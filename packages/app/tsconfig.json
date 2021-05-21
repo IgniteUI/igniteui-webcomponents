@@ -1,0 +1,33 @@
+{
+  "extends": "../tsconfig.settings.json",
+  "compilerOptions": {
+    "allowUnreachableCode": false,
+    "experimentalDecorators": true,
+    "lib": [
+      "dom",
+      "es2015"
+    ],
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "module": "esnext",
+    "target": "es2017",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "jsx": "react",
+    "jsxFactory": "h"
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "docs",
+    "node_modules",
+    "stencil.config.ts",
+    "dist",
+    "www",
+    "src/**/*.spec.ts*",
+    "src/**/*.e2e.ts*"
+  ],
+  "references": [{ "path": "../core" }]
+}

@@ -1,0 +1,27 @@
+{
+  "extends": "../tsconfig.settings.json",
+  "compilerOptions": {
+    "allowUnreachableCode": false,
+    "experimentalDecorators": true,
+    "lib": [
+      "dom",
+      "es2017"
+    ],
+    "moduleResolution": "node",
+    "module": "esnext",
+    "target": "es2017",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "jsx": "react",
+    "jsxFactory": "h"
+  },
+  "include": [
+    "src",
+    "types/jsx.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/**/*.spec.ts*",
+    "src/**/*.e2e.ts*"
+  ]
+}
