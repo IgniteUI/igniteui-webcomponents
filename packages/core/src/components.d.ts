@@ -7,18 +7,7 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
     interface IgcButton {
-        /**
-          * The first name
-         */
-        "first": string;
-        /**
-          * The last name
-         */
-        "last": string;
-        /**
-          * The middle name
-         */
-        "middle": string;
+        "disabled": boolean;
     }
 }
 declare global {
@@ -34,18 +23,7 @@ declare global {
 }
 declare namespace LocalJSX {
     interface IgcButton {
-        /**
-          * The first name
-         */
-        "first"?: string;
-        /**
-          * The last name
-         */
-        "last"?: string;
-        /**
-          * The middle name
-         */
-        "middle"?: string;
+        "disabled"?: boolean;
     }
     interface IntrinsicElements {
         "igc-button": IgcButton;

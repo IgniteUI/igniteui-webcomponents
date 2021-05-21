@@ -1,5 +1,4 @@
-import { Component, Prop, h } from '@stencil/core';
-import { format } from '../../utils/utils';
+import { Component, Prop, h, Host } from '@stencil/core';
 
 @Component({
   tag: 'igc-button',
@@ -7,26 +6,15 @@ import { format } from '../../utils/utils';
   shadow: true,
 })
 export class IgcButtonComponent {
-  /**
-   * The first name
-   */
-  @Prop() first: string;
-
-  /**
-   * The middle name
-   */
-  @Prop() middle: string;
-
-  /**
-   * The last name
-   */
-  @Prop() last: string;
-
-  private getText(): string {
-    return format(this.first, this.middle, this.last);
-  }
+  @Prop() disabled: boolean;
 
   render() {
-    return <div>Hello, World! I'm {this.getText()}</div>;
+    return (
+      <Host>
+        <button>
+          <slot/>
+        </button>
+      </Host>
+    );
   }
 }
