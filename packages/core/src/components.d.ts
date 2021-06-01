@@ -7,7 +7,16 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
     interface IgcButton {
+        "background": string;
+        "buttonType": 'button' | 'reset' | 'submit';
+        "color": string;
         "disabled": boolean;
+        "download": string;
+        "href": string;
+        "rel": string;
+        "size": 'small' | 'medium' | 'large';
+        "target": '_blank' | '_parent' | '_self' | '_top';
+        "type": 'flat' | 'raised' | 'outlined' | 'icon' | 'fab';
     }
 }
 declare global {
@@ -23,7 +32,16 @@ declare global {
 }
 declare namespace LocalJSX {
     interface IgcButton {
+        "background"?: string;
+        "buttonType"?: 'button' | 'reset' | 'submit';
+        "color"?: string;
         "disabled"?: boolean;
+        "download"?: string;
+        "href"?: string;
+        "rel"?: string;
+        "size"?: 'small' | 'medium' | 'large';
+        "target"?: '_blank' | '_parent' | '_self' | '_top';
+        "type"?: 'flat' | 'raised' | 'outlined' | 'icon' | 'fab';
     }
     interface IntrinsicElements {
         "igc-button": IgcButton;
