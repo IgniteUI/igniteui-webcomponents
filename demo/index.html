@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <div id="demo"></div>
+
+  <script type="module">
+    import { html, render } from 'lit-html';
+    import '../dist/igniteui-webcomponents.js';
+
+    const title = 'Hello owc World!';
+    render(
+      html`
+        <igniteui-webcomponents .title=${title}>
+          some more light-dom
+        </igniteui-webcomponents>
+        <igc-button>Click</igc-button>
+        <igc-link-button>Click</igc-link-button>
+      `,
+      document.querySelector('#demo')
+    );
+  </script>
+</body>
+</html>
