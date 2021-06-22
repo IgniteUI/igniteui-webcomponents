@@ -1,8 +1,11 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { IgcBaseComponent } from '../common/component-base.js';
+import { styles } from './button.css';
 
 export abstract class IgcButtonBaseComponent extends IgcBaseComponent {
+  static styles = [styles];
+
   /**
    * Determines whether the button is disabled.
    */
