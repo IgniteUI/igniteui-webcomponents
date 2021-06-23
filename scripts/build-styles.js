@@ -18,10 +18,10 @@ async function sassToCss(sassFile) {
 
   let cssStr = result.css.toString();
 
-  cssStr = await postcss([ autoprefixer ]).process(cssStr).css;
+  cssStr = await postcss([autoprefixer]).process(cssStr).css;
 
   // Strip BOM if any
-  if (cssStr.charCodeAt(0) === 0xFEFF) {
+  if (cssStr.charCodeAt(0) === 0xfeff) {
     cssStr = cssStr.substr(1);
   }
   return cssStr;
@@ -38,7 +38,7 @@ async function sassRender(sourceFile, templateFile, outputFile) {
 
 (async () => {
   const template = path.resolve(process.argv[1], '../styles.tmpl');
-  const paths = await globby('src/components/**/*.scss');
+  const paths = await globby(['src/components/**/*.scss', 'src/styles/themes/**/*.scss']);
 
   for (const sourceFile of paths) {
     const output = sourceFile.replace(/\.scss$/, '.css.ts');

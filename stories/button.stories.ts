@@ -55,15 +55,19 @@ const Template: Story<ArgTypes> = ({
   size,
   variant,
   type,
-}: ArgTypes) => html`
-  <igc-button
-    ?disabled=${disabled}
-    size=${ifDefined(size)}
-    variant=${ifDefined(variant)}
-    type=${ifDefined(type)}
-  >
-    Click me
-  </igc-button>
-`;
+}: ArgTypes) => {
+  return html`
+    <igniteui-webcomponents>
+      <igc-button
+        ?disabled=${disabled}
+        size=${ifDefined(size)}
+        variant=${ifDefined(variant)}
+        type=${ifDefined(type)}
+      >
+        Click Me
+      </igc-button>
+    </igniteui-webcomponents>
+  `;
+};
 
 export const Basic = Template.bind({});

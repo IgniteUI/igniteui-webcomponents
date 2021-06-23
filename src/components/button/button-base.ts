@@ -16,19 +16,17 @@ export abstract class IgcButtonBaseComponent extends IgcBaseComponent {
   variant: 'flat' | 'raised' | 'outlined' | 'icon' | 'fab' = 'flat';
 
   protected get classes() {
-    const { size, variant, disabled } = this;
+    const { size, variant } = this;
 
     return {
-      'igc-button': true,
-      'igc-button--flat': variant === 'flat',
-      'igc-button--outlined': variant === 'outlined',
-      'igc-button--raised': variant === 'raised',
-      'igc-button--icon': variant === 'icon',
-      'igc-button--fab': variant === 'fab',
-      'igc-button--disabled': disabled,
-      'igc-button--small': size === 'small',
-      'igc-button--medium': size === 'medium',
-      'igc-button--large': size === 'large',
+      flat: variant === 'flat',
+      outlined: variant === 'outlined',
+      raised: variant === 'raised',
+      icon: variant === 'icon',
+      fab: variant === 'fab',
+      small: size === 'small',
+      medium: size === 'medium',
+      large: size === 'large',
     };
   }
 
