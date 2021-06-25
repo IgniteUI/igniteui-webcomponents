@@ -1,4 +1,26 @@
+@use '../utilities' as utils;
+
+$palette: utils.palette(
+  $primary: #09f,
+  $secondary: #e41c77,
+  $gray: #000,
+  $surface: white,
+) !default;
+
+$elevations: utils.elevations(
+    rgba(0, 0, 0, .26),
+    rgba(0, 0, 0, .12),
+    rgba(0, 0, 0, .08)
+) !default;
+
+$type-scale: utils.type-scale();
+
 :root,
 :host {
-  --igc-primary-500: #09f;
+  @include utils.palette($palette);
+  @include utils.elevations($elevations);
+  @include utils.typography(
+    $font-family: 'Titillium Web, sans-serif',
+    $type-scale: $type-scale
+  );
 }

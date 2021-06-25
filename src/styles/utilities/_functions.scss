@@ -1,0 +1,652 @@
+@use 'sass:math';
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:map';
+@use 'sass:list';
+@use 'sass:string';
+
+////
+/// @group Utilities
+/// @author <a href="https://github.com/simeonoff" target="_blank">Simeon Simeonoff</a>
+////
+
+/// Converts pixels to relative values (em).
+/// @access public
+/// @param {number|string} $pixels - The pixel value to be converted.
+/// @param {number|string} $base-size [16px] - The base context to convert against.
+@function em($pixels, $base-size: 16px) {
+    @if (math.is-unitless($pixels)) {
+        $pixels: $pixels * 1px;
+    }
+    @if (math.is-unitless($base-size)) {
+        $context: $context * 1px;
+    }
+    @return math.div($pixels, $base-size) * 1em;
+}
+
+/// Pixels to root relative values (rem).
+/// @access public
+/// @param {number|string} $pixels - The pixel value to be converted.
+/// @param {number|string} $base-size [16px] - The base context to convert against.
+@function rem($pixels, $base-size: 16px) {
+    @if (math.is-unitless($pixels)) {
+        $pixels: $pixels * 1px;
+    }
+    @if (math.is-unitless($base-size)) {
+        $context: $context * 1px;
+    }
+    @return math.div($pixels, $base-size) * 1rem;
+}
+
+/// Relative value(em/rem) to pixel.
+/// @access public
+/// @param {number|string} $num - The relative value to be converted.
+/// @param {number|string} $base-isze [16px] - The base context to convert against.
+@function px($num, $base-size: 16px) {
+    @if meta.type-of($num) == 'number' {
+        @return math.div($num, ($num * 0 + 1)) * 16px;
+    }
+
+    @return $num;
+}
+
+/// Calculates the linear channel value for a given sRGB color.
+/// @access private
+@function _lcv($value) {
+    @return if(
+        $value < .03928,
+        math.div($value, 12.92),
+        math.pow(math.div($value + .055, 1.055), 2.4)
+    );
+}
+
+/// Calculates the luminance for a given color.
+/// See https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests.
+///
+/// @param {Color} $color - The color to calculate luminance for.
+@function luminance($color) {
+    @if meta.type-of($color) == 'color' {
+        $r: math.div(color.red($color), 255);
+        $g: math.div(color.green($color), 255);
+        $b: math.div(color.blue($color), 255);
+
+        @return .2126 * _lcv($r) + .7152 * _lcv($g) + .0722 * _lcv($b);
+    }
+    @return $color;
+}
+
+/// Calculates the contrast ratio between two colors.
+/// See https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests
+///
+/// @param {Color} $background - The background color.
+/// @param {Color} $foreground - The foreground color.
+/// @returns {Number} - The contrast ratio between the background and foreground colors.
+@function contrast-ratio($background, $foreground) {
+    $backLum: luminance($background) + .05;
+    $foreLum: luminance($foreground) + .05;
+
+    @return math.div(math.max($backLum, $foreLum), math.min($backLum, $foreLum));
+}
+
+/// Generates a color shade from base color and saturation level.
+/// @access private
+/// @group Palettes
+/// @param {Color} $color - The base color to be used to generate a color shade.
+/// @param {number|string} $shade - The shade.
+@function _get-shade($color, $shade) {
+    @if ($shade == 50) {
+        @return lighten(saturate($color, 10.4), 37.7);
+    } @else if ($shade == 100) {
+        @return lighten(desaturate($color, 10.4), 31.8);
+    } @else if ($shade == 200) {
+        @return lighten(desaturate($color, 17), 18.7);
+    } @else if ($shade == 300) {
+        @return lighten(desaturate($color, 12.9), 9.1);
+    } @else if ($shade == 400) {
+        @return lighten(desaturate($color, 6.6), 4.1);
+    } @else if ($shade == 500) {
+        @return $color;
+    } @else if ($shade == 600) {
+        @return darken(saturate($color, 12.4), 5.1);
+    } @else if ($shade == 700) {
+        @return darken(saturate($color, 24.5), 8.8);
+    } @else if ($shade == 800) {
+        @return darken(saturate($color, 23.2), 12.7);
+    } @else if ($shade == 900) {
+        @return darken(saturate($color, 16.1), 17);
+    } @else if ($shade == 'A100') {
+        @return lighten(saturate($color, 10.4), 16.7);
+    } @else if ($shade == 'A200') {
+        @return lighten(saturate($color, 10.4), 7.7);
+    } @else if ($shade == 'A400') {
+        @return darken(saturate($color, 10.4), 3.9);
+    } @else if ($shade == 'A700') {
+        @return darken(saturate($color, 10.4), 16.6);
+    }
+}
+
+/// Generates an hsla color variant from base(500) colors.
+/// @access private
+/// @group Palettes
+/// @param {Color} $name - The base color name (primary, secondary, etc.) to be used to generate a color variant.
+/// @param {number|string} $shade - The target shade variant.
+/// @param {number|string} $theme - The target theme variant.
+@function _get-hsla-color($name, $shade) {
+    $h: var(--igc-#{$name}-h);
+    $s: var(--igc-#{$name}-s);
+    $l: var(--igc-#{$name}-l);
+    $a: var(--igc-#{$name}-a);
+
+    @if ($shade == 50) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, calc(#{$s} * 1.23), calc(#{$l} * 1.78), #{$a})};
+        }
+    } @else if ($shade == 100) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, calc(#{$s} / 1.25), calc(#{$l} * 1.66), #{$a})};
+        }
+    } @else if ($shade == 200) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, calc(#{$s} * .64), calc(#{$l} * 1.43), #{$a})};
+        }
+    } @else if ($shade == 300) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, calc(#{$s} * .73), calc(#{$l} * 1.19), #{$a})};
+        }
+    } @else if ($shade == 400) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, calc(#{$s} * .875), calc(#{$l} * 1.08), #{$a})};
+        }
+    } @else if ($shade == 500) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, $s, $l, $a)};
+        }
+    } @else if ($shade == 600) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, calc(#{$s} * 1.26), calc(#{$l} * .89), #{$a})};
+        }
+    } @else if ($shade == 700) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, calc(#{$s} * 1.52), calc(#{$l} * .81), #{$a})};
+        }
+    } @else if ($shade == 800) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, calc(#{$s} * 1.5), calc(#{$l} * .73), #{$a})};
+        }
+    } @else if ($shade == 900) {
+        @if $name == 'gray' {
+            @return #{hsla($h, $s, $l)};
+        } @else {
+            @return #{hsla($h, calc(#{$s} * 1.34), calc(#{$l} * .64), #{$a})};
+        }
+    } @else if ($shade == 'A100') {
+        @return #{hsla($h, calc(#{$s} * 1.23), calc(#{$l} * 1.34), #{$a})};
+    } @else if ($shade == 'A200') {
+        @return #{hsla($h, calc(#{$s} * 1.22), calc(#{$l} * 1.16), #{$a})};
+    } @else if ($shade == 'A400') {
+        @return #{hsla($h, calc(#{$s} * 1.23), calc(#{$l} * .91), #{$a})};
+    } @else if ($shade == 'A700') {
+        @return #{hsla($h, calc(#{$s} * 1.22), calc(#{$l} * .65), #{$a})};
+    }
+}
+
+/// Generates a Material-like color palette for a single color.
+/// @access private
+/// @group Palettes
+/// @requires {function} _get-shade
+/// @requires {function} text-contrast
+/// @param {Color} $color - The base color used to generate the palette.
+/// @param {List} $saturations - The saturation list of color variants.
+/// @param {Color} $base [#fff] - The base color to calculate contrast colors against if the base color is transluscent.
+//// Based on the Material color system.
+/// @returns {Map} - A map consisting of 14 color variations and 14
+/// text contrast colors for each variation.
+@function _get-shades(
+    $name,
+    $color,
+    $shades,
+    $base: #fff
+) {
+    $result: ();
+    @each $shade in $shades {
+        $hsla-color: _get-hsla-color($name, $shade);
+        $contrast-color: contrast(to-opaque(_get-shade($color, $shade), $base));
+        $result: map.merge($result, (
+            #{$shade}: $hsla-color,
+            #{$shade}-contrast: $contrast-color,
+        ));
+    }
+    @return $result;
+}
+
+/// Generates a color palette.
+/// @access public
+/// @group Palettes
+/// @requires {function} _color-palette
+/// @param {Color} $primary - The primary color used to generate the primary color palette.
+/// @param {Color} $secondary - The secondary color used to generate the secondary color palette.
+/// @param {Color} $info [#1377d5] - The information color used throughout the application.
+/// @param {Color} $success [#4eb862] - The success color used throughout the application.
+/// @param {Color} $warn [#fbb13c] - The warning color used throughout the application.
+/// @param {Color} $error [#ff134a] - The error color used throughout the application.
+/// @param {Color} $grays [#000 | $igx-foreground-color] - The color used for generating the grays palette.
+/// @param {Color} $surface [#fff] - The color used as a background in components, such as cards, sheets, and menus.
+/// @param {String} $variant ['material'] - The palette variant that gets generated. Possible values are: 'material', 'fluent', 'bootstrap', and 'indigo-design'.
+/// @returns {Map} - A map consisting of 74 color variations, including the `primary`, `secondary`, `grays`,
+/// `info`, `success`, `warn`, and `error` colors.
+@function palette(
+    $primary,
+    $secondary,
+    $gray: #000,
+    $surface: #fff,
+    $info: #1377d5,
+    $success: #4eb862,
+    $warn: #fbb13c,
+    $error: #ff134a,
+    $variant: 'material',
+) {
+    $shades: (50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 'A100', 'A200', 'A400', 'A700');
+    $gray-shades: (50, 100, 200, 300, 400, 500, 600, 700, 800, 900);
+
+    $primary-palette: _get-shades('primary', $primary, $shades, $surface);
+    $secondary-palette: _get-shades('secondary', $secondary, $shades, $surface);
+    $grayscale-palette: _get-shades('gray', $gray, $gray-shades, $surface);
+
+    // @debug 'Primary Colors Palette: #{$primary-palette}';
+    // @debug 'secondary Colors Palette: #{$secondary-palette}';
+    // @debug 'Warn Colors Palette: #{$warn-palette}';
+
+    @return (
+        primary: $primary-palette,
+        secondary: $secondary-palette,
+        gray: $grayscale-palette,
+        info: (
+            500: $info,
+            '500-contrast': contrast(
+                to-opaque($info, $surface)
+            )
+        ),
+        success: (
+            500: $success,
+            '500-contrast': contrast(
+                to-opaque($success, $surface)
+            )
+        ),
+        warn: (
+            500: $warn,
+            '500-contrast': contrast(
+                to-opaque($warn, $surface)
+            )
+        ),
+        error: (
+            500: $error,
+            '500-contrast': contrast(
+                to-opaque($error, $surface)
+            )
+        ),
+        surface: (
+            500: $surface,
+            '500-contrast': contrast(
+                to-opaque($surface, $surface)
+            )
+        ),
+        _meta: (
+            'primary': $primary,
+            'secondary': $secondary,
+            'gray': $gray,
+            'surface': $surface,
+            'info': $info,
+            'success': $success,
+            'warn': $warn,
+            'error': $error,
+            'variant': $variant,
+        )
+    );
+}
+
+/// @access private
+/// Used in igx-color to test internally
+/// for color and variant validity.
+$p-test: palette(#fff, #000);
+
+/// Retrieves a color from a color palette.
+/// @access public
+/// @group Palettes
+/// @param {Map} $palette [null]- The source palette map.
+/// @param {string} $color [primary]- The target color from the color palette.
+/// @param {number|string} $variant [500] - The target color shade from the color palette.
+/// @returns {Color} White if no palette, color, and variant matches found.
+@function color($palette: null, $color: primary, $variant: 500) {
+    $c: map.get($palette or $p-test, $color);
+    $v: if($c, map.get($c, $variant), null);
+
+    @if not($c) {
+        @error 'The passed color #{$color} is not valid.';
+    }
+
+    @if not($v) {
+        @error 'The passed variant #{$variant} is not valid.';
+    }
+
+    @if $palette == null {
+        @return #{var(--igc-#{$color}-#{$variant})};
+    }
+
+    @return map.get($c, $variant);
+}
+
+/// Retrieves a contrast text color for a given color from a color palette.
+/// @access public
+/// @group Palettes
+/// @param {Map} $palette [null] - The source palette map.
+/// @param {string} $color [primary] - The target color from the color palette.
+/// @param {number|variant} $variant [500] - The target color shade from the color palette.
+/// @requires igx-color
+/// @returns {Color} [#fff] - Returns white if no palette, color and/or variant matches found.
+@function contrast-color($palette: null, $color: primary, $variant: 500) {
+    @return color($palette, $color, #{$variant}-contrast);
+}
+
+/// Mixes two colors to produce an opaque color.
+/// @access public
+/// @param {Color} $color-1 - The first color, usually transparent.
+/// @param {Color} $color-2 [#fff] - The second color, usually opaque.
+/// @return {Color} - The color representation of the rgba value.
+@function to-opaque($color-1, $color-2: #fff) {
+    @if meta.type-of($color-1) == color and meta.type-of($color-2) == color {
+        $red: color.red($color-1);
+        $green: color.green($color-1);
+        $blue: color.blue($color-1);
+        $a: color.alpha($color-1);
+        $r: math.floor($a * $red + (1 - $a) * color.red($color-2));
+        $g: math.floor($a * $green + (1 - $a) * color.green($color-2));
+        $b: math.floor($a * $blue + (1 - $a) * color.blue($color-2));
+        @return rgb($r, $g, $b);
+    }
+    @return $color-1;
+}
+
+/// Returns a contrast color for a passed color.
+/// @access public
+/// @group Palettes
+/// @param {Color} $background - The background color used to return a contrast/forground color for.
+/// @param {Color} $foreground - The foreground color used in case it has enough contrast against the provided background.
+/// @param {String} $contrast - The contrast level according to WCAG 2.0 standards.
+/// @returns {Color} - Returns either white or black depending on the luminance of the input color.
+/// @link https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+@function contrast(
+    $background,
+    $foreground: white,
+    $contrast: 'AA',
+    $palette: null
+) {
+    @if meta.type-of($foreground) == 'color' and meta.type-of($background) == 'color' {
+        $level: map.get((
+            'A': 3,
+            'AA': 4.5,
+            'AAA': 7
+        ), $contrast);
+
+        @if $level == null {
+            @error "$contrast must be 'A', 'AA', or 'AAA'";
+        }
+
+        @if contrast-ratio($background, $foreground) >= $level {
+            @return $foreground;
+        } @else {
+            $lcr: contrast-ratio($background, white);
+            $dcr: contrast-ratio($background, black);
+
+            @if ($lcr > $dcr) {
+                @return white;
+            } @else {
+                @return black;
+            }
+        }
+    } @else {
+        @return $background;
+    }
+}
+
+/// Converts numbers to HEX value strings.
+/// @access private
+/// @param {number} $num - The number to convert.
+/// @param {radix} $radix [16] - The base radix to use for the conversion.
+/// @return {String} - The resulting string.
+@function to-string($num, $radix: 16) {
+    $chars: '0123456789abcdef';
+    $result: '';
+    $sign: '';
+    @if $num < 0 {
+        $sign: '-';
+        $num: math.abs($num);
+    }
+    @if $num >= 0 and $num < $radix {
+        @return $sign + string.slice($chars, ($num + 1), ($num + 1));
+    }
+    $q: $num;
+    @while $q !=0 {
+        $r: $q % $radix;
+        $q: math.floor($q / $radix);
+        $result: string.slice($chars, ($r + 1), ($r + 1)) + $result;
+    }
+    @return $sign + $result;
+}
+
+/// @access private
+@function to-number($value) {
+    @if meta.type-of($value) == 'number' {
+        @return $value;
+    } @else if meta.type-of($value) != 'string' {
+        $_: log('Value for `to-number` should be a number or a string.');
+    }
+
+    $result: 0;
+    $digits: 0;
+    $minus: string.slice($value, 1, 1) == '-';
+    $numbers: ('0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9);
+
+    @for $i from if($minus, 2, 1) through string.length($value) {
+        $character: string.slice($value, $i, $i);
+
+        @if not(list.index(map.keys($numbers), $character) or $character == '.') {
+            @return $value;
+        }
+
+        @if $character == '.' {
+            $digits: 1;
+        } @else if $digits == 0 {
+            $result: $result * 10 + map.get($numbers, $character);
+        } @else {
+            $digits: $digits * 10;
+            $result: $result + map.get($numbers, $character) / $digits;
+        }
+    }
+
+    @return if($minus, -$result, $result);
+}
+
+/// Removes all null key-value pairs from the map
+/// @access private
+/// @param {Map} $map - The target map to be cleaned.
+/// @returns {Map} - Returns a clean map.
+@function map-clean($map) {
+    $result: ();
+
+    @each $key, $value in $map {
+        @if($value) != null {
+            $result: map.merge($result, (
+                #{$key}: $value
+            ));
+        }
+    }
+
+    @return $result;
+}
+
+/// Extends a Map object with the properties of another Map object.
+/// @access public
+/// @param {Map...} $maps - The source map to get extended.
+/// @returns {Map} - Returns the merged maps.
+@function extend($maps...) {
+    $result: ();
+
+    @each $map in $maps {
+        $result: map.merge($result, map-clean($map));
+    }
+
+    @return $result;
+}
+
+/// Returns a CSS property value. It could return either css '--var' or
+/// a plain string value based on theme configuration.
+/// @access public
+/// @param {map} $map - The source theme to be used to read values from.
+/// @param {string} $key - A key from the theme map to assign as value to the property.
+/// @example scss Assign the color property in a rule-set to a value from the default avatar theme.
+///   %igx-avatar-icon {
+///     color: var-get($avatar-theme, 'icon-color');
+///   }
+///   // If legacy-support is off, it will produce the following:
+///   // %igx-avatar-icon {
+///   //   color: var(--igx-avatar-icon-color);
+///   // }
+///   // otherwise, it will return the value for key 'icon-color' in the '$avatar-theme';
+/// @returns {String} - The value of the key in the passed map, or the name of key concatenated with the key name.
+@function var-get($map, $key, $fallback: null) {
+    @if map.has-key($map, $key) {
+        @if not(legacy()) {
+            @if not($fallback) {
+                @return var(--#{$key})
+            }
+            @return var(--#{$key}, #{$fallback})
+        } @else {
+            @return map.get($map, $key);
+        }
+    } @else {
+        @error string.unquote('The map you passed does not contain a key #{$key}');
+    }
+}
+
+/// Splits a string into a list by a given separator.
+/// @access private
+/// @param {string} $string - The string to split.
+/// @param {string} $separator - The string separator to split the string by.
+@function str-split($string, $separator) {
+    $split-arr: ();
+    $index : string.index($string, $separator);
+    @while $index != null {
+        $item: string.slice($string, 1, $index - 1);
+        $split-arr: list.append($split-arr, $item);
+        $string: string.slice($string, $index + 1);
+        $index : string.index($string, $separator);
+    }
+    $split-arr: list.append($split-arr, $string);
+    @return $split-arr;
+}
+
+@function _generate-series-colors($palette, $color-blind: false) {
+    @if $color-blind {
+        @return (
+            rgb(86, 180, 233),
+            rgb(0, 158, 115),
+            rgb(240, 228, 68),
+            rgb(213, 94, 0),
+            rgb(214, 0, 254),
+            rgb(0, 73, 159),
+            rgb(230, 159, 0),
+            rgb(0, 0, 0),
+            rgb(132, 240, 223),
+            rgb(115, 86, 86),
+        );
+    }
+
+    @return (
+        rgb(157, 231, 114),
+        rgb(139, 91, 177),
+        rgb(109, 177, 255),
+        rgb(154, 242, 228),
+        rgb(238, 88, 121),
+        rgb(115, 86, 86),
+        rgb(247, 210, 98),
+        rgb(168, 168, 183),
+        rgb(224, 81, 169),
+        rgb(248, 161, 95),
+    );
+}
+
+/// Returns true if the scope where it's called
+/// is the root of the document.
+/// @access private
+/// @example scss Check if the current scope is root
+///   @mixin smart-mixin() {
+///     $scope: if(is-root(), ':root', '&');
+///
+///     #{$scope} {
+///       /* style rules here */
+///     }
+///   }
+///
+@function is-root() {
+    @each $selector in & {
+        @return if($selector == null, true, false);
+    }
+}
+
+/// Returns $if param when global variable $directory
+/// is set to ltr otherwise returns $else.
+/// @param {*} $if - The value to be returned when $direction is set to ltr;
+/// @param {*} $else - The value to be returned when $direction is set to rtl;
+/// @example scss Set variable values based on $direction
+///    $left: if-ltr(left, right);
+///    $right: if-ltr(right, left);
+@function if-ltr($if, $else: null) {
+    $dir: if(meta.global-variable-exists('direction'), $direction, 'ltr');
+
+    @if $dir != rtl {
+        @return $if;
+    } @else {
+        @return $else;
+    }
+}
+
+/// Returns $if param when global variable $directory
+/// is set to rtl otherwise returns $else.
+/// @param {*} $if - The value to be returned when $direction is set to rtl;
+/// @param {*} $else - The value to be returned when $direction is set to ltr;
+/// @example scss Set variable values based on $direction
+///    $left: if-rtl(left, right);
+///    $right: if-rtl(right, left);
+@function if-rtl($if, $else: null) {
+    @return if-ltr($else, $if);
+}
+
+@function str-replace($string, $search, $replace: '') {
+    $index: string.index($string, $search);
+    @if $index {
+        @return string.slice($string, 1, $index - 1) + $replace + str-replace(
+            string.slice($string, $index + string.length($search)),
+            $search,
+            $replace
+        );
+    }
+    @return $string;
+}

@@ -1,5 +1,9 @@
 @use '../../styles/common/component';
 
+:host {
+  display: inline-flex;
+}
+
 a,
 button {
   position: relative;
@@ -7,6 +11,14 @@ button {
   align-items: center;
   justify-content: center;
   border: none;
+  border-radius: 4px;
+  font-family: var(--igc-button-font-family);
+  font-weight: var(--igc-button-font-weight);
+  font-size: var(--igc-button-font-size);
+  font-style: var(--igc-button-font-style);
+  letter-spacing: var(--igc-button-letter-spacing);
+  line-height: var(--igc-button-line-height);
+  text-transform: var(--igc-button-text-transform);
   cursor: pointer;
   user-select: none;
   outline-style: none;
@@ -32,11 +44,24 @@ button {
 
 .flat {
   background: transparent;
-  color: var(--igc-primary-500);
-  border-radius: var(--igc-border-radius);
+  color: var(--igc-secondary-500);
 
   &:hover::before {
-    background: var(--igc-primary-500);
+    background: var(--igc-secondary-500);
     opacity: 12%;
+  }
+}
+
+.raised {
+  background: var(--igc-secondary-500);
+  color: var(--igc-secondary-500-contrast);
+  box-shadow: var(--igc-elevation-2);
+
+  &:hover {
+    box-shadow: var(--igc-elevation-4);
+  }
+
+  &:hover::before {
+    background: rgba(255, 255, 255, .12);
   }
 }
