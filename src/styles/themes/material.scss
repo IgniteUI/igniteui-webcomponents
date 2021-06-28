@@ -17,10 +17,12 @@ $type-scale: utils.type-scale();
 
 :root,
 :host {
+  --igc-border-radius: #{utils.rem(2px)};
+  --igc-spacing: #{utils.rem(2px)};
   @include utils.palette($palette);
   @include utils.elevations($elevations);
   @include utils.typography(
-    $font-family: 'Titillium Web, sans-serif',
+    $font-family: 'Roboto, sans-serif',
     $type-scale: $type-scale
   );
 }
