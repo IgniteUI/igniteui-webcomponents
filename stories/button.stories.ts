@@ -64,7 +64,9 @@ const Template: Story<ArgTypes> = ({
         variant=${ifDefined(variant)}
         type=${ifDefined(type)}
       >
-        Click Me
+        <span slot="prefix">+</span>
+        Click
+        <span slot="suffix">-</span>
       </igc-button>
     </igniteui-webcomponents>
   `;

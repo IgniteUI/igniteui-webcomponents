@@ -1,8 +1,33 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
+$slot-spacing: calc(var(--igc-spacing) * 4);
+
 :host {
   display: inline-flex;
+}
+
+:host,
+:host([dir="ltr"]) {
+  [name="prefix"]::slotted(*) {
+    margin-right: $slot-spacing;
+  }
+
+  [name="suffix"]::slotted(*) {
+    margin-left: $slot-spacing;
+  }
+}
+
+:host([dir="rtl"]) {
+  [name="prefix"]::slotted(*) {
+    margin-right: initial;
+    margin-left: $slot-spacing;
+  }
+
+  [name="suffix"]::slotted(*) {
+    margin-left: initial;
+    margin-right: $slot-spacing;
+  }
 }
 
 a,
@@ -47,7 +72,8 @@ button {
     width: 100%;
     height: 100%;
     z-index: -1;
-    transition: opacity .1s ease-out, background .1s ease-out;
+    will-change: opacity;
+    transition: all .1s ease-out;
   }
 }
 
@@ -82,8 +108,6 @@ button {
 
   &:before {
     opacity: 0;
-    will-change: opacity;
-    transition: opacity .1s ease-out;
   }
 
   &:hover:not([disabled]) {
