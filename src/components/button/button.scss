@@ -29,7 +29,8 @@ button {
   line-height: var(--igc-button-line-height);
   text-transform: var(--igc-button-text-transform);
 
-  &[disabled] {
+  &[disabled],
+  &[aria-disabled="true"] {
     background: var(--igc-gray-300);
     color: var(--igc-gray-500);
     pointer-events: none;
