@@ -34,12 +34,11 @@ export abstract class IgcButtonBaseComponent extends IgcBaseComponent {
     return html`
       <span part="prefix">
         <slot name="prefix"></slot>
-        <span>
-          <slot></slot>
-          <span part="suffix">
-            <slot name="suffix"></slot>
-          </span> </span
-      ></span>
+      </span>
+      <slot></slot>
+      <span part="suffix">
+        <slot name="suffix"></slot>
+      </span>
     `;
   }
 }
