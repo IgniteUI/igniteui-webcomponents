@@ -54,15 +54,14 @@ button {
   line-height: var(--igc-button-line-height);
   text-transform: var(--igc-button-text-transform);
 
-  &[disabled],
-  &[aria-disabled="true"] {
+  &.disabled {
     background: var(--igc-gray-300);
     color: var(--igc-gray-500);
     pointer-events: none;
     box-shadow: none;
   }
 
-  &:hover:not([disabled]) {
+  &:hover:not(.disabled) {
     cursor: pointer;
   }
 
@@ -85,9 +84,15 @@ button {
     opacity: 0;
   }
 
-  &:hover:not([disabled])::before {
+  &:hover:not(.disabled)::before {
     background: var(--igc-secondary-500);
-    opacity: 12%;
+    opacity: .12;
+  }
+
+  &:focus:not(.disabled)::before,
+  &:active:not(.disabled)::before {
+    background: var(--igc-secondary-500);
+    opacity: .24;
   }
 }
 
@@ -95,8 +100,8 @@ button {
   @extend .flat;
   box-shadow: inset 0 0 0 1px var(--igc-secondary-500);
 
-  &[disabled] {
-    box-shadow: inset 0 0 0 1px var(--igc-gray-500);
+  &.disabled {
+    box-shadow: inset 0 0 0 1px var(--igc-gray-300);
   }
 }
 
@@ -110,13 +115,24 @@ button {
     opacity: 0;
   }
 
-  &:hover:not([disabled]) {
+  &:hover:not(.disabled) {
     box-shadow: var(--igc-elevation-4);
   }
 
-  &:hover:not([disabled])::before {
-    background: var(--igc-gray-50);
+  &:hover:not(.disabled)::before {
+    background: #fff;
     opacity: .12;
+  }
+
+  &:focus:not(.disabled),
+  &:focus:not(.disabled) {
+    box-shadow: var(--igc-elevation-8);
+  }
+
+  &:focus:not(.disabled)::before,
+  &:active:not(.disabled)::before {
+    background: #fff;
+    opacity: .24;
   }
 }
 
@@ -125,7 +141,9 @@ button {
   border-radius: calc(var(--igc-border-radius) * 12);
   box-shadow: var(--igc-elevation-6);
 
-  &:hover:not([disabled]) {
+  &:hover:not(.disabled),
+  &:focus:not(.disabled),
+  &:focus:not(.disabled) {
     box-shadow: var(--igc-elevation-12);
   }
 
