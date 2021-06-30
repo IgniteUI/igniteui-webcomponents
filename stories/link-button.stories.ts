@@ -13,14 +13,14 @@ export default {
         type: 'inline-radio',
         options: ['small', 'medium', 'large'],
       },
-      // defaultValue: 'large'
+      defaultValue: 'large',
     },
     variant: {
       control: {
         type: 'inline-radio',
-        options: ['flat', 'raised', 'outlined', 'icon', 'fab'],
+        options: ['flat', 'raised', 'outlined', 'fab'],
       },
-      // defaultValue: 'flat'
+      defaultValue: 'flat',
     },
     href: { control: 'text' },
     download: { control: 'text' },
@@ -37,7 +37,7 @@ export default {
 interface ArgTypes {
   disabled: boolean;
   size: 'small' | 'medium' | 'large';
-  variant: 'flat' | 'raised' | 'outlined' | 'icon' | 'fab';
+  variant: 'flat' | 'raised' | 'outlined' | 'fab';
   href: string;
   download: string;
   rel: string;

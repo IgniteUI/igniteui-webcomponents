@@ -13,7 +13,7 @@ export abstract class IgcButtonBaseComponent extends IgcBaseComponent {
   disabled = false;
 
   @property()
-  variant: 'flat' | 'raised' | 'outlined' | 'icon' | 'fab' = 'flat';
+  variant: 'flat' | 'raised' | 'outlined' | 'fab' = 'flat';
 
   protected get classes() {
     const { size, variant } = this;
@@ -22,19 +22,24 @@ export abstract class IgcButtonBaseComponent extends IgcBaseComponent {
       flat: variant === 'flat',
       outlined: variant === 'outlined',
       raised: variant === 'raised',
-      icon: variant === 'icon',
       fab: variant === 'fab',
       small: size === 'small',
       medium: size === 'medium',
       large: size === 'large',
+      disabled: this.disabled,
     };
   }
 
   protected renderContent() {
     return html`
-      <slot name="prefix"></slot>
-      <slot></slot>
-      <slot name="suffix"></slot>
+      <span part="prefix">
+        <slot name="prefix"></slot>
+        <span>
+          <slot></slot>
+          <span part="suffix">
+            <slot name="suffix"></slot>
+          </span> </span
+      ></span>
     `;
   }
 }

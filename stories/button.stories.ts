@@ -24,21 +24,21 @@ export default {
         type: 'inline-radio',
         options: ['small', 'medium', 'large'],
       },
-      // defaultValue: 'large'
+      defaultValue: 'large',
     },
     variant: {
       control: {
         type: 'inline-radio',
-        options: ['flat', 'raised', 'outlined', 'icon', 'fab'],
+        options: ['flat', 'raised', 'outlined', 'fab'],
       },
-      // defaultValue: 'flat'
+      defaultValue: 'flat',
     },
     type: {
       control: {
         type: 'inline-radio',
         options: ['button', 'reset', 'submit'],
       },
-      // defaultValue: 'button'
+      defaultValue: 'button',
     },
   },
 };
@@ -46,7 +46,7 @@ export default {
 interface ArgTypes {
   disabled: boolean;
   size: 'small' | 'medium' | 'large';
-  variant: 'flat' | 'raised' | 'outlined' | 'icon' | 'fab';
+  variant: 'flat' | 'raised' | 'outlined' | 'fab';
   type: 'button' | 'reset' | 'submit';
 }
 
