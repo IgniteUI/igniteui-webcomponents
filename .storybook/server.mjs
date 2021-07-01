@@ -13,7 +13,7 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
   },
   plugins: [
     storybookPlugin({ type: 'web-components' }),
-    postCSS({ include: ['**/*.scss'], modules: false }),
+    postCSS({ include: ['**/*.scss'], inject: false }),
     ...baseConfig.plugins,
   ],
 });
