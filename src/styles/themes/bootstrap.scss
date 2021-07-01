@@ -1,0 +1,35 @@
+@use '../utilities' as utils;
+@use '../../components/button/button.bootstrap' as button;
+
+$palette: utils.palette(
+ $primary: #007bff,
+ $secondary: #6c757d,
+ $gray: #000,
+ $surface: #f8f9fa,
+ $info: #17a2b8,
+ $success: #28a745,
+ $warn: #ffc107,
+ $error: #dc3545,
+) !default;
+
+$elevations: utils.elevations(
+   rgba(0, 0, 0, .26),
+   rgba(0, 0, 0, .12),
+   rgba(0, 0, 0, .08)
+) !default;
+
+$type-scale: utils.type-scale();
+
+:root,
+:host {
+ --igc-border-radius: #{utils.rem(2px)};
+ --igc-spacing-small: #{utils.rem(2px)};
+ --igc-spacing-medium: #{utils.rem(4px)};
+ --igc-spacing-large: #{utils.rem(8px)};
+ @include utils.palette($palette);
+ @include utils.elevations($elevations);
+ @include utils.typography(
+   $font-family: 'Roboto, sans-serif',
+   $type-scale: $type-scale
+ );
+}

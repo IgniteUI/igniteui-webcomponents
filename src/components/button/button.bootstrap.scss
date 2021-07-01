@@ -1,0 +1,7 @@
+@mixin theme() {
+  igc-button::part(native) {
+    &.large {
+      height: 48px;
+    }
+  }
+}
