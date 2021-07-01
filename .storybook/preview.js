@@ -13,11 +13,21 @@ export const globalTypes = {
     description: 'Global theme for components',
     defaultValue: 'material',
     toolbar: {
-      icon: 'circlehollow',
+      icon: 'cog',
       items: ['material', 'bootstrap', 'fluent', 'indigo'],
-      showName: 'False',
+      showName: 'True',
     },
   },
+  direction: {
+    name: 'Direction',
+    description: 'Component direction',
+    defaultValue: 'ltr',
+    toolbar: {
+      icon: 'accessibility',
+      items: ['ltr', 'rtl'],
+      showName: 'True',
+    }
+  }
 };
 
 const getTheme = (themeName) => {

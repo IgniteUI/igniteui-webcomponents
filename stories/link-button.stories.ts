@@ -44,15 +44,22 @@ interface ArgTypes {
   target: '_blank' | '_parent' | '_self' | '_top';
 }
 
-const Template: Story<ArgTypes> = ({
-  disabled = false,
-  size,
-  variant,
-  href = 'http://www.infragistics.com',
-  download,
-  rel,
-  target,
-}: ArgTypes) => html`
+interface Context {
+  globals: { theme: string; direction: string };
+}
+
+const Template: Story<ArgTypes, Context> = (
+  {
+    disabled = false,
+    size,
+    variant,
+    href = 'http://www.infragistics.com',
+    download,
+    rel,
+    target,
+  }: ArgTypes,
+  { globals: { direction } }: Context
+) => html`
   <igc-link-button
     ?disabled=${disabled}
     size=${ifDefined(size)}
@@ -61,6 +68,7 @@ const Template: Story<ArgTypes> = ({
     download=${ifDefined(download)}
     rel=${ifDefined(rel)}
     target=${ifDefined(target)}
+    dir=${ifDefined(direction)}
   >
     Click me
   </igc-link-button>

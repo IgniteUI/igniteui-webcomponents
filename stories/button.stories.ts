@@ -50,18 +50,21 @@ interface ArgTypes {
   type: 'button' | 'reset' | 'submit';
 }
 
-const Template: Story<ArgTypes> = ({
-  disabled = false,
-  size,
-  variant,
-  type,
-}: ArgTypes) => {
+interface Context {
+  globals: { theme: string; direction: string };
+}
+
+const Template: Story<ArgTypes, Context> = (
+  { disabled = false, size, variant, type }: ArgTypes,
+  { globals: { direction } }: Context
+) => {
   return html`
     <igc-button
       ?disabled=${disabled}
       size=${ifDefined(size)}
       variant=${ifDefined(variant)}
       type=${ifDefined(type)}
+      dir=${ifDefined(direction)}
     >
       <span slot="prefix">+</span>
       Click
