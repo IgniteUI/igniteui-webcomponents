@@ -170,16 +170,16 @@ span[part="suffix"] {
 }
 
 .large {
-  height: var(--size-large, 36px);
+  height: var(--size, 36px);
   padding: 0 calc(var(--igc-spacing-large) * 2);
 }
 
 .medium {
-  height: var(--size-medium, 30px);
+  height: var(--size, 30px);
   padding: 0 calc(var(--igc-spacing-medium) * 3);
 }
 
 .small {
-  height: var(--size-small, 24px);
+  height: var(--size, 24px);
   padding: 0 calc(var(--igc-spacing-small) * 4);
 }

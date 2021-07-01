@@ -1,7 +1,181 @@
+@use '../../styles/utilities' as utils;
+
 @mixin theme() {
-  igc-button::part(native) {
-    &.large {
-      height: 48px;
-    }
+  igc-button[size="large"]::part(native),
+  igc-link-button[size="large"]::part(native) {
+   --size: #{utils.rem(48px)};
+  }
+
+  igc-button[size="medium"]::part(native),
+  igc-link-button[size="medium"]::part(native) {
+   --size: #{utils.rem(40px)};
+  }
+
+  igc-button[size="small"]::part(native),
+  igc-link-button[size="small"]::part(native) {
+   --size: #{utils.rem(32px)};
+  }
+
+  igc-button[variant="flat"][disabled]::part(native),
+  igc-link-button[variant="flat"][disabled]::part(native) {
+      background: transparent;
+      color: var(--igc-primary-100);
+  }
+
+  igc-button[variant="fab"][disabled]::part(native),
+  igc-button[variant="raised"][disabled]::part(native),
+  igc-link-button[variant="fab"][disabled]::part(native),
+  igc-link-button[variant="raised"][disabled]::part(native) {
+      background: var(--igc-primary-100);
+      color: var(--igc-primary-300);
+  }
+
+  igc-button[variant="outlined"][disabled]::part(native),
+  igc-link-button[variant="outlined"][disabled]::part(native) {
+      color: var(--igc-primary-100);
+      box-shadow: 0 0 0 1px var(--igc-primary-100);
+      background: transparent;
+  }
+
+  igc-button[variant="flat"]:not([disabled])::part(native),
+  igc-link-button[variant="flat"]:not([disabled])::part(native) {
+      color: var(--igc-primary-500);
+
+      &:hover {
+          color: var(--igc-primary-800);
+      }
+
+      &:focus,
+      &:active {
+          color: var(--igc-primary-600);
+      }
+
+      &:hover::before {
+          background: transparent;
+      }
+
+      &:focus::before,
+      &:active::before {
+          background: var(--igc-gray-100);
+          opacity: 1;
+      }
+  }
+
+  igc-button[variant="raised"]:not([disabled])::part(native),
+  igc-link-button[variant="raised"]:not([disabled])::part(native) {
+      color: var(--igc-primary-600-contrast);
+
+      &:hover {
+          color: var(--igc-primary-600-contrast);
+      }
+
+      &:focus,
+      &:active {
+          color: var(--igc-primary-600-contrast);
+          box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
+      }
+
+      &::before {
+          background: var(--igc-primary-500);
+          opacity: 1;
+      }
+
+      &:hover::before,
+      &:focus::before,
+      &:active::before {
+          background: var(--igc-primary-600);
+          opacity: 1;
+      }
+  }
+
+  igc-button[variant="outlined"]:not([disabled])::part(native),
+  igc-link-button[variant="outlined"]:not([disabled])::part(native) {
+      color: var(--igc-primary-500);
+      transition: color .15s ease-out;
+      box-shadow: 0 0 0 1px var(--igc-primary-500);
+      overflow: visible;
+
+      &::after {
+          position: absolute;
+          content: '';
+          width: 100%;
+          height: 100%;
+          border-radius: calc(var(--igc-border-radius) * 2);
+          transition: box-shadow .15s ease-out;
+      }
+
+      &:hover {
+          color: var(--igc-primary-600-contrast);
+      }
+
+      &:focus,
+      &:active {
+          color: var(--igc-primary-600-contrast);
+      }
+
+      &:hover::before {
+          background: var(--igc-primary-500);
+          opacity: 1;
+      }
+
+      &:focus::before,
+      &:active::before {
+          background: var(--igc-primary-500);
+          opacity: 1;
+      }
+
+      &:focus::after,
+      &:active::after {
+          box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
+      }
+  }
+
+  igc-button[variant="fab"][size="large"]::part(native),
+  igc-link-button[variant="fab"][size="large"]::part(native) {
+      border-radius: calc(var(--igc-border-radius) * 8);
+  }
+
+  igc-button[variant="fab"][size="medium"]::part(native)
+  igc-link-button[variant="fab"][size="medium"]::part(native) {
+      border-radius: calc(var(--igc-border-radius) * 6);
+  }
+
+  igc-button[variant="fab"][size="small"]::part(native),
+  igc-link-button[variant="fab"][size="small"]::part(native) {
+      border-radius: calc(var(--igc-border-radius) * 4);
+  }
+
+  igc-button[variant="fab"]:not([disabled])::part(native),
+  igc-link-button[variant="fab"]:not([disabled])::part(native) {
+      color: var(--igc-primary-600-contrast);
+
+      &:hover {
+          color: var(--igc-primary-600-contrast);
+      }
+
+      &:focus,
+      &:active {
+          color: var(--igc-primary-600-contrast);
+          box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
+      }
+
+      &::before {
+          background: var(--igc-primary-500);
+          opacity: 1;
+      }
+
+      &:hover::before,
+      &:focus::before,
+      &:active::before {
+          background: var(--igc-primary-600);
+          opacity: 1;
+      }
+  }
+
+  igc-button[variant="raised"]::part(native),
+  igc-button[variant="fab"]::part(native),
+  igc-link-button[variant="raised"]::part(native),
+  igc-link-button[variant="fab"]::part(native) {
+      box-shadow: var(--igc-elevation-0);
   }
 }
