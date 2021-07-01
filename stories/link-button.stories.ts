@@ -53,19 +53,17 @@ const Template: Story<ArgTypes> = ({
   rel,
   target,
 }: ArgTypes) => html`
-  <igniteui-webcomponents>
-    <igc-link-button
-      ?disabled=${disabled}
-      size=${ifDefined(size)}
-      variant=${ifDefined(variant)}
-      href=${ifDefined(href)}
-      download=${ifDefined(download)}
-      rel=${ifDefined(rel)}
-      target=${ifDefined(target)}
-    >
-      Click me
-    </igc-link-button>
-  </igniteui-webcomponents>
+  <igc-link-button
+    ?disabled=${disabled}
+    size=${ifDefined(size)}
+    variant=${ifDefined(variant)}
+    href=${ifDefined(href)}
+    download=${ifDefined(download)}
+    rel=${ifDefined(rel)}
+    target=${ifDefined(target)}
+  >
+    Click me
+  </igc-link-button>
 `;
 
 export const Basic = Template.bind({});

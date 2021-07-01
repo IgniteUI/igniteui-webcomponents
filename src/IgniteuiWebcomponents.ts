@@ -1,5 +1,5 @@
 import { html, css, LitElement } from 'lit';
-import { styles as materialTheme } from './styles/themes/material.css';
+import { styles } from './styles/themes/material.css';
 
 export class IgniteuiWebcomponents extends LitElement {
   static styles = [
@@ -8,7 +8,7 @@ export class IgniteuiWebcomponents extends LitElement {
         display: block;
       }
     `,
-    materialTheme,
+    styles,
   ];
 
   render() {

@@ -57,18 +57,16 @@ const Template: Story<ArgTypes> = ({
   type,
 }: ArgTypes) => {
   return html`
-    <igniteui-webcomponents>
-      <igc-button
-        ?disabled=${disabled}
-        size=${ifDefined(size)}
-        variant=${ifDefined(variant)}
-        type=${ifDefined(type)}
-      >
-        <span slot="prefix">+</span>
-        Click
-        <span slot="suffix">-</span>
-      </igc-button>
-    </igniteui-webcomponents>
+    <igc-button
+      ?disabled=${disabled}
+      size=${ifDefined(size)}
+      variant=${ifDefined(variant)}
+      type=${ifDefined(type)}
+    >
+      <span slot="prefix">+</span>
+      Click
+      <span slot="suffix">-</span>
+    </igc-button>
   `;
 };
 

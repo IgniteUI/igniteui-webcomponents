@@ -18,7 +18,9 @@ $type-scale: utils.type-scale();
 :root,
 :host {
   --igc-border-radius: #{utils.rem(2px)};
-  --igc-spacing: #{utils.rem(2px)};
+  --igc-spacing-small: #{utils.rem(2px)};
+  --igc-spacing-medium: #{utils.rem(4px)};
+  --igc-spacing-large: #{utils.rem(8px)};
   @include utils.palette($palette);
   @include utils.elevations($elevations);
   @include utils.typography(
