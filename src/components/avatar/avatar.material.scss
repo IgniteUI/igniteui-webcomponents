@@ -1,0 +1,74 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+  display: block;
+}
+
+[part="native"] {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  color: var(--igc-gray-800);
+  background: var(--igc-gray-400);
+  vertical-align: middle;
+  border-radius: 0;
+  outline-style: none;
+  flex-shrink: 0;
+}
+
+.rounded {
+  border-radius: calc(var(--igc-border-radius) * 4);
+}
+
+.circle {
+  border-radius: calc(var(--igc-border-radius) * 22);
+}
+
+img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--igc-gray-400);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+[part="initials"] {
+  text-transform: uppercase;
+}
+
+.large {
+  width: var(--size, 88px);
+  height: var(--size, 88px);
+
+  [part="initials"] {
+    font-size: rem(44px);
+    line-height: rem(44px);
+  }
+}
+
+.medium {
+  width: var(--size, 64px);
+  height: var(--size, 64px);
+
+  [part="initials"] {
+    font-size: rem(32px);
+    line-height: rem(32px);
+  }
+}
+
+.small {
+  width: var(--size, 40px);
+  height: var(--size, 40px);
+
+  [part="initials"] {
+    font-size: rem(20px);
+    line-height: rem(20px);
+  }
+}
+
