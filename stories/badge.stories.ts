@@ -33,6 +33,13 @@ export default {
         },
       },
     },
+    content: {
+      control: {
+        type: 'text',
+      },
+      defaultValue: '',
+      description: 'Content of the badge',
+    },
   },
 };
 
@@ -40,6 +47,7 @@ interface ArgTypes {
   shape: 'rounded' | 'square';
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
   outlined: boolean;
+  content: string;
 }
 
 interface Context {
@@ -47,7 +55,7 @@ interface Context {
 }
 
 const Template: Story<ArgTypes, Context> = (
-  { outlined = false, shape, variant }: ArgTypes,
+  { outlined = false, shape, variant, content = '' }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -56,7 +64,8 @@ const Template: Story<ArgTypes, Context> = (
       shape=${ifDefined(shape)}
       variant=${ifDefined(variant)}
       dir=${ifDefined(direction)}
-    ></igc-badge>
+      >${content}</igc-badge
+    >
   `;
 };
 
