@@ -1,0 +1,60 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+  display: inline-flex;
+}
+
+span {
+  display: inline-flex;
+  min-width: rem(12px);
+  min-height: rem(12px);
+  font-size: rem(16px);
+  line-height: 1;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+:host(:not(:empty)) span {
+  padding: rem(4px) rem(8px);
+  min-width: rem(24px);
+}
+
+.rounded {
+  border-radius: rem(12px);
+}
+
+.square {
+  border-radius: 0;
+}
+
+.primary {
+  background: var(--igc-primary-500);
+  color: var(--igc-primary-500-contrast);
+}
+
+.info {
+  background: var(--igc-info-500);
+  color: var(--igc-info-500-contrast);
+}
+
+.success {
+  background: var(--igc-success-500);
+  color: var(--igc-success-500-contrast);
+}
+
+.warning {
+  background: var(--igc-warn-500);
+  color: var(--igc-warning-500-contrast);
+}
+
+.danger {
+  background: var(--igc-error-500);
+  color: var(--igc-danger-500-contrast);
+}
+
+.outlined {
+  box-shadow: inset 0 0 0 rem(2px) var(--igc-gray-50);
+}
