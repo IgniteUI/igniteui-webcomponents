@@ -32,7 +32,12 @@ export class IgcBadgeComponent extends LitElement {
 
   render() {
     return html`
-      <span part="native" class=${classMap(this.classes)}>
+      <span
+        part="native"
+        class=${classMap(this.classes)}
+        role="img"
+        aria-label="badge"
+      >
         <slot></slot>
         <slot name="icon"></slot>
       </span>
