@@ -39,7 +39,6 @@ export class IgcBadgeComponent extends LitElement {
         aria-label="badge"
       >
         <slot></slot>
-        <slot name="icon"></slot>
       </span>
     `;
   }
