@@ -1,6 +1,7 @@
 :host {
   position: relative;
   box-sizing: border-box;
+  direction: inherit;
 
   & *,
   & *:before,
