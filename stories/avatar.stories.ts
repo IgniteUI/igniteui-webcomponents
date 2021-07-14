@@ -21,12 +21,16 @@ export default {
       },
       defaultValue: 'circle',
     },
+    src: { control: 'text' },
+    alt: { control: 'text' },
   },
 };
 
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
   shape: 'circle' | 'rounded' | 'square';
+  src: string;
+  alt: string;
 }
 
 interface Context {
@@ -34,13 +38,20 @@ interface Context {
 }
 
 const Template: Story<ArgTypes, Context> = (
-  { size, shape }: ArgTypes,
+  {
+    size,
+    shape,
+    src = 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+    alt,
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-avatar
     initials="ab"
     size=${ifDefined(size)}
     shape=${ifDefined(shape)}
+    src=${ifDefined(src)}
+    alt=${ifDefined(alt)}
     dir=${ifDefined(direction)}
   >
   </igc-avatar>

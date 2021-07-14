@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcBaseComponent } from '../common/component-base.js';
@@ -10,6 +10,9 @@ export class IgcAvatarComponent extends IgcBaseComponent {
 
   @property()
   src?: string;
+
+  @state()
+  private hasError = false;
 
   @property()
   alt?: string;
@@ -33,6 +36,11 @@ export class IgcAvatarComponent extends IgcBaseComponent {
     };
   }
 
+  constructor() {
+    super();
+    this.size = 'small';
+  }
+
   render() {
     return html`
       <div
@@ -49,10 +57,14 @@ export class IgcAvatarComponent extends IgcBaseComponent {
                 <slot name="icon"></slot>
               </span>
             `}
-        ${this.src
+        ${this.src && !this.hasError
           ? html`
-              <img part="image" alt=${ifDefined(this.alt)}
-              src=${ifDefined(this.src)} "/>
+              <img
+                part="image"
+                alt=${ifDefined(this.alt)}
+                src=${ifDefined(this.src)}
+                @error="${() => (this.hasError = true)}"
+              />
             `
           : ''}
       </div>
