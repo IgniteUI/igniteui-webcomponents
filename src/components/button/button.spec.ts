@@ -1,5 +1,11 @@
-import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
-import '../../../igniteui-webcomponents'; // Obligatory
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
+} from '@open-wc/testing';
+import '../../../igniteui-webcomponents';
 import { IgcButtonComponent } from './button';
 
 describe('Button component', () => {
@@ -10,7 +16,7 @@ describe('Button component', () => {
   let el: IgcButtonComponent;
 
   describe('', () => {
-    before(async () => {
+    beforeEach(async () => {
       el = await createButtonComponent();
     });
 
@@ -35,9 +41,33 @@ describe('Button component', () => {
       </button>`);
     });
 
-    it('sets direction property successfully', async () => {
-      el.dir = 'rtl';
-      expect(el.dir).to.equal('rtl');
+    it('sets type property successfully', async () => {
+      el.type = 'reset';
+      expect(el.type).to.equal('reset');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="flat large" type="reset"/>`,
+        DIFF_OPTIONS
+      );
+
+      el.type = 'submit';
+      expect(el.type).to.equal('submit');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="flat large" type="submit"/>`,
+        DIFF_OPTIONS
+      );
+
+      el.type = 'button';
+      expect(el.type).to.equal('button');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="flat large" type="button"/>`,
+        DIFF_OPTIONS
+      );
     });
   });
 

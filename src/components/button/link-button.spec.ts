@@ -1,4 +1,10 @@
-import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
+} from '@open-wc/testing';
 import '../../../igniteui-webcomponents'; // Obligatory
 import { IgcLinkButtonComponent } from './link-button';
 
@@ -10,7 +16,7 @@ describe('LinkButton component', () => {
   let el: IgcLinkButtonComponent;
 
   describe('', () => {
-    before(async () => {
+    beforeEach(async () => {
       el = await createLinkButtonComponent();
     });
 
@@ -42,6 +48,12 @@ describe('LinkButton component', () => {
     it('sets href property successfully', async () => {
       el.href = '../test';
       expect(el.href).to.equal('../test');
+      await elementUpdated(el);
+      expect(el).shadowDom.to.equal(
+        `<a class="large flat" href="../test" />`,
+        DIFF_OPTIONS
+      );
+
       el.href = '';
       expect(el.href).to.equal('');
     });
@@ -49,11 +61,22 @@ describe('LinkButton component', () => {
     it('sets rel property successfully', async () => {
       el.rel = 'test';
       expect(el.rel).to.equal('test');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<a class="large flat" rel="test" />`,
+        DIFF_OPTIONS
+      );
     });
 
     it('sets target property successfully', async () => {
       el.target = '_parent';
       expect(el.target).to.equal('_parent');
+      await elementUpdated(el);
+      expect(el).shadowDom.to.equal(
+        `<a class="large flat" target="_parent" />`,
+        DIFF_OPTIONS
+      );
       el.target = undefined;
       expect(el.target).to.be.undefined;
     });
@@ -61,6 +84,11 @@ describe('LinkButton component', () => {
     it('sets download property successfully', async () => {
       el.download = 'test';
       expect(el.download).to.equal('test');
+      await elementUpdated(el);
+      expect(el).shadowDom.to.equal(
+        `<a class="large flat" download="test" />`,
+        DIFF_OPTIONS
+      );
     });
   });
 
@@ -102,11 +130,14 @@ describe('LinkButton component', () => {
     );
   });
 
-  it('applies all button specific properties to the wrapped native element', async () => {
+  it('applies all anchor specific properties to the wrapped native element', async () => {
     el = await createLinkButtonComponent(
-      `<igc-link-button variant="raised" size="medium">Submit<igc-link-button>`
+      `<igc-link-button variant="raised" size="medium" href="test" target="_blank" download="test" rel="test">Submit<igc-link-button>`
     );
-    expect(el).shadowDom.to.equal(`<a class="medium raised"/>`, DIFF_OPTIONS);
+    expect(el).shadowDom.to.equal(
+      `<a class="medium raised" href="test" target="_blank" download="test" rel="test"/>`,
+      DIFF_OPTIONS
+    );
   });
 
   it.skip('should focus/blur the wrapped native element when the methods are called', async () => {
