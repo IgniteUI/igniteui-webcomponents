@@ -1,10 +1,20 @@
-import { html } from 'lit';
-import { property } from 'lit/decorators.js';
-import { IgcBaseComponent } from '../common/component-base.js';
+import { html, LitElement } from 'lit';
+import { property, query } from 'lit/decorators.js';
+import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './button.material.css';
 
-export abstract class IgcButtonBaseComponent extends IgcBaseComponent {
+export interface IgcButtonEventMap {
+  'igcFocus': CustomEvent<void>;
+  'igcBlur': CustomEvent<void>;
+}
+
+export abstract class IgcButtonBaseComponent extends SizableMixin(EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)) {
   static styles = [styles];
+
+  @query('.native', true)
+  nativeElement!: HTMLElement;
 
   /**
    * Determines whether the button is disabled.
@@ -15,10 +25,27 @@ export abstract class IgcButtonBaseComponent extends IgcBaseComponent {
   @property()
   variant: 'flat' | 'raised' | 'outlined' | 'fab' = 'flat';
 
+  focus(options?: FocusOptions) {
+    this.nativeElement.focus(options);
+  }
+
+  blur() {
+    this.nativeElement.blur();
+  }
+
+  protected handleFocus() {
+    this.emitEvent('igcFocus');
+  }
+
+  protected handleBlur() {
+    this.emitEvent('igcBlur');
+  }
+
   protected get classes() {
     const { size, variant } = this;
 
     return {
+      native: true,
       flat: variant === 'flat',
       outlined: variant === 'outlined',
       raised: variant === 'raised',
