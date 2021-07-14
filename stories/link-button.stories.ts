@@ -45,7 +45,7 @@ interface ArgTypes {
 }
 
 interface Context {
-  globals: { theme: string; direction: string };
+  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
 
 const Template: Story<ArgTypes, Context> = (
@@ -61,13 +61,13 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => html`
   <igc-link-button
-    ?disabled=${disabled}
-    size=${ifDefined(size)}
-    variant=${ifDefined(variant)}
-    href=${ifDefined(href)}
-    download=${ifDefined(download)}
-    rel=${ifDefined(rel)}
-    target=${ifDefined(target)}
+    .disabled=${disabled}
+    .size=${size}
+    .variant=${variant}
+    .href=${href}
+    .download=${download}
+    .rel=${rel}
+    .target=${target}
     dir=${ifDefined(direction)}
   >
     Click me

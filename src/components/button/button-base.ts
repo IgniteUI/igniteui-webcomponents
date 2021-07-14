@@ -6,11 +6,13 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './button.material.css';
 
 export interface IgcButtonEventMap {
-  'igcFocus': CustomEvent<void>;
-  'igcBlur': CustomEvent<void>;
+  igcFocus: CustomEvent<void>;
+  igcBlur: CustomEvent<void>;
 }
 
-export abstract class IgcButtonBaseComponent extends SizableMixin(EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)) {
+export abstract class IgcButtonBaseComponent extends SizableMixin(
+  EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
+) {
   static styles = [styles];
 
   @query('.native', true)
@@ -19,10 +21,10 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(EventEmitterMi
   /**
    * Determines whether the button is disabled.
    */
-  @property({ type: Boolean })
+  @property({ type: Boolean, reflect: true })
   disabled = false;
 
-  @property()
+  @property({ reflect: true })
   variant: 'flat' | 'raised' | 'outlined' | 'fab' = 'flat';
 
   focus(options?: FocusOptions) {
