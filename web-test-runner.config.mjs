@@ -1,13 +1,13 @@
 // import { playwrightLauncher } from '@web/test-runner-playwright';
 
 export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
-  files: 'dist/test/**/*.test.js',
+  files: ['dist/**/*.spec.js'],
   nodeResolve: true,
 
   /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
   // esbuildTarget: 'auto',
 
-  /** Confgure bare import resolve plugin */
+  /** Configure bare import resolve plugin */
   // nodeResolve: {
   //   exportConditions: ['browser', 'development']
   // },
