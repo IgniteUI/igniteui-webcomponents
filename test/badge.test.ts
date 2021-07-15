@@ -17,6 +17,14 @@ describe('Badge', () => {
     );
   });
 
+  it('should render content inside', async () => {
+    const content = '12';
+    const el = await fixture<IgcBadgeComponent>(
+      html`<igc-badge>${content}</igc-badge>`
+    );
+    expect(el).dom.to.have.text(content);
+  });
+
   it('can change variant', async () => {
     const el = await fixture<IgcBadgeComponent>(
       html`<igc-badge variant="info"></igc-badge>`
