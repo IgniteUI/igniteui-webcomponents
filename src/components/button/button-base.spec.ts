@@ -119,7 +119,7 @@ describe('ButtonBase component', () => {
     );
   });
 
-  it.only('should focus/blur the wrapped native element when the methods are called', async () => {
+  it('should focus/blur the wrapped native element when the methods are called', async () => {
     const igcFocus = oneEvent(el, 'igcFocus');
     el.focus();
     const focusPayload = await igcFocus;
