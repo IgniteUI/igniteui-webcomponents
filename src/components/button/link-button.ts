@@ -29,6 +29,8 @@ export class IgcLinkButtonComponent extends IgcButtonBaseComponent {
         rel=${ifDefined(this.rel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
         class=${classMap(this.classes)}
+        @focus=${this.handleFocus}
+        @blur=${this.handleBlur}
       >
         ${this.renderContent()}
       </a>
