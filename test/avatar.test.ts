@@ -1,4 +1,4 @@
-import { html, fixture, expect } from '@open-wc/testing';
+import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
 import { IgcAvatarComponent } from '../src/components/avatar/avatar';
 import '../igniteui-webcomponents.js';
 
@@ -26,8 +26,18 @@ describe('Avatar', () => {
     );
 
     expect(el.size).to.equal('small');
-    el.setAttribute('size', 'medium');
-    expect(el).dom.to.equal(`<igc-avatar size="medium"></igc-avatar>`);
+
+    el.size = 'medium';
+    await elementUpdated(el);
+    expect(el).dom.to.equal(
+      `<igc-avatar size="medium" shape="square"></igc-avatar>`
+    );
+
+    el.size = 'large';
+    await elementUpdated(el);
+    expect(el).dom.to.equal(
+      `<igc-avatar size="large" shape="square"></igc-avatar>`
+    );
   });
 
   it('should set avatar shape correctly', async () => {
@@ -37,8 +47,17 @@ describe('Avatar', () => {
 
     expect(el.shape).to.equal('square');
 
-    el.setAttribute('shape', 'rounded');
-    expect(el).dom.to.equal(`<igc-avatar shape="rounded"></igc-avatar>`);
+    el.shape = 'rounded';
+    await elementUpdated(el);
+    expect(el).dom.to.equal(
+      `<igc-avatar size="small" shape="rounded"></igc-avatar>`
+    );
+
+    el.shape = 'circle';
+    await elementUpdated(el);
+    expect(el).dom.to.equal(
+      `<igc-avatar size="small" shape="circle"></igc-avatar>`
+    );
   });
 
   it('should fallback to initials avatar when no image or wrong image source is provided', async () => {
