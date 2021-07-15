@@ -6,6 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import '../../../igniteui-webcomponents'; // Obligatory
+import { classValue } from './button-base.spec';
 import { IgcLinkButtonComponent } from './link-button';
 
 describe('LinkButton component', () => {
@@ -24,14 +25,16 @@ describe('LinkButton component', () => {
       console.log(el);
       expect(el).shadowDom.to.be.accessible();
       expect(el).shadowDom.to.equal(
-        `<a aria-disabled="false" class="flat large" part="native" role="button"/>`,
+        `<a aria-disabled="false" class="${classValue(
+          `flat large`
+        )}" part="native" role="button"/>`,
         { ignoreChildren: ['a'] }
       );
     });
 
     it('renders the prefix, content and suffix slots successfully', async () => {
       expect(el).shadowDom.to.equal(`<a aria-disabled="false"
-        class="flat large" part="native" role="button">
+        class="${classValue(`flat large`)}" part="native" role="button">
         <span part="prefix"><slot name="prefix"></slot>
         </span><slot></slot>
         <span part="suffix"><slot name="suffix"></slot></span>
@@ -50,7 +53,7 @@ describe('LinkButton component', () => {
       expect(el.href).to.equal('../test');
       await elementUpdated(el);
       expect(el).shadowDom.to.equal(
-        `<a class="large flat" href="../test" />`,
+        `<a class="${classValue(`large flat`)}" href="../test" />`,
         DIFF_OPTIONS
       );
 
@@ -64,7 +67,7 @@ describe('LinkButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<a class="large flat" rel="test" />`,
+        `<a class="${classValue(`large flat`)}" rel="test" />`,
         DIFF_OPTIONS
       );
     });
@@ -74,7 +77,7 @@ describe('LinkButton component', () => {
       expect(el.target).to.equal('_parent');
       await elementUpdated(el);
       expect(el).shadowDom.to.equal(
-        `<a class="large flat" target="_parent" />`,
+        `<a class="${classValue(`large flat`)}" target="_parent" />`,
         DIFF_OPTIONS
       );
       el.target = undefined;
@@ -86,7 +89,7 @@ describe('LinkButton component', () => {
       expect(el.download).to.equal('test');
       await elementUpdated(el);
       expect(el).shadowDom.to.equal(
-        `<a class="large flat" download="test" />`,
+        `<a class="${classValue(`large flat`)}" download="test" />`,
         DIFF_OPTIONS
       );
     });
@@ -101,7 +104,7 @@ describe('LinkButton component', () => {
           `<igc-link-button variant="${variant}"/>`
         );
         expect(el).shadowDom.to.equal(
-          `<a class="large ${variant}"/>`,
+          `<a class="${classValue(`large ${variant}`)}"/>`,
           DIFF_OPTIONS
         );
       });
@@ -116,7 +119,7 @@ describe('LinkButton component', () => {
           `<igc-link-button size="${size}" />`
         );
         expect(el).shadowDom.to.equal(
-          `<a class="flat ${size}"/>`,
+          `<a class="${classValue(`flat ${size}`)}"/>`,
           DIFF_OPTIONS
         );
       });
@@ -125,7 +128,7 @@ describe('LinkButton component', () => {
   it('applies the correct CSS class to the native element when link button is disabled', async () => {
     el = await createLinkButtonComponent(`<igc-link-button disabled="true"/>`);
     expect(el).shadowDom.to.equal(
-      `<a class="disabled flat large"/>`,
+      `<a class="${classValue(`disabled flat large`)}"/>`,
       DIFF_OPTIONS
     );
   });
@@ -135,22 +138,11 @@ describe('LinkButton component', () => {
       `<igc-link-button variant="raised" size="medium" href="test" target="_blank" download="test" rel="test">Submit<igc-link-button>`
     );
     expect(el).shadowDom.to.equal(
-      `<a class="medium raised" href="test" target="_blank" download="test" rel="test"/>`,
+      `<a class="${classValue(
+        `medium raised`
+      )}" href="test" target="_blank" download="test" rel="test"/>`,
       DIFF_OPTIONS
     );
-  });
-
-  it.skip('should focus/blur the wrapped native element when the methods are called', async () => {
-    el = await createLinkButtonComponent(
-      `<igc-link-button>Submit</igc-link-button>`
-    );
-    el.focus();
-
-    const btn = el.shadowRoot?.children[0];
-    expect(el.shadowRoot?.activeElement).to.equal(btn);
-
-    el.blur();
-    expect(el.shadowRoot?.activeElement).not.to.equal(btn);
   });
 
   const createLinkButtonComponent = (template = '<igc-link-button/>') => {

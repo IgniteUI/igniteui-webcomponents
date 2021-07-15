@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import '../../../igniteui-webcomponents';
 import { IgcButtonComponent } from './button';
+import { classValue } from './button-base.spec';
 
 describe('Button component', () => {
   const DIFF_OPTIONS = {
@@ -30,7 +31,9 @@ describe('Button component', () => {
     });
 
     it('renders the prefix, content and suffix slots successfully', async () => {
-      expect(el).shadowDom.to.equal(`<button class="flat large" part="native">
+      expect(el).shadowDom.to.equal(`<button class="${classValue(
+        'flat large'
+      )}" part="native">
       <span part="prefix">
         <slot name="prefix"></slot>
       </span>
@@ -47,7 +50,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="flat large" type="reset"/>`,
+        `<button class="${classValue('flat large')}" type="reset"/>`,
         DIFF_OPTIONS
       );
 
@@ -56,7 +59,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="flat large" type="submit"/>`,
+        `<button class="${classValue('flat large')}" type="submit"/>`,
         DIFF_OPTIONS
       );
 
@@ -65,7 +68,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="flat large" type="button"/>`,
+        `<button class="${classValue('flat large')}" type="button"/>`,
         DIFF_OPTIONS
       );
     });
@@ -78,7 +81,7 @@ describe('Button component', () => {
       it(variant, async () => {
         el = await createButtonComponent(`<igc-button variant="${variant}"/>`);
         expect(el).shadowDom.to.equal(
-          `<button class="large ${variant}"/>`,
+          `<button class="${classValue(`large ${variant}`)}"/>`,
           DIFF_OPTIONS
         );
       });
@@ -91,7 +94,7 @@ describe('Button component', () => {
       it(size, async () => {
         el = await createButtonComponent(`<igc-button size="${size}" />`);
         expect(el).shadowDom.to.equal(
-          `<button class="flat ${size}"/>`,
+          `<button class="${classValue(`flat ${size}`)}"/>`,
           DIFF_OPTIONS
         );
       });
@@ -100,7 +103,7 @@ describe('Button component', () => {
   it('applies the correct CSS class to the native element when button is disabled', async () => {
     el = await createButtonComponent(`<igc-button disabled="true"/>`);
     expect(el).shadowDom.to.equal(
-      `<button class="disabled flat large" disabled/>`,
+      `<button class="${classValue(`disabled flat large`)}" disabled/>`,
       DIFF_OPTIONS
     );
     console.log(el.shadowRoot?.children[0]);
@@ -111,20 +114,9 @@ describe('Button component', () => {
       `<igc-button type="submit" variant="raised" size="medium">Submit<igc-button>`
     );
     expect(el).shadowDom.to.equal(
-      `<button class="medium raised" type="submit" />`,
+      `<button class="${classValue(`medium raised`)}" type="submit" />`,
       DIFF_OPTIONS
     );
-  });
-
-  it.skip('should focus/blur the wrapped native element when the methods are called', async () => {
-    el = await createButtonComponent(`<igc-button>Submit</igc-button>`);
-    el.focus();
-
-    const btn = el.shadowRoot?.children[0];
-    expect(el.shadowRoot?.activeElement).to.equal(btn);
-
-    el.blur();
-    expect(el.shadowRoot?.activeElement).not.to.equal(btn);
   });
 
   const createButtonComponent = (template = '<igc-button/>') => {
