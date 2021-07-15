@@ -16,6 +16,8 @@ export class IgcButtonComponent extends IgcButtonBaseComponent {
         .disabled=${this.disabled}
         class=${classMap(this.classes)}
         type=${ifDefined(this.type)}
+        @focus=${this.handleFocus}
+        @blur=${this.handleBlur}
       >
         ${this.renderContent()}
       </button>
