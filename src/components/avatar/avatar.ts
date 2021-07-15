@@ -2,13 +2,10 @@ import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './avatar.material.css';
 
-export class IgcAvatarComponent extends SizableMixin(
-  <Constructor<LitElement>>LitElement
-) {
+export class IgcAvatarComponent extends SizableMixin(LitElement) {
   static styles = [styles];
 
   @property()
@@ -55,11 +52,7 @@ export class IgcAvatarComponent extends SizableMixin(
       >
         ${this.initials
           ? html`<span part="initials">${this.initials}</span>`
-          : html`
-              <span part="icon">
-                <slot name="icon"></slot>
-              </span>
-            `}
+          : html` <slot></slot> `}
         ${this.src && !this.hasError
           ? html`
               <img
