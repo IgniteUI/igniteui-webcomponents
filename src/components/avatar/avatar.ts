@@ -1,11 +1,14 @@
-import { html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { IgcBaseComponent } from '../common/component-base.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './avatar.material.css';
 
-export class IgcAvatarComponent extends IgcBaseComponent {
+export class IgcAvatarComponent extends SizableMixin(
+  <Constructor<LitElement>>LitElement
+) {
   static styles = [styles];
 
   @property()
@@ -20,7 +23,7 @@ export class IgcAvatarComponent extends IgcBaseComponent {
   @property()
   initials?: string;
 
-  @property()
+  @property({ reflect: true })
   shape: 'circle' | 'rounded' | 'square' = 'square';
 
   protected get classes() {
