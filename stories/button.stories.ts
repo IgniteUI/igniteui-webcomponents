@@ -51,7 +51,7 @@ interface ArgTypes {
 }
 
 interface Context {
-  globals: { theme: string; direction: string };
+  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
 
 const Template: Story<ArgTypes, Context> = (
@@ -60,10 +60,10 @@ const Template: Story<ArgTypes, Context> = (
 ) => {
   return html`
     <igc-button
-      ?disabled=${disabled}
-      size=${ifDefined(size)}
-      variant=${ifDefined(variant)}
-      type=${ifDefined(type)}
+      .disabled=${disabled}
+      .size=${size}
+      .variant=${variant}
+      .type=${type}
       dir=${ifDefined(direction)}
     >
       <span slot="prefix">+</span>
