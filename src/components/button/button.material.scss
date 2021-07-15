@@ -7,29 +7,6 @@ $slot-spacing: var(--igc-spacing-large);
   display: inline-flex;
 }
 
-:host,
-:host([dir="ltr"]) {
-  [name="prefix"]::slotted(*) {
-    margin-right: $slot-spacing;
-  }
-
-  [name="suffix"]::slotted(*) {
-    margin-left: $slot-spacing;
-  }
-}
-
-:host([dir="rtl"]) {
-  [name="prefix"]::slotted(*) {
-    margin-right: initial;
-    margin-left: $slot-spacing;
-  }
-
-  [name="suffix"]::slotted(*) {
-    margin-left: initial;
-    margin-right: $slot-spacing;
-  }
-}
-
 a,
 button {
   position: relative;
@@ -74,6 +51,14 @@ button {
     will-change: opacity;
     transition: all .1s ease-out;
   }
+}
+
+[name="prefix"]::slotted(*) {
+  margin-inline-end: $slot-spacing;
+}
+
+[name="suffix"]::slotted(*) {
+  margin-inline-start: $slot-spacing;
 }
 
 span[part="prefix"],
