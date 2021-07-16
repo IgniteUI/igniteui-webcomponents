@@ -22,7 +22,6 @@ describe('Button component', () => {
     });
 
     it('renders a button element successfully', async () => {
-      console.log(el);
       expect(el).shadowDom.to.be.accessible();
       expect(el).shadowDom.to.equal(`<button/>`, {
         ignoreChildren: ['button'],
@@ -106,7 +105,6 @@ describe('Button component', () => {
       `<button class="${classValue(`disabled flat large`)}" disabled/>`,
       DIFF_OPTIONS
     );
-    console.log(el.shadowRoot?.children[0]);
   });
 
   it('applies all button specific properties to the wrapped native element', async () => {

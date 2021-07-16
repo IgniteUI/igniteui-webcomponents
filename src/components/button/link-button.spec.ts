@@ -22,7 +22,6 @@ describe('LinkButton component', () => {
     });
 
     it('renders an anchor element successfully', async () => {
-      console.log(el);
       expect(el).shadowDom.to.be.accessible();
       expect(el).shadowDom.to.equal(
         `<a aria-disabled="false" class="${classValue(
