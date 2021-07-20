@@ -1,6 +1,6 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { IgcBadgeComponent } from '../src/components/badge/badge';
-import '../igniteui-webcomponents.js';
+import { IgcBadgeComponent } from './badge';
+import '../../../igniteui-webcomponents.js';
 
 describe('Badge', () => {
   it('passes the a11y audit', async () => {
