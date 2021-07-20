@@ -6,7 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import '../../../igniteui-webcomponents'; // Obligatory
-import { classValue } from './button-base.spec';
+import { classValue } from './button.spec';
 import { IgcLinkButtonComponent } from './link-button';
 
 describe('LinkButton component', () => {

@@ -5,9 +5,14 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
+import sinon from 'sinon';
 import '../../../igniteui-webcomponents';
 import { IgcButtonComponent } from './button';
-import { classValue } from './button-base.spec';
+
+export const DEFAULT_CLASSES = 'native';
+export const classValue = (changeableValue: string) => {
+  return `${changeableValue} ${DEFAULT_CLASSES}`;
+};
 
 describe('Button component', () => {
   const DIFF_OPTIONS = {
@@ -19,6 +24,119 @@ describe('Button component', () => {
   describe('', () => {
     beforeEach(async () => {
       el = await createButtonComponent();
+    });
+
+    it('is initialized with the proper default values', async () => {
+      expect(el.disabled).to.equal(false);
+      expect(el.variant).to.equal('flat');
+      expect(el.dir).to.equal('');
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`large flat`)}"/>`,
+        DIFF_OPTIONS
+      );
+    });
+
+    it('changes size property values successfully', async () => {
+      el.size = 'medium';
+      expect(el.size).to.equal('medium');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`medium flat`)}"/>`,
+        DIFF_OPTIONS
+      );
+
+      el.size = 'small';
+      expect(el.size).to.equal('small');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`small flat`)}"/>`,
+        DIFF_OPTIONS
+      );
+
+      el.size = 'large';
+      expect(el.size).to.equal('large');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`large flat`)}"/>`,
+        DIFF_OPTIONS
+      );
+    });
+
+    it('sets disabled property successfully', async () => {
+      el.disabled = true;
+      expect(el.disabled).to.be.true;
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`disabled large flat`)}" disabled/>`,
+        DIFF_OPTIONS
+      );
+
+      el.disabled = false;
+      expect(el.disabled).to.be.false;
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`large flat`)}"/>`,
+        DIFF_OPTIONS
+      );
+    });
+
+    it('sets variant property successfully', async () => {
+      el.variant = 'raised';
+      expect(el.variant).to.equal('raised');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`large raised`)}"/>`,
+        DIFF_OPTIONS
+      );
+
+      el.variant = 'outlined';
+      expect(el.variant).to.equal('outlined');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`large outlined`)}"/>`,
+        DIFF_OPTIONS
+      );
+
+      el.variant = 'fab';
+      expect(el.variant).to.equal('fab');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`large fab`)}"/>`,
+        DIFF_OPTIONS
+      );
+
+      el.variant = 'flat';
+      expect(el.variant).to.equal('flat');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue(`large flat`)}"/>`,
+        DIFF_OPTIONS
+      );
+    });
+
+    it('should focus/blur the wrapped native element when the methods are called', () => {
+      const eventSpy = sinon.spy(el, 'emitEvent');
+      el.focus();
+
+      const btn = el.shadowRoot?.children[0];
+      expect(el.shadowRoot?.activeElement).to.equal(btn);
+      expect(eventSpy).calledOnceWithExactly('igcFocus');
+
+      el.blur();
+
+      expect(el.shadowRoot?.activeElement).to.be.null;
+      expect(eventSpy).calledTwice;
+      expect(eventSpy).calledWithExactly('igcBlur');
     });
 
     it('renders a button element successfully', async () => {
@@ -99,6 +217,7 @@ describe('Button component', () => {
       });
     });
   });
+
   it('applies the correct CSS class to the native element when button is disabled', async () => {
     el = await createButtonComponent(`<igc-button disabled="true"/>`);
     expect(el).shadowDom.to.equal(
