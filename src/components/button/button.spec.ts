@@ -124,7 +124,7 @@ describe('Button component', () => {
       );
     });
 
-    it('should focus/blur the wrapped native element when the methods are called', () => {
+    it('should focus/blur the wrapped base element when the methods are called', () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
       el.focus();
 
@@ -150,7 +150,7 @@ describe('Button component', () => {
     it('renders the prefix, content and suffix slots successfully', async () => {
       expect(el).shadowDom.to.equal(`<button class="${classValue(
         'flat large'
-      )}" part="native">
+      )}" part="base">
       <span part="prefix">
         <slot name="prefix"></slot>
       </span>
@@ -191,7 +191,7 @@ describe('Button component', () => {
     });
   });
 
-  describe('applies the correct CSS class to the native element for variant', () => {
+  describe('applies the correct CSS class to the base element for variant', () => {
     const variants = ['flat', 'raised', 'outlined', 'fab'];
 
     variants.forEach((variant) => {
@@ -205,7 +205,7 @@ describe('Button component', () => {
     });
   });
 
-  describe('applies the correct CSS class to the native element for size', () => {
+  describe('applies the correct CSS class to the base element for size', () => {
     const sizes = ['small', 'medium', 'large'];
     sizes.forEach((size) => {
       it(size, async () => {
@@ -218,7 +218,7 @@ describe('Button component', () => {
     });
   });
 
-  it('applies the correct CSS class to the native element when button is disabled', async () => {
+  it('applies the correct CSS class to the base element when button is disabled', async () => {
     el = await createButtonComponent(`<igc-button disabled="true"/>`);
     expect(el).shadowDom.to.equal(
       `<button class="${classValue(`disabled flat large`)}" disabled/>`,
@@ -226,7 +226,7 @@ describe('Button component', () => {
     );
   });
 
-  it('applies all button specific properties to the wrapped native element', async () => {
+  it('applies all button specific properties to the wrapped base element', async () => {
     el = await createButtonComponent(
       `<igc-button type="submit" variant="raised" size="medium">Submit<igc-button>`
     );
