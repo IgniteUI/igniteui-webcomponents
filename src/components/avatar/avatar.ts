@@ -44,7 +44,7 @@ export class IgcAvatarComponent extends SizableMixin(LitElement) {
   render() {
     return html`
       <div
-        part="native"
+        part="base"
         role="img"
         aria-label="avatar"
         aria-roledescription=${this.size + ' ' + this.shape}

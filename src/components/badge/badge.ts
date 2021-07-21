@@ -33,7 +33,7 @@ export class IgcBadgeComponent extends LitElement {
   render() {
     return html`
       <span
-        part="native"
+        part="base"
         class=${classMap(this.classes)}
         role="img"
         aria-label="badge"

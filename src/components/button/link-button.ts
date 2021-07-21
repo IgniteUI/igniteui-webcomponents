@@ -21,7 +21,7 @@ export class IgcLinkButtonComponent extends IgcButtonBaseComponent {
   render() {
     return html`
       <a
-        part="native"
+        part="base"
         role="button"
         href=${ifDefined(this.href)}
         target=${ifDefined(this.target)}
