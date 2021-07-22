@@ -30,9 +30,9 @@ input[type="radio"] {
   $size: var(--size, rem(20px));
   position: relative;
   display: inline-flex;
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
+  width: calc(#{$size } * 2);
+  height: calc(#{$size } * 2);
+  min-width: calc(#{$size } * 2);
   border-radius: 50% 50%;
   user-select: none;
   transition: background .15s ease-in;
@@ -58,7 +58,7 @@ input[type="radio"] {
   }
 
   &::after {
-      border: rem(2px) solid var(--igc-gray-600);
+      border: calc(#{$size} / 10) solid var(--igc-gray-600);
   }
 }
 
@@ -75,7 +75,7 @@ input[type="radio"] {
 
   [part="control"] {
     &::before {
-      border: rem(2px) solid var(--igc-secondary-500) ;
+      border-color: var(--igc-secondary-500);
       background: var(--igc-secondary-500);
       transform: translate(-50%, -50%) scale(.5);
     }
@@ -93,7 +93,7 @@ input[type="radio"] {
 
   [part="control"] {
     &::after {
-      border: rem(2px) solid var(--igc-gray-300);
+      border-color: var(--igc-gray-300);
     }
   }
 }
@@ -102,7 +102,7 @@ input[type="radio"] {
   [part="control"] {
     &::before {
       background: var(--igc-gray-300);
-      border: rem(2px) solid transparent;
+      border-color: transparent;
     }
   }
 }
