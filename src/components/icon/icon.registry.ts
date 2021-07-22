@@ -26,15 +26,20 @@ export class IconsRegistry {
     const div = document.createElement('div');
     div.innerHTML = iconText;
     const svg = div.querySelector('svg') as SVGElement;
-    svg.setAttribute('fit', '');
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    svg.removeAttribute('width');
-    svg.removeAttribute('height');
-    const svgText = svg.outerHTML;
 
-    const setRegistry = this.getOrCreateIconSet(set);
-    setRegistry.set(name, svgText);
-    this.callbacks.forEach((c) => c(name, set));
+    if (svg) {
+      svg.setAttribute('fit', '');
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      const svgText = svg.outerHTML;
+
+      const setRegistry = this.getOrCreateIconSet(set);
+      setRegistry.set(name, svgText);
+      this.callbacks.forEach((c) => c(name, set));
+    } else {
+      throw new Error('SVG element not found.');
+    }
   }
 
   getIcon(name: string, set = 'default') {
@@ -59,13 +64,19 @@ export class IconsRegistry {
   }
 }
 
-export const registerIcon = (name: string, url: string, set = 'default') => {
-  fetch(url).then(async (response) => {
-    if (response.ok) {
-      const value = await response.text();
-      registerIconFromText(name, value, set);
-    }
-  });
+export const registerIcon = async (
+  name: string,
+  url: string,
+  set = 'default'
+) => {
+  const response = await fetch(url);
+
+  if (response.ok) {
+    const value = await response.text();
+    IconsRegistry.instance().registerIcon(name, value, set);
+  } else {
+    throw new Error(`Icon request failed. Status: ${response.status}.`);
+  }
 };
 
 export const registerIconFromText = (
