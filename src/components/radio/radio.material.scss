@@ -39,26 +39,26 @@ input[type="radio"] {
 
   &::before,
   &::after {
-      position: absolute;
-      content: '';
-      width: $size;
-      height: $size;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      border-radius: 50% 50%;
-      transition: all .15s ease-in;
+    position: absolute;
+    content: '';
+    width: $size;
+    height: $size;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50% 50%;
+    transition: all .15s ease-in;
   }
 
   &::before {
-      backface-visibility: hidden;
-      transform: translate(-50%, -50%) scale(.1);
-      transform-origin: center;
-      z-index: 1;
+    backface-visibility: hidden;
+    transform: translate(-50%, -50%) scale(.1);
+    transform-origin: center;
+    z-index: 1;
   }
 
   &::after {
-      border: calc(#{$size} / 10) solid var(--igc-gray-600);
+    border: calc(#{$size} / 10) solid var(--igc-gray-600);
   }
 }
 
@@ -109,13 +109,12 @@ input[type="radio"] {
 
 :host([label-position="after"]) {
   [part="label"] {
-      margin-inline-start: rem(8px);
+    margin-inline-start: rem(8px);
   }
 }
 :host([label-position="before"]) {
   [part="label"] {
-      order: -1;
-      margin-inline-end: rem(8px);
+    order: -1;
+    margin-inline-end: rem(8px);
   }
 }
-

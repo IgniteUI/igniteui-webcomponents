@@ -6,7 +6,7 @@ export class IgcRadioComponent extends LitElement {
   static styles = styles;
 
   @query('input[type="radio"]')
-  input?: HTMLInputElement;
+  input!: HTMLInputElement;
 
   @property({ type: Boolean, reflect: true })
   disabled = false;
@@ -23,7 +23,7 @@ export class IgcRadioComponent extends LitElement {
 
   handleMouseDown(event: MouseEvent) {
     event.preventDefault();
-    this.input?.focus();
+    this.input.focus();
   }
 
   render() {
