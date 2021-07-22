@@ -16,16 +16,26 @@ input[type="radio"] {
   align-items: center;
   cursor: pointer;
   transition: color .15s ease-in;
+
+  &:hover [part="control"] {
+    background: var(--igc-gray-200);
+  }
+
+  &:focus-within [part="control"] {
+    background: var(--igc-gray-300);
+  }
 }
 
 [part="control"] {
   $size: var(--size, rem(20px));
   position: relative;
   display: inline-flex;
-  width: $size;
-  height: $size;
-  min-width: $size;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50% 50%;
   user-select: none;
+  transition: background .15s ease-in;
 
   &::before,
   &::after {
@@ -33,15 +43,16 @@ input[type="radio"] {
       content: '';
       width: $size;
       height: $size;
-      left: 0;
-      top: 0;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
       border-radius: 50% 50%;
       transition: all .15s ease-in;
   }
 
   &::before {
       backface-visibility: hidden;
-      transform: scale(.1);
+      transform: translate(-50%, -50%) scale(.1);
       transform-origin: center;
       z-index: 1;
   }
@@ -52,16 +63,26 @@ input[type="radio"] {
 }
 
 :host([checked]) {
-  [part="control"] {
-        &::before {
-            border: rem(2px) solid var(--igc-secondary-300) ;
-            background: var(--igc-secondary-300);
-            transform: scale(.5);
-        }
+  [part="base"] {
+    &:hover [part="control"] {
+      background: var(--igc-secondary-50);
+    }
 
-        &::after {
-            border-color: var(--igc-secondary-500);
-        }
+    &:focus-within [part="control"] {
+      background: var(--igc-secondary-100);
+    }
+  }
+
+  [part="control"] {
+    &::before {
+      border: rem(2px) solid var(--igc-secondary-500) ;
+      background: var(--igc-secondary-500);
+      transform: translate(-50%, -50%) scale(.5);
+    }
+
+    &::after {
+      border-color: var(--igc-secondary-500);
+    }
   }
 }
 
@@ -97,3 +118,4 @@ input[type="radio"] {
       margin-inline-end: rem(8px);
   }
 }
+
