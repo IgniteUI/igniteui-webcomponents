@@ -5,7 +5,7 @@
   display: inline-block;
 }
 
-[part="native"] {
+[part="base"] {
   position: relative;
   display: inline-flex;
   justify-content: center;
@@ -16,6 +16,8 @@
   border-radius: 0;
   outline-style: none;
   flex-shrink: 0;
+  overflow: hidden;
+  font-family: var(--igc-font-family);
 }
 
 .rounded {
