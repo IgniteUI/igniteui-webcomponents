@@ -1,0 +1,80 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-radio {
+        --size: #{utils.rem(16px)};
+
+        &::part(base) {
+            transition: none;
+        }
+    }
+
+    igc-radio[label-position="after"]::part(label) {
+        margin-inline-start: #{utils.rem(4px)};
+    }
+
+    igc-radio[label-position="before"]::part(label) {
+        margin-inline-end: #{utils.rem(4px)};
+    }
+
+    igc-radio::part(control) {
+        width: #{utils.rem(24px)};
+        height: #{utils.rem(24px)};
+        min-width: #{utils.rem(24px)};
+        transition: none;
+
+        &::before,
+        &::after {
+            transition: none;
+        }
+
+        &::before {
+            transform: translate(-50%, -50%) scale(.375);
+        }
+
+        &::after {
+            background: white;
+            border-color: var(--igc-gray-400);
+        }
+    }
+
+    igc-radio:hover::part(control) {
+        background: transparent;
+    }
+
+    igc-radio:focus-within::part(control) {
+        background: var(--igc-primary-100);
+
+        &::after {
+            border-color: var(--igc-primary-500);
+        }
+    }
+
+    igc-radio[checked][disabled]::part(control) {
+        &::after {
+            background: var(--igc-primary-200);
+            border-color: var(--igc-primary-200);
+        }
+
+        &::before {
+            background: white;
+        }
+    }
+
+    igc-radio:not([disabled])[checked]::part(control) {
+        &::after {
+            background: var(--igc-primary-500);
+            border-color: var(--igc-primary-500);
+        }
+
+        &::before {
+            background: white;
+        }
+    }
+
+    igc-radio:not([checked])[disabled]::part(control) {
+        &::after {
+            border-color: var(--igc-gray-300);
+        }
+    }
+}

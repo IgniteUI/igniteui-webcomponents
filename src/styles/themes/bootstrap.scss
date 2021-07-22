@@ -1,5 +1,6 @@
 @use '../utilities' as utils;
 @use '../../components/button/button.bootstrap' as button;
+@use '../../components/radio/radio.bootstrap' as radio;
 
 $palette: utils.palette(
  $primary: #007bff,
@@ -177,4 +178,4 @@ $type-scale: utils.extend($_base-scale, (
 }
 
 @include button.theme();
-
+@include radio.theme();
