@@ -11,11 +11,11 @@ span {
   min-height: rem(12px);
   max-height: rem(24px);
   font-size: rem(16px);
-  line-height: 1;
   justify-content: center;
   align-items: center;
   overflow: hidden;
   white-space: nowrap;
+  font-family: var(--igc-font-family);
 }
 
 :host(:not(:empty)) span {

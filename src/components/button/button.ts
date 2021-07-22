@@ -12,7 +12,7 @@ export class IgcButtonComponent extends IgcButtonBaseComponent {
   render() {
     return html`
       <button
-        part="native"
+        part="base"
         .disabled=${this.disabled}
         class=${classMap(this.classes)}
         type=${ifDefined(this.type)}

@@ -26,14 +26,14 @@ describe('LinkButton component', () => {
       expect(el).shadowDom.to.equal(
         `<a aria-disabled="false" class="${classValue(
           `flat large`
-        )}" part="native" role="button"/>`,
+        )}" part="base" role="button"/>`,
         { ignoreChildren: ['a'] }
       );
     });
 
     it('renders the prefix, content and suffix slots successfully', async () => {
       expect(el).shadowDom.to.equal(`<a aria-disabled="false"
-        class="${classValue(`flat large`)}" part="native" role="button">
+        class="${classValue(`flat large`)}" part="base" role="button">
         <span part="prefix"><slot name="prefix"></slot>
         </span><slot></slot>
         <span part="suffix"><slot name="suffix"></slot></span>
@@ -94,7 +94,7 @@ describe('LinkButton component', () => {
     });
   });
 
-  describe('applies the correct CSS class to the native element for variant', () => {
+  describe('applies the correct CSS class to the base element for variant', () => {
     const variants = ['flat', 'raised', 'outlined', 'fab'];
 
     variants.forEach((variant) => {
@@ -110,7 +110,7 @@ describe('LinkButton component', () => {
     });
   });
 
-  describe('applies the correct CSS class to the native element for size', () => {
+  describe('applies the correct CSS class to the base element for size', () => {
     const sizes = ['small', 'medium', 'large'];
     sizes.forEach((size) => {
       it(size, async () => {
@@ -124,7 +124,7 @@ describe('LinkButton component', () => {
       });
     });
   });
-  it('applies the correct CSS class to the native element when link button is disabled', async () => {
+  it('applies the correct CSS class to the base element when link button is disabled', async () => {
     el = await createLinkButtonComponent(`<igc-link-button disabled="true"/>`);
     expect(el).shadowDom.to.equal(
       `<a class="${classValue(`disabled flat large`)}"/>`,
@@ -132,7 +132,7 @@ describe('LinkButton component', () => {
     );
   });
 
-  it('applies all anchor specific properties to the wrapped native element', async () => {
+  it('applies all anchor specific properties to the wrapped base element', async () => {
     el = await createLinkButtonComponent(
       `<igc-link-button variant="raised" size="medium" href="test" target="_blank" download="test" rel="test">Submit<igc-link-button>`
     );
