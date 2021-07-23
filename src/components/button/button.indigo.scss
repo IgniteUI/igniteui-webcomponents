@@ -1,17 +1,14 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
-	igc-button,
-	igc-link-button {
-		--l-size: #{utils.rem(36px)};
-		--m-size: #{utils.rem(32px)};
-		--s-size: #{utils.rem(24px)};
-	}
+	$indigo-l-size: utils.rem(36px);
+	$indigo-m-size: utils.rem(32px);
+	$indigo-s-size: utils.rem(24px);
 
 	igc-button[size='large']::part(base),
 	igc-link-button[size='large']::part(base) {
-		--size: var(--l-size);
-		--igc-border-radius: calc(var(--l-size) / 2);
+		--size: #{$indigo-l-size};
+		--igc-border-radius: calc(var(--size) / 2);
 		border-radius: var(--igc-border-radius);
 
 		&::before,
@@ -22,8 +19,8 @@
 
 	igc-button[size='medium']::part(base),
 	igc-link-button[size='medium']::part(base) {
-		--size: var(--m-size);
-		--igc-border-radius: calc(var(--m-size) / 2);
+		--size: #{$indigo-m-size};
+		--igc-border-radius: calc(var(--size) / 2);
 		border-radius: var(--igc-border-radius);
 
 		&::before,
@@ -34,8 +31,8 @@
 
 	igc-button[size='small']::part(base),
 	igc-link-button[size='small']::part(base) {
-		--size: var(--s-size);
-		--igc-border-radius: calc(var(--s-size) / 2);
+		--size: #{$indigo-s-size};
+		--igc-border-radius: calc(var(--size) / 2);
 		border-radius: var(--igc-border-radius);
 
 		&::before,
