@@ -32,8 +32,8 @@ button {
   text-transform: var(--igc-button-text-transform);
 
   &.disabled {
-    background: var(--igc-gray-300);
-    color: var(--igc-gray-500);
+    background: color(gray, 300);
+    color: color(gray, 500);
     pointer-events: none;
     box-shadow: none;
   }
@@ -69,36 +69,36 @@ span[part="suffix"] {
 
 .flat {
   background: transparent;
-  color: var(--igc-secondary-500);
+  color: color(secondary, 500);
 
   &:before {
     opacity: 0;
   }
 
   &:hover:not(.disabled)::before {
-    background: var(--igc-secondary-500);
+    background: color(secondary, 500);
     opacity: .12;
   }
 
   &:focus:not(.disabled)::before,
   &:active:not(.disabled)::before {
-    background: var(--igc-secondary-500);
+    background: color(secondary, 500);
     opacity: .24;
   }
 }
 
 .outlined {
   @extend .flat;
-  box-shadow: inset 0 0 0 1px var(--igc-secondary-500);
+  box-shadow: inset 0 0 0 1px color(secondary, 500);
 
   &.disabled {
-    box-shadow: inset 0 0 0 1px var(--igc-gray-300);
+    box-shadow: inset 0 0 0 1px color(gray, 300);
   }
 }
 
 .raised {
-  background: var(--igc-secondary-500);
-  color: var(--igc-secondary-500-contrast);
+  background: color(secondary, 500);
+  color: contrast-color(secondary, 500);
   box-shadow: var(--igc-elevation-2);
   transition: box-shadow .1s ease-out;
 
