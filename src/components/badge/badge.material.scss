@@ -32,30 +32,30 @@ span {
 }
 
 .primary {
-  background: var(--igc-primary-500);
-  color: var(--igc-primary-500-contrast);
+  background: color(primary, 500);
+  color: contrast-color(primary, 500);
 }
 
 .info {
-  background: var(--igc-info-500);
-  color: var(--igc-info-500-contrast);
+  background: color(info, 500);
+  color: contrast-color(info, 500);
 }
 
 .success {
-  background: var(--igc-success-500);
-  color: var(--igc-success-500-contrast);
+  background: color(success, 500);
+  color: contrast-color(success, 500);
 }
 
 .warning {
-  background: var(--igc-warn-500);
-  color: var(--igc-warning-500-contrast);
+  background: color(warn, 500);
+  color: contrast-color(warn, 500);
 }
 
 .danger {
-  background: var(--igc-error-500);
-  color: var(--igc-danger-500-contrast);
+  background: color(error, 500);
+  color: contrast-color(error, 500);
 }
 
 .outlined {
-  box-shadow: inset 0 0 0 rem(2px) var(--igc-gray-50);
+  box-shadow: inset 0 0 0 rem(2px) color(gray, 50);
 }

@@ -19,35 +19,35 @@
   igc-button[variant="flat"][disabled]::part(base),
   igc-link-button[variant="flat"][disabled]::part(base) {
       background: transparent;
-      color: var(--igc-primary-100);
+      color: #{utils.color(primary, 100)};
   }
 
   igc-button[variant="fab"][disabled]::part(base),
   igc-button[variant="raised"][disabled]::part(base),
   igc-link-button[variant="fab"][disabled]::part(base),
   igc-link-button[variant="raised"][disabled]::part(base) {
-      background: var(--igc-primary-100);
-      color: var(--igc-primary-300);
+      background: #{utils.color(primary, 100)};
+      color: #{utils.color(primary, 300)};
   }
 
   igc-button[variant="outlined"][disabled]::part(base),
   igc-link-button[variant="outlined"][disabled]::part(base) {
-      color: var(--igc-primary-100);
-      box-shadow: 0 0 0 1px var(--igc-primary-100);
+      color: #{utils.color(primary, 100)};
+      box-shadow: 0 0 0 1px utils.color(primary, 100);
       background: transparent;
   }
 
   igc-button[variant="flat"]:not([disabled])::part(base),
   igc-link-button[variant="flat"]:not([disabled])::part(base) {
-      color: var(--igc-primary-500);
+      color: #{utils.color(primary, 500)};
 
       &:hover {
-          color: var(--igc-primary-800);
+          color: #{utils.color(primary, 800)};
       }
 
       &:focus,
       &:active {
-          color: var(--igc-primary-600);
+          color: #{utils.color(primary, 600)};
       }
 
       &:hover::before {
@@ -56,43 +56,43 @@
 
       &:focus::before,
       &:active::before {
-          background: var(--igc-gray-100);
+          background: #{utils.color(gray, 100)};
           opacity: 1;
       }
   }
 
   igc-button[variant="raised"]:not([disabled])::part(base),
   igc-link-button[variant="raised"]:not([disabled])::part(base) {
-      color: var(--igc-primary-600-contrast);
+      color: #{utils.contrast-color(primary, 600)};
 
       &:hover {
-          color: var(--igc-primary-600-contrast);
+          color: #{utils.contrast-color(primary, 600)};
       }
 
       &:focus,
       &:active {
-          color: var(--igc-primary-600-contrast);
-          box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
+          color: #{utils.contrast-color(primary, 600)};
+          box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
       }
 
       &::before {
-          background: var(--igc-primary-500);
+          background: #{utils.color(primary, 500)};
           opacity: 1;
       }
 
       &:hover::before,
       &:focus::before,
       &:active::before {
-          background: var(--igc-primary-600);
+          background: #{utils.color(primary, 600)};
           opacity: 1;
       }
   }
 
   igc-button[variant="outlined"]:not([disabled])::part(base),
   igc-link-button[variant="outlined"]:not([disabled])::part(base) {
-      color: var(--igc-primary-500);
+      color: #{utils.color(primary, 500)};
       transition: color .15s ease-out;
-      box-shadow: 0 0 0 1px var(--igc-primary-500);
+      box-shadow: 0 0 0 1px utils.color(primary, 500);
       overflow: visible;
 
       &::after {
@@ -105,28 +105,28 @@
       }
 
       &:hover {
-          color: var(--igc-primary-600-contrast);
+          color: #{utils.contrast-color(primary, 600)};
       }
 
       &:focus,
       &:active {
-          color: var(--igc-primary-600-contrast);
+          color: #{utils.contrast-color(primary, 600)};
       }
 
       &:hover::before {
-          background: var(--igc-primary-500);
+          background: #{utils.color(primary, 500)};
           opacity: 1;
       }
 
       &:focus::before,
       &:active::before {
-          background: var(--igc-primary-500);
+          background: #{utils.color(primary, 500)};
           opacity: 1;
       }
 
       &:focus::after,
       &:active::after {
-          box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
+          box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
       }
   }
 
@@ -147,27 +147,27 @@
 
   igc-button[variant="fab"]:not([disabled])::part(base),
   igc-link-button[variant="fab"]:not([disabled])::part(base) {
-      color: var(--igc-primary-600-contrast);
+      color: #{utils.contrast-color(primary, 600)};
 
       &:hover {
-          color: var(--igc-primary-600-contrast);
+          color: #{utils.contrast-color(primary, 600)};
       }
 
       &:focus,
       &:active {
-          color: var(--igc-primary-600-contrast);
-          box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
+          color: #{utils.contrast-color(primary, 600)};
+          box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
       }
 
       &::before {
-          background: var(--igc-primary-500);
+          background: #{utils.color(primary, 500)};
           opacity: 1;
       }
 
       &:hover::before,
       &:focus::before,
       &:active::before {
-          background: var(--igc-primary-600);
+          background: #{utils.color(primary, 600)};
           opacity: 1;
       }
   }
