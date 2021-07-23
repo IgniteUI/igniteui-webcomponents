@@ -14,7 +14,7 @@ button {
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: var(--igc-border-radius);
+	border-radius: calc(var(--igc-border-radius) * 2);
   user-select: none;
   outline-style: none;
   -webkit-tap-highlight-color: transparent;

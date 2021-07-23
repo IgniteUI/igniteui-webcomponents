@@ -3,16 +3,19 @@
 @mixin theme() {
   igc-button[size="large"]::part(base),
   igc-link-button[size="large"]::part(base) {
+	 border-radius: calc(var(--igc-border-radius) * 1);
    --size: #{utils.rem(48px)};
   }
 
   igc-button[size="medium"]::part(base),
   igc-link-button[size="medium"]::part(base) {
+	 border-radius: calc(var(--igc-border-radius) * 1);
    --size: #{utils.rem(40px)};
   }
 
   igc-button[size="small"]::part(base),
   igc-link-button[size="small"]::part(base) {
+	 border-radius: calc(var(--igc-border-radius) * 1);
    --size: #{utils.rem(32px)};
   }
 

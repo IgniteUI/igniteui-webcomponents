@@ -1,13 +1,13 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
-	$indigo-l-size: utils.rem(36px);
-	$indigo-m-size: utils.rem(32px);
-	$indigo-s-size: utils.rem(24px);
+	$l-size: utils.rem(36px);
+	$m-size: utils.rem(32px);
+	$s-size: utils.rem(24px);
 
 	igc-button[size='large']::part(base),
 	igc-link-button[size='large']::part(base) {
-		--size: #{$indigo-l-size};
+		--size: #{$l-size};
 		--igc-border-radius: calc(var(--size) / 2);
 		border-radius: var(--igc-border-radius);
 
@@ -19,7 +19,7 @@
 
 	igc-button[size='medium']::part(base),
 	igc-link-button[size='medium']::part(base) {
-		--size: #{$indigo-m-size};
+		--size: #{$m-size};
 		--igc-border-radius: calc(var(--size) / 2);
 		border-radius: var(--igc-border-radius);
 
@@ -31,7 +31,7 @@
 
 	igc-button[size='small']::part(base),
 	igc-link-button[size='small']::part(base) {
-		--size: #{$indigo-s-size};
+		--size: #{$s-size};
 		--igc-border-radius: calc(var(--size) / 2);
 		border-radius: var(--igc-border-radius);
 
@@ -164,3 +164,4 @@
 	}
 	// DISABLED END
 }
+
