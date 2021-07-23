@@ -2,75 +2,75 @@
 @use '../../styles/utilities' as *;
 
 :host {
-  display: inline-block;
+    display: inline-block;
 }
 
-[part="base"] {
-  position: relative;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  user-select: none;
-  color: color(gray, 800);
-  background: color(gray, 400);
-  border-radius: 0;
-  outline-style: none;
-  flex-shrink: 0;
-  overflow: hidden;
-  font-family: var(--igc-font-family);
+[part='base'] {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    color: color(gray, 800);
+    background: color(gray, 400);
+    border-radius: 0;
+    outline-style: none;
+    flex-shrink: 0;
+    overflow: hidden;
+    font-family: var(--igc-font-family);
 }
 
 .rounded {
-  border-radius: calc(var(--igc-border-radius) * 4);
+    border-radius: calc(var(--igc-border-radius) * 4);
 }
 
 .circle {
-  border-radius: calc(var(--igc-border-radius) * 22);
+    border-radius: calc(var(--igc-border-radius) * 22);
 }
 
 img {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background-color: inherit;
-  object-fit: cover;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background-color: inherit;
+    object-fit: cover;
 }
 
-[part="initials"] {
-  text-transform: uppercase;
+[part='initials'] {
+    text-transform: uppercase;
 }
 
 .large {
-  $size: var(--size, rem(88px));
-  width: $size;
-  height: $size;
+    $size: var(--size, rem(88px));
+    width: $size;
+    height: $size;
 
-  [part="initials"] {
-    font-size: calc(#{$size} / 2);
-    line-height: calc(#{$size} / 2);
-  }
+    [part='initials'] {
+        font-size: calc(#{$size} / 2);
+        line-height: calc(#{$size} / 2);
+    }
 }
 
 .medium {
-  $size: var(--size, rem(64px));
-  width: $size;
-  height: $size;
+    $size: var(--size, rem(64px));
+    width: $size;
+    height: $size;
 
-  [part="initials"] {
-    font-size: calc(#{$size} / 2);
-    line-height: calc(#{$size} / 2);
-  }
+    [part='initials'] {
+        font-size: calc(#{$size} / 2);
+        line-height: calc(#{$size} / 2);
+    }
 }
 
 .small {
-  $size: var(--size, rem(40px));
-  width: $size;
-  height: $size;
+    $size: var(--size, rem(40px));
+    width: $size;
+    height: $size;
 
-  [part="initials"] {
-    font-size: calc(#{$size} / 2);
-    line-height: calc(#{$size} / 2);
-  }
+    [part='initials'] {
+        font-size: calc(#{$size} / 2);
+        line-height: calc(#{$size} / 2);
+    }
 }
 
