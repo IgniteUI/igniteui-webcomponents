@@ -34,7 +34,7 @@
 
         &::after {
             background: white;
-            border-color: var(--igc-gray-400);
+            border-color: #{utils.color(gray, 400)};
         }
     }
 
@@ -43,17 +43,17 @@
     }
 
     igc-radio:focus-within::part(control) {
-        background: var(--igc-primary-100);
+        background: #{utils.color(primary, 100)};
 
         &::after {
-            border-color: var(--igc-primary-500);
+            border-color: #{utils.color(primary, 500)};
         }
     }
 
     igc-radio[checked][disabled]::part(control) {
         &::after {
-            background: var(--igc-primary-200);
-            border-color: var(--igc-primary-200);
+            background: #{utils.color(primary, 200)};
+            border-color: #{utils.color(primary, 200)};
         }
 
         &::before {
@@ -63,8 +63,8 @@
 
     igc-radio:not([disabled])[checked]::part(control) {
         &::after {
-            background: var(--igc-primary-500);
-            border-color: var(--igc-primary-500);
+            background: #{utils.color(primary, 500)};
+            border-color: #{utils.color(primary, 500)};
         }
 
         &::before {
@@ -74,7 +74,7 @@
 
     igc-radio:not([checked])[disabled]::part(control) {
         &::after {
-            border-color: var(--igc-gray-300);
+            border-color: #{utils.color(gray, 300)};
         }
     }
 }
