@@ -43,14 +43,14 @@
 
 	igc-button[variant='flat']:not([disabled])::part(base),
 	igc-link-button[variant='flat']:not([disabled])::part(base) {
-		color: var(--igc-gray-700);
+		color: #{utils.color(gray, 700)};
 
 		transition: color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
 		&:hover,
 		&:focus,
 		&:active {
-			color: var(--igc-gray-900);
+			color: #{utils.color(gray, 900)};
 		}
 
 		&:hover::before {
@@ -64,15 +64,15 @@
 
 		&:focus,
 		&:active {
-			box-shadow: 0 0 0 utils.rem(3px) var(--igc-gray-300);
+			box-shadow: 0 0 0 utils.rem(3px) #{utils.color(gray, 300)};
 		}
 	}
 
 	igc-button[variant='outlined']:not([disabled])::part(base),
 	igc-link-button[variant='outlined']:not([disabled])::part(base) {
-		color: var(--igc-gray-700);
+		color: #{utils.color(gray, 700)};
 		transition: color .15s ease-out;
-		box-shadow: inset 0 0 0 2px var(--igc-gray-500);
+		box-shadow: inset 0 0 0 2px #{utils.color(gray, 500)};
 		overflow: visible;
 
 		&::after {
@@ -84,13 +84,13 @@
 		}
 
 		&:hover {
-			color: var(--igc-gray-900);
-			background: var(--igc-gray-50);
+			color: #{utils.color(gray, 900)};
+			background: #{utils.color(gray, 50)};
 		}
 
 		&:focus,
 		&:active {
-			color: var(--igc-gray-900);
+			color: #{utils.color(gray, 900)};
 		}
 
 		&:focus::before,
@@ -100,7 +100,7 @@
 
 		&:focus::after,
 		&:active::after {
-			box-shadow: 0 0 0 utils.rem(3px) var(--igc-gray-300);
+			box-shadow: 0 0 0 utils.rem(3px) #{utils.color(gray, 300)};
 		}
 	}
 
@@ -108,27 +108,27 @@
 	igc-link-button[variant='fab']:not([disabled])::part(base),
 	igc-button[variant='raised']:not([disabled])::part(base),
 	igc-link-button[variant='raised']:not([disabled])::part(base) {
-		color: var(--igc-primary-600-contrast);
+		color: #{utils.contrast-color(primary, 600)};
 
 		&:hover {
-			color: var(--igc-primary-600-contrast);
+			color: #{utils.contrast-color(primary, 600)};
 		}
 
 		&:focus,
 		&:active {
-			color: var(--igc-primary-600-contrast);
-			box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
+			color: #{utils.contrast-color(primary, 600)};
+			box-shadow: 0 0 0 utils.rem(3px) #{utils.color(primary, 200)};
 		}
 
 		&::before {
-			background: var(--igc-primary-500);
+			background: #{utils.color(primary, 500)};
 			opacity: 1;
 		}
 
 		&:hover::before,
 		&:focus::before,
 		&:active::before {
-			background: var(--igc-primary-400);
+			background: #{utils.color(primary, 400)};
 			opacity: 1;
 		}
 	}
@@ -152,15 +152,15 @@
 	igc-link-button[variant='outlined'][disabled]::part(base) {
 		background: transparent;
 		box-shadow: none;
-		color: var(--igc-gray-400);
+		color: #{utils.color(gray, 400)};
 	}
 
 	igc-button[variant='fab'][disabled]::part(base),
 	igc-button[variant='raised'][disabled]::part(base),
 	igc-link-button[variant='fab'][disabled]::part(base),
 	igc-link-button[variant='raised'][disabled]::part(base) {
-		background: var(--igc-gray-100);
-		color: var(--igc-gray-400);
+		background: #{utils.color(gray, 100)};
+		color: #{utils.color(gray, 400)};
 	}
 	// DISABLED END
 }

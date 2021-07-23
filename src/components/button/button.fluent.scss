@@ -29,10 +29,10 @@
 	// FLAT
 	igc-button[variant='flat']:not([disabled])::part(base),
 	igc-link-button[variant='flat']:not([disabled])::part(base) {
-		color: var(--igc-gray-900);
+		color: #{utils.color(gray, 900)};
 
 		&:hover {
-			color: var(--igc-primary-500);
+			color: #{utils.color(primary, 500)};
 
 			&::before {
 				background: transparent;
@@ -41,11 +41,11 @@
 
 		&:focus,
 		&:active {
-			color: var(--igc-primary-500);
+			color: #{utils.color(primary, 500)};
 
 			&::before {
 				opacity: .8;
-				background: var(--igc-gray-100);
+				background: #{utils.color(gray, 100)};
 			}
 		}
 	}
@@ -53,26 +53,26 @@
 	// OUTLINED
 	igc-button[variant='outlined']:not([disabled])::part(base),
 	igc-link-button[variant='outlined']:not([disabled])::part(base) {
-		color: var(--igc-gray-900);
+		color: #{utils.color(gray, 900)};
 		transition: color .15s ease-out;
-		box-shadow: 0 0 0 1px var(--igc-gray-800);
+		box-shadow: 0 0 0 1px #{utils.color(gray, 800)};
 
 		&:hover {
-			color: var(--igc-gray-900);
+			color: #{utils.color(gray, 900)};
 
 			&::before {
 				opacity: 1;
-				background: var(--igc-gray-100);
+				background: #{utils.color(gray, 100)};
 			}
 		}
 
 		&:focus,
 		&:active {
-			color: var(--igc-gray-900);
+			color: #{utils.color(gray, 900)};
 
 			&::before {
 				opacity: 1;
-				background: var(--igc-gray-100);
+				background: #{utils.color(gray, 100)};
 			}
 		}
 	}
@@ -82,20 +82,20 @@
 	igc-link-button[variant='raised']:not([disabled])::part(base),
 	igc-button[variant='fab']:not([disabled])::part(base),
 	igc-link-button[variant='fab']:not([disabled])::part(base) {
-		color: var(--igc-primary-600-contrast);
+		color: #{utils.contrast-color(primary, 600)};
 
 		&:hover {
-			color: var(--igc-primary-600-contrast);
+			color: #{utils.contrast-color(primary, 600)};
 		}
 
 		&:focus,
 		&:active {
-			color: var(--igc-primary-600-contrast);
+			color: #{utils.contrast-color(primary, 600)};
 		}
 
 		&::before {
 			opacity: 1;
-			background: var(--igc-primary-500);
+			background: #{utils.color(primary, 500)};
 		}
 
 		&:hover,
@@ -103,7 +103,7 @@
 		&:active {
 			&::before {
 				opacity: 1;
-				background: var(--igc-primary-600);
+				background: #{utils.color(primary, 600)};
 			}
 		}
 	}
@@ -118,7 +118,7 @@
 	igc-link-button[variant='flat'][disabled]::part(base),
 	igc-button[variant='outlined'][disabled]::part(base),
 	igc-link-button[variant='outlined'][disabled]::part(base) {
-		color: var(--igc-gray-400);
+		color: #{utils.color(gray, 400)};
 		background: transparent;
 	}
 
@@ -126,11 +126,11 @@
 	igc-link-button[variant='fab'][disabled]::part(base),
 	igc-button[variant='raised'][disabled]::part(base),
 	igc-link-button[variant='raised'][disabled]::part(base) {
-		color: var(--igc-gray-400);
+		color: #{utils.color(gray, 400)};
 
 		&::before {
 			opacity: 1;
-			background: var(--igc-gray-100);
+			background: #{utils.color(gray, 100)};
 		}
 	}
 
