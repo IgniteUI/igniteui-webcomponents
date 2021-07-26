@@ -1,10 +1,10 @@
 @use '../utilities' as utils;
 
 $palette: utils.palette(
-  $primary: #09f,
-  $secondary: #e41c77,
-  $gray: #000,
-  $surface: white,
+    $primary: #09f,
+    $secondary: #e41c77,
+    $gray: #000,
+    $surface: white,
 ) !default;
 
 $elevations: utils.elevations(
@@ -16,14 +16,14 @@ $elevations: utils.elevations(
 $type-scale: utils.type-scale();
 
 :root {
-  --igc-border-radius: #{utils.rem(2px)};
-  --igc-spacing-small: #{utils.rem(2px)};
-  --igc-spacing-medium: #{utils.rem(4px)};
-  --igc-spacing-large: #{utils.rem(8px)};
-  @include utils.palette($palette);
-  @include utils.elevations($elevations);
-  @include utils.typography(
-    $font-family: 'Roboto, sans-serif',
-    $type-scale: $type-scale
-  );
+    --igc-border-radius: #{utils.rem(2px)};
+    --igc-spacing-small: #{utils.rem(2px)};
+    --igc-spacing-medium: #{utils.rem(4px)};
+    --igc-spacing-large: #{utils.rem(8px)};
+    @include utils.palette($palette);
+    @include utils.elevations($elevations);
+    @include utils.typography(
+        $font-family: 'Roboto, sans-serif',
+        $type-scale: $type-scale
+    );
 }
