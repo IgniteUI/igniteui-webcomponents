@@ -44,8 +44,7 @@
             color: #{utils.color(primary, 500)};
 
             &::before {
-                opacity: .8;
-                background: #{utils.color(gray, 100)};
+                background: #{utils.color(gray, 100, .8)};
             }
         }
     }
