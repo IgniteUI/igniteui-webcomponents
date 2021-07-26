@@ -4,167 +4,167 @@
 $slot-spacing: var(--igc-spacing-large);
 
 :host {
-  display: inline-flex;
+    display: inline-flex;
 }
 
 a,
 button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: calc(var(--igc-border-radius) * 2);
-  user-select: none;
-  outline-style: none;
-  -webkit-tap-highlight-color: transparent;
-  overflow: hidden;
-  white-space: nowrap;
-  text-decoration: none;
-  z-index: 0;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: calc(var(--igc-border-radius) * 2);
+    user-select: none;
+    outline-style: none;
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+    white-space: nowrap;
+    text-decoration: none;
+    z-index: 0;
 
-  font-family: var(--igc-button-font-family);
-  font-weight: var(--igc-button-font-weight);
-  font-size: var(--igc-button-font-size);
-  font-style: var(--igc-button-font-style);
-  letter-spacing: var(--igc-button-letter-spacing);
-  line-height: var(--igc-button-line-height);
-  text-transform: var(--igc-button-text-transform);
+    font-family: var(--igc-button-font-family);
+    font-weight: var(--igc-button-font-weight);
+    font-size: var(--igc-button-font-size);
+    font-style: var(--igc-button-font-style);
+    letter-spacing: var(--igc-button-letter-spacing);
+    line-height: var(--igc-button-line-height);
+    text-transform: var(--igc-button-text-transform);
 
-  &.disabled {
-    background: color(gray, 300);
-    color: color(gray, 500);
-    pointer-events: none;
-    box-shadow: none;
-  }
+    &.disabled {
+        background: color(gray, 300);
+        color: color(gray, 500);
+        pointer-events: none;
+        box-shadow: none;
+    }
 
-  &:hover:not(.disabled) {
-    cursor: pointer;
-  }
+    &:hover:not(.disabled) {
+        cursor: pointer;
+    }
 
-  &::before {
-    position: absolute;
-    content: '';
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    will-change: opacity;
-    transition: all .1s ease-out;
-  }
+    &::before {
+        position: absolute;
+        content: '';
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        will-change: opacity;
+        transition: all .1s ease-out;
+    }
 }
 
-[name="prefix"]::slotted(*) {
-  margin-inline-end: $slot-spacing;
+[name='prefix']::slotted(*) {
+    margin-inline-end: $slot-spacing;
 }
 
-[name="suffix"]::slotted(*) {
-  margin-inline-start: $slot-spacing;
+[name='suffix']::slotted(*) {
+    margin-inline-start: $slot-spacing;
 }
 
-span[part="prefix"],
-span[part="suffix"] {
-  display: inline-flex;
-  align-items: center;
+span[part='prefix'],
+span[part='suffix'] {
+    display: inline-flex;
+    align-items: center;
 }
 
 .flat {
-  background: transparent;
-  color: color(secondary, 500);
+    background: transparent;
+    color: color(secondary, 500);
 
-  &:before {
-    opacity: 0;
-  }
+    &::before {
+        opacity: 0;
+    }
 
-  &:hover:not(.disabled)::before {
-    background: color(secondary, 500);
-    opacity: .12;
-  }
+    &:hover:not(.disabled)::before {
+        background: color(secondary, 500);
+        opacity: .12;
+    }
 
-  &:focus:not(.disabled)::before,
-  &:active:not(.disabled)::before {
-    background: color(secondary, 500);
-    opacity: .24;
-  }
+    &:focus:not(.disabled)::before,
+    &:active:not(.disabled)::before {
+        background: color(secondary, 500);
+        opacity: .24;
+    }
 }
 
 .outlined {
-  @extend .flat;
-  box-shadow: inset 0 0 0 1px color(secondary, 500);
+    @extend .flat;
+    box-shadow: inset 0 0 0 1px color(secondary, 500);
 
-  &.disabled {
-    box-shadow: inset 0 0 0 1px color(gray, 300);
-  }
+    &.disabled {
+        box-shadow: inset 0 0 0 1px color(gray, 300);
+    }
 }
 
 .raised {
-  background: color(secondary, 500);
-  color: contrast-color(secondary, 500);
-  box-shadow: var(--igc-elevation-2);
-  transition: box-shadow .1s ease-out;
+    background: color(secondary, 500);
+    color: contrast-color(secondary, 500);
+    box-shadow: var(--igc-elevation-2);
+    transition: box-shadow .1s ease-out;
 
-  &:before {
-    opacity: 0;
-  }
+    &::before {
+        opacity: 0;
+    }
 
-  &:hover:not(.disabled) {
-    box-shadow: var(--igc-elevation-4);
-  }
+    &:hover:not(.disabled) {
+        box-shadow: var(--igc-elevation-4);
+    }
 
-  &:hover:not(.disabled)::before {
-    background: #fff;
-    opacity: .12;
-  }
+    &:hover:not(.disabled)::before {
+        background: #fff;
+        opacity: .12;
+    }
 
-  &:focus:not(.disabled),
-  &:focus:not(.disabled) {
-    box-shadow: var(--igc-elevation-8);
-  }
+    &:focus:not(.disabled),
+    &:active:not(.disabled) {
+        box-shadow: var(--igc-elevation-8);
+    }
 
-  &:focus:not(.disabled)::before,
-  &:active:not(.disabled)::before {
-    background: #fff;
-    opacity: .24;
-  }
+    &:focus:not(.disabled)::before,
+    &:active:not(.disabled)::before {
+        background: #fff;
+        opacity: .24;
+    }
 }
 
 .fab {
-  @extend .raised;
-  border-radius: calc(var(--igc-border-radius) * 12);
-  box-shadow: var(--igc-elevation-6);
+    @extend .raised;
+    border-radius: calc(var(--igc-border-radius) * 12);
+    box-shadow: var(--igc-elevation-6);
 
-  &:hover:not(.disabled),
-  &:focus:not(.disabled),
-  &:focus:not(.disabled) {
-    box-shadow: var(--igc-elevation-12);
-  }
+    &:hover:not(.disabled),
+    &:focus:not(.disabled),
+    &:active:not(.disabled) {
+        box-shadow: var(--igc-elevation-12);
+    }
 
-  &.large {
-    min-width: rem(48px);
-    min-height: rem(48px);
-  }
+    &.large {
+        min-width: rem(48px);
+        min-height: rem(48px);
+    }
 
-  &.medium {
-    min-width: rem(40px);
-    min-height: rem(40px);
-  }
+    &.medium {
+        min-width: rem(40px);
+        min-height: rem(40px);
+    }
 
-  &.small {
-    min-width: rem(32px);
-    min-height: rem(32px);
-  }
+    &.small {
+        min-width: rem(32px);
+        min-height: rem(32px);
+    }
 }
 
 .large {
-  height: var(--size, 36px);
-  padding: 0 calc(var(--igc-spacing-large) * 2);
+    height: var(--size, 36px);
+    padding: 0 calc(var(--igc-spacing-large) * 2);
 }
 
 .medium {
-  height: var(--size, 30px);
-  padding: 0 calc(var(--igc-spacing-medium) * 3);
+    height: var(--size, 30px);
+    padding: 0 calc(var(--igc-spacing-medium) * 3);
 }
 
 .small {
-  height: var(--size, 24px);
-  padding: 0 calc(var(--igc-spacing-small) * 4);
+    height: var(--size, 24px);
+    padding: 0 calc(var(--igc-spacing-small) * 4);
 }
