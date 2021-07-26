@@ -2,12 +2,12 @@
 @use '../../styles/utilities' as *;
 
 :host {
-  display: inline-flex;
-  font-family: var(--igc-font-family);
+    display: inline-flex;
+    font-family: var(--igc-font-family);
 }
 
 input[type='radio'] {
-  @include hide-default();
+    @include hide-default();
 }
 
 $switch-width: rem(36px);
@@ -16,126 +16,126 @@ $switch-on-offset: rem(1px);
 $switch-off-offset: rem(-1px);
 
 [part='base'] {
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  cursor: pointer;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    cursor: pointer;
 }
 
 [part='control'] {
-  display: flex;
-  position: relative;
-  align-items: center;
-  width: $switch-width;
-  height: rem(14px);
-  border: 1px transparent;
-  border-radius: rem(7px);
-  background: color(gray, 600);
-  user-select: none;
-  transition: all .2s ease-in-out-quad;
-
-  &:hover,
-  &:focus {
-    border-color: transparent;
-  }
-}
-
-[part='thumb'] {
-  display: block;
-  width: $switch-thumb-width;
-  height: $switch-thumb-width;
-  min-width: $switch-thumb-width;
-  background: color(gray, 200);
-  border-radius: rem(10px);
-  box-shadow: var(--igc-elevation-2);
-  transition: all 0.2s ease-in;
-
-  &::after {
-    position: absolute;
-    content: '';
-    width: $switch-thumb-width;
-    height: $switch-thumb-width;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 50% 50%;
-    transition: all .15s ease-in;
-  }
-
-  @include if-ltr() {
-    transform: translateX(#{$switch-off-offset});
-  }
-
-  @include if-rtl() {
-    transform: translateX(#{rem(-1 * ($switch-off-offset))});
-  }
-
-  &:hover {
-    box-shadow: var(--igc-elevation-3);
-  }
-}
-
-[part="label"] {
-  display: inline-block;
-  color: color(gray, 900);
-  cursor: pointer;
-  user-select: none;
-  word-wrap: break-all;
-}
-
-:host([checked]) {
-  [part='control'] {
-    background: color(secondary, 500, 0.5);
-    border-color: transparent;
+    display: flex;
+    position: relative;
+    align-items: center;
+    width: $switch-width;
+    height: rem(14px);
+    border: 1px transparent;
+    border-radius: rem(7px);
+    background: color(gray, 600);
+    user-select: none;
+    transition: all .2s ease-in-out-quad;
 
     &:hover,
     &:focus {
-      border-color: transparent;
+        border-color: transparent;
     }
-  }
+}
 
-  [part='thumb'] {
-    background: color(secondary, 500);
+[part='thumb'] {
+    display: block;
+    width: $switch-thumb-width;
+    height: $switch-thumb-width;
+    min-width: $switch-thumb-width;
+    background: color(gray, 200);
+    border-radius: rem(10px);
+    box-shadow: var(--igc-elevation-2);
+    transition: all .2s ease-in;
+
+    &::after {
+        position: absolute;
+        content: '';
+        width: $switch-thumb-width;
+        height: $switch-thumb-width;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        transition: all .15s ease-in;
+    }
 
     @include if-ltr() {
-      transform: translateX(#{($switch-width) - ($switch-thumb-width) - ($switch-on-offset)});
+        transform: translateX(#{$switch-off-offset});
     }
 
     @include if-rtl() {
-      transform: translateX(-(#{($switch-width) - ($switch-thumb-width) - ($switch-on-offset)}));
+        transform: translateX(#{rem(-1 * ($switch-off-offset))});
     }
-  }
+
+    &:hover {
+        box-shadow: var(--igc-elevation-3);
+    }
+}
+
+[part='label'] {
+    display: inline-block;
+    color: color(gray, 900);
+    cursor: pointer;
+    user-select: none;
+    word-wrap: break-all;
+}
+
+:host([checked]) {
+    [part='control'] {
+        background: color(secondary, 500, .5);
+        border-color: transparent;
+
+        &:hover,
+        &:focus {
+            border-color: transparent;
+        }
+    }
+
+    [part='thumb'] {
+        background: color(secondary, 500);
+
+        @include if-ltr() {
+            transform: translateX(#{($switch-width) - ($switch-thumb-width) - ($switch-on-offset)});
+        }
+
+        @include if-rtl() {
+            transform: translateX(-(#{($switch-width) - ($switch-thumb-width) - ($switch-on-offset)}));
+        }
+    }
 }
 
 :host([disabled]) {
-  user-select: none;
-  pointer-events: none;
-  cursor: initial;
+    user-select: none;
+    pointer-events: none;
+    cursor: initial;
 
-  [part='control'] {
-    background: color(gray, 300);
-    border-color: transparent;
-  }
+    [part='control'] {
+        background: color(gray, 300);
+        border-color: transparent;
+    }
 
-  [part='thumb'] {
-    background: color(gray, 400);
-    box-shadow: var(--igc-elevation-1);
-  }
+    [part='thumb'] {
+        background: color(gray, 400);
+        box-shadow: var(--igc-elevation-1);
+    }
 
-  [part='label'] {
-    color: color(gray, 400);
-  }
+    [part='label'] {
+        color: color(gray, 400);
+    }
 }
 
 :host([label-position='after']) {
-  [part='label'] {
-    margin-inline-start: rem(8px);
-  }
+    [part='label'] {
+        margin-inline-start: rem(8px);
+    }
 }
 
 :host([label-position='before']) {
-  [part='label'] {
-    order: -1;
-    margin-inline-end: rem(8px);
-  }
+    [part='label'] {
+        order: -1;
+        margin-inline-end: rem(8px);
+    }
 }
