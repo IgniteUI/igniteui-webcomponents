@@ -39,12 +39,6 @@
         }
     }
 
-    igc-radio:not([disabled])[checked]::part(control) {
-        &::after {
-            border-color: utils.color(primary, 500);
-        }
-    }
-
     igc-radio:not([disabled])[checked]:hover::part(control),
     igc-radio:not([disabled])[checked]:focus-within::part(control) {
         &::after {

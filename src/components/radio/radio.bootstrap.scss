@@ -9,11 +9,11 @@
         }
     }
 
-    igc-radio[label-position="after"]::part(label) {
+    igc-radio[label-position='after']::part(label) {
         margin-inline-start: #{utils.rem(4px)};
     }
 
-    igc-radio[label-position="before"]::part(label) {
+    igc-radio[label-position='before']::part(label) {
         margin-inline-end: #{utils.rem(4px)};
     }
 
