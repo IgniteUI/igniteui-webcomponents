@@ -135,7 +135,8 @@
         border-radius: calc(var(--igc-border-radius) * 8);
     }
 
-    igc-button[variant='fab'][size='medium']::part(base) igc-link-button[variant='fab'][size='medium']::part(base) {
+    igc-button[variant='fab'][size='medium']::part(base),
+    igc-link-button[variant='fab'][size='medium']::part(base) {
         border-radius: calc(var(--igc-border-radius) * 6);
     }
 
