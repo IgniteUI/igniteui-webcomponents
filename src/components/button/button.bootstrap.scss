@@ -3,20 +3,17 @@
 @mixin theme() {
     igc-button[size='large']::part(base),
     igc-link-button[size='large']::part(base) {
-			border-radius: calc(var(--igc-border-radius) * 1);
-			--size: #{utils.rem(48px)};
+        --size: #{utils.rem(48px)};
     }
 
     igc-button[size='medium']::part(base),
     igc-link-button[size='medium']::part(base) {
-			border-radius: calc(var(--igc-border-radius) * 1);
-			--size: #{utils.rem(40px)};
+        --size: #{utils.rem(40px)};
     }
 
     igc-button[size='small']::part(base),
     igc-link-button[size='small']::part(base) {
-			border-radius: calc(var(--igc-border-radius) * 1);
-			--size: #{utils.rem(32px)};
+        --size: #{utils.rem(32px)};
     }
 
     igc-button[variant='flat'][disabled]::part(base),
@@ -133,34 +130,47 @@
         }
     }
 
-  igc-button[variant="fab"]:not([disabled])::part(base),
-  igc-link-button[variant="fab"]:not([disabled])::part(base) {
-			border-radius: calc(var(--igc-border-radius) * 4);
+    igc-button[variant='fab'][size='large']::part(base),
+    igc-link-button[variant='fab'][size='large']::part(base) {
+        border-radius: calc(var(--igc-border-radius) * 8);
+    }
 
-      color: #{utils.contrast-color(primary, 600)};
+    igc-button[variant='fab'][size='medium']::part(base),
+    igc-link-button[variant='fab'][size='medium']::part(base) {
+        border-radius: calc(var(--igc-border-radius) * 6);
+    }
 
-      &:hover {
-          color: #{utils.contrast-color(primary, 600)};
-      }
+    igc-button[variant='fab'][size='small']::part(base),
+    igc-link-button[variant='fab'][size='small']::part(base) {
+        border-radius: calc(var(--igc-border-radius) * 4);
+    }
 
-      &:focus,
-      &:active {
-          color: #{utils.contrast-color(primary, 600)};
-          box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
-      }
+    igc-button[variant='fab']:not([disabled])::part(base),
+    igc-link-button[variant='fab']:not([disabled])::part(base) {
+        color: #{utils.contrast-color(primary, 600)};
 
-      &::before {
-          background: #{utils.color(primary, 500)};
-          opacity: 1;
-      }
+        &:hover {
+            color: #{utils.contrast-color(primary, 600)};
+        }
 
-      &:hover::before,
-      &:focus::before,
-      &:active::before {
-          background: #{utils.color(primary, 600)};
-          opacity: 1;
-      }
-  }
+        &:focus,
+        &:active {
+            color: #{utils.contrast-color(primary, 600)};
+            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+        }
+
+        &::before {
+            background: #{utils.color(primary, 500)};
+            opacity: 1;
+        }
+
+        &:hover::before,
+        &:focus::before,
+        &:active::before {
+            background: #{utils.color(primary, 600)};
+            opacity: 1;
+        }
+    }
 
     igc-button[variant='raised']::part(base),
     igc-button[variant='fab']::part(base),
