@@ -25,21 +25,26 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
     return this._name;
   }
 
-  private _set = 'default';
+  private _collection = 'default';
 
-  set set(value: string) {
-    if (this._set !== value) {
-      this._set = value;
+  set collection(value: string) {
+    if (this._collection !== value) {
+      this._collection = value;
       this.getIcon();
     }
   }
   @property()
-  get set(): string {
-    return this._set;
+  get collection(): string {
+    return this._collection;
   }
 
-  @property({ type: Boolean, attribute: 'flip-rtl', reflect: true })
-  flipRtl = false;
+  @property({ type: Boolean, reflect: true })
+  mirrored = false;
+
+  constructor() {
+    super();
+    this.size = 'medium';
+  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -55,27 +60,27 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
   }
 
   private iconLoaded = (name: string, set: string) => {
-    if (this.name === name && this.set === set) {
+    if (this.name === name && this.collection === set) {
       this.getIcon();
     }
   };
 
   private getIcon() {
     const svg =
-      this._name && this._set
-        ? IconsRegistry.instance().getIcon(this._name, this._set)
+      this._name && this._collection
+        ? IconsRegistry.instance().getIcon(this._name, this._collection)
         : '';
     this.svg = svg ?? '';
   }
 
   private get classes() {
-    const { size, flipRtl } = this;
+    const { size, mirrored } = this;
 
     return {
       small: size === 'small',
       medium: size === 'medium',
       large: size === 'large',
-      'flip-rtl': flipRtl,
+      mirrored: mirrored,
     };
   }
 

@@ -18,23 +18,23 @@ export default {
       defaultValue: '',
       description: 'Name of the icon',
     },
-    set: {
+    collection: {
       control: {
         type: 'text',
       },
       defaultValue: 'default',
-      description: 'Set of icons',
+      description: 'Collection of icons',
     },
     size: {
       control: {
         type: 'inline-radio',
         options: ['small', 'medium', 'large'],
       },
-      defaultValue: 'large',
+      defaultValue: 'medium',
     },
-    flipRtl: {
+    mirrored: {
       control: 'boolean',
-      defaultValue: 'false',
+      defaultValue: false,
     },
   },
 };
@@ -43,7 +43,7 @@ interface ArgTypes {
   name: string;
   set: string;
   size: 'small' | 'medium' | 'large';
-  flipRtl: boolean;
+  mirrored: boolean;
 }
 
 interface Context {
@@ -69,16 +69,16 @@ const registerIconClick = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { name = 'bug', set = 'default', size, flipRtl }: ArgTypes,
+  { name = 'bug', set = 'default', size, mirrored = false }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
     <div style="display: flex;">
       <igc-icon
         .name=${name}
-        .set=${set}
+        .collection=${set}
         .size=${size}
-        .flipRtl=${flipRtl}
+        .mirrored=${mirrored}
         dir=${ifDefined(direction)}
       >
       </igc-icon>
