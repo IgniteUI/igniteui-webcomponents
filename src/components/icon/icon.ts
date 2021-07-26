@@ -1,11 +1,13 @@
 import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './icon.material.css';
 import { IconsRegistry } from './icon.registry.js';
 
 // @customElement('igc-icon')
-export class IgcIconComponent extends LitElement {
+export class IgcIconComponent extends SizableMixin(LitElement) {
   static styles = styles;
 
   @state() private svg = '';
@@ -36,8 +38,14 @@ export class IgcIconComponent extends LitElement {
     return this._set;
   }
 
+  @property({ type: Boolean, attribute: 'flip-rtl', reflect: true })
+  flipRtl = false;
+
   connectedCallback() {
     super.connectedCallback();
+
+    this.setAttribute('role', 'img');
+
     IconsRegistry.instance().subscribe(this.iconLoaded);
   }
 
@@ -60,7 +68,20 @@ export class IgcIconComponent extends LitElement {
     this.svg = svg ?? '';
   }
 
+  private get classes() {
+    const { size, flipRtl } = this;
+
+    return {
+      small: size === 'small',
+      medium: size === 'medium',
+      large: size === 'large',
+      'flip-rtl': flipRtl,
+    };
+  }
+
   render() {
-    return html` <div part="base">${unsafeSVG(this.svg)}</div> `;
+    return html`<div part="base" class=${classMap(this.classes)}>
+      ${unsafeSVG(this.svg)}
+    </div>`;
   }
 }
