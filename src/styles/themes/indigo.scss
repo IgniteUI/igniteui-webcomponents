@@ -2,172 +2,172 @@
 @use '../../components/button/button.indigo' as button;
 
 $palette: utils.palette(
-	$primary: #3f51b5,
-	$secondary: #3f51b5,
-	$gray: hsl(236, 8%, 5%),
-	$surface: #fff,
-	$info: #9208bc,
-	$success: #689f38,
-	$warn: #ff9800,
-	$error: #cf1a2b
+    $primary: #3f51b5,
+    $secondary: #3f51b5,
+    $gray: hsl(236, 8%, 5%),
+    $surface: #fff,
+    $info: #9208bc,
+    $success: #689f38,
+    $warn: #ff9800,
+    $error: #cf1a2b
 ) !default;
 
 $elevations: utils.elevations(
-		rgba(0, 0, 0, .26),
-		rgba(0, 0, 0, .12),
-		rgba(0, 0, 0, .08)
+    rgba(0, 0, 0, .26),
+    rgba(0, 0, 0, .12),
+    rgba(0, 0, 0, .08)
 ) !default;
 
 $indigo_h1: utils.type-style(
-	$font-size: utils.rem(96px),
-	$font-weight: 200,
-	$line-height: utils.rem(112px),
-	$letter-spacing: utils.rem(-1.54px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(96px),
+    $font-weight: 200,
+    $line-height: utils.rem(112px),
+    $letter-spacing: utils.rem(-1.54px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_h2: utils.type-style(
-	$font-size: utils.rem(60px),
-	$font-weight: 200,
-	$line-height: utils.rem(72px),
-	$letter-spacing: utils.rem(-.48px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(60px),
+    $font-weight: 200,
+    $line-height: utils.rem(72px),
+    $letter-spacing: utils.rem(-.48px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_h3: utils.type-style(
-	$font-size: utils.rem(48px),
-	$font-weight: 200,
-	$line-height: utils.rem(56px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(48px),
+    $font-weight: 200,
+    $line-height: utils.rem(56px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_h4: utils.type-style(
-	$font-size: utils.rem(36px),
-	$font-weight: 200,
-	$line-height: utils.rem(42px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(36px),
+    $font-weight: 200,
+    $line-height: utils.rem(42px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_h5: utils.type-style(
-	$font-size: utils.rem(24px),
-	$font-weight: 200,
-	$line-height: utils.rem(28px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(24px),
+    $font-weight: 200,
+    $line-height: utils.rem(28px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_h6: utils.type-style(
-	$font-size: utils.rem(20px),
-	$font-weight: 600,
-	$line-height: utils.rem(26px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(20px),
+    $font-weight: 600,
+    $line-height: utils.rem(26px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_body-1: utils.type-style(
-	$font-size: utils.rem(16px),
-	$font-weight: 400,
-	$line-height: utils.rem(20px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(16px),
+    $font-weight: 400,
+    $line-height: utils.rem(20px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_body-2: utils.type-style(
-	$font-size: utils.rem(14px),
-	$font-weight: 400,
-	$line-height: utils.rem(20px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(14px),
+    $font-weight: 400,
+    $line-height: utils.rem(20px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_subtitle-1: utils.type-style(
-	$font-size: utils.rem(16px),
-	$font-weight: 600,
-	$line-height: utils.rem(22px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(16px),
+    $font-weight: 600,
+    $line-height: utils.rem(22px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_subtitle-2: utils.type-style(
-	$font-size: utils.rem(14px),
-	$font-weight: 700,
-	$line-height: utils.rem(20px),
-	$text-transform: none,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(14px),
+    $font-weight: 700,
+    $line-height: utils.rem(20px),
+    $text-transform: none,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_button: utils.type-style(
-	$font-size: utils.rem(12px),
-	$font-weight: 700,
-	$line-height: normal,
-	$text-transform: uppercase,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(12px),
+    $font-weight: 700,
+    $line-height: normal,
+    $text-transform: uppercase,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_caption: utils.type-style(
-	$font-size: utils.rem(12px),
-	$font-weight: 400,
-	$line-height: utils.rem(16px),
-	$text-transform: normal,
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(12px),
+    $font-weight: 400,
+    $line-height: utils.rem(16px),
+    $text-transform: normal,
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo_overline: utils.type-style(
-	$font-size: utils.rem(10px),
-	$font-weight: 700,
-	$line-height: utils.rem(14px),
-	$text-transform: uppercase,
-	$letter-spacing: utils.rem(.2px),
-	$margin-top: 0,
-	$margin-bottom: 0
+    $font-size: utils.rem(10px),
+    $font-weight: 700,
+    $line-height: utils.rem(14px),
+    $text-transform: uppercase,
+    $letter-spacing: utils.rem(.2px),
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 
 $indigo-type-scale: utils.type-scale(
-	$_meta: (variant: 'indigo'),
-	$h1: $indigo_h1,
-	$h2: $indigo_h2,
-	$h3: $indigo_h3,
-	$h4: $indigo_h4,
-	$h5: $indigo_h5,
-	$h6: $indigo_h6,
-	$subtitle-1: $indigo_subtitle-1,
-	$subtitle-2: $indigo_subtitle-2,
-	$body-1: $indigo_body-1,
-	$body-2: $indigo_body-2,
-	$button: $indigo_button,
-	$caption: $indigo_caption,
-	$overline: $indigo_overline
+    $_meta: (variant: 'indigo'),
+    $h1: $indigo_h1,
+    $h2: $indigo_h2,
+    $h3: $indigo_h3,
+    $h4: $indigo_h4,
+    $h5: $indigo_h5,
+    $h6: $indigo_h6,
+    $subtitle-1: $indigo_subtitle-1,
+    $subtitle-2: $indigo_subtitle-2,
+    $body-1: $indigo_body-1,
+    $body-2: $indigo_body-2,
+    $button: $indigo_button,
+    $caption: $indigo_caption,
+    $overline: $indigo_overline
 );
 
 $type-scale: utils.extend($indigo-type-scale);
 
 :root {
-	--igc-border-radius: #{utils.rem(2px)};
-	--igc-spacing-small: #{utils.rem(2px)};
-	--igc-spacing-medium: #{utils.rem(4px)};
-	--igc-spacing-large: #{utils.rem(8px)};
-	@include utils.palette($palette);
-	@include utils.elevations($elevations);
-	@include utils.typography(
-		$font-family: "'Nunito Sans', sans-serif",
-		$type-scale: $type-scale
-	);
+    --igc-border-radius: #{utils.rem(2px)};
+    --igc-spacing-small: #{utils.rem(2px)};
+    --igc-spacing-medium: #{utils.rem(4px)};
+    --igc-spacing-large: #{utils.rem(8px)};
+    @include utils.palette($palette);
+    @include utils.elevations($elevations);
+    @include utils.typography(
+        $font-family: '\'Nunito Sans\', sans-serif',
+        $type-scale: $type-scale
+    );
 }
 
 @include button.theme();
