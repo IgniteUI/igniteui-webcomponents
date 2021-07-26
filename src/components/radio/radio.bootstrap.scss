@@ -2,26 +2,18 @@
 
 @mixin theme() {
     igc-radio {
-        --size: #{utils.rem(16px)};
-
         &::part(base) {
             transition: none;
         }
     }
 
-    igc-radio[label-position='after']::part(label) {
-        margin-inline-start: #{utils.rem(4px)};
-    }
-
-    igc-radio[label-position='before']::part(label) {
-        margin-inline-end: #{utils.rem(4px)};
-    }
-
     igc-radio::part(control) {
-        width: var(--size, utils.rem(24px));
-        height: var(--size, utils.rem(24px));
-        min-width: var(--size, utils.rem(24px));
-        transition: none;
+        $size: var(--size, utils.rem(16px));
+        width: $size;
+        height: $size;
+        min-width: $size;
+        background: none;
+        transition: transparent;
 
         &::before,
         &::after {
@@ -33,17 +25,16 @@
         }
 
         &::after {
-            background: white;
+            width: inherit;
+            height: inherit;
+            min-width: inherit;
             border-color: #{utils.color(gray, 400)};
+            border-width: calc(var(--size, #{utils.rem(10px)}) / 10);
         }
     }
 
-    igc-radio:hover::part(control) {
-        background: transparent;
-    }
-
     igc-radio:focus-within::part(control) {
-        background: #{utils.color(primary, 100)};
+        box-shadow: 0 0 0 #{calc(var(--size, #{utils.rem(16px)}) / 4)} #{utils.color(primary, 100)};
 
         &::after {
             border-color: #{utils.color(primary, 500)};
