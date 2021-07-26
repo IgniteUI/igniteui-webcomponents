@@ -45,23 +45,20 @@ export class IgcSwitchComponent extends LitElement {
 
   render() {
     return html`
-      <label
-        part="base"
-        for="radio"
-        @mousedown="${this.handleMouseDown}">
-          <input
-            id="radio"
-            type="radio"
-            .disabled="${this.disabled}"
-            .checked="${this.checked}"
-            @click="${this.handleClick}"
-          />
-          <span part="control">
-            <span part="thumb">
-          </span>
-          <span part="label">
-            <slot></slot>
-          </span>
+      <label part="base" for="radio" @mousedown="${this.handleMouseDown}">
+        <input
+          id="radio"
+          type="radio"
+          .disabled="${this.disabled}"
+          .checked="${this.checked}"
+          @click="${this.handleClick}"
+        />
+        <span part="control">
+          <span part="thumb"></span>
+        </span>
+        <span part="label">
+          <slot></slot>
+        </span>
       </label>
     `;
   }
