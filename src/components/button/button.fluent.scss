@@ -33,18 +33,17 @@
 
         &:hover {
             color: #{utils.color(primary, 500)};
-
-            &::before {
-                background: transparent;
-            }
         }
 
+        &:active {
+            color: #{utils.color(gray, 900)};
+        }
+
+        &:hover,
         &:focus,
         &:active {
-            color: #{utils.color(primary, 500)};
-
             &::before {
-                background: #{utils.color(gray, 100, .8)};
+                background: transparent;
             }
         }
     }
@@ -54,7 +53,7 @@
     igc-link-button[variant='outlined']:not([disabled])::part(base) {
         color: #{utils.color(gray, 900)};
         transition: color .15s ease-out;
-        box-shadow: 0 0 0 1px #{utils.color(gray, 800)};
+        box-shadow: 0 0 0 1px #{utils.color(gray, 700)};
 
         &:hover {
             color: #{utils.color(gray, 900)};
@@ -65,13 +64,36 @@
             }
         }
 
+        &:focus {
+            &::before {
+                background: transparent;
+            }
+        }
+
         &:focus,
         &:active {
             color: #{utils.color(gray, 900)};
+        }
 
+        &:active {
             &::before {
                 opacity: 1;
-                background: #{utils.color(gray, 100)};
+                background: #{utils.color(gray, 200)};
+            }
+        }
+    }
+
+    // FLAT & OUTLINED
+    igc-button[variant='flat']:not([disabled])::part(base),
+    igc-link-button[variant='flat']:not([disabled])::part(base),
+    igc-button[variant='outlined']:not([disabled])::part(base),
+    igc-link-button[variant='outlined']:not([disabled])::part(base) {
+        &:focus-visible {
+            outline: #{utils.rem(1px)} solid #{utils.color(gray, 800)};
+            outline-offset: #{utils.rem(-2px)};
+
+            &::before {
+                background: transparent;
             }
         }
     }
@@ -85,6 +107,11 @@
 
         &:hover {
             color: #{utils.contrast-color(primary, 600)};
+
+            &::before {
+                opacity: 1;
+                background: #{utils.color(primary, 600)};
+            }
         }
 
         &:focus,
@@ -97,12 +124,19 @@
             background: #{utils.color(primary, 500)};
         }
 
-        &:hover,
-        &:focus,
         &:active {
             &::before {
                 opacity: 1;
-                background: #{utils.color(primary, 600)};
+                background: #{utils.color(primary, 700)};
+            }
+        }
+
+        &:focus-visible {
+            outline: #{utils.rem(1px)} solid #{utils.contrast-color(primary, 600)};
+            outline-offset: #{utils.rem(-3px)};
+
+            &::before {
+                background: transparent;
             }
         }
     }
@@ -132,7 +166,6 @@
             background: #{utils.color(gray, 100)};
         }
     }
-
 
     igc-button[variant='outlined'][disabled]::part(base),
     igc-link-button[variant='outlined'][disabled]::part(base) {
