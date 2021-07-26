@@ -3,20 +3,20 @@
 @use '../../components/radio/radio.bootstrap' as radio;
 
 $palette: utils.palette(
- $primary: #007bff,
- $secondary: #6c757d,
- $gray: #000,
- $surface: #f8f9fa,
- $info: #17a2b8,
- $success: #28a745,
- $warn: #ffc107,
- $error: #dc3545,
+    $primary: #007bff,
+    $secondary: #6c757d,
+    $gray: #000,
+    $surface: #f8f9fa,
+    $info: #17a2b8,
+    $success: #28a745,
+    $warn: #ffc107,
+    $error: #dc3545,
 ) !default;
 
 $elevations: utils.elevations(
-   rgba(0, 0, 0, .26),
-   rgba(0, 0, 0, .12),
-   rgba(0, 0, 0, .08)
+    rgba(0, 0, 0, .26),
+    rgba(0, 0, 0, .12),
+    rgba(0, 0, 0, .08)
 ) !default;
 
 $bootstrap_h1: utils.type-style(
@@ -165,16 +165,16 @@ $type-scale: utils.extend($_base-scale, (
 ));
 
 :root {
- --igc-border-radius: #{utils.rem(2px)};
- --igc-spacing-small: #{utils.rem(2px)};
- --igc-spacing-medium: #{utils.rem(4px)};
- --igc-spacing-large: #{utils.rem(8px)};
- @include utils.palette($palette);
- @include utils.elevations($elevations);
- @include utils.typography(
-   $font-family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
-   $type-scale: $type-scale
- );
+    --igc-border-radius: #{utils.rem(2px)};
+    --igc-spacing-small: #{utils.rem(2px)};
+    --igc-spacing-medium: #{utils.rem(4px)};
+    --igc-spacing-large: #{utils.rem(8px)};
+    @include utils.palette($palette);
+    @include utils.elevations($elevations);
+    @include utils.typography(
+        $font-family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
+        $type-scale: $type-scale
+    );
 }
 
 @include button.theme();
