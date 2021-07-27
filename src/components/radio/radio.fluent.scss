@@ -34,6 +34,10 @@
     }
 
     igc-radio:not([disabled])[checked]::part(control) {
+        &::before {
+            background: utils.color(primary, 500);
+        }
+
         &::after {
             border-color: utils.color(primary, 500);
         }
