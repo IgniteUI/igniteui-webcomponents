@@ -1,19 +1,19 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
-    $switch-width: utils.rem(32px);
+    $switch-width: utils.rem(34px);
     $switch-offset: calc(#{utils.rem(8px)} / 3);
 
     igc-switch::part(control) {
         width: $switch-width;
         height: utils.rem(16px);
-        border: 1px solid #{utils.color(gray, 500)};
-        border-radius: utils.rem(4px);
+        border: 2px solid #{utils.color(gray, 500)};
+        border-radius: utils.rem(8px);
         background: transparent;
 
         &:hover,
         &:focus {
-            border-color: #{utils.color(gray, 800)};
+            border-color: #{utils.color(gray, 500)};
         }
     }
 
@@ -32,8 +32,12 @@
     }
 
     igc-switch:focus-within:part(control) {
-        border-radius: utils.rem(2px);
-        box-shadow: 0 0 0 2px #{utils.color(primary, 200)};
+        border-radius: utils.rem(10px);
+        box-shadow: 0 0 0 3px #{utils.color(gray, 300)};
+    }
+
+    igc-switch[checked]:focus-within:part(control) {
+        box-shadow: 0 0 0 3px #{utils.color(primary, 200)};
     }
 
     igc-switch::part(thumb) {
@@ -41,9 +45,9 @@
         width: $size;
         height: $size;
         min-width: $size;
+        border-radius: utils.rem(10px);
         margin-inline-start: #{$switch-offset};
-        background: #{utils.color(gray, 900)};
-        border-radius: utils.rem(2px);
+        background: #{utils.color(gray, 600)};
         box-shadow: none;
 
         &::after {
@@ -55,12 +59,18 @@
         }
     }
 
+    igc-switch:focus-within:part(thumb) {
+        border-radius: utils.rem(10px);
+        box-shadow: 0 0 0 3px #{utils.color(gray, 300)};
+    }
+
     igc-switch[checked]::part(thumb) {
         background: white;
         margin-inline-start: calc(50% + #{$switch-offset});
     }
 
     igc-switch[disabled]::part(thumb) {
+        background: #{utils.color(gray, 300)};
         box-shadow: none;
     }
 

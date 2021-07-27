@@ -1,14 +1,14 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
-    $switch-width: utils.rem(32px);
-    $switch-offset: calc(#{utils.rem(8px)} / 3);
+    $switch-width: utils.rem(40px);
+    $switch-offset: calc(#{utils.rem(12px)} / 3);
 
     igc-switch::part(control) {
         width: $switch-width;
-        height: utils.rem(16px);
+        height: utils.rem(20px);
         border: 1px solid #{utils.color(gray, 500)};
-        border-radius: utils.rem(4px);
+        border-radius: utils.rem(10px);
         background: transparent;
 
         &:hover,
@@ -18,7 +18,7 @@
     }
 
     igc-switch[checked]::part(control) {
-        background: #{utils.color(primary, 500)};
+        background: #{utils.color(secondary, 500)};
         border-color: #{utils.color(primary, 500)};
 
         &:hover,
@@ -31,19 +31,13 @@
         border-color: #{utils.color(gray, 300)};
     }
 
-    igc-switch:focus-within:part(control) {
-        border-radius: utils.rem(2px);
-        box-shadow: 0 0 0 2px #{utils.color(primary, 200)};
-    }
-
     igc-switch::part(thumb) {
-        $size: var(--size, utils.rem(8px));
+        $size: var(--size, utils.rem(12px));
         width: $size;
         height: $size;
         min-width: $size;
         margin-inline-start: #{$switch-offset};
         background: #{utils.color(gray, 900)};
-        border-radius: utils.rem(2px);
         box-shadow: none;
 
         &::after {
@@ -52,6 +46,20 @@
 
         &:hover {
             box-shadow: none;
+        }
+    }
+
+    igc-switch:focus-within:part(thumb) {
+        $focus-outline-offset: utils.rem(2px);
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: -$focus-outline-offset;
+            left: -$focus-outline-offset;
+            box-shadow: 0 0 0 1px #{utils.color(gray, 800)};
+            width: calc(100% + (#{$focus-outline-offset} * 2));
+            height: calc(100% + (#{$focus-outline-offset} * 2));
         }
     }
 

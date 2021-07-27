@@ -12,8 +12,7 @@ input[type='radio'] {
 
 $switch-width: rem(36px);
 $switch-thumb-width: rem(20px);
-$switch-on-offset: rem(1px);
-$switch-off-offset: rem(-1px);
+$switch-offset: rem(-1px);
 $ripple-size: rem(48px);
 $ripple-radius: calc(#{$ripple-size} / 2);
 
@@ -38,7 +37,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
 [part='control'] {
     display: flex;
-    position: relative;
     align-items: center;
     width: $switch-width;
     height: rem(14px);
@@ -55,13 +53,16 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 }
 
 [part='thumb'] {
-    display: block;
+    position: relative;
     width: $switch-thumb-width;
     height: $switch-thumb-width;
     min-width: $switch-thumb-width;
     background: color(gray, 200);
     border-radius: rem(10px);
     box-shadow: var(--igc-elevation-2);
+    animation-name: thumb-off;
+    animation-duration: .2s;
+    animation-fill-mode: none;
     transition: all .2s ease-in-out;
 
     &::after {
@@ -73,14 +74,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         height: $ripple-size;
         overflow: hidden;
         border-radius: $ripple-radius;
-    }
-
-    @include if-ltr() {
-        transform: translateX(#{$switch-off-offset});
-    }
-
-    @include if-rtl() {
-        transform: translateX(calc(-1 * #{($switch-off-offset)}));
     }
 
     &:hover {
@@ -123,14 +116,9 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
     [part='thumb'] {
         background: color(secondary, 500);
-
-        @include if-ltr() {
-            transform: translateX(#{($switch-width) - ($switch-thumb-width) - ($switch-on-offset)});
-        }
-
-        @include if-rtl() {
-            transform: translateX(-(#{($switch-width) - ($switch-thumb-width) - ($switch-on-offset)}));
-        }
+        animation-name: thumb-on;
+        animation-duration: .2s;
+        animation-fill-mode: forwards;
     }
 }
 
@@ -164,5 +152,25 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     [part='label'] {
         order: -1;
         margin-inline-end: rem(8px);
+    }
+}
+
+@keyframes thumb-on {
+    from {
+        margin-inline-start: #{$switch-offset};
+    }
+
+    to {
+        margin-inline-start: calc(50% + #{$switch-offset});
+    }
+}
+
+@keyframes thumb-off {
+    from {
+        margin-inline-start: calc(50% + #{$switch-offset});
+    }
+
+    to {
+        margin-inline-start: #{$switch-offset};
     }
 }
