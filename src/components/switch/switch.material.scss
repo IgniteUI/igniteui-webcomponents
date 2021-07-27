@@ -14,12 +14,26 @@ $switch-width: rem(36px);
 $switch-thumb-width: rem(20px);
 $switch-on-offset: rem(1px);
 $switch-off-offset: rem(-1px);
+$ripple-size: rem(48px);
+$ripple-radius: calc(#{$ripple-size} / 2);
 
 [part='base'] {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
     cursor: pointer;
+
+    &:hover [part='thumb'] {
+        &::after {
+            background: color(gray, 600, .06);
+        }
+    }
+
+    &:focus-within [part='thumb'] {
+        &::after {
+            background: color(gray, 600, .12);
+        }
+    }
 }
 
 [part='control'] {
@@ -32,7 +46,7 @@ $switch-off-offset: rem(-1px);
     border-radius: rem(7px);
     background: color(gray, 600);
     user-select: none;
-    transition: all .2s ease-in-out-quad;
+    transition: all .2s ease-in-out;
 
     &:hover,
     &:focus {
@@ -48,18 +62,17 @@ $switch-off-offset: rem(-1px);
     background: color(gray, 200);
     border-radius: rem(10px);
     box-shadow: var(--igc-elevation-2);
-    transition: all .2s ease-in;
+    transition: all .2s ease-in-out;
 
     &::after {
         position: absolute;
         content: '';
-        width: $switch-thumb-width;
-        height: $switch-thumb-width;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 50%;
-        transition: all .15s ease-in;
+        top: calc(50% - #{$ripple-radius});
+        left: calc(50% - #{$ripple-radius});
+        width: $ripple-size;
+        height: $ripple-size;
+        overflow: hidden;
+        border-radius: $ripple-radius;
     }
 
     @include if-ltr() {
@@ -67,7 +80,7 @@ $switch-off-offset: rem(-1px);
     }
 
     @include if-rtl() {
-        transform: translateX(#{rem(-1 * ($switch-off-offset))});
+        transform: translateX(calc(-1 * #{($switch-off-offset)}));
     }
 
     &:hover {
@@ -84,6 +97,20 @@ $switch-off-offset: rem(-1px);
 }
 
 :host([checked]) {
+    [part='base'] {
+        &:hover [part='thumb'] {
+            &::after {
+                background: color(secondary, 500, .06);
+            }
+        }
+
+        &:focus-within [part='thumb'] {
+            &::after {
+                background: color(secondary, 500, .12);
+            }
+        }
+    }
+
     [part='control'] {
         background: color(secondary, 500, .5);
         border-color: transparent;

@@ -1,0 +1,79 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    $switch-width: utils.rem(32px);
+
+    igc-switch::part(control) {
+        width: $switch-width;
+        height: utils.rem(16px);
+        border: 1px solid #{utils.color(gray, 500)};
+        border-radius: utils.rem(4px);
+        background: transparent;
+
+        &:hover,
+        &:focus {
+            border-color: #{utils.color(gray, 800)};
+        }
+    }
+
+    igc-switch[checked]::part(control) {
+        background: #{utils.color(primary, 500)};
+        border-color: #{utils.color(primary, 500)};
+
+        &:hover,
+        &:focus {
+            border-color: #{utils.color(primary, 500)};
+        }
+    }
+
+    igc-switch[disabled]::part(control) {
+        border-color: #{utils.color(gray, 300)};
+    }
+
+    igc-switch:focus-within:part(control) {
+        border-radius: utils.rem(2px);
+        box-shadow: 0 0 0 2px #{utils.color(primary, 200)};
+    }
+
+    igc-switch::part(thumb) {
+        $size: var(--size, utils.rem(8px));
+        width: $size;
+        height: $size;
+        min-width: $size;
+        background: #{utils.color(gray, 900)};
+        border-radius: utils.rem(2px);
+        box-shadow: none;
+
+        @include utils.if-ltr() {
+            transform: translateX(calc(var(--size, #{utils.rem(8px)}) / 3));
+        }
+
+        @include utils.if-rtl() {
+            transform: translateX(calc(-1 * (var(--size, #{utils.rem(8px)}) / 3)));;
+        }
+
+        &::after {
+            display: none;
+        }
+
+        &:hover {
+            box-shadow: none;
+        }
+    }
+
+    igc-switch[checked]::part(thumb) {
+        background: white;
+
+        @include utils.if-ltr() {
+            transform: translateX(calc(#{$switch-width} - (var(--size, #{utils.rem(8px)})) - (calc(var(--size, #{utils.rem(8px)}) / 2))));
+        }
+
+        @include utils.if-rtl() {
+            transform: translateX(calc(-1 * (var(--size, #{utils.rem(8px)}) / 3)));;
+        }
+    }
+
+    igc-switch[disabled]::part(thumb) {
+        box-shadow: none;
+    }
+}
