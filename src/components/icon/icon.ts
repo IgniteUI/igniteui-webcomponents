@@ -90,3 +90,9 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
     </div>`;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-icon': IgcIconComponent;
+  }
+}
