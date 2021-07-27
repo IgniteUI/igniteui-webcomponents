@@ -49,7 +49,7 @@
         }
 
         @include utils.if-rtl() {
-            transform: translateX(calc(-1 * (var(--size, #{utils.rem(8px)}) / 3)));;
+            transform: translateX(calc(-1 * (var(--size, #{utils.rem(8px)}) / 3)));
         }
 
         &::after {
@@ -69,7 +69,7 @@
         }
 
         @include utils.if-rtl() {
-            transform: translateX(calc(-1 * (var(--size, #{utils.rem(8px)}) / 3)));;
+            transform: translateX(calc(-1 * (var(--size, #{utils.rem(8px)}) / 3)));
         }
     }
 
