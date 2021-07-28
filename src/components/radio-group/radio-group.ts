@@ -72,28 +72,16 @@ export class IgcRadioGroupComponent extends LitElement {
       if (index < 0) index = this.radios.length - 1;
       if (index > this.radios.length - 1) index = 0;
 
-      event.preventDefault();
-
       this.radios.forEach((radio) => (radio.checked = false));
       this.radios[index].focus();
       this.radios[index].checked = true;
-    }
-  }
 
-  handleFocusIn() {
-    const checked = this.radios.find((radio) => radio.checked);
-
-    if (checked) {
-      checked.focus();
+      event.preventDefault();
     }
   }
 
   render() {
-    return html`<div
-      part="base"
-      @keydown="${this.handleKeydown}"
-      @focusin="${this.handleFocusIn}"
-    >
+    return html`<div part="base" @keydown="${this.handleKeydown}">
       <slot></slot>
     </div>`;
   }
