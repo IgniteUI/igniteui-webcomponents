@@ -7,6 +7,8 @@ import { watch } from '../common/decorators';
 export class IgcRadioGroupComponent extends LitElement {
   static styles = styles;
 
+  private _cachedRadios!: IgcRadioComponent[];
+
   get _slottedRadios() {
     const slot = this.shadowRoot!.querySelector('slot');
     const childNodes = slot!.assignedNodes({ flatten: true });
@@ -19,7 +21,12 @@ export class IgcRadioGroupComponent extends LitElement {
     return this._slottedRadios.filter((radio) => !radio.disabled);
   }
 
-  private _cachedRadios!: IgcRadioComponent[];
+  get isLTR(): boolean {
+    return this.dir === 'ltr';
+  }
+
+  @property({ reflect: true })
+  public dir: 'ltr' | 'rtl' = 'ltr';
 
   @property({ reflect: true, attribute: 'label-position' })
   labelPosition: 'before' | 'after' = 'after';
@@ -48,8 +55,22 @@ export class IgcRadioGroupComponent extends LitElement {
       ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
     ) {
       const checked = this.radios.find((radio) => radio.checked);
-      const direction = ['ArrowUp', 'ArrowLeft'].includes(event.key) ? -1 : 1;
-      let index = this.radios.indexOf(checked!) + direction;
+      let index = this.radios.indexOf(checked!);
+
+      switch (event.key) {
+        case 'ArrowUp':
+          index += -1;
+          break;
+        case 'ArrowLeft':
+          index += this.isLTR ? -1 : 1;
+          break;
+        case 'ArrowRight':
+          index += this.isLTR ? 1 : -1;
+          break;
+        default:
+          index += 1;
+      }
+
       if (index < 0) index = this.radios.length - 1;
       if (index > this.radios.length - 1) index = 0;
 
