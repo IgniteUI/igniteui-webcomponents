@@ -56,7 +56,11 @@ const Template: Story<ArgTypes, Context> = (
   };
 
   const handleFocus = (e: Event) => {
-    console.log(e.target);
+    console.log('focused', e.target);
+  };
+
+  const handleBlur = (e: Event) => {
+    console.log('blurred', e.target);
   };
 
   return html`
@@ -67,7 +71,12 @@ const Template: Story<ArgTypes, Context> = (
       .disabled="${ifDefined(disabled)}"
       @igcChange="${handleChange}"
     >
-      <igc-radio name="fruit" value="apple" @igcFocus="${handleFocus}">Apple</igc-radio>
+      <igc-radio
+        name="fruit"
+        value="apple"
+        @igcFocus="${handleFocus}"
+        @igcBlur="${handleBlur}"
+      >Apple</igc-radio>
       <igc-radio name="fruit" value="orange" checked>Orange</igc-radio>
       <igc-radio name="fruit" value="mango">Mango</igc-radio>
       <igc-radio name="fruit" value="banana" disabled>Banana</igc-radio>

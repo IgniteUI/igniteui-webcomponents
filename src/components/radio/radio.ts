@@ -45,6 +45,9 @@ export class IgcRadioComponent extends EventEmitterMixin<
   @property({ reflect: true, attribute: 'label-position' })
   labelPosition: 'before' | 'after' = 'after';
 
+  @property({ reflect: true, attribute: 'aria-labelledby' })
+  ariaLabelledby!: string;
+
   click() {
     this.input.click();
   }
@@ -88,10 +91,8 @@ export class IgcRadioComponent extends EventEmitterMixin<
     if (this.checked) {
       this.getSiblings().forEach((radio) => {
         radio.checked = false;
-        radio.input.tabIndex = -1;
       });
       this.input.focus();
-      this.input.tabIndex = 0;
       this.emitEvent('igcChange');
     }
   }
@@ -122,9 +123,12 @@ export class IgcRadioComponent extends EventEmitterMixin<
           value="${ifDefined(this.value)}"
           .disabled="${this.disabled}"
           .checked="${live(this.checked)}"
+          tabindex=${this.checked ? 0 : -1}
           aria-checked="${this.checked ? 'true' : 'false'}"
           aria-disabled="${this.disabled ? 'true' : 'false'}"
-          aria-labelledby="${this.labelId}"
+          aria-labelledby="${this.ariaLabelledby
+            ? this.ariaLabelledby
+            : this.labelId}"
           @click="${this.handleClick}"
           @blur="${this.handleBlur}"
           @focus="${this.handleFocus}"
