@@ -87,6 +87,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
   handleChange() {
     if (this.checked) {
       this.getRadios().forEach((radio) => (radio.checked = false));
+      this.input.focus();
     }
 
     this.emitEvent('igcChange');

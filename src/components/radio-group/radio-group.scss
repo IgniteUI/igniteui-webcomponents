@@ -2,10 +2,14 @@
 @use '../../styles/utilities' as *;
 
 :host {
+    display: block;
+}
+
+[part='base'] {
     display: flex;
 }
 
-:host([alignment='vertical']) {
+:host([alignment='vertical']) [part='base'] {
     flex-direction: column;
 
     ::slotted(igc-radio:not(:first-of-type)) {
@@ -13,7 +17,7 @@
     }
 }
 
-:host([alignment='horizontal']) {
+:host([alignment='horizontal']) [part='base'] {
     flex-direction: row;
 
     ::slotted(igc-radio:not(:first-of-type)) {
