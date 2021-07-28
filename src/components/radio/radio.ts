@@ -86,14 +86,14 @@ export class IgcRadioComponent extends EventEmitterMixin<
   @watch('checked', { waitUntilFirstUpdate: true })
   handleChange() {
     if (this.checked) {
-      this.getRadios().forEach((radio) => (radio.checked = false));
+      this.getSiblings().forEach((radio) => (radio.checked = false));
       this.input.focus();
     }
 
     this.emitEvent('igcChange');
   }
 
-  getRadios() {
+  getSiblings() {
     const group = this.closest('igc-radio-group');
 
     if (!group) {

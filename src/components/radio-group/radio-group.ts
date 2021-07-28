@@ -9,7 +9,7 @@ export class IgcRadioGroupComponent extends LitElement {
 
   private _cachedRadios!: IgcRadioComponent[];
 
-  get _slottedRadios() {
+  private get _slottedRadios() {
     const slot = this.shadowRoot!.querySelector('slot');
     const childNodes = slot!.assignedNodes({ flatten: true });
     return Array.prototype.filter.call(childNodes, (node) => {
@@ -17,16 +17,14 @@ export class IgcRadioGroupComponent extends LitElement {
     }) as IgcRadioComponent[];
   }
 
-  get radios() {
+  private get radios() {
     return this._slottedRadios.filter((radio) => !radio.disabled);
   }
 
-  get isLTR(): boolean {
-    return this.dir === 'ltr';
+  private get isLTR(): boolean {
+    const styles = window.getComputedStyle(this);
+    return styles.getPropertyValue('direction') === 'ltr';
   }
-
-  @property({ reflect: true })
-  public dir: 'ltr' | 'rtl' = 'ltr';
 
   @property({ reflect: true, attribute: 'label-position' })
   labelPosition: 'before' | 'after' = 'after';
@@ -51,13 +49,13 @@ export class IgcRadioGroupComponent extends LitElement {
   }
 
   handleKeydown(event: KeyboardEvent) {
-    if (
-      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
-    ) {
+    const { key } = event;
+
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
       const checked = this.radios.find((radio) => radio.checked);
       let index = this.radios.indexOf(checked!);
 
-      switch (event.key) {
+      switch (key) {
         case 'ArrowUp':
           index += -1;
           break;

@@ -1,6 +1,6 @@
 // @watch decorator
 //
-// Runs whenan observed property changes, e.g. @property or @state, but before the component updates.
+// Runs when an observed property changes, e.g. @property or @state, but before the component updates.
 //
 // To wait for an update to complete after a change occurs, use `await this.updateComplete` in the handler. To start
 // watching after the initial update/render, use `{ waitUntilFirstUpdate: true }` or `this.hasUpdated` in the handler.

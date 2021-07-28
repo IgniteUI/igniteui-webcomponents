@@ -50,17 +50,18 @@ const Template: Story<ArgTypes, Context> = (
   { alignment, labelPosition, disabled }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
-  <igc-radio-group
-    alignment="${ifDefined(alignment)}"
-    label-position="${ifDefined(labelPosition)}"
-    .disabled="${ifDefined(disabled)}"
-    dir=${ifDefined(direction)}
-  >
-    <igc-radio name="fruit" value="apple" checked>Apple</igc-radio>
-    <igc-radio name="fruit" value="orange">Orange</igc-radio>
-    <igc-radio name="fruit" value="mango">Mango</igc-radio>
-    <igc-radio name="fruit" value="banana" disabled>Banana</igc-radio>
-  </igc-radio>
+  <div dir="${ifDefined(direction)}">
+    <igc-radio-group
+      alignment="${ifDefined(alignment)}"
+      label-position="${ifDefined(labelPosition)}"
+      .disabled="${ifDefined(disabled)}"
+    >
+      <igc-radio name="fruit" value="apple">Apple</igc-radio>
+      <igc-radio name="fruit" value="orange" checked>Orange</igc-radio>
+      <igc-radio name="fruit" value="mango">Mango</igc-radio>
+      <igc-radio name="fruit" value="banana" disabled>Banana</igc-radio>
+    </igc-radio>
+  </div>
 `;
 
 export const Basic = Template.bind({});
