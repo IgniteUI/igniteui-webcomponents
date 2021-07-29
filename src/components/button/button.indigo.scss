@@ -134,7 +134,9 @@
     }
 
     igc-button[variant='fab']:not([disabled])::part(base),
-    igc-link-button[variant='fab']:not([disabled])::part(base) {
+    igc-link-button[variant='fab']:not([disabled])::part(base),
+    igc-button[variant='fab'][disabled]::part(base),
+    igc-link-button[variant='raised'][disabled]::part(base) {
         border-radius: calc(var(--igc-border-radius) * 100);
     }
 
