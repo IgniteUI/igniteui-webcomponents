@@ -26,6 +26,11 @@ export class IgcRadioGroupComponent extends LitElement {
     return styles.getPropertyValue('direction') === 'ltr';
   }
 
+  constructor() {
+    super();
+    this.addEventListener('keydown', this.handleKeydown);
+  }
+
   @property({ reflect: true, attribute: 'label-position' })
   labelPosition: 'before' | 'after' = 'after';
 
@@ -48,7 +53,7 @@ export class IgcRadioGroupComponent extends LitElement {
     this._cachedRadios.forEach((radio) => (radio.disabled = this.disabled));
   }
 
-  handleKeydown(event: KeyboardEvent) {
+  handleKeydown = (event: KeyboardEvent) => {
     const { key } = event;
 
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
@@ -78,11 +83,9 @@ export class IgcRadioGroupComponent extends LitElement {
 
       event.preventDefault();
     }
-  }
+  };
 
   render() {
-    return html`<div part="base" @keydown="${this.handleKeydown}">
-      <slot></slot>
-    </div>`;
+    return html`<slot></slot>`;
   }
 }
