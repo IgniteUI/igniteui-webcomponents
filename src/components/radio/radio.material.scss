@@ -86,6 +86,27 @@ input[type='radio'] {
     }
 }
 
+:host(:not([disabled])[invalid]),
+:host(:not([disabled])[invalid][checked]) {
+    [part='label'] {
+        color: color(error, 500);
+    }
+
+    [part='control'] {
+        &::after {
+            border-color: color(error, 500);
+        }
+    }
+}
+
+:host(:not([disabled])[invalid][checked]) {
+    [part='control'] {
+        &::before {
+            background: color(error, 500);
+        }
+    }
+}
+
 :host([disabled]) {
     pointer-events: none;
     color: color(gray, 400);

@@ -41,10 +41,10 @@
         }
     }
 
-    igc-radio[checked][disabled]::part(control) {
+    igc-radio[checked]::part(control) {
         &::after {
-            background: #{utils.color(primary, 200)};
-            border-color: #{utils.color(primary, 200)};
+            background: #{utils.color(primary, 500)};
+            border-color: #{utils.color(primary, 500)};
         }
 
         &::before {
@@ -52,10 +52,23 @@
         }
     }
 
-    igc-radio:not([disabled])[checked]::part(control) {
+    igc-radio[invalid],
+    igc-radio[invalid][checked] {
+        &::part(control)::after {
+            border-color: utils.color(error, 500);
+        }
+    }
+
+    igc-radio[invalid][checked] {
+        &::part(control)::after {
+            background: utils.color(error, 500);
+        }
+    }
+
+    igc-radio[checked][disabled]::part(control) {
         &::after {
-            background: #{utils.color(primary, 500)};
-            border-color: #{utils.color(primary, 500)};
+            background: #{utils.color(primary, 200)};
+            border-color: #{utils.color(primary, 200)};
         }
 
         &::before {
