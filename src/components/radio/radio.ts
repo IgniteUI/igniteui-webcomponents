@@ -99,14 +99,11 @@ export class IgcRadioComponent extends EventEmitterMixin<
 
   getSiblings() {
     const group = this.closest('igc-radio-group');
+    if (!group) return [];
 
-    if (!group) {
-      return [];
-    }
-
-return Array.from<IgcRadioComponent>(group.querySelectorAll('igc-radio'))
-      .filter((radio) => radio.name === this.name && radio !== this);
-    );
+    return Array.from<IgcRadioComponent>(
+      group.querySelectorAll('igc-radio')
+    ).filter((radio) => radio.name === this.name && radio !== this);
   }
 
   render() {

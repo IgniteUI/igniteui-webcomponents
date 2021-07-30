@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, queryAssignedNodes } from 'lit/decorators.js';
 import { IgcRadioComponent } from '../radio/radio';
 import { styles } from './radio-group.css';
 import { watch } from '../common/decorators';
@@ -9,11 +9,11 @@ export class IgcRadioGroupComponent extends LitElement {
 
   private _cachedRadios!: IgcRadioComponent[];
 
-@queryAssignedNodes(undefined, true, 'igc-radio')
+  @queryAssignedNodes(undefined, true, 'igc-radio')
   _slottedRadios!: NodeListOf<IgcRadioComponent>;
 
   private get radios() {
-    return this._slottedRadios.filter((radio) => !radio.disabled);
+    return Array.from(this._slottedRadios).filter((radio) => !radio.disabled);
   }
 
   private get isLTR(): boolean {
