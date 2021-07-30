@@ -14,6 +14,18 @@ describe('Button component', () => {
   let radio: IgcRadioComponent;
   let input: HTMLInputElement;
 
+  const DIFF_OPTIONS = {
+    ignoreAttributes: [
+      'id',
+      'part',
+      'aria-checked',
+      'aria-disabled',
+      'aria-labelledby',
+      'tabindex',
+      'type',
+    ],
+  };
+
   describe('', () => {
     beforeEach(async () => {
       radio = await createRadioComponent();
@@ -68,18 +80,6 @@ describe('Button component', () => {
 
     it('sets the name property successfully', async () => {
       const name = 'fruit';
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-checked',
-          'aria-disabled',
-          'aria-label',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
 
       radio.name = name;
       expect(radio.name).to.equal(name);
@@ -90,18 +90,6 @@ describe('Button component', () => {
 
     it('sets the value property successfully', async () => {
       const value = 'apple';
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-checked',
-          'aria-disabled',
-          'aria-label',
-          'aria-labelledby',
-          'tabindex',
-          'type',
-        ],
-      };
 
       radio.value = value;
       expect(radio.value).to.equal(value);
@@ -116,7 +104,6 @@ describe('Button component', () => {
           'id',
           'part',
           'aria-disabled',
-          'aria-label',
           'aria-labelledby',
           'tabindex',
           'type',
@@ -144,7 +131,6 @@ describe('Button component', () => {
           'id',
           'part',
           'aria-checked',
-          'aria-label',
           'aria-labelledby',
           'tabindex',
           'type',
@@ -189,6 +175,18 @@ describe('Button component', () => {
 
       await elementUpdated(radio);
       expect(eventSpy).calledWithExactly('igcChange');
+    });
+
+    it('should be able to use external elements as label', async () => {
+      const labelId = 'my-label';
+      const radio = await fixture<IgcRadioComponent>(
+        html`<igc-radio aria-labelledby="${labelId}"></igc-radio>
+          <span id="${labelId}">My Label</span>`
+      );
+      const input = radio.renderRoot.querySelector('input') as HTMLInputElement;
+
+      expect(radio.ariaLabelledby).to.equal(labelId);
+      expect(input.getAttribute('aria-labelledby')).to.equal(labelId);
     });
   });
 
