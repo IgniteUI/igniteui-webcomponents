@@ -9,13 +9,8 @@ export class IgcRadioGroupComponent extends LitElement {
 
   private _cachedRadios!: IgcRadioComponent[];
 
-  private get _slottedRadios() {
-    const slot = this.shadowRoot!.querySelector('slot');
-    const childNodes = slot!.assignedNodes({ flatten: true });
-    return Array.prototype.filter.call(childNodes, (node) => {
-      return node.nodeName.toLowerCase() == 'igc-radio';
-    }) as IgcRadioComponent[];
-  }
+@queryAssignedNodes(undefined, true, 'igc-radio')
+  _slottedRadios!: NodeListOf<IgcRadioComponent>;
 
   private get radios() {
     return this._slottedRadios.filter((radio) => !radio.disabled);
