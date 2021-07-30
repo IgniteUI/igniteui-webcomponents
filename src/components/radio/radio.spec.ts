@@ -9,7 +9,7 @@ import sinon from 'sinon';
 import '../../../igniteui-webcomponents';
 import { IgcRadioComponent } from './radio';
 
-describe('Button component', () => {
+describe('Radio Component', () => {
   const label = 'Apple';
   let radio: IgcRadioComponent;
   let input: HTMLInputElement;
