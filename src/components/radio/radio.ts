@@ -104,8 +104,8 @@ export class IgcRadioComponent extends EventEmitterMixin<
       return [];
     }
 
-    return ([...group.querySelectorAll('igc-radio')] as this[]).filter(
-      (radio: this) => radio.name === this.name && radio !== this
+return Array.from<IgcRadioComponent>(group.querySelectorAll('igc-radio'))
+      .filter((radio) => radio.name === this.name && radio !== this);
     );
   }
 
