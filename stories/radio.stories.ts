@@ -59,8 +59,8 @@ const Template: Story<ArgTypes, Context> = (
 ) => html`
   <igc-radio
     label-position="${ifDefined(labelPosition)}"
-    .disabled="${ifDefined(disabled)}"
-    .checked="${ifDefined(checked)}"
+    .disabled="${disabled}"
+    .checked="${checked}"
     dir=${ifDefined(direction)}
   >
     ${label}

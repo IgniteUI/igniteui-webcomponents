@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { styles } from './radio.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
@@ -24,8 +24,11 @@ export class IgcRadioComponent extends EventEmitterMixin<
   private inputId = `radio-${nextId++}`;
   private labelId = `radio-label-${this.inputId}`;
 
-  @query('input[type="radio"]')
+  @query('input[type="radio"]', true)
   input!: HTMLInputElement;
+
+  @state()
+  _tabIndex = 0;
 
   @property()
   name!: string;
@@ -91,8 +94,10 @@ export class IgcRadioComponent extends EventEmitterMixin<
     if (this.checked) {
       this.getSiblings().forEach((radio) => {
         radio.checked = false;
+        radio._tabIndex = -1;
       });
       this.input.focus();
+      this._tabIndex = 0;
       this.emitEvent('igcChange');
     }
   }
@@ -120,7 +125,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
           value="${ifDefined(this.value)}"
           .disabled="${this.disabled}"
           .checked="${live(this.checked)}"
-          tabindex=${this.checked ? 0 : -1}
+          tabindex=${this._tabIndex}
           aria-checked="${this.checked ? 'true' : 'false'}"
           aria-disabled="${this.disabled ? 'true' : 'false'}"
           aria-labelledby="${this.ariaLabelledby
