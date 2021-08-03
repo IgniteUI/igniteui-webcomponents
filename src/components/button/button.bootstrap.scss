@@ -1,181 +1,181 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
-  igc-button[size="large"]::part(base),
-  igc-link-button[size="large"]::part(base) {
-   --size: #{utils.rem(48px)};
-  }
+    igc-button[size='large']::part(base),
+    igc-link-button[size='large']::part(base) {
+        --size: #{utils.rem(48px)};
+    }
 
-  igc-button[size="medium"]::part(base),
-  igc-link-button[size="medium"]::part(base) {
-   --size: #{utils.rem(40px)};
-  }
+    igc-button[size='medium']::part(base),
+    igc-link-button[size='medium']::part(base) {
+        --size: #{utils.rem(40px)};
+    }
 
-  igc-button[size="small"]::part(base),
-  igc-link-button[size="small"]::part(base) {
-   --size: #{utils.rem(32px)};
-  }
+    igc-button[size='small']::part(base),
+    igc-link-button[size='small']::part(base) {
+        --size: #{utils.rem(32px)};
+    }
 
-  igc-button[variant="flat"][disabled]::part(base),
-  igc-link-button[variant="flat"][disabled]::part(base) {
-      background: transparent;
-      color: var(--igc-primary-100);
-  }
+    igc-button[variant='flat'][disabled]::part(base),
+    igc-link-button[variant='flat'][disabled]::part(base) {
+        background: transparent;
+        color: #{utils.color(primary, 100)};
+    }
 
-  igc-button[variant="fab"][disabled]::part(base),
-  igc-button[variant="raised"][disabled]::part(base),
-  igc-link-button[variant="fab"][disabled]::part(base),
-  igc-link-button[variant="raised"][disabled]::part(base) {
-      background: var(--igc-primary-100);
-      color: var(--igc-primary-300);
-  }
+    igc-button[variant='fab'][disabled]::part(base),
+    igc-button[variant='raised'][disabled]::part(base),
+    igc-link-button[variant='fab'][disabled]::part(base),
+    igc-link-button[variant='raised'][disabled]::part(base) {
+        background: #{utils.color(primary, 100)};
+        color: #{utils.color(primary, 300)};
+    }
 
-  igc-button[variant="outlined"][disabled]::part(base),
-  igc-link-button[variant="outlined"][disabled]::part(base) {
-      color: var(--igc-primary-100);
-      box-shadow: 0 0 0 1px var(--igc-primary-100);
-      background: transparent;
-  }
+    igc-button[variant='outlined'][disabled]::part(base),
+    igc-link-button[variant='outlined'][disabled]::part(base) {
+        color: #{utils.color(primary, 100)};
+        box-shadow: 0 0 0 1px utils.color(primary, 100);
+        background: transparent;
+    }
 
-  igc-button[variant="flat"]:not([disabled])::part(base),
-  igc-link-button[variant="flat"]:not([disabled])::part(base) {
-      color: var(--igc-primary-500);
+    igc-button[variant='flat']:not([disabled])::part(base),
+    igc-link-button[variant='flat']:not([disabled])::part(base) {
+        color: #{utils.color(primary, 500)};
 
-      &:hover {
-          color: var(--igc-primary-800);
-      }
+        &:hover {
+            color: #{utils.color(primary, 800)};
+        }
 
-      &:focus,
-      &:active {
-          color: var(--igc-primary-600);
-      }
+        &:focus,
+        &:active {
+            color: #{utils.color(primary, 600)};
+        }
 
-      &:hover::before {
-          background: transparent;
-      }
+        &:hover::before {
+            background: transparent;
+        }
 
-      &:focus::before,
-      &:active::before {
-          background: var(--igc-gray-100);
-          opacity: 1;
-      }
-  }
+        &:focus::before,
+        &:active::before {
+            background: #{utils.color(gray, 100)};
+            opacity: 1;
+        }
+    }
 
-  igc-button[variant="raised"]:not([disabled])::part(base),
-  igc-link-button[variant="raised"]:not([disabled])::part(base) {
-      color: var(--igc-primary-600-contrast);
+    igc-button[variant='raised']:not([disabled])::part(base),
+    igc-link-button[variant='raised']:not([disabled])::part(base) {
+        color: #{utils.contrast-color(primary, 600)};
 
-      &:hover {
-          color: var(--igc-primary-600-contrast);
-      }
+        &:hover {
+            color: #{utils.contrast-color(primary, 600)};
+        }
 
-      &:focus,
-      &:active {
-          color: var(--igc-primary-600-contrast);
-          box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
-      }
+        &:focus,
+        &:active {
+            color: #{utils.contrast-color(primary, 600)};
+            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+        }
 
-      &::before {
-          background: var(--igc-primary-500);
-          opacity: 1;
-      }
+        &::before {
+            background: #{utils.color(primary, 500)};
+            opacity: 1;
+        }
 
-      &:hover::before,
-      &:focus::before,
-      &:active::before {
-          background: var(--igc-primary-600);
-          opacity: 1;
-      }
-  }
+        &:hover::before,
+        &:focus::before,
+        &:active::before {
+            background: #{utils.color(primary, 600)};
+            opacity: 1;
+        }
+    }
 
-  igc-button[variant="outlined"]:not([disabled])::part(base),
-  igc-link-button[variant="outlined"]:not([disabled])::part(base) {
-      color: var(--igc-primary-500);
-      transition: color .15s ease-out;
-      box-shadow: 0 0 0 1px var(--igc-primary-500);
-      overflow: visible;
+    igc-button[variant='outlined']:not([disabled])::part(base),
+    igc-link-button[variant='outlined']:not([disabled])::part(base) {
+        color: #{utils.color(primary, 500)};
+        transition: color .15s ease-out;
+        box-shadow: 0 0 0 1px utils.color(primary, 500);
+        overflow: visible;
 
-      &::after {
-          position: absolute;
-          content: '';
-          width: 100%;
-          height: 100%;
-          border-radius: calc(var(--igc-border-radius) * 2);
-          transition: box-shadow .15s ease-out;
-      }
+        &::after {
+            position: absolute;
+            content: '';
+            width: 100%;
+            height: 100%;
+            border-radius: calc(var(--igc-border-radius) * 2);
+            transition: box-shadow .15s ease-out;
+        }
 
-      &:hover {
-          color: var(--igc-primary-600-contrast);
-      }
+        &:hover {
+            color: #{utils.contrast-color(primary, 600)};
+        }
 
-      &:focus,
-      &:active {
-          color: var(--igc-primary-600-contrast);
-      }
+        &:focus,
+        &:active {
+            color: #{utils.contrast-color(primary, 600)};
+        }
 
-      &:hover::before {
-          background: var(--igc-primary-500);
-          opacity: 1;
-      }
+        &:hover::before {
+            background: #{utils.color(primary, 500)};
+            opacity: 1;
+        }
 
-      &:focus::before,
-      &:active::before {
-          background: var(--igc-primary-500);
-          opacity: 1;
-      }
+        &:focus::before,
+        &:active::before {
+            background: #{utils.color(primary, 500)};
+            opacity: 1;
+        }
 
-      &:focus::after,
-      &:active::after {
-          box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
-      }
-  }
+        &:focus::after,
+        &:active::after {
+            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+        }
+    }
 
-  igc-button[variant="fab"][size="large"]::part(base),
-  igc-link-button[variant="fab"][size="large"]::part(base) {
-      border-radius: calc(var(--igc-border-radius) * 8);
-  }
+    igc-button[variant='fab'][size='large']::part(base),
+    igc-link-button[variant='fab'][size='large']::part(base) {
+        border-radius: calc(var(--igc-border-radius) * 8);
+    }
 
-  igc-button[variant="fab"][size="medium"]::part(base)
-  igc-link-button[variant="fab"][size="medium"]::part(base) {
-      border-radius: calc(var(--igc-border-radius) * 6);
-  }
+    igc-button[variant='fab'][size='medium']::part(base),
+    igc-link-button[variant='fab'][size='medium']::part(base) {
+        border-radius: calc(var(--igc-border-radius) * 6);
+    }
 
-  igc-button[variant="fab"][size="small"]::part(base),
-  igc-link-button[variant="fab"][size="small"]::part(base) {
-      border-radius: calc(var(--igc-border-radius) * 4);
-  }
+    igc-button[variant='fab'][size='small']::part(base),
+    igc-link-button[variant='fab'][size='small']::part(base) {
+        border-radius: calc(var(--igc-border-radius) * 4);
+    }
 
-  igc-button[variant="fab"]:not([disabled])::part(base),
-  igc-link-button[variant="fab"]:not([disabled])::part(base) {
-      color: var(--igc-primary-600-contrast);
+    igc-button[variant='fab']:not([disabled])::part(base),
+    igc-link-button[variant='fab']:not([disabled])::part(base) {
+        color: #{utils.contrast-color(primary, 600)};
 
-      &:hover {
-          color: var(--igc-primary-600-contrast);
-      }
+        &:hover {
+            color: #{utils.contrast-color(primary, 600)};
+        }
 
-      &:focus,
-      &:active {
-          color: var(--igc-primary-600-contrast);
-          box-shadow: 0 0 0 utils.rem(3px) var(--igc-primary-200);
-      }
+        &:focus,
+        &:active {
+            color: #{utils.contrast-color(primary, 600)};
+            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+        }
 
-      &::before {
-          background: var(--igc-primary-500);
-          opacity: 1;
-      }
+        &::before {
+            background: #{utils.color(primary, 500)};
+            opacity: 1;
+        }
 
-      &:hover::before,
-      &:focus::before,
-      &:active::before {
-          background: var(--igc-primary-600);
-          opacity: 1;
-      }
-  }
+        &:hover::before,
+        &:focus::before,
+        &:active::before {
+            background: #{utils.color(primary, 600)};
+            opacity: 1;
+        }
+    }
 
-  igc-button[variant="raised"]::part(base),
-  igc-button[variant="fab"]::part(base),
-  igc-link-button[variant="raised"]::part(base),
-  igc-link-button[variant="fab"]::part(base) {
-      box-shadow: var(--igc-elevation-0);
-  }
+    igc-button[variant='raised']::part(base),
+    igc-button[variant='fab']::part(base),
+    igc-link-button[variant='raised']::part(base),
+    igc-link-button[variant='fab']::part(base) {
+        box-shadow: var(--igc-elevation-0);
+    }
 }
