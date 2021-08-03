@@ -3,7 +3,7 @@ import { html, LitElement } from 'lit';
 export class IgcNavbarComponent extends LitElement {
   render() {
     return html`
-      <header part="base">
+      <div part="base">
         <span part="start">
           <slot name="start"></slot>
         </span>
@@ -13,7 +13,7 @@ export class IgcNavbarComponent extends LitElement {
         <span part="end">
           <slot name="end"></slot>
         </span>
-      </header>
+      </div>
     `;
   }
 }
