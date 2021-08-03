@@ -1,8 +1,9 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
-    $switch-width: utils.rem(40px);
-    $switch-offset: calc(#{utils.rem(12px)} / 3);
+    $switch-width: var(--switch-width, utils.rem(40px));
+    $switch-thumb: var(--switch-thumb, utils.rem(12px));
+    $switch-offset: calc(#{$switch-thumb} / 2);
 
     igc-switch::part(control) {
         width: $switch-width;
@@ -32,10 +33,10 @@
     }
 
     igc-switch::part(thumb) {
-        $size: var(--size, utils.rem(12px));
-        width: $size;
-        height: $size;
-        min-width: $size;
+        width: $switch-thumb;
+        height: $switch-thumb;
+        min-width: $switch-thumb;
+        animation-name: thumb-off-fluent;
         margin-inline-start: #{$switch-offset};
         background: #{utils.color(gray, 900)};
         box-shadow: none;
@@ -65,26 +66,27 @@
 
     igc-switch[checked]::part(thumb) {
         background: white;
-        margin-inline-start: calc(50% + #{$switch-offset});
+        animation-name: thumb-on-fluent;
+        margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
     }
 
     igc-switch[disabled]::part(thumb) {
         box-shadow: none;
     }
 
-    @keyframes thumb-on {
+    @keyframes thumb-on-fluent {
         from {
             margin-inline-start: #{$switch-offset};
         }
 
         to {
-            margin-inline-start: calc(50% + #{$switch-offset});
+            margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
         }
     }
 
-    @keyframes thumb-off {
+    @keyframes thumb-off-fluent {
         from {
-            margin-inline-start: calc(50% + #{$switch-offset});
+            margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
         }
 
         to {

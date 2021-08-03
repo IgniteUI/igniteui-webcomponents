@@ -6,12 +6,12 @@
     font-family: var(--igc-font-family);
 }
 
-input[type='radio'] {
+input[type='checkbox'] {
     @include hide-default();
 }
 
-$switch-width: rem(36px);
-$switch-thumb-width: rem(20px);
+$switch-width: var(--switch-width, rem(36px));
+$switch-thumb: var(--switch-thumb, rem(20px));
 $switch-offset: rem(-1px);
 $ripple-size: rem(48px);
 $ripple-radius: calc(#{$ripple-size} / 2);
@@ -54,13 +54,13 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
 [part='thumb'] {
     position: relative;
-    width: $switch-thumb-width;
-    height: $switch-thumb-width;
-    min-width: $switch-thumb-width;
+    width: $switch-thumb;
+    height: $switch-thumb;
+    min-width: $switch-thumb;
     background: color(gray, 200);
     border-radius: rem(10px);
     box-shadow: var(--igc-elevation-2);
-    animation-name: thumb-off;
+    animation-name: thumb-off-material;
     animation-duration: .2s;
     animation-fill-mode: none;
     transition: all .2s ease-in-out;
@@ -116,7 +116,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
     [part='thumb'] {
         background: color(secondary, 500);
-        animation-name: thumb-on;
+        animation-name: thumb-on-material;
         animation-duration: .2s;
         animation-fill-mode: forwards;
     }
@@ -155,19 +155,19 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     }
 }
 
-@keyframes thumb-on {
+@keyframes thumb-on-material {
     from {
         margin-inline-start: #{$switch-offset};
     }
 
     to {
-        margin-inline-start: calc(50% + #{$switch-offset});
+        margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
     }
 }
 
-@keyframes thumb-off {
+@keyframes thumb-off-material {
     from {
-        margin-inline-start: calc(50% + #{$switch-offset});
+        margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} -  #{$switch-offset});
     }
 
     to {
