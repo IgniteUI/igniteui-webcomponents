@@ -55,17 +55,22 @@ const Template: Story<ArgTypes, Context> = (
   { alignment, labelPosition, disabled }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
+  const radios = ['apple', 'orange', 'mango', 'banana'];
   return html`
     <igc-radio-group
       dir="${ifDefined(direction)}"
       alignment="${ifDefined(alignment)}"
-      label-position="${ifDefined(labelPosition)}"
-      .disabled="${disabled}"
     >
-      <igc-radio name="fruit" value="apple">Apple</igc-radio>
-      <igc-radio name="fruit" value="orange">Orange</igc-radio>
-      <igc-radio name="fruit" value="mango">Mango</igc-radio>
-      <igc-radio name="fruit" value="banana" disabled>Banana</igc-radio>
+      ${radios.map(
+        (v) =>
+          html`<igc-radio
+            name="fruit"
+            value=${v}
+            .disabled=${disabled}
+            label-position=${labelPosition}
+            >${v.replace(/^\w/, (c) => c.toUpperCase())}</igc-radio
+          > `
+      )}
     </igc-radio-group>
   `;
 };

@@ -17,8 +17,6 @@ describe('Radio Group Component', () => {
     });
 
     it('is initialized with the proper default values', async () => {
-      expect(group.disabled).to.equal(false);
-      expect(group.labelPosition).to.equal('after');
       expect(group.alignment).to.equal('vertical');
     });
 
@@ -45,34 +43,6 @@ describe('Radio Group Component', () => {
         `<igc-radio-group alignment="${group.alignment}"></igc-radio-group>`,
         DIFF_OPTIONS
       );
-    });
-
-    it('sets label position for children radios', async () => {
-      group.labelPosition = 'before';
-      await elementUpdated(group);
-      for (const radio of radios) {
-        expect(radio.labelPosition).to.equal(group.labelPosition);
-      }
-
-      group.labelPosition = 'after';
-      await elementUpdated(group);
-      for (const radio of radios) {
-        expect(radio.labelPosition).to.equal(group.labelPosition);
-      }
-    });
-
-    it('sets disabled state for all children radios', async () => {
-      group.disabled = true;
-      await elementUpdated(group);
-      for (const radio of radios) {
-        expect(radio.disabled).to.equal(group.disabled);
-      }
-
-      group.disabled = false;
-      await elementUpdated(group);
-      for (const radio of radios) {
-        expect(radio.disabled).to.equal(group.disabled);
-      }
     });
 
     it('should be able to navigate radios using arrow keys', async () => {
