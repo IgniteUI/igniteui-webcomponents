@@ -78,7 +78,7 @@
 
     @keyframes thumb-off-bootstrap {
         from {
-            margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} -  #{$switch-offset});
+            margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
         }
 
         to {

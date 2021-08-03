@@ -167,7 +167,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
 @keyframes thumb-off-material {
     from {
-        margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} -  #{$switch-offset});
+        margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
     }
 
     to {
