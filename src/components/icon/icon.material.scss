@@ -12,14 +12,6 @@ $size: rem(24px);
     fill: currentColor;
 }
 
-[part='base'] {
-    display: inherit;
-    align-items: inherit;
-    justify-content: inherit;
-    width: inherit;
-    height: inherit;
-}
-
 :host([size='small']) {
     --size: #{rem(18px)};
 }
