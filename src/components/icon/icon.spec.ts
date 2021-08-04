@@ -36,7 +36,6 @@ describe('Icon component', () => {
       html`<igc-icon name="bug"></igc-icon>`
     );
 
-    expect(icon).shadowDom.to.equal('<div part="base" class="medium"></div>');
     verifySvg(icon, bugSvgContent);
   });
 
@@ -77,24 +76,7 @@ describe('Icon component', () => {
       html`<igc-icon name="bug" mirrored></igc-icon>`
     );
 
-    expect(icon).shadowDom.to.equal(
-      '<div part="base" class="medium mirrored"></div>'
-    );
-  });
-
-  describe('should have applied CSS classes for all sizes', () => {
-    const sizes = ['small', 'medium', 'large'];
-
-    sizes.forEach((size) => {
-      it(size, async () => {
-        const icon = await fixture<IgcIconComponent>(
-          html`<igc-icon name="bug" size="${size}"></igc-icon>`
-        );
-        expect(icon).shadowDom.to.equal(
-          `<div part="base" class="${size}"></div>`
-        );
-      });
-    });
+    expect(icon.mirrored).to.be.true;
   });
 });
 
