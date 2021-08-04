@@ -1,5 +1,6 @@
 @use '../utilities' as utils;
 @use '../../components/button/button.indigo' as button;
+@use '../../components/radio/radio.indigo' as radio;
 @use '../../components/switch/switch.indigo' as switch;
 
 $palette: utils.palette(
@@ -172,4 +173,6 @@ $type-scale: utils.extend($indigo-type-scale);
 }
 
 @include button.theme();
+@include radio.theme();
 @include switch.theme();
+
