@@ -1,0 +1,29 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+$size: rem(24px);
+
+:host {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size, $size);
+    height: var(--size, $size);
+    fill: currentColor;
+}
+
+:host([size='small']) {
+    --size: #{rem(18px)};
+}
+
+:host([size='medium']) {
+    --size: #{$size};
+}
+
+:host([size='large']) {
+    --size: #{rem(32px)};
+}
+
+:host([mirrored]) {
+    transform: scaleX(-1);
+}
