@@ -58,8 +58,8 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
     IconsRegistry.instance().unsubscribe(this.iconLoaded);
   }
 
-  private iconLoaded = (name: string, set: string) => {
-    if (this.name === name && this.collection === set) {
+  private iconLoaded = (name: string, collection: string) => {
+    if (this.name === name && this.collection === collection) {
       this.getIcon();
     }
   };
