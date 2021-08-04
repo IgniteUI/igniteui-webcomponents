@@ -1,5 +1,38 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+$size: rem(24px);
+
 :host {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    fill: currentColor;
+    $size: var(--size, $size);
+    width: $size;
+    height: $size;
+}
+
+[part='base'] {
+    display: inherit;
+    align-items: inherit;
+    justify-content: inherit;
+    width: inherit;
+    height: inherit;
+}
+
+:host([size='small']) {
+    --size: #{rem(18px)};
+}
+
+:host([size='medium']) {
+    --size: #{$size};
+}
+
+:host([size='large']) {
+    --size: #{rem(32px)};
+}
+
+:host([mirrored]) {
+    transform: scaleX(-1);
 }
