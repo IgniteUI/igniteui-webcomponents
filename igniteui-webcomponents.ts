@@ -17,4 +17,3 @@ window.customElements.define('igc-switch', IgcSwitchComponent);
 window.customElements.define('igc-icon', IgcIconComponent);
 window.customElements.define('igc-radio', IgcRadioComponent);
 window.customElements.define('igc-radio-group', IgcRadioGroupComponent);
-
