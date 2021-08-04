@@ -41,7 +41,7 @@ export default {
 
 interface ArgTypes {
   name: string;
-  set: string;
+  collection: string;
   size: 'small' | 'medium' | 'large';
   mirrored: boolean;
 }
@@ -69,14 +69,14 @@ const registerIconClick = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { name = 'biking', set = 'default', size, mirrored = false }: ArgTypes,
+  { name = 'biking', collection = 'default', size, mirrored = false }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
     <div style="display: flex;">
       <igc-icon
         .name=${name}
-        .collection=${set}
+        .collection=${collection}
         .size=${size}
         .mirrored=${mirrored}
         dir=${ifDefined(direction)}
