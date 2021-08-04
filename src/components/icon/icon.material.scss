@@ -7,10 +7,9 @@ $size: rem(24px);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: var(--size, $size);
+    height: var(--size, $size);
     fill: currentColor;
-    $size: var(--size, $size);
-    width: $size;
-    height: $size;
 }
 
 [part='base'] {
