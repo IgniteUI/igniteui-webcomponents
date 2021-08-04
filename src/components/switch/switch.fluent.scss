@@ -1,12 +1,14 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
-    $switch-width: var(--switch-width, utils.rem(40px));
-    $switch-thumb: var(--switch-thumb, utils.rem(12px));
-    $switch-offset: calc(#{$switch-thumb} / 2);
+    igc-switch {
+        --switch-width: #{utils.rem(40px)};
+        --switch-thumb: #{utils.rem(12px)};
+        --switch-offset: calc(var(--switch-thumb) / 2);
+    }
 
     igc-switch::part(control) {
-        width: $switch-width;
+        width: var(--switch-width);
         height: utils.rem(20px);
         border: 1px solid #{utils.color(gray, 500)};
         border-radius: utils.rem(10px);
@@ -33,11 +35,11 @@
     }
 
     igc-switch::part(thumb) {
-        width: $switch-thumb;
-        height: $switch-thumb;
-        min-width: $switch-thumb;
-        animation-name: thumb-off-fluent;
-        margin-inline-start: #{$switch-offset};
+        width: var(--switch-thumb);
+        height: var(--switch-thumb);
+        min-width: var(--switch-thumb);
+        animation-name: thumb-off;
+        margin-inline-start: var(--switch-offset);
         background: #{utils.color(gray, 900)};
         box-shadow: none;
 
@@ -66,31 +68,31 @@
 
     igc-switch[checked]::part(thumb) {
         background: white;
-        animation-name: thumb-on-fluent;
-        margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
+        animation-name: thumb-on;
+        margin-inline-start: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-offset));
     }
 
     igc-switch[disabled]::part(thumb) {
         box-shadow: none;
     }
 
-    @keyframes thumb-on-fluent {
+    @keyframes thumb-on {
         from {
-            margin-inline-start: #{$switch-offset};
+            margin-inline-start: var(--switch-offset);
         }
 
         to {
-            margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
+            margin-inline-start: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-offset));
         }
     }
 
-    @keyframes thumb-off-fluent {
+    @keyframes thumb-off {
         from {
-            margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
+            margin-inline-start: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-offset));
         }
 
         to {
-            margin-inline-start: #{$switch-offset};
+            margin-inline-start: var(--switch-offset);
         }
     }
 }

@@ -26,4 +26,28 @@ $type-scale: utils.type-scale();
         $font-family: 'Roboto, sans-serif',
         $type-scale: $type-scale
     );
+
+    --switch-width: #{utils.rem(36px)};
+    --switch-thumb: #{utils.rem(20px)};
+    --switch-offset: #{utils.rem(-1px)};
+}
+
+@keyframes thumb-on {
+    from {
+        margin-inline-start: var(--switch-offset);
+    }
+
+    to {
+        margin-inline-start: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-offset));
+    }
+}
+
+@keyframes thumb-off {
+    from {
+        margin-inline-start: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-offset));
+    }
+
+    to {
+        margin-inline-start: var(--switch-offset);
+    }
 }

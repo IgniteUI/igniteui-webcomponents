@@ -10,9 +10,6 @@ input[type='checkbox'] {
     @include hide-default();
 }
 
-$switch-width: var(--switch-width, rem(36px));
-$switch-thumb: var(--switch-thumb, rem(20px));
-$switch-offset: rem(-1px);
 $ripple-size: rem(48px);
 $ripple-radius: calc(#{$ripple-size} / 2);
 
@@ -38,7 +35,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 [part='control'] {
     display: flex;
     align-items: center;
-    width: $switch-width;
+    width: var(--switch-width);
     height: rem(14px);
     border: 1px transparent;
     border-radius: rem(7px);
@@ -54,13 +51,14 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
 [part='thumb'] {
     position: relative;
-    width: $switch-thumb;
-    height: $switch-thumb;
-    min-width: $switch-thumb;
+    width: var(--switch-thumb);
+    height: var(--switch-thumb);
+    min-width: var(--switch-thumb);
     background: color(gray, 200);
     border-radius: rem(10px);
     box-shadow: var(--igc-elevation-2);
-    animation-name: thumb-off-material;
+    margin-inline-start: var(--switch-offset);
+    animation-name: thumb-off;
     animation-duration: .2s;
     animation-fill-mode: none;
     transition: all .2s ease-in-out;
@@ -116,7 +114,8 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
     [part='thumb'] {
         background: color(secondary, 500);
-        animation-name: thumb-on-material;
+        margin-inline-start: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-offset));
+        animation-name: thumb-on;
         animation-duration: .2s;
         animation-fill-mode: forwards;
     }
@@ -155,22 +154,3 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     }
 }
 
-@keyframes thumb-on-material {
-    from {
-        margin-inline-start: #{$switch-offset};
-    }
-
-    to {
-        margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
-    }
-}
-
-@keyframes thumb-off-material {
-    from {
-        margin-inline-start: calc(#{$switch-width} - #{$switch-thumb} - #{$switch-offset});
-    }
-
-    to {
-        margin-inline-start: #{$switch-offset};
-    }
-}
