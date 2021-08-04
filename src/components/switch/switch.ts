@@ -5,6 +5,7 @@ import { live } from 'lit/directives/live.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { styles } from './switch.material.css';
+import { watch } from '../common/decorators/watch.js';
 
 let nextId = 0;
 
@@ -92,6 +93,7 @@ export class IgcSwitchComponent extends EventEmitterMixin<
     this.input.focus();
   }
 
+  @watch('checked', { waitUntilFirstUpdate: true })
   handleChange() {
     if (this.checked) {
       this.input.focus();
