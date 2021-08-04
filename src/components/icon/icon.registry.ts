@@ -30,8 +30,6 @@ export class IconsRegistry {
     if (svg) {
       svg.setAttribute('fit', '');
       svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-      svg.removeAttribute('width');
-      svg.removeAttribute('height');
       const svgText = svg.outerHTML;
 
       const setRegistry = this.getOrCreateIconSet(set);
