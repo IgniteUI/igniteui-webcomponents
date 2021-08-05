@@ -35,29 +35,23 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 [part='control'] {
     display: flex;
     align-items: center;
-    width: var(--switch-width);
+    width: var(--size);
     height: rem(14px);
-    border: 1px transparent;
     border-radius: rem(7px);
     background: color(gray, 600);
     user-select: none;
     transition: all .2s ease-in-out;
-
-    &:hover,
-    &:focus {
-        border-color: transparent;
-    }
 }
 
 [part='thumb'] {
     position: relative;
-    width: var(--switch-thumb);
-    height: var(--switch-thumb);
-    min-width: var(--switch-thumb);
+    width: var(--thumb);
+    height: var(--thumb);
+    min-width: var(--thumb);
     background: color(gray, 200);
     border-radius: rem(10px);
     box-shadow: var(--igc-elevation-2);
-    margin-inline-start: var(--switch-offset);
+    margin-inline-start: var(--thumb-offset);
     animation-name: thumb-off;
     animation-duration: .2s;
     animation-fill-mode: none;
@@ -85,6 +79,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     cursor: pointer;
     user-select: none;
     word-wrap: break-all;
+    transition: all .2s ease-in-out;
 }
 
 :host([checked]) {
@@ -104,17 +99,11 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
     [part='control'] {
         background: color(secondary, 500, .5);
-        border-color: transparent;
-
-        &:hover,
-        &:focus {
-            border-color: transparent;
-        }
     }
 
     [part='thumb'] {
         background: color(secondary, 500);
-        margin-inline-start: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-offset));
+        margin-inline-start: calc(var(--size) - var(--thumb) - var(--thumb-offset));
         animation-name: thumb-on;
         animation-duration: .2s;
         animation-fill-mode: forwards;
@@ -128,7 +117,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
     [part='control'] {
         background: color(gray, 300);
-        border-color: transparent;
     }
 
     [part='thumb'] {
@@ -153,4 +141,3 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         margin-inline-end: rem(8px);
     }
 }
-

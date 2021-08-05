@@ -27,27 +27,27 @@ $type-scale: utils.type-scale();
         $type-scale: $type-scale
     );
 
-    --switch-width: #{utils.rem(36px)};
-    --switch-thumb: #{utils.rem(20px)};
-    --switch-offset: #{utils.rem(-1px)};
+    --size: #{utils.rem(36px)};
+    --thumb: #{utils.rem(20px)};
+    --thumb-offset: #{utils.rem(-1px)};
 }
 
 @keyframes thumb-on {
     from {
-        margin-inline-start: var(--switch-offset);
+        margin-inline-start: var(--thumb-offset);
     }
 
     to {
-        margin-inline-start: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-offset));
+        margin-inline-start: calc(var(--size) - var(--thumb) - var(--thumb-offset));
     }
 }
 
 @keyframes thumb-off {
     from {
-        margin-inline-start: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-offset));
+        margin-inline-start: calc(var(--size) - var(--thumb) - var(--thumb-offset));
     }
 
     to {
-        margin-inline-start: var(--switch-offset);
+        margin-inline-start: var(--thumb-offset);
     }
 }
