@@ -11,7 +11,7 @@ describe('Navbar component', () => {
     expect(el).shadowDom.to.be.accessible();
   });
 
-  it('should display content', async () => {
+  it('displays content', async () => {
     const content = 'Title';
     const el = await fixture<IgcNavbarComponent>(
       html`<igc-navbar>${content}</igc-navbar>`
@@ -30,5 +30,19 @@ describe('Navbar component', () => {
           <span part="middle"><slot></slot></span>
           <span part="end"><slot name="end"></slot></span>
         </div>`);
+  });
+
+  it('displays the elements defined in the slots', async () => {
+    const el = await fixture<IgcNavbarComponent>(
+      html`<igc-navbar>
+        <button slot="start">IG</button>
+        <h1>This is the title</h1>
+        <input slot="end" type="text" value="Search" />
+      </igc-navbar>`
+    );
+
+    expect(el).dom.to.have.descendant('button');
+    expect(el).dom.to.have.descendant('h1');
+    expect(el).dom.to.have.descendant('input');
   });
 });
