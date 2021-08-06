@@ -3,6 +3,7 @@ import '../igniteui-webcomponents.js';
 import { Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 export default {
   title: 'Avatar',
   component: 'igc-avatar',
@@ -36,6 +37,7 @@ export default {
     alt: { control: 'text' },
   },
 };
+// endregion
 
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';

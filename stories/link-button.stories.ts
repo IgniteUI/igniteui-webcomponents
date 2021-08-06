@@ -3,36 +3,49 @@ import { ifDefined } from 'lit-html/directives/if-defined.js';
 import { Story } from './story.js';
 import '../igniteui-webcomponents.js';
 
+// region default
 export default {
-  title: 'Link Button',
+  title: 'Link-button',
   component: 'igc-link-button',
   argTypes: {
-    disabled: { control: 'boolean' },
-    size: {
+    href: {
+      control: 'text',
+    },
+    download: {
+      control: 'text',
+    },
+    target: {
       control: {
         type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
+        options: ['_blank', '_parent', '_self', '_top', 'undefined'],
       },
-      defaultValue: 'large',
+    },
+    rel: {
+      control: 'text',
+    },
+    disabled: {
+      description: 'Determines whether the button is disabled.',
+      defaultValue: 'false',
+      control: 'boolean',
     },
     variant: {
+      defaultValue: 'flat',
       control: {
         type: 'inline-radio',
         options: ['flat', 'raised', 'outlined', 'fab'],
       },
-      defaultValue: 'flat',
     },
-    href: { control: 'text' },
-    download: { control: 'text' },
-    rel: { control: 'text' },
-    target: {
+    size: {
+      description: 'Determines the size of the component.',
+      defaultValue: 'large',
       control: {
         type: 'inline-radio',
-        options: ['_blank', '_parent', '_self', '_top'],
+        options: ['small', 'medium', 'large'],
       },
     },
   },
 };
+// endregion
 
 interface ArgTypes {
   disabled: boolean;

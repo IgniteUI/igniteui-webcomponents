@@ -7,38 +7,35 @@ import {
   registerIconFromText,
 } from '../src/components/icon/icon.registry';
 
+// region default
 export default {
   title: 'Icon',
   component: 'igc-icon',
   argTypes: {
     name: {
-      control: {
-        type: 'text',
-      },
+      description: 'The name of the icon glyph to draw.',
       defaultValue: '',
-      description: 'Name of the icon',
+      control: 'text',
     },
     collection: {
-      control: {
-        type: 'text',
-      },
+      description:
+        'The name of the registered collection for look up of icons.\nDefaults to `default`.',
       defaultValue: 'default',
-      description: 'Collection of icons',
-    },
-    size: {
-      control: {
-        type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
-      },
-      defaultValue: 'medium',
+      control: 'text',
     },
     mirrored: {
+      description: 'Whether to flip the icon. Useful for RTL layouts.',
+      defaultValue: 'false',
       control: 'boolean',
-      defaultValue: false,
+    },
+    size: {
+      description: 'Determines the size of the component.',
+      defaultValue: 'medium',
+      control: 'text',
     },
   },
 };
-
+// endregion
 interface ArgTypes {
   name: string;
   collection: string;

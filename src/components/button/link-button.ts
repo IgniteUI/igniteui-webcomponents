@@ -24,7 +24,7 @@ export class IgcLinkButtonComponent extends IgcButtonBaseComponent {
   download!: string;
 
   @property()
-  target!: '_blank' | '_parent' | '_self' | '_top';
+  target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
 
   @property()
   rel!: string;

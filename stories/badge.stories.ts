@@ -3,6 +3,7 @@ import '../igniteui-webcomponents.js';
 import { Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 export default {
   title: 'Badge',
   component: 'igc-badge',
@@ -42,6 +43,7 @@ export default {
     },
   },
 };
+//end region
 
 interface ArgTypes {
   shape: 'rounded' | 'square';

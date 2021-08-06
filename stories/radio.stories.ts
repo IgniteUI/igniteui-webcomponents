@@ -3,6 +3,7 @@ import '../igniteui-webcomponents.js';
 import { Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 export default {
   title: 'Radio',
   component: 'igc-radio',
@@ -41,7 +42,7 @@ export default {
     },
   },
 };
-
+// endregion
 interface ArgTypes {
   label: string;
   labelPosition: 'before' | 'after';

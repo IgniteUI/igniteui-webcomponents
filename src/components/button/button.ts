@@ -10,13 +10,14 @@ import { IgcButtonBaseComponent } from './button-base.js';
  * @slot prefix - Slot for projecting content at the start of the button.
  * @slot suffix - Slot for projecting content at the end of the button.
  *
- * @cssprop --size - Duh!
- *
  * @csspart native - The native button/a element.
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
  */
 export class IgcButtonComponent extends IgcButtonBaseComponent {
+  /**
+   * The type of the button. Defaults to undefined.
+   */
   @property()
   type!: 'button' | 'reset' | 'submit';
 

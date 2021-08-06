@@ -3,6 +3,7 @@ import '../igniteui-webcomponents.js';
 import { Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 export default {
   title: 'Radio Group',
   component: 'igc-radio-group',
@@ -40,6 +41,7 @@ export default {
     },
   },
 };
+// endregion
 
 interface ArgTypes {
   alignment: 'vertical' | 'horizontal';
