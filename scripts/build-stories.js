@@ -7,7 +7,7 @@ const writeFile = util.promisify(fs.writeFile);
 const readdir = util.promisify(fs.readdir);
 
 const VENDOR_PREFIX = 'igc-';
-const SRC_DIR = path.resolve(__dirname, '../docs');
+const SRC_DIR = path.resolve(__dirname, '../docs/json');
 const DEST_DIR = path.resolve(__dirname, '../stories');
 
 const REPLACE_REGEX = /\/\/ region default.*\/\/ endregion/gs;
