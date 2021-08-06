@@ -1,0 +1,43 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-radio {
+        font-weight: 600;
+    }
+
+    igc-radio::part(control) {
+        width: var(--size, utils.rem(20px));
+        height: var(--size, utils.rem(20px));
+        min-width: var(--size, utils.rem(20px));
+        transition: none;
+        background: none;
+    }
+
+    igc-radio:hover::part(control) {
+        box-shadow: 0 0 0 4px utils.color(gray, 200, .87);
+    }
+
+    igc-radio:focus-within::part(control) {
+        box-shadow: 0 0 0 4px utils.color(gray, 300, .87);
+    }
+
+    igc-radio[checked]:hover::part(control) {
+        box-shadow: 0 0 0 4px utils.color(secondary, 100, .87);
+    }
+
+    igc-radio[checked]:focus-within::part(control) {
+        box-shadow: 0 0 0 4px utils.color(secondary, 200, .87);
+    }
+
+    igc-radio[disabled] {
+        pointer-events: none;
+        color: color(gray, 400);
+        user-select: none;
+
+        &::part(control) {
+            &::after {
+                background: transparent;
+            }
+        }
+    }
+}
