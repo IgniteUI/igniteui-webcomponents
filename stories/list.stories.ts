@@ -22,6 +22,10 @@ interface ArgTypes {
   size: 'small' | 'medium' | 'large';
 }
 
+interface Context {
+  globals: { theme: string; direction: string };
+}
+
 const data = [
   { name: 'Elizabeth Lincoln', position: 'Accounting Manager' },
   { name: 'Frédérique Citeaux', position: 'Marketing Manager' },
@@ -56,34 +60,70 @@ const itemPan = (event: any) => {
   });
 };
 
-const BasicTemplate: Story<ArgTypes, {}> = ({ size }: ArgTypes) => {
+const BasicTemplate: Story<ArgTypes, Context> = (
+  { size }: ArgTypes,
+  { globals: { direction } }: Context
+) => {
   return html`
-    <igc-list .size="${size}">
+    <igc-list .size="${size}" dir="${direction}">
       <igc-list-item>
-        <span slot="start">Icon</span>
-        <h2 slot="title">Title</h2>
-        <span slot="subtitle">Sub title</span>
-        <span slot="end">Action btns</span>
+        <igc-avatar
+          slot="start"
+          src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
+          shape="circle"
+          >AA</igc-avatar
+        >
+        <h2 slot="title">John Smith</h2>
+        <span slot="subtitle">Software Developer</span>
+        <igc-button slot="end" .size="${size}" variant="outlined"
+          >Text</igc-button
+        >
+        <igc-button slot="end" .size="${size}" variant="outlined"
+          >Call</igc-button
+        >
       </igc-list-item>
       <igc-list-item>
-        <span slot="start">Icon</span>
-        <h2 slot="title">Title</h2>
-        <span slot="subtitle">Sub title</span>
-        <span slot="end">Action btns</span>
+        <igc-avatar
+          slot="start"
+          src="https://www.infragistics.com/angular-demos/assets/images/men/2.jpg"
+          shape="circle"
+          >AB</igc-avatar
+        >
+        <h2 slot="title">Abraham Lee</h2>
+        <span slot="subtitle">Team Lead</span>
+        <igc-button slot="end" .size="${size}" variant="outlined"
+          >Text</igc-button
+        >
+        <igc-button slot="end" .size="${size}" variant="outlined"
+          >Call</igc-button
+        >
       </igc-list-item>
       <igc-list-item>
-        <span slot="start">Icon</span>
-        <h2 slot="title">Title</h2>
-        <span slot="subtitle">Sub title</span>
-        <span slot="end">Action btns</span>
+        <igc-avatar
+          slot="start"
+          src="https://www.infragistics.com/angular-demos/assets/images/men/3.jpg"
+          shape="circle"
+          >AB</igc-avatar
+        >
+        <h2 slot="title">Jonathan Deberkow</h2>
+        <span slot="subtitle">UX Designer</span>
+        <igc-button slot="end" .size="${size}" variant="outlined"
+          >Text</igc-button
+        >
+        <igc-button slot="end" .size="${size}" variant="outlined"
+          >Call</igc-button
+        >
       </igc-list-item>
     </igc-list>
   `;
 };
 
-const ListHeaderTemplate: Story<ArgTypes, {}> = ({ size }: ArgTypes) => {
+const ListHeaderTemplate: Story<ArgTypes, Context> = (
+  { size }: ArgTypes,
+  { globals: { direction } }: Context
+) => {
   return html`
-    <igc-list .size="${size}">
+    <igc-list .size="${size}" dir=${direction}>
       <igc-list-header>
         <h1>List Header</h1>
       </igc-list-header>
@@ -112,9 +152,12 @@ const ListHeaderTemplate: Story<ArgTypes, {}> = ({ size }: ArgTypes) => {
   `;
 };
 
-const EventTemplate: Story<ArgTypes, {}> = ({ size }: ArgTypes) => {
+const EventTemplate: Story<ArgTypes, Context> = (
+  { size }: ArgTypes,
+  { globals: { direction } }: Context
+) => {
   return html`
-    <igc-list .size="${size}" @click="${itemClicked}">
+    <igc-list .size="${size}" @click="${itemClicked}" direction="${direction}">
       <igc-list-header role="separator">
         <h1>Job Positions</h1>
       </igc-list-header>
@@ -136,9 +179,17 @@ const EventTemplate: Story<ArgTypes, {}> = ({ size }: ArgTypes) => {
   `;
 };
 
-const GestureTemplate: Story<ArgTypes, {}> = ({ size }: ArgTypes) => {
+const GestureTemplate: Story<ArgTypes, Context> = (
+  { size }: ArgTypes,
+  { globals: { direction } }: Context
+) => {
   return html`
-    <igc-list .size="${size}" role="list" @click="${itemPan}">
+    <igc-list
+      .size="${size}"
+      role="list"
+      @click="${itemPan}"
+      dir="${direction}"
+    >
       <igc-list-header>
         <h1>Job Positions</h1>
       </igc-list-header>
