@@ -34,11 +34,13 @@
     "storybook:build": "npm run build && build-storybook"
   },
   "dependencies": {
+    "hammerjs": "^2.0.8",
     "lit": "^2.0.0-rc.2"
   },
   "devDependencies": {
     "@open-wc/eslint-config": "^4.3.0",
     "@open-wc/testing": "^2.5.33",
+    "@types/hammerjs": "^2.0.40",
     "@typescript-eslint/eslint-plugin": "^4.26.1",
     "@typescript-eslint/parser": "^4.26.1",
     "@web/dev-server": "^0.1.17",
