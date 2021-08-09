@@ -30,26 +30,6 @@ $type-scale: utils.type-scale();
 
 igc-switch {
     --size: #{utils.rem(36px)};
-    --thumb: #{utils.rem(20px)};
+    --thumb-size: #{utils.rem(20px)};
     --thumb-offset: #{utils.rem(-1px)};
-}
-
-@keyframes thumb-on {
-    from {
-        margin-inline-start: var(--thumb-offset);
-    }
-
-    to {
-        margin-inline-start: calc(var(--size) - var(--thumb) - var(--thumb-offset));
-    }
-}
-
-@keyframes thumb-off {
-    from {
-        margin-inline-start: calc(var(--size) - var(--thumb) - var(--thumb-offset));
-    }
-
-    to {
-        margin-inline-start: var(--thumb-offset);
-    }
 }

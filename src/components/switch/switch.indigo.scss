@@ -3,8 +3,8 @@
 @mixin theme() {
     igc-switch {
         --size: #{utils.rem(34px)};
-        --thumb: #{utils.rem(8px)};
-        --thumb-offset: calc(var(--thumb) / 2);
+        --thumb-size: #{utils.rem(8px)};
+        --thumb-offset: calc(var(--thumb-size) / 2);
     }
 
     igc-switch::part(control) {
@@ -13,39 +13,86 @@
         box-shadow: inset 0 0 0 2px #{utils.color(gray, 500)};
         border-radius: utils.rem(8px);
         background: transparent;
+
+        &::after {
+            content: '';
+            position: absolute;
+            width: inherit;
+            height: inherit;
+            border-radius: inherit;
+        }
+    }
+
+    igc-switch:hover::part(control) {
+        box-shadow: 0 0 0 2px #{utils.color(gray, 200, .87)};
+
+        &::after {
+            border: 2px solid #{utils.color(gray, 500)};
+        }
+    }
+
+    igc-switch:focus-within::part(control) {
+        box-shadow: 0 0 0 2px #{utils.color(gray, 300, .87)};
+
+        &::after {
+            border: 2px solid #{utils.color(gray, 500)};
+        }
     }
 
     igc-switch[checked]::part(control) {
         background: #{utils.color(primary, 500)};
-        box-shadow: inset 0 0 0 2px #{utils.color(primary, 500)};
+        box-shadow: inset 0 0 0 2px #{utils.color(secondary, 500)};
+    }
 
-        &:hover,
-        &:focus {
-            box-shadow: inset 0 0 0 2px #{utils.color(primary, 500)};
+    igc-switch[checked]:hover::part(control) {
+        box-shadow: 0 0 0 2px #{utils.color(secondary, 100, .87)};
+
+        &::after {
+            border: 2px solid #{utils.color(secondary, 500)};
         }
     }
 
-    igc-switch[disabled]::part(control) {
+    igc-switch[checked]:focus-within::part(control) {
+        box-shadow: 0 0 0 2px #{utils.color(secondary, 200, .87)};
+
+        &::after {
+            border: 2px solid #{utils.color(secondary, 500)};
+        }
+    }
+
+    igc-switch[invalid]::part(control),
+    igc-switch[invalid][checked]::part(control),
+    igc-switch[invalid]:focus-within::part(control) {
+        box-shadow: inset 0 0 0 2px #{utils.color(error, 500)};
+    }
+
+    igc-switch[invalid][checked]::part(control),
+    igc-switch:not([checked])[invalid]::part(thumb) {
+        background: utils.color(error, 500);
+    }
+
+    igc-switch[invalid]:hover::part(control),
+    igc-switch[invalid]:focus-within::part(control),
+    igc-switch[invalid][checked]:focus-within::part(control) {
+        &::after {
+            border: 2px solid #{utils.color(error, 500)};
+        }
+    }
+
+    igc-switch[disabled]::part(control),
+    igc-switch[disabled][invalid]::part(control) {
         box-shadow: inset 0 0 0 2px #{utils.color(gray, 300)};
     }
 
-    igc-switch[checked][disabled]::part(control) {
+    igc-switch[checked][disabled]::part(control),
+    igc-switch[checked][disabled][invalid]::part(control) {
         background: transparent;
     }
 
-    igc-switch:focus-within::part(control) {
-        border-radius: utils.rem(10px);
-        box-shadow: 0 0 0 2px #{utils.color(gray, 300)};
-    }
-
-    igc-switch[checked]:focus-within::part(control) {
-        box-shadow: 0 0 0 2px #{utils.color(primary, 200)};
-    }
-
     igc-switch::part(thumb) {
-        width: var(--thumb);
-        height: var(--thumb);
-        min-width: var(--thumb);
+        width: var(--thumb-size);
+        height: var(--thumb-size);
+        min-width: var(--thumb-size);
         border-radius: utils.rem(10px);
         animation-name: thumb-off;
         margin-inline-start: var(--thumb-offset);
@@ -64,31 +111,11 @@
     igc-switch[checked]::part(thumb) {
         background: white;
         animation-name: thumb-on;
-        margin-inline-start: calc(var(--size) - var(--thumb) - var(--thumb-offset));
+        margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
     }
 
-    igc-switch[disabled]::part(thumb) {
-        background: #{utils.color(gray, 300)};
-        box-shadow: none;
-    }
-
-    @keyframes thumb-on {
-        from {
-            margin-inline-start: var(--thumb-offset);
-        }
-
-        to {
-            margin-inline-start: calc(var(--size) - var(--thumb) - var(--thumb-offset));
-        }
-    }
-
-    @keyframes thumb-off {
-        from {
-            margin-inline-start: calc(var(--size) - var(--thumb) - var(--thumb-offset));
-        }
-
-        to {
-            margin-inline-start: var(--thumb-offset);
-        }
+    igc-switch[disabled]::part(thumb),
+    igc-switch[disabled][invalid]::part(thumb) {
+        background: #{utils.color(gray, 400)};
     }
 }

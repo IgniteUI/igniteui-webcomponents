@@ -45,9 +45,9 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
 [part='thumb'] {
     position: relative;
-    width: var(--thumb);
-    height: var(--thumb);
-    min-width: var(--thumb);
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    min-width: var(--thumb-size);
     background: color(gray, 200);
     border-radius: rem(10px);
     box-shadow: var(--igc-elevation-2);
@@ -103,7 +103,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
     [part='thumb'] {
         background: color(secondary, 500);
-        margin-inline-start: calc(var(--size) - var(--thumb) - var(--thumb-offset));
+        margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
         animation-name: thumb-on;
         animation-duration: .2s;
         animation-fill-mode: forwards;
@@ -129,6 +129,21 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     }
 }
 
+:host(:not([disabled])[invalid]),
+:host(:not([disabled])[invalid][checked]) {
+    [part='label'] {
+        color: color(error, 500);
+    }
+
+    [part='control'] {
+        background: color(error, 500, .5);
+    }
+
+    [part='thumb'] {
+        background: color(error, 500);
+    }
+}
+
 :host([label-position='after']) {
     [part='label'] {
         margin-inline-start: rem(8px);
@@ -139,5 +154,25 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     [part='label'] {
         order: -1;
         margin-inline-end: rem(8px);
+    }
+}
+
+@keyframes thumb-on {
+    from {
+        margin-inline-start: var(--thumb-offset);
+    }
+
+    to {
+        margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
+    }
+}
+
+@keyframes thumb-off {
+    from {
+        margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
+    }
+
+    to {
+        margin-inline-start: var(--thumb-offset);
     }
 }

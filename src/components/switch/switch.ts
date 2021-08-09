@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -25,11 +25,8 @@ export class IgcSwitchComponent extends EventEmitterMixin<
   private inputId = `switch-${nextId++}`;
   private labelId = `switch-label-${this.inputId}`;
 
-  @query('input[type="checkbox"]')
+  @query('input[type="checkbox"]', true)
   input!: HTMLInputElement;
-
-  @state()
-  _tabIndex = 0;
 
   @property()
   name!: string;
@@ -97,7 +94,6 @@ export class IgcSwitchComponent extends EventEmitterMixin<
   handleChange() {
     if (this.checked) {
       this.input.focus();
-      this._tabIndex = 0;
       this.emitEvent('igcChange');
     }
   }
@@ -116,7 +112,6 @@ export class IgcSwitchComponent extends EventEmitterMixin<
           value="${ifDefined(this.value)}"
           .disabled="${this.disabled}"
           .checked="${live(this.checked)}"
-          tabindex=${this._tabIndex}
           aria-checked="${this.checked ? 'true' : 'false'}"
           aria-disabled="${this.disabled ? 'true' : 'false'}"
           aria-labelledby="${this.ariaLabelledby
