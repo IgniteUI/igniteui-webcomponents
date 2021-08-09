@@ -16,12 +16,15 @@
   "scripts": {
     "start": "npm run storybook",
     "serve": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wds\"",
-    "build": "npm run build:styles && npm run build:typescript",
+    "build": "npm run clean && npm run build:styles && npm run build:typescript",
     "build:typescript": "tsc",
     "build:styles": "node scripts/build-styles.js",
     "build:watch": "npm run build:styles && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\"",
     "watch-scss": "node scripts/styles-watcher.js",
     "watch-ts": "tsc --watch --preserveWatchOutput",
+    "clean": "npm run clean:dist && npm run clean:styles",
+    "clean:dist": "rimraf ./dist",
+    "clean:styles": "rimraf \"src/**/*.css.ts\"",
     "lint": "npm run lint:eslint && npm run lint:lit-analyzer && npm run lint:prettier && npm run lint:styles",
     "lint:eslint": "eslint --ext .ts . --ignore-path .gitignore",
     "lint:lit-analyzer": "lit-analyzer",
@@ -38,6 +41,7 @@
     "lit": "^2.0.0-rc.2"
   },
   "devDependencies": {
+    "@igniteui/material-icons-extended": "^2.9.0",
     "@open-wc/eslint-config": "^4.3.0",
     "@open-wc/testing": "^2.5.33",
     "@types/hammerjs": "^2.0.40",
@@ -58,6 +62,7 @@
     "node-watch": "^0.7.1",
     "postcss": "^8.3.5",
     "prettier": "^2.2.1",
+    "rimraf": "^3.0.2",
     "rollup-plugin-postcss": "^4.0.0",
     "sass": "^1.35.1",
     "sinon": "^11.1.1",
