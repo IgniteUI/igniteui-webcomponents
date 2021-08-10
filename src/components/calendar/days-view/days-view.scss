@@ -1,0 +1,37 @@
+:host {
+    display: flex;
+    flex-flow: column nowrap;
+    width: 100%;
+    min-width: 290px;;
+    outline: none;
+    overflow: hidden;
+}
+
+.body-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0;
+}
+
+.label,
+.date {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    min-width: 14.28%;
+}
+
+.label--week-number {
+    border-radius: 0;
+    pointer-events: none;
+}
+
+.date-content {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
