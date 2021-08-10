@@ -4,6 +4,11 @@ import { styles } from './list-item.material.css';
 export class IgcListItemComponent extends LitElement {
   static styles = styles;
 
+  constructor() {
+    super();
+    this.setAttribute('role', 'listitem');
+  }
+
   render() {
     return html`
       <section part="start">
