@@ -6,6 +6,7 @@
     flex-flow: column nowrap;
     font-family: var(--igc-font-family);
     overflow: hidden;
+    background: color(surface, 500);
 }
 
 :host([size='small']) ::slotted(igc-list-item),

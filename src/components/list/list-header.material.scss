@@ -6,14 +6,11 @@
     align-items: center;
     justify-content: flex-start;
     color: color(secondary, 500);
+    background: inherit;
+    @include type-category('overline');
 }
 
 ::slotted(*) {
-    font-family: var(--igc-overline-font-family);
-    font-size: var(--igc-overline-font-size);
-    font-weight: var(--igc-overline-font-weight);
-    letter-spacing: var(--igc-overline-letter-spacing);
-    line-height: var(--igc-overline-line-height);
-    text-transform: var(--igc-overline-text-transform);
-    margin: 0;
+    font: inherit;
+    margin: inherit;
 }
