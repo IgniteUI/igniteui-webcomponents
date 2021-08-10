@@ -45,6 +45,7 @@
     "lit": "^2.0.0-rc.2"
   },
   "devDependencies": {
+    "@igniteui/material-icons-extended": "^2.9.0",
     "@open-wc/eslint-config": "^4.3.0",
     "@open-wc/testing": "^2.5.33",
     "@typescript-eslint/eslint-plugin": "^4.26.1",

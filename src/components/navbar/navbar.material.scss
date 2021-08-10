@@ -1,0 +1,49 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    width: 100%;
+    min-height: rem(56px);
+    max-height: rem(128px);
+    padding: rem(16px);
+    background: color(primary, 500);
+    color: contrast-color(primary, 500);
+    box-shadow: var(--igc-elevation-4);
+    font-family: var(--igc-font-family);
+}
+
+[part='base'] {
+    display: inherit;
+    position: relative;
+    flex-flow: row nowrap;
+    flex-grow: 1;
+    align-items: center;
+    overflow: hidden;
+    z-index: 4;
+}
+
+[part='middle'] {
+    @include line-clamp(4, true, true);
+    user-select: text;
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    margin-inline-start: rem(16px);
+}
+
+[part='start'],
+[part='end'] {
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+[name='end']::slotted(*) {
+    margin-inline-start: rem(16px);
+}
+
+::slotted(igc-icon) {
+    cursor: pointer;
+    color: contrast-color(primary, 500);
+}
