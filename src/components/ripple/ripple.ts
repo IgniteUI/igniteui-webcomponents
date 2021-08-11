@@ -1,24 +1,8 @@
-import { css, html, LitElement } from 'lit';
+import { html, LitElement } from 'lit';
+import { styles } from './ripple.css';
 
 export class IgcRippleComponent extends LitElement {
-  static styles = css`
-    :host {
-      contain: content;
-      box-sizing: border-box;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      box-sizing: border-box;
-      display: block;
-      overflow: hidden;
-    }
-    :host::before,
-    :host::after {
-      box-sizing: border-box;
-    }
-  `;
+  static styles = styles;
 
   constructor() {
     super();
@@ -30,6 +14,7 @@ export class IgcRippleComponent extends LitElement {
     const { radius, top, left } = this.getDimensions(clientX, clientY);
 
     const styles: Partial<CSSStyleDeclaration> = {
+      position: 'absolute',
       display: 'block',
       pointerEvents: 'none',
       transformOrigin: 'center',
@@ -42,8 +27,7 @@ export class IgcRippleComponent extends LitElement {
       borderRadius: '50%',
       top: `${top}px`,
       left: `${left}px`,
-      background: 'var(--igc-primary-500-contrast)',
-      position: 'absolute',
+      background: 'var(--color, hsl(var(--igc-gray-800)))',
     };
     const frames: Keyframe[] = [
       { opacity: 0.5, transform: 'scale(.3)' },
@@ -52,7 +36,7 @@ export class IgcRippleComponent extends LitElement {
     const opts: KeyframeAnimationOptions = {
       duration: 600, // --igc-ripple-duration,
       fill: 'forwards',
-      easing: 'linear', // --ic-ripple-easing
+      easing: 'linear', // --igc-ripple-easing
     };
 
     Object.assign(element.style, styles);
