@@ -1,0 +1,13 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-navbar {
+        background: #{utils.color(surface, 500)};
+        color: #{utils.contrast-color(surface, 500)};
+        box-shadow: none;
+    }
+
+    ::slotted(igc-icon) {
+        color: #{utils.contrast-color(surface, 500)};
+    }
+}

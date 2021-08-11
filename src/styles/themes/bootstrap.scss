@@ -2,6 +2,7 @@
 @use '../../components/button/button.bootstrap' as button;
 @use '../../components/radio/radio.bootstrap' as radio;
 @use '../../components/switch/switch.bootstrap' as switch;
+@use '../../components/navbar/navbar.bootstrap' as navbar;
 
 $palette: utils.palette(
     $primary: #007bff,
@@ -181,3 +182,4 @@ $type-scale: utils.extend($_base-scale, (
 @include button.theme();
 @include radio.theme();
 @include switch.theme();
+@include navbar.theme();
