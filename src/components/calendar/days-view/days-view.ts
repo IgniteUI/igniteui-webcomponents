@@ -22,7 +22,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   static styles = [styles];
 
   private calendarModel = new Calendar();
-  // private formatterDay: Intl.DateTimeFormat;
+  // private formatterDay!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   // private formatterMonth: Intl.DateTimeFormat;
   // private formatterYear: Intl.DateTimeFormat;
@@ -52,6 +52,12 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     weekday: 'short',
     year: 'numeric',
   };
+
+  @watch('formatOptions')
+  @watch('locale')
+  formattersChange() {
+    this.initFormatters();
+  }
 
   constructor() {
     super();

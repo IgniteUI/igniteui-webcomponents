@@ -9,7 +9,7 @@ export default {
   argTypes: {
     showWeekNumber: {
       control: 'boolean',
-      description: 'Determines whether the show week number.',
+      description: 'Determines whether to show week number.',
       table: {
         type: {
           summary: 'boolean',
@@ -19,35 +19,47 @@ export default {
         },
       },
     },
-    size: {
+    weekStart: {
       control: {
         type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
+        options: [0, 1, 2, 3, 4, 5, 6],
+        labels: [
+          'Sunday',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+        ],
       },
-      defaultValue: 'large',
+      defaultValue: 0,
     },
-    variant: {
+    locale: {
       control: {
         type: 'inline-radio',
-        options: ['flat', 'raised', 'outlined', 'fab'],
+        options: ['en', 'ja', 'fr', 'bg'],
       },
-      defaultValue: 'flat',
+      defaultValue: 'en',
     },
-    type: {
+    viewDate: {
+      control: 'date',
+    },
+    weekDayFormat: {
       control: {
         type: 'inline-radio',
-        options: ['button', 'reset', 'submit'],
+        options: ['long', 'short', 'narrow'],
       },
-      defaultValue: 'button',
     },
   },
 };
 
 interface ArgTypes {
   showWeekNumber: boolean;
-  size: 'small' | 'medium' | 'large';
-  variant: 'flat' | 'raised' | 'outlined' | 'fab';
-  type: 'button' | 'reset' | 'submit';
+  weekStart: number;
+  locale: string;
+  viewDate: Date;
+  weekDayFormat: 'long' | 'short' | 'narrow';
 }
 
 interface Context {
@@ -56,12 +68,24 @@ interface Context {
 
 const Template: Story<ArgTypes, Context> = (
   // eslint-disable-next-line no-empty-pattern
-  { showWeekNumber }: ArgTypes,
+  {
+    showWeekNumber,
+    weekStart,
+    locale,
+    viewDate = new Date(),
+    weekDayFormat = 'short',
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
+  const formatOptions = { weekday: weekDayFormat };
+
   return html`
     <igc-days-view
       .showWeekNumber=${showWeekNumber}
+      .weekStart=${weekStart}
+      .locale=${locale}
+      .viewDate=${new Date(viewDate)}
+      .formatOptions=${formatOptions}
       dir=${ifDefined(direction)}
     >
     </igc-days-view>
