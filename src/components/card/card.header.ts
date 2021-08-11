@@ -11,14 +11,14 @@ export class IgcCardHeader extends LitElement {
 
   render() {
     return html`
-    <div class="thumbnail">
-      <slot name="thumbnail"></slot>
-    </div>
-    <div class="titles">
-      <slot name="title"></slot>
-      <slot name="subtitle"></slot>
-      <slot><slot>
-    </div>
+      <div class="thumbnail">
+        <slot name="thumbnail"></slot>
+      </div>
+      <div class="titles">
+        <slot name="title"></slot>
+        <slot name="subtitle"></slot>
+        <slot></slot>
+      </div>
     `;
   }
 }
