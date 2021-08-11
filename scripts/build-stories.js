@@ -25,9 +25,10 @@ const capitalize = (str) => `${str[0].toUpperCase()}${str.slice(1)}`;
 function fixControlProp(controlMeta) {
   if (controlMeta === 'string') { return 'text'; }
   if (controlMeta.includes('|')) {
+    const options = controlMeta.split('|').map(part => part.trim());
     return {
-        type: 'inline-radio',
-        options: controlMeta.split('|').map(part => part.trim())
+        type: options.length > 3 ? 'select': 'inline-radio',
+        options
     };
   }
   return controlMeta;
@@ -62,6 +63,9 @@ function extractTags(meta) {
   };
 }
 
+const writeControl = (control) => control.options ? control.options.join(' | ').replaceAll('"', "'") : control.replaceAll('text', 'string');
+const buildArgTypes = (meta, indent="  ") => ['interface ArgTypes {', ...meta.args.map(arg => `${indent}${arg[0]}: ${writeControl(arg[1].control)};`), '}'].join('\n');
+
 /**
  *
  * @param {Buffer} story
@@ -76,7 +80,7 @@ function buildStoryMeta(story, meta) {
   };
 
   meta.args.forEach(arg => storyMeta.argTypes[arg[0]] = arg[1]);
-  const payload = `// region default\nexport default ${JSON.stringify(storyMeta, undefined, 2)}\n// endregion`.replaceAll(STRIP_QUOTES, "'");
+  const payload = `// region default\nexport default ${JSON.stringify(storyMeta, undefined, 2)}\n${buildArgTypes(meta)}\n// endregion`.replaceAll(STRIP_QUOTES, "'");
 
   return story.toString().replace(REPLACE_REGEX, payload);
 }
