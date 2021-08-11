@@ -1,0 +1,14 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: block;
+    overflow: hidden;
+    line-height: 0;
+
+    > * {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }

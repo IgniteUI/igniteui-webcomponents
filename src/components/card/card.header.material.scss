@@ -1,0 +1,30 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    flex-flow: row nowrap;
+    flex: 1 1 auto;
+    align-items: center;
+    width: 100%;
+    color: black;
+    padding: 2px;
+    box-sizing: border-box;
+  }
+
+  .titles {
+    display: flex;
+    flex-flow: column nowrap;
+    overflow: hidden;
+    flex: 1 1 auto;
+    justify-content: center;
+    margin: 1px;
+  }
+
+  .thumbnail {
+    align-self: flex-start;
+
+    &:empty {
+      display: none;
+    }
+  }

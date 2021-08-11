@@ -1,0 +1,16 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+.container {
+    box-shadow: 3px 3px 10px rem(2px) rgba(gray, 50);
+    display: flex;
+    width: auto;
+    height: auto;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .outlined {
+    box-shadow: none;
+    border: 1px solid black;
+  }

@@ -1,0 +1,10 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: block;
+    width: 100%;
+    flex: 1 1 auto;
+    padding: 2px;
+    color: gray;
+  }

@@ -1,0 +1,24 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    flex: 0 1 auto;
+    align-items: center;
+    padding: 1px;
+  }
+
+  .icons {
+    display: flex;
+    align-items: center;
+    margin: 1px auto;
+    order: 1;
+  }
+
+  .buttons {
+    display: flex;
+    align-items: center;
+    order: 0;
+  }
