@@ -27,3 +27,9 @@ $type-scale: utils.type-scale();
         $type-scale: $type-scale
     );
 }
+
+igc-switch {
+    --size: #{utils.rem(36px)};
+    --thumb-size: #{utils.rem(20px)};
+    --thumb-offset: #{utils.rem(-1px)};
+}
