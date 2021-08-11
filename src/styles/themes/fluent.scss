@@ -1,6 +1,7 @@
 @use '../utilities' as utils;
 @use '../../components/button/button.fluent' as button;
 @use '../../components/radio/radio.fluent' as radio;
+@use '../../components/list/list.fluent' as list;
 @use '../../components/switch/switch.fluent' as switch;
 
 $palette: utils.palette(
@@ -148,5 +149,5 @@ $type-scale: utils.extend($fluent-type-scale);
 
 @include button.theme();
 @include radio.theme();
+@include list.theme();
 @include switch.theme();
-
