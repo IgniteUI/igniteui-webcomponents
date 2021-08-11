@@ -1,0 +1,20 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-list-header {
+        color: utils.color(primary, 500)
+    }
+
+    igc-list-item {
+        color: utils.color(gray, 900);
+
+        &:hover,
+        &:focus-within {
+            background: utils.color(primary, 50, .54);
+        }
+
+        &::part(subtitle) {
+            color: utils.color(gray, 800);
+        }
+    }
+}
