@@ -1,7 +1,5 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-
-import 'hammerjs';
 import { Story } from './story.js';
 
 export default {
