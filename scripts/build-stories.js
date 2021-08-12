@@ -63,7 +63,7 @@ function extractTags(meta) {
   };
 }
 
-const writeControl = (control) => control.options ? control.options.join(' | ').replaceAll('"', "'") : control.replaceAll('text', 'string');
+const writeControl = (control) => control.options ? control.options.join(' | ').replace(/"/g, "'") : control.replace(/text/g, 'string');
 const buildArgTypes = (meta, indent="  ") => ['interface ArgTypes {', ...meta.args.map(arg => `${indent}${arg[0]}: ${writeControl(arg[1].control)};`), '}'].join('\n');
 
 /**
@@ -80,7 +80,7 @@ function buildStoryMeta(story, meta) {
   };
 
   meta.args.forEach(arg => storyMeta.argTypes[arg[0]] = arg[1]);
-  const payload = `// region default\nexport default ${JSON.stringify(storyMeta, undefined, 2)}\n${buildArgTypes(meta)}\n// endregion`.replaceAll(STRIP_QUOTES, "'");
+  const payload = `// region default\nexport default ${JSON.stringify(storyMeta, undefined, 2)}\n${buildArgTypes(meta)}\n// endregion`.replace(STRIP_QUOTES, "'");
 
   return story.toString().replace(REPLACE_REGEX, payload);
 }
