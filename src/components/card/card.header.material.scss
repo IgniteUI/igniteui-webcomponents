@@ -10,21 +10,21 @@
     color: black;
     padding: 2px;
     box-sizing: border-box;
-  }
+}
 
-  .titles {
+.titles {
     display: flex;
     flex-flow: column nowrap;
     overflow: hidden;
     flex: 1 1 auto;
     justify-content: center;
     margin: 1px;
-  }
+}
 
-  .thumbnail {
+.thumbnail {
     align-self: flex-start;
 
     &:empty {
       display: none;
     }
-  }
+}
