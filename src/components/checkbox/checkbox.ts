@@ -46,7 +46,10 @@ export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           value="${ifDefined(this.value)}"
           .disabled="${this.disabled}"
           .checked="${live(this.checked)}"
-          aria-checked="${this.checked ? 'true' : 'false'}"
+          .indeterminate="${live(this.indeterminate)}"
+          aria-checked="${this.indeterminate && !this.checked
+            ? 'mixed'
+            : this.checked}"
           aria-disabled="${this.disabled ? 'true' : 'false'}"
           aria-labelledby="${this.ariaLabelledby
             ? this.ariaLabelledby
