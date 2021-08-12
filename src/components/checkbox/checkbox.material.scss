@@ -1,0 +1,173 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: inline-flex;
+    font-family: var(--igc-font-family);
+}
+
+input[type='checkbox'] {
+    @include hide-default();
+}
+
+$ripple-size: rem(40px);
+$ripple-radius: calc(#{$ripple-size} / 2);
+
+$mark-length: 24;
+
+[part='base'] {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    flex-flow: row nowrap;
+
+    &:hover [part='control'] {
+        &::after {
+            background: color(gray, 600, .06);
+        }
+    }
+
+    &:focus-within [part='control'] {
+        &::after {
+            background: color(gray, 600, .12);
+        }
+    }
+}
+
+[part='control'] {
+    $size: var(--size, rem(20px));
+    position: relative;
+    display: inline-flex;
+    width: $size;
+    height: $size;
+    min-width: $size;
+    border-radius: rem(2px);
+    border: rem(2px) solid color(gray, 600);
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color .2s ease-out;
+
+    &::after {
+        position: absolute;
+        content: '';
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: $ripple-size;
+        height: $ripple-size;
+        overflow: hidden;
+        border-radius: $ripple-radius;
+        transition: background .2s ease-out;
+    }
+}
+
+[part='label'] {
+    display: inline-block;
+    color: color(gray, 900);
+    cursor: pointer;
+    user-select: none;
+    word-wrap: break-all;
+    transition: all .2s ease-in-out;
+}
+
+[part='indicator'] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    stroke: white;
+    stroke-linecap: square;
+    stroke-width: 3;
+    stroke-dasharray: $mark-length;
+    stroke-dashoffset: $mark-length;
+    fill: none;
+    opacity: 0;
+    z-index: 1;
+    transition: opacity .1s ease-out;
+}
+
+:host([checked]),
+:host([indeterminate]) {
+    [part='base'] {
+        &:hover [part='control'] {
+            &::after {
+                background: color(secondary, 500, .06);
+            }
+        }
+
+        &:focus-within [part='control'] {
+            &::after {
+                background: color(secondary, 500, .12);
+            }
+        }
+    }
+
+    [part='control'] {
+        border-color: color(secondary, 500);
+        background: color(secondary, 500);
+    }
+
+    [part='indicator'] {
+        stroke-dashoffset: 0;
+        opacity: 1;
+        transition: all .2s ease-out, opacity .2s ease-out;
+    }
+
+    .indeterminate {
+        stroke-dashoffset: 41;
+        opacity: 1;
+        transform: rotate(45deg) translateX(-.125rem);
+    }
+}
+
+:host(:not([disabled])[invalid]) {
+    [part='label'] {
+        color: color(error, 500);
+    }
+
+    [part='control'] {
+        border-color: color(error, 500);
+    }
+}
+
+:host(:not([disabled])[invalid][checked]),
+:host(:not([disabled])[invalid][indeterminate]) {
+    [part='control'] {
+        background: color(error, 500);
+    }
+}
+
+:host([disabled]) {
+    user-select: none;
+    cursor: initial;
+    pointer-events: none;
+
+    [part='control'] {
+        border-color: color(gray, 400);
+        background: transparent;
+    }
+
+    [part='label'] {
+        color: color(gray, 400);
+    }
+}
+
+:host([disabled][checked]),
+:host([disabled][indeterminate]) {
+    [part='control'] {
+        background: color(gray, 400);
+    }
+}
+
+:host([label-position='after']) {
+    [part='label'] {
+        margin-inline-start: rem(8px);
+    }
+}
+
+:host([label-position='before']) {
+    [part='label'] {
+        order: -1;
+        margin-inline-end: rem(8px);
+    }
+}
