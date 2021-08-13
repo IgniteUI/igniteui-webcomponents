@@ -8,8 +8,8 @@ import { Directive, directive, DirectiveParameters } from 'lit/directive.js';
 
 class ResizeDirective extends Directive {
   ro!: ResizeObserver;
-  width?: number;
-  height?: number;
+  width = 0;
+  height = 0;
 
   update(part: ElementPart, [host]: DirectiveParameters<this>) {
     const el = part.element as Element;
@@ -38,8 +38,8 @@ const resizeDirective = directive(ResizeDirective);
 
 export class ResizeController implements ReactiveController {
   host: ReactiveControllerHost;
-  width?: number;
-  height?: number;
+  width = 0;
+  height = 0;
 
   constructor(host: ReactiveControllerHost) {
     (this.host = host).addController(this);

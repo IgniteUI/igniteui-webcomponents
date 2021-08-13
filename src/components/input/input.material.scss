@@ -24,9 +24,11 @@ label {
     display: inline-block;
     top: 50%;
     left: rem(4px);
-    transform: translateY(-50%);
+    transform: translateY(-50%) scale(1);
+    transform-origin: 0;
     transition: transform 150ms cubic-bezier(.4, 0, .2, 1), color 150ms cubic-bezier(.4, 0, .2, 1);
     white-space: nowrap;
+    line-height: 1;
 }
 
 :host(:focus-within) {
@@ -53,6 +55,7 @@ label {
     }
 }
 
+:host([placeholder]) > [part='container'],
 input:not(:placeholder-shown) + [part='container'] {
     > [part='middle']  {
         border-top: 1px solid transparent;

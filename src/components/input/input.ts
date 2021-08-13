@@ -7,21 +7,31 @@ export class IgcInputComponent extends LitElement {
   static styles = styles;
   private _size = new ResizeController(this);
 
+  @property({ type: String })
+  label!: string;
+
+  @property({ type: String })
+  placeholder!: string;
+
   @property({ reflect: true, type: String })
   variant: 'outlined' | 'filled' = 'outlined';
 
   renderOutlined() {
+    const gap = 4;
+    const scale = 0.75;
+    const labelWidth = this._size.width;
+    const width = `${labelWidth * scale + gap * 2}px`;
+
     return html`
-      <input id="outlined" type="text" placeholder=" " />
+      <input
+        id="outlined"
+        type="text"
+        placeholder="${this.placeholder ?? ' '}"
+      />
       <div part="container">
         <div part="start"></div>
-        <div
-          part="middle"
-          .style="width: ${this._size.dimensions.width
-            ? `${this._size.dimensions.width + 12 * 0.75}px`
-            : 'auto'}"
-        >
-          <label ${this._size.observe()} for="outlined">Some long label</label>
+        <div part="middle" style="width: ${labelWidth > 0 ? width : 'auto'}">
+          <label ${this._size.observe()} for="outlined"> ${this.label} </label>
         </div>
         <div part="end"></div>
       </div>
@@ -29,7 +39,6 @@ export class IgcInputComponent extends LitElement {
   }
 
   render() {
-    console.log(this._size.dimensions);
     return html`${this.renderOutlined()}`;
   }
 }
