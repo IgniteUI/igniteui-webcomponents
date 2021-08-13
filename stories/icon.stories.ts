@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
-import { Story } from './story';
+import { Story, Context } from './story';
 import '../igniteui-webcomponents.js';
 import {
   registerIcon,
@@ -48,10 +48,6 @@ interface ArgTypes {
   collection: string;
   size: 'small' | 'medium' | 'large';
   mirrored: boolean;
-}
-
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
 
 all.forEach((icon) => {

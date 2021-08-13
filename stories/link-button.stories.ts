@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined.js';
-import { Story } from './story.js';
+import { Story, Context } from './story.js';
 import '../igniteui-webcomponents.js';
 
 export default {
@@ -42,10 +42,6 @@ interface ArgTypes {
   download: string;
   rel: string;
   target: '_blank' | '_parent' | '_self' | '_top';
-}
-
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
 
 const Template: Story<ArgTypes, Context> = (

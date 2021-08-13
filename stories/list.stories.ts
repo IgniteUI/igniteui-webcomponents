@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Story, Context } from './story.js';
 
 export default {
   title: 'List',
@@ -18,10 +18,6 @@ export default {
 
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
-}
-
-interface Context {
-  globals: { theme: string; direction: string };
 }
 
 const employeeData = [

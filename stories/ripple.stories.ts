@@ -1,17 +1,11 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Story, Context } from './story.js';
 
 export default {
   title: 'Ripple',
   component: 'igc-ripple',
 };
-
-type Direction = 'ltr' | 'rtl' | 'auto';
-
-interface Context {
-  globals: { theme: string; direction: Direction };
-}
 
 const Template: Story<null, Context> = () => html`
   <igc-button>

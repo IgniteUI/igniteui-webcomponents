@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Story, Context } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 export default {
@@ -47,10 +47,6 @@ interface ArgTypes {
   labelPosition: 'before' | 'after';
   checked: boolean;
   disabled: boolean;
-}
-
-interface Context {
-  globals: { theme: string; direction: string };
 }
 
 const Template: Story<ArgTypes, Context> = (
