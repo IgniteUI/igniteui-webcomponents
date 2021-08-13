@@ -51,6 +51,12 @@ export default {
         options: ['long', 'short', 'narrow'],
       },
     },
+    selection: {
+      control: {
+        type: 'inline-radio',
+        options: ['single', 'multi', 'range'],
+      },
+    },
   },
 };
 
@@ -60,6 +66,7 @@ interface ArgTypes {
   locale: string;
   viewDate: Date;
   weekDayFormat: 'long' | 'short' | 'narrow';
+  selection: 'single' | 'multi' | 'range';
 }
 
 interface Context {
@@ -74,6 +81,7 @@ const Template: Story<ArgTypes, Context> = (
     locale,
     viewDate = new Date(),
     weekDayFormat = 'short',
+    selection = 'single',
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -86,6 +94,7 @@ const Template: Story<ArgTypes, Context> = (
       .locale=${locale}
       .viewDate=${new Date(viewDate)}
       .formatOptions=${formatOptions}
+      .selection=${selection}
       dir=${ifDefined(direction)}
     >
     </igc-days-view>

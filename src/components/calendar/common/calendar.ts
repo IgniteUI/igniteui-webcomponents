@@ -153,13 +153,6 @@ export interface IFormattedParts {
   combined: string;
 }
 
-export interface IFormattingOptions {
-  day?: 'numeric' | '2-digit';
-  month?: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
-  weekday?: 'long' | 'short' | 'narrow';
-  year?: 'numeric' | '2-digit';
-}
-
 export interface IFormattingViews {
   day?: boolean;
   month?: boolean;
