@@ -18,10 +18,7 @@ export default {
     name: {
       description: 'The name of the icon glyph to draw.',
       defaultValue: '',
-      control: {
-        type: 'select',
-        options: icons,
-      },
+      control: 'text',
     },
     collection: {
       description:
@@ -37,17 +34,20 @@ export default {
     size: {
       description: 'Determines the size of the component.',
       defaultValue: 'medium',
-      control: 'text',
+      control: {
+        type: 'inline-radio',
+        options: ['small', 'medium', 'large'],
+      },
     },
   },
 };
-// endregion
 interface ArgTypes {
   name: string;
   collection: string;
-  size: 'small' | 'medium' | 'large';
   mirrored: boolean;
+  size: 'small' | 'medium' | 'large';
 }
+// endregion
 
 interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };

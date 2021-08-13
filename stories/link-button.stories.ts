@@ -16,7 +16,7 @@ export default {
     },
     target: {
       control: {
-        type: 'inline-radio',
+        type: 'select',
         options: ['_blank', '_parent', '_self', '_top', 'undefined'],
       },
     },
@@ -31,7 +31,7 @@ export default {
     variant: {
       defaultValue: 'flat',
       control: {
-        type: 'inline-radio',
+        type: 'select',
         options: ['flat', 'raised', 'outlined', 'fab'],
       },
     },
@@ -45,17 +45,16 @@ export default {
     },
   },
 };
-// endregion
-
 interface ArgTypes {
-  disabled: boolean;
-  size: 'small' | 'medium' | 'large';
-  variant: 'flat' | 'raised' | 'outlined' | 'fab';
   href: string;
   download: string;
+  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
   rel: string;
-  target: '_blank' | '_parent' | '_self' | '_top';
+  disabled: boolean;
+  variant: 'flat' | 'raised' | 'outlined' | 'fab';
+  size: 'small' | 'medium' | 'large';
 }
+// endregion
 
 interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
