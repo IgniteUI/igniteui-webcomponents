@@ -1,0 +1,11 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-list-item {
+        border-bottom: utils.rem(1px) solid utils.color(gray, 200);
+
+        &:last-of-type {
+            border-bottom: none;
+        }
+    }
+}

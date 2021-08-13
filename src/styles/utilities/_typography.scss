@@ -283,6 +283,19 @@
     }
 }
 
+/// Includes all category related styles into the current style block.
+/// @param {String} $category - The name of the typography category.
+/// @example scss Assign the `h1` styles to custom CSS property using the CSS font shorthand syntax.
+///   .text {
+///     @include type-category('overline');
+///   }
+@mixin type-category($category) {
+    @each $key in type-style() {
+        #{$key}: var(--igc-#{$category}-#{$key});
+    }
+    @content;
+}
+
 @mixin typography($font-family, $type-scale) {
     $scope: if(is-root(), ':root', '&');
 
