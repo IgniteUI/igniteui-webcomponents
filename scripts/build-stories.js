@@ -80,7 +80,7 @@ function extractTags(meta) {
             table: prop.default ?
             {
               defaultValue: { summary: prop.type === 'boolean' ? prop.default === 'true' :
-                prop.type === 'Date' ? undefined : prop.default?.replace(/"/g, '') }
+                prop.type === 'Date' ? undefined : prop.default.replace(/"/g, '') }
             } : undefined,
           }
         ]
