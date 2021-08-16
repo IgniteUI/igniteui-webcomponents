@@ -15,6 +15,9 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 ) {
   static styles = [styles];
 
+  /**
+   * @private
+   */
   @query('.native', true)
   nativeElement!: HTMLElement;
 

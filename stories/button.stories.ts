@@ -1,58 +1,50 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
-export default {
+// region default
+const metadata = {
   title: 'Button',
   component: 'igc-button',
   argTypes: {
-    disabled: {
-      control: 'boolean',
-      description: 'Determines whether the button is disabled.',
-      table: {
-        type: {
-          summary: 'boolean',
-        },
-        defaultValue: {
-          summary: 'false',
-        },
-      },
-    },
-    size: {
-      control: {
-        type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
-      },
-      defaultValue: 'large',
-    },
-    variant: {
-      control: {
-        type: 'inline-radio',
-        options: ['flat', 'raised', 'outlined', 'fab'],
-      },
-      defaultValue: 'flat',
-    },
     type: {
+      description: 'The type of the button. Defaults to undefined.',
       control: {
         type: 'inline-radio',
         options: ['button', 'reset', 'submit'],
       },
-      defaultValue: 'button',
+    },
+    disabled: {
+      description: 'Determines whether the button is disabled.',
+      defaultValue: false,
+      control: 'boolean',
+    },
+    variant: {
+      defaultValue: 'flat',
+      control: {
+        type: 'select',
+        options: ['flat', 'raised', 'outlined', 'fab'],
+      },
+    },
+    size: {
+      description: 'Determines the size of the component.',
+      defaultValue: 'large',
+      control: {
+        type: 'inline-radio',
+        options: ['small', 'medium', 'large'],
+      },
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
-  disabled: boolean;
-  size: 'small' | 'medium' | 'large';
-  variant: 'flat' | 'raised' | 'outlined' | 'fab';
   type: 'button' | 'reset' | 'submit';
+  disabled: boolean;
+  variant: 'flat' | 'raised' | 'outlined' | 'fab';
+  size: 'small' | 'medium' | 'large';
 }
-
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   { disabled = false, size, variant, type }: ArgTypes,

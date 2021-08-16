@@ -1,52 +1,61 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 import '../igniteui-webcomponents.js';
 
-export default {
-  title: 'Link Button',
+// region default
+const metadata = {
+  title: 'Link-button',
   component: 'igc-link-button',
   argTypes: {
-    disabled: { control: 'boolean' },
+    href: {
+      control: 'text',
+    },
+    download: {
+      control: 'text',
+    },
+    target: {
+      control: {
+        type: 'select',
+        options: ['_blank', '_parent', '_self', '_top', 'undefined'],
+      },
+    },
+    rel: {
+      control: 'text',
+    },
+    disabled: {
+      description: 'Determines whether the button is disabled.',
+      defaultValue: false,
+      control: 'boolean',
+    },
+    variant: {
+      defaultValue: 'flat',
+      control: {
+        type: 'select',
+        options: ['flat', 'raised', 'outlined', 'fab'],
+      },
+    },
     size: {
+      description: 'Determines the size of the component.',
+      defaultValue: 'large',
       control: {
         type: 'inline-radio',
         options: ['small', 'medium', 'large'],
       },
-      defaultValue: 'large',
-    },
-    variant: {
-      control: {
-        type: 'inline-radio',
-        options: ['flat', 'raised', 'outlined', 'fab'],
-      },
-      defaultValue: 'flat',
-    },
-    href: { control: 'text' },
-    download: { control: 'text' },
-    rel: { control: 'text' },
-    target: {
-      control: {
-        type: 'inline-radio',
-        options: ['_blank', '_parent', '_self', '_top'],
-      },
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
-  disabled: boolean;
-  size: 'small' | 'medium' | 'large';
-  variant: 'flat' | 'raised' | 'outlined' | 'fab';
   href: string;
   download: string;
+  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
   rel: string;
-  target: '_blank' | '_parent' | '_self' | '_top';
+  disabled: boolean;
+  variant: 'flat' | 'raised' | 'outlined' | 'fab';
+  size: 'small' | 'medium' | 'large';
 }
-
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   {
