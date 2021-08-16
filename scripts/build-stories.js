@@ -80,7 +80,7 @@ function buildStoryMeta(story, meta) {
   };
 
   meta.args.forEach(arg => storyMeta.argTypes[arg[0]] = arg[1]);
-  const payload = `// region default\nexport default ${JSON.stringify(storyMeta, undefined, 2)}\n${buildArgTypes(meta)}\n// endregion`.replace(STRIP_QUOTES, "'");
+  const payload = `// region default\nconst metadata = ${JSON.stringify(storyMeta, undefined, 2)}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`.replace(STRIP_QUOTES, "'");
 
   return story.toString().replace(REPLACE_REGEX, payload);
 }

@@ -4,7 +4,7 @@ import { Story } from './story.js';
 import '../igniteui-webcomponents.js';
 
 // region default
-export default {
+const metadata = {
   title: 'Link-button',
   component: 'igc-link-button',
   argTypes: {
@@ -45,6 +45,7 @@ export default {
     },
   },
 };
+export default metadata;
 interface ArgTypes {
   href: string;
   download: string;

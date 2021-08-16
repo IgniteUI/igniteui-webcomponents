@@ -4,7 +4,7 @@ import { Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 // region default
-export default {
+const metadata = {
   title: 'Button',
   component: 'igc-button',
   argTypes: {
@@ -37,6 +37,7 @@ export default {
     },
   },
 };
+export default metadata;
 interface ArgTypes {
   type: 'button' | 'reset' | 'submit';
   disabled: boolean;
