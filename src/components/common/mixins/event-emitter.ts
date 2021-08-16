@@ -34,6 +34,9 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
   superClass: T
 ) => {
   class EventEmitterElement extends superClass {
+    /**
+     * @private
+     */
     addEventListener<K extends keyof M, M extends E & HTMLElementEventMap>(
       type: K,
       listener: (this: HTMLElement, ev: M[K]) => any,
@@ -47,6 +50,9 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
       super.addEventListener(type, listener, options);
     }
 
+    /**
+     * @private
+     */
     removeEventListener<K extends keyof M, M extends E & HTMLElementEventMap>(
       type: K,
       listener: (this: HTMLElement, ev: M[K]) => any,
@@ -60,6 +66,9 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
       super.removeEventListener(type, listener, options);
     }
 
+    /**
+     * @private
+     */
     emitEvent<K extends keyof E, D extends UnpackCustomEvent<E[K]>>(
       type: K,
       eventInitDict?: CustomEventInit<D>
