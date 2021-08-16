@@ -13,6 +13,9 @@ import { IconsRegistry } from './icon.registry.js';
  *
  */
 export class IgcIconComponent extends SizableMixin(LitElement) {
+  /**
+   * @private
+   */
   static styles = styles;
 
   @state() private svg = '';
