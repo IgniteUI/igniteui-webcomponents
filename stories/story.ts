@@ -3,7 +3,7 @@ import { TemplateResult } from 'lit-html';
 export type Direction = 'ltr' | 'rtl' | 'auto';
 
 export interface Context {
-  globals: { theme: string; direction: Direction };
+  globals: { direction: Direction };
 }
 
 export interface Story<T, K> {
