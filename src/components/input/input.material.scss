@@ -1,6 +1,9 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
+$idle-color: color(gray, 600);
+$active-color: color(primary, 500);
+
 :host {
     position: relative;
     display: flex;
@@ -28,30 +31,37 @@ label {
     transform-origin: 0;
     transition: transform 150ms cubic-bezier(.4, 0, .2, 1), color 150ms cubic-bezier(.4, 0, .2, 1);
     white-space: nowrap;
+    color: $idle-color;
     line-height: 1;
 }
 
 :host(:focus-within) {
     [part='start'] {
-        border: 2px solid color(primary, 300);
-        border-right: none;
+        padding-inline-start: 4px;
+        border: {
+            width: rem(2px);
+            color: $active-color;
+        }
     }
 
     [part='middle'] {
-        border: 2px solid color(primary, 300);
-        border-left: none;
-        border-right: none;
-        border-top: 1px solid transparent;
+        border: {
+            width: rem(2px);
+            color: $active-color;
+            top: 1px solid transparent;
+        }
     }
 
     [part='end'] {
-        border: 2px solid color(primary, 300);
-        border-left: none;
+        border: {
+            width: rem(2px);
+            color: $active-color;
+        }
     }
 
     label {
         transform: translateY(-34.75px) scale(.75);
-        color: color(primary, 300);
+        color: $active-color;
     }
 }
 
@@ -78,11 +88,20 @@ input:not(:placeholder-shown) + [part='container'] {
 }
 
 [part='start'] {
-    width: rem(12px);
+    display: flex;
+    align-items: center;
+    width: auto;
     height: 100%;
-    border: 1px solid color(primary, 300);
-    border-right: none;
-    border-radius: 4px 0 0 4px;
+    min-width: rem(12px);
+    border: {
+        width: 1px;
+        style: solid;
+        color: $idle-color;
+        right: none;
+        radius: rem(4px) 0 0 rem(4px);
+    }
+    padding-inline-start: 5px;
+    padding-inline-end: rem(4px);
 }
 
 [part='middle'] {
@@ -90,16 +109,24 @@ input:not(:placeholder-shown) + [part='container'] {
     flex: 0 0 auto;
     width: auto;
     height: 100%;
-    border: 1px solid color(primary, 300);
-    border-left: none;
-    border-right: none;
+    border: {
+        width: 1px;
+        style: solid;
+        color: $idle-color;
+        left: none;
+        right: none;
+    }
     overflow: visible;
 }
 
 [part='end'] {
     flex-grow: 1;
     height: 100%;
-    border: 1px solid color(primary, 300);
-    border-radius: 0 4px 4px 0;
-    border-left: 0;
+    border: {
+        width: 1px;
+        style: solid;
+        color: $idle-color;
+        left: none;
+        radius: 0 rem(4px) rem(4px) 0;
+    }
 }
