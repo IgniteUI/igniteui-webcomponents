@@ -10,9 +10,14 @@ import {
   DateRangeType,
   ICalendarDate,
   isDateInRanges,
-  WEEKDAYS,
+  WeekDays,
 } from '../common/calendar';
-import { getDateOnly, isDate, isEqual } from '../common/utils';
+import {
+  getDateOnly,
+  getWeekDayNumber,
+  isDate,
+  isEqual,
+} from '../common/utils';
 import { styles } from './days-view.css';
 
 export interface IgcDaysViewEventMap {
@@ -44,8 +49,8 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   @property({ type: Boolean })
   showWeekNumber = false;
 
-  @property({ type: Number, attribute: 'week-start' })
-  weekStart: WEEKDAYS | number = WEEKDAYS.SUNDAY;
+  @property({ attribute: 'week-start' })
+  weekStart: WeekDays = 'sunday';
 
   @property({ attribute: false })
   viewDate = new Date();
@@ -83,7 +88,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   @watch('weekStart')
   weekStartChange() {
-    this.calendarModel.firstWeekDay = this.weekStart;
+    this.calendarModel.firstWeekDay = getWeekDayNumber(this.weekStart);
   }
 
   @watch('formatOptions')

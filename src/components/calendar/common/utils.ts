@@ -1,3 +1,15 @@
+import { WeekDays } from './calendar';
+
+const weekDaysMap = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+
 export const isDate = (value: any): value is Date => value instanceof Date;
 
 export const isEqual = (obj1: any, obj2: any): boolean => {
@@ -26,4 +38,8 @@ export const getDateOnly = (date: Date) => {
     validDate.getMonth(),
     validDate.getDate()
   );
+};
+
+export const getWeekDayNumber = (day: WeekDays) => {
+  return weekDaysMap[day];
 };

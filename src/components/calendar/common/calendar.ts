@@ -159,7 +159,16 @@ export interface IFormattingViews {
   year?: boolean;
 }
 
-export enum WEEKDAYS {
+export type WeekDays =
+  | 'sunday'
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday';
+
+enum WEEKDAYS {
   SUNDAY = 0,
   MONDAY = 1,
   TUESDAY = 2,
