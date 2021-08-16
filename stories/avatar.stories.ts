@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 // region default
@@ -37,8 +37,6 @@ export default {
     alt: { control: 'text' },
   },
 };
-// endregion
-
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
   shape: 'circle' | 'rounded' | 'square';
@@ -46,10 +44,7 @@ interface ArgTypes {
   src: string;
   alt: string;
 }
-
-interface Context {
-  globals: { theme: string; direction: string };
-}
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   { size, shape, src, alt, initials }: ArgTypes,

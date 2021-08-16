@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 // region default
@@ -45,10 +45,6 @@ interface ArgTypes {
   size: 'small' | 'medium' | 'large';
 }
 // endregion
-
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
 
 const Template: Story<ArgTypes, Context> = (
   { disabled = false, size, variant, type }: ArgTypes,

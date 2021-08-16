@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 // region default
@@ -43,7 +43,6 @@ export default {
     },
   },
 };
-//end region
 
 interface ArgTypes {
   shape: 'rounded' | 'square';
@@ -51,10 +50,7 @@ interface ArgTypes {
   outlined: boolean;
   content: string;
 }
-
-interface Context {
-  globals: { theme: string; direction: string };
-}
+//end region
 
 const Template: Story<ArgTypes, Context> = (
   { outlined = false, shape, variant, content = '' }: ArgTypes,
