@@ -18,6 +18,7 @@
 # build
 /_site/
 /dist/
+/docs
 /out-tsc/
 
 storybook-static

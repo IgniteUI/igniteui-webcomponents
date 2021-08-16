@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
-import { Story } from './story';
+import { Context, Story } from './story';
 import '../igniteui-webcomponents.js';
 import {
   registerIcon,
@@ -10,49 +10,50 @@ import { all } from '@igniteui/material-icons-extended';
 
 const icons = all.map((icon) => icon.name);
 
-export default {
+// region default
+const metadata = {
   title: 'Icon',
   component: 'igc-icon',
   argTypes: {
     name: {
-      control: {
-        type: 'select',
-        options: icons,
-      },
-      defaultValue: 'biking',
-      description: 'Name of the icon',
+      description: 'The name of the icon glyph to draw.',
+      defaultValue: '',
+      control: 'text',
     },
     collection: {
-      control: {
-        type: 'text',
-      },
+      description:
+        'The name of the registered collection for look up of icons.\nDefaults to `default`.',
       defaultValue: 'default',
-      description: 'Collection of icons',
+      control: 'text',
+    },
+    mirrored: {
+      description: 'Whether to flip the icon. Useful for RTL layouts.',
+      defaultValue: false,
+      control: 'boolean',
     },
     size: {
+      description: 'Determines the size of the component.',
+      defaultValue: 'medium',
       control: {
         type: 'inline-radio',
         options: ['small', 'medium', 'large'],
       },
-      defaultValue: 'medium',
-    },
-    mirrored: {
-      control: 'boolean',
-      defaultValue: false,
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
   name: string;
   collection: string;
-  size: 'small' | 'medium' | 'large';
   mirrored: boolean;
+  size: 'small' | 'medium' | 'large';
 }
+// endregion
 
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
+(metadata.argTypes.name as any).control = {
+  type: 'select',
+  options: icons,
+};
 
 all.forEach((icon) => {
   registerIconFromText(icon.name, icon.value);

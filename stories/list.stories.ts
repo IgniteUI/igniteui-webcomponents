@@ -1,7 +1,8 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 
+// region default
 export default {
   title: 'List',
   component: 'igc-list',
@@ -19,10 +20,7 @@ export default {
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
 }
-
-interface Context {
-  globals: { theme: string; direction: string };
-}
+//end region
 
 const employeeData = [
   {
