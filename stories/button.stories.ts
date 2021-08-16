@@ -17,7 +17,7 @@ const metadata = {
     },
     disabled: {
       description: 'Determines whether the button is disabled.',
-      defaultValue: 'false',
+      defaultValue: false,
       control: 'boolean',
     },
     variant: {

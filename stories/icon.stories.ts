@@ -28,7 +28,7 @@ const metadata = {
     },
     mirrored: {
       description: 'Whether to flip the icon. Useful for RTL layouts.',
-      defaultValue: 'false',
+      defaultValue: false,
       control: 'boolean',
     },
     size: {

@@ -57,7 +57,7 @@ function extractTags(meta) {
     component: meta.name,
     args: Array.from(meta.attributes, attr => [attr.name, {
       description: attr.description,
-      defaultValue: attr.default,
+      defaultValue: attr.type === 'boolean' ? attr.default === 'true' : attr.default,
       control: fixControlProp(attr.type)
     }])
   };
