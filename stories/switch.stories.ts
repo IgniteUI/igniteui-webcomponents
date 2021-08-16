@@ -1,8 +1,9 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 export default {
   title: 'Switch',
   component: 'igc-switch',
@@ -48,10 +49,7 @@ interface ArgTypes {
   checked: boolean;
   disabled: boolean;
 }
-
-interface Context {
-  globals: { theme: string; direction: string };
-}
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   { label, labelPosition, checked, disabled }: ArgTypes,
@@ -60,8 +58,8 @@ const Template: Story<ArgTypes, Context> = (
   return html`
     <igc-switch
       label-position=${ifDefined(labelPosition)}
-      .checked=${ifDefined(checked)}
-      .disabled=${ifDefined(disabled)}
+      .checked=${checked}
+      .disabled=${disabled}
       dir=${ifDefined(direction)}
     >
       ${label}

@@ -5,26 +5,38 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './icon.material.css';
 import { IconsRegistry } from './icon.registry.js';
 
-// @customElement('igc-icon')
+/**
+ * Icon component
+ *
+ * @element igc-icon
+ *
+ *
+ */
 export class IgcIconComponent extends SizableMixin(LitElement) {
   static styles = styles;
 
   @state() private svg = '';
 
-  private _name: string | undefined;
+  private _name = '';
 
-  set name(value: string | undefined) {
+  private _collection = 'default';
+
+  set name(value: string) {
     if (this._name !== value) {
       this._name = value;
       this.getIcon();
     }
   }
+
+  /**
+   * The name of the icon glyph to draw.
+   *
+   * @attr [name=""]
+   */
   @property()
-  get name(): string | undefined {
+  get name(): string {
     return this._name;
   }
-
-  private _collection = 'default';
 
   set collection(value: string) {
     if (this._collection !== value) {
@@ -32,11 +44,21 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
       this.getIcon();
     }
   }
+
+  /**
+   * The name of the registered collection for look up of icons.
+   * Defaults to `default`.
+   *
+   * @attr [collection=default]
+   */
   @property()
   get collection(): string {
     return this._collection;
   }
 
+  /**
+   * Whether to flip the icon. Useful for RTL layouts.
+   */
   @property({ type: Boolean, reflect: true })
   mirrored = false;
 
@@ -47,9 +69,7 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-
     this.setAttribute('role', 'img');
-
     IconsRegistry.instance().subscribe(this.iconLoaded);
   }
 

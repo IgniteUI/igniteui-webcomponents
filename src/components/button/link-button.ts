@@ -4,19 +4,30 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 
-// @customElement('igc-link-button')
+/**
+ * @element igc-link-button
+ *
+ * @slot prefix - Slot for projecting content at the start of the button.
+ * @slot suffix - Slot for projecting content at the end of the button.
+ *
+ * @cssprop --size - Duh!
+ *
+ * @csspart native - The native button/a element.
+ * @csspart prefix - The prefix container.
+ * @csspart suffix - The suffix container.
+ */
 export class IgcLinkButtonComponent extends IgcButtonBaseComponent {
   @property()
-  href?: string;
+  href!: string;
 
   @property()
-  download?: string;
+  download!: string;
 
   @property()
-  target?: '_blank' | '_parent' | '_self' | '_top';
+  target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
 
   @property()
-  rel?: string;
+  rel!: string;
 
   render() {
     return html`
