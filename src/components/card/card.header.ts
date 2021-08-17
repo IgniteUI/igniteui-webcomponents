@@ -6,19 +6,18 @@ export class IgcCardHeader extends LitElement {
 
   constructor() {
     super();
-    this.setAttribute('role', 'header');
   }
 
   render() {
     return html`
-      <div class="thumbnail">
+      <section class="thumbnail">
         <slot name="thumbnail"></slot>
-      </div>
-      <div class="titles">
+      </section>
+      <section class="titles">
         <slot name="title"></slot>
         <slot name="subtitle"></slot>
         <slot></slot>
-      </div>
+      </section>
     `;
   }
 }

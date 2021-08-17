@@ -1,7 +1,7 @@
 import { IgcAvatarComponent } from './src/components/avatar/avatar.js';
 import { IgcBadgeComponent } from './src/components/badge/badge.js';
 import { IgcButtonComponent } from './src/components/button/button.js';
-import { IgcCard } from './src/components/card/card.js';
+import { IgcCardComponent } from './src/components/card/card.js';
 import { IgcCardActions } from './src/components/card/card.actions.js';
 import { IgcCardContent } from './src/components/card/card.content.js';
 import { IgcCardHeader } from './src/components/card/card.header.js';
@@ -22,7 +22,7 @@ window.customElements.define('igniteui-webcomponents', IgniteuiWebcomponents);
 window.customElements.define('igc-avatar', IgcAvatarComponent);
 window.customElements.define('igc-badge', IgcBadgeComponent);
 window.customElements.define('igc-button', IgcButtonComponent);
-window.customElements.define('igc-card', IgcCard);
+window.customElements.define('igc-card', IgcCardComponent);
 window.customElements.define('igc-card-header', IgcCardHeader);
 window.customElements.define('igc-card-media', IgcCardMedia);
 window.customElements.define('igc-card-content', IgcCardContent);

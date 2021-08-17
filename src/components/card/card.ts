@@ -3,12 +3,11 @@ import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styles } from './card.material.css';
 
-export class IgcCard extends LitElement {
+export class IgcCardComponent extends LitElement {
   static styles = styles;
 
   constructor() {
     super();
-    this.setAttribute('role', 'group');
   }
 
   @property({ type: Boolean, reflect: true })
