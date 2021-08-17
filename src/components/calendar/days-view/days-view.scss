@@ -9,22 +9,25 @@
 
 .body-row {
     display: flex;
-    justify-content: space-between;
-    padding: 0;
 }
 
 .label,
 .date {
     position: relative;
     display: flex;
+    flex: 1;
     justify-content: center;
     align-items: center;
     outline: none;
-    min-width: 14.28%;
+    box-sizing: border-box;
 }
 
 .date--selected {
     background: hotpink;
+}
+
+.date--hidden {
+    visibility: hidden;
 }
 
 .label--week-number {

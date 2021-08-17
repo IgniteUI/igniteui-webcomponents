@@ -10,7 +10,6 @@ import {
   DateRangeType,
   ICalendarDate,
   isDateInRanges,
-  WeekDays,
 } from '../common/calendar';
 import {
   getDateOnly,
@@ -26,10 +25,18 @@ export interface IgcDaysViewEventMap {
 
 const WEEK_LABEL = 'Wk';
 
+/**
+ * Days view component
+ *
+ * @element igc-days-view
+ */
 export class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  /**
+   * @private
+   */
   static styles = [styles];
 
   private rangeStarted = false;
@@ -47,10 +54,17 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   selection: 'single' | 'multi' | 'range' = 'single';
 
   @property({ type: Boolean })
-  showWeekNumber = false;
+  showWeekNumbers = false;
 
   @property({ attribute: 'week-start' })
-  weekStart: WeekDays = 'sunday';
+  weekStart:
+    | 'sunday'
+    | 'monday'
+    | 'tuesday'
+    | 'wednesday'
+    | 'thursday'
+    | 'friday'
+    | 'saturday' = 'sunday';
 
   @property({ attribute: false })
   viewDate = new Date();
@@ -442,7 +456,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   private renderWeekHeaders() {
     return html`<div role="row" class="body-row">
-      ${this.showWeekNumber
+      ${this.showWeekNumbers
         ? html`<div role="columnheader" class="label label--week-number">
             <span>${WEEK_LABEL}</span>
           </div>`
@@ -462,7 +476,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   private renderDates() {
     return this.getCalendarMonth().map(
       (week) => html`<div role="row" class="body-row">
-        ${this.showWeekNumber
+        ${this.showWeekNumbers
           ? html`<div role="columnheader" class="date date--week-number">
               <span
                 role="rowheader"
