@@ -1,15 +1,120 @@
+@use 'sass:map';
+@use 'sass:math';
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
 $idle-color: color(gray, 600);
 $active-color: color(primary, 500);
+$success-color: color(success, 500);
+$error-color: color(error, 500);
+$idle-border-width: rem(1px);
+$active-border-width: rem(2px);
+$scale: .75;
+$fs: rem(16px);
+
+$input-height: (
+    large: rem(56px),
+    medium: rem(48px),
+    small: rem(40px)
+);
+
+@function floated-position($input-height) {
+    $scaled-fs: $fs * $scale;
+    @return $scaled-fs + $input-height - #{math.div($fs, 2)};
+}
+
+%large-label {
+    $y-offset: floated-position(map.get($input-height, 'large'));
+    transform: translateY(-34.75px) scale($scale);
+}
+
+%medium-label {
+    $y-offset: floated-position(map.get($input-height, 'medium'));
+    transform: translateY(-29.75px) scale($scale);
+}
+
+%small-label {
+    $y-offset: floated-position(map.get($input-height, 'small'));
+    transform: translateY(-25.75px) scale($scale);
+}
+
+%floated-styles {
+    > [part='middle']  {
+        border-top: $idle-border-width solid transparent;
+    }
+}
 
 :host {
     position: relative;
     display: flex;
     flex-direction: column;
-    height: rem(56px);
     font-family: var(--igc-font-family);
+}
+
+:host([size='large']) {
+    height: map.get($input-height, 'large');
+
+    input:not(:placeholder-shown) + [part='container'] label {
+        @extend %large-label;
+    }
+}
+
+:host([size='medium']) {
+    height: map.get($input-height, 'medium');
+
+    input:not(:placeholder-shown) + [part='container'] label {
+        @extend %medium-label;
+    }
+}
+
+:host([size='small']) {
+    height: map.get($input-height, 'small');
+
+    input:not(:placeholder-shown) + [part='container'] label {
+        @extend %small-label;
+    }
+}
+
+:host([size='large']:focus-within) {
+    label {
+        @extend %large-label;
+    }
+}
+
+:host([size='medium']:focus-within) {
+    label {
+        @extend %medium-label;
+    }
+}
+
+:host([size='small']:focus-within) {
+    label {
+        @extend %small-label;
+    }
+}
+
+:host([placeholder][size='large']) > [part='container'] {
+    @extend %floated-styles;
+
+    label {
+        @extend %large-label;
+    }
+}
+
+:host([placeholder][size='medium']) > [part='container'] {
+    @extend %floated-styles;
+
+    label {
+        @extend %medium-label;
+    }
+}
+
+:host([placeholder][size='small']) > [part='container'] {
+    @extend %floated-styles;
+
+    label {
+        @extend %small-label;
+    }
 }
 
 input {
@@ -26,9 +131,8 @@ label {
     position: absolute;
     display: inline-block;
     top: 50%;
-    left: rem(4px);
+    inset-inline-start: rem(4px);
     transform: translateY(-50%) scale(1);
-    transform-origin: 0;
     transition: transform 150ms cubic-bezier(.4, 0, .2, 1), color 150ms cubic-bezier(.4, 0, .2, 1);
     white-space: nowrap;
     color: $idle-color;
@@ -39,41 +143,49 @@ label {
     [part='start'] {
         padding-inline-start: 4px;
         border: {
-            width: rem(2px);
             color: $active-color;
+            inline: {
+                start-width: $active-border-width;
+            };
+            block: {
+                start-width: $active-border-width;
+                end-width: $active-border-width;
+            }
         }
     }
 
     [part='middle'] {
         border: {
-            width: rem(2px);
+            width: $active-border-width;
             color: $active-color;
-            top: 1px solid transparent;
+            top: $idle-border-width solid transparent;
         }
     }
 
-    [part='end'] {
+    [part='filler'] {
         border: {
-            width: rem(2px);
             color: $active-color;
+            inline: {
+                end-width: $active-border-width;
+            };
+            block: {
+                start-width: $active-border-width;
+                end-width: $active-border-width;
+            };
+        }
+
+        > [part='end'] {
+            padding-inline-end: rem(4px);
         }
     }
 
     label {
-        transform: translateY(-34.75px) scale(.75);
         color: $active-color;
     }
 }
 
-:host([placeholder]) > [part='container'],
 input:not(:placeholder-shown) + [part='container'] {
-    > [part='middle']  {
-        border-top: 1px solid transparent;
-
-        > label {
-            transform: translateY(-34.75px) scale(.75);
-        }
-    }
+    @extend %floated-styles;
 }
 
 [part='container'] {
@@ -82,8 +194,6 @@ input:not(:placeholder-shown) + [part='container'] {
     width: 100%;
     height: 100%;
     max-width: 100%;
-    right: 0;
-    left: 0;
     pointer-events: none;
 }
 
@@ -94,13 +204,24 @@ input:not(:placeholder-shown) + [part='container'] {
     height: 100%;
     min-width: rem(12px);
     border: {
-        width: 1px;
         style: solid;
         color: $idle-color;
-        right: none;
-        radius: rem(4px) 0 0 rem(4px);
+        inline: {
+            start-width: $idle-border-width;
+            end-width: 0;
+        };
+        block: {
+            start-width: $idle-border-width;
+            end-width: $idle-border-width;
+        };
+        start: {
+            start-radius: rem(4px);
+        };
+        end: {
+            start-radius: rem(4px);
+        };
     }
-    padding-inline-start: 5px;
+    padding-inline-start: rem(5px);
     padding-inline-end: rem(4px);
 }
 
@@ -110,7 +231,7 @@ input:not(:placeholder-shown) + [part='container'] {
     width: auto;
     height: 100%;
     border: {
-        width: 1px;
+        width: $idle-border-width;
         style: solid;
         color: $idle-color;
         left: none;
@@ -119,14 +240,35 @@ input:not(:placeholder-shown) + [part='container'] {
     overflow: visible;
 }
 
-[part='end'] {
+[part='filler'] {
+    display: flex;
+    justify-content: flex-end;
     flex-grow: 1;
     height: 100%;
     border: {
-        width: 1px;
         style: solid;
         color: $idle-color;
-        left: none;
-        radius: 0 rem(4px) rem(4px) 0;
+        inline: {
+            start-width: 0;
+            end-width: $idle-border-width;
+        };
+        block: {
+            start-width: $idle-border-width;
+            end-width: $idle-border-width;
+        };
+        start: {
+            end-radius: rem(4px);
+        };
+        end: {
+            end-radius: rem(4px);
+        };
+    }
+
+    > [part='end'] {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        padding-inline-start: rem(4px);
+        padding-inline-end: rem(5px);
     }
 }

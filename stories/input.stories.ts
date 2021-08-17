@@ -48,6 +48,7 @@ const Template: Story<ArgTypes, Context> = (
       placeholder=${ifDefined(placeholder)}
     >
       <igc-icon name="github" slot="start"></igc-icon>
+      <igc-icon name="github" slot="end"></igc-icon>
     </igc-input>
   `;
 export const Outlined = Template.bind({});
