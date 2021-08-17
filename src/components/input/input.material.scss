@@ -184,6 +184,39 @@ label {
     }
 }
 
+:host([invalid]),
+:host([invalid]:focus-within) {
+    [part='start'],
+    [part='middle'],
+    [part='filler'] {
+        border-color: $error-color;
+    }
+
+    label {
+        color: $error-color;
+    }
+}
+
+:host([valid]),
+:host([valid]:focus-within) {
+    [part='start'],
+    [part='middle'],
+    [part='filler'] {
+        border-color: $success-color;
+    }
+
+    label {
+        color: $success-color;
+    }
+}
+
+:host([valid]:focus-within),
+:host([invalid]:focus-within) {
+    [part='middle']  {
+        border-top: $idle-border-width solid transparent;
+    }
+}
+
 input:not(:placeholder-shown) + [part='container'] {
     @extend %floated-styles;
 }
@@ -203,6 +236,7 @@ input:not(:placeholder-shown) + [part='container'] {
     width: auto;
     height: 100%;
     min-width: rem(12px);
+    color: color(gray, 700);
     border: {
         style: solid;
         color: $idle-color;
@@ -268,6 +302,7 @@ input:not(:placeholder-shown) + [part='container'] {
         display: flex;
         align-items: center;
         height: 100%;
+        color: color(gray, 700);
         padding-inline-start: rem(4px);
         padding-inline-end: rem(5px);
     }
