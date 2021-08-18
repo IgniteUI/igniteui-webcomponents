@@ -1,27 +1,18 @@
-import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { html } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { watch } from '../../common/decorators';
-import { Constructor } from '../../common/mixins/constructor';
-import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import {
-  Calendar,
-  DateRangeDescriptor,
   DateRangeType,
   ICalendarDate,
   isDateInRanges,
-} from '../common/calendar';
-import {
-  getDateOnly,
-  getWeekDayNumber,
-  isDate,
-  isEqual,
-} from '../common/utils';
+} from '../common/calendar.model';
+import { IgcCalendarBaseComponent } from '../common/calendar-base';
+import { getDateOnly, isDate, isEqual } from '../common/utils';
 import { styles } from './days-view.css';
 
-export interface IgcDaysViewEventMap {
-  igcChange: CustomEvent<void>;
-}
+// export interface IgcDaysViewEventMap {
+//   igcChange: CustomEvent<void>;
+// }
 
 const WEEK_LABEL = 'Wk';
 
@@ -30,79 +21,23 @@ const WEEK_LABEL = 'Wk';
  *
  * @element igc-days-view
  */
-export class IgcDaysViewComponent extends EventEmitterMixin<
-  IgcDaysViewEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export class IgcDaysViewComponent extends IgcCalendarBaseComponent {
   /**
    * @private
    */
   static styles = [styles];
 
   private rangeStarted = false;
-  private calendarModel = new Calendar();
   // private formatterDay!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   // private formatterMonth: Intl.DateTimeFormat;
   // private formatterYear: Intl.DateTimeFormat;
   // private formatterMonthday: Intl.DateTimeFormat;
 
-  @property({ attribute: false })
-  value?: Date | Date[];
-
-  @property()
-  selection: 'single' | 'multi' | 'range' = 'single';
-
-  @property({ type: Boolean })
-  showWeekNumbers = false;
-
-  @property({ attribute: 'week-start' })
-  weekStart:
-    | 'sunday'
-    | 'monday'
-    | 'tuesday'
-    | 'wednesday'
-    | 'thursday'
-    | 'friday'
-    | 'saturday' = 'sunday';
-
-  @property({ attribute: false })
-  viewDate = new Date();
-
-  @property()
-  locale = 'en';
-
-  @property({ attribute: false })
-  formatOptions: Intl.DateTimeFormatOptions = {
-    day: 'numeric',
-    month: 'short',
-    weekday: 'short',
-    year: 'numeric',
-  };
-
-  @property({ attribute: false })
-  disabledDates!: DateRangeDescriptor[];
-
-  @property({ attribute: false })
-  specialDates!: DateRangeDescriptor[];
-
-  @property({ type: Boolean, attribute: 'hide-outside-days' })
-  hideOutsideDays = false;
-
-  @watch('value')
-  valueChange() {
-    this.emitEvent('igcChange');
-  }
-
   @watch('selection', { waitUntilFirstUpdate: true })
   selectionChange() {
     this.value = undefined;
     this.rangeStarted = false;
-  }
-
-  @watch('weekStart')
-  weekStartChange() {
-    this.calendarModel.firstWeekDay = getWeekDayNumber(this.weekStart);
   }
 
   @watch('formatOptions')

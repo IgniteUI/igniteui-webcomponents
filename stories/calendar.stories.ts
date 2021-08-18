@@ -4,8 +4,8 @@ import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 const metadata = {
-  title: 'Days View',
-  component: 'igc-days-view',
+  title: 'Calendar',
+  component: 'igc-calendar',
   argTypes: {
     selection: {
       type: '"single" | "multi" | "range"',
@@ -50,6 +50,11 @@ const metadata = {
       defaultValue: false,
       control: 'boolean',
     },
+    activeView: {
+      type: '"days" | "months" | "years"',
+      options: ['days', 'months', 'years'],
+      control: { type: 'inline-radio' },
+    },
   },
 };
 export default metadata;
@@ -67,6 +72,7 @@ interface ArgTypes {
   viewDate: Date;
   locale: string;
   hideOutsideDays: boolean;
+  activeView: 'days' | 'months' | 'years';
 }
 
 const Template: Story<ArgTypes, Context> = (
@@ -78,22 +84,25 @@ const Template: Story<ArgTypes, Context> = (
     viewDate = new Date(),
     // weekDayFormat = 'short',
     selection = 'single',
+    activeView = 'days',
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   // const formatOptions = { weekday: weekDayFormat };
 
   return html`
-    <igc-days-view
+    <igc-calendar
+      style="width: 500px;"
       .showWeekNumbers=${showWeekNumbers}
       .hideOutsideDays=${hideOutsideDays}
       .weekStart=${weekStart}
       .locale=${locale}
       .viewDate=${new Date(viewDate)}
       .selection=${selection}
+      .activeView=${activeView}
       dir=${ifDefined(direction)}
     >
-    </igc-days-view>
+    </igc-calendar>
   `;
 };
 

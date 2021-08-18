@@ -1,0 +1,21 @@
+:host {
+    display: flex;
+    flex-flow: row wrap;
+    width: 100%;
+    min-width: 290px;
+    outline: none;
+    overflow: hidden;
+}
+
+.year {
+    display: flex;
+    position: relative;
+    flex: 1 0 25%;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+}
+
+.year--current {
+    color: hotpink;
+}

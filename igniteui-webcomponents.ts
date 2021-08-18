@@ -12,6 +12,9 @@ import { IgcRadioComponent } from './src/components/radio/radio.js';
 import { IgcRadioGroupComponent } from './src/components/radio-group/radio-group.js';
 import { IgniteuiWebcomponents } from './src/IgniteuiWebcomponents.js';
 import { IgcDaysViewComponent } from './src/components/calendar/days-view/days-view.js';
+import { IgcMonthsViewComponent } from './src/components/calendar/months-view/months-view.js';
+import { IgcYearsViewComponent } from './src/components/calendar/years-view/years-view.js';
+import { IgcCalendarComponent } from './src/components/calendar/calendar.js';
 import { IgcRippleComponent } from './src/components/ripple/ripple.js';
 
 window.customElements.define('igniteui-webcomponents', IgniteuiWebcomponents);
@@ -28,4 +31,7 @@ window.customElements.define('igc-icon', IgcIconComponent);
 window.customElements.define('igc-radio', IgcRadioComponent);
 window.customElements.define('igc-radio-group', IgcRadioGroupComponent);
 window.customElements.define('igc-days-view', IgcDaysViewComponent);
+window.customElements.define('igc-months-view', IgcMonthsViewComponent);
+window.customElements.define('igc-years-view', IgcYearsViewComponent);
+window.customElements.define('igc-calendar', IgcCalendarComponent);
 window.customElements.define('igc-ripple', IgcRippleComponent);
