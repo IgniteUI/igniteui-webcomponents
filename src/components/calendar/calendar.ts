@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
@@ -21,30 +21,33 @@ export class IgcCalendarComponent extends EventEmitterMixin<
    */
   static styles = [styles];
 
-  @query('igc-days-view')
-  daysView!: IgcDaysViewComponent;
+  // @query('igc-days-view')
+  // daysView!: IgcDaysViewComponent;
 
-  @query('igc-months-view')
-  monthsView!: IgcMonthsViewComponent;
+  // @query('igc-months-view')
+  // monthsView!: IgcMonthsViewComponent;
 
-  @query('igc-years-view')
-  yearsView!: IgcYearsViewComponent;
+  // @query('igc-years-view')
+  // yearsView!: IgcYearsViewComponent;
 
   @property()
   activeView: 'days' | 'months' | 'years' = 'days';
 
-  private changeValue() {
-    this.value = this.daysView.value;
+  private changeValue(event: CustomEvent<void>) {
+    event.stopPropagation();
+    this.value = (event.target as IgcDaysViewComponent).value;
     this.emitEvent('igcChange');
   }
 
-  private changeMonth() {
-    this.viewDate = this.monthsView.value;
+  private changeMonth(event: CustomEvent<void>) {
+    event.stopPropagation();
+    this.viewDate = (event.target as IgcMonthsViewComponent).value;
     this.activeView = 'days';
   }
 
-  private changeYear() {
-    this.viewDate = this.yearsView.value;
+  private changeYear(event: CustomEvent<void>) {
+    event.stopPropagation();
+    this.viewDate = (event.target as IgcYearsViewComponent).value;
     this.activeView = 'months';
   }
 
