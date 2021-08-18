@@ -6,7 +6,7 @@
         width: $size;
         height: $size;
         min-width: $size;
-        transition: transparent;
+        transition: background-color .15s ease-in-out, box-shadow .15s ease-in-out;
         border-radius: utils.rem(4px);
         background: none;
 
