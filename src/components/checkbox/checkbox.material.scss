@@ -10,9 +10,6 @@ input[type='checkbox'] {
     @include hide-default();
 }
 
-$ripple-size: rem(40px);
-$ripple-radius: calc(#{$ripple-size} / 2);
-
 $mark-length: 24;
 
 [part='base'] {
@@ -22,15 +19,11 @@ $mark-length: 24;
     flex-flow: row nowrap;
 
     &:hover [part='control'] {
-        &::after {
-            background: color(gray, 600, .06);
-        }
+        background: color(gray, 600, .06);
     }
 
     &:focus-within [part='control'] {
-        &::after {
-            background: color(gray, 600, .12);
-        }
+        background: color(gray, 600, .12);
     }
 }
 
@@ -38,13 +31,12 @@ $mark-length: 24;
     $size: var(--size, rem(20px));
     position: relative;
     display: inline-flex;
-    width: $size;
-    height: $size;
-    min-width: $size;
-    border-radius: rem(2px);
-    border: rem(2px) solid color(gray, 600);
-    -webkit-tap-highlight-color: transparent;
-    transition: border-color .2s ease-out;
+    width: calc(#{$size } * 2);
+    height: calc(#{$size } * 2);
+    min-width: calc(#{$size } * 2);
+    border-radius: 50%;
+    user-select: none;
+    transition: background .15s ease-in;
 
     &::after {
         position: absolute;
@@ -52,11 +44,11 @@ $mark-length: 24;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-        width: $ripple-size;
-        height: $ripple-size;
-        overflow: hidden;
-        border-radius: $ripple-radius;
-        transition: background .2s ease-out;
+        width: $size;
+        height: $size;
+        border: rem(2px) solid color(gray, 600);
+        border-radius: rem(2px);
+        transition: all .15s ease-in;
     }
 }
 
@@ -84,25 +76,23 @@ $mark-length: 24;
     opacity: 0;
     z-index: 1;
     transition: opacity .1s ease-out;
+    transform: scale(.45);
+    transform-origin: center;
 }
 
 :host([checked]),
 :host([indeterminate]) {
     [part='base'] {
         &:hover [part='control'] {
-            &::after {
-                background: color(secondary, 500, .06);
-            }
+            background: color(secondary, 500, .06);
         }
 
         &:focus-within [part='control'] {
-            &::after {
-                background: color(secondary, 500, .12);
-            }
+            background: color(secondary, 500, .12);
         }
     }
 
-    [part='control'] {
+    [part='control']::after {
         border-color: color(secondary, 500);
         background: color(secondary, 500);
     }
@@ -112,11 +102,13 @@ $mark-length: 24;
         opacity: 1;
         transition: all .2s ease-out, opacity .2s ease-out;
     }
+}
 
-    .indeterminate {
+:host(:not([checked])[indeterminate]) {
+    [part='indicator'] {
         stroke-dashoffset: 41;
         opacity: 1;
-        transform: rotate(45deg) translateX(-.125rem);
+        transform: rotate(45deg) scale(.45) translateX(-.25rem);
     }
 }
 
@@ -126,14 +118,18 @@ $mark-length: 24;
     }
 
     [part='control'] {
-        border-color: color(error, 500);
+        &::after {
+            border-color: color(error, 500);
+        }
     }
 }
 
 :host(:not([disabled])[invalid][checked]),
 :host(:not([disabled])[invalid][indeterminate]) {
     [part='control'] {
-        background: color(error, 500);
+        &::after {
+            background: color(error, 500);
+        }
     }
 }
 
@@ -143,8 +139,9 @@ $mark-length: 24;
     pointer-events: none;
 
     [part='control'] {
-        border-color: color(gray, 400);
-        background: transparent;
+        &::after {
+            border-color: color(gray, 400);
+        }
     }
 
     [part='label'] {
@@ -155,7 +152,9 @@ $mark-length: 24;
 :host([disabled][checked]),
 :host([disabled][indeterminate]) {
     [part='control'] {
-        background: color(gray, 400);
+        &::after {
+            background: color(gray, 400);
+        }
     }
 }
 

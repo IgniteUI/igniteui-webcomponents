@@ -59,20 +59,11 @@ export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           @focus="${this.handleFocus}"
         />
         <span part="control">
-          ${this.checked
-            ? html` <span part="indicator" class="checked">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <path d="M4.1,12.7 9,17.6 20.3,6.3" />
-                </svg>
-              </span>`
-            : ''}
-          ${!this.checked && this.indeterminate
-            ? html` <span part="indicator" class="indeterminate">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <path d="M4.1,12.7 9,17.6 20.3,6.3" />
-                </svg>
-              </span>`
-            : ''}
+          <span part="indicator">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M4.1,12.7 9,17.6 20.3,6.3" />
+            </svg>
+          </span>
         </span>
         <span part="label" id="${this.labelId}">
           <slot></slot>
