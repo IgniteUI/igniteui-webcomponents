@@ -9,11 +9,6 @@ import { styles } from './years-view.css';
 
 const YEARS_PER_PAGE = 20;
 
-/**
- * Years view component
- *
- * @element igc-years-view
- */
 export class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
