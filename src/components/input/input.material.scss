@@ -308,3 +308,24 @@ input:not(:placeholder-shown) + [part='container'] {
         padding-inline-end: rem(5px);
     }
 }
+
+:host([required]) {
+    label::after {
+        content: '*';
+    }
+}
+
+:host([disabled]) {
+    input,
+    label {
+        color: color(gray, 400);
+    }
+
+    [part='start'],
+    [part='middle'],
+    [part='filler'],
+    [part='end'] {
+        color: color(gray, 400);
+        border-color: color(gray, 400);
+    }
+}
