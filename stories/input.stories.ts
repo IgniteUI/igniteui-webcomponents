@@ -27,25 +27,44 @@ export default {
       },
       defaultValue: 'large',
     },
+    outlined: {
+      control: 'boolean',
+      defaultValue: true,
+    },
+    required: {
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      control: 'boolean',
+      defaultValue: false,
+    },
   },
 };
 
 interface ArgTypes {
   label: string;
+  outlined: boolean;
   size: 'small' | 'medium' | 'large';
   placeholder: string;
+  required: boolean;
+  disabled: boolean;
 }
 
 const Template: Story<ArgTypes, Context> = (
-  { label, size, placeholder }: ArgTypes,
+  { label, size, outlined, placeholder, required, disabled }: ArgTypes,
   { globals: { direction } }: Context
 ) =>
   html`
     <igc-input
       label=${label}
       size=${size}
-      dir=${direction}
       placeholder=${ifDefined(placeholder)}
+      type="text"
+      dir="${direction}"
+      .outlined=${outlined}
+      .required=${required}
+      .disabled=${disabled}
     >
       <igc-icon name="github" slot="prefix"></igc-icon>
       <igc-icon name="github" slot="suffix"></igc-icon>

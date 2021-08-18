@@ -2,24 +2,23 @@ import { css, html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styles } from './input.material.css';
-import { ResizeController } from '../common/directives/resize.js';
+import { ResizeController, DirectionController } from '../common/controllers';
 
 export class IgcInputComponent extends LitElement {
   static styles = styles;
+  private direction = new DirectionController(this);
   private _start = new ResizeController(this);
   private _label = new ResizeController(this);
   private _end = new ResizeController(this);
-
-  private get isLTR(): boolean {
-    const styles = window.getComputedStyle(this);
-    return styles.getPropertyValue('direction') === 'ltr';
-  }
 
   @query('input', true)
   input!: HTMLInputElement;
 
   @property({ type: String })
   type!: string;
+
+  @property({ type: String })
+  pattern!: string;
 
   @property({ type: String })
   label!: string;
@@ -33,8 +32,14 @@ export class IgcInputComponent extends LitElement {
   @property({ reflect: true, type: Boolean })
   invalid!: boolean;
 
-  @property({ reflect: true, type: String })
-  variant: 'outlined' | 'filled' = 'outlined';
+  @property({ reflect: true, type: Boolean })
+  outlined = false;
+
+  @property({ reflect: true, type: Boolean })
+  required = false;
+
+  @property({ reflect: true, type: Boolean })
+  disabled = false;
 
   reportValidity() {
     this.input.reportValidity();
@@ -49,19 +54,22 @@ export class IgcInputComponent extends LitElement {
   renderOutlined() {
     const gap = 4;
     const scale = 0.75;
+    const padding = 12;
     const labelWidth = this._label.width;
     const startWidth = this._start.width;
     const endWidth = this._end.width;
     const width = `${labelWidth * scale + gap * 2}px`;
+
     const inputStyle = css`
-      padding-inline-start: calc(${startWidth}px + 12px);
-      padding-inline-end: calc(${endWidth}px + 12px);
+      padding-inline-start: calc(${startWidth}px + ${padding}px);
+      padding-inline-end: calc(${endWidth}px + ${padding}px);
     `;
 
     return html`
       <input
         id="outlined"
         type="${ifDefined(this.type)}"
+        pattern="${ifDefined(this.pattern)}"
         placeholder="${this.placeholder ?? ' '}"
         style="${inputStyle}"
       />
@@ -73,13 +81,15 @@ export class IgcInputComponent extends LitElement {
           <label
             ${this._label.observe()}
             for="outlined"
-            style="transform-origin: ${this.isLTR ? 'left' : 'right'}"
+            style="transform-origin: ${this.direction.value === 'ltr'
+              ? 'left'
+              : 'right'}"
           >
             ${this.label}
           </label>
         </div>
         <div part="filler">
-          <div part="end" style="display: flex" ${this._end.observe()}>
+          <div part="end" ${this._end.observe()}>
             <slot name="suffix"></slot>
           </div>
         </div>
