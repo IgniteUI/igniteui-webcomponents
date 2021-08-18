@@ -6,13 +6,18 @@ import {
   ICalendarDate,
   isDateInRanges,
 } from '../common/calendar.model';
-import { IgcCalendarBaseComponent } from '../common/calendar-base';
+import {
+  IgcCalendarBaseComponent,
+  IgcCalendarBaseEventMap,
+} from '../common/calendar-base';
 import { getDateOnly, isDate, isEqual } from '../common/utils';
 import { styles } from './days-view.css';
+import { EventEmitterMixin } from '../../common/mixins/event-emitter';
+import { Constructor } from '../../common/mixins/constructor';
 
-// export interface IgcDaysViewEventMap {
-//   igcChange: CustomEvent<void>;
-// }
+export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
+  igcOutsideDaySelected: CustomEvent<ICalendarDate>;
+}
 
 const WEEK_LABEL = 'Wk';
 
@@ -21,7 +26,10 @@ const WEEK_LABEL = 'Wk';
  *
  * @element igc-days-view
  */
-export class IgcDaysViewComponent extends IgcCalendarBaseComponent {
+export class IgcDaysViewComponent extends EventEmitterMixin<
+  IgcDaysViewEventMap,
+  Constructor<IgcCalendarBaseComponent<IgcDaysViewEventMap>>
+>(IgcCalendarBaseComponent) {
   /**
    * @private
    */
@@ -231,6 +239,10 @@ export class IgcDaysViewComponent extends IgcCalendarBaseComponent {
   private selectDay(event: Event, day: ICalendarDate) {
     event.stopPropagation();
     this.selectDateFromClient(day.date);
+
+    if (!day.isCurrentMonth) {
+      this.emitEvent('igcOutsideDaySelected', { detail: day, bubbles: false });
+    }
   }
 
   private selectDateFromClient(value: Date) {

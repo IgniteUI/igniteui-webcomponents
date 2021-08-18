@@ -1,8 +1,7 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { watch } from '../../common/decorators';
-import { Constructor } from '../../common/mixins/constructor';
-import { EventEmitterMixin } from '../../common/mixins/event-emitter';
+import { UnpackCustomEvent } from '../../common/mixins/event-emitter';
 import { Calendar, DateRangeDescriptor } from './calendar.model';
 import { getWeekDayNumber } from './utils';
 
@@ -10,10 +9,9 @@ export interface IgcCalendarBaseEventMap {
   igcChange: CustomEvent<void>;
 }
 
-export class IgcCalendarBaseComponent extends EventEmitterMixin<
-  IgcCalendarBaseEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export class IgcCalendarBaseComponent<
+  E extends IgcCalendarBaseEventMap
+> extends LitElement {
   protected calendarModel = new Calendar();
 
   @property({ attribute: false })
@@ -66,5 +64,12 @@ export class IgcCalendarBaseComponent extends EventEmitterMixin<
   @watch('weekStart')
   weekStartChange() {
     this.calendarModel.firstWeekDay = getWeekDayNumber(this.weekStart);
+  }
+
+  emitEvent<K extends keyof E, D extends UnpackCustomEvent<E[K]>>(
+    _type: K,
+    _eventInitDict?: CustomEventInit<D>
+  ): boolean {
+    return false;
   }
 }
