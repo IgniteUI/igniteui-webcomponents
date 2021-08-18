@@ -28,7 +28,7 @@ const WEEK_LABEL = 'Wk';
  */
 export class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
-  Constructor<IgcCalendarBaseComponent<IgcDaysViewEventMap>>
+  Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
   /**
    * @private
@@ -239,6 +239,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   private selectDay(event: Event, day: ICalendarDate) {
     event.stopPropagation();
     this.selectDateFromClient(day.date);
+    this.emitEvent('igcChange');
 
     if (!day.isCurrentMonth) {
       this.emitEvent('igcOutsideDaySelected', { detail: day, bubbles: false });

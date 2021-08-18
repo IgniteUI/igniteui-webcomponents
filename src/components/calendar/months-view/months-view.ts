@@ -34,11 +34,6 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
   @property()
   monthFormat?: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' = 'short';
 
-  @watch('value', { waitUntilFirstUpdate: true })
-  valueChange() {
-    this.emitEvent('igcChange');
-  }
-
   @watch('locale')
   @watch('monthFormat')
   formatChange() {
@@ -85,6 +80,7 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
       month.getMonth(),
       this.value.getDate()
     );
+    this.emitEvent('igcChange');
   }
 
   render() {

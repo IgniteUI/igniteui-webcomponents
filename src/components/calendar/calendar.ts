@@ -5,7 +5,7 @@ import {
   IgcCalendarBaseEventMap,
 } from './common/calendar-base';
 import { IgcMonthsViewComponent } from './months-view/months-view';
-import { IgcYearsViewComponent } from './years-view/years-view';
+import { IgcYearsViewComponent, YEARS_PER_PAGE } from './years-view/years-view';
 import { styles } from './calendar.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
@@ -14,7 +14,7 @@ import { ICalendarDate } from './common/calendar.model';
 
 export class IgcCalendarComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
-  Constructor<IgcCalendarBaseComponent<IgcCalendarBaseEventMap>>
+  Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
   /**
    * @private
@@ -35,6 +35,7 @@ export class IgcCalendarComponent extends EventEmitterMixin<
 
   private changeValue() {
     this.value = this.daysView.value;
+    this.emitEvent('igcChange');
   }
 
   private changeMonth() {
@@ -45,10 +46,6 @@ export class IgcCalendarComponent extends EventEmitterMixin<
   private changeYear() {
     this.viewDate = this.yearsView.value;
     this.activeView = 'months';
-  }
-
-  private renderNavigation() {
-    return html`<div class="navigation">${this.viewDate.toDateString()}</div>`;
   }
 
   private outsideDaySelected(event: CustomEvent<ICalendarDate>) {
@@ -66,6 +63,58 @@ export class IgcCalendarComponent extends EventEmitterMixin<
 
   private previousMonth() {
     this.viewDate = this.calendarModel.getPrevMonth(this.viewDate);
+  }
+
+  private nextYear() {
+    this.viewDate = this.calendarModel.getNextYear(this.viewDate);
+  }
+
+  private previousYear() {
+    this.viewDate = this.calendarModel.getPrevYear(this.viewDate);
+  }
+
+  private nextYearsPage() {
+    this.viewDate = this.calendarModel.timedelta(
+      this.viewDate,
+      'year',
+      YEARS_PER_PAGE
+    );
+  }
+
+  private previousYearsPage() {
+    this.viewDate = this.calendarModel.timedelta(
+      this.viewDate,
+      'year',
+      -YEARS_PER_PAGE
+    );
+  }
+
+  private navigateNext() {
+    if (this.activeView === 'days') {
+      this.nextMonth();
+    } else if (this.activeView === 'months') {
+      this.nextYear();
+    } else if (this.activeView === 'years') {
+      this.nextYearsPage();
+    }
+  }
+
+  private navigatePrevious() {
+    if (this.activeView === 'days') {
+      this.previousMonth();
+    } else if (this.activeView === 'months') {
+      this.previousYear();
+    } else if (this.activeView === 'years') {
+      this.previousYearsPage();
+    }
+  }
+
+  private renderNavigation() {
+    return html`<div class="navigation">
+      <button @click=${this.navigatePrevious}><</button>
+      ${this.viewDate.toDateString()}
+      <button @click=${this.navigateNext}>></button>
+    </div>`;
   }
 
   render() {

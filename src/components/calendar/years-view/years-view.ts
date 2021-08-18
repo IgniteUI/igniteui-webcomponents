@@ -1,13 +1,12 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { styles } from './years-view.css';
 
-const YEARS_PER_PAGE = 20;
+export const YEARS_PER_PAGE = 20;
 
 export class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
@@ -29,11 +28,6 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
 
   // @property()
   // yearFormat: 'numeric' | '2-digit' = 'numeric';
-
-  @watch('value', { waitUntilFirstUpdate: true })
-  valueChange() {
-    this.emitEvent('igcChange');
-  }
 
   // @watch('locale')
   // @watch('yearFormat')
@@ -79,6 +73,7 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
 
   private yearClick(year: Date) {
     this.value = year;
+    this.emitEvent('igcChange');
   }
 
   render() {
