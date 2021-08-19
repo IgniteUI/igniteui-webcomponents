@@ -21,9 +21,9 @@ export default {
       defaultValue: 'after',
     },
     alignment: {
+      options: ['vertical', 'horizontal'],
       control: {
         type: 'inline-radio',
-        options: ['vertical', 'horizontal'],
       },
       defaultValue: 'vertical',
     },

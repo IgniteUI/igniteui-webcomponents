@@ -16,27 +16,47 @@ const metadata = {
   component: 'igc-icon',
   argTypes: {
     name: {
+      type: 'string',
       description: 'The name of the icon glyph to draw.',
-      defaultValue: '',
       control: 'text',
+      table: {
+        defaultValue: {
+          summary: '',
+        },
+      },
     },
     collection: {
+      type: 'string',
       description:
         'The name of the registered collection for look up of icons.\nDefaults to `default`.',
-      defaultValue: 'default',
       control: 'text',
+      table: {
+        defaultValue: {
+          summary: 'default',
+        },
+      },
     },
     mirrored: {
+      type: 'boolean',
       description: 'Whether to flip the icon. Useful for RTL layouts.',
-      defaultValue: false,
       control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
     },
     size: {
+      type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
-      defaultValue: 'medium',
+      options: ['small', 'medium', 'large'],
       control: {
         type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
+      },
+      table: {
+        defaultValue: {
+          summary: 'medium',
+        },
       },
     },
   },
@@ -76,7 +96,12 @@ const registerIconClick = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { name = 'biking', collection = 'default', size, mirrored = false }: ArgTypes,
+  {
+    name = 'biking',
+    collection = 'default',
+    size = 'medium',
+    mirrored = false,
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`

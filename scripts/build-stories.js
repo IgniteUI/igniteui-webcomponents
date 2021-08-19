@@ -11,27 +11,34 @@ const SRC_DIR = path.resolve(__dirname, '../docs/json');
 const DEST_DIR = path.resolve(__dirname, '../stories');
 
 const REPLACE_REGEX = /\/\/ region default.*\/\/ endregion/gs;
-const STRIP_QUOTES = /("\\"|\\"")/gi;
+const SUPPORTED_TYPES = ['string', 'number', 'boolean', 'Date'];
 
-const capitalize = (str) => `${str[0].toUpperCase()}${str.slice(1)}`;
+const capitalize = (str) => {
+  const arr = str.split('-');
+
+  for (var i = 0; i < arr.length; i++) {
+    arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
+  }
+
+  return arr.join(' ');
+};
 
 
 /**
  * Fixes the TS types to appropriate controls in the storybook js presentation.
  *
- * @param {string} controlMeta
+ * @param {string} propType
  * @returns
  */
-function fixControlProp(controlMeta) {
-  if (controlMeta === 'string') { return 'text'; }
-  if (controlMeta.includes('|')) {
-    const options = controlMeta.split('|').map(part => part.trim());
+function fixControlProp(propType, options) {
+  if (propType === 'string') { return 'text'; }
+  if (propType === 'Date') { return 'date'; }
+  if (options) {
     return {
-        type: options.length > 3 ? 'select': 'inline-radio',
-        options
+      type: options.length > 4 ? 'select': 'inline-radio',
     };
   }
-  return controlMeta;
+  return propType;
 }
 
 
@@ -55,16 +62,33 @@ async function processFileMeta(path) {
 function extractTags(meta) {
   return {
     component: meta.name,
-    args: Array.from(meta.attributes, attr => [attr.name, {
-      description: attr.description,
-      defaultValue: attr.type === 'boolean' ? attr.default === 'true' : attr.default,
-      control: fixControlProp(attr.type)
-    }])
+    args: Array.from(meta.properties)
+      .filter(prop =>
+        SUPPORTED_TYPES.includes(prop.type) ||
+        (prop.type.includes('|') && prop.type.startsWith('"')))
+      .map(prop => {
+        const options = prop.type.includes('|') ?
+          prop.type.split('|').map(part => part.trim().replace(/"/g, '')) :
+          undefined;
+        return [
+          prop.name,
+          {
+            type: prop.type,
+            description: prop.description,
+            options,
+            control: fixControlProp(prop.type, options),
+            table: prop.default ?
+            {
+              defaultValue: { summary: prop.type === 'boolean' ? prop.default === 'true' :
+                prop.type === 'Date' ? undefined : prop.default.replace(/"/g, '') }
+            } : undefined,
+          }
+        ]
+      })
   };
 }
 
-const writeControl = (control) => control.options ? control.options.join(' | ').replace(/"/g, "'") : control.replace(/text/g, 'string');
-const buildArgTypes = (meta, indent="  ") => ['interface ArgTypes {', ...meta.args.map(arg => `${indent}${arg[0]}: ${writeControl(arg[1].control)};`), '}'].join('\n');
+const buildArgTypes = (meta, indent="  ") => ['interface ArgTypes {', ...meta.args.map(arg => `${indent}${arg[0]}: ${arg[1].type};`), '}'].join('\n');
 
 /**
  *
@@ -80,7 +104,7 @@ function buildStoryMeta(story, meta) {
   };
 
   meta.args.forEach(arg => storyMeta.argTypes[arg[0]] = arg[1]);
-  const payload = `// region default\nconst metadata = ${JSON.stringify(storyMeta, undefined, 2)}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`.replace(STRIP_QUOTES, "'");
+  const payload = `// region default\nconst metadata = ${JSON.stringify(storyMeta, undefined, 2)}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`;
 
   return story.toString().replace(REPLACE_REGEX, payload);
 }
