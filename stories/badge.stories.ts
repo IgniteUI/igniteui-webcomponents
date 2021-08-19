@@ -9,17 +9,13 @@ export default {
   component: 'igc-badge',
   argTypes: {
     shape: {
-      control: {
-        type: 'inline-radio',
-        options: ['rounded', 'square'],
-      },
+      options: ['rounded', 'square'],
+      control: { type: 'inline-radio' },
       defaultValue: 'rounded',
     },
     variant: {
-      control: {
-        type: 'inline-radio',
-        options: ['primary', 'info', 'success', 'warning', 'danger'],
-      },
+      options: ['primary', 'info', 'success', 'warning', 'danger'],
+      control: { type: 'inline-radio' },
       defaultValue: 'primary',
     },
     outlined: {

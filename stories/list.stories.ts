@@ -8,9 +8,9 @@ export default {
   component: 'igc-list',
   argTypes: {
     size: {
+      options: ['small', 'medium', 'large'],
       control: {
         type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
       },
       defaultValue: 'large',
     },

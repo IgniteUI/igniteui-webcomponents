@@ -5,42 +5,61 @@ import '../igniteui-webcomponents.js';
 
 // region default
 const metadata = {
-  title: 'Link-button',
+  title: 'Link Button',
   component: 'igc-link-button',
   argTypes: {
     href: {
+      type: 'string',
       control: 'text',
     },
     download: {
+      type: 'string',
       control: 'text',
     },
     target: {
+      type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
+      options: ['_blank', '_parent', '_self', '_top', 'undefined'],
       control: {
         type: 'select',
-        options: ['_blank', '_parent', '_self', '_top', 'undefined'],
       },
     },
     rel: {
+      type: 'string',
       control: 'text',
     },
     disabled: {
+      type: 'boolean',
       description: 'Determines whether the button is disabled.',
-      defaultValue: false,
       control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
     },
     variant: {
-      defaultValue: 'flat',
+      type: '"flat" | "raised" | "outlined" | "fab"',
+      options: ['flat', 'raised', 'outlined', 'fab'],
       control: {
-        type: 'select',
-        options: ['flat', 'raised', 'outlined', 'fab'],
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'flat',
+        },
       },
     },
     size: {
+      type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
-      defaultValue: 'large',
+      options: ['small', 'medium', 'large'],
       control: {
         type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
+      },
+      table: {
+        defaultValue: {
+          summary: 'large',
+        },
       },
     },
   },
