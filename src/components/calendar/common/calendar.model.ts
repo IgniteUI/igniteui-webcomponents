@@ -324,51 +324,6 @@ export class Calendar {
     return ret;
   }
 
-  public formatToParts(
-    date: Date,
-    locale: string,
-    options: any,
-    parts: string[]
-  ) {
-    const formatter = new Intl.DateTimeFormat(locale, options);
-    const result: any = {
-      date,
-      full: formatter.format(date),
-    };
-
-    if ((formatter as any).formatToParts) {
-      const formattedParts = formatter.formatToParts(date);
-
-      const toType = (partType: string) => {
-        const index = formattedParts.findIndex(({ type }) => type === partType);
-        const o: IFormattedParts = { value: '', literal: '', combined: '' };
-
-        if (partType === 'era' && index > -1) {
-          o.value = formattedParts[index].value;
-          return o;
-        } else if (partType === 'era' && index === -1) {
-          return o;
-        }
-
-        o.value = formattedParts[index].value;
-        o.literal = formattedParts[index + 1]
-          ? formattedParts[index + 1].value
-          : '';
-        o.combined = [o.value, o.literal].join('');
-        return o;
-      };
-
-      for (const each of parts) {
-        result[each] = toType(each);
-      }
-    } else {
-      for (const each of parts) {
-        result[each] = { value: '', literal: '', combined: '' };
-      }
-    }
-    return result;
-  }
-
   public getFirstViewDate(date: Date, interval: string, activeViewIdx: number) {
     return this.timedelta(date, interval, -activeViewIdx);
   }
