@@ -70,8 +70,10 @@ export class IgcInputComponent extends LitElement {
         id="outlined"
         type="${ifDefined(this.type)}"
         pattern="${ifDefined(this.pattern)}"
-        placeholder="${this.placeholder ?? ' '}"
         style="${inputStyle}"
+        placeholder="${this.placeholder ?? ' '}"
+        .disabled="${this.disabled}"
+        .required="${this.required}"
       />
       <div part="container">
         <div part="start" ${this._start.observe()}>

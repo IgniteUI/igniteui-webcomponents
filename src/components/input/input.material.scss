@@ -310,6 +310,27 @@ input:not(:placeholder-shown) + [part='container'] {
     }
 }
 
+:host([required]) {
+    label::after {
+        content: '*';
+    }
+}
+
+:host([disabled]) {
+    input,
+    label {
+        color: color(gray, 400);
+    }
+
+    [part='start'],
+    [part='middle'],
+    [part='filler'],
+    [part='end'] {
+        color: color(gray, 400);
+        border-color: color(gray, 400);
+    }
+}
+
 // FILLED INPUT STYLES
 :host([outlined]) {
     [part='filler'],
@@ -393,3 +414,4 @@ input:not(:placeholder-shown) + [part='container'] {
         transform: translateY(-106%) scale($scale);
     }
 }
+
