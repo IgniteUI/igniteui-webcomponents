@@ -3,62 +3,94 @@ import '../igniteui-webcomponents.js';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 const metadata = {
   title: 'Calendar',
   component: 'igc-calendar',
   argTypes: {
-    selection: {
-      type: '"single" | "multi" | "range"',
-      defaultValue: 'single',
+    activeView: {
+      type: '"days" | "months" | "years"',
+      options: ['days', 'months', 'years'],
       control: {
         type: 'inline-radio',
-        options: ['single', 'multi', 'range'],
+      },
+      table: {
+        defaultValue: {
+          summary: 'days',
+        },
+      },
+    },
+    selection: {
+      type: '"single" | "multi" | "range"',
+      options: ['single', 'multi', 'range'],
+      control: {
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'single',
+        },
       },
     },
     showWeekNumbers: {
       type: 'boolean',
-      defaultValue: false,
       control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
     },
     weekStart: {
       type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
-      defaultValue: 'sunday',
+      options: [
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+      ],
       control: {
         type: 'select',
-        options: [
-          'sunday',
-          'monday',
-          'tuesday',
-          'wednesday',
-          'thursday',
-          'friday',
-          'saturday',
-        ],
+      },
+      table: {
+        defaultValue: {
+          summary: 'sunday',
+        },
       },
     },
     viewDate: {
       type: 'Date',
       control: 'date',
+      table: {
+        defaultValue: {},
+      },
     },
     locale: {
       type: 'string',
-      defaultValue: 'en',
       control: 'text',
+      table: {
+        defaultValue: {
+          summary: 'en',
+        },
+      },
     },
     hideOutsideDays: {
       type: 'boolean',
-      defaultValue: false,
       control: 'boolean',
-    },
-    activeView: {
-      type: '"days" | "months" | "years"',
-      options: ['days', 'months', 'years'],
-      control: { type: 'inline-radio' },
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
     },
   },
 };
 export default metadata;
 interface ArgTypes {
+  activeView: 'days' | 'months' | 'years';
   selection: 'single' | 'multi' | 'range';
   showWeekNumbers: boolean;
   weekStart:
@@ -72,7 +104,38 @@ interface ArgTypes {
   viewDate: Date;
   locale: string;
   hideOutsideDays: boolean;
-  activeView: 'days' | 'months' | 'years';
+}
+// endregion
+
+(metadata.argTypes as any).weekDayFormat = {
+  type: '"long" | "short" | "narrow"',
+  options: ['long', 'short', 'narrow'],
+  control: {
+    type: 'inline-radio',
+  },
+  table: {
+    defaultValue: {
+      summary: 'short',
+    },
+  },
+};
+
+(metadata.argTypes as any).monthFormat = {
+  type: '"numeric" | "2-digit" | "long" | "short" | "narrow"',
+  options: ['numeric', '2-digit', 'long', 'short', 'narrow'],
+  control: {
+    type: 'inline-radio',
+  },
+  table: {
+    defaultValue: {
+      summary: 'short',
+    },
+  },
+};
+
+interface ArgTypes {
+  weekDayFormat: 'long' | 'short' | 'narrow';
+  monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
 }
 
 const Template: Story<ArgTypes, Context> = (
@@ -82,13 +145,14 @@ const Template: Story<ArgTypes, Context> = (
     weekStart,
     locale,
     viewDate = new Date(),
-    // weekDayFormat = 'short',
+    weekDayFormat = 'short',
+    monthFormat = 'short',
     selection = 'single',
     activeView = 'days',
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  // const formatOptions = { weekday: weekDayFormat };
+  const formatOptions = { weekday: weekDayFormat, month: monthFormat };
 
   return html`
     <igc-calendar
@@ -100,6 +164,7 @@ const Template: Story<ArgTypes, Context> = (
       .viewDate=${new Date(viewDate)}
       .selection=${selection}
       .activeView=${activeView}
+      .formatOptions=${formatOptions}
       dir=${ifDefined(direction)}
     >
     </igc-calendar>

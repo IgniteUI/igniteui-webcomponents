@@ -37,14 +37,6 @@ export class IgcCalendarBaseComponent extends LitElement {
   locale = 'en';
 
   @property({ attribute: false })
-  formatOptions: Intl.DateTimeFormatOptions = {
-    day: 'numeric',
-    month: 'short',
-    weekday: 'short',
-    year: 'numeric',
-  };
-
-  @property({ attribute: false })
   disabledDates!: DateRangeDescriptor[];
 
   @property({ attribute: false })

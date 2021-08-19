@@ -14,6 +14,9 @@ import { ICalendarDate } from './common/calendar.model';
 import { watch } from '../common/decorators';
 import { calculateYearsRangeStart } from './common/utils';
 
+/**
+ * @element igc-calendar
+ */
 export class IgcCalendarComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<IgcCalendarBaseComponent>
@@ -36,6 +39,14 @@ export class IgcCalendarComponent extends EventEmitterMixin<
 
   @property()
   activeView: 'days' | 'months' | 'years' = 'days';
+
+  @property({ attribute: false })
+  formatOptions: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'short',
+    weekday: 'short',
+    year: 'numeric',
+  };
 
   @watch('formatOptions')
   @watch('locale')
@@ -182,7 +193,7 @@ export class IgcCalendarComponent extends EventEmitterMixin<
         ? html`<igc-days-view
             .viewDate=${this.viewDate}
             .weekStart=${this.weekStart}
-            .formatOptions=${this.formatOptions}
+            .weekDayFormat=${this.formatOptions.weekday!}
             .locale=${this.locale}
             .selection=${this.selection}
             .value=${this.value}
@@ -198,7 +209,7 @@ export class IgcCalendarComponent extends EventEmitterMixin<
         ? html`<igc-months-view
             .value=${this.viewDate}
             .locale=${this.locale}
-            .monthFormat=${this.formatOptions.month}
+            .monthFormat=${this.formatOptions.month!}
             @igcChange=${this.changeMonth}
           ></igc-months-view>`
         : ''}

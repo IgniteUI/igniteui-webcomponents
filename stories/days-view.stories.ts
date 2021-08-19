@@ -3,57 +3,94 @@ import '../igniteui-webcomponents.js';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 const metadata = {
   title: 'Days View',
   component: 'igc-days-view',
   argTypes: {
-    selection: {
-      type: '"single" | "multi" | "range"',
-      defaultValue: 'single',
+    weekDayFormat: {
+      type: '"long" | "short" | "narrow"',
+      options: ['long', 'short', 'narrow'],
       control: {
         type: 'inline-radio',
-        options: ['single', 'multi', 'range'],
+      },
+      table: {
+        defaultValue: {
+          summary: 'short',
+        },
+      },
+    },
+    selection: {
+      type: '"single" | "multi" | "range"',
+      options: ['single', 'multi', 'range'],
+      control: {
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'single',
+        },
       },
     },
     showWeekNumbers: {
       type: 'boolean',
-      defaultValue: false,
       control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
     },
     weekStart: {
       type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
-      defaultValue: 'sunday',
+      options: [
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+      ],
       control: {
         type: 'select',
-        options: [
-          'sunday',
-          'monday',
-          'tuesday',
-          'wednesday',
-          'thursday',
-          'friday',
-          'saturday',
-        ],
+      },
+      table: {
+        defaultValue: {
+          summary: 'sunday',
+        },
       },
     },
     viewDate: {
       type: 'Date',
       control: 'date',
+      table: {
+        defaultValue: {},
+      },
     },
     locale: {
       type: 'string',
-      defaultValue: 'en',
       control: 'text',
+      table: {
+        defaultValue: {
+          summary: 'en',
+        },
+      },
     },
     hideOutsideDays: {
       type: 'boolean',
-      defaultValue: false,
       control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
     },
   },
 };
 export default metadata;
 interface ArgTypes {
+  weekDayFormat: 'long' | 'short' | 'narrow';
   selection: 'single' | 'multi' | 'range';
   showWeekNumbers: boolean;
   weekStart:
@@ -68,6 +105,7 @@ interface ArgTypes {
   locale: string;
   hideOutsideDays: boolean;
 }
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   {
@@ -76,7 +114,7 @@ const Template: Story<ArgTypes, Context> = (
     weekStart,
     locale,
     viewDate = new Date(),
-    // weekDayFormat = 'short',
+    weekDayFormat = 'short',
     selection = 'single',
   }: ArgTypes,
   { globals: { direction } }: Context
@@ -91,6 +129,7 @@ const Template: Story<ArgTypes, Context> = (
       .locale=${locale}
       .viewDate=${new Date(viewDate)}
       .selection=${selection}
+      .weekDayFormat=${weekDayFormat}
       dir=${ifDefined(direction)}
     >
     </igc-days-view>

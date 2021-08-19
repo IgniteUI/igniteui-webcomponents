@@ -14,6 +14,7 @@ import { getDateOnly, isDate, isEqual } from '../common/utils';
 import { styles } from './days-view.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
+import { property } from 'lit/decorators.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcOutsideDaySelected: CustomEvent<ICalendarDate>;
@@ -36,11 +37,10 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   static styles = [styles];
 
   private rangeStarted = false;
-  // private formatterDay!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
-  // private formatterMonth: Intl.DateTimeFormat;
-  // private formatterYear: Intl.DateTimeFormat;
-  // private formatterMonthday: Intl.DateTimeFormat;
+
+  @property()
+  weekDayFormat: 'long' | 'short' | 'narrow' = 'short';
 
   @watch('selection', { waitUntilFirstUpdate: true })
   selectionChange() {
@@ -48,7 +48,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     this.rangeStarted = false;
   }
 
-  @watch('formatOptions')
+  @watch('weekDayFormat')
   @watch('locale')
   formattersChange() {
     this.initFormatters();
@@ -60,22 +60,9 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private initFormatters() {
-    // this.formatterDay = new Intl.DateTimeFormat(this.locale, {
-    //   day: this.formatOptions.day,
-    // });
     this.formatterWeekday = new Intl.DateTimeFormat(this.locale, {
-      weekday: this.formatOptions.weekday,
+      weekday: this.weekDayFormat,
     });
-    // this.formatterMonth = new Intl.DateTimeFormat(this.locale, {
-    //   month: this.formatOptions.month,
-    // });
-    // this.formatterYear = new Intl.DateTimeFormat(this.locale, {
-    //   year: this.formatOptions.year,
-    // });
-    // this.formatterMonthday = new Intl.DateTimeFormat(this.locale, {
-    //   month: this.formatOptions.month,
-    //   day: this.formatOptions.day,
-    // });
   }
 
   private generateWeekHeader(): string[] {
