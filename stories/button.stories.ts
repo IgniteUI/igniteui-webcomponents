@@ -9,30 +9,46 @@ const metadata = {
   component: 'igc-button',
   argTypes: {
     type: {
+      type: '"button" | "reset" | "submit"',
       description: 'The type of the button. Defaults to undefined.',
+      options: ['button', 'reset', 'submit'],
       control: {
         type: 'inline-radio',
-        options: ['button', 'reset', 'submit'],
       },
     },
     disabled: {
+      type: 'boolean',
       description: 'Determines whether the button is disabled.',
-      defaultValue: false,
       control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
     },
     variant: {
-      defaultValue: 'flat',
+      type: '"flat" | "raised" | "outlined" | "fab"',
+      options: ['flat', 'raised', 'outlined', 'fab'],
       control: {
-        type: 'select',
-        options: ['flat', 'raised', 'outlined', 'fab'],
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'flat',
+        },
       },
     },
     size: {
+      type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
-      defaultValue: 'large',
+      options: ['small', 'medium', 'large'],
       control: {
         type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
+      },
+      table: {
+        defaultValue: {
+          summary: 'large',
+        },
       },
     },
   },
