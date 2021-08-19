@@ -27,7 +27,8 @@
         }
     }
 
-    igc-checkbox:not([checked]):hover::part(indicator) {
+    igc-checkbox:not([checked]):hover::part(indicator),
+    igc-checkbox:not([checked]):focus-within::part(indicator) {
         opacity: 1;
         stroke: #{utils.color(gray, 700)};
         stroke-dashoffset: 0;
@@ -87,7 +88,8 @@
         }
     }
 
-    igc-checkbox[invalid]:hover::part(indicator) {
+    igc-checkbox:not([checked])[invalid]:hover::part(indicator),
+    igc-checkbox:not([checked])[invalid]:focus-within::part(indicator) {
         stroke: #{utils.color(error, 500)};
     }
 

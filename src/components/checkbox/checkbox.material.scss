@@ -62,6 +62,7 @@ $mark-length: 24;
 }
 
 [part='indicator'] {
+    display: flex;
     position: absolute;
     top: 0;
     right: 0;
