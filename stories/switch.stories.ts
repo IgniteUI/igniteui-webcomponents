@@ -10,9 +10,9 @@ export default {
   argTypes: {
     label: { control: 'text', defaultValue: 'Label' },
     labelPosition: {
+      options: ['before', 'after'],
       control: {
         type: 'inline-radio',
-        options: ['before', 'after'],
       },
       defaultValue: 'after',
     },
