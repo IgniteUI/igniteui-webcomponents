@@ -9,17 +9,13 @@ export default {
   component: 'igc-avatar',
   argTypes: {
     size: {
-      control: {
-        type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
-      },
+      options: ['small', 'medium', 'large'],
+      control: { type: 'inline-radio' },
       defaultValue: 'small',
     },
     shape: {
-      control: {
-        type: 'inline-radio',
-        options: ['circle', 'rounded', 'square'],
-      },
+      options: ['circle', 'rounded', 'square'],
+      control: { type: 'inline-radio' },
       defaultValue: 'circle',
     },
     initials: {
