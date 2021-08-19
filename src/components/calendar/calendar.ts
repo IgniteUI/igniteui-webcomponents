@@ -11,6 +11,8 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
 import { IgcDaysViewComponent } from './days-view/days-view';
 import { ICalendarDate } from './common/calendar.model';
+import { watch } from '../common/decorators';
+import { calculateYearsRangeStart } from './common/utils';
 
 export class IgcCalendarComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
@@ -20,6 +22,8 @@ export class IgcCalendarComponent extends EventEmitterMixin<
    * @private
    */
   static styles = [styles];
+
+  private formatterMonth!: Intl.DateTimeFormat;
 
   // @query('igc-days-view')
   // daysView!: IgcDaysViewComponent;
@@ -32,6 +36,27 @@ export class IgcCalendarComponent extends EventEmitterMixin<
 
   @property()
   activeView: 'days' | 'months' | 'years' = 'days';
+
+  @watch('formatOptions')
+  @watch('locale')
+  formattersChange() {
+    this.initFormatters();
+  }
+
+  constructor() {
+    super();
+    this.initFormatters();
+  }
+
+  private initFormatters() {
+    this.formatterMonth = new Intl.DateTimeFormat(this.locale, {
+      month: this.formatOptions.month,
+    });
+  }
+
+  private formattedMonth(value: Date) {
+    return this.formatterMonth.format(value);
+  }
 
   private changeValue(event: CustomEvent<void>) {
     event.stopPropagation();
@@ -49,6 +74,14 @@ export class IgcCalendarComponent extends EventEmitterMixin<
     event.stopPropagation();
     this.viewDate = (event.target as IgcYearsViewComponent).value;
     this.activeView = 'months';
+  }
+
+  private switchToMonths() {
+    this.activeView = 'months';
+  }
+
+  private switchToYears() {
+    this.activeView = 'years';
   }
 
   private outsideDaySelected(event: CustomEvent<ICalendarDate>) {
@@ -113,9 +146,31 @@ export class IgcCalendarComponent extends EventEmitterMixin<
   }
 
   private renderNavigation() {
+    let startYear = undefined;
+    let endYear = undefined;
+
+    if (this.activeView === 'years') {
+      startYear = calculateYearsRangeStart(this.viewDate, YEARS_PER_PAGE);
+      endYear = startYear + YEARS_PER_PAGE - 1;
+    }
+
     return html`<div class="navigation">
       <button @click=${this.navigatePrevious}><</button>
-      ${this.viewDate.toDateString()}
+      <div>
+        ${this.activeView === 'days'
+          ? html`<button @click=${this.switchToMonths}>
+              ${this.formattedMonth(this.viewDate)}
+            </button>`
+          : ''}
+        ${this.activeView === 'days' || this.activeView === 'months'
+          ? html`<button @click=${this.switchToYears}>
+              ${this.viewDate.getFullYear()}
+            </button>`
+          : ''}
+        ${this.activeView === 'years'
+          ? html`<span>${`${startYear} - ${endYear}`}</span>`
+          : ''}
+      </div>
       <button @click=${this.navigateNext}>></button>
     </div>`;
   }

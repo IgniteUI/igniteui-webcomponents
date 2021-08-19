@@ -43,3 +43,9 @@ export const getDateOnly = (date: Date) => {
 export const getWeekDayNumber = (day: WeekDays) => {
   return weekDaysMap[day];
 };
+
+export const calculateYearsRangeStart = (date: Date, rangeCount: number) => {
+  const year = date.getFullYear();
+  const decadeFirstYear = year - (year % 10);
+  return decadeFirstYear - (rangeCount - 10) / 2;
+};

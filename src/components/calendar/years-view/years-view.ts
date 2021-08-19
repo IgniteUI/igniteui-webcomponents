@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
+import { calculateYearsRangeStart } from '../common/utils';
 import { styles } from './years-view.css';
 
 export const YEARS_PER_PAGE = 20;
@@ -51,9 +52,7 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   }
 
   private get years() {
-    const year = this.value.getFullYear();
-    const decadeFirstYear = year - (year % 10);
-    const startYear = decadeFirstYear - (YEARS_PER_PAGE - 10) / 2;
+    const startYear = calculateYearsRangeStart(this.value, YEARS_PER_PAGE);
     const month = this.value.getMonth();
     const result = [];
 
