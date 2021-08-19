@@ -75,7 +75,6 @@ $mark-length: 24;
     fill: none;
     opacity: 0;
     z-index: 1;
-    transition: opacity .1s ease-out;
     transform: scale(.45);
     transform-origin: center;
 }
@@ -100,7 +99,12 @@ $mark-length: 24;
     [part='indicator'] {
         stroke-dashoffset: 0;
         opacity: 1;
-        transition: all .2s ease-out, opacity .2s ease-out;
+    }
+}
+
+:host([checked]) {
+    [part='indicator'] {
+        transition: all .2s ease-out;
     }
 }
 
