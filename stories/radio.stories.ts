@@ -17,28 +17,12 @@ export default {
       defaultValue: 'after',
     },
     checked: {
-      control: 'boolean',
-      description: 'Determines whether the radio is disabled.',
-      table: {
-        type: {
-          summary: 'boolean',
-        },
-        defaultValue: {
-          summary: 'false',
-        },
-      },
+      type: 'boolean',
+      defaultValue: false,
     },
     disabled: {
-      control: 'boolean',
-      description: 'Determines whether the radio is disabled.',
-      table: {
-        type: {
-          summary: 'boolean',
-        },
-        defaultValue: {
-          summary: 'false',
-        },
-      },
+      type: 'boolean',
+      defaultValue: false,
     },
   },
 };
