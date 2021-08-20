@@ -4,6 +4,7 @@
 @use '../../styles/utilities' as *;
 
 $idle-color: color(gray, 600);
+$idle-hover-color: color(gray, 800);
 $active-color: color(primary, 500);
 $success-color: color(success, 500);
 $error-color: color(error, 500);
@@ -329,3 +330,88 @@ input:not(:placeholder-shown) + [part='container'] {
         border-color: color(gray, 400);
     }
 }
+
+// FILLED INPUT STYLES
+:host([outlined]) {
+    [part='filler'],
+    [part='start'] {
+        border-top-color: transparent;
+        border-left-color: transparent;
+        border-right-color: transparent;
+        border-bottom: transparent;
+        border-top-width: rem(1px);
+    }
+
+    [part='middle'] {
+        border-top: 1px solid transparent;
+        border-bottom: transparent;
+        border-bottom-width: rem(1px);
+    }
+
+    label {
+        inset-inline-start: rem(2px);
+    }
+
+    input {
+        padding-top: rem(20px);
+        padding-bottom: rem(6px);
+        background: color(gray, 100);
+        border-bottom: 1px solid $idle-color;
+
+        border: {
+            start: {
+                end-radius: rem(4px);
+                start-radius: rem(4px);
+            };
+        }
+
+        transition: border-bottom-width 150ms cubic-bezier(.4, 0, .2, 1);
+
+        &:focus {
+            border-color: $active-color;
+        }
+
+        &:hover {
+            background: color(gray, 200);
+            border-color: $idle-hover-color;
+        }
+    }
+
+    input:not(:placeholder-shown) + [part='container'] {
+        label {
+            transform: translateY(-106%) scale($scale);
+        }
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        height: rem(2px);
+        background: $active-color;
+        left: 0;
+        right: 0;
+        transform: scaleX(0);
+        transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
+    }
+}
+
+:host([outlined]:focus-within) {
+    &::after {
+        width: 100%;
+        transform: scaleX(1);
+        opacity: 1;
+    }
+
+    input {
+        border-color: $active-color;
+    }
+}
+
+:host([outlined]:focus-within),
+:host([outlined][placeholder]) {
+    label {
+        transform: translateY(-106%) scale($scale);
+    }
+}
+
