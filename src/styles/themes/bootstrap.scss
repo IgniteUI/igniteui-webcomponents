@@ -1,7 +1,8 @@
 @use '../utilities' as utils;
 @use '../../components/button/button.bootstrap' as button;
+@use '../../components/checkbox/checkbox.bootstrap' as checkbox;
 @use '../../components/radio/radio.bootstrap' as radio;
-@use '../../components/switch/switch.bootstrap' as switch;
+@use '../../components/checkbox/switch.bootstrap' as switch;
 @use '../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../components/list/list.bootstrap' as list;
 
@@ -181,6 +182,7 @@ $type-scale: utils.extend($_base-scale, (
 }
 
 @include button.theme();
+@include checkbox.theme();
 @include radio.theme();
 @include switch.theme();
 @include navbar.theme();

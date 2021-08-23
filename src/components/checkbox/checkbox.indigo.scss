@@ -1,0 +1,77 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-checkbox {
+        font-weight: 600;
+    }
+
+    igc-checkbox::part(control) {
+        width: var(--size, utils.rem(20px));
+        height: var(--size, utils.rem(20px));
+        min-width: var(--size, utils.rem(20px));
+        transition: none;
+        background: none;
+        border-radius: utils.rem(3px);
+        border: none;
+        box-shadow: inset 0 0 0 2px #{utils.color(gray, 500)};
+
+        &::after {
+            border-radius: inherit;
+        }
+    }
+
+    igc-checkbox::part(indicator) {
+        transform: scale(.8);
+        stroke: #{utils.color(surface, 500)};
+    }
+
+    igc-checkbox:not([checked])[indeterminate]::part(indicator) {
+        transform: rotate(45deg) translateX(-.125rem) scale(.8);
+    }
+
+    igc-checkbox:hover::part(control) {
+        box-shadow: 0 0 0 4px #{utils.color(gray, 200, .87)};
+    }
+
+    igc-checkbox:focus-within::part(control) {
+        box-shadow: 0 0 0 4px #{utils.color(gray, 300, .87)};
+    }
+
+    igc-checkbox[checked]::part(control),
+    igc-checkbox[indeterminate]::part(control) {
+        background: #{utils.color(primary, 500)};
+        box-shadow: inset 0 0 0 4px #{utils.color(secondary, 500)};
+    }
+
+    igc-checkbox[checked]:hover::part(control),
+    igc-checkbox[indeterminate]:hover::part(control) {
+        box-shadow: 0 0 0 4px #{utils.color(secondary, 100, .87)};
+    }
+
+    igc-checkbox[checked]:focus-within::part(control),
+    igc-checkbox[indeterminate]:focus-within::part(control) {
+        box-shadow: 0 0 0 4px #{utils.color(secondary, 200, .87)};
+    }
+
+    igc-checkbox[invalid][checked]::part(control),
+    igc-checkbox[invalid][indeterminate]::part(control) {
+        box-shadow: inset 0 0 0 4px #{utils.color(error, 500)};
+        background: #{utils.color(error, 500)};
+    }
+
+    igc-checkbox[invalid]:hover::part(control),
+    igc-checkbox[invalid]:focus-within::part(control),
+    igc-checkbox[invalid][checked]:hover::part(control),
+    igc-checkbox[invalid][checked]:focus-within::part(control),
+    igc-checkbox[invalid][indeterminate]:hover::part(control),
+    igc-checkbox[invalid][indeterminate]:focus-within::part(control) {
+        box-shadow: 0 0 0 4px #{utils.color(error, 200, .87)};
+    }
+
+    igc-checkbox[disabled] {
+        &::part(control) {
+            background: transparent;
+            box-shadow: none;
+        }
+    }
+}
