@@ -232,3 +232,9 @@ export class IgcCalendarComponent extends SizableMixin(
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-calendar': IgcCalendarComponent;
+  }
+}

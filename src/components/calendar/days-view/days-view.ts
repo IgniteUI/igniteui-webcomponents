@@ -440,3 +440,9 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     return html`${this.renderWeekHeaders()} ${this.renderDates()}`;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-days-view': IgcDaysViewComponent;
+  }
+}

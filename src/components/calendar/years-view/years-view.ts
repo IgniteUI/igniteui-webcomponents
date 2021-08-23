@@ -91,3 +91,9 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
     )}`;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-years-view': IgcYearsViewComponent;
+  }
+}
