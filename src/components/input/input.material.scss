@@ -40,7 +40,7 @@ $input-height: (
 }
 
 %floated-styles {
-    > [part='middle']  {
+    > [part='notch']  {
         border-top: $idle-border-width solid transparent;
     }
 }
@@ -142,7 +142,7 @@ label {
 }
 
 :host(:focus-within) {
-    [part='start'] {
+    [part='prefix'] {
         padding-inline-start: 4px;
         border: {
             color: $active-color;
@@ -156,7 +156,7 @@ label {
         }
     }
 
-    [part='middle'] {
+    [part='notch'] {
         border: {
             width: $active-border-width;
             color: $active-color;
@@ -164,7 +164,7 @@ label {
         }
     }
 
-    [part='filler'] {
+    [part='end'] {
         border: {
             color: $active-color;
             inline: {
@@ -176,7 +176,7 @@ label {
             };
         }
 
-        > [part='end'] {
+        > [part='suffix'] {
             padding-inline-end: rem(4px);
         }
     }
@@ -188,9 +188,9 @@ label {
 
 :host([invalid]),
 :host([invalid]:focus-within) {
-    [part='start'],
-    [part='middle'],
-    [part='filler'] {
+    [part='prefix'],
+    [part='notch'],
+    [part='end'] {
         border-color: $error-color;
     }
 
@@ -201,9 +201,9 @@ label {
 
 :host([valid]),
 :host([valid]:focus-within) {
-    [part='start'],
-    [part='middle'],
-    [part='filler'] {
+    [part='prefix'],
+    [part='notch'],
+    [part='end'] {
         border-color: $success-color;
     }
 
@@ -214,7 +214,7 @@ label {
 
 :host([valid]:focus-within),
 :host([invalid]:focus-within) {
-    [part='middle']  {
+    [part='notch']  {
         border-top: $idle-border-width solid transparent;
     }
 }
@@ -232,7 +232,7 @@ input:not(:placeholder-shown) + [part='container'] {
     pointer-events: none;
 }
 
-[part='start'] {
+[part='prefix'] {
     display: flex;
     align-items: center;
     width: auto;
@@ -261,7 +261,7 @@ input:not(:placeholder-shown) + [part='container'] {
     padding-inline-end: rem(4px);
 }
 
-[part='middle'] {
+[part='notch'] {
     position: relative;
     flex: 0 0 auto;
     width: auto;
@@ -276,7 +276,7 @@ input:not(:placeholder-shown) + [part='container'] {
     overflow: visible;
 }
 
-[part='filler'] {
+[part='end'] {
     display: flex;
     justify-content: flex-end;
     flex-grow: 1;
@@ -300,7 +300,7 @@ input:not(:placeholder-shown) + [part='container'] {
         };
     }
 
-    > [part='end'] {
+    > [part='suffix'] {
         display: flex;
         align-items: center;
         height: 100%;
@@ -322,19 +322,19 @@ input:not(:placeholder-shown) + [part='container'] {
         color: color(gray, 400);
     }
 
-    [part='start'],
-    [part='middle'],
-    [part='filler'],
-    [part='end'] {
+    [part='prefix'],
+    [part='notch'],
+    [part='end'],
+    [part='suffix'] {
         color: color(gray, 400);
         border-color: color(gray, 400);
     }
 }
 
 // FILLED INPUT STYLES
-:host([outlined]) {
-    [part='filler'],
-    [part='start'] {
+:host(:not([outlined])) {
+    [part='end'],
+    [part='prefix'] {
         border-top-color: transparent;
         border-left-color: transparent;
         border-right-color: transparent;
@@ -342,7 +342,7 @@ input:not(:placeholder-shown) + [part='container'] {
         border-top-width: rem(1px);
     }
 
-    [part='middle'] {
+    [part='notch'] {
         border-top: 1px solid transparent;
         border-bottom: transparent;
         border-bottom-width: rem(1px);
@@ -396,7 +396,7 @@ input:not(:placeholder-shown) + [part='container'] {
     }
 }
 
-:host([outlined]:focus-within) {
+:host(:not([outlined]):focus-within) {
     &::after {
         width: 100%;
         transform: scaleX(1);
@@ -408,10 +408,9 @@ input:not(:placeholder-shown) + [part='container'] {
     }
 }
 
-:host([outlined]:focus-within),
-:host([outlined][placeholder]) {
+:host(:not([outlined]):focus-within),
+:host(:not([outlined])[placeholder]) {
     label {
         transform: translateY(-106%) scale($scale);
     }
 }
-

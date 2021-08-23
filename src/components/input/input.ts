@@ -51,15 +51,7 @@ export class IgcInputComponent extends LitElement {
     this.valid = !this.invalid;
   }
 
-  renderOutlined() {
-    const gap = 4;
-    const scale = 0.75;
-    const padding = 12;
-    const labelWidth = this._label.width;
-    const startWidth = this._start.width;
-    const endWidth = this._end.width;
-    const width = `${labelWidth * scale + gap * 2}px`;
-
+  renderInput(startWidth: number, endWidth: number, padding: number) {
     const inputStyle = css`
       padding-inline-start: calc(${startWidth}px + ${padding}px);
       padding-inline-end: calc(${endWidth}px + ${padding}px);
@@ -72,34 +64,68 @@ export class IgcInputComponent extends LitElement {
         pattern="${ifDefined(this.pattern)}"
         style="${inputStyle}"
         placeholder="${this.placeholder ?? ' '}"
-        .disabled="${this.disabled}"
-        .required="${this.required}"
+        ?disabled="${ifDefined(this.disabled)}"
+        ?required="${ifDefined(this.required)}"
       />
+    `;
+  }
+
+  renderLabel() {
+    return html`<label
+      ${this._label.observe()}
+      for="outlined"
+      style="transform-origin: ${this.direction.value === 'ltr'
+        ? 'left'
+        : 'right'}"
+    >
+      ${this.label}
+    </label>`;
+  }
+
+  renderPrefix() {
+    return html`<div part="prefix" ${this._start.observe()}>
+      <slot name="prefix"></slot>
+    </div>`;
+  }
+
+  renderSuffix() {
+    return html`<div part="suffix" ${this._end.observe()}>
+      <slot name="suffix"></slot>
+    </div>`;
+  }
+
+  renderDefault() {
+    return html`${this.renderLabel()}
       <div part="container">
-        <div part="start" ${this._start.observe()}>
-          <slot name="prefix"></slot>
+        ${this.renderPrefix()} ${this.renderInput(0, 0, 16)}
+        ${this.renderSuffix()}
+      </div>`;
+  }
+
+  renderOutlined() {
+    const gap = 4;
+    const scale = 0.75;
+    const padding = 12;
+    const labelWidth = this._label.width;
+    const startWidth = this._start.width;
+    const endWidth = this._end.width;
+    const width = `${labelWidth * scale + gap * 2}px`;
+
+    return html`
+      ${this.renderInput(startWidth, endWidth, padding)}
+      <div part="container">
+        ${this.renderPrefix()}
+        <div part="notch" style="width: ${labelWidth > 0 ? width : 'auto'}">
+          ${this.renderLabel()}
         </div>
-        <div part="middle" style="width: ${labelWidth > 0 ? width : 'auto'}">
-          <label
-            ${this._label.observe()}
-            for="outlined"
-            style="transform-origin: ${this.direction.value === 'ltr'
-              ? 'left'
-              : 'right'}"
-          >
-            ${this.label}
-          </label>
-        </div>
-        <div part="filler">
-          <div part="end" ${this._end.observe()}>
-            <slot name="suffix"></slot>
-          </div>
-        </div>
+        <div part="end">${this.renderSuffix()}</div>
       </div>
     `;
   }
 
   render() {
-    return html`${this.renderOutlined()}`;
+    return html`${this.outlined
+      ? this.renderOutlined()
+      : this.renderDefault()}`;
   }
 }
