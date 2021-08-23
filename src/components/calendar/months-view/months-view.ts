@@ -1,12 +1,12 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Calendar } from '../common/calendar.model';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { styles } from './months-view.css';
+import { partNameMap } from '../../common/util';
 
 /**
  * Months view component
@@ -67,10 +67,10 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
     return result;
   }
 
-  private resolveMonthClasses(date: Date) {
+  private resolveMonthPartName(date: Date) {
     return {
       month: true,
-      'month--current': date.getMonth() === this.value.getMonth(),
+      selected: date.getMonth() === this.value.getMonth(),
     };
   }
 
@@ -87,7 +87,7 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
     return html`${this.months.map(
       (month) =>
         html`<span
-          class=${classMap(this.resolveMonthClasses(month))}
+          part=${partNameMap(this.resolveMonthPartName(month))}
           @click=${() => this.monthClick(month)}
           >${this.formattedMonth(month)}</span
         >`

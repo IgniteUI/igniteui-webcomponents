@@ -7,7 +7,7 @@
     overflow: hidden;
 }
 
-.month {
+[part~='month'] {
     display: flex;
     position: relative;
     flex: 1 0 33%;
@@ -16,6 +16,6 @@
     user-select: none;
 }
 
-.month--current {
+[part~='selected'] {
     color: hotpink;
 }

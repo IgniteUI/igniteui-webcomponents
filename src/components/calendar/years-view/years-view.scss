@@ -7,7 +7,7 @@
     overflow: hidden;
 }
 
-.year {
+[part~='year'] {
     display: flex;
     position: relative;
     flex: 1 0 33%;
@@ -16,6 +16,6 @@
     user-select: none;
 }
 
-.year--current {
+[part~='selected'] {
     color: hotpink;
 }

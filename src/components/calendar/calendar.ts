@@ -219,6 +219,7 @@ export class IgcCalendarComponent extends SizableMixin(
             .value=${this.viewDate}
             .locale=${this.locale}
             .monthFormat=${this.formatOptions.month!}
+            exportparts="month, selected"
             @igcChange=${this.changeMonth}
           ></igc-months-view>`
         : ''}
@@ -226,6 +227,7 @@ export class IgcCalendarComponent extends SizableMixin(
         ? html`<igc-years-view
             .value=${this.viewDate}
             .yearsPerPage=${this.yearPerPage}
+            exportparts="year, selected"
             @igcChange=${this.changeYear}
           ></igc-years-view>`
         : ''}

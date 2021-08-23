@@ -1,8 +1,8 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
+import { partNameMap } from '../../common/util';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { calculateYearsRangeStart } from '../common/utils';
 import { styles } from './years-view.css';
@@ -68,10 +68,10 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
     return result;
   }
 
-  private resolveYearClasses(date: Date) {
+  private resolveYearPartName(date: Date) {
     return {
       year: true,
-      'year--current': date.getFullYear() === this.value.getFullYear(),
+      selected: date.getFullYear() === this.value.getFullYear(),
     };
   }
 
@@ -84,7 +84,7 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
     return html`${this.years.map(
       (year) =>
         html`<span
-          class=${classMap(this.resolveYearClasses(year))}
+          part=${partNameMap(this.resolveYearPartName(year))}
           @click=${() => this.yearClick(year)}
           >${this.formattedYear(year)}</span
         >`
