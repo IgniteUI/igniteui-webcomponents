@@ -5,7 +5,7 @@ import {
   IgcCalendarBaseEventMap,
 } from './common/calendar-base';
 import { IgcMonthsViewComponent } from './months-view/months-view';
-import { IgcYearsViewComponent, YEARS_PER_PAGE } from './years-view/years-view';
+import { IgcYearsViewComponent } from './years-view/years-view';
 import { styles } from './calendar.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
@@ -13,14 +13,17 @@ import { IgcDaysViewComponent } from './days-view/days-view';
 import { ICalendarDate } from './common/calendar.model';
 import { watch } from '../common/decorators';
 import { calculateYearsRangeStart } from './common/utils';
+import { SizableMixin } from '../common/mixins/sizable';
 
 /**
  * @element igc-calendar
  */
-export class IgcCalendarComponent extends EventEmitterMixin<
-  IgcCalendarBaseEventMap,
-  Constructor<IgcCalendarBaseComponent>
->(IgcCalendarBaseComponent) {
+export class IgcCalendarComponent extends SizableMixin(
+  EventEmitterMixin<
+    IgcCalendarBaseEventMap,
+    Constructor<IgcCalendarBaseComponent>
+  >(IgcCalendarBaseComponent)
+) {
   /**
    * @private
    */
@@ -57,6 +60,10 @@ export class IgcCalendarComponent extends EventEmitterMixin<
   constructor() {
     super();
     this.initFormatters();
+  }
+
+  private get yearPerPage() {
+    return this.size === 'small' ? 18 : 15;
   }
 
   private initFormatters() {
@@ -124,7 +131,7 @@ export class IgcCalendarComponent extends EventEmitterMixin<
     this.viewDate = this.calendarModel.timedelta(
       this.viewDate,
       'year',
-      YEARS_PER_PAGE
+      this.yearPerPage
     );
   }
 
@@ -132,7 +139,7 @@ export class IgcCalendarComponent extends EventEmitterMixin<
     this.viewDate = this.calendarModel.timedelta(
       this.viewDate,
       'year',
-      -YEARS_PER_PAGE
+      -this.yearPerPage
     );
   }
 
@@ -161,8 +168,8 @@ export class IgcCalendarComponent extends EventEmitterMixin<
     let endYear = undefined;
 
     if (this.activeView === 'years') {
-      startYear = calculateYearsRangeStart(this.viewDate, YEARS_PER_PAGE);
-      endYear = startYear + YEARS_PER_PAGE - 1;
+      startYear = calculateYearsRangeStart(this.viewDate, this.yearPerPage);
+      endYear = startYear + this.yearPerPage - 1;
     }
 
     return html`<div class="navigation">
@@ -216,6 +223,7 @@ export class IgcCalendarComponent extends EventEmitterMixin<
       ${this.activeView === 'years'
         ? html`<igc-years-view
             .value=${this.viewDate}
+            .yearsPerPage=${this.yearPerPage}
             @igcChange=${this.changeYear}
           ></igc-years-view>`
         : ''}

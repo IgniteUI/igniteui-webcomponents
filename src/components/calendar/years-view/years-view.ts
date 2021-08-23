@@ -7,8 +7,6 @@ import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { calculateYearsRangeStart } from '../common/utils';
 import { styles } from './years-view.css';
 
-export const YEARS_PER_PAGE = 20;
-
 export class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
@@ -23,6 +21,9 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
 
   @property({ attribute: false })
   value = new Date();
+
+  @property({ type: Number })
+  yearsPerPage = 15;
 
   // @property()
   // locale = 'en';
@@ -52,12 +53,16 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   }
 
   private get years() {
-    const startYear = calculateYearsRangeStart(this.value, YEARS_PER_PAGE);
+    const startYear = calculateYearsRangeStart(this.value, this.yearsPerPage);
     const month = this.value.getMonth();
     const result = [];
 
-    for (let i = 0; i < YEARS_PER_PAGE; i++) {
-      result.push(new Date(startYear + i, month, 1));
+    for (let i = 0; i < this.yearsPerPage; i++) {
+      const year = startYear + i;
+      const date = new Date(year, month, 1);
+      // fix year since values between 0 and 100 results in 1900s
+      date.setFullYear(year);
+      result.push(date);
     }
 
     return result;

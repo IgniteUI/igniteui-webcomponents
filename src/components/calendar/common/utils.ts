@@ -10,6 +10,12 @@ const weekDaysMap = {
   saturday: 6,
 };
 
+const DATE_BOUND = 8640000000000000;
+
+export const MAX_DATE = new Date(DATE_BOUND);
+
+export const MIN_DATE = new Date(-DATE_BOUND);
+
 export const isDate = (value: any): value is Date => value instanceof Date;
 
 export const isEqual = (obj1: any, obj2: any): boolean => {
@@ -46,6 +52,7 @@ export const getWeekDayNumber = (day: WeekDays) => {
 
 export const calculateYearsRangeStart = (date: Date, rangeCount: number) => {
   const year = date.getFullYear();
-  const decadeFirstYear = year - (year % 10);
-  return decadeFirstYear - (rangeCount - 10) / 2;
+  const startYear = Math.floor(year / rangeCount) * rangeCount;
+
+  return startYear;
 };

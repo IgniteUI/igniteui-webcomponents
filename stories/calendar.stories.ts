@@ -20,6 +20,19 @@ const metadata = {
         },
       },
     },
+    size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
+      control: {
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'large',
+        },
+      },
+    },
     selection: {
       type: '"single" | "multi" | "range"',
       options: ['single', 'multi', 'range'],
@@ -91,6 +104,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   activeView: 'days' | 'months' | 'years';
+  size: 'small' | 'medium' | 'large';
   selection: 'single' | 'multi' | 'range';
   showWeekNumbers: boolean;
   weekStart:
@@ -149,6 +163,7 @@ const Template: Story<ArgTypes, Context> = (
     monthFormat = 'short',
     selection = 'single',
     activeView = 'days',
+    size = 'large',
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -165,6 +180,7 @@ const Template: Story<ArgTypes, Context> = (
       .selection=${selection}
       .activeView=${activeView}
       .formatOptions=${formatOptions}
+      .size=${size}
       dir=${ifDefined(direction)}
     >
     </igc-calendar>
