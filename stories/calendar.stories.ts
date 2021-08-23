@@ -171,7 +171,7 @@ const Template: Story<ArgTypes, Context> = (
 
   return html`
     <igc-calendar
-      style="width: 500px;"
+      style="width: 400px;"
       .showWeekNumbers=${showWeekNumbers}
       .hideOutsideDays=${hideOutsideDays}
       .weekStart=${weekStart}
