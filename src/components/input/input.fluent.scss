@@ -1,0 +1,103 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    $border-radius: rem(2px);
+    $label-color: color(gray, 800);
+    $idle-color: color(gray, 600);
+    $active-color: color(primary, 500);
+    $idle-border-width: rem(1px);
+    $active-border-width: rem(2px);
+
+    label {
+        position: relative;
+        top: initial;
+        inset-inline-start: 0;
+        transform: initial;
+        padding: rem(5px) 0;
+        font-size: rem(14px);
+        color: $label-color;
+        font-weight: 600;
+
+        &:hover,
+        &:focus {
+            color: $label-color;
+        }
+    }
+
+    input {
+        padding: 0 rem(8px) !important;
+    }
+
+    [part='container'] {
+        position: relative;
+        box-shadow: 0 0 0 $idle-border-width $idle-color;
+        transition: box-shadow 50ms ease-in-out;
+        border-radius: $border-radius;
+
+        &:hover {
+            box-shadow: 0 0 0 $idle-border-width color(gray, 800);
+        }
+
+        &:focus {
+            box-shadow: 0 0 0 $active-border-width color(primary, 800);
+        }
+    }
+
+    :host(:focus-within) {
+        [part='container'] {
+            box-shadow: 0 0 0 $active-border-width $active-color;
+        }
+
+        [part='prefix'] {
+            padding: 0 rem(10px);
+        }
+
+        label {
+            color: $label-color;
+        }
+    }
+
+    :host(:not([outlined]):focus-within),
+    :host(:not([outlined])[placeholder]),
+    input:not(:placeholder-shown) + [part='container'] {
+        label {
+            transform: initial;
+        }
+    }
+
+    [part='prefix'] {
+        border: {
+            start: {
+                start-radius: $border-radius;
+            };
+            end: {
+                start-radius: $border-radius;
+            };
+        }
+    }
+
+    [part='suffix'] {
+        border: {
+            start: {
+                end-radius: $border-radius;
+            };
+            end: {
+                end-radius: $border-radius;
+            };
+        }
+    }
+
+    [part='prefix'],
+    [part='suffix'] {
+        font-size: 100%;
+        padding: 0 rem(10px);
+        background: color(gray, 100);
+    }
+
+    [part='end'],
+    [part='prefix'],
+    [part='notch'] {
+        border: none;
+    }
+}
+
