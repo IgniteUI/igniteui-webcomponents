@@ -4,6 +4,7 @@
 @use '../../components/switch/switch.bootstrap' as switch;
 @use '../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../components/list/list.bootstrap' as list;
+@use '../../components/input/input.bootstrap' as input;
 
 $palette: utils.palette(
     $primary: #007bff,
@@ -185,3 +186,4 @@ $type-scale: utils.extend($_base-scale, (
 @include switch.theme();
 @include navbar.theme();
 @include list.theme();
+@include input.theme();
