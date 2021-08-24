@@ -8,6 +8,8 @@
     $idle-border-width: rem(1px);
     $active-border-width: rem(2px);
     $input-height: rem(32px);
+    $success-color: color(success, 500);
+    $error-color: color(error, 500);
 
     :host([size='small']),
     :host([size='medium']),
@@ -30,6 +32,10 @@
             &:hover,
             &:focus {
                 color: $label-color;
+            }
+
+            &::after {
+                color: color(error, 300);
             }
         }
 
@@ -123,6 +129,59 @@
     input:not(:placeholder-shown) + [part='container'] {
         label {
             transform: initial;
+        }
+    }
+
+    :host([disabled]) {
+        [part='container'],
+        label {
+            color: color(gray, 400);
+
+            &::after {
+                color: color(gray, 400);
+            }
+        }
+
+        [part='container'] {
+            box-shadow: 0 0 0 $idle-border-width transparent;
+        }
+
+        [part='container'],
+        [part='prefix'],
+        [part='suffix']{
+            background: color(gray, 100);
+        }
+    }
+
+    :host([invalid]) {
+        [part='container'] {
+            box-shadow: 0 0 0 $idle-border-width $error-color;
+
+            &:focus {
+                box-shadow: 0 0 0 $active-border-width $error-color;
+            }
+        }
+    }
+
+    :host([invalid]:focus-within) {
+        [part='container'] {
+            box-shadow: 0 0 0 $active-border-width $error-color;
+        }
+    }
+
+    :host([valid]) {
+        [part='container'] {
+            box-shadow: 0 0 0 $idle-border-width $success-color;
+
+            &:focus {
+                box-shadow: 0 0 0 $active-border-width $success-color;
+            }
+        }
+    }
+
+    :host([valid]:focus-within) {
+        [part='container'] {
+            box-shadow: 0 0 0 $active-border-width $success-color;
         }
     }
 }

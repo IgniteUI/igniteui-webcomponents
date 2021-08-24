@@ -143,7 +143,7 @@ $type-scale: utils.extend($fluent-type-scale);
     @include utils.palette($palette);
     @include utils.elevations($elevations);
     @include utils.typography(
-        $font-family: '\'Open Sans\', Helvetica, Arial, sans-serif',
+        $font-family: '\'Segoe UI\', -apple-system, BlinkMacSystemFont, Roboto, Helvetica Neue, sans-serif',
         $type-scale: $type-scale
     );
 }
