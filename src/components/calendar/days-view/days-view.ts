@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { classMap } from 'lit/directives/class-map.js';
 import { watch } from '../../common/decorators';
 import {
   DateRangeType,
@@ -15,6 +14,7 @@ import { styles } from './days-view.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
 import { property } from 'lit/decorators.js';
+import { partNameMap } from '../../common/util';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcOutsideDaySelected: CustomEvent<ICalendarDate>;
@@ -367,41 +367,36 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     }
   }
 
-  private resolveDayItemClasses(day: ICalendarDate) {
+  private resolveDayItemPartName(day: ICalendarDate) {
     const isInactive = day.isNextMonth || day.isPrevMonth;
     const isHidden = this.hideOutsideDays && isInactive;
     const isDisabled = this.isDisabled(day.date);
 
     return {
       date: true,
-      'date--first': this.isFirstInRange(day),
-      'date--last': this.isLastInRange(day),
-      'date--selected': !isDisabled && this.isSelected(day),
-      'date--inactive': isInactive,
-      'date--hidden': isHidden,
-      'date--current': this.isToday(day),
-      'date--weekend': this.isWeekend(day),
-      'date--range':
-        this.selection === 'range' && this.isWithinRange(day.date, true),
-      'date--special': this.isSpecial(day),
-      'date--disabled': isHidden || isDisabled || !day.isCurrentMonth,
-      'date--single': this.selection !== 'range',
+      first: this.isFirstInRange(day),
+      last: this.isLastInRange(day),
+      selected: !isDisabled && this.isSelected(day),
+      inactive: isInactive,
+      hidden: isHidden,
+      current: this.isToday(day),
+      weekend: this.isWeekend(day),
+      range: this.selection === 'range' && this.isWithinRange(day.date, true),
+      special: this.isSpecial(day),
+      disabled: isHidden || isDisabled || !day.isCurrentMonth,
+      single: this.selection !== 'range',
     };
   }
 
   private renderWeekHeaders() {
-    return html`<div role="row" class="body-row">
+    return html`<div role="row" part="days-row">
       ${this.showWeekNumbers
-        ? html`<div role="columnheader" class="label label--week-number">
-            <span>${WEEK_LABEL}</span>
-          </div>`
+        ? html`<span role="columnheader" part="label week-number">
+            ${WEEK_LABEL}
+          </span>`
         : ''}
       ${this.generateWeekHeader().map(
-        (dayName) => html`<span
-          role="columnheader"
-          aria-label=${dayName}
-          class="label"
-        >
+        (dayName) => html`<span role="columnheader" part="label">
           ${this.titleCase(dayName)}
         </span>`
       )}
@@ -410,16 +405,11 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   private renderDates() {
     return this.getCalendarMonth().map(
-      (week) => html`<div role="row" class="body-row">
+      (week) => html`<div role="row" part="days-row">
         ${this.showWeekNumbers
-          ? html`<div role="columnheader" class="date date--week-number">
-              <span
-                role="rowheader"
-                class="date-content date-content--week-number"
-              >
-                ${this.getWeekNumber(week[0].date)}
-              </span>
-            </div>`
+          ? html`<span role="rowheader" part="date week-number">
+              ${this.getWeekNumber(week[0].date)}
+            </span>`
           : ''}
         ${week.map((day) => this.renderDateItem(day))}
       </div>`
@@ -428,7 +418,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   private renderDateItem(day: ICalendarDate) {
     return html`<span
-      class=${classMap(this.resolveDayItemClasses(day))}
+      part=${partNameMap(this.resolveDayItemPartName(day))}
       role="gridcell"
       @click=${(event: MouseEvent) => this.selectDay(event, day)}
     >

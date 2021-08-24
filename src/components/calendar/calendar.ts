@@ -210,6 +210,7 @@ export class IgcCalendarComponent extends SizableMixin(
             .showWeekNumbers=${this.showWeekNumbers}
             .disabledDates=${this.disabledDates}
             .specialDates=${this.specialDates}
+            exportparts="days-row, label, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
             @igcChange=${this.changeValue}
             @igcOutsideDaySelected=${this.outsideDaySelected}
           ></igc-days-view>`
