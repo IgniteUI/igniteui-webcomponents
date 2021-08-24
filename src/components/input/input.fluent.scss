@@ -28,6 +28,8 @@
             color: $label-color;
             font-weight: 600;
             overflow-wrap: break-word;
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
 
             &:hover,
             &:focus {
