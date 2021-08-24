@@ -172,25 +172,27 @@ export class IgcCalendarComponent extends SizableMixin(
       endYear = startYear + this.yearPerPage - 1;
     }
 
-    return html`<div class="navigation">
+    return html`<div part="navigation">
       <div>
         ${this.activeView === 'days'
-          ? html`<button @click=${this.switchToMonths}>
+          ? html`<button part="months-navigation" @click=${this.switchToMonths}>
               ${this.formattedMonth(this.viewDate)}
             </button>`
           : ''}
         ${this.activeView === 'days' || this.activeView === 'months'
-          ? html`<button @click=${this.switchToYears}>
+          ? html`<button part="years-navigation" @click=${this.switchToYears}>
               ${this.viewDate.getFullYear()}
             </button>`
           : ''}
         ${this.activeView === 'years'
-          ? html`<span>${`${startYear} - ${endYear}`}</span>`
+          ? html`<span part="years-range">${`${startYear} - ${endYear}`}</span>`
           : ''}
       </div>
       <div>
-        <button @click=${this.navigatePrevious}><</button>
-        <button @click=${this.navigateNext}>></button>
+        <button part="navigation-button" @click=${this.navigatePrevious}>
+          <
+        </button>
+        <button part="navigation-button" @click=${this.navigateNext}>></button>
       </div>
     </div>`;
   }
