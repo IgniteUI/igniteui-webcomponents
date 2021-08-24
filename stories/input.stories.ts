@@ -11,7 +11,6 @@ export default {
       control: {
         type: 'text',
       },
-      description: 'The placeholder of the input',
     },
     label: {
       control: {
@@ -29,7 +28,30 @@ export default {
     },
     outlined: {
       control: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
+    },
+    autofocus: {
+      control: 'boolean',
+      defaultValue: false,
+    },
+    autocomplete: {
+      control: 'text',
+    },
+    minlength: {
+      control: 'text',
+    },
+    maxlength: {
+      control: 'text',
+    },
+    min: {
+      control: 'text',
+    },
+    max: {
+      control: 'text',
+    },
+    readonly: {
+      control: 'boolean',
+      defaultValue: false,
     },
     required: {
       control: 'boolean',
@@ -43,25 +65,53 @@ export default {
 };
 
 interface ArgTypes {
-  label: string;
-  outlined: boolean;
   size: 'small' | 'medium' | 'large';
+  label: string;
   placeholder: string;
+  outlined: boolean;
+  autofocus: boolean;
+  autocomplete: 'on' | 'off';
+  minlength: string;
+  maxlength: string;
+  min: string | number;
+  max: string | number;
+  readonly: boolean;
   required: boolean;
   disabled: boolean;
 }
 
 const Template: Story<ArgTypes, Context> = (
-  { label, size, outlined, placeholder, required, disabled }: ArgTypes,
+  {
+    size,
+    label,
+    outlined,
+    autofocus,
+    autocomplete,
+    minlength,
+    maxlength,
+    min,
+    max,
+    placeholder,
+    readonly,
+    required,
+    disabled,
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) =>
   html`
     <igc-input
+      type="email"
       label=${label}
       size=${size}
       placeholder=${ifDefined(placeholder)}
-      type="text"
-      dir="${direction}"
+      dir=${direction}
+      minlength=${ifDefined(minlength)}
+      maxlength=${ifDefined(maxlength)}
+      min=${ifDefined(min)}
+      max=${ifDefined(max)}
+      autocomplete=${ifDefined(autocomplete)}
+      ?autofocus=${autofocus}
+      .readonly=${readonly}
       .outlined=${outlined}
       .required=${required}
       .disabled=${disabled}

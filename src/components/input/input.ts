@@ -1,21 +1,45 @@
 import { css, html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
 import { ResizeController, DirectionController } from '../common/controllers';
+import { Constructor } from '../common/mixins/constructor.js';
+import { watch } from '../common/decorators';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 
-export class IgcInputComponent extends LitElement {
+let nextId = 0;
+
+export interface IgcRadioEventMap {
+  igcInput: CustomEvent<void>;
+  igcChange: CustomEvent<void>;
+  igcFocus: CustomEvent<void>;
+  igcBlur: CustomEvent<void>;
+}
+
+export class IgcInputComponent extends EventEmitterMixin<
+  IgcRadioEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   static styles = styles;
   private direction = new DirectionController(this);
   private _start = new ResizeController(this);
   private _label = new ResizeController(this);
   private _end = new ResizeController(this);
+  private inputId = `input-${nextId++}`;
+  private labelId = `input-label-${this.inputId}`;
 
   @query('input', true)
   input!: HTMLInputElement;
 
   @property({ type: String })
   type!: string;
+
+  @property()
+  name!: string;
+
+  @property()
+  value = '';
 
   @property({ type: String })
   pattern!: string;
@@ -27,10 +51,7 @@ export class IgcInputComponent extends LitElement {
   placeholder!: string;
 
   @property({ reflect: true, type: Boolean })
-  valid!: boolean;
-
-  @property({ reflect: true, type: Boolean })
-  invalid!: boolean;
+  invalid = false;
 
   @property({ reflect: true, type: Boolean })
   outlined = false;
@@ -41,6 +62,27 @@ export class IgcInputComponent extends LitElement {
   @property({ reflect: true, type: Boolean })
   disabled = false;
 
+  @property({ reflect: true, type: Boolean })
+  readonly = false;
+
+  @property({ type: Number })
+  minlength!: number;
+
+  @property({ type: Number })
+  maxlength!: number;
+
+  @property()
+  min!: number | string;
+
+  @property()
+  max!: number | string;
+
+  @property({ type: Boolean })
+  autofocus!: boolean;
+
+  @property()
+  autocomplete!: string;
+
   reportValidity() {
     this.input.reportValidity();
   }
@@ -48,7 +90,34 @@ export class IgcInputComponent extends LitElement {
   setCustomValidity(message: string) {
     this.input.setCustomValidity(message);
     this.invalid = !this.input.checkValidity();
-    this.valid = !this.invalid;
+  }
+
+  handleInvalid() {
+    this.invalid = true;
+  }
+
+  handleInput() {
+    this.value = this.input.value;
+    this.emitEvent('igcInput');
+  }
+
+  handleChange() {
+    this.value = this.input.value;
+    this.emitEvent('igcBlur');
+  }
+
+  handleFocus() {
+    this.emitEvent('igcFocus');
+  }
+
+  handleBlur() {
+    this.emitEvent('igcBlur');
+  }
+
+  @watch('value', { waitUntilFirstUpdate: true })
+  handleValueChange() {
+    console.log(this.value);
+    this.invalid = !this.input.checkValidity();
   }
 
   renderInput(startWidth: number, endWidth: number, padding: number) {
@@ -59,24 +128,41 @@ export class IgcInputComponent extends LitElement {
 
     return html`
       <input
-        id="outlined"
+        id="${this.inputId}"
+        part="input"
+        name="${ifDefined(this.name)}"
         type="${ifDefined(this.type)}"
         pattern="${ifDefined(this.pattern)}"
         style="${inputStyle}"
         placeholder="${this.placeholder ?? ' '}"
-        ?disabled="${ifDefined(this.disabled)}"
-        ?required="${ifDefined(this.required)}"
+        .value="${live(this.value)}"
+        ?readonly="${this.readonly}"
+        ?disabled="${this.disabled}"
+        ?required="${this.required}"
+        ?autofocus="${this.autofocus}"
+        autocomplete="${ifDefined(this.autocomplete)}"
+        min="${ifDefined(this.min)}"
+        max="${ifDefined(this.max)}"
+        minlength="${ifDefined(this.minlength)}"
+        maxlength="${ifDefined(this.maxlength)}"
+        @invalid="${this.handleInvalid}"
+        @change="${this.handleChange}"
+        @input="${this.handleInput}"
+        @focus="${this.handleFocus}"
+        @blur="${this.handleBlur}"
       />
     `;
   }
 
   renderLabel() {
     return html`<label
-      ${this._label.observe()}
-      for="outlined"
+      id="${this.labelId}"
+      part="label"
+      for="${this.inputId}"
       style="transform-origin: ${this.direction.value === 'ltr'
         ? 'left'
         : 'right'}"
+      ${this._label.observe()}
     >
       ${this.label}
     </label>`;
