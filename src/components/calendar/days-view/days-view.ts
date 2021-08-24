@@ -39,8 +39,8 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   private rangeStarted = false;
   private formatterWeekday!: Intl.DateTimeFormat;
 
-  @property()
-  weekDayFormat: 'long' | 'short' | 'narrow' = 'short';
+  @property({ attribute: 'week-day-format' })
+  weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
 
   @watch('selection', { waitUntilFirstUpdate: true })
   selectionChange() {

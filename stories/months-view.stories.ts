@@ -32,7 +32,7 @@ const metadata = {
       },
       table: {
         defaultValue: {
-          summary: 'short',
+          summary: 'long',
         },
       },
     },
@@ -47,13 +47,13 @@ interface ArgTypes {
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { locale, monthFormat = 'short' }: ArgTypes,
+  { locale, monthFormat }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
     <igc-months-view
-      .locale=${locale}
-      .monthFormat=${monthFormat}
+      locale=${ifDefined(locale)}
+      monthFormat=${ifDefined(monthFormat)}
       dir=${ifDefined(direction)}
     >
     </igc-months-view>

@@ -40,14 +40,14 @@ export class IgcCalendarComponent extends SizableMixin(
   // @query('igc-years-view')
   // yearsView!: IgcYearsViewComponent;
 
-  @property()
+  @property({ attribute: 'active-view' })
   activeView: 'days' | 'months' | 'years' = 'days';
 
   @property({ attribute: false })
   formatOptions: Intl.DateTimeFormatOptions = {
     day: 'numeric',
-    month: 'short',
-    weekday: 'short',
+    month: 'long',
+    weekday: 'narrow',
     year: 'numeric',
   };
 

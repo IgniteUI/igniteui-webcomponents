@@ -22,7 +22,7 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   @property({ attribute: false })
   value = new Date();
 
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'years-per-page' })
   yearsPerPage = 15;
 
   // @property()

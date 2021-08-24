@@ -159,11 +159,11 @@ const Template: Story<ArgTypes, Context> = (
     weekStart,
     locale,
     viewDate = new Date(),
-    weekDayFormat = 'short',
-    monthFormat = 'short',
-    selection = 'single',
-    activeView = 'days',
-    size = 'large',
+    weekDayFormat = 'narrow',
+    monthFormat = 'long',
+    selection,
+    activeView,
+    size,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -172,15 +172,15 @@ const Template: Story<ArgTypes, Context> = (
   return html`
     <igc-calendar
       style="width: 400px;"
-      .showWeekNumbers=${showWeekNumbers}
-      .hideOutsideDays=${hideOutsideDays}
-      .weekStart=${weekStart}
-      .locale=${locale}
+      ?show-week-numbers=${showWeekNumbers}
+      ?hide-outside-days=${hideOutsideDays}
+      week-start=${ifDefined(weekStart)}
+      locale=${ifDefined(locale)}
       .viewDate=${new Date(viewDate)}
-      .selection=${selection}
-      .activeView=${activeView}
+      selection=${ifDefined(selection)}
+      active-view=${ifDefined(activeView)}
       .formatOptions=${formatOptions}
-      .size=${size}
+      size=${ifDefined(size)}
       dir=${ifDefined(direction)}
     >
     </igc-calendar>

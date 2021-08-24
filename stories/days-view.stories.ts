@@ -16,7 +16,7 @@ const metadata = {
       },
       table: {
         defaultValue: {
-          summary: 'short',
+          summary: 'narrow',
         },
       },
     },
@@ -114,22 +114,20 @@ const Template: Story<ArgTypes, Context> = (
     weekStart,
     locale,
     viewDate = new Date(),
-    weekDayFormat = 'short',
-    selection = 'single',
+    weekDayFormat,
+    selection,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  // const formatOptions = { weekday: weekDayFormat };
-
   return html`
     <igc-days-view
-      .showWeekNumbers=${showWeekNumbers}
-      .hideOutsideDays=${hideOutsideDays}
-      .weekStart=${weekStart}
-      .locale=${locale}
+      ?show-week-numbers=${showWeekNumbers}
+      ?hide-outside-days=${hideOutsideDays}
+      week-start=${ifDefined(weekStart)}
+      locale=${ifDefined(locale)}
       .viewDate=${new Date(viewDate)}
-      .selection=${selection}
-      .weekDayFormat=${weekDayFormat}
+      selection=${ifDefined(selection)}
+      week-day-format=${ifDefined(weekDayFormat)}
       dir=${ifDefined(direction)}
     >
     </igc-days-view>
