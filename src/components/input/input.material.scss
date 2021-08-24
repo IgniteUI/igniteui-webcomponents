@@ -299,15 +299,15 @@ input:not(:placeholder-shown) + [part='container'] {
             end-radius: rem(4px);
         };
     }
+}
 
-    > [part='suffix'] {
-        display: flex;
-        align-items: center;
-        height: 100%;
-        color: color(gray, 700);
-        padding-inline-start: rem(4px);
-        padding-inline-end: rem(5px);
-    }
+[part='suffix'] {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    color: color(gray, 700);
+    padding-inline-start: rem(4px);
+    padding-inline-end: rem(5px);
 }
 
 :host([required]) {
@@ -350,11 +350,33 @@ input:not(:placeholder-shown) + [part='container'] {
 
     label {
         inset-inline-start: rem(2px);
+        z-index: 1;
     }
 
     input {
         padding-top: rem(20px);
         padding-bottom: rem(6px);
+    }
+
+    input:not(:placeholder-shown) + [part='container'] {
+        label {
+            transform: translateY(-106%) scale($scale);
+        }
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        height: rem(2px);
+        background: $active-color;
+        left: 0;
+        right: 0;
+        transform: scaleX(0);
+        transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
+    }
+
+    [part='container'] {
         background: color(gray, 100);
         border-bottom: 1px solid $idle-color;
 
@@ -376,25 +398,8 @@ input:not(:placeholder-shown) + [part='container'] {
             border-color: $idle-hover-color;
         }
     }
-
-    input:not(:placeholder-shown) + [part='container'] {
-        label {
-            transform: translateY(-106%) scale($scale);
-        }
-    }
-
-    &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        height: rem(2px);
-        background: $active-color;
-        left: 0;
-        right: 0;
-        transform: scaleX(0);
-        transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
-    }
 }
+
 
 :host(:not([outlined]):focus-within) {
     &::after {
