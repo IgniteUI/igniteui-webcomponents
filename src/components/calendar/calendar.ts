@@ -202,6 +202,7 @@ export class IgcCalendarComponent extends SizableMixin(
       ${this.renderNavigation()}
       ${this.activeView === 'days'
         ? html`<igc-days-view
+            part="days-view"
             .viewDate=${this.viewDate}
             .weekStart=${this.weekStart}
             .weekDayFormat=${this.formatOptions.weekday!}
@@ -219,6 +220,7 @@ export class IgcCalendarComponent extends SizableMixin(
         : ''}
       ${this.activeView === 'months'
         ? html`<igc-months-view
+            part="months-view"
             .value=${this.viewDate}
             .locale=${this.locale}
             .monthFormat=${this.formatOptions.month!}
@@ -228,6 +230,7 @@ export class IgcCalendarComponent extends SizableMixin(
         : ''}
       ${this.activeView === 'years'
         ? html`<igc-years-view
+            part="years-view"
             .value=${this.viewDate}
             .yearsPerPage=${this.yearPerPage}
             exportparts="year, selected"
