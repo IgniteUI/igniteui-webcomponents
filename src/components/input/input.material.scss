@@ -55,7 +55,7 @@ $input-height: (
 :host([size='large']) {
     height: map.get($input-height, 'large');
 
-    input:not(:placeholder-shown) + [part='container'] label {
+    input:not(:placeholder-shown) + [part='container'] [part='label'] {
         @extend %large-label;
     }
 }
@@ -63,7 +63,7 @@ $input-height: (
 :host([size='medium']) {
     height: map.get($input-height, 'medium');
 
-    input:not(:placeholder-shown) + [part='container'] label {
+    input:not(:placeholder-shown) + [part='container'] [part='label'] {
         @extend %medium-label;
     }
 }
@@ -71,25 +71,25 @@ $input-height: (
 :host([size='small']) {
     height: map.get($input-height, 'small');
 
-    input:not(:placeholder-shown) + [part='container'] label {
+    input:not(:placeholder-shown) + [part='container'] [part='label'] {
         @extend %small-label;
     }
 }
 
 :host([size='large']:focus-within) {
-    label {
+    [part='label'] {
         @extend %large-label;
     }
 }
 
 :host([size='medium']:focus-within) {
-    label {
+    [part='label'] {
         @extend %medium-label;
     }
 }
 
 :host([size='small']:focus-within) {
-    label {
+    [part='label'] {
         @extend %small-label;
     }
 }
@@ -97,7 +97,7 @@ $input-height: (
 :host([placeholder][size='large']) > [part='container'] {
     @extend %floated-styles;
 
-    label {
+    [part='label'] {
         @extend %large-label;
     }
 }
@@ -105,7 +105,7 @@ $input-height: (
 :host([placeholder][size='medium']) > [part='container'] {
     @extend %floated-styles;
 
-    label {
+    [part='label'] {
         @extend %medium-label;
     }
 }
@@ -113,7 +113,7 @@ $input-height: (
 :host([placeholder][size='small']) > [part='container'] {
     @extend %floated-styles;
 
-    label {
+    [part='label'] {
         @extend %small-label;
     }
 }
@@ -129,7 +129,7 @@ input {
     font-family: var(--igc-font-family);
 }
 
-label {
+[part='label'] {
     position: absolute;
     display: inline-block;
     top: 50%;
@@ -181,7 +181,7 @@ label {
         }
     }
 
-    label {
+    [part='label'] {
         color: $active-color;
     }
 }
@@ -194,7 +194,7 @@ label {
         border-color: $error-color;
     }
 
-    label {
+    [part='label'] {
         color: $error-color;
     }
 }
@@ -207,7 +207,7 @@ label {
         border-color: $success-color;
     }
 
-    label {
+    [part='label'] {
         color: $success-color;
     }
 }
@@ -232,13 +232,17 @@ input:not(:placeholder-shown) + [part='container'] {
     pointer-events: none;
 }
 
-[part='prefix'] {
+[part='prefix'],
+[part='suffix'] {
     display: flex;
     align-items: center;
-    width: auto;
     height: 100%;
-    min-width: rem(12px);
     color: color(gray, 700);
+}
+
+[part='prefix'] {
+    width: auto;
+    min-width: rem(12px);
     border: {
         style: solid;
         color: $idle-color;
@@ -301,24 +305,20 @@ input:not(:placeholder-shown) + [part='container'] {
     }
 
     > [part='suffix'] {
-        display: flex;
-        align-items: center;
-        height: 100%;
-        color: color(gray, 700);
         padding-inline-start: rem(4px);
         padding-inline-end: rem(5px);
     }
 }
 
 :host([required]) {
-    label::after {
+    [part='label']::after {
         content: '*';
     }
 }
 
 :host([disabled]) {
-    input,
-    label {
+    [part='input'],
+    [part='label'] {
         color: color(gray, 400);
     }
 
@@ -348,7 +348,7 @@ input:not(:placeholder-shown) + [part='container'] {
         border-bottom-width: rem(1px);
     }
 
-    label {
+    [part='label'] {
         inset-inline-start: rem(2px);
     }
 
@@ -378,7 +378,7 @@ input:not(:placeholder-shown) + [part='container'] {
     }
 
     input:not(:placeholder-shown) + [part='container'] {
-        label {
+        [part='label'] {
             transform: translateY(-106%) scale($scale);
         }
     }
@@ -410,7 +410,7 @@ input:not(:placeholder-shown) + [part='container'] {
 
 :host(:not([outlined]):focus-within),
 :host(:not([outlined])[placeholder]) {
-    label {
+    [part='label'] {
         transform: translateY(-106%) scale($scale);
     }
 }
