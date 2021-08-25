@@ -9,12 +9,22 @@
 
         &::part(input) {
             padding: initial;
-            border-radius: 0;
+            border-radius: utils.rem(4px);
             background: #fff;
             box-shadow: 0 0 0 0 transparent;
             z-index: 1;
             border: 1px solid utils.color(gray, 400);
             transition: box-shadow .15s ease-out, border .15s ease-out;
+        }
+
+        &::part(input prefixed) {
+            border-start-start-radius: 0;
+            border-end-start-radius: 0;
+        }
+
+        &::part(input suffixed) {
+            border-start-end-radius: 0;
+            border-end-end-radius: 0;
         }
 
         &::part(label),
@@ -33,7 +43,6 @@
 
         &::part(container) {
             pointer-events: auto;
-            border-radius: utils.rem(4px);
             border: none;
         }
 
