@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, queryAssignedNodes } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
@@ -7,6 +7,7 @@ import { ResizeController, DirectionController } from '../common/controllers';
 import { Constructor } from '../common/mixins/constructor.js';
 import { watch } from '../common/decorators';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partNameMap } from '../common/util';
 
 let nextId = 0;
 
@@ -31,6 +32,12 @@ export class IgcInputComponent extends EventEmitterMixin<
 
   @query('input', true)
   input!: HTMLInputElement;
+
+  @queryAssignedNodes('prefix', true)
+  _prefix!: NodeListOf<HTMLElement>;
+
+  @queryAssignedNodes('suffix', true)
+  _suffix!: NodeListOf<HTMLElement>;
 
   @property({ type: String })
   type!: string;
@@ -83,6 +90,14 @@ export class IgcInputComponent extends EventEmitterMixin<
   @property()
   autocomplete!: string;
 
+  resolvePartNames(base: string) {
+    return {
+      [base]: true,
+      prefixed: this._prefix && this._prefix?.length > 0,
+      suffixed: this._suffix && this._suffix?.length > 0,
+    };
+  }
+
   reportValidity() {
     this.input.reportValidity();
   }
@@ -116,7 +131,6 @@ export class IgcInputComponent extends EventEmitterMixin<
 
   @watch('value', { waitUntilFirstUpdate: true })
   handleValueChange() {
-    console.log(this.value);
     this.invalid = !this.input.checkValidity();
   }
 
@@ -129,7 +143,7 @@ export class IgcInputComponent extends EventEmitterMixin<
     return html`
       <input
         id="${this.inputId}"
-        part="input"
+        part="${partNameMap(this.resolvePartNames('input'))}"
         name="${ifDefined(this.name)}"
         type="${ifDefined(this.type)}"
         pattern="${ifDefined(this.pattern)}"
@@ -182,7 +196,7 @@ export class IgcInputComponent extends EventEmitterMixin<
 
   renderDefault() {
     return html`${this.renderLabel()}
-      <div part="container">
+      <div part="${partNameMap(this.resolvePartNames('container'))}">
         ${this.renderPrefix()} ${this.renderInput(0, 0, 16)}
         ${this.renderSuffix()}
       </div>`;
@@ -199,8 +213,8 @@ export class IgcInputComponent extends EventEmitterMixin<
 
     return html`
       ${this.renderInput(startWidth, endWidth, padding)}
-      <div part="container">
-        ${this.renderPrefix()}
+      <div part="${partNameMap(this.resolvePartNames('container'))}">
+        <div part="start">${this.renderPrefix()}</div>
         <div part="notch" style="width: ${labelWidth > 0 ? width : 'auto'}">
           ${this.renderLabel()}
         </div>

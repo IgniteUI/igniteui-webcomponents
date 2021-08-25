@@ -45,6 +45,13 @@ $input-height: (
     }
 }
 
+%starfix {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    color: color(gray, 700);
+}
+
 :host {
     position: relative;
     display: flex;
@@ -55,7 +62,7 @@ $input-height: (
 :host([size='large']) {
     height: map.get($input-height, 'large');
 
-    input:not(:placeholder-shown) + [part='container'] [part='label'] {
+    input:not(:placeholder-shown) + [part^='container'] [part='label'] {
         @extend %large-label;
     }
 }
@@ -63,7 +70,7 @@ $input-height: (
 :host([size='medium']) {
     height: map.get($input-height, 'medium');
 
-    input:not(:placeholder-shown) + [part='container'] [part='label'] {
+    input:not(:placeholder-shown) + [part^='container'] [part='label'] {
         @extend %medium-label;
     }
 }
@@ -71,7 +78,7 @@ $input-height: (
 :host([size='small']) {
     height: map.get($input-height, 'small');
 
-    input:not(:placeholder-shown) + [part='container'] [part='label'] {
+    input:not(:placeholder-shown) + [part^='container'] [part='label'] {
         @extend %small-label;
     }
 }
@@ -94,7 +101,7 @@ $input-height: (
     }
 }
 
-:host([placeholder][size='large']) > [part='container'] {
+:host([placeholder][size='large']) > [part^='container'] {
     @extend %floated-styles;
 
     [part='label'] {
@@ -102,7 +109,7 @@ $input-height: (
     }
 }
 
-:host([placeholder][size='medium']) > [part='container'] {
+:host([placeholder][size='medium']) > [part^='container'] {
     @extend %floated-styles;
 
     [part='label'] {
@@ -110,7 +117,7 @@ $input-height: (
     }
 }
 
-:host([placeholder][size='small']) > [part='container'] {
+:host([placeholder][size='small']) > [part^='container'] {
     @extend %floated-styles;
 
     [part='label'] {
@@ -142,8 +149,7 @@ input {
 }
 
 :host(:focus-within) {
-    [part='prefix'] {
-        padding-inline-start: 4px;
+    [part='start'] {
         border: {
             color: $active-color;
             inline: {
@@ -175,10 +181,14 @@ input {
                 end-width: $active-border-width;
             };
         }
+    }
 
-        > [part='suffix'] {
-            padding-inline-end: rem(4px);
-        }
+    [part='prefix'] {
+        padding-inline-start: 4px;
+    }
+
+    [part='suffix'] {
+        padding-inline-end: rem(4px);
     }
 
     [part='label'] {
@@ -188,7 +198,7 @@ input {
 
 :host([invalid]),
 :host([invalid]:focus-within) {
-    [part='prefix'],
+    [part='start'],
     [part='notch'],
     [part='end'] {
         border-color: $error-color;
@@ -201,7 +211,7 @@ input {
 
 :host([valid]),
 :host([valid]:focus-within) {
-    [part='prefix'],
+    [part='start'],
     [part='notch'],
     [part='end'] {
         border-color: $success-color;
@@ -219,11 +229,11 @@ input {
     }
 }
 
-input:not(:placeholder-shown) + [part='container'] {
+input:not(:placeholder-shown) + [part^='container'] {
     @extend %floated-styles;
 }
 
-[part='container'] {
+[part^='container'] {
     position: absolute;
     display: flex;
     width: 100%;
@@ -234,13 +244,22 @@ input:not(:placeholder-shown) + [part='container'] {
 
 [part='prefix'],
 [part='suffix'] {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    color: color(gray, 700);
+    display: none;
 }
 
-[part='prefix'] {
+[part~='prefixed'] {
+    [part='prefix'] {
+        @extend %starfix;
+    }
+}
+
+[part~='suffixed'] {
+    [part='suffix'] {
+        @extend %starfix;
+    }
+}
+
+[part='start'] {
     width: auto;
     min-width: rem(12px);
     border: {
@@ -261,8 +280,11 @@ input:not(:placeholder-shown) + [part='container'] {
             start-radius: rem(4px);
         };
     }
-    padding-inline-start: rem(5px);
-    padding-inline-end: rem(4px);
+
+    > [part='prefix'] {
+        padding-inline-start: rem(5px);
+        padding-inline-end: rem(4px);
+    }
 }
 
 [part='notch'] {
@@ -322,10 +344,9 @@ input:not(:placeholder-shown) + [part='container'] {
         color: color(gray, 400);
     }
 
-    [part='prefix'],
+    [part='start'],
     [part='notch'],
-    [part='end'],
-    [part='suffix'] {
+    [part='end'] {
         color: color(gray, 400);
         border-color: color(gray, 400);
     }
@@ -333,8 +354,8 @@ input:not(:placeholder-shown) + [part='container'] {
 
 // FILLED INPUT STYLES
 :host(:not([outlined])) {
-    [part='end'],
-    [part='prefix'] {
+    [part='start'],
+    [part='end'] {
         border-top-color: transparent;
         border-left-color: transparent;
         border-right-color: transparent;
@@ -377,7 +398,7 @@ input:not(:placeholder-shown) + [part='container'] {
         }
     }
 
-    input:not(:placeholder-shown) + [part='container'] {
+    input:not(:placeholder-shown) + [part^='container'] {
         [part='label'] {
             transform: translateY(-106%) scale($scale);
         }
