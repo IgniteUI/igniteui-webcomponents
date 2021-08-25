@@ -30,6 +30,8 @@ export class IgcCalendarComponent extends SizableMixin(
   static styles = [styles];
 
   private formatterMonth!: Intl.DateTimeFormat;
+  private formatterWeekday!: Intl.DateTimeFormat;
+  private formatterMonthDay!: Intl.DateTimeFormat;
 
   // @query('igc-days-view')
   // daysView!: IgcDaysViewComponent;
@@ -39,6 +41,12 @@ export class IgcCalendarComponent extends SizableMixin(
 
   // @query('igc-years-view')
   // yearsView!: IgcYearsViewComponent;
+
+  @property({ type: Boolean, attribute: 'has-header' })
+  hasHeader = true;
+
+  @property({ attribute: 'header-orientation', reflect: true })
+  headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
 
   @property({ attribute: 'active-view' })
   activeView: 'days' | 'months' | 'years' = 'days';
@@ -69,6 +77,13 @@ export class IgcCalendarComponent extends SizableMixin(
   private initFormatters() {
     this.formatterMonth = new Intl.DateTimeFormat(this.locale, {
       month: this.formatOptions.month,
+    });
+    this.formatterWeekday = new Intl.DateTimeFormat(this.locale, {
+      weekday: this.formatOptions.weekday,
+    });
+    this.formatterMonthDay = new Intl.DateTimeFormat(this.locale, {
+      month: this.formatOptions.month,
+      day: this.formatOptions.day,
     });
   }
 
@@ -197,46 +212,92 @@ export class IgcCalendarComponent extends SizableMixin(
     </div>`;
   }
 
+  private renderHeader() {
+    if (!this.hasHeader || this.selection === 'multi') {
+      return '';
+    }
+
+    return html`<div part="header">
+      <span part="header-title">
+        <slot name="title"
+          >${this.selection === 'single'
+            ? 'Select a date'
+            : 'Select a date range'}</slot
+        >
+      </span>
+      <div part="header-date">${this.renderHeaderDate()}</div>
+    </div>`;
+  }
+
+  private renderHeaderDate() {
+    if (this.selection === 'single') {
+      const date = this.value as Date;
+      return html`${date
+        ? html`${this.formatterWeekday.format(date)},${this
+            .headerOrientation === 'vertical'
+            ? html`<br />`
+            : ' '}${this.formatterMonthDay.format(date)}`
+        : 'Selected date'}`;
+    }
+
+    const dates = this.value as Date[];
+
+    return html`<span
+        >${dates && dates.length
+          ? this.formatterMonthDay.format(dates[0])
+          : 'Start'}</span
+      >
+      <span> - </span>
+      <span
+        >${dates && dates.length > 1
+          ? this.formatterMonthDay.format(dates[dates.length - 1])
+          : 'End'}</span
+      >`;
+  }
+
   render() {
     return html`
-      ${this.renderNavigation()}
-      ${this.activeView === 'days'
-        ? html`<igc-days-view
-            part="days-view"
-            .viewDate=${this.viewDate}
-            .weekStart=${this.weekStart}
-            .weekDayFormat=${this.formatOptions.weekday!}
-            .locale=${this.locale}
-            .selection=${this.selection}
-            .value=${this.value}
-            .hideOutsideDays=${this.hideOutsideDays}
-            .showWeekNumbers=${this.showWeekNumbers}
-            .disabledDates=${this.disabledDates}
-            .specialDates=${this.specialDates}
-            exportparts="days-row, label, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
-            @igcChange=${this.changeValue}
-            @igcOutsideDaySelected=${this.outsideDaySelected}
-          ></igc-days-view>`
-        : ''}
-      ${this.activeView === 'months'
-        ? html`<igc-months-view
-            part="months-view"
-            .value=${this.viewDate}
-            .locale=${this.locale}
-            .monthFormat=${this.formatOptions.month!}
-            exportparts="month, selected"
-            @igcChange=${this.changeMonth}
-          ></igc-months-view>`
-        : ''}
-      ${this.activeView === 'years'
-        ? html`<igc-years-view
-            part="years-view"
-            .value=${this.viewDate}
-            .yearsPerPage=${this.yearPerPage}
-            exportparts="year, selected"
-            @igcChange=${this.changeYear}
-          ></igc-years-view>`
-        : ''}
+      ${this.renderHeader()}
+      <div part="content">
+        ${this.renderNavigation()}
+        ${this.activeView === 'days'
+          ? html`<igc-days-view
+              part="days-view"
+              .viewDate=${this.viewDate}
+              .weekStart=${this.weekStart}
+              .weekDayFormat=${this.formatOptions.weekday!}
+              .locale=${this.locale}
+              .selection=${this.selection}
+              .value=${this.value}
+              .hideOutsideDays=${this.hideOutsideDays}
+              .showWeekNumbers=${this.showWeekNumbers}
+              .disabledDates=${this.disabledDates}
+              .specialDates=${this.specialDates}
+              exportparts="days-row, label, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
+              @igcChange=${this.changeValue}
+              @igcOutsideDaySelected=${this.outsideDaySelected}
+            ></igc-days-view>`
+          : ''}
+        ${this.activeView === 'months'
+          ? html`<igc-months-view
+              part="months-view"
+              .value=${this.viewDate}
+              .locale=${this.locale}
+              .monthFormat=${this.formatOptions.month!}
+              exportparts="month, selected"
+              @igcChange=${this.changeMonth}
+            ></igc-months-view>`
+          : ''}
+        ${this.activeView === 'years'
+          ? html`<igc-years-view
+              part="years-view"
+              .value=${this.viewDate}
+              .yearsPerPage=${this.yearPerPage}
+              exportparts="year, selected"
+              @igcChange=${this.changeYear}
+            ></igc-years-view>`
+          : ''}
+      </div>
     `;
   }
 }

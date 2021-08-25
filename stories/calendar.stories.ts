@@ -8,6 +8,27 @@ const metadata = {
   title: 'Calendar',
   component: 'igc-calendar',
   argTypes: {
+    hasHeader: {
+      type: 'boolean',
+      control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: true,
+        },
+      },
+    },
+    headerOrientation: {
+      type: '"vertical" | "horizontal"',
+      options: ['vertical', 'horizontal'],
+      control: {
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'horizontal',
+        },
+      },
+    },
     activeView: {
       type: '"days" | "months" | "years"',
       options: ['days', 'months', 'years'],
@@ -103,6 +124,8 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
+  hasHeader: boolean;
+  headerOrientation: 'vertical' | 'horizontal';
   activeView: 'days' | 'months' | 'years';
   size: 'small' | 'medium' | 'large';
   selection: 'single' | 'multi' | 'range';
@@ -147,9 +170,15 @@ interface ArgTypes {
   },
 };
 
+(metadata.argTypes as any).title = {
+  type: 'string',
+  control: 'text',
+};
+
 interface ArgTypes {
   weekDayFormat: 'long' | 'short' | 'narrow';
   monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
+  title: string;
 }
 
 const Template: Story<ArgTypes, Context> = (
@@ -159,21 +188,31 @@ const Template: Story<ArgTypes, Context> = (
     weekStart,
     locale,
     viewDate = new Date(),
-    weekDayFormat = 'narrow',
-    monthFormat = 'long',
+    weekDayFormat,
+    monthFormat,
     selection,
     activeView,
     size,
+    hasHeader = true,
+    headerOrientation,
+    title,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  const formatOptions = { weekday: weekDayFormat, month: monthFormat };
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: monthFormat ?? 'short',
+    weekday: weekDayFormat ?? 'short',
+    year: 'numeric',
+  };
 
   return html`
     <igc-calendar
-      style="width: 400px;"
+      style="width: 500px;"
+      ?has-header=${hasHeader}
       ?show-week-numbers=${showWeekNumbers}
       ?hide-outside-days=${hideOutsideDays}
+      header-orientation=${ifDefined(headerOrientation)}
       week-start=${ifDefined(weekStart)}
       locale=${ifDefined(locale)}
       .viewDate=${new Date(viewDate)}
@@ -183,6 +222,7 @@ const Template: Story<ArgTypes, Context> = (
       size=${ifDefined(size)}
       dir=${ifDefined(direction)}
     >
+      ${title ? html`<span slot="title">${title}</span>` : ''}
     </igc-calendar>
   `;
 };

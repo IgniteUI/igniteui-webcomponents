@@ -3,8 +3,39 @@
     flex-direction: column;
 }
 
-[part~='navigation'] {
+:host([header-orientation='vertical']) {
+    flex-direction: row;
+
+    [part='header'] {
+        height: auto;
+        width: 140px;
+    }
+}
+
+[part='navigation'] {
     display: flex;
     justify-content: space-between;
     margin: 0 15px;
+}
+
+[part='content'] {
+    flex-grow: 1;
+}
+
+[part='header'] {
+    display: flex;
+    box-sizing: border-box;
+    padding: 5px;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100px;
+    background-color: hotpink;
+    color: white;
+}
+
+[part='header-date'] {
+    display: flex;
+    flex-wrap: wrap;
+    white-space: pre-wrap;
+    font-size: x-large;
 }
