@@ -93,8 +93,8 @@ export class IgcInputComponent extends EventEmitterMixin<
   resolvePartNames(base: string) {
     return {
       [base]: true,
-      prefixed: this._prefix && this._prefix?.length > 0,
-      suffixed: this._suffix && this._suffix?.length > 0,
+      prefixed: this._prefix?.length > 0,
+      suffixed: this._suffix?.length > 0,
     };
   }
 
