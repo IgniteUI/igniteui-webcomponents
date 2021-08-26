@@ -1,5 +1,6 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
@@ -47,6 +48,12 @@ export class IgcCalendarComponent extends SizableMixin(
 
   @property({ attribute: 'header-orientation', reflect: true })
   headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
+
+  @property({ reflect: true })
+  orientation: 'vertical' | 'horizontal' = 'horizontal';
+
+  @property({ type: Number, attribute: 'visible-months' })
+  visibleMonths = 1;
 
   @property({ attribute: 'active-view' })
   activeView: 'days' | 'months' | 'years' = 'days';
@@ -178,12 +185,14 @@ export class IgcCalendarComponent extends SizableMixin(
     }
   }
 
-  private renderNavigation() {
+  private renderNavigation(viewDate?: Date, renderButtons = true) {
+    viewDate = viewDate ?? this.viewDate;
+
     let startYear = undefined;
     let endYear = undefined;
 
     if (this.activeView === 'years') {
-      startYear = calculateYearsRangeStart(this.viewDate, this.yearPerPage);
+      startYear = calculateYearsRangeStart(viewDate, this.yearPerPage);
       endYear = startYear + this.yearPerPage - 1;
     }
 
@@ -191,24 +200,28 @@ export class IgcCalendarComponent extends SizableMixin(
       <div>
         ${this.activeView === 'days'
           ? html`<button part="months-navigation" @click=${this.switchToMonths}>
-              ${this.formattedMonth(this.viewDate)}
+              ${this.formattedMonth(viewDate)}
             </button>`
           : ''}
         ${this.activeView === 'days' || this.activeView === 'months'
           ? html`<button part="years-navigation" @click=${this.switchToYears}>
-              ${this.viewDate.getFullYear()}
+              ${viewDate.getFullYear()}
             </button>`
           : ''}
         ${this.activeView === 'years'
           ? html`<span part="years-range">${`${startYear} - ${endYear}`}</span>`
           : ''}
       </div>
-      <div>
-        <button part="navigation-button" @click=${this.navigatePrevious}>
-          <
-        </button>
-        <button part="navigation-button" @click=${this.navigateNext}>></button>
-      </div>
+      ${renderButtons
+        ? html`<div>
+            <button part="navigation-button" @click=${this.navigatePrevious}>
+              <
+            </button>
+            <button part="navigation-button" @click=${this.navigateNext}>
+              >
+            </button>
+          </div>`
+        : ''}
     </div>`;
   }
 
@@ -256,46 +269,78 @@ export class IgcCalendarComponent extends SizableMixin(
   }
 
   render() {
+    const viewDates = [this.viewDate];
+
+    if (this.visibleMonths > 1) {
+      for (let i = 1; i < this.visibleMonths; i++) {
+        viewDates.push(this.calendarModel.timedelta(this.viewDate, 'month', i));
+      }
+    }
+
     return html`
       ${this.renderHeader()}
-      <div part="content">
-        ${this.renderNavigation()}
+      <div
+        part="content"
+        style=${styleMap({
+          display: 'flex',
+          flexGrow: '1',
+          flexDirection:
+            this.activeView === 'days'
+              ? this.orientation === 'horizontal'
+                ? 'row'
+                : 'column'
+              : 'column',
+        })}
+      >
         ${this.activeView === 'days'
-          ? html`<igc-days-view
-              part="days-view"
-              .viewDate=${this.viewDate}
-              .weekStart=${this.weekStart}
-              .weekDayFormat=${this.formatOptions.weekday!}
-              .locale=${this.locale}
-              .selection=${this.selection}
-              .value=${this.value}
-              .hideOutsideDays=${this.hideOutsideDays}
-              .showWeekNumbers=${this.showWeekNumbers}
-              .disabledDates=${this.disabledDates}
-              .specialDates=${this.specialDates}
-              exportparts="days-row, label, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
-              @igcChange=${this.changeValue}
-              @igcOutsideDaySelected=${this.outsideDaySelected}
-            ></igc-days-view>`
+          ? viewDates.map(
+              (viewDate, i) => html`<div part="days-view-container">
+                ${this.renderNavigation(
+                  viewDate,
+                  this.orientation === 'horizontal'
+                    ? i === viewDates.length - 1
+                    : i === 0
+                )}
+                <igc-days-view
+                  part="days-view"
+                  .viewDate=${viewDate}
+                  .weekStart=${this.weekStart}
+                  .weekDayFormat=${this.formatOptions.weekday!}
+                  .locale=${this.locale}
+                  .selection=${this.selection}
+                  .value=${this.value}
+                  .hideOutsideDays=${this.hideOutsideDays ||
+                  this.visibleMonths > 1}
+                  .showWeekNumbers=${this.showWeekNumbers}
+                  .disabledDates=${this.disabledDates}
+                  .specialDates=${this.specialDates}
+                  exportparts="days-row, label, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
+                  @igcChange=${this.changeValue}
+                  @igcOutsideDaySelected=${this.outsideDaySelected}
+                ></igc-days-view>
+              </div>`
+            )
           : ''}
         ${this.activeView === 'months'
-          ? html`<igc-months-view
-              part="months-view"
-              .value=${this.viewDate}
-              .locale=${this.locale}
-              .monthFormat=${this.formatOptions.month!}
-              exportparts="month, selected"
-              @igcChange=${this.changeMonth}
-            ></igc-months-view>`
+          ? html` ${this.renderNavigation()}
+              <igc-months-view
+                part="months-view"
+                .value=${this.viewDate}
+                .locale=${this.locale}
+                .monthFormat=${this.formatOptions.month!}
+                exportparts="month, selected"
+                @igcChange=${this.changeMonth}
+              ></igc-months-view>`
           : ''}
         ${this.activeView === 'years'
-          ? html`<igc-years-view
-              part="years-view"
-              .value=${this.viewDate}
-              .yearsPerPage=${this.yearPerPage}
-              exportparts="year, selected"
-              @igcChange=${this.changeYear}
-            ></igc-years-view>`
+          ? html`${this.renderNavigation()}
+              <igc-years-view
+                part="years-view"
+                .value=${this.viewDate}
+                .yearsPerPage=${this.yearPerPage}
+                exportparts="year, selected"
+                @igcChange=${this.changeYear}
+              ></igc-years-view>`
           : ''}
       </div>
     `;

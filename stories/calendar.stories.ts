@@ -29,6 +29,27 @@ const metadata = {
         },
       },
     },
+    orientation: {
+      type: '"vertical" | "horizontal"',
+      options: ['vertical', 'horizontal'],
+      control: {
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'horizontal',
+        },
+      },
+    },
+    visibleMonths: {
+      type: 'number',
+      control: 'number',
+      table: {
+        defaultValue: {
+          summary: '1',
+        },
+      },
+    },
     activeView: {
       type: '"days" | "months" | "years"',
       options: ['days', 'months', 'years'],
@@ -126,6 +147,8 @@ export default metadata;
 interface ArgTypes {
   hasHeader: boolean;
   headerOrientation: 'vertical' | 'horizontal';
+  orientation: 'vertical' | 'horizontal';
+  visibleMonths: number;
   activeView: 'days' | 'months' | 'years';
   size: 'small' | 'medium' | 'large';
   selection: 'single' | 'multi' | 'range';
@@ -143,6 +166,12 @@ interface ArgTypes {
   hideOutsideDays: boolean;
 }
 // endregion
+
+(metadata as any).parameters = {
+  actions: {
+    handles: ['igcChange'],
+  },
+};
 
 (metadata.argTypes as any).weekDayFormat = {
   type: '"long" | "short" | "narrow"',
@@ -195,7 +224,9 @@ const Template: Story<ArgTypes, Context> = (
     size,
     hasHeader = true,
     headerOrientation,
+    orientation,
     title,
+    visibleMonths,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -208,11 +239,11 @@ const Template: Story<ArgTypes, Context> = (
 
   return html`
     <igc-calendar
-      style="width: 500px;"
       ?has-header=${hasHeader}
       ?show-week-numbers=${showWeekNumbers}
       ?hide-outside-days=${hideOutsideDays}
       header-orientation=${ifDefined(headerOrientation)}
+      orientation=${ifDefined(orientation)}
       week-start=${ifDefined(weekStart)}
       locale=${ifDefined(locale)}
       .viewDate=${new Date(viewDate)}
@@ -220,7 +251,12 @@ const Template: Story<ArgTypes, Context> = (
       active-view=${ifDefined(activeView)}
       .formatOptions=${formatOptions}
       size=${ifDefined(size)}
+      visible-months=${ifDefined(visibleMonths)}
       dir=${ifDefined(direction)}
+      @igcChange=${(ev: Event) => {
+        console.log(ev);
+        console.log(document.querySelector('igc-calendar')?.value);
+      }}
     >
       ${title ? html`<span slot="title">${title}</span>` : ''}
     </igc-calendar>
