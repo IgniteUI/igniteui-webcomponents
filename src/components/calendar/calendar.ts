@@ -231,14 +231,14 @@ export class IgcCalendarComponent extends SizableMixin(
     }
 
     return html`<div part="header">
-      <span part="header-title">
+      <h5 part="header-title">
         <slot name="title"
           >${this.selection === 'single'
             ? 'Select a date'
             : 'Select a date range'}</slot
         >
-      </span>
-      <div part="header-date">${this.renderHeaderDate()}</div>
+      </h5>
+      <h2 part="header-date">${this.renderHeaderDate()}</h2>
     </div>`;
   }
 

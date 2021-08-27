@@ -8,7 +8,7 @@ $date-sizes: (
 );
 
 $week-number-bg: color(gray, 200);
-$week-number-color: color(gray, 600);
+$week-number-color: color(gray, 500);
 $week-number-radius: rem(4px);
 $row-gap: rem(4px);
 
@@ -28,6 +28,7 @@ $date-size: map.get($date-sizes, 'large');
     cursor: pointer;
     user-select: none;
     position: relative;
+    font-size: var(--igc-subtitle-1-font-size);
 
     &:hover,
     &:focus {
@@ -87,13 +88,13 @@ $date-size: map.get($date-sizes, 'large');
 
 [part~='range'][part~='first'] {
     &::after {
-        left: 50%;
+        inset-inline-start: 50%;
     }
 }
 
 [part~='last'] {
     &::after {
-        right: 50%;
+        inset-inline-end: 50%;
     }
 }
 
