@@ -1,8 +1,9 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 export default {
   title: 'Radio Group',
   component: 'igc-radio-group',
@@ -20,9 +21,9 @@ export default {
       defaultValue: 'after',
     },
     alignment: {
+      options: ['vertical', 'horizontal'],
       control: {
         type: 'inline-radio',
-        options: ['vertical', 'horizontal'],
       },
       defaultValue: 'vertical',
     },
@@ -40,16 +41,12 @@ export default {
     },
   },
 };
-
 interface ArgTypes {
   alignment: 'vertical' | 'horizontal';
   labelPosition: 'before' | 'after';
   disabled: boolean;
 }
-
-interface Context {
-  globals: { theme: string; direction: string };
-}
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   { alignment, labelPosition, disabled }: ArgTypes,

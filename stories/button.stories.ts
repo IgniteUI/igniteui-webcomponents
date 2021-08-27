@@ -1,58 +1,66 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
-export default {
+// region default
+const metadata = {
   title: 'Button',
   component: 'igc-button',
   argTypes: {
+    type: {
+      type: '"button" | "reset" | "submit"',
+      description: 'The type of the button. Defaults to undefined.',
+      options: ['button', 'reset', 'submit'],
+      control: {
+        type: 'inline-radio',
+      },
+    },
     disabled: {
-      control: 'boolean',
+      type: 'boolean',
       description: 'Determines whether the button is disabled.',
+      control: 'boolean',
       table: {
-        type: {
-          summary: 'boolean',
-        },
         defaultValue: {
-          summary: 'false',
+          summary: false,
+        },
+      },
+    },
+    variant: {
+      type: '"flat" | "raised" | "outlined" | "fab"',
+      options: ['flat', 'raised', 'outlined', 'fab'],
+      control: {
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'flat',
         },
       },
     },
     size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
       control: {
         type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
       },
-      defaultValue: 'large',
-    },
-    variant: {
-      control: {
-        type: 'inline-radio',
-        options: ['flat', 'raised', 'outlined', 'fab'],
+      table: {
+        defaultValue: {
+          summary: 'large',
+        },
       },
-      defaultValue: 'flat',
-    },
-    type: {
-      control: {
-        type: 'inline-radio',
-        options: ['button', 'reset', 'submit'],
-      },
-      defaultValue: 'button',
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
-  disabled: boolean;
-  size: 'small' | 'medium' | 'large';
-  variant: 'flat' | 'raised' | 'outlined' | 'fab';
   type: 'button' | 'reset' | 'submit';
+  disabled: boolean;
+  variant: 'flat' | 'raised' | 'outlined' | 'fab';
+  size: 'small' | 'medium' | 'large';
 }
-
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   { disabled = false, size, variant, type }: ArgTypes,

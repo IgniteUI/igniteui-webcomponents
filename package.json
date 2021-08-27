@@ -16,24 +16,30 @@
   "scripts": {
     "start": "npm run storybook",
     "serve": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wds\"",
-    "build": "npm run clean && npm run build:styles && npm run build:typescript",
+    "build": "npm run clean && npm run build:styles && npm run build:typescript && npm run build:docs:json && npm run build:meta",
     "build:typescript": "tsc",
     "build:styles": "node scripts/build-styles.js",
     "build:watch": "npm run build:styles && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\"",
+    "build:docs:md": "web-component-analyzer \"src/**/*.ts\" --outDir docs/md",
+    "build:docs:json": "web-component-analyzer \"src/**/*.ts\" --format json --outDir docs/json",
+    "build:meta": "node scripts/build-stories.js && npm run format:stories",
+    "watch-meta": "node scripts/stories-watcher.js ",
     "watch-scss": "node scripts/styles-watcher.js",
     "watch-ts": "tsc --watch --preserveWatchOutput",
     "clean": "npm run clean:dist && npm run clean:styles",
     "clean:dist": "rimraf ./dist",
     "clean:styles": "rimraf \"src/**/*.css.ts\"",
+    "clean:docs": "rimraf ./docs",
     "lint": "npm run lint:eslint && npm run lint:lit-analyzer && npm run lint:prettier && npm run lint:styles",
     "lint:eslint": "eslint --ext .ts . --ignore-path .gitignore",
     "lint:lit-analyzer": "lit-analyzer",
     "lint:prettier": "prettier \"**/*.ts\" --check --ignore-path .gitignore",
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "format": "eslint --ext .ts . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
+    "format:stories": "prettier \"**/*.stories.ts\" --write --ignore-path .gitignore",
     "test": "npm run build && wtr --coverage",
     "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
-    "storybook": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wds -c .storybook/server.mjs\"",
+    "storybook": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"npm:watch-meta\" \"wds -c .storybook/server.mjs\"",
     "storybook:build": "npm run build && build-storybook"
   },
   "dependencies": {
@@ -47,7 +53,7 @@
     "@typescript-eslint/parser": "^4.26.1",
     "@web/dev-server": "^0.1.17",
     "@web/dev-server-rollup": "^0.3.4",
-    "@web/dev-server-storybook": "^0.3.5",
+    "@web/dev-server-storybook": "^0.3.8",
     "@web/test-runner": "^0.12.20",
     "autoprefixer": "^10.2.6",
     "concurrently": "^5.3.0",
@@ -67,7 +73,8 @@
     "stylelint": "^13.13.1",
     "stylelint-scss": "^3.20.1",
     "tslib": "^2.2.0",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.2",
+    "web-component-analyzer": "^1.1.6"
   },
   "husky": {
     "hooks": {

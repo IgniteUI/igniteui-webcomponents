@@ -2,8 +2,9 @@ import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
 import '../igniteui-webcomponents.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Story } from './story';
+import { Context, Story } from './story';
 
+// region default
 export default {
   title: 'Navigation Bar',
   component: 'igc-navbar',
@@ -20,10 +21,7 @@ export default {
 interface ArgTypes {
   content: string;
 }
-
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
+//end region
 
 registerIcon(
   'home',
