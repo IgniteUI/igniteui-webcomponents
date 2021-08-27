@@ -49,7 +49,7 @@ export class IgcCalendarComponent extends SizableMixin(
   @property({ attribute: 'header-orientation', reflect: true })
   headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
 
-  @property({ reflect: true })
+  @property()
   orientation: 'vertical' | 'horizontal' = 'horizontal';
 
   @property({ type: Number, attribute: 'visible-months' })
