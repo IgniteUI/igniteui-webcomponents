@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit';
-import { property, query, queryAssignedNodes } from 'lit/decorators.js';
+import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
@@ -23,12 +23,19 @@ export class IgcInputComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   static styles = styles;
+  static shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
   private direction = new DirectionController(this);
   private _start = new ResizeController(this);
   private _label = new ResizeController(this);
   private _end = new ResizeController(this);
   private inputId = `input-${nextId++}`;
   private labelId = `input-label-${this.inputId}`;
+
+  @state()
+  theme!: string | undefined;
 
   @query('input', true)
   input!: HTMLInputElement;
@@ -39,8 +46,20 @@ export class IgcInputComponent extends EventEmitterMixin<
   @queryAssignedNodes('suffix', true)
   _suffix!: NodeListOf<HTMLElement>;
 
-  @property({ type: String })
-  type!: string;
+  @property({ reflect: true })
+  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url' =
+    'text';
+
+  @property()
+  inputmode!:
+    | 'none'
+    | 'txt'
+    | 'decimal'
+    | 'numeric'
+    | 'tel'
+    | 'search'
+    | 'email'
+    | 'url';
 
   @property()
   name!: string;
@@ -84,11 +103,24 @@ export class IgcInputComponent extends EventEmitterMixin<
   @property()
   max!: number | string;
 
+  @property({ type: Number })
+  step!: number;
+
   @property({ type: Boolean })
   autofocus!: boolean;
 
   @property()
   autocomplete!: string;
+
+  connectedCallback() {
+    super.connectedCallback();
+    const theme = document.defaultView
+      ?.getComputedStyle(this)
+      .getPropertyValue('--theme')
+      .trim();
+
+    this.theme = theme;
+  }
 
   resolvePartNames(base: string) {
     return {
@@ -118,7 +150,7 @@ export class IgcInputComponent extends EventEmitterMixin<
 
   handleChange() {
     this.value = this.input.value;
-    this.emitEvent('igcBlur');
+    this.emitEvent('igcChange');
   }
 
   handleFocus() {
@@ -155,10 +187,13 @@ export class IgcInputComponent extends EventEmitterMixin<
         ?required="${this.required}"
         ?autofocus="${this.autofocus}"
         autocomplete="${ifDefined(this.autocomplete)}"
+        inputmode="${ifDefined(this.inputmode)}"
         min="${ifDefined(this.min)}"
         max="${ifDefined(this.max)}"
         minlength="${ifDefined(this.minlength)}"
         maxlength="${ifDefined(this.maxlength)}"
+        step="${ifDefined(this.step)}"
+        aria-invalid="${this.invalid ? 'true' : 'false'}"
         @invalid="${this.handleInvalid}"
         @change="${this.handleChange}"
         @input="${this.handleInput}"
@@ -194,15 +229,18 @@ export class IgcInputComponent extends EventEmitterMixin<
     </div>`;
   }
 
-  renderDefault() {
+  renderStandard() {
     return html`${this.renderLabel()}
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         ${this.renderPrefix()} ${this.renderInput(0, 0, 16)}
         ${this.renderSuffix()}
+      </div>
+      <div part="helper-text">
+        <slot name="helper-text"></slot>
       </div>`;
   }
 
-  renderOutlined() {
+  renderMaterial() {
     const gap = 4;
     const scale = 0.75;
     const padding = 12;
@@ -220,12 +258,15 @@ export class IgcInputComponent extends EventEmitterMixin<
         </div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
+      <div part="helper-text">
+        <slot name="helper-text"></slot>
+      </div>
     `;
   }
 
   render() {
-    return html`${this.outlined
-      ? this.renderOutlined()
-      : this.renderDefault()}`;
+    return html`${this.theme === 'material'
+      ? this.renderMaterial()
+      : this.renderStandard()}`;
   }
 }

@@ -6,7 +6,6 @@
 $idle-color: color(gray, 600);
 $idle-hover-color: color(gray, 800);
 $active-color: color(primary, 500);
-$success-color: color(success, 500);
 $error-color: color(error, 500);
 $idle-border-width: rem(1px);
 $active-border-width: rem(2px);
@@ -54,13 +53,17 @@ $input-height: (
 
 :host {
     position: relative;
-    display: flex;
-    flex-direction: column;
+    display: block;
     font-family: var(--igc-font-family);
+    outline-style: none;
+    --theme: material;
 }
 
 :host([size='large']) {
-    height: map.get($input-height, 'large');
+    [part~='input'],
+    [part~='container'] {
+        height: map.get($input-height, 'large');
+    }
 
     input:not(:placeholder-shown) + [part^='container'] [part='label'] {
         @extend %large-label;
@@ -68,7 +71,10 @@ $input-height: (
 }
 
 :host([size='medium']) {
-    height: map.get($input-height, 'medium');
+    [part~='input'],
+    [part~='container'] {
+        height: map.get($input-height, 'medium');
+    }
 
     input:not(:placeholder-shown) + [part^='container'] [part='label'] {
         @extend %medium-label;
@@ -76,7 +82,10 @@ $input-height: (
 }
 
 :host([size='small']) {
-    height: map.get($input-height, 'small');
+    [part~='input'],
+    [part~='container'] {
+        height: map.get($input-height, 'small');
+    }
 
     input:not(:placeholder-shown) + [part^='container'] [part='label'] {
         @extend %small-label;
@@ -209,20 +218,6 @@ input {
     }
 }
 
-:host([valid]),
-:host([valid]:focus-within) {
-    [part='start'],
-    [part='notch'],
-    [part='end'] {
-        border-color: $success-color;
-    }
-
-    [part='label'] {
-        color: $success-color;
-    }
-}
-
-:host([valid]:focus-within),
 :host([invalid]:focus-within) {
     [part='notch']  {
         border-top: $idle-border-width solid transparent;
@@ -236,6 +231,7 @@ input:not(:placeholder-shown) + [part^='container'] {
 [part^='container'] {
     position: absolute;
     display: flex;
+    top: 0;
     width: 100%;
     height: 100%;
     max-width: 100%;
@@ -262,6 +258,7 @@ input:not(:placeholder-shown) + [part^='container'] {
 [part='start'] {
     width: auto;
     min-width: rem(12px);
+    flex-shrink: 0;
     border: {
         style: solid;
         color: $idle-color;
@@ -332,6 +329,13 @@ input:not(:placeholder-shown) + [part^='container'] {
     }
 }
 
+[part='helper-text'] {
+    @include type-category('caption');
+    padding: 0 rem(8px);
+    margin-top: rem(4px);
+    color: color(gray, 600);
+}
+
 :host([required]) {
     [part='label']::after {
         content: '*';
@@ -352,14 +356,11 @@ input:not(:placeholder-shown) + [part^='container'] {
     }
 }
 
-// FILLED INPUT STYLES
+// Filled Style
 :host(:not([outlined])) {
     [part='start'],
     [part='end'] {
-        border-top-color: transparent;
-        border-left-color: transparent;
-        border-right-color: transparent;
-        border-bottom: transparent;
+        border-color: transparent;
         border-top-width: rem(1px);
     }
 
@@ -404,27 +405,37 @@ input:not(:placeholder-shown) + [part^='container'] {
         }
     }
 
-    &::after {
-        content: '';
+    [part~='container']::after {
         position: absolute;
-        bottom: 0;
+        content: '';
+        width: 100%;
         height: rem(2px);
-        background: $active-color;
         left: 0;
         right: 0;
+        bottom: 0;
+        background: $active-color;
         transform: scaleX(0);
         transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
     }
 }
 
 :host(:not([outlined]):focus-within) {
-    &::after {
-        width: 100%;
+    [part='start'],
+    [part='end'] {
+        border-color: transparent;
+    }
+
+    [part='notch'] {
+        border-bottom-color: transparent;
+        border-top: 1px solid transparent;
+    }
+
+    [part~='container']::after {
         transform: scaleX(1);
         opacity: 1;
     }
 
-    input {
+    [part~='input'] {
         border-color: $active-color;
     }
 }
@@ -433,5 +444,16 @@ input:not(:placeholder-shown) + [part^='container'] {
 :host(:not([outlined])[placeholder]) {
     [part='label'] {
         transform: translateY(-106%) scale($scale);
+    }
+}
+
+:host(:not([outlined])[invalid]),
+:host(:not([outlined])[invalid]:focus-within) {
+    [part~='input'] {
+        border-color: $error-color;
+    }
+
+    [part~='container']::after {
+        background: $error-color;
     }
 }

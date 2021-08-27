@@ -3,6 +3,8 @@
 @mixin theme() {
     igc-input,
     igc-input[outlined] {
+        --theme: bootstrap;
+
         &::after {
             background: none;
         }
@@ -32,6 +34,7 @@
             position: relative;
             transform: none;
             top: initial;
+            left: 0;
             border: initial;
         }
 
@@ -44,6 +47,10 @@
         &::part(container) {
             pointer-events: auto;
             border: none;
+
+            &::after {
+                display: none;
+            }
         }
 
         &::part(prefix),
@@ -96,6 +103,11 @@
                     end-radius: utils.rem(4px);
                 };
             }
+        }
+
+        &::part(helper-text) {
+            padding: 0;
+            color: utils.color(gray, 700);
         }
     }
 

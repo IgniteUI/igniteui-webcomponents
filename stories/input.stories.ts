@@ -118,6 +118,11 @@ const Template: Story<ArgTypes, Context> = (
     >
       <igc-icon name="github" slot="prefix"></igc-icon>
       <igc-icon name="github" slot="suffix"></igc-icon>
+      <span slot="helper-text"
+        >Visit
+        <a href="https://infragistics.com" target="_blank">Infragistics</a> for
+        more information.</span
+      >
     </igc-input>
   `;
 export const Outlined = Template.bind({});
