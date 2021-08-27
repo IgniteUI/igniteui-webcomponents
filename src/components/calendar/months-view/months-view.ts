@@ -31,8 +31,8 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
   @property()
   locale = 'en';
 
-  @property()
-  monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' = 'short';
+  @property({ attribute: 'month-format' })
+  monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' = 'long';
 
   @watch('locale')
   @watch('monthFormat')

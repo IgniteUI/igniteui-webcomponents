@@ -49,4 +49,9 @@ export class IgcCalendarBaseComponent extends LitElement {
   weekStartChange() {
     this.calendarModel.firstWeekDay = getWeekDayNumber(this.weekStart);
   }
+
+  @watch('selection', { waitUntilFirstUpdate: true })
+  selectionChange() {
+    this.value = undefined;
+  }
 }

@@ -8,6 +8,48 @@ const metadata = {
   title: 'Calendar',
   component: 'igc-calendar',
   argTypes: {
+    hasHeader: {
+      type: 'boolean',
+      control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: true,
+        },
+      },
+    },
+    headerOrientation: {
+      type: '"vertical" | "horizontal"',
+      options: ['vertical', 'horizontal'],
+      control: {
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'horizontal',
+        },
+      },
+    },
+    orientation: {
+      type: '"vertical" | "horizontal"',
+      options: ['vertical', 'horizontal'],
+      control: {
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'horizontal',
+        },
+      },
+    },
+    visibleMonths: {
+      type: 'number',
+      control: 'number',
+      table: {
+        defaultValue: {
+          summary: '1',
+        },
+      },
+    },
     activeView: {
       type: '"days" | "months" | "years"',
       options: ['days', 'months', 'years'],
@@ -103,6 +145,10 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
+  hasHeader: boolean;
+  headerOrientation: 'vertical' | 'horizontal';
+  orientation: 'vertical' | 'horizontal';
+  visibleMonths: number;
   activeView: 'days' | 'months' | 'years';
   size: 'small' | 'medium' | 'large';
   selection: 'single' | 'multi' | 'range';
@@ -120,6 +166,12 @@ interface ArgTypes {
   hideOutsideDays: boolean;
 }
 // endregion
+
+(metadata as any).parameters = {
+  actions: {
+    handles: ['igcChange'],
+  },
+};
 
 (metadata.argTypes as any).weekDayFormat = {
   type: '"long" | "short" | "narrow"',
@@ -147,9 +199,15 @@ interface ArgTypes {
   },
 };
 
+(metadata.argTypes as any).title = {
+  type: 'string',
+  control: 'text',
+};
+
 interface ArgTypes {
   weekDayFormat: 'long' | 'short' | 'narrow';
   monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
+  title: string;
 }
 
 const Template: Story<ArgTypes, Context> = (
@@ -159,29 +217,48 @@ const Template: Story<ArgTypes, Context> = (
     weekStart,
     locale,
     viewDate = new Date(),
-    weekDayFormat = 'short',
-    monthFormat = 'short',
-    selection = 'single',
-    activeView = 'days',
-    size = 'large',
+    weekDayFormat,
+    monthFormat,
+    selection,
+    activeView,
+    size,
+    hasHeader = true,
+    headerOrientation,
+    orientation,
+    title,
+    visibleMonths,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  const formatOptions = { weekday: weekDayFormat, month: monthFormat };
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: monthFormat ?? 'short',
+    weekday: weekDayFormat ?? 'short',
+    year: 'numeric',
+  };
 
   return html`
     <igc-calendar
-      .showWeekNumbers=${showWeekNumbers}
-      .hideOutsideDays=${hideOutsideDays}
-      .weekStart=${weekStart}
-      .locale=${locale}
+      ?has-header=${hasHeader}
+      ?show-week-numbers=${showWeekNumbers}
+      ?hide-outside-days=${hideOutsideDays}
+      header-orientation=${ifDefined(headerOrientation)}
+      orientation=${ifDefined(orientation)}
+      week-start=${ifDefined(weekStart)}
+      locale=${ifDefined(locale)}
       .viewDate=${new Date(viewDate)}
-      .selection=${selection}
-      .activeView=${activeView}
+      selection=${ifDefined(selection)}
+      active-view=${ifDefined(activeView)}
       .formatOptions=${formatOptions}
-      .size=${size}
+      size=${ifDefined(size)}
+      visible-months=${ifDefined(visibleMonths)}
       dir=${ifDefined(direction)}
+      @igcChange=${(ev: Event) => {
+        console.log(ev);
+        console.log(document.querySelector('igc-calendar')?.value);
+      }}
     >
+      ${title ? html`<span slot="title">${title}</span>` : ''}
     </igc-calendar>
   `;
 };

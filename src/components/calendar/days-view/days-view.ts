@@ -9,7 +9,7 @@ import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
 } from '../common/calendar-base';
-import { getDateOnly, isDate, isEqual } from '../common/utils';
+import { getDateOnly, isEqual } from '../common/utils';
 import { styles } from './days-view.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
@@ -36,17 +36,10 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
    */
   static styles = [styles];
 
-  private rangeStarted = false;
   private formatterWeekday!: Intl.DateTimeFormat;
 
-  @property()
-  weekDayFormat: 'long' | 'short' | 'narrow' = 'short';
-
-  @watch('selection', { waitUntilFirstUpdate: true })
-  selectionChange() {
-    this.value = undefined;
-    this.rangeStarted = false;
-  }
+  @property({ attribute: 'week-day-format' })
+  weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
 
   @watch('weekDayFormat')
   @watch('locale')
@@ -95,10 +88,6 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private formattedDate(value: Date): string {
-    // TODO
-    // if (this.formatViews.day) {
-    //     return this.formatterDay.format(value);
-    // }
     return `${value.getDate()}`;
   }
 
@@ -225,24 +214,38 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   private selectDay(event: Event, day: ICalendarDate) {
     event.stopPropagation();
-    this.selectDateFromClient(day.date);
-    this.emitEvent('igcChange');
+    const result = this.selectDate(day.date);
+
+    if (result) {
+      this.emitEvent('igcChange');
+    }
 
     if (!day.isCurrentMonth) {
       this.emitEvent('igcOutsideDaySelected', { detail: day, bubbles: false });
     }
   }
 
-  private selectDateFromClient(value: Date) {
+  private selectDate(value: Date) {
+    if (this.isDisabled(value)) {
+      return false;
+    }
+
     switch (this.selection) {
       case 'single':
+        if ((this.value as Date)?.getTime() === value.getTime()) {
+          return false;
+        }
+        this.selectSingle(value);
+        break;
       case 'multi':
-        this.selectDate(value);
+        this.selectMultiple(value);
         break;
       case 'range':
-        this.selectRange(value, true);
+        this.selectRange(value);
         break;
     }
+
+    return true;
   }
 
   private generateDateRange(start: Date, end: Date): Date[] {
@@ -257,114 +260,62 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     return result;
   }
 
-  private selectRange(value: Date | Date[], excludeDisabledDates = false) {
+  private selectRange(value: Date) {
     let start: Date;
     let end: Date;
     let selectedDates: Date[] = (this.value ?? []) as Date[];
 
-    if (Array.isArray(value)) {
-      // this.rangeStarted = false;
-      value.sort((a: Date, b: Date) => a.valueOf() - b.valueOf());
-      start = getDateOnly(value[0]);
-      end = getDateOnly(value[value.length - 1]);
-      selectedDates = [start, ...this.generateDateRange(start, end)];
+    if (selectedDates.length !== 1) {
+      // start new range
+      selectedDates = [value];
     } else {
-      if (!this.rangeStarted) {
-        this.rangeStarted = true;
-        selectedDates = [value];
-      } else {
-        this.rangeStarted = false;
-
-        if (selectedDates[0].getTime() === value.getTime()) {
-          // selectedDates = [];
-          this.value = [];
-          // this._onChangeCallback(this.selectedDates);
-          return;
-        }
-
-        selectedDates.push(value);
-        selectedDates.sort((a: Date, b: Date) => a.valueOf() - b.valueOf());
-
-        start = selectedDates.shift()!;
-        end = selectedDates.pop()!;
-        selectedDates = [start, ...this.generateDateRange(start, end)];
+      if (selectedDates[0].getTime() === value.getTime()) {
+        this.value = [];
+        return;
       }
+
+      selectedDates.push(value);
+      selectedDates.sort((a: Date, b: Date) => a.valueOf() - b.valueOf());
+
+      start = selectedDates.shift()!;
+      end = selectedDates.pop()!;
+      selectedDates = [start, ...this.generateDateRange(start, end)];
     }
 
-    if (excludeDisabledDates) {
-      selectedDates = selectedDates.filter((d) => !this.isDisabled(d));
-    }
+    // exclude disabled dates
+    selectedDates = selectedDates.filter((d) => !this.isDisabled(d));
 
     this.value = [...selectedDates];
-    // this._onChangeCallback(this.selectedDates);
   }
 
   private selectSingle(value: Date) {
     this.value = getDateOnly(value);
-    // this._onChangeCallback(this.selectedDates);
   }
 
-  private selectMultiple(value: Date | Date[]) {
+  private selectMultiple(value: Date) {
     let selectedDates: Date[] = (this.value ?? []) as Date[];
+    const valueDateOnly = getDateOnly(value);
+    const newSelection = [];
 
-    if (Array.isArray(value)) {
-      const newDates = value.map((v) => getDateOnly(v).getTime());
-      const selDates = selectedDates.map((v) => getDateOnly(v).getTime());
-
-      if (JSON.stringify(newDates) === JSON.stringify(selDates)) {
-        return;
-      }
-
-      selectedDates = Array.from(new Set([...newDates, ...selDates])).map(
-        (v) => new Date(v)
-      );
+    if (
+      selectedDates.every(
+        (date: Date) => date.getTime() !== valueDateOnly.getTime()
+      )
+    ) {
+      newSelection.push(valueDateOnly);
     } else {
-      const valueDateOnly = getDateOnly(value);
-      const newSelection = [];
-      if (
-        selectedDates.every(
-          (date: Date) => date.getTime() !== valueDateOnly.getTime()
-        )
-      ) {
-        newSelection.push(valueDateOnly);
-      } else {
-        selectedDates = selectedDates.filter(
-          (date: Date) => date.getTime() !== valueDateOnly.getTime()
-        );
-      }
-
-      if (newSelection.length > 0) {
-        selectedDates = selectedDates.concat(newSelection);
-      }
+      selectedDates = selectedDates.filter(
+        (date: Date) => date.getTime() !== valueDateOnly.getTime()
+      );
     }
+
+    if (newSelection.length > 0) {
+      selectedDates = selectedDates.concat(newSelection);
+    }
+
     selectedDates = selectedDates.filter((d) => !this.isDisabled(d));
     selectedDates.sort((a: Date, b: Date) => a.valueOf() - b.valueOf());
     this.value = [...selectedDates];
-    // this._onChangeCallback(this.selectedDates);
-  }
-
-  private selectDate(value: Date | Date[]) {
-    if (
-      value === null ||
-      value === undefined ||
-      (Array.isArray(value) && value.length === 0)
-    ) {
-      return;
-    }
-
-    switch (this.selection) {
-      case 'single':
-        if (isDate(value) && !this.isDisabled(value as Date)) {
-          this.selectSingle(value as Date);
-        }
-        break;
-      case 'multi':
-        this.selectMultiple(value);
-        break;
-      case 'range':
-        this.selectRange(value, true);
-        break;
-    }
   }
 
   private resolveDayItemPartName(day: ICalendarDate) {
