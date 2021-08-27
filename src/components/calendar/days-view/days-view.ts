@@ -9,7 +9,7 @@ import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
 } from '../common/calendar-base';
-import { getDateOnly, isDate, isEqual } from '../common/utils';
+import { getDateOnly, isEqual } from '../common/utils';
 import { styles } from './days-view.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
@@ -40,11 +40,6 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   @property({ attribute: 'week-day-format' })
   weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
-
-  @watch('selection', { waitUntilFirstUpdate: true })
-  selectionChange() {
-    this.value = undefined;
-  }
 
   @watch('weekDayFormat')
   @watch('locale')
@@ -219,8 +214,11 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   private selectDay(event: Event, day: ICalendarDate) {
     event.stopPropagation();
-    this.selectDate(day.date);
-    this.emitEvent('igcChange');
+    const result = this.selectDate(day.date);
+
+    if (result) {
+      this.emitEvent('igcChange');
+    }
 
     if (!day.isCurrentMonth) {
       this.emitEvent('igcOutsideDaySelected', { detail: day, bubbles: false });
@@ -228,11 +226,16 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private selectDate(value: Date) {
+    if (this.isDisabled(value)) {
+      return false;
+    }
+
     switch (this.selection) {
       case 'single':
-        if (isDate(value) && !this.isDisabled(value)) {
-          this.selectSingle(value);
+        if ((this.value as Date)?.getTime() === value.getTime()) {
+          return false;
         }
+        this.selectSingle(value);
         break;
       case 'multi':
         this.selectMultiple(value);
@@ -241,6 +244,8 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
         this.selectRange(value);
         break;
     }
+
+    return true;
   }
 
   private generateDateRange(start: Date, end: Date): Date[] {
