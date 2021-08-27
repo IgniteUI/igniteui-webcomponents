@@ -1,37 +1,188 @@
+@use '../../../styles/utilities' as *;
+@use 'sass:map';
+
+$date-sizes: (
+    large: rem(34px),
+    medium: rem(30px),
+    small: rem(26px)
+);
+
+$week-number-bg: color(gray, 200);
+$week-number-color: color(gray, 600);
+$week-number-radius: rem(4px);
+$row-gap: rem(4px);
+
+$date-size: map.get($date-sizes, 'large');
+
 :host {
-    display: flex;
-    flex-flow: column nowrap;
-    width: 100%;
+    display: grid;
     min-width: 290px;
     outline: none;
+    padding: 0 rem(12px) rem(16px) rem(12px);
     overflow: hidden;
+    box-sizing: border-box;
+    row-gap: $row-gap;
 }
 
-[part~='days-row'] {
-    display: flex;
+[part~='date'] {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+
+    &:hover,
+    &:focus {
+        span {
+            background: color(gray, 200);
+        }
+    }
+}
+
+[part~='current'] {
+    span {
+        box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
+    }
 }
 
 [part~='date'],
 [part~='label'] {
+    width: 100%;
+    height: 100%;
+    align-self: center;
+    justify-self: center;
+    color: color(gray, 800);
     position: relative;
     display: flex;
-    flex: 1;
     justify-content: center;
     align-items: center;
     outline: none;
     box-sizing: border-box;
     user-select: none;
+
+    span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
 }
 
-[part~='selected'] {
-    background: hotpink;
+[part~='range'] {
+    background: color(secondary, 100);
+    border-radius: 0;
+}
+
+[part~='range'][part~='first'],
+[part~='range'][part~='last'] {
+    background: transparent;
+
+    &::after {
+        content: '';
+        position: absolute;
+        height: 100%;
+        width: 50%;
+        background: color(secondary, 100);
+        z-index: 1;
+    }
+}
+
+[part~='range'][part~='first'] {
+    &::after {
+        left: 50%;
+    }
+}
+
+[part~='last'] {
+    &::after {
+        right: 50%;
+    }
+}
+
+[part~='selected'][part~='range'][part~='weekend'],
+[part~='selected'][part~='range'][part~='inactive'],
+[part~='selected'][part~='range']:not([part~='first']),
+[part~='selected'][part~='range']:not([part~='last']) {
+    color: contrast-color(secondary, 100);
+
+    &:hover,
+    &:focus {
+        color: contrast-color(secondary, 700);
+
+        span {
+            background: color(secondary, 700);
+        }
+    }
+}
+
+[part~='selected'][part~='range'][part~='first'],
+[part~='selected'][part~='range'][part~='last'],
+[part~='selected']:not([part~='range']) {
+    color: contrast-color(secondary, 700);
+
+    span {
+        background: color(secondary, 500);
+    }
+
+    &:hover,
+    &:focus {
+        span {
+            background: color(secondary, 700);
+        }
+
+        color: contrast-color(secondary, 700);
+    }
+}
+
+[part~='selected'][part~='weekend']:not([part~='range']),
+[part~='selected'][part~='inactive']:not([part~='range']),
+[part~='selected']:not([part~='range']) {
+    color: contrast-color(secondary, 700)
+}
+
+[part~='weekend'],
+[part~='inactive'],
+[part~='label'] {
+    color: $week-number-color;
+}
+
+[part~='week-number'] {
+    grid-column: 1;
+    color: $week-number-color;
+    cursor: default;
+
+    [part='week-number-inner'] {
+        position: relative;
+        background: $week-number-bg;
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            height: $row-gap;
+            width: 100%;
+            background: $week-number-bg;
+        }
+    }
+
+    &:first-of-type {
+        span {
+            border-top-left-radius: $week-number-radius;
+            border-top-right-radius: $week-number-radius;
+        }
+    }
+
+    &:last-of-type {
+        span {
+            border-bottom-left-radius: $week-number-radius;
+            border-bottom-right-radius: $week-number-radius;
+
+            &::after {
+                display: none;
+            }
+        }
+    }
 }
 
 [part~='hidden'] {
     visibility: hidden;
-}
-
-[part~='week-number'] {
-    background-color: gainsboro;
 }
 

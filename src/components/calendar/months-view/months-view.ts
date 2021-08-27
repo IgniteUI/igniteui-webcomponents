@@ -89,8 +89,8 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
         html`<span
           part=${partNameMap(this.resolveMonthPartName(month))}
           @click=${() => this.monthClick(month)}
-          >${this.formattedMonth(month)}</span
-        >`
+          ><span part="month-inner">${this.formattedMonth(month)}</span>
+        </span>`
     )}`;
   }
 }

@@ -1,0 +1,169 @@
+@use '../../styles/utilities' as *;
+@use 'sass:map';
+@use 'sass:math';
+
+$date-sizes: (
+    large: rem(34px),
+    medium: rem(30px),
+    small: rem(26px)
+);
+
+$date-size-large: map.get($date-sizes, 'large');
+$date-size-medium: map.get($date-sizes, 'medium');
+$date-size-small: map.get($date-sizes, 'small');
+
+
+:host {
+    display: flex;
+    flex-direction: column;
+    // TODO REMOVE THE BORDER BEFORE COMMIT
+    border: 1px solid #ddd;
+    font-family: var(--igc-font-family);
+
+    > * {
+        font-family: var(--igc-font-family);
+    }
+}
+
+:host([size='large']) {
+    igc-days-view {
+        grid-template-columns: repeat(7, minmax($date-size-large, 1fr));
+        grid-template-rows: repeat(7, minmax($date-size-large, 1fr));
+    }
+
+    igc-days-view[showweeknumbers] {
+        grid-template-columns: repeat(8, minmax($date-size-large, 1fr));
+    }
+
+    igc-days-view::part(week-number-inner),
+    igc-days-view::part(date-inner) {
+        width: $date-size-large;
+        height: $date-size-large;
+    }
+
+    igc-days-view::part(date-inner){
+        border-radius: math.div($date-size-large, 2);
+    }
+
+    igc-months-view {
+        grid-template-rows: repeat(4, minmax($date-size-large, 1fr));
+
+        &::part(month-inner) {
+            height: $date-size-large;
+            border-radius: math.div($date-size-large, 2);
+        }
+    }
+
+    igc-years-view {
+        grid-template-rows: repeat(5, minmax($date-size-large, 1fr));
+
+        &::part(year-inner) {
+            height: $date-size-large;
+            border-radius: math.div($date-size-large, 2);
+        }
+    }
+}
+
+:host([size='medium']) {
+    igc-days-view {
+        grid-template-columns: repeat(7, minmax($date-size-medium, 1fr));
+        grid-template-rows: repeat(7, minmax($date-size-medium, 1fr));
+    }
+
+    igc-days-view[showweeknumbers] {
+        grid-template-columns: repeat(8, minmax($date-size-medium, 1fr));
+    }
+
+    igc-days-view::part(week-number-inner),
+    igc-days-view::part(date-inner)  {
+        width: $date-size-medium;
+        height: $date-size-medium;
+    }
+
+    igc-days-view::part(date-inner){
+        border-radius: math.div($date-size-medium, 2);
+    }
+
+    igc-months-view {
+        grid-template-rows: repeat(4, minmax($date-size-medium, 1fr));
+
+        &::part(month-inner) {
+            height: $date-size-medium;
+            border-radius: math.div($date-size-medium, 2);
+        }
+
+    }
+
+    igc-years-view {
+        grid-template-rows: repeat(5, minmax($date-size-medium, 1fr));
+
+        &::part(year-inner) {
+            height: $date-size-medium;
+            border-radius: math.div($date-size-medium, 2);
+        }
+    }
+}
+
+:host([size='small']) {
+    igc-days-view {
+        grid-template-columns: repeat(7, minmax($date-size-small, 1fr));
+        grid-template-rows: repeat(7, minmax($date-size-small, 1fr));
+    }
+
+    igc-days-view[showweeknumbers] {
+        grid-template-columns: repeat(8, minmax($date-size-small, 1fr));
+    }
+
+    igc-days-view::part(week-number-inner),
+    igc-days-view::part(date-inner)  {
+        width: $date-size-small;
+        height: $date-size-small;
+    }
+
+    igc-days-view::part(date-inner){
+        border-radius: math.div($date-size-small, 2);
+    }
+
+    igc-months-view {
+        grid-template-rows: repeat(4, minmax($date-size-small, 1fr));
+
+        &::part(month-inner) {
+            height: $date-size-small;
+            border-radius: math.div($date-size-small, 2);
+        }
+    }
+
+    igc-years-view {
+        grid-template-rows: repeat(6, minmax($date-size-small, 1fr));
+
+        &::part(year-inner) {
+            height: $date-size-small;
+            border-radius: math.div($date-size-small, 2);
+        }
+    }
+}
+
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    padding: rem(25px) rem(18px);
+    user-select: none;
+
+    button {
+        user-select: none;
+        background: transparent;
+        border: none;
+        color: color(gray, 800);
+        font-size: rem(16px);
+        padding: 0;
+        transition: color 150ms ease-in-out;
+
+        &:hover,
+        &:focus {
+            color: color(secondary, 500);
+            cursor: pointer;
+        }
+    }
+}
+
+

@@ -6,7 +6,7 @@ import {
 } from './common/calendar-base';
 import { IgcMonthsViewComponent } from './months-view/months-view';
 import { IgcYearsViewComponent } from './years-view/years-view';
-import { styles } from './calendar.css';
+import { styles } from './calendar.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
 import { IgcDaysViewComponent } from './days-view/days-view';
@@ -210,7 +210,7 @@ export class IgcCalendarComponent extends SizableMixin(
             .showWeekNumbers=${this.showWeekNumbers}
             .disabledDates=${this.disabledDates}
             .specialDates=${this.specialDates}
-            exportparts="days-row, label, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
+            exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
             @igcChange=${this.changeValue}
             @igcOutsideDaySelected=${this.outsideDaySelected}
           ></igc-days-view>`
@@ -220,7 +220,7 @@ export class IgcCalendarComponent extends SizableMixin(
             .value=${this.viewDate}
             .locale=${this.locale}
             .monthFormat=${this.formatOptions.month!}
-            exportparts="month, selected"
+            exportparts="month, selected month-inner"
             @igcChange=${this.changeMonth}
           ></igc-months-view>`
         : ''}
@@ -228,7 +228,7 @@ export class IgcCalendarComponent extends SizableMixin(
         ? html`<igc-years-view
             .value=${this.viewDate}
             .yearsPerPage=${this.yearPerPage}
-            exportparts="year, selected"
+            exportparts="year, selected year-inner"
             @igcChange=${this.changeYear}
           ></igc-years-view>`
         : ''}

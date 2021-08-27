@@ -389,10 +389,10 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private renderWeekHeaders() {
-    return html`<div role="row" part="days-row">
+    return html`
       ${this.showWeekNumbers
         ? html`<span role="columnheader" part="label week-number">
-            ${WEEK_LABEL}
+            <span part="week-number-inner">${WEEK_LABEL}</span>
           </span>`
         : ''}
       ${this.generateWeekHeader().map(
@@ -400,19 +400,19 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
           ${this.titleCase(dayName)}
         </span>`
       )}
-    </div>`;
+    `;
   }
 
   private renderDates() {
     return this.getCalendarMonth().map(
-      (week) => html`<div role="row" part="days-row">
-        ${this.showWeekNumbers
-          ? html`<span role="rowheader" part="date week-number">
-              ${this.getWeekNumber(week[0].date)}
-            </span>`
-          : ''}
-        ${week.map((day) => this.renderDateItem(day))}
-      </div>`
+      (week) => html` ${this.showWeekNumbers
+        ? html`<span role="rowheader" part="date week-number">
+            <span part="week-number-inner"
+              >${this.getWeekNumber(week[0].date)}</span
+            >
+          </span>`
+        : ''}
+      ${week.map((day) => this.renderDateItem(day))}`
     );
   }
 
@@ -422,7 +422,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
       role="gridcell"
       @click=${(event: MouseEvent) => this.selectDay(event, day)}
     >
-      ${this.formattedDate(day.date)}
+      <span part="date-inner">${this.formattedDate(day.date)}</span>
     </span>`;
   }
 
