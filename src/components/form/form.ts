@@ -1,70 +1,142 @@
-import { IgcButtonComponent } from './../button/button';
 import { html, LitElement } from 'lit';
-import { property, query, queryAssignedNodes } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
-import { styles } from './form.material.css';
-import { IgcRadioGroupComponent } from '../radio-group/radio-group';
-import { IgcRadioComponent } from '../radio/radio';
+import { property } from 'lit/decorators.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { Constructor } from '../common/mixins/constructor';
+
+export interface IgcFormEventMap {
+  igcSubmit: CustomEvent<FormData>;
+  igcReset: CustomEvent;
+}
 
 // @customElement('igc-form')
-export class IgcFormComponent extends LitElement {
-  static styles = styles;
+export class IgcFormComponent extends EventEmitterMixin<
+  IgcFormEventMap,
+  Constructor<LitElement>
+>(LitElement) {
+  private _controlsWithChecked = [
+    'input',
+    'radio',
+    'igc-radio',
+    'igc-switch',
+    'igc-checkbox',
+  ];
+  private _controlsWithValue = ['input', 'select', 'textarea'];
+  private _controlsThatSubmit = ['input', 'button', 'igc-button'];
 
-  @queryAssignedNodes(undefined, true, 'igc-radio-group')
-  _slottedRadioGroups!: NodeListOf<IgcRadioGroupComponent>;
+  @property({ type: Boolean, reflect: true }) novalidate = false;
 
-  @query('.form', true)
-  form!: HTMLElement;
+  constructor() {
+    super();
 
-  @property({ type: Boolean, reflect: true }) outlined = false;
+    this.addEventListener('click', this.handleClick);
+  }
 
-  protected get classes() {
-    return {
-      outlined: this.outlined,
-    };
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.setAttribute('role', 'form');
+    this.setAttribute('aria-label', 'form');
+  }
+
+  submit(): boolean {
+    const formData = this.getFormData();
+
+    const isValid = this.reportValidity();
+    if (!this.novalidate && !isValid) {
+      return false;
+    }
+
+    this.emitEvent('igcSubmit', { detail: formData });
+    return true;
+  }
+
+  reset() {
+    const formElements = this.getFormElements();
+    formElements.forEach((element) => {
+      element.value = element.defaultValue;
+      element.checked = element.defaultChecked;
+
+      if (
+        (element.tagName.toLowerCase() === 'input' &&
+          (element.type === 'checkbox' || element.type == 'radio')) ||
+        (element.tagName.toLowerCase() !== 'input' &&
+          this._controlsWithChecked.includes(element.tagName.toLowerCase()))
+      ) {
+        element.checked = element.defaultChecked;
+      } else {
+        element.value = element.defaultValue;
+      }
+    });
+
+    this.emitEvent('igcReset');
+  }
+
+  private getFormElements(): any[] {
+    const slot = this.shadowRoot?.querySelector('slot');
+    const assignedElements = slot?.assignedElements({ flatten: true });
+    const formElements = assignedElements || [];
+    assignedElements?.forEach((element) => {
+      const children = Array.from(element.getElementsByTagName('*'));
+      formElements.push(...children);
+    });
+
+    return formElements;
   }
 
   getFormData() {
     const formData = new FormData();
 
-    this._slottedRadioGroups.forEach((radioGroup) => {
-      const radios =
-        radioGroup.querySelectorAll<IgcRadioComponent>('igc-radio');
-      radios.forEach((radio) => {
-        if (radio.checked) {
-          formData.append(radio.name, radio.value);
-        }
-      });
+    const formElements = this.getFormElements();
+    formElements.forEach((element) => {
+      if (
+        (this._controlsWithChecked.includes(element.tagName.toLowerCase()) &&
+          element.checked) ||
+        (this._controlsWithValue.includes(element.tagName.toLowerCase()) &&
+          element.type !== 'checkbox' &&
+          element.type !== 'radio' &&
+          element.type !== 'submit')
+      ) {
+        formData.append(element.name, element.value);
+      }
     });
 
     return formData;
   }
 
-  handleClick(event: MouseEvent) {
-    const targetElement = event.target as HTMLElement;
-    if (targetElement.tagName.toLocaleLowerCase() === 'igc-button') {
-      const igcButton = targetElement as IgcButtonComponent;
-      if (igcButton.type === 'submit') {
-        const formData = this.getFormData();
+  reportValidity(): boolean {
+    const formElements = this.getFormElements();
+    return !formElements.some(
+      (element) =>
+        typeof element.reportValidity === 'function' &&
+        element.reportValidity() === false
+    );
+  }
 
-        for (const pair of formData.entries()) {
-          console.log(pair[0] + ', ' + pair[1]);
-        }
+  handleClick(event: MouseEvent) {
+    const targetElement: any = event.target as HTMLElement;
+    if (
+      this._controlsThatSubmit.includes(targetElement.tagName.toLowerCase()) &&
+      targetElement.type.toLowerCase() === 'submit'
+    ) {
+      const formData = this.getFormData();
+
+      const isValid = this.reportValidity();
+      if (!this.novalidate && !isValid) {
+        return false;
       }
+
+      this.emitEvent('igcSubmit', { detail: formData });
     }
+
+    // TODO: is this needed?
+    else if (targetElement.type?.toLowerCase() === 'reset') {
+      this.reset();
+    }
+
+    return true;
   }
 
   render() {
-    return html`
-      <div
-        part="base"
-        class=${classMap(this.classes)}
-        role="form"
-        aria-label="form"
-        @click="${this.handleClick}"
-      >
-        <slot></slot>
-      </div>
-    `;
+    return html`<slot></slot>`;
   }
 }
