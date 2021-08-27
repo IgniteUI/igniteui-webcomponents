@@ -88,15 +88,18 @@ $ripple-radius: calc(#{$ripple-size} / 2);
             background: color(secondary, 500, .06);
         }
     }
+
     &:focus-within [part~='thumb'][part~='checked'] {
         &::after {
             background: color(secondary, 500, .12);
         }
     }
 }
+
 [part~='control'][part~='checked'] {
     background: color(secondary, 500, .5);
 }
+
 [part~='thumb'][part~='checked'] {
     background: color(secondary, 500);
     margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
