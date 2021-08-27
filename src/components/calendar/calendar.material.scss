@@ -16,8 +16,6 @@ $date-size-small: map.get($date-sizes, 'small');
 :host {
     display: flex;
     flex-direction: column;
-    // TODO REMOVE THE BORDER BEFORE COMMIT
-    border: 1px solid #ddd;
     font-family: var(--igc-font-family);
 
     > * {
