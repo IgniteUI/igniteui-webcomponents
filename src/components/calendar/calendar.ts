@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   IgcCalendarBaseComponent,
@@ -33,6 +33,9 @@ export class IgcCalendarComponent extends SizableMixin(
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
+
+  @state()
+  rangePreviewDate?: Date;
 
   // @query('igc-days-view')
   // daysView!: IgcDaysViewComponent;
@@ -131,6 +134,10 @@ export class IgcCalendarComponent extends SizableMixin(
     } else if (date.isPrevMonth) {
       this.previousMonth();
     }
+  }
+
+  private rangePreviewDateChange(event: CustomEvent<Date>) {
+    this.rangePreviewDate = event.detail;
   }
 
   private nextMonth() {
@@ -314,9 +321,11 @@ export class IgcCalendarComponent extends SizableMixin(
                   .showWeekNumbers=${this.showWeekNumbers}
                   .disabledDates=${this.disabledDates}
                   .specialDates=${this.specialDates}
+                  .rangePreviewDate=${this.rangePreviewDate}
                   exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
                   @igcChange=${this.changeValue}
                   @igcOutsideDaySelected=${this.outsideDaySelected}
+                  @igcRangePreviewDateChange=${this.rangePreviewDateChange}
                 ></igc-days-view>
               </div>`
             )

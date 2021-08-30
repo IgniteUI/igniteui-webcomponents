@@ -18,6 +18,7 @@ import { partNameMap } from '../../common/util';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcOutsideDaySelected: CustomEvent<ICalendarDate>;
+  igcRangePreviewDateChange: CustomEvent<Date>;
 }
 
 const WEEK_LABEL = 'Wk';
@@ -37,6 +38,9 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   static styles = [styles];
 
   private formatterWeekday!: Intl.DateTimeFormat;
+
+  @property({ attribute: false })
+  rangePreviewDate?: Date;
 
   @property({ attribute: 'week-day-format' })
   weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
@@ -101,7 +105,14 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     }
 
     const dates = this.value as Date[];
-    const lastDate = dates[dates.length - 1];
+    let lastDate = dates[dates.length - 1];
+
+    if (this.rangePreviewDate) {
+      if (this.rangePreviewDate > lastDate) {
+        lastDate = this.rangePreviewDate;
+      }
+    }
+
     return isEqual(lastDate, date.date);
   }
 
@@ -110,7 +121,16 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
       return false;
     }
 
-    return isEqual((this.value as Date[])[0], date.date);
+    const dates = this.value as Date[];
+    let firstDate = dates[0];
+
+    if (this.rangePreviewDate) {
+      if (this.rangePreviewDate < firstDate) {
+        firstDate = this.rangePreviewDate;
+      }
+    }
+
+    return isEqual(firstDate, date.date);
   }
 
   private isDisabled(date: Date): boolean {
@@ -121,19 +141,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     return isDateInRanges(date, this.disabledDates);
   }
 
-  private isWithinRange(
-    date: Date,
-    checkForRange: boolean,
-    min?: Date,
-    max?: Date
-  ): boolean {
-    if (
-      checkForRange &&
-      !(Array.isArray(this.value) && this.value.length > 1)
-    ) {
-      return false;
-    }
-
+  private isWithinRange(date: Date, min?: Date, max?: Date): boolean {
     const valueArr = this.value as Date[];
     min = min ? min : valueArr[0];
     max = max ? max : valueArr[valueArr.length - 1];
@@ -144,6 +152,50 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
         dateRange: [min, max],
       },
     ]);
+  }
+
+  private isRangeDate(date: Date) {
+    if (
+      this.selection !== 'range' ||
+      !this.value ||
+      (this.value as Date[]).length === 0
+    ) {
+      return false;
+    }
+
+    const dates = this.value as Date[];
+    const min = dates[0];
+    let max;
+
+    if (dates.length === 1) {
+      if (!this.rangePreviewDate) {
+        return false;
+      }
+
+      max = this.rangePreviewDate;
+    } else {
+      max = dates[dates.length - 1];
+    }
+
+    return isDateInRanges(date, [
+      {
+        type: DateRangeType.Between,
+        dateRange: [min, max],
+      },
+    ]);
+  }
+
+  private isRangePreview(date: Date) {
+    if (this.selection === 'range' && this.rangePreviewDate) {
+      return isDateInRanges(date, [
+        {
+          type: DateRangeType.Between,
+          dateRange: [(this.value as Date[])[0], this.rangePreviewDate],
+        },
+      ]);
+    }
+
+    return false;
   }
 
   private isSelected(date: ICalendarDate) {
@@ -170,7 +222,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
       const start = getDateOnly(selectedDates[0]);
       const end = getDateOnly(selectedDates[selectedDates.length - 1]);
 
-      if (this.isWithinRange(date.date, false, start, end)) {
+      if (this.isWithinRange(date.date, start, end)) {
         const currentDate = selectedDates.find(
           (element) => element.getTime() === date.date.getTime()
         );
@@ -179,7 +231,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
         return false;
       }
     } else {
-      return this.isWithinRange(date.date, true);
+      return this.isWithinRange(date.date);
     }
   }
 
@@ -214,6 +266,11 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   private selectDay(event: Event, day: ICalendarDate) {
     event.stopPropagation();
+
+    if (this.rangePreviewDate) {
+      this.setRangePreviewDate(undefined);
+    }
+
     const result = this.selectDate(day.date);
 
     if (result) {
@@ -318,6 +375,28 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     this.value = [...selectedDates];
   }
 
+  private dateMouseEnter(date: Date) {
+    if (
+      this.selection === 'range' &&
+      this.value &&
+      (this.value as Date[]).length === 1 &&
+      !isEqual((this.value as Date[])[0], date)
+    ) {
+      this.setRangePreviewDate(date);
+    }
+  }
+
+  private dateMouseLeave() {
+    if (this.rangePreviewDate) {
+      this.setRangePreviewDate(undefined);
+    }
+  }
+
+  private setRangePreviewDate(value?: Date) {
+    this.rangePreviewDate = value;
+    this.emitEvent('igcRangePreviewDateChange', { detail: value });
+  }
+
   private resolveDayItemPartName(day: ICalendarDate) {
     const isInactive = day.isNextMonth || day.isPrevMonth;
     const isHidden = this.hideOutsideDays && isInactive;
@@ -332,10 +411,11 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
       hidden: isHidden,
       current: this.isToday(day),
       weekend: this.isWeekend(day),
-      range: this.selection === 'range' && this.isWithinRange(day.date, true),
+      range: this.selection === 'range' && this.isRangeDate(day.date),
       special: this.isSpecial(day),
       disabled: isHidden || isDisabled || !day.isCurrentMonth,
       single: this.selection !== 'range',
+      preview: this.isRangePreview(day.date),
     };
   }
 
@@ -372,6 +452,8 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
       part=${partNameMap(this.resolveDayItemPartName(day))}
       role="gridcell"
       @click=${(event: MouseEvent) => this.selectDay(event, day)}
+      @mouseenter=${() => this.dateMouseEnter(day.date)}
+      @mouseleave=${() => this.dateMouseLeave()}
     >
       <span part="date-inner">${this.formattedDate(day.date)}</span>
     </span>`;
