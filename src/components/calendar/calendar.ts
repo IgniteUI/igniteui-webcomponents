@@ -322,7 +322,7 @@ export class IgcCalendarComponent extends SizableMixin(
                   .disabledDates=${this.disabledDates}
                   .specialDates=${this.specialDates}
                   .rangePreviewDate=${this.rangePreviewDate}
-                  exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
+                  exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
                   @igcChange=${this.changeValue}
                   @igcOutsideDaySelected=${this.outsideDaySelected}
                   @igcRangePreviewDateChange=${this.rangePreviewDateChange}
@@ -337,7 +337,7 @@ export class IgcCalendarComponent extends SizableMixin(
                 .value=${this.viewDate}
                 .locale=${this.locale}
                 .monthFormat=${this.formatOptions.month!}
-                exportparts="month, selected month-inner"
+                exportparts="month, selected, month-inner"
                 @igcChange=${this.changeMonth}
               ></igc-months-view>`
           : ''}
@@ -347,7 +347,7 @@ export class IgcCalendarComponent extends SizableMixin(
                 part="years-view"
                 .value=${this.viewDate}
                 .yearsPerPage=${this.yearPerPage}
-                exportparts="year, selected year-inner"
+                exportparts="year, selected, year-inner"
                 @igcChange=${this.changeYear}
               ></igc-years-view>`
           : ''}
