@@ -29,7 +29,7 @@ $date-size-small: map.get($date-sizes, 'small');
         grid-template-rows: repeat(7, minmax($date-size-large, 1fr));
     }
 
-    igc-days-view[showweeknumbers] {
+    igc-days-view[show-week-numbers] {
         grid-template-columns: repeat(8, minmax($date-size-large, 1fr));
     }
 
@@ -68,7 +68,7 @@ $date-size-small: map.get($date-sizes, 'small');
         grid-template-rows: repeat(7, minmax($date-size-medium, 1fr));
     }
 
-    igc-days-view[showweeknumbers] {
+    igc-days-view[show-week-numbers] {
         grid-template-columns: repeat(8, minmax($date-size-medium, 1fr));
     }
 
@@ -107,7 +107,7 @@ $date-size-small: map.get($date-sizes, 'small');
         grid-template-rows: repeat(7, minmax($date-size-small, 1fr));
     }
 
-    igc-days-view[showweeknumbers] {
+    igc-days-view[show-week-numbers] {
         grid-template-columns: repeat(8, minmax($date-size-small, 1fr));
     }
 

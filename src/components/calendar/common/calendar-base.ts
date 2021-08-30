@@ -17,7 +17,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   @property()
   selection: 'single' | 'multi' | 'range' = 'single';
 
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, attribute: 'show-week-numbers', reflect: true })
   showWeekNumbers = false;
 
   @property({ attribute: 'week-start' })
