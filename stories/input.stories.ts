@@ -7,6 +7,21 @@ export default {
   title: 'Input',
   component: 'igc-input',
   argTypes: {
+    type: {
+      control: {
+        type: 'select',
+        options: [
+          'email',
+          'number',
+          'password',
+          'search',
+          'tel',
+          'text',
+          'url',
+        ],
+      },
+      defaultValue: 'text',
+    },
     placeholder: {
       control: {
         type: 'text',
@@ -24,7 +39,7 @@ export default {
         type: 'inline-radio',
         options: ['small', 'medium', 'large'],
       },
-      defaultValue: 'large',
+      defaultValue: 'medium',
     },
     outlined: {
       control: 'boolean',
@@ -65,6 +80,7 @@ export default {
 };
 
 interface ArgTypes {
+  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url';
   size: 'small' | 'medium' | 'large';
   label: string;
   placeholder: string;
@@ -82,6 +98,7 @@ interface ArgTypes {
 
 const Template: Story<ArgTypes, Context> = (
   {
+    type,
     size,
     label,
     outlined,
@@ -97,32 +114,32 @@ const Template: Story<ArgTypes, Context> = (
     disabled,
   }: ArgTypes,
   { globals: { direction } }: Context
-) =>
-  html`
-    <igc-input
-      type="email"
-      label=${label}
-      size=${size}
-      placeholder=${ifDefined(placeholder)}
-      dir=${direction}
-      minlength=${ifDefined(minlength)}
-      maxlength=${ifDefined(maxlength)}
-      min=${ifDefined(min)}
-      max=${ifDefined(max)}
-      autocomplete=${ifDefined(autocomplete)}
-      ?autofocus=${autofocus}
-      .readonly=${readonly}
-      .outlined=${outlined}
-      .required=${required}
-      .disabled=${disabled}
+) => html`
+  <igc-input
+    type=${type}
+    label=${label}
+    size=${size}
+    placeholder=${ifDefined(placeholder)}
+    dir=${direction}
+    minlength=${ifDefined(minlength)}
+    maxlength=${ifDefined(maxlength)}
+    min=${ifDefined(min)}
+    max=${ifDefined(max)}
+    autocomplete=${ifDefined(autocomplete)}
+    ?autofocus=${autofocus}
+    .readonly=${readonly}
+    .outlined=${outlined}
+    .required=${required}
+    .disabled=${disabled}
+  >
+    <igc-icon name="github" slot="prefix"></igc-icon>
+    <igc-icon name="github" slot="suffix"></igc-icon>
+    <span slot="helper-text"
+      >Visit
+      <a href="https://infragistics.com" target="_blank">Infragistics</a> for
+      more information.</span
     >
-      <igc-icon name="github" slot="prefix"></igc-icon>
-      <igc-icon name="github" slot="suffix"></igc-icon>
-      <span slot="helper-text"
-        >Visit
-        <a href="https://infragistics.com" target="_blank">Infragistics</a> for
-        more information.</span
-      >
-    </igc-input>
-  `;
+  </igc-input>
+`;
+
 export const Outlined = Template.bind({});

@@ -1,0 +1,112 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-input,
+    igc-input[outlined] {
+        --theme: fluent;
+
+        &::part(prefix),
+        &::part(suffix) {
+            padding-top: utils.rem(8px);
+            padding-bottom: utils.rem(8px);
+            color: utils.color(gray, 600);
+        }
+
+        &::part(prefix) {
+            padding-inline-start: utils.rem(16px);
+            padding-inline-end: utils.rem(8px);
+        }
+
+        &::part(suffix) {
+            padding-inline-start: utils.rem(8px);
+            padding-inline-end: utils.rem(16px);
+        }
+
+        &::part(label),
+        &::part(container) {
+            position: relative;
+        }
+
+        &::part(label) {
+            transform: none;
+            transition: none;
+            margin-bottom: utils.rem(4px);
+        }
+
+        &::part(container) {
+            border-bottom: 1px solid utils.color(gray, 500);
+            transition: background .25s ease-out;
+
+            &::after {
+                background: utils.color(secondary, 500);
+                transform: scaleY(0);
+                height: 1px;
+            }
+        }
+
+        &::part(input) {
+            font-weight: 600;
+            background: initial;
+            padding: utils.rem(8px);
+            border: none;
+        }
+    }
+
+    igc-input:hover,
+    igc-input[outlined]:hover {
+        &::part(container) {
+            background: utils.color(gray, 100);
+        }
+    }
+
+    igc-input:focus-within,
+    igc-input[outlined]:focus-within {
+        &::part(container) {
+            background: utils.color(gray, 100);
+
+            &::after {
+                transform: scaleY(1);
+            }
+        }
+    }
+
+    igc-input[invalid],
+    igc-input[outlined] {
+        &::part(container) {
+            border-color: utils.color(error, 500);
+
+            &::after {
+                background: utils.color(error, 500);
+            }
+        }
+    }
+
+    igc-input[readonly] {
+        &::part(container) {
+            border-color: utils.color(gray, 400);
+        }
+
+        &::part(prefix),
+        &::part(suffix),
+        &::part(label),
+        &::part(helper-text) {
+            color: utils.color(gray, 400);
+        }
+    }
+
+    igc-input[disabled] {
+        pointer-events: none;
+
+        &::part(container) {
+            border-color: utils.color(gray, 300);
+        }
+
+        &::part(prefix),
+        &::part(suffix),
+        &::part(label),
+        &::part(input),
+        &::part(helper-text) {
+            color: utils.color(gray, 300);
+        }
+    }
+}

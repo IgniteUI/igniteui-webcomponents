@@ -139,6 +139,45 @@ export class IgcInputComponent extends EventEmitterMixin<
     this.invalid = !this.input.checkValidity();
   }
 
+  select() {
+    return this.input.select();
+  }
+
+  setSelectionRange(
+    selectionStart: number,
+    selectionEnd: number,
+    selectionDirection: 'backward' | 'forward' | 'none' = 'none'
+  ) {
+    return this.input.setSelectionRange(
+      selectionStart,
+      selectionEnd,
+      selectionDirection
+    );
+  }
+
+  setRangeText(
+    replacement: string,
+    start: number,
+    end: number,
+    selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
+  ) {
+    this.input.setRangeText(replacement, start, end, selectMode);
+
+    if (this.value !== this.input.value) {
+      this.value = this.input.value;
+      this.emitEvent('igcInput');
+      this.emitEvent('igcChange');
+    }
+  }
+
+  stepUp(n?: number) {
+    this.input.stepUp(n);
+  }
+
+  stepDown(n?: number) {
+    this.input.stepDown(n);
+  }
+
   handleInvalid() {
     this.invalid = true;
   }
