@@ -215,10 +215,10 @@ export class IgcCalendarComponent extends SizableMixin(
       ${renderButtons
         ? html`<div>
             <button part="navigation-button" @click=${this.navigatePrevious}>
-              <
+              <igc-icon name="navigate_before" collection="internal"></igc-icon>
             </button>
             <button part="navigation-button" @click=${this.navigateNext}>
-              >
+              <igc-icon name="navigate_next" collection="internal"></igc-icon>
             </button>
           </div>`
         : ''}
