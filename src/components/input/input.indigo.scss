@@ -3,7 +3,7 @@
 @mixin theme() {
     igc-input,
     igc-input[outlined] {
-        --theme: fluent;
+        --theme: indigo;
 
         &::part(prefix),
         &::part(suffix) {
@@ -45,7 +45,6 @@
         }
 
         &::part(input) {
-            font-weight: 600;
             background: initial;
             padding: utils.rem(8px);
             border: none;

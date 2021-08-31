@@ -1,0 +1,124 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-input,
+    igc-input[outlined] {
+        --theme: fluent;
+
+        &::part(prefix),
+        &::part(suffix) {
+            padding: 0 utils.rem(10px);
+            color: utils.color(gray, 700);
+            background: utils.color(gray, 100);
+            font-size: utils.rem(14px);
+            border: 1px solid transparent;
+        }
+
+        &::part(prefix) {
+            border-inline-end: none;
+        }
+
+        &::part(suffix) {
+            border-inline-start: none;
+        }
+
+        &::part(label),
+        &::part(container) {
+            position: relative;
+        }
+
+        &::part(label) {
+            transform: none;
+            transition: none;
+            margin-bottom: utils.rem(8px);
+            font-size: utils.rem(14px);
+            font-weight: 600;
+            color: utils.color(gray, 900);
+            left: 0;
+        }
+
+        &::part(container) {
+            border: 1px solid utils.color(gray, 500);
+            border-radius: utils.rem(2px);
+            transition: none;
+            background: utils.color(surface, 500);
+            cursor: text;
+
+            &::after {
+                background: transparent;
+                transform: none;
+                height: initial;
+            }
+        }
+
+        &::part(input) {
+            background: initial;
+            font-size: utils.rem(14px);
+            padding: utils.rem(8px);
+            max-height: 100%;
+            border: none;
+        }
+
+        &::part(helper-text) {
+            padding: 0;
+            margin-top: utils.rem(8px);
+        }
+    }
+
+    igc-input:hover,
+    igc-input[outlined]:hover {
+        &::part(container) {
+            border-color: utils.color(gray, 700);
+        }
+    }
+
+    igc-input:focus-within,
+    igc-input[outlined]:focus-within {
+        &::part(container) {
+            border-color: utils.color(primary, 500);
+            border-width: utils.rem(2px);
+        }
+
+        &::part(prefix),
+        &::part(suffix) {
+            border-width: 0;
+        }
+    }
+
+    igc-input[required],
+    igc-input[outlined][required] {
+        &::part(label)::after {
+            color: utils.color(error, 500);
+        }
+    }
+
+    igc-input[invalid],
+    igc-input[outlined][invalid] {
+        &::part(container) {
+            border-color: utils.color(error, 500);
+        }
+
+        &::part(helper-text) {
+            color: utils.color(error, 500);
+        }
+    }
+
+    igc-input[disabled] {
+        pointer-events: none;
+
+        &::part(container),
+        &::part(prefix),
+        &::part(suffix) {
+            background: utils.color(gray, 100);
+            border-color: utils.color(gray, 100);
+        }
+
+        &::part(prefix),
+        &::part(suffix),
+        &::part(label),
+        &::part(input),
+        &::part(helper-text) {
+            color: utils.color(gray, 400);
+        }
+    }
+}
