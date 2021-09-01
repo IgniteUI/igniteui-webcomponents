@@ -163,6 +163,14 @@ $date-size-small: map.get($date-sizes, 'small');
     }
 }
 
+:host([orientation='vertical']) {
+    [part='days-view-container'] + [part='days-view-container']  {
+        [part='navigation'] {
+            padding-top: 0;
+        }
+    }
+}
+
 :host([header-orientation='vertical']) {
     flex-direction: row;
 
@@ -173,12 +181,6 @@ $date-size-small: map.get($date-sizes, 'small');
 
     [part='header-date'] {
         flex-direction: column;
-    }
-
-    [part='days-view-container'] + [part='days-view-container']  {
-        [part='navigation'] {
-            padding-top: 0;
-        }
     }
 }
 

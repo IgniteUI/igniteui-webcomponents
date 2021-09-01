@@ -29,6 +29,7 @@ $date-size: map.get($date-sizes, 'large');
     user-select: none;
     position: relative;
     font-size: var(--igc-subtitle-1-font-size);
+    border: rem(1px) dashed transparent;
 
     &:hover,
     &:focus {
@@ -67,9 +68,31 @@ $date-size: map.get($date-sizes, 'large');
     }
 }
 
+[part='date-inner'] {
+    position: absolute;
+}
+
 [part~='range'] {
     background: color(secondary, 100);
     border-radius: 0;
+}
+
+[part~='range'][part~='preview'] {
+    background: transparent;
+    border-top: 1px dashed color(gray, 300);
+    border-bottom: 1px dashed color(gray, 300);
+}
+
+[part~='range'][part~='preview'][part~='first'],
+[part~='range'][part~='preview'][part~='last'] {
+    border: none;
+
+    &::after {
+        height: calc(100% - 2px);
+        background: transparent;
+        border-top: 1px dashed color(gray, 300);
+        border-bottom: 1px dashed color(gray, 300);
+    }
 }
 
 [part~='range'][part~='first'],
@@ -79,8 +102,8 @@ $date-size: map.get($date-sizes, 'large');
     &::after {
         content: '';
         position: absolute;
-        height: 100%;
-        width: 50%;
+        height: calc(100% + 2px);
+        width: calc(50% + 1px);
         background: color(secondary, 100);
         z-index: 1;
     }
