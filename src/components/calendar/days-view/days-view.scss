@@ -181,7 +181,7 @@ $date-size: map.get($date-sizes, 'large');
             content: '';
             position: absolute;
             top: 100%;
-            height: $row-gap;
+            height: calc(#{$row-gap} + 2px);
             width: 100%;
             background: $week-number-bg;
         }
