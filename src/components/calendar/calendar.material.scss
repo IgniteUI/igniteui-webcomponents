@@ -3,9 +3,9 @@
 @use 'sass:math';
 
 $date-sizes: (
-    large: rem(34px),
-    medium: rem(30px),
-    small: rem(26px)
+    large: rem(32px),
+    medium: rem(28px),
+    small: rem(24px)
 );
 
 $date-size-large: map.get($date-sizes, 'large');
@@ -40,7 +40,7 @@ $date-size-small: map.get($date-sizes, 'small');
     }
 
     igc-days-view::part(date-inner) {
-        border-radius: math.div($date-size-large, 2);
+        border-radius: math.div($date-size-large, 2) + rem(2px);
     }
 
     igc-months-view {
@@ -48,7 +48,7 @@ $date-size-small: map.get($date-sizes, 'small');
 
         &::part(month-inner) {
             height: $date-size-large;
-            border-radius: math.div($date-size-large, 2);
+            border-radius: math.div($date-size-large, 2) + rem(2px);
         }
     }
 
@@ -57,7 +57,7 @@ $date-size-small: map.get($date-sizes, 'small');
 
         &::part(year-inner) {
             height: $date-size-large;
-            border-radius: math.div($date-size-large, 2);
+            border-radius: math.div($date-size-large, 2) + rem(2px);
         }
     }
 }
@@ -79,7 +79,7 @@ $date-size-small: map.get($date-sizes, 'small');
     }
 
     igc-days-view::part(date-inner) {
-        border-radius: math.div($date-size-medium, 2);
+        border-radius: math.div($date-size-medium, 2) + rem(2px);
     }
 
     igc-months-view {
@@ -87,7 +87,7 @@ $date-size-small: map.get($date-sizes, 'small');
 
         &::part(month-inner) {
             height: $date-size-medium;
-            border-radius: math.div($date-size-medium, 2);
+            border-radius: math.div($date-size-medium, 2) + rem(2px);
         }
     }
 
@@ -96,7 +96,7 @@ $date-size-small: map.get($date-sizes, 'small');
 
         &::part(year-inner) {
             height: $date-size-medium;
-            border-radius: math.div($date-size-medium, 2);
+            border-radius: math.div($date-size-medium, 2) + rem(2px);
         }
     }
 }
@@ -118,7 +118,7 @@ $date-size-small: map.get($date-sizes, 'small');
     }
 
     igc-days-view::part(date-inner) {
-        border-radius: math.div($date-size-small, 2);
+        border-radius: math.div($date-size-small, 2) + rem(2px);
     }
 
     igc-months-view {
@@ -126,7 +126,7 @@ $date-size-small: map.get($date-sizes, 'small');
 
         &::part(month-inner) {
             height: $date-size-small;
-            border-radius: math.div($date-size-small, 2);
+            border-radius: math.div($date-size-small, 2) + rem(2px);
         }
     }
 
@@ -135,7 +135,7 @@ $date-size-small: map.get($date-sizes, 'small');
 
         &::part(year-inner) {
             height: $date-size-small;
-            border-radius: math.div($date-size-small, 2);
+            border-radius: math.div($date-size-small, 2) + rem(2px);
         }
     }
 }

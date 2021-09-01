@@ -33,8 +33,9 @@ $date-size: map.get($date-sizes, 'large');
 
     &:hover,
     &:focus {
-        span {
+        [part='date-inner'] {
             background: color(gray, 200);
+            border-color: color(gray, 200);
         }
     }
 }
@@ -70,6 +71,7 @@ $date-size: map.get($date-sizes, 'large');
 
 [part='date-inner'] {
     position: absolute;
+    border: rem(1px) solid transparent;
 }
 
 [part~='range'] {
@@ -142,14 +144,16 @@ $date-size: map.get($date-sizes, 'large');
 [part~='selected']:not([part~='range']) {
     color: contrast-color(secondary, 700);
 
-    span {
+    [part='date-inner'] {
         background: color(secondary, 500);
+        border-color: color(secondary, 500);
     }
 
     &:hover,
     &:focus {
-        span {
+        [part='date-inner'] {
             background: color(secondary, 700);
+            border-color: color(secondary, 700);
         }
 
         color: contrast-color(secondary, 700);
@@ -188,14 +192,14 @@ $date-size: map.get($date-sizes, 'large');
     }
 
     &:first-of-type {
-        span {
+        [part='date-inner'] {
             border-top-left-radius: $week-number-radius;
             border-top-right-radius: $week-number-radius;
         }
     }
 
     &:last-of-type {
-        span {
+        [part='date-inner'] {
             border-bottom-left-radius: $week-number-radius;
             border-bottom-right-radius: $week-number-radius;
 
