@@ -71,7 +71,6 @@ $date-size: map.get($date-sizes, 'large');
 
 [part='date-inner'] {
     position: absolute;
-    border: rem(1px) solid transparent;
 }
 
 [part~='range'] {
