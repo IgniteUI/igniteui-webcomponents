@@ -420,7 +420,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private renderWeekHeaders() {
-    return html`
+    return html`<div role="row" part="days-row">
       ${this.showWeekNumbers
         ? html`<span role="columnheader" part="label week-number">
             <span part="week-number-inner">${WEEK_LABEL}</span>
@@ -429,33 +429,38 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
       ${this.generateWeekHeader().map(
         (dayName) => html`<span role="columnheader" part="label">
           ${this.titleCase(dayName)}
-        </span>`
+        </span> `
       )}
-    `;
+    </div> `;
   }
 
   private renderDates() {
     return this.getCalendarMonth().map(
-      (week) => html` ${this.showWeekNumbers
-        ? html`<span role="rowheader" part="date week-number">
-            <span part="week-number-inner"
-              >${this.getWeekNumber(week[0].date)}</span
-            >
-          </span>`
-        : ''}
-      ${week.map((day) => this.renderDateItem(day))}`
+      (week) => html`<div role="row" part="days-row">
+        ${this.showWeekNumbers
+          ? html`<span role="rowheader" part="date week-number">
+              <span part="week-number-inner"
+                >${this.getWeekNumber(week[0].date)}</span
+              >
+            </span>`
+          : ''}
+        ${week.map((day) => this.renderDateItem(day))}
+      </div>`
     );
   }
 
   private renderDateItem(day: ICalendarDate) {
+    const datePartName = partNameMap(this.resolveDayItemPartName(day));
+    const dateInnerPartName = datePartName.replace('date', 'date-inner');
+
     return html`<span
-      part=${partNameMap(this.resolveDayItemPartName(day))}
+      part=${datePartName}
       role="gridcell"
       @click=${(event: MouseEvent) => this.selectDay(event, day)}
       @mouseenter=${() => this.dateMouseEnter(day.date)}
       @mouseleave=${() => this.dateMouseLeave()}
     >
-      <span part="date-inner">${this.formattedDate(day.date)}</span>
+      <span part=${dateInnerPartName}>${this.formattedDate(day.date)}</span>
     </span>`;
   }
 
