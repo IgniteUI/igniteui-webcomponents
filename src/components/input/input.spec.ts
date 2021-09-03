@@ -196,7 +196,7 @@ describe('Input component', () => {
 
     it('should increment/decrement the value by calling the stepUp and stepDown methods', async () => {
       el.type = 'number';
-      el.value = 10;
+      el.value = '10';
       el.step = 5;
       await elementUpdated(el);
 

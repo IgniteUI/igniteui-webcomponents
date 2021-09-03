@@ -1,4 +1,4 @@
-import { css, html, LitElement } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -69,7 +69,7 @@ export class IgcInputComponent extends SizableMixin(
   name!: string;
 
   @property()
-  value: string | number = '';
+  value = '';
 
   @property({ type: String })
   pattern!: string;
@@ -114,7 +114,7 @@ export class IgcInputComponent extends SizableMixin(
   autofocus!: boolean;
 
   @property()
-  autocomplete!: string;
+  autocomplete!: any;
 
   connectedCallback() {
     super.connectedCallback();
@@ -212,7 +212,7 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   renderInput(startWidth: number, endWidth: number, padding: number) {
-    const inputStyle = css`
+    const inputStyle = `
       padding-inline-start: calc(${startWidth}px + ${padding}px);
       padding-inline-end: calc(${endWidth}px + ${padding}px);
     `;
