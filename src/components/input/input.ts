@@ -3,13 +3,16 @@ import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
-import { ResizeController, DirectionController } from '../common/controllers';
+import { ResizeController } from '../common/controllers';
 import { Constructor } from '../common/mixins/constructor.js';
 import { watch } from '../common/decorators';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util';
+import { SizableMixin } from '../common/mixins/sizable';
 
 let nextId = 0;
+
+type Direction = 'ltr' | 'rtl' | 'auto';
 
 export interface IgcRadioEventMap {
   igcInput: CustomEvent<void>;
@@ -18,16 +21,14 @@ export interface IgcRadioEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-export class IgcInputComponent extends EventEmitterMixin<
-  IgcRadioEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export class IgcInputComponent extends SizableMixin(
+  EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
+) {
   static styles = styles;
   static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
-  private direction = new DirectionController(this);
   private _start = new ResizeController(this);
   private _label = new ResizeController(this);
   private _end = new ResizeController(this);
@@ -45,6 +46,9 @@ export class IgcInputComponent extends EventEmitterMixin<
 
   @queryAssignedNodes('suffix', true)
   _suffix!: NodeListOf<HTMLElement>;
+
+  @property({ reflect: true })
+  dir: Direction = 'auto';
 
   @property({ reflect: true })
   type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url' =
@@ -65,7 +69,7 @@ export class IgcInputComponent extends EventEmitterMixin<
   name!: string;
 
   @property()
-  value = '';
+  value: string | number = '';
 
   @property({ type: String })
   pattern!: string;
@@ -172,10 +176,12 @@ export class IgcInputComponent extends EventEmitterMixin<
 
   stepUp(n?: number) {
     this.input.stepUp(n);
+    this.handleChange();
   }
 
   stepDown(n?: number) {
     this.input.stepDown(n);
+    this.handleChange();
   }
 
   handleInvalid() {
@@ -247,9 +253,7 @@ export class IgcInputComponent extends EventEmitterMixin<
       id="${this.labelId}"
       part="label"
       for="${this.inputId}"
-      style="transform-origin: ${this.direction.value === 'ltr'
-        ? 'left'
-        : 'right'}"
+      style="transform-origin: ${this.dir === 'ltr' ? 'left' : 'right'}"
       ${this._label.observe()}
     >
       ${this.label}
