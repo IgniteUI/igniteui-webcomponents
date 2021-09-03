@@ -93,8 +93,6 @@ describe('Input component', () => {
         html`<igc-input label=${text}></igc-input>`
       );
       const label = el.shadowRoot?.querySelector('label') as HTMLLabelElement;
-
-      await elementUpdated(el);
       expect(label.innerText).to.equal(text);
     });
 
