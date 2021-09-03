@@ -15,13 +15,13 @@
     margin-inline-start: rem(8px);
 }
 
-::slotted([slot="start"]) {
+::slotted([slot='start']) {
     display: flex;
     align-items: center;
     order: 0;
 }
 
-::slotted([slot="end"]) {
+::slotted([slot='end']) {
     display: flex;
     align-items: center;
     margin-inline-start: auto;
