@@ -6,15 +6,9 @@ export class IgcCardActions extends LitElement {
 
   render() {
     return html`
-      <div class="buttons">
-        <slot name="start"></slot>
-      </div>
-      <div>
-        <slot></slot>
-      </div>
-      <div class="icons">
-        <slot name="end"></slot>
-      </div>
+      <slot name="start"></slot>
+      <slot></slot>
+      <slot name="end"></slot>
     `;
   }
 }

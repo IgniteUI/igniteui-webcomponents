@@ -1,0 +1,17 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-card {
+        background: white;
+        border-radius: #{utils.rem(4px)};
+    }
+
+    igc-card:not([outlined]) {
+        box-shadow: var(--igc-elevation-2);
+
+        &:hover,
+        &:focus-within {
+            box-shadow: var(--igc-elevation-2);
+        }
+    }
+}

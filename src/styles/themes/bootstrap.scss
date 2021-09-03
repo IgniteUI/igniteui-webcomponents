@@ -1,5 +1,8 @@
 @use '../utilities' as utils;
 @use '../../components/button/button.bootstrap' as button;
+@use '../../components/card/card.bootstrap' as card;
+@use '../../components/card/card.header.bootstrap' as card-header;
+@use '../../components/card/card.content.bootstrap' as card-content;
 @use '../../components/radio/radio.bootstrap' as radio;
 @use '../../components/switch/switch.bootstrap' as switch;
 @use '../../components/navbar/navbar.bootstrap' as navbar;
@@ -181,6 +184,9 @@ $type-scale: utils.extend($_base-scale, (
 }
 
 @include button.theme();
+@include card.theme();
+@include card-header.theme();
+@include card-content.theme();
 @include radio.theme();
 @include switch.theme();
 @include navbar.theme();

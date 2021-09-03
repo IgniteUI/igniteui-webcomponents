@@ -6,7 +6,6 @@ export class IgcCardMedia extends LitElement {
 
   constructor() {
     super();
-    // this.setAttribute('role', 'img');
   }
 
   render() {

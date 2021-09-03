@@ -1,5 +1,6 @@
 @use '../utilities' as utils;
 @use '../../components/button/button.fluent' as button;
+@use '../../components/card/card.fluent' as card;
 @use '../../components/radio/radio.fluent' as radio;
 @use '../../components/list/list.fluent' as list;
 @use '../../components/switch/switch.fluent' as switch;
@@ -148,6 +149,7 @@ $type-scale: utils.extend($fluent-type-scale);
 }
 
 @include button.theme();
+@include card.theme();
 @include radio.theme();
 @include list.theme();
 @include switch.theme();

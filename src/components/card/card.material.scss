@@ -1,16 +1,29 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-.container {
-    box-shadow: 3px 3px 10px rem(2px) rgba(gray, 50);
+:host {
     display: flex;
-    width: auto;
-    height: auto;
     flex-direction: column;
-    box-sizing: border-box;
+    box-shadow: var(--igc-elevation-4);
+    overflow: hidden;
+    border-radius: rem(3px);
+    background: color(surface, 500);
+    transition: box-shadow .1s ease-out;
+    backface-visibility: hidden;
+    font-family: var(--igc-font-family);
 }
 
-.outlined {
+:host(:hover),
+:host(:focus-within) {
+    box-shadow: var(--igc-elevation-6);
+}
+
+:host([outlined]) {
     box-shadow: none;
-    border: 1px solid black;
+    border: 1px solid color(gray, 400);
+
+    &:hover,
+    &:focus-within {
+        box-shadow: none;
+    }
 }

@@ -5,6 +5,12 @@
     display: block;
     width: 100%;
     flex: 1 1 auto;
-    padding: 2px;
-    color: gray;
+    padding: rem(16px);
+    color: contrast-color(surface, 500);
+}
+
+::slotted(*) {
+    @include type-category('body-2');
+    opacity: .6;
+    margin: 0;
 }

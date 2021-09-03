@@ -1,0 +1,24 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-card {
+        box-shadow: none;
+        border: 1px solid #{utils.color(gray, 100)};
+        border-radius: 0;
+    }
+
+    igc-card:not([outlined]) {
+        &:hover,
+        &:focus-within {
+            &::after {
+                position: absolute;
+                content: '';
+                width: 100%;
+                height: 100%;
+                transition: box-shadow .1s ease-out;
+                box-shadow: inset 0 0 0 2px #{utils.color(gray, 300)};
+                pointer-events: none;
+            }
+        }
+    }
+}
