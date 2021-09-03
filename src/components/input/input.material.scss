@@ -331,7 +331,7 @@ input:not(:placeholder-shown) + [part^='container'] {
 
 [part='helper-text'] {
     @include type-category('caption');
-    padding: 0 rem(8px);
+    padding: 0 rem(12px);
     margin-top: rem(4px);
     color: color(gray, 600);
 }
@@ -345,14 +345,17 @@ input:not(:placeholder-shown) + [part^='container'] {
 :host([disabled]) {
     pointer-events: none;
 
-    [part='input'],
-    [part='label'] {
+    [part~='input'],
+    [part='label'],
+    [part='prefix'],
+    [part='suffix'],
+    [part='helper-text'] {
         color: color(gray, 400);
     }
 
     [part='start'],
     [part='notch'],
-    [part='end'] {
+    [part='end'], {
         color: color(gray, 400);
         border-color: color(gray, 400);
     }
@@ -376,7 +379,7 @@ input:not(:placeholder-shown) + [part^='container'] {
         inset-inline-start: rem(2px);
     }
 
-    input {
+    [part~='input'] {
         padding-top: rem(20px);
         padding-bottom: rem(6px);
         background: color(gray, 100);
@@ -401,7 +404,7 @@ input:not(:placeholder-shown) + [part^='container'] {
         }
     }
 
-    input:not(:placeholder-shown) + [part^='container'] {
+    [part~='input']:not(:placeholder-shown) + [part^='container'] {
         [part='label'] {
             transform: translateY(-106%) scale($scale);
         }
@@ -457,5 +460,19 @@ input:not(:placeholder-shown) + [part^='container'] {
 
     [part~='container']::after {
         background: $error-color;
+    }
+}
+
+:host(:not([outlined])[disabled]) {
+    [part~='input'],
+    [part='label'],
+    [part='prefix'],
+    [part='suffix'],
+    [part='helper-text'] {
+        color: color(gray, 400);
+    }
+
+    [part~='input'] {
+        border-color: color(gray, 400);
     }
 }

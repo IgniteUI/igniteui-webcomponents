@@ -13,13 +13,11 @@
         }
 
         &::part(prefix) {
-            padding-inline-start: utils.rem(16px);
-            padding-inline-end: utils.rem(8px);
+            padding-inline-start: utils.rem(8px);
         }
 
         &::part(suffix) {
-            padding-inline-start: utils.rem(8px);
-            padding-inline-end: utils.rem(16px);
+            padding-inline-end: utils.rem(8px);
         }
 
         &::part(label),
@@ -49,6 +47,10 @@
             background: initial;
             padding: utils.rem(8px);
             border: none;
+        }
+
+        &::part(helper-text) {
+            padding: 0;
         }
     }
 
