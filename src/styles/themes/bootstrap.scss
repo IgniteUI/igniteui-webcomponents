@@ -3,8 +3,9 @@
 @use '../../components/card/card.bootstrap' as card;
 @use '../../components/card/card.header.bootstrap' as card-header;
 @use '../../components/card/card.content.bootstrap' as card-content;
+@use '../../components/checkbox/checkbox.bootstrap' as checkbox;
 @use '../../components/radio/radio.bootstrap' as radio;
-@use '../../components/switch/switch.bootstrap' as switch;
+@use '../../components/checkbox/switch.bootstrap' as switch;
 @use '../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../components/list/list.bootstrap' as list;
 
@@ -187,6 +188,7 @@ $type-scale: utils.extend($_base-scale, (
 @include card.theme();
 @include card-header.theme();
 @include card-content.theme();
+@include checkbox.theme();
 @include radio.theme();
 @include switch.theme();
 @include navbar.theme();

@@ -3,8 +3,9 @@
 @use '../../components/card/card.indigo' as card;
 @use '../../components/card/card.header.indigo' as card-header;
 @use '../../components/card/card.content.indigo' as card-content;
+@use '../../components/checkbox/checkbox.indigo' as checkbox;
 @use '../../components/radio/radio.indigo' as radio;
-@use '../../components/switch/switch.indigo' as switch;
+@use '../../components/checkbox/switch.indigo' as switch;
 @use '../../components/navbar/navbar.indigo' as navbar;
 @use '../../components/list/list.indigo' as list;
 
@@ -181,6 +182,7 @@ $type-scale: utils.extend($indigo-type-scale);
 @include card.theme();
 @include card-header.theme();
 @include card-content.theme();
+@include checkbox.theme();
 @include radio.theme();
 @include switch.theme();
 @include navbar.theme();
