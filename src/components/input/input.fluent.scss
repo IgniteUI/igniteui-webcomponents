@@ -25,6 +25,7 @@
         &::part(label),
         &::part(container) {
             position: relative;
+            left: 0;
         }
 
         &::part(label) {

@@ -343,6 +343,8 @@ input:not(:placeholder-shown) + [part^='container'] {
 }
 
 :host([disabled]) {
+    pointer-events: none;
+
     [part='input'],
     [part='label'] {
         color: color(gray, 400);

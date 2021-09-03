@@ -25,6 +25,7 @@
         &::part(label),
         &::part(container) {
             position: relative;
+            left: 0;
         }
 
         &::part(label) {
@@ -70,7 +71,7 @@
     }
 
     igc-input[invalid],
-    igc-input[outlined] {
+    igc-input[invalid][outlined] {
         &::part(container) {
             border-color: utils.color(error, 500);
 
