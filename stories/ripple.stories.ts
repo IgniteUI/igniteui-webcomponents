@@ -1,11 +1,13 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story, Context } from './story.js';
+import { Context, Story } from './story.js';
 
+// region default
 export default {
   title: 'Ripple',
   component: 'igc-ripple',
 };
+// endregion
 
 const Template: Story<null, Context> = () => html`
   <igc-button>

@@ -1,24 +1,21 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story, Context } from './story.js';
+import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 export default {
   title: 'Avatar',
   component: 'igc-avatar',
   argTypes: {
     size: {
-      control: {
-        type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
-      },
+      options: ['small', 'medium', 'large'],
+      control: { type: 'inline-radio' },
       defaultValue: 'small',
     },
     shape: {
-      control: {
-        type: 'inline-radio',
-        options: ['circle', 'rounded', 'square'],
-      },
+      options: ['circle', 'rounded', 'square'],
+      control: { type: 'inline-radio' },
       defaultValue: 'circle',
     },
     initials: {
@@ -36,7 +33,6 @@ export default {
     alt: { control: 'text' },
   },
 };
-
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
   shape: 'circle' | 'rounded' | 'square';
@@ -44,6 +40,7 @@ interface ArgTypes {
   src: string;
   alt: string;
 }
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   { size, shape, src, alt, initials }: ArgTypes,

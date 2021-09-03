@@ -13,8 +13,14 @@ export interface IgcButtonEventMap {
 export abstract class IgcButtonBaseComponent extends SizableMixin(
   EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  /**
+   * @private
+   */
   static styles = [styles];
 
+  /**
+   * @private
+   */
   @query('.native', true)
   nativeElement!: HTMLElement;
 

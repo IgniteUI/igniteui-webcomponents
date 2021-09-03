@@ -1,6 +1,6 @@
 import { TemplateResult } from 'lit-html';
 
-type Direction = 'ltr' | 'rtl' | 'auto';
+export type Direction = 'ltr' | 'rtl' | 'auto';
 
 export interface Story<T, K> {
   (args: T, context: K): TemplateResult;

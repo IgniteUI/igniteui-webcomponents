@@ -1,6 +1,6 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
-import { Story, Context } from './story';
+import { Context, Story } from './story';
 import '../igniteui-webcomponents.js';
 import {
   registerIcon,
@@ -10,45 +10,70 @@ import { all } from '@igniteui/material-icons-extended';
 
 const icons = all.map((icon) => icon.name);
 
-export default {
+// region default
+const metadata = {
   title: 'Icon',
   component: 'igc-icon',
   argTypes: {
     name: {
-      control: {
-        type: 'select',
-        options: icons,
+      type: 'string',
+      description: 'The name of the icon glyph to draw.',
+      control: 'text',
+      table: {
+        defaultValue: {
+          summary: '',
+        },
       },
-      defaultValue: 'biking',
-      description: 'Name of the icon',
     },
     collection: {
-      control: {
-        type: 'text',
+      type: 'string',
+      description:
+        'The name of the registered collection for look up of icons.\nDefaults to `default`.',
+      control: 'text',
+      table: {
+        defaultValue: {
+          summary: 'default',
+        },
       },
-      defaultValue: 'default',
-      description: 'Collection of icons',
-    },
-    size: {
-      control: {
-        type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
-      },
-      defaultValue: 'medium',
     },
     mirrored: {
+      type: 'boolean',
+      description: 'Whether to flip the icon. Useful for RTL layouts.',
       control: 'boolean',
-      defaultValue: false,
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
+    },
+    size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
+      control: {
+        type: 'inline-radio',
+      },
+      table: {
+        defaultValue: {
+          summary: 'medium',
+        },
+      },
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
   name: string;
   collection: string;
-  size: 'small' | 'medium' | 'large';
   mirrored: boolean;
+  size: 'small' | 'medium' | 'large';
 }
+// endregion
+
+(metadata.argTypes.name as any).control = {
+  type: 'select',
+  options: icons,
+};
 
 all.forEach((icon) => {
   registerIconFromText(icon.name, icon.value);
@@ -71,7 +96,12 @@ const registerIconClick = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { name = 'biking', collection = 'default', size, mirrored = false }: ArgTypes,
+  {
+    name = 'biking',
+    collection = 'default',
+    size = 'medium',
+    mirrored = false,
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`

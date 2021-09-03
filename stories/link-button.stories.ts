@@ -1,48 +1,80 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined.js';
-import { Story, Context } from './story.js';
+import { Context, Story } from './story.js';
 import '../igniteui-webcomponents.js';
 
-export default {
+// region default
+const metadata = {
   title: 'Link Button',
   component: 'igc-link-button',
   argTypes: {
-    disabled: { control: 'boolean' },
-    size: {
+    href: {
+      type: 'string',
+      control: 'text',
+    },
+    download: {
+      type: 'string',
+      control: 'text',
+    },
+    target: {
+      type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
+      options: ['_blank', '_parent', '_self', '_top', 'undefined'],
       control: {
-        type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
+        type: 'select',
       },
-      defaultValue: 'large',
+    },
+    rel: {
+      type: 'string',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'Determines whether the button is disabled.',
+      control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
     },
     variant: {
+      type: '"flat" | "raised" | "outlined" | "fab"',
+      options: ['flat', 'raised', 'outlined', 'fab'],
       control: {
         type: 'inline-radio',
-        options: ['flat', 'raised', 'outlined', 'fab'],
       },
-      defaultValue: 'flat',
+      table: {
+        defaultValue: {
+          summary: 'flat',
+        },
+      },
     },
-    href: { control: 'text' },
-    download: { control: 'text' },
-    rel: { control: 'text' },
-    target: {
+    size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
       control: {
         type: 'inline-radio',
-        options: ['_blank', '_parent', '_self', '_top'],
+      },
+      table: {
+        defaultValue: {
+          summary: 'large',
+        },
       },
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
-  disabled: boolean;
-  size: 'small' | 'medium' | 'large';
-  variant: 'flat' | 'raised' | 'outlined' | 'fab';
   href: string;
   download: string;
+  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
   rel: string;
-  target: '_blank' | '_parent' | '_self' | '_top';
+  disabled: boolean;
+  variant: 'flat' | 'raised' | 'outlined' | 'fab';
+  size: 'small' | 'medium' | 'large';
 }
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   {

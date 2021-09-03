@@ -1,24 +1,21 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story, Context } from './story.js';
+import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
+// region default
 export default {
   title: 'Badge',
   component: 'igc-badge',
   argTypes: {
     shape: {
-      control: {
-        type: 'inline-radio',
-        options: ['rounded', 'square'],
-      },
+      options: ['rounded', 'square'],
+      control: { type: 'inline-radio' },
       defaultValue: 'rounded',
     },
     variant: {
-      control: {
-        type: 'inline-radio',
-        options: ['primary', 'info', 'success', 'warning', 'danger'],
-      },
+      options: ['primary', 'info', 'success', 'warning', 'danger'],
+      control: { type: 'inline-radio' },
       defaultValue: 'primary',
     },
     outlined: {
@@ -49,6 +46,7 @@ interface ArgTypes {
   outlined: boolean;
   content: string;
 }
+//end region
 
 const Template: Story<ArgTypes, Context> = (
   { outlined = false, shape, variant, content = '' }: ArgTypes,

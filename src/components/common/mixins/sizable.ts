@@ -12,6 +12,7 @@ export const SizableMixin = <T extends Constructor<LitElement>>(
   class SizableElement extends superClass {
     /**
      * Determines the size of the component.
+     * @type {"small" | "medium" | "large"}
      */
     @property({ reflect: true })
     size: 'small' | 'medium' | 'large' = 'large';

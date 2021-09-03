@@ -1,15 +1,16 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story, Context } from './story.js';
+import { Context, Story } from './story.js';
 
+// region default
 export default {
   title: 'List',
   component: 'igc-list',
   argTypes: {
     size: {
+      options: ['small', 'medium', 'large'],
       control: {
         type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
       },
       defaultValue: 'large',
     },
@@ -19,6 +20,7 @@ export default {
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
 }
+//end region
 
 const employeeData = [
   {
