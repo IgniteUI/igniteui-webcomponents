@@ -64,6 +64,9 @@ export default {
     max: {
       control: 'text',
     },
+    step: {
+      control: 'text',
+    },
     readonly: {
       control: 'boolean',
       defaultValue: false,
@@ -91,6 +94,7 @@ interface ArgTypes {
   maxlength: string;
   min: string | number;
   max: string | number;
+  step: string | number;
   readonly: boolean;
   required: boolean;
   disabled: boolean;
@@ -108,6 +112,7 @@ const Template: Story<ArgTypes, Context> = (
     maxlength,
     min,
     max,
+    step,
     placeholder,
     readonly,
     required,
@@ -125,6 +130,7 @@ const Template: Story<ArgTypes, Context> = (
     maxlength=${ifDefined(maxlength)}
     min=${ifDefined(min)}
     max=${ifDefined(max)}
+    step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
     ?autofocus=${autofocus}
     .readonly=${readonly}
@@ -142,4 +148,4 @@ const Template: Story<ArgTypes, Context> = (
   </igc-input>
 `;
 
-export const Outlined = Template.bind({});
+export const Basic = Template.bind({});
