@@ -2,15 +2,7 @@ import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
 import { IgcCardComponent } from './card';
 import '../../../igniteui-webcomponents.js';
 
-const DEFAULT_CLASS = 'container';
-const classValue = (classes: string) => {
-  return `${DEFAULT_CLASS} ${classes}`;
-};
-
 describe('Card Component', () => {
-  const DIFF_OPTIONS = {
-    ignoreChildren: ['div'],
-  };
   let el: IgcCardComponent;
 
   it('a11y audit', async () => {
@@ -30,18 +22,14 @@ describe('Card Component', () => {
     await elementUpdated(el);
 
     expect(el.outlined).to.be.true;
-    expect(el).shadowDom.to.equal(
-      `<div class="${classValue('outlined')}">
-      </div>`,
-      DIFF_OPTIONS
-    );
+    expect(el).dom.to.equal(`<igc-card outlined></igc-card>`);
   });
 
   it('should render some content', async () => {
     const content = `
       <igc-card-header>
         <h1 slot="title">Title</h1>
-        <h3 slot="title">Subtitle</h3>
+        <h3 slot="subtitle">Subtitle</h3>
       </igc-card-header>
       <igc-card-media>
         <img src="someLink">
