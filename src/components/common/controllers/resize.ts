@@ -15,14 +15,19 @@ class ResizeDirective extends Directive {
     const el = part.element as Element;
     const controller = host as ResizeController;
     this.ro = new ResizeObserver((entries) => {
-      entries.forEach((entry) => {
-        const { width, height } = entry.contentRect;
-        if (this.width !== width) {
-          this.width = width;
-          this.height = height;
-          controller.dimensions = entry.contentRect;
-          controller.host.requestUpdate();
+      window.requestAnimationFrame(() => {
+        if (!Array.isArray(entries) || !entries.length) {
+          return;
         }
+        entries.forEach((entry) => {
+          const { width, height } = entry.contentRect;
+          if (this.width !== width) {
+            this.width = width;
+            this.height = height;
+            controller.dimensions = entry.contentRect;
+            controller.host.requestUpdate();
+          }
+        });
       });
     });
     this.ro.observe(el);
