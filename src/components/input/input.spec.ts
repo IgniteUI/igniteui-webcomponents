@@ -14,6 +14,17 @@ describe('Input component', () => {
   let input: HTMLInputElement;
 
   describe('', () => {
+    // before(() => {
+    //   window.onerror = function (err) {
+    //     if (err === 'ResizeObserver loop limit exceeded') {
+    //       console.warn('Ignored: ResizeObserver loop limit exceeded');
+    //       return false;
+    //     } else {
+    //       return true;
+    //     }
+    //   };
+    // });
+
     beforeEach(async () => {
       el = await createInputComponent();
       input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
@@ -93,6 +104,7 @@ describe('Input component', () => {
         html`<igc-input label=${text}></igc-input>`
       );
       const label = el.shadowRoot?.querySelector('label') as HTMLLabelElement;
+      expect(el.label).to.equal(text);
       expect(label.innerText).to.equal(text);
     });
 
