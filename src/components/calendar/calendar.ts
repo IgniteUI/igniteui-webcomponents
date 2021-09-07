@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   IgcCalendarBaseComponent,
@@ -34,14 +34,17 @@ export class IgcCalendarComponent extends SizableMixin(
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
 
-  // @query('igc-days-view')
-  // daysView!: IgcDaysViewComponent;
+  @query('igc-days-view')
+  daysView!: IgcDaysViewComponent;
 
   // @query('igc-months-view')
   // monthsView!: IgcMonthsViewComponent;
 
   // @query('igc-years-view')
   // yearsView!: IgcYearsViewComponent;
+
+  @state()
+  activeDate = new Date();
 
   @property({ type: Boolean, attribute: 'has-header' })
   hasHeader = true;
@@ -124,12 +127,20 @@ export class IgcCalendarComponent extends SizableMixin(
     this.activeView = 'years';
   }
 
-  private outsideDaySelected(event: CustomEvent<ICalendarDate>) {
+  private activeDateChanged(event: CustomEvent<Date>) {
+    this.activeDate = event.detail;
+  }
+
+  private async outsideDaySelected(event: CustomEvent<ICalendarDate>) {
     const date = event.detail;
     if (date.isNextMonth) {
       this.nextMonth();
+      await this.updateComplete;
+      this.daysView.focusDate(date.date);
     } else if (date.isPrevMonth) {
       this.previousMonth();
+      await this.updateComplete;
+      this.daysView.focusDate(date.date);
     }
   }
 
@@ -303,6 +314,7 @@ export class IgcCalendarComponent extends SizableMixin(
                 )}
                 <igc-days-view
                   part="days-view"
+                  .activeDate=${this.activeDate}
                   .viewDate=${viewDate}
                   .weekStart=${this.weekStart}
                   .weekDayFormat=${this.formatOptions.weekday!}
@@ -317,6 +329,7 @@ export class IgcCalendarComponent extends SizableMixin(
                   exportparts="days-row, label, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single"
                   @igcChange=${this.changeValue}
                   @igcOutsideDaySelected=${this.outsideDaySelected}
+                  @igcActiveDateChange=${this.activeDateChanged}
                 ></igc-days-view>
               </div>`
             )

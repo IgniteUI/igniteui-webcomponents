@@ -23,6 +23,10 @@
     user-select: none;
 }
 
+[part~='date']:focus {
+    border: 1px solid gray;
+}
+
 [part~='selected'] {
     background: hotpink;
 }

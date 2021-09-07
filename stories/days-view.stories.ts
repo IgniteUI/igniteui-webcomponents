@@ -8,6 +8,13 @@ const metadata = {
   title: 'Days View',
   component: 'igc-days-view',
   argTypes: {
+    activeDate: {
+      type: 'Date',
+      control: 'date',
+      table: {
+        defaultValue: {},
+      },
+    },
     weekDayFormat: {
       type: '"long" | "short" | "narrow"',
       options: ['long', 'short', 'narrow'],
@@ -90,6 +97,7 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
+  activeDate: Date;
   weekDayFormat: 'long' | 'short' | 'narrow';
   selection: 'single' | 'multi' | 'range';
   showWeekNumbers: boolean;
