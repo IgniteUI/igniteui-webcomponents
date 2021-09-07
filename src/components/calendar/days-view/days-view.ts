@@ -453,14 +453,14 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     const datePartName = partNameMap(this.resolveDayItemPartName(day));
     const dateInnerPartName = datePartName.replace('date', 'date-inner');
 
-    return html`<span
-      part=${datePartName}
-      role="gridcell"
-      @click=${(event: MouseEvent) => this.selectDay(event, day)}
-      @mouseenter=${() => this.dateMouseEnter(day.date)}
-      @mouseleave=${() => this.dateMouseLeave()}
-    >
-      <span part=${dateInnerPartName}>${this.formattedDate(day.date)}</span>
+    return html`<span part=${datePartName} role="gridcell">
+      <span
+        part=${dateInnerPartName}
+        @click=${(event: MouseEvent) => this.selectDay(event, day)}
+        @mouseenter=${() => this.dateMouseEnter(day.date)}
+        @mouseleave=${() => this.dateMouseLeave()}
+        >${this.formattedDate(day.date)}</span
+      >
     </span>`;
   }
 
