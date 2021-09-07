@@ -33,6 +33,10 @@ $date-size-small: map.get($date-sizes, 'small');
         grid-template-columns: repeat(8, minmax($date-size-large, 1fr));
     }
 
+    igc-days-view::part(days-row) {
+        min-height: $date-size-large;
+    }
+
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
         width: $date-size-large;
@@ -72,6 +76,10 @@ $date-size-small: map.get($date-sizes, 'small');
         grid-template-columns: repeat(8, minmax($date-size-medium, 1fr));
     }
 
+    igc-days-view::part(days-row) {
+        min-height: $date-size-medium;
+    }
+
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
         width: $date-size-medium;
@@ -109,6 +117,10 @@ $date-size-small: map.get($date-sizes, 'small');
 
     igc-days-view[show-week-numbers] {
         grid-template-columns: repeat(8, minmax($date-size-small, 1fr));
+    }
+
+    igc-days-view::part(days-row) {
+        min-height: $date-size-small;
     }
 
     igc-days-view::part(week-number-inner),
@@ -215,4 +227,5 @@ $date-size-small: map.get($date-sizes, 'small');
     font-size: var(--igc-overline-font-size);
     font-weight: var(--igc-overline-font-weight);
     line-height: var(--igc-overline-line-height);
+    text-transform: uppercase;
 }

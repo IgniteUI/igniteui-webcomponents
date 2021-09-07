@@ -6,7 +6,7 @@ $date-sizes: (
     medium: rem(30px),
     small: rem(26px)
 );
-
+$border-width: rem(1px);
 $week-number-bg: color(gray, 200);
 $week-number-color: color(gray, 500);
 $week-number-radius: rem(4px);
@@ -15,13 +15,54 @@ $row-gap: rem(4px);
 $date-size: map.get($date-sizes, 'large');
 
 :host {
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    gap: $row-gap;
     min-width: 290px;
     outline: none;
     padding: 0 rem(12px) rem(16px) rem(12px);
     overflow: hidden;
     box-sizing: border-box;
-    row-gap: $row-gap;
+}
+
+[part~='days-row'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:first-of-type {
+        [part='week-number-inner'] {
+            border-top-left-radius: $week-number-radius;
+            border-top-right-radius: $week-number-radius;
+        }
+    }
+
+    &:last-of-type {
+        [part='week-number-inner'] {
+            border-bottom-left-radius: $week-number-radius;
+            border-bottom-right-radius: $week-number-radius;
+
+            &::after {
+                display: none;
+            }
+        }
+    }
+
+    [gridcell] {
+        &:last-of-type {
+            &::before {
+                border-bottom-right-radius: 16px;
+                border-top-right-radius: 16px;
+            }
+        }
+
+        &:first-of-type {
+            &::before {
+                border-bottom-left-radius: 16px;
+                border-top-left-radius: 16px;
+            }
+        }
+    }
 }
 
 [part~='date'] {
@@ -29,19 +70,30 @@ $date-size: map.get($date-sizes, 'large');
     user-select: none;
     position: relative;
     font-size: var(--igc-subtitle-1-font-size);
-    border: rem(1px) dashed transparent;
+    border: $border-width dashed transparent;
+
+    [part~='date-inner'] {
+        z-index: 2;
+    }
 
     &:hover,
     &:focus {
-        [part='date-inner'] {
+        [part~='date-inner'] {
             background: color(gray, 200);
             border-color: color(gray, 200);
         }
     }
 }
 
+[part~='current'][part~='selected'] {
+    [part~='date-inner'] {
+        box-shadow: inset 0 0 0 rem(1px) color(surface),
+            0 0 0 rem(1px) color(secondary, 500);
+    }
+}
+
 [part~='current'] {
-    span {
+    [part~='date-inner'] {
         box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
     }
 }
@@ -50,8 +102,6 @@ $date-size: map.get($date-sizes, 'large');
 [part~='label'] {
     width: 100%;
     height: 100%;
-    align-self: center;
-    justify-self: center;
     color: color(gray, 800);
     position: relative;
     display: flex;
@@ -61,11 +111,11 @@ $date-size: map.get($date-sizes, 'large');
     box-sizing: border-box;
     user-select: none;
 
-    span {
+    [part~='week-number-inner'],
+    [part~='date-inner'] {
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 2;
     }
 }
 
@@ -73,84 +123,118 @@ $date-size: map.get($date-sizes, 'large');
     position: absolute;
 }
 
-[part~='range'] {
-    background: color(secondary, 100);
+[part='date-inner'],
+[part='week-number-inner'] {
+    border: $border-width solid transparent;
+}
+
+[part~='date'][part~='range'] {
     border-radius: 0;
-}
 
-[part~='range'][part~='preview'] {
-    background: transparent;
-    border-top: 1px dashed color(gray, 300);
-    border-bottom: 1px dashed color(gray, 300);
-}
-
-[part~='range'][part~='preview'][part~='first'],
-[part~='range'][part~='preview'][part~='last'] {
-    border: none;
-
-    &::after {
-        height: calc(100% - 2px);
-        background: transparent;
-        border-top: 1px dashed color(gray, 300);
-        border-bottom: 1px dashed color(gray, 300);
+    &::before {
+        content: '';
+        position: absolute;
+        background: color(secondary, 100);
+        height: 100%;
+        width: calc(100% + (#{$border-width} * 2));
     }
 }
 
-[part~='range'][part~='first'],
-[part~='range'][part~='last'] {
+[part~='date'][part~='range'][part~='preview']{
+    &::before {
+        background: transparent;
+        height: calc(100% - 2px);
+        border-top: $border-width dashed color(gray, 300);
+        border-bottom: $border-width dashed color(gray, 300);
+    }
+}
+
+[part~='date'][part~='range'][part~='preview'][part~='first'],
+[part~='date'][part~='range'][part~='preview'][part~='last'] {
+    &::after {
+        height: calc(100% - (#{$border-width} * 2));
+        background: transparent;
+        border-top: $border-width dashed color(gray, 300);
+        border-bottom: $border-width dashed color(gray, 300);
+    }
+
+    &::before {
+        display: none;
+    }
+}
+
+[part~='date'][part~='range'][part~='first'],
+[part~='date'][part~='range'][part~='last'] {
     background: transparent;
 
     &::after {
         content: '';
         position: absolute;
-        height: calc(100% + 2px);
-        width: calc(50% + 1px);
+        height: calc(100% - (#{$border-width} * 2));
+        width: calc(50% + #{$border-width});
         background: color(secondary, 100);
+        border-top: $border-width solid  color(secondary, 100);
+        border-bottom: $border-width solid  color(secondary, 100);
         z-index: 1;
+    }
+
+    &::before {
+        display: none;
     }
 }
 
-[part~='range'][part~='first'] {
+[part~='date'][part~='range'][part~='first'] {
     &::after {
         inset-inline-start: 50%;
     }
 }
 
-[part~='last'] {
+[part~='date'][part~='last'] {
     &::after {
         inset-inline-end: 50%;
     }
 }
 
-[part~='selected'][part~='range'][part~='weekend'],
-[part~='selected'][part~='range'][part~='inactive'],
-[part~='selected'][part~='range']:not([part~='first']),
-[part~='selected'][part~='range']:not([part~='last']) {
+[part~='date'][part~='weekend'],
+[part~='date'][part~='inactive'],
+[part~='date'][part~='label'] {
+    color: $week-number-color;
+}
+
+[part~='selected'][part~='weekend'][part~='first'],
+[part~='selected'][part~='weekend'][part~='last'] {
+    color: contrast-color(secondary, 700);
+}
+
+[part~='date'][part~='selected'][part~='range'][part~='weekend'],
+[part~='date'][part~='selected'][part~='range'][part~='inactive'],
+[part~='date'][part~='selected'][part~='range']:not([part~='first']),
+[part~='date'][part~='selected'][part~='range']:not([part~='last']) {
     color: contrast-color(secondary, 100);
 
     &:hover,
     &:focus {
         color: contrast-color(secondary, 700);
 
-        span {
+        [part~='date-inner'] {
             background: color(secondary, 700);
         }
     }
 }
 
-[part~='selected'][part~='range'][part~='first'],
-[part~='selected'][part~='range'][part~='last'],
-[part~='selected']:not([part~='range']) {
+[part~='date'][part~='selected'][part~='range'][part~='first'],
+[part~='date'][part~='selected'][part~='range'][part~='last'],
+[part~='date'][part~='selected']:not([part~='range']) {
     color: contrast-color(secondary, 700);
 
-    [part='date-inner'] {
+    [part~='date-inner'] {
         background: color(secondary, 500);
         border-color: color(secondary, 500);
     }
 
     &:hover,
     &:focus {
-        [part='date-inner'] {
+        [part~='date-inner'] {
             background: color(secondary, 700);
             border-color: color(secondary, 700);
         }
@@ -159,53 +243,33 @@ $date-size: map.get($date-sizes, 'large');
     }
 }
 
-[part~='selected'][part~='weekend']:not([part~='range']),
-[part~='selected'][part~='inactive']:not([part~='range']),
-[part~='selected']:not([part~='range']) {
+[part~='date'][part~='selected'][part~='weekend']:not([part~='range']),
+[part~='date'][part~='selected'][part~='inactive']:not([part~='range']),
+[part~='date'][part~='selected']:not([part~='range']) {
     color: contrast-color(secondary, 700)
 }
 
-[part~='weekend'],
-[part~='inactive'],
-[part~='label'] {
-    color: $week-number-color;
-}
 
 [part~='week-number'] {
-    grid-column: 1;
+    order: 0;
     color: $week-number-color;
     cursor: default;
+}
 
-    [part='week-number-inner'] {
-        position: relative;
+[part='week-number-inner'] {
+    position: relative;
+    background: $week-number-bg;
+    border-inline-end-color: $week-number-bg;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        height: calc(#{$row-gap} + (#{$border-width} * 2 + 2px));
+        width: 100%;
         background: $week-number-bg;
-
-        &::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            height: calc(#{$row-gap} + 2px);
-            width: 100%;
-            background: $week-number-bg;
-        }
-    }
-
-    &:first-of-type {
-        [part='date-inner'] {
-            border-top-left-radius: $week-number-radius;
-            border-top-right-radius: $week-number-radius;
-        }
-    }
-
-    &:last-of-type {
-        [part='date-inner'] {
-            border-bottom-left-radius: $week-number-radius;
-            border-bottom-right-radius: $week-number-radius;
-
-            &::after {
-                display: none;
-            }
-        }
+        border-inline-start: rem(1px) solid $week-number-bg;
+        border-inline-end: rem(1px) solid $week-number-bg;
     }
 }
 
