@@ -20,16 +20,26 @@
         transform: scale(.8);
     }
 
-    igc-checkbox:not([checked]):hover::part(indicator),
-    igc-checkbox:not([checked]):focus-within::part(indicator) {
-        opacity: 1;
-        stroke: #{utils.color(gray, 700)};
-        stroke-dashoffset: 0;
-        transition: opacity .1s ease-out;
+    igc-checkbox:hover,
+    igc-checkbox:focus-within {
+        &::part(indicator) {
+            opacity: 1;
+            stroke: #{utils.color(gray, 700)};
+            stroke-dashoffset: 0;
+            transition: opacity .1s ease-out;
+        }
+
+        &::part(indicator checked) {
+            stroke: white;
+        }
     }
 
-    igc-checkbox:not([checked])[indeterminate]::part(control) {
-        &::before {
+    igc-checkbox[indeterminate] {
+        &::part(indicator) {
+            display: none;
+        }
+
+        &::part(control)::before {
             display: block;
             width: inherit;
             height: inherit;
@@ -41,37 +51,38 @@
             z-index: 1;
         }
 
-        &::after {
+        &::part(control)::after {
             box-shadow: inset 0 0 0 1px #{utils.color(primary, 500)};
+        }
+
+        &::part(control checked)::after {
+            background: transparent;
         }
     }
 
-    igc-checkbox:not([checked])[indeterminate]::part(indicator) {
-        display: none;
+    igc-checkbox[indeterminate]:hover::part(control),
+    igc-checkbox[indeterminate]:focus-within::part(control) {
+        &::before {
+            background: #{utils.color(primary, 900)};
+        }
+
+        &::after {
+            box-shadow: inset 0 0 0 1px #{utils.color(primary, 900)};
+            background: transparent;
+        }
     }
 
-    igc-checkbox[checked]::part(control) {
+    igc-checkbox::part(control checked) {
         &::after {
             background: #{utils.color(primary, 500)};
             box-shadow: inset 0 0 0 1px #{utils.color(primary, 500)};
         }
     }
 
-    igc-checkbox[checked]:hover::part(control),
-    igc-checkbox[checked]:focus-within::part(control) {
+    igc-checkbox:hover::part(control checked),
+    igc-checkbox:focus-within::part(control checked) {
         &::after {
             background: #{utils.color(primary, 900)};
-            box-shadow: inset 0 0 0 1px #{utils.color(primary, 900)};
-        }
-    }
-
-    igc-checkbox:not([checked])[indeterminate]:hover::part(control),
-    igc-checkbox:not([checked])[indeterminate]:focus-within::part(control) {
-        &::before {
-            background: #{utils.color(primary, 900)};
-        }
-
-        &::after {
             box-shadow: inset 0 0 0 1px #{utils.color(primary, 900)};
         }
     }
@@ -82,19 +93,19 @@
         }
     }
 
-    igc-checkbox:not([checked])[invalid]:hover::part(indicator),
-    igc-checkbox:not([checked])[invalid]:focus-within::part(indicator) {
+    igc-checkbox[invalid]:hover::part(indicator),
+    igc-checkbox[invalid]:focus-within::part(indicator) {
         stroke: #{utils.color(error, 500)};
     }
 
-    igc-checkbox[invalid][checked]::part(control) {
+    igc-checkbox[invalid]::part(control checked) {
         &::after {
             box-shadow: inset 0 0 0 1px #{utils.color(error, 500)};
             background: #{utils.color(error, 500)};
         }
     }
 
-    igc-checkbox:not([checked])[indeterminate][invalid]::part(control) {
+    igc-checkbox[indeterminate][invalid]::part(control) {
         &::before {
             background: #{utils.color(error, 500)};
         }
@@ -104,23 +115,23 @@
         }
     }
 
-    igc-checkbox:not([checked])[invalid]:hover::part(control),
-    igc-checkbox:not([checked])[invalid]:focus-within::part(control) {
+    igc-checkbox[invalid]:hover::part(control),
+    igc-checkbox[invalid]:focus-within::part(control) {
         &::after {
             box-shadow: inset 0 0 0 1px #{utils.color(error, 700)};
         }
     }
 
-    igc-checkbox[checked][invalid]:hover::part(control),
-    igc-checkbox[checked][invalid]:focus-within::part(control) {
+    igc-checkbox[invalid]:hover::part(control checked),
+    igc-checkbox[invalid]:focus-within::part(control checked) {
         &::after {
             box-shadow: inset 0 0 0 1px #{utils.color(error, 700)};
             background: #{utils.color(error, 700)};
         }
     }
 
-    igc-checkbox:not([checked])[indeterminate][invalid]:hover::part(control),
-    igc-checkbox:not([checked])[indeterminate][invalid]:focus-within::part(control) {
+    igc-checkbox[indeterminate][invalid]:hover::part(control),
+    igc-checkbox[indeterminate][invalid]:focus-within::part(control) {
         &::before {
             background: #{utils.color(error, 700)};
         }
@@ -134,24 +145,26 @@
     igc-checkbox[disabled][invalid]::part(control) {
         &::after {
             box-shadow: inset 0 0 0 1px #{utils.color(gray, 400)};
+            background: transparent;
         }
     }
 
-    igc-checkbox[disabled][checked]::part(control),
-    igc-checkbox[disabled][checked][invalid]::part(control) {
+    igc-checkbox[disabled]::part(control checked),
+    igc-checkbox[disabled][invalid]::part(control checked) {
         &::after {
             background: #{utils.color(gray, 400)};
         }
     }
 
-    igc-checkbox:not([checked])[disabled][indeterminate]::part(control),
-    igc-checkbox:not([checked])[disabled][indeterminate][invalid]::part(control) {
+    igc-checkbox[disabled][indeterminate]::part(control),
+    igc-checkbox[disabled][indeterminate][invalid]::part(control) {
         &::before {
             background: #{utils.color(gray, 400)};
         }
 
         &::after {
             box-shadow: inset 0 0 0 1px #{utils.color(gray, 400)};
+            background: transparent;
         }
     }
 }
