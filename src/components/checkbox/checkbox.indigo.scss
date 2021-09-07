@@ -25,8 +25,9 @@
         stroke: #{utils.color(surface, 500)};
     }
 
-    igc-checkbox:not([checked])[indeterminate]::part(indicator) {
+    igc-checkbox[indeterminate]::part(indicator) {
         transform: rotate(45deg) translateX(-.125rem) scale(.8);
+        stroke-dashoffset: 41;
     }
 
     igc-checkbox:hover::part(control) {
@@ -37,23 +38,23 @@
         box-shadow: 0 0 0 4px #{utils.color(gray, 300, .87)};
     }
 
-    igc-checkbox[checked]::part(control),
+    igc-checkbox::part(control checked),
     igc-checkbox[indeterminate]::part(control) {
         background: #{utils.color(primary, 500)};
         box-shadow: inset 0 0 0 4px #{utils.color(secondary, 500)};
     }
 
-    igc-checkbox[checked]:hover::part(control),
+    igc-checkbox:hover::part(control checked),
     igc-checkbox[indeterminate]:hover::part(control) {
         box-shadow: 0 0 0 4px #{utils.color(secondary, 100, .87)};
     }
 
-    igc-checkbox[checked]:focus-within::part(control),
+    igc-checkbox:focus-within::part(control checked),
     igc-checkbox[indeterminate]:focus-within::part(control) {
         box-shadow: 0 0 0 4px #{utils.color(secondary, 200, .87)};
     }
 
-    igc-checkbox[invalid][checked]::part(control),
+    igc-checkbox[invalid]::part(control checked),
     igc-checkbox[invalid][indeterminate]::part(control) {
         box-shadow: inset 0 0 0 4px #{utils.color(error, 500)};
         background: #{utils.color(error, 500)};
@@ -61,14 +62,15 @@
 
     igc-checkbox[invalid]:hover::part(control),
     igc-checkbox[invalid]:focus-within::part(control),
-    igc-checkbox[invalid][checked]:hover::part(control),
-    igc-checkbox[invalid][checked]:focus-within::part(control),
+    igc-checkbox[invalid]:hover::part(control checked),
+    igc-checkbox[invalid]:focus-within::part(control checked),
     igc-checkbox[invalid][indeterminate]:hover::part(control),
     igc-checkbox[invalid][indeterminate]:focus-within::part(control) {
         box-shadow: 0 0 0 4px #{utils.color(error, 200, .87)};
     }
 
-    igc-checkbox[disabled] {
+    igc-checkbox[disabled],
+    igc-checkbox[disabled][invalid] {
         &::part(control) {
             background: transparent;
             box-shadow: none;
