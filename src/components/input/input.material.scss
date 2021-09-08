@@ -9,7 +9,6 @@ $active-color: color(primary, 500);
 $error-color: color(error, 500);
 $idle-border-width: rem(1px);
 $active-border-width: rem(2px);
-$scale: .75;
 $fs: rem(16px);
 
 $input-height: (
@@ -50,6 +49,10 @@ $input-height: (
     font-family: var(--igc-font-family);
     outline-style: none;
     --theme: material;
+
+    input:not(:placeholder-shown) + [part='notch'] {
+        @extend %floated-styles;
+    }
 }
 
 :host([size='large']) {
@@ -103,7 +106,7 @@ $input-height: (
     }
 }
 
-:host([placeholder][size='large']) > [part='notch'] {
+:host([placeholder][size='large']) [part='notch'] {
     @extend %floated-styles;
 
     [part='label'] {
@@ -111,7 +114,7 @@ $input-height: (
     }
 }
 
-:host([placeholder][size='medium']) > [part='notch'] {
+:host([placeholder][size='medium']) [part='notch'] {
     @extend %floated-styles;
 
     [part='label'] {
@@ -119,7 +122,7 @@ $input-height: (
     }
 }
 
-:host([placeholder][size='small']) > [part='notch'] {
+:host([placeholder][size='small']) [part='notch'] {
     @extend %floated-styles;
 
     [part='label'] {
@@ -203,31 +206,8 @@ input {
     }
 }
 
-:host([invalid]),
-:host([invalid]:focus-within) {
-    [part='start'],
-    [part='notch'],
-    [part='filler'],
-    [part='end'] {
-        border-color: $error-color;
-    }
-
-    [part='label'] {
-        color: $error-color;
-    }
-}
-
-:host([invalid]:focus-within) {
-    [part='notch']  {
-        border-top: $idle-border-width solid transparent;
-    }
-}
-
-input:not(:placeholder-shown) + [part='notch'] {
-    @extend %floated-styles;
-}
-
 [part^='container'] {
+    position: relative;
     display: grid;
     grid-template-columns: auto auto 1fr auto;
     pointer-events: none;
@@ -347,6 +327,31 @@ input:not(:placeholder-shown) + [part='notch'] {
     color: color(gray, 600);
 }
 
+:host([invalid]),
+:host([invalid]:focus-within) {
+    [part='start'],
+    [part='notch'],
+    [part='filler'],
+    [part='end'] {
+        border-color: $error-color;
+    }
+
+    [part='label'],
+    [part='helper-text'] {
+        color: $error-color;
+    }
+
+    input:not(:placeholder-shown) + [part='notch'] {
+        @extend %floated-styles;
+    }
+}
+
+:host([invalid]:focus-within) {
+    [part='notch']  {
+        border-top: $idle-border-width solid transparent;
+    }
+}
+
 :host([required]) {
     [part='label']::after {
         content: '*';
@@ -372,6 +377,11 @@ input:not(:placeholder-shown) + [part='notch'] {
         border-color: color(gray, 400);
     }
 
+
+    input::placeholder {
+        color: color(gray, 300);
+    }
+
     input:not(:placeholder-shown) + [part='notch'] {
         @extend %floated-styles;
     }
@@ -385,7 +395,8 @@ input:not(:placeholder-shown) + [part='notch'] {
         border-top-width: rem(1px);
     }
 
-    [part='notch'] {
+    [part='notch'],
+    [part='filler'] {
         border-top: 1px solid transparent;
         border-bottom: transparent;
         border-bottom-width: rem(1px);
@@ -398,6 +409,9 @@ input:not(:placeholder-shown) + [part='notch'] {
     [part~='input'] {
         padding-top: rem(20px);
         padding-bottom: rem(6px);
+    }
+
+    [part~='container'] {
         background: color(gray, 100);
         border-bottom: 1px solid $idle-color;
 
@@ -410,66 +424,66 @@ input:not(:placeholder-shown) + [part='notch'] {
 
         transition: border-bottom-width 150ms cubic-bezier(.4, 0, .2, 1);
 
-        &:focus {
-            border-color: $active-color;
-        }
-
-        &:hover {
-            background: color(gray, 200);
-            border-color: $idle-hover-color;
+        &::after {
+            position: absolute;
+            content: '';
+            width: 100%;
+            height: rem(2px);
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            background: $active-color;
+            transform: scaleX(0);
+            transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
         }
     }
 
-    [part~='container']::after {
-        position: absolute;
-        content: '';
-        width: 100%;
-        height: rem(2px);
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: $active-color;
-        transform: scaleX(0);
-        transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
+    input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+        transform: translateY(-106%);
+    }
+}
+
+:host(:not([outlined]):hover) {
+    [part~='container'] {
+        background: color(gray, 200);
+        border-bottom: 1px solid color(gray, 800);
     }
 }
 
 :host(:not([outlined]):focus-within) {
-    [part='start'],
-    [part='end'] {
-        border-color: transparent;
-    }
+    [part~='container'] {
+        background: color(gray, 300);
+        border-bottom: 1px solid $active-color;
 
-    [part='notch'] {
-        border-bottom-color: transparent;
-        border-top: 1px solid transparent;
-    }
-
-    [part~='container']::after {
-        transform: scaleX(1);
-        opacity: 1;
-    }
-
-    [part~='input'] {
-        border-color: $active-color;
+        &::after {
+            transform: scaleX(1);
+            opacity: 1;
+        }
     }
 }
 
 :host(:not([outlined]):focus-within),
 :host(:not([outlined])[placeholder]) {
-    [part='label'] {
-        transform: translateY(-106%) scale($scale);
+    [part='notch'] [part='label'] {
+        transform: translateY(-106%);
     }
 }
 
 :host(:not([outlined])[invalid]),
 :host(:not([outlined])[invalid]:focus-within) {
-    [part~='input'] {
-        border-color: $error-color;
+    [part='start'],
+    [part='notch'],
+    [part='filler'],
+    [part='end'] {
+        border-color: transparent;
     }
 
-    [part~='container']::after {
-        background: $error-color;
+    [part~='container'] {
+        border-color: $error-color;
+
+        &::after {
+            background: $error-color;
+        }
     }
 }
 
@@ -482,7 +496,7 @@ input:not(:placeholder-shown) + [part='notch'] {
         color: color(gray, 400);
     }
 
-    [part~='input'] {
+    [part~='container'] {
         border-color: color(gray, 400);
     }
 }
