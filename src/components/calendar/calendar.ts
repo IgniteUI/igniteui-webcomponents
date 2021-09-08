@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   IgcCalendarBaseComponent,
@@ -34,17 +34,17 @@ export class IgcCalendarComponent extends SizableMixin(
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
 
-  @state()
-  rangePreviewDate?: Date;
-
-  // @query('igc-days-view')
-  // daysView!: IgcDaysViewComponent;
+  @query('igc-days-view')
+  daysView!: IgcDaysViewComponent;
 
   // @query('igc-months-view')
   // monthsView!: IgcMonthsViewComponent;
 
   // @query('igc-years-view')
   // yearsView!: IgcYearsViewComponent;
+
+  @state()
+  activeDate = new Date();
 
   @property({ type: Boolean, attribute: 'has-header' })
   hasHeader = true;
@@ -127,12 +127,20 @@ export class IgcCalendarComponent extends SizableMixin(
     this.activeView = 'years';
   }
 
-  private outsideDaySelected(event: CustomEvent<ICalendarDate>) {
+  private activeDateChanged(event: CustomEvent<Date>) {
+    this.activeDate = event.detail;
+  }
+
+  private async outsideDaySelected(event: CustomEvent<ICalendarDate>) {
     const date = event.detail;
     if (date.isNextMonth) {
       this.nextMonth();
+      await this.updateComplete;
+      this.daysView.focusDate(date.date);
     } else if (date.isPrevMonth) {
       this.previousMonth();
+      await this.updateComplete;
+      this.daysView.focusDate(date.date);
     }
   }
 
@@ -222,10 +230,10 @@ export class IgcCalendarComponent extends SizableMixin(
       ${renderButtons
         ? html`<div>
             <button part="navigation-button" @click=${this.navigatePrevious}>
-              <
+              <igc-icon name="navigate_before" collection="internal"></igc-icon>
             </button>
             <button part="navigation-button" @click=${this.navigateNext}>
-              >
+              <igc-icon name="navigate_next" collection="internal"></igc-icon>
             </button>
           </div>`
         : ''}
@@ -310,6 +318,7 @@ export class IgcCalendarComponent extends SizableMixin(
                 )}
                 <igc-days-view
                   part="days-view"
+                  .activeDate=${this.activeDate}
                   .viewDate=${viewDate}
                   .weekStart=${this.weekStart}
                   .weekDayFormat=${this.formatOptions.weekday!}
@@ -325,7 +334,7 @@ export class IgcCalendarComponent extends SizableMixin(
                   exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
                   @igcChange=${this.changeValue}
                   @igcOutsideDaySelected=${this.outsideDaySelected}
-                  @igcRangePreviewDateChange=${this.rangePreviewDateChange}
+                  @igcActiveDateChange=${this.activeDateChanged}
                 ></igc-days-view>
               </div>`
             )

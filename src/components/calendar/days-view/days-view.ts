@@ -13,11 +13,12 @@ import { getDateOnly, isEqual } from '../common/utils';
 import { styles } from './days-view-material.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
-import { property } from 'lit/decorators.js';
+import { property, queryAll } from 'lit/decorators.js';
 import { partNameMap } from '../../common/util';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcOutsideDaySelected: CustomEvent<ICalendarDate>;
+  igcActiveDateChange: CustomEvent<Date>;
   igcRangePreviewDateChange: CustomEvent<Date>;
 }
 
@@ -38,6 +39,13 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   static styles = [styles];
 
   private formatterWeekday!: Intl.DateTimeFormat;
+  private dates!: ICalendarDate[][];
+
+  @queryAll('[part~="date"]')
+  dateElements!: NodeList;
+
+  @property({ attribute: false })
+  activeDate = new Date();
 
   @property({ attribute: false })
   rangePreviewDate?: Date;
@@ -51,9 +59,37 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     this.initFormatters();
   }
 
+  @watch('weekStart')
+  @watch('viewDate')
+  datesChange() {
+    this.dates = this.getCalendarMonth();
+  }
+
   constructor() {
     super();
     this.initFormatters();
+  }
+
+  focusDate(date: Date) {
+    let index = -1;
+    let match = false;
+
+    for (const week of this.dates) {
+      for (const day of week) {
+        index++;
+        if (day.date.getTime() === date.getTime()) {
+          match = true;
+          break;
+        }
+      }
+      if (match) {
+        break;
+      }
+    }
+
+    if (index !== -1) {
+      (this.dateElements[index] as HTMLElement).focus();
+    }
   }
 
   private initFormatters() {
@@ -375,6 +411,11 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     this.value = [...selectedDates];
   }
 
+  private changeActiveDate(date: Date) {
+    this.activeDate = date;
+    this.emitEvent('igcActiveDateChange', { detail: date });
+  }
+
   private dateMouseEnter(date: Date) {
     if (
       this.selection === 'range' &&
@@ -435,7 +476,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private renderDates() {
-    return this.getCalendarMonth().map(
+    return this.dates.map(
       (week) => html`<div role="row" part="days-row">
         ${this.showWeekNumbers
           ? html`<span role="rowheader" part="date week-number">
@@ -456,7 +497,11 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     return html`<span part=${datePartName} role="gridcell">
       <span
         part=${dateInnerPartName}
+        tabindex=${getDateOnly(this.activeDate).getTime() === day.date.getTime()
+          ? 0
+          : -1}
         @click=${(event: MouseEvent) => this.selectDay(event, day)}
+        @focus=${() => this.changeActiveDate(day.date)}
         @mouseenter=${() => this.dateMouseEnter(day.date)}
         @mouseleave=${() => this.dateMouseLeave()}
         >${this.formattedDate(day.date)}</span
