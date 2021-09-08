@@ -72,9 +72,18 @@
         background: utils.color(error, 500);
     }
 
-    igc-switch[invalid]:hover::part(control),
+    igc-switch[invalid]:hover::part(control) {
+        box-shadow: 0 0 0 2px #{utils.color(error, 100, .87)};
+
+        &::after {
+            border: 2px solid #{utils.color(error, 500)};
+        }
+    }
+
     igc-switch[invalid]:focus-within::part(control),
     igc-switch[invalid]:focus-within::part(control checked) {
+        box-shadow: 0 0 0 2px #{utils.color(error, 200, .87)};
+
         &::after {
             border: 2px solid #{utils.color(error, 500)};
         }
