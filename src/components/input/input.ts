@@ -29,9 +29,7 @@ export class IgcInputComponent extends SizableMixin(
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
-  private _start = new ResizeController(this);
   private _label = new ResizeController(this);
-  private _end = new ResizeController(this);
   private inputId = `input-${nextId++}`;
   private labelId = `input-label-${this.inputId}`;
 
@@ -211,12 +209,7 @@ export class IgcInputComponent extends SizableMixin(
     this.invalid = !this.input.checkValidity();
   }
 
-  renderInput(startWidth: number, endWidth: number, padding: number) {
-    const inputStyle = `
-      padding-inline-start: calc(${startWidth}px + ${padding}px);
-      padding-inline-end: calc(${endWidth}px + ${padding}px);
-    `;
-
+  renderInput() {
     return html`
       <input
         id="${this.inputId}"
@@ -224,7 +217,6 @@ export class IgcInputComponent extends SizableMixin(
         name="${ifDefined(this.name)}"
         type="${ifDefined(this.type)}"
         pattern="${ifDefined(this.pattern)}"
-        style="${inputStyle}"
         placeholder="${this.placeholder ?? ' '}"
         .value="${live(this.value)}"
         ?readonly="${this.readonly}"
@@ -260,13 +252,13 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   renderPrefix() {
-    return html`<div part="prefix" ${this._start.observe()}>
+    return html`<div part="prefix">
       <slot name="prefix"></slot>
     </div>`;
   }
 
   renderSuffix() {
-    return html`<div part="suffix" ${this._end.observe()}>
+    return html`<div part="suffix">
       <slot name="suffix"></slot>
     </div>`;
   }
@@ -274,8 +266,7 @@ export class IgcInputComponent extends SizableMixin(
   renderStandard() {
     return html`${this.renderLabel()}
       <div part="${partNameMap(this.resolvePartNames('container'))}">
-        ${this.renderPrefix()} ${this.renderInput(0, 0, 16)}
-        ${this.renderSuffix()}
+        ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
       <div part="helper-text">
         <slot name="helper-text"></slot>
@@ -283,21 +274,13 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   renderMaterial() {
-    // const gap = 4;
-    // const scale = 0.75;
-    const padding = 12;
-    // const labelWidth = this._label.width;
-    // const startWidth = this._start.width;
-    // const endWidth = this._end.width;
-    // const width = `${labelWidth * scale + gap * 2}px`;
-
     return html`
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         <div part="start">${this.renderPrefix()}</div>
+        ${this.renderInput()}
         <div part="notch">${this.renderLabel()}</div>
-        ${this.renderInput(0, 0, padding)}
-        <div part="end"></div>
-        <div style="grid-area: 1 / 4">${this.renderSuffix()}</div>
+        <div part="filler"></div>
+        <div part="end">${this.renderSuffix()}</div>
       </div>
       <div part="helper-text">
         <slot name="helper-text"></slot>

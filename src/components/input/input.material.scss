@@ -18,31 +18,23 @@ $input-height: (
     small: rem(40px)
 );
 
-@function floated-position($input-height) {
-    $scaled-fs: $fs * $scale;
-    @return $scaled-fs + $input-height - #{math.div($fs, 2)};
-}
-
 %large-label {
-    $y-offset: floated-position(map.get($input-height, 'large'));
-    transform: translateY(-34.75px) scale($scale);
+    transform: translateY(-26px);
+    font-size: rem(12px);
 }
 
 %medium-label {
-    $y-offset: floated-position(map.get($input-height, 'medium'));
-    transform: translateY(-22px); //scale($scale);
-    font-size: 10px;
+    transform: translateY(-22px);
+    font-size: rem(12px);
 }
 
 %small-label {
-    $y-offset: floated-position(map.get($input-height, 'small'));
-    transform: translateY(-25.75px) scale($scale);
+    transform: translateY(-18px);
+    font-size: rem(12px);
 }
 
 %floated-styles {
-    > [part='notch']  {
-        border-top: $idle-border-width solid transparent;
-    }
+    border-top: $idle-border-width solid transparent;
 }
 
 %starfix {
@@ -66,7 +58,7 @@ $input-height: (
         height: map.get($input-height, 'large');
     }
 
-    input:not(:placeholder-shown) + [part^='container'] [part='label'] {
+    input:not(:placeholder-shown) + [part='notch'] [part='label'] {
         @extend %large-label;
     }
 }
@@ -77,7 +69,7 @@ $input-height: (
         height: map.get($input-height, 'medium');
     }
 
-    input:not(:placeholder-shown) + [part^='container'] [part='label'] {
+    input:not(:placeholder-shown) + [part='notch'] [part='label'] {
         @extend %medium-label;
     }
 }
@@ -88,7 +80,7 @@ $input-height: (
         height: map.get($input-height, 'small');
     }
 
-    input:not(:placeholder-shown) + [part^='container'] [part='label'] {
+    input:not(:placeholder-shown) + [part='notch'] [part='label'] {
         @extend %small-label;
     }
 }
@@ -111,7 +103,7 @@ $input-height: (
     }
 }
 
-:host([placeholder][size='large']) > [part^='container'] {
+:host([placeholder][size='large']) > [part='notch'] {
     @extend %floated-styles;
 
     [part='label'] {
@@ -119,7 +111,7 @@ $input-height: (
     }
 }
 
-:host([placeholder][size='medium']) > [part^='container'] {
+:host([placeholder][size='medium']) > [part='notch'] {
     @extend %floated-styles;
 
     [part='label'] {
@@ -127,7 +119,7 @@ $input-height: (
     }
 }
 
-:host([placeholder][size='small']) > [part^='container'] {
+:host([placeholder][size='small']) > [part='notch'] {
     @extend %floated-styles;
 
     [part='label'] {
@@ -141,22 +133,19 @@ input {
     border: none;
     background: transparent;
     outline-style: none;
-    padding: rem(12px) rem(16px);
+    padding: 0 rem(4px);
     font-size: rem(16px);
     font-family: var(--igc-font-family);
     grid-area: 1 / 2 / span 1 / span 2;
 }
 
 [part='label'] {
-    // position: absolute;
     display: inline-block;
-    // top: 50%;
-    // inset-inline-start: rem(4px);
-    // transform: translateY(-50%) scale(1);
-    transition: transform 150ms cubic-bezier(.4, 0, .2, 1), color 150ms cubic-bezier(.4, 0, .2, 1);
+    transition: transform 150ms cubic-bezier(.4, 0, .2, 1), color 150ms cubic-bezier(.4, 0, .2, 1), font-size 150ms cubic-bezier(.4, 0, .2, 1);
     white-space: nowrap;
     color: $idle-color;
     line-height: 1;
+    will-change: font-size, color, transform;
 }
 
 :host(:focus-within) {
@@ -178,6 +167,13 @@ input {
             width: $active-border-width;
             color: $active-color;
             top: $idle-border-width solid transparent;
+        }
+    }
+
+    [part='filler'] {
+        border: {
+            width: $active-border-width;
+            color: $active-color;
         }
     }
 
@@ -211,6 +207,7 @@ input {
 :host([invalid]:focus-within) {
     [part='start'],
     [part='notch'],
+    [part='filler'],
     [part='end'] {
         border-color: $error-color;
     }
@@ -226,18 +223,13 @@ input {
     }
 }
 
-input:not(:placeholder-shown) + [part^='container'] {
+input:not(:placeholder-shown) + [part='notch'] {
     @extend %floated-styles;
 }
 
 [part^='container'] {
-    // position: absolute;
     display: grid;
     grid-template-columns: auto auto 1fr auto;
-    // top: 0;
-    // width: 100%;
-    // height: 100%;
-    // max-width: 100%;
     pointer-events: none;
 }
 
@@ -294,7 +286,7 @@ input:not(:placeholder-shown) + [part^='container'] {
     width: auto;
     height: 100%;
     grid-area: 1 / 2;
-    padding: 0 4px;
+    padding: 0 rem(4px);
     border: {
         width: $idle-border-width;
         style: solid;
@@ -305,12 +297,24 @@ input:not(:placeholder-shown) + [part^='container'] {
     overflow: visible;
 }
 
+[part='filler'] {
+    grid-area: 1 / 3;
+    border: {
+        width: $idle-border-width;
+        style: solid;
+        color: $idle-color;
+        left: none;
+        right: none;
+    }
+}
+
 [part='end'] {
     display: flex;
     justify-content: flex-end;
     flex-grow: 1;
     height: 100%;
-    grid-area: 1 / 3 / span 1 / span 2;
+    grid-area: 1 / 4;
+    min-width: rem(12px);
     border: {
         style: solid;
         color: $idle-color;
@@ -338,7 +342,7 @@ input:not(:placeholder-shown) + [part^='container'] {
 
 [part='helper-text'] {
     @include type-category('caption');
-    padding: 0 rem(12px);
+    padding: 0 rem(8px);
     margin-top: rem(4px);
     color: color(gray, 600);
 }
@@ -361,10 +365,15 @@ input:not(:placeholder-shown) + [part^='container'] {
     }
 
     [part='start'],
+    [part='filler'],
     [part='notch'],
     [part='end'], {
         color: color(gray, 400);
         border-color: color(gray, 400);
+    }
+
+    input:not(:placeholder-shown) + [part='notch'] {
+        @extend %floated-styles;
     }
 }
 
@@ -408,12 +417,6 @@ input:not(:placeholder-shown) + [part^='container'] {
         &:hover {
             background: color(gray, 200);
             border-color: $idle-hover-color;
-        }
-    }
-
-    [part~='input']:not(:placeholder-shown) + [part^='container'] {
-        [part='label'] {
-            transform: translateY(-106%) scale($scale);
         }
     }
 
