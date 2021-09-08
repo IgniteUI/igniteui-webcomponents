@@ -68,9 +68,13 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
   }
 
   private resolveMonthPartName(date: Date) {
+    const today = new Date();
     return {
       month: true,
       selected: date.getMonth() === this.value.getMonth(),
+      current:
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth(),
     };
   }
 
@@ -84,14 +88,16 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
   }
 
   render() {
-    return html`${this.months.map(
-      (month) =>
-        html`<span
-          part=${partNameMap(this.resolveMonthPartName(month))}
-          @click=${() => this.monthClick(month)}
-          ><span part="month-inner">${this.formattedMonth(month)}</span>
-        </span>`
-    )}`;
+    return html`${this.months.map((month) => {
+      const monthPartName = partNameMap(this.resolveMonthPartName(month));
+      const monthInnerPartName = monthPartName.replace('month', 'month-inner');
+
+      return html`<span
+        part=${monthPartName}
+        @click=${() => this.monthClick(month)}
+        ><span part=${monthInnerPartName}>${this.formattedMonth(month)}</span>
+      </span>`;
+    })}`;
   }
 }
 
