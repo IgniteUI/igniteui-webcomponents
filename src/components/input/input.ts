@@ -3,7 +3,6 @@ import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
-import { ResizeController } from '../common/controllers';
 import { Constructor } from '../common/mixins/constructor.js';
 import { watch } from '../common/decorators';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -29,9 +28,14 @@ export class IgcInputComponent extends SizableMixin(
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
-  private _label = new ResizeController(this);
   private inputId = `input-${nextId++}`;
   private labelId = `input-label-${this.inputId}`;
+
+  @state()
+  private _prefixLength!: number;
+
+  @state()
+  private _suffixLength!: number;
 
   @state()
   theme!: string | undefined;
@@ -122,13 +126,18 @@ export class IgcInputComponent extends SizableMixin(
       .trim();
 
     this.theme = theme;
+
+    this.shadowRoot?.addEventListener('slotchange', (_) => {
+      this._prefixLength = this._prefix.length;
+      this._suffixLength = this._suffix.length;
+    });
   }
 
   resolvePartNames(base: string) {
     return {
       [base]: true,
-      prefixed: this._prefix?.length > 0,
-      suffixed: this._suffix?.length > 0,
+      prefixed: this._prefixLength > 0,
+      suffixed: this._suffixLength > 0,
     };
   }
 
@@ -241,12 +250,7 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   renderLabel() {
-    return html`<label
-      id="${this.labelId}"
-      part="label"
-      for="${this.inputId}"
-      ${this._label.observe()}
-    >
+    return html`<label id="${this.labelId}" part="label" for="${this.inputId}">
       ${this.label}
     </label>`;
   }
