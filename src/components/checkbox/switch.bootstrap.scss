@@ -31,7 +31,7 @@
         }
     }
 
-    igc-switch[checked]:focus-within::part(control) {
+    igc-switch:focus-within::part(control checked) {
         box-shadow: 0 0 0 2px #{utils.color(primary, 200)};
 
         &::after {
@@ -39,23 +39,23 @@
         }
     }
 
-    igc-switch[checked]::part(control) {
+    igc-switch::part(control checked) {
         background: #{utils.color(primary, 500)};
         box-shadow: inset 0 0 0 1px #{utils.color(primary, 500)};
     }
 
     igc-switch[invalid]::part(control),
-    igc-switch[invalid][checked]::part(control) {
+    igc-switch[invalid]::part(control checked) {
         box-shadow: inset 0 0 0 1px #{utils.color(error, 500)};
     }
 
-    igc-switch[invalid][checked]::part(control),
-    igc-switch:not([checked])[invalid]::part(thumb) {
+    igc-switch[invalid]::part(control checked),
+    igc-switch[invalid]::part(thumb) {
         background: utils.color(error, 500);
     }
 
     igc-switch[invalid]:focus-within::part(control),
-    igc-switch[invalid][checked]:focus-within::part(control) {
+    igc-switch[invalid]:focus-within::part(control checked) {
         &::after {
             border: 1px solid #{utils.color(error, 500)};
         }
@@ -66,8 +66,8 @@
         box-shadow: inset 0 0 0 1px #{utils.color(gray, 300)};
     }
 
-    igc-switch[checked][disabled]::part(control),
-    igc-switch[checked][disabled][invalid]::part(control) {
+    igc-switch[disabled]::part(control checked),
+    igc-switch[disabled][invalid]::part(control checked) {
         background: #{utils.color(primary, 200)};
         box-shadow: inset 0 0 0 1px #{utils.color(primary, 200)};
     }
@@ -91,7 +91,7 @@
         }
     }
 
-    igc-switch[checked]::part(thumb) {
+    igc-switch::part(thumb checked) {
         background: white;
         animation-name: thumb-on;
         margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
@@ -102,7 +102,9 @@
         background: #{utils.color(gray, 300)};
     }
 
-    igc-switch[checked][disabled]::part(thumb) {
+    igc-switch[disabled]::part(thumb checked),
+    igc-switch[invalid]::part(thumb checked),
+    igc-switch[disabled][invalid]::part(thumb checked) {
         background: white;
     }
 }

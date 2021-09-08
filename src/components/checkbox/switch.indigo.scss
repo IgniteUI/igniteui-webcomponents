@@ -109,7 +109,8 @@
         }
     }
 
-    igc-switch::part(thumb checked) {
+    igc-switch::part(thumb checked),
+    igc-switch[invalid]::part(thumb checked) {
         background: white;
         animation-name: thumb-on;
         margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
