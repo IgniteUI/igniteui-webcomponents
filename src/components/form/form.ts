@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
@@ -13,6 +13,12 @@ export class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  static styles = css`
+    :host {
+      display: block;
+    }
+  `;
+
   private _controlsWithChecked = [
     'input',
     'radio',
@@ -20,7 +26,7 @@ export class IgcFormComponent extends EventEmitterMixin<
     'igc-switch',
     'igc-checkbox',
   ];
-  private _controlsWithValue = ['input', 'select', 'textarea'];
+  private _controlsWithValue = ['input', 'textarea'];
   private _controlsThatSubmit = ['input', 'button', 'igc-button'];
 
   @property({ type: Boolean, reflect: true }) novalidate = false;
@@ -29,13 +35,6 @@ export class IgcFormComponent extends EventEmitterMixin<
     super();
 
     this.addEventListener('click', this.handleClick);
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-
-    this.setAttribute('role', 'form');
-    this.setAttribute('aria-label', 'form');
   }
 
   submit(): boolean {
@@ -53,17 +52,19 @@ export class IgcFormComponent extends EventEmitterMixin<
   reset() {
     const formElements = this.getFormElements();
     formElements.forEach((element) => {
-      element.value = element.defaultValue;
-      element.checked = element.defaultChecked;
-
-      if (
-        (element.tagName.toLowerCase() === 'input' &&
+      const tagName = element.tagName.toLowerCase();
+      if (tagName === 'select') {
+        for (let i = 0; i < element.options.length; i++) {
+          const option = element.options[i];
+          option.selected = option.defaultSelected;
+        }
+      } else if (
+        (tagName === 'input' &&
           (element.type === 'checkbox' || element.type == 'radio')) ||
-        (element.tagName.toLowerCase() !== 'input' &&
-          this._controlsWithChecked.includes(element.tagName.toLowerCase()))
+        (tagName !== 'input' && this._controlsWithChecked.includes(tagName))
       ) {
         element.checked = element.defaultChecked;
-      } else {
+      } else if (this._controlsWithValue.includes(tagName)) {
         element.value = element.defaultValue;
       }
     });
@@ -74,9 +75,14 @@ export class IgcFormComponent extends EventEmitterMixin<
   private getFormElements(): any[] {
     const slot = this.shadowRoot?.querySelector('slot');
     const assignedElements = slot?.assignedElements({ flatten: true });
-    const formElements = assignedElements || [];
-    assignedElements?.forEach((element) => {
-      const children = Array.from(element.getElementsByTagName('*'));
+    const formElements: any[] = [];
+    assignedElements?.forEach((element: any) => {
+      if (!element.disabled) {
+        formElements.push(element);
+      }
+      const children = Array.from(element.getElementsByTagName('*')).filter(
+        (element: any) => !element.disabled
+      );
       formElements.push(...children);
     });
 
@@ -88,10 +94,17 @@ export class IgcFormComponent extends EventEmitterMixin<
 
     const formElements = this.getFormElements();
     formElements.forEach((element) => {
-      if (
-        (this._controlsWithChecked.includes(element.tagName.toLowerCase()) &&
-          element.checked) ||
-        (this._controlsWithValue.includes(element.tagName.toLowerCase()) &&
+      const tagName = element.tagName.toLowerCase();
+      if (tagName === 'select') {
+        for (let i = 0; i < element.options.length; i++) {
+          const option = element.options[i];
+          if (option.selected) {
+            formData.append(element.name, option.text);
+          }
+        }
+      } else if (
+        (this._controlsWithChecked.includes(tagName) && element.checked) ||
+        (this._controlsWithValue.includes(tagName) &&
           element.type !== 'checkbox' &&
           element.type !== 'radio' &&
           element.type !== 'submit')
@@ -118,18 +131,8 @@ export class IgcFormComponent extends EventEmitterMixin<
       this._controlsThatSubmit.includes(targetElement.tagName.toLowerCase()) &&
       targetElement.type.toLowerCase() === 'submit'
     ) {
-      const formData = this.getFormData();
-
-      const isValid = this.reportValidity();
-      if (!this.novalidate && !isValid) {
-        return false;
-      }
-
-      this.emitEvent('igcSubmit', { detail: formData });
-    }
-
-    // TODO: is this needed?
-    else if (targetElement.type?.toLowerCase() === 'reset') {
+      this.submit();
+    } else if (targetElement.type?.toLowerCase() === 'reset') {
       this.reset();
     }
 
