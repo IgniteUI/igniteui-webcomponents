@@ -17,6 +17,7 @@
             z-index: 1;
             border: 1px solid utils.color(gray, 400);
             transition: box-shadow .15s ease-out, border .15s ease-out;
+            grid-area: 1 / 2;
         }
 
         &::part(input prefixed) {
@@ -42,11 +43,17 @@
             line-height: utils.rem(24px);
             margin-bottom: utils.rem(4px);
             color: utils.color(gray, 700);
+            font-size: initial;
+
+            &:empty {
+                display: none;
+            }
         }
 
         &::part(container) {
             pointer-events: auto;
             border: none;
+            grid-template-columns: auto 1fr auto;
 
             &::after {
                 display: none;
@@ -69,6 +76,7 @@
         }
 
         &::part(prefix) {
+            grid-area: 1 / 1;
             border: {
                 style: solid;
                 color: utils.color(gray, 400);
@@ -90,6 +98,8 @@
         }
 
         &::part(suffix) {
+            grid-area: 1 / 3;
+
             border: {
                 style: solid;
                 color: utils.color(gray, 400);
