@@ -253,7 +253,6 @@ export class IgcInputComponent extends SizableMixin(
       id="${this.labelId}"
       part="label"
       for="${this.inputId}"
-      style="transform-origin: ${this.dir === 'ltr' ? 'left' : 'right'}"
       ${this._label.observe()}
     >
       ${this.label}
@@ -284,22 +283,21 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   renderMaterial() {
-    const gap = 4;
-    const scale = 0.75;
+    // const gap = 4;
+    // const scale = 0.75;
     const padding = 12;
-    const labelWidth = this._label.width;
-    const startWidth = this._start.width;
-    const endWidth = this._end.width;
-    const width = `${labelWidth * scale + gap * 2}px`;
+    // const labelWidth = this._label.width;
+    // const startWidth = this._start.width;
+    // const endWidth = this._end.width;
+    // const width = `${labelWidth * scale + gap * 2}px`;
 
     return html`
-      ${this.renderInput(startWidth, endWidth, padding)}
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         <div part="start">${this.renderPrefix()}</div>
-        <div part="notch" style="width: ${labelWidth > 0 ? width : 'auto'}">
-          ${this.renderLabel()}
-        </div>
-        <div part="end">${this.renderSuffix()}</div>
+        <div part="notch">${this.renderLabel()}</div>
+        ${this.renderInput(0, 0, padding)}
+        <div part="end"></div>
+        <div style="grid-area: 1 / 4">${this.renderSuffix()}</div>
       </div>
       <div part="helper-text">
         <slot name="helper-text"></slot>
