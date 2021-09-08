@@ -1,0 +1,28 @@
+@use '../../../styles/utilities' as *;
+
+
+$selected-background: color(primary, 500);
+$selected-color: contrast-color(primary, 600);
+$current-background: color(gray, 200);
+$current-color: color(gray, 800);
+$range-preview-background: color(primary, 200);
+$range-preview-color: contrast-color(primary, 600);
+$header-background: color(secondary, 50, .2);
+$header-color: contrast-color(secondary, 50);
+$border-color: color(gray, 300);
+$date-color: color(gray, 700);
+
+
+@mixin theme() {
+    igc-years-view::part(year-inner current) {
+        box-shadow: none;
+        background: $current-background;
+        color: $current-color;
+
+        &:hover,
+        &:focus {
+            background: $current-background;
+            color: $current-color;
+        }
+    }
+}

@@ -13,45 +13,45 @@
 }
 
 [part~='month'],
-[part~='month'] span {
+[part~='month-inner'] {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-[part~='month'] {
+[part~='month-inner'] {
     user-select: none;
     cursor: pointer;
 
-    span {
-        padding: 0 rem(12px);
-    }
+    padding: 0 rem(12px);
 
     &:hover,
     &:focus {
-        span {
-            background: color(gray, 200);
-        }
+        background: color(gray, 200);
     }
 
     &:hover {
-        span {
-            background: color(gray, 200);
-        }
+        background: color(gray, 200);
     }
 }
 
-[part~='selected'] {
-    span {
-        background: color(secondary, 500);
-        color: contrast-color(secondary, 600);
-    }
+[part~='month-inner'][part~='selected'] {
+    background: color(secondary, 500);
+    color: contrast-color(secondary, 600);
 
     &:hover,
     &:focus {
-        span {
-            background: color(secondary, 500);
-            color: contrast-color(secondary, 600);
-        }
+        background: color(secondary, 500);
+        color: contrast-color(secondary, 600);
     }
 }
+
+[part~='month-inner'][part~='current'] {
+    box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
+}
+
+[part~='month-inner'][part~='selected'][part~='current'] {
+    box-shadow: inset 0 0 0 rem(1px) color(surface),
+        0 0 0 rem(1px) color(secondary, 500);
+}
+

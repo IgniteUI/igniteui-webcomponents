@@ -6,6 +6,7 @@
 @use '../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../components/list/list.bootstrap' as list;
 @use '../../components/calendar/calendar.bootstrap' as calendar;
+@use '../../components/calendar/years-view/years-view-bootstrap' as years-view;
 
 $palette: utils.palette(
     $primary: #007bff,
@@ -189,3 +190,5 @@ $type-scale: utils.extend($_base-scale, (
 @include navbar.theme();
 @include list.theme();
 @include calendar.theme();
+@include years-view.theme();
+

@@ -23,13 +23,58 @@ $days-view-gap: rem(4px);
     }
 
     igc-calendar::part(navigation-button) {
-        color: $selected-background
+        color: color(primary, 500);
+
+        &:hover,
+        &:focus {
+            color: color(primary, 600);
+        }
     }
 
+    igc-calendar::part(month-inner selected),
+    igc-calendar::part(year-inner selected) {
+        background: $selected-background;
+    }
+
+    igc-months-view::part(month-inner current),
+    igc-years-view::part(year-inner current) {
+        box-shadow: none;
+        background: $current-background;
+        color: $current-color;
+
+        &:hover,
+        &:focus {
+            background: $current-background;
+            color: $current-color;
+        }
+    }
+
+    igc-calendar::part(month-inner selected current),
+    igc-calendar::part(year-inner selected current) {
+        background: $selected-background;
+        color: $current-color;
+
+        &:hover,
+        &:focus {
+            color: $current-color;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            width: calc(100% - 4px);
+            height: calc(100% - 4px);
+            border-radius: $border-radius;
+            background: $current-background;
+            z-index: -1;
+        }
+    }
+
+    igc-calendar::part(months-navigation),
     igc-calendar::part(years-navigation) {
         &:focus,
         &:hover {
-            color: $selected-background
+            color: color(primary, 500);
         }
     }
 
