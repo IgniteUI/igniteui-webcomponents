@@ -3,7 +3,6 @@ import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
-import { ResizeController } from '../common/controllers';
 import { Constructor } from '../common/mixins/constructor.js';
 import { watch } from '../common/decorators';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -29,11 +28,14 @@ export class IgcInputComponent extends SizableMixin(
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
-  private _start = new ResizeController(this);
-  private _label = new ResizeController(this);
-  private _end = new ResizeController(this);
   private inputId = `input-${nextId++}`;
   private labelId = `input-label-${this.inputId}`;
+
+  @state()
+  private _prefixLength!: number;
+
+  @state()
+  private _suffixLength!: number;
 
   @state()
   theme!: string | undefined;
@@ -124,13 +126,18 @@ export class IgcInputComponent extends SizableMixin(
       .trim();
 
     this.theme = theme;
+
+    this.shadowRoot?.addEventListener('slotchange', (_) => {
+      this._prefixLength = this._prefix.length;
+      this._suffixLength = this._suffix.length;
+    });
   }
 
   resolvePartNames(base: string) {
     return {
       [base]: true,
-      prefixed: this._prefix?.length > 0,
-      suffixed: this._suffix?.length > 0,
+      prefixed: this._prefixLength > 0,
+      suffixed: this._suffixLength > 0,
     };
   }
 
@@ -211,12 +218,7 @@ export class IgcInputComponent extends SizableMixin(
     this.invalid = !this.input.checkValidity();
   }
 
-  renderInput(startWidth: number, endWidth: number, padding: number) {
-    const inputStyle = `
-      padding-inline-start: calc(${startWidth}px + ${padding}px);
-      padding-inline-end: calc(${endWidth}px + ${padding}px);
-    `;
-
+  renderInput() {
     return html`
       <input
         id="${this.inputId}"
@@ -224,7 +226,6 @@ export class IgcInputComponent extends SizableMixin(
         name="${ifDefined(this.name)}"
         type="${ifDefined(this.type)}"
         pattern="${ifDefined(this.pattern)}"
-        style="${inputStyle}"
         placeholder="${this.placeholder ?? ' '}"
         .value="${live(this.value)}"
         ?readonly="${this.readonly}"
@@ -249,25 +250,19 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   renderLabel() {
-    return html`<label
-      id="${this.labelId}"
-      part="label"
-      for="${this.inputId}"
-      style="transform-origin: ${this.dir === 'ltr' ? 'left' : 'right'}"
-      ${this._label.observe()}
-    >
+    return html`<label id="${this.labelId}" part="label" for="${this.inputId}">
       ${this.label}
     </label>`;
   }
 
   renderPrefix() {
-    return html`<div part="prefix" ${this._start.observe()}>
+    return html`<div part="prefix">
       <slot name="prefix"></slot>
     </div>`;
   }
 
   renderSuffix() {
-    return html`<div part="suffix" ${this._end.observe()}>
+    return html`<div part="suffix">
       <slot name="suffix"></slot>
     </div>`;
   }
@@ -275,8 +270,7 @@ export class IgcInputComponent extends SizableMixin(
   renderStandard() {
     return html`${this.renderLabel()}
       <div part="${partNameMap(this.resolvePartNames('container'))}">
-        ${this.renderPrefix()} ${this.renderInput(0, 0, 16)}
-        ${this.renderSuffix()}
+        ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
       <div part="helper-text">
         <slot name="helper-text"></slot>
@@ -284,21 +278,12 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   renderMaterial() {
-    const gap = 4;
-    const scale = 0.75;
-    const padding = 12;
-    const labelWidth = this._label.width;
-    const startWidth = this._start.width;
-    const endWidth = this._end.width;
-    const width = `${labelWidth * scale + gap * 2}px`;
-
     return html`
-      ${this.renderInput(startWidth, endWidth, padding)}
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         <div part="start">${this.renderPrefix()}</div>
-        <div part="notch" style="width: ${labelWidth > 0 ? width : 'auto'}">
-          ${this.renderLabel()}
-        </div>
+        ${this.renderInput()}
+        <div part="notch">${this.renderLabel()}</div>
+        <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
       <div part="helper-text">
