@@ -24,12 +24,6 @@
             grid-area: 1 / 3;
         }
 
-        &::part(label),
-        &::part(container) {
-            position: relative;
-            left: 0;
-        }
-
         &::part(label) {
             transform: none;
             transition: none;
