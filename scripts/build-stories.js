@@ -88,7 +88,13 @@ function extractTags(meta) {
   };
 }
 
-const buildArgTypes = (meta, indent="  ") => ['interface ArgTypes {', ...meta.args.map(arg => `${indent}${arg[0]}: ${arg[1].type};`), '}'].join('\n');
+const buildArgTypes = (meta, indent="  ") => {
+  // Skip interface generation for "dumb" components
+  if (!meta.args.length) {
+    return '';
+  }
+  return ['interface ArgTypes {', ...meta.args.map(arg => `${indent}${arg[0]}: ${arg[1].type};`), '}'].join('\n');
+};
 
 /**
  *

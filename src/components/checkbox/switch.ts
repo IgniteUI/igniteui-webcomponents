@@ -7,19 +7,34 @@ import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 
 let nextId = 0;
 
-// @customElement('igc-switch')
+/**
+ * Similar to a checkbox, a switch controls the state of a single setting on or off.
+ *
+ * @element igc-switch
+ *
+ * @slot - The switch label.
+ *
+ * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcFocus - Emitted when the control gains focus.
+ * @fires igcBlur - Emitted when the control loses focus.
+ *
+ * @csspart base - The base wrapper of the switch.
+ * @csspart control - The switch control.
+ * @csspart thumb - The position indicator of the switch.
+ * @csspart label - The switch label.
+ */
 export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   static styles = styles;
 
   private inputId = `switch-${nextId++}`;
   private labelId = `switch-label-${this.inputId}`;
 
-  handleClick() {
+  protected handleClick() {
     this.checked = !this.checked;
   }
 
   @watch('checked', { waitUntilFirstUpdate: true })
-  handleChange() {
+  protected handleChange() {
     if (this.checked) {
       this.input.focus();
       this.emitEvent('igcChange');

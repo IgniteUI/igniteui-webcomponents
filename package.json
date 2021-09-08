@@ -22,6 +22,8 @@
     "build:watch": "npm run build:styles && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\"",
     "build:docs:md": "web-component-analyzer \"src/**/*.ts\" --outDir docs/md",
     "build:docs:json": "web-component-analyzer \"src/**/*.ts\" --format json --outDir docs/json",
+    "build:docs:schema": "web-component-analyzer src --format json --outFile custom-elements.json",
+    "build:docs:vscode-schema": "web-component-analyzer src --format vscode --outFile vscode-html-custom-data.json",
     "build:meta": "node scripts/build-stories.js && npm run format:stories",
     "watch-meta": "node scripts/stories-watcher.js ",
     "watch-scss": "node scripts/styles-watcher.js",
