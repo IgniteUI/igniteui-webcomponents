@@ -24,15 +24,6 @@ $date-size-small: map.get($date-sizes, 'small');
 }
 
 :host([size='large']) {
-    igc-days-view {
-        grid-template-columns: repeat(7, minmax($date-size-large, 1fr));
-        grid-template-rows: repeat(7, minmax($date-size-large, 1fr));
-    }
-
-    igc-days-view[show-week-numbers] {
-        grid-template-columns: repeat(8, minmax($date-size-large, 1fr));
-    }
-
     igc-days-view::part(days-row) {
         min-height: $date-size-large;
     }
@@ -40,6 +31,12 @@ $date-size-small: map.get($date-sizes, 'small');
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
         width: $date-size-large;
+        min-width: $date-size-large;
+        height: $date-size-large;
+    }
+
+    igc-days-view::part(label) {
+        min-width: $date-size-large;
         height: $date-size-large;
     }
 
@@ -67,15 +64,6 @@ $date-size-small: map.get($date-sizes, 'small');
 }
 
 :host([size='medium']) {
-    igc-days-view {
-        grid-template-columns: repeat(7, minmax($date-size-medium, 1fr));
-        grid-template-rows: repeat(7, minmax($date-size-medium, 1fr));
-    }
-
-    igc-days-view[show-week-numbers] {
-        grid-template-columns: repeat(8, minmax($date-size-medium, 1fr));
-    }
-
     igc-days-view::part(days-row) {
         min-height: $date-size-medium;
     }
@@ -83,6 +71,12 @@ $date-size-small: map.get($date-sizes, 'small');
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
         width: $date-size-medium;
+        min-width: $date-size-medium;
+        height: $date-size-medium;
+    }
+
+    igc-days-view::part(label) {
+        min-width: $date-size-medium;
         height: $date-size-medium;
     }
 
@@ -110,15 +104,6 @@ $date-size-small: map.get($date-sizes, 'small');
 }
 
 :host([size='small']) {
-    igc-days-view {
-        grid-template-columns: repeat(7, minmax($date-size-small, 1fr));
-        grid-template-rows: repeat(7, minmax($date-size-small, 1fr));
-    }
-
-    igc-days-view[show-week-numbers] {
-        grid-template-columns: repeat(8, minmax($date-size-small, 1fr));
-    }
-
     igc-days-view::part(days-row) {
         min-height: $date-size-small;
     }
@@ -126,6 +111,12 @@ $date-size-small: map.get($date-sizes, 'small');
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
         width: $date-size-small;
+        min-width: $date-size-small;
+        height: $date-size-small;
+    }
+
+    igc-days-view::part(label) {
+        min-width: $date-size-small;
         height: $date-size-small;
     }
 

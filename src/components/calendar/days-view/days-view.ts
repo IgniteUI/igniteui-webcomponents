@@ -10,7 +10,7 @@ import {
   IgcCalendarBaseEventMap,
 } from '../common/calendar-base';
 import { getDateOnly, isEqual } from '../common/utils';
-import { styles } from './days-view.css';
+import { styles } from './days-view-material.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
 import { property } from 'lit/decorators.js';

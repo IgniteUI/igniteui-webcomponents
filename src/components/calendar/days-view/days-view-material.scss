@@ -30,17 +30,19 @@ $date-size: map.get($date-sizes, 'large');
     align-items: center;
     justify-content: center;
 
+    // TODO Find a way to make that roundness to a specific theme
+    //&:first-of-type {
+    //    [part='week-number-inner'] {
+    //        border-top-left-radius: $week-number-radius;
+    //        border-top-right-radius: $week-number-radius;
+    //    }
+    //}
+
     &:first-of-type {
         [part='week-number-inner'] {
-            border-top-left-radius: $week-number-radius;
-            border-top-right-radius: $week-number-radius;
-        }
-    }
-
-    &:last-of-type {
-        [part='week-number-inner'] {
-            border-bottom-left-radius: $week-number-radius;
-            border-bottom-right-radius: $week-number-radius;
+            // TODO Find a way to make that roundness to a specific theme
+            //border-bottom-left-radius: $week-number-radius;
+            //border-bottom-right-radius: $week-number-radius;
 
             &::after {
                 display: none;
@@ -66,15 +68,14 @@ $date-size: map.get($date-sizes, 'large');
 }
 
 [part~='date'] {
-    cursor: pointer;
-    user-select: none;
     position: relative;
     font-size: var(--igc-subtitle-1-font-size);
     border: $border-width dashed transparent;
 }
 
 [part~='date-inner'] {
-    //position: absolute;
+    cursor: pointer;
+    user-select: none;
     z-index: 2;
 
     &:hover,
@@ -244,7 +245,7 @@ $date-size: map.get($date-sizes, 'large');
     &::after {
         content: '';
         position: absolute;
-        top: 100%;
+        bottom: 100%;
         height: calc(#{$row-gap} + (#{$border-width} * 2 + 2px));
         width: 100%;
         background: $week-number-bg;
@@ -256,4 +257,5 @@ $date-size: map.get($date-sizes, 'large');
 [part~='hidden'] {
     visibility: hidden;
 }
+
 
