@@ -1,12 +1,15 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-
-:host(:not([mini])) {
+:host {
     [part='main'] {
         width: 250px;
         margin: 10px 0px 0px 10px;
     }
+    ::slotted([slot='mini']) {
+        margin: 10px
+    }
+    background-color: #2c2c2c;
 }
 
 .end {
@@ -21,19 +24,12 @@
     color: #9FDBAD;
 }
 
-:host(:not([pinned]):not([mini])) {
+:host(:not([pinned])) {
     position: absolute;
     z-index: 999;
 }
 
-:host(:not([open])[mini]) {
-    [part='mini'] {
-        position: absolute;
-        margin-top: 50px;
-    }
-}
-
-:host(:not([open]):not([mini])) {
+:host(:not([open])) {
     [part='main'] {
         display: none;
     }
@@ -44,8 +40,4 @@
     [part='mini'] {
         display: none;
     }
-}
-
-:host {
-    background-color: #2c2c2c;
 }

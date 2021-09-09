@@ -28,7 +28,7 @@ const metadata = {
     collection: {
       type: 'string',
       description:
-        'The name of the registered collection for look up of icons.\nDefaults to `default`.',
+        'The name of the registered collection for look up of icons.\r\nDefaults to `default`.',
       control: 'text',
       table: {
         defaultValue: {
