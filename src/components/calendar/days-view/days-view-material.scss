@@ -11,6 +11,7 @@ $week-number-bg: color(gray, 200);
 $week-number-color: color(gray, 500);
 $week-number-radius: rem(4px);
 $row-gap: rem(4px);
+$border-radius: rem(4px);
 
 $date-size: map.get($date-sizes, 'large');
 
@@ -31,6 +32,8 @@ $date-size: map.get($date-sizes, 'large');
     justify-content: center;
 }
 
+[part~='label'],
+[part~='week-number'],
 [part~='date'] {
     position: relative;
     font-size: var(--igc-subtitle-1-font-size);
@@ -59,9 +62,9 @@ $date-size: map.get($date-sizes, 'large');
 }
 
 [part~='date'],
+[part~='week-number'],
 [part~='label'] {
     width: 100%;
-    height: 100%;
     color: color(gray, 800);
     position: relative;
     display: flex;
@@ -75,12 +78,12 @@ $date-size: map.get($date-sizes, 'large');
 [part='label-inner'] {
     text-overflow: ellipsis;
     overflow: hidden;
-    min-width: 3ch;
+    min-width: 4ch;
     text-align: center;
 }
 
 [part~='date-inner'],
-[part='week-number-inner'] {
+[part~='week-number-inner'] {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -212,7 +215,17 @@ $date-size: map.get($date-sizes, 'large');
     cursor: default;
 }
 
-[part='week-number-inner'] {
+[part='week-number-inner first'] {
+    border-top-left-radius: $border-radius;
+    border-top-right-radius: $border-radius;
+}
+
+[part='week-number-inner last'] {
+    border-bottom-left-radius: $border-radius;
+    border-bottom-right-radius: $border-radius;
+}
+
+[part~='week-number-inner'] {
     position: relative;
     background: $week-number-bg;
     border-inline-end-color: $week-number-bg;

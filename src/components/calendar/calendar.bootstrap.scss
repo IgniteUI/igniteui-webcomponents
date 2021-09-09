@@ -25,6 +25,13 @@ $days-view-gap: rem(4px);
     igc-calendar::part(days-row) {
         overflow: hidden;
         position: relative;
+
+        padding: 0 $row-gap;
+    }
+
+    igc-calendar::part(days-row first) {
+        background: $header-background;
+        border-bottom: $header-border-width solid $border-color;
     }
 
     igc-calendar::part(navigation-button) {
@@ -105,8 +112,6 @@ $days-view-gap: rem(4px);
     igc-calendar::part(label) {
         font-style: italic;
         color: color(info, 300);
-        background: $header-background;
-        border-bottom: $header-border-width solid $border-color;
     }
 
     igc-calendar::part(date-inner),
