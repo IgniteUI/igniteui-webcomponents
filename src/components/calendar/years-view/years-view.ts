@@ -69,9 +69,11 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   }
 
   private resolveYearPartName(date: Date) {
+    const today = new Date();
     return {
       year: true,
       selected: date.getFullYear() === this.value.getFullYear(),
+      current: date.getFullYear() === today.getFullYear(),
     };
   }
 
@@ -83,15 +85,18 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   }
 
   render() {
-    return html`${this.years.map(
-      (year) =>
-        html`<span
-          part=${partNameMap(this.resolveYearPartName(year))}
-          tabindex=${year.getFullYear() === this.value.getFullYear() ? 0 : -1}
-          @click=${() => this.yearClick(year)}
-          >${this.formattedYear(year)}</span
-        >`
-    )}`;
+    return html`${this.years.map((year) => {
+      const yearPartName = partNameMap(this.resolveYearPartName(year));
+      const yearInnerPartName = yearPartName.replace('year', 'year-inner');
+
+      return html`<span
+        part=${yearPartName}
+        tabindex="${year.getFullYear() === this.value.getFullYear() ? 0 : -1}"
+        @click=${() => this.yearClick(year)}
+      >
+        <span part=${yearInnerPartName}> ${this.formattedYear(year)} </span>
+      </span>`;
+    })}`;
   }
 }
 

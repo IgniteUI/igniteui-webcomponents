@@ -1,21 +1,57 @@
+@use '../../../styles/utilities' as *;
+@use 'sass:math';
+
 :host {
-    display: flex;
-    flex-flow: row wrap;
-    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     min-width: 290px;
     outline: none;
+    padding: 0 rem(12px) rem(16px) rem(12px);
     overflow: hidden;
+    box-sizing: border-box;
+    row-gap: rem(4px);
 }
 
-[part~='month'] {
+[part~='month'],
+[part~='month-inner'] {
     display: flex;
-    position: relative;
-    flex: 1 0 33%;
-    justify-content: center;
     align-items: center;
-    user-select: none;
+    justify-content: center;
 }
 
-[part~='selected'] {
-    color: hotpink;
+[part~='month-inner'] {
+    user-select: none;
+    cursor: pointer;
+
+    padding: 0 rem(12px);
+
+    &:hover,
+    &:focus {
+        background: color(gray, 200);
+    }
+
+    &:hover {
+        background: color(gray, 200);
+    }
 }
+
+[part~='month-inner'][part~='selected'] {
+    background: color(secondary, 500);
+    color: contrast-color(secondary, 600);
+
+    &:hover,
+    &:focus {
+        background: color(secondary, 500);
+        color: contrast-color(secondary, 600);
+    }
+}
+
+[part~='month-inner'][part~='current'] {
+    box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
+}
+
+[part~='month-inner'][part~='selected'][part~='current'] {
+    box-shadow: inset 0 0 0 rem(1px) color(surface),
+        0 0 0 rem(1px) color(secondary, 500);
+}
+

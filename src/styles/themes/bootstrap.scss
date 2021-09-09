@@ -5,6 +5,7 @@
 @use '../../components/checkbox/switch.bootstrap' as switch;
 @use '../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../components/list/list.bootstrap' as list;
+@use '../../components/calendar/calendar.bootstrap' as calendar;
 
 $palette: utils.palette(
     $primary: #007bff,
@@ -187,3 +188,5 @@ $type-scale: utils.extend($_base-scale, (
 @include switch.theme();
 @include navbar.theme();
 @include list.theme();
+@include calendar.theme();
+
