@@ -38,7 +38,14 @@ $days-view-gap: rem(4px);
 
     igc-calendar::part(month-inner selected),
     igc-calendar::part(year-inner selected) {
+        color: $selected-color;
         background: $selected-background;
+
+        &:focus,
+        &:hover {
+            color: $selected-color;
+            background: $selected-background;
+        }
     }
 
     igc-calendar::part(month-inner current),
@@ -58,21 +65,12 @@ $days-view-gap: rem(4px);
     igc-calendar::part(year-inner selected current) {
         box-shadow: none;
         background: $selected-background;
-        color: $current-color;
+        color: $selected-color;
 
         &:hover,
         &:focus {
-            color: $current-color;
-        }
-
-        &::after {
-            content: '';
-            position: absolute;
-            width: calc(100% - 4px);
-            height: calc(100% - 4px);
-            border-radius: $border-radius;
-            background: $current-background;
-            z-index: -1;
+            background: $selected-background;
+            color: $selected-color;
         }
     }
 

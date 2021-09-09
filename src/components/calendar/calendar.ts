@@ -350,7 +350,7 @@ export class IgcCalendarComponent extends SizableMixin(
                 .value=${this.viewDate}
                 .locale=${this.locale}
                 .monthFormat=${this.formatOptions.month!}
-                exportparts="month, selected, month-inner"
+                exportparts="month, selected, month-inner, current"
                 @igcChange=${this.changeMonth}
               ></igc-months-view>`
           : ''}
@@ -360,7 +360,7 @@ export class IgcCalendarComponent extends SizableMixin(
                 part="years-view"
                 .value=${this.viewDate}
                 .yearsPerPage=${this.yearPerPage}
-                exportparts="year, selected, year-inner"
+                exportparts="year, selected, year-inner, current"
                 @igcChange=${this.changeYear}
               ></igc-years-view>`
           : ''}

@@ -11,6 +11,44 @@ $current-background: color(secondary, 500);
 $current-color: contrast-color(secondary, 600);
 
 @mixin theme() {
+    igc-calendar::part(month-inner selected),
+    igc-calendar::part(year-inner selected) {
+        color: $selected-color;
+        background: $selected-background;
+
+        &:focus,
+        &:hover {
+            color: $selected-color;
+            background: $selected-background;
+        }
+    }
+
+    igc-calendar::part(month-inner current),
+    igc-calendar::part(year-inner current) {
+        box-shadow: none;
+        background: $current-background;
+        color: $current-color;
+
+        &:hover,
+        &:focus {
+            background: $current-background;
+            color: $current-color;
+        }
+    }
+
+    igc-calendar::part(month-inner selected current),
+    igc-calendar::part(year-inner selected current) {
+        box-shadow: none;
+        background: $selected-background;
+        color: $selected-color;
+
+        &:hover,
+        &:focus {
+            background: $selected-background;
+            color: $selected-color;
+        }
+    }
+
     igc-calendar::part(date range) {
         &::before {
             height: calc(100% - (#{$border-width} * 2));
