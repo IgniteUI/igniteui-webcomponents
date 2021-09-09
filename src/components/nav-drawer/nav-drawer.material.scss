@@ -1,0 +1,51 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+
+:host(:not([mini])) {
+    [part='main'] {
+        width: 250px;
+        margin: 10px 0px 0px 10px;
+    }
+}
+
+.end {
+    color: #EC8B83;
+}
+
+.top {
+    color: #9369A8;
+}
+
+.bottom {
+    color: #9FDBAD;
+}
+
+:host(:not([pinned]):not([mini])) {
+    position: absolute;
+    z-index: 999;
+}
+
+:host(:not([open])[mini]) {
+    [part='mini'] {
+        position: absolute;
+        margin-top: 50px;
+    }
+}
+
+:host(:not([open]):not([mini])) {
+    [part='main'] {
+        display: none;
+    }
+}
+
+:host([open]) {
+    color: #fff;
+    [part='mini'] {
+        display: none;
+    }
+}
+
+:host {
+    background-color: #2c2c2c;
+}

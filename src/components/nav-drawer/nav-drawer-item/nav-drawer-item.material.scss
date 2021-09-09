@@ -1,0 +1,15 @@
+:host {
+    display: flex;
+    width: 100%;
+}
+
+[part='base'] {
+    display: inherit;
+    position: relative;
+    align-items: center;
+}
+
+[part='icon'] {
+    color: white;
+}
+
