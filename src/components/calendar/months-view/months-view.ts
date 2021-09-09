@@ -86,15 +86,17 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
       const monthPartName = partNameMap(this.resolveMonthPartName(month));
       const monthInnerPartName = monthPartName.replace('month', 'month-inner');
 
-      return html`<span
-        part=${monthPartName}
-        tabindex="${month.getFullYear() === this.value.getFullYear() &&
-        month.getMonth() === this.value.getMonth()
-          ? 0
-          : -1}"
-        @click=${() => this.monthClick(month)}
-      >
-        <span part=${monthInnerPartName}> ${this.formattedMonth(month)} </span>
+      return html`<span part=${monthPartName}>
+        <span
+          part=${monthInnerPartName}
+          tabindex="${month.getFullYear() === this.value.getFullYear() &&
+          month.getMonth() === this.value.getMonth()
+            ? 0
+            : -1}"
+          @click=${() => this.monthClick(month)}
+        >
+          ${this.formattedMonth(month)}
+        </span>
       </span>`;
     })}`;
   }
