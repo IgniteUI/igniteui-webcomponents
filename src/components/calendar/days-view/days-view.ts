@@ -45,9 +45,6 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   dateElements!: NodeList;
 
   @property({ attribute: false })
-  activeDate = new Date();
-
-  @property({ attribute: false })
   rangePreviewDate?: Date;
 
   @property({ attribute: 'week-day-format' })
