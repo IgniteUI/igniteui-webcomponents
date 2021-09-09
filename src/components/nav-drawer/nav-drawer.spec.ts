@@ -117,13 +117,13 @@ describe('Navigation Drawer', () => {
 
         </igc-nav-drawer>`);
 
-      expect(el).shadowDom.to.equal('da');
-
       el.open = true;
 
       await elementUpdated(el);
 
-      expect(el.children.length).to.equals(3);
+      // TODO finish this test
+
+      //expect(el.children.length).to.equals(3);
       // expect(el.shadowRoot?.querySelector('div[part=mini]')).to.not.be.displayed
 
       //  const asd = el.shadowRoot?.querySelector('slot[name=mini]');

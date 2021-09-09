@@ -35,16 +35,6 @@ export default {
         },
       },
     },
-    // mini: {
-    //   type: 'boolean',
-    //   description: 'Determines whether the mini is displayed.',
-    //   control: 'boolean',
-    //   table: {
-    //     defaultValue: {
-    //       summary: true,
-    //     },
-    //   },
-    // },
     position: {
       type: '"start" | "end" | "top" | "bottom"',
       options: ['start', 'end', 'top', 'bottom'],
@@ -65,7 +55,6 @@ interface ArgTypes {
   content2: string;
   open: boolean;
   pinned: boolean;
-  //mini: boolean;
   position: 'start' | 'end' | 'top' | 'bottom';
 }
 
@@ -102,18 +91,12 @@ const handleToggle = () => {
   drawer?.toggle();
 };
 
-const opening = (event: any) => {
-  //alert('opening');
-  console.log(event);
-};
-
 const Template: Story<ArgTypes, Context> = (
   {
     content1 = 'Home',
     content2 = 'Search',
     open = false,
     pinned = false,
-    //mini = false,
     position,
   }: ArgTypes,
   { globals: { direction } }: Context
@@ -125,7 +108,6 @@ const Template: Story<ArgTypes, Context> = (
         .open=${open}
         .pinned=${pinned}
         .position=${position}
-        @igcOpening=${opening}
       >
         <igc-nav-drawer-header>Sample Drawer</igc-nav-drawer-header>
 
@@ -138,6 +120,16 @@ const Template: Story<ArgTypes, Context> = (
           <igc-icon slot="icon" name="search"></igc-icon>
           <h2>${content2}</h2>
         </igc-nav-drawer-item>
+
+        <div slot="mini">
+          <igc-nav-drawer-item>
+            <igc-icon slot="icon" name="home"></igc-icon>
+          </igc-nav-drawer-item>
+
+          <igc-nav-drawer-item>
+            <igc-icon slot="icon" name="search"></igc-icon>
+          </igc-nav-drawer-item>
+        </div>
       </igc-nav-drawer>
 
       <div>
