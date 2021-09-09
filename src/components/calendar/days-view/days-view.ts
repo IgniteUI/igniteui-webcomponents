@@ -461,10 +461,10 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private renderWeekHeaders() {
-    return html`<div role="row" part="days-row">
+    return html`<div role="row" part="days-row first">
       ${this.showWeekNumbers
-        ? html`<span role="columnheader" part="label week-number">
-            <span part="week-number-inner">${WEEK_LABEL}</span>
+        ? html`<span role="columnheader" part="label week-number first">
+            <span part="week-number-inner first">${WEEK_LABEL}</span>
           </span>`
         : ''}
       ${this.generateWeekHeader().map(
@@ -476,18 +476,23 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private renderDates() {
-    return this.dates.map(
-      (week) => html`<div role="row" part="days-row">
+    return this.dates.map((week, i) => {
+      const last = i === this.dates.length - 1;
+
+      return html`<div role="row" part="days-row">
         ${this.showWeekNumbers
-          ? html`<span role="rowheader" part="date week-number">
-              <span part="week-number-inner"
+          ? html`<span
+              role="rowheader"
+              part=${partNameMap({ 'week-number': true, last })}
+            >
+              <span part=${partNameMap({ 'week-number-inner': true, last })}
                 >${this.getWeekNumber(week[0].date)}</span
               >
             </span>`
           : ''}
         ${week.map((day) => this.renderDateItem(day))}
-      </div>`
-    );
+      </div>`;
+    });
   }
 
   private renderDateItem(day: ICalendarDate) {
