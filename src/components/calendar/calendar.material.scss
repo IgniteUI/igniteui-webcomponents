@@ -146,32 +146,42 @@ $date-size-small: map.get($date-sizes, 'small');
 [part='navigation'] {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    height: rem(20px);
     padding: rem(25px) rem(18px);
     user-select: none;
+}
 
-    button {
-        user-select: none;
-        background: transparent;
-        border: none;
-        color: color(gray, 800);
-        font-size: rem(16px);
-        padding: 0;
-        transition: color 150ms ease-in-out;
+[part='months-navigation'],
+[part='years-navigation'],
+[part='navigation-button'] {
+    display: inline-flex;
+    user-select: none;
+    background: transparent;
+    border: none;
+    color: color(gray, 800);
+    font-size: rem(16px);
+    padding: 0;
+    transition: color 150ms ease-in-out;
 
-        &:hover,
-        &:focus {
-            color: color(secondary, 500);
-            cursor: pointer;
-        }
+    &:hover,
+    &:focus {
+        color: color(secondary, 500);
+        cursor: pointer;
+    }
+
+    &:focus {
+        outline: none;
     }
 }
 
-:host([orientation='vertical']) {
-    [part='days-view-container'] + [part='days-view-container']  {
-        [part='navigation'] {
-            padding-top: 0;
-        }
-    }
+[part='navigation-button'] {
+    margin-inline-start: rem(24px);
+}
+
+[part='navigation-buttons'] {
+    display: flex;
+    align-items: center;
 }
 
 :host([header-orientation='vertical']) {

@@ -23,48 +23,20 @@ $date-size: map.get($date-sizes, 'large');
     padding: 0 rem(12px) rem(16px) rem(12px);
     overflow: hidden;
     box-sizing: border-box;
+
+    &:first-child {
+        padding: 0 15px;
+    }
+
+    //&:last-child {
+    //
+    //}
 }
 
 [part~='days-row'] {
     display: flex;
     align-items: center;
     justify-content: center;
-
-    // TODO Find a way to make that roundness to a specific theme
-    //&:first-of-type {
-    //    [part='week-number-inner'] {
-    //        border-top-left-radius: $week-number-radius;
-    //        border-top-right-radius: $week-number-radius;
-    //    }
-    //}
-
-    &:first-of-type {
-        [part='week-number-inner'] {
-            // TODO Find a way to make that roundness to a specific theme
-            //border-bottom-left-radius: $week-number-radius;
-            //border-bottom-right-radius: $week-number-radius;
-
-            &::after {
-                display: none;
-            }
-        }
-    }
-
-    [gridcell] {
-        &:last-of-type {
-            &::before {
-                border-bottom-right-radius: 16px;
-                border-top-right-radius: 16px;
-            }
-        }
-
-        &:first-of-type {
-            &::before {
-                border-bottom-left-radius: 16px;
-                border-top-left-radius: 16px;
-            }
-        }
-    }
 }
 
 [part~='date'] {
@@ -108,12 +80,23 @@ $date-size: map.get($date-sizes, 'large');
     user-select: none;
 }
 
+[part='label-inner'] {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    min-width: 3ch;
+    text-align: center;
+}
+
 [part~='date-inner'],
 [part='week-number-inner'] {
     display: flex;
     align-items: center;
     justify-content: center;
     border: $border-width solid transparent;
+
+    &:focus {
+        outline: none;
+    }
 }
 
 [part~='date'][part~='range'] {

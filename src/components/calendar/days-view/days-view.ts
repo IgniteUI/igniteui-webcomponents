@@ -469,7 +469,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
         : ''}
       ${this.generateWeekHeader().map(
         (dayName) => html`<span role="columnheader" part="label">
-          ${this.titleCase(dayName)}
+          <span part="label-inner">${this.titleCase(dayName)}</span>
         </span> `
       )}
     </div> `;
