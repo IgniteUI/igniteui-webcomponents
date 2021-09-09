@@ -7,6 +7,7 @@ import { Calendar } from '../common/calendar.model';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { styles } from './months-view.css';
 import { partNameMap } from '../../common/util';
+import { setDateSafe } from '../common/utils';
 
 /**
  * Months view component
@@ -79,11 +80,9 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
   }
 
   private monthClick(month: Date) {
-    this.value = new Date(
-      month.getFullYear(),
-      month.getMonth(),
-      this.value.getDate()
-    );
+    const value = new Date(month);
+    setDateSafe(value, this.value.getDate());
+    this.value = value;
     this.emitEvent('igcChange');
   }
 
@@ -94,7 +93,11 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
 
       return html`<span
         part=${monthPartName}
-        @click=${() => this.monthClick(month)}
+        tabindex="${month.getFullYear() === this.value.getFullYear() &&
+        month.getMonth() === this.value.getMonth()
+          ? 0
+          : -1}@click"
+        =${() => this.monthClick(month)}
         ><span part=${monthInnerPartName}>${this.formattedMonth(month)}</span>
       </span>`;
     })}`;

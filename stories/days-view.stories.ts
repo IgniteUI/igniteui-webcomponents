@@ -8,13 +8,6 @@ const metadata = {
   title: 'Days View',
   component: 'igc-days-view',
   argTypes: {
-    activeDate: {
-      type: 'Date',
-      control: 'date',
-      table: {
-        defaultValue: {},
-      },
-    },
     weekDayFormat: {
       type: '"long" | "short" | "narrow"',
       options: ['long', 'short', 'narrow'],
@@ -68,7 +61,7 @@ const metadata = {
         },
       },
     },
-    viewDate: {
+    activeDate: {
       type: 'Date',
       control: 'date',
       table: {
@@ -97,7 +90,6 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  activeDate: Date;
   weekDayFormat: 'long' | 'short' | 'narrow';
   selection: 'single' | 'multi' | 'range';
   showWeekNumbers: boolean;
@@ -109,7 +101,7 @@ interface ArgTypes {
     | 'thursday'
     | 'friday'
     | 'saturday';
-  viewDate: Date;
+  activeDate: Date;
   locale: string;
   hideOutsideDays: boolean;
 }
@@ -121,7 +113,6 @@ const Template: Story<ArgTypes, Context> = (
     hideOutsideDays,
     weekStart,
     locale,
-    viewDate = new Date(),
     weekDayFormat,
     selection,
   }: ArgTypes,
@@ -133,7 +124,6 @@ const Template: Story<ArgTypes, Context> = (
       ?hide-outside-days=${hideOutsideDays}
       week-start=${ifDefined(weekStart)}
       locale=${ifDefined(locale)}
-      .viewDate=${new Date(viewDate)}
       selection=${ifDefined(selection)}
       week-day-format=${ifDefined(weekDayFormat)}
       dir=${ifDefined(direction)}
