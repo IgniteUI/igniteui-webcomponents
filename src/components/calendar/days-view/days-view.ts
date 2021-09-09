@@ -24,11 +24,6 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
 
 const WEEK_LABEL = 'Wk';
 
-/**
- * Days view component
- *
- * @element igc-days-view
- */
 export class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>

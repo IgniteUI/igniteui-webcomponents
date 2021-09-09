@@ -115,8 +115,15 @@ async function buildStories() {
   for (const file of files) {
     const meta = await processFileMeta(path.join(SRC_DIR, file));
     const outFile = path.join(DEST_DIR, `${meta.component.replace(VENDOR_PREFIX, '')}.stories.ts`);
+    let story;
+
     try {
-      const story = await readFile(outFile, 'utf8');
+      story = await readFile(outFile, 'utf8');
+    } catch {
+      continue;
+    }
+
+    try {
       await writeFile(outFile, buildStoryMeta(story, meta), 'utf8');
     } catch (e) {
       console.error(e);

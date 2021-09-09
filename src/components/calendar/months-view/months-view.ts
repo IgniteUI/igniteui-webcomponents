@@ -9,11 +9,6 @@ import { styles } from './months-view.css';
 import { partNameMap } from '../../common/util';
 import { setDateSafe } from '../common/utils';
 
-/**
- * Months view component
- *
- * @element igc-months-view
- */
 export class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
