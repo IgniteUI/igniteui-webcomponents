@@ -34,6 +34,9 @@ export class IgcCalendarComponent extends SizableMixin(
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
 
+  @state()
+  rangePreviewDate?: Date;
+
   @query('igc-days-view')
   daysView!: IgcDaysViewComponent;
 
@@ -335,6 +338,7 @@ export class IgcCalendarComponent extends SizableMixin(
                   @igcChange=${this.changeValue}
                   @igcOutsideDaySelected=${this.outsideDaySelected}
                   @igcActiveDateChange=${this.activeDateChanged}
+                  @igcRangePreviewDateChange=${this.rangePreviewDateChange}
                 ></igc-days-view>
               </div>`
             )
