@@ -27,12 +27,6 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   pinned = false;
 
-  // @property({ type: Boolean, reflect: true })
-  // mini = false;
-
-  @property()
-  pinThreshold!: number;
-
   protected get classes() {
     const { position } = this;
 
