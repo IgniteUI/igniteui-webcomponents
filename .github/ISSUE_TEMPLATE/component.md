@@ -12,4 +12,5 @@ _Estimated Delivery Sprint - Sprint X_
 - [ ] Research
 - [ ] Specification
 - [ ] Component and tests implementation
+- [ ] API Documentation
 - [ ] Design implementation
