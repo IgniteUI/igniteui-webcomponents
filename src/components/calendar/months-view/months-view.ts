@@ -96,9 +96,10 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
         tabindex="${month.getFullYear() === this.value.getFullYear() &&
         month.getMonth() === this.value.getMonth()
           ? 0
-          : -1}@click"
-        =${() => this.monthClick(month)}
-        ><span part=${monthInnerPartName}>${this.formattedMonth(month)}</span>
+          : -1}"
+        @click=${() => this.monthClick(month)}
+      >
+        <span part=${monthInnerPartName}> ${this.formattedMonth(month)} </span>
       </span>`;
     })}`;
   }

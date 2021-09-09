@@ -91,14 +91,11 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
 
       return html`<span
         part=${yearPartName}
-        tabindex="${year.getFullYear() === this.value.getFullYear()
-          ? 0
-          : -1}@click"
-        =${() => this.yearClick(year)}
-        ><span part=${yearInnerPartName}
-          >${this.formattedYear(year)}</span
-        ></span
-      >`;
+        tabindex="${year.getFullYear() === this.value.getFullYear() ? 0 : -1}"
+        @click=${() => this.yearClick(year)}
+      >
+        <span part=${yearInnerPartName}> ${this.formattedYear(year)} </span>
+      </span>`;
     })}`;
   }
 }
