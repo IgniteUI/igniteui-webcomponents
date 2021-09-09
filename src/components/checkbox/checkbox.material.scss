@@ -145,6 +145,16 @@ $mark-length: 24;
             background: color(error, 500);
         }
     }
+
+    [part~='base'] {
+        &:hover [part~='control'] {
+            background: color(error, 50, .54);
+        }
+
+        &:focus-within [part~='control'] {
+            background: color(error, 100, .72);
+        }
+    }
 }
 
 :host(:not([disabled])[invalid][indeterminate]) {

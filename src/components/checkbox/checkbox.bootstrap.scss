@@ -76,7 +76,7 @@
     igc-checkbox[invalid]:focus-within::part(control),
     igc-checkbox[invalid]:focus-within::part(control checked),
     igc-checkbox[invalid][indeterminate]:focus-within::part(control) {
-        box-shadow: inset 0 0 0 1px #{utils.color(error, 500)};
+        box-shadow: 0 0 0 4px #{utils.color(error, 100)};
     }
 
     igc-checkbox[disabled]::part(control),

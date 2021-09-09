@@ -95,7 +95,12 @@
 
     igc-checkbox[invalid]:hover::part(indicator),
     igc-checkbox[invalid]:focus-within::part(indicator) {
-        stroke: #{utils.color(error, 500)};
+        stroke: #{utils.color(error, 500, .54)};
+    }
+
+    igc-checkbox[invalid]:hover::part(indicator checked),
+    igc-checkbox[invalid]:focus-within::part(indicator checked) {
+        stroke: white;
     }
 
     igc-checkbox[invalid]::part(control checked) {
