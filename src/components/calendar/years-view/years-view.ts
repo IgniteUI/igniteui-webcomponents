@@ -4,7 +4,7 @@ import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { partNameMap } from '../../common/util';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
-import { calculateYearsRangeStart } from '../common/utils';
+import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
 import { styles } from './years-view.css';
 
 export class IgcYearsViewComponent extends EventEmitterMixin<
@@ -76,7 +76,9 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   }
 
   private yearClick(year: Date) {
-    this.value = year;
+    const value = new Date(year);
+    setDateSafe(value, this.value.getDate());
+    this.value = value;
     this.emitEvent('igcChange');
   }
 
@@ -85,6 +87,7 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
       (year) =>
         html`<span
           part=${partNameMap(this.resolveYearPartName(year))}
+          tabindex=${year.getFullYear() === this.value.getFullYear() ? 0 : -1}
           @click=${() => this.yearClick(year)}
           >${this.formattedYear(year)}</span
         >`

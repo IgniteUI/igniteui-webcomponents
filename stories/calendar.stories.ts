@@ -8,13 +8,6 @@ const metadata = {
   title: 'Calendar',
   component: 'igc-calendar',
   argTypes: {
-    activeDate: {
-      type: 'Date',
-      control: 'date',
-      table: {
-        defaultValue: {},
-      },
-    },
     hasHeader: {
       type: 'boolean',
       control: 'boolean',
@@ -123,7 +116,7 @@ const metadata = {
         },
       },
     },
-    viewDate: {
+    activeDate: {
       type: 'Date',
       control: 'date',
       table: {
@@ -152,7 +145,6 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  activeDate: Date;
   hasHeader: boolean;
   headerOrientation: 'vertical' | 'horizontal';
   orientation: 'vertical' | 'horizontal';
@@ -169,7 +161,7 @@ interface ArgTypes {
     | 'thursday'
     | 'friday'
     | 'saturday';
-  viewDate: Date;
+  activeDate: Date;
   locale: string;
   hideOutsideDays: boolean;
 }
@@ -224,7 +216,6 @@ const Template: Story<ArgTypes, Context> = (
     hideOutsideDays,
     weekStart,
     locale,
-    // viewDate = new Date(),
     weekDayFormat,
     monthFormat,
     selection,

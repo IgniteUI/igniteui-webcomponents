@@ -9,7 +9,7 @@ import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
 } from '../common/calendar-base';
-import { getDateOnly, isEqual } from '../common/utils';
+import { areEqualDates, getDateOnly, isEqual } from '../common/utils';
 import { styles } from './days-view.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
@@ -43,9 +43,6 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   @queryAll('[part~="date"]')
   dateElements!: NodeList;
 
-  @property({ attribute: false })
-  activeDate = new Date();
-
   @property({ attribute: 'week-day-format' })
   weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
 
@@ -56,7 +53,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   @watch('weekStart')
-  @watch('viewDate')
+  @watch('activeDate')
   datesChange() {
     this.dates = this.getCalendarMonth();
   }
@@ -97,8 +94,8 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   private generateWeekHeader(): string[] {
     const dayNames = [];
     const rv = this.calendarModel.monthdatescalendar(
-      this.viewDate.getFullYear(),
-      this.viewDate.getMonth()
+      this.activeDate.getFullYear(),
+      this.activeDate.getMonth()
     )[0];
     for (const day of rv) {
       dayNames.push(this.formatterWeekday.format(day.date));
@@ -109,8 +106,8 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   private getCalendarMonth(): ICalendarDate[][] {
     return this.calendarModel.monthdatescalendar(
-      this.viewDate.getFullYear(),
-      this.viewDate.getMonth(),
+      this.activeDate.getFullYear(),
+      this.activeDate.getMonth(),
       true
     );
   }
@@ -354,9 +351,11 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     this.value = [...selectedDates];
   }
 
-  private changeActiveDate(date: Date) {
-    this.activeDate = date;
-    this.emitEvent('igcActiveDateChange', { detail: date });
+  private changeActiveDate(day: ICalendarDate) {
+    if (day.isCurrentMonth) {
+      this.activeDate = day.date;
+      this.emitEvent('igcActiveDateChange', { detail: day.date });
+    }
   }
 
   private resolveDayItemPartName(day: ICalendarDate) {
@@ -412,11 +411,9 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     return html`<span
       part=${partNameMap(this.resolveDayItemPartName(day))}
       role="gridcell"
-      tabindex=${getDateOnly(this.activeDate).getTime() === day.date.getTime()
-        ? 0
-        : -1}
+      tabindex=${areEqualDates(this.activeDate, day.date) ? 0 : -1}
       @click=${(event: MouseEvent) => this.selectDay(event, day)}
-      @focus=${() => this.changeActiveDate(day.date)}
+      @focus=${() => this.changeActiveDate(day)}
     >
       ${this.formattedDate(day.date)}
     </span>`;

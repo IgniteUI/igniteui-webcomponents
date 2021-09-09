@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   IgcCalendarBaseComponent,
@@ -34,8 +34,8 @@ export class IgcCalendarComponent extends SizableMixin(
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
 
-  @query('igc-days-view')
-  daysView!: IgcDaysViewComponent;
+  @queryAll('igc-days-view')
+  daysViews!: NodeList;
 
   // @query('igc-months-view')
   // monthsView!: IgcMonthsViewComponent;
@@ -44,7 +44,7 @@ export class IgcCalendarComponent extends SizableMixin(
   // yearsView!: IgcYearsViewComponent;
 
   @state()
-  activeDate = new Date();
+  protected activeDateMonthIndex = 0;
 
   @property({ type: Boolean, attribute: 'has-header' })
   hasHeader = true;
@@ -109,13 +109,13 @@ export class IgcCalendarComponent extends SizableMixin(
 
   private changeMonth(event: CustomEvent<void>) {
     event.stopPropagation();
-    this.viewDate = (event.target as IgcMonthsViewComponent).value;
+    this.activeDate = (event.target as IgcMonthsViewComponent).value;
     this.activeView = 'days';
   }
 
   private changeYear(event: CustomEvent<void>) {
     event.stopPropagation();
-    this.viewDate = (event.target as IgcYearsViewComponent).value;
+    this.activeDate = (event.target as IgcYearsViewComponent).value;
     this.activeView = 'months';
   }
 
@@ -128,49 +128,45 @@ export class IgcCalendarComponent extends SizableMixin(
   }
 
   private activeDateChanged(event: CustomEvent<Date>) {
+    const daysViews = Array.from(this.daysViews);
+    this.activeDateMonthIndex = daysViews.findIndex((d) => d === event.target);
     this.activeDate = event.detail;
   }
 
   private async outsideDaySelected(event: CustomEvent<ICalendarDate>) {
-    const date = event.detail;
-    if (date.isNextMonth) {
-      this.nextMonth();
-      await this.updateComplete;
-      this.daysView.focusDate(date.date);
-    } else if (date.isPrevMonth) {
-      this.previousMonth();
-      await this.updateComplete;
-      this.daysView.focusDate(date.date);
-    }
+    const date = event.detail.date;
+    this.activeDate = date;
+    await this.updateComplete;
+    (this.daysViews[0] as IgcDaysViewComponent).focusDate(date);
   }
 
   private nextMonth() {
-    this.viewDate = this.calendarModel.getNextMonth(this.viewDate);
+    this.activeDate = this.calendarModel.getNextMonth(this.activeDate);
   }
 
   private previousMonth() {
-    this.viewDate = this.calendarModel.getPrevMonth(this.viewDate);
+    this.activeDate = this.calendarModel.getPrevMonth(this.activeDate);
   }
 
   private nextYear() {
-    this.viewDate = this.calendarModel.getNextYear(this.viewDate);
+    this.activeDate = this.calendarModel.getNextYear(this.activeDate);
   }
 
   private previousYear() {
-    this.viewDate = this.calendarModel.getPrevYear(this.viewDate);
+    this.activeDate = this.calendarModel.getPrevYear(this.activeDate);
   }
 
   private nextYearsPage() {
-    this.viewDate = this.calendarModel.timedelta(
-      this.viewDate,
+    this.activeDate = this.calendarModel.timedelta(
+      this.activeDate,
       'year',
       this.yearPerPage
     );
   }
 
   private previousYearsPage() {
-    this.viewDate = this.calendarModel.timedelta(
-      this.viewDate,
+    this.activeDate = this.calendarModel.timedelta(
+      this.activeDate,
       'year',
       -this.yearPerPage
     );
@@ -196,14 +192,14 @@ export class IgcCalendarComponent extends SizableMixin(
     }
   }
 
-  private renderNavigation(viewDate?: Date, renderButtons = true) {
-    viewDate = viewDate ?? this.viewDate;
+  private renderNavigation(activeDate?: Date, renderButtons = true) {
+    activeDate = activeDate ?? this.activeDate;
 
     let startYear = undefined;
     let endYear = undefined;
 
     if (this.activeView === 'years') {
-      startYear = calculateYearsRangeStart(viewDate, this.yearPerPage);
+      startYear = calculateYearsRangeStart(activeDate, this.yearPerPage);
       endYear = startYear + this.yearPerPage - 1;
     }
 
@@ -211,12 +207,12 @@ export class IgcCalendarComponent extends SizableMixin(
       <div>
         ${this.activeView === 'days'
           ? html`<button part="months-navigation" @click=${this.switchToMonths}>
-              ${this.formattedMonth(viewDate)}
+              ${this.formattedMonth(activeDate)}
             </button>`
           : ''}
         ${this.activeView === 'days' || this.activeView === 'months'
           ? html`<button part="years-navigation" @click=${this.switchToYears}>
-              ${viewDate.getFullYear()}
+              ${activeDate.getFullYear()}
             </button>`
           : ''}
         ${this.activeView === 'years'
@@ -280,12 +276,17 @@ export class IgcCalendarComponent extends SizableMixin(
   }
 
   render() {
-    const viewDates = [this.viewDate];
+    const activeDates: Date[] = [];
+    const monthsCount = this.visibleMonths > 1 ? this.visibleMonths : 1;
 
-    if (this.visibleMonths > 1) {
-      for (let i = 1; i < this.visibleMonths; i++) {
-        viewDates.push(this.calendarModel.timedelta(this.viewDate, 'month', i));
-      }
+    for (let i = 0; i < monthsCount; i++) {
+      activeDates.push(
+        this.calendarModel.timedelta(
+          this.activeDate,
+          'month',
+          i - this.activeDateMonthIndex
+        )
+      );
     }
 
     return html`
@@ -304,18 +305,17 @@ export class IgcCalendarComponent extends SizableMixin(
         })}
       >
         ${this.activeView === 'days'
-          ? viewDates.map(
-              (viewDate, i) => html`<div part="days-view-container">
+          ? activeDates.map(
+              (activeDate, i) => html`<div part="days-view-container">
                 ${this.renderNavigation(
-                  viewDate,
+                  activeDate,
                   this.orientation === 'horizontal'
-                    ? i === viewDates.length - 1
+                    ? i === activeDates.length - 1
                     : i === 0
                 )}
                 <igc-days-view
                   part="days-view"
-                  .activeDate=${this.activeDate}
-                  .viewDate=${viewDate}
+                  .activeDate=${activeDate}
                   .weekStart=${this.weekStart}
                   .weekDayFormat=${this.formatOptions.weekday!}
                   .locale=${this.locale}
@@ -338,7 +338,7 @@ export class IgcCalendarComponent extends SizableMixin(
           ? html` ${this.renderNavigation()}
               <igc-months-view
                 part="months-view"
-                .value=${this.viewDate}
+                .value=${this.activeDate}
                 .locale=${this.locale}
                 .monthFormat=${this.formatOptions.month!}
                 exportparts="month, selected"
@@ -349,7 +349,7 @@ export class IgcCalendarComponent extends SizableMixin(
           ? html`${this.renderNavigation()}
               <igc-years-view
                 part="years-view"
-                .value=${this.viewDate}
+                .value=${this.activeDate}
                 .yearsPerPage=${this.yearPerPage}
                 exportparts="year, selected"
                 @igcChange=${this.changeYear}

@@ -31,7 +31,7 @@ export class IgcCalendarBaseComponent extends LitElement {
     | 'saturday' = 'sunday';
 
   @property({ attribute: false })
-  viewDate = new Date();
+  activeDate = new Date();
 
   @property()
   locale = 'en';

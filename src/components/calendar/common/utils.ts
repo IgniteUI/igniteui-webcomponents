@@ -18,6 +18,25 @@ export const MIN_DATE = new Date(-DATE_BOUND);
 
 export const isDate = (value: any): value is Date => value instanceof Date;
 
+export const areEqualDates = (
+  date1: Date,
+  date2: Date,
+  datePartOnly = true
+) => {
+  return datePartOnly
+    ? date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
+    : date1.getTime() === date2.getTime();
+};
+
+export const setDateSafe = (date: Date, value: number) => {
+  date.setDate(value);
+  if (date.getDate() !== value) {
+    date.setDate(0);
+  }
+};
+
 export const isEqual = (obj1: any, obj2: any): boolean => {
   if (isDate(obj1) && isDate(obj2)) {
     return obj1.getTime() === obj2.getTime();
