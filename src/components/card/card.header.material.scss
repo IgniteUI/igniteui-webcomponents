@@ -1,0 +1,43 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    flex-flow: row wrap;
+    flex: 1 1 auto;
+    align-items: center;
+    align-content: flex-start;
+    width: 100%;
+    color: contrast-color(surface, 500);
+    padding: rem(16px);
+    box-sizing: border-box;
+}
+
+::slotted(*) {
+    margin: 0;
+    font: inherit;
+    opacity: inherit;
+}
+
+[part='header'] {
+    display: flex;
+    flex-flow: column nowrap;
+    overflow: hidden;
+    flex: 1 1 auto;
+}
+
+[part='title'] {
+    @include type-category('h6');
+    opacity: .87;
+}
+
+[part='subtitle'] {
+    @include type-category('subtitle-2');
+    opacity: .6;
+}
+
+::slotted([slot='thumbnail']) {
+    display: flex;
+    align-self: flex-start;
+    margin-inline-end: rem(16px);
+}
