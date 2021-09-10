@@ -2,6 +2,6 @@
 
 @mixin theme() {
     igc-card {
-        border: 1px solid #{utils.color(gray, 400)};
+        border: #{utils.rem(1px)} solid #{utils.color(gray, 400)};
     }
 }

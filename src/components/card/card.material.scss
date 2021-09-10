@@ -20,7 +20,7 @@
 
 :host([outlined]) {
     box-shadow: none;
-    border: 1px solid color(gray, 400);
+    border: rem(1px) solid color(gray, 400);
 
     &:hover,
     &:focus-within {

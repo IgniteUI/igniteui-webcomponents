@@ -39,12 +39,12 @@ const Template: Story<ArgTypes, Context> = (
           <igc-avatar
             slot="thumbnail"
             size="small"
-            shape="rounded"
+            shape="circle"
             src="https://www.infragistics.com/angular-demos/assets/images/men/1.jpg"
           >
           </igc-avatar>
-          <h3 slot="title">Title</h3>
-          <h5 slot="subtitle">Subtitle</h5>
+          <h3 slot="title">New York City</h3>
+          <h5 slot="subtitle">City in New York</h5>
         </igc-card-header>
         <igc-card-content>
           <p>
@@ -54,9 +54,6 @@ const Template: Story<ArgTypes, Context> = (
             financial and cultural centers.
           </p>
         </igc-card-content>
-        <hr
-          style="height: 1px; margin: 0 0 5px 0; background-color: rgba(0,0,0, 0.2); border: 0px"
-        />
         <igc-card-actions>
           <igc-button slot="start" variant="flat">Like</igc-button>
           <igc-button slot="start" variant="flat">Learn More</igc-button>

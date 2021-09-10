@@ -3,9 +3,8 @@
 
 :host {
     display: flex;
-    flex-flow: row wrap;
+    flex-wrap: wrap;
     justify-content: space-between;
-    flex: 0 1 auto;
     align-items: center;
     padding: rem(8px);
 }
