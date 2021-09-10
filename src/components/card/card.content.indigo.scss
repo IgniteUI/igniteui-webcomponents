@@ -1,0 +1,11 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-card-content {
+        color: #{utils.color(gray, 700)};
+
+        > * {
+            opacity: 1;
+        }
+    }
+}
