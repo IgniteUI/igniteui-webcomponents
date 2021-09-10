@@ -194,7 +194,7 @@ input {
     }
 
     [part='prefix'] {
-        padding-inline-start: 4px;
+        padding-inline-start: rem(4px);
     }
 
     [part='suffix'] {
