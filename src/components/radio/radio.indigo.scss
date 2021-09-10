@@ -34,7 +34,7 @@
     }
 
     igc-radio[invalid]:focus-within::part(control) {
-        box-shadow: 0 0 0 4px utils.color(error, 200, .87);
+        box-shadow: 0 0 0 utils.rem(4px) utils.color(error, 200, .87);
     }
 
     igc-radio[disabled] {
