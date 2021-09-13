@@ -13,7 +13,7 @@ let nextId = 0;
 
 type Direction = 'ltr' | 'rtl' | 'auto';
 
-export interface IgcRadioEventMap {
+export interface IgcInputEventMap {
   igcInput: CustomEvent<void>;
   igcChange: CustomEvent<void>;
   igcFocus: CustomEvent<void>;
@@ -21,7 +21,7 @@ export interface IgcRadioEventMap {
 }
 
 export class IgcInputComponent extends SizableMixin(
-  EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
   static styles = styles;
   static shadowRootOptions = {
@@ -189,6 +189,14 @@ export class IgcInputComponent extends SizableMixin(
   stepDown(n?: number) {
     this.input.stepDown(n);
     this.handleChange();
+  }
+
+  focus(options?: FocusOptions) {
+    this.input.focus(options);
+  }
+
+  blur() {
+    this.input.blur();
   }
 
   handleInvalid() {

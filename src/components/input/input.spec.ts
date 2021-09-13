@@ -14,17 +14,6 @@ describe('Input component', () => {
   let input: HTMLInputElement;
 
   describe('', () => {
-    // before(() => {
-    //   window.onerror = function (err) {
-    //     if (err === 'ResizeObserver loop limit exceeded') {
-    //       console.warn('Ignored: ResizeObserver loop limit exceeded');
-    //       return false;
-    //     } else {
-    //       return true;
-    //     }
-    //   };
-    // });
-
     beforeEach(async () => {
       el = await createInputComponent();
       input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
@@ -231,6 +220,20 @@ describe('Input component', () => {
     });
 
     it('should focus/blur the wrapped base element when the methods are called', () => {
+      const eventSpy = sinon.spy(el, 'emitEvent');
+      el.focus();
+
+      expect(el.shadowRoot?.activeElement).to.equal(input);
+      expect(eventSpy).calledOnceWithExactly('igcFocus');
+
+      el.blur();
+
+      expect(el.shadowRoot?.activeElement).to.be.null;
+      expect(eventSpy).calledTwice;
+      expect(eventSpy).calledWithExactly('igcBlur');
+    });
+
+    it('should emit focus/blur events when methods are called', () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
       el.focus();
 
