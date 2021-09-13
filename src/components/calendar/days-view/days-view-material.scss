@@ -1,19 +1,12 @@
 @use '../../../styles/utilities' as *;
 @use 'sass:map';
 
-$date-sizes: (
-    large: rem(34px),
-    medium: rem(30px),
-    small: rem(26px)
-);
 $border-width: rem(1px);
 $week-number-bg: color(gray, 200);
 $week-number-color: color(gray, 500);
 $week-number-radius: rem(4px);
 $row-gap: rem(4px);
 $border-radius: rem(4px);
-
-$date-size: map.get($date-sizes, 'large');
 
 :host {
     display: flex;
@@ -30,14 +23,6 @@ $date-size: map.get($date-sizes, 'large');
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-[part~='label'],
-[part~='week-number'],
-[part~='date'] {
-    position: relative;
-    font-size: var(--igc-subtitle-1-font-size);
-    border: $border-width dashed transparent;
 }
 
 [part~='date-inner'] {
@@ -64,6 +49,8 @@ $date-size: map.get($date-sizes, 'large');
 [part~='date'],
 [part~='week-number'],
 [part~='label'] {
+    font-size: var(--igc-subtitle-1-font-size);
+    border: $border-width dashed transparent;
     width: 100%;
     color: color(gray, 800);
     position: relative;

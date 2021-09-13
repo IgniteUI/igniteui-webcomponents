@@ -2,16 +2,9 @@
 @use 'sass:map';
 @use 'sass:math';
 
-$date-sizes: (
-    large: rem(32px),
-    medium: rem(28px),
-    small: rem(24px)
-);
-
-$date-size-large: map.get($date-sizes, 'large');
-$date-size-medium: map.get($date-sizes, 'medium');
-$date-size-small: map.get($date-sizes, 'small');
-
+$date-size-large: rem(32px);
+$date-size-medium: rem(28px);
+$date-size-small: rem(24px);
 
 :host {
     display: flex;
@@ -218,15 +211,9 @@ $date-size-small: map.get($date-sizes, 'small');
 [part='header-date'] {
     display: flex;
     white-space: pre-wrap;
-    font-size: var(--igc-h4-font-size);
-    font-weight: var(--igc-h4-font-weight);
-    line-height: var(--igc-h4-line-height);
-    margin-top: var(--igc-h4-margin-top);
+    @include type-category('h4');
 }
 
 [part='header-title'] {
-    font-size: var(--igc-overline-font-size);
-    font-weight: var(--igc-overline-font-weight);
-    line-height: var(--igc-overline-line-height);
-    text-transform: uppercase;
+    @include type-category('overline');
 }

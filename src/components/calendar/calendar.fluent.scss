@@ -11,6 +11,11 @@ $current-background: color(secondary, 500);
 $current-color: contrast-color(secondary, 600);
 
 @mixin theme() {
+    igc-calendar::part(week-number-inner first),
+    igc-calendar::part(week-number-inner last) {
+        border-radius: 0;
+    }
+
     igc-calendar::part(month-inner selected),
     igc-calendar::part(year-inner selected) {
         color: $selected-color;
@@ -59,7 +64,7 @@ $current-color: contrast-color(secondary, 600);
 
     igc-calendar::part(days-row) {
         &:last-child {
-            border-radius: 16px;
+            border-radius: rem(16px);
         }
     }
 
