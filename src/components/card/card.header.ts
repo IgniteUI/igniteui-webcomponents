@@ -1,6 +1,16 @@
 import { LitElement, html } from 'lit';
 import { styles } from './card.header.material.css';
 
+/** A wrapper for card's header
+ * @element - igc-card-header
+ *
+ * @slot thumbnail - Renders a headers media like icon
+ * @slot title - Renders the card title
+ * @slot subtitle - Renders the card subtitle
+ * @slot - Renders content next to the card title
+ *
+ * @csspart header - The card header container
+ */
 export class IgcCardHeader extends LitElement {
   static styles = styles;
 
