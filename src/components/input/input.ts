@@ -258,9 +258,11 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   renderLabel() {
-    return html`<label id="${this.labelId}" part="label" for="${this.inputId}">
-      ${this.label}
-    </label>`;
+    return this.label
+      ? html`<label id="${this.labelId}" part="label" for="${this.inputId}">
+          ${this.label}
+        </label>`
+      : null;
   }
 
   renderPrefix() {

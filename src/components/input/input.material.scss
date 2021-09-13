@@ -275,6 +275,10 @@ input {
         right: none;
     }
     overflow: visible;
+
+    &:empty {
+        display: none;
+    }
 }
 
 [part='filler'] {
