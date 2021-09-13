@@ -60,6 +60,10 @@
         &::part(control checked)::after {
             background: utils.color(error, 500);
         }
+
+        &:focus-within::part(control) {
+            box-shadow: 0 0 0 #{calc(var(--size, #{utils.rem(16px)}) / 4)} #{utils.color(error, 100)};
+        }
     }
 
     igc-radio[disabled] {
