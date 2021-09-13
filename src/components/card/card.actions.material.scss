@@ -1,0 +1,29 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: rem(8px);
+}
+
+::slotted(igc-button:not(:first-of-type)),
+::slotted(igc-icon:not(:first-of-type)) {
+    margin-inline-start: rem(8px);
+}
+
+::slotted([slot='start']) {
+    display: flex;
+    align-items: center;
+    order: 0;
+}
+
+::slotted([slot='end']) {
+    display: flex;
+    align-items: center;
+    margin-inline-start: auto;
+    order: 1;
+    opacity: .6;
+}
