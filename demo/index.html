@@ -10,7 +10,9 @@
 </head>
 <body>
   <div id="demo"></div>
-
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+  <script defer src="https://i.icomoon.io/public/temp/1125a5bb7e/UntitledProject/svgxuse.js"></script>
   <script type="module">
     import { html, render } from 'lit-html';
     import '../dist/igniteui-webcomponents.js';
@@ -20,6 +22,33 @@
         <igniteui-webcomponents>
           <igc-button>Click</igc-button>
           <igc-link-button>Click</igc-link-button>
+          <div style="max-width: 320px">
+          <igc-card outlined="true">
+            <igc-card-media>
+              <img src="https://images.unsplash.com/photo-1518235506717-e1ed3306a89b?ixlib=rb-1.2.1&auto=format&fit=crop&w=320&q=180">
+            </igc-card-media>
+            <igc-card-header>
+              <span slot="thumbnail" class="material-icons">person</span>
+              <h3 slot="title">Title</h3>
+              <h5 slot="subtitle">Subtitle</h5>
+            </igc-card-header>
+            <igc-card-content>
+              <p>New YYork City comprises 5 boroughs sitting where the
+                  Hudson River meets the Atlantic Ocean. At its core is Manhattan,
+                  a densely populated borough that’s among the world’s major commercial,
+                  financial and cultural centers.</p>
+            </igc-card-content>
+            <igc-card-actions>
+              <div slot="start">
+                <button class="mdc-button">Like</button>
+                <button class="mdc-button">Lear More</button>
+              </div>
+              <div slot="end">
+                <span slot="thumbnail" class="material-icons">home</span>
+              </div>
+            </igc-card-actions>
+          </igc-card>
+          </div>
         </igniteui-webcomponents>
       `,
       document.querySelector('#demo')
