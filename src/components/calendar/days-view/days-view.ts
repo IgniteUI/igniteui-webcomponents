@@ -4,6 +4,7 @@ import {
   DateRangeType,
   ICalendarDate,
   isDateInRanges,
+  TimeDeltaInterval,
 } from '../common/calendar.model';
 import {
   IgcCalendarBaseComponent,
@@ -13,7 +14,7 @@ import { areEqualDates, getDateOnly, isEqual } from '../common/utils';
 import { styles } from './days-view-material.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
-import { property, queryAll } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { partNameMap } from '../../common/util';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
@@ -36,8 +37,8 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];
 
-  @queryAll('[part~="date"]')
-  dateElements!: NodeList;
+  @query('[tabindex="0"]')
+  activeDay!: HTMLElement;
 
   @property({ attribute: false })
   rangePreviewDate?: Date;
@@ -62,26 +63,8 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     this.initFormatters();
   }
 
-  focusDate(date: Date) {
-    let index = -1;
-    let match = false;
-
-    for (const week of this.dates) {
-      for (const day of week) {
-        index++;
-        if (day.date.getTime() === date.getTime()) {
-          match = true;
-          break;
-        }
-      }
-      if (match) {
-        break;
-      }
-    }
-
-    if (index !== -1) {
-      (this.dateElements[index] as HTMLElement).focus();
-    }
+  focusActiveDate() {
+    this.activeDay.focus();
   }
 
   private initFormatters() {
@@ -292,9 +275,19 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     return isDateInRanges(day.date, this.specialDates);
   }
 
-  private selectDay(event: Event, day: ICalendarDate) {
+  private dateClicked(event: Event, day: ICalendarDate) {
     event.stopPropagation();
 
+    this.selectDay(day);
+
+    this.changeActiveDate(day);
+
+    if (!day.isCurrentMonth) {
+      this.emitEvent('igcOutsideDaySelected', { detail: day });
+    }
+  }
+
+  private selectDay(day: ICalendarDate) {
     if (this.rangePreviewDate) {
       this.setRangePreviewDate(undefined);
     }
@@ -303,10 +296,6 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
     if (result) {
       this.emitEvent('igcChange');
-    }
-
-    if (!day.isCurrentMonth) {
-      this.emitEvent('igcOutsideDaySelected', { detail: day, bubbles: false });
     }
   }
 
@@ -338,7 +327,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     start = getDateOnly(start);
     end = getDateOnly(end);
     while (start.getTime() < end.getTime()) {
-      start = this.calendarModel.timedelta(start, 'day', 1);
+      start = this.calendarModel.timedelta(start, TimeDeltaInterval.Day, 1);
       result.push(start);
     }
 
@@ -410,7 +399,14 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     }
   }
 
-  private dateMouseEnter(date: Date) {
+  private dateKeyDown(event: KeyboardEvent, day: ICalendarDate) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.selectDay(day);
+    }
+  }
+
+  private changeRangePreview(date: Date) {
     if (
       this.selection === 'range' &&
       this.value &&
@@ -421,7 +417,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     }
   }
 
-  private dateMouseLeave() {
+  private clearRangePreview() {
     if (this.rangePreviewDate) {
       this.setRangePreviewDate(undefined);
     }
@@ -497,10 +493,12 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
       <span
         part=${dateInnerPartName}
         tabindex=${areEqualDates(this.activeDate, day.date) ? 0 : -1}
-        @click=${(event: MouseEvent) => this.selectDay(event, day)}
-        @focus=${() => this.changeActiveDate(day)}
-        @mouseenter=${() => this.dateMouseEnter(day.date)}
-        @mouseleave=${() => this.dateMouseLeave()}
+        @click=${(event: MouseEvent) => this.dateClicked(event, day)}
+        @focus=${() => this.changeRangePreview(day.date)}
+        @blur=${() => this.clearRangePreview()}
+        @keydown=${(event: KeyboardEvent) => this.dateKeyDown(event, day)}
+        @mouseenter=${() => this.changeRangePreview(day.date)}
+        @mouseleave=${() => this.clearRangePreview()}
         >${this.formattedDate(day.date)}</span
       >
     </span>`;

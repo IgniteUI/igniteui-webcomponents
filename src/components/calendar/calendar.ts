@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property, queryAll, state } from 'lit/decorators.js';
+import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import {
   IgcCalendarBaseComponent,
@@ -11,10 +11,13 @@ import { styles } from './calendar.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
 import { IgcDaysViewComponent } from './days-view/days-view';
-import { ICalendarDate } from './common/calendar.model';
+import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model';
 import { watch } from '../common/decorators';
-import { calculateYearsRangeStart } from './common/utils';
+import { calculateYearsRangeStart, setDateSafe } from './common/utils';
 import { SizableMixin } from '../common/mixins/sizable';
+
+const MONTHS_PER_ROW = 3;
+const YEARS_PER_ROW = 3;
 
 /**
  * @element igc-calendar
@@ -34,20 +37,20 @@ export class IgcCalendarComponent extends SizableMixin(
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
 
-  @queryAll('igc-days-view')
-  daysViews!: NodeList;
-
   @state()
   rangePreviewDate?: Date;
 
-  // @query('igc-months-view')
-  // monthsView!: IgcMonthsViewComponent;
+  @queryAll('igc-days-view')
+  daysViews!: NodeList;
 
-  // @query('igc-years-view')
-  // yearsView!: IgcYearsViewComponent;
+  @query('igc-months-view')
+  monthsView!: IgcMonthsViewComponent;
+
+  @query('igc-years-view')
+  yearsView!: IgcYearsViewComponent;
 
   @state()
-  protected activeDateMonthIndex = 0;
+  protected activeDaysViewIndex = 0;
 
   @property({ type: Boolean, attribute: 'has-header' })
   hasHeader = true;
@@ -87,6 +90,265 @@ export class IgcCalendarComponent extends SizableMixin(
     return this.size === 'small' ? 18 : 15;
   }
 
+  private handleKeyDown = (event: KeyboardEvent) => {
+    const tagName = (event.target as HTMLElement).tagName.toLowerCase();
+
+    if (
+      tagName !== 'igc-days-view' &&
+      tagName !== 'igc-months-view' &&
+      tagName !== 'igc-years-view'
+    ) {
+      return;
+    }
+
+    switch (event.key) {
+      case 'PageDown':
+        event.preventDefault();
+
+        if (event.shiftKey && this.activeView === 'days') {
+          this.nextYear();
+        } else {
+          this.navigateNext();
+        }
+
+        if (this.activeView === 'days') {
+          this.focusActiveDate();
+        }
+        break;
+      case 'PageUp':
+        event.preventDefault();
+
+        if (event.shiftKey && this.activeView === 'days') {
+          this.previousYear();
+        } else {
+          this.navigatePrevious();
+        }
+
+        if (this.activeView === 'days') {
+          this.focusActiveDate();
+        }
+        break;
+      case 'Home':
+        event.preventDefault();
+
+        if (this.activeView === 'days') {
+          const firstDaysView = this.daysViews[0] as IgcDaysViewComponent;
+          const activeDate = firstDaysView.activeDate;
+          const date = new Date(activeDate);
+          date.setDate(1);
+          this.activeDate = date;
+          this.activeDaysViewIndex = 0;
+        } else if (this.activeView === 'months') {
+          const date = new Date(this.activeDate);
+          date.setMonth(0);
+          this.activeDate = date;
+        } else if (this.activeView === 'years') {
+          const startYear = calculateYearsRangeStart(
+            this.activeDate,
+            this.yearPerPage
+          );
+          const date = new Date(this.activeDate);
+          date.setDate(1);
+          date.setFullYear(startYear);
+          setDateSafe(date, this.activeDate.getDate());
+          this.activeDate = date;
+        }
+
+        this.focusActiveDate();
+        break;
+      case 'End':
+        event.preventDefault();
+
+        if (this.activeView === 'days') {
+          const index = this.daysViews.length - 1;
+          const lastDaysView = this.daysViews[index] as IgcDaysViewComponent;
+          const activeDate = lastDaysView.activeDate;
+          const date = new Date(activeDate);
+          date.setDate(1);
+          date.setMonth(date.getMonth() + 1);
+          date.setDate(0);
+          this.activeDate = date;
+          this.activeDaysViewIndex = index;
+        } else if (this.activeView === 'months') {
+          const date = new Date(this.activeDate);
+          date.setMonth(11);
+          this.activeDate = date;
+        } else if (this.activeView === 'years') {
+          const startYear = calculateYearsRangeStart(
+            this.activeDate,
+            this.yearPerPage
+          );
+          const date = new Date(this.activeDate);
+          date.setDate(1);
+          date.setFullYear(startYear + this.yearPerPage - 1);
+          setDateSafe(date, this.activeDate.getDate());
+          this.activeDate = date;
+        }
+
+        this.focusActiveDate();
+        break;
+      case 'ArrowLeft':
+        event.preventDefault();
+
+        if (this.activeView === 'days') {
+          const date = this.calendarModel.timedelta(
+            this.activeDate,
+            TimeDeltaInterval.Day,
+            -1
+          );
+
+          if (this.visibleMonths > 1) {
+            const activeDayView = this.daysViews[
+              this.activeDaysViewIndex
+            ] as IgcDaysViewComponent;
+            const activeMonthDate = activeDayView.activeDate;
+
+            if (activeMonthDate.getMonth() !== date.getMonth()) {
+              this.activeDaysViewIndex =
+                this.activeDaysViewIndex > 0
+                  ? this.activeDaysViewIndex - 1
+                  : this.visibleMonths - 1;
+            }
+          }
+          this.activeDate = date;
+        } else if (this.activeView === 'months') {
+          this.previousMonth();
+        } else if (this.activeView === 'years') {
+          this.previousYear();
+        }
+
+        this.focusActiveDate();
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+
+        if (this.activeView === 'days') {
+          const date = this.calendarModel.timedelta(
+            this.activeDate,
+            TimeDeltaInterval.Day,
+            1
+          );
+
+          if (this.visibleMonths > 1) {
+            const activeDayView = this.daysViews[
+              this.activeDaysViewIndex
+            ] as IgcDaysViewComponent;
+            const activeMonthDate = activeDayView.activeDate;
+
+            if (activeMonthDate.getMonth() !== date.getMonth()) {
+              this.activeDaysViewIndex =
+                this.activeDaysViewIndex === this.visibleMonths - 1
+                  ? 0
+                  : this.activeDaysViewIndex + 1;
+            }
+          }
+          this.activeDate = date;
+        } else if (this.activeView === 'months') {
+          this.nextMonth();
+        } else if (this.activeView === 'years') {
+          this.nextYear();
+        }
+
+        this.focusActiveDate();
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+
+        if (this.activeView === 'days') {
+          const date = this.calendarModel.timedelta(
+            this.activeDate,
+            TimeDeltaInterval.Week,
+            -1
+          );
+
+          if (this.visibleMonths > 1) {
+            const activeDayView = this.daysViews[
+              this.activeDaysViewIndex
+            ] as IgcDaysViewComponent;
+            const activeMonthDate = activeDayView.activeDate;
+
+            if (activeMonthDate.getMonth() !== date.getMonth()) {
+              this.activeDaysViewIndex =
+                this.activeDaysViewIndex > 0
+                  ? this.activeDaysViewIndex - 1
+                  : this.visibleMonths - 1;
+            }
+          }
+          this.activeDate = date;
+        } else if (this.activeView === 'months') {
+          this.activeDate = this.calendarModel.timedelta(
+            this.activeDate,
+            TimeDeltaInterval.Month,
+            -MONTHS_PER_ROW
+          );
+        } else if (this.activeView === 'years') {
+          this.activeDate = this.calendarModel.timedelta(
+            this.activeDate,
+            TimeDeltaInterval.Year,
+            -YEARS_PER_ROW
+          );
+        }
+
+        this.focusActiveDate();
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+
+        if (this.activeView === 'days') {
+          const date = this.calendarModel.timedelta(
+            this.activeDate,
+            TimeDeltaInterval.Week,
+            1
+          );
+
+          if (this.visibleMonths > 1) {
+            const activeDayView = this.daysViews[
+              this.activeDaysViewIndex
+            ] as IgcDaysViewComponent;
+            const activeMonthDate = activeDayView.activeDate;
+
+            if (activeMonthDate.getMonth() !== date.getMonth()) {
+              this.activeDaysViewIndex =
+                this.activeDaysViewIndex === this.visibleMonths - 1
+                  ? 0
+                  : this.activeDaysViewIndex + 1;
+            }
+          }
+          this.activeDate = date;
+        } else if (this.activeView === 'months') {
+          this.activeDate = this.calendarModel.timedelta(
+            this.activeDate,
+            TimeDeltaInterval.Month,
+            MONTHS_PER_ROW
+          );
+        } else if (this.activeView === 'years') {
+          this.activeDate = this.calendarModel.timedelta(
+            this.activeDate,
+            TimeDeltaInterval.Year,
+            YEARS_PER_ROW
+          );
+        }
+
+        this.focusActiveDate();
+        break;
+    }
+  };
+
+  private async focusActiveDate() {
+    await this.updateComplete;
+
+    if (this.activeView === 'days') {
+      const daysView = this.daysViews[
+        this.activeDaysViewIndex
+      ] as IgcDaysViewComponent;
+      daysView.focusActiveDate();
+    } else if (this.activeView === 'months') {
+      this.monthsView.focusActiveDate();
+    } else if (this.activeView === 'years') {
+      this.yearsView.focusActiveDate();
+    }
+  }
+
   private initFormatters() {
     this.formatterMonth = new Intl.DateTimeFormat(this.locale, {
       month: this.formatOptions.month,
@@ -114,12 +376,16 @@ export class IgcCalendarComponent extends SizableMixin(
     event.stopPropagation();
     this.activeDate = (event.target as IgcMonthsViewComponent).value;
     this.activeView = 'days';
+
+    this.focusActiveDate();
   }
 
   private changeYear(event: CustomEvent<void>) {
     event.stopPropagation();
     this.activeDate = (event.target as IgcYearsViewComponent).value;
     this.activeView = 'months';
+
+    this.focusActiveDate();
   }
 
   private switchToMonths() {
@@ -132,15 +398,16 @@ export class IgcCalendarComponent extends SizableMixin(
 
   private activeDateChanged(event: CustomEvent<Date>) {
     const daysViews = Array.from(this.daysViews);
-    this.activeDateMonthIndex = daysViews.findIndex((d) => d === event.target);
+    this.activeDaysViewIndex = daysViews.findIndex((d) => d === event.target);
     this.activeDate = event.detail;
   }
 
-  private async outsideDaySelected(event: CustomEvent<ICalendarDate>) {
+  private outsideDaySelected(event: CustomEvent<ICalendarDate>) {
+    event.stopPropagation();
     const date = event.detail.date;
     this.activeDate = date;
-    await this.updateComplete;
-    (this.daysViews[0] as IgcDaysViewComponent).focusDate(date);
+
+    this.focusActiveDate();
   }
 
   private rangePreviewDateChange(event: CustomEvent<Date>) {
@@ -166,7 +433,7 @@ export class IgcCalendarComponent extends SizableMixin(
   private nextYearsPage() {
     this.activeDate = this.calendarModel.timedelta(
       this.activeDate,
-      'year',
+      TimeDeltaInterval.Year,
       this.yearPerPage
     );
   }
@@ -174,7 +441,7 @@ export class IgcCalendarComponent extends SizableMixin(
   private previousYearsPage() {
     this.activeDate = this.calendarModel.timedelta(
       this.activeDate,
-      'year',
+      TimeDeltaInterval.Year,
       -this.yearPerPage
     );
   }
@@ -290,8 +557,8 @@ export class IgcCalendarComponent extends SizableMixin(
       activeDates.push(
         this.calendarModel.timedelta(
           this.activeDate,
-          'month',
-          i - this.activeDateMonthIndex
+          TimeDeltaInterval.Month,
+          i - this.activeDaysViewIndex
         )
       );
     }
@@ -310,6 +577,7 @@ export class IgcCalendarComponent extends SizableMixin(
                 : 'column'
               : 'column',
         })}
+        @keydown=${this.handleKeyDown}
       >
         ${this.activeView === 'days'
           ? activeDates.map(

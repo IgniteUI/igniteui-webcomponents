@@ -15,9 +15,15 @@ export enum DateRangeType {
 /**
  * @hidden
  */
-enum TimeDeltaInterval {
-  Month = 'month',
-  Year = 'year',
+export enum TimeDeltaInterval {
+  Second,
+  Minute,
+  Hour,
+  Day,
+  Week,
+  Month,
+  Quarter,
+  Year,
 }
 
 const MDAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -233,7 +239,7 @@ export class Calendar {
     if (days < 0) {
       days = 7 - Math.abs(days);
     }
-    date = this.timedelta(date, 'day', -days);
+    date = this.timedelta(date, TimeDeltaInterval.Day, -days);
     const res = [];
     let value: ICalendarDate;
 
@@ -242,14 +248,14 @@ export class Calendar {
       value = this.generateICalendarDate(date, year, month);
       res.push(value);
 
-      date = this.timedelta(date, 'day', 1);
+      date = this.timedelta(date, TimeDeltaInterval.Day, 1);
 
       if (date.getMonth() !== month && date.getDay() === this.firstWeekDay) {
         if (extraWeek && res.length <= 35) {
           for (const _ of range(0, 7)) {
             value = this.generateICalendarDate(date, year, month);
             res.push(value);
-            date = this.timedelta(date, 'day', 1);
+            date = this.timedelta(date, TimeDeltaInterval.Day, 1);
           }
         }
         break;
@@ -281,7 +287,11 @@ export class Calendar {
     return res;
   }
 
-  public timedelta(date: Date, interval: string, units: number): Date {
+  public timedelta(
+    date: Date,
+    interval: TimeDeltaInterval,
+    units: number
+  ): Date {
     const ret = new Date(date);
 
     const checkRollover = () => {
@@ -290,46 +300,38 @@ export class Calendar {
       }
     };
 
-    switch (interval.toLowerCase()) {
-      case 'year':
+    switch (interval) {
+      case TimeDeltaInterval.Year:
         ret.setFullYear(ret.getFullYear() + units);
         checkRollover();
         break;
-      case 'quarter':
+      case TimeDeltaInterval.Quarter:
         ret.setMonth(ret.getMonth() + 3 * units);
         checkRollover();
         break;
-      case 'month':
+      case TimeDeltaInterval.Month:
         ret.setMonth(ret.getMonth() + units);
         checkRollover();
         break;
-      case 'week':
+      case TimeDeltaInterval.Week:
         ret.setDate(ret.getDate() + 7 * units);
         break;
-      case 'day':
+      case TimeDeltaInterval.Day:
         ret.setDate(ret.getDate() + units);
         break;
-      case 'hour':
+      case TimeDeltaInterval.Hour:
         ret.setTime(ret.getTime() + units * 3600000);
         break;
-      case 'minute':
+      case TimeDeltaInterval.Minute:
         ret.setTime(ret.getTime() + units * 60000);
         break;
-      case 'second':
+      case TimeDeltaInterval.Second:
         ret.setTime(ret.getTime() + units * 1000);
         break;
       default:
         throw new Error('Invalid interval specifier');
     }
     return ret;
-  }
-
-  public getFirstViewDate(date: Date, interval: string, activeViewIdx: number) {
-    return this.timedelta(date, interval, -activeViewIdx);
-  }
-
-  public getDateByView(date: Date, interval: string, activeViewIdx: number) {
-    return this.timedelta(date, interval, activeViewIdx);
   }
 
   public getNextMonth(date: Date) {

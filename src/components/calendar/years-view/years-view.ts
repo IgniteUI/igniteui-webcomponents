@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
+import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { partNameMap } from '../../common/util';
@@ -16,14 +17,24 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
    */
   static styles = [styles];
 
+  private years!: Date[];
   // private calendarModel = new Calendar();
   // private yearFormatter: any;
+
+  @query('[tabindex="0"]')
+  activeYear!: HTMLElement;
 
   @property({ attribute: false })
   value = new Date();
 
   @property({ type: Number, attribute: 'years-per-page' })
   yearsPerPage = 15;
+
+  @watch('value')
+  @watch('yearsPerPage')
+  datesChange() {
+    this.years = this.generateYears();
+  }
 
   // @property()
   // locale = 'en';
@@ -48,11 +59,15 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   //   });
   // }
 
+  focusActiveDate() {
+    this.activeYear.focus();
+  }
+
   private formattedYear(value: Date) {
     return `${value.getFullYear()}`;
   }
 
-  private get years() {
+  private generateYears() {
     const startYear = calculateYearsRangeStart(this.value, this.yearsPerPage);
     const month = this.value.getMonth();
     const result = [];
@@ -77,11 +92,18 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
     };
   }
 
-  private yearClick(year: Date) {
+  private selectYear(year: Date) {
     const value = new Date(year);
     setDateSafe(value, this.value.getDate());
     this.value = value;
     this.emitEvent('igcChange');
+  }
+
+  private yearKeyDown(event: KeyboardEvent, year: Date) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.selectYear(year);
+    }
   }
 
   render() {
@@ -93,7 +115,8 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
         <span
           part=${yearInnerPartName}
           tabindex="${year.getFullYear() === this.value.getFullYear() ? 0 : -1}"
-          @click=${() => this.yearClick(year)}
+          @click=${() => this.selectYear(year)}
+          @keydown=${(event: KeyboardEvent) => this.yearKeyDown(event, year)}
         >
           ${this.formattedYear(year)}
         </span>

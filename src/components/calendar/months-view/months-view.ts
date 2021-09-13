@@ -1,9 +1,9 @@
 import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
-import { Calendar } from '../common/calendar.model';
+import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { styles } from './months-view.css';
 import { partNameMap } from '../../common/util';
@@ -20,6 +20,9 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
 
   private calendarModel = new Calendar();
   private monthFormatter: any;
+
+  @query('[tabindex="0"]')
+  activeMonth!: HTMLElement;
 
   @property({ attribute: false })
   value = new Date();
@@ -41,6 +44,10 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
     this.initMonthFormatter();
   }
 
+  focusActiveDate() {
+    this.activeMonth.focus();
+  }
+
   private initMonthFormatter() {
     this.monthFormatter = new Intl.DateTimeFormat(this.locale, {
       month: this.monthFormat,
@@ -57,7 +64,7 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
 
     for (let i = 0; i < 12; i++) {
       result.push(start);
-      start = this.calendarModel.timedelta(start, 'month', 1);
+      start = this.calendarModel.timedelta(start, TimeDeltaInterval.Month, 1);
     }
 
     return result;
@@ -74,11 +81,18 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
     };
   }
 
-  private monthClick(month: Date) {
+  private selectMonth(month: Date) {
     const value = new Date(month);
     setDateSafe(value, this.value.getDate());
     this.value = value;
     this.emitEvent('igcChange');
+  }
+
+  private monthKeyDown(event: KeyboardEvent, month: Date) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.selectMonth(month);
+    }
   }
 
   render() {
@@ -93,7 +107,8 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
           month.getMonth() === this.value.getMonth()
             ? 0
             : -1}"
-          @click=${() => this.monthClick(month)}
+          @click=${() => this.selectMonth(month)}
+          @keydown=${(event: KeyboardEvent) => this.monthKeyDown(event, month)}
         >
           ${this.formattedMonth(month)}
         </span>
