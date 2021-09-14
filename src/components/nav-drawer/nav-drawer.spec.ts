@@ -53,7 +53,7 @@ describe('Navigation Drawer', () => {
           <span part="icon">
             <slot name="icon"></slot>
           </span>
-          <span part="default">
+          <span part="text">
             <slot></slot>
           </span>
         </div>
