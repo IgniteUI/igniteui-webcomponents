@@ -38,12 +38,12 @@ describe('Navigation Drawer', () => {
 
     it('renders nav drawer with items and header', async () => {
       el = await createNavDrawerElement(`<igc-nav-drawer>
-              <igc-nav-drawer-header></igc-nav-drawer-header>
+              <igc-nav-drawer-header-item></igc-nav-drawer-header-item>
               <igc-nav-drawer-item></igc-nav-drawer-item>
               <igc-nav-drawer-item></igc-nav-drawer-item>
             </igc-nav-drawer>`);
 
-      expect(el).to.contain('igc-nav-drawer-header');
+      expect(el).to.contain('igc-nav-drawer-header-item');
       expect(el).to.contain('igc-nav-drawer-item');
     });
 
@@ -102,7 +102,7 @@ describe('Navigation Drawer', () => {
     it('displays the elements defined in the slots', async () => {
       el = await createNavDrawerElement(`
         <igc-nav-drawer>
-          <igc-nav-drawer-header>Header</igc-nav-drawer-header>
+          <igc-nav-drawer-header-item>Header</igc-nav-drawer-header-item>
 
           <igc-nav-drawer-item>
             <igc-icon slot="icon" name="home"></igc-icon>

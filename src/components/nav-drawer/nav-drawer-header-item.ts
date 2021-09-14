@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 
-export class IgcNavDrawerHeaderComponent extends LitElement {
+export class IgcNavDrawerHeaderItemComponent extends LitElement {
   render() {
     return html`<slot></slot>`;
   }

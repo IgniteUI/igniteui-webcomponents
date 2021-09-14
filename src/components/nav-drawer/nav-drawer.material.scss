@@ -4,7 +4,7 @@
 :host {
     [part='main'] {
         width: 250px;
-        margin: 10px 0px 0px 10px;
+        margin-top: 10px;
     }
     ::slotted([slot='mini']) {
         margin: 10px

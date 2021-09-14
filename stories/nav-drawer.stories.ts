@@ -35,6 +35,26 @@ export default {
         },
       },
     },
+    disabled: {
+      type: 'boolean',
+      description: 'Determines whether a drawer item is disabled.',
+      control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
+    },
+    active: {
+      type: 'boolean',
+      description: 'Determines whether a drawer item is active.',
+      control: 'boolean',
+      table: {
+        defaultValue: {
+          summary: false,
+        },
+      },
+    },
     position: {
       type: '"start" | "end" | "top" | "bottom"',
       options: ['start', 'end', 'top', 'bottom'],
@@ -55,6 +75,8 @@ interface ArgTypes {
   content2: string;
   open: boolean;
   pinned: boolean;
+  disabled: boolean;
+  active: boolean;
   position: 'start' | 'end' | 'top' | 'bottom';
 }
 
@@ -97,6 +119,8 @@ const Template: Story<ArgTypes, Context> = (
     content2 = 'Search',
     open = false,
     pinned = false,
+    disabled = false,
+    active = false,
     position,
   }: ArgTypes,
   { globals: { direction } }: Context
@@ -109,31 +133,33 @@ const Template: Story<ArgTypes, Context> = (
         .pinned=${pinned}
         .position=${position}
       >
-        <igc-nav-drawer-header>Sample Drawer</igc-nav-drawer-header>
+        <igc-nav-drawer-header-item style="margin-left: 10px;"
+          >Sample Drawer</igc-nav-drawer-header-item
+        >
 
-        <igc-nav-drawer-item>
+        <igc-nav-drawer-item .disabled=${disabled}>
           <igc-icon slot="icon" name="home"></igc-icon>
           <h2>${content1}</h2>
         </igc-nav-drawer-item>
 
-        <igc-nav-drawer-item>
+        <igc-nav-drawer-item .active=${active}>
           <igc-icon slot="icon" name="search"></igc-icon>
           <h2>${content2}</h2>
         </igc-nav-drawer-item>
-
-        <div slot="mini">
-          <igc-nav-drawer-item>
-            <igc-icon slot="icon" name="home"></igc-icon>
-          </igc-nav-drawer-item>
-
-          <igc-nav-drawer-item>
-            <igc-icon slot="icon" name="search"></igc-icon>
-          </igc-nav-drawer-item>
-        </div>
       </igc-nav-drawer>
 
       <div>
         <p>Sample page content</p>
+      </div>
+
+      <div slot="mini">
+        <igc-nav-drawer-item>
+          <igc-icon slot="icon" name="home"></igc-icon>
+        </igc-nav-drawer-item>
+
+        <igc-nav-drawer-item>
+          <igc-icon slot="icon" name="search"></igc-icon>
+        </igc-nav-drawer-item>
       </div>
 
       <igc-button @click="${handleOpen}">Open</igc-button>

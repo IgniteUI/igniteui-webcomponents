@@ -13,9 +13,9 @@ import { IgcRadioComponent } from './src/components/radio/radio.js';
 import { IgcRadioGroupComponent } from './src/components/radio-group/radio-group.js';
 import { IgniteuiWebcomponents } from './src/IgniteuiWebcomponents.js';
 import { IgcRippleComponent } from './src/components/ripple/ripple.js';
-import { IgcNavDrawerItemComponent } from './src/components/nav-drawer/nav-drawer-item/nav-drawer-item.js';
+import { IgcNavDrawerItemComponent } from './src/components/nav-drawer/nav-drawer-item.js';
 import { IgcNavDrawerComponent } from './src/components/nav-drawer/nav-drawer.js';
-import { IgcNavDrawerHeaderComponent } from './src/components/nav-drawer/nav-drawer-header/nav-drawer-header.js';
+import { IgcNavDrawerHeaderItemComponent } from './src/components/nav-drawer/nav-drawer-header-item.js';
 
 window.customElements.define('igniteui-webcomponents', IgniteuiWebcomponents);
 window.customElements.define('igc-avatar', IgcAvatarComponent);
@@ -36,6 +36,6 @@ window.customElements.define('igc-ripple', IgcRippleComponent);
 window.customElements.define('igc-nav-drawer', IgcNavDrawerComponent);
 window.customElements.define('igc-nav-drawer-item', IgcNavDrawerItemComponent);
 window.customElements.define(
-  'igc-nav-drawer-header',
-  IgcNavDrawerHeaderComponent
+  'igc-nav-drawer-header-item',
+  IgcNavDrawerHeaderItemComponent
 );
