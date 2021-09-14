@@ -63,6 +63,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+    this.setAttribute('role', 'grid');
     this.initFormatters();
   }
 
@@ -76,14 +77,17 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     });
   }
 
-  private generateWeekHeader(): string[] {
+  private generateWeekHeader(): { label: string; ariaLabel: string }[] {
     const dayNames = [];
     const rv = this.calendarModel.monthdatescalendar(
       this.activeDate.getFullYear(),
       this.activeDate.getMonth()
     )[0];
     for (const day of rv) {
-      dayNames.push(this.formatterWeekday.format(day.date));
+      dayNames.push({
+        label: this.formatterWeekday.format(day.date),
+        ariaLabel: day.date.toLocaleString(this.locale, { weekday: 'long' }),
+      });
     }
 
     return dayNames;
@@ -461,8 +465,12 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
           </span>`
         : ''}
       ${this.generateWeekHeader().map(
-        (dayName) => html`<span role="columnheader" part="label">
-          <span part="label-inner">${this.titleCase(dayName)}</span>
+        (weekday) => html`<span
+          role="columnheader"
+          part="label"
+          aria-label=${weekday.ariaLabel}
+        >
+          <span part="label-inner">${this.titleCase(weekday.label)}</span>
         </span> `
       )}
     </div>`;
@@ -492,9 +500,17 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     const datePartName = partNameMap(this.resolveDayItemPartName(day));
     const dateInnerPartName = datePartName.replace('date', 'date-inner');
 
-    return html`<span part=${datePartName} role="gridcell">
+    return html`<span part=${datePartName}>
       <span
         part=${dateInnerPartName}
+        role="gridcell"
+        aria-label=${day.date.toLocaleString(this.locale, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+        aria-selected=${this.isSelected(day)}
+        aria-disabled=${this.isDisabled(day.date)}
         tabindex=${this.active && areEqualDates(this.activeDate, day.date)
           ? 0
           : -1}
