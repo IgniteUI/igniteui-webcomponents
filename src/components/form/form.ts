@@ -8,7 +8,17 @@ export interface IgcFormEventMap {
   igcReset: CustomEvent;
 }
 
-// @customElement('igc-form')
+/**
+ * The form is a component used to collect user input from
+ * interactive controls.
+ *
+ * @element igc-form
+ *
+ * @slot - Default slot for the form.
+ *
+ * @fires igcSubmit - Emitted when the form is submitted.
+ * @fires igcReset - Emitted when the form is reset.
+ */
 export class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
   Constructor<LitElement>
@@ -29,6 +39,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   private _controlsWithValue = ['input', 'textarea'];
   private _controlsThatSubmit = ['input', 'button', 'igc-button'];
 
+  /** Specifies if the form should not to be validated on submit. */
   @property({ type: Boolean, reflect: true }) novalidate = false;
 
   constructor() {
@@ -37,6 +48,7 @@ export class IgcFormComponent extends EventEmitterMixin<
     this.addEventListener('click', this.handleClick);
   }
 
+  /** Submits the form. */
   submit(): boolean {
     const formData = this.getFormData();
 
@@ -49,6 +61,7 @@ export class IgcFormComponent extends EventEmitterMixin<
     return true;
   }
 
+  /** Resets the form. */
   reset() {
     const formElements = this.getFormElements();
     formElements.forEach((element) => {
@@ -89,6 +102,7 @@ export class IgcFormComponent extends EventEmitterMixin<
     return formElements;
   }
 
+  /** Retrieves the data from the form in the format of a FormData object. */
   getFormData() {
     const formData = new FormData();
 
@@ -116,6 +130,7 @@ export class IgcFormComponent extends EventEmitterMixin<
     return formData;
   }
 
+  /** Checks for validity of the form. */
   reportValidity(): boolean {
     const formElements = this.getFormElements();
     return !formElements.some(
@@ -125,7 +140,7 @@ export class IgcFormComponent extends EventEmitterMixin<
     );
   }
 
-  handleClick(event: MouseEvent) {
+  protected handleClick(event: MouseEvent) {
     const targetElement: any = event.target as HTMLElement;
     if (
       this._controlsThatSubmit.includes(targetElement.tagName.toLowerCase()) &&
