@@ -388,12 +388,22 @@ export class IgcCalendarComponent extends SizableMixin(
     this.focusActiveDate();
   }
 
-  private switchToMonths() {
+  private switchToMonths(daysViewIndex: number) {
+    this.activateDaysView(daysViewIndex);
     this.activeView = 'months';
   }
 
-  private switchToYears() {
+  private switchToYears(daysViewIndex: number) {
+    this.activateDaysView(daysViewIndex);
     this.activeView = 'years';
+  }
+
+  private activateDaysView(daysViewIndex: number) {
+    const activeDaysView = this.daysViews[
+      daysViewIndex
+    ] as IgcDaysViewComponent;
+    this.activeDate = activeDaysView.activeDate;
+    this.activeDaysViewIndex = daysViewIndex;
   }
 
   private activeDateChanged(event: CustomEvent<Date>) {
@@ -466,7 +476,11 @@ export class IgcCalendarComponent extends SizableMixin(
     }
   }
 
-  private renderNavigation(activeDate?: Date, renderButtons = true) {
+  private renderNavigation(
+    activeDate?: Date,
+    renderButtons = true,
+    daysViewIndex = 0
+  ) {
     activeDate = activeDate ?? this.activeDate;
 
     let startYear = undefined;
@@ -480,12 +494,18 @@ export class IgcCalendarComponent extends SizableMixin(
     return html`<div part="navigation">
       <div>
         ${this.activeView === 'days'
-          ? html`<button part="months-navigation" @click=${this.switchToMonths}>
+          ? html`<button
+              part="months-navigation"
+              @click=${() => this.switchToMonths(daysViewIndex)}
+            >
               ${this.formattedMonth(activeDate)}
             </button>`
           : ''}
         ${this.activeView === 'days' || this.activeView === 'months'
-          ? html`<button part="years-navigation" @click=${this.switchToYears}>
+          ? html`<button
+              part="years-navigation"
+              @click=${() => this.switchToYears(daysViewIndex)}
+            >
               ${activeDate.getFullYear()}
             </button>`
           : ''}
@@ -586,10 +606,12 @@ export class IgcCalendarComponent extends SizableMixin(
                   activeDate,
                   this.orientation === 'horizontal'
                     ? i === activeDates.length - 1
-                    : i === 0
+                    : i === 0,
+                  i
                 )}
                 <igc-days-view
                   part="days-view"
+                  .active=${this.activeDaysViewIndex === i}
                   .activeDate=${activeDate}
                   .weekStart=${this.weekStart}
                   .weekDayFormat=${this.formatOptions.weekday!}

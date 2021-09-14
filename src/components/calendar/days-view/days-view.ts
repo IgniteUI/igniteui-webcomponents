@@ -40,6 +40,9 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   @query('[tabindex="0"]')
   activeDay!: HTMLElement;
 
+  @property({ type: Boolean })
+  active = false;
+
   @property({ attribute: false })
   rangePreviewDate?: Date;
 
@@ -492,7 +495,9 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     return html`<span part=${datePartName} role="gridcell">
       <span
         part=${dateInnerPartName}
-        tabindex=${areEqualDates(this.activeDate, day.date) ? 0 : -1}
+        tabindex=${this.active && areEqualDates(this.activeDate, day.date)
+          ? 0
+          : -1}
         @click=${(event: MouseEvent) => this.dateClicked(event, day)}
         @focus=${() => this.changeRangePreview(day.date)}
         @blur=${() => this.clearRangePreview()}
