@@ -3,102 +3,159 @@ import '../igniteui-webcomponents.js';
 import { Story, Context } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
-export default {
+// region default
+const metadata = {
   title: 'Input',
   component: 'igc-input',
   argTypes: {
     type: {
+      type: '"number" | "email" | "password" | "search" | "tel" | "text" | "url"',
+      description: 'The type attribute of the control.',
+      options: ['number', 'email', 'password', 'search', 'tel', 'text', 'url'],
       control: {
         type: 'select',
-        options: [
-          'email',
-          'number',
-          'password',
-          'search',
-          'tel',
-          'text',
-          'url',
-        ],
       },
       defaultValue: 'text',
     },
-    placeholder: {
+    inputmode: {
+      type: '"email" | "search" | "tel" | "url" | "none" | "txt" | "decimal" | "numeric"',
+      description: 'The input mode attribute of the control.',
+      options: [
+        'email',
+        'search',
+        'tel',
+        'url',
+        'none',
+        'txt',
+        'decimal',
+        'numeric',
+      ],
       control: {
-        type: 'text',
+        type: 'select',
       },
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    value: {
+      type: 'string',
+      description: 'The value attribute of the control.',
+      control: 'text',
+      defaultValue: '',
+    },
+    pattern: {
+      type: 'string',
+      description: 'The pattern attribute of the control.',
+      control: 'text',
     },
     label: {
-      control: {
-        type: 'text',
-      },
+      type: 'string',
+      description: 'The label of the control.',
+      control: 'text',
       defaultValue: 'Label',
-      description: 'The label of the input',
     },
-    size: {
-      control: {
-        type: 'inline-radio',
-        options: ['small', 'medium', 'large'],
-      },
-      defaultValue: 'medium',
+    placeholder: {
+      type: 'string',
+      description: 'The placeholder attribute of the control.',
+      control: 'text',
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Controls the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
     },
     outlined: {
-      control: 'boolean',
-      defaultValue: false,
-    },
-    autofocus: {
-      control: 'boolean',
-      defaultValue: false,
-    },
-    autocomplete: {
-      control: 'text',
-    },
-    minlength: {
-      control: 'text',
-    },
-    maxlength: {
-      control: 'text',
-    },
-    min: {
-      control: 'text',
-    },
-    max: {
-      control: 'text',
-    },
-    step: {
-      control: 'text',
-    },
-    readonly: {
+      type: 'boolean',
       control: 'boolean',
       defaultValue: false,
     },
     required: {
+      type: 'boolean',
+      description: 'Makes the control a required field.',
       control: 'boolean',
       defaultValue: false,
     },
     disabled: {
+      type: 'boolean',
+      description: 'Makes the control a disabled field.',
       control: 'boolean',
       defaultValue: false,
     },
+    readonly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    minlength: {
+      type: 'number',
+      description: 'The minlength attribute of the control.',
+      control: 'number',
+    },
+    maxlength: {
+      type: 'number',
+      description: 'The maxlength attribute of the control.',
+      control: 'number',
+    },
+    step: {
+      type: 'number',
+      description: 'The step attribute of the control.',
+      control: 'number',
+    },
+    autofocus: {
+      type: 'boolean',
+      description: 'The autofocus attribute of the control.',
+      control: 'boolean',
+    },
+    autocomplete: {
+      type: 'string',
+      description: 'The autocomplete attribute of the control.',
+      control: 'text',
+    },
+    size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'medium',
+    },
   },
 };
-
+export default metadata;
 interface ArgTypes {
-  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url';
-  size: 'small' | 'medium' | 'large';
+  type: 'number' | 'email' | 'password' | 'search' | 'tel' | 'text' | 'url';
+  inputmode:
+    | 'email'
+    | 'search'
+    | 'tel'
+    | 'url'
+    | 'none'
+    | 'txt'
+    | 'decimal'
+    | 'numeric';
+  name: string;
+  value: string;
+  pattern: string;
   label: string;
   placeholder: string;
+  invalid: boolean;
   outlined: boolean;
-  autofocus: boolean;
-  autocomplete: 'on' | 'off';
-  minlength: string;
-  maxlength: string;
-  min: string | number;
-  max: string | number;
-  step: string | number;
-  readonly: boolean;
   required: boolean;
   disabled: boolean;
+  readonly: boolean;
+  minlength: number;
+  maxlength: number;
+  step: number;
+  autofocus: boolean;
+  autocomplete: string;
+  size: 'small' | 'medium' | 'large';
 }
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
   {
@@ -110,8 +167,6 @@ const Template: Story<ArgTypes, Context> = (
     autocomplete,
     minlength,
     maxlength,
-    min,
-    max,
     step,
     placeholder,
     readonly,
@@ -128,8 +183,6 @@ const Template: Story<ArgTypes, Context> = (
     dir=${direction}
     minlength=${ifDefined(minlength)}
     maxlength=${ifDefined(maxlength)}
-    min=${ifDefined(min)}
-    max=${ifDefined(max)}
     step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
     ?autofocus=${autofocus}

@@ -42,7 +42,10 @@ export interface IgcInputEventMap {
 export class IgcInputComponent extends SizableMixin(
   EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  /** @private */
   static styles = styles;
+
+  /** @private */
   static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
@@ -101,7 +104,9 @@ export class IgcInputComponent extends SizableMixin(
   @property({ type: String })
   pattern!: string;
 
-  /** The label of the control. */
+  /** The label of the control.
+   * @attr [label=Label]
+   */
   @property({ type: String })
   label!: string;
 
@@ -154,7 +159,12 @@ export class IgcInputComponent extends SizableMixin(
 
   /** The autocomplete attribute of the control. */
   @property()
-  autocomplete!: any;
+  autocomplete!: string;
+
+  constructor() {
+    super();
+    this.size = 'medium';
+  }
 
   connectedCallback() {
     super.connectedCallback();
