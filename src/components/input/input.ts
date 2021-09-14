@@ -77,7 +77,7 @@ export class IgcInputComponent extends SizableMixin(
   type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url' =
     'text';
 
-  /** The inputmode attribute of the control. */
+  /** The input mode attribute of the control. */
   @property()
   inputmode!:
     | 'none'
@@ -171,7 +171,7 @@ export class IgcInputComponent extends SizableMixin(
     });
   }
 
-  /** Checks for validity of the control and shows the browser message if it invalid. */
+  /** Checks for validity of the control and shows the browser message if it's invalid. */
   reportValidity() {
     this.input.reportValidity();
   }
