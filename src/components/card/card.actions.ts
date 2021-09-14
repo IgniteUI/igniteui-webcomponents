@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { styles } from './card.actions.material.css';
 
-/** A wrapper for card action items like buttons
+/** A container for card action items like buttons
  * @element - igc-card-actions
  *
  * @slot start - Renders items at the beginning of actions area

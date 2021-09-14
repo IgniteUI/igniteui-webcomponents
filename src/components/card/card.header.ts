@@ -4,7 +4,7 @@ import { styles } from './card.header.material.css';
 /** A wrapper for card's header
  * @element - igc-card-header
  *
- * @slot thumbnail - Renders a headers media like icon
+ * @slot thumbnail - Renders header media like icon
  * @slot title - Renders the card title
  * @slot subtitle - Renders the card subtitle
  * @slot - Renders content next to the card title
