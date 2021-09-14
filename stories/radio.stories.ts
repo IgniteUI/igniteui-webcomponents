@@ -22,31 +22,19 @@ const metadata = {
       type: 'boolean',
       description: 'The checked state of the control.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     disabled: {
       type: 'boolean',
       description: 'Disables the radio control.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     invalid: {
       type: 'boolean',
       description: 'Controls the validity of the control.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     labelPosition: {
       type: '"before" | "after"',
@@ -55,11 +43,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'after',
-        },
-      },
+      defaultValue: 'after',
     },
     ariaLabelledby: {
       type: 'string',

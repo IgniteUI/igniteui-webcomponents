@@ -19,22 +19,23 @@ import { styles } from './avatar.material.css';
  * @csspart icon - The icon wrapper of the avatar.
  */
 export class IgcAvatarComponent extends SizableMixin(LitElement) {
+  /** @private */
   static styles = [styles];
 
   /** The image source to use. */
   @property()
-  src?: string;
+  src!: string;
 
   @state()
   private hasError = false;
 
   /** Alternative text for the image. */
   @property()
-  alt?: string;
+  alt!: string;
 
   /** Initials to use as a fallback when no image is available. */
   @property()
-  initials?: string;
+  initials!: string;
 
   /** The shape of the avatar. */
   @property({ reflect: true })
