@@ -394,7 +394,9 @@ export class IgcCalendarComponent extends SizableMixin(
   }
 
   private switchToYears(daysViewIndex: number) {
-    this.activateDaysView(daysViewIndex);
+    if (this.activeView === 'days') {
+      this.activateDaysView(daysViewIndex);
+    }
     this.activeView = 'years';
   }
 
