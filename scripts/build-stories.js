@@ -69,7 +69,7 @@ async function processFileMeta(path) {
 function extractTags(meta) {
   return {
     component: meta.name,
-    args: Array.from(meta.properties ?? [])
+    args: Array.from(meta.properties || [])
       .filter(
         (prop) =>
           SUPPORTED_TYPES.includes(prop.type) ||
