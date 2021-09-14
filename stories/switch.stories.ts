@@ -72,7 +72,7 @@ interface ArgTypes {
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { label, labelPosition, checked, disabled }: ArgTypes,
+  { labelPosition, checked, disabled }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -82,7 +82,7 @@ const Template: Story<ArgTypes, Context> = (
       .disabled=${disabled}
       dir=${ifDefined(direction)}
     >
-      ${label}
+      Label
     </igc-switch>
   `;
 };
