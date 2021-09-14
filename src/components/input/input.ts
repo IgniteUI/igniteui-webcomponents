@@ -300,7 +300,7 @@ export class IgcInputComponent extends SizableMixin(
         ?disabled="${this.disabled}"
         ?required="${this.required}"
         ?autofocus="${this.autofocus}"
-        autocomplete="${ifDefined(this.autocomplete)}"
+        autocomplete="${ifDefined(this.autocomplete as any)}"
         inputmode="${ifDefined(this.inputmode)}"
         min="${ifDefined(this.min)}"
         max="${ifDefined(this.max)}"
@@ -349,7 +349,12 @@ export class IgcInputComponent extends SizableMixin(
 
   protected renderMaterial() {
     return html`
-      <div part="${partNameMap(this.resolvePartNames('container'))}">
+      <div
+        part="${partNameMap({
+          ...this.resolvePartNames('container'),
+          labelled: this.label,
+        })}"
+      >
         <div part="start">${this.renderPrefix()}</div>
         ${this.renderInput()}
         <div part="notch">${this.renderLabel()}</div>

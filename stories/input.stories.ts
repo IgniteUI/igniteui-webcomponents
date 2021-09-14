@@ -168,6 +168,7 @@ const Template: Story<ArgTypes, Context> = (
     minlength,
     maxlength,
     step,
+    value,
     placeholder,
     readonly,
     required,
@@ -185,6 +186,7 @@ const Template: Story<ArgTypes, Context> = (
     maxlength=${ifDefined(maxlength)}
     step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
+    .value=${value}
     ?autofocus=${autofocus}
     .readonly=${readonly}
     .outlined=${outlined}
