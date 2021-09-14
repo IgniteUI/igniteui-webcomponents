@@ -8,6 +8,7 @@ import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { styles } from './months-view.css';
 import { partNameMap } from '../../common/util';
 import { setDateSafe } from '../common/utils';
+import { MONTHS_PER_ROW } from '../calendar';
 
 export class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
@@ -41,6 +42,7 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
 
   constructor() {
     super();
+    this.setAttribute('role', 'grid');
     this.initMonthFormatter();
   }
 
@@ -58,13 +60,20 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
     return this.monthFormatter.format(value);
   }
 
-  private get months() {
-    let start = new Date(this.value.getFullYear(), 0, 1);
+  private get months(): Date[][] {
+    let date = new Date(this.value.getFullYear(), 0, 1);
     const result = [];
 
-    for (let i = 0; i < 12; i++) {
-      result.push(start);
-      start = this.calendarModel.timedelta(start, TimeDeltaInterval.Month, 1);
+    const rowsCount = 12 / MONTHS_PER_ROW;
+
+    for (let i = 0; i < rowsCount; i++) {
+      const row: Date[] = [];
+
+      for (let j = 0; j < MONTHS_PER_ROW; j++) {
+        row.push(date);
+        date = this.calendarModel.timedelta(date, TimeDeltaInterval.Month, 1);
+      }
+      result.push(row);
     }
 
     return result;
@@ -96,23 +105,37 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
   }
 
   render() {
-    return html`${this.months.map((month) => {
-      const monthPartName = partNameMap(this.resolveMonthPartName(month));
-      const monthInnerPartName = monthPartName.replace('month', 'month-inner');
+    return html`${this.months.map((row) => {
+      return html`<div part="months-row" role="row">
+        ${row.map((month) => {
+          const monthPartName = partNameMap(this.resolveMonthPartName(month));
+          const monthInnerPartName = monthPartName.replace(
+            'month',
+            'month-inner'
+          );
 
-      return html`<span part=${monthPartName}>
-        <span
-          part=${monthInnerPartName}
-          tabindex="${month.getFullYear() === this.value.getFullYear() &&
-          month.getMonth() === this.value.getMonth()
-            ? 0
-            : -1}"
-          @click=${() => this.selectMonth(month)}
-          @keydown=${(event: KeyboardEvent) => this.monthKeyDown(event, month)}
-        >
-          ${this.formattedMonth(month)}
-        </span>
-      </span>`;
+          return html`<span part=${monthPartName}>
+            <span
+              part=${monthInnerPartName}
+              role="gridcell"
+              aria-label=${month.toLocaleString(this.locale, {
+                month: 'long',
+                year: 'numeric',
+              })}
+              aria-selected=${month.getMonth() === this.value.getMonth()}
+              tabindex="${month.getFullYear() === this.value.getFullYear() &&
+              month.getMonth() === this.value.getMonth()
+                ? 0
+                : -1}"
+              @click=${() => this.selectMonth(month)}
+              @keydown=${(event: KeyboardEvent) =>
+                this.monthKeyDown(event, month)}
+            >
+              ${this.formattedMonth(month)}
+            </span>
+          </span>`;
+        })}
+      </div>`;
     })}`;
   }
 }

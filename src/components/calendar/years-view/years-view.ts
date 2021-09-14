@@ -4,6 +4,7 @@ import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { partNameMap } from '../../common/util';
+import { YEARS_PER_ROW } from '../calendar';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
 import { styles } from './years-view.css';
@@ -17,7 +18,7 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
    */
   static styles = [styles];
 
-  private years!: Date[];
+  private years!: Date[][];
   // private calendarModel = new Calendar();
   // private yearFormatter: any;
 
@@ -48,10 +49,11 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   //   this.initYearFormatter();
   // }
 
-  // constructor() {
-  //   super();
-  //   this.initYearFormatter();
-  // }
+  constructor() {
+    super();
+    this.setAttribute('role', 'grid');
+    // this.initYearFormatter();
+  }
 
   // private initYearFormatter() {
   //   this.yearFormatter = new Intl.DateTimeFormat(this.locale, {
@@ -72,12 +74,18 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
     const month = this.value.getMonth();
     const result = [];
 
-    for (let i = 0; i < this.yearsPerPage; i++) {
-      const year = startYear + i;
-      const date = new Date(year, month, 1);
-      // fix year since values between 0 and 100 results in 1900s
-      date.setFullYear(year);
-      result.push(date);
+    const rows = this.yearsPerPage / YEARS_PER_ROW;
+
+    for (let i = 0; i < rows; i++) {
+      const row: Date[] = [];
+      for (let j = 0; j < YEARS_PER_ROW; j++) {
+        const year = startYear + i * YEARS_PER_ROW + j;
+        const date = new Date(year, month, 1);
+        // fix year since values between 0 and 100 results in 1900s
+        date.setFullYear(year);
+        row.push(date);
+      }
+      result.push(row);
     }
 
     return result;
@@ -107,20 +115,29 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   }
 
   render() {
-    return html`${this.years.map((year) => {
-      const yearPartName = partNameMap(this.resolveYearPartName(year));
-      const yearInnerPartName = yearPartName.replace('year', 'year-inner');
+    return html`${this.years.map((row) => {
+      return html`<div part="years-row" role="row">
+        ${row.map((year) => {
+          const yearPartName = partNameMap(this.resolveYearPartName(year));
+          const yearInnerPartName = yearPartName.replace('year', 'year-inner');
 
-      return html`<span part=${yearPartName}>
-        <span
-          part=${yearInnerPartName}
-          tabindex="${year.getFullYear() === this.value.getFullYear() ? 0 : -1}"
-          @click=${() => this.selectYear(year)}
-          @keydown=${(event: KeyboardEvent) => this.yearKeyDown(event, year)}
-        >
-          ${this.formattedYear(year)}
-        </span>
-      </span>`;
+          return html`<span part=${yearPartName}>
+            <span
+              part=${yearInnerPartName}
+              role="gridcell"
+              aria-selected=${year.getFullYear() === this.value.getFullYear()}
+              tabindex="${year.getFullYear() === this.value.getFullYear()
+                ? 0
+                : -1}"
+              @click=${() => this.selectYear(year)}
+              @keydown=${(event: KeyboardEvent) =>
+                this.yearKeyDown(event, year)}
+            >
+              ${this.formattedYear(year)}
+            </span>
+          </span>`;
+        })}
+      </div>`;
     })}`;
   }
 }

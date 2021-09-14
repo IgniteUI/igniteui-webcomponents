@@ -16,8 +16,8 @@ import { watch } from '../common/decorators';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils';
 import { SizableMixin } from '../common/mixins/sizable';
 
-const MONTHS_PER_ROW = 3;
-const YEARS_PER_ROW = 3;
+export const MONTHS_PER_ROW = 3;
+export const YEARS_PER_ROW = 3;
 
 /**
  * @element igc-calendar
