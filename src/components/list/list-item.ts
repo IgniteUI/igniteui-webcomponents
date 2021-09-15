@@ -8,13 +8,13 @@ import { styles } from './list-item.material.css';
  * @element igc-list-item
  *
  * @slot - Renders a custom content.
- * @slot start - Renders the left aligned content.
- * @slot end - Renders the right aligned content.
+ * @slot start - Renders the content before the title and subtitle.
+ * @slot end - Renders the content after the title and subtitle.
  * @slot title - Renders the title.
  * @slot subtitle - Renders the sub title below the title.
  *
- * @csspart start - The left aligned container.
- * @csspart end - The right aligned container.
+ * @csspart start - The start container.
+ * @csspart end - The end container.
  * @csspart content - The header and custom template container.
  * @csspart header - The title and subtitle container.
  * @csspart title - The title wrapper.
