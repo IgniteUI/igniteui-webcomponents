@@ -33,7 +33,7 @@
         }
     }
 
-    igc-radio:not([disabled])[checked]::part(control) {
+    igc-radio::part(control checked) {
         &::before {
             background: utils.color(primary, 500);
         }
@@ -43,8 +43,8 @@
         }
     }
 
-    igc-radio:not([disabled])[checked]:hover::part(control),
-    igc-radio:not([disabled])[checked]:focus-within::part(control) {
+    igc-radio:hover::part(control checked),
+    igc-radio:focus-within::part(control checked) {
         &::after {
             border-color: utils.color(primary, 900);
         }
@@ -54,19 +54,19 @@
         }
     }
 
-    igc-radio:not([checked])[invalid]::part(control) {
+    igc-radio[invalid]::part(control) {
         &::after {
             border-color: utils.color(error, 500);
         }
     }
 
-    igc-radio:not([checked])[invalid]:hover::part(control) {
+    igc-radio[invalid]:hover::part(control) {
         &::before {
             background: utils.color(error, 500);
         }
     }
 
-    igc-radio[checked][invalid]::part(control) {
+    igc-radio[invalid]::part(control checked) {
         &::after {
             border-color: utils.color(error, 500);
         }
@@ -76,15 +76,15 @@
         }
     }
 
-    igc-radio:not([checked])[invalid]:hover::part(control),
-    igc-radio:not([checked])[invalid]:focus-within::part(control) {
+    igc-radio[invalid]:hover::part(control),
+    igc-radio[invalid]:focus-within::part(control) {
         &::after {
             border-color: utils.color(error, 700);
         }
     }
 
-    igc-radio[checked][invalid]:hover::part(control),
-    igc-radio[checked][invalid]:focus-within::part(control) {
+    igc-radio[invalid]:hover::part(control checked),
+    igc-radio[invalid]:focus-within::part(control checked) {
         &::after {
             border-color: utils.color(error, 700);
         }
@@ -94,13 +94,13 @@
         }
     }
 
-    igc-radio:not([checked])[disabled]::part(control) {
+    igc-radio[disabled]::part(control) {
         &::after {
             border-color: utils.color(gray, 400);
         }
     }
 
-    igc-radio[checked][disabled]::part(control) {
+    igc-radio[disabled]::part(control checked) {
         &::after {
             border-color: utils.color(gray, 400);
         }

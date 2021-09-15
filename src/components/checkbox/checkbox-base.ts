@@ -29,7 +29,7 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   disabled = false;
 
   /** The checked state of the control. */
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean })
   checked = false;
 
   /** Makes the control a required field. */

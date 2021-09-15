@@ -4,6 +4,7 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { styles } from './switch.material.css';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
+import { partNameMap } from '../common/util.js';
 
 let nextId = 0;
 
@@ -44,7 +45,7 @@ export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   render() {
     return html`
       <label
-        part="base"
+        part=${partNameMap({ base: true, checked: this.checked })}
         for="${this.inputId}"
         @mousedown="${this.handleMouseDown}"
       >
@@ -64,10 +65,15 @@ export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           @blur="${this.handleBlur}"
           @focus="${this.handleFocus}"
         />
-        <span part="control">
-          <span part="thumb"></span>
+        <span part=${partNameMap({ control: true, checked: this.checked })}>
+          <span
+            part=${partNameMap({ thumb: true, checked: this.checked })}
+          ></span>
         </span>
-        <span part="label" id="${this.labelId}">
+        <span
+          part=${partNameMap({ label: true, checked: this.checked })}
+          id="${this.labelId}"
+        >
           <slot></slot>
         </span>
       </label>
