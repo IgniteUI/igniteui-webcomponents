@@ -11,7 +11,7 @@ import { styles } from './list-item.material.css';
  * @slot start - Renders the content before the title and subtitle.
  * @slot end - Renders the content after the title and subtitle.
  * @slot title - Renders the title.
- * @slot subtitle - Renders the sub title below the title.
+ * @slot subtitle - Renders the subtitle.
  *
  * @csspart start - The start container.
  * @csspart end - The end container.
