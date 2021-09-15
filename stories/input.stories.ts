@@ -122,7 +122,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'medium',
+      defaultValue: 'large',
     },
   },
 };
