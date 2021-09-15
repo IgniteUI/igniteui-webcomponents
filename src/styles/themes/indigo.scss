@@ -8,6 +8,7 @@
 @use '../../components/checkbox/switch.indigo' as switch;
 @use '../../components/navbar/navbar.indigo' as navbar;
 @use '../../components/list/list.indigo' as list;
+@use '../../components/input/input.indigo' as input;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -187,3 +188,4 @@ $type-scale: utils.extend($indigo-type-scale);
 @include switch.theme();
 @include navbar.theme();
 @include list.theme();
+@include input.theme();
