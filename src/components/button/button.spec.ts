@@ -87,12 +87,12 @@ describe('Button component', () => {
     });
 
     it('sets variant property successfully', async () => {
-      el.variant = 'raised';
-      expect(el.variant).to.equal('raised');
+      el.variant = 'contained';
+      expect(el.variant).to.equal('contained');
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`large raised`)}"/>`,
+        `<button class="${classValue(`large contained`)}"/>`,
         DIFF_OPTIONS
       );
 
@@ -192,7 +192,7 @@ describe('Button component', () => {
   });
 
   describe('applies the correct CSS class to the base element for variant', () => {
-    const variants = ['flat', 'raised', 'outlined', 'fab'];
+    const variants = ['flat', 'contained', 'outlined', 'fab'];
 
     variants.forEach((variant) => {
       it(variant, async () => {
@@ -228,10 +228,10 @@ describe('Button component', () => {
 
   it('applies all button specific properties to the wrapped base element', async () => {
     el = await createButtonComponent(
-      `<igc-button type="submit" variant="raised" size="medium">Submit<igc-button>`
+      `<igc-button type="submit" variant="contained" size="medium">Submit<igc-button>`
     );
     expect(el).shadowDom.to.equal(
-      `<button class="${classValue(`medium raised`)}" type="submit" />`,
+      `<button class="${classValue(`medium contained`)}" type="submit" />`,
       DIFF_OPTIONS
     );
   });

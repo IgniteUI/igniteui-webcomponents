@@ -31,7 +31,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   disabled = false;
 
   @property({ reflect: true })
-  variant: 'flat' | 'raised' | 'outlined' | 'fab' = 'flat';
+  variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'flat';
 
   focus(options?: FocusOptions) {
     this.nativeElement.focus(options);
@@ -56,7 +56,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
       native: true,
       flat: variant === 'flat',
       outlined: variant === 'outlined',
-      raised: variant === 'raised',
+      contained: variant === 'contained',
       fab: variant === 'fab',
       small: size === 'small',
       medium: size === 'medium',
