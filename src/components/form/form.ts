@@ -113,7 +113,7 @@ export class IgcFormComponent extends EventEmitterMixin<
         for (let i = 0; i < element.options.length; i++) {
           const option = element.options[i];
           if (option.selected) {
-            formData.append(element.name, option.text);
+            formData.append(element.name, option.value);
           }
         }
       } else if (
