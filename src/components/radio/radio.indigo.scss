@@ -14,18 +14,18 @@
     }
 
     igc-radio:hover::part(control) {
-        box-shadow: 0 0 0 4px utils.color(gray, 200, .87);
+        box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 200, .87);
     }
 
     igc-radio:focus-within::part(control) {
-        box-shadow: 0 0 0 4px utils.color(gray, 300, .87);
+        box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 300, .87);
     }
 
-    igc-radio[checked]:hover::part(control) {
-        box-shadow: 0 0 0 4px utils.color(secondary, 100, .87);
+    igc-radio:hover::part(control checked) {
+        box-shadow: 0 0 0 utils.rem(4px) utils.color(secondary, 100, .87);
     }
 
-    igc-radio[checked]:focus-within::part(control) {
+    igc-radio:focus-within::part(control checked) {
         box-shadow: 0 0 0 utils.rem(4px) utils.color(secondary, 200, .87);
     }
 
