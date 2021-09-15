@@ -1,39 +1,33 @@
 import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
-import { Story } from './story.js';
+import { Context, Story } from './story.js';
 // import { ifDefined } from 'lit-html/directives/if-defined';
 
-export default {
+// region default
+const metadata = {
   title: 'Form',
   component: 'igc-form',
-  parameters: {
-    actions: {
-      handles: ['igcSubmit', 'igcReset'],
-    },
-  },
   argTypes: {
     novalidate: {
+      type: 'boolean',
+      description:
+        'Specifies if the form should not to be validated on submit.',
       control: 'boolean',
-      description: 'Sets wether the validating of the form should be omitted.',
-      table: {
-        type: {
-          summary: 'boolean',
-        },
-        defaultValue: {
-          summary: 'false',
-        },
-      },
+      defaultValue: false,
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
   novalidate: boolean;
 }
+// endregion
 
-interface Context {
-  globals: { theme: string; direction: string };
-}
+(metadata as any).parameters = {
+  actions: {
+    handles: ['igcSubmit', 'igcReset'],
+  },
+};
 
 const Template: Story<ArgTypes, Context> = ({
   novalidate = false,
