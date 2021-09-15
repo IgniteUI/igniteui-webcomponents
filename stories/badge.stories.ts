@@ -43,9 +43,10 @@ interface ArgTypes {
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { outlined = false, shape, variant, content = '' }: ArgTypes,
+  { outlined = false, shape, variant }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
+  const content = '';
   return html`
     <igc-badge
       ?outlined=${outlined}
