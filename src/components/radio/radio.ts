@@ -6,6 +6,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { watch } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { partNameMap } from '../common/util.js';
 
 let nextId = 0;
 
@@ -36,7 +37,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
   @property()
   value!: string;
 
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean })
   checked = false;
 
   @property({ type: Boolean, reflect: true })
@@ -114,7 +115,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
   render() {
     return html`
       <label
-        part="base"
+        part="${partNameMap({ base: true, checked: this.checked })}"
         for="${this.inputId}"
         @mousedown="${this.handleMouseDown}"
       >
@@ -135,8 +136,13 @@ export class IgcRadioComponent extends EventEmitterMixin<
           @blur="${this.handleBlur}"
           @focus="${this.handleFocus}"
         />
-        <span part="control"></span>
-        <span part="label" id="${this.labelId}">
+        <span
+          part="${partNameMap({ control: true, checked: this.checked })}"
+        ></span>
+        <span
+          part="${partNameMap({ label: true, checked: this.checked })}"
+          id="${this.labelId}"
+        >
           <slot></slot>
         </span>
       </label>

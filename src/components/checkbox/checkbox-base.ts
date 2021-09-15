@@ -25,7 +25,7 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   disabled = false;
 
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean })
   checked = false;
 
   @property({ type: Boolean, reflect: true })
