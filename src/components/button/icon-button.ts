@@ -55,7 +55,7 @@ export class IgcIconButtonComponent extends IgcButtonBaseComponent {
         part="icon"
         name=${ifDefined(this.name)}
         collection=${ifDefined(this.collection)}
-        .mirrored=${ifDefined(this.mirrored)}
+        .mirrored=${this.mirrored}
         size=${ifDefined(this.size)}
         aria-hidden="true"
       ></igc-icon>
@@ -63,9 +63,9 @@ export class IgcIconButtonComponent extends IgcButtonBaseComponent {
   }
 
   render() {
-    const isLink = !!this.href;
+    const link = !!this.href;
 
-    return isLink
+    return link
       ? html`
           <a
             part="base"
