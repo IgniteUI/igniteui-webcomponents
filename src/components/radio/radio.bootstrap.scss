@@ -65,6 +65,10 @@
         }
     }
 
+    igc-radio[invalid]:focus-within::part(control) {
+        box-shadow: 0 0 0 #{calc(var(--size, #{utils.rem(16px)}) / 4)} #{utils.color(error, 100)};
+    }
+
     igc-radio[checked][disabled]::part(control) {
         &::after {
             background: #{utils.color(primary, 200)};
