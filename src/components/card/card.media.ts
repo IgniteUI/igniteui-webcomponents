@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { styles } from './card.media.material.css';
 
 /** A wrapper for card's media - could be an image, gif, video
- * @element - igc-card-media
+ * @element igc-card-media
  *
  * @slot - Renders the card media content
  */

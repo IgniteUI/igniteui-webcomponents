@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { styles } from './card.header.material.css';
 
 /** A wrapper for card's header
- * @element - igc-card-header
+ * @element igc-card-header
  *
  * @slot thumbnail - Renders header media like icon
  * @slot title - Renders the card title

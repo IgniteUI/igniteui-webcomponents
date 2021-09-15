@@ -136,8 +136,8 @@ async function buildStories() {
       const story = await readFile(outFile, 'utf8');
       await writeFile(outFile, buildStoryMeta(story, meta), 'utf8');
     } catch (e) {
-      // console.error(e);
-      // process.exit(-1);
+      console.error(e);
+      process.exit(-1);
       continue;
     }
   }
