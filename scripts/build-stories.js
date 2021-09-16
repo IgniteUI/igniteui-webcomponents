@@ -23,7 +23,6 @@ const capitalize = (str) => {
   return arr.join(' ');
 };
 
-
 /**
  * Fixes the TS types to appropriate controls in the storybook js presentation.
  *
@@ -31,16 +30,19 @@ const capitalize = (str) => {
  * @returns
  */
 function fixControlProp(propType, options) {
-  if (propType === 'string') { return 'text'; }
-  if (propType === 'Date') { return 'date'; }
+  if (propType === 'string') {
+    return 'text';
+  }
+  if (propType === 'Date') {
+    return 'date';
+  }
   if (options) {
     return {
-      type: options.length > 4 ? 'select': 'inline-radio',
+      type: options.length > 4 ? 'select' : 'inline-radio',
     };
   }
   return propType;
 }
-
 
 /**
  *
@@ -53,7 +55,6 @@ async function processFileMeta(path) {
   return extractTags(data.tags[0]);
 }
 
-
 /**
  *
  * @param {object} meta
@@ -63,13 +64,15 @@ function extractTags(meta) {
   return {
     component: meta.name,
     args: Array.from(meta.properties)
-      .filter(prop =>
-        SUPPORTED_TYPES.includes(prop.type) ||
-        (prop.type.includes('|') && prop.type.startsWith('"')))
-      .map(prop => {
-        const options = prop.type.includes('|') ?
-          prop.type.split('|').map(part => part.trim().replace(/"/g, '')) :
-          undefined;
+      .filter(
+        (prop) =>
+          SUPPORTED_TYPES.includes(prop.type) ||
+          (prop.type.includes('|') && prop.type.startsWith('"'))
+      )
+      .map((prop) => {
+        const options = prop.type.includes('|')
+          ? prop.type.split('|').map((part) => part.trim().replace(/"/g, ''))
+          : undefined;
         return [
           prop.name,
           {
@@ -77,18 +80,25 @@ function extractTags(meta) {
             description: prop.description,
             options,
             control: fixControlProp(prop.type, options),
-            table: prop.default ?
-            {
-              defaultValue: { summary: prop.type === 'boolean' ? prop.default === 'true' :
-                prop.type === 'Date' ? undefined : prop.default.replace(/"/g, '') }
-            } : undefined,
-          }
-        ]
-      })
+            defaultValue: prop.default
+              ? prop.type === 'boolean'
+                ? prop.default === 'true'
+                : prop.type === 'Date'
+                ? undefined
+                : prop.default.replace(/"/g, '')
+              : undefined,
+          },
+        ];
+      }),
   };
 }
 
-const buildArgTypes = (meta, indent="  ") => ['interface ArgTypes {', ...meta.args.map(arg => `${indent}${arg[0]}: ${arg[1].type};`), '}'].join('\n');
+const buildArgTypes = (meta, indent = '  ') =>
+  [
+    'interface ArgTypes {',
+    ...meta.args.map((arg) => `${indent}${arg[0]}: ${arg[1].type};`),
+    '}',
+  ].join('\n');
 
 /**
  *
@@ -100,11 +110,15 @@ function buildStoryMeta(story, meta) {
   const storyMeta = {
     title: capitalize(meta.component.replace(VENDOR_PREFIX, '')),
     component: meta.component,
-    argTypes: {}
+    argTypes: {},
   };
 
-  meta.args.forEach(arg => storyMeta.argTypes[arg[0]] = arg[1]);
-  const payload = `// region default\nconst metadata = ${JSON.stringify(storyMeta, undefined, 2)}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`;
+  meta.args.forEach((arg) => (storyMeta.argTypes[arg[0]] = arg[1]));
+  const payload = `// region default\nconst metadata = ${JSON.stringify(
+    storyMeta,
+    undefined,
+    2
+  )}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`;
 
   return story.toString().replace(REPLACE_REGEX, payload);
 }
@@ -114,7 +128,10 @@ async function buildStories() {
 
   for (const file of files) {
     const meta = await processFileMeta(path.join(SRC_DIR, file));
-    const outFile = path.join(DEST_DIR, `${meta.component.replace(VENDOR_PREFIX, '')}.stories.ts`);
+    const outFile = path.join(
+      DEST_DIR,
+      `${meta.component.replace(VENDOR_PREFIX, '')}.stories.ts`
+    );
     try {
       const story = await readFile(outFile, 'utf8');
       await writeFile(outFile, buildStoryMeta(story, meta), 'utf8');
@@ -123,12 +140,9 @@ async function buildStories() {
       process.exit(-1);
     }
   }
-
 }
 
-
-
-( async () => {
+(async () => {
   buildStories();
   console.log('Stories metadata generation finished');
 })();
