@@ -31,11 +31,7 @@ const metadata = {
       type: 'boolean',
       description: 'Determines whether the button is disabled.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     variant: {
       type: '"flat" | "contained" | "outlined" | "fab"',
@@ -43,11 +39,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'flat',
-        },
-      },
+      defaultValue: 'flat',
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -56,11 +48,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'large',
-        },
-      },
+      defaultValue: 'large',
     },
   },
 };

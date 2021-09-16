@@ -26,11 +26,7 @@ const metadata = {
       type: 'boolean',
       description: 'Whether to flip the icon. Useful for RTL layouts.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     href: {
       type: 'string',
@@ -59,11 +55,7 @@ const metadata = {
       type: 'boolean',
       description: 'Determines whether the button is disabled.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     variant: {
       type: '"flat" | "contained" | "outlined"',
@@ -72,11 +64,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'flat',
-        },
-      },
+      defaultValue: 'flat',
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -85,11 +73,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'large',
-        },
-      },
+      defaultValue: 'large',
     },
   },
 };
@@ -129,9 +113,12 @@ const Template: Story<ArgTypes, Context> = (
   {
     name = 'biking',
     collection = 'default',
-    size = 'medium',
     mirrored,
     href,
+    download,
+    size,
+    target,
+    rel,
     variant,
     disabled,
   }: ArgTypes,
@@ -141,23 +128,15 @@ const Template: Story<ArgTypes, Context> = (
     <igc-icon-button
       .name=${name}
       .collection=${collection}
-      .size=${size}
       .mirrored=${mirrored}
-      .disabled=${ifDefined(disabled)}
       href=${ifDefined(href)}
+      target=${ifDefined(target)}
+      rel=${ifDefined(rel)}
       dir=${ifDefined(direction)}
+      download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-    >
-    </igc-icon-button>
-    <igc-icon-button
-      .name=${name}
-      .collection=${collection}
       .size=${size}
-      .mirrored=${mirrored}
       .disabled=${ifDefined(disabled)}
-      href=${ifDefined(href)}
-      dir=${ifDefined(direction)}
-      variant=${ifDefined(variant)}
     >
     </igc-icon-button>
   `;
