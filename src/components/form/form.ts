@@ -51,9 +51,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   /** Submits the form. */
   submit(): boolean {
     const formData = this.getFormData();
-
-    const isValid = this.reportValidity();
-    if (!this.novalidate && !isValid) {
+    if (!this.novalidate && !this.reportValidity()) {
       return false;
     }
 
@@ -76,7 +74,7 @@ export class IgcFormComponent extends EventEmitterMixin<
           (element.type === 'checkbox' || element.type == 'radio')) ||
         (tagName !== 'input' && this._controlsWithChecked.includes(tagName))
       ) {
-        element.checked = element.defaultChecked;
+        element.checked = element.hasAttribute('checked');
       } else if (this._controlsWithValue.includes(tagName)) {
         element.value = element.defaultValue;
       }
