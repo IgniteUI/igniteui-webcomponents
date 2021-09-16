@@ -24,3 +24,7 @@
 storybook-static
 
 *.css.ts
+
+# component metadata
+vscode-html-custom-data.json
+custom-elements.json

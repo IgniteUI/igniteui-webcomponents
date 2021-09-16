@@ -3,11 +3,13 @@ import '../igniteui-webcomponents.js';
 import { Context, Story } from './story.js';
 
 // region default
-export default {
+const metadata = {
   title: 'List',
   component: 'igc-list',
   argTypes: {
     size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
       control: {
         type: 'inline-radio',
@@ -16,11 +18,11 @@ export default {
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
 }
-//end region
+// endregion
 
 const employeeData = [
   {
