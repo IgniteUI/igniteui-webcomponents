@@ -3,10 +3,13 @@ import '../igniteui-webcomponents.js';
 import { Context, Story } from './story.js';
 
 // region default
-export default {
+const metadata = {
   title: 'Ripple',
   component: 'igc-ripple',
+  argTypes: {},
 };
+export default metadata;
+
 // endregion
 
 const Template: Story<null, Context> = () => html`

@@ -4,38 +4,68 @@ import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 // region default
-export default {
+const metadata = {
   title: 'Radio',
   component: 'igc-radio',
   argTypes: {
-    label: { control: 'text', defaultValue: 'Label' },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    value: {
+      type: 'string',
+      description: 'The value attribute of the control.',
+      control: 'text',
+    },
+    checked: {
+      type: 'boolean',
+      description: 'The checked state of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'Disables the radio control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Controls the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     labelPosition: {
+      type: '"before" | "after"',
+      description: 'The label position of the radio control.',
       options: ['before', 'after'],
       control: {
         type: 'inline-radio',
       },
       defaultValue: 'after',
     },
-    checked: {
-      type: 'boolean',
-      defaultValue: false,
-    },
-    disabled: {
-      type: 'boolean',
-      defaultValue: false,
+    ariaLabelledby: {
+      type: 'string',
+      description: 'Sets the aria-labelledby attribute for the radio control.',
+      control: 'text',
     },
   },
 };
+export default metadata;
 interface ArgTypes {
-  label: string;
-  labelPosition: 'before' | 'after';
+  name: string;
+  value: string;
   checked: boolean;
   disabled: boolean;
+  invalid: boolean;
+  labelPosition: 'before' | 'after';
+  ariaLabelledby: string;
 }
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { label, labelPosition, checked, disabled }: ArgTypes,
+  { labelPosition, checked, disabled }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-radio
@@ -44,7 +74,7 @@ const Template: Story<ArgTypes, Context> = (
     .checked="${checked}"
     dir=${ifDefined(direction)}
   >
-    ${label}
+    Label
   </igc-radio>
 `;
 
