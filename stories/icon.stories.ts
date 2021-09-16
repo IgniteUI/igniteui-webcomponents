@@ -79,6 +79,8 @@ const registerIconClick = () => {
   );
 };
 
+metadata.argTypes.name.defaultValue = 'biking';
+
 const Template: Story<ArgTypes, Context> = (
   {
     name = 'biking',
