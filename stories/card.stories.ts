@@ -2,23 +2,23 @@ import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
 import { Story } from './story';
 
-export default {
+// region default
+const metadata = {
   title: 'Card',
   component: 'igc-card',
   argTypes: {
     outlined: {
-      control: {
-        type: 'boolean',
-        defaultValue: false,
-      },
+      type: 'boolean',
+      control: 'boolean',
+      defaultValue: false,
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
   outlined: boolean;
 }
-
+// endregion
 interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }

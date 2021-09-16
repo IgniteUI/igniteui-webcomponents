@@ -24,6 +24,7 @@ const metadata = {
     },
     variant: {
       type: '"flat" | "contained" | "outlined" | "fab"',
+      description: 'Sets the variant of the button.',
       options: ['flat', 'contained', 'outlined', 'fab'],
       control: {
         type: 'inline-radio',

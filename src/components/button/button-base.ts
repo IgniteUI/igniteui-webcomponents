@@ -30,13 +30,16 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   disabled = false;
 
+  /** Sets the variant of the button. */
   @property({ reflect: true })
   variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'flat';
 
+  /** Sets focus in the button. */
   focus(options?: FocusOptions) {
     this.nativeElement.focus(options);
   }
 
+  /** Removes focus from the button. */
   blur() {
     this.nativeElement.blur();
   }
