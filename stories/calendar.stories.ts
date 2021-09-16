@@ -11,11 +11,7 @@ const metadata = {
     hasHeader: {
       type: 'boolean',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: true,
-        },
-      },
+      defaultValue: true,
     },
     headerOrientation: {
       type: '"vertical" | "horizontal"',
@@ -23,11 +19,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'horizontal',
-        },
-      },
+      defaultValue: 'horizontal',
     },
     orientation: {
       type: '"vertical" | "horizontal"',
@@ -35,20 +27,12 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'horizontal',
-        },
-      },
+      defaultValue: 'horizontal',
     },
     visibleMonths: {
       type: 'number',
       control: 'number',
-      table: {
-        defaultValue: {
-          summary: '1',
-        },
-      },
+      defaultValue: '1',
     },
     activeView: {
       type: '"days" | "months" | "years"',
@@ -56,11 +40,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'days',
-        },
-      },
+      defaultValue: 'days',
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -69,11 +49,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'large',
-        },
-      },
+      defaultValue: 'large',
     },
     selection: {
       type: '"single" | "multi" | "range"',
@@ -81,20 +57,12 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'single',
-        },
-      },
+      defaultValue: 'single',
     },
     showWeekNumbers: {
       type: 'boolean',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     weekStart: {
       type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
@@ -110,36 +78,21 @@ const metadata = {
       control: {
         type: 'select',
       },
-      table: {
-        defaultValue: {
-          summary: 'sunday',
-        },
-      },
+      defaultValue: 'sunday',
     },
     activeDate: {
       type: 'Date',
       control: 'date',
-      table: {
-        defaultValue: {},
-      },
     },
     locale: {
       type: 'string',
       control: 'text',
-      table: {
-        defaultValue: {
-          summary: 'en',
-        },
-      },
+      defaultValue: 'en',
     },
     hideOutsideDays: {
       type: 'boolean',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
   },
 };
