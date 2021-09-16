@@ -6,6 +6,7 @@
 @use '../../components/list/list.fluent' as list;
 @use '../../components/checkbox/switch.fluent' as switch;
 @use '../../components/calendar/calendar.fluent' as calendar;
+@use '../../components/input/input.fluent' as input;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -157,5 +158,4 @@ $type-scale: utils.extend($fluent-type-scale);
 @include list.theme();
 @include switch.theme();
 @include calendar.theme();
-
-
+@include input.theme();
