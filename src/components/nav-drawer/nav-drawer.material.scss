@@ -2,31 +2,70 @@
 @use '../../styles/utilities' as *;
 
 :host {
+    flex-shrink: 0;
+    font-family: var(--igc-font-family);
+
+    [part='base'] {
+        position: fixed;
+        height: 100%;
+        min-height: 100%;
+        overflow-x: hidden;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 999;
+        background: color(surface, 500);
+        box-shadow: var(--igc-elevation-16);
+        border-radius: 0;
+        transition: all ease-out .3s, .3s;
+    }
+
     [part='main'] {
-        width: 250px;
-        margin-top: 10px;
+        width: rem(256px);
     }
-    ::slotted([slot='mini']) {
-        margin: 10px
+
+    [part='mini'] {
+        width: rem(60px);
     }
-    background-color: #2c2c2c;
 }
 
-.end {
-    color: #EC8B83;
+:host([position='bottom']) {
+    [part='base'] {
+        height: 50vh;
+        min-height: initial;
+        top: auto;
+        width: 100%;
+    }
 }
 
-.top {
-    color: #9369A8;
+:host([position='top']) {
+    [part='base'] {
+        height: 50vh;
+        min-height: initial;
+        bottom: auto;
+        width: 100%;
+    }
 }
 
-.bottom {
-    color: #9FDBAD;
+:host([position='end']) {
+    [part='base'] {
+        left: auto;
+        right: 0;
+    }
 }
 
-:host(:not([pinned])) {
-    position: absolute;
-    z-index: 999;
+:host([pinned]) {
+    [part='base'] {
+        position: relative;
+        box-shadow: none;
+        z-index: 0;
+    }
+}
+
+:host([open]) {
+    [part='mini'] {
+        display: none;
+    }
 }
 
 :host(:not([open])) {
@@ -35,9 +74,7 @@
     }
 }
 
-:host([open]) {
-    color: #fff;
-    [part='mini'] {
-        display: none;
-    }
+:host([pinned][position='end']) {
+    order: 1;
+    margin-inline-start: auto;
 }

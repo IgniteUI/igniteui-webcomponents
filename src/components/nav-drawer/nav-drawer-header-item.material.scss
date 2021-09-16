@@ -1,0 +1,11 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: block;
+    padding: rem(20px) rem(16px);
+    white-space: nowrap;
+    color: contrast-color(surface, 500);
+    opacity: .87;
+    @include type-category('subtitle-1');
+}

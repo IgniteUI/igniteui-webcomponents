@@ -133,38 +133,35 @@ const Template: Story<ArgTypes, Context> = (
         .pinned=${pinned}
         .position=${position}
       >
-        <igc-nav-drawer-header-item style="margin-left: 10px;"
-          >Sample Drawer</igc-nav-drawer-header-item
-        >
+        <igc-nav-drawer-header-item>Sample Drawer</igc-nav-drawer-header-item>
 
         <igc-nav-drawer-item .disabled=${disabled}>
           <igc-icon slot="icon" name="home"></igc-icon>
-          <h2>${content1}</h2>
+          <span>${content1}</span>
         </igc-nav-drawer-item>
 
         <igc-nav-drawer-item .active=${active}>
           <igc-icon slot="icon" name="search"></igc-icon>
-          <h2>${content2}</h2>
+          <span>${content2}</span>
         </igc-nav-drawer-item>
+
+        <div slot="mini">
+          <igc-nav-drawer-item>
+            <igc-icon slot="icon" name="home"></igc-icon>
+          </igc-nav-drawer-item>
+
+          <igc-nav-drawer-item>
+            <igc-icon slot="icon" name="search"></igc-icon>
+          </igc-nav-drawer-item>
+        </div>
       </igc-nav-drawer>
 
       <div>
         <p>Sample page content</p>
+        <igc-button @click="${handleOpen}">Open</igc-button>
+        <igc-button @click="${handleClose}">Close</igc-button>
+        <igc-button @click="${handleToggle}">Toggle</igc-button>
       </div>
-
-      <div slot="mini">
-        <igc-nav-drawer-item>
-          <igc-icon slot="icon" name="home"></igc-icon>
-        </igc-nav-drawer-item>
-
-        <igc-nav-drawer-item>
-          <igc-icon slot="icon" name="search"></igc-icon>
-        </igc-nav-drawer-item>
-      </div>
-
-      <igc-button @click="${handleOpen}">Open</igc-button>
-      <igc-button @click="${handleClose}">Close</igc-button>
-      <igc-button @click="${handleToggle}">Toggle</igc-button>
     </div>
   `;
 };
