@@ -19,32 +19,20 @@ const metadata = {
       type: 'string',
       description: 'The name of the icon glyph to draw.',
       control: 'text',
-      table: {
-        defaultValue: {
-          summary: '',
-        },
-      },
+      defaultValue: '',
     },
     collection: {
       type: 'string',
       description:
         'The name of the registered collection for look up of icons.\nDefaults to `default`.',
       control: 'text',
-      table: {
-        defaultValue: {
-          summary: 'default',
-        },
-      },
+      defaultValue: 'default',
     },
     mirrored: {
       type: 'boolean',
       description: 'Whether to flip the icon. Useful for RTL layouts.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -53,11 +41,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'medium',
-        },
-      },
+      defaultValue: 'medium',
     },
   },
 };
@@ -94,6 +78,8 @@ const registerIconClick = () => {
     'material'
   );
 };
+
+metadata.argTypes.name.defaultValue = 'biking';
 
 const Template: Story<ArgTypes, Context> = (
   {
