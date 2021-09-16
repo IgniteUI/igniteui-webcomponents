@@ -145,6 +145,7 @@ async function buildStories() {
       `${meta.component.replace(VENDOR_PREFIX, '')}.stories.ts`
     );
     try {
+      const story = await readFile(outFile, 'utf8');
       await writeFile(outFile, buildStoryMeta(story, meta), 'utf8');
     } catch (e) {
       if (e.code === 'ENOENT') {
