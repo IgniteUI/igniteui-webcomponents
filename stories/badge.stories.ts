@@ -4,54 +4,49 @@ import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 // region default
-export default {
+const metadata = {
   title: 'Badge',
   component: 'igc-badge',
   argTypes: {
-    shape: {
-      options: ['rounded', 'square'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'rounded',
-    },
     variant: {
-      options: ['primary', 'info', 'success', 'warning', 'danger'],
-      control: { type: 'inline-radio' },
+      type: '"primary" | "info" | "success" | "warning" | "danger" | undefined',
+      description: 'The type of badge.',
+      options: ['primary', 'info', 'success', 'warning', 'danger', 'undefined'],
+      control: {
+        type: 'select',
+      },
       defaultValue: 'primary',
     },
     outlined: {
+      type: 'boolean',
+      description: 'Sets whether to draw an outlined version of the badge.',
       control: 'boolean',
-      description: 'Determines whether the badge is outlined.',
-      table: {
-        type: {
-          summary: 'boolean',
-        },
-        defaultValue: {
-          summary: 'false',
-        },
-      },
+      defaultValue: false,
     },
-    content: {
+    shape: {
+      type: '"rounded" | "square" | undefined',
+      description: 'The shape of the badge.',
+      options: ['rounded', 'square', 'undefined'],
       control: {
-        type: 'text',
+        type: 'inline-radio',
       },
-      defaultValue: '',
-      description: 'Content of the badge',
+      defaultValue: 'rounded',
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
-  shape: 'rounded' | 'square';
-  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
+  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger' | undefined;
   outlined: boolean;
-  content: string;
+  shape: 'rounded' | 'square' | undefined;
 }
-//end region
+// endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { outlined = false, shape, variant, content = '' }: ArgTypes,
+  { outlined = false, shape, variant }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
+  const content = '';
   return html`
     <igc-badge
       ?outlined=${outlined}

@@ -11,7 +11,7 @@ input[type='radio'] {
     @include hide-default();
 }
 
-[part='base'] {
+[part~='base'] {
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -26,7 +26,7 @@ input[type='radio'] {
     }
 }
 
-[part='control'] {
+[part~='control'] {
     $size: var(--size, rem(20px));
     position: relative;
     display: inline-flex;
@@ -62,45 +62,40 @@ input[type='radio'] {
     }
 }
 
-:host([checked]) {
-    [part='base'] {
-        &:hover [part='control'] {
-            background: color(secondary, 50, .54);
-        }
-
-        &:focus-within [part='control'] {
-            background: color(secondary, 100, .72);
-        }
+[part='base checked'] {
+    &:hover [part~='control'] {
+        background: color(secondary, 50, .54);
     }
 
-    [part='control'] {
-        &::before {
-            border-color: color(secondary, 500);
-            background: color(secondary, 500);
-            transform: translate(-50%, -50%) scale(.5);
-        }
-
-        &::after {
-            border-color: color(secondary, 500);
-        }
+    &:focus-within [part~='control'] {
+        background: color(secondary, 100, .72);
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not([disabled])[invalid][checked]) {
-    [part='label'] {
+[part='control checked'] {
+    &::before {
+        border-color: color(secondary, 500);
+        background: color(secondary, 500);
+        transform: translate(-50%, -50%) scale(.5);
+    }
+
+    &::after {
+        border-color: color(secondary, 500);
+    }
+}
+
+:host(:not([disabled])[invalid]) {
+    [part~='label'] {
         color: color(error, 500);
     }
 
-    [part='control'] {
+    [part~='control'] {
         &::after {
             border-color: color(error, 500);
         }
     }
-}
 
-:host(:not([disabled])[invalid][checked]) {
-    [part='control'] {
+    [part='control checked'] {
         &::before {
             background: color(error, 500);
         }
@@ -112,15 +107,13 @@ input[type='radio'] {
     color: color(gray, 400);
     user-select: none;
 
-    [part='control'] {
+    [part~='control'] {
         &::after {
             border-color: color(gray, 300);
         }
     }
-}
 
-:host([disabled][checked]) {
-    [part='control'] {
+    [part='control checked'] {
         &::before {
             background: color(gray, 300);
             border-color: transparent;
@@ -129,13 +122,13 @@ input[type='radio'] {
 }
 
 :host([label-position='after']) {
-    [part='label'] {
+    [part~='label'] {
         margin-inline-start: rem(8px);
     }
 }
 
 :host([label-position='before']) {
-    [part='label'] {
+    [part~='label'] {
         order: -1;
         margin-inline-end: rem(8px);
     }
