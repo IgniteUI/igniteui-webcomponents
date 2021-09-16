@@ -54,7 +54,13 @@ interface ArgTypes {
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { size, shape, src, alt, initials }: ArgTypes,
+  {
+    size,
+    shape,
+    src = 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+    alt,
+    initials = 'JB',
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-avatar
