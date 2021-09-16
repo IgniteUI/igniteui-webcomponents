@@ -13,6 +13,12 @@ const DEST_DIR = path.resolve(__dirname, '../stories');
 const REPLACE_REGEX = /\/\/ region default.*\/\/ endregion/gs;
 const SUPPORTED_TYPES = ['string', 'number', 'boolean', 'Date'];
 
+const report = {
+  success: (s) => console.log("\x1b[32m%s\x1b[0m", s),
+  warn: (s) => console.warn("\x1b[33m%s\x1b[0m", s),
+  error: (s) => console.error("\x1b[31m%s\x1b[0m", s),
+};
+
 const capitalize = (str) => {
   const arr = str.split('-');
 
@@ -63,7 +69,7 @@ async function processFileMeta(path) {
 function extractTags(meta) {
   return {
     component: meta.name,
-    args: Array.from(meta.properties)
+    args: Array.from(meta.properties || [])
       .filter(
         (prop) =>
           SUPPORTED_TYPES.includes(prop.type) ||
@@ -93,12 +99,18 @@ function extractTags(meta) {
   };
 }
 
-const buildArgTypes = (meta, indent = '  ') =>
-  [
+const buildArgTypes = (meta, indent = '  ') => {
+  // Skip ArgTypes for "dumb" components.
+  if (!meta.args.length) {
+    return '';
+  }
+
+  return [
     'interface ArgTypes {',
-    ...meta.args.map((arg) => `${indent}${arg[0]}: ${arg[1].type};`),
+    ...meta.args.map(([name, obj]) => `${indent}${name}: ${obj.type};`),
     '}',
   ].join('\n');
+}
 
 /**
  *
@@ -136,13 +148,17 @@ async function buildStories() {
       const story = await readFile(outFile, 'utf8');
       await writeFile(outFile, buildStoryMeta(story, meta), 'utf8');
     } catch (e) {
-      console.error(e);
-      process.exit(-1);
+      if (e.code === 'ENOENT') {
+        report.warn(`!!! No such file '${e.path} !!! Does it need a story file?'`);
+      } else {
+        report.error(e);
+        process.exit(-1);
+      }
     }
   }
 }
 
 (async () => {
   buildStories();
-  console.log('Stories metadata generation finished');
+  report.success('Stories metadata generation finished');
 })();
