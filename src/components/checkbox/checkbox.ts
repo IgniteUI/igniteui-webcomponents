@@ -5,27 +5,44 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { styles } from './checkbox.material.css';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
+import { partNameMap } from '../common/util.js';
 
 let nextId = 0;
 
-// @customElement('igc-checkbox')
+/**
+ * A check box allowing single values to be selected/deselected.
+ *
+ * @element igc-checkbox
+ *
+ * @slot - The checkbox label.
+ *
+ * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcFocus - Emitted when the control gains focus.
+ * @fires igcBlur - Emitted when the control loses focus.
+ *
+ * @csspart base - The base wrapper of the checkbox.
+ * @csspart control - The checkbox control.
+ * @csspart label - The checkbox label.
+ * @csspart indicator - The checkbox icon.
+ */
 export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   static styles = styles;
 
   private inputId = `checkbox-${nextId++}`;
   private labelId = `checkbox-label-${this.inputId}`;
 
+  /** Draws the checkbox in indeterminate state. */
   @property({ type: Boolean, reflect: true })
   indeterminate = false;
 
-  handleClick() {
+  protected handleClick() {
     this.checked = !this.checked;
     this.indeterminate = false;
   }
 
   @watch('checked', { waitUntilFirstUpdate: true })
   @watch('indeterminate', { waitUntilFirstUpdate: true })
-  handleChange() {
+  protected handleChange() {
     if (this.checked) {
       this.input.focus();
       this.emitEvent('igcChange');
@@ -35,7 +52,7 @@ export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   render() {
     return html`
       <label
-        part="base"
+        part="${partNameMap({ base: true, checked: this.checked })}"
         for="${this.inputId}"
         @mousedown="${this.handleMouseDown}"
       >
@@ -58,14 +75,19 @@ export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           @blur="${this.handleBlur}"
           @focus="${this.handleFocus}"
         />
-        <span part="control">
-          <span part="indicator">
+        <span part="${partNameMap({ control: true, checked: this.checked })}">
+          <span
+            part="${partNameMap({ indicator: true, checked: this.checked })}"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <path d="M4.1,12.7 9,17.6 20.3,6.3" />
             </svg>
           </span>
         </span>
-        <span part="label" id="${this.labelId}">
+        <span
+          part="${partNameMap({ label: true, checked: this.checked })}"
+          id="${this.labelId}"
+        >
           <slot></slot>
         </span>
       </label>

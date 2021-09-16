@@ -21,7 +21,7 @@ export default {
 interface ArgTypes {
   content: string;
 }
-//end region
+// endregion
 
 registerIcon(
   'home',

@@ -4,46 +4,63 @@ import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 // region default
-export default {
+const metadata = {
   title: 'Avatar',
   component: 'igc-avatar',
   argTypes: {
-    size: {
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'small',
+    src: {
+      type: 'string',
+      description: 'The image source to use.',
+      control: 'text',
     },
-    shape: {
-      options: ['circle', 'rounded', 'square'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'circle',
+    alt: {
+      type: 'string',
+      description: 'Alternative text for the image.',
+      control: 'text',
     },
     initials: {
-      control: {
-        type: 'text',
-      },
-      defaultValue: 'JB',
-      description: 'The initials used',
-    },
-    src: {
+      type: 'string',
+      description: 'Initials to use as a fallback when no image is available.',
       control: 'text',
-      defaultValue:
-        'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
     },
-    alt: { control: 'text' },
+    shape: {
+      type: '"circle" | "rounded" | "square"',
+      description: 'The shape of the avatar.',
+      options: ['circle', 'rounded', 'square'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'square',
+    },
+    size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'small',
+    },
   },
 };
+export default metadata;
 interface ArgTypes {
-  size: 'small' | 'medium' | 'large';
-  shape: 'circle' | 'rounded' | 'square';
-  initials: string;
   src: string;
   alt: string;
+  initials: string;
+  shape: 'circle' | 'rounded' | 'square';
+  size: 'small' | 'medium' | 'large';
 }
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { size, shape, src, alt, initials }: ArgTypes,
+  {
+    size,
+    shape,
+    src = 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+    alt,
+    initials = 'JB',
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-avatar
