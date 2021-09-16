@@ -15,6 +15,10 @@ import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model';
 import { watch } from '../common/decorators';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils';
 import { SizableMixin } from '../common/mixins/sizable';
+import {
+  IgcCalendarResourceStringEN,
+  IgcCalendarResourceStrings,
+} from '../common/i18n/calendar.resources';
 
 export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;
@@ -75,6 +79,9 @@ export class IgcCalendarComponent extends SizableMixin(
     year: 'numeric',
   };
 
+  @property({ attribute: false })
+  resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
+
   @watch('formatOptions')
   @watch('locale')
   formattersChange() {
@@ -88,6 +95,46 @@ export class IgcCalendarComponent extends SizableMixin(
 
   private get yearPerPage() {
     return this.size === 'small' ? 18 : 15;
+  }
+
+  private get previousButtonLabel() {
+    return this.activeView === 'days'
+      ? this.resourceStrings.previousMonth
+      : this.activeView === 'months'
+      ? this.resourceStrings.previousYear
+      : this.activeView === 'years'
+      ? this.resourceStrings.previousYears.replace(
+          '{0}',
+          this.yearPerPage.toString()
+        )
+      : '';
+  }
+
+  private get nextButtonLabel() {
+    return this.activeView === 'days'
+      ? this.resourceStrings.nextMonth
+      : this.activeView === 'months'
+      ? this.resourceStrings.nextYear
+      : this.activeView === 'years'
+      ? this.resourceStrings.nextYears.replace(
+          '{0}',
+          this.yearPerPage.toString()
+        )
+      : '';
+  }
+
+  private monthSelectLabel(activeDate: Date) {
+    return (
+      activeDate.toLocaleString(this.locale, {
+        month: 'long',
+      }) +
+      ', ' +
+      this.resourceStrings.selectMonth
+    );
+  }
+
+  private yearSelectLabel(activeDate: Date) {
+    return activeDate.getFullYear() + ', ' + this.resourceStrings.selectYear;
   }
 
   private handleKeyDown = (event: KeyboardEvent) => {
@@ -498,6 +545,7 @@ export class IgcCalendarComponent extends SizableMixin(
         ${this.activeView === 'days'
           ? html`<button
               part="months-navigation"
+              aria-label=${this.monthSelectLabel(activeDate)}
               @click=${() => this.switchToMonths(daysViewIndex)}
             >
               ${this.formattedMonth(activeDate)}
@@ -506,6 +554,7 @@ export class IgcCalendarComponent extends SizableMixin(
         ${this.activeView === 'days' || this.activeView === 'months'
           ? html`<button
               part="years-navigation"
+              aria-label=${this.yearSelectLabel(activeDate)}
               @click=${() => this.switchToYears(daysViewIndex)}
             >
               ${activeDate.getFullYear()}
@@ -517,10 +566,18 @@ export class IgcCalendarComponent extends SizableMixin(
       </div>
       ${renderButtons
         ? html`<div part="navigation-buttons">
-            <button part="navigation-button" @click=${this.navigatePrevious}>
+            <button
+              part="navigation-button"
+              aria-label=${this.previousButtonLabel}
+              @click=${this.navigatePrevious}
+            >
               <igc-icon name="navigate_before" collection="internal"></igc-icon>
             </button>
-            <button part="navigation-button" @click=${this.navigateNext}>
+            <button
+              part="navigation-button"
+              aria-label=${this.nextButtonLabel}
+              @click=${this.navigateNext}
+            >
               <igc-icon name="navigate_next" collection="internal"></igc-icon>
             </button>
           </div>`
