@@ -36,7 +36,7 @@ export class IgcFormComponent extends EventEmitterMixin<
     'igc-switch',
     'igc-checkbox',
   ];
-  private _controlsWithValue = ['input', 'textarea'];
+  private _controlsWithValue = ['input', 'igc-input', 'textarea'];
   private _controlsThatSubmit = ['input', 'button', 'igc-button'];
 
   /** Specifies if the form should not to be validated on submit. */
@@ -75,6 +75,8 @@ export class IgcFormComponent extends EventEmitterMixin<
         (tagName !== 'input' && this._controlsWithChecked.includes(tagName))
       ) {
         element.checked = element.hasAttribute('checked');
+      } else if (tagName === 'igc-input') {
+        element.value = element.getAttribute('value');
       } else if (this._controlsWithValue.includes(tagName)) {
         element.value = element.defaultValue;
       }
@@ -115,11 +117,15 @@ export class IgcFormComponent extends EventEmitterMixin<
           }
         }
       } else if (
-        (this._controlsWithChecked.includes(tagName) && element.checked) ||
-        (this._controlsWithValue.includes(tagName) &&
-          element.type !== 'checkbox' &&
-          element.type !== 'radio' &&
-          element.type !== 'submit')
+        this._controlsWithChecked.includes(tagName) &&
+        element.checked
+      ) {
+        formData.append(element.name, element.value || 'on');
+      } else if (
+        this._controlsWithValue.includes(tagName) &&
+        element.type !== 'checkbox' &&
+        element.type !== 'radio' &&
+        element.type !== 'submit'
       ) {
         formData.append(element.name, element.value);
       }

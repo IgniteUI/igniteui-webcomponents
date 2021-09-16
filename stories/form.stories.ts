@@ -107,6 +107,15 @@ The cat was playing<br> in the garden.</textarea
       </div>
       <label for="email">Email:</label>
       <input type="email" id="email" name="email" /><br /><br />
+      <igc-input
+        name="email-confirm"
+        type="email"
+        label="Confirm email"
+        value="..."
+      ></igc-input>
+      <igc-checkbox name="checkbox-longform"
+        >Check if you think this is a long form</igc-checkbox
+      >
       <igc-button type="reset">Reset</igc-button>
       <igc-button type="submit">Submit</igc-button>
     </igc-form>
