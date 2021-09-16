@@ -30,10 +30,7 @@ export class IgcIconButtonComponent extends IgcButtonBaseComponent {
   @property()
   href!: string;
 
-  /**
-   * The visual variant of the icon.
-   * @attr [variant=flat]
-   */
+  /** The visual variant of the icon. */
   @property()
   variant: 'flat' | 'contained' | 'outlined' = 'flat';
 
