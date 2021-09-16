@@ -10,14 +10,19 @@ const metadata = {
   argTypes: {
     href: {
       type: 'string',
+      description: 'The URL the link-button points to.',
       control: 'text',
     },
     download: {
       type: 'string',
+      description:
+        'Prompts to save the linked URL instead of navigating to it.',
       control: 'text',
     },
     target: {
       type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
+      description:
+        'Where to display the linked URL, as the name for a browsing context.',
       options: ['_blank', '_parent', '_self', '_top', 'undefined'],
       control: {
         type: 'select',
@@ -25,29 +30,24 @@ const metadata = {
     },
     rel: {
       type: 'string',
+      description:
+        'The relationship of the linked URL.\nSee https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types',
       control: 'text',
     },
     disabled: {
       type: 'boolean',
       description: 'Determines whether the button is disabled.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     variant: {
       type: '"flat" | "contained" | "outlined" | "fab"',
+      description: 'Sets the variant of the button.',
       options: ['flat', 'contained', 'outlined', 'fab'],
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'flat',
-        },
-      },
+      defaultValue: 'flat',
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -56,11 +56,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      table: {
-        defaultValue: {
-          summary: 'large',
-        },
-      },
+      defaultValue: 'large',
     },
   },
 };
