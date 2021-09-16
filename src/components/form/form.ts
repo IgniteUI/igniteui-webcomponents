@@ -75,10 +75,8 @@ export class IgcFormComponent extends EventEmitterMixin<
         (tagName !== 'input' && this._controlsWithChecked.includes(tagName))
       ) {
         element.checked = element.hasAttribute('checked');
-      } else if (tagName === 'igc-input') {
-        element.value = element.getAttribute('value');
       } else if (this._controlsWithValue.includes(tagName)) {
-        element.value = element.defaultValue;
+        element.value = element.getAttribute('value');
       }
     });
 
