@@ -7,18 +7,18 @@ import { styles } from './list-item.material.css';
  *
  * @element igc-list-item
  *
- * @slot - Renders a custom content.
- * @slot start - Renders the content before the title and subtitle.
- * @slot end - Renders the content after the title and subtitle.
+ * @slot - Renders custom content.
+ * @slot start - Renders content before all other content.
+ * @slot end - Renders content after all other content.
  * @slot title - Renders the title.
  * @slot subtitle - Renders the subtitle.
  *
  * @csspart start - The start container.
  * @csspart end - The end container.
- * @csspart content - The header and custom template container.
+ * @csspart content - The header and custom content container.
  * @csspart header - The title and subtitle container.
- * @csspart title - The title wrapper.
- * @csspart subtitle - The subtitle wrapper.
+ * @csspart title - The title container.
+ * @csspart subtitle - The subtitle container.
  */
 export class IgcListItemComponent extends LitElement {
   static styles = styles;

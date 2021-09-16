@@ -2,7 +2,7 @@ import { html, LitElement } from 'lit';
 import { styles } from './list-header.material.css';
 
 /**
- * Header component for list items.
+ * Header list item.
  *
  * @element igc-list-header
  *
