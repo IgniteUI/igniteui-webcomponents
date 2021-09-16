@@ -1,0 +1,7 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-nav-drawer-header-item {
+        color: #{utils.color(gray, 50)};
+    }
+}
