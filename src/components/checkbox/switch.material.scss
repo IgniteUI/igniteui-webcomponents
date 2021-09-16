@@ -13,26 +13,26 @@ input[type='checkbox'] {
 $ripple-size: rem(40px);
 $ripple-radius: calc(#{$ripple-size} / 2);
 
-[part='base'] {
+[part~='base'] {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
     cursor: pointer;
 
-    &:hover [part='thumb'] {
+    &:hover [part~='thumb'] {
         &::after {
             background: color(gray, 600, .06);
         }
     }
 
-    &:focus-within [part='thumb'] {
+    &:focus-within [part~='thumb'] {
         &::after {
             background: color(gray, 600, .12);
         }
     }
 }
 
-[part='control'] {
+[part~='control'] {
     display: flex;
     align-items: center;
     width: var(--size);
@@ -43,7 +43,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     transition: all .2s ease-in-out;
 }
 
-[part='thumb'] {
+[part~='thumb'] {
     position: relative;
     width: var(--thumb-size);
     height: var(--thumb-size);
@@ -73,7 +73,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     }
 }
 
-[part='label'] {
+[part~='label'] {
     display: inline-block;
     color: color(gray, 900);
     cursor: pointer;
@@ -82,32 +82,30 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     transition: all .2s ease-in-out;
 }
 
-:host([checked]) {
-    [part='base'] {
-        &:hover [part='thumb'] {
-            &::after {
-                background: color(secondary, 500, .06);
-            }
-        }
-
-        &:focus-within [part='thumb'] {
-            &::after {
-                background: color(secondary, 500, .12);
-            }
+[part~='base'][part~='checked'] {
+    &:hover [part~='thumb'][part~='checked'] {
+        &::after {
+            background: color(secondary, 500, .06);
         }
     }
 
-    [part='control'] {
-        background: color(secondary, 500, .5);
+    &:focus-within [part~='thumb'][part~='checked'] {
+        &::after {
+            background: color(secondary, 500, .12);
+        }
     }
+}
 
-    [part='thumb'] {
-        background: color(secondary, 500);
-        margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
-        animation-name: thumb-on;
-        animation-duration: .2s;
-        animation-fill-mode: forwards;
-    }
+[part~='control'][part~='checked'] {
+    background: color(secondary, 500, .5);
+}
+
+[part~='thumb'][part~='checked'] {
+    background: color(secondary, 500);
+    margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
+    animation-name: thumb-on;
+    animation-duration: .2s;
+    animation-fill-mode: forwards;
 }
 
 :host([disabled]) {
@@ -115,43 +113,42 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     pointer-events: none;
     cursor: initial;
 
-    [part='control'] {
+    [part~='control'] {
         background: color(gray, 300);
     }
 
-    [part='thumb'] {
+    [part~='thumb'] {
         background: color(gray, 400);
         box-shadow: var(--igc-elevation-1);
     }
 
-    [part='label'] {
+    [part~='label'] {
         color: color(gray, 400);
     }
 }
 
-:host(:not([disabled])[invalid]),
-:host(:not([disabled])[invalid][checked]) {
-    [part='label'] {
+:host(:not([disabled])[invalid]) {
+    [part~='label'] {
         color: color(error, 500);
     }
 
-    [part='control'] {
+    [part~='control'] {
         background: color(error, 500, .5);
     }
 
-    [part='thumb'] {
+    [part~='thumb'] {
         background: color(error, 500);
     }
 }
 
 :host([label-position='after']) {
-    [part='label'] {
+    [part~='label'] {
         margin-inline-start: rem(8px);
     }
 }
 
 :host([label-position='before']) {
-    [part='label'] {
+    [part~='label'] {
         order: -1;
         margin-inline-end: rem(8px);
     }
