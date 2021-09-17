@@ -170,7 +170,7 @@ describe('IconButton component', () => {
       download="test"
       rel="test">
       Submit
-      <igc-link-button>`
+      </igc-icon-button>`
     );
     expect(el).shadowDom.to.equal(
       `<a href="https://test.com" target="_blank" download="test" rel="test">
