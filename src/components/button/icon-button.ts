@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './icon-button.material.css';
@@ -72,7 +71,6 @@ export class IgcIconButtonComponent extends IgcButtonBaseComponent {
             download=${ifDefined(this.download)}
             rel=${ifDefined(this.rel)}
             aria-disabled=${this.disabled ? 'true' : 'false'}
-            class=${classMap(this.classes)}
             @focus=${this.handleFocus}
             @blur=${this.handleBlur}
           >
@@ -83,6 +81,7 @@ export class IgcIconButtonComponent extends IgcButtonBaseComponent {
           <button
             part="base"
             .disabled=${this.disabled}
+            aria-disabled=${this.disabled ? 'true' : 'false'}
             @focus=${this.handleFocus}
             @blur=${this.handleBlur}
           >
