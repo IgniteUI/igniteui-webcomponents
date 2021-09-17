@@ -51,7 +51,6 @@
         }
 
         &::part(container) {
-            pointer-events: auto;
             border: none;
             grid-template-columns: auto 1fr auto;
 
