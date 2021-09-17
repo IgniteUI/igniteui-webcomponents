@@ -140,6 +140,7 @@ $input-height: (
     font-size: rem(16px);
     font-family: var(--igc-font-family);
     grid-area: 1 / 2 / span 1 / span 2;
+    z-index: 1;
 }
 
 [part='label'] {
@@ -210,7 +211,6 @@ $input-height: (
     position: relative;
     display: grid;
     grid-template-columns: auto auto 1fr auto;
-    pointer-events: none;
 }
 
 [part='prefix'],
