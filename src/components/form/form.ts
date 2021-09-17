@@ -39,7 +39,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   private _controlsWithValue = ['input', 'igc-input', 'textarea'];
   private _controlsThatSubmit = ['input', 'button', 'igc-button'];
 
-  /** Specifies if the form should not to be validated on submit. */
+  /** Specifies if form data validation should be skipped on submit. */
   @property({ type: Boolean, reflect: true }) novalidate = false;
 
   constructor() {
