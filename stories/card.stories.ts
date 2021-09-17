@@ -9,6 +9,7 @@ const metadata = {
   argTypes: {
     outlined: {
       type: 'boolean',
+      description: 'Sets card outline style, otherwise card looks elevated',
       control: 'boolean',
       defaultValue: false,
     },

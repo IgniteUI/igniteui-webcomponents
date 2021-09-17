@@ -16,14 +16,16 @@ import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
 import { property, query } from 'lit/decorators.js';
 import { partNameMap } from '../../common/util';
+import {
+  IgcCalendarResourceStringEN,
+  IgcCalendarResourceStrings,
+} from '../../common/i18n/calendar.resources';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcOutsideDaySelected: CustomEvent<ICalendarDate>;
   igcActiveDateChange: CustomEvent<Date>;
   igcRangePreviewDateChange: CustomEvent<Date>;
 }
-
-const WEEK_LABEL = 'Wk';
 
 export class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
@@ -48,6 +50,9 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   @property({ attribute: 'week-day-format' })
   weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
+
+  @property({ attribute: false })
+  resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
 
   @watch('weekDayFormat')
   @watch('locale')
@@ -461,7 +466,9 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     return html`<div role="row" part="days-row first">
       ${this.showWeekNumbers
         ? html`<span role="columnheader" part="label week-number first">
-            <span part="week-number-inner first">${WEEK_LABEL}</span>
+            <span part="week-number-inner first"
+              >${this.resourceStrings.weekLabel}</span
+            >
           </span>`
         : ''}
       ${this.generateWeekHeader().map(

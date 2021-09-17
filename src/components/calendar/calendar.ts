@@ -604,8 +604,8 @@ export class IgcCalendarComponent extends SizableMixin(
       <h5 part="header-title">
         <slot name="title"
           >${this.selection === 'single'
-            ? 'Select a date'
-            : 'Select a date range'}</slot
+            ? this.resourceStrings.selectDate
+            : this.resourceStrings.selectDateRange}</slot
         >
       </h5>
       <h2 part="header-date">${this.renderHeaderDate()}</h2>
@@ -620,7 +620,7 @@ export class IgcCalendarComponent extends SizableMixin(
             .headerOrientation === 'vertical'
             ? html`<br />`
             : ' '}${this.formatterMonthDay.format(date)}`
-        : 'Selected date'}`;
+        : this.resourceStrings.selectedDate}`;
     }
 
     const dates = this.value as Date[];
@@ -628,13 +628,13 @@ export class IgcCalendarComponent extends SizableMixin(
     return html`<span
         >${dates && dates.length
           ? this.formatterMonthDay.format(dates[0])
-          : 'Start'}</span
+          : this.resourceStrings.startDate}</span
       >
       <span> - </span>
       <span
         >${dates && dates.length > 1
           ? this.formatterMonthDay.format(dates[dates.length - 1])
-          : 'End'}</span
+          : this.resourceStrings.endDate}</span
       >`;
   }
 
@@ -693,6 +693,7 @@ export class IgcCalendarComponent extends SizableMixin(
                   .disabledDates=${this.disabledDates}
                   .specialDates=${this.specialDates}
                   .rangePreviewDate=${this.rangePreviewDate}
+                  .resourceStrings=${this.resourceStrings}
                   exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
                   @igcChange=${this.changeValue}
                   @igcOutsideDaySelected=${this.outsideDaySelected}
