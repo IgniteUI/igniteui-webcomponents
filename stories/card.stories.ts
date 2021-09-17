@@ -57,7 +57,7 @@ const Template: Story<ArgTypes, Context> = (
         <igc-card-actions>
           <igc-button slot="start" variant="flat">Like</igc-button>
           <igc-button slot="start" variant="flat">Learn More</igc-button>
-          <igc-icon-button slot="end" name="home"></igc-icon>
+          <igc-icon-button slot="end" name="home"></igc-icon-button>
         </igc-card-actions>
       </igc-card>
     </div>
