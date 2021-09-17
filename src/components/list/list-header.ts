@@ -6,7 +6,7 @@ import { styles } from './list-header.material.css';
  *
  * @element igc-list-header
  *
- * @slot - Renders a header for the list items.
+ * @slot - Renders header list item's content.
  */
 export class IgcListHeaderComponent extends LitElement {
   static styles = styles;
