@@ -217,3 +217,12 @@ $date-size-small: rem(24px);
 [part='header-title'] {
     @include type-category('overline');
 }
+
+.aria-off-screen {
+    top:0;
+    left:-2px;
+    width:1px;
+    height:1px;
+    position:absolute;
+    overflow:hidden;
+}

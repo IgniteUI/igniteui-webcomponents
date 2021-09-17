@@ -552,16 +552,26 @@ export class IgcCalendarComponent extends SizableMixin(
             </button>`
           : ''}
         ${this.activeView === 'days' || this.activeView === 'months'
-          ? html`<button
-              part="years-navigation"
-              aria-label=${this.yearSelectLabel(activeDate)}
-              @click=${() => this.switchToYears(daysViewIndex)}
-            >
-              ${activeDate.getFullYear()}
-            </button>`
+          ? html`<span class="aria-off-screen" aria-live="polite">
+                ${this.activeView === 'days'
+                  ? activeDate.toLocaleString(this.locale, {
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                  : activeDate.getFullYear()}
+              </span>
+              <button
+                part="years-navigation"
+                aria-label=${this.yearSelectLabel(activeDate)}
+                @click=${() => this.switchToYears(daysViewIndex)}
+              >
+                ${activeDate.getFullYear()}
+              </button>`
           : ''}
         ${this.activeView === 'years'
-          ? html`<span part="years-range">${`${startYear} - ${endYear}`}</span>`
+          ? html`<span part="years-range" aria-live="polite"
+              >${`${startYear} - ${endYear}`}</span
+            >`
           : ''}
       </div>
       ${renderButtons
