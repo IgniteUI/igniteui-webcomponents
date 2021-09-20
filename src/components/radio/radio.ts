@@ -3,7 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { styles } from './radio.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { watch } from '../common/decorators';
+import { alternateName, watch } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { partNameMap } from '../common/util.js';
