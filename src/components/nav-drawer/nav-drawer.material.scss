@@ -15,6 +15,7 @@
         left: 0;
         z-index: 999;
         background: color(surface, 500);
+        border-inline-end: 1px solid color(gray, 900, .14);
         box-shadow: var(--igc-elevation-16);
         border-radius: 0;
         transition: all ease-out .3s, .3s;
@@ -47,8 +48,27 @@
     }
 }
 
+:host(:not([open])[position='top']),
+:host(:not([open])[position='bottom']) {
+    [part='base'] {
+        transform: translate3d(0, -60vh, 0);
+    }
+
+    [part='mini'] {
+        display: none;
+    }
+}
+
+:host(:not([open])[position='bottom']) {
+    [part='base'] {
+        transform: translate3d(0, 60vh, 0);
+    }
+}
+
 :host([position='end']) {
     [part='base'] {
+        border-inline-end: none;
+        border-inline-start: 1px solid color(gray, 900, .14);
         left: auto;
         right: 0;
     }
@@ -58,6 +78,7 @@
     [part='base'] {
         position: relative;
         box-shadow: none;
+        border: none;
         z-index: 0;
     }
 }
@@ -70,6 +91,13 @@
 
 :host(:not([open])) {
     [part='main'] {
+        display: none;
+    }
+}
+
+:host(:not([open])[pinned][position='top']),
+:host(:not([open])[pinned][position='bottom']) {
+    [part='base'] {
         display: none;
     }
 }
