@@ -73,10 +73,10 @@ export class IgcCalendarComponent extends SizableMixin(
 
   @property({ attribute: false })
   formatOptions: Intl.DateTimeFormatOptions = {
-    day: 'numeric',
+    // day: 'numeric',
     month: 'long',
     weekday: 'narrow',
-    year: 'numeric',
+    // year: 'numeric',
   };
 
   @property({ attribute: false })
@@ -397,11 +397,11 @@ export class IgcCalendarComponent extends SizableMixin(
       month: this.formatOptions.month,
     });
     this.formatterWeekday = new Intl.DateTimeFormat(this.locale, {
-      weekday: this.formatOptions.weekday,
+      weekday: 'short',
     });
     this.formatterMonthDay = new Intl.DateTimeFormat(this.locale, {
-      month: this.formatOptions.month,
-      day: this.formatOptions.day,
+      month: 'short',
+      day: 'numeric',
     });
   }
 

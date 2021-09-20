@@ -2,6 +2,10 @@ import { html } from 'lit-html';
 import '../igniteui-webcomponents.js';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
+import {
+  DateRangeDescriptor,
+  DateRangeType,
+} from '../src/components/calendar/common/calendar.model.js';
 
 // region default
 const metadata = {
@@ -134,7 +138,7 @@ interface ArgTypes {
   },
   table: {
     defaultValue: {
-      summary: 'short',
+      summary: 'narrow',
     },
   },
 };
@@ -147,7 +151,7 @@ interface ArgTypes {
   },
   table: {
     defaultValue: {
-      summary: 'short',
+      summary: 'long',
     },
   },
 };
@@ -183,11 +187,23 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   const formatOptions: Intl.DateTimeFormatOptions = {
-    day: 'numeric',
-    month: monthFormat ?? 'short',
-    weekday: weekDayFormat ?? 'short',
-    year: 'numeric',
+    month: monthFormat ?? 'long',
+    weekday: weekDayFormat ?? 'narrow',
   };
+
+  const disabledDates: DateRangeDescriptor[] = [
+    // {
+    //   type: DateRangeType.Before,
+    //   dateRange: [new Date()],
+    // },
+  ];
+
+  const specialDates: DateRangeDescriptor[] = [
+    // {
+    //   type: DateRangeType.Specific,
+    //   dateRange: [new Date(2021, 8, 22)],
+    // },
+  ];
 
   return html`
     <igc-calendar
@@ -201,6 +217,8 @@ const Template: Story<ArgTypes, Context> = (
       selection=${ifDefined(selection)}
       active-view=${ifDefined(activeView)}
       .formatOptions=${formatOptions}
+      .disabledDates=${disabledDates}
+      .specialDates=${specialDates}
       size=${ifDefined(size)}
       visible-months=${ifDefined(visibleMonths)}
       dir=${ifDefined(direction)}
