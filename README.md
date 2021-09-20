@@ -1,7 +1,7 @@
 # Ignite UI Web Components - from Infragistics
 
 [![Node.js CI](https://github.com/IgniteUI/igniteui-webcomponents/workflows/Node.js%20CI/badge.svg)](https://github.com/IgniteUI/igniteui-webcomponents/actions/workflows/node.js.yml)
-![Discord](https://img.shields.io/discord/836634487483269200)
+[![Discord](https://img.shields.io/discord/836634487483269200?logo=discord&logoColor=ffffff)](https://discord.gg/39MjrTRqds)
 
 ## Setup
 
