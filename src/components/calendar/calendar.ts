@@ -252,9 +252,7 @@ export class IgcCalendarComponent extends SizableMixin(
 
             if (activeMonthDate.getMonth() !== date.getMonth()) {
               this.activeDaysViewIndex =
-                this.activeDaysViewIndex > 0
-                  ? this.activeDaysViewIndex - 1
-                  : this.visibleMonths - 1;
+                this.activeDaysViewIndex > 0 ? this.activeDaysViewIndex - 1 : 0;
             }
           }
           this.activeDate = date;
@@ -285,7 +283,7 @@ export class IgcCalendarComponent extends SizableMixin(
             if (activeMonthDate.getMonth() !== date.getMonth()) {
               this.activeDaysViewIndex =
                 this.activeDaysViewIndex === this.visibleMonths - 1
-                  ? 0
+                  ? this.activeDaysViewIndex
                   : this.activeDaysViewIndex + 1;
             }
           }
@@ -316,9 +314,7 @@ export class IgcCalendarComponent extends SizableMixin(
 
             if (activeMonthDate.getMonth() !== date.getMonth()) {
               this.activeDaysViewIndex =
-                this.activeDaysViewIndex > 0
-                  ? this.activeDaysViewIndex - 1
-                  : this.visibleMonths - 1;
+                this.activeDaysViewIndex > 0 ? this.activeDaysViewIndex - 1 : 0;
             }
           }
           this.activeDate = date;
@@ -357,7 +353,7 @@ export class IgcCalendarComponent extends SizableMixin(
             if (activeMonthDate.getMonth() !== date.getMonth()) {
               this.activeDaysViewIndex =
                 this.activeDaysViewIndex === this.visibleMonths - 1
-                  ? 0
+                  ? this.activeDaysViewIndex
                   : this.activeDaysViewIndex + 1;
             }
           }
