@@ -26,6 +26,7 @@ let nextId = 0;
  * @csspart indicator - The checkbox icon.
  */
 export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
+  /** @private */
   static styles = styles;
 
   private inputId = `checkbox-${nextId++}`;

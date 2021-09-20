@@ -49,22 +49,22 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   ariaLabelledby!: string;
 
   /** Simulates a click on the control. */
-  click() {
+  public click() {
     this.input.click();
   }
 
   /** Sets focus on the control. */
-  focus(options?: FocusOptions) {
+  public focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the control. */
-  blur() {
+  public blur() {
     this.input.blur();
   }
 
   /** Checks for validity of the control and shows the browser message if it invalid. */
-  reportValidity() {
+  public reportValidity() {
     return this.input.reportValidity();
   }
 
@@ -72,7 +72,7 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
    */
-  setCustomValidity(message: string) {
+  public setCustomValidity(message: string) {
     this.input.setCustomValidity(message);
     this.invalid = !this.input.checkValidity();
   }

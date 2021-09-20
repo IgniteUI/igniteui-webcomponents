@@ -8,11 +8,8 @@ import { styles } from './card.material.css';
  * @slot - Renders card content
  */
 export class IgcCardComponent extends LitElement {
+  /** @private */
   static styles = styles;
-
-  constructor() {
-    super();
-  }
 
   /** Sets card outline style, otherwise card looks elevated */
   @property({ type: Boolean, reflect: true })

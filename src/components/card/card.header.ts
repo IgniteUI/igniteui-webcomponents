@@ -12,11 +12,8 @@ import { styles } from './card.header.material.css';
  * @csspart header - The card header container
  */
 export class IgcCardHeader extends LitElement {
+  /** @private */
   static styles = styles;
-
-  constructor() {
-    super();
-  }
 
   render() {
     return html`

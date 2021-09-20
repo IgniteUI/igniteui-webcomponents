@@ -60,7 +60,7 @@ export class IgcInputComponent extends SizableMixin(
   private _suffixLength!: number;
 
   @state()
-  theme!: string | undefined;
+  private theme!: string | undefined;
 
   @query('input', true)
   protected input!: HTMLInputElement;
@@ -177,7 +177,7 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
-  reportValidity() {
+  public reportValidity() {
     this.input.reportValidity();
   }
 
@@ -185,18 +185,18 @@ export class IgcInputComponent extends SizableMixin(
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
    */
-  setCustomValidity(message: string) {
+  public setCustomValidity(message: string) {
     this.input.setCustomValidity(message);
     this.invalid = !this.input.checkValidity();
   }
 
   /** Selects all text within the input. */
-  select() {
+  public select() {
     return this.input.select();
   }
 
   /** Sets the text selection range of the input. */
-  setSelectionRange(
+  public setSelectionRange(
     selectionStart: number,
     selectionEnd: number,
     selectionDirection: 'backward' | 'forward' | 'none' = 'none'
@@ -209,7 +209,7 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   /** Replaces the selected text in the input. */
-  setRangeText(
+  public setRangeText(
     replacement: string,
     start: number,
     end: number,
@@ -225,24 +225,24 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   /** Increments the numeric value of the input by one or more steps. */
-  stepUp(n?: number) {
+  public stepUp(n?: number) {
     this.input.stepUp(n);
     this.handleChange();
   }
 
   /** Decrements the numeric value of the input by one or more steps. */
-  stepDown(n?: number) {
+  public stepDown(n?: number) {
     this.input.stepDown(n);
     this.handleChange();
   }
 
   /** Sets focus on the control. */
-  focus(options?: FocusOptions) {
+  public focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the control. */
-  blur() {
+  public blur() {
     this.input.blur();
   }
 

@@ -22,7 +22,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
    * @private
    */
   @query('.native', true)
-  nativeElement!: HTMLElement;
+  protected nativeElement!: HTMLElement;
 
   /**
    * Determines whether the button is disabled.
@@ -35,12 +35,12 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   variant: 'flat' | 'raised' | 'outlined' | 'fab' = 'flat';
 
   /** Sets focus in the button. */
-  focus(options?: FocusOptions) {
+  public focus(options?: FocusOptions) {
     this.nativeElement.focus(options);
   }
 
   /** Removes focus from the button. */
-  blur() {
+  public blur() {
     this.nativeElement.blur();
   }
 

@@ -14,6 +14,7 @@ import { styles } from './badge.material.css';
  * @csspart base - The base wrapper of the badge.
  */
 export class IgcBadgeComponent extends LitElement {
+  /** @private */
   static styles = styles;
 
   /** The type of badge. */

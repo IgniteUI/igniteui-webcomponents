@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { styles } from './navbar.material.css';
 
 export class IgcNavbarComponent extends LitElement {
+  /** @private */
   static styles = [styles];
 
   render() {

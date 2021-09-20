@@ -9,6 +9,7 @@ import { styles } from './card.actions.material.css';
  * @slot end - Renders items at the end of actions area
  */
 export class IgcCardActions extends LitElement {
+  /** @private */
   static styles = styles;
 
   render() {

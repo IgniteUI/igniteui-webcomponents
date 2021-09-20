@@ -3,6 +3,7 @@ import { SizableMixin } from '../common/mixins/sizable';
 import { styles } from './list.material.css';
 
 export class IgcListComponent extends SizableMixin(LitElement) {
+  /** @private */
   static styles = styles;
 
   constructor() {

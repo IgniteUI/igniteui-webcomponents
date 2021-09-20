@@ -25,6 +25,7 @@ let nextId = 0;
  * @csspart label - The switch label.
  */
 export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
+  /** @private */
   static styles = styles;
 
   private inputId = `switch-${nextId++}`;

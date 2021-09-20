@@ -33,6 +33,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  /** @private */
   static styles = styles;
 
   private inputId = `radio-${nextId++}`;
@@ -42,7 +43,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
   protected input!: HTMLInputElement;
 
   @state()
-  _tabIndex = 0;
+  private _tabIndex = 0;
 
   /** The name attribute of the control. */
   @property()
@@ -73,22 +74,22 @@ export class IgcRadioComponent extends EventEmitterMixin<
   ariaLabelledby!: string;
 
   /** Simulates a click on the radio control. */
-  click() {
+  public click() {
     this.input.click();
   }
 
   /** Sets focus on the radio control. */
-  focus(options?: FocusOptions) {
+  public focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the radio control. */
-  blur() {
+  public blur() {
     this.input.blur();
   }
 
   /** Checks for validity of the control and shows the browser message if it invalid. */
-  reportValidity() {
+  public reportValidity() {
     this.input.reportValidity();
   }
 
@@ -96,7 +97,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
    */
-  setCustomValidity(message: string) {
+  public setCustomValidity(message: string) {
     this.input.setCustomValidity(message);
     this.invalid = !this.input.checkValidity();
   }

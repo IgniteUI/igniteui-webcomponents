@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { styles } from './list-item.material.css';
 
 export class IgcListItemComponent extends LitElement {
+  /** @private */
   static styles = styles;
 
   constructor() {
