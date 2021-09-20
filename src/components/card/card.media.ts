@@ -7,6 +7,7 @@ import { styles } from './card.media.material.css';
  * @slot - Renders the card media content
  */
 export class IgcCardMedia extends LitElement {
+  /** @private */
   public static styles = styles;
 
   protected render() {
