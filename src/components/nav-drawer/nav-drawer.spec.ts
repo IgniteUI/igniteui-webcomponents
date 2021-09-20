@@ -9,6 +9,7 @@ import {
 import { IgcNavDrawerComponent } from './nav-drawer';
 import '../../../igniteui-webcomponents';
 import sinon from 'sinon';
+import { IgcNavDrawerItemComponent } from './nav-drawer-item';
 
 describe('Navigation Drawer', () => {
   const DIFF_OPTIONS = {
@@ -75,13 +76,35 @@ describe('Navigation Drawer', () => {
     });
 
     it('successfully changes nav drawer position', async () => {
+      expect(el).shadowDom.to.equal(
+        `<div part="base" class="start">`,
+        DIFF_OPTIONS
+      );
+
+      el.position = 'end';
+      expect(el.position).to.equal('end');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<div part="base" class="end">`,
+        DIFF_OPTIONS
+      );
+
+      el.position = 'top';
+      expect(el.position).to.equal('top');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<div part="base" class="top">`,
+        DIFF_OPTIONS
+      );
+
       el.position = 'bottom';
       expect(el.position).to.equal('bottom');
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `
-        <div part="base" class="bottom">`,
+        `<div part="base" class="bottom">`,
         DIFF_OPTIONS
       );
     });
@@ -99,6 +122,18 @@ describe('Navigation Drawer', () => {
       expect(el.pinned).to.equal(true);
     });
 
+    it('successfully sets active to drawer item', async () => {
+      const item = el.children[0] as IgcNavDrawerItemComponent;
+      item.active = true;
+      expect(item.active).to.equal(true);
+    });
+
+    it('successfully sets disabled to drawer item', async () => {
+      const item = el.children[0] as IgcNavDrawerItemComponent;
+      item.disabled = true;
+      expect(item.disabled).to.equal(true);
+    });
+
     it('displays the elements defined in the slots', async () => {
       el = await createNavDrawerElement(`
         <igc-nav-drawer>
@@ -109,7 +144,7 @@ describe('Navigation Drawer', () => {
             <h2>Item Content</h2>
           </igc-nav-drawer-item>
 
-          <div slot="mini" mini="true"">
+          <div slot="mini">
             <igc-nav-drawer-item>
               <igc-icon slot="icon" name="home"></igc-icon>
             <igc-nav-drawer-item>
@@ -121,14 +156,16 @@ describe('Navigation Drawer', () => {
 
       await elementUpdated(el);
 
-      // TODO finish this test
+      const asd = el.shadowRoot?.querySelector('div[part=mini]') as Element;
+      let computedStyles = window.getComputedStyle(asd);
+      expect(computedStyles.getPropertyValue('display')).to.equal('none');
 
-      //expect(el.children.length).to.equals(3);
-      // expect(el.shadowRoot?.querySelector('div[part=mini]')).to.not.be.displayed
+      el.open = false;
 
-      //  const asd = el.shadowRoot?.querySelector('slot[name=mini]');
-      //  (asd as Element).setAttribute('style','display: none');
-      //  expect(asd).to.be.displayed;
+      await elementUpdated(el);
+
+      computedStyles = window.getComputedStyle(asd);
+      expect(computedStyles.getPropertyValue('display')).to.not.equal('none');
     });
 
     it('should emit igcOpening event when the drawer is opened', async () => {
