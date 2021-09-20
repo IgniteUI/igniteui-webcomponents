@@ -13,9 +13,9 @@ import { styles } from './card.header.material.css';
  */
 export class IgcCardHeader extends LitElement {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
-  render() {
+  protected render() {
     return html`
       <section>
         <slot name="thumbnail"></slot>

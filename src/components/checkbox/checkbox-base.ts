@@ -18,35 +18,35 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 
   /** The name attribute of the control. */
   @property()
-  name!: string;
+  public name!: string;
 
   /** The value attribute of the control. */
   @property()
-  value!: string;
+  public value!: string;
 
   /** Disables the control. */
   @property({ type: Boolean, reflect: true })
-  disabled = false;
+  public disabled = false;
 
   /** The checked state of the control. */
   @property({ type: Boolean })
-  checked = false;
+  public checked = false;
 
   /** Makes the control a required field. */
   @property({ type: Boolean, reflect: true })
-  required = false;
+  public required = false;
 
   /** Controls the validity of the control. */
   @property({ type: Boolean, reflect: true })
-  invalid = false;
+  public invalid = false;
 
   /** The label position of the control. */
   @property({ reflect: true, attribute: 'label-position' })
-  labelPosition: 'before' | 'after' = 'after';
+  public labelPosition: 'before' | 'after' = 'after';
 
   /** Sets the aria-labelledby attribute for the control. */
   @property({ reflect: true, attribute: 'aria-labelledby' })
-  ariaLabelledby!: string;
+  public ariaLabelledby!: string;
 
   /** Simulates a click on the control. */
   public click() {

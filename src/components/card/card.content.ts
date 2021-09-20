@@ -8,9 +8,9 @@ import { styles } from './card.content.material.css';
  */
 export class IgcCardContent extends LitElement {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }

@@ -10,9 +10,9 @@ import { styles } from './card.actions.material.css';
  */
 export class IgcCardActions extends LitElement {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
-  render() {
+  protected render() {
     return html`
       <slot name="start"></slot>
       <slot></slot>

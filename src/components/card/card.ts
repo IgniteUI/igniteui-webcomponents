@@ -9,13 +9,13 @@ import { styles } from './card.material.css';
  */
 export class IgcCardComponent extends LitElement {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
   /** Sets card outline style, otherwise card looks elevated */
   @property({ type: Boolean, reflect: true })
-  outlined = false;
+  public outlined = false;
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }

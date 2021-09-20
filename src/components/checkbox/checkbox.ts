@@ -27,14 +27,14 @@ let nextId = 0;
  */
 export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
   private inputId = `checkbox-${nextId++}`;
   private labelId = `checkbox-label-${this.inputId}`;
 
   /** Draws the checkbox in indeterminate state. */
   @property({ type: Boolean, reflect: true })
-  indeterminate = false;
+  public indeterminate = false;
 
   protected handleClick() {
     this.checked = !this.checked;
@@ -50,7 +50,7 @@ export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     }
   }
 
-  render() {
+  protected render() {
     return html`
       <label
         part="${partNameMap({ base: true, checked: this.checked })}"

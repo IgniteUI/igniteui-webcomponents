@@ -16,7 +16,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   /**
    * @private
    */
-  static styles = [styles];
+  public static styles = [styles];
 
   /**
    * @private
@@ -28,11 +28,11 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
    * Determines whether the button is disabled.
    */
   @property({ type: Boolean, reflect: true })
-  disabled = false;
+  public disabled = false;
 
   /** Sets the variant of the button. */
   @property({ reflect: true })
-  variant: 'flat' | 'raised' | 'outlined' | 'fab' = 'flat';
+  public variant: 'flat' | 'raised' | 'outlined' | 'fab' = 'flat';
 
   /** Sets focus in the button. */
   public focus(options?: FocusOptions) {

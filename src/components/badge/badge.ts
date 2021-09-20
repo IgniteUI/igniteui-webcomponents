@@ -15,18 +15,20 @@ import { styles } from './badge.material.css';
  */
 export class IgcBadgeComponent extends LitElement {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
   /** The type of badge. */
   @property({ reflect: true })
-  variant?: 'primary' | 'info' | 'success' | 'warning' | 'danger' = 'primary';
+  public variant?: 'primary' | 'info' | 'success' | 'warning' | 'danger' =
+    'primary';
 
   /** Sets whether to draw an outlined version of the badge. */
-  @property({ type: Boolean, reflect: true }) outlined = false;
+  @property({ type: Boolean, reflect: true })
+  public outlined = false;
 
   /** The shape of the badge. */
   @property({ reflect: true })
-  shape?: 'rounded' | 'square' = 'rounded';
+  public shape?: 'rounded' | 'square' = 'rounded';
 
   protected get classes() {
     const { shape, variant } = this;
@@ -43,7 +45,7 @@ export class IgcBadgeComponent extends LitElement {
     };
   }
 
-  render() {
+  protected render() {
     return html`
       <span
         part="base"

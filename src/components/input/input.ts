@@ -43,10 +43,10 @@ export class IgcInputComponent extends SizableMixin(
   EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
   /** @private */
-  static shadowRootOptions = {
+  protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
@@ -73,16 +73,22 @@ export class IgcInputComponent extends SizableMixin(
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
-  dir: Direction = 'auto';
+  public dir: Direction = 'auto';
 
   /** The type attribute of the control. */
   @property({ reflect: true })
-  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url' =
-    'text';
+  public type:
+    | 'email'
+    | 'number'
+    | 'password'
+    | 'search'
+    | 'tel'
+    | 'text'
+    | 'url' = 'text';
 
   /** The input mode attribute of the control. */
   @property()
-  inputmode!:
+  public inputmode!:
     | 'none'
     | 'txt'
     | 'decimal'
@@ -94,36 +100,36 @@ export class IgcInputComponent extends SizableMixin(
 
   /** The name attribute of the control. */
   @property()
-  name!: string;
+  public name!: string;
 
   /** The value attribute of the control. */
   @property()
-  value = '';
+  public value = '';
 
   /** The pattern attribute of the control. */
   @property({ type: String })
-  pattern!: string;
+  public pattern!: string;
 
   /** The label of the control.
    * @attr [label=Label]
    */
   @property({ type: String })
-  label!: string;
+  public label!: string;
 
   /** The placeholder attribute of the control. */
   @property({ type: String })
-  placeholder!: string;
+  public placeholder!: string;
 
   /** Controls the validity of the control. */
   @property({ reflect: true, type: Boolean })
-  invalid = false;
+  public invalid = false;
 
   @property({ reflect: true, type: Boolean })
-  outlined = false;
+  public outlined = false;
 
   /** Makes the control a required field. */
   @property({ reflect: true, type: Boolean })
-  required = false;
+  public required = false;
 
   /** Makes the control a disabled field. */
   @property({ reflect: true, type: Boolean })
@@ -131,37 +137,37 @@ export class IgcInputComponent extends SizableMixin(
 
   /** Makes the control a readonly field. */
   @property({ reflect: true, type: Boolean })
-  readonly = false;
+  public readonly = false;
 
   /** The minlength attribute of the control. */
   @property({ type: Number })
-  minlength!: number;
+  public minlength!: number;
 
   /** The maxlength attribute of the control. */
   @property({ type: Number })
-  maxlength!: number;
+  public maxlength!: number;
 
   /** The min attribute of the control. */
   @property()
-  min!: number | string;
+  public min!: number | string;
 
   /** The max attribute of the control. */
   @property()
-  max!: number | string;
+  public max!: number | string;
 
   /** The step attribute of the control. */
   @property({ type: Number })
-  step!: number;
+  public step!: number;
 
   /** The autofocus attribute of the control. */
   @property({ type: Boolean })
-  autofocus!: boolean;
+  public autofocus!: boolean;
 
   /** The autocomplete attribute of the control. */
   @property()
-  autocomplete!: string;
+  public autocomplete!: string;
 
-  connectedCallback() {
+  public connectedCallback() {
     super.connectedCallback();
     const theme = document.defaultView
       ?.getComputedStyle(this)
@@ -362,7 +368,7 @@ export class IgcInputComponent extends SizableMixin(
     `;
   }
 
-  render() {
+  protected render() {
     return html`${this.theme === 'material'
       ? this.renderMaterial()
       : this.renderStandard()}`;

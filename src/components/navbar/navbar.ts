@@ -3,9 +3,9 @@ import { styles } from './navbar.material.css';
 
 export class IgcNavbarComponent extends LitElement {
   /** @private */
-  static styles = [styles];
+  public static styles = [styles];
 
-  render() {
+  protected render() {
     return html`
       <div part="base">
         <span part="start">

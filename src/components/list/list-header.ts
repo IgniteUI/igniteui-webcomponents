@@ -3,14 +3,14 @@ import { styles } from './list-header.material.css';
 
 export class IgcListHeaderComponent extends LitElement {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
   constructor() {
     super();
     this.setAttribute('role', 'separator');
   }
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }

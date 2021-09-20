@@ -5,7 +5,7 @@ import { styles } from './radio-group.css';
 
 export class IgcRadioGroupComponent extends LitElement {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
   @queryAssignedNodes(undefined, true, 'igc-radio')
   private _slottedRadios!: NodeListOf<IgcRadioComponent>;
@@ -25,7 +25,7 @@ export class IgcRadioGroupComponent extends LitElement {
   }
 
   @property({ reflect: true })
-  alignment: 'vertical' | 'horizontal' = 'vertical';
+  public alignment: 'vertical' | 'horizontal' = 'vertical';
 
   private handleKeydown = (event: KeyboardEvent) => {
     const { key } = event;
@@ -59,7 +59,7 @@ export class IgcRadioGroupComponent extends LitElement {
     }
   };
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }

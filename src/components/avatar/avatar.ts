@@ -20,26 +20,26 @@ import { styles } from './avatar.material.css';
  */
 export class IgcAvatarComponent extends SizableMixin(LitElement) {
   /** @private */
-  static styles = [styles];
+  public static styles = [styles];
 
   /** The image source to use. */
   @property()
-  src!: string;
+  public src!: string;
 
   @state()
   private hasError = false;
 
   /** Alternative text for the image. */
   @property()
-  alt!: string;
+  public alt!: string;
 
   /** Initials to use as a fallback when no image is available. */
   @property()
-  initials!: string;
+  public initials!: string;
 
   /** The shape of the avatar. */
   @property({ reflect: true })
-  shape: 'circle' | 'rounded' | 'square' = 'square';
+  public shape: 'circle' | 'rounded' | 'square' = 'square';
 
   protected get classes() {
     const { size, shape } = this;
@@ -59,7 +59,7 @@ export class IgcAvatarComponent extends SizableMixin(LitElement) {
     this.size = 'small';
   }
 
-  render() {
+  protected render() {
     return html`
       <div
         part="base"

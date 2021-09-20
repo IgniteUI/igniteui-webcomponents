@@ -4,14 +4,14 @@ import { styles } from './list.material.css';
 
 export class IgcListComponent extends SizableMixin(LitElement) {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
   constructor() {
     super();
     this.setAttribute('role', 'list');
   }
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }
