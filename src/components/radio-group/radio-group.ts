@@ -26,6 +26,7 @@ export class IgcRadioGroupComponent extends LitElement {
   @property({ reflect: true })
   alignment: 'vertical' | 'horizontal' = 'vertical';
 
+  @blazorSuppress()
   handleKeydown = (event: KeyboardEvent) => {
     const { key } = event;
 

@@ -110,10 +110,12 @@ export class IgcRadioComponent extends EventEmitterMixin<
     this.checked = true;
   }
 
+  @alternateName('handleBlurred')
   protected handleBlur() {
     this.emitEvent('igcBlur');
   }
 
+  @alternateName('handleFocused')
   protected handleFocus() {
     this.emitEvent('igcFocus');
   }

@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
+import { alternateName, blazorSuppress } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './button.material.css';
@@ -22,6 +23,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
    * @private
    */
   @query('.native', true)
+  @blazorSuppress()
   nativeElement!: HTMLElement;
 
   /**
@@ -44,10 +46,12 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     this.nativeElement.blur();
   }
 
+  @alternateName('handleFocused')
   protected handleFocus() {
     this.emitEvent('igcFocus');
   }
 
+  @alternateName('handleBlurred')
   protected handleBlur() {
     this.emitEvent('igcBlur');
   }
