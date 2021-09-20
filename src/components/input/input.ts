@@ -133,7 +133,7 @@ export class IgcInputComponent extends SizableMixin(
 
   /** Makes the control a disabled field. */
   @property({ reflect: true, type: Boolean })
-  disabled = false;
+  public disabled = false;
 
   /** Makes the control a readonly field. */
   @property({ reflect: true, type: Boolean })
@@ -287,7 +287,7 @@ export class IgcInputComponent extends SizableMixin(
     this.invalid = !this.input.checkValidity();
   }
 
-  protected renderInput() {
+  private renderInput() {
     return html`
       <input
         id="${this.inputId}"
@@ -318,7 +318,7 @@ export class IgcInputComponent extends SizableMixin(
     `;
   }
 
-  protected renderLabel() {
+  private renderLabel() {
     return this.label
       ? html`<label id="${this.labelId}" part="label" for="${this.inputId}">
           ${this.label}
@@ -326,19 +326,19 @@ export class IgcInputComponent extends SizableMixin(
       : null;
   }
 
-  protected renderPrefix() {
+  private renderPrefix() {
     return html`<div part="prefix">
       <slot name="prefix"></slot>
     </div>`;
   }
 
-  protected renderSuffix() {
+  private renderSuffix() {
     return html`<div part="suffix">
       <slot name="suffix"></slot>
     </div>`;
   }
 
-  protected renderStandard() {
+  private renderStandard() {
     return html`${this.renderLabel()}
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
@@ -348,7 +348,7 @@ export class IgcInputComponent extends SizableMixin(
       </div>`;
   }
 
-  protected renderMaterial() {
+  private renderMaterial() {
     return html`
       <div
         part="${partNameMap({
