@@ -1,5 +1,4 @@
 import { html, LitElement } from 'lit';
-import { blazorSuppress } from '../common/decorators';
 import { styles } from './ripple.css';
 
 /**
@@ -17,7 +16,6 @@ export class IgcRippleComponent extends LitElement {
     this.addEventListener('mousedown', this.handler);
   }
 
-  @blazorSuppress()
   private handler = ({ clientX, clientY }: MouseEvent) => {
     const element = document.createElement('span');
     const { radius, top, left } = this.getDimensions(clientX, clientY);

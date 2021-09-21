@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
-import { alternateName, blazorSuppress } from '../common/decorators';
+import { alternateName } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './button.material.css';

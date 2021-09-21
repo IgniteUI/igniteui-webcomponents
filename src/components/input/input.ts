@@ -265,6 +265,7 @@ export class IgcInputComponent extends SizableMixin(
     this.invalid = true;
   }
 
+  @alternateName('handleInputOccurred')
   private handleInput() {
     this.value = this.input.value;
     this.emitEvent('igcInput');
@@ -275,10 +276,12 @@ export class IgcInputComponent extends SizableMixin(
     this.emitEvent('igcChange');
   }
 
+  @alternateName('hangleFocused')
   private handleFocus() {
     this.emitEvent('igcFocus');
   }
 
+  @alternateName('handleBlurred')
   private handleBlur() {
     this.emitEvent('igcBlur');
   }

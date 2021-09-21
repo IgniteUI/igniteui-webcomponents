@@ -1,6 +1,5 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedNodes } from 'lit/decorators.js';
-import { blazorSuppress } from '../common/decorators';
 import { IgcRadioComponent } from '../radio/radio';
 import { styles } from './radio-group.css';
 
