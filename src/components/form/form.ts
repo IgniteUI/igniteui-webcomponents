@@ -23,7 +23,10 @@ export class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  static styles = css`
+  /**
+   * @private
+   */
+  public static styles = css`
     :host {
       display: block;
     }
@@ -40,7 +43,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   private _controlsThatSubmit = ['input', 'button', 'igc-button'];
 
   /** Specifies if form data validation should be skipped on submit. */
-  @property({ type: Boolean, reflect: true }) novalidate = false;
+  @property({ type: Boolean, reflect: true }) public novalidate = false;
 
   constructor() {
     super();
@@ -49,7 +52,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   }
 
   /** Submits the form. */
-  submit(): boolean {
+  public submit(): boolean {
     const formData = this.getFormData();
     if (!this.novalidate && !this.reportValidity()) {
       return false;
@@ -60,7 +63,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   }
 
   /** Resets the form. */
-  reset() {
+  public reset() {
     const formElements = this.getFormElements();
     formElements.forEach((element) => {
       const tagName = element.tagName.toLowerCase();
@@ -103,7 +106,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   }
 
   /** Retrieves the data from the form in the format of a FormData object. */
-  getFormData() {
+  public getFormData() {
     const formData = new FormData();
 
     const formElements = this.getFormElements();
@@ -135,7 +138,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   }
 
   /** Checks for validity of the form. */
-  reportValidity(): boolean {
+  public reportValidity(): boolean {
     const formElements = this.getFormElements();
     return !formElements.some(
       (element) =>
@@ -144,7 +147,7 @@ export class IgcFormComponent extends EventEmitterMixin<
     );
   }
 
-  protected handleClick(event: MouseEvent) {
+  private handleClick(event: MouseEvent) {
     const targetElement: any = event.target as HTMLElement;
     if (
       this._controlsThatSubmit.includes(targetElement.tagName.toLowerCase()) &&
@@ -158,7 +161,7 @@ export class IgcFormComponent extends EventEmitterMixin<
     return true;
   }
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }
