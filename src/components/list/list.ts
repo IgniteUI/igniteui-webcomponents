@@ -10,14 +10,15 @@ import { styles } from './list.material.css';
  * @slot - Renders the list items and list headers inside default slot.
  */
 export class IgcListComponent extends SizableMixin(LitElement) {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
   constructor() {
     super();
     this.setAttribute('role', 'list');
   }
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }

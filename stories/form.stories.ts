@@ -10,7 +10,7 @@ const metadata = {
     novalidate: {
       type: 'boolean',
       description:
-        'Specifies if the form should not to be validated on submit.',
+        'Specifies if form data validation should be skipped on submit.',
       control: 'boolean',
       defaultValue: false,
     },

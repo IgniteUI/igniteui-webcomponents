@@ -21,14 +21,15 @@ import { styles } from './list-item.material.css';
  * @csspart subtitle - The subtitle container.
  */
 export class IgcListItemComponent extends LitElement {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
   constructor() {
     super();
     this.setAttribute('role', 'listitem');
   }
 
-  render() {
+  protected render() {
     return html`
       <section part="start">
         <slot name="start"></slot>

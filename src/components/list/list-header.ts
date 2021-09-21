@@ -9,14 +9,15 @@ import { styles } from './list-header.material.css';
  * @slot - Renders header list item's content.
  */
 export class IgcListHeaderComponent extends LitElement {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
   constructor() {
     super();
     this.setAttribute('role', 'separator');
   }
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }

@@ -33,7 +33,8 @@ export class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
   private inputId = `radio-${nextId++}`;
   private labelId = `radio-label-${this.inputId}`;
@@ -42,53 +43,53 @@ export class IgcRadioComponent extends EventEmitterMixin<
   protected input!: HTMLInputElement;
 
   @state()
-  _tabIndex = 0;
+  private _tabIndex = 0;
 
   /** The name attribute of the control. */
   @property()
-  name!: string;
+  public name!: string;
 
   /** The value attribute of the control. */
   @property()
-  value!: string;
+  public value!: string;
 
   /** The checked state of the control. */
   @property({ type: Boolean })
-  checked = false;
+  public checked = false;
 
   /** Disables the radio control. */
   @property({ type: Boolean, reflect: true })
-  disabled = false;
+  public disabled = false;
 
   /** Controls the validity of the control. */
   @property({ type: Boolean, reflect: true })
-  invalid = false;
+  public invalid = false;
 
   /** The label position of the radio control. */
   @property({ reflect: true, attribute: 'label-position' })
-  labelPosition: 'before' | 'after' = 'after';
+  public labelPosition: 'before' | 'after' = 'after';
 
   /** Sets the aria-labelledby attribute for the radio control. */
   @property({ reflect: true, attribute: 'aria-labelledby' })
-  ariaLabelledby!: string;
+  public ariaLabelledby!: string;
 
   /** Simulates a click on the radio control. */
-  click() {
+  public click() {
     this.input.click();
   }
 
   /** Sets focus on the radio control. */
-  focus(options?: FocusOptions) {
+  public focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the radio control. */
-  blur() {
+  public blur() {
     this.input.blur();
   }
 
   /** Checks for validity of the control and shows the browser message if it invalid. */
-  reportValidity() {
+  public reportValidity() {
     this.input.reportValidity();
   }
 
@@ -96,7 +97,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
    */
-  setCustomValidity(message: string) {
+  public setCustomValidity(message: string) {
     this.input.setCustomValidity(message);
     this.invalid = !this.input.checkValidity();
   }
@@ -140,7 +141,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
     ).filter((radio) => radio.name === this.name && radio !== this);
   }
 
-  render() {
+  protected render() {
     return html`
       <label
         part="${partNameMap({ base: true, checked: this.checked })}"
