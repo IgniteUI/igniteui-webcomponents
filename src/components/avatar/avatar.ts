@@ -41,7 +41,7 @@ export class IgcAvatarComponent extends SizableMixin(LitElement) {
   @property({ reflect: true })
   public shape: 'circle' | 'rounded' | 'square' = 'square';
 
-  protected get classes() {
+  private get classes() {
     const { size, shape } = this;
 
     return {

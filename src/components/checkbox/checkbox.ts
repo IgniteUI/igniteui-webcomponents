@@ -36,7 +36,7 @@ export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   @property({ type: Boolean, reflect: true })
   public indeterminate = false;
 
-  protected handleClick() {
+  private handleClick() {
     this.checked = !this.checked;
     this.indeterminate = false;
   }

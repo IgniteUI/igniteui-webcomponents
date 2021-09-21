@@ -31,7 +31,7 @@ export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   private inputId = `switch-${nextId++}`;
   private labelId = `switch-label-${this.inputId}`;
 
-  protected handleClick() {
+  private handleClick() {
     this.checked = !this.checked;
   }
 

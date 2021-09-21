@@ -63,7 +63,7 @@ export class IgcInputComponent extends SizableMixin(
   private theme!: string | undefined;
 
   @query('input', true)
-  protected input!: HTMLInputElement;
+  private input!: HTMLInputElement;
 
   @queryAssignedNodes('prefix', true)
   private _prefix!: NodeListOf<HTMLElement>;
@@ -252,7 +252,7 @@ export class IgcInputComponent extends SizableMixin(
     this.input.blur();
   }
 
-  protected resolvePartNames(base: string) {
+  private resolvePartNames(base: string) {
     return {
       [base]: true,
       prefixed: this._prefixLength > 0,
@@ -260,25 +260,25 @@ export class IgcInputComponent extends SizableMixin(
     };
   }
 
-  protected handleInvalid() {
+  private handleInvalid() {
     this.invalid = true;
   }
 
-  protected handleInput() {
+  private handleInput() {
     this.value = this.input.value;
     this.emitEvent('igcInput');
   }
 
-  protected handleChange() {
+  private handleChange() {
     this.value = this.input.value;
     this.emitEvent('igcChange');
   }
 
-  protected handleFocus() {
+  private handleFocus() {
     this.emitEvent('igcFocus');
   }
 
-  protected handleBlur() {
+  private handleBlur() {
     this.emitEvent('igcBlur');
   }
 

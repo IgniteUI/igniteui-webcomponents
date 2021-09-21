@@ -30,7 +30,7 @@ export class IgcBadgeComponent extends LitElement {
   @property({ reflect: true })
   public shape?: 'rounded' | 'square' = 'rounded';
 
-  protected get classes() {
+  private get classes() {
     const { shape, variant } = this;
 
     return {

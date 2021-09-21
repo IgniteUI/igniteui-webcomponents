@@ -22,7 +22,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
    * @private
    */
   @query('.native', true)
-  protected nativeElement!: HTMLElement;
+  private nativeElement!: HTMLElement;
 
   /**
    * Determines whether the button is disabled.
