@@ -2,9 +2,10 @@ import { html, LitElement } from 'lit';
 import { styles } from './navbar.material.css';
 
 export class IgcNavbarComponent extends LitElement {
-  static styles = [styles];
+  /** @private */
+  public static styles = [styles];
 
-  render() {
+  protected render() {
     return html`
       <div part="base">
         <span part="start">

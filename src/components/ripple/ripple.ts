@@ -10,7 +10,7 @@ import { styles } from './ripple.css';
  */
 export class IgcRippleComponent extends LitElement {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
   constructor() {
     super();
@@ -61,7 +61,7 @@ export class IgcRippleComponent extends LitElement {
     return { radius, top: _top, left: _left };
   }
 
-  render() {
+  protected render() {
     return html`<div></div>`;
   }
 }

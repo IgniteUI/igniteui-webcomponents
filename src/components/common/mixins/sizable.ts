@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { Constructor } from './constructor';
 
 export declare class SizableInterface {
-  size: 'small' | 'medium' | 'large';
+  public size: 'small' | 'medium' | 'large';
 }
 
 export const SizableMixin = <T extends Constructor<LitElement>>(
@@ -15,7 +15,7 @@ export const SizableMixin = <T extends Constructor<LitElement>>(
      * @type {"small" | "medium" | "large"}
      */
     @property({ reflect: true })
-    size: 'small' | 'medium' | 'large' = 'large';
+    public size: 'small' | 'medium' | 'large' = 'large';
   }
   return SizableElement as Constructor<SizableInterface> & T;
 };

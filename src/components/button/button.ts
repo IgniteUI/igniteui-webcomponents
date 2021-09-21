@@ -28,9 +28,9 @@ export class IgcButtonComponent extends IgcButtonBaseComponent {
    */
   @alternateName('displayType')
   @property()
-  type!: 'button' | 'reset' | 'submit';
+  public type!: 'button' | 'reset' | 'submit';
 
-  render() {
+  protected render() {
     return html`
       <button
         part="base"
