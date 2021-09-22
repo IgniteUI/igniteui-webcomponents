@@ -3,7 +3,7 @@
 
 $item-margin: rem(8px);
 
-[part='base'] {
+[part~='base'] {
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
@@ -40,6 +40,18 @@ $item-margin: rem(8px);
 
 [part='text'] {
     margin-inline-start: rem(32px);
+}
+
+[part~='mini'] {
+    display: block;
+
+    [part='text'] {
+        display: none;
+    }
+
+    ::slotted(igc-icon) {
+        width: 100%;
+    }
 }
 
 :host([disabled]) {
