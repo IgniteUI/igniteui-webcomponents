@@ -168,7 +168,7 @@ describe('Navigation Drawer', () => {
       expect(computedStyles.getPropertyValue('display')).to.not.equal('none');
     });
 
-    it('should emit igcOpening event when the drawer is opened', async () => {
+    it('should emit events on drawer toggle', async () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
       el.toggle();
 
