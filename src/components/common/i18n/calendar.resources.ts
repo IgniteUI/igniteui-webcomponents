@@ -2,7 +2,7 @@ export interface IgcCalendarResourceStrings {
   selectMonth: string;
   selectYear: string;
   selectDate: string;
-  selectDateRange: string;
+  selectRange: string;
   selectedDate: string;
   startDate: string;
   endDate: string;
@@ -18,8 +18,8 @@ export interface IgcCalendarResourceStrings {
 export const IgcCalendarResourceStringEN: IgcCalendarResourceStrings = {
   selectMonth: 'Select month',
   selectYear: 'Select year',
-  selectDate: 'Select a date',
-  selectDateRange: 'Select a date range',
+  selectDate: 'Select date',
+  selectRange: 'Select range',
   selectedDate: 'Selected date',
   startDate: 'Start',
   endDate: 'End',

@@ -601,7 +601,7 @@ export class IgcCalendarComponent extends SizableMixin(
         <slot name="title"
           >${this.selection === 'single'
             ? this.resourceStrings.selectDate
-            : this.resourceStrings.selectDateRange}</slot
+            : this.resourceStrings.selectRange}</slot
         >
       </h5>
       <h2 part="header-date">${this.renderHeaderDate()}</h2>
