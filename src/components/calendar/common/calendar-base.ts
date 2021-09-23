@@ -42,9 +42,6 @@ export class IgcCalendarBaseComponent extends LitElement {
   @property({ attribute: false })
   specialDates!: DateRangeDescriptor[];
 
-  @property({ type: Boolean, attribute: 'hide-outside-days' })
-  hideOutsideDays = false;
-
   @watch('weekStart')
   weekStartChange() {
     this.calendarModel.firstWeekDay = getWeekDayNumber(this.weekStart);

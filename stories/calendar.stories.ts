@@ -9,6 +9,11 @@ const metadata = {
   title: 'Calendar',
   component: 'igc-calendar',
   argTypes: {
+    hideOutsideDays: {
+      type: 'boolean',
+      control: 'boolean',
+      defaultValue: false,
+    },
     hasHeader: {
       type: 'boolean',
       control: 'boolean',
@@ -90,15 +95,11 @@ const metadata = {
       control: 'text',
       defaultValue: 'en',
     },
-    hideOutsideDays: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: false,
-    },
   },
 };
 export default metadata;
 interface ArgTypes {
+  hideOutsideDays: boolean;
   hasHeader: boolean;
   headerOrientation: 'vertical' | 'horizontal';
   orientation: 'vertical' | 'horizontal';
@@ -117,7 +118,6 @@ interface ArgTypes {
     | 'saturday';
   activeDate: Date;
   locale: string;
-  hideOutsideDays: boolean;
 }
 // endregion
 

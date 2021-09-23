@@ -57,6 +57,9 @@ export class IgcCalendarComponent extends SizableMixin(
   @state()
   protected activeDaysViewIndex = 0;
 
+  @property({ type: Boolean, attribute: 'hide-outside-days' })
+  hideOutsideDays = false;
+
   @property({ type: Boolean, attribute: 'has-header' })
   hasHeader = true;
 
@@ -452,18 +455,16 @@ export class IgcCalendarComponent extends SizableMixin(
     this.activeDaysViewIndex = daysViewIndex;
   }
 
-  private activeDateChanged(event: CustomEvent<Date>) {
+  private activeDateChanged(event: CustomEvent<ICalendarDate>) {
+    const day = event.detail;
     const daysViews = Array.from(this.daysViews);
-    this.activeDaysViewIndex = daysViews.findIndex((d) => d === event.target);
-    this.activeDate = event.detail;
-  }
 
-  private outsideDaySelected(event: CustomEvent<ICalendarDate>) {
-    event.stopPropagation();
-    const date = event.detail.date;
-    this.activeDate = date;
+    this.activeDaysViewIndex = daysViews.indexOf(event.target as Node);
+    this.activeDate = day.date;
 
-    this.focusActiveDate();
+    if (!day.isCurrentMonth) {
+      this.focusActiveDate();
+    }
   }
 
   private rangePreviewDateChange(event: CustomEvent<Date>) {
@@ -690,8 +691,9 @@ export class IgcCalendarComponent extends SizableMixin(
                   .locale=${this.locale}
                   .selection=${this.selection}
                   .value=${this.value}
-                  .hideOutsideDays=${this.hideOutsideDays ||
-                  this.visibleMonths > 1}
+                  .hideLeadingDays=${this.hideOutsideDays || i !== 0}
+                  .hideTrailingDays=${this.hideOutsideDays ||
+                  i !== activeDates.length - 1}
                   .showWeekNumbers=${this.showWeekNumbers}
                   .disabledDates=${this.disabledDates}
                   .specialDates=${this.specialDates}
@@ -699,7 +701,6 @@ export class IgcCalendarComponent extends SizableMixin(
                   .resourceStrings=${this.resourceStrings}
                   exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
                   @igcChange=${this.changeValue}
-                  @igcOutsideDaySelected=${this.outsideDaySelected}
                   @igcActiveDateChange=${this.activeDateChanged}
                   @igcRangePreviewDateChange=${this.rangePreviewDateChange}
                 ></igc-days-view>

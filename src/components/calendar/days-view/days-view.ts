@@ -22,8 +22,7 @@ import {
 } from '../../common/i18n/calendar.resources';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
-  igcOutsideDaySelected: CustomEvent<ICalendarDate>;
-  igcActiveDateChange: CustomEvent<Date>;
+  igcActiveDateChange: CustomEvent<ICalendarDate>;
   igcRangePreviewDateChange: CustomEvent<Date>;
 }
 
@@ -38,6 +37,12 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];
+
+  @property({ type: Boolean, attribute: 'hide-leading-days' })
+  hideLeadingDays = false;
+
+  @property({ type: Boolean, attribute: 'hide-trailing-days' })
+  hideTrailingDays = false;
 
   @query('[tabindex="0"]')
   activeDay!: HTMLElement;
@@ -293,10 +298,6 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     this.selectDay(day);
 
     this.changeActiveDate(day);
-
-    if (!day.isCurrentMonth) {
-      this.emitEvent('igcOutsideDaySelected', { detail: day });
-    }
   }
 
   private selectDay(day: ICalendarDate) {
@@ -405,10 +406,8 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private changeActiveDate(day: ICalendarDate) {
-    if (day.isCurrentMonth) {
-      this.activeDate = day.date;
-      this.emitEvent('igcActiveDateChange', { detail: day.date });
-    }
+    this.activeDate = day.date;
+    this.emitEvent('igcActiveDateChange', { detail: day });
   }
 
   private dateKeyDown(event: KeyboardEvent, day: ICalendarDate) {
@@ -442,7 +441,9 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
 
   private resolveDayItemPartName(day: ICalendarDate) {
     const isInactive = day.isNextMonth || day.isPrevMonth;
-    const isHidden = this.hideOutsideDays && isInactive;
+    const isHidden =
+      (this.hideLeadingDays && day.isPrevMonth) ||
+      (this.hideTrailingDays && day.isNextMonth);
     const isDisabled = this.isDisabled(day.date);
 
     return {
