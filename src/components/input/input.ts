@@ -4,7 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
 import { Constructor } from '../common/mixins/constructor.js';
-import { watch } from '../common/decorators';
+import { alternateName, watch } from '../common/decorators';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util';
 import { SizableMixin } from '../common/mixins/sizable';
@@ -43,10 +43,10 @@ export class IgcInputComponent extends SizableMixin(
   EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
   /** @private */
-  static styles = styles;
+  public static styles = styles;
 
   /** @private */
-  static shadowRootOptions = {
+  protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
@@ -60,10 +60,10 @@ export class IgcInputComponent extends SizableMixin(
   private _suffixLength!: number;
 
   @state()
-  theme!: string | undefined;
+  private theme!: string | undefined;
 
   @query('input', true)
-  protected input!: HTMLInputElement;
+  private input!: HTMLInputElement;
 
   @queryAssignedNodes('prefix', true)
   private _prefix!: NodeListOf<HTMLElement>;
@@ -73,16 +73,23 @@ export class IgcInputComponent extends SizableMixin(
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
-  dir: Direction = 'auto';
+  public dir: Direction = 'auto';
 
   /** The type attribute of the control. */
+  @alternateName('displayType')
   @property({ reflect: true })
-  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url' =
-    'text';
+  public type:
+    | 'email'
+    | 'number'
+    | 'password'
+    | 'search'
+    | 'tel'
+    | 'text'
+    | 'url' = 'text';
 
   /** The input mode attribute of the control. */
   @property()
-  inputmode!:
+  public inputmode!:
     | 'none'
     | 'txt'
     | 'decimal'
@@ -94,74 +101,74 @@ export class IgcInputComponent extends SizableMixin(
 
   /** The name attribute of the control. */
   @property()
-  name!: string;
+  public name!: string;
 
   /** The value attribute of the control. */
   @property()
-  value = '';
+  public value = '';
 
   /** The pattern attribute of the control. */
   @property({ type: String })
-  pattern!: string;
+  public pattern!: string;
 
   /** The label of the control.
    * @attr [label=Label]
    */
   @property({ type: String })
-  label!: string;
+  public label!: string;
 
   /** The placeholder attribute of the control. */
   @property({ type: String })
-  placeholder!: string;
+  public placeholder!: string;
 
   /** Controls the validity of the control. */
   @property({ reflect: true, type: Boolean })
-  invalid = false;
+  public invalid = false;
 
   @property({ reflect: true, type: Boolean })
-  outlined = false;
+  public outlined = false;
 
   /** Makes the control a required field. */
   @property({ reflect: true, type: Boolean })
-  required = false;
+  public required = false;
 
   /** Makes the control a disabled field. */
   @property({ reflect: true, type: Boolean })
-  disabled = false;
+  public disabled = false;
 
   /** Makes the control a readonly field. */
   @property({ reflect: true, type: Boolean })
-  readonly = false;
+  public readonly = false;
 
   /** The minlength attribute of the control. */
   @property({ type: Number })
-  minlength!: number;
+  public minlength!: number;
 
   /** The maxlength attribute of the control. */
   @property({ type: Number })
-  maxlength!: number;
+  public maxlength!: number;
 
   /** The min attribute of the control. */
   @property()
-  min!: number | string;
+  public min!: number | string;
 
   /** The max attribute of the control. */
   @property()
-  max!: number | string;
+  public max!: number | string;
 
   /** The step attribute of the control. */
   @property({ type: Number })
-  step!: number;
+  public step!: number;
 
   /** The autofocus attribute of the control. */
   @property({ type: Boolean })
-  autofocus!: boolean;
+  public autofocus!: boolean;
 
   /** The autocomplete attribute of the control. */
   @property()
-  autocomplete!: string;
+  public autocomplete!: string;
 
-  connectedCallback() {
+  public connectedCallback() {
     super.connectedCallback();
     const theme = document.defaultView
       ?.getComputedStyle(this)
@@ -177,26 +184,26 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
-  reportValidity() {
-    this.input.reportValidity();
+  public reportValidity() {
+    return this.input.reportValidity();
   }
 
   /**
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
    */
-  setCustomValidity(message: string) {
+  public setCustomValidity(message: string) {
     this.input.setCustomValidity(message);
     this.invalid = !this.input.checkValidity();
   }
 
   /** Selects all text within the input. */
-  select() {
+  public select() {
     return this.input.select();
   }
 
   /** Sets the text selection range of the input. */
-  setSelectionRange(
+  public setSelectionRange(
     selectionStart: number,
     selectionEnd: number,
     selectionDirection: 'backward' | 'forward' | 'none' = 'none'
@@ -209,7 +216,7 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   /** Replaces the selected text in the input. */
-  setRangeText(
+  public setRangeText(
     replacement: string,
     start: number,
     end: number,
@@ -225,28 +232,28 @@ export class IgcInputComponent extends SizableMixin(
   }
 
   /** Increments the numeric value of the input by one or more steps. */
-  stepUp(n?: number) {
+  public stepUp(n?: number) {
     this.input.stepUp(n);
     this.handleChange();
   }
 
   /** Decrements the numeric value of the input by one or more steps. */
-  stepDown(n?: number) {
+  public stepDown(n?: number) {
     this.input.stepDown(n);
     this.handleChange();
   }
 
   /** Sets focus on the control. */
-  focus(options?: FocusOptions) {
+  public focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the control. */
-  blur() {
+  public blur() {
     this.input.blur();
   }
 
-  protected resolvePartNames(base: string) {
+  private resolvePartNames(base: string) {
     return {
       [base]: true,
       prefixed: this._prefixLength > 0,
@@ -254,25 +261,28 @@ export class IgcInputComponent extends SizableMixin(
     };
   }
 
-  protected handleInvalid() {
+  private handleInvalid() {
     this.invalid = true;
   }
 
-  protected handleInput() {
+  @alternateName('handleInputOccurred')
+  private handleInput() {
     this.value = this.input.value;
     this.emitEvent('igcInput');
   }
 
-  protected handleChange() {
+  private handleChange() {
     this.value = this.input.value;
     this.emitEvent('igcChange');
   }
 
-  protected handleFocus() {
+  @alternateName('handleFocused')
+  private handleFocus() {
     this.emitEvent('igcFocus');
   }
 
-  protected handleBlur() {
+  @alternateName('handleBlurred')
+  private handleBlur() {
     this.emitEvent('igcBlur');
   }
 
@@ -281,7 +291,7 @@ export class IgcInputComponent extends SizableMixin(
     this.invalid = !this.input.checkValidity();
   }
 
-  protected renderInput() {
+  private renderInput() {
     return html`
       <input
         id="${this.inputId}"
@@ -312,7 +322,7 @@ export class IgcInputComponent extends SizableMixin(
     `;
   }
 
-  protected renderLabel() {
+  private renderLabel() {
     return this.label
       ? html`<label id="${this.labelId}" part="label" for="${this.inputId}">
           ${this.label}
@@ -320,19 +330,19 @@ export class IgcInputComponent extends SizableMixin(
       : null;
   }
 
-  protected renderPrefix() {
+  private renderPrefix() {
     return html`<div part="prefix">
       <slot name="prefix"></slot>
     </div>`;
   }
 
-  protected renderSuffix() {
+  private renderSuffix() {
     return html`<div part="suffix">
       <slot name="suffix"></slot>
     </div>`;
   }
 
-  protected renderStandard() {
+  private renderStandard() {
     return html`${this.renderLabel()}
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
@@ -342,7 +352,7 @@ export class IgcInputComponent extends SizableMixin(
       </div>`;
   }
 
-  protected renderMaterial() {
+  private renderMaterial() {
     return html`
       <div
         part="${partNameMap({
@@ -362,7 +372,7 @@ export class IgcInputComponent extends SizableMixin(
     `;
   }
 
-  render() {
+  protected render() {
     return html`${this.theme === 'material'
       ? this.renderMaterial()
       : this.renderStandard()}`;

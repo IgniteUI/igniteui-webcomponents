@@ -30,7 +30,12 @@
     }
 }
 
+:host([position='top']),
 :host([position='bottom']) {
+    [part='main'] {
+        width: 100%;
+    }
+
     [part='base'] {
         height: 50vh;
         min-height: initial;
@@ -41,10 +46,8 @@
 
 :host([position='top']) {
     [part='base'] {
-        height: 50vh;
-        min-height: initial;
+        top: 0;
         bottom: auto;
-        width: 100%;
     }
 }
 

@@ -25,12 +25,13 @@ let nextId = 0;
  * @csspart label - The switch label.
  */
 export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
   private inputId = `switch-${nextId++}`;
   private labelId = `switch-label-${this.inputId}`;
 
-  protected handleClick() {
+  private handleClick() {
     this.checked = !this.checked;
   }
 
@@ -42,7 +43,7 @@ export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
     }
   }
 
-  render() {
+  protected render() {
     return html`
       <label
         part=${partNameMap({ base: true, checked: this.checked })}

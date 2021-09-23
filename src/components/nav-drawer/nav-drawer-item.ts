@@ -1,7 +1,8 @@
 import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, queryAssignedNodes, state } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators';
+import { partNameMap } from '../common/util';
 import { styles } from './nav-drawer-item.material.css';
 
 /**
@@ -28,8 +29,28 @@ export class IgcNavDrawerItemComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   active = false;
 
+  @state()
+  private _textLength!: number;
+
+  @queryAssignedNodes('text', true)
+  private _text!: NodeListOf<HTMLElement>;
+
   protected handleClick() {
     this.active = true;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.shadowRoot?.addEventListener('slotchange', (_) => {
+      this._textLength = this._text.length;
+    });
+  }
+
+  protected resolvePartNames(base: string) {
+    return {
+      [base]: true,
+      mini: this._textLength < 1,
+    };
   }
 
   @watch('active', { waitUntilFirstUpdate: true })
@@ -53,7 +74,7 @@ export class IgcNavDrawerItemComponent extends LitElement {
   render() {
     return html`
       <div
-        part="base"
+        part="${partNameMap(this.resolvePartNames('base'))}"
         .disabled="${this.disabled}"
         .active="${live(this.active)}"
         @click="${this.handleClick}"
@@ -62,7 +83,7 @@ export class IgcNavDrawerItemComponent extends LitElement {
           <slot name="icon"></slot>
         </span>
         <span part="text">
-          <slot></slot>
+          <slot name="text"></slot>
         </span>
       </div>
     `;
