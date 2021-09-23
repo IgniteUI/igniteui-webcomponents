@@ -147,7 +147,7 @@ $date-size-small: rem(24px);
 
 [part='months-navigation'],
 [part='years-navigation'],
-[part='navigation-button'] {
+[part~='navigation-button'] {
     display: inline-flex;
     user-select: none;
     background: transparent;
@@ -168,8 +168,12 @@ $date-size-small: rem(24px);
     }
 }
 
-[part='navigation-button'] {
+[part~='navigation-button'] {
     margin-inline-start: rem(24px);
+
+    &[part~='vertical'] {
+        transform: rotate(90deg);
+    }
 }
 
 [part='navigation-buttons'] {

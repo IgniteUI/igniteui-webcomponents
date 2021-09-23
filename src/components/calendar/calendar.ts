@@ -19,6 +19,7 @@ import {
   IgcCalendarResourceStringEN,
   IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources';
+import { partNameMap } from '../common/util';
 
 export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;
@@ -573,14 +574,20 @@ export class IgcCalendarComponent extends SizableMixin(
       ${renderButtons
         ? html`<div part="navigation-buttons">
             <button
-              part="navigation-button"
+              part=${partNameMap({
+                'navigation-button': true,
+                vertical: this.orientation === 'vertical',
+              })}
               aria-label=${this.previousButtonLabel}
               @click=${this.navigatePrevious}
             >
               <igc-icon name="navigate_before" collection="internal"></igc-icon>
             </button>
             <button
-              part="navigation-button"
+              part=${partNameMap({
+                'navigation-button': true,
+                vertical: this.orientation === 'vertical',
+              })}
               aria-label=${this.nextButtonLabel}
               @click=${this.navigateNext}
             >
