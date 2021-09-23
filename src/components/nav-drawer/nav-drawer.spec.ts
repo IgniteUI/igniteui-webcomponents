@@ -12,11 +12,6 @@ import sinon from 'sinon';
 import { IgcNavDrawerItemComponent } from './nav-drawer-item';
 
 describe('Navigation Drawer', () => {
-  const DIFF_OPTIONS = {
-    ignoreChildren: ['div'],
-    ignoreAttributes: ['part'],
-  };
-
   let el: IgcNavDrawerComponent;
 
   describe('', async () => {
@@ -55,7 +50,7 @@ describe('Navigation Drawer', () => {
             <slot name="icon"></slot>
           </span>
           <span part="text">
-            <slot></slot>
+            <slot name="text"></slot>
           </span>
         </div>
       `);
@@ -63,7 +58,7 @@ describe('Navigation Drawer', () => {
 
     it('render nav drawer slots successfully', async () => {
       expect(el).shadowDom.equal(`
-        <div part="base" class="start">
+        <div part="base">
           <div part="main">
             <slot></slot>
           </div>
@@ -76,37 +71,19 @@ describe('Navigation Drawer', () => {
     });
 
     it('successfully changes nav drawer position', async () => {
-      expect(el).shadowDom.to.equal(
-        `<div part="base" class="start">`,
-        DIFF_OPTIONS
-      );
+      expect(el.position).to.equal('start');
 
       el.position = 'end';
       expect(el.position).to.equal('end');
       await elementUpdated(el);
 
-      expect(el).shadowDom.to.equal(
-        `<div part="base" class="end">`,
-        DIFF_OPTIONS
-      );
-
       el.position = 'top';
       expect(el.position).to.equal('top');
       await elementUpdated(el);
 
-      expect(el).shadowDom.to.equal(
-        `<div part="base" class="top">`,
-        DIFF_OPTIONS
-      );
-
       el.position = 'bottom';
       expect(el.position).to.equal('bottom');
       await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<div part="base" class="bottom">`,
-        DIFF_OPTIONS
-      );
     });
 
     it('successfully toggles nav drawer', async () => {

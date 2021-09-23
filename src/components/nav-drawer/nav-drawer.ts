@@ -1,6 +1,5 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './nav-drawer.material.css';
@@ -48,17 +47,6 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
   /** Determines whether the drawer is pinned. */
   @property({ type: Boolean, reflect: true })
   pinned = false;
-
-  protected get classes() {
-    const { position } = this;
-
-    return {
-      start: position === 'start',
-      end: position === 'end',
-      top: position === 'top',
-      bottom: position === 'bottom',
-    };
-  }
 
   /** Opens the drawer. */
   show() {
@@ -122,7 +110,7 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   render() {
-    return html` <div part="base" class=${classMap(this.classes)}>
+    return html` <div part="base">
       <div part="main">
         <slot></slot>
       </div>
