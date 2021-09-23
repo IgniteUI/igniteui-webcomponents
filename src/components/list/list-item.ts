@@ -2,14 +2,15 @@ import { html, LitElement } from 'lit';
 import { styles } from './list-item.material.css';
 
 export class IgcListItemComponent extends LitElement {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
   constructor() {
     super();
     this.setAttribute('role', 'listitem');
   }
 
-  render() {
+  protected render() {
     return html`
       <section part="start">
         <slot name="start"></slot>

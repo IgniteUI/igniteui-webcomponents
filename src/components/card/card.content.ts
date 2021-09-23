@@ -7,9 +7,10 @@ import { styles } from './card.content.material.css';
  * @slot - Renders the card text content
  */
 export class IgcCardContent extends LitElement {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }

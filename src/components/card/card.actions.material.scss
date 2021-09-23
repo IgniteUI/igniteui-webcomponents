@@ -9,8 +9,7 @@
     padding: rem(8px);
 }
 
-::slotted(igc-button:not(:first-of-type)),
-::slotted(igc-icon:not(:first-of-type)) {
+::slotted(igc-button:not(:first-of-type)) {
     margin-inline-start: rem(8px);
 }
 
@@ -25,5 +24,8 @@
     align-items: center;
     margin-inline-start: auto;
     order: 1;
+}
+
+::slotted(igc-icon) {
     opacity: .6;
 }
