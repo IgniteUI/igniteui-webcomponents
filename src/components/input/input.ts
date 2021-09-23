@@ -276,7 +276,7 @@ export class IgcInputComponent extends SizableMixin(
     this.emitEvent('igcChange');
   }
 
-  @alternateName('hangleFocused')
+  @alternateName('handleFocused')
   private handleFocus() {
     this.emitEvent('igcFocus');
   }
