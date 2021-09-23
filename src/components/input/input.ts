@@ -4,7 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
 import { Constructor } from '../common/mixins/constructor.js';
-import { watch } from '../common/decorators';
+import { alternateName, watch } from '../common/decorators';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util';
 import { SizableMixin } from '../common/mixins/sizable';
@@ -76,6 +76,7 @@ export class IgcInputComponent extends SizableMixin(
   public dir: Direction = 'auto';
 
   /** The type attribute of the control. */
+  @alternateName('displayType')
   @property({ reflect: true })
   public type:
     | 'email'
@@ -264,6 +265,7 @@ export class IgcInputComponent extends SizableMixin(
     this.invalid = true;
   }
 
+  @alternateName('handleInputOccurred')
   private handleInput() {
     this.value = this.input.value;
     this.emitEvent('igcInput');
@@ -274,10 +276,12 @@ export class IgcInputComponent extends SizableMixin(
     this.emitEvent('igcChange');
   }
 
+  @alternateName('handleFocused')
   private handleFocus() {
     this.emitEvent('igcFocus');
   }
 
+  @alternateName('handleBlurred')
   private handleBlur() {
     this.emitEvent('igcBlur');
   }

@@ -2,6 +2,7 @@ import { LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
+import { alternateName } from '../common/decorators/alternateName.js';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<void>;
@@ -77,10 +78,12 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
     this.invalid = !this.input.checkValidity();
   }
 
+  @alternateName('handleBlurred')
   protected handleBlur() {
     this.emitEvent('igcBlur');
   }
 
+  @alternateName('handleFocused')
   protected handleFocus() {
     this.emitEvent('igcFocus');
   }

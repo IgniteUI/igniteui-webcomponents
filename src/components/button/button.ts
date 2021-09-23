@@ -2,6 +2,7 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { alternateName } from '../common/decorators';
 import { IgcButtonBaseComponent } from './button-base.js';
 
 /**
@@ -25,6 +26,7 @@ export class IgcButtonComponent extends IgcButtonBaseComponent {
   /**
    * The type of the button. Defaults to undefined.
    */
+  @alternateName('displayType')
   @property()
   public type!: 'button' | 'reset' | 'submit';
 
