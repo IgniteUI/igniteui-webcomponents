@@ -5,7 +5,7 @@ interface IconCollection {
 export class IconsRegistry {
   private static _instance: IconsRegistry;
 
-  static instance() {
+  public static instance() {
     if (!IconsRegistry._instance) {
       IconsRegistry._instance = new IconsRegistry();
     }
@@ -20,15 +20,15 @@ export class IconsRegistry {
     this.iconsRegistry.set('internal', internalIcons);
   }
 
-  subscribe(callback: (name: string, collection: string) => void) {
+  public subscribe(callback: (name: string, collection: string) => void) {
     this.callbacks.add(callback);
   }
 
-  unsubscribe(callback: (name: string, collection: string) => void) {
+  public unsubscribe(callback: (name: string, collection: string) => void) {
     this.callbacks.delete(callback);
   }
 
-  registerIcon(name: string, iconText: string, collection = 'default') {
+  public registerIcon(name: string, iconText: string, collection = 'default') {
     const div = document.createElement('div');
     div.innerHTML = iconText;
     const svg = div.querySelector('svg') as SVGElement;
@@ -46,7 +46,7 @@ export class IconsRegistry {
     }
   }
 
-  getIcon(name: string, collection = 'default') {
+  public getIcon(name: string, collection = 'default') {
     if (this.iconsRegistry.has(collection)) {
       return this.iconsRegistry.get(collection)![name];
     }

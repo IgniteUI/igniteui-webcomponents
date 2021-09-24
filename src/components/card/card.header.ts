@@ -12,13 +12,10 @@ import { styles } from './card.header.material.css';
  * @csspart header - The card header container
  */
 export class IgcCardHeader extends LitElement {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
-  constructor() {
-    super();
-  }
-
-  render() {
+  protected render() {
     return html`
       <section>
         <slot name="thumbnail"></slot>

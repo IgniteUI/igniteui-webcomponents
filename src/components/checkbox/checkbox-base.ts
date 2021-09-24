@@ -2,6 +2,7 @@ import { LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
+import { alternateName } from '../common/decorators/alternateName.js';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<void>;
@@ -18,53 +19,53 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 
   /** The name attribute of the control. */
   @property()
-  name!: string;
+  public name!: string;
 
   /** The value attribute of the control. */
   @property()
-  value!: string;
+  public value!: string;
 
   /** Disables the control. */
   @property({ type: Boolean, reflect: true })
-  disabled = false;
+  public disabled = false;
 
   /** The checked state of the control. */
   @property({ type: Boolean })
-  checked = false;
+  public checked = false;
 
   /** Makes the control a required field. */
   @property({ type: Boolean, reflect: true })
-  required = false;
+  public required = false;
 
   /** Controls the validity of the control. */
   @property({ type: Boolean, reflect: true })
-  invalid = false;
+  public invalid = false;
 
   /** The label position of the control. */
   @property({ reflect: true, attribute: 'label-position' })
-  labelPosition: 'before' | 'after' = 'after';
+  public labelPosition: 'before' | 'after' = 'after';
 
   /** Sets the aria-labelledby attribute for the control. */
   @property({ reflect: true, attribute: 'aria-labelledby' })
-  ariaLabelledby!: string;
+  public ariaLabelledby!: string;
 
   /** Simulates a click on the control. */
-  click() {
+  public click() {
     this.input.click();
   }
 
   /** Sets focus on the control. */
-  focus(options?: FocusOptions) {
+  public focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the control. */
-  blur() {
+  public blur() {
     this.input.blur();
   }
 
   /** Checks for validity of the control and shows the browser message if it invalid. */
-  reportValidity() {
+  public reportValidity() {
     return this.input.reportValidity();
   }
 
@@ -72,15 +73,17 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
    */
-  setCustomValidity(message: string) {
+  public setCustomValidity(message: string) {
     this.input.setCustomValidity(message);
     this.invalid = !this.input.checkValidity();
   }
 
+  @alternateName('handleBlurred')
   protected handleBlur() {
     this.emitEvent('igcBlur');
   }
 
+  @alternateName('handleFocused')
   protected handleFocus() {
     this.emitEvent('igcFocus');
   }

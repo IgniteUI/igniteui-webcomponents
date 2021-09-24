@@ -4,27 +4,30 @@ import { Constructor } from './constructor';
 export type UnpackCustomEvent<T> = T extends CustomEvent<infer U> ? U : never;
 
 export declare class EventEmitterInterface<E> {
-  addEventListener<K extends keyof M, M extends E & HTMLElementEventMap>(
+  public addEventListener<K extends keyof M, M extends E & HTMLElementEventMap>(
     type: K,
     listener: (this: HTMLElement, ev: M[K]) => any,
     options?: boolean | AddEventListenerOptions
   ): void;
-  addEventListener(
+  public addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
   ): void;
-  removeEventListener<K extends keyof M, M extends E & HTMLElementEventMap>(
+  public removeEventListener<
+    K extends keyof M,
+    M extends E & HTMLElementEventMap
+  >(
     type: K,
     listener: (this: HTMLElement, ev: M[K]) => any,
     options?: boolean | EventListenerOptions
   ): void;
-  removeEventListener(
+  public removeEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | EventListenerOptions
   ): void;
-  emitEvent<K extends keyof E, D extends UnpackCustomEvent<E[K]>>(
+  public emitEvent<K extends keyof E, D extends UnpackCustomEvent<E[K]>>(
     type: K,
     eventInitDict?: CustomEventInit<D>
   ): boolean;
@@ -37,12 +40,15 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
     /**
      * @private
      */
-    addEventListener<K extends keyof M, M extends E & HTMLElementEventMap>(
+    public addEventListener<
+      K extends keyof M,
+      M extends E & HTMLElementEventMap
+    >(
       type: K,
       listener: (this: HTMLElement, ev: M[K]) => any,
       options?: boolean | AddEventListenerOptions
     ): void;
-    addEventListener(
+    public addEventListener(
       type: string,
       listener: EventListenerOrEventListenerObject,
       options?: boolean | AddEventListenerOptions
@@ -53,12 +59,15 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
     /**
      * @private
      */
-    removeEventListener<K extends keyof M, M extends E & HTMLElementEventMap>(
+    public removeEventListener<
+      K extends keyof M,
+      M extends E & HTMLElementEventMap
+    >(
       type: K,
       listener: (this: HTMLElement, ev: M[K]) => any,
       options?: boolean | EventListenerOptions
     ): void;
-    removeEventListener(
+    public removeEventListener(
       type: string,
       listener: EventListenerOrEventListenerObject,
       options?: boolean | EventListenerOptions
@@ -69,7 +78,7 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
     /**
      * @private
      */
-    emitEvent<K extends keyof E, D extends UnpackCustomEvent<E[K]>>(
+    public emitEvent<K extends keyof E, D extends UnpackCustomEvent<E[K]>>(
       type: K,
       eventInitDict?: CustomEventInit<D>
     ): boolean {
