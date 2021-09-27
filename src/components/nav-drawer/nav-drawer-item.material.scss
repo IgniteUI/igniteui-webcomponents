@@ -40,6 +40,7 @@ $item-margin: rem(8px);
 
 [part='text'] {
     margin-inline-start: rem(32px);
+    @include ellipsis();
 }
 
 [part='base mini'] {
