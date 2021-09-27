@@ -59,7 +59,7 @@ const metadata = {
     },
     selection: {
       type: '"single" | "multi" | "range"',
-      options: ['single', 'multi', 'range'],
+      options: ['single', 'multiple', 'range'],
       control: {
         type: 'inline-radio',
       },

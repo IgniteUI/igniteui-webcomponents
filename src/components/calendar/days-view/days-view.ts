@@ -246,7 +246,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
       return getDateOnly(selectedDates[0]).getTime() === date.date.getTime();
     }
 
-    if (this.selection === 'multi') {
+    if (this.selection === 'multiple') {
       const start = getDateOnly(selectedDates[0]);
       const end = getDateOnly(selectedDates[selectedDates.length - 1]);
 
@@ -324,7 +324,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
         }
         this.selectSingle(value);
         break;
-      case 'multi':
+      case 'multiple':
         this.selectMultiple(value);
         break;
       case 'range':
