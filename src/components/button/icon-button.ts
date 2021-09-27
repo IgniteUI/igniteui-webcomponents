@@ -11,41 +11,41 @@ import { styles } from './icon-button.material.css';
  * @csspart icon - The icon element.
  */
 export class IgcIconButtonComponent extends IgcButtonBaseComponent {
-  static styles = [styles];
+  public static styles = [styles];
 
   /** The name of the icon. */
   @property()
-  name!: string;
+  public name!: string;
 
   /** The name of the icon collection. */
   @property()
-  collection!: string;
+  public collection!: string;
 
-  /** Whether to flip the icon. Useful for RTL layouts. */
+  /** Whether to flip the icon button. Useful for RTL layouts. */
   @property({ type: Boolean })
-  mirrored = false;
+  public mirrored = false;
 
   /** The href attribute of the icon. */
   @property()
-  href!: string;
+  public href!: string;
 
-  /** The visual variant of the icon. */
+  /** The visual variant of the icon button. */
   @property()
-  variant: 'flat' | 'contained' | 'outlined' = 'flat';
+  public variant: 'flat' | 'contained' | 'outlined' = 'flat';
 
   /** The download attribute of the icon. */
   @property()
-  download!: string;
+  public download!: string;
 
-  /** The target attribute of the icon. */
+  /** The target attribute of the icon button. */
   @property()
-  target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  public target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
 
-  /** The rel attribute of the icon. */
+  /** The rel attribute of the icon button. */
   @property()
-  rel!: string;
+  public rel!: string;
 
-  protected renderIcon() {
+  private renderIcon() {
     return html`
       <igc-icon
         part="icon"
@@ -58,7 +58,7 @@ export class IgcIconButtonComponent extends IgcButtonBaseComponent {
     `;
   }
 
-  render() {
+  protected render() {
     const link = !!this.href;
 
     return link

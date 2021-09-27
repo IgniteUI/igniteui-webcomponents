@@ -24,7 +24,7 @@ const metadata = {
     },
     mirrored: {
       type: 'boolean',
-      description: 'Whether to flip the icon. Useful for RTL layouts.',
+      description: 'Whether to flip the icon button. Useful for RTL layouts.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -40,7 +40,7 @@ const metadata = {
     },
     target: {
       type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
-      description: 'The target attribute of the icon.',
+      description: 'The target attribute of the icon button.',
       options: ['_blank', '_parent', '_self', '_top', 'undefined'],
       control: {
         type: 'select',
@@ -48,7 +48,7 @@ const metadata = {
     },
     rel: {
       type: 'string',
-      description: 'The rel attribute of the icon.',
+      description: 'The rel attribute of the icon button.',
       control: 'text',
     },
     disabled: {
@@ -59,7 +59,7 @@ const metadata = {
     },
     variant: {
       type: '"flat" | "contained" | "outlined"',
-      description: 'The visual variant of the icon.',
+      description: 'The visual variant of the icon button.',
       options: ['flat', 'contained', 'outlined'],
       control: {
         type: 'inline-radio',
