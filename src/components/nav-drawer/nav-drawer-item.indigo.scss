@@ -19,10 +19,6 @@
         padding-inline-start: #{utils.rem(8px)};
     }
 
-    igc-nav-drawer-item::part(icon) {
-        margin-inline-start: #{utils.rem(4px)};
-    }
-
     igc-nav-drawer-item[active]::part(base) {
         color: #{utils.color(gray, 50)};
         background: #{utils.color(gray, 600, .8)};

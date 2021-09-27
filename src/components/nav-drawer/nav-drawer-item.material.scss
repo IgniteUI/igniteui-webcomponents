@@ -42,7 +42,7 @@ $item-margin: rem(8px);
     margin-inline-start: rem(32px);
 }
 
-[part~='mini'] {
+[part='base mini'] {
     display: block;
 
     [part='text'] {
@@ -59,13 +59,13 @@ $item-margin: rem(8px);
     cursor: initial;
     pointer-events: none;
 
-    [part='base'] {
+    [part~='base'] {
         color: color(gray, 400);
     }
 }
 
 :host([active]) {
-    [part='base'] {
+    [part~='base'] {
         background: color(primary, 500, .12);
         color: color(primary, 500);
     }

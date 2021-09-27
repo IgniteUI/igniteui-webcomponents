@@ -146,11 +146,11 @@ const Template: Story<ArgTypes, Context> = (
         </igc-nav-drawer-item>
 
         <div slot="mini">
-          <igc-nav-drawer-item>
+          <igc-nav-drawer-item .disabled=${disabled}>
             <igc-icon slot="icon" name="home"></igc-icon>
           </igc-nav-drawer-item>
 
-          <igc-nav-drawer-item>
+          <igc-nav-drawer-item .active=${active}>
             <igc-icon slot="icon" name="search"></igc-icon>
           </igc-nav-drawer-item>
         </div>
