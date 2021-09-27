@@ -36,21 +36,21 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   public variant: 'flat' | 'raised' | 'outlined' | 'fab' = 'flat';
 
   /** Sets focus in the button. */
+  @alternateName('focusComponent')
   public focus(options?: FocusOptions) {
     this.nativeElement.focus(options);
   }
 
   /** Removes focus from the button. */
+  @alternateName('blurComponent')
   public blur() {
     this.nativeElement.blur();
   }
 
-  @alternateName('handleFocused')
   protected handleFocus() {
     this.emitEvent('igcFocus');
   }
 
-  @alternateName('handleBlurred')
   protected handleBlur() {
     this.emitEvent('igcBlur');
   }

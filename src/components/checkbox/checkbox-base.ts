@@ -55,11 +55,13 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   }
 
   /** Sets focus on the control. */
+  @alternateName('focusComponent')
   public focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the control. */
+  @alternateName('blurComponent')
   public blur() {
     this.input.blur();
   }
@@ -78,12 +80,10 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
     this.invalid = !this.input.checkValidity();
   }
 
-  @alternateName('handleBlurred')
   protected handleBlur() {
     this.emitEvent('igcBlur');
   }
 
-  @alternateName('handleFocused')
   protected handleFocus() {
     this.emitEvent('igcFocus');
   }

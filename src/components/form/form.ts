@@ -1,6 +1,7 @@
 import { css, html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { alternateName } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
 
 export interface IgcFormEventMap {
@@ -52,6 +53,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   }
 
   /** Submits the form. */
+  @alternateName('performSubmit')
   public submit(): boolean {
     const formData = this.getFormData();
     if (!this.novalidate && !this.reportValidity()) {
@@ -63,6 +65,7 @@ export class IgcFormComponent extends EventEmitterMixin<
   }
 
   /** Resets the form. */
+  @alternateName('performReset')
   public reset() {
     const formElements = this.getFormElements();
     formElements.forEach((element) => {
