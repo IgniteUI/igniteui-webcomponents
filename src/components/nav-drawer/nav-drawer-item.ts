@@ -10,36 +10,37 @@ import { styles } from './nav-drawer-item.material.css';
  *
  * @element igc-nav-drawer-item
  *
- * @slot - The default slot for the drawer item.
+ * @slot content - The content slot for the drawer item.
  * @slot icon - The slot for the icon of the drawer item.
  *
  * @csspart base - The base wrapper of the drawer item.
  * @csspart icon - The icon container.
- * @csspart text - The text container.
+ * @csspart content - The content container.
  */
 export class IgcNavDrawerItemComponent extends LitElement {
   /** @private */
-  static styles = [styles];
+  public static styles = [styles];
 
   /** Determines whether the drawer is disabled. */
   @property({ type: Boolean, reflect: true })
-  disabled = false;
+  public disabled = false;
 
   /** Determines whether the drawer is active. */
   @property({ type: Boolean, reflect: true })
-  active = false;
+  public active = false;
 
   @state()
   private _textLength!: number;
 
-  @queryAssignedNodes('text', true)
+  @queryAssignedNodes('content', true)
   private _text!: NodeListOf<HTMLElement>;
 
   protected handleClick() {
     this.active = true;
   }
 
-  connectedCallback() {
+  public connectedCallback() {
+    //debugger
     super.connectedCallback();
     this.shadowRoot?.addEventListener('slotchange', (_) => {
       this._textLength = this._text.length;
@@ -71,7 +72,7 @@ export class IgcNavDrawerItemComponent extends LitElement {
     ).filter((item) => item !== this);
   }
 
-  render() {
+  protected render() {
     return html`
       <div
         part="${partNameMap(this.resolvePartNames('base'))}"
@@ -82,8 +83,8 @@ export class IgcNavDrawerItemComponent extends LitElement {
         <span part="icon">
           <slot name="icon"></slot>
         </span>
-        <span part="text">
-          <slot name="text"></slot>
+        <span part="content">
+          <slot name="content"></slot>
         </span>
       </div>
     `;

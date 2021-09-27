@@ -38,14 +38,14 @@ $item-margin: rem(8px);
     }
 }
 
-[part='text'] {
+[part='content'] {
     margin-inline-start: rem(32px);
 }
 
 [part~='mini'] {
     display: block;
 
-    [part='text'] {
+    [part='content'] {
         display: none;
     }
 

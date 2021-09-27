@@ -49,8 +49,8 @@ describe('Navigation Drawer', () => {
           <span part="icon">
             <slot name="icon"></slot>
           </span>
-          <span part="text">
-            <slot name="text"></slot>
+          <span part="content">
+            <slot name="content"></slot>
           </span>
         </div>
       `);
@@ -118,7 +118,7 @@ describe('Navigation Drawer', () => {
 
           <igc-nav-drawer-item>
             <igc-icon slot="icon" name="home"></igc-icon>
-            <h2>Item Content</h2>
+            <h2 name="content">Item Content</h2>
           </igc-nav-drawer-item>
 
           <div slot="mini">
@@ -133,15 +133,15 @@ describe('Navigation Drawer', () => {
 
       await elementUpdated(el);
 
-      const asd = el.shadowRoot?.querySelector('div[part=mini]') as Element;
-      let computedStyles = window.getComputedStyle(asd);
+      const mini = el.shadowRoot?.querySelector('div[part=mini]') as Element;
+      let computedStyles = window.getComputedStyle(mini);
       expect(computedStyles.getPropertyValue('display')).to.equal('none');
 
       el.open = false;
 
       await elementUpdated(el);
 
-      computedStyles = window.getComputedStyle(asd);
+      computedStyles = window.getComputedStyle(mini);
       expect(computedStyles.getPropertyValue('display')).to.not.equal('none');
     });
 
@@ -156,6 +156,37 @@ describe('Navigation Drawer', () => {
 
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
+    });
+
+    it('should successfully cancel opening event', async () => {
+      el.addEventListener('igcOpening', (ev: CustomEvent) => {
+        ev.detail.cancel = true;
+      });
+
+      const eventSpy = sinon.spy(el, 'emitEvent');
+
+      el.show();
+
+      await elementUpdated(el);
+
+      expect(eventSpy).calledWith('igcOpening');
+      expect(el.open).to.equal(false);
+    });
+
+    it('should successfully cancel closing events', async () => {
+      el.show();
+      el.addEventListener('igcClosing', (ev: CustomEvent) => {
+        ev.detail.cancel = true;
+      });
+
+      const eventSpy = sinon.spy(el, 'emitEvent');
+
+      el.hide();
+
+      await elementUpdated(el);
+
+      expect(eventSpy).calledWith('igcClosing');
+      expect(el.open).to.equal(true);
     });
   });
 

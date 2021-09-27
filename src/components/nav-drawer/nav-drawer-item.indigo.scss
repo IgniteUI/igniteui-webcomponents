@@ -14,7 +14,7 @@
         }
     }
 
-    igc-nav-drawer-item::part(text) {
+    igc-nav-drawer-item::part(content) {
         margin-inline-start: #{utils.rem(24px)};
         padding-inline-start: #{utils.rem(8px)};
     }

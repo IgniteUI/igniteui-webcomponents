@@ -9,9 +9,9 @@ import { styles } from './nav-drawer-header-item.material.css';
  */
 export class IgcNavDrawerHeaderItemComponent extends LitElement {
   /** @private */
-  static styles = [styles];
+  public static styles = [styles];
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }

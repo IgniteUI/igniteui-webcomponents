@@ -5,9 +5,9 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './nav-drawer.material.css';
 
 export interface IgcNavDrawerEventMap {
-  igcOpening: CustomEvent<void>;
+  igcOpening: CustomEvent<any>;
   igcOpened: CustomEvent<void>;
-  igcClosing: CustomEvent<void>;
+  igcClosing: CustomEvent<any>;
   igcClosed: CustomEvent<void>;
 }
 
@@ -34,29 +34,27 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   /** @private */
-  static styles = [styles];
+  public static styles = [styles];
 
   /** The position of the drawer. */
   @property({ reflect: true })
-  position: 'start' | 'end' | 'top' | 'bottom' = 'start';
+  public position: 'start' | 'end' | 'top' | 'bottom' = 'start';
 
   /** Determines whether the drawer is opened. */
   @property({ type: Boolean, reflect: true })
-  open = false;
+  public open = false;
 
   /** Determines whether the drawer is pinned. */
   @property({ type: Boolean, reflect: true })
-  pinned = false;
+  public pinned = false;
 
   /** Opens the drawer. */
-  show() {
+  public show() {
     if (this.open) {
       return;
     }
 
-    const args = { cancel: false };
-
-    if (!this.handleOpening(args)) {
+    if (!this.handleOpening()) {
       return;
     }
 
@@ -65,14 +63,12 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   /** Closes the drawer. */
-  hide() {
+  public hide() {
     if (!this.open) {
       return;
     }
 
-    const args = { cancel: false };
-
-    if (!this.handleClosing(args)) {
+    if (!this.handleClosing()) {
       return;
     }
 
@@ -81,7 +77,7 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
   }
 
   /** Toggles the open state of the drawer. */
-  toggle() {
+  public toggle() {
     if (this.open) {
       this.hide();
     } else {
@@ -89,9 +85,13 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
     }
   }
 
-  private handleOpening(args: { cancel: boolean }) {
-    this.emitEvent('igcOpening');
-    if (args.cancel) {
+  private handleOpening() {
+    const args = {
+      detail: { cancel: false },
+    };
+    this.emitEvent('igcOpening', args);
+
+    if (args.detail.cancel) {
       this.open = false;
       return false;
     }
@@ -99,9 +99,13 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
     return true;
   }
 
-  private handleClosing(args: { cancel: boolean }) {
-    this.emitEvent('igcClosing');
-    if (args.cancel) {
+  private handleClosing() {
+    const args = {
+      detail: { cancel: false },
+    };
+    this.emitEvent('igcClosing', args);
+
+    if (args.detail.cancel) {
       this.open = true;
       return false;
     }
@@ -109,7 +113,7 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
     return true;
   }
 
-  render() {
+  protected render() {
     return html` <div part="base">
       <div part="main">
         <slot></slot>

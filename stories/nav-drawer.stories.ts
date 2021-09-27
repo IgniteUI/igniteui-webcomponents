@@ -6,81 +6,40 @@ import { Context, Story } from './story';
 import { IgcNavDrawerComponent } from './../src/components/nav-drawer/nav-drawer.js';
 
 // region default
-export default {
-  title: 'Navigation Drawer',
+const metadata = {
+  title: 'Nav Drawer',
   component: 'igc-nav-drawer',
-  parameters: {
-    actions: {
-      handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
-    },
-  },
   argTypes: {
+    position: {
+      type: '"start" | "end" | "top" | "bottom"',
+      description: 'The position of the drawer.',
+      options: ['start', 'end', 'top', 'bottom'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'start',
+    },
     open: {
       type: 'boolean',
       description: 'Determines whether the drawer is opened.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
+      defaultValue: false,
     },
     pinned: {
       type: 'boolean',
       description: 'Determines whether the drawer is pinned.',
       control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Determines whether a drawer item is disabled.',
-      control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
-    },
-    active: {
-      type: 'boolean',
-      description: 'Determines whether a drawer item is active.',
-      control: 'boolean',
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
-    },
-    position: {
-      type: '"start" | "end" | "top" | "bottom"',
-      options: ['start', 'end', 'top', 'bottom'],
-      control: {
-        type: 'inline-radio',
-      },
-      table: {
-        defaultValue: {
-          summary: 'start',
-        },
-      },
+      defaultValue: false,
     },
   },
 };
-
+export default metadata;
 interface ArgTypes {
-  content1: string;
-  content2: string;
+  position: 'start' | 'end' | 'top' | 'bottom';
   open: boolean;
   pinned: boolean;
-  disabled: boolean;
-  active: boolean;
-  position: 'start' | 'end' | 'top' | 'bottom';
 }
-
-//end region
+// endregion
 
 registerIcon(
   'home',
@@ -114,15 +73,7 @@ const handleToggle = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  {
-    content1 = 'Home',
-    content2 = 'Search',
-    open = false,
-    pinned = false,
-    disabled = false,
-    active = false,
-    position,
-  }: ArgTypes,
+  { open = false, pinned = false, position }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -135,14 +86,14 @@ const Template: Story<ArgTypes, Context> = (
       >
         <igc-nav-drawer-header-item>Sample Drawer</igc-nav-drawer-header-item>
 
-        <igc-nav-drawer-item .disabled=${disabled}>
+        <igc-nav-drawer-item>
           <igc-icon slot="icon" name="home"></igc-icon>
-          <span slot="text">${content1}</span>
+          <span>Home</span>
         </igc-nav-drawer-item>
 
-        <igc-nav-drawer-item .active=${active}>
+        <igc-nav-drawer-item>
           <igc-icon slot="icon" name="search"></igc-icon>
-          <span slot="text">${content2}</span>
+          <span>Search</span>
         </igc-nav-drawer-item>
 
         <div slot="mini">
