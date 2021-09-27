@@ -16,52 +16,31 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   /**
    * @private
    */
-  static styles = [styles];
+  public static styles = [styles];
 
   private years!: Date[][];
-  // private calendarModel = new Calendar();
-  // private yearFormatter: any;
 
   @query('[tabindex="0"]')
-  activeYear!: HTMLElement;
+  private activeYear!: HTMLElement;
 
   @property({ attribute: false })
-  value = new Date();
+  public value = new Date();
 
   @property({ type: Number, attribute: 'years-per-page' })
-  yearsPerPage = 15;
+  public yearsPerPage = 15;
 
   @watch('value')
   @watch('yearsPerPage')
-  datesChange() {
+  protected datesChange() {
     this.years = this.generateYears();
   }
-
-  // @property()
-  // locale = 'en';
-
-  // @property()
-  // yearFormat: 'numeric' | '2-digit' = 'numeric';
-
-  // @watch('locale')
-  // @watch('yearFormat')
-  // formatChange() {
-  //   this.initYearFormatter();
-  // }
 
   constructor() {
     super();
     this.setAttribute('role', 'grid');
-    // this.initYearFormatter();
   }
 
-  // private initYearFormatter() {
-  //   this.yearFormatter = new Intl.DateTimeFormat(this.locale, {
-  //     year: this.yearFormat,
-  //   });
-  // }
-
-  focusActiveDate() {
+  public focusActiveDate() {
     this.activeYear.focus();
   }
 
@@ -114,7 +93,7 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
     }
   }
 
-  render() {
+  protected render() {
     return html`${this.years.map((row) => {
       return html`<div part="years-row" role="row">
         ${row.map((year) => {

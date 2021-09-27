@@ -36,59 +36,66 @@ export class IgcCalendarComponent extends SizableMixin(
   /**
    * @private
    */
-  static styles = [styles];
+  public static styles = [styles];
 
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
 
   @state()
-  rangePreviewDate?: Date;
-
-  @queryAll('igc-days-view')
-  daysViews!: NodeList;
-
-  @query('igc-months-view')
-  monthsView!: IgcMonthsViewComponent;
-
-  @query('igc-years-view')
-  yearsView!: IgcYearsViewComponent;
+  private rangePreviewDate?: Date;
 
   @state()
-  protected activeDaysViewIndex = 0;
+  private activeDaysViewIndex = 0;
 
+  @queryAll('igc-days-view')
+  private daysViews!: NodeList;
+
+  @query('igc-months-view')
+  private monthsView!: IgcMonthsViewComponent;
+
+  @query('igc-years-view')
+  private yearsView!: IgcYearsViewComponent;
+
+  /** Controls the visibility of the dates that do not belong to the current month. */
   @property({ type: Boolean, attribute: 'hide-outside-days' })
-  hideOutsideDays = false;
+  public hideOutsideDays = false;
 
+  /** Determines whether the calendar has header. Even if set to true, the header is not displayed for `multiple` selection. */
   @property({ type: Boolean, attribute: 'has-header' })
-  hasHeader = true;
+  public hasHeader = true;
 
+  /** The orientation of the header. */
   @property({ attribute: 'header-orientation', reflect: true })
-  headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
+  public headerOrientation: 'vertical' | 'horizontal' = 'horizontal';
 
+  /** The orientation of the multiple months displayed in days view. */
   @property()
-  orientation: 'vertical' | 'horizontal' = 'horizontal';
+  public orientation: 'vertical' | 'horizontal' = 'horizontal';
 
+  /** The number of months displayed in days view. */
   @property({ type: Number, attribute: 'visible-months' })
-  visibleMonths = 1;
+  public visibleMonths = 1;
 
+  /** The active view. */
   @property({ attribute: 'active-view' })
-  activeView: 'days' | 'months' | 'years' = 'days';
+  public activeView: 'days' | 'months' | 'years' = 'days';
 
+  /** The options used to format the months and the weekdays in the calendar views. */
   @property({ attribute: false })
-  formatOptions: Intl.DateTimeFormatOptions = {
-    // day: 'numeric',
-    month: 'long',
-    weekday: 'narrow',
-    // year: 'numeric',
-  };
+  public formatOptions: Pick<Intl.DateTimeFormatOptions, 'month' | 'weekday'> =
+    {
+      month: 'long',
+      weekday: 'narrow',
+    };
 
+  /** The resource strings. */
   @property({ attribute: false })
-  resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
+  public resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
 
   @watch('formatOptions')
   @watch('locale')
-  formattersChange() {
+  protected formattersChange() {
     this.initFormatters();
   }
 
@@ -600,7 +607,7 @@ export class IgcCalendarComponent extends SizableMixin(
   }
 
   private renderHeader() {
-    if (!this.hasHeader || this.selection === 'multi') {
+    if (!this.hasHeader || this.selection === 'multiple') {
       return '';
     }
 
@@ -642,7 +649,7 @@ export class IgcCalendarComponent extends SizableMixin(
       >`;
   }
 
-  render() {
+  protected render() {
     const activeDates: Date[] = [];
     const monthsCount = this.visibleMonths > 1 ? this.visibleMonths : 1;
 

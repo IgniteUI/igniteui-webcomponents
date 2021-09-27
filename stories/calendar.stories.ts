@@ -106,7 +106,7 @@ interface ArgTypes {
   visibleMonths: number;
   activeView: 'days' | 'months' | 'years';
   size: 'small' | 'medium' | 'large';
-  selection: 'single' | 'multi' | 'range';
+  selection: 'single' | 'multiple' | 'range';
   showWeekNumbers: boolean;
   weekStart:
     | 'sunday'

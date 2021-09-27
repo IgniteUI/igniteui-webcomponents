@@ -17,26 +17,27 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
   /**
    * @private
    */
-  static styles = [styles];
+  public static styles = [styles];
 
   private calendarModel = new Calendar();
   private monthFormatter: any;
 
   @query('[tabindex="0"]')
-  activeMonth!: HTMLElement;
+  private activeMonth!: HTMLElement;
 
   @property({ attribute: false })
-  value = new Date();
+  public value = new Date();
 
   @property()
-  locale = 'en';
+  public locale = 'en';
 
   @property({ attribute: 'month-format' })
-  monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' = 'long';
+  public monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' =
+    'long';
 
   @watch('locale')
   @watch('monthFormat')
-  formatChange() {
+  protected formatChange() {
     this.initMonthFormatter();
   }
 
@@ -46,7 +47,7 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
     this.initMonthFormatter();
   }
 
-  focusActiveDate() {
+  public focusActiveDate() {
     this.activeMonth.focus();
   }
 
@@ -104,7 +105,7 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
     }
   }
 
-  render() {
+  protected render() {
     return html`${this.months.map((row) => {
       return html`<div part="months-row" role="row">
         ${row.map((month) => {

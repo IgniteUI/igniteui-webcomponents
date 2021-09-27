@@ -33,41 +33,41 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   /**
    * @private
    */
-  static styles = [styles];
+  public static styles = [styles];
 
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];
 
+  @query('[tabindex="0"]')
+  private activeDay!: HTMLElement;
+
   @property({ type: Boolean, attribute: 'hide-leading-days' })
-  hideLeadingDays = false;
+  public hideLeadingDays = false;
 
   @property({ type: Boolean, attribute: 'hide-trailing-days' })
-  hideTrailingDays = false;
-
-  @query('[tabindex="0"]')
-  activeDay!: HTMLElement;
+  public hideTrailingDays = false;
 
   @property({ type: Boolean })
-  active = false;
+  public active = false;
 
   @property({ attribute: false })
-  rangePreviewDate?: Date;
+  public rangePreviewDate?: Date;
 
   @property({ attribute: 'week-day-format' })
-  weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
+  public weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
 
   @property({ attribute: false })
-  resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
+  public resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
 
   @watch('weekDayFormat')
   @watch('locale')
-  formattersChange() {
+  protected formattersChange() {
     this.initFormatters();
   }
 
   @watch('weekStart')
   @watch('activeDate')
-  datesChange() {
+  protected datesChange() {
     this.dates = this.getCalendarMonth();
   }
 
@@ -77,7 +77,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     this.initFormatters();
   }
 
-  focusActiveDate() {
+  public focusActiveDate() {
     this.activeDay.focus();
   }
 
@@ -533,7 +533,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     </span>`;
   }
 
-  render() {
+  protected render() {
     return html`${this.renderWeekHeaders()} ${this.renderDates()}`;
   }
 }

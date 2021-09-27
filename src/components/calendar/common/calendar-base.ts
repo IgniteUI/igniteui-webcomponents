@@ -12,16 +12,16 @@ export class IgcCalendarBaseComponent extends LitElement {
   protected calendarModel = new Calendar();
 
   @property({ attribute: false })
-  value?: Date | Date[];
+  public value?: Date | Date[];
 
   @property()
-  selection: 'single' | 'multi' | 'range' = 'single';
+  public selection: 'single' | 'multiple' | 'range' = 'single';
 
   @property({ type: Boolean, attribute: 'show-week-numbers', reflect: true })
-  showWeekNumbers = false;
+  public showWeekNumbers = false;
 
   @property({ attribute: 'week-start' })
-  weekStart:
+  public weekStart:
     | 'sunday'
     | 'monday'
     | 'tuesday'
@@ -31,24 +31,24 @@ export class IgcCalendarBaseComponent extends LitElement {
     | 'saturday' = 'sunday';
 
   @property({ attribute: false })
-  activeDate = new Date();
+  public activeDate = new Date();
 
   @property()
-  locale = 'en';
+  public locale = 'en';
 
   @property({ attribute: false })
-  disabledDates!: DateRangeDescriptor[];
+  public disabledDates!: DateRangeDescriptor[];
 
   @property({ attribute: false })
-  specialDates!: DateRangeDescriptor[];
+  public specialDates!: DateRangeDescriptor[];
 
   @watch('weekStart')
-  weekStartChange() {
+  protected weekStartChange() {
     this.calendarModel.firstWeekDay = getWeekDayNumber(this.weekStart);
   }
 
   @watch('selection', { waitUntilFirstUpdate: true })
-  selectionChange() {
+  protected selectionChange() {
     this.value = undefined;
   }
 }
