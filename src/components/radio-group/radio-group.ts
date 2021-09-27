@@ -4,10 +4,11 @@ import { IgcRadioComponent } from '../radio/radio';
 import { styles } from './radio-group.css';
 
 export class IgcRadioGroupComponent extends LitElement {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
   @queryAssignedNodes(undefined, true, 'igc-radio')
-  _slottedRadios!: NodeListOf<IgcRadioComponent>;
+  private _slottedRadios!: NodeListOf<IgcRadioComponent>;
 
   private get radios() {
     return Array.from(this._slottedRadios).filter((radio) => !radio.disabled);
@@ -24,9 +25,9 @@ export class IgcRadioGroupComponent extends LitElement {
   }
 
   @property({ reflect: true })
-  alignment: 'vertical' | 'horizontal' = 'vertical';
+  public alignment: 'vertical' | 'horizontal' = 'vertical';
 
-  handleKeydown = (event: KeyboardEvent) => {
+  private handleKeydown = (event: KeyboardEvent) => {
     const { key } = event;
 
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
@@ -58,7 +59,7 @@ export class IgcRadioGroupComponent extends LitElement {
     }
   };
 
-  render() {
+  protected render() {
     return html`<slot></slot>`;
   }
 }

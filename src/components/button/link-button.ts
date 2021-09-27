@@ -25,24 +25,24 @@ import { IgcButtonBaseComponent } from './button-base.js';
 export class IgcLinkButtonComponent extends IgcButtonBaseComponent {
   /** The URL the link-button points to. */
   @property()
-  href!: string;
+  public href!: string;
 
   /** Prompts to save the linked URL instead of navigating to it. */
   @property()
-  download!: string;
+  public download!: string;
 
   /** Where to display the linked URL, as the name for a browsing context. */
   @property()
-  target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  public target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
 
   /**
    * The relationship of the linked URL.
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
    */
   @property()
-  rel!: string;
+  public rel!: string;
 
-  render() {
+  protected render() {
     return html`
       <a
         part="base"
