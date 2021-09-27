@@ -1,65 +1,34 @@
-@use '../../../styles/utilities' as *;
-@use 'sass:math';
+@import '../year-month';
 
 :host {
-    display: flex;
-    flex-direction: column;
-    min-width: rem(290px);
-    outline: none;
-    padding: 0 rem(12px) rem(16px) rem(12px);
-    overflow: hidden;
-    box-sizing: border-box;
-    gap: rem(4px);
+    @extend %host;
 }
 
 [part='months-row'] {
-    display: flex;
+    @extend %row;
 }
 
 [part~='month'] {
-    flex: 1;
+    @extend %item;
 }
 
 [part~='month'],
 [part~='month-inner'] {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    @extend %item-and-inner;
 }
 
 [part~='month-inner'] {
-    user-select: none;
-    cursor: pointer;
-
-    padding: 0 rem(12px);
-
-    &:hover,
-    &:focus {
-        background: color(gray, 200);
-    }
-
-    &:hover {
-        background: color(gray, 200);
-    }
+    @extend %item-inner;
 }
 
 [part~='month-inner'][part~='selected'] {
-    background: color(secondary, 500);
-    color: contrast-color(secondary, 600);
-
-    &:hover,
-    &:focus {
-        background: color(secondary, 500);
-        color: contrast-color(secondary, 600);
-    }
+    @extend %item-inner--selected;
 }
 
 [part~='month-inner'][part~='current'] {
-    box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
+    @extend %item-inner--current;
 }
 
 [part~='month-inner'][part~='selected'][part~='current'] {
-    box-shadow: inset 0 0 0 rem(1px) color(surface),
-        0 0 0 rem(1px) color(secondary, 500);
+    @extend %item-inner--selected--current;
 }
-
