@@ -40,7 +40,6 @@ export class IgcNavDrawerItemComponent extends LitElement {
   }
 
   public connectedCallback() {
-    //debugger
     super.connectedCallback();
     this.shadowRoot?.addEventListener('slotchange', (_) => {
       this._textLength = this._text.length;

@@ -88,12 +88,12 @@ const Template: Story<ArgTypes, Context> = (
 
         <igc-nav-drawer-item>
           <igc-icon slot="icon" name="home"></igc-icon>
-          <span>Home</span>
+          <span slot="content">Home</span>
         </igc-nav-drawer-item>
 
         <igc-nav-drawer-item>
           <igc-icon slot="icon" name="search"></igc-icon>
-          <span>Search</span>
+          <span slot="content">Search</span>
         </igc-nav-drawer-item>
 
         <div slot="mini">
