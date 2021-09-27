@@ -33,7 +33,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   /** Sets the variant of the button. */
   @property({ reflect: true })
-  variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'flat';
+  public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'flat';
 
   /** Sets focus in the button. */
   public focus(options?: FocusOptions) {
