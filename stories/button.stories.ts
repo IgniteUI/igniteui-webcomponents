@@ -23,9 +23,9 @@ const metadata = {
       defaultValue: false,
     },
     variant: {
-      type: '"flat" | "raised" | "outlined" | "fab"',
+      type: '"flat" | "contained" | "outlined" | "fab"',
       description: 'Sets the variant of the button.',
-      options: ['flat', 'raised', 'outlined', 'fab'],
+      options: ['flat', 'contained', 'outlined', 'fab'],
       control: {
         type: 'inline-radio',
       },
@@ -46,7 +46,7 @@ export default metadata;
 interface ArgTypes {
   type: 'button' | 'reset' | 'submit';
   disabled: boolean;
-  variant: 'flat' | 'raised' | 'outlined' | 'fab';
+  variant: 'flat' | 'contained' | 'outlined' | 'fab';
   size: 'small' | 'medium' | 'large';
 }
 // endregion
