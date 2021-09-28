@@ -1,5 +1,6 @@
 @use '../utilities' as utils;
 @use '../../components/button/button.indigo' as button;
+@use '../../components/button/icon-button.indigo' as icon-button;
 @use '../../components/card/card.indigo' as card;
 @use '../../components/card/card.header.indigo' as card-header;
 @use '../../components/card/card.content.indigo' as card-content;
@@ -195,3 +196,4 @@ $type-scale: utils.extend($indigo-type-scale);
 @include nav-drawer-header.theme();
 @include list.theme();
 @include input.theme();
+@include icon-button.theme();

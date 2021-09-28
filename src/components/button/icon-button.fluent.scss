@@ -1,0 +1,80 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-icon-button::part(base) {
+        background: transparent;
+        border-radius: utils.rem(1px);
+        transition: color .15s ease-out, background .15s ease-out;
+        box-shadow: none;
+
+        &::after {
+            position: absolute;
+            content: '';
+            pointer-events: none;
+            top: 2px;
+            left: 2px;
+            width: calc(100% - 4px);
+            height: calc(100% - 4px);
+        }
+    }
+
+    igc-icon-button:not([disabled])::part(base) {
+        color: utils.color(gray, 900);
+
+        &:hover {
+            color: utils.color(primary, 500);
+        }
+
+        &:focus-visible {
+            color: utils.color(gray, 900);
+        }
+
+        &:focus-visible::after {
+            box-shadow: 0 0 0 utils.rem(1px) utils.color(gray, 900);
+        }
+    }
+
+    igc-icon-button[variant='contained']:not([disabled])::part(base) {
+        color: utils.contrast-color(primary, 600);
+        background: utils.color(primary, 500);
+
+        &:hover {
+            background: utils.color(primary, 600);
+        }
+
+        &:focus-visible::after {
+            box-shadow: 0 0 0 utils.rem(1px) utils.contrast-color(primary, 600);
+        }
+    }
+
+    igc-icon-button[variant='outlined']:not([disabled])::part(base) {
+        color: utils.color(gray, 900);
+        box-shadow: 0 0 0 1px utils.color(gray, 700);
+
+        &:focus {
+            background: transparent;
+        }
+
+        &:hover,
+        &:focus:hover {
+            background: utils.color(gray, 100);
+        }
+
+        &:focus:active {
+            background: utils.color(gray, 200);
+        }
+    }
+
+    igc-icon-button[disabled] {
+        &::part(base) {
+            color: utils.color(gray, 400);
+            background: transparent;
+        }
+
+        &[variant='contained']::part(base),
+        &[variant='outlined']::part(base) {
+            color: utils.color(gray, 500);
+            background: utils.color(gray, 100);
+        }
+    }
+}
