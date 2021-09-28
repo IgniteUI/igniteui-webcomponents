@@ -1,7 +1,7 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-$size: rem(24px);
+$size: rem(20px);
 
 :host {
     display: inline-flex;
@@ -13,7 +13,7 @@ $size: rem(24px);
 }
 
 :host([size='small']) {
-    --size: #{rem(18px)};
+    --size: #{rem(16px)};
 }
 
 :host([size='medium']) {
@@ -21,7 +21,7 @@ $size: rem(24px);
 }
 
 :host([size='large']) {
-    --size: #{rem(32px)};
+    --size: #{rem(24px)};
 }
 
 :host([mirrored]) {

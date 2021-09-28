@@ -96,7 +96,7 @@ span[part='suffix'] {
     }
 }
 
-.raised {
+.contained {
     background: color(secondary, 500);
     color: contrast-color(secondary, 500);
     box-shadow: var(--igc-elevation-2);
@@ -128,7 +128,7 @@ span[part='suffix'] {
 }
 
 .fab {
-    @extend .raised;
+    @extend .contained;
     border-radius: calc(var(--igc-border-radius) * 12);
     box-shadow: var(--igc-elevation-6);
 

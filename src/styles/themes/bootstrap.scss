@@ -1,5 +1,6 @@
 @use '../utilities' as utils;
 @use '../../components/button/button.bootstrap' as button;
+@use '../../components/button/icon-button.bootstrap' as icon-button;
 @use '../../components/card/card.bootstrap' as card;
 @use '../../components/card/card.header.bootstrap' as card-header;
 @use '../../components/card/card.content.bootstrap' as card-content;
@@ -195,3 +196,4 @@ $type-scale: utils.extend($_base-scale, (
 @include navbar.theme();
 @include list.theme();
 @include input.theme();
+@include icon-button.theme();
