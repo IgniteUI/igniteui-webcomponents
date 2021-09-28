@@ -94,7 +94,6 @@ export class IgcSliderComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-    console.log('constructor!!!');
     this.addEventListener('pointerdown', this.pointerDown);
     //implement pointerUp to release the capture
     // this.addEventListener('pointerup', this.pointerUp);
@@ -164,10 +163,6 @@ export class IgcSliderComponent extends EventEmitterMixin<
         ),
       };
     } else {
-      console.log(
-        'get value ' +
-          this.valueInRange(this.upperValue, this.lowerBound, this.upperBound)
-      );
       return this.valueInRange(
         this.upperValue,
         this.lowerBound,
@@ -177,7 +172,6 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   public set min(value: number) {
-    console.log('set min value: ' + value);
     if (value >= this.max) {
       return;
     } else {
@@ -330,11 +324,6 @@ export class IgcSliderComponent extends EventEmitterMixin<
 
   @property({ type: Boolean })
   showSecondaryLabels = true;
-
-  valueChange(args: { oldValue: number | IRangeSliderValue }) {
-    console.log(args);
-    this.emitEvent('igcChange');
-  }
 
   private totalTickNumber() {
     return this.primaryTicks > 0
