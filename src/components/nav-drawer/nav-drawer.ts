@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { partNameMap } from '../common/util';
 import { styles } from './nav-drawer.material.css';
 
 export interface IgcNavDrawerEventMap {
@@ -113,13 +114,23 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
     return true;
   }
 
+  private resolvePartNames(base: string) {
+    const mini = document.querySelector('div[slot="mini"]');
+    const hasChildren = mini !== null && mini.children.length > 0;
+
+    return {
+      [base]: true,
+      hidden: !hasChildren,
+    };
+  }
+
   protected render() {
     return html` <div part="base">
       <div part="main">
         <slot></slot>
       </div>
 
-      <div part="mini">
+      <div part="${partNameMap(this.resolvePartNames('mini'))}">
         <slot name="mini"></slot>
       </div>
     </div>`;
