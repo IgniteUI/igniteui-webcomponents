@@ -79,11 +79,13 @@ export class IgcRadioComponent extends EventEmitterMixin<
   }
 
   /** Sets focus on the radio control. */
+  @alternateName('focusComponent')
   public focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the radio control. */
+  @alternateName('blurComponent')
   public blur() {
     this.input.blur();
   }
@@ -111,12 +113,10 @@ export class IgcRadioComponent extends EventEmitterMixin<
     this.checked = true;
   }
 
-  @alternateName('handleBlurred')
   protected handleBlur() {
     this.emitEvent('igcBlur');
   }
 
-  @alternateName('handleFocused')
   protected handleFocus() {
     this.emitEvent('igcFocus');
   }
