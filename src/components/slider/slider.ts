@@ -113,7 +113,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   firstUpdated() {
     this._hasViewInit = true;
     this.positionHandlersAndUpdateTrack();
-    this.setTickInterval();
+    this.setStepInterval();
     this.changeThumbFocusableState(this.disabled);
   }
 
@@ -189,7 +189,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
     // Recalculate step distance.
     this.positionHandlersAndUpdateTrack();
     if (this._hasViewInit) {
-      this.setTickInterval();
+      this.setStepInterval();
     }
   }
 
@@ -215,7 +215,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
     this._pMax = 1;
     this.positionHandlersAndUpdateTrack();
     if (this._hasViewInit) {
-      this.setTickInterval();
+      this.setStepInterval();
     }
   }
 
@@ -288,7 +288,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   public set continuous(continuous: boolean) {
     this._continuous = continuous;
     if (this._hasViewInit) {
-      this.setTickInterval();
+      this.setStepInterval();
     }
   }
 
@@ -302,7 +302,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
 
     if (this._hasViewInit) {
       this.normalizeByStep(this.value);
-      this.setTickInterval();
+      this.setStepInterval();
     }
   }
   @property({ type: Number })
@@ -324,14 +324,6 @@ export class IgcSliderComponent extends EventEmitterMixin<
 
   @property({ type: Boolean })
   showSecondaryLabels = true;
-
-  private totalTickNumber() {
-    return this.primaryTicks > 0
-      ? (this.primaryTicks - 1) * this.secondaryTicks + this.primaryTicks
-      : this.secondaryTicks > 0
-      ? this.secondaryTicks
-      : 0;
-  }
 
   private validateInitialValue(value: IRangeSliderValue) {
     if (value.lower < this.lowerBound && value.upper < this.lowerBound) {
@@ -402,7 +394,37 @@ export class IgcSliderComponent extends EventEmitterMixin<
       this._activeThumb = this.thumbTo;
     }
   }
-  private generateTickMarks(color: string, interval: number | null) {
+
+  private totalTickNumber() {
+    return this.primaryTicks > 0
+      ? (this.primaryTicks - 1) * this.secondaryTicks + this.primaryTicks
+      : this.secondaryTicks > 0
+      ? this.secondaryTicks
+      : 0;
+  }
+
+  private tickLabel(idx: number) {
+    const labelStep =
+      (Math.max(this.min, this.max) - Math.min(this.min, this.max)) /
+      (this.totalTickNumber() - 1);
+    const labelVal = labelStep * idx;
+
+    return (this.min + labelVal).toFixed(2);
+  }
+
+  private hiddenTickLabels(idx: number) {
+    return this.isPrimary(idx)
+      ? this.showPrimaryLabels
+      : this.showSecondaryLabels;
+  }
+
+  private isPrimary(idx: number) {
+    return this.primaryTicks <= 0
+      ? false
+      : idx % (this.secondaryTicks + 1) === 0;
+  }
+
+  private generateStepMarks(color: string, interval: number | null) {
     return interval !== null
       ? `repeating-linear-gradient(
             ${'to left'},
@@ -420,7 +442,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
       : interval;
   }
 
-  private setTickInterval() {
+  private setStepInterval() {
     const trackProgress = 100;
     const trackRange = this.max - this.min;
     const interval =
@@ -435,7 +457,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
 
     //Background should be calculated based on the current theme
     const renderCallbackExecution = !this.continuous
-      ? this.generateTickMarks('white', interval)
+      ? this.generateStepMarks('white', interval)
       : null;
     if (renderCallbackExecution) {
       this.steps.style['background'] = renderCallbackExecution;
@@ -695,7 +717,9 @@ export class IgcSliderComponent extends EventEmitterMixin<
     for (let i = 0; i < this.totalTickNumber(); i++) {
       groups.push(html` <div part="tick-group">
         <div part="tick">
-          <span part="tick-label"></span>
+          ${this.hiddenTickLabels(i)
+            ? html`<span part="tick-label">${this.tickLabel(i)}</span>`
+            : html``}
         </div>
       </div>`);
     }
@@ -723,7 +747,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
                           this.isRange
                             ? (this.value as IRangeSliderValue).lower
                             : null
-                        }</span></div>                    
+                        }</span></div>
                         </div>
                         <div 
                             part="thumb"

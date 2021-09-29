@@ -19,7 +19,7 @@ const metadata = {
     },
     continuous: {
       type: 'boolean',
-      description: 'Specifies whether slider is disabled',
+      description: 'Specifies whether slider is continuous',
       defaultValue: false,
     },
     step: {
@@ -81,6 +81,16 @@ const metadata = {
       },
       defaultValue: 2,
     },
+    showPrimaryLabels: {
+      type: 'boolean',
+      description: 'Specifies whether primary labels are visible',
+      defaultValue: true,
+    },
+    showSecondaryLabels: {
+      type: 'boolean',
+      description: 'Specifies whether secondary labels are visible',
+      defaultValue: true,
+    },
     tickOrientation: {
       type: '"mirror"|"start"|"end"',
       description: 'Specifies the orientation of the ticks.',
@@ -109,6 +119,8 @@ interface ArgTypes {
   max: number;
   primaryTicks: number;
   secondaryTicks: number;
+  showPrimaryLabels: boolean;
+  showSecondaryLabels: boolean;
   tickOrientation: 'mirror' | 'start' | 'end';
   zeroOrigin: boolean;
 }
@@ -129,6 +141,8 @@ const Template: Story<ArgTypes, Context> = (
     max = 100,
     primaryTicks = 3,
     secondaryTicks = 2,
+    showPrimaryLabels = true,
+    showSecondaryLabels = true,
     tickOrientation = 'end',
     zeroOrigin = false,
   }: ArgTypes,
@@ -144,6 +158,8 @@ const Template: Story<ArgTypes, Context> = (
     max=${max}
     primaryTicks=${primaryTicks}
     secondaryTicks=${secondaryTicks}
+    ?showPrimaryLabels=${showPrimaryLabels}
+    ?showSecondaryLabels=${showSecondaryLabels}
     tickOrientation=${tickOrientation}
     ?zeroOrigin=${zeroOrigin}
     dir=${ifDefined(direction)}
