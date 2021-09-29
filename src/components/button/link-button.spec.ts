@@ -5,8 +5,9 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
+import '../../../index.js';
 import { classValue } from './button.spec';
-import { default as IgcLinkButtonComponent } from './link-button';
+import type IgcLinkButtonComponent from './link-button';
 
 describe('LinkButton component', () => {
   const DIFF_OPTIONS = {

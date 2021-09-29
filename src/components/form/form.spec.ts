@@ -1,5 +1,3 @@
-import { default as IgcRadioComponent } from './../radio/radio';
-import '../button/button';
 import {
   html,
   fixture,
@@ -7,8 +5,10 @@ import {
   elementUpdated,
   unsafeStatic,
 } from '@open-wc/testing';
-import { default as IgcFormComponent } from './form';
 import sinon from 'sinon';
+import '../../../index.js';
+import type IgcFormComponent from './form';
+import type IgcRadioComponent from './../radio/radio';
 
 describe('Form', () => {
   it('passes the a11y audit', async () => {

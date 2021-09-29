@@ -1,5 +1,6 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { default as IgcAvatarComponent } from './avatar';
+import '../../../index.js';
+import type IgcAvatarComponent from './avatar';
 
 describe('Avatar', () => {
   it('passes the a11y audit', async () => {
@@ -11,6 +12,7 @@ describe('Avatar', () => {
   });
 
   it('should initialize avatar component with default values', async () => {
+    console.log(window.customElements.get('igc-avatar'));
     const el = await fixture<IgcAvatarComponent>(
       html`<igc-avatar></igc-avatar>`
     );

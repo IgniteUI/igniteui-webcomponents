@@ -1,5 +1,6 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import { default as IgcNavbarComponent } from './navbar';
+import '../../../index.js';
+import type IgcNavbarComponent from './navbar';
 
 describe('Navbar component', () => {
   it('passes the a11y audit', async () => {

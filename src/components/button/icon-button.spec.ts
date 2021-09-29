@@ -5,7 +5,8 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { default as IgcIconButtonComponent } from './icon-button';
+import '../../../index.js';
+import type IgcIconButtonComponent from './icon-button';
 
 describe('IconButton component', () => {
   const DIFF_OPTIONS = {

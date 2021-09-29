@@ -1,5 +1,6 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { default as IgcBadgeComponent } from './badge';
+import '../../../index.js';
+import type IgcBadgeComponent from './badge';
 
 describe('Badge', () => {
   it('passes the a11y audit', async () => {

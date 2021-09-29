@@ -1,5 +1,6 @@
 import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
-import { default as IgcListComponent } from './list';
+import '../../../index.js';
+import type IgcListComponent from './list';
 
 describe('List', () => {
   let el: IgcListComponent;

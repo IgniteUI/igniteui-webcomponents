@@ -6,7 +6,8 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { default as IgcInputComponent } from './input';
+import '../../../index.js';
+import type IgcInputComponent from './input';
 
 describe('Input component', () => {
   let el: IgcInputComponent;
