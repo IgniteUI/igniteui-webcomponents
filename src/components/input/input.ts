@@ -20,6 +20,7 @@ let nextId = 0;
 type Direction = 'ltr' | 'rtl' | 'auto';
 
 export interface IgcInputEventMap {
+  /* alternateName: inputOcurred */
   igcInput: CustomEvent<void>;
   igcChange: CustomEvent<void>;
   igcFocus: CustomEvent<void>;
@@ -251,11 +252,13 @@ export default class IgcInputComponent extends SizableMixin(
   }
 
   /** Sets focus on the control. */
+  @alternateName('focusComponent')
   public focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the control. */
+  @alternateName('blurComponent')
   public blur() {
     this.input.blur();
   }
@@ -272,7 +275,6 @@ export default class IgcInputComponent extends SizableMixin(
     this.invalid = true;
   }
 
-  @alternateName('handleInputOccurred')
   private handleInput() {
     this.value = this.input.value;
     this.emitEvent('igcInput');
@@ -283,12 +285,10 @@ export default class IgcInputComponent extends SizableMixin(
     this.emitEvent('igcChange');
   }
 
-  @alternateName('handleFocused')
   private handleFocus() {
     this.emitEvent('igcFocus');
   }
 
-  @alternateName('handleBlurred')
   private handleBlur() {
     this.emitEvent('igcBlur');
   }
