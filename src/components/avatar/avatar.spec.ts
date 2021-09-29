@@ -1,6 +1,5 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { IgcAvatarComponent } from './avatar';
-import '../../../igniteui-webcomponents.js';
+import { default as IgcAvatarComponent } from './avatar';
 
 describe('Avatar', () => {
   it('passes the a11y audit', async () => {

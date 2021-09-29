@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
 
@@ -19,7 +19,8 @@ export interface IgcFormEventMap {
  * @fires igcSubmit - Emitted when the form is submitted.
  * @fires igcReset - Emitted when the form is reset.
  */
-export class IgcFormComponent extends EventEmitterMixin<
+@customElement('igc-form')
+export default class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
   Constructor<LitElement>
 >(LitElement) {
@@ -163,5 +164,11 @@ export class IgcFormComponent extends EventEmitterMixin<
 
   protected render() {
     return html`<slot></slot>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-form': IgcFormComponent;
   }
 }

@@ -1,0 +1,21 @@
+{
+  "name": "igniteui-webcomponents",
+  "version": "0.0.0",
+  "description": "Ignite UI Web Components",
+  "author": "Infragistics",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IgniteUI/igniteui-webcomponents"
+  },
+  "bugs": {
+    "url": "https://github.com/IgniteUI/igniteui-webcomponents/issues"
+  },
+  "peerDependencies": {
+    "lit": "^2.0.0"
+  }
+}

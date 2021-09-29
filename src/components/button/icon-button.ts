@@ -1,16 +1,18 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './icon-button.material.css';
 
+import '../icon/icon';
 /**
  * @element igc-icon-button
  *
  * @csspart base - The wrapping element.
  * @csspart icon - The icon element.
  */
-export class IgcIconButtonComponent extends IgcButtonBaseComponent {
+@customElement('igc-icon-button')
+export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static styles = [styles];
 
   /** The name of the icon. */
@@ -88,5 +90,11 @@ export class IgcIconButtonComponent extends IgcButtonBaseComponent {
             ${this.renderIcon()}
           </button>
         `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-icon-button': IgcIconButtonComponent;
   }
 }

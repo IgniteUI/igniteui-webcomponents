@@ -1,6 +1,5 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import { IgcNavbarComponent } from './navbar';
-import '../../../igniteui-webcomponents';
+import { default as IgcNavbarComponent } from './navbar';
 
 describe('Navbar component', () => {
   it('passes the a11y audit', async () => {

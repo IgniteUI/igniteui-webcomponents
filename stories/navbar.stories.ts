@@ -1,26 +1,17 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
-import '../igniteui-webcomponents.js';
+import '../index.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { Context, Story } from './story';
 
 // region default
-export default {
-  title: 'Navigation Bar',
+const metadata = {
+  title: 'Navbar',
   component: 'igc-navbar',
-  argTypes: {
-    content: {
-      control: {
-        type: 'text',
-      },
-      defaultValue: 'Title',
-    },
-  },
+  argTypes: {},
 };
+export default metadata;
 
-interface ArgTypes {
-  content: string;
-}
 // endregion
 
 registerIcon(
@@ -33,8 +24,8 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
 );
 
-const Template: Story<ArgTypes, Context> = (
-  { content = 'Title' }: ArgTypes,
+const Template: Story<any, Context> = (
+  { content = 'Title' }: any,
   { globals: { direction } }: Context
 ) => {
   return html`

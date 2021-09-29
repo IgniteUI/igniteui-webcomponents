@@ -1,5 +1,4 @@
-import { IgcSwitchComponent } from './switch';
-import '../../../igniteui-webcomponents.js';
+import { default as IgcSwitchComponent } from './switch';
 import {
   elementUpdated,
   expect,

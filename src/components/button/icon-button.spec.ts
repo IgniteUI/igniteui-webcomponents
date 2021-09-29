@@ -5,8 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import '../../../igniteui-webcomponents'; // Obligatory
-import { IgcIconButtonComponent } from './icon-button';
+import { default as IgcIconButtonComponent } from './icon-button';
 
 describe('IconButton component', () => {
   const DIFF_OPTIONS = {

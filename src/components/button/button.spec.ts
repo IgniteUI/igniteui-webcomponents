@@ -6,8 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../igniteui-webcomponents';
-import { IgcButtonComponent } from './button';
+import { default as IgcButtonComponent } from './button';
 
 export const DEFAULT_CLASSES = 'native';
 export const classValue = (changeableValue: string) => {

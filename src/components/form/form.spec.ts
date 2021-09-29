@@ -1,4 +1,5 @@
-import { IgcRadioComponent } from './../radio/radio';
+import { default as IgcRadioComponent } from './../radio/radio';
+import '../button/button';
 import {
   html,
   fixture,
@@ -6,8 +7,7 @@ import {
   elementUpdated,
   unsafeStatic,
 } from '@open-wc/testing';
-import { IgcFormComponent } from './form';
-import '../../../igniteui-webcomponents.js';
+import { default as IgcFormComponent } from './form';
 import sinon from 'sinon';
 
 describe('Form', () => {

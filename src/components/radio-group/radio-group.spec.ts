@@ -1,8 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../igniteui-webcomponents';
-import { IgcRadioComponent } from '../radio/radio';
-import { IgcRadioGroupComponent } from './radio-group';
+import { default as IgcRadioComponent } from '../radio/radio';
+import { default as IgcRadioGroupComponent } from './radio-group';
 
 describe('Radio Group Component', () => {
   let group: IgcRadioGroupComponent;

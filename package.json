@@ -17,6 +17,7 @@
     "start": "npm run storybook",
     "serve": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wds\"",
     "build": "npm run clean && npm run build:styles && npm run build:typescript && npm run build:docs:json && npm run build:meta",
+    "build:publish": "node scripts/build.js",
     "build:typescript": "tsc",
     "build:styles": "node scripts/build-styles.js",
     "build:watch": "npm run build:styles && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\"",

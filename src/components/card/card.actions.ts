@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { styles } from './card.actions.material.css';
 
 /** A container for card action items like buttons
@@ -8,7 +9,8 @@ import { styles } from './card.actions.material.css';
  * @slot - Renders items at the middle of actions area
  * @slot end - Renders items at the end of actions area
  */
-export class IgcCardActions extends LitElement {
+@customElement('igc-card-actions')
+export default class IgcCardActions extends LitElement {
   /** @private */
   public static styles = styles;
 
@@ -18,5 +20,11 @@ export class IgcCardActions extends LitElement {
       <slot></slot>
       <slot name="end"></slot>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-card-actions': IgcCardActions;
   }
 }

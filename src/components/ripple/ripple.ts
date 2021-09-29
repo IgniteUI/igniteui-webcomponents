@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { styles } from './ripple.css';
 
 /**
@@ -7,7 +8,8 @@ import { styles } from './ripple.css';
  *
  * @element igc-ripple
  */
-export class IgcRippleComponent extends LitElement {
+@customElement('igc-ripple')
+export default class IgcRippleComponent extends LitElement {
   /** @private */
   public static styles = styles;
 
@@ -61,5 +63,11 @@ export class IgcRippleComponent extends LitElement {
 
   protected render() {
     return html`<div></div>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-ripple': IgcRippleComponent;
   }
 }

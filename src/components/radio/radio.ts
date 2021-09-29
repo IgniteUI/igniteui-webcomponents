@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { styles } from './radio.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
@@ -29,7 +29,8 @@ export interface IgcRadioEventMap {
  * @csspart control - The radio control.
  * @csspart label - The radio control label.
  */
-export class IgcRadioComponent extends EventEmitterMixin<
+@customElement('igc-radio')
+export default class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
@@ -178,5 +179,11 @@ export class IgcRadioComponent extends EventEmitterMixin<
         </span>
       </label>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-radio': IgcRadioComponent;
   }
 }

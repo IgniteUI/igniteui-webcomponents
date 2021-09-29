@@ -1,5 +1,4 @@
-import { IgcCheckboxComponent } from './checkbox';
-import '../../../igniteui-webcomponents.js';
+import { default as IgcCheckboxComponent } from './checkbox';
 import {
   elementUpdated,
   expect,

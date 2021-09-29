@@ -5,9 +5,8 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import '../../../igniteui-webcomponents'; // Obligatory
 import { classValue } from './button.spec';
-import { IgcLinkButtonComponent } from './link-button';
+import { default as IgcLinkButtonComponent } from './link-button';
 
 describe('LinkButton component', () => {
   const DIFF_OPTIONS = {

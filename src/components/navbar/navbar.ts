@@ -1,7 +1,9 @@
 import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { styles } from './navbar.material.css';
 
-export class IgcNavbarComponent extends LitElement {
+@customElement('igc-navbar')
+export default class IgcNavbarComponent extends LitElement {
   /** @private */
   public static styles = [styles];
 
@@ -19,5 +21,11 @@ export class IgcNavbarComponent extends LitElement {
         </span>
       </div>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-navbar': IgcNavbarComponent;
   }
 }

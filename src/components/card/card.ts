@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { styles } from './card.material.css';
 
 /** A container which wraps different elements related to a single subject
@@ -7,7 +7,8 @@ import { styles } from './card.material.css';
  *
  * @slot - Renders card content
  */
-export class IgcCardComponent extends LitElement {
+@customElement('igc-card')
+export default class IgcCardComponent extends LitElement {
   /** @private */
   public static styles = styles;
 
@@ -17,5 +18,11 @@ export class IgcCardComponent extends LitElement {
 
   protected render() {
     return html`<slot></slot>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-card': IgcCardComponent;
   }
 }
