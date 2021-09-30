@@ -1,8 +1,15 @@
 import { html, LitElement } from 'lit';
 import { styles } from './ripple.css';
 
+/**
+ * A ripple can be applied to an element to represent
+ * interactive surface.
+ *
+ * @element igc-ripple
+ */
 export class IgcRippleComponent extends LitElement {
-  static styles = styles;
+  /** @private */
+  public static styles = styles;
 
   constructor() {
     super();
@@ -52,7 +59,7 @@ export class IgcRippleComponent extends LitElement {
     return { radius, top: _top, left: _left };
   }
 
-  render() {
+  protected render() {
     return html`<div></div>`;
   }
 }

@@ -5,25 +5,43 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './avatar.material.css';
 
+/**
+ * An avatar component is used as a representation of a user identity
+ * typically in a user profile.
+ *
+ * @element igc-avatar
+ *
+ * @slot - Renders an icon inside the default slot.
+ *
+ * @csspart base - The base wrapper of the avatar.
+ * @csspart initials - The initials wrapper of the avatar.
+ * @csspart image - The image wrapper of the avatar.
+ * @csspart icon - The icon wrapper of the avatar.
+ */
 export class IgcAvatarComponent extends SizableMixin(LitElement) {
-  static styles = [styles];
+  /** @private */
+  public static styles = [styles];
 
+  /** The image source to use. */
   @property()
-  src?: string;
+  public src!: string;
 
   @state()
   private hasError = false;
 
+  /** Alternative text for the image. */
   @property()
-  alt?: string;
+  public alt!: string;
 
+  /** Initials to use as a fallback when no image is available. */
   @property()
-  initials?: string;
+  public initials!: string;
 
+  /** The shape of the avatar. */
   @property({ reflect: true })
-  shape: 'circle' | 'rounded' | 'square' = 'square';
+  public shape: 'circle' | 'rounded' | 'square' = 'square';
 
-  protected get classes() {
+  private get classes() {
     const { size, shape } = this;
 
     return {
@@ -41,7 +59,7 @@ export class IgcAvatarComponent extends SizableMixin(LitElement) {
     this.size = 'small';
   }
 
-  render() {
+  protected render() {
     return html`
       <div
         part="base"

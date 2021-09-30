@@ -1,8 +1,8 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
-    igc-button[variant='raised']::part(base),
-    igc-link-button[variant='raised']::part(base),
+    igc-button[variant='contained']::part(base),
+    igc-link-button[variant='contained']::part(base),
     igc-button[variant='fab']::part(base),
     igc-link-button[variant='fab']::part(base) {
         box-shadow: var(--igc-elevation-0);
@@ -126,9 +126,9 @@
         }
     }
 
-    // FAB & RAISED
-    igc-button[variant='raised']:not([disabled])::part(base),
-    igc-link-button[variant='raised']:not([disabled])::part(base),
+    // FAB & CONTAINED
+    igc-button[variant='contained']:not([disabled])::part(base),
+    igc-link-button[variant='contained']:not([disabled])::part(base),
     igc-button[variant='fab']:not([disabled])::part(base),
     igc-link-button[variant='fab']:not([disabled])::part(base) {
         color: #{utils.contrast-color(primary, 600)};
@@ -199,8 +199,8 @@
 
     igc-button[variant='fab'][disabled]::part(base),
     igc-link-button[variant='fab'][disabled]::part(base),
-    igc-button[variant='raised'][disabled]::part(base),
-    igc-link-button[variant='raised'][disabled]::part(base) {
+    igc-button[variant='contained'][disabled]::part(base),
+    igc-link-button[variant='contained'][disabled]::part(base) {
         color: #{utils.color(gray, 400)};
 
         &::before {

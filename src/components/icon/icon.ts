@@ -16,7 +16,7 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
   /**
    * @private
    */
-  static styles = styles;
+  public static styles = styles;
 
   @state() private svg = '';
 
@@ -24,7 +24,7 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
 
   private _collection = 'default';
 
-  set name(value: string) {
+  public set name(value: string) {
     if (this._name !== value) {
       this._name = value;
       this.getIcon();
@@ -37,11 +37,11 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
    * @attr [name=""]
    */
   @property()
-  get name(): string {
+  public get name(): string {
     return this._name;
   }
 
-  set collection(value: string) {
+  public set collection(value: string) {
     if (this._collection !== value) {
       this._collection = value;
       this.getIcon();
@@ -55,7 +55,7 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
    * @attr [collection=default]
    */
   @property()
-  get collection(): string {
+  public get collection(): string {
     return this._collection;
   }
 
@@ -63,20 +63,20 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
    * Whether to flip the icon. Useful for RTL layouts.
    */
   @property({ type: Boolean, reflect: true })
-  mirrored = false;
+  public mirrored = false;
 
   constructor() {
     super();
     this.size = 'medium';
   }
 
-  connectedCallback() {
+  public connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'img');
     IconsRegistry.instance().subscribe(this.iconLoaded);
   }
 
-  disconnectedCallback() {
+  public disconnectedCallback() {
     super.disconnectedCallback();
     IconsRegistry.instance().unsubscribe(this.iconLoaded);
   }
@@ -95,7 +95,7 @@ export class IgcIconComponent extends SizableMixin(LitElement) {
     this.svg = svg ?? '';
   }
 
-  render() {
+  protected render() {
     return html` ${unsafeSVG(this.svg)} `;
   }
 }
