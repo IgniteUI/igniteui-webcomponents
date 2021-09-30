@@ -174,7 +174,7 @@ export type WeekDays =
   | 'friday'
   | 'saturday';
 
-enum WEEKDAYS {
+export enum WEEKDAYS {
   SUNDAY = 0,
   MONDAY = 1,
   TUESDAY = 2,
