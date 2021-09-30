@@ -63,7 +63,7 @@ describe('Navigation Drawer', () => {
             <slot></slot>
           </div>
 
-          <div part="mini">
+          <div part="mini hidden">
             <slot name="mini"></slot>
           </div>
         </div>
