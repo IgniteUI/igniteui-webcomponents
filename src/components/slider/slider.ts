@@ -20,7 +20,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   IgcSliderEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  static styles = [styles];
+  public static styles = [styles];
 
   // Limit handle travel zone
   private _pMin = 0;
@@ -99,7 +99,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
     this.addEventListener('keydown', this.handleKeydown);
   }
 
-  connectedCallback() {
+  public connectedCallback() {
     super.connectedCallback();
 
     if (this.zeroOrigin) {
@@ -109,14 +109,14 @@ export class IgcSliderComponent extends EventEmitterMixin<
     }
   }
 
-  firstUpdated() {
+  public firstUpdated() {
     this._hasViewInit = true;
     this.positionHandlersAndUpdateTrack();
     this.setStepInterval();
     this.changeThumbFocusableState(this.disabled);
   }
 
-  updated() {
+  public updated() {
     if (this.thumbFrom) {
       this.thumbFrom.addEventListener(
         'pointerenter',
@@ -140,25 +140,25 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   @query('#steps')
-  steps!: HTMLElement;
+  private steps!: HTMLElement;
 
   @query('#thumbFrom')
-  thumbFrom!: HTMLElement;
+  private thumbFrom!: HTMLElement;
 
   @query('#thumbTo')
-  thumbTo!: HTMLElement;
+  private thumbTo!: HTMLElement;
 
   @query('#labelFrom')
-  labelFrom!: HTMLElement;
+  private labelFrom!: HTMLElement;
 
   @query('#labelTo')
-  labelTo!: HTMLElement;
+  private labelTo!: HTMLElement;
 
   @query('#fill')
-  filledTrack!: HTMLElement;
+  private filledTrack!: HTMLElement;
 
   @state()
-  _tabIndex = 0;
+  private _tabIndex = 0;
 
   public set value(value: number | IRangeSliderValue) {
     if (this._hasViewInit) {
@@ -289,10 +289,10 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   @property({ type: Boolean })
-  zeroOrigin = true;
+  public zeroOrigin = true;
 
   @property()
-  type: 'slider' | 'range' = 'slider';
+  public type: 'slider' | 'range' = 'slider';
 
   public set disabled(disable: boolean) {
     this._disabled = disable;
@@ -333,22 +333,22 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   @property({ type: Number })
-  primaryTicks = 0;
+  public primaryTicks = 0;
 
   @property({ type: Number })
-  secondaryTicks = 0;
+  public secondaryTicks = 0;
 
   @property()
-  tickOrientation: 'mirror' | 'start' | 'end' = 'end';
+  public tickOrientation: 'mirror' | 'start' | 'end' = 'end';
 
   @property({ type: Boolean })
-  showPrimaryLabels = true;
+  public showPrimaryLabels = true;
 
   @property({ type: Boolean })
-  showSecondaryLabels = true;
+  public showSecondaryLabels = true;
 
   @property()
-  labelFormatter: ((tickLabel: string) => any) | undefined;
+  public labelFormatter: ((tickLabel: string) => any) | undefined;
 
   private validateInitialValue(value: IRangeSliderValue) {
     if (value.lower < this.lowerBound && value.upper < this.lowerBound) {
