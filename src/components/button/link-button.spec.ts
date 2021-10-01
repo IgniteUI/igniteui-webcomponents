@@ -95,7 +95,7 @@ describe('LinkButton component', () => {
   });
 
   describe('applies the correct CSS class to the base element for variant', () => {
-    const variants = ['flat', 'raised', 'outlined', 'fab'];
+    const variants = ['flat', 'contained', 'outlined', 'fab'];
 
     variants.forEach((variant) => {
       it(variant, async () => {
@@ -134,11 +134,11 @@ describe('LinkButton component', () => {
 
   it('applies all anchor specific properties to the wrapped base element', async () => {
     el = await createLinkButtonComponent(
-      `<igc-link-button variant="raised" size="medium" href="test" target="_blank" download="test" rel="test">Submit<igc-link-button>`
+      `<igc-link-button variant="contained" size="medium" href="test" target="_blank" download="test" rel="test">Submit<igc-link-button>`
     );
     expect(el).shadowDom.to.equal(
       `<a class="${classValue(
-        `medium raised`
+        `medium contained`
       )}" href="test" target="_blank" download="test" rel="test"/>`,
       DIFF_OPTIONS
     );

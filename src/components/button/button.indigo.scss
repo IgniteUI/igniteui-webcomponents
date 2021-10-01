@@ -106,8 +106,8 @@
 
     igc-button[variant='fab']:not([disabled])::part(base),
     igc-link-button[variant='fab']:not([disabled])::part(base),
-    igc-button[variant='raised']:not([disabled])::part(base),
-    igc-link-button[variant='raised']:not([disabled])::part(base) {
+    igc-button[variant='contained']:not([disabled])::part(base),
+    igc-link-button[variant='contained']:not([disabled])::part(base) {
         color: #{utils.contrast-color(primary, 600)};
 
         &:hover {
@@ -136,13 +136,13 @@
     igc-button[variant='fab']:not([disabled])::part(base),
     igc-link-button[variant='fab']:not([disabled])::part(base),
     igc-button[variant='fab'][disabled]::part(base),
-    igc-link-button[variant='raised'][disabled]::part(base) {
+    igc-link-button[variant='contained'][disabled]::part(base) {
         border-radius: calc(var(--igc-border-radius) * 100);
     }
 
-    igc-button[variant='raised']::part(base),
+    igc-button[variant='contained']::part(base),
     igc-button[variant='fab']::part(base),
-    igc-link-button[variant='raised']::part(base),
+    igc-link-button[variant='contained']::part(base),
     igc-link-button[variant='fab']::part(base) {
         box-shadow: var(--igc-elevation-0);
     }
@@ -158,9 +158,9 @@
     }
 
     igc-button[variant='fab'][disabled]::part(base),
-    igc-button[variant='raised'][disabled]::part(base),
+    igc-button[variant='contained'][disabled]::part(base),
     igc-link-button[variant='fab'][disabled]::part(base),
-    igc-link-button[variant='raised'][disabled]::part(base) {
+    igc-link-button[variant='contained'][disabled]::part(base) {
         background: #{utils.color(gray, 100)};
         color: #{utils.color(gray, 400)};
     }

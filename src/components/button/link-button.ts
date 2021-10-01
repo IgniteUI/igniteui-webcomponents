@@ -5,31 +5,44 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 
 /**
+ * Represents a button component specifically useful for
+ * creating hyperlinks to web pages, files, or anything else
+ * a URL can address.
+ *
  * @element igc-link-button
  *
- * @slot prefix - Slot for projecting content at the start of the button.
- * @slot suffix - Slot for projecting content at the end of the button.
+ * @slot - Renders the label of the button.
+ * @slot prefix - Renders content before the label of the button.
+ * @slot suffix - Renders content after the label of the button.
  *
- * @cssprop --size - Duh!
+ * @fires igcFocus - Emitted when the button gains focus.
+ * @fires igcBlur - Emitted when the button loses focus.
  *
- * @csspart native - The native button/a element.
+ * @csspart base - The native anchor element.
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
  */
 export class IgcLinkButtonComponent extends IgcButtonBaseComponent {
+  /** The URL the link-button points to. */
   @property()
-  href!: string;
+  public href!: string;
 
+  /** Prompts to save the linked URL instead of navigating to it. */
   @property()
-  download!: string;
+  public download!: string;
 
+  /** Where to display the linked URL, as the name for a browsing context. */
   @property()
-  target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  public target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
 
+  /**
+   * The relationship of the linked URL.
+   * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+   */
   @property()
-  rel!: string;
+  public rel!: string;
 
-  render() {
+  protected render() {
     return html`
       <a
         part="base"

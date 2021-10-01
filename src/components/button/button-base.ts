@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
+import { alternateName } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './button.material.css';
@@ -16,28 +17,33 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   /**
    * @private
    */
-  static styles = [styles];
+  public static styles = [styles];
 
   /**
    * @private
    */
   @query('.native', true)
-  nativeElement!: HTMLElement;
+  private nativeElement!: HTMLElement;
 
   /**
    * Determines whether the button is disabled.
    */
   @property({ type: Boolean, reflect: true })
-  disabled = false;
+  public disabled = false;
 
+  /** Sets the variant of the button. */
   @property({ reflect: true })
-  variant: 'flat' | 'raised' | 'outlined' | 'fab' = 'flat';
+  public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'flat';
 
-  focus(options?: FocusOptions) {
+  /** Sets focus in the button. */
+  @alternateName('focusComponent')
+  public focus(options?: FocusOptions) {
     this.nativeElement.focus(options);
   }
 
-  blur() {
+  /** Removes focus from the button. */
+  @alternateName('blurComponent')
+  public blur() {
     this.nativeElement.blur();
   }
 
@@ -56,7 +62,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
       native: true,
       flat: variant === 'flat',
       outlined: variant === 'outlined',
-      raised: variant === 'raised',
+      contained: variant === 'contained',
       fab: variant === 'fab',
       small: size === 'small',
       medium: size === 'medium',

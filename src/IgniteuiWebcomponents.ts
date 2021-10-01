@@ -2,7 +2,8 @@ import { html, css, LitElement } from 'lit';
 import { styles } from './styles/themes/material.css';
 
 export class IgniteuiWebcomponents extends LitElement {
-  static styles = [
+  /** @private */
+  public static styles = [
     css`
       :host {
         display: block;
@@ -11,7 +12,7 @@ export class IgniteuiWebcomponents extends LitElement {
     styles,
   ];
 
-  render() {
+  protected render() {
     return html` <slot></slot> `;
   }
 }

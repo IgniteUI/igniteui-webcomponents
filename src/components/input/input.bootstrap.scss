@@ -1,0 +1,203 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-input,
+    igc-input[outlined] {
+        --theme: bootstrap;
+
+        &::after {
+            background: none;
+        }
+
+        &::part(input) {
+            padding: initial;
+            border-radius: utils.rem(4px);
+            background: #fff;
+            box-shadow: 0 0 0 0 transparent;
+            z-index: 1;
+            border: 1px solid utils.color(gray, 400);
+            transition: box-shadow .15s ease-out, border .15s ease-out;
+            grid-area: 1 / 2;
+        }
+
+        &::part(input prefixed) {
+            border-start-start-radius: 0;
+            border-end-start-radius: 0;
+        }
+
+        &::part(input suffixed) {
+            border-start-end-radius: 0;
+            border-end-end-radius: 0;
+        }
+
+        &::part(label),
+        &::part(container) {
+            position: relative;
+            transform: none;
+            top: initial;
+            left: 0;
+            border: initial;
+        }
+
+        &::part(label) {
+            line-height: utils.rem(24px);
+            margin-bottom: utils.rem(4px);
+            color: utils.color(gray, 700);
+            font-size: initial;
+
+            &:empty {
+                display: none;
+            }
+        }
+
+        &::part(container) {
+            border: none;
+            grid-template-columns: auto 1fr auto;
+
+            &::after {
+                display: none;
+            }
+        }
+
+        &::part(prefix),
+        &::part(suffix) {
+            position: relative;
+            padding: rem(16px);
+            border-radius: none;
+            min-width: auto;
+            color: utils.color(gray, 800);
+            background: utils.color(gray, 300);
+            transition: box-shadow .15s ease-out, border .15s ease-out;
+
+            &:focus-within {
+                box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 300, .38);
+            }
+        }
+
+        &::part(prefix) {
+            grid-area: 1 / 1;
+            border: {
+                style: solid;
+                color: utils.color(gray, 400);
+                inline: {
+                    start-width: 1px;
+                    end-width: 0;
+                };
+                block: {
+                    start-width: 1px;
+                    end-width: 1px;
+                };
+                start: {
+                    start-radius: utils.rem(4px);
+                };
+                end: {
+                    start-radius: utils.rem(4px);
+                };
+            }
+        }
+
+        &::part(suffix) {
+            grid-area: 1 / 3;
+
+            border: {
+                style: solid;
+                color: utils.color(gray, 400);
+                inline: {
+                    start-width: 0;
+                    end-width: 1px;
+                };
+                block: {
+                    start-width: 1px;
+                    end-width: 1px;
+                };
+                start: {
+                    end-radius: utils.rem(4px);
+                };
+                end: {
+                    end-radius: utils.rem(4px);
+                };
+            }
+        }
+
+        &::part(helper-text) {
+            padding: 0;
+            color: utils.color(gray, 700);
+        }
+    }
+
+    igc-input[size='large'] {
+        &::part(input), {
+            font-size: utils.rem(20px);
+            padding: utils.rem(8px) utils.rem(16px);
+        }
+
+        &::part(prefix),
+        &::part(suffix) {
+            padding: utils.rem(8px) utils.rem(16px);
+        }
+    }
+
+    igc-input[size='medium'] {
+        &::part(input), {
+            font-size: utils.rem(16px);
+            padding: utils.rem(6px) utils.rem(12px);
+        }
+
+        &::part(prefix),
+        &::part(suffix) {
+            padding: utils.rem(6px) utils.rem(12px);
+        }
+    }
+
+    igc-input[size='small'] {
+        &::part(input), {
+            font-size: utils.rem(14px);
+            padding: utils.rem(4px) utils.rem(8px);
+        }
+
+        &::part(prefix),
+        &::part(suffix) {
+            padding: utils.rem(4px) utils.rem(8px);
+        }
+    }
+
+    igc-input:focus-within {
+        &::part(input) {
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 500, .38);
+            border-color: utils.color(primary, 500);
+        }
+    }
+
+    igc-input[invalid]:focus-within {
+        &::part(input) {
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(error, 500, .38);
+            border-color: utils.color(error, 500);
+        }
+    }
+
+    igc-input[disabled],
+    igc-input[readonly] {
+        &::part(prefix),
+        &::part(suffix),
+        &::part(input) {
+            background: utils.color(gray, 100);
+            border-color: utils.color(gray, 300);
+            color: utils.color(gray, 400);
+        }
+    }
+
+    igc-input[readonly] {
+        &::part(prefix),
+        &::part(suffix),
+        &::part(input) {
+            color: utils.color(gray, 800);
+        }
+    }
+
+    igc-input:focus-within[readonly] {
+        &::part(input) {
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 400, .38);
+            border-color: utils.color(gray, 400);
+        }
+    }
+}
