@@ -3,13 +3,10 @@ This product is free to use for non-commercial educational use for students in K
 or University programs, and for educators to use in a classroom setting as examples / tools in their curriculum.
 
 In order for us to verify your eligibility for free usage, please register for trial at
-https://Infragistics.com/Angular and open a support ticket with a request for free license.
+https://www.infragistics.com/products/ignite-ui-web-components and open a support ticket with a request for free license.
 
-To acquire a license for commercial usage, please register for trial at https://Infragistics.com/Angular
+To acquire a license for commercial usage, please register for trial at https://www.infragistics.com/products/ignite-ui-web-components
 and refer to the purchasing options in the pricing section on the product page.
-
-This repository includes code originally copied from https://github.com/zloirock/core-js
-in the projects/igniteui-angular/src/lib/core/setImmediate.ts file. The original version of the code is MIT licensed. See the file header for details.
 
 © Copyright 2021 INFRAGISTICS. All Rights Reserved.
 The Infragistics Ultimate license & copyright applies to this distribution.
