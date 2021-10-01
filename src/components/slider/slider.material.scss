@@ -4,142 +4,132 @@
 
 /// @access private
 @function private-div($a, $b) {
-    @if not global-variable-exists('__legacy-libsass') and call(get-function('function-exists'), 'div', 'math') {
-        @return call(get-function($name: 'div', $module: 'math'), $a, $b);
-    } @else {
-        @return $a / $b;
-    }
+  @if not
+    global-variable-exists('__legacy-libsass') and
+    call(get-function('function-exists'), 'div', 'math')
+  {
+    @return call(get-function($name: 'div', $module: 'math'), $a, $b);
+  } @else {
+    @return $a / $b;
+  }
 }
 
 :host([disabled]) {
-    user-select: none;
-    pointer-events: none;
-    cursor: initial;
+  user-select: none;
+  pointer-events: none;
+  cursor: initial;
 
-    [part='fill'] {
-        background: color(gray, 300);
-    }
+  [part='fill'] {
+    background: color(gray, 300);
+  }
 
-    [part='thumb'] {
-        background: color(gray, 400);
-        box-shadow: var(--igc-elevation-1);
-    }
+  [part='thumb'] {
+    background: color(gray, 400);
+    box-shadow: var(--igc-elevation-1);
+  }
 }
 
 [part='track'] {
-    position: relative;
-    width: 100%;
-    height: 2px;
-    background: rgba(0, 0, 0, .26);
+  position: relative;
+  width: 100%;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.26);
 }
 
 [part='fill'] {
-    position: absolute;
-    width: 100%;
-    height: inherit;
-    background: #e41c77;    
-    transform-origin: left center;
-    transform: scaleX(0);
+  position: absolute;
+  width: 100%;
+  height: inherit;
+  background: #e41c77;
+  transform-origin: left center;
+  transform: scaleX(0);
 }
 
 [part='steps'] {
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    background-size: 100% 2px;
-    opacity: .85;
-    z-index: 1;
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background-size: 100% 2px;
+  opacity: 0.85;
+  z-index: 1;
 }
 
 [part='thumbs'] {
-    position: relative;
-    width: 100%;
-    height: 0;
-    cursor: default;
-    z-index: 1;
-    left: 0;
+  position: relative;
+  width: 100%;
+  height: 0;
+  cursor: default;
+  z-index: 1;
+  left: 0;
 }
 
 [part='thumb'] {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    width: 12px;
-    height: 20px;
-    outline-style: none;
-    border: 6px solid black;
-    top: -1rem;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 12px;
+  height: 20px;
+  outline-style: none;
+  border: 6px solid black;
+  top: -1rem;
+
+  &:hover {
+    border: 6px solid #e41c77;
+  }
 }
 
 [part='thumb-label'] {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    top: -#{rem(16px)};
-    left: -50%;
-    pointer-events: none;
-    min-width: rem(36px);
-    height: rem(36px);
-    padding: 0 rem(2px);
-    border-radius: rem(private-div(36px, 2));
-    margin: 0 auto;
-    line-height: rem(18px);
-    color: #e41c77;
-    background: #e41c77;
-    opacity: 0;
-    border-color: #e41c77 transparent transparent;
-    z-index: -1;        
-}
-
-#labelTo {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    height: 40px;
-    outline-style: none;
-    top: -1.25rem;
-    margin: 0 auto;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 20px;
+  width: 20px;
+  left: -50%;
+  border-radius: rem(private-div(36px, 2));
+  background: #e41c77;
+  outline-style: none;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
 }
 
 [part='ticks'] {
-    width: 100%;
-    display: flex;
-    position: absolute;
-    top: rem(4px);
-    justify-content: space-between;
-    z-index: 1;
+  width: 100%;
+  display: flex;
+  position: absolute;
+  top: rem(4px);
+  justify-content: space-between;
+  z-index: 1;
 
-    &:first-child {
-        bottom: 4px;
-        top: auto;
-        align-items: flex-end;
-    }
+  &:first-child {
+    bottom: 4px;
+    top: auto;
+    align-items: flex-end;
+  }
 }
 
 [part='tick-group'] {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
 }
 
 [part='tick'] {
-    background: green;
-    height: 8px;
-    width: 2px;    
+  background: green;
+  height: 8px;
+  width: 2px;
 }
 
 [part='label'] {
-    color: green;
-    position: absolute;
-    top: 16px;
-    transform: translate(-50%);
-    line-height: .7;
-    opacity: 1;
+  color: green;
+  position: absolute;
+  top: 16px;
+  transform: translate(-50%);
+  line-height: 0.7;
+  opacity: 1;
 }
