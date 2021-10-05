@@ -11,7 +11,7 @@
         @return call(get-function($name: 'div', $module: 'math'), $a, $b);
     } @else {
         @return $a / $b;
-  }
+    }
 }
 
 :host([disabled]) {
@@ -33,7 +33,7 @@
     position: relative;
     width: 100%;
     height: 2px;
-    background: rgba(0, 0, 0, 0.26);
+    background: rgba(137, 103, 103, .26);
 }
 
 [part='fill'] {
@@ -50,7 +50,7 @@
     width: 100%;
     height: 2px;
     background-size: 100% 2px;
-    opacity: 0.85;
+    opacity: .85;
     z-index: 1;
 }
 
@@ -130,6 +130,6 @@
     position: absolute;
     top: 16px;
     transform: translate(-50%);
-    line-height: 0.7;
+    line-height: .7;
     opacity: 1;
 }
