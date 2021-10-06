@@ -24,7 +24,7 @@ $item-margin: rem(8px);
     transition: background .15s ease-out;
     @include type-category('subtitle-2');
 
-    ::slotted(*) {
+    ::slotted(igc-icon) {
         display: flex;
         font: inherit;
     }
