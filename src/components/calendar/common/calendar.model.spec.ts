@@ -12,7 +12,7 @@ import {
 
 describe('Calendar model', () => {
   const calendarModel = new Calendar();
-  const startDate = new Date(2021, 0, 1, 0, 0, 0);
+  const startDate = new Date(2021, 0, 1, 12, 0, 0);
   let dates: ICalendarDate[];
 
   describe('', () => {
@@ -166,13 +166,13 @@ describe('Calendar model', () => {
     units: number
   ) => {
     let newDate = calendarModel.timedelta(startDate, timeDeltaInterval, units);
-    expect(newDate.getHours()).to.equal(1);
+    expect(newDate.getHours()).to.equal(13);
     newDate = calendarModel.timedelta(startDate, timeDeltaInterval, 24 * units);
     expect(newDate.getDate()).to.equal(2);
-    expect(newDate.getHours()).to.equal(0);
+    expect(newDate.getHours()).to.equal(12);
     newDate = calendarModel.timedelta(startDate, timeDeltaInterval, -units);
-    expect(newDate.getHours()).to.equal(23);
-    expect(newDate.getDate()).to.equal(31);
-    expect(newDate.getFullYear()).to.equal(2020);
+    expect(newDate.getHours()).to.equal(11);
+    expect(newDate.getDate()).to.equal(1);
+    expect(newDate.getFullYear()).to.equal(2021);
   };
 });
