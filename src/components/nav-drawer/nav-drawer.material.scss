@@ -77,15 +77,6 @@
     }
 }
 
-:host([pinned]) {
-    [part='base'] {
-        position: relative;
-        box-shadow: none;
-        border: none;
-        z-index: 0;
-    }
-}
-
 :host([open]) {
     [part='mini'] {
         display: none;
@@ -96,16 +87,4 @@
     [part='main'] {
         display: none;
     }
-}
-
-:host(:not([open])[pinned][position='top']),
-:host(:not([open])[pinned][position='bottom']) {
-    [part='base'] {
-        display: none;
-    }
-}
-
-:host([pinned][position='end']) {
-    order: 1;
-    margin-inline-start: auto;
 }

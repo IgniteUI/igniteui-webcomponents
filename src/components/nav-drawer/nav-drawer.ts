@@ -45,10 +45,6 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  /** Determines whether the drawer is pinned. */
-  @property({ type: Boolean, reflect: true })
-  public pinned = false;
-
   /** Opens the drawer. */
   public show() {
     if (this.open) {

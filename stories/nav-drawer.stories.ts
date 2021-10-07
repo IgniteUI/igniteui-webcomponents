@@ -25,19 +25,12 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    pinned: {
-      type: 'boolean',
-      description: 'Determines whether the drawer is pinned.',
-      control: 'boolean',
-      defaultValue: false,
-    },
   },
 };
 export default metadata;
 interface ArgTypes {
   position: 'start' | 'end' | 'top' | 'bottom';
   open: boolean;
-  pinned: boolean;
 }
 // endregion
 
@@ -73,7 +66,7 @@ const handleToggle = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { open = false, pinned = false, position }: ArgTypes,
+  { open = false, position }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -81,7 +74,6 @@ const Template: Story<ArgTypes, Context> = (
       <igc-nav-drawer
         dir=${ifDefined(direction)}
         .open=${open}
-        .pinned=${pinned}
         .position=${position}
       >
         <igc-nav-drawer-header-item>Sample Drawer</igc-nav-drawer-header-item>

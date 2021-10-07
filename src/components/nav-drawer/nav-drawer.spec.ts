@@ -94,11 +94,6 @@ describe('Navigation Drawer', () => {
       expect(el.open).to.equal(false);
     });
 
-    it('successfully pins nav drawer', async () => {
-      el.pinned = true;
-      expect(el.pinned).to.equal(true);
-    });
-
     it('successfully sets active to drawer item', async () => {
       const item = el.children[0] as IgcNavDrawerItemComponent;
       item.active = true;
