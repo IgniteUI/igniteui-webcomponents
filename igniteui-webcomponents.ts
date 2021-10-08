@@ -25,6 +25,9 @@ import { IgcMonthsViewComponent } from './src/components/calendar/months-view/mo
 import { IgcYearsViewComponent } from './src/components/calendar/years-view/years-view.js';
 import { IgcCalendarComponent } from './src/components/calendar/calendar.js';
 import { IgcRippleComponent } from './src/components/ripple/ripple.js';
+import { IgcNavDrawerItemComponent } from './src/components/nav-drawer/nav-drawer-item.js';
+import { IgcNavDrawerComponent } from './src/components/nav-drawer/nav-drawer.js';
+import { IgcNavDrawerHeaderItemComponent } from './src/components/nav-drawer/nav-drawer-header-item.js';
 
 window.customElements.define('igniteui-webcomponents', IgniteuiWebcomponents);
 window.customElements.define('igc-avatar', IgcAvatarComponent);
@@ -53,3 +56,10 @@ window.customElements.define('igc-months-view', IgcMonthsViewComponent);
 window.customElements.define('igc-years-view', IgcYearsViewComponent);
 window.customElements.define('igc-calendar', IgcCalendarComponent);
 window.customElements.define('igc-ripple', IgcRippleComponent);
+
+window.customElements.define('igc-nav-drawer', IgcNavDrawerComponent);
+window.customElements.define('igc-nav-drawer-item', IgcNavDrawerItemComponent);
+window.customElements.define(
+  'igc-nav-drawer-header-item',
+  IgcNavDrawerHeaderItemComponent
+);
