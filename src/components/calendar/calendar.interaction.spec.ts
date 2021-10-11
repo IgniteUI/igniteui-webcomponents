@@ -1,10 +1,4 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import '../../../igniteui-webcomponents.js';
 import { IgcCalendarComponent } from './calendar.js';
@@ -189,7 +183,7 @@ describe('Calendar Interaction', () => {
     });
 
     it('Verify date is disabled for DateRangeType - After', async () => {
-      const afterDate = new Date(2021, 8, 20);
+      const afterDate = new Date(2021, 8, 27);
       const disabledDates: DateRangeDescriptor[] = [
         {
           type: DateRangeType.After,
@@ -204,6 +198,21 @@ describe('Calendar Interaction', () => {
       const inRangeDates = calendarDates.filter(
         (d) => d.date.getTime() > afterDate.getTime()
       );
+
+      const enableDate = dates.item(0).querySelector('span');
+      enableDate.click();
+      await elementUpdated(calendar);
+      const activeDate = calendar.activeDate;
+
+      const disableDates = weekDays.querySelectorAll(
+        'span[part="date disabled single"]'
+      );
+
+      const disableDate = disableDates.item(0);
+      disableDate.click();
+      await elementUpdated(calendar);
+
+      expect(activeDate).to.equals(calendar.activeDate);
 
       //Validate if dates after are disabled
       inRangeDates.forEach((date) => {
@@ -500,8 +509,8 @@ describe('Calendar Interaction', () => {
     });
   });
 
-  const createCalendarComponent = (template = `<igc-calendar/>`) => {
-    return fixture<IgcCalendarComponent>(html`${unsafeStatic(template)}`);
+  const createCalendarComponent = () => {
+    return fixture<IgcCalendarComponent>(html`<igc-calendar />`);
   };
 
   const isSelected = (date: Date) => {

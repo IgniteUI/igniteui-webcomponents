@@ -1,19 +1,19 @@
-import {
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-  elementUpdated,
-} from '@open-wc/testing';
+import { expect, fixture, html, elementUpdated } from '@open-wc/testing';
 import { IgcCalendarComponent } from './calendar';
 import '../../../igniteui-webcomponents';
+import { IgcDaysViewComponent } from './days-view/days-view';
+import { IgcMonthsViewComponent } from './months-view/months-view';
 
 describe('Calendar Rendering', () => {
   let el: IgcCalendarComponent;
+  let daysView: IgcDaysViewComponent;
 
   describe('', async () => {
     beforeEach(async () => {
       el = await createCalendarElement();
+      daysView = el.shadowRoot?.querySelector(
+        'igc-days-view'
+      ) as IgcDaysViewComponent;
     });
 
     it('passes the a11y audit', async () => {
@@ -71,10 +71,7 @@ describe('Calendar Rendering', () => {
       expect(el.hideOutsideDays).to.equal(true);
       await elementUpdated(el);
 
-      const daysViewEl = el.shadowRoot?.querySelector(
-        'igc-days-view'
-      ) as Element;
-      const content = daysViewEl.shadowRoot?.querySelector(
+      const content = daysView.shadowRoot?.querySelector(
         'div[part="days-row"]'
       ) as Element;
       const datePart = content.children[0].getAttribute('part');
@@ -197,22 +194,30 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully changes active view', async () => {
-      const daysView = el.shadowRoot?.querySelector(
-        'div[part=days-view-container]'
-      ) as Element;
       expect(daysView).to.not.be.null;
 
-      el.activeView = 'months';
+      let monthsView = el.shadowRoot?.querySelector(
+        'igc-months-view'
+      ) as IgcMonthsViewComponent;
 
+      expect(monthsView).to.be.null;
+
+      el.activeView = 'months';
       await elementUpdated(el);
 
-      const monthsView = el.shadowRoot?.querySelector(
-        'igc-months-view[part=months-view]'
-      ) as Element;
+      monthsView = el.shadowRoot?.querySelector(
+        'igc-months-view'
+      ) as IgcMonthsViewComponent;
+
       expect(monthsView).to.not.be.null;
 
-      el.activeView = 'years';
+      daysView = el.shadowRoot?.querySelector(
+        'igc-days-view'
+      ) as IgcDaysViewComponent;
 
+      expect(daysView).to.be.null;
+
+      el.activeView = 'years';
       await elementUpdated(el);
 
       const yearsView = el.shadowRoot?.querySelector(
@@ -255,10 +260,7 @@ describe('Calendar Rendering', () => {
       expect(el.showWeekNumbers).to.be.true;
       await elementUpdated(el);
 
-      const daysViewEl = el.shadowRoot?.querySelector(
-        'igc-days-view[part="days-view"]'
-      ) as Element;
-      let weekNumber = daysViewEl.shadowRoot?.querySelector(
+      let weekNumber = daysView.shadowRoot?.querySelector(
         'span[part="week-number"]'
       ) as Element;
       expect(weekNumber).to.not.be.null;
@@ -267,7 +269,7 @@ describe('Calendar Rendering', () => {
       expect(el.showWeekNumbers).to.be.false;
       await elementUpdated(el);
 
-      weekNumber = daysViewEl.shadowRoot?.querySelector(
+      weekNumber = daysView.shadowRoot?.querySelector(
         'span[part="week-number"]'
       ) as Element;
 
@@ -279,10 +281,7 @@ describe('Calendar Rendering', () => {
       expect(el.weekStart).to.equal('wednesday');
       await elementUpdated(el);
 
-      const daysViewEl = el.shadowRoot?.querySelector(
-        'igc-days-view[part="days-view"]'
-      ) as Element;
-      const weekDay = daysViewEl.shadowRoot?.querySelector(
+      const weekDay = daysView.shadowRoot?.querySelector(
         'span[part="label"]'
       ) as Element;
       const attr = weekDay.getAttribute('aria-label');
@@ -294,13 +293,11 @@ describe('Calendar Rendering', () => {
         weekday: 'short',
       };
 
+      expect(el.weekStart).to.equal('sunday');
       expect(el.formatOptions.weekday).to.equal('short');
       await elementUpdated(el);
 
-      const daysViewEl = el.shadowRoot?.querySelector(
-        'igc-days-view[part="days-view"]'
-      ) as Element;
-      const weekDay = daysViewEl.shadowRoot?.querySelector(
+      const weekDay = daysView.shadowRoot?.querySelector(
         'span[part="label-inner"]'
       ) as Element;
       expect(weekDay).lightDom.to.equal('Sun');
@@ -389,8 +386,8 @@ describe('Calendar Rendering', () => {
       );
     });
 
-    const createCalendarElement = (template = '<igc-calendar/>') => {
-      return fixture<IgcCalendarComponent>(html`${unsafeStatic(template)}`);
+    const createCalendarElement = () => {
+      return fixture<IgcCalendarComponent>(html`<igc-calendar />`);
     };
   });
 });
