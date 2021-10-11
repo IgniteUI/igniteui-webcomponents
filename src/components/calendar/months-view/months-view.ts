@@ -10,6 +10,15 @@ import { partNameMap } from '../../common/util';
 import { setDateSafe } from '../common/utils';
 import { MONTHS_PER_ROW } from '../calendar';
 
+/**
+ * Instantiate a months view as a separate component in the calendar.
+ *
+ * @element igc-months-view
+ *
+ * @csspart months-row - The months row container.
+ * @csspart month - The month container.
+ * @csspart month-inner - The inner month container.
+ */
 export class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
@@ -25,12 +34,15 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
   @query('[tabindex="0"]')
   private activeMonth!: HTMLElement;
 
+  /** Тhe current value of the calendar. */
   @property({ attribute: false })
   public value = new Date();
 
+  /** Sets the locale used for formatting and displaying the dates. */
   @property()
   public locale = 'en';
 
+  /** The format of the month. Defaults to long. */
   @property({ attribute: 'month-format' })
   public monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' =
     'long';
@@ -47,6 +59,7 @@ export class IgcMonthsViewComponent extends EventEmitterMixin<
     this.initMonthFormatter();
   }
 
+  /** Focuses the active date. */
   public focusActiveDate() {
     this.activeMonth.focus();
   }

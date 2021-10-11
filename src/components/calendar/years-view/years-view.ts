@@ -9,6 +9,15 @@ import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
 import { styles } from './years-view.css';
 
+/**
+ * Instantiate a years view as a separate component in the calendar.
+ *
+ * @element igc-years-view
+ *
+ * @csspart years-row - The years row container.
+ * @csspart year - The year container.
+ * @csspart year-inner - The inner year container.
+ */
 export class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
@@ -23,9 +32,11 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
   @query('[tabindex="0"]')
   private activeYear!: HTMLElement;
 
+  /** Тhe current value of the calendar. */
   @property({ attribute: false })
   public value = new Date();
 
+  /** Sets how many years are displayed on a single page. */
   @property({ type: Number, attribute: 'years-per-page' })
   public yearsPerPage = 15;
 
@@ -40,6 +51,7 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
     this.setAttribute('role', 'grid');
   }
 
+  /** Focuses the active date. */
   public focusActiveDate() {
     this.activeYear.focus();
   }

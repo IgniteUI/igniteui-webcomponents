@@ -36,6 +36,9 @@ export const YEARS_PER_ROW = 3;
  * @fires igcChange - Emitted when calendar changes its value.
  *
  * @csspart content - The content container.
+ * @csspart days-view - The days view container.
+ * @csspart months-view - The months view container.
+ * @csspart years-view - The years view container.
  * @csspart header - The header container.
  * @csspart header-title - The header title container.
  * @csspart header-date - The header date container.

@@ -26,6 +26,20 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcRangePreviewDateChange: CustomEvent<Date>;
 }
 
+/**
+ * Instantiate a days view as a separate component in the calendar.
+ *
+ * @element igc-days-view
+ *
+ * @fires igcActiveDateChange - Emitted when the active date changes.
+ * @fires igcRangePreviewDateChange - Emitted when the range preview date changes.
+ *
+ * @csspart days-row - The days row container.
+ * @csspart label - The label container.
+ * @csspart label-inner - The inner label container.
+ * @csspart week-number - The week number container.
+ * @csspart week-number-inner - The inner week number container.
+ */
 export class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
@@ -41,21 +55,27 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
   @query('[tabindex="0"]')
   private activeDay!: HTMLElement;
 
+  /** Controls the visibility of the leading dates that do not belong to the current month. */
   @property({ type: Boolean, attribute: 'hide-leading-days' })
   public hideLeadingDays = false;
 
+  /** Controls the visibility of the trailing dates that do not belong to the current month. */
   @property({ type: Boolean, attribute: 'hide-trailing-days' })
   public hideTrailingDays = false;
 
+  /** Gets/sets the active state of the days view. */
   @property({ type: Boolean })
   public active = false;
 
+  /** The range preview date. */
   @property({ attribute: false })
   public rangePreviewDate?: Date;
 
+  /** The format of the days. Defaults to narrow. */
   @property({ attribute: 'week-day-format' })
   public weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
 
+  /** The resource strings. */
   @property({ attribute: false })
   public resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
 
@@ -77,6 +97,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     this.initFormatters();
   }
 
+  /** Focuses the active date. */
   public focusActiveDate() {
     this.activeDay.focus();
   }

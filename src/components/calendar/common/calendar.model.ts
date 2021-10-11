@@ -191,10 +191,12 @@ export class Calendar {
     this._firstWeekDay = firstWeekDay;
   }
 
+  /** Gets the starting day of the week. */
   public get firstWeekDay(): number {
     return this._firstWeekDay % 7;
   }
 
+  /** Sets the starting day of the week. */
   public set firstWeekDay(value: number) {
     this._firstWeekDay = value;
   }
@@ -334,22 +336,27 @@ export class Calendar {
     return ret;
   }
 
+  /** Gets the same date the month after. */
   public getNextMonth(date: Date) {
     return this.timedelta(date, TimeDeltaInterval.Month, 1);
   }
 
+  /** Gets the same date the month prior. */
   public getPrevMonth(date: Date) {
     return this.timedelta(date, TimeDeltaInterval.Month, -1);
   }
 
+  /** Gets the same date the year after. */
   public getNextYear(date: Date) {
     return this.timedelta(date, TimeDeltaInterval.Year, 1);
   }
 
+  /** Gets the same date the year prior. */
   public getPrevYear(date: Date) {
     return this.timedelta(date, TimeDeltaInterval.Year, -1);
   }
 
+  /** Gets the week number of a given date. */
   public getWeekNumber(date: Date) {
     const firstJan = new Date(date.getFullYear(), 0, 1).getTime();
     const today = new Date(
