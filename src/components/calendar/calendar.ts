@@ -25,7 +25,29 @@ export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;
 
 /**
+ * Represents a calendar that lets users
+ * to select a date value in a variety of different ways.
+ *
  * @element igc-calendar
+ *
+ * @slot - The default slot for the calendar.
+ * @slot title - Renders the title of the calendar header.
+ *
+ * @fires igcChange - Emitted when calendar changes its value.
+ *
+ * @csspart content - The content container.
+ * @csspart header - The header container.
+ * @csspart header-title - The header title container.
+ * @csspart header-date - The header date container.
+ * @csspart navigation - The navigation container.
+ * @csspart months-navigation - The months navigation container.
+ * @csspart years-navigation - The years navigation container.
+ * @csspart years-range - The years range container.
+ * @csspart navigation-buttons - The navigation buttons container.
+ * @csspart navigation-button - The navigation button container.
+ * @csspart navigation-button vertical - The navigation button container
+ * when calendar orientation is vertical.
+ * @csspart days-view-container - The days view container.
  */
 export class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
