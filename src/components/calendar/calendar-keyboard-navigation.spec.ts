@@ -11,6 +11,8 @@ describe('Calendar Rendering', () => {
       el = await createCalendarElement();
       el.activeView = 'days';
       el.size = 'large';
+      el.activeDate = new Date(2021, 6, 17);
+
       await elementUpdated(el);
     });
 
@@ -19,8 +21,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches next month by pressing PageDown', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
       const currentMonth = el.activeDate.getMonth();
 
@@ -34,8 +34,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches next year by pressing Shift + PageDown', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
       const currentYear = el.activeDate.getFullYear();
 
@@ -53,8 +51,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches previous month by pressing PageUp', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
       const currentMonth = el.activeDate.getMonth();
 
@@ -68,8 +64,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches previous year by pressing Shift + PageUp', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
       const currentYear = el.activeDate.getFullYear();
 
@@ -87,8 +81,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches next day by pressing ArrowRight', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
       const currentDay = el.activeDate.getDate();
 
@@ -102,8 +94,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches previous day by pressing ArrowLeft', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
       const currentDay = el.activeDate.getDate();
 
@@ -149,8 +139,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches first day of month by pressing Home', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
       expect(el.activeDate.getDate()).to.equal(17);
 
@@ -163,8 +151,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches first day of month by pressing End', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
       expect(el.activeDate.getDate()).to.equal(17);
 
@@ -177,9 +163,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully focuses date by pressing Enter', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-      await elementUpdated(el);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
 
       const firstDay = daysView?.shadowRoot?.querySelectorAll(
@@ -202,9 +185,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully focuses date by pressing space', async () => {
-      el.activeDate = new Date(2021, 6, 17);
-      await elementUpdated(el);
-
       const daysView = el.shadowRoot?.querySelector('igc-days-view');
 
       const firstDay = daysView?.shadowRoot?.querySelectorAll(
