@@ -292,8 +292,8 @@ describe('Calendar Rendering', () => {
       el.formatOptions = {
         weekday: 'short',
       };
+      el.weekStart = 'sunday';
 
-      expect(el.weekStart).to.equal('sunday');
       expect(el.formatOptions.weekday).to.equal('short');
       await elementUpdated(el);
 
@@ -385,9 +385,9 @@ describe('Calendar Rendering', () => {
         { ignoreAttributes: ['header-orientation', 'size'] }
       );
     });
-
-    const createCalendarElement = () => {
-      return fixture<IgcCalendarComponent>(html`<igc-calendar />`);
-    };
   });
 });
+
+export const createCalendarElement = () => {
+  return fixture<IgcCalendarComponent>(html`<igc-calendar />`);
+};
