@@ -1,6 +1,7 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import { elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import '../../../igniteui-webcomponents.js';
+import { createCalendarElement } from './calendar-rendering.spec.js';
 import { IgcCalendarComponent } from './calendar.js';
 import {
   Calendar,
@@ -21,7 +22,7 @@ describe('Calendar Interaction', () => {
 
   describe('', () => {
     beforeEach(async () => {
-      calendar = await createCalendarComponent();
+      calendar = await createCalendarElement();
       calendar.value = new Date(2021, 8, 29, 12, 0, 0);
       calendar.activeDate = new Date(2021, 8, 29, 12, 0, 0);
       await elementUpdated(calendar);
@@ -212,7 +213,7 @@ describe('Calendar Interaction', () => {
       disableDate.click();
       await elementUpdated(calendar);
 
-      expect(activeDate).to.equals(calendar.activeDate);
+      expect(calendar.activeDate).to.equals(activeDate);
 
       //Validate if dates after are disabled
       inRangeDates.forEach((date) => {
@@ -508,10 +509,6 @@ describe('Calendar Interaction', () => {
       changeDaysViewWhenOutsideDateSelected('range');
     });
   });
-
-  const createCalendarComponent = () => {
-    return fixture<IgcCalendarComponent>(html`<igc-calendar />`);
-  };
 
   const isSelected = (date: Date) => {
     let selectedDates: Date | Date[];

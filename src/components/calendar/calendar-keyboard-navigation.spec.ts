@@ -1,12 +1,7 @@
-import {
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-  elementUpdated,
-} from '@open-wc/testing';
+import { expect, elementUpdated } from '@open-wc/testing';
 import { IgcCalendarComponent } from './calendar';
 import '../../../igniteui-webcomponents';
+import { createCalendarElement } from './calendar-rendering.spec';
 
 describe('Calendar Rendering', () => {
   let el: IgcCalendarComponent;
@@ -537,10 +532,6 @@ describe('Calendar Rendering', () => {
       expect(el.activeView).to.equal('months');
     });
   });
-
-  const createCalendarElement = (template = '<igc-calendar/>') => {
-    return fixture<IgcCalendarComponent>(html`${unsafeStatic(template)}`);
-  };
 
   const switchYear = async (yearsView: Element, btn: string) => {
     // focus first year
