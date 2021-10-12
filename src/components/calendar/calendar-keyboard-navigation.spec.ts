@@ -183,41 +183,52 @@ describe('Calendar Rendering', () => {
 
     it('successfully focuses date by pressing Enter', async () => {
       el.activeDate = new Date(2021, 6, 17);
-
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
-      const day = daysView?.shadowRoot?.querySelector(
-        'span[part="date-inner single"]'
-      ) as HTMLElement;
-
-      day.focus();
       await elementUpdated(el);
 
-      day.dispatchEvent(
+      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+
+      const firstDay = daysView?.shadowRoot?.querySelectorAll(
+        'span[part="date-inner single"]'
+      )[0] as HTMLElement;
+
+      firstDay.focus();
+      await elementUpdated(el);
+
+      firstDay.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
       );
       await elementUpdated(el);
 
-      expect((el.value as Date).getUTCDate()).to.equal(1);
+      const timeZoneOffset = (el.value as Date).getTimezoneOffset() * 60000;
+
+      const newDate = new Date((el.value as any) - timeZoneOffset);
+
+      expect(newDate.getDate()).to.equal(1);
     });
 
     it('successfully focuses date by pressing space', async () => {
       el.activeDate = new Date(2021, 6, 17);
-
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
-      const day = daysView?.shadowRoot?.querySelector(
-        'span[part="date-inner single"]'
-      ) as HTMLElement;
-      expect(el.value).to.be.undefined;
-
-      day.focus();
       await elementUpdated(el);
 
-      day.dispatchEvent(
+      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+
+      const firstDay = daysView?.shadowRoot?.querySelectorAll(
+        'span[part="date-inner single"]'
+      )[0] as HTMLElement;
+
+      firstDay.focus();
+      await elementUpdated(el);
+
+      firstDay.dispatchEvent(
         new KeyboardEvent('keydown', { key: ' ', bubbles: true })
       );
       await elementUpdated(el);
 
-      expect((el.value as Date).getUTCDate()).to.equal(1);
+      const timeZoneOffset = (el.value as Date).getTimezoneOffset() * 60000;
+
+      const newDate = new Date((el.value as any) - timeZoneOffset);
+
+      expect(newDate.getDate()).to.equal(1);
     });
   });
 
