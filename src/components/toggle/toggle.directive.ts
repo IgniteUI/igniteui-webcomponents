@@ -11,6 +11,7 @@ export class IgcToggleDirective extends Directive {
   /** private */
   private styles = `
     color: #666;
+    background: white;
     border: 1px solid #666;
     font-weight: bold;
     padding: 4px 4px;
@@ -19,11 +20,12 @@ export class IgcToggleDirective extends Directive {
 
   private _part: PartInfo;
   private _open = false;
-  private _placement: IgcPlacement = 'right-start';
+  private _placement: IgcPlacement = 'bottom-start';
   private _strategy: 'absolute' | 'fixed' = 'absolute';
   private _flip = false;
   private _modifiers: Modifier<any, any>[] = [flip];
   private _instance!: Instance;
+  private _popperElement!: HTMLElement;
 
   private _defaultOptions: IToggleOptions = {
     placement: this._placement,
@@ -37,36 +39,51 @@ export class IgcToggleDirective extends Directive {
     options?: IToggleOptions
   ) {
     this._open = open;
-    const popperElement = this.createPopperElement(this._part as ChildPart);
+    this._popperElement = this.createPopperElement();
+
     if (this._instance) {
       this.updateToggleOptions(options);
-      return this._instance.state.elements.popper;
-    }
+    } else {
+      if (!target) {
+        return;
+      }
 
-    if (!target) {
-      return;
+      const toggleOptions = Object.assign({}, this._defaultOptions, options);
+      this._instance = createPopper(target, this._popperElement, toggleOptions);
     }
-
-    const toggleOptions = Object.assign({}, this._defaultOptions, options);
-    this._instance = createPopper(target, popperElement, toggleOptions);
 
     return this._instance.state.elements.popper;
   }
 
-  private createPopperElement(part: ChildPart) {
-    const popperElement = document.createElement('div');
-    const parentNode = part.parentNode as HTMLElement;
+  private createPopperElement() {
+    const hostElement = (this._part as ChildPart).options?.host as HTMLElement;
+    hostElement.classList.add('igc-toggle--hidden');
 
-    this._open
-      ? parentNode.removeAttribute('hidden')
-      : parentNode.setAttribute('hidden', 'true');
+    if (!this._popperElement) {
+      const parentNode = (this._part as ChildPart).parentNode as HTMLElement;
+      const nonSlotElements = [...parentNode.children].filter(
+        (el) => !(el instanceof HTMLSlotElement)
+      );
 
-    popperElement.setAttribute('style', this.styles);
-    for (const el of parentNode.children) {
-      popperElement.appendChild(el.cloneNode(true));
+      if (nonSlotElements.length === 0) {
+        this._popperElement = parentNode;
+      } else if (nonSlotElements.length === 1) {
+        this._popperElement = nonSlotElements[0] as HTMLElement;
+      } else {
+        this._popperElement = document.createElement('span');
+        for (const el of nonSlotElements) {
+          this._popperElement.appendChild(el.cloneNode(true));
+        }
+      }
+
+      this._popperElement.setAttribute('style', this.styles);
     }
 
-    return popperElement;
+    this._open
+      ? this._popperElement.classList.remove('igc-toggle--hidden')
+      : this._popperElement.classList.add('igc-toggle--hidden');
+
+    return this._popperElement;
   }
 
   private updateToggleOptions(options?: IToggleOptions) {
