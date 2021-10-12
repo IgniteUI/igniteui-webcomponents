@@ -180,6 +180,45 @@ describe('Calendar Rendering', () => {
 
       expect(el.activeDate.getDate()).to.equal(31);
     });
+
+    it('successfully focuses date by pressing Enter', async () => {
+      el.activeDate = new Date(2021, 6, 17);
+
+      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+      const day = daysView?.shadowRoot?.querySelector(
+        'span[part="date-inner single"]'
+      ) as HTMLElement;
+
+      day.focus();
+      await elementUpdated(el);
+
+      day.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+      );
+      await elementUpdated(el);
+
+      expect((el.value as Date).getUTCDate()).to.equal(1);
+    });
+
+    it('successfully focuses date by pressing space', async () => {
+      el.activeDate = new Date(2021, 6, 17);
+
+      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+      const day = daysView?.shadowRoot?.querySelector(
+        'span[part="date-inner single"]'
+      ) as HTMLElement;
+      expect(el.value).to.be.undefined;
+
+      day.focus();
+      await elementUpdated(el);
+
+      day.dispatchEvent(
+        new KeyboardEvent('keydown', { key: ' ', bubbles: true })
+      );
+      await elementUpdated(el);
+
+      expect((el.value as Date).getUTCDate()).to.equal(1);
+    });
   });
 
   describe('Months view', async () => {
@@ -268,16 +307,50 @@ describe('Calendar Rendering', () => {
       expect(month).to.equal(9);
     });
 
+    it('successfully focuses month by pressing Enter', async () => {
+      const monthsView = el.shadowRoot?.querySelector('igc-months-view');
+
+      expect(el.activeView).to.equal('months');
+
+      const month = monthsView?.shadowRoot?.querySelectorAll(
+        'span[part="month-inner"]'
+      )[0] as HTMLElement;
+      month.focus();
+      await elementUpdated(el);
+
+      month.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      await elementUpdated(el);
+
+      expect(el.activeView).to.equal('days');
+    });
+
+    it('successfully focuses month by pressing space', async () => {
+      const monthsView = el.shadowRoot?.querySelector('igc-months-view');
+
+      expect(el.activeView).to.equal('months');
+
+      const month = monthsView?.shadowRoot?.querySelectorAll(
+        'span[part="month-inner"]'
+      )[0] as HTMLElement;
+      month.focus();
+      await elementUpdated(el);
+
+      month.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
+      await elementUpdated(el);
+
+      expect(el.activeView).to.equal('days');
+    });
+
     const switchMonth = async (el: IgcCalendarComponent, btn: string) => {
-      const daysView = el.shadowRoot?.querySelector('igc-months-view');
+      const monthsView = el.shadowRoot?.querySelector('igc-months-view');
 
       // focus first month
-      daysView?.dispatchEvent(
+      monthsView?.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
       );
       await elementUpdated(el);
 
-      daysView?.dispatchEvent(
+      monthsView?.dispatchEvent(
         new KeyboardEvent('keydown', { key: btn, bubbles: true })
       );
       await elementUpdated(el);
@@ -413,6 +486,44 @@ describe('Calendar Rendering', () => {
 
       const year = el.activeDate.getFullYear();
       expect(year).to.equal(firstYear + 15);
+    });
+
+    it('successfully focuses year by pressing Enter', async () => {
+      const yearsView = el.shadowRoot?.querySelector(
+        'igc-years-view'
+      ) as Element;
+
+      expect(el.activeView).to.equal('years');
+
+      const year = yearsView?.shadowRoot?.querySelectorAll(
+        'span[part="year-inner"]'
+      )[0] as HTMLElement;
+      year.focus();
+      await elementUpdated(el);
+
+      year.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      await elementUpdated(el);
+
+      expect(el.activeView).to.equal('months');
+    });
+
+    it('successfully focuses year by pressing space', async () => {
+      const yearsView = el.shadowRoot?.querySelector(
+        'igc-years-view'
+      ) as Element;
+
+      expect(el.activeView).to.equal('years');
+
+      const year = yearsView?.shadowRoot?.querySelectorAll(
+        'span[part="year-inner"]'
+      )[0] as HTMLElement;
+      year.focus();
+      await elementUpdated(el);
+
+      year.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
+      await elementUpdated(el);
+
+      expect(el.activeView).to.equal('months');
     });
   });
 
