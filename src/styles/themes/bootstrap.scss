@@ -10,6 +10,7 @@
 @use '../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../components/list/list.bootstrap' as list;
 @use '../../components/input/input.bootstrap' as input;
+@use '../../components/slider/slider.bootstrap' as slider;
 
 $palette: utils.palette(
     $primary: #007bff,
@@ -192,6 +193,7 @@ $type-scale: utils.extend($_base-scale, (
 @include card-content.theme();
 @include checkbox.theme();
 @include radio.theme();
+@include slider.theme();
 @include switch.theme();
 @include navbar.theme();
 @include list.theme();

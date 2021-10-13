@@ -832,7 +832,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
 
   protected render() {
     return html`
-      <div part="base" style="{flex-direction:column}">
+      <div part="base">
         <div part="track">
           ${this.tickOrientation === 'mirror' ||
           this.tickOrientation === 'start'
@@ -853,11 +853,11 @@ export class IgcSliderComponent extends EventEmitterMixin<
                             : null
                         }</div>
                         </div>
-                        <div 
+                        <div
                             part="thumb"
                             id="thumbFrom"
                             tabindex=${this._tabIndex}
-                            role="slider"  
+                            role="slider"
                             aria-valuemin=${this.min}
                             aria-valuemax=${this.max}
                             aria-valuenow=${

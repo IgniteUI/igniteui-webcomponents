@@ -10,6 +10,7 @@
 @use '../../components/navbar/navbar.indigo' as navbar;
 @use '../../components/list/list.indigo' as list;
 @use '../../components/input/input.indigo' as input;
+@use '../../components/slider/slider.indigo' as slider;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -186,6 +187,7 @@ $type-scale: utils.extend($indigo-type-scale);
 @include card-content.theme();
 @include checkbox.theme();
 @include radio.theme();
+@include slider.theme();
 @include switch.theme();
 @include navbar.theme();
 @include list.theme();

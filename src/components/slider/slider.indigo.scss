@@ -1,0 +1,55 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    $thumb-size: utils.rem(14px);
+
+    igc-slider:hover {
+        &::part(track) {
+            background: utils.color(gray, 500);
+        }
+
+        &::part(fill) {
+            background: utils.color(primary, 400);
+        }
+    }
+
+    igc-slider::part(track) {
+        height: utils.rem(2px);
+        background: utils.color(gray, 400);
+    }
+
+    igc-slider::part(fill) {
+        height: utils.rem(2px);
+        top: initial;
+    }
+
+    igc-slider::part(steps) {
+        height: utils.rem(2px);
+        background-size: 100% utils.rem(2px);
+        top: initial;
+    }
+
+    igc-slider::part(thumb) {
+        width: $thumb-size;
+        height: $thumb-size;
+        top: -7px;
+
+        &:focus {
+            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+        }
+
+        &::after {
+            display: none;
+        }
+    }
+
+    igc-slider[disabled] {
+        &::part(track) {
+            background: utils.color(gray, 300);
+        }
+
+        &::part(thumb) {
+            background: utils.color(gray, 300);
+        }
+    }
+}

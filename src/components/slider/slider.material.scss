@@ -1,100 +1,50 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
-@use 'sass:math';
 
-/// @access private
-@function private-div($a, $b) {
-    @if not
-        global-variable-exists('__legacy-libsass') and
-        call(get-function('function-exists'), 'div', 'math')
-    {
-        @return call(get-function($name: 'div', $module: 'math'), $a, $b);
-    } @else {
-        @return $a / $b;
-    }
-}
+$ripple-size: rem(40px);
+$ripple-radius: calc(#{$ripple-size} / 2);
+$thumb-size: rem(20px);
+$thumb-radius: calc(#{$thumb-size} / 2);
 
-:host([disabled]) {
-    user-select: none;
-    pointer-events: none;
-    cursor: initial;
-
-    [part='fill'] {
-        background: color(gray, 300);
-    }
-
-    [part='thumb'] {
-        background: color(gray, 400);
-        box-shadow: var(--igc-elevation-1);
-    }
+[part='base'] {
+    display: flex;
+    position: relative;
+    flex-grow: 1;
+    align-items: center;
+    height: rem(48px);
+    transition: all .2s ease-out;
+    font-family: var(--igc-font-family);
 }
 
 [part='track'] {
     position: relative;
+    height: rem(4px);
     width: 100%;
-    height: 2px;
-    background: rgba(137, 103, 103, .26);
+    background: color(secondary, 500, .24);
+    transition: background .2s ease-out;
+    border-radius: rem(32px);
 }
 
 [part='fill'] {
     position: absolute;
+    height: rem(6px);
     width: 100%;
-    height: inherit;
-    background: #e41c77;
+    top: rem(-1px);
+    background: color(secondary, 500);
     transform-origin: left center;
-    transform: scaleX(0);
+    border-radius: rem(32px);
 }
 
 [part='steps'] {
     position: absolute;
     width: 100%;
-    height: 2px;
-    background-size: 100% 2px;
+    height: rem(2px);
+    background-size: 100% rem(2px);
+    background-color: color(surface, 500);
     opacity: .85;
+    transition: opacity .2s ease-out;
     z-index: 1;
-}
-
-[part='thumbs'] {
-    position: relative;
-    width: 100%;
-    height: 0;
-    cursor: default;
-    z-index: 1;
-    left: 0;
-}
-
-[part='thumb'] {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    width: 12px;
-    height: 20px;
-    outline-style: none;
-    border: 6px solid black;
-    top: -1rem;
-
-    &:hover {
-        border: 6px solid #e41c77;
-    }
-}
-
-[part='thumb-label'] {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    height: 20px;
-    width: 20px;
-    left: -50%;
-    border-radius: rem(private-div(36px, 2));
-    background: #e41c77;
-    outline-style: none;
-    opacity: 0;
-    pointer-events: none;
-    z-index: -1;
+    top: rem(1px);
 }
 
 [part='ticks'] {
@@ -106,30 +56,172 @@
     z-index: 1;
 
     &:first-child {
-        bottom: 4px;
+        bottom: rem(4px);
         top: auto;
         align-items: flex-end;
+
+        [part='tick-label'] {
+            top: auto;
+            bottom: rem(16px);
+        }
     }
 }
 
 [part='tick-group'] {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
+    &:first-of-type {
+        margin-inline-start: rem(-1px);
+    }
+
+    &:last-of-type {
+        margin-inline-start: rem(-1px);
+    }
 }
 
 [part='tick'] {
-    background: green;
-    height: 8px;
-    width: 2px;
+    background: color(gray, 500);
+    height: rem(8px);
+    width: rem(2px);
 }
 
-[part='label'] {
-    color: green;
+[part='tick-label'] {
+    color: color(gray, 500);
     position: absolute;
-    top: 16px;
+    top: rem(16px);
     transform: translate(-50%);
     line-height: .7;
     opacity: 1;
+    transition: opacity .2s ease-in-out;
+    @include type-category('caption');
+}
+
+[part='thumbs'] {
+    position: absolute;
+    width: 100%;
+    height: 0;
+    cursor: default;
+    z-index: 1;
+    left: 0;
+}
+
+[part='thumb'],
+[part='thumb-label'] {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    outline-style: none;
+}
+
+[part='thumb'] {
+    width: $thumb-size;
+    height: $thumb-size;
+    background: color(secondary, 500);
+    transition: transform .1s ease-out, border-radius .1s ease-out;
+    border-radius: $thumb-radius;
+    top: -10px;
+
+    &::after {
+        position: absolute;
+        content: '';
+        width: $ripple-size;
+        height: $ripple-size;
+        background: color(secondary, 500);
+        top: calc(50% - #{$ripple-radius});
+        left: calc(50% - #{$ripple-radius});
+        opacity: 0;
+        transform: scale(0);
+        transform-origin: center center;
+        transition: transform .1s ease-out, opacity .1s ease-out;
+        overflow: hidden;
+        border-radius: $ripple-radius;
+    }
+
+    &:hover::after {
+        opacity: .12;
+        transform: scale(1);
+    }
+
+    &:focus::after {
+        opacity: .18;
+        transform: scale(1);
+    }
+
+    &:active::after {
+        opacity: .24;
+    }
+}
+
+[part='thumb-label'] {
+    @include type-category('caption');
+    margin: 0 auto;
+    flex: 0 0 auto;
+    top: -50px;
+    left: -50%;
+    pointer-events: none;
+    min-width: rem(40px);
+    height: rem(30px);
+    padding: 0 rem(2px);
+    border-radius: rem(2px);
+    color: contrast-color(gray, 700);
+    background: color(gray, 700);
+    opacity: 0;
+    z-index: -1;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        margin-inline-start: rem(-15px);
+        width: rem(30px);
+        height: rem(30px);
+        border-radius: 0 rem(15px) rem(15px);
+        background: inherit;
+        transform: rotate(-135deg);
+        z-index: -1;
+    }
+}
+
+:host([continuous]) {
+    [part='steps'] {
+        display: none;
+    }
+}
+
+:host([disabled]) {
+    user-select: none;
+    pointer-events: none;
+    cursor: initial;
+
+    [part='track'] {
+        background: color(gray, 200);
+    }
+
+    [part='fill'],
+    [part='tick'] {
+        background: color(gray, 400);
+    }
+
+    [part='tick-label'] {
+        color: color(gray, 400);
+    }
+
+    [part='thumb'] {
+        background: color(gray, 400);
+
+        &:focus::after {
+            transform: scale(0);
+        }
+    }
+
+    &:hover {
+        [part='track'] {
+            background: color(gray, 400);
+        }
+
+        [part='thumb'] {
+            border-color: color(gray, 400);
+        }
+    }
 }

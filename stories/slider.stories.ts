@@ -149,7 +149,7 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => html`
   <igc-slider
-    style="margin:40px;"
+    style="display: block; margin:40px 20px;"
     ?disabled=${disabled}
     ?continuous=${continuous}
     step=${step}

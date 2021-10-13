@@ -7,6 +7,7 @@
 @use '../../components/list/list.fluent' as list;
 @use '../../components/checkbox/switch.fluent' as switch;
 @use '../../components/input/input.fluent' as input;
+@use '../../components/slider/slider.fluent' as slider;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -156,6 +157,7 @@ $type-scale: utils.extend($fluent-type-scale);
 @include checkbox.theme();
 @include radio.theme();
 @include list.theme();
+@include slider.theme();
 @include switch.theme();
 @include input.theme();
 @include icon-button.theme();
