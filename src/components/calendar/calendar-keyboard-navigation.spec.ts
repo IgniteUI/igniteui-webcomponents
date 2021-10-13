@@ -5,6 +5,9 @@ import { createCalendarElement } from './calendar-rendering.spec';
 
 describe('Calendar Rendering', () => {
   let el: IgcCalendarComponent;
+  let daysView: Element;
+  let monthsView: Element;
+  let yearsView: Element;
 
   describe('Days view', async () => {
     beforeEach(async () => {
@@ -14,17 +17,18 @@ describe('Calendar Rendering', () => {
       el.activeDate = new Date(2021, 6, 17);
 
       await elementUpdated(el);
+
+      daysView = el.shadowRoot?.querySelector('igc-days-view') as Element;
     });
 
     it('passes the a11y audit', async () => {
       expect(el).shadowDom.to.be.accessible();
     });
 
-    it('successfully switches next month by pressing PageDown', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+    it('successfully switches to next month by pressing PageDown', async () => {
       const currentMonth = el.activeDate.getMonth();
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true })
       );
       await elementUpdated(el);
@@ -33,11 +37,10 @@ describe('Calendar Rendering', () => {
       expect(nextMonth).to.equal(currentMonth + 1);
     });
 
-    it('successfully switches next year by pressing Shift + PageDown', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+    it('successfully switches to next year by pressing Shift + PageDown', async () => {
       const currentYear = el.activeDate.getFullYear();
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'PageDown',
           bubbles: true,
@@ -50,11 +53,10 @@ describe('Calendar Rendering', () => {
       expect(nextYear).to.equal(currentYear + 1);
     });
 
-    it('successfully switches previous month by pressing PageUp', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+    it('successfully switches to previous month by pressing PageUp', async () => {
       const currentMonth = el.activeDate.getMonth();
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'PageUp', bubbles: true })
       );
       await elementUpdated(el);
@@ -63,11 +65,10 @@ describe('Calendar Rendering', () => {
       expect(nextMonth).to.equal(currentMonth - 1);
     });
 
-    it('successfully switches previous year by pressing Shift + PageUp', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+    it('successfully switches to previous year by pressing Shift + PageUp', async () => {
       const currentYear = el.activeDate.getFullYear();
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'PageUp',
           bubbles: true,
@@ -80,11 +81,10 @@ describe('Calendar Rendering', () => {
       expect(nextYear).to.equal(currentYear - 1);
     });
 
-    it('successfully switches next day by pressing ArrowRight', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+    it('successfully switches to next day by pressing ArrowRight', async () => {
       const currentDay = el.activeDate.getDate();
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })
       );
       await elementUpdated(el);
@@ -93,11 +93,10 @@ describe('Calendar Rendering', () => {
       expect(nextDay).to.equal(currentDay + 1);
     });
 
-    it('successfully switches previous day by pressing ArrowLeft', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+    it('successfully switches to previous day by pressing ArrowLeft', async () => {
       const currentDay = el.activeDate.getDate();
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })
       );
       await elementUpdated(el);
@@ -106,43 +105,43 @@ describe('Calendar Rendering', () => {
       expect(previousDay).to.equal(currentDay - 1);
     });
 
-    it('successfully switches previous week by pressing ArrowUp', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
-      const currentTime = daysView?.activeDate.getTime();
-      const lastWeekTime = new Date(
+    it('successfully switches to previous week by pressing ArrowUp', async () => {
+      const currentTime = el.activeDate.getTime();
+
+      const lastWeekDate = new Date(
         currentTime! - 7 * 24 * 60 * 60 * 1000
       ).getDate();
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
       );
       await elementUpdated(el);
 
-      const activeDate = daysView?.activeDate.getDate();
-      expect(activeDate).to.equal(lastWeekTime);
+      const activeDate = el.activeDate.getDate();
+
+      expect(activeDate).to.equal(lastWeekDate);
     });
 
-    it('successfully switches next week by pressing ArrowDown', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
-      const currentTime = daysView?.activeDate.getTime();
-      const lastWeekTime = new Date(
+    it('successfully switches to next week by pressing ArrowDown', async () => {
+      const currentTime = el.activeDate.getTime();
+
+      const nextWeekDate = new Date(
         currentTime! + 7 * 24 * 60 * 60 * 1000
       ).getDate();
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
       );
       await elementUpdated(el);
 
-      const activeDate = daysView?.activeDate.getDate();
-      expect(activeDate).to.equal(lastWeekTime);
+      const activeDate = el.activeDate.getDate();
+      expect(activeDate).to.equal(nextWeekDate);
     });
 
-    it('successfully switches first day of month by pressing Home', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+    it('successfully switches to first day of month by pressing Home', async () => {
       expect(el.activeDate.getDate()).to.equal(17);
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
       );
       await elementUpdated(el);
@@ -150,11 +149,10 @@ describe('Calendar Rendering', () => {
       expect(el.activeDate.getDate()).to.equal(1);
     });
 
-    it('successfully switches first day of month by pressing End', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
+    it('successfully switches to last day of month by pressing End', async () => {
       expect(el.activeDate.getDate()).to.equal(17);
 
-      daysView?.dispatchEvent(
+      daysView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'End', bubbles: true })
       );
       await elementUpdated(el);
@@ -163,9 +161,7 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully focuses date by pressing Enter', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
-
-      const firstDay = daysView?.shadowRoot?.querySelectorAll(
+      const firstDay = daysView.shadowRoot?.querySelectorAll(
         'span[part="date-inner single"]'
       )[0] as HTMLElement;
 
@@ -184,10 +180,8 @@ describe('Calendar Rendering', () => {
       expect(newDate.getDate()).to.equal(1);
     });
 
-    it('successfully focuses date by pressing space', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-days-view');
-
-      const firstDay = daysView?.shadowRoot?.querySelectorAll(
+    it('successfully focuses date by pressing Space', async () => {
+      const firstDay = daysView.shadowRoot?.querySelectorAll(
         'span[part="date-inner single"]'
       )[0] as HTMLElement;
 
@@ -212,13 +206,14 @@ describe('Calendar Rendering', () => {
       el = await createCalendarElement();
       el.activeView = 'months';
       el.size = 'large';
+
       await elementUpdated(el);
+
+      monthsView = el.shadowRoot?.querySelector('igc-months-view') as Element;
     });
 
     it('successfully switches to first month by pressing Home', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-months-view');
-
-      daysView?.dispatchEvent(
+      monthsView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
       );
       await elementUpdated(el);
@@ -228,9 +223,7 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches to last month by pressing End', async () => {
-      const daysView = el.shadowRoot?.querySelector('igc-months-view');
-
-      daysView?.dispatchEvent(
+      monthsView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'End', bubbles: true })
       );
       await elementUpdated(el);
@@ -239,7 +232,7 @@ describe('Calendar Rendering', () => {
       expect(month).to.equal(11);
     });
 
-    it('successfully switches to previous month by pressing PageUp', async () => {
+    it('successfully switches to previous year by pressing PageUp', async () => {
       const btn = el.shadowRoot?.querySelector(
         'button[part="years-navigation"]'
       );
@@ -252,7 +245,7 @@ describe('Calendar Rendering', () => {
       expect(previousYear).to.equal(year - 1);
     });
 
-    it('successfully switches to next month by pressing PageDown', async () => {
+    it('successfully switches to next year by pressing PageDown', async () => {
       const btn = el.shadowRoot?.querySelector(
         'button[part="years-navigation"]'
       );
@@ -265,14 +258,14 @@ describe('Calendar Rendering', () => {
       expect(nextYear).to.equal(year + 1);
     });
 
-    it('successfully switches month by pressing ArrowRight', async () => {
+    it('successfully switches to next month by pressing ArrowRight', async () => {
       await switchMonth(el, 'ArrowRight');
 
       const month = el.activeDate.getMonth();
       expect(month).to.equal(1);
     });
 
-    it('successfully switches month by pressing ArrowLeft', async () => {
+    it('successfully switches to previous month by pressing ArrowLeft', async () => {
       await switchMonth(el, 'ArrowLeft');
 
       const month = el.activeDate.getMonth();
@@ -294,11 +287,9 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully focuses month by pressing Enter', async () => {
-      const monthsView = el.shadowRoot?.querySelector('igc-months-view');
-
       expect(el.activeView).to.equal('months');
 
-      const month = monthsView?.shadowRoot?.querySelectorAll(
+      const month = monthsView.shadowRoot?.querySelectorAll(
         'span[part="month-inner"]'
       )[0] as HTMLElement;
       month.focus();
@@ -310,12 +301,10 @@ describe('Calendar Rendering', () => {
       expect(el.activeView).to.equal('days');
     });
 
-    it('successfully focuses month by pressing space', async () => {
-      const monthsView = el.shadowRoot?.querySelector('igc-months-view');
-
+    it('successfully focuses month by pressing Space', async () => {
       expect(el.activeView).to.equal('months');
 
-      const month = monthsView?.shadowRoot?.querySelectorAll(
+      const month = monthsView.shadowRoot?.querySelectorAll(
         'span[part="month-inner"]'
       )[0] as HTMLElement;
       month.focus();
@@ -328,15 +317,13 @@ describe('Calendar Rendering', () => {
     });
 
     const switchMonth = async (el: IgcCalendarComponent, btn: string) => {
-      const monthsView = el.shadowRoot?.querySelector('igc-months-view');
-
       // focus first month
-      monthsView?.dispatchEvent(
+      monthsView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
       );
       await elementUpdated(el);
 
-      monthsView?.dispatchEvent(
+      monthsView.dispatchEvent(
         new KeyboardEvent('keydown', { key: btn, bubbles: true })
       );
       await elementUpdated(el);
@@ -348,18 +335,18 @@ describe('Calendar Rendering', () => {
       el = await createCalendarElement();
       el.activeView = 'years';
       el.size = 'large';
+
       await elementUpdated(el);
+
+      yearsView = el.shadowRoot?.querySelector('igc-years-view') as Element;
     });
 
     it('successfully switches to first year by pressing Home', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
       const firstYearEl = yearsView.shadowRoot?.querySelector(
         'span[part="year-inner"]'
       ) as Element;
 
-      yearsView?.dispatchEvent(
+      yearsView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
       );
       await elementUpdated(el);
@@ -368,16 +355,13 @@ describe('Calendar Rendering', () => {
       expect(firstYearEl).lightDom.to.equal(`${year}`);
     });
 
-    it('successfully switches to last year by pressing Home', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
+    it('successfully switches to last year by pressing End', async () => {
       const yearsEl = yearsView.shadowRoot?.querySelectorAll(
         'span[part="year-inner"]'
       );
       const lastYear = yearsEl![yearsEl!.length - 1];
 
-      yearsView?.dispatchEvent(
+      yearsView.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'End', bubbles: true })
       );
       await elementUpdated(el);
@@ -386,10 +370,7 @@ describe('Calendar Rendering', () => {
       expect(lastYear).lightDom.to.equal(`${year}`);
     });
 
-    it('successfully switches year by pressing ArrowRight', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
+    it('successfully switches to next year by pressing ArrowRight', async () => {
       const firstYearEl = yearsView.shadowRoot?.querySelectorAll(
         'span[part="year-inner"]'
       )[1];
@@ -400,10 +381,7 @@ describe('Calendar Rendering', () => {
       expect(firstYearEl).lightDom.to.equal(`${year}`);
     });
 
-    it('successfully switches year by pressing ArrowLeft', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
+    it('successfully switches to previous year by pressing ArrowLeft', async () => {
       const yearsEl = yearsView.shadowRoot?.querySelectorAll(
         'span[part="year-inner"]'
       );
@@ -416,9 +394,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches year by pressing ArrowUp', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
       const firstYearEl = yearsView.shadowRoot?.querySelector(
         'span[part="year-inner"]'
       ) as Element;
@@ -431,9 +406,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches year by pressing ArrowDown', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
       const firstYearEl = yearsView.shadowRoot?.querySelectorAll(
         'span[part="year-inner"]'
       )[3];
@@ -445,9 +417,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches year by pressing PageUp', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
       const firstYearEl = yearsView.shadowRoot?.querySelector(
         'span[part="year-inner"]'
       ) as Element;
@@ -460,9 +429,6 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully switches year by pressing PageDown', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
       const firstYearEl = yearsView.shadowRoot?.querySelector(
         'span[part="year-inner"]'
       ) as Element;
@@ -475,13 +441,9 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully focuses year by pressing Enter', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
-
       expect(el.activeView).to.equal('years');
 
-      const year = yearsView?.shadowRoot?.querySelectorAll(
+      const year = yearsView.shadowRoot?.querySelectorAll(
         'span[part="year-inner"]'
       )[0] as HTMLElement;
       year.focus();
@@ -493,14 +455,10 @@ describe('Calendar Rendering', () => {
       expect(el.activeView).to.equal('months');
     });
 
-    it('successfully focuses year by pressing space', async () => {
-      const yearsView = el.shadowRoot?.querySelector(
-        'igc-years-view'
-      ) as Element;
-
+    it('successfully focuses year by pressing Space', async () => {
       expect(el.activeView).to.equal('years');
 
-      const year = yearsView?.shadowRoot?.querySelectorAll(
+      const year = yearsView.shadowRoot?.querySelectorAll(
         'span[part="year-inner"]'
       )[0] as HTMLElement;
       year.focus();
