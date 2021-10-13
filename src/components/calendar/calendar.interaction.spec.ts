@@ -203,19 +203,19 @@ describe('Calendar Interaction', () => {
       const enableDate = dates.item(0).querySelector('span');
       enableDate.click();
       await elementUpdated(calendar);
-      const activeDate = calendar.activeDate;
+      const enableDateValue = calendar.value;
 
-      const disableDates = weekDays.querySelectorAll(
+      const disabledDatesEl = weekDays.querySelectorAll(
         'span[part="date disabled single"]'
       );
 
-      const disableDate = disableDates.item(0);
-      disableDate.click();
+      const disableDate = disabledDatesEl.item(0);
+
+      disableDate.querySelector('span').click();
       await elementUpdated(calendar);
 
-      expect(calendar.activeDate).to.equals(activeDate);
+      expect(calendar.value).to.equals(enableDateValue);
 
-      //Validate if dates after are disabled
       inRangeDates.forEach((date) => {
         expect(isDateInRanges(date.date, disabledDates)).to.be.true;
       });
