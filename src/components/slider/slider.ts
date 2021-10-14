@@ -36,6 +36,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   private _disabled = false;
   private _continuous = false;
   private _step = 1;
+  private _primaryTicks = 0;
   private _hasViewInit = false;
   private _activeThumb: HTMLElement | undefined;
 
@@ -44,7 +45,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
     return styles.getPropertyValue('direction') === 'ltr';
   }
 
-  public get isRange(): boolean {
+  private get isRange(): boolean {
     return this.type === 'range';
   }
 
@@ -161,12 +162,14 @@ export class IgcSliderComponent extends EventEmitterMixin<
   private _tabIndex = 0;
 
   public set value(value: number | IRangeSliderValue) {
+    const oldValue = this._value;
     if (this._hasViewInit) {
       this.setValue(value, true);
       this.positionHandlersAndUpdateTrack();
     } else {
       this._value = value;
     }
+    this.requestUpdate('value', oldValue);
   }
 
   @property({ attribute: false })
@@ -194,6 +197,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   public set min(value: number) {
+    const oldValue = this._min;
     if (value >= this.max) {
       return;
     } else {
@@ -213,6 +217,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
     if (this._hasViewInit) {
       this.setStepInterval();
     }
+    this.requestUpdate('min', oldValue);
   }
 
   @property({ type: Number })
@@ -221,6 +226,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   public set max(value: number) {
+    const oldValue = this._max;
     if (value <= this._min) {
       return;
     } else {
@@ -239,6 +245,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
     if (this._hasViewInit) {
       this.setStepInterval();
     }
+    this.requestUpdate('max', oldValue);
   }
 
   @property({ type: Number })
@@ -247,6 +254,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   public set lowerBound(value: number) {
+    const oldValue = this._lowerBound;
     if (value >= this.upperBound) {
       return;
     }
@@ -256,6 +264,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
     // Refresh min travel zone.
     this._pMin = this.valueToFraction(this._lowerBound, 0, 1);
     this.positionHandlersAndUpdateTrack();
+    this.requestUpdate('lowerBound', oldValue);
   }
 
   @property({ type: Number })
@@ -268,15 +277,17 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   public set upperBound(value: number) {
+    const oldValue = this._upperBound;
     if (value <= this.lowerBound) {
       return;
     }
 
     this._upperBound = this.valueInRange(value, this.min, this.max);
 
-    // Refresh time travel zone.
+    // Refresh max travel zone.
     this._pMax = this.valueToFraction(this._upperBound, 0, 1);
     this.positionHandlersAndUpdateTrack();
+    this.requestUpdate('upperBound', oldValue);
   }
 
   @property({ type: Number })
@@ -333,8 +344,20 @@ export class IgcSliderComponent extends EventEmitterMixin<
     return this._step;
   }
 
-  @property({ type: Number })
-  public primaryTicks = 0;
+  public set primaryTicks(primaryTicks: number) {
+    const oldValue = this._primaryTicks;
+    if (primaryTicks === 1) {
+      this._primaryTicks = 2;
+    } else {
+      this._primaryTicks = primaryTicks;
+    }
+    this.requestUpdate('primaryTicks', oldValue);
+  }
+
+  @property({ type: Number, reflect: true })
+  public get primaryTicks(): number {
+    return this._primaryTicks;
+  }
 
   @property({ type: Number })
   public secondaryTicks = 0;
@@ -349,7 +372,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   public showSecondaryLabels = true;
 
   @property()
-  public labelFormatter: ((tickLabel: string) => any) | undefined;
+  public labelFormatter: ((tickLabel: string) => string) | undefined;
 
   @property({ type: Number, reflect: true })
   public tickLabelRotation: 0 | 90 | -90 = 0;
@@ -373,7 +396,6 @@ export class IgcSliderComponent extends EventEmitterMixin<
     return value;
   }
 
-  //Check if the triggerChange is needed here
   private setValue(value: number | IRangeSliderValue, triggerChange: boolean) {
     let res;
     if (!this.isRange) {
@@ -459,9 +481,11 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private tickLabel(idx: number) {
+    const totalTickNumber =
+      this.totalTickNumber() > 1 ? this.totalTickNumber() : 0;
     const labelStep =
       (Math.max(this.min, this.max) - Math.min(this.min, this.max)) /
-      (this.totalTickNumber() - 1);
+      (totalTickNumber - 1);
     const labelVal = labelStep * idx;
 
     return (this.min + labelVal).toFixed(2);
@@ -674,8 +698,6 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private updateValue(value: number) {
-    //const oldValue = this.value;
-
     let newValue: IRangeSliderValue;
     if (this.isRange) {
       if (this._activeThumb?.id === 'thumbFrom') {
