@@ -327,6 +327,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
       this.setStepInterval();
     }
   }
+
   @property({ type: Number })
   public get step() {
     return this._step;
@@ -349,6 +350,9 @@ export class IgcSliderComponent extends EventEmitterMixin<
 
   @property()
   public labelFormatter: ((tickLabel: string) => any) | undefined;
+
+  @property({ type: Number, reflect: true })
+  public tickLabelRotation: 0 | 90 | -90 = 0;
 
   private validateInitialValue(value: IRangeSliderValue) {
     if (value.lower < this.lowerBound && value.upper < this.lowerBound) {
@@ -816,7 +820,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
     const groups = [];
     for (let i = 0; i < this.totalTickNumber(); i++) {
       groups.push(html` <div part="tick-group">
-        <div part="tick">
+        <div part="tick" data-primary=${this.isPrimary(i)}>
           ${this.hiddenTickLabels(i)
             ? html`<span part="tick-label"
                 >${this.labelFormatter
