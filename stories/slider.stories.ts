@@ -100,6 +100,15 @@ const metadata = {
       },
       defaultValue: 'end',
     },
+    tickLabelRotation: {
+      type: '"0"|"90"|"-90"',
+      description: 'Specifies the orientation of the tick labels.',
+      options: ['0', '90', '-90'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: '0',
+    },
     zeroOrigin: {
       type: 'boolean',
       description: 'Specifies if the default value is zero',
@@ -122,6 +131,7 @@ interface ArgTypes {
   showPrimaryLabels: boolean;
   showSecondaryLabels: boolean;
   tickOrientation: 'mirror' | 'start' | 'end';
+  tickLabelRotation: '0' | '90' | '-90';
   zeroOrigin: boolean;
 }
 
@@ -145,6 +155,7 @@ const Template: Story<ArgTypes, Context> = (
     showPrimaryLabels = true,
     showSecondaryLabels = true,
     tickOrientation = 'end',
+    tickLabelRotation = '0',
     zeroOrigin = false,
   }: ArgTypes,
   { globals: { direction } }: Context
@@ -163,6 +174,7 @@ const Template: Story<ArgTypes, Context> = (
     ?showPrimaryLabels=${showPrimaryLabels}
     ?showSecondaryLabels=${showSecondaryLabels}
     tickOrientation=${tickOrientation}
+    tickLabelRotation=${tickLabelRotation}
     ?zeroOrigin=${zeroOrigin}
     dir=${ifDefined(direction)}
     @igcChange=${(ev: any) => {

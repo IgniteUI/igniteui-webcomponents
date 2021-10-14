@@ -2,6 +2,7 @@
 
 @mixin theme() {
     $thumb-size: utils.rem(16px);
+    $thumb-radius: calc(#{$thumb-size} / 2);
 
     igc-slider:hover {
         &::part(track) {
@@ -38,7 +39,7 @@
         border: utils.rem(2px) solid utils.color(gray, 700);
         width: $thumb-size;
         height: $thumb-size;
-        top: -8px;
+        top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
 
         &:focus {
             border-color: utils.color(primary, 200);
@@ -47,6 +48,10 @@
         &::after {
             display: none;
         }
+    }
+
+    igc-slider::part(thumb-label) {
+        margin-inline-start: utils.rem(-12px);
     }
 
     igc-slider[disabled] {

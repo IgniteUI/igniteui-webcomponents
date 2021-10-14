@@ -51,18 +51,18 @@ $thumb-radius: calc(#{$thumb-size} / 2);
     width: 100%;
     display: flex;
     position: absolute;
-    top: rem(4px);
+    top: rem(8px);
     justify-content: space-between;
     z-index: 1;
 
     &:first-child {
-        bottom: rem(4px);
+        bottom: rem(8px);
         top: auto;
         align-items: flex-end;
 
         [part='tick-label'] {
             top: auto;
-            bottom: rem(16px);
+            bottom: rem(24px);
         }
     }
 }
@@ -83,10 +83,14 @@ $thumb-radius: calc(#{$thumb-size} / 2);
     width: rem(2px);
 }
 
+[part='tick'][data-primary='true'] {
+    height: rem(16px);
+}
+
 [part='tick-label'] {
     color: color(gray, 500);
     position: absolute;
-    top: rem(16px);
+    top: rem(24px);
     transform: translate(-50%);
     line-height: .7;
     opacity: 1;
@@ -119,7 +123,8 @@ $thumb-radius: calc(#{$thumb-size} / 2);
     background: color(secondary, 500);
     transition: transform .1s ease-out, border-radius .1s ease-out;
     border-radius: $thumb-radius;
-    top: -10px;
+    left: calc(#{$thumb-size} - #{$thumb-radius});
+    top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
 
     &::after {
         position: absolute;
@@ -154,7 +159,7 @@ $thumb-radius: calc(#{$thumb-size} / 2);
 
 [part='thumb-label'] {
     @include type-category('caption');
-    margin: 0 auto;
+    margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
     flex: 0 0 auto;
     top: -50px;
     left: -50%;
@@ -166,7 +171,7 @@ $thumb-radius: calc(#{$thumb-size} / 2);
     color: contrast-color(gray, 700);
     background: color(gray, 700);
     opacity: 0;
-    z-index: -1;
+    z-index: 1;
 
     &::after {
         content: '';
@@ -180,6 +185,32 @@ $thumb-radius: calc(#{$thumb-size} / 2);
         background: inherit;
         transform: rotate(-135deg);
         z-index: -1;
+    }
+}
+
+:host(:not([showprimarylabels])) {
+    [part='tick'][data-primary='true'] > span {
+        display: none;
+    }
+}
+
+:host(:not([showsecondarylabels])) {
+    [part='tick'][data-primary='false'] > span {
+        display: none;
+    }
+}
+
+:host([ticklabelrotation='-90']) {
+    [part='tick-label'] {
+        writing-mode: vertical-rl;
+        transform: translate(-50%) rotate(0deg);
+    }
+}
+
+:host([ticklabelrotation='90']) {
+    [part='tick-label'] {
+        writing-mode: vertical-rl;
+        transform: translate(-50%) rotate(180deg);
     }
 }
 
