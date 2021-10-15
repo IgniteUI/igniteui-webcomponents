@@ -18,14 +18,16 @@ interface WatchOptions {
 
 export function watch(propName: string, options?: WatchOptions) {
   return (protoOrDescriptor: any, name: string): any => {
-    const { update } = protoOrDescriptor;
+    const { willUpdate } = protoOrDescriptor;
 
     options = Object.assign(
       { waitUntilFirstUpdate: false },
       options
     ) as WatchOptions;
 
-    protoOrDescriptor.update = function (changedProps: Map<string, any>) {
+    protoOrDescriptor.willUpdate = function (changedProps: Map<string, any>) {
+      willUpdate.call(this, changedProps);
+
       if (changedProps.has(propName)) {
         const oldValue = changedProps.get(propName);
         const newValue = this[propName];
@@ -36,8 +38,6 @@ export function watch(propName: string, options?: WatchOptions) {
           }
         }
       }
-
-      update.call(this, changedProps);
     };
   };
 }

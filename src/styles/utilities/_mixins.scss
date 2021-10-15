@@ -28,6 +28,7 @@
     pointer-events: none;
     overflow: hidden;
     appearance: none;
+    @content;
 }
 
 /// Applies text-overflow ellipsis to e text element.

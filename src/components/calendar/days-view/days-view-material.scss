@@ -1,0 +1,236 @@
+@use '../../../styles/utilities' as *;
+@use 'sass:map';
+
+$border-width: rem(1px);
+$week-number-bg: color(gray, 200);
+$week-number-color: color(gray, 500);
+$week-number-radius: rem(4px);
+$row-gap: rem(4px);
+$border-radius: rem(4px);
+
+:host {
+    display: flex;
+    flex-direction: column;
+    gap: $row-gap;
+    min-width: 290px;
+    outline: none;
+    padding: 0 rem(12px) rem(16px) rem(12px);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+[part~='days-row'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[part~='date-inner'] {
+    cursor: pointer;
+    user-select: none;
+    z-index: 2;
+
+    &:hover,
+    &:focus {
+        background: color(gray, 200);
+        border-color: color(gray, 200);
+    }
+}
+
+[part~='date-inner'][part~='current'][part~='selected'] {
+    box-shadow: inset 0 0 0 rem(1px) color(surface),
+        0 0 0 rem(1px) color(secondary, 500);
+}
+
+[part~='current'][part~='date-inner'] {
+    box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
+}
+
+[part~='date'],
+[part~='week-number'],
+[part~='label'] {
+    font-size: var(--igc-subtitle-1-font-size);
+    border: $border-width dashed transparent;
+    width: 100%;
+    color: color(gray, 800);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+[part='label-inner'] {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    min-width: 4ch;
+    text-align: center;
+}
+
+[part~='date-inner'],
+[part~='week-number-inner'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: $border-width solid transparent;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+[part~='date'][part~='range'] {
+    border-radius: 0;
+
+    &::before {
+        content: '';
+        position: absolute;
+        background: color(secondary, 100);
+        height: 100%;
+        width: calc(100% + (#{$border-width} * 2));
+    }
+}
+
+[part~='date'][part~='range'][part~='preview']{
+    &::before {
+        background: transparent;
+        height: calc(100% - 2px);
+        border-top: $border-width dashed color(gray, 300);
+        border-bottom: $border-width dashed color(gray, 300);
+    }
+}
+
+[part~='date'][part~='range'][part~='preview'][part~='first'],
+[part~='date'][part~='range'][part~='preview'][part~='last'] {
+    &::after {
+        height: calc(100% - (#{$border-width} * 2));
+        background: transparent;
+        border-top: $border-width dashed color(gray, 300);
+        border-bottom: $border-width dashed color(gray, 300);
+    }
+
+    &::before {
+        display: none;
+    }
+}
+
+[part~='date'][part~='range'][part~='first'],
+[part~='date'][part~='range'][part~='last'] {
+    background: transparent;
+
+    &::after {
+        content: '';
+        position: absolute;
+        height: calc(100% - (#{$border-width} * 2));
+        width: calc(50% + #{$border-width});
+        background: color(secondary, 100);
+        border-top: $border-width solid  color(secondary, 100);
+        border-bottom: $border-width solid  color(secondary, 100);
+        z-index: 1;
+    }
+
+    &::before {
+        display: none;
+    }
+}
+
+[part~='date'][part~='range'][part~='first'] {
+    &::after {
+        inset-inline-start: 50%;
+    }
+}
+
+[part~='date'][part~='range'][part~='last'] {
+    &::after {
+        inset-inline-end: 50%;
+    }
+}
+
+[part~='date-inner'][part~='weekend'],
+[part~='date-inner'][part~='inactive'],
+[part~='date-inner'][part~='label'] {
+    color: $week-number-color;
+}
+
+[part~='date-inner'][part~='selected'][part~='range'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='last'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='weekend'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='weekend'][part~='last'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='inactive'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='inactive'][part~='last'] {
+    color: contrast-color(secondary, 700);
+}
+
+[part~='date-inner'][part~='selected'][part~='range'][part~='weekend'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='inactive'],
+[part~='date-inner'][part~='selected'][part~='range'] {
+    color: contrast-color(secondary, 100);
+
+    &:hover,
+    &:focus {
+        color: contrast-color(secondary, 700);
+        background: color(secondary, 700);
+        border-color: color(secondary, 700);
+    }
+}
+
+[part~='date-inner'][part~='selected'][part~='range'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='last'],
+[part~='date-inner'][part~='selected']:not([part~='range']) {
+    background: color(secondary, 500);
+    border-color: color(secondary, 500);
+
+    &:hover,
+    &:focus {
+        background: color(secondary, 700);
+        border-color: color(secondary, 700);
+    }
+}
+
+[part~='date-inner'][part~='selected'][part~='weekend']:not([part~='range']),
+[part~='date-inner'][part~='selected'][part~='inactive']:not([part~='range']),
+[part~='date-inner'][part~='selected']:not([part~='range']) {
+    color: contrast-color(secondary, 700)
+}
+
+
+[part~='week-number'] {
+    order: 0;
+    color: $week-number-color;
+    cursor: default;
+}
+
+[part='week-number-inner first'] {
+    border-top-left-radius: $border-radius;
+    border-top-right-radius: $border-radius;
+}
+
+[part='week-number-inner last'] {
+    border-bottom-left-radius: $border-radius;
+    border-bottom-right-radius: $border-radius;
+}
+
+[part~='week-number-inner'] {
+    position: relative;
+    background: $week-number-bg;
+    border-inline-end-color: $week-number-bg;
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        height: calc(#{$row-gap} + (#{$border-width} * 2 + 2px));
+        width: 100%;
+        background: $week-number-bg;
+        border-inline-start: rem(1px) solid $week-number-bg;
+        border-inline-end: rem(1px) solid $week-number-bg;
+    }
+}
+
+[part~='hidden'] {
+    visibility: hidden;
+}
+
+

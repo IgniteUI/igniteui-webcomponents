@@ -1,0 +1,68 @@
+@use '../../styles/utilities' as *;
+@use 'sass:math';
+
+%host {
+    display: flex;
+    flex-direction: column;
+    min-width: rem(290px);
+    outline: none;
+    padding: 0 rem(12px) rem(16px) rem(12px);
+    overflow: hidden;
+    box-sizing: border-box;
+    gap: rem(4px);
+}
+
+%row {
+    display: flex;
+}
+
+%item {
+    flex: 1;
+}
+
+%item-and-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+%item-inner {
+    user-select: none;
+    cursor: pointer;
+
+    padding: 0 rem(12px);
+
+    &:hover,
+    &:focus {
+        background: color(gray, 200);
+    }
+
+    &:hover {
+        background: color(gray, 200);
+    }
+}
+
+%item-inner--selected {
+    background: color(secondary, 500);
+    color: contrast-color(secondary, 600);
+
+    &:hover{
+        background: color(secondary, 500);
+        color: contrast-color(secondary, 600);
+    }
+
+    &:focus {
+        outline: none;
+        background: color(secondary, 700);
+        color: contrast-color(secondary, 700);
+    }
+}
+
+%item-inner--current {
+    box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
+}
+
+%item-inner--selected--current {
+    box-shadow: inset 0 0 0 rem(1px) color(surface), 0 0 0 rem(1px) color(secondary, 500);
+}
+
