@@ -7,20 +7,21 @@
 1. **[DONE]** Avatar component
 2. **[DONE]** Badge component
 3. **[DONE]** Button component
-4. **[DONE]** Card component
-5. **[DONE]** Checkbox component
-6. **[DONE]** Form component
-7. **[DONE]** Icon component
-8. **[DONE]** Icon button component
-9. **[DONE]** Input component
-10. **[DONE]** List component
-11. **[DONE]** Navigation bar component
-12. **[DONE]** Navigation drawer component
-13. **[DONE]** Radio group component
-14. **[DONE]** Radio component
-15. **[DONE]** Ripple component
-16. **[DONE]** Switch component
-17. **[IN PROGRESS]** Slider component
+4. **[DONE]** Calendar component
+5. **[DONE]** Card component
+6. **[DONE]** Checkbox component
+7. **[DONE]** Form component
+8. **[DONE]** Icon component
+9. **[DONE]** Icon button component
+10. **[DONE]** Input component
+11. **[DONE]** List component
+12. **[DONE]** Navigation bar component
+13. **[DONE]** Navigation drawer component
+14. **[DONE]** Radio group component
+15. **[DONE]** Radio component
+16. **[DONE]** Ripple component
+17. **[DONE]** Switch component
+18. **[IN PROGRESS]** Slider component
  
 
 ## Going down the road
