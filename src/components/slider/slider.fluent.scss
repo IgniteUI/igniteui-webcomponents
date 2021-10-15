@@ -30,8 +30,6 @@
 
     igc-slider::part(steps) {
         height: utils.rem(4px);
-        background-size: 100% utils.rem(4px);
-        top: initial;
     }
 
     igc-slider::part(thumb) {

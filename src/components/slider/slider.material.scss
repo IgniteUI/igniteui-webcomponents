@@ -39,8 +39,6 @@ $thumb-radius: calc(#{$thumb-size} / 2);
     position: absolute;
     width: 100%;
     height: rem(2px);
-    background-size: 100% rem(2px);
-    background-color: color(surface, 500);
     opacity: .85;
     transition: opacity .2s ease-out;
     z-index: 1;

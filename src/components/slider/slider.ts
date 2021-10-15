@@ -505,19 +505,13 @@ export class IgcSliderComponent extends EventEmitterMixin<
 
   private generateStepMarks(color: string, interval: number | null) {
     return interval !== null
-      ? `repeating-linear-gradient(
-            ${'to left'},
-            ${color},
-            ${color} 1.5px,
-            transparent 1.5px,
-            transparent ${interval}%
-        ), repeating-linear-gradient(
-            ${'to right'},
-            ${color},
-            ${color} 1.5px,
-            transparent 1.5px,
-            transparent ${interval}%
-        )`
+      ? `<svg width="100%" height="100%" style="display: flex">
+          <line x1="0" y1="1" x2="100%" y2="1"
+          stroke="${color}"
+          stroke-dasharray="1.5px, ${interval}%"
+          stroke-linecap="round"
+          stroke-width="2px"></line>
+        </svg>`
       : interval;
   }
 
@@ -539,9 +533,9 @@ export class IgcSliderComponent extends EventEmitterMixin<
       ? this.generateStepMarks('white', interval)
       : null;
     if (renderCallbackExecution) {
-      this.steps.style['background'] = renderCallbackExecution;
+      this.steps.innerHTML = renderCallbackExecution;
     } else {
-      this.steps.style['background'] = '';
+      this.steps.innerHTML = '';
     }
   }
 
