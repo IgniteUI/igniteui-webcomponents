@@ -1,5 +1,4 @@
 import { expect } from '@open-wc/testing';
-import '../../../../igniteui-webcomponents'; // Obligatory
 import {
   Calendar,
   ICalendarDate,

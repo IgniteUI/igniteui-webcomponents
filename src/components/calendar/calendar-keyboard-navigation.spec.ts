@@ -1,6 +1,6 @@
 import { expect, elementUpdated } from '@open-wc/testing';
-import { IgcCalendarComponent } from './calendar';
-import '../../../igniteui-webcomponents';
+import type IgcCalendarComponent from './calendar';
+import '../../../index.js';
 import { createCalendarElement } from './calendar-rendering.spec';
 
 describe('Calendar Rendering', () => {

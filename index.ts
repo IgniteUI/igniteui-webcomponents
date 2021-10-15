@@ -3,6 +3,7 @@
 export { default as IgcAvatarComponent } from './src/components/avatar/avatar';
 export { default as IgcBadgeComponent } from './src/components/badge/badge';
 export { default as IgcButtonComponent } from './src/components/button/button';
+export { default as IgcCalendarComponent } from './src/components/calendar/calendar';
 export { default as IgcCardActions } from './src/components/card/card.actions';
 export { default as IgcCardComponent } from './src/components/card/card';
 export { default as IgcCardContent } from './src/components/card/card.content';
