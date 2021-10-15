@@ -95,7 +95,7 @@ export class IgcYearsViewComponent extends EventEmitterMixin<
     const value = new Date(year);
     setDateSafe(value, this.value.getDate());
     this.value = value;
-    this.emitEvent('igcChange');
+    this.emitEvent('igcChange', { detail: this.value });
   }
 
   private yearKeyDown(event: KeyboardEvent, year: Date) {

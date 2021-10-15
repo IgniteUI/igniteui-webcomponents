@@ -329,7 +329,7 @@ export class IgcDaysViewComponent extends EventEmitterMixin<
     const result = this.selectDate(day.date);
 
     if (result) {
-      this.emitEvent('igcChange');
+      this.emitEvent('igcChange', { detail: day.date });
     }
   }
 

@@ -11,7 +11,7 @@ import { partNameMap } from '../common/util.js';
 let nextId = 0;
 
 export interface IgcRadioEventMap {
-  igcChange: CustomEvent<void>;
+  igcChange: CustomEvent<boolean>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
@@ -130,7 +130,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
       });
       this.input.focus();
       this._tabIndex = 0;
-      this.emitEvent('igcChange');
+      this.emitEvent('igcChange', { detail: this.checked });
     }
   }
 
