@@ -149,8 +149,3 @@ module.exports.createDocsOutputDir = createDocsOutputDirFn;
      this.cleanTypedocOutputDir,
      typedocBuildDocsEN
  );
-
-// export const exportTypedocJson = typedocBuildExportFn;
-// export const cleanTypedocOutputDir = cleanTypedocOutputDirFn;
-// export const importTypedocJson = typedocImportJsonFn;
-// export { typedocBuildTheme, typedocServe, typedocBuildDocsJA, typedocBuildDocsEN };
