@@ -29,6 +29,7 @@
         width: $thumb-size;
         height: $thumb-size;
         top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
+        margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
 
         &:focus {
             box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
@@ -37,10 +38,6 @@
         &::after {
             display: none;
         }
-    }
-
-    igc-slider::part(thumb-label) {
-        margin-inline-start: utils.rem(-12px);
     }
 
     igc-slider[disabled] {

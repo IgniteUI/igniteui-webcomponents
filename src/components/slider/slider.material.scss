@@ -5,6 +5,8 @@ $ripple-size: rem(40px);
 $ripple-radius: calc(#{$ripple-size} / 2);
 $thumb-size: rem(20px);
 $thumb-radius: calc(#{$thumb-size} / 2);
+$thumb-label-width: rem(40px);
+$thumb-label-height: rem(30px);
 
 [part='base'] {
     display: flex;
@@ -123,6 +125,7 @@ $thumb-radius: calc(#{$thumb-size} / 2);
     border-radius: $thumb-radius;
     left: calc(#{$thumb-size} - #{$thumb-radius});
     top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
+    margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
 
     &::after {
         position: absolute;
@@ -157,13 +160,13 @@ $thumb-radius: calc(#{$thumb-size} / 2);
 
 [part='thumb-label'] {
     @include type-category('caption');
-    margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
+    margin-inline-start: calc((#{$thumb-label-width} / 2) * -1);
     flex: 0 0 auto;
-    top: -50px;
+    top: calc((#{$thumb-label-height} + #{$thumb-size}) * -1);;
     left: -50%;
     pointer-events: none;
-    min-width: rem(40px);
-    height: rem(30px);
+    min-width: $thumb-label-width;
+    height: $thumb-label-height;
     padding: 0 rem(2px);
     border-radius: rem(2px);
     color: contrast-color(gray, 700);
@@ -176,10 +179,10 @@ $thumb-radius: calc(#{$thumb-size} / 2);
         position: absolute;
         top: 0;
         left: 50%;
-        margin-inline-start: rem(-15px);
-        width: rem(30px);
-        height: rem(30px);
-        border-radius: 0 rem(15px) rem(15px);
+        margin-inline-start: calc((#{$thumb-label-height} / 2) * -1);
+        width: $thumb-label-height;
+        height: $thumb-label-height;
+        border-radius: 0 calc((#{$thumb-label-height} / 2)) calc((#{$thumb-label-height} / 2));
         background: inherit;
         transform: rotate(-135deg);
         z-index: -1;
