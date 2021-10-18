@@ -5,23 +5,18 @@ import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { Context, Story } from './story';
 
 // region default
-export default {
-  title: 'Navigation Bar',
+const metadata = {
+  title: 'Navbar',
   component: 'igc-navbar',
-  argTypes: {
-    content: {
-      control: {
-        type: 'text',
-      },
-      defaultValue: 'Title',
-    },
-  },
+  argTypes: {},
 };
+export default metadata;
+
+// endregion
 
 interface ArgTypes {
   content: string;
 }
-// endregion
 
 registerIcon(
   'home',
