@@ -11,16 +11,21 @@ const metadata = {
   argTypes: {
     hideOutsideDays: {
       type: 'boolean',
+      description:
+        'Controls the visibility of the dates that do not belong to the current month.',
       control: 'boolean',
       defaultValue: false,
     },
     hasHeader: {
       type: 'boolean',
+      description:
+        'Determines whether the calendar has header. Even if set to true, the header is not displayed for `multiple` selection.',
       control: 'boolean',
       defaultValue: true,
     },
     headerOrientation: {
       type: '"vertical" | "horizontal"',
+      description: 'The orientation of the header.',
       options: ['vertical', 'horizontal'],
       control: {
         type: 'inline-radio',
@@ -29,6 +34,8 @@ const metadata = {
     },
     orientation: {
       type: '"vertical" | "horizontal"',
+      description:
+        'The orientation of the multiple months displayed in days view.',
       options: ['vertical', 'horizontal'],
       control: {
         type: 'inline-radio',
@@ -37,11 +44,13 @@ const metadata = {
     },
     visibleMonths: {
       type: 'number',
+      description: 'The number of months displayed in days view.',
       control: 'number',
       defaultValue: '1',
     },
     activeView: {
       type: '"days" | "months" | "years"',
+      description: 'The active view.',
       options: ['days', 'months', 'years'],
       control: {
         type: 'inline-radio',
@@ -58,7 +67,8 @@ const metadata = {
       defaultValue: 'large',
     },
     selection: {
-      type: '"single" | "multi" | "range"',
+      type: '"single" | "multiple" | "range"',
+      description: 'Sets the type of date selection.',
       options: ['single', 'multiple', 'range'],
       control: {
         type: 'inline-radio',
@@ -67,11 +77,13 @@ const metadata = {
     },
     showWeekNumbers: {
       type: 'boolean',
+      description: 'Show/hide the week numbers.',
       control: 'boolean',
       defaultValue: false,
     },
     weekStart: {
       type: '"sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday"',
+      description: 'Sets the start day of the week.',
       options: [
         'sunday',
         'monday',
@@ -88,10 +100,14 @@ const metadata = {
     },
     activeDate: {
       type: 'Date',
+      description:
+        'Sets the date which is shown in view and is highlighted. By default it is the current date.',
       control: 'date',
     },
     locale: {
       type: 'string',
+      description:
+        'Sets the locale used for formatting and displaying the dates in the calendar.',
       control: 'text',
       defaultValue: 'en',
     },
