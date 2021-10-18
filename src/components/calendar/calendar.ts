@@ -448,7 +448,7 @@ export class IgcCalendarComponent extends SizableMixin(
   private changeValue(event: CustomEvent<void>) {
     event.stopPropagation();
     this.value = (event.target as IgcDaysViewComponent).value;
-    this.emitEvent('igcChange');
+    this.emitEvent('igcChange', { detail: this.value });
   }
 
   private changeMonth(event: CustomEvent<void>) {

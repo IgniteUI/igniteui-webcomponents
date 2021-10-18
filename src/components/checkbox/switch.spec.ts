@@ -174,7 +174,7 @@ describe('Switch', () => {
       el.click();
 
       await elementUpdated(el);
-      expect(eventSpy).calledWithExactly('igcChange');
+      expect(eventSpy).calledWithExactly('igcChange', { detail: true });
     });
 
     const createSwitchComponent = (
