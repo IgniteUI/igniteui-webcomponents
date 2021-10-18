@@ -27,5 +27,14 @@
       }
     ]
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "typedocOptions": {
+    "out": "dist/docs/typescript",
+    "exclude": "**/*.spec.ts",
+    "theme":  "node_modules/ig-typedoc-theme/dist",
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "name": "Ignite UI for Web Components",
+    "readme": "none"
+},
 }
