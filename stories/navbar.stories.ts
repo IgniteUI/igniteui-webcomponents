@@ -14,10 +14,6 @@ export default metadata;
 
 // endregion
 
-interface ArgTypes {
-  content: string;
-}
-
 registerIcon(
   'home',
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
