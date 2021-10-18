@@ -25,6 +25,7 @@ export { default as IgcNavDrawerItemComponent } from './src/components/nav-drawe
 export { default as IgcRadioComponent } from './src/components/radio/radio';
 export { default as IgcRadioGroupComponent } from './src/components/radio-group/radio-group';
 export { default as IgcRippleComponent } from './src/components/ripple/ripple';
+export { default as igcRatingComponent } from './src/components/rating/rating';
 export { default as IgcSwitchComponent } from './src/components/checkbox/switch';
 
 // utility stuff
