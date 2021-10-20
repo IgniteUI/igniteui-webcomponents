@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './slider.material.css';
@@ -26,17 +27,9 @@ export class IgcSliderComponent extends EventEmitterMixin<
   private _pMin = 0;
   private _pMax = 1;
 
-  private _min = 0;
-  private _max = 100;
   private _lowerValue?: number;
   private _upperValue?: number;
-  private _lowerBound?: number;
-  private _upperBound?: number;
   private _value: number | IRangeSliderValue = 0;
-  private _disabled = false;
-  private _continuous = false;
-  private _step = 1;
-  private _primaryTicks = 0;
   private _hasViewInit = false;
   private _activeThumb: HTMLElement | undefined;
 
@@ -100,19 +93,10 @@ export class IgcSliderComponent extends EventEmitterMixin<
     this.addEventListener('keydown', this.handleKeydown);
   }
 
-  public connectedCallback() {
-    super.connectedCallback();
-
-    if (this.zeroOrigin) {
-      this.setValue(this._value, false);
-    } else {
-      this.setValue(this.min, false);
-    }
-  }
-
   public firstUpdated() {
     this._hasViewInit = true;
     this.positionHandlersAndUpdateTrack();
+    this.normalizeByStep(this.value);
     this.setStepInterval();
     this.changeThumbFocusableState(this.disabled);
   }
@@ -164,7 +148,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   public set value(value: number | IRangeSliderValue) {
     const oldValue = this._value;
     if (this._hasViewInit) {
-      this.setValue(value, true);
+      this.setValue(value);
       this.positionHandlersAndUpdateTrack();
     } else {
       this._value = value;
@@ -196,168 +180,32 @@ export class IgcSliderComponent extends EventEmitterMixin<
     }
   }
 
-  public set min(value: number) {
-    const oldValue = this._min;
-    if (value >= this.max) {
-      return;
-    } else {
-      this._min = value;
-    }
-
-    if (value > this.upperBound) {
-      this.upperBound = this.max;
-      this._pMax = 1;
-      this.lowerBound = value;
-    }
-
-    // Refresh min travel zone limit.
-    this._pMin = 0;
-    // Recalculate step distance.
-    this.positionHandlersAndUpdateTrack();
-    if (this._hasViewInit) {
-      this.setStepInterval();
-    }
-    this.requestUpdate('min', oldValue);
-  }
+  @property({ type: Number })
+  public min = 0;
 
   @property({ type: Number })
-  public get min(): number {
-    return this._min;
-  }
-
-  public set max(value: number) {
-    const oldValue = this._max;
-    if (value <= this._min) {
-      return;
-    } else {
-      this._max = value;
-    }
-
-    if (value < this.lowerBound) {
-      this.lowerBound = this.min;
-      this._pMin = 0;
-      this.upperBound = value;
-    }
-
-    // refresh max travel zone limits.
-    this._pMax = 1;
-    this.positionHandlersAndUpdateTrack();
-    if (this._hasViewInit) {
-      this.setStepInterval();
-    }
-    this.requestUpdate('max', oldValue);
-  }
+  public max = 100;
 
   @property({ type: Number })
-  public get max(): number {
-    return this._max;
-  }
-
-  public set lowerBound(value: number) {
-    const oldValue = this._lowerBound;
-    if (value >= this.upperBound) {
-      return;
-    }
-
-    this._lowerBound = this.valueInRange(value, this.min, this.max);
-
-    // Refresh min travel zone.
-    this._pMin = this.valueToFraction(this._lowerBound, 0, 1);
-    this.positionHandlersAndUpdateTrack();
-    this.requestUpdate('lowerBound', oldValue);
-  }
+  public lowerBound = 0;
 
   @property({ type: Number })
-  public get lowerBound(): number {
-    if (!Number.isNaN(this._lowerBound) && this._lowerBound !== undefined) {
-      return this.valueInRange(this._lowerBound, this.min, this.max);
-    }
-
-    return this.min;
-  }
-
-  public set upperBound(value: number) {
-    const oldValue = this._upperBound;
-    if (value <= this.lowerBound) {
-      return;
-    }
-
-    this._upperBound = this.valueInRange(value, this.min, this.max);
-
-    // Refresh max travel zone.
-    this._pMax = this.valueToFraction(this._upperBound, 0, 1);
-    this.positionHandlersAndUpdateTrack();
-    this.requestUpdate('upperBound', oldValue);
-  }
-
-  @property({ type: Number })
-  public get upperBound(): number {
-    if (!Number.isNaN(this._upperBound) && this._upperBound !== undefined) {
-      return this.valueInRange(this._upperBound, this.min, this.max);
-    }
-
-    return this.max;
-  }
-
-  @property({ type: Boolean })
-  public zeroOrigin = true;
+  public upperBound = 0;
 
   @property()
   public type: 'slider' | 'range' = 'slider';
 
-  public set disabled(disable: boolean) {
-    this._disabled = disable;
+  @property({ type: Boolean, reflect: true })
+  public disabled = false;
 
-    if (this._hasViewInit) {
-      this.changeThumbFocusableState(disable);
-    }
-  }
-
-  @property({ type: Boolean })
-  public get disabled(): boolean {
-    return this._disabled;
-  }
-
-  public set continuous(continuous: boolean) {
-    this._continuous = continuous;
-    if (this._hasViewInit) {
-      this.setStepInterval();
-    }
-  }
-
-  @property({ type: Boolean })
-  public get continuous(): boolean {
-    return this._continuous;
-  }
-
-  public set step(step: number) {
-    this._step = step;
-
-    if (this._hasViewInit) {
-      this.normalizeByStep(this.value);
-      this.setStepInterval();
-    }
-  }
+  @property({ type: Boolean, reflect: true })
+  public continuous = false;
 
   @property({ type: Number })
-  public get step() {
-    return this._step;
-  }
+  public step = 1;
 
-  public set primaryTicks(primaryTicks: number) {
-    const oldValue = this._primaryTicks;
-    if (primaryTicks === 1) {
-      this._primaryTicks = 2;
-    } else {
-      this._primaryTicks = primaryTicks;
-    }
-    this.requestUpdate('primaryTicks', oldValue);
-  }
-
-  @property({ type: Number, reflect: true })
-  public get primaryTicks(): number {
-    return this._primaryTicks;
-  }
+  @property({ type: Number })
+  public primaryTicks = 0;
 
   @property({ type: Number })
   public secondaryTicks = 0;
@@ -377,7 +225,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
   @property({ type: Number, reflect: true })
   public tickLabelRotation: 0 | 90 | -90 = 0;
 
-  private validateInitialValue(value: IRangeSliderValue) {
+  private validateInitialRangeValue(value: IRangeSliderValue) {
     if (value.lower < this.lowerBound && value.upper < this.lowerBound) {
       value.upper = this.lowerBound;
       value.lower = this.lowerBound;
@@ -396,22 +244,42 @@ export class IgcSliderComponent extends EventEmitterMixin<
     return value;
   }
 
-  private setValue(value: number | IRangeSliderValue, triggerChange: boolean) {
+  protected setValue(value: number | IRangeSliderValue) {
     let res;
     if (!this.isRange) {
       this.upperValue = (value as number) - ((value as number) % this.step);
       res = this.upperValue;
     } else {
-      value = this.validateInitialValue(value as IRangeSliderValue);
+      value = this.validateInitialRangeValue(value as IRangeSliderValue);
       this.upperValue = (value as IRangeSliderValue).upper;
       this.lowerValue = (value as IRangeSliderValue).lower;
       res = { lower: this.lowerValue, upper: this.upperValue };
     }
 
-    if (triggerChange) {
-      this._value = res;
-      this.emitEvent('igcChange');
-    }
+    this._value = res;
+    this.emitEvent('igcChange');
+  }
+
+  @watch('lowerBound')
+  protected updateMinTravelZoneAndTrack() {
+    this._pMin = this.valueToFraction(this.lowerBound, 0, 1);
+    this.positionHandlersAndUpdateTrack();
+  }
+
+  @watch('upperBound')
+  protected updateMaxTravelZoneAndTrack() {
+    this._pMax = this.valueToFraction(this.upperBound, 0, 1);
+    this.positionHandlersAndUpdateTrack();
+  }
+
+  @watch('min')
+  protected updateMinTravelZoneAndBound() {
+    this._pMin = 0;
+  }
+
+  @watch('max')
+  protected updateMaxTravelZoneAndBound() {
+    this._pMax = 1;
   }
 
   private swapThumb(value: IRangeSliderValue) {
@@ -473,6 +341,10 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private totalTickNumber() {
+    if (this.primaryTicks === 1) {
+      this.primaryTicks = 2;
+    }
+
     return this.primaryTicks > 0
       ? (this.primaryTicks - 1) * this.secondaryTicks + this.primaryTicks
       : this.secondaryTicks > 0
@@ -481,11 +353,11 @@ export class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private tickLabel(idx: number) {
-    const totalTickNumber =
-      this.totalTickNumber() > 1 ? this.totalTickNumber() : 0;
     const labelStep =
-      (Math.max(this.min, this.max) - Math.min(this.min, this.max)) /
-      (totalTickNumber - 1);
+      this.totalTickNumber() > 1
+        ? (Math.max(this.min, this.max) - Math.min(this.min, this.max)) /
+          (this.totalTickNumber() - 1)
+        : Math.max(this.min, this.max) - Math.min(this.min, this.max);
     const labelVal = labelStep * idx;
 
     return (this.min + labelVal).toFixed(2);
@@ -515,6 +387,10 @@ export class IgcSliderComponent extends EventEmitterMixin<
       : interval;
   }
 
+  @watch('continuous', { waitUntilFirstUpdate: true })
+  @watch('step', { waitUntilFirstUpdate: true })
+  @watch('max', { waitUntilFirstUpdate: true })
+  @watch('min', { waitUntilFirstUpdate: true })
   private setStepInterval() {
     const trackProgress = 100;
     const trackRange = this.max - this.min;
@@ -522,21 +398,11 @@ export class IgcSliderComponent extends EventEmitterMixin<
       this.step > 1
         ? ((trackProgress / (trackRange / this.step)) * 10) / 10
         : null;
-
-    //In Angular (the three lines below) we have a check for the IE browser.
-    // const renderCallbackExecution = !this.continuous ? this.generateTickMarks(
-    //     this.platform.isIE ? 'white' : 'var(--igx-slider-track-step-color, var(--track-step-color, white))', interval) : null;
-    // this.renderer.setStyle(this.ticks.nativeElement, 'background', renderCallbackExecution);
-
-    //Background should be calculated based on the current theme
-    const renderCallbackExecution = !this.continuous
+    const renderSteps = !this.continuous
       ? this.generateStepMarks('white', interval)
       : null;
-    if (renderCallbackExecution) {
-      this.steps.innerHTML = renderCallbackExecution;
-    } else {
-      this.steps.innerHTML = '';
-    }
+
+    this.steps.innerHTML = renderSteps ? renderSteps : '';
   }
 
   private showThumbLabels() {
@@ -591,6 +457,7 @@ export class IgcSliderComponent extends EventEmitterMixin<
     );
   }
 
+  @watch('step', { waitUntilFirstUpdate: true })
   private normalizeByStep(value: IRangeSliderValue | number) {
     if (this.isRange) {
       this.value = {
@@ -653,7 +520,9 @@ export class IgcSliderComponent extends EventEmitterMixin<
     }
   }
 
-  private positionHandlersAndUpdateTrack() {
+  @watch('max')
+  @watch('min')
+  protected positionHandlersAndUpdateTrack() {
     if (!this.isRange) {
       this.positionHandler(this.thumbTo, this.labelTo, this.value as number);
     } else {
@@ -669,11 +538,10 @@ export class IgcSliderComponent extends EventEmitterMixin<
       );
     }
 
-    if (this._hasViewInit) {
-      this.updateTrack();
-    }
+    this.updateTrack();
   }
 
+  @watch('disabled', { waitUntilFirstUpdate: true })
   private changeThumbFocusableState(state: boolean) {
     const value = state ? -1 : 1;
 
@@ -820,14 +688,18 @@ export class IgcSliderComponent extends EventEmitterMixin<
 
   public incrementValue() {
     if (this.isRange) {
-      this.lowerValue += this.step;
+      if (this._activeThumb?.id === 'thumbFrom') {
+        this.lowerValue += this.step;
+      } else this.upperValue += this.step;
     }
     this.value = (this.value as number) + this.step;
   }
 
   public decrementValue() {
     if (this.isRange) {
-      this.lowerValue -= this.step;
+      if (this._activeThumb?.id === 'thumbFrom') {
+        this.lowerValue -= this.step;
+      } else this.upperValue -= this.step;
     }
     this.value = (this.value as number) - this.step;
   }

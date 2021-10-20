@@ -46,6 +46,23 @@ const metadata = {
       control: {
         type: 'number',
       },
+      defaultValue: 100,
+    },
+    lowerBound: {
+      type: 'number',
+      description: 'Sets the minimum value for the track.',
+      control: {
+        type: 'number',
+      },
+      defaultValue: 0,
+    },
+    upperBound: {
+      type: 'number',
+      description: 'Sets the maximum value for the track.',
+      control: {
+        type: 'number',
+      },
+      defaultValue: 100,
     },
     min: {
       type: 'number',
@@ -53,7 +70,7 @@ const metadata = {
       control: {
         type: 'number',
       },
-      defaultValue: -20,
+      defaultValue: 0,
     },
     max: {
       type: 'number',
@@ -109,11 +126,6 @@ const metadata = {
       },
       defaultValue: '0',
     },
-    zeroOrigin: {
-      type: 'boolean',
-      description: 'Specifies if the default value is zero',
-      defaultValue: false,
-    },
   },
 };
 export default metadata;
@@ -126,13 +138,14 @@ interface ArgTypes {
   value: number;
   min: number;
   max: number;
+  lowerBound: number;
+  upperBound: number;
   primaryTicks: number;
   secondaryTicks: number;
   showPrimaryLabels: boolean;
   showSecondaryLabels: boolean;
   tickOrientation: 'mirror' | 'start' | 'end';
   tickLabelRotation: '0' | '90' | '-90';
-  zeroOrigin: boolean;
 }
 
 (metadata as any).parameters = {
@@ -147,16 +160,17 @@ const Template: Story<ArgTypes, Context> = (
     continuous = false,
     step = 2,
     type = 'slider',
-    value = 0,
-    min = -20,
+    value = 100,
+    min = 0,
     max = 100,
+    lowerBound = 0,
+    upperBound = 100,
     primaryTicks = 3,
     secondaryTicks = 2,
     showPrimaryLabels = true,
     showSecondaryLabels = true,
     tickOrientation = 'end',
     tickLabelRotation = '0',
-    zeroOrigin = false,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -169,13 +183,14 @@ const Template: Story<ArgTypes, Context> = (
     .value=${value}
     min=${min}
     max=${max}
+    lowerBound=${lowerBound}
+    upperBound=${upperBound}
     primaryTicks=${primaryTicks}
     secondaryTicks=${secondaryTicks}
     ?showPrimaryLabels=${showPrimaryLabels}
     ?showSecondaryLabels=${showSecondaryLabels}
     tickOrientation=${tickOrientation}
     tickLabelRotation=${tickLabelRotation}
-    ?zeroOrigin=${zeroOrigin}
     dir=${ifDefined(direction)}
     @igcChange=${(ev: any) => {
       console.log(ev);
