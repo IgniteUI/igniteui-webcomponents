@@ -20,21 +20,30 @@ $thumb-label-height: rem(30px);
 
 [part='track'] {
     position: relative;
-    height: rem(4px);
+    height: rem(6px);
     width: 100%;
-    background: color(secondary, 500, .24);
-    transition: background .2s ease-out;
     border-radius: rem(32px);
+    overflow: hidden;
 }
 
 [part='fill'] {
     position: absolute;
     height: rem(6px);
     width: 100%;
-    top: rem(-1px);
     background: color(secondary, 500);
     transform-origin: left center;
-    border-radius: rem(32px);
+    border-radius: inherit;
+}
+
+[part='inactive'] {
+    position: absolute;
+    height: rem(4px);
+    width: 100%;
+    top: rem(1px);
+    background: color(secondary, 500, .24);
+    transition: background .2s ease-out;
+    border-radius: inherit;
+    z-index: -1;
 }
 
 [part='steps'] {
@@ -44,20 +53,20 @@ $thumb-label-height: rem(30px);
     opacity: .85;
     transition: opacity .2s ease-out;
     z-index: 1;
-    top: rem(1px);
+    top: rem(2px);
 }
 
 [part='ticks'] {
     width: 100%;
     display: flex;
     position: absolute;
-    top: rem(8px);
+    bottom: 0;
     justify-content: space-between;
     z-index: 1;
 
     &:first-child {
-        bottom: rem(8px);
-        top: auto;
+        bottom: auto;
+        top: 0;
         align-items: flex-end;
 
         [part='tick-label'] {
@@ -177,14 +186,10 @@ $thumb-label-height: rem(30px);
     &::after {
         content: '';
         position: absolute;
-        top: 0;
-        left: 50%;
-        margin-inline-start: calc((#{$thumb-label-height} / 2) * -1);
-        width: $thumb-label-height;
-        height: $thumb-label-height;
-        border-radius: 0 calc((#{$thumb-label-height} / 2)) calc((#{$thumb-label-height} / 2));
-        background: inherit;
-        transform: rotate(-135deg);
+        top: 85%;
+        border-left: rem(10px) solid transparent;
+	    border-right: rem(10px) solid transparent;
+	    border-top: rem(10px) solid color(gray, 700);
         z-index: -1;
     }
 }
@@ -204,14 +209,14 @@ $thumb-label-height: rem(30px);
 :host([ticklabelrotation='-90']) {
     [part='tick-label'] {
         writing-mode: vertical-rl;
-        transform: translate(-50%) rotate(0deg);
+        transform: translate(-50%) rotate(180deg);
     }
 }
 
 :host([ticklabelrotation='90']) {
     [part='tick-label'] {
         writing-mode: vertical-rl;
-        transform: translate(-50%) rotate(180deg);
+        transform: translate(-50%) rotate(0deg);
     }
 }
 
@@ -226,7 +231,7 @@ $thumb-label-height: rem(30px);
     pointer-events: none;
     cursor: initial;
 
-    [part='track'] {
+    [part='inactive'] {
         background: color(gray, 200);
     }
 
@@ -248,7 +253,7 @@ $thumb-label-height: rem(30px);
     }
 
     &:hover {
-        [part='track'] {
+        [part='inactive'] {
             background: color(gray, 400);
         }
 

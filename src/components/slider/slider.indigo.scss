@@ -5,7 +5,7 @@
     $thumb-radius: calc(#{$thumb-size} / 2);
 
     igc-slider:hover {
-        &::part(track) {
+        &::part(inactive) {
             background: utils.color(gray, 500);
         }
 
@@ -14,15 +14,17 @@
         }
     }
 
-    igc-slider::part(track) {
-        height: utils.rem(2px);
+    igc-slider::part(inactive) {
         background: utils.color(gray, 400);
     }
 
+    igc-slider::part(track),
+    igc-slider::part(inactive),
     igc-slider::part(fill),
     igc-slider::part(steps) {
         height: utils.rem(2px);
         top: initial;
+        border-radius: initial;
     }
 
     igc-slider::part(thumb) {
@@ -41,7 +43,7 @@
     }
 
     igc-slider[disabled] {
-        &::part(track),
+        &::part(inactive),
         &::part(fill),
         &::part(thumb) {
             background: utils.color(gray, 300);

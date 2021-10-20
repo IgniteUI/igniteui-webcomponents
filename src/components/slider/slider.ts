@@ -725,17 +725,17 @@ export class IgcSliderComponent extends EventEmitterMixin<
   protected render() {
     return html`
       <div part="base">
+        ${this.tickOrientation === 'mirror' || this.tickOrientation === 'start'
+          ? html`<div part="ticks">${this.renderTicks()}</div>`
+          : html``}
         <div part="track">
-          ${this.tickOrientation === 'mirror' ||
-          this.tickOrientation === 'start'
-            ? html`<div part="ticks">${this.renderTicks()}</div>`
-            : html``}
           <div part="fill" id="fill"></div>
+          <div part="inactive" id="inactive"></div>
           <div part="steps" id="steps"></div>
-          ${this.tickOrientation !== 'start'
-            ? html`<div part="ticks">${this.renderTicks()}</div>`
-            : html``}
         </div>
+        ${this.tickOrientation !== 'start'
+          ? html`<div part="ticks">${this.renderTicks()}</div>`
+          : html``}
         <div part="thumbs">
           ${this.isRange
             ? html`<div part="thumb-label"
