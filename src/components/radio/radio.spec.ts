@@ -6,8 +6,8 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../igniteui-webcomponents';
-import { IgcRadioComponent } from './radio';
+import '../../../index.js';
+import type IgcRadioComponent from './radio';
 
 describe('Radio Component', () => {
   const label = 'Apple';

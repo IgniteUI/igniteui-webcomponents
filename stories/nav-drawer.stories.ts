@@ -1,9 +1,9 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
-import '../igniteui-webcomponents.js';
+import '../index.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { Context, Story } from './story';
-import { IgcNavDrawerComponent } from './../src/components/nav-drawer/nav-drawer.js';
+import { IgcNavDrawerComponent } from '../index.js';
 
 // region default
 const metadata = {

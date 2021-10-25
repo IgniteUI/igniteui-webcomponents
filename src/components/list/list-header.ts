@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { styles } from './list-header.material.css';
 
 /**
@@ -8,7 +9,8 @@ import { styles } from './list-header.material.css';
  *
  * @slot - Renders header list item's content.
  */
-export class IgcListHeaderComponent extends LitElement {
+@customElement('igc-list-header')
+export default class IgcListHeaderComponent extends LitElement {
   /** @private */
   public static styles = styles;
 
@@ -19,5 +21,11 @@ export class IgcListHeaderComponent extends LitElement {
 
   protected render() {
     return html`<slot></slot>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-list-header': IgcListHeaderComponent;
   }
 }

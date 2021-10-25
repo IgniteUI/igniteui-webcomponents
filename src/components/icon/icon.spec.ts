@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import '../../../igniteui-webcomponents'; // Obligatory
-import { IgcIconComponent } from './icon';
+import '../../../index.js';
+import type IgcIconComponent from './icon';
 import { registerIconFromText } from './icon.registry';
 
 const bugSvgContent =

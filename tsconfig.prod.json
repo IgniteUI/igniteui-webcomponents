@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig",
+  "exclude": [
+    "**/*.spec.ts",
+    "stories"
+  ],
+  "compilerOptions": {
+    "removeComments": true
+  },
+}

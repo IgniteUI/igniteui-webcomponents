@@ -1,55 +1,31 @@
 import { html } from 'lit-html';
-import '../igniteui-webcomponents.js';
+import '../index.js';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
 // region default
-export default {
+const metadata = {
   title: 'Radio Group',
   component: 'igc-radio-group',
-  parameters: {
-    actions: {
-      handles: ['igcChange', 'igcFocus', 'igcBlur'],
-    },
-  },
   argTypes: {
-    labelPosition: {
-      control: {
-        type: 'inline-radio',
-        options: ['before', 'after'],
-      },
-      defaultValue: 'after',
-    },
     alignment: {
+      type: '"vertical" | "horizontal"',
       options: ['vertical', 'horizontal'],
       control: {
         type: 'inline-radio',
       },
       defaultValue: 'vertical',
     },
-    disabled: {
-      control: 'boolean',
-      description: 'Determines whether the radio is disabled.',
-      table: {
-        type: {
-          summary: 'boolean',
-        },
-        defaultValue: {
-          summary: 'false',
-        },
-      },
-    },
   },
 };
+export default metadata;
 interface ArgTypes {
   alignment: 'vertical' | 'horizontal';
-  labelPosition: 'before' | 'after';
-  disabled: boolean;
 }
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { alignment, labelPosition, disabled }: ArgTypes,
+  { alignment }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   const radios = ['apple', 'orange', 'mango', 'banana'];
@@ -60,11 +36,7 @@ const Template: Story<ArgTypes, Context> = (
     >
       ${radios.map(
         (v) =>
-          html`<igc-radio
-            name="fruit"
-            value=${v}
-            .disabled=${disabled}
-            label-position=${labelPosition}
+          html`<igc-radio name="fruit" value=${v}
             >${v.replace(/^\w/, (c) => c.toUpperCase())}</igc-radio
           > `
       )}

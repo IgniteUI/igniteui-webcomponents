@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './icon.material.css';
@@ -12,7 +12,8 @@ import { IconsRegistry } from './icon.registry.js';
  *
  *
  */
-export class IgcIconComponent extends SizableMixin(LitElement) {
+@customElement('igc-icon')
+export default class IgcIconComponent extends SizableMixin(LitElement) {
   /**
    * @private
    */
