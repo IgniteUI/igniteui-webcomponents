@@ -5,11 +5,10 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-// import sinon from "sinon";
-import { IgcNavDrawerComponent } from './nav-drawer';
-import '../../../igniteui-webcomponents';
 import sinon from 'sinon';
-import { IgcNavDrawerItemComponent } from './nav-drawer-item';
+import '../../../index.js';
+import type IgcNavDrawerComponent from './nav-drawer';
+import type IgcNavDrawerItemComponent from './nav-drawer-item';
 
 describe('Navigation Drawer', () => {
   let el: IgcNavDrawerComponent;

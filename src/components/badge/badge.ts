@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styles } from './badge.material.css';
 
@@ -13,7 +13,8 @@ import { styles } from './badge.material.css';
  *
  * @csspart base - The base wrapper of the badge.
  */
-export class IgcBadgeComponent extends LitElement {
+@customElement('igc-badge')
+export default class IgcBadgeComponent extends LitElement {
   /** @private */
   public static styles = styles;
 
@@ -56,5 +57,11 @@ export class IgcBadgeComponent extends LitElement {
         <slot></slot>
       </span>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-badge': IgcBadgeComponent;
   }
 }

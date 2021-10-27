@@ -1,8 +1,8 @@
 import { expect, fixture, html, elementUpdated } from '@open-wc/testing';
-import { IgcCalendarComponent } from './calendar';
-import '../../../igniteui-webcomponents';
-import { IgcDaysViewComponent } from './days-view/days-view';
-import { IgcMonthsViewComponent } from './months-view/months-view';
+import '../../../index.js';
+import type IgcCalendarComponent from './calendar';
+import type IgcDaysViewComponent from './days-view/days-view';
+import type IgcMonthsViewComponent from './months-view/months-view';
 
 describe('Calendar Rendering', () => {
   let el: IgcCalendarComponent;

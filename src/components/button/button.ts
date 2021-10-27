@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { alternateName } from '../common/decorators';
@@ -22,7 +22,8 @@ import { IgcButtonBaseComponent } from './button-base.js';
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
  */
-export class IgcButtonComponent extends IgcButtonBaseComponent {
+@customElement('igc-button')
+export default class IgcButtonComponent extends IgcButtonBaseComponent {
   /**
    * The type of the button. Defaults to undefined.
    */
@@ -43,5 +44,11 @@ export class IgcButtonComponent extends IgcButtonBaseComponent {
         ${this.renderContent()}
       </button>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-button': IgcButtonComponent;
   }
 }

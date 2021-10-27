@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { styles } from './list-item.material.css';
 
 /**
@@ -20,7 +21,8 @@ import { styles } from './list-item.material.css';
  * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  */
-export class IgcListItemComponent extends LitElement {
+@customElement('igc-list-item')
+export default class IgcListItemComponent extends LitElement {
   /** @private */
   public static styles = styles;
 
@@ -45,5 +47,11 @@ export class IgcListItemComponent extends LitElement {
         <slot name="end"></slot>
       </section>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-list-item': IgcListItemComponent;
   }
 }

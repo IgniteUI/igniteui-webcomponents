@@ -1,6 +1,6 @@
 import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
-import { IgcListComponent } from './list';
-import '../../../igniteui-webcomponents';
+import '../../../index.js';
+import type IgcListComponent from './list';
 
 describe('List', () => {
   let el: IgcListComponent;
