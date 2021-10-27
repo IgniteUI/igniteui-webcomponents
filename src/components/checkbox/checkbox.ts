@@ -43,12 +43,11 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   }
 
   @watch('checked', { waitUntilFirstUpdate: true })
-  @watch('indeterminate', { waitUntilFirstUpdate: true })
   protected handleChange() {
     if (this.checked) {
       this.input.focus();
-      this.emitEvent('igcChange');
     }
+    this.emitEvent('igcChange');
   }
 
   protected render() {
