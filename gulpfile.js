@@ -95,7 +95,7 @@ function createDocsOutputDirFn(cb) {
 }
 
 function cleanTypedocOutputDirFn(cb) {
-  rimraf(slash(path.join(DOCS_OUTPUT_PATH, 'typescript')));
+  rimraf(slash(path.join(DOCS_OUTPUT_PATH, 'typescript')), () => {});
   cb();
 }
 
