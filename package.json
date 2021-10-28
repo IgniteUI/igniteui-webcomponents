@@ -45,7 +45,11 @@
     "storybook": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"npm:watch-meta\" \"wds -c .storybook/server.mjs\"",
     "storybook:build": "npm run build && build-storybook",
     "typedoc:dev": "gulp typedocServe",
-    "build.docs": "set NODE_ENV=staging && typedoc src"
+    "build.docs": "set NODE_ENV=staging && typedoc src",
+    "build:typedoc:ja:production": "set NODE_ENV=production && gulp typedocBuildDocsJA",
+    "build:typedoc:ja:staging": "set NODE_ENV=staging && gulp typedocBuildDocsJA",
+    "build:typedoc:en:production": "set NODE_ENV=production && gulp typedocBuildDocsEN",
+    "build:typedoc:en:staging": "set NODE_ENV=staging && gulp typedocBuildDocsEN"
   },
   "dependencies": {
     "lit": "^2.0.0"
