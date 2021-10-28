@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
@@ -18,7 +18,8 @@ import { styles } from './years-view.css';
  * @csspart year - The year container.
  * @csspart year-inner - The inner year container.
  */
-export class IgcYearsViewComponent extends EventEmitterMixin<
+@customElement('igc-years-view')
+export default class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {

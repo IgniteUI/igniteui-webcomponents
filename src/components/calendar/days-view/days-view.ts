@@ -14,7 +14,7 @@ import { areEqualDates, getDateOnly, isEqual } from '../common/utils';
 import { styles } from './days-view-material.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
-import { property, query } from 'lit/decorators.js';
+import { property, query, customElement } from 'lit/decorators.js';
 import { partNameMap } from '../../common/util';
 import {
   IgcCalendarResourceStringEN,
@@ -40,7 +40,8 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
  * @csspart week-number - The week number container.
  * @csspart week-number-inner - The inner week number container.
  */
-export class IgcDaysViewComponent extends EventEmitterMixin<
+@customElement('igc-days-view')
+export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {

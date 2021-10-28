@@ -1,6 +1,6 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { IgcCardComponent } from './card';
-import '../../../igniteui-webcomponents.js';
+import '../../../index.js';
+import type IgcCardComponent from './card';
 
 describe('Card Component', () => {
   let el: IgcCardComponent;

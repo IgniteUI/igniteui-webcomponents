@@ -1,16 +1,22 @@
 import { html } from 'lit';
-import { property, query, queryAll, state } from 'lit/decorators.js';
+import {
+  customElement,
+  property,
+  query,
+  queryAll,
+  state,
+} from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import type IgcDaysViewComponent from './days-view/days-view';
+import type IgcMonthsViewComponent from './months-view/months-view';
+import type IgcYearsViewComponent from './years-view/years-view';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
 } from './common/calendar-base';
-import { IgcMonthsViewComponent } from './months-view/months-view';
-import { IgcYearsViewComponent } from './years-view/years-view';
 import { styles } from './calendar.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
-import { IgcDaysViewComponent } from './days-view/days-view';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model';
 import { watch } from '../common/decorators';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils';
@@ -20,6 +26,11 @@ import {
   IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources';
 import { partNameMap } from '../common/util';
+
+import './days-view/days-view';
+import './months-view/months-view';
+import './years-view/years-view';
+import '../icon/icon';
 
 export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;
@@ -52,7 +63,8 @@ export const YEARS_PER_ROW = 3;
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-export class IgcCalendarComponent extends SizableMixin(
+@customElement('igc-calendar')
+export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
     Constructor<IgcCalendarBaseComponent>

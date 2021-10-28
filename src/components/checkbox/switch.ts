@@ -5,6 +5,7 @@ import { watch } from '../common/decorators/watch.js';
 import { styles } from './switch.material.css';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { partNameMap } from '../common/util.js';
+import { customElement } from 'lit/decorators.js';
 
 let nextId = 0;
 
@@ -24,7 +25,8 @@ let nextId = 0;
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
  */
-export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
+@customElement('igc-switch')
+export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   /** @private */
   public static styles = styles;
 
@@ -39,8 +41,8 @@ export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   protected handleChange() {
     if (this.checked) {
       this.input.focus();
-      this.emitEvent('igcChange', { detail: this.checked });
     }
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   protected render() {
@@ -79,5 +81,11 @@ export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
         </span>
       </label>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-switch': IgcSwitchComponent;
   }
 }

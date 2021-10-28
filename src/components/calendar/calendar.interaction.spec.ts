@@ -1,8 +1,9 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../igniteui-webcomponents.js';
+import '../../../index.js';
 import { createCalendarElement } from './calendar-rendering.spec.js';
-import { IgcCalendarComponent } from './calendar.js';
+import type IgcCalendarComponent from './calendar.js';
+import type IgcDaysViewComponent from './days-view/days-view.js';
 import {
   Calendar,
   DateRangeDescriptor,
@@ -10,7 +11,6 @@ import {
   ICalendarDate,
   isDateInRanges,
 } from './common/calendar.model.js';
-import { IgcDaysViewComponent } from './days-view/days-view.js';
 
 describe('Calendar Interaction', () => {
   const calendarModel = new Calendar();

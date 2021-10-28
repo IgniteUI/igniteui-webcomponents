@@ -1,5 +1,3 @@
-import { IgcSwitchComponent } from './switch';
-import '../../../igniteui-webcomponents.js';
 import {
   elementUpdated,
   expect,
@@ -8,6 +6,8 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
+import '../../../index.js';
+import type IgcSwitchComponent from './switch';
 
 describe('Switch', () => {
   const label = 'Label';

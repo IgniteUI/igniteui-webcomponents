@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
@@ -19,7 +19,8 @@ import { MONTHS_PER_ROW } from '../calendar';
  * @csspart month - The month container.
  * @csspart month-inner - The inner month container.
  */
-export class IgcMonthsViewComponent extends EventEmitterMixin<
+@customElement('igc-months-view')
+export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
