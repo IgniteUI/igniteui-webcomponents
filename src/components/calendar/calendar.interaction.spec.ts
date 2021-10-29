@@ -45,7 +45,7 @@ describe('Calendar Interaction', () => {
       dates?.item(4).querySelector('span')?.click();
       await elementUpdated(calendar);
 
-      expect(eventSpy).calledOnceWith('igcChange');
+      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: prevDay });
       expect(isSelected(currentDate as Date)).to.be.false;
       expect(isSelected(prevDay)).to.be.true;
       expect((calendar.value as Date).toDateString()).to.equal(
@@ -144,6 +144,31 @@ describe('Calendar Interaction', () => {
       dates?.item(4).querySelector('span')?.click();
       await elementUpdated(daysView);
       expect(eventSpy).calledWith('igcActiveDateChange');
+
+      const evDetails = eventSpy.args[1][1]?.detail as ICalendarDate;
+      expect(evDetails.date.toISOString()).to.equals(
+        new Date(2021, 8, 28).toISOString()
+      );
+      const selectedDate = evDetails.date;
+      const selectedMonth = selectedDate.getMonth();
+      const selectedYear = selectedDate.getFullYear();
+      const currentDate = calendar.activeDate;
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      expect(evDetails.isCurrentMonth).to.equal(
+        selectedYear === currentYear && selectedMonth === currentMonth,
+        `Wrong current month! Selected: ${selectedMonth} - Current: ${currentMonth}`
+      );
+      expect(evDetails.isNextMonth).to.equal(
+        selectedYear > currentYear ||
+          (selectedYear === currentYear && selectedMonth % 12 > currentMonth),
+        'Wrong isNextMonth!'
+      );
+      expect(evDetails.isPrevMonth).to.equal(
+        selectedYear < currentYear ||
+          (selectedYear === currentYear && selectedMonth % 12 < currentMonth),
+        'Wrong isPrevMonth!'
+      );
     });
 
     it('should emit igcRangePreviewDateChange event', async () => {
@@ -157,7 +182,9 @@ describe('Calendar Interaction', () => {
       dates?.item(dates.length - 1).focus();
       await elementUpdated(calendar);
 
-      expect(eventSpy).calledWith('igcRangePreviewDateChange');
+      expect(eventSpy).calledWithExactly('igcRangePreviewDateChange', {
+        detail: new Date(2021, 9, 2),
+      });
     });
 
     it('Verify date is disabled for DateRangeType - Before', async () => {

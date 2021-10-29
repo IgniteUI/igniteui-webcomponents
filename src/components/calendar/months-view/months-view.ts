@@ -109,7 +109,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     const value = new Date(month);
     setDateSafe(value, this.value.getDate());
     this.value = value;
-    this.emitEvent('igcChange');
+    this.emitEvent('igcChange', { detail: this.value });
   }
 
   private monthKeyDown(event: KeyboardEvent, month: Date) {

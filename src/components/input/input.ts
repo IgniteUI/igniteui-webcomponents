@@ -21,8 +21,8 @@ type Direction = 'ltr' | 'rtl' | 'auto';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
-  igcInput: CustomEvent<void>;
-  igcChange: CustomEvent<void>;
+  igcInput: CustomEvent<string>;
+  igcChange: CustomEvent<string>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
@@ -234,8 +234,8 @@ export default class IgcInputComponent extends SizableMixin(
 
     if (this.value !== this.input.value) {
       this.value = this.input.value;
-      this.emitEvent('igcInput');
-      this.emitEvent('igcChange');
+      this.emitEvent('igcInput', { detail: this.value });
+      this.emitEvent('igcChange', { detail: this.value });
     }
   }
 
@@ -277,12 +277,12 @@ export default class IgcInputComponent extends SizableMixin(
 
   private handleInput() {
     this.value = this.input.value;
-    this.emitEvent('igcInput');
+    this.emitEvent('igcInput', { detail: this.value });
   }
 
   private handleChange() {
     this.value = this.input.value;
-    this.emitEvent('igcChange');
+    this.emitEvent('igcChange', { detail: this.value });
   }
 
   private handleFocus() {
