@@ -5,7 +5,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 
 export interface IgcCheckboxEventMap {
-  igcChange: CustomEvent<void>;
+  igcChange: CustomEvent<boolean>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }

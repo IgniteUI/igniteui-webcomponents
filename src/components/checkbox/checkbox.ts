@@ -47,7 +47,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     if (this.checked) {
       this.input.focus();
     }
-    this.emitEvent('igcChange');
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   protected render() {
