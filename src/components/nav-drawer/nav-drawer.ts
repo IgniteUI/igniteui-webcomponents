@@ -86,6 +86,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   private handleOpening() {
     const args = {
       detail: { cancel: false },
+      cancelable: true,
     };
     this.emitEvent('igcOpening', args);
 
@@ -100,6 +101,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   private handleClosing() {
     const args = {
       detail: { cancel: false },
+      cancelable: true,
     };
     this.emitEvent('igcClosing', args);
 
