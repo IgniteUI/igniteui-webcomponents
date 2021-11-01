@@ -1,6 +1,10 @@
 @use '../../styles/utilities' as *;
 
-$border-width: rem(1px);
+$date-size-large: rem(32px);
+$date-size-medium: rem(28px);
+$date-size-small: rem(24px);
+
+$border-width: 1px;
 $border-radius: rem(2px);
 $border-color: color(gray, 500);
 $selected-background: color(gray, 200);
@@ -11,21 +15,13 @@ $current-background: color(secondary, 500);
 $current-color: contrast-color(secondary, 600);
 
 @mixin theme() {
+    igc-calendar::part(selected date-inner single),
     igc-calendar::part(week-number-inner first),
-    igc-calendar::part(week-number-inner last) {
+    igc-calendar::part(week-number-inner last),
+    igc-calendar::part(date-inner),
+    igc-calendar::part(month-inner),
+    igc-calendar::part(year-inner) {
         border-radius: 0;
-    }
-
-    igc-calendar::part(month-inner selected),
-    igc-calendar::part(year-inner selected) {
-        color: $selected-color;
-        background: $selected-background;
-
-        &:focus,
-        &:hover {
-            color: $selected-color;
-            background: $selected-background;
-        }
     }
 
     igc-calendar::part(month-inner current),
@@ -54,51 +50,51 @@ $current-color: contrast-color(secondary, 600);
         }
     }
 
-    igc-calendar::part(date range) {
-        &::before {
-            height: calc(100% - (#{$border-width} * 2));
-            border-bottom: rem(1px) solid;
-            border-top: rem(1px) solid;
-        }
-    }
-
-    igc-calendar::part(days-row) {
-        &:last-child {
-            border-radius: rem(16px);
-        }
-    }
-
-    igc-calendar::part(date-inner),
-    igc-calendar::part(month-inner),
-    igc-calendar::part(year-inner) {
-        border-radius: 0;
-    }
-
+    igc-calendar::part(current date-inner selected),
     igc-calendar::part(current date-inner),
-    igc-calendar::part(current single date-inner),
-    igc-calendar::part(current range date-inner) {
+    igc-calendar::part(current single date-inner) {
         box-shadow: none;
         position: relative;
+        overflow: hidden;
         color: $current-color;
 
-        &::before {
+        &::before,
+        &::after {
             content: '';
             position: absolute;
-            width: calc(100% - 2px);
-            height: calc(100% - 2px);
-            background: $current-background;
-
-            z-index: -1;
-            border-radius: rem(16px);
+            top: rem(1px);
+            left: rem(1px);
         }
 
+        &::before {
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        &::after {
+            width: calc(100% - #{rem(2px)});
+            height: calc(100% - #{rem(2px)});
+            background: $current-background;
+            border-radius: rem(16px);
+            z-index: -1;
+        }
+
+        &:focus,
         &:hover {
-            background: $selected-background;
+            color: $current-color;
+
+            &::after {
+                background: $current-background;
+            }
+
+            &::before {
+                background: $selected-background;
+            }
         }
     }
 
     igc-calendar::part(selected date-inner single) {
-        //box-shadow: 0 0 0 $border-width $border-color;
         border-color: $border-color;
         background: $selected-background;
         color: $selected-color;
@@ -117,132 +113,137 @@ $current-color: contrast-color(secondary, 600);
         }
     }
 
-    igc-calendar::part(date first range preview),
-    igc-calendar::part(date last range preview) {
-        &::after {
-            border-top-style: solid;
-            border-bottom-style: solid;
+    // SELECTED RANGE STYLES
+    igc-calendar::part(date-inner first range) {
+        border-top-color: $border-color;
+        border-bottom-color: $border-color;
+        border-inline-start-color: $border-color;
+        border-inline-end-color: transparent;
+    }
+
+    igc-calendar::part(date-inner last range) {
+        border-top-color: $border-color;
+        border-bottom-color: $border-color;
+        border-inline-end-color: $border-color;
+        border-inline-start-color: transparent;
+    }
+
+    igc-calendar::part(date-inner selected range) {
+        color: $selected-color;
+
+        &:hover {
+            background: $selected-background-hover;
+            border-color: $border-color;
+        }
+
+        &:focus {
+            background: $selected-background;
+            border-color: $border-color;
         }
     }
 
-    igc-calendar::part(date first selected range preview),
-    igc-calendar::part(date last selected range preview) {
-        &::after {
-            border-top-color: $selected-background;
-            border-bottom-color: $selected-background;
+    igc-calendar::part(date-inner selected range preview) {
+        &:focus {
             background: $selected-background;
-        }
-    }
-
-    igc-calendar::part(date first selected range),
-    igc-calendar::part(date last selected range) {
-        &::after {
-            border-top-color: $border-color;
-            border-bottom-color: $border-color;
-            background: $selected-background;
-        }
-    }
-
-    igc-calendar::part(date range preview){
-        &::after,
-        &::before {
-            border-top-style: solid;
-            border-bottom-style: solid;
-            border-top-color: $selected-background;
-            border-bottom-color: $selected-background;
-            background: $selected-background;
+            border-color: $selected-background;
         }
     }
 
     igc-calendar::part(date selected range) {
-        &::before {
+        background: $selected-background;
+        border-top-color: $border-color;
+        border-bottom-color: $border-color;
+    }
+
+    igc-calendar::part(date first selected range),
+    igc-calendar::part(date last selected range) {
+        background: transparent;
+        border-color: transparent;
+
+        &::after {
+            background: $selected-background;
             border-top-color: $border-color;
             border-bottom-color: $border-color;
-            background: $selected-background;
         }
     }
 
-    igc-calendar::part(date-inner selected range) {
-        &:hover,
-        &:focus {
+    igc-calendar::part(date-inner selected current range),
+    igc-calendar::part(date-inner first last selected current range),
+    igc-calendar::part(date-inner first last selected current),
+    igc-calendar::part(date-inner first selected current range),
+    igc-calendar::part(date-inner last selected current range) {
+        color: $current-color !important;
+
+        &:focus,
+        &:hover {
             border-color: $border-color;
-            background: $selected-background-hover;
-            color: $selected-color-hover;
         }
     }
 
-    igc-calendar::part(date) {
-        border-style: solid;
+    // PREVIEW STYLES
+    igc-calendar::part(date-inner first range preview),
+    igc-calendar::part(date-inner first selected range preview) {
+        border-top-color: $selected-background;
+        border-bottom-color: $selected-background;
+        border-inline-start-color: $selected-background;
+        border-inline-end-color: transparent;
+        background: transparent;
     }
 
-
-    igc-calendar::part(date-inner first selected range preview),
+    igc-calendar::part(date-inner last range preview),
     igc-calendar::part(date-inner last selected range preview) {
-        &::after {
-            display: none;
+        border-top-color: $selected-background;
+        border-bottom-color: $selected-background;
+        border-inline-end-color: $selected-background;
+        border-inline-start-color: transparent;
+        background: transparent;
+    }
+
+    igc-calendar::part(date range preview) {
+        border-top-style: solid;
+        border-bottom-style: solid;
+        border-top-color: $selected-background;
+        border-bottom-color: $selected-background;
+
+        &::after{
+            border-top-style: solid;
+            border-bottom-style: solid;
+            border-top-color: $selected-background;
+            border-bottom-color: $selected-background;
+            background: transparent;
         }
     }
 
+    igc-calendar::part(date first range preview),
+    igc-calendar::part(date last range preview) {
+        border-top-color: transparent;
+        border-bottom-color: transparent;
+    }
+
+    igc-calendar::part(date first selected range preview),
+    igc-calendar::part(date last selected range preview) {
+        background: transparent;
+
+        &::after {
+            border-top-color: $selected-background;
+            border-bottom-color: $selected-background;
+            background: transparent;
+        }
+    }
 
     igc-calendar::part(date-inner first last selected) {
-        background: $selected-background;
-        color: $selected-color;
         border-color: $selected-background;
     }
 
-    igc-calendar::part(date-inner selected current range) {
-        &:hover,
-        &:focus {
-            background: $selected-background;
-            color: $current-color;
-        }
-    }
-
-    igc-calendar::part(date-inner first selected range),
-    igc-calendar::part(date-inner last selected range) {
+    igc-calendar::part(date-inner first last selected),
+    igc-calendar::part(date-inner first selected),
+    igc-calendar::part(date-inner last selected) {
         background: $selected-background;
         color: $selected-color;
-        position: relative;
 
-        &:hover,
         &:focus {
-            background: $selected-background-hover;
-            color: $selected-color-hover;
+            background: $selected-background;
+            color: $selected-color;
         }
-
-        &::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: rem(1px) solid transparent;
-            background: transparent;
-            pointer-events: none;
-            user-select: none;
-            border-block-start-color: $border-color;
-            border-block-end-color: $border-color;
-            z-index: 4;
-        }
-    }
-
-
-    igc-calendar::part(date-inner first selected range) {
-        border-color: transparent;
-        border-inline-start-color: $border-color;
-        border-inline-end-color: $selected-background;
-    }
-
-    igc-calendar::part(date-inner last selected range) {
-        border-color: transparent;
-        border-inline-end-color: $border-color;
-        border-inline-start-color: $selected-background;
-    }
-
-    igc-calendar::part(date-inner first selected range preview) {
-        border-inline-start-color: $selected-background;
-    }
-
-    igc-calendar::part(date-inner last selected range preview) {
-        border-inline-end-color: $selected-background;
     }
 }

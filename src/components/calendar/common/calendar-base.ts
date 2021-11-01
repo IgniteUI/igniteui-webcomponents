@@ -5,7 +5,7 @@ import { Calendar, DateRangeDescriptor } from './calendar.model';
 import { getWeekDayNumber } from './utils';
 
 export interface IgcCalendarBaseEventMap {
-  igcChange: CustomEvent<void>;
+  igcChange: CustomEvent<Date | Date[]>;
 }
 
 export class IgcCalendarBaseComponent extends LitElement {

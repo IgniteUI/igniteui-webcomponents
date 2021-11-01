@@ -6,6 +6,7 @@ $date-size-large: rem(32px);
 $date-size-medium: rem(28px);
 $date-size-small: rem(24px);
 
+
 :host {
     display: flex;
     flex-direction: column;
@@ -17,15 +18,18 @@ $date-size-small: rem(24px);
 }
 
 :host([size='large']) {
+    igc-days-view::part(date),
+    igc-days-view::part(week-number),
+    igc-days-view::part(label),
     igc-days-view::part(days-row) {
-        min-height: $date-size-large;
+        height: $date-size-large;
     }
 
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
-        width: $date-size-large;
-        min-width: $date-size-large;
-        height: $date-size-large;
+        width: calc(#{$date-size-large} - #{rem(2px)});
+        min-width: calc(#{$date-size-large} - #{rem(2px)});
+        height: 100%;
     }
 
     igc-days-view::part(label) {
@@ -57,15 +61,18 @@ $date-size-small: rem(24px);
 }
 
 :host([size='medium']) {
+    igc-days-view::part(date),
+    igc-days-view::part(week-number),
+    igc-days-view::part(label),
     igc-days-view::part(days-row) {
-        min-height: $date-size-medium;
+        height: $date-size-medium;
     }
 
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
-        width: $date-size-medium;
-        min-width: $date-size-medium;
-        height: $date-size-medium;
+        width: calc(#{$date-size-medium} - #{rem(2px)});
+        min-width: calc(#{$date-size-medium} - #{rem(2px)});
+        height: 100%;
     }
 
     igc-days-view::part(label) {
@@ -97,15 +104,18 @@ $date-size-small: rem(24px);
 }
 
 :host([size='small']) {
+    igc-days-view::part(date),
+    igc-days-view::part(week-number),
+    igc-days-view::part(label),
     igc-days-view::part(days-row) {
-        min-height: $date-size-small;
+        height: $date-size-small;
     }
 
     igc-days-view::part(week-number-inner),
     igc-days-view::part(date-inner) {
-        width: $date-size-small;
-        min-width: $date-size-small;
-        height: $date-size-small;
+        width: calc(#{$date-size-small} - #{rem(2px)});
+        min-width: calc(#{$date-size-small} - #{rem(2px)});
+        height: 100%;
     }
 
     igc-days-view::part(label) {
