@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-import { alternateName } from '../common/decorators';
+import { alternateName, blazorInclude } from '../common/decorators';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './icon.material.css';
 import {
@@ -106,11 +106,17 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
     return html` ${unsafeSVG(this.svg)} `;
   }
 
-  public async registerIcon(name: string, url: string, collection = 'default') {
+  @blazorInclude()
+  protected async registerIcon(
+    name: string,
+    url: string,
+    collection = 'default'
+  ) {
     await registerIcon_impl(name, url, collection);
   }
 
-  public registerIconFromText(
+  @blazorInclude()
+  protected registerIconFromText(
     name: string,
     iconText: string,
     collection = 'default'
