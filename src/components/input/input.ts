@@ -10,7 +10,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
 import { Constructor } from '../common/mixins/constructor.js';
-import { alternateName, watch } from '../common/decorators';
+import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util';
 import { SizableMixin } from '../common/mixins/sizable';
@@ -113,6 +113,7 @@ export default class IgcInputComponent extends SizableMixin(
 
   /** The value attribute of the control. */
   @property()
+  @blazorTwoWayBind('igcChange', 'detail')
   public value = '';
 
   /** The pattern attribute of the control. */
