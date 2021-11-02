@@ -2,7 +2,7 @@ import { LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { alternateName } from '../common/decorators/alternateName.js';
+import { alternateName, blazorTwoWayBind } from '../common/decorators';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;
@@ -31,6 +31,7 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 
   /** The checked state of the control. */
   @property({ type: Boolean })
+  @blazorTwoWayBind('igcChange', 'detail')
   public checked = false;
 
   /** Makes the control a required field. */

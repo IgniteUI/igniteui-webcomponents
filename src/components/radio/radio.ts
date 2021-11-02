@@ -3,7 +3,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { styles } from './radio.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { alternateName, watch } from '../common/decorators';
+import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { partNameMap } from '../common/util.js';
@@ -56,6 +56,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
 
   /** The checked state of the control. */
   @property({ type: Boolean })
+  @blazorTwoWayBind('igcChange', 'detail')
   public checked = false;
 
   /** Disables the radio control. */
