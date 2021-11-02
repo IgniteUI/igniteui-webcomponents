@@ -1,5 +1,4 @@
 const fs = require('fs');
-const rimraf = require('rimraf');
 const path = require('path');
 const sass = require('sass');
 const globby = require('globby');
@@ -8,6 +7,8 @@ const postcss = require('postcss');
 const { promisify } = require('util');
 
 const exec = promisify(require('child_process').exec);
+const getDirName = path.dirname;
+const makeDir = fs.mkdirSync;
 const copyFile = promisify(fs.copyFile);
 const writeFile = promisify(fs.writeFile);
 const renderSass = promisify(sass.render);
@@ -17,8 +18,6 @@ const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
 const THEMES_PATH = `src/styles/themes`;
 
 async function buildThemes() {
-  rimraf(DEST_DIR(`${THEMES_PATH}/*.js`), (err) => { if (err) console.error(err); });
-
   const paths = await globby(`${THEMES_PATH}/**/*.scss`);
 
   for (const sassFile of paths) {
@@ -32,7 +31,9 @@ async function buildThemes() {
       outCss = outCss.substr(1);
     }
 
-    await writeFile(DEST_DIR(sassFile.replace(/\.scss$/, '.css')), outCss, 'utf-8');
+    const outputFile = DEST_DIR(sassFile.replace(/\.scss$/, '.css').replace('src/', ''));
+    makeDir(getDirName(outputFile), { recursive: true });
+    await writeFile(outputFile, outCss, 'utf-8');
   }
 }
 

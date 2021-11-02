@@ -1,5 +1,5 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import '../../../index.js';
+import '../../index.js';
 import type IgcCardComponent from './card';
 
 describe('Card Component', () => {

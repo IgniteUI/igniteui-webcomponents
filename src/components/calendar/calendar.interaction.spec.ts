@@ -1,6 +1,6 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../index.js';
+import '../../index.js';
 import { createCalendarElement } from './calendar-rendering.spec.js';
 import type IgcCalendarComponent from './calendar.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';

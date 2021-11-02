@@ -1,5 +1,5 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import '../../../index.js';
+import '../../index.js';
 import type IgcNavbarComponent from './navbar';
 
 describe('Navbar component', () => {

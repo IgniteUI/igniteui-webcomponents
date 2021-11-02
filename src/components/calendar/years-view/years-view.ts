@@ -7,7 +7,7 @@ import { partNameMap } from '../../common/util';
 import { YEARS_PER_ROW } from '../calendar';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
 import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
-import { styles } from './years-view.css';
+import { styles } from './years-view.material.css';
 
 /**
  * Instantiate a years view as a separate component in the calendar.

@@ -6,7 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../index.js';
+import '../../index.js';
 import type IgcSwitchComponent from './switch';
 
 describe('Switch', () => {

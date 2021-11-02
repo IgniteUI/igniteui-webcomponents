@@ -5,6 +5,7 @@
     "stories"
   ],
   "compilerOptions": {
+    "rootDir": "./src",
     "removeComments": true
   },
 }
