@@ -1,9 +1,9 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
-import '../index.js';
+import '../src/index.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { Context, Story } from './story';
-import { IgcNavDrawerComponent } from '../index.js';
+import { IgcNavDrawerComponent } from '../src/index.js';
 
 // region default
 const metadata = {

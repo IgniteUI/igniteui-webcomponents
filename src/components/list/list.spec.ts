@@ -1,5 +1,5 @@
 import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
-import '../../../index.js';
+import '../../index.js';
 import type IgcListComponent from './list';
 
 describe('List', () => {
