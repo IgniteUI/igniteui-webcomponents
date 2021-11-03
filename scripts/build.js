@@ -31,7 +31,7 @@ async function buildThemes() {
       outCss = outCss.substr(1);
     }
 
-    const outputFile = DEST_DIR(sassFile.replace(/\.scss$/, '.css').replace('src/', ''));
+    const outputFile = DEST_DIR(sassFile.replace(/\.scss$/, '.css').replace('src/styles/', ''));
     makeDir(getDirName(outputFile), { recursive: true });
     await writeFile(outputFile, outCss, 'utf-8');
   }
