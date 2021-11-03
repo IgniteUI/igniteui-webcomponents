@@ -34,7 +34,6 @@
     "navbar",
     "navdrawer",
     "radio",
-    "slider",
     "switch"
   ],
   "peerDependencies": {
