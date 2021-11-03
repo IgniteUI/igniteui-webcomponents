@@ -1,5 +1,5 @@
 import { html } from 'lit-html';
-import '../index.js';
+import '../src/index.js';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 import { DateRangeDescriptor } from '../src/components/calendar/common/calendar.model.js';

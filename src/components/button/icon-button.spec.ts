@@ -5,7 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import '../../../index.js';
+import '../../index.js';
 import type IgcIconButtonComponent from './icon-button';
 
 describe('IconButton component', () => {

@@ -11,7 +11,7 @@ import {
   IgcCalendarBaseEventMap,
 } from '../common/calendar-base';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils';
-import { styles } from './days-view-material.css';
+import { styles } from './days-view.material.css';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Constructor } from '../../common/mixins/constructor';
 import { property, query, customElement } from 'lit/decorators.js';

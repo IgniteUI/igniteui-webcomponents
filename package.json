@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "npm run storybook",
-    "serve": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wds\"",
+    "serve": "npm run build:publish && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wds\"",
     "build": "npm run clean && npm run build:styles && npm run build:typescript && npm run build:docs:json && npm run build:meta",
     "build:publish": "node scripts/build.js",
     "build:typescript": "tsc",
@@ -47,7 +47,7 @@
     "typedoc:dev": "gulp typedocServe"
   },
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "^2.0.2"
   },
   "devDependencies": {
     "@igniteui/material-icons-extended": "^2.9.0",

@@ -9,6 +9,7 @@
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/IgniteUI/igniteui-webcomponents"
@@ -37,7 +38,7 @@
     "slider",
     "switch"
   ],
-  "peerDependencies": {
+  "dependencies": {
     "lit": "^2.0.0"
   }
 }
