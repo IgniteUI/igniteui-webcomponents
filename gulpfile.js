@@ -14,7 +14,7 @@ const slash = require('slash');
 const DOCS_OUTPUT_PATH = slash(path.join(__dirname, 'dist', 'docs'));
 
 const TYPEDOC_THEME = {
-    SRC: slash(path.join(__dirname, 'node_modules', 'ig-typedoc-theme', 'src')),
+    SRC: slash(path.join(__dirname, 'node_modules', 'igniteui-typedoc-theme', '*')),
     OUTPUT: slash(path.join(DOCS_OUTPUT_PATH, 'typescript'))
 };
 
@@ -59,7 +59,7 @@ function typedocWatchFunc(cb) {
 
 const TYPEDOC = {
   EXPORT_JSON_PATH: slash(path.join(DOCS_OUTPUT_PATH, 'typescript-exported')),
-  PROJECT_PATH: slash(path.join(__dirname, 'index.ts')),
+  PROJECT_PATH: slash(path.join(__dirname, 'src/index.ts')),
   TEMPLATE_STRINGS_PATH: slash(path.join(__dirname, 'extras', 'template', 'strings', 'shell-strings.json'))
 };
 
