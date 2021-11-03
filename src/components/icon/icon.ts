@@ -1,9 +1,14 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
+import { alternateName, blazorInclude } from '../common/decorators';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './icon.material.css';
-import { IconsRegistry } from './icon.registry.js';
+import {
+  IconsRegistry,
+  registerIcon as registerIcon_impl,
+  registerIconFromText as registerIconFromText_impl,
+} from './icon.registry.js';
 
 /**
  * Icon component
@@ -25,6 +30,8 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   private _collection = 'default';
 
+  @property()
+  @alternateName('iconName')
   public set name(value: string) {
     if (this._name !== value) {
       this._name = value;
@@ -37,7 +44,6 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
    *
    * @attr [name=""]
    */
-  @property()
   public get name(): string {
     return this._name;
   }
@@ -98,6 +104,24 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   protected render() {
     return html` ${unsafeSVG(this.svg)} `;
+  }
+
+  @blazorInclude()
+  protected async registerIcon(
+    name: string,
+    url: string,
+    collection = 'default'
+  ) {
+    await registerIcon_impl(name, url, collection);
+  }
+
+  @blazorInclude()
+  protected registerIconFromText(
+    name: string,
+    iconText: string,
+    collection = 'default'
+  ) {
+    registerIconFromText_impl(name, iconText, collection);
   }
 }
 
