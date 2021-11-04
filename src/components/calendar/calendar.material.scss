@@ -5,12 +5,13 @@
 $date-size-large: rem(32px);
 $date-size-medium: rem(28px);
 $date-size-small: rem(24px);
-
+$calendar-bacground: color(surface);
 
 :host {
     display: flex;
     flex-direction: column;
     font-family: var(--igc-font-family);
+    background: $calendar-bacground;
 
     > * {
         font-family: var(--igc-font-family);
