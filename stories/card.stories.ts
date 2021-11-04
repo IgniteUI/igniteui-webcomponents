@@ -1,5 +1,5 @@
 import { html } from 'lit-html';
-import '../index.js';
+import '../src/index.js';
 import { Story } from './story';
 
 // region default
