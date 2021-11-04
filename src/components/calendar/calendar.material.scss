@@ -11,7 +11,7 @@ $calendar-background: color(surface);
     display: flex;
     flex-direction: column;
     font-family: var(--igc-font-family);
-    background: $calendar-bacground;
+    background: $calendar-background;
 
     > * {
         font-family: var(--igc-font-family);
