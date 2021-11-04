@@ -240,3 +240,144 @@ describe('Button component', () => {
     return fixture<IgcButtonComponent>(html`${unsafeStatic(template)}`);
   };
 });
+
+describe('LinkButton component', () => {
+  const DIFF_OPTIONS = {
+    ignoreChildren: ['a'],
+    ignoreAttributes: ['aria-disabled', 'part', 'role'],
+  };
+  let el: IgcButtonComponent;
+
+  describe('', () => {
+    beforeEach(async () => {
+      el = await createLinkButtonComponent();
+    });
+
+    it('renders an anchor element successfully', async () => {
+      expect(el).shadowDom.to.be.accessible();
+      expect(el).shadowDom.to.equal(
+        `<a aria-disabled="false" class="${classValue(
+          `flat large`
+        )}" href="/" part="base" role="button"/>`,
+        { ignoreChildren: ['a'] }
+      );
+    });
+
+    it('renders the prefix, content and suffix slots successfully', async () => {
+      expect(el).shadowDom.to.equal(`<a aria-disabled="false"
+        class="${classValue(`flat large`)}" href="/" part="base" role="button">
+        <span part="prefix"><slot name="prefix"></slot>
+        </span><slot></slot>
+        <span part="suffix"><slot name="suffix"></slot></span>
+      </a>`);
+    });
+
+    it('is created with the proper default values', async () => {
+      expect(el.rel).to.be.undefined;
+      expect(el.target).to.be.undefined;
+      expect(el.download).to.be.undefined;
+    });
+
+    it('sets href property successfully', async () => {
+      el.href = '../test';
+      expect(el.href).to.equal('../test');
+      await elementUpdated(el);
+      expect(el).shadowDom.to.equal(
+        `<a class="${classValue(`large flat`)}" href="../test" />`,
+        DIFF_OPTIONS
+      );
+
+      el.href = '';
+      expect(el.href).to.equal('');
+    });
+
+    it('sets rel property successfully', async () => {
+      el.rel = 'test';
+      expect(el.rel).to.equal('test');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<a class="${classValue(`large flat`)}" href="/" rel="test" />`,
+        DIFF_OPTIONS
+      );
+    });
+
+    it('sets target property successfully', async () => {
+      el.target = '_parent';
+      expect(el.target).to.equal('_parent');
+      await elementUpdated(el);
+      expect(el).shadowDom.to.equal(
+        `<a class="${classValue(`large flat`)}" href="/" target="_parent"/>`,
+        DIFF_OPTIONS
+      );
+      el.target = undefined;
+      expect(el.target).to.be.undefined;
+    });
+
+    it('sets download property successfully', async () => {
+      el.download = 'test';
+      expect(el.download).to.equal('test');
+      await elementUpdated(el);
+      expect(el).shadowDom.to.equal(
+        `<a class="${classValue(`large flat`)}" href="/" download="test"/>`,
+        DIFF_OPTIONS
+      );
+    });
+  });
+
+  describe('applies the correct CSS class to the base element for variant', () => {
+    const variants = ['flat', 'contained', 'outlined', 'fab'];
+
+    variants.forEach((variant) => {
+      it(variant, async () => {
+        el = await createLinkButtonComponent(
+          `<igc-button href="/" variant="${variant}"/>`
+        );
+        expect(el).shadowDom.to.equal(
+          `<a class="${classValue(`large ${variant}`)}" href="/"/>`,
+          DIFF_OPTIONS
+        );
+      });
+    });
+  });
+
+  describe('applies the correct CSS class to the base element for size', () => {
+    const sizes = ['small', 'medium', 'large'];
+    sizes.forEach((size) => {
+      it(size, async () => {
+        el = await createLinkButtonComponent(
+          `<igc-button href="/" size="${size}" />`
+        );
+        expect(el).shadowDom.to.equal(
+          `<a class="${classValue(`flat ${size}`)}" href="/"/>`,
+          DIFF_OPTIONS
+        );
+      });
+    });
+  });
+  it('applies the correct CSS class to the base element when link button is disabled', async () => {
+    el = await createLinkButtonComponent(
+      `<igc-button href="/" disabled="true"/>`
+    );
+    expect(el).shadowDom.to.equal(
+      `<a class="${classValue(`disabled flat large`)}" href="/"/>`,
+      DIFF_OPTIONS
+    );
+  });
+
+  it('applies all anchor specific properties to the wrapped base element', async () => {
+    el = await createLinkButtonComponent(
+      `<igc-button variant="contained" size="medium" href="test" target="_blank" download="test" rel="test">Submit<igc-button>`
+    );
+    expect(el).shadowDom.to.equal(
+      `<a class="${classValue(
+        `medium contained`
+      )}" href="test" target="_blank" download="test" rel="test"/>`,
+      DIFF_OPTIONS
+    );
+  });
+
+  const createLinkButtonComponent = (template = '<igc-button href="/"/>') => {
+    return fixture<IgcButtonComponent>(html`${unsafeStatic(template)}`);
+  };
+});

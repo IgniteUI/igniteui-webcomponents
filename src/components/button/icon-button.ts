@@ -27,25 +27,9 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   @property({ type: Boolean })
   public mirrored = false;
 
-  /** The href attribute of the icon. */
-  @property()
-  public href!: string;
-
   /** The visual variant of the icon button. */
   @property()
   public variant: 'flat' | 'contained' | 'outlined' = 'flat';
-
-  /** The download attribute of the icon. */
-  @property()
-  public download!: string;
-
-  /** The target attribute of the icon button. */
-  @property()
-  public target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
-
-  /** The rel attribute of the icon button. */
-  @property()
-  public rel!: string;
 
   private renderIcon() {
     return html`

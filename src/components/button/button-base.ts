@@ -25,6 +25,25 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   @query('.native', true)
   private nativeElement!: HTMLElement;
 
+  /** The URL the button points to. */
+  @property()
+  public href!: string;
+
+  /** Prompts to save the linked URL instead of navigating to it. */
+  @property()
+  public download!: string;
+
+  /** Where to display the linked URL, as the name for a browsing context. */
+  @property()
+  public target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
+
+  /**
+   * The relationship of the linked URL.
+   * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+   */
+  @property()
+  public rel!: string;
+
   /**
    * Determines whether the button is disabled.
    */

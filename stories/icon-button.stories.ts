@@ -30,17 +30,19 @@ const metadata = {
     },
     href: {
       type: 'string',
-      description: 'The href attribute of the icon.',
+      description: 'The URL the button points to.',
       control: 'text',
     },
     download: {
       type: 'string',
-      description: 'The download attribute of the icon.',
+      description:
+        'Prompts to save the linked URL instead of navigating to it.',
       control: 'text',
     },
     target: {
       type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
-      description: 'The target attribute of the icon button.',
+      description:
+        'Where to display the linked URL, as the name for a browsing context.',
       options: ['_blank', '_parent', '_self', '_top', 'undefined'],
       control: {
         type: 'select',
@@ -48,7 +50,8 @@ const metadata = {
     },
     rel: {
       type: 'string',
-      description: 'The rel attribute of the icon button.',
+      description:
+        'The relationship of the linked URL.\nSee https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types',
       control: 'text',
     },
     disabled: {

@@ -31,7 +31,7 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
   @property()
   public type!: 'button' | 'reset' | 'submit';
 
-  protected render() {
+  private renderButton() {
     return html`
       <button
         part="base"
@@ -44,6 +44,30 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
         ${this.renderContent()}
       </button>
     `;
+  }
+
+  private renderLinkButton() {
+    return html`
+      <a
+        part="base"
+        role="button"
+        href=${ifDefined(this.href)}
+        target=${ifDefined(this.target)}
+        download=${ifDefined(this.download)}
+        rel=${ifDefined(this.rel)}
+        aria-disabled=${this.disabled ? 'true' : 'false'}
+        class=${classMap(this.classes)}
+        @focus=${this.handleFocus}
+        @blur=${this.handleBlur}
+      >
+        ${this.renderContent()}
+      </a>
+    `;
+  }
+
+  protected render() {
+    const link = !!this.href;
+    return link ? this.renderLinkButton() : this.renderButton();
   }
 }
 
