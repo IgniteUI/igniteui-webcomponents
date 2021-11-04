@@ -99,7 +99,7 @@
         }
     }
 
-    igc-button[variant='fab']:not([disabled])::part(base)
+    igc-button[variant='fab']:not([disabled])::part(base),
     igc-button[variant='contained']:not([disabled])::part(base) {
         color: #{utils.contrast-color(primary, 600)};
 
