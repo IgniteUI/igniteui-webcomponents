@@ -1,11 +1,7 @@
 @use '../../styles/utilities' as *;
+@use 'shared-calendar' as *;
 @use 'sass:map';
 @use 'sass:math';
-
-$date-size-large: rem(32px);
-$date-size-medium: rem(28px);
-$date-size-small: rem(24px);
-$calendar-bacground: color(surface);
 
 :host {
     display: flex;
