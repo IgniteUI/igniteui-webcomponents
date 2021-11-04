@@ -28,6 +28,10 @@ export default class IgcListItemComponent extends LitElement {
 
   constructor() {
     super();
+  }
+
+  public connectedCallback() {
+    super.connectedCallback();
     this.setAttribute('role', 'listitem');
   }
 
