@@ -25,6 +25,13 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   @query('.native', true)
   private nativeElement!: HTMLElement;
 
+  /**
+   * The type of the button. Defaults to undefined.
+   */
+  @alternateName('displayType')
+  @property()
+  public type!: 'button' | 'reset' | 'submit';
+
   /** The URL the button points to. */
   @property()
   public href!: string;

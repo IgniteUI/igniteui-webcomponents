@@ -67,6 +67,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
           <button
             part="base"
             .disabled=${this.disabled}
+            type=${ifDefined(this.type)}
             aria-disabled=${this.disabled ? 'true' : 'false'}
             @focus=${this.handleFocus}
             @blur=${this.handleBlur}

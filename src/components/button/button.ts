@@ -24,13 +24,6 @@ import { IgcButtonBaseComponent } from './button-base.js';
  */
 @customElement('igc-button')
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
-  /**
-   * The type of the button. Defaults to undefined.
-   */
-  @alternateName('displayType')
-  @property()
-  public type!: 'button' | 'reset' | 'submit';
-
   private renderButton() {
     return html`
       <button
