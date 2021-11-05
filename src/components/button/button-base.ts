@@ -1,10 +1,11 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, TemplateResult } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { alternateName } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './button.material.css';
 
 export interface IgcButtonEventMap {
   igcFocus: CustomEvent<void>;
@@ -17,12 +18,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   /**
    * @private
    */
-  public static styles = [styles];
-
-  /**
-   * @private
-   */
-  @query('.native', true)
+  @query('[part="base"]', true)
   private nativeElement!: HTMLElement;
 
   /**
@@ -57,10 +53,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  /** Sets the variant of the button. */
-  @property({ reflect: true })
-  public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'flat';
-
   /** Sets focus in the button. */
   @alternateName('focusComponent')
   public focus(options?: FocusOptions) {
@@ -82,30 +74,47 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   }
 
   protected get classes() {
-    const { size, variant } = this;
-
-    return {
-      native: true,
-      flat: variant === 'flat',
-      outlined: variant === 'outlined',
-      contained: variant === 'contained',
-      fab: variant === 'fab',
-      small: size === 'small',
-      medium: size === 'medium',
-      large: size === 'large',
-      disabled: this.disabled,
-    };
+    return {};
   }
 
-  protected renderContent() {
+  protected renderButton() {
     return html`
-      <span part="prefix">
-        <slot name="prefix"></slot>
-      </span>
-      <slot></slot>
-      <span part="suffix">
-        <slot name="suffix"></slot>
-      </span>
+      <button
+        part="base"
+        .disabled=${this.disabled}
+        class=${classMap(this.classes)}
+        type=${ifDefined(this.type)}
+        @focus=${this.handleFocus}
+        @blur=${this.handleBlur}
+      >
+        ${this.renderContent()}
+      </button>
     `;
+  }
+
+  protected renderLinkButton() {
+    return html`
+      <a
+        part="base"
+        role="button"
+        href=${ifDefined(this.href)}
+        target=${ifDefined(this.target)}
+        download=${ifDefined(this.download)}
+        rel=${ifDefined(this.rel)}
+        aria-disabled=${this.disabled ? 'true' : 'false'}
+        class=${classMap(this.classes)}
+        @focus=${this.handleFocus}
+        @blur=${this.handleBlur}
+      >
+        ${this.renderContent()}
+      </a>
+    `;
+  }
+
+  protected abstract renderContent(): TemplateResult;
+
+  protected render() {
+    const link = !!this.href;
+    return link ? this.renderLinkButton() : this.renderButton();
   }
 }

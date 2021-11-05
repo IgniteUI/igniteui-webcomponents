@@ -13,6 +13,7 @@ import '../icon/icon';
  */
 @customElement('igc-icon-button')
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
+  /** @private */
   public static styles = [styles];
 
   /** The name of the icon. */
@@ -31,7 +32,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   @property()
   public variant: 'flat' | 'contained' | 'outlined' = 'flat';
 
-  private renderIcon() {
+  protected renderContent() {
     return html`
       <igc-icon
         part="icon"
@@ -42,39 +43,6 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
         aria-hidden="true"
       ></igc-icon>
     `;
-  }
-
-  protected render() {
-    const link = !!this.href;
-
-    return link
-      ? html`
-          <a
-            part="base"
-            role="button"
-            href=${ifDefined(this.href)}
-            target=${ifDefined(this.target)}
-            download=${ifDefined(this.download)}
-            rel=${ifDefined(this.rel)}
-            aria-disabled=${this.disabled ? 'true' : 'false'}
-            @focus=${this.handleFocus}
-            @blur=${this.handleBlur}
-          >
-            ${this.renderIcon()}
-          </a>
-        `
-      : html`
-          <button
-            part="base"
-            .disabled=${this.disabled}
-            type=${ifDefined(this.type)}
-            aria-disabled=${this.disabled ? 'true' : 'false'}
-            @focus=${this.handleFocus}
-            @blur=${this.handleBlur}
-          >
-            ${this.renderIcon()}
-          </button>
-        `;
   }
 }
 
