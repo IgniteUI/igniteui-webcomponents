@@ -28,6 +28,14 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    type: {
+      type: '"button" | "reset" | "submit"',
+      description: 'The type of the button. Defaults to undefined.',
+      options: ['button', 'reset', 'submit'],
+      control: {
+        type: 'inline-radio',
+      },
+    },
     href: {
       type: 'string',
       description: 'The URL the button points to.',
@@ -85,6 +93,7 @@ interface ArgTypes {
   name: string;
   collection: string;
   mirrored: boolean;
+  type: 'button' | 'reset' | 'submit';
   href: string;
   download: string;
   target: '_blank' | '_parent' | '_self' | '_top' | undefined;

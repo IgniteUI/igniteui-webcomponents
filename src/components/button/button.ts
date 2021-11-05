@@ -1,8 +1,7 @@
 import { html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { alternateName } from '../common/decorators';
 import { IgcButtonBaseComponent } from './button-base.js';
 
 /**
