@@ -58,7 +58,7 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
   }
 
   protected render() {
-    const link = !!this.href;
+    const link = this.href !== undefined;
     return link ? this.renderLinkButton() : this.renderButton();
   }
 }
