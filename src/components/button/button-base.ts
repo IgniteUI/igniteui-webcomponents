@@ -114,7 +114,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   protected abstract renderContent(): TemplateResult;
 
   protected render() {
-    const link = !!this.href;
+    const link = this.href !== undefined;
     return link ? this.renderLinkButton() : this.renderButton();
   }
 }
