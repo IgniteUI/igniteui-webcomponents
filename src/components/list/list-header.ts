@@ -16,6 +16,10 @@ export default class IgcListHeaderComponent extends LitElement {
 
   constructor() {
     super();
+  }
+
+  public connectedCallback() {
+    super.connectedCallback();
     this.setAttribute('role', 'separator');
   }
 
