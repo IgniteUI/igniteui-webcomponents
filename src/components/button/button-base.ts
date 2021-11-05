@@ -77,7 +77,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     return {};
   }
 
-  protected renderButton() {
+  private renderButton() {
     return html`
       <button
         part="base"
@@ -92,7 +92,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     `;
   }
 
-  protected renderLinkButton() {
+  private renderLinkButton() {
     return html`
       <a
         part="base"
