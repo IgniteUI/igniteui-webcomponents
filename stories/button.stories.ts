@@ -8,6 +8,15 @@ const metadata = {
   title: 'Button',
   component: 'igc-button',
   argTypes: {
+    variant: {
+      type: '"flat" | "contained" | "outlined" | "fab"',
+      description: 'Sets the variant of the button.',
+      options: ['flat', 'contained', 'outlined', 'fab'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'flat',
+    },
     type: {
       type: '"button" | "reset" | "submit"',
       description: 'The type of the button. Defaults to undefined.',
@@ -48,15 +57,6 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    variant: {
-      type: '"flat" | "contained" | "outlined" | "fab"',
-      description: 'Sets the variant of the button.',
-      options: ['flat', 'contained', 'outlined', 'fab'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'flat',
-    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -70,13 +70,13 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
+  variant: 'flat' | 'contained' | 'outlined' | 'fab';
   type: 'button' | 'reset' | 'submit';
   href: string;
   download: string;
   target: '_blank' | '_parent' | '_self' | '_top' | undefined;
   rel: string;
   disabled: boolean;
-  variant: 'flat' | 'contained' | 'outlined' | 'fab';
   size: 'small' | 'medium' | 'large';
 }
 // endregion

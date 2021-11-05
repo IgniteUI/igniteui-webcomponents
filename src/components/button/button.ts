@@ -1,8 +1,7 @@
 import { html } from 'lit';
-import { customElement } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import { customElement, property } from 'lit/decorators.js';
 import { IgcButtonBaseComponent } from './button-base.js';
+import { styles } from './button.material.css';
 
 /**
  * Represents a clickable button, used to submit forms or anywhere in a
@@ -23,43 +22,40 @@ import { IgcButtonBaseComponent } from './button-base.js';
  */
 @customElement('igc-button')
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
-  private renderButton() {
-    return html`
-      <button
-        part="base"
-        .disabled=${this.disabled}
-        class=${classMap(this.classes)}
-        type=${ifDefined(this.type)}
-        @focus=${this.handleFocus}
-        @blur=${this.handleBlur}
-      >
-        ${this.renderContent()}
-      </button>
-    `;
+  /**
+   * @private
+   */
+  public static styles = [styles];
+
+  /** Sets the variant of the button. */
+  @property({ reflect: true })
+  public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'flat';
+
+  protected get classes() {
+    const { size, variant } = this;
+
+    return {
+      flat: variant === 'flat',
+      outlined: variant === 'outlined',
+      contained: variant === 'contained',
+      fab: variant === 'fab',
+      small: size === 'small',
+      medium: size === 'medium',
+      large: size === 'large',
+      disabled: this.disabled,
+    };
   }
 
-  private renderLinkButton() {
+  protected renderContent() {
     return html`
-      <a
-        part="base"
-        role="button"
-        href=${ifDefined(this.href)}
-        target=${ifDefined(this.target)}
-        download=${ifDefined(this.download)}
-        rel=${ifDefined(this.rel)}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
-        class=${classMap(this.classes)}
-        @focus=${this.handleFocus}
-        @blur=${this.handleBlur}
-      >
-        ${this.renderContent()}
-      </a>
+      <span part="prefix">
+        <slot name="prefix"></slot>
+      </span>
+      <slot></slot>
+      <span part="suffix">
+        <slot name="suffix"></slot>
+      </span>
     `;
-  }
-
-  protected render() {
-    const link = !!this.href;
-    return link ? this.renderLinkButton() : this.renderButton();
   }
 }
 

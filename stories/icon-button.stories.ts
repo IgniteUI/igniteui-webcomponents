@@ -28,6 +28,15 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    variant: {
+      type: '"flat" | "contained" | "outlined"',
+      description: 'The visual variant of the icon button.',
+      options: ['flat', 'contained', 'outlined'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'flat',
+    },
     type: {
       type: '"button" | "reset" | "submit"',
       description: 'The type of the button. Defaults to undefined.',
@@ -68,15 +77,6 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    variant: {
-      type: '"flat" | "contained" | "outlined"',
-      description: 'The visual variant of the icon button.',
-      options: ['flat', 'contained', 'outlined'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'flat',
-    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -93,13 +93,13 @@ interface ArgTypes {
   name: string;
   collection: string;
   mirrored: boolean;
+  variant: 'flat' | 'contained' | 'outlined';
   type: 'button' | 'reset' | 'submit';
   href: string;
   download: string;
   target: '_blank' | '_parent' | '_self' | '_top' | undefined;
   rel: string;
   disabled: boolean;
-  variant: 'flat' | 'contained' | 'outlined';
   size: 'small' | 'medium' | 'large';
 }
 // endregion

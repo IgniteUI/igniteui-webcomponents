@@ -148,7 +148,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button aria-disabled="${el.disabled}" disabled>
+        `<button disabled>
           <igc-icon></igc-icon>
         </button>`,
         {
