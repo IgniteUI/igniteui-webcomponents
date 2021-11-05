@@ -26,6 +26,19 @@ export { default as IgcRadioGroupComponent } from './components/radio-group/radi
 export { default as IgcRippleComponent } from './components/ripple/ripple';
 export { default as IgcSwitchComponent } from './components/checkbox/switch';
 
+export { SizableMixin } from './components/common/mixins/sizable';
+export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources';
+
+export { IgcButtonBaseComponent } from './components/button/button-base';
+
+export { IgcCalendarBaseComponent } from './components/calendar/common/calendar-base';
+export {
+  DateRangeDescriptor,
+  DateRangeType,
+} from './components/calendar/common/calendar.model';
+
+export { IgcCheckboxBaseComponent } from './components/checkbox/checkbox-base';
+
 // utility stuff
 export {
   registerIcon,
