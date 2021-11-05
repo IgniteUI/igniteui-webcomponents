@@ -6,10 +6,13 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../index.js';
-import type IgcInputComponent from './input';
+import { defineComponents, IgcInputComponent } from '../../index.js';
 
 describe('Input component', () => {
+  before(() => {
+    defineComponents(IgcInputComponent);
+  });
+
   let el: IgcInputComponent;
   let input: HTMLInputElement;
 

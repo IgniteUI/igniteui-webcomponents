@@ -1,10 +1,13 @@
 import { expect, fixture, html, elementUpdated } from '@open-wc/testing';
-import '../../index.js';
-import type IgcCalendarComponent from './calendar';
+import { defineComponents, IgcCalendarComponent } from '../../index.js';
 import type IgcDaysViewComponent from './days-view/days-view';
 import type IgcMonthsViewComponent from './months-view/months-view';
 
 describe('Calendar Rendering', () => {
+  before(() => {
+    defineComponents(IgcCalendarComponent);
+  });
+
   let el: IgcCalendarComponent;
   let daysView: IgcDaysViewComponent;
 
