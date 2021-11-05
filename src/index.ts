@@ -40,6 +40,9 @@ export {
 
 export { IgcCheckboxBaseComponent } from './components/checkbox/checkbox-base';
 
+export { defineComponents } from './components/common/definitions/defineComponents';
+export { defineAllComponents } from './components/common/definitions/defineAllComponents';
+
 // utility stuff
 export {
   registerIcon,

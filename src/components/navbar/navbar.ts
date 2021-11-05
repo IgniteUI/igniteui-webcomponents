@@ -1,5 +1,4 @@
 import { html, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
 import { styles } from './navbar.material.css';
 
 /**
@@ -17,8 +16,10 @@ import { styles } from './navbar.material.css';
  * @csspart middle - The navigation bar title container.
  * @csspart end - The right aligned action icons container.
  */
-@customElement('igc-navbar')
 export default class IgcNavbarComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-navbar';
+
   /** @private */
   public static styles = [styles];
 

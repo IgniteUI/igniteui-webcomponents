@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
@@ -22,7 +22,6 @@ import { IgcButtonBaseComponent } from './button-base.js';
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
  */
-@customElement('igc-link-button')
 export default class IgcLinkButtonComponent extends IgcButtonBaseComponent {
   /** The URL the link-button points to. */
   @property()

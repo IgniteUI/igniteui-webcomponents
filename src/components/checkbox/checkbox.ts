@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
@@ -25,8 +25,10 @@ let nextId = 0;
  * @csspart label - The checkbox label.
  * @csspart indicator - The checkbox icon.
  */
-@customElement('igc-checkbox')
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
+  /** @private */
+  public static tagName = 'igc-checkbox';
+
   /** @private */
   public static styles = styles;
 
