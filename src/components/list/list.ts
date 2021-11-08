@@ -1,5 +1,4 @@
 import { html, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
 import { SizableMixin } from '../common/mixins/sizable';
 import { styles } from './list.material.css';
 
@@ -10,8 +9,10 @@ import { styles } from './list.material.css';
  *
  * @slot - Renders the list items and list headers inside default slot.
  */
-@customElement('igc-list')
 export default class IgcListComponent extends SizableMixin(LitElement) {
+  /** @private */
+  public static tagName = 'igc-list';
+
   /** @private */
   public static styles = styles;
 

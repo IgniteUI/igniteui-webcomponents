@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './button.material.css';
 
@@ -20,8 +20,10 @@ import { styles } from './button.material.css';
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
  */
-@customElement('igc-button')
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
+  /** @private */
+  public static tagName = 'igc-button';
+
   /**
    * @private
    */

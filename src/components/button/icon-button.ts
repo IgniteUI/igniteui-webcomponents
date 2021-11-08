@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './icon-button.material.css';
@@ -11,8 +11,10 @@ import '../icon/icon';
  * @csspart base - The wrapping element.
  * @csspart icon - The icon element.
  */
-@customElement('igc-icon-button')
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
+  /** @private */
+  public static tagName = 'igc-icon-button';
+
   /** @private */
   public static styles = [styles];
 

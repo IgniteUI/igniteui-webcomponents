@@ -1,6 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import '../../index.js';
-import type IgcIconComponent from './icon';
+import { defineComponents, IgcIconComponent } from '../../index.js';
 import { registerIconFromText } from './icon.registry';
 
 const bugSvgContent =
@@ -17,6 +16,10 @@ const searchSvgContent =
 const searchSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">${searchSvgContent}</svg>`;
 
 describe('Icon component', () => {
+  before(() => {
+    defineComponents(IgcIconComponent);
+  });
+
   beforeEach(() => {
     registerIconFromText('bug', bugSvg);
     registerIconFromText('virus', virusSvg);

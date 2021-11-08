@@ -1,8 +1,11 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import '../../index.js';
-import type IgcBadgeComponent from './badge';
+import { defineComponents, IgcBadgeComponent } from '../../index.js';
 
 describe('Badge', () => {
+  before(() => {
+    defineComponents(IgcBadgeComponent);
+  });
+
   it('passes the a11y audit', async () => {
     const el = await fixture<IgcBadgeComponent>(html`<igc-badge></igc-badge>`);
 

@@ -1,10 +1,5 @@
 import { html, LitElement } from 'lit';
-import {
-  customElement,
-  property,
-  queryAssignedNodes,
-  state,
-} from 'lit/decorators.js';
+import { property, queryAssignedNodes, state } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators';
 import { partNameMap } from '../common/util';
@@ -22,8 +17,10 @@ import { styles } from './nav-drawer-item.material.css';
  * @csspart icon - The icon container.
  * @csspart content - The content container.
  */
-@customElement('igc-nav-drawer-item')
 export default class IgcNavDrawerItemComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-nav-drawer-item';
+
   /** @private */
   public static styles = [styles];
 

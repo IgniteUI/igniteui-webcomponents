@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styles } from './badge.material.css';
 
@@ -13,8 +13,10 @@ import { styles } from './badge.material.css';
  *
  * @csspart base - The base wrapper of the badge.
  */
-@customElement('igc-badge')
 export default class IgcBadgeComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-badge';
+
   /** @private */
   public static styles = styles;
 
@@ -59,6 +61,11 @@ export default class IgcBadgeComponent extends LitElement {
     `;
   }
 }
+
+// export const badgeDefinition: IgcComponentDefinition = {
+//   tag: 'igc-badge',
+//   component: IgcBadgeComponent,
+// };
 
 declare global {
   interface HTMLElementTagNameMap {

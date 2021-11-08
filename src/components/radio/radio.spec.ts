@@ -6,10 +6,13 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../index.js';
-import type IgcRadioComponent from './radio';
+import { defineComponents, IgcRadioComponent } from '../../index.js';
 
 describe('Radio Component', () => {
+  before(() => {
+    defineComponents(IgcRadioComponent);
+  });
+
   const label = 'Apple';
   let radio: IgcRadioComponent;
   let input: HTMLInputElement;

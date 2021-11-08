@@ -9,7 +9,13 @@
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "./components/calendar/days-view/days-view.js",
+    "./components/calendar/months-view/months-view.js",
+    "./components/calendar/years-view/years-view.js",
+    "./components/calendar/icon/icon.js",
+    "*.css"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/IgniteUI/igniteui-webcomponents"

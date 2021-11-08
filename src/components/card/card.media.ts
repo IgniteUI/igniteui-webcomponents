@@ -1,5 +1,4 @@
 import { LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
 import { styles } from './card.media.material.css';
 
 /** A container for card's media - could be an image, gif, video
@@ -7,8 +6,10 @@ import { styles } from './card.media.material.css';
  *
  * @slot - Renders the card media content
  */
-@customElement('igc-card-media')
-export default class IgcCardMedia extends LitElement {
+export default class IgcCardMediaComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-card-media';
+
   /** @private */
   public static styles = styles;
 
@@ -19,6 +20,6 @@ export default class IgcCardMedia extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-card-media': IgcCardMedia;
+    'igc-card-media': IgcCardMediaComponent;
   }
 }
