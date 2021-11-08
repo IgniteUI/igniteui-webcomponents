@@ -13,7 +13,7 @@
     "./components/calendar/days-view/days-view.js",
     "./components/calendar/months-view/months-view.js",
     "./components/calendar/years-view/years-view.js",
-    "./components/calendar/icon/icon.js",
+    "./components/icon/icon.js",
     "*.css"
   ],
   "repository": {
