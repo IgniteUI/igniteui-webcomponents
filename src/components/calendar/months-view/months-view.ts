@@ -5,7 +5,7 @@ import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
 import { IgcCalendarBaseEventMap } from '../common/calendar-base';
-import { styles } from './months-view.css';
+import { styles } from './months-view.material.css';
 import { partNameMap } from '../../common/util';
 import { setDateSafe } from '../common/utils';
 import { MONTHS_PER_ROW } from '../calendar';

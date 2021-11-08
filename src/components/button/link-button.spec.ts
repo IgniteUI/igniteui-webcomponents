@@ -5,7 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import '../../../index.js';
+import '../../index.js';
 import { classValue } from './button.spec';
 import type IgcLinkButtonComponent from './link-button';
 

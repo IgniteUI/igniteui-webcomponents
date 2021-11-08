@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "npm run storybook",
-    "serve": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wds\"",
+    "serve": "npm run build:publish && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wds\"",
     "build": "npm run clean && npm run build:styles && npm run build:typescript && npm run build:docs:json && npm run build:meta",
     "build:publish": "node scripts/build.js",
     "build:typescript": "tsc",
@@ -44,10 +44,11 @@
     "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
     "storybook": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"npm:watch-meta\" \"wds -c .storybook/server.mjs\"",
     "storybook:build": "npm run build && build-storybook",
-    "typedoc:dev": "gulp typedocServe"
+    "build:typedoc:ja": "set NODE_ENV=production && gulp typedocBuildDocsJA",
+    "build:typedoc:en": "set NODE_ENV=production && gulp typedocBuildDocsEN"
   },
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "^2.0.2"
   },
   "devDependencies": {
     "@igniteui/material-icons-extended": "^2.9.0",
@@ -77,7 +78,7 @@
     "gulp-util": "^3.0.8",
     "husky": "^4.3.8",
     "keep-a-changelog": "^0.10.4",
-    "ig-typedoc-theme": "^4.0.3",
+    "igniteui-typedoc-theme": "^3.0.0",
     "lint-staged": "^10.5.4",
     "lit-analyzer": "^1.2.1",
     "node-watch": "^0.7.1",

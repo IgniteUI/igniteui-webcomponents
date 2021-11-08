@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import '../../../index.js';
+import '../../index.js';
 import type IgcIconComponent from './icon';
 import { registerIconFromText } from './icon.registry';
 

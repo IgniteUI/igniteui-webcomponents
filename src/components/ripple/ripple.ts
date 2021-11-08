@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { styles } from './ripple.css';
+import { styles } from './ripple.material.css';
 
 /**
  * A ripple can be applied to an element to represent
