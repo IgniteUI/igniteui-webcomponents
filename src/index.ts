@@ -14,7 +14,6 @@ export { default as IgcFormComponent } from './components/form/form';
 export { default as IgcIconButtonComponent } from './components/button/icon-button';
 export { default as IgcIconComponent } from './components/icon/icon';
 export { default as IgcInputComponent } from './components/input/input';
-export { default as IgcLinkButtonComponent } from './components/button/link-button';
 export { default as IgcListComponent } from './components/list/list';
 export { default as IgcListHeaderComponent } from './components/list/list-header';
 export { default as IgcListItemComponent } from './components/list/list-item';

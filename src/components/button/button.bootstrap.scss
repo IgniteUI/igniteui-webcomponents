@@ -1,44 +1,36 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
-    igc-button[size='large']::part(base),
-    igc-link-button[size='large']::part(base) {
+    igc-button[size='large']::part(base) {
         --size: #{utils.rem(48px)};
     }
 
-    igc-button[size='medium']::part(base),
-    igc-link-button[size='medium']::part(base) {
+    igc-button[size='medium']::part(base) {
         --size: #{utils.rem(40px)};
     }
 
-    igc-button[size='small']::part(base),
-    igc-link-button[size='small']::part(base) {
+    igc-button[size='small']::part(base) {
         --size: #{utils.rem(32px)};
     }
 
-    igc-button[variant='flat'][disabled]::part(base),
-    igc-link-button[variant='flat'][disabled]::part(base) {
+    igc-button[variant='flat'][disabled]::part(base) {
         background: transparent;
         color: #{utils.color(primary, 100)};
     }
 
     igc-button[variant='fab'][disabled]::part(base),
-    igc-button[variant='contained'][disabled]::part(base),
-    igc-link-button[variant='fab'][disabled]::part(base),
-    igc-link-button[variant='contained'][disabled]::part(base) {
+    igc-button[variant='contained'][disabled]::part(base) {
         background: #{utils.color(primary, 100)};
         color: #{utils.color(primary, 300)};
     }
 
-    igc-button[variant='outlined'][disabled]::part(base),
-    igc-link-button[variant='outlined'][disabled]::part(base) {
+    igc-button[variant='outlined'][disabled]::part(base) {
         color: #{utils.color(primary, 100)};
         box-shadow: 0 0 0 1px utils.color(primary, 100);
         background: transparent;
     }
 
-    igc-button[variant='flat']:not([disabled])::part(base),
-    igc-link-button[variant='flat']:not([disabled])::part(base) {
+    igc-button[variant='flat']:not([disabled])::part(base) {
         color: #{utils.color(primary, 500)};
 
         &:hover {
@@ -61,8 +53,7 @@
         }
     }
 
-    igc-button[variant='contained']:not([disabled])::part(base),
-    igc-link-button[variant='contained']:not([disabled])::part(base) {
+    igc-button[variant='contained']:not([disabled])::part(base) {
         color: #{utils.contrast-color(primary, 600)};
 
         &:hover {
@@ -88,8 +79,7 @@
         }
     }
 
-    igc-button[variant='outlined']:not([disabled])::part(base),
-    igc-link-button[variant='outlined']:not([disabled])::part(base) {
+    igc-button[variant='outlined']:not([disabled])::part(base) {
         color: #{utils.color(primary, 500)};
         transition: color .15s ease-out;
         box-shadow: 0 0 0 1px utils.color(primary, 500);
@@ -130,23 +120,19 @@
         }
     }
 
-    igc-button[variant='fab'][size='large']::part(base),
-    igc-link-button[variant='fab'][size='large']::part(base) {
+    igc-button[variant='fab'][size='large']::part(base) {
         border-radius: calc(var(--igc-border-radius) * 8);
     }
 
-    igc-button[variant='fab'][size='medium']::part(base),
-    igc-link-button[variant='fab'][size='medium']::part(base) {
+    igc-button[variant='fab'][size='medium']::part(base) {
         border-radius: calc(var(--igc-border-radius) * 6);
     }
 
-    igc-button[variant='fab'][size='small']::part(base),
-    igc-link-button[variant='fab'][size='small']::part(base) {
+    igc-button[variant='fab'][size='small']::part(base) {
         border-radius: calc(var(--igc-border-radius) * 4);
     }
 
-    igc-button[variant='fab']:not([disabled])::part(base),
-    igc-link-button[variant='fab']:not([disabled])::part(base) {
+    igc-button[variant='fab']:not([disabled])::part(base) {
         color: #{utils.contrast-color(primary, 600)};
 
         &:hover {
@@ -173,9 +159,7 @@
     }
 
     igc-button[variant='contained']::part(base),
-    igc-button[variant='fab']::part(base),
-    igc-link-button[variant='contained']::part(base),
-    igc-link-button[variant='fab']::part(base) {
+    igc-button[variant='fab']::part(base) {
         box-shadow: var(--igc-elevation-0);
     }
 }

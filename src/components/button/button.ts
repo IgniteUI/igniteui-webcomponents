@@ -1,9 +1,7 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { alternateName } from '../common/decorators';
 import { IgcButtonBaseComponent } from './button-base.js';
+import { styles } from './button.material.css';
 
 /**
  * Represents a clickable button, used to submit forms or anywhere in a
@@ -27,24 +25,38 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static tagName = 'igc-button';
 
   /**
-   * The type of the button. Defaults to undefined.
+   * @private
    */
-  @alternateName('displayType')
-  @property()
-  public type!: 'button' | 'reset' | 'submit';
+  public static styles = [styles];
 
-  protected render() {
+  /** Sets the variant of the button. */
+  @property({ reflect: true })
+  public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'flat';
+
+  protected get classes() {
+    const { size, variant } = this;
+
+    return {
+      flat: variant === 'flat',
+      outlined: variant === 'outlined',
+      contained: variant === 'contained',
+      fab: variant === 'fab',
+      small: size === 'small',
+      medium: size === 'medium',
+      large: size === 'large',
+      disabled: this.disabled,
+    };
+  }
+
+  protected renderContent() {
     return html`
-      <button
-        part="base"
-        .disabled=${this.disabled}
-        class=${classMap(this.classes)}
-        type=${ifDefined(this.type)}
-        @focus=${this.handleFocus}
-        @blur=${this.handleBlur}
-      >
-        ${this.renderContent()}
-      </button>
+      <span part="prefix">
+        <slot name="prefix"></slot>
+      </span>
+      <slot></slot>
+      <span part="suffix">
+        <slot name="suffix"></slot>
+      </span>
     `;
   }
 }
