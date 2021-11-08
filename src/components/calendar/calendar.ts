@@ -1,11 +1,5 @@
 import { html } from 'lit';
-import {
-  customElement,
-  property,
-  query,
-  queryAll,
-  state,
-} from 'lit/decorators.js';
+import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import type IgcDaysViewComponent from './days-view/days-view';
 import type IgcMonthsViewComponent from './months-view/months-view';
@@ -63,13 +57,15 @@ export const YEARS_PER_ROW = 3;
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@customElement('igc-calendar')
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
     Constructor<IgcCalendarBaseComponent>
   >(IgcCalendarBaseComponent)
 ) {
+  /** @private */
+  public static tagName = 'igc-calendar';
+
   /**
    * @private
    */

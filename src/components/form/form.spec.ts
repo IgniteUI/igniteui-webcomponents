@@ -6,11 +6,17 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../index.js';
-import type IgcFormComponent from './form';
-import type IgcRadioComponent from './../radio/radio';
+import {
+  defineAllComponents,
+  IgcFormComponent,
+  IgcRadioComponent,
+} from '../../index.js';
 
 describe('Form', () => {
+  before(() => {
+    defineAllComponents();
+  });
+
   it('passes the a11y audit', async () => {
     const el = await fixture<IgcFormComponent>(html`<igc-form></igc-form>`);
 

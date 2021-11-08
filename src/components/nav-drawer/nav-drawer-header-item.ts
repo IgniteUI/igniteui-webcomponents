@@ -1,5 +1,4 @@
 import { html, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
 import { styles } from './nav-drawer-header-item.material.css';
 
 /**
@@ -8,8 +7,10 @@ import { styles } from './nav-drawer-header-item.material.css';
  *
  * @slot - Renders the header content
  */
-@customElement('igc-nav-drawer-header-item')
 export default class IgcNavDrawerHeaderItemComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-nav-drawer-header-item';
+
   /** @private */
   public static styles = [styles];
 
