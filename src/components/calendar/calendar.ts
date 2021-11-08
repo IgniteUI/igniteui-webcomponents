@@ -7,6 +7,8 @@ import type IgcYearsViewComponent from './years-view/years-view';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
+  MONTHS_PER_ROW,
+  YEARS_PER_ROW,
 } from './common/calendar-base';
 import { styles } from './calendar.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
@@ -25,9 +27,6 @@ import './days-view/days-view';
 import './months-view/months-view';
 import './years-view/years-view';
 import '../icon/icon';
-
-export const MONTHS_PER_ROW = 3;
-export const YEARS_PER_ROW = 3;
 
 /**
  * Represents a calendar that lets users
