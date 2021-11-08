@@ -113,7 +113,7 @@ $thumb-label-height: rem(30px);
     height: 0;
     cursor: default;
     z-index: 1;
-    left: 0;
+    inset-inline-start: 0;
 }
 
 [part='thumb'],
@@ -132,7 +132,7 @@ $thumb-label-height: rem(30px);
     background: color(secondary, 500);
     transition: transform .1s ease-out, border-radius .1s ease-out;
     border-radius: $thumb-radius;
-    left: calc(#{$thumb-size} - #{$thumb-radius});
+    inset-inline-start: calc(#{$thumb-size} - #{$thumb-radius});
     top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
     margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
 
@@ -143,7 +143,7 @@ $thumb-label-height: rem(30px);
         height: $ripple-size;
         background: color(secondary, 500);
         top: calc(50% - #{$ripple-radius});
-        left: calc(50% - #{$ripple-radius});
+        inset-inline-start: calc(50% - #{$ripple-radius});
         opacity: 0;
         transform: scale(0);
         transform-origin: center center;
@@ -172,7 +172,7 @@ $thumb-label-height: rem(30px);
     margin-inline-start: calc((#{$thumb-label-width} / 2) * -1);
     flex: 0 0 auto;
     top: calc((#{$thumb-label-height} + #{$thumb-size}) * -1);
-    left: -50%;
+    inset-inline-start: -50%;
     pointer-events: none;
     min-width: $thumb-label-width;
     height: $thumb-label-height;
