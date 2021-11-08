@@ -479,7 +479,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       weekend: this.isWeekend(day),
       range: this.selection === 'range' && this.isRangeDate(day.date),
       special: this.isSpecial(day),
-      disabled: isHidden || isDisabled || !day.isCurrentMonth,
+      disabled: isHidden || isDisabled,
       single: this.selection !== 'range',
       preview: this.isRangePreview(day.date),
     };

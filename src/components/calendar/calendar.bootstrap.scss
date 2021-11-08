@@ -1,6 +1,9 @@
 @use '../../styles/utilities' as *;
+@use 'shared-calendar' as *;
 
 $border-radius: rem(4px);
+$special-background: color(primary, 300);
+$special-color: contrast-color(primary, 600);
 $selected-background: color(primary, 500);
 $selected-color: contrast-color(primary, 600);
 $current-background: color(gray, 200);
@@ -19,6 +22,7 @@ $days-view-gap: rem(4px);
     igc-calendar {
         border: rem(1px) solid $border-color;
         border-radius: $border-radius;
+        background: transparent;
     }
 
     igc-calendar::part(days-row) {
@@ -311,5 +315,17 @@ $days-view-gap: rem(4px);
         &::after {
             display: none;
         }
+    }
+
+    igc-calendar::part(date-inner special) {
+        background: $special-background;
+        border-color: $special-background;
+        color: $special-color;
+    }
+
+    igc-calendar::part(date-inner special selected) {
+        background: $selected-background;
+        border-color: $selected-background;
+        color: $selected-color;
     }
 }
