@@ -11,10 +11,10 @@ export const globalTypes = {
   theme: {
     name: 'Theme',
     description: 'Global theme for components',
-    defaultValue: 'material',
+    defaultValue: 'bootstrap',
     toolbar: {
       icon: 'cog',
-      items: ['material', 'bootstrap', 'fluent', 'indigo'],
+      items: ['bootstrap', 'material', 'fluent', 'indigo'],
       showName: 'True',
     },
   },

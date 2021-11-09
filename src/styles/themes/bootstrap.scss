@@ -1,4 +1,5 @@
 @use '../utilities' as utils;
+@use '../../components/badge/badge.bootstrap' as badge;
 @use '../../components/button/button.bootstrap' as button;
 @use '../../components/button/icon-button.bootstrap' as icon-button;
 @use '../../components/card/card.bootstrap' as card;
@@ -187,6 +188,7 @@ $type-scale: utils.extend($_base-scale, (
     );
 }
 
+@include badge.theme();
 @include button.theme();
 @include card.theme();
 @include card-header.theme();
