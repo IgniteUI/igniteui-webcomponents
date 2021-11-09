@@ -4,8 +4,10 @@ import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { partNameMap } from '../../common/util';
-import { YEARS_PER_ROW } from '../calendar';
-import { IgcCalendarBaseEventMap } from '../common/calendar-base';
+import {
+  IgcCalendarBaseEventMap,
+  YEARS_PER_ROW,
+} from '../common/calendar-base';
 import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
 import { styles } from './years-view.material.css';
 
