@@ -4,6 +4,9 @@ import { watch } from '../../common/decorators';
 import { Calendar, DateRangeDescriptor } from './calendar.model';
 import { getWeekDayNumber } from './utils';
 
+export const MONTHS_PER_ROW = 3;
+export const YEARS_PER_ROW = 3;
+
 export interface IgcCalendarBaseEventMap {
   igcChange: CustomEvent<Date | Date[]>;
 }
