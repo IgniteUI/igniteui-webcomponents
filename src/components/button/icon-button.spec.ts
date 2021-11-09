@@ -5,10 +5,13 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import '../../index.js';
-import type IgcIconButtonComponent from './icon-button';
+import { defineComponents, IgcIconButtonComponent } from '../../index.js';
 
 describe('IconButton component', () => {
+  before(() => {
+    defineComponents(IgcIconButtonComponent);
+  });
+
   const DIFF_OPTIONS = {
     ignoreChildren: ['a'],
     ignoreAttributes: ['aria-disabled', 'part', 'role'],
@@ -148,7 +151,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button aria-disabled="${el.disabled}" disabled>
+        `<button disabled>
           <igc-icon></igc-icon>
         </button>`,
         {

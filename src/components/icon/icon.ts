@@ -19,6 +19,9 @@ import {
  */
 @customElement('igc-icon')
 export default class IgcIconComponent extends SizableMixin(LitElement) {
+  /** @private */
+  public static tagName = 'igc-icon';
+
   /**
    * @private
    */

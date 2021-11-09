@@ -1,11 +1,5 @@
 import { html, LitElement } from 'lit';
-import {
-  customElement,
-  property,
-  query,
-  queryAssignedNodes,
-  state,
-} from 'lit/decorators.js';
+import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
@@ -46,10 +40,12 @@ export interface IgcInputEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@customElement('igc-input')
 export default class IgcInputComponent extends SizableMixin(
   EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  /** @private */
+  public static tagName = 'igc-input';
+
   /** @private */
   public static styles = styles;
 

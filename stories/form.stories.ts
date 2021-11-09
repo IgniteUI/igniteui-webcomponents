@@ -1,5 +1,4 @@
 import { html } from 'lit-html';
-import '../src/index.js';
 import { Context, Story } from './story.js';
 
 // region default

@@ -6,11 +6,22 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../index.js';
-import type IgcNavDrawerComponent from './nav-drawer';
-import type IgcNavDrawerItemComponent from './nav-drawer-item';
+import {
+  defineComponents,
+  IgcNavDrawerComponent,
+  IgcNavDrawerItemComponent,
+  IgcNavDrawerHeaderItemComponent,
+} from '../../index.js';
 
 describe('Navigation Drawer', () => {
+  before(() => {
+    defineComponents(
+      IgcNavDrawerComponent,
+      IgcNavDrawerItemComponent,
+      IgcNavDrawerHeaderItemComponent
+    );
+  });
+
   let el: IgcNavDrawerComponent;
 
   describe('', async () => {

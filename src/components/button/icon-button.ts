@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './icon-button.material.css';
@@ -11,8 +11,11 @@ import '../icon/icon';
  * @csspart base - The wrapping element.
  * @csspart icon - The icon element.
  */
-@customElement('igc-icon-button')
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
+  /** @private */
+  public static tagName = 'igc-icon-button';
+
+  /** @private */
   public static styles = [styles];
 
   /** The name of the icon. */
@@ -27,27 +30,11 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   @property({ type: Boolean })
   public mirrored = false;
 
-  /** The href attribute of the icon. */
-  @property()
-  public href!: string;
-
   /** The visual variant of the icon button. */
   @property()
   public variant: 'flat' | 'contained' | 'outlined' = 'flat';
 
-  /** The download attribute of the icon. */
-  @property()
-  public download!: string;
-
-  /** The target attribute of the icon button. */
-  @property()
-  public target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
-
-  /** The rel attribute of the icon button. */
-  @property()
-  public rel!: string;
-
-  private renderIcon() {
+  protected renderContent() {
     return html`
       <igc-icon
         part="icon"
@@ -58,38 +45,6 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
         aria-hidden="true"
       ></igc-icon>
     `;
-  }
-
-  protected render() {
-    const link = !!this.href;
-
-    return link
-      ? html`
-          <a
-            part="base"
-            role="button"
-            href=${ifDefined(this.href)}
-            target=${ifDefined(this.target)}
-            download=${ifDefined(this.download)}
-            rel=${ifDefined(this.rel)}
-            aria-disabled=${this.disabled ? 'true' : 'false'}
-            @focus=${this.handleFocus}
-            @blur=${this.handleBlur}
-          >
-            ${this.renderIcon()}
-          </a>
-        `
-      : html`
-          <button
-            part="base"
-            .disabled=${this.disabled}
-            aria-disabled=${this.disabled ? 'true' : 'false'}
-            @focus=${this.handleFocus}
-            @blur=${this.handleBlur}
-          >
-            ${this.renderIcon()}
-          </button>
-        `;
   }
 }
 
