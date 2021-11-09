@@ -1,3 +1,4 @@
+@use 'sass:math';
 @use '../../styles/utilities' as *;
 @use 'shared-calendar' as *;
 
@@ -199,37 +200,37 @@ $current-color: contrast-color(secondary, 600);
 
     igc-calendar[size='large']::part(date first selected range) {
         &::before {
-            inset-inline-start: calc(50% - (#{$date-size-large / 2}));
+            inset-inline-start: calc(50% - math.div($date-size-large, 2));
         }
     }
 
     igc-calendar[size='medium']::part(date first selected range) {
         &::before {
-            inset-inline-start: calc(50% - (#{$date-size-medium / 2}));
+            inset-inline-start: calc(50% - math.div($date-size-medium, 2));
         }
     }
 
     igc-calendar[size='small']::part(date first selected range) {
         &::before {
-            inset-inline-start: calc(50% - (#{$date-size-small / 2}));
+            inset-inline-start: calc(50% - math.div($date-size-small, 2));
         }
     }
 
     igc-calendar[size='large']::part(date last selected range) {
         &::before {
-            inset-inline-end: calc(50% - (#{$date-size-large / 2}));
+            inset-inline-end: calc(50% - math.div($date-size-large, 2));
         }
     }
 
     igc-calendar[size='medium']::part(date last selected range) {
         &::before {
-            inset-inline-end: calc(50% - (#{$date-size-medium / 2}));
+            inset-inline-end: calc(50% - math.div($date-size-medium, 2));
         }
     }
 
     igc-calendar[size='small']::part(date last selected range) {
         &::before {
-            inset-inline-end: calc(50% - (#{$date-size-small / 2}));
+            inset-inline-end: calc(50% - math.div($date-size-small, 2));
         }
     }
 
