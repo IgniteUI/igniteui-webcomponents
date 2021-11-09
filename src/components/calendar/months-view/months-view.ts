@@ -4,11 +4,13 @@ import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
-import { IgcCalendarBaseEventMap } from '../common/calendar-base';
+import {
+  IgcCalendarBaseEventMap,
+  MONTHS_PER_ROW,
+} from '../common/calendar-base';
 import { styles } from './months-view.material.css';
 import { partNameMap } from '../../common/util';
 import { setDateSafe } from '../common/utils';
-import { MONTHS_PER_ROW } from '../calendar';
 
 /**
  * Instantiate a months view as a separate component in the calendar.
