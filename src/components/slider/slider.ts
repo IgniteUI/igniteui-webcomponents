@@ -17,10 +17,14 @@ export interface IRangeSliderValue {
   upper: number;
 }
 
-export class IgcSliderComponent extends EventEmitterMixin<
+export default class IgcSliderComponent extends EventEmitterMixin<
   IgcSliderEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  /** @private */
+  public static tagName = 'igc-slider';
+
+  /** @private */
   public static styles = [styles];
 
   // Limit handle travel zone
@@ -778,5 +782,11 @@ export class IgcSliderComponent extends EventEmitterMixin<
         </div>
       </div>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-slider': IgcSliderComponent;
   }
 }

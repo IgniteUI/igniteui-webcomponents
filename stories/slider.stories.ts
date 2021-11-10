@@ -1,6 +1,5 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
-import '../igniteui-webcomponents.js';
 import { Context, Story } from './story.js';
 
 const metadata = {
