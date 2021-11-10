@@ -6,11 +6,20 @@ import { styles } from './card.media.material.css';
  *
  * @slot - Renders the card media content
  */
-export class IgcCardMedia extends LitElement {
+export default class IgcCardMediaComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-card-media';
+
   /** @private */
   public static styles = styles;
 
   protected render() {
     return html`<slot></slot>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-card-media': IgcCardMediaComponent;
   }
 }

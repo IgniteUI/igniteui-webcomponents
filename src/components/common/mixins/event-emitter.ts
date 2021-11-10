@@ -1,7 +1,7 @@
 import { LitElement } from 'lit';
 import { Constructor } from './constructor';
 
-type UnpackCustomEvent<T> = T extends CustomEvent<infer U> ? U : never;
+export type UnpackCustomEvent<T> = T extends CustomEvent<infer U> ? U : never;
 
 export declare class EventEmitterInterface<E> {
   public addEventListener<K extends keyof M, M extends E & HTMLElementEventMap>(

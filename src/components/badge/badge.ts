@@ -13,7 +13,10 @@ import { styles } from './badge.material.css';
  *
  * @csspart base - The base wrapper of the badge.
  */
-export class IgcBadgeComponent extends LitElement {
+export default class IgcBadgeComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-badge';
+
   /** @private */
   public static styles = styles;
 
@@ -56,5 +59,16 @@ export class IgcBadgeComponent extends LitElement {
         <slot></slot>
       </span>
     `;
+  }
+}
+
+// export const badgeDefinition: IgcComponentDefinition = {
+//   tag: 'igc-badge',
+//   component: IgcBadgeComponent,
+// };
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-badge': IgcBadgeComponent;
   }
 }

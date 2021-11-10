@@ -30,10 +30,13 @@ export interface IgcNavDrawerEventMap {
  * @csspart main - The main container.
  * @csspart mini - The mini container.
  */
-export class IgcNavDrawerComponent extends EventEmitterMixin<
+export default class IgcNavDrawerComponent extends EventEmitterMixin<
   IgcNavDrawerEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  /** @private */
+  public static tagName = 'igc-nav-drawer';
+
   /** @private */
   public static styles = [styles];
 
@@ -85,6 +88,7 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
   private handleOpening() {
     const args = {
       detail: { cancel: false },
+      cancelable: true,
     };
     this.emitEvent('igcOpening', args);
 
@@ -99,6 +103,7 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
   private handleClosing() {
     const args = {
       detail: { cancel: false },
+      cancelable: true,
     };
     this.emitEvent('igcClosing', args);
 
@@ -130,5 +135,11 @@ export class IgcNavDrawerComponent extends EventEmitterMixin<
         <slot name="mini"></slot>
       </div>
     </div>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-nav-drawer': IgcNavDrawerComponent;
   }
 }

@@ -1,4 +1,3 @@
-import { IgcRadioComponent } from './../radio/radio';
 import {
   html,
   fixture,
@@ -6,11 +5,18 @@ import {
   elementUpdated,
   unsafeStatic,
 } from '@open-wc/testing';
-import { IgcFormComponent } from './form';
-import '../../../igniteui-webcomponents.js';
 import sinon from 'sinon';
+import {
+  defineAllComponents,
+  IgcFormComponent,
+  IgcRadioComponent,
+} from '../../index.js';
 
 describe('Form', () => {
+  before(() => {
+    defineAllComponents();
+  });
+
   it('passes the a11y audit', async () => {
     const el = await fixture<IgcFormComponent>(html`<igc-form></igc-form>`);
 

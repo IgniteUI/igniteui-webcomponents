@@ -24,7 +24,10 @@ let nextId = 0;
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
  */
-export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
+export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
+  /** @private */
+  public static tagName = 'igc-switch';
+
   /** @private */
   public static styles = styles;
 
@@ -39,8 +42,8 @@ export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   protected handleChange() {
     if (this.checked) {
       this.input.focus();
-      this.emitEvent('igcChange');
     }
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   protected render() {
@@ -79,5 +82,11 @@ export class IgcSwitchComponent extends IgcCheckboxBaseComponent {
         </span>
       </label>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-switch': IgcSwitchComponent;
   }
 }

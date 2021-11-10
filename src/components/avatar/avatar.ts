@@ -18,7 +18,10 @@ import { styles } from './avatar.material.css';
  * @csspart image - The image wrapper of the avatar.
  * @csspart icon - The icon wrapper of the avatar.
  */
-export class IgcAvatarComponent extends SizableMixin(LitElement) {
+export default class IgcAvatarComponent extends SizableMixin(LitElement) {
+  /** @private */
+  public static tagName = 'igc-avatar';
+
   /** @private */
   public static styles = [styles];
 
@@ -83,5 +86,16 @@ export class IgcAvatarComponent extends SizableMixin(LitElement) {
           : ''}
       </div>
     `;
+  }
+}
+
+// export const avatarDefinition: IgcComponentDefinition = {
+//   tag: 'igc-avatar',
+//   component: IgcAvatarComponent,
+// };
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-avatar': IgcAvatarComponent;
   }
 }

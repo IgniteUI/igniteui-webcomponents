@@ -11,7 +11,10 @@ import { styles } from './card.header.material.css';
  *
  * @csspart header - The card header container
  */
-export class IgcCardHeader extends LitElement {
+export default class IgcCardHeaderComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-card-header';
+
   /** @private */
   public static styles = styles;
 
@@ -28,5 +31,11 @@ export class IgcCardHeader extends LitElement {
         <slot></slot>
       </section>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-card-header': IgcCardHeaderComponent;
   }
 }

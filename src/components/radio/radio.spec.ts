@@ -6,10 +6,13 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../igniteui-webcomponents';
-import { IgcRadioComponent } from './radio';
+import { defineComponents, IgcRadioComponent } from '../../index.js';
 
 describe('Radio Component', () => {
+  before(() => {
+    defineComponents(IgcRadioComponent);
+  });
+
   const label = 'Apple';
   let radio: IgcRadioComponent;
   let input: HTMLInputElement;
@@ -174,7 +177,7 @@ describe('Radio Component', () => {
       radio.click();
 
       await elementUpdated(radio);
-      expect(eventSpy).calledWithExactly('igcChange');
+      expect(eventSpy).calledWithExactly('igcChange', { detail: true });
     });
 
     it('should be able to use external elements as label', async () => {

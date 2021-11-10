@@ -25,7 +25,10 @@ let nextId = 0;
  * @csspart label - The checkbox label.
  * @csspart indicator - The checkbox icon.
  */
-export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
+export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
+  /** @private */
+  public static tagName = 'igc-checkbox';
+
   /** @private */
   public static styles = styles;
 
@@ -42,12 +45,11 @@ export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   }
 
   @watch('checked', { waitUntilFirstUpdate: true })
-  @watch('indeterminate', { waitUntilFirstUpdate: true })
   protected handleChange() {
     if (this.checked) {
       this.input.focus();
-      this.emitEvent('igcChange');
     }
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   protected render() {
@@ -93,5 +95,11 @@ export class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         </span>
       </label>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-checkbox': IgcCheckboxComponent;
   }
 }

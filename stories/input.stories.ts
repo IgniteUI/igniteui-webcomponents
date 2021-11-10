@@ -1,5 +1,4 @@
 import { html } from 'lit-html';
-import '../igniteui-webcomponents.js';
 import { Story, Context } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
@@ -18,9 +17,10 @@ const metadata = {
       defaultValue: 'text',
     },
     inputmode: {
-      type: '"email" | "search" | "tel" | "url" | "none" | "txt" | "decimal" | "numeric"',
+      type: '"numeric" | "email" | "search" | "tel" | "url" | "none" | "txt" | "decimal"',
       description: 'The input mode attribute of the control.',
       options: [
+        'numeric',
         'email',
         'search',
         'tel',
@@ -28,7 +28,6 @@ const metadata = {
         'none',
         'txt',
         'decimal',
-        'numeric',
       ],
       control: {
         type: 'select',
@@ -130,14 +129,14 @@ export default metadata;
 interface ArgTypes {
   type: 'number' | 'email' | 'password' | 'search' | 'tel' | 'text' | 'url';
   inputmode:
+    | 'numeric'
     | 'email'
     | 'search'
     | 'tel'
     | 'url'
     | 'none'
     | 'txt'
-    | 'decimal'
-    | 'numeric';
+    | 'decimal';
   name: string;
   value: string;
   pattern: string;

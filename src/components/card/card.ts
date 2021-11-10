@@ -7,7 +7,10 @@ import { styles } from './card.material.css';
  *
  * @slot - Renders card content
  */
-export class IgcCardComponent extends LitElement {
+export default class IgcCardComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-card';
+
   /** @private */
   public static styles = styles;
 
@@ -17,5 +20,11 @@ export class IgcCardComponent extends LitElement {
 
   protected render() {
     return html`<slot></slot>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-card': IgcCardComponent;
   }
 }

@@ -1,8 +1,24 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { IgcCardComponent } from './card';
-import '../../../igniteui-webcomponents.js';
+import {
+  defineComponents,
+  IgcCardActionsComponent,
+  IgcCardContentComponent,
+  IgcCardHeaderComponent,
+  IgcCardMediaComponent,
+  IgcCardComponent,
+} from '../../index.js';
 
 describe('Card Component', () => {
+  before(() => {
+    defineComponents(
+      IgcCardComponent,
+      IgcCardActionsComponent,
+      IgcCardContentComponent,
+      IgcCardHeaderComponent,
+      IgcCardMediaComponent
+    );
+  });
+
   let el: IgcCardComponent;
 
   it('a11y audit', async () => {

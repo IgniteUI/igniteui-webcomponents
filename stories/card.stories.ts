@@ -1,5 +1,4 @@
 import { html } from 'lit-html';
-import '../igniteui-webcomponents.js';
 import { Story } from './story';
 
 // region default
@@ -98,15 +97,23 @@ const Template: Story<ArgTypes, Context> = (
           <igc-card-actions>
             <igc-button slot="start" variant="flat">Like</igc-button>
             <igc-button slot="start" variant="flat">Learn More</igc-button>
-            <igc-icon name="instagram" slot="end" collection="default"></igc-icon>
-            <igc-icon name="facebook" slot="end" collection="default"></igc-icon>
+            <igc-icon
+              name="instagram"
+              slot="end"
+              collection="default"
+            ></igc-icon>
+            <igc-icon
+              name="facebook"
+              slot="end"
+              collection="default"
+            ></igc-icon>
           </igc-card-actions>
         </igc-card>
       </div>
       <div></div>
     </div>
     <div style="display:flex; margin:16px">
-      <div style="max-width: 400px; min-width: 250px; margin-right: 16px"">
+      <div style="max-width: 400px; min-width: 250px; margin-right: 16px">
         <igc-card ?outlined=${outlined}>
           <div style="display: flex; flex-direction: row">
             <div style="border-right:1px solid gray">
@@ -123,8 +130,8 @@ const Template: Story<ArgTypes, Context> = (
               </igc-card-header>
               <igc-card-content>
                 <p>
-                  As I have always said: I write what’s real and what’s true, even
-                  if it means throwing myself under the bus.
+                  As I have always said: I write what’s real and what’s true,
+                  even if it means throwing myself under the bus.
                 </p>
               </igc-card-content>
             </div>
@@ -153,8 +160,8 @@ const Template: Story<ArgTypes, Context> = (
               </igc-card-header>
               <igc-card-content>
                 <p>
-                  Far far away, behind the word mountains, far from the countries
-                  Vokalia and Consonantia, there live the blind texts.
+                  Far far away, behind the word mountains, far from the
+                  countries Vokalia and Consonantia, there live the blind texts.
                 </p>
               </igc-card-content>
               <igc-card-actions>

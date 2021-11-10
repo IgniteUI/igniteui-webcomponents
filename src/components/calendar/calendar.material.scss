@@ -1,0 +1,235 @@
+@use '../../styles/utilities' as *;
+@use 'shared-calendar' as *;
+@use 'sass:map';
+@use 'sass:math';
+
+:host {
+    display: flex;
+    flex-direction: column;
+    font-family: var(--igc-font-family);
+    background: $calendar-background;
+
+    > * {
+        font-family: var(--igc-font-family);
+    }
+}
+
+:host([size='large']) {
+    igc-days-view::part(date),
+    igc-days-view::part(week-number),
+    igc-days-view::part(label),
+    igc-days-view::part(days-row) {
+        height: $date-size-large;
+    }
+
+    igc-days-view::part(week-number-inner),
+    igc-days-view::part(date-inner) {
+        width: calc(#{$date-size-large} - #{rem(2px)});
+        min-width: calc(#{$date-size-large} - #{rem(2px)});
+        height: 100%;
+    }
+
+    igc-days-view::part(label) {
+        min-width: $date-size-large;
+        height: $date-size-large;
+    }
+
+    igc-days-view::part(date-inner) {
+        border-radius: math.div($date-size-large, 2) + rem(2px);
+    }
+
+    igc-months-view {
+        grid-template-rows: repeat(4, minmax($date-size-large, 1fr));
+
+        &::part(month-inner) {
+            height: $date-size-large;
+            border-radius: math.div($date-size-large, 2) + rem(2px);
+        }
+    }
+
+    igc-years-view {
+        grid-template-rows: repeat(5, minmax($date-size-large, 1fr));
+
+        &::part(year-inner) {
+            height: $date-size-large;
+            border-radius: math.div($date-size-large, 2) + rem(2px);
+        }
+    }
+}
+
+:host([size='medium']) {
+    igc-days-view::part(date),
+    igc-days-view::part(week-number),
+    igc-days-view::part(label),
+    igc-days-view::part(days-row) {
+        height: $date-size-medium;
+    }
+
+    igc-days-view::part(week-number-inner),
+    igc-days-view::part(date-inner) {
+        width: calc(#{$date-size-medium} - #{rem(2px)});
+        min-width: calc(#{$date-size-medium} - #{rem(2px)});
+        height: 100%;
+    }
+
+    igc-days-view::part(label) {
+        min-width: $date-size-medium;
+        height: $date-size-medium;
+    }
+
+    igc-days-view::part(date-inner) {
+        border-radius: math.div($date-size-medium, 2) + rem(2px);
+    }
+
+    igc-months-view {
+        grid-template-rows: repeat(4, minmax($date-size-medium, 1fr));
+
+        &::part(month-inner) {
+            height: $date-size-medium;
+            border-radius: math.div($date-size-medium, 2) + rem(2px);
+        }
+    }
+
+    igc-years-view {
+        grid-template-rows: repeat(5, minmax($date-size-medium, 1fr));
+
+        &::part(year-inner) {
+            height: $date-size-medium;
+            border-radius: math.div($date-size-medium, 2) + rem(2px);
+        }
+    }
+}
+
+:host([size='small']) {
+    igc-days-view::part(date),
+    igc-days-view::part(week-number),
+    igc-days-view::part(label),
+    igc-days-view::part(days-row) {
+        height: $date-size-small;
+    }
+
+    igc-days-view::part(week-number-inner),
+    igc-days-view::part(date-inner) {
+        width: calc(#{$date-size-small} - #{rem(2px)});
+        min-width: calc(#{$date-size-small} - #{rem(2px)});
+        height: 100%;
+    }
+
+    igc-days-view::part(label) {
+        min-width: $date-size-small;
+        height: $date-size-small;
+    }
+
+    igc-days-view::part(date-inner) {
+        border-radius: math.div($date-size-small, 2) + rem(2px);
+    }
+
+    igc-months-view {
+        grid-template-rows: repeat(4, minmax($date-size-small, 1fr));
+
+        &::part(month-inner) {
+            height: $date-size-small;
+            border-radius: math.div($date-size-small, 2) + rem(2px);
+        }
+    }
+
+    igc-years-view {
+        grid-template-rows: repeat(6, minmax($date-size-small, 1fr));
+
+        &::part(year-inner) {
+            height: $date-size-small;
+            border-radius: math.div($date-size-small, 2) + rem(2px);
+        }
+    }
+}
+
+[part='navigation'] {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: rem(20px);
+    padding: rem(25px) rem(18px);
+    user-select: none;
+}
+
+[part='months-navigation'],
+[part='years-navigation'],
+[part~='navigation-button'] {
+    display: inline-flex;
+    user-select: none;
+    background: transparent;
+    border: none;
+    color: color(gray, 800);
+    font-size: rem(16px);
+    padding: 0;
+    transition: color 150ms ease-in-out;
+
+    &:hover,
+    &:focus {
+        color: color(secondary, 500);
+        cursor: pointer;
+    }
+
+    &:focus {
+        outline: none;
+    }
+}
+
+[part~='navigation-button'] {
+    margin-inline-start: rem(24px);
+
+    &[part~='vertical'] {
+        transform: rotate(90deg);
+    }
+}
+
+[part='navigation-buttons'] {
+    display: flex;
+    align-items: center;
+}
+
+:host([header-orientation='vertical']) {
+    flex-direction: row;
+
+    [part='header'] {
+        justify-content: flex-start;
+        width: rem(140px);
+    }
+
+    [part='header-date'] {
+        flex-direction: column;
+    }
+}
+
+[part='days-view-container'] {
+    flex-grow: 1;
+}
+
+[part='header'] {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: rem(16px);
+    background: color(secondary, 500);
+    color: contrast-color(secondary, 600);
+}
+
+[part='header-date'],
+[part='header-title'] {
+    margin: 0;
+}
+
+[part='header-date'] {
+    display: flex;
+    white-space: pre-wrap;
+    @include type-category('h4');
+}
+
+[part='header-title'] {
+    @include type-category('overline');
+}
+
+.aria-off-screen {
+    @include hide-default();
+}

@@ -1,8 +1,11 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import { IgcNavbarComponent } from './navbar';
-import '../../../igniteui-webcomponents';
+import { defineComponents, IgcNavbarComponent } from '../../index.js';
 
 describe('Navbar component', () => {
+  before(() => {
+    defineComponents(IgcNavbarComponent);
+  });
+
   it('passes the a11y audit', async () => {
     const el = await fixture<IgcNavbarComponent>(
       html`<igc-navbar></igc-navbar>`

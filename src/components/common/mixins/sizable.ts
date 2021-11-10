@@ -3,6 +3,10 @@ import { property } from 'lit/decorators.js';
 import { Constructor } from './constructor';
 
 export declare class SizableInterface {
+  /**
+   * Determines the size of the component.
+   * @type {"small" | "medium" | "large"}
+   */
   public size: 'small' | 'medium' | 'large';
 }
 

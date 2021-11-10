@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { styles } from './ripple.css';
+import { styles } from './ripple.material.css';
 
 /**
  * A ripple can be applied to an element to represent
@@ -7,7 +7,10 @@ import { styles } from './ripple.css';
  *
  * @element igc-ripple
  */
-export class IgcRippleComponent extends LitElement {
+export default class IgcRippleComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-ripple';
+
   /** @private */
   public static styles = styles;
 
@@ -61,5 +64,11 @@ export class IgcRippleComponent extends LitElement {
 
   protected render() {
     return html`<div></div>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-ripple': IgcRippleComponent;
   }
 }

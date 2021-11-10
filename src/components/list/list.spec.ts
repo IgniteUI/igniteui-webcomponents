@@ -1,8 +1,20 @@
 import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
-import { IgcListComponent } from './list';
-import '../../../igniteui-webcomponents';
+import {
+  defineComponents,
+  IgcListComponent,
+  IgcListHeaderComponent,
+  IgcListItemComponent,
+} from '../../index.js';
 
 describe('List', () => {
+  before(() => {
+    defineComponents(
+      IgcListComponent,
+      IgcListHeaderComponent,
+      IgcListItemComponent
+    );
+  });
+
   let el: IgcListComponent;
 
   describe('', async () => {

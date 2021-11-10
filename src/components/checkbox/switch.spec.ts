@@ -1,5 +1,3 @@
-import { IgcSwitchComponent } from './switch';
-import '../../../igniteui-webcomponents.js';
 import {
   elementUpdated,
   expect,
@@ -8,8 +6,13 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
+import { defineComponents, IgcSwitchComponent } from '../../index.js';
 
 describe('Switch', () => {
+  before(() => {
+    defineComponents(IgcSwitchComponent);
+  });
+
   const label = 'Label';
   let el: IgcSwitchComponent;
   let input: HTMLInputElement;
@@ -174,7 +177,7 @@ describe('Switch', () => {
       el.click();
 
       await elementUpdated(el);
-      expect(eventSpy).calledWithExactly('igcChange');
+      expect(eventSpy).calledWithExactly('igcChange', { detail: true });
     });
 
     const createSwitchComponent = (
