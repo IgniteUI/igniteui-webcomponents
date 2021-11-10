@@ -9,16 +9,19 @@
     igc-button[size='small']::part(base) {
         border-radius: calc(var(--igc-border-radius) * 1);
         --size: #{utils.rem(24px)};
+        padding: 0 utils.rem(8px);
     }
 
     igc-button[size='medium']::part(base) {
         border-radius: calc(var(--igc-border-radius) * 1);
-        --size: #{utils.rem(28px)};
+        --size: #{utils.rem(32px)};
+        padding: 0 utils.rem(16px);
     }
 
     igc-button[size='large']::part(base) {
         border-radius: calc(var(--igc-border-radius) * 1);
-        --size: #{utils.rem(32px)};
+        --size: #{utils.rem(38px)};
+        padding: 0 utils.rem(16px);
     }
 
     // FLAT
