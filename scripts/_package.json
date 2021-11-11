@@ -10,10 +10,10 @@
   "module": "index.js",
   "types": "index.d.ts",
   "sideEffects": [
-    "./components/calendar/days-view/days-view.js",
-    "./components/calendar/months-view/months-view.js",
-    "./components/calendar/years-view/years-view.js",
-    "./components/calendar/icon/icon.js",
+    "components/calendar/days-view/days-view.js",
+    "components/calendar/months-view/months-view.js",
+    "components/calendar/years-view/years-view.js",
+    "components/icon/icon.js",
     "*.css"
   ],
   "repository": {
