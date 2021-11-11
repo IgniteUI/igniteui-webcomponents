@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
@@ -105,29 +106,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.changeThumbFocusableState(this.disabled);
   }
 
-  public updated() {
-    if (this.thumbFrom) {
-      this.thumbFrom.addEventListener(
-        'pointerenter',
-        this.handleThumbPointerEnter
-      );
-      this.thumbFrom.addEventListener(
-        'pointerleave',
-        this.handleThumbPointerLeave
-      );
-    }
-    if (this.thumbTo) {
-      this.thumbTo.addEventListener(
-        'pointerenter',
-        this.handleThumbPointerEnter
-      );
-      this.thumbTo.addEventListener(
-        'pointerleave',
-        this.handleThumbPointerLeave
-      );
-    }
-  }
-
   @query('#steps')
   private steps!: HTMLElement;
 
@@ -148,6 +126,9 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   @state()
   private _tabIndex = 0;
+
+  @state()
+  private thumbLabelsVisible = false;
 
   public set value(value: number | IRangeSliderValue) {
     const oldValue = this._value;
@@ -414,11 +395,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       return;
     }
 
-    this.toggleThumbLabels(this.labelTo, true);
-
-    if (this.labelFrom) {
-      this.toggleThumbLabels(this.labelFrom, true);
-    }
+    this.thumbLabelsVisible = true;
   }
 
   private hideThumbLabels() {
@@ -426,15 +403,9 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       return;
     }
 
-    setTimeout(this.toggleThumbLabels, 750, this.labelTo, false);
-
-    if (this.labelFrom) {
-      setTimeout(this.toggleThumbLabels, 750, this.labelFrom, false);
-    }
-  }
-
-  private toggleThumbLabels(label: HTMLElement, isActive: boolean) {
-    return (label.style.opacity = isActive ? '1' : '0');
+    setTimeout(() => {
+      this.thumbLabelsVisible = false;
+    }, 750);
   }
 
   private closestTo(goal: number, positions: number[]): number {
@@ -743,11 +714,12 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         <div part="thumbs">
           ${this.isRange
             ? html`<div part="thumb-label"
-                        id="labelFrom">${
-                          this.isRange
-                            ? (this.value as IRangeSliderValue).lower
-                            : null
-                        }</div>
+                        id="labelFrom"
+                        style=${styleMap({
+                          opacity: this.thumbLabelsVisible ? '1' : '0',
+                        })}>${
+                this.isRange ? (this.value as IRangeSliderValue).lower : null
+              }</div>
                         </div>
                         <div
                             part="thumb"
@@ -761,10 +733,16 @@ export default class IgcSliderComponent extends EventEmitterMixin<
                                 ? (this.value as IRangeSliderValue).lower
                                 : ''
                             }
-                            aria-disabled=${this.disabled ? 'true' : 'false'}>
+                            aria-disabled=${this.disabled ? 'true' : 'false'}
+                            @pointerenter=${this.handleThumbPointerEnter}
+                            @pointerleave=${this.handleThumbPointerLeave}>
                         </div>`
             : html``}
-          <div part="thumb-label" id="labelTo">
+          <div
+            part="thumb-label"
+            id="labelTo"
+            style=${styleMap({ opacity: this.thumbLabelsVisible ? '1' : '0' })}
+          >
             ${this.isRange
               ? (this.value as IRangeSliderValue).upper
               : (this.value as number)}
@@ -778,6 +756,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
             aria-valuemax=${this.max}
             aria-valuenow=${this.upperValue}
             aria-disabled=${this.disabled ? 'true' : 'false'}
+            @pointerenter=${this.handleThumbPointerEnter}
+            @pointerleave=${this.handleThumbPointerLeave}
           ></div>
         </div>
       </div>
