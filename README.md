@@ -8,12 +8,40 @@
 
 ## Usage
 
-TODO:
+In order to use the Ignite UI Web Components in your application you should install the `igniteui-webcomponents` package:
 
+```
+npm install igniteui-webcomponents
+```
+
+Next you will need to import the components that you want to use. You could import one or more components using the `defineComponents` function like this:
+
+```ts
+import { defineComponents, IgcAvatarComponent, IgcBadgeComponent } from 'igniteui-webcomponents';
+
+defineComponents(IgcAvatarComponent, IgcBadgeComponent);
+```
+
+You could also import all of the components using the `defineAllComponents` function:
+
+```ts
+import { defineAllComponents } from 'igniteui-webcomponents';
+
+defineAllComponents();
+```
+
+Please note that importing all of the components will increase the bundle size of your application. That's why we recommend you to import only the components that you are actually using.
+
+After the components are imported you could use them in your html:
+
+```html
+<igc-avatar initials="AZ"></igc-avatar>
+<igc-badge></igc-badge>
+```
 
 ## Setup
 
-From the root folder run:
+In order to run the repository locally from the root folder run:
 
 ```
 npm install
