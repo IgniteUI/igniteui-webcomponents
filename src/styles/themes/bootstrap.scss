@@ -179,6 +179,7 @@ $type-scale: utils.extend($_base-scale, (
     --igc-spacing-small: #{utils.rem(2px)};
     --igc-spacing-medium: #{utils.rem(4px)};
     --igc-spacing-large: #{utils.rem(8px)};
+    --igc-outline-size: #{utils.rem(4px)};
     @include utils.palette($palette);
     @include utils.elevations($elevations);
     @include utils.typography(

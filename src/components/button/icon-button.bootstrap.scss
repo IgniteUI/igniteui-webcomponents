@@ -1,7 +1,10 @@
 @use '../../styles/utilities' as utils;
 
+$focus-outline: var(--igc-outline-size);
+
 @mixin theme() {
     igc-icon-button::part(base) {
+        margin: $focus-outline;
         border-radius: utils.rem(4px);
         transition: box-shadow .15s ease-out,
             color .15s ease-out,

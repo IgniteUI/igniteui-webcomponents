@@ -1,5 +1,7 @@
 @use '../../styles/utilities' as utils;
 
+$focus-outline: var(--igc-outline-size);
+
 @mixin theme() {
     igc-radio {
         &::part(base) {
@@ -9,6 +11,7 @@
 
     igc-radio::part(control) {
         $size: var(--size, utils.rem(16px));
+        margin: $focus-outline;
         width: $size;
         height: $size;
         min-width: $size;
@@ -31,6 +34,14 @@
             border-color: #{utils.color(gray, 400)};
             border-width: calc(var(--size, #{utils.rem(10px)}) / 10);
         }
+    }
+
+    igc-radio[label-position='after']::part(label) {
+        margin-inline-start: $focus-outline;
+    }
+
+    igc-radio[label-position='before']::part(label) {
+        margin-inline-end: $focus-outline;
     }
 
     igc-radio:focus-within::part(control) {

@@ -1,5 +1,7 @@
 @use '../../styles/utilities' as utils;
 
+$focus-outline: var(--igc-outline-size);
+
 @mixin theme() {
     igc-input,
     igc-input[outlined] {
@@ -41,7 +43,7 @@
 
         &::part(label) {
             line-height: utils.rem(24px);
-            margin-bottom: utils.rem(4px);
+            margin-inline-start: $focus-outline;
             color: utils.color(gray, 700);
             font-size: initial;
 
@@ -52,6 +54,7 @@
 
         &::part(container) {
             border: none;
+            margin: $focus-outline;
             grid-template-columns: auto 1fr auto;
 
             &::after {
@@ -63,14 +66,14 @@
         &::part(suffix) {
             position: relative;
             padding: rem(16px);
-            border-radius: none;
+            border-radius: 0;
             min-width: auto;
             color: utils.color(gray, 800);
             background: utils.color(gray, 300);
             transition: box-shadow .15s ease-out, border .15s ease-out;
 
             &:focus-within {
-                box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 300, .38);
+                box-shadow: 0 0 0 $focus-outline utils.color(gray, 300, .38);
             }
         }
 
@@ -163,14 +166,14 @@
 
     igc-input:focus-within {
         &::part(input) {
-            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 500, .38);
+            box-shadow: 0 0 0 $focus-outline utils.color(primary, 500, .38);
             border-color: utils.color(primary, 500);
         }
     }
 
     igc-input[invalid]:focus-within {
         &::part(input) {
-            box-shadow: 0 0 0 utils.rem(4px) utils.color(error, 500, .38);
+            box-shadow: 0 0 0 $focus-outline utils.color(error, 500, .38);
             border-color: utils.color(error, 500);
         }
     }
@@ -196,7 +199,7 @@
 
     igc-input:focus-within[readonly] {
         &::part(input) {
-            box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 400, .38);
+            box-shadow: 0 0 0 $focus-outline utils.color(gray, 400, .38);
             border-color: utils.color(gray, 400);
         }
     }

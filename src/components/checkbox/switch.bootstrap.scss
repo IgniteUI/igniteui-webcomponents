@@ -1,18 +1,22 @@
 @use '../../styles/utilities' as utils;
 
+$focus-outline: var(--igc-outline-size);
+
 @mixin theme() {
     igc-switch {
         --size: #{utils.rem(32px)};
-        --thumb-size: #{utils.rem(8px)};
-        --thumb-offset: calc(var(--thumb-size) / 2);
+        --thumb-size: #{utils.rem(10px)};
+        --thumb-offset: calc((var(--thumb-size) / 2) - #{utils.rem(2px)});
     }
 
     igc-switch::part(control) {
+        margin: $focus-outline;
         width: var(--size);
         height: utils.rem(16px);
         box-shadow: inset 0 0 0 1px #{utils.color(gray, 500)};
-        border-radius: utils.rem(4px);
+        border-radius: var(--size);
         background: transparent;
+        transition-duration: 0;
 
         &::after {
             content: '';
@@ -23,16 +27,24 @@
         }
     }
 
+    igc-switch[label-position='after']::part(label) {
+        margin-inline-start: $focus-outline;
+    }
+
+    igc-switch[label-position='before']::part(label) {
+        margin-inline-end: $focus-outline;
+    }
+
     igc-switch:focus-within::part(control) {
-        box-shadow: 0 0 0 2px #{utils.color(primary, 100)};
+        box-shadow: 0 0 0 $focus-outline #{utils.color(primary, 100)};
 
         &::after {
-            border: 1px solid #{utils.color(primary, 500)};
+            border: 1px solid #{utils.color(primary, 200)};
         }
     }
 
     igc-switch:focus-within::part(control checked) {
-        box-shadow: 0 0 0 2px #{utils.color(primary, 200)};
+        box-shadow: 0 0 0 $focus-outline #{utils.color(primary, 100)};
 
         &::after {
             border: 1px solid #{utils.color(primary, 500)};
@@ -55,7 +67,7 @@
     }
 
     igc-switch[invalid]:focus-within::part(control) {
-        box-shadow: 0 0 0 2px #{utils.color(error, 100)};
+        box-shadow: 0 0 0 $focus-outline #{utils.color(error, 100)};
 
         &::after {
             border: 1px solid #{utils.color(error, 500)};
@@ -63,7 +75,7 @@
     }
 
     igc-switch[invalid]:focus-within::part(control checked) {
-        box-shadow: 0 0 0 2px #{utils.color(error, 200)};
+        box-shadow: 0 0 0 $focus-outline #{utils.color(error, 100)};
 
         &::after {
             border: 1px solid #{utils.color(error, 500)};
@@ -87,8 +99,7 @@
         min-width: var(--thumb-size);
         animation-name: thumb-off;
         margin-inline-start: var(--thumb-offset);
-        background: #{utils.color(gray, 900)};
-        border-radius: utils.rem(2px);
+        background: #{utils.color(gray, 400)};
         box-shadow: none;
 
         &::after {
@@ -100,10 +111,18 @@
         }
     }
 
+    igc-switch:focus-within::part(thumb) {
+        background: #{utils.color(primary, 200)};
+    }
+
     igc-switch::part(thumb checked) {
         background: white;
         animation-name: thumb-on;
         margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
+    }
+
+    igc-switch:focus-within::part(thumb checked) {
+        background: #{utils.contrast-color(primary, 600)};
     }
 
     igc-switch[disabled]::part(thumb),
