@@ -1,0 +1,8 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-card-actions {
+        padding: utils.rem(16px);
+    }
+}
+

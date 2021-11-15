@@ -1,7 +1,12 @@
 @use '../../styles/utilities' as utils;
+@use 'card.header.indigo' as card-header;
+@use 'card.content.indigo' as card-content;
 
 @mixin theme() {
     igc-card {
         border: #{utils.rem(1px)} solid #{utils.color(gray, 400)};
     }
+
+    @include card-header.theme();
+    @include card-content.theme();
 }
