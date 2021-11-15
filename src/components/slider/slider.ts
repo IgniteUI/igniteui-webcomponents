@@ -103,11 +103,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this._hasViewInit = true;
     this.positionHandlersAndUpdateTrack();
     this.normalizeByStep(this.value);
-    this.setStepInterval();
   }
-
-  @query('#steps')
-  private steps!: HTMLElement;
 
   @query('#thumbFrom')
   private thumbFrom!: HTMLElement;
@@ -355,36 +351,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return this.primaryTicks <= 0
       ? false
       : idx % (this.secondaryTicks + 1) === 0;
-  }
-
-  private generateStepMarks(color: string, interval: number | null) {
-    return interval !== null
-      ? `<svg width="100%" height="100%" style="display: flex">
-          <line x1="0" y1="1" x2="100%" y2="1"
-          stroke="${color}"
-          stroke-dasharray="1.5px, ${interval}%"
-          stroke-linecap="round"
-          stroke-width="2px"></line>
-        </svg>`
-      : interval;
-  }
-
-  @watch('continuous', { waitUntilFirstUpdate: true })
-  @watch('step', { waitUntilFirstUpdate: true })
-  @watch('max', { waitUntilFirstUpdate: true })
-  @watch('min', { waitUntilFirstUpdate: true })
-  private setStepInterval() {
-    const trackProgress = 100;
-    const trackRange = this.max - this.min;
-    const interval =
-      this.step > 1
-        ? ((trackProgress / (trackRange / this.step)) * 10) / 10
-        : null;
-    const renderSteps = !this.continuous
-      ? this.generateStepMarks('white', interval)
-      : null;
-
-    this.steps.innerHTML = renderSteps ? renderSteps : '';
   }
 
   private showThumbLabels() {
@@ -712,6 +678,32 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       ></div>`;
   }
 
+  private renderSteps() {
+    if (this.continuous || this.step <= 0) {
+      return html``;
+    }
+
+    const color = 'white';
+    const trackProgress = 100;
+    const trackRange = this.max - this.min;
+    const interval = ((trackProgress / (trackRange / this.step)) * 10) / 10;
+
+    return html`<div part="steps">
+      <svg width="100%" height="100%" style="display: flex">
+        <line
+          x1="0"
+          y1="1"
+          x2="100%"
+          y2="1"
+          stroke="${color}"
+          stroke-dasharray="1.5px, ${interval}%"
+          stroke-linecap="round"
+          stroke-width="2px"
+        ></line>
+      </svg>
+    </div>`;
+  }
+
   protected render() {
     return html`
       <div part="base">
@@ -721,7 +713,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         <div part="track">
           <div part="fill" id="fill"></div>
           <div part="inactive" id="inactive"></div>
-          <div part="steps" id="steps"></div>
+          ${this.renderSteps()}
         </div>
         ${this.tickOrientation !== 'start'
           ? html`<div part="ticks">${this.renderTicks()}</div>`
