@@ -1,6 +1,5 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedNodes, state } from 'lit/decorators.js';
-import { live } from 'lit/directives/live.js';
 import { partNameMap } from '../common/util';
 import { styles } from './nav-drawer-item.material.css';
 
@@ -53,11 +52,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
 
   protected render() {
     return html`
-      <div
-        part="${partNameMap(this.resolvePartNames('base'))}"
-        .disabled="${this.disabled}"
-        .active="${live(this.active)}"
-      >
+      <div part="${partNameMap(this.resolvePartNames('base'))}">
         <span part="icon">
           <slot name="icon"></slot>
         </span>
