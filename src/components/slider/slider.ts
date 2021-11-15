@@ -697,6 +697,34 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return groups;
   }
 
+  private renderThumb(isFrom = false) {
+    const value = this.isRange
+      ? isFrom
+        ? (this.value as IRangeSliderValue).lower
+        : (this.value as IRangeSliderValue).upper
+      : (this.value as number);
+
+    return html` <div
+        part="thumb-label"
+        id=${isFrom ? 'labelFrom' : 'labelTo'}
+        style=${styleMap({ opacity: this.thumbLabelsVisible ? '1' : '0' })}
+      >
+        ${value}
+      </div>
+      <div
+        part="thumb"
+        id=${isFrom ? 'thumbFrom' : 'thumbTo'}
+        tabindex=${this._tabIndex}
+        role="slider"
+        aria-valuemin=${this.min}
+        aria-valuemax=${this.max}
+        aria-valuenow=${value}
+        aria-disabled=${this.disabled ? 'true' : 'false'}
+        @pointerenter=${this.handleThumbPointerEnter}
+        @pointerleave=${this.handleThumbPointerLeave}
+      ></div>`;
+  }
+
   protected render() {
     return html`
       <div part="base">
@@ -712,53 +740,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
           ? html`<div part="ticks">${this.renderTicks()}</div>`
           : html``}
         <div part="thumbs">
-          ${this.isRange
-            ? html`<div part="thumb-label"
-                        id="labelFrom"
-                        style=${styleMap({
-                          opacity: this.thumbLabelsVisible ? '1' : '0',
-                        })}>${
-                this.isRange ? (this.value as IRangeSliderValue).lower : null
-              }</div>
-                        </div>
-                        <div
-                            part="thumb"
-                            id="thumbFrom"
-                            tabindex=${this._tabIndex}
-                            role="slider"
-                            aria-valuemin=${this.min}
-                            aria-valuemax=${this.max}
-                            aria-valuenow=${
-                              this.isRange
-                                ? (this.value as IRangeSliderValue).lower
-                                : ''
-                            }
-                            aria-disabled=${this.disabled ? 'true' : 'false'}
-                            @pointerenter=${this.handleThumbPointerEnter}
-                            @pointerleave=${this.handleThumbPointerLeave}>
-                        </div>`
-            : html``}
-          <div
-            part="thumb-label"
-            id="labelTo"
-            style=${styleMap({ opacity: this.thumbLabelsVisible ? '1' : '0' })}
-          >
-            ${this.isRange
-              ? (this.value as IRangeSliderValue).upper
-              : (this.value as number)}
-          </div>
-          <div
-            part="thumb"
-            id="thumbTo"
-            tabindex=${this._tabIndex}
-            role="slider"
-            aria-valuemin=${this.min}
-            aria-valuemax=${this.max}
-            aria-valuenow=${this.upperValue}
-            aria-disabled=${this.disabled ? 'true' : 'false'}
-            @pointerenter=${this.handleThumbPointerEnter}
-            @pointerleave=${this.handleThumbPointerLeave}
-          ></div>
+          ${this.isRange ? this.renderThumb(true) : html``}
+          ${this.renderThumb()}
         </div>
       </div>
     `;
