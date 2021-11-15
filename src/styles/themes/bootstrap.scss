@@ -3,8 +3,6 @@
 @use '../../components/button/button.bootstrap' as button;
 @use '../../components/button/icon-button.bootstrap' as icon-button;
 @use '../../components/card/card.bootstrap' as card;
-@use '../../components/card/card.header.bootstrap' as card-header;
-@use '../../components/card/card.content.bootstrap' as card-content;
 @use '../../components/checkbox/checkbox.bootstrap' as checkbox;
 @use '../../components/radio/radio.bootstrap' as radio;
 @use '../../components/checkbox/switch.bootstrap' as switch;
@@ -191,8 +189,6 @@ $type-scale: utils.extend($_base-scale, (
 @include badge.theme();
 @include button.theme();
 @include card.theme();
-@include card-header.theme();
-@include card-content.theme();
 @include checkbox.theme();
 @include radio.theme();
 @include switch.theme();
