@@ -34,7 +34,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'flat',
+      defaultValue: 'contained',
     },
     type: {
       type: '"button" | "reset" | "submit"',
