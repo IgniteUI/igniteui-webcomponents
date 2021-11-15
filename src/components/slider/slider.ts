@@ -37,6 +37,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   private _value: number | IRangeSliderValue = 0;
   private _hasViewInit = false;
   private _activeThumb: HTMLElement | undefined;
+  private thumbHoverTimer: any;
 
   private get isLTR(): boolean {
     const styles = window.getComputedStyle(this);
@@ -395,6 +396,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       return;
     }
 
+    if (this.thumbHoverTimer) {
+      clearTimeout(this.thumbHoverTimer);
+      this.thumbHoverTimer = null;
+    }
+
     this.thumbLabelsVisible = true;
   }
 
@@ -403,7 +409,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       return;
     }
 
-    setTimeout(() => {
+    this.thumbHoverTimer = setTimeout(() => {
       this.thumbLabelsVisible = false;
     }, 750);
   }
@@ -650,16 +656,12 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   };
 
   private handleThumbPointerEnter = () => {
-    this.onHoverChange(true);
+    this.showThumbLabels();
   };
 
   private handleThumbPointerLeave = () => {
-    this.onHoverChange(false);
+    this.hideThumbLabels();
   };
-
-  private onHoverChange(state: boolean) {
-    return state ? this.showThumbLabels() : this.hideThumbLabels();
-  }
 
   public incrementValue() {
     if (this.isRange) {
