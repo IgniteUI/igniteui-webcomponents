@@ -104,7 +104,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.positionHandlersAndUpdateTrack();
     this.normalizeByStep(this.value);
     this.setStepInterval();
-    this.changeThumbFocusableState(this.disabled);
   }
 
   @query('#steps')
@@ -124,9 +123,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   @query('#fill')
   private filledTrack!: HTMLElement;
-
-  @state()
-  private _tabIndex = 0;
 
   @state()
   private thumbLabelsVisible = false;
@@ -522,17 +518,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.updateTrack();
   }
 
-  @watch('disabled', { waitUntilFirstUpdate: true })
-  private changeThumbFocusableState(state: boolean) {
-    const value = state ? -1 : 1;
-
-    if (this.isRange) {
-      this.thumbFrom.tabIndex = value;
-    }
-
-    this.thumbTo.tabIndex = value;
-  }
-
   private updateThumbValue(mouseX: number) {
     const calculatedValue = this.calculateTrackUpdate(mouseX);
     if (this._activeThumb && calculatedValue !== 0) {
@@ -716,7 +701,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       <div
         part="thumb"
         id=${isFrom ? 'thumbFrom' : 'thumbTo'}
-        tabindex=${this._tabIndex}
+        tabindex=${this.disabled ? -1 : 0}
         role="slider"
         aria-valuemin=${this.min}
         aria-valuemax=${this.max}
