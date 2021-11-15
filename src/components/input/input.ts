@@ -173,6 +173,11 @@ export default class IgcInputComponent extends SizableMixin(
   @property()
   public autocomplete!: string;
 
+  constructor() {
+    super();
+    this.size = 'medium';
+  }
+
   public connectedCallback() {
     super.connectedCallback();
     const theme = document.defaultView
