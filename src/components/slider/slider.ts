@@ -164,10 +164,10 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @property({ type: Number })
   public max = 100;
 
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'lower-bound' })
   public lowerBound = 0;
 
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'upper-bound' })
   public upperBound = 0;
 
   @property()
@@ -182,25 +182,29 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @property({ type: Number })
   public step = 1;
 
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'primary-ticks' })
   public primaryTicks = 0;
 
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'secondary-ticks' })
   public secondaryTicks = 0;
 
-  @property()
+  @property({ attribute: 'tick-orientation' })
   public tickOrientation: 'mirror' | 'start' | 'end' = 'end';
 
-  @property({ type: Boolean })
+  @property({ type: Boolean, reflect: true, attribute: 'show-primary-labels' })
   public showPrimaryLabels = true;
 
-  @property({ type: Boolean })
+  @property({
+    type: Boolean,
+    reflect: true,
+    attribute: 'show-secondary-labels',
+  })
   public showSecondaryLabels = true;
 
-  @property()
+  @property({ attribute: false })
   public labelFormatter: ((tickLabel: string) => string) | undefined;
 
-  @property({ type: Number, reflect: true })
+  @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   public tickLabelRotation: 0 | 90 | -90 = 0;
 
   private validateInitialRangeValue(value: IRangeSliderValue) {

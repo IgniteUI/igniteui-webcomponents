@@ -182,14 +182,14 @@ const Template: Story<ArgTypes, Context> = (
     .value=${value}
     min=${min}
     max=${max}
-    lowerBound=${lowerBound}
-    upperBound=${upperBound}
-    primaryTicks=${primaryTicks}
-    secondaryTicks=${secondaryTicks}
-    ?showPrimaryLabels=${showPrimaryLabels}
-    ?showSecondaryLabels=${showSecondaryLabels}
-    tickOrientation=${tickOrientation}
-    tickLabelRotation=${tickLabelRotation}
+    .lowerBound=${lowerBound}
+    .upperBound=${upperBound}
+    .primaryTicks=${primaryTicks}
+    .secondaryTicks=${secondaryTicks}
+    .showPrimaryLabels=${showPrimaryLabels}
+    .showSecondaryLabels=${showSecondaryLabels}
+    .tickOrientation=${tickOrientation}
+    .tickLabelRotation=${tickLabelRotation}
     dir=${ifDefined(direction)}
     @igcChange=${(ev: any) => {
       console.log(ev);
