@@ -102,7 +102,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   public firstUpdated() {
     this._hasViewInit = true;
     this.positionHandlersAndUpdateTrack();
-    this.normalizeByStep(this.value);
+    this.normalizeByStep();
   }
 
   @query('#thumbFrom')
@@ -405,18 +405,16 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   @watch('step', { waitUntilFirstUpdate: true })
-  private normalizeByStep(value: IRangeSliderValue | number) {
+  private normalizeByStep() {
     if (this.isRange) {
+      const rangeValue = this.value as IRangeSliderValue;
       this.value = {
-        lower:
-          (value as IRangeSliderValue).lower -
-          ((value as IRangeSliderValue).lower % this.step),
-        upper:
-          (value as IRangeSliderValue).upper -
-          ((value as IRangeSliderValue).upper % this.step),
+        lower: rangeValue.lower - (rangeValue.lower % this.step),
+        upper: rangeValue.upper - (rangeValue.upper % this.step),
       };
     } else {
-      this.value = (value as number) - ((value as number) % this.step);
+      const numValue = this.value as number;
+      this.value = numValue - (numValue % this.step);
     }
   }
 
