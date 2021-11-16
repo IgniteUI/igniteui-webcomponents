@@ -3,8 +3,8 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './icon-button.material.css';
-
 import '../icon/icon';
+
 /**
  * @element igc-icon-button
  *
@@ -31,8 +31,8 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public mirrored = false;
 
   /** The visual variant of the icon button. */
-  @property()
-  public variant: 'flat' | 'contained' | 'outlined' = 'flat';
+  @property({ reflect: true })
+  public variant: 'flat' | 'contained' | 'outlined' = 'contained';
 
   protected renderContent() {
     return html`
@@ -41,6 +41,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
         name=${ifDefined(this.name)}
         collection=${ifDefined(this.collection)}
         .mirrored=${this.mirrored}
+        variant=${this.variant}
         size=${ifDefined(this.size)}
         aria-hidden="true"
       ></igc-icon>

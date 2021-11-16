@@ -13,6 +13,7 @@
         box-shadow: inset 0 0 0 1px #{utils.color(gray, 500)};
         border-radius: utils.rem(4px);
         background: transparent;
+        transition: background-color .15s ease-in-out;
 
         &::after {
             content: '';
@@ -23,8 +24,12 @@
         }
     }
 
+    igc-switch::part(label) {
+        transition: none;
+    }
+
     igc-switch:focus-within::part(control) {
-        box-shadow: 0 0 0 2px #{utils.color(primary, 100)};
+        box-shadow: 0 0 0 4px #{utils.color(primary, 100)};
 
         &::after {
             border: 1px solid #{utils.color(primary, 500)};
@@ -32,7 +37,7 @@
     }
 
     igc-switch:focus-within::part(control checked) {
-        box-shadow: 0 0 0 2px #{utils.color(primary, 200)};
+        box-shadow: 0 0 0 4px #{utils.color(primary, 200)};
 
         &::after {
             border: 1px solid #{utils.color(primary, 500)};
@@ -55,7 +60,7 @@
     }
 
     igc-switch[invalid]:focus-within::part(control) {
-        box-shadow: 0 0 0 2px #{utils.color(error, 100)};
+        box-shadow: 0 0 0 4px #{utils.color(error, 100)};
 
         &::after {
             border: 1px solid #{utils.color(error, 500)};
@@ -63,7 +68,7 @@
     }
 
     igc-switch[invalid]:focus-within::part(control checked) {
-        box-shadow: 0 0 0 2px #{utils.color(error, 200)};
+        box-shadow: 0 0 0 4px #{utils.color(error, 200)};
 
         &::after {
             border: 1px solid #{utils.color(error, 500)};
