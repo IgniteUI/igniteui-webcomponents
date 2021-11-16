@@ -126,6 +126,11 @@
     }
 
     igc-input[size='large'] {
+        &::part(container),
+        &::part(input) {
+            height: utils.rem(48px);
+        }
+
         &::part(input), {
             font-size: utils.rem(20px);
             padding: utils.rem(8px) utils.rem(16px);
@@ -133,11 +138,17 @@
 
         &::part(prefix),
         &::part(suffix) {
+            font-size: rem(20px);
             padding: utils.rem(8px) utils.rem(16px);
         }
     }
 
     igc-input[size='medium'] {
+        &::part(container),
+        &::part(input) {
+            height: utils.rem(38px);
+        }
+
         &::part(input), {
             font-size: utils.rem(16px);
             padding: utils.rem(6px) utils.rem(12px);
@@ -145,11 +156,17 @@
 
         &::part(prefix),
         &::part(suffix) {
+            font-size: utils.rem(16px);
             padding: utils.rem(6px) utils.rem(12px);
         }
     }
 
     igc-input[size='small'] {
+        &::part(container),
+        &::part(input) {
+            height: utils.rem(31px);
+        }
+
         &::part(input), {
             font-size: utils.rem(14px);
             padding: utils.rem(4px) utils.rem(8px);
@@ -157,6 +174,7 @@
 
         &::part(prefix),
         &::part(suffix) {
+            font-size: utils.rem(14px);
             padding: utils.rem(4px) utils.rem(8px);
         }
     }

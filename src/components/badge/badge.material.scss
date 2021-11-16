@@ -3,59 +3,63 @@
 
 :host {
     display: inline-flex;
+    --size: #{rem(12px)};
+    font-weight: 500;
 }
 
-span {
+[part='base'] {
     display: inline-flex;
-    min-width: rem(12px);
-    min-height: rem(12px);
-    max-height: rem(24px);
-    font-size: rem(16px);
+    min-width: var(--size);
+    min-height: var(--size);
+    max-height: calc(var(--size) * 2);
+    line-height: 1;
     justify-content: center;
     align-items: center;
     overflow: hidden;
     white-space: nowrap;
     font-family: var(--igc-font-family);
+    font-size: var(--igc-subtitle-1-font-size);
+    font-weight: inherit;
 }
 
-:host(:not(:empty)) span {
+:host(:not(:empty)) [part='base'] {
     padding: rem(4px) rem(8px);
-    min-width: rem(24px);
+    min-width: calc(var(--size) * 2);
 }
 
-.rounded {
-    border-radius: rem(12px);
-}
-
-.square {
-    border-radius: 0;
-}
-
-.primary {
+:host([variant='primary']) {
     background: color(primary, 500);
     color: contrast-color(primary, 500);
 }
 
-.info {
+:host([variant='info']) {
     background: color(info, 500);
     color: contrast-color(info, 500);
 }
 
-.success {
+:host([variant='success']) {
     background: color(success, 500);
     color: contrast-color(success, 500);
 }
 
-.warning {
+:host([variant='warning']) {
     background: color(warn, 500);
     color: contrast-color(warn, 500);
 }
 
-.danger {
+:host([variant='danger']) {
     background: color(error, 500);
     color: contrast-color(error, 500);
 }
 
-.outlined {
+:host([shape='rounded']) {
+    border-radius: var(--size);
+}
+
+:host([shape='square']) {
+    border-radius: 0;
+}
+
+:host([outlined]) {
     box-shadow: inset 0 0 0 rem(2px) color(gray, 50);
 }

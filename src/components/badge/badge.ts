@@ -1,6 +1,5 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { styles } from './badge.material.css';
 
 /**
@@ -33,29 +32,9 @@ export default class IgcBadgeComponent extends LitElement {
   @property({ reflect: true })
   public shape?: 'rounded' | 'square' = 'rounded';
 
-  private get classes() {
-    const { shape, variant } = this;
-
-    return {
-      primary: variant === 'primary',
-      info: variant === 'info',
-      success: variant === 'success',
-      warning: variant === 'warning',
-      danger: variant === 'danger',
-      rounded: shape === 'rounded',
-      square: shape === 'square',
-      outlined: this.outlined,
-    };
-  }
-
   protected render() {
     return html`
-      <span
-        part="base"
-        class=${classMap(this.classes)}
-        role="img"
-        aria-label="badge"
-      >
+      <span part="base" role="img" aria-label="badge">
         <slot></slot>
       </span>
     `;
