@@ -23,7 +23,7 @@ describe('Input component', () => {
     });
 
     it('is initialized with the proper default values', async () => {
-      expect(el.size).to.equal('large');
+      expect(el.size).to.equal('medium');
       expect(el.type).to.equal('text');
       expect(el.value).to.equal('');
       expect(el.invalid).to.be.false;
