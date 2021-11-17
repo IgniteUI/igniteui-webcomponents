@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { customElement, property, queryAll, state } from 'lit/decorators.js';
+import { property, queryAll, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
@@ -7,7 +7,7 @@ import { SizableMixin } from '../common/mixins/sizable';
 import IgcIconComponent from '../icon/icon';
 
 export interface IgcRatingEventMap {
-  igcChange: CustomEvent<void>;
+  igcChange: CustomEvent<number>;
 }
 
 /**
@@ -15,10 +15,12 @@ export interface IgcRatingEventMap {
  *
  * @fires igcChange - Emitted when the value of the control changes.
  */
-@customElement('igc-rating')
 export default class igcRatingComponent extends SizableMixin(
   EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  /** @private */
+  public static tagName = 'igc-rating';
+
   @queryAll('igc-icon')
   protected icons!: NodeListOf<IgcIconComponent>;
 
@@ -28,6 +30,15 @@ export default class igcRatingComponent extends SizableMixin(
   @state()
   protected hoverState = false;
 
+  protected navigationKeys = new Set([
+    'ArrowUp',
+    'ArrowDown',
+    'ArrowLeft',
+    'ArrowRight',
+    'Home',
+    'End',
+  ]);
+
   /**
    * The number of icons to render
    * @attr [length=5]
@@ -36,12 +47,20 @@ export default class igcRatingComponent extends SizableMixin(
   public length = 5;
 
   /** The unfilled symbol/icon to use */
-  @property({ type: String })
-  public icon = 'coronavirus';
+  @property()
+  public icon = 'dollar-circled';
 
   /** The filled symbol/icon to use */
-  @property({ type: String })
-  public filledIcon = 'diamond';
+  @property()
+  public filledIcon = 'apple';
+
+  /** The name attribute of the control */
+  @property()
+  public name!: string;
+
+  /** The label of the control. */
+  @property()
+  public label!: string;
 
   /**
    * The current value of the component
@@ -54,7 +73,7 @@ export default class igcRatingComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  /** Sets hover preview behaviour for the component */
+  /** Sets hover preview behavior for the component */
   @property({ type: Boolean, reflect: true })
   public hover = false;
 
@@ -68,12 +87,14 @@ export default class igcRatingComponent extends SizableMixin(
           <div
             part="base"
             tabindex=${ifDefined(this.readonly ? undefined : 0)}
+            aria-labelledby=${ifDefined(this.label)}
             aria-valuemin="0"
             aria-valuenow=${this.value}
             aria-valuemax=${this.length}
             @mouseenter=${() => (this.hoverState = true)}
             @mouseleave=${() => (this.hoverState = false)}
             @mouseover=${this.handleMouseOver}
+            @keydown=${this.handleKeyDown}
             @click=${this.handleClick}
           >
             ${this.renderIcons()}
@@ -83,9 +104,11 @@ export default class igcRatingComponent extends SizableMixin(
           <div
             part="base"
             tabindex=${ifDefined(this.readonly ? undefined : 0)}
+            aria-labelledby=${ifDefined(this.label)}
             aria-valuemin="0"
             aria-valuenow=${this.value}
             aria-valuemax=${this.length}
+            @keydown=${this.handleKeyDown}
             @click=${this.handleClick}
           >
             ${this.renderIcons()}
@@ -103,16 +126,41 @@ export default class igcRatingComponent extends SizableMixin(
   }
 
   protected handleClick(event: MouseEvent) {
-    if (this.isIconElement(event.target) && !this.readonly) {
+    if (this.isIconElement(event.target) && !(this.readonly || this.disabled)) {
       this.value = [...this.icons].indexOf(event.target) + 1;
-      this.emitEvent('igcChange');
+      this.emitEvent('igcChange', { detail: this.value });
     }
   }
 
   protected handleMouseOver(event: MouseEvent) {
-    if (this.isIconElement(event.target) && !this.readonly) {
+    if (this.isIconElement(event.target) && !(this.readonly || this.disabled)) {
       this.hoverValue = [...this.icons].indexOf(event.target) + 1;
     }
+  }
+
+  protected handleKeyDown(event: KeyboardEvent) {
+    if (!this.navigationKeys.has(event.key)) {
+      return;
+    }
+    switch (event.key) {
+      case 'ArrowUp':
+      case 'ArrowRight':
+        this.value += 1;
+        break;
+      case 'ArrowDown':
+      case 'ArrowLeft':
+        this.value -= 1;
+        break;
+      case 'Home':
+        this.value = 1;
+        break;
+      case 'End':
+        this.value = this.length;
+        break;
+      default:
+        return;
+    }
+    this.emitEvent('igcChange', { detail: this.value });
   }
 
   private bindValue(index: number) {
@@ -122,5 +170,11 @@ export default class igcRatingComponent extends SizableMixin(
 
   private isIconElement(el: any): el is IgcIconComponent {
     return el.tagName.toLowerCase() === 'igc-icon';
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-rating': igcRatingComponent;
   }
 }

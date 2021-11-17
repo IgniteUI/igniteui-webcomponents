@@ -22,6 +22,7 @@ import IgcNavDrawerItemComponent from '../../nav-drawer/nav-drawer-item';
 import IgcNavbarComponent from '../../navbar/navbar';
 import IgcRadioGroupComponent from '../../radio-group/radio-group';
 import IgcRadioComponent from '../../radio/radio';
+import igcRatingComponent from '../../rating/rating';
 import IgcRippleComponent from '../../ripple/ripple';
 import { defineComponents } from './defineComponents';
 
@@ -50,6 +51,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcNavbarComponent,
   IgcRadioComponent,
   IgcRadioGroupComponent,
+  igcRatingComponent,
   IgcRippleComponent,
 ];
 

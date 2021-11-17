@@ -1,5 +1,4 @@
 import { html } from 'lit-html';
-import '../index.js';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
@@ -18,13 +17,18 @@ const metadata = {
       type: 'string',
       description: 'The unfilled symbol/icon to use',
       control: 'text',
-      defaultValue: 'coronavirus',
+      defaultValue: 'dollar-circled',
     },
     filledIcon: {
       type: 'string',
       description: 'The filled symbol/icon to use',
       control: 'text',
-      defaultValue: 'diamond',
+      defaultValue: 'apple',
+    },
+    label: {
+      type: 'string',
+      description: 'The label of the control.',
+      control: 'text',
     },
     value: {
       type: 'number',
@@ -40,7 +44,7 @@ const metadata = {
     },
     hover: {
       type: 'boolean',
-      description: 'Sets hover preview behaviour for the component',
+      description: 'Sets hover preview behavior for the component',
       control: 'boolean',
       defaultValue: false,
     },
@@ -66,6 +70,7 @@ interface ArgTypes {
   length: number;
   icon: string;
   filledIcon: string;
+  label: string;
   value: number;
   disabled: boolean;
   hover: boolean;
@@ -83,11 +88,13 @@ const Template: Story<ArgTypes, Context> = (
     length,
     disabled,
     readonly,
+    label,
     value,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html` <igc-rating
+    label=${ifDefined(label)}
     dir=${ifDefined(direction)}
     ?disabled=${disabled}
     ?hover=${hover}
