@@ -1,5 +1,4 @@
 import { html } from 'lit-html';
-import '../index.js';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 

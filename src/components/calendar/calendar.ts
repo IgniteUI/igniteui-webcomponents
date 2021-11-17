@@ -1,11 +1,5 @@
 import { html } from 'lit';
-import {
-  customElement,
-  property,
-  query,
-  queryAll,
-  state,
-} from 'lit/decorators.js';
+import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import type IgcDaysViewComponent from './days-view/days-view';
 import type IgcMonthsViewComponent from './months-view/months-view';
@@ -13,6 +7,8 @@ import type IgcYearsViewComponent from './years-view/years-view';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
+  MONTHS_PER_ROW,
+  YEARS_PER_ROW,
 } from './common/calendar-base';
 import { styles } from './calendar.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
@@ -31,9 +27,6 @@ import './days-view/days-view';
 import './months-view/months-view';
 import './years-view/years-view';
 import '../icon/icon';
-
-export const MONTHS_PER_ROW = 3;
-export const YEARS_PER_ROW = 3;
 
 /**
  * Represents a calendar that lets users
@@ -63,13 +56,15 @@ export const YEARS_PER_ROW = 3;
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@customElement('igc-calendar')
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
     Constructor<IgcCalendarBaseComponent>
   >(IgcCalendarBaseComponent)
 ) {
+  /** @private */
+  public static tagName = 'igc-calendar';
+
   /**
    * @private
    */

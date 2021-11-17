@@ -1,5 +1,4 @@
 import { html } from 'lit-html';
-import '../index.js';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit-html/directives/if-defined';
 
@@ -8,6 +7,15 @@ const metadata = {
   title: 'Button',
   component: 'igc-button',
   argTypes: {
+    variant: {
+      type: '"flat" | "contained" | "outlined" | "fab"',
+      description: 'Sets the variant of the button.',
+      options: ['flat', 'contained', 'outlined', 'fab'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'contained',
+    },
     type: {
       type: '"button" | "reset" | "submit"',
       description: 'The type of the button. Defaults to undefined.',
@@ -16,20 +24,37 @@ const metadata = {
         type: 'inline-radio',
       },
     },
+    href: {
+      type: 'string',
+      description: 'The URL the button points to.',
+      control: 'text',
+    },
+    download: {
+      type: 'string',
+      description:
+        'Prompts to save the linked URL instead of navigating to it.',
+      control: 'text',
+    },
+    target: {
+      type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
+      description:
+        'Where to display the linked URL, as the name for a browsing context.',
+      options: ['_blank', '_parent', '_self', '_top', 'undefined'],
+      control: {
+        type: 'select',
+      },
+    },
+    rel: {
+      type: 'string',
+      description:
+        'The relationship of the linked URL.\nSee https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types',
+      control: 'text',
+    },
     disabled: {
       type: 'boolean',
       description: 'Determines whether the button is disabled.',
       control: 'boolean',
       defaultValue: false,
-    },
-    variant: {
-      type: '"flat" | "contained" | "outlined" | "fab"',
-      description: 'Sets the variant of the button.',
-      options: ['flat', 'contained', 'outlined', 'fab'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'flat',
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -38,20 +63,24 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'large',
+      defaultValue: 'medium',
     },
   },
 };
 export default metadata;
 interface ArgTypes {
-  type: 'button' | 'reset' | 'submit';
-  disabled: boolean;
   variant: 'flat' | 'contained' | 'outlined' | 'fab';
+  type: 'button' | 'reset' | 'submit';
+  href: string;
+  download: string;
+  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  rel: string;
+  disabled: boolean;
   size: 'small' | 'medium' | 'large';
 }
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
+const ButtonTemplate: Story<ArgTypes, Context> = (
   { disabled = false, size, variant, type }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -70,4 +99,35 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+const LinkTemplate: Story<ArgTypes, Context> = (
+  {
+    disabled = false,
+    size,
+    variant,
+    href = 'http://www.infragistics.com',
+    download,
+    rel,
+    target,
+  }: ArgTypes,
+  { globals: { direction } }: Context
+) => html`
+  <igc-button
+    .disabled=${disabled}
+    .size=${size}
+    .variant=${variant}
+    .href=${href}
+    .download=${download}
+    .rel=${rel}
+    .target=${target}
+    dir=${ifDefined(direction)}
+  >
+    Click me
+  </igc-button>
+`;
+
+export const Button = ButtonTemplate.bind({});
+export const Link = LinkTemplate.bind({});
+export const BlankTarget = LinkTemplate.bind({});
+BlankTarget.args = {
+  target: '_blank',
+};

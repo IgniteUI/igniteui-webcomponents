@@ -6,10 +6,13 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../index.js';
-import type IgcInputComponent from './input';
+import { defineComponents, IgcInputComponent } from '../../index.js';
 
 describe('Input component', () => {
+  before(() => {
+    defineComponents(IgcInputComponent);
+  });
+
   let el: IgcInputComponent;
   let input: HTMLInputElement;
 
@@ -20,7 +23,7 @@ describe('Input component', () => {
     });
 
     it('is initialized with the proper default values', async () => {
-      expect(el.size).to.equal('large');
+      expect(el.size).to.equal('medium');
       expect(el.type).to.equal('text');
       expect(el.value).to.equal('');
       expect(el.invalid).to.be.false;

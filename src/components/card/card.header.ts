@@ -1,5 +1,4 @@
 import { LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
 import { styles } from './card.header.material.css';
 
 /** A container for card's header
@@ -12,8 +11,10 @@ import { styles } from './card.header.material.css';
  *
  * @csspart header - The card header container
  */
-@customElement('igc-card-header')
-export default class IgcCardHeader extends LitElement {
+export default class IgcCardHeaderComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-card-header';
+
   /** @private */
   public static styles = styles;
 
@@ -35,6 +36,6 @@ export default class IgcCardHeader extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-card-header': IgcCardHeader;
+    'igc-card-header': IgcCardHeaderComponent;
   }
 }

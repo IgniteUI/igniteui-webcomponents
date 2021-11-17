@@ -1,16 +1,13 @@
 @use '../../styles/utilities' as *;
+@use 'shared-calendar' as *;
 @use 'sass:map';
 @use 'sass:math';
-
-$date-size-large: rem(32px);
-$date-size-medium: rem(28px);
-$date-size-small: rem(24px);
-
 
 :host {
     display: flex;
     flex-direction: column;
     font-family: var(--igc-font-family);
+    background: $calendar-background;
 
     > * {
         font-family: var(--igc-font-family);

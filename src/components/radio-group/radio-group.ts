@@ -1,10 +1,12 @@
 import { html, LitElement } from 'lit';
-import { customElement, property, queryAssignedNodes } from 'lit/decorators.js';
+import { property, queryAssignedNodes } from 'lit/decorators.js';
 import { default as IgcRadioComponent } from '../radio/radio';
-import { styles } from './radio-group.css';
+import { styles } from './radio-group.material.css';
 
-@customElement('igc-radio-group')
 export default class IgcRadioGroupComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-radio-group';
+
   /** @private */
   public static styles = styles;
 

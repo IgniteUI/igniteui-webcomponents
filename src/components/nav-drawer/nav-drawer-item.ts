@@ -1,12 +1,5 @@
 import { html, LitElement } from 'lit';
-import {
-  customElement,
-  property,
-  queryAssignedNodes,
-  state,
-} from 'lit/decorators.js';
-import { live } from 'lit/directives/live.js';
-import { watch } from '../common/decorators';
+import { property, queryAssignedNodes, state } from 'lit/decorators.js';
 import { partNameMap } from '../common/util';
 import { styles } from './nav-drawer-item.material.css';
 
@@ -22,8 +15,10 @@ import { styles } from './nav-drawer-item.material.css';
  * @csspart icon - The icon container.
  * @csspart content - The content container.
  */
-@customElement('igc-nav-drawer-item')
 export default class IgcNavDrawerItemComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-nav-drawer-item';
+
   /** @private */
   public static styles = [styles];
 
@@ -41,10 +36,6 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   @queryAssignedNodes('content', true)
   private _text!: NodeListOf<HTMLElement>;
 
-  protected handleClick() {
-    this.active = true;
-  }
-
   public connectedCallback() {
     super.connectedCallback();
     this.shadowRoot?.addEventListener('slotchange', (_) => {
@@ -59,32 +50,9 @@ export default class IgcNavDrawerItemComponent extends LitElement {
     };
   }
 
-  @watch('active', { waitUntilFirstUpdate: true })
-  protected handleChange() {
-    if (this.active) {
-      this.getDrawerItems().forEach((item) => {
-        item.active = false;
-      });
-    }
-  }
-
-  private getDrawerItems() {
-    const drawer = this.closest('igc-nav-drawer');
-    if (!drawer) return [];
-
-    return Array.from<IgcNavDrawerItemComponent>(
-      drawer.querySelectorAll('igc-nav-drawer-item')
-    ).filter((item) => item !== this);
-  }
-
   protected render() {
     return html`
-      <div
-        part="${partNameMap(this.resolvePartNames('base'))}"
-        .disabled="${this.disabled}"
-        .active="${live(this.active)}"
-        @click="${this.handleClick}"
-      >
+      <div part="${partNameMap(this.resolvePartNames('base'))}">
         <span part="icon">
           <slot name="icon"></slot>
         </span>

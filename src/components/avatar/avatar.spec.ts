@@ -1,8 +1,11 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import '../../../index.js';
-import type IgcAvatarComponent from './avatar';
+import { defineComponents, IgcAvatarComponent } from '../../index.js';
 
 describe('Avatar', () => {
+  before(() => {
+    defineComponents(IgcAvatarComponent);
+  });
+
   it('passes the a11y audit', async () => {
     const el = await fixture<IgcAvatarComponent>(
       html`<igc-avatar></igc-avatar>`

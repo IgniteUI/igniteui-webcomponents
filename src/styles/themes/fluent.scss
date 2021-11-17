@@ -116,10 +116,11 @@ $fluent_subtitle-2: utils.type-style(
 $fluent_button: utils.type-style(
     $font-size: utils.rem(14px),
     $font-weight: 600,
-    $line-height: utils.rem(14px),
+    $line-height: normal,
     $text-transform: capitalize,
     $margin-top: 0,
-    $margin-bottom: 0
+    $margin-bottom: 0,
+    $letter-spacing: 0,
 );
 
 $fluent-type-scale: utils.type-scale(
@@ -161,4 +162,5 @@ $type-scale: utils.extend($fluent-type-scale);
 @include calendar.theme();
 @include input.theme();
 @include icon-button.theme();
+
 

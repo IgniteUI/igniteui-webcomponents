@@ -32,8 +32,8 @@ $border-radius: rem(4px);
 
     &:hover,
     &:focus {
-        background: color(gray, 200);
-        border-color: color(gray, 200);
+        background: color(secondary, 100);
+        border-color: color(secondary, 100);
     }
 }
 
@@ -83,7 +83,7 @@ $border-radius: rem(4px);
 }
 
 [part~='date'][part~='range'] {
-    background: color(secondary, 100);
+    background: color(secondary, 50);
 }
 
 [part~='date'][part~='range'][part~='preview'] {
@@ -103,10 +103,6 @@ $border-radius: rem(4px);
         border-bottom: $border-width dashed color(gray, 300);
         background: transparent;
     }
-
-    &::before {
-        display: none;
-    }
 }
 
 [part~='date'][part~='range'][part~='first'],
@@ -118,14 +114,10 @@ $border-radius: rem(4px);
         position: absolute;
         height: 100%;
         width: calc(50% + #{rem(1px)});
-        background: color(secondary, 100);
-        border-top: $border-width solid color(secondary, 100);
-        border-bottom: $border-width solid color(secondary, 100);
+        background: color(secondary, 50);
+        border-top: $border-width solid color(secondary, 50);
+        border-bottom: $border-width solid color(secondary, 50);
         z-index: 1;
-    }
-
-    &::before {
-        display: none;
     }
 }
 
@@ -149,7 +141,8 @@ $border-radius: rem(4px);
 
 [part~='date-inner'][part~='weekend'],
 [part~='date-inner'][part~='inactive'],
-[part~='date-inner'][part~='label'] {
+[part~='date-inner'][part~='label'],
+[part~='date-inner'][part~='disabled'] {
     color: $week-number-color;
 }
 
@@ -165,13 +158,13 @@ $border-radius: rem(4px);
 [part~='date-inner'][part~='selected'][part~='range'][part~='weekend'],
 [part~='date-inner'][part~='selected'][part~='range'][part~='inactive'],
 [part~='date-inner'][part~='selected'][part~='range'] {
-    color: contrast-color(secondary, 100);
+    color: contrast-color(secondary, 50);
 
     &:hover,
     &:focus {
-        color: contrast-color(secondary, 700);
-        background: color(secondary, 700);
-        border-color: color(secondary, 700);
+        color: contrast-color(secondary, 100);
+        background: color(secondary, 100);
+        border-color: color(secondary, 100);
     }
 }
 
@@ -185,6 +178,7 @@ $border-radius: rem(4px);
     &:focus {
         background: color(secondary, 700);
         border-color: color(secondary, 700);
+        color: contrast-color(secondary, 700);
     }
 }
 
@@ -225,6 +219,26 @@ $border-radius: rem(4px);
         background: $week-number-bg;
         border-inline-start: rem(1px) solid $week-number-bg;
         border-inline-end: rem(1px) solid $week-number-bg;
+    }
+}
+
+[part~='date-inner'][part~='disabled'] {
+    pointer-events: none;
+    user-select: none;
+    cursor: not-allowed;
+}
+
+[part~='date-inner'][part~='special'][part~='range'],
+[part~='date-inner'][part~='special'] {
+    background: color(gray, 100);
+    border-color: color(gray, 100);
+    color: color(gray, 900);
+    font-weight: 900;
+
+    &:hover,
+    &:focus {
+        background: color(secondary, 100);
+        border-color: color(secondary, 100);
     }
 }
 

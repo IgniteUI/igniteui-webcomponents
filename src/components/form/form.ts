@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { alternateName } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
@@ -20,11 +20,13 @@ export interface IgcFormEventMap {
  * @fires igcSubmit - Emitted when the form is submitted.
  * @fires igcReset - Emitted when the form is reset.
  */
-@customElement('igc-form')
 export default class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  /** @private */
+  public static tagName = 'igc-form';
+
   /**
    * @private
    */
@@ -42,7 +44,12 @@ export default class IgcFormComponent extends EventEmitterMixin<
     'igc-checkbox',
   ];
   private _controlsWithValue = ['input', 'igc-input', 'textarea'];
-  private _controlsThatSubmit = ['input', 'button', 'igc-button'];
+  private _controlsThatSubmit = [
+    'input',
+    'button',
+    'igc-button',
+    'igc-icon-button',
+  ];
 
   /** Specifies if form data validation should be skipped on submit. */
   @property({ type: Boolean, reflect: true }) public novalidate = false;

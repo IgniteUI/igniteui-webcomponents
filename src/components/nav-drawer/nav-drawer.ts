@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { partNameMap } from '../common/util';
@@ -30,11 +30,13 @@ export interface IgcNavDrawerEventMap {
  * @csspart main - The main container.
  * @csspart mini - The mini container.
  */
-@customElement('igc-nav-drawer')
 export default class IgcNavDrawerComponent extends EventEmitterMixin<
   IgcNavDrawerEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  /** @private */
+  public static tagName = 'igc-nav-drawer';
+
   /** @private */
   public static styles = [styles];
 

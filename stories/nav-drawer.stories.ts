@@ -1,9 +1,11 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
-import '../index.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { Context, Story } from './story';
-import { IgcNavDrawerComponent } from '../index.js';
+import {
+  IgcNavDrawerComponent,
+  IgcNavDrawerItemComponent,
+} from '../src/index.js';
 
 // region default
 const metadata = {
@@ -43,6 +45,35 @@ registerIcon(
   'search',
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
 );
+const handleClick = (ev: PointerEvent) => {
+  let drawerItem: IgcNavDrawerItemComponent | undefined;
+
+  const eventTarget = ev.target as HTMLElement;
+
+  if (eventTarget.tagName.toLowerCase() === 'igc-nav-drawer-item') {
+    drawerItem = eventTarget as IgcNavDrawerItemComponent;
+  }
+
+  if (
+    eventTarget.parentElement?.tagName.toLowerCase() === 'igc-nav-drawer-item'
+  ) {
+    drawerItem = eventTarget.parentElement as IgcNavDrawerItemComponent;
+  }
+
+  if (drawerItem !== undefined) {
+    drawerItem.active = true;
+
+    const navDrawer = document.querySelector(
+      'igc-nav-drawer'
+    ) as IgcNavDrawerComponent;
+
+    const items = Array.from<IgcNavDrawerItemComponent>(
+      navDrawer.querySelectorAll('igc-nav-drawer-item')
+    ).filter((item) => item !== drawerItem);
+
+    items.forEach((item) => (item.active = false));
+  }
+};
 
 const handleOpen = () => {
   const drawer = document.querySelector(
@@ -75,6 +106,7 @@ const Template: Story<ArgTypes, Context> = (
         dir=${ifDefined(direction)}
         .open=${open}
         .position=${position}
+        @click="${handleClick}"
       >
         <igc-nav-drawer-header-item>Sample Drawer</igc-nav-drawer-header-item>
 

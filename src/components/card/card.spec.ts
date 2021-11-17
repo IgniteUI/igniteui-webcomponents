@@ -1,8 +1,24 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import '../../../index.js';
-import type IgcCardComponent from './card';
+import {
+  defineComponents,
+  IgcCardActionsComponent,
+  IgcCardContentComponent,
+  IgcCardHeaderComponent,
+  IgcCardMediaComponent,
+  IgcCardComponent,
+} from '../../index.js';
 
 describe('Card Component', () => {
+  before(() => {
+    defineComponents(
+      IgcCardComponent,
+      IgcCardActionsComponent,
+      IgcCardContentComponent,
+      IgcCardHeaderComponent,
+      IgcCardMediaComponent
+    );
+  });
+
   let el: IgcCardComponent;
 
   it('a11y audit', async () => {
@@ -13,7 +29,7 @@ describe('Card Component', () => {
   it('check the default outlined value', async () => {
     el = await fixture<IgcCardComponent>(html`<igc-card></igc-card>`);
 
-    expect(el.outlined).to.be.false;
+    expect(el.outlined).to.be.true;
   });
 
   it('change outlined property', async () => {

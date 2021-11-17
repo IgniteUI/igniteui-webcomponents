@@ -6,15 +6,18 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../index.js';
-import type IgcButtonComponent from './button';
+import { defineComponents, IgcButtonComponent } from '../../index.js';
 
-export const DEFAULT_CLASSES = 'native';
+// export const DEFAULT_CLASSES = 'native';
 export const classValue = (changeableValue: string) => {
-  return `${changeableValue} ${DEFAULT_CLASSES}`;
+  return `${changeableValue}`;
 };
 
 describe('Button component', () => {
+  before(() => {
+    defineComponents(IgcButtonComponent);
+  });
+
   const DIFF_OPTIONS = {
     ignoreChildren: ['button'],
     ignoreAttributes: ['part'],
@@ -28,11 +31,11 @@ describe('Button component', () => {
 
     it('is initialized with the proper default values', async () => {
       expect(el.disabled).to.equal(false);
-      expect(el.variant).to.equal('flat');
+      expect(el.variant).to.equal('contained');
       expect(el.dir).to.equal('');
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`large flat`)}"/>`,
+        `<button class="${classValue(`medium contained`)}"/>`,
         DIFF_OPTIONS
       );
     });
@@ -43,7 +46,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`medium flat`)}"/>`,
+        `<button class="${classValue(`medium contained`)}"/>`,
         DIFF_OPTIONS
       );
 
@@ -52,7 +55,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`small flat`)}"/>`,
+        `<button class="${classValue(`small contained`)}"/>`,
         DIFF_OPTIONS
       );
 
@@ -61,7 +64,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`large flat`)}"/>`,
+        `<button class="${classValue(`large contained`)}"/>`,
         DIFF_OPTIONS
       );
     });
@@ -72,7 +75,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`disabled large flat`)}" disabled/>`,
+        `<button class="${classValue(`disabled medium contained`)}" disabled/>`,
         DIFF_OPTIONS
       );
 
@@ -81,7 +84,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`large flat`)}"/>`,
+        `<button class="${classValue(`medium contained`)}"/>`,
         DIFF_OPTIONS
       );
     });
@@ -92,7 +95,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`large contained`)}"/>`,
+        `<button class="${classValue(`medium contained`)}"/>`,
         DIFF_OPTIONS
       );
 
@@ -101,7 +104,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`large outlined`)}"/>`,
+        `<button class="${classValue(`medium outlined`)}"/>`,
         DIFF_OPTIONS
       );
 
@@ -110,7 +113,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`large fab`)}"/>`,
+        `<button class="${classValue(`medium fab`)}"/>`,
         DIFF_OPTIONS
       );
 
@@ -119,7 +122,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`large flat`)}"/>`,
+        `<button class="${classValue(`medium flat`)}"/>`,
         DIFF_OPTIONS
       );
     });
@@ -149,7 +152,7 @@ describe('Button component', () => {
 
     it('renders the prefix, content and suffix slots successfully', async () => {
       expect(el).shadowDom.to.equal(`<button class="${classValue(
-        'flat large'
+        'contained medium'
       )}" part="base">
       <span part="prefix">
         <slot name="prefix"></slot>
@@ -167,7 +170,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue('flat large')}" type="reset"/>`,
+        `<button class="${classValue('contained medium')}" type="reset"/>`,
         DIFF_OPTIONS
       );
 
@@ -176,7 +179,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue('flat large')}" type="submit"/>`,
+        `<button class="${classValue('contained medium')}" type="submit"/>`,
         DIFF_OPTIONS
       );
 
@@ -185,7 +188,7 @@ describe('Button component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button class="${classValue('flat large')}" type="button"/>`,
+        `<button class="${classValue('contained medium')}" type="button"/>`,
         DIFF_OPTIONS
       );
     });
@@ -198,7 +201,7 @@ describe('Button component', () => {
       it(variant, async () => {
         el = await createButtonComponent(`<igc-button variant="${variant}"/>`);
         expect(el).shadowDom.to.equal(
-          `<button class="${classValue(`large ${variant}`)}"/>`,
+          `<button class="${classValue(`medium ${variant}`)}"/>`,
           DIFF_OPTIONS
         );
       });
@@ -211,7 +214,7 @@ describe('Button component', () => {
       it(size, async () => {
         el = await createButtonComponent(`<igc-button size="${size}" />`);
         expect(el).shadowDom.to.equal(
-          `<button class="${classValue(`flat ${size}`)}"/>`,
+          `<button class="${classValue(`contained ${size}`)}"/>`,
           DIFF_OPTIONS
         );
       });
@@ -221,7 +224,7 @@ describe('Button component', () => {
   it('applies the correct CSS class to the base element when button is disabled', async () => {
     el = await createButtonComponent(`<igc-button disabled="true"/>`);
     expect(el).shadowDom.to.equal(
-      `<button class="${classValue(`disabled flat large`)}" disabled/>`,
+      `<button class="${classValue(`disabled contained medium`)}" disabled/>`,
       DIFF_OPTIONS
     );
   });
@@ -237,6 +240,153 @@ describe('Button component', () => {
   });
 
   const createButtonComponent = (template = '<igc-button/>') => {
+    return fixture<IgcButtonComponent>(html`${unsafeStatic(template)}`);
+  };
+});
+
+describe('LinkButton component', () => {
+  const DIFF_OPTIONS = {
+    ignoreChildren: ['a'],
+    ignoreAttributes: ['aria-disabled', 'part', 'role'],
+  };
+  let el: IgcButtonComponent;
+
+  describe('', () => {
+    beforeEach(async () => {
+      el = await createLinkButtonComponent();
+    });
+
+    it('renders an anchor element successfully', async () => {
+      expect(el).shadowDom.to.be.accessible();
+      expect(el).shadowDom.to.equal(
+        `<a aria-disabled="false" class="${classValue(
+          `contained medium`
+        )}" href="/" part="base" role="button"/>`,
+        { ignoreChildren: ['a'] }
+      );
+    });
+
+    it('renders the prefix, content and suffix slots successfully', async () => {
+      expect(el).shadowDom.to.equal(`<a aria-disabled="false"
+        class="${classValue(
+          `contained medium`
+        )}" href="/" part="base" role="button">
+        <span part="prefix"><slot name="prefix"></slot>
+        </span><slot></slot>
+        <span part="suffix"><slot name="suffix"></slot></span>
+      </a>`);
+    });
+
+    it('is created with the proper default values', async () => {
+      expect(el.rel).to.be.undefined;
+      expect(el.target).to.be.undefined;
+      expect(el.download).to.be.undefined;
+    });
+
+    it('sets href property successfully', async () => {
+      el.href = '../test';
+      expect(el.href).to.equal('../test');
+      await elementUpdated(el);
+      expect(el).shadowDom.to.equal(
+        `<a class="${classValue(`medium contained`)}" href="../test" />`,
+        DIFF_OPTIONS
+      );
+
+      el.href = '';
+      expect(el.href).to.equal('');
+    });
+
+    it('sets rel property successfully', async () => {
+      el.rel = 'test';
+      expect(el.rel).to.equal('test');
+      await elementUpdated(el);
+
+      expect(el).shadowDom.to.equal(
+        `<a class="${classValue(`medium contained`)}" href="/" rel="test" />`,
+        DIFF_OPTIONS
+      );
+    });
+
+    it('sets target property successfully', async () => {
+      el.target = '_parent';
+      expect(el.target).to.equal('_parent');
+      await elementUpdated(el);
+      expect(el).shadowDom.to.equal(
+        `<a class="${classValue(
+          `medium contained`
+        )}" href="/" target="_parent"/>`,
+        DIFF_OPTIONS
+      );
+      el.target = undefined;
+      expect(el.target).to.be.undefined;
+    });
+
+    it('sets download property successfully', async () => {
+      el.download = 'test';
+      expect(el.download).to.equal('test');
+      await elementUpdated(el);
+      expect(el).shadowDom.to.equal(
+        `<a class="${classValue(
+          `medium contained`
+        )}" href="/" download="test"/>`,
+        DIFF_OPTIONS
+      );
+    });
+  });
+
+  describe('applies the correct CSS class to the base element for variant', () => {
+    const variants = ['flat', 'contained', 'outlined', 'fab'];
+
+    variants.forEach((variant) => {
+      it(variant, async () => {
+        el = await createLinkButtonComponent(
+          `<igc-button href="/" variant="${variant}"/>`
+        );
+        expect(el).shadowDom.to.equal(
+          `<a class="${classValue(`medium ${variant}`)}" href="/"/>`,
+          DIFF_OPTIONS
+        );
+      });
+    });
+  });
+
+  describe('applies the correct CSS class to the base element for size', () => {
+    const sizes = ['small', 'medium', 'large'];
+    sizes.forEach((size) => {
+      it(size, async () => {
+        el = await createLinkButtonComponent(
+          `<igc-button href="/" size="${size}" />`
+        );
+        expect(el).shadowDom.to.equal(
+          `<a class="${classValue(`contained ${size}`)}" href="/"/>`,
+          DIFF_OPTIONS
+        );
+      });
+    });
+  });
+  it('applies the correct CSS class to the base element when link button is disabled', async () => {
+    el = await createLinkButtonComponent(
+      `<igc-button href="/" disabled="true"/>`
+    );
+    expect(el).shadowDom.to.equal(
+      `<a class="${classValue(`disabled contained medium`)}" href="/"/>`,
+      DIFF_OPTIONS
+    );
+  });
+
+  it('applies all anchor specific properties to the wrapped base element', async () => {
+    el = await createLinkButtonComponent(
+      `<igc-button variant="contained" size="medium" href="test" target="_blank" download="test" rel="test">Submit<igc-button>`
+    );
+    expect(el).shadowDom.to.equal(
+      `<a class="${classValue(
+        `medium contained`
+      )}" href="test" target="_blank" download="test" rel="test"/>`,
+      DIFF_OPTIONS
+    );
+  });
+
+  const createLinkButtonComponent = (template = '<igc-button href="/"/>') => {
     return fixture<IgcButtonComponent>(html`${unsafeStatic(template)}`);
   };
 });

@@ -5,10 +5,13 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import '../../../index.js';
-import type IgcIconButtonComponent from './icon-button';
+import { defineComponents, IgcIconButtonComponent } from '../../index.js';
 
 describe('IconButton component', () => {
+  before(() => {
+    defineComponents(IgcIconButtonComponent);
+  });
+
   const DIFF_OPTIONS = {
     ignoreChildren: ['a'],
     ignoreAttributes: ['aria-disabled', 'part', 'role'],
@@ -24,6 +27,7 @@ describe('IconButton component', () => {
       expect(el).shadowDom.to.be.accessible();
       expect(el).shadowDom.to.equal(`<button><igc-icon></igc-icon></button>`, {
         ignoreAttributes: [
+          'variant',
           'aria-disabled',
           'aria-hidden',
           'part',
@@ -40,6 +44,7 @@ describe('IconButton component', () => {
       expect(el).shadowDom.to.be.accessible();
       expect(el).shadowDom.to.equal(`<a><igc-icon></igc-icon></a>`, {
         ignoreAttributes: [
+          'variant',
           'aria-disabled',
           'aria-hidden',
           'part',
@@ -54,7 +59,7 @@ describe('IconButton component', () => {
       expect(el.name).to.be.undefined;
       expect(el.collection).to.be.undefined;
       expect(el.mirrored).to.equal(false);
-      expect(el.variant).to.equal('flat');
+      expect(el.variant).to.equal('contained');
       expect(el.href).to.be.undefined;
       expect(el.download).to.be.undefined;
       expect(el.target).to.be.undefined;
@@ -73,6 +78,7 @@ describe('IconButton component', () => {
         </button>`,
         {
           ignoreAttributes: [
+            'variant',
             'aria-disabled',
             'aria-hidden',
             'part',
@@ -93,6 +99,7 @@ describe('IconButton component', () => {
         </button>`,
         {
           ignoreAttributes: [
+            'variant',
             'aria-disabled',
             'aria-hidden',
             'part',
@@ -148,11 +155,11 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button aria-disabled="${el.disabled}" disabled>
+        `<button disabled>
           <igc-icon></igc-icon>
         </button>`,
         {
-          ignoreAttributes: ['aria-hidden', 'part', 'role', 'size'],
+          ignoreAttributes: ['aria-hidden', 'part', 'role', 'size', 'variant'],
         }
       );
     });

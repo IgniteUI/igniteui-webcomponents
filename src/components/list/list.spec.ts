@@ -1,8 +1,20 @@
 import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
-import '../../../index.js';
-import type IgcListComponent from './list';
+import {
+  defineComponents,
+  IgcListComponent,
+  IgcListHeaderComponent,
+  IgcListItemComponent,
+} from '../../index.js';
 
 describe('List', () => {
+  before(() => {
+    defineComponents(
+      IgcListComponent,
+      IgcListHeaderComponent,
+      IgcListItemComponent
+    );
+  });
+
   let el: IgcListComponent;
 
   describe('', async () => {
