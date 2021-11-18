@@ -8,6 +8,7 @@ import IgcIconComponent from '../icon/icon';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
+  igcHover: CustomEvent<number>;
 }
 
 /**
@@ -46,13 +47,21 @@ export default class igcRatingComponent extends SizableMixin(
   @property({ type: Number })
   public length = 5;
 
-  /** The unfilled symbol/icon to use */
+  /**
+   * The unfilled symbol/icon to use.
+   * Additionally it accepts a callback function which accepts the current position
+   * index so the symbol can be resolved per position.
+   */
   @property()
-  public icon = 'dollar-circled';
+  public icon: string | ((index: number) => string) = 'dollar-circled';
 
-  /** The filled symbol/icon to use */
+  /**
+   * The filled symbol/icon to use.
+   * Additionally it accepts a callback function which accepts the current position
+   * index so the symbol can be resolved per position.
+   */
   @property()
-  public filledIcon = 'apple';
+  public filledIcon: string | ((index: number) => string) = 'apple';
 
   /** The name attribute of the control */
   @property()
@@ -127,7 +136,12 @@ export default class igcRatingComponent extends SizableMixin(
 
   protected handleClick(event: MouseEvent) {
     if (this.isIconElement(event.target) && !(this.readonly || this.disabled)) {
-      this.value = [...this.icons].indexOf(event.target) + 1;
+      const index = [...this.icons].indexOf(event.target) + 1;
+      if (index === this.value) {
+        this.value = 0;
+      } else {
+        this.value = index;
+      }
       this.emitEvent('igcChange', { detail: this.value });
     }
   }
@@ -135,6 +149,7 @@ export default class igcRatingComponent extends SizableMixin(
   protected handleMouseOver(event: MouseEvent) {
     if (this.isIconElement(event.target) && !(this.readonly || this.disabled)) {
       this.hoverValue = [...this.icons].indexOf(event.target) + 1;
+      this.emitEvent('igcHover', { detail: this.hoverValue });
     }
   }
 
@@ -165,7 +180,14 @@ export default class igcRatingComponent extends SizableMixin(
 
   private bindValue(index: number) {
     const value = this.hoverState ? this.hoverValue : this.value;
-    return index < value ? this.filledIcon : this.icon;
+    return index < value
+      ? this.renderIcon(index, 'rated')
+      : this.renderIcon(index, 'not-rated');
+  }
+
+  private renderIcon(index: number, state: 'rated' | 'not-rated') {
+    const symbol = state === 'rated' ? this.filledIcon : this.icon;
+    return typeof symbol === 'function' ? symbol(index) : symbol;
   }
 
   private isIconElement(el: any): el is IgcIconComponent {

@@ -15,15 +15,22 @@ const metadata = {
     },
     icon: {
       type: 'string',
-      description: 'The unfilled symbol/icon to use',
+      description:
+        'The unfilled symbol/icon to use.\nAdditionally it accepts a callback function which accepts the current position\nindex so the symbol can be resolved per position.',
       control: 'text',
       defaultValue: 'dollar-circled',
     },
     filledIcon: {
       type: 'string',
-      description: 'The filled symbol/icon to use',
+      description:
+        'The filled symbol/icon to use.\nAdditionally it accepts a callback function which accepts the current position\nindex so the symbol can be resolved per position.',
       control: 'text',
       defaultValue: 'apple',
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control',
+      control: 'text',
     },
     label: {
       type: 'string',
@@ -70,6 +77,7 @@ interface ArgTypes {
   length: number;
   icon: string;
   filledIcon: string;
+  name: string;
   label: string;
   value: number;
   disabled: boolean;
@@ -78,6 +86,12 @@ interface ArgTypes {
   size: 'small' | 'medium' | 'large';
 }
 // endregion
+
+(metadata as any).parameters = {
+  actions: {
+    handles: ['igcChange', 'igcHover'],
+  },
+};
 
 const Template: Story<ArgTypes, Context> = (
   {
@@ -93,19 +107,42 @@ const Template: Story<ArgTypes, Context> = (
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  return html` <igc-rating
-    label=${ifDefined(label)}
-    dir=${ifDefined(direction)}
-    ?disabled=${disabled}
-    ?hover=${hover}
-    ?readonly=${readonly}
-    .icon=${icon}
-    .filledIcon=${filledIcon}
-    .length=${length}
-    .value=${value}
-    .size=${size}
-  >
-  </igc-rating>`;
+  const unfilled = (index: number) => {
+    switch (index) {
+      case 0:
+        return 'coronavirus';
+      case 1:
+        return 'atm';
+      case 2:
+        return 'biking';
+      case 3:
+        return 'award';
+      case 4:
+        return 'bacteria';
+      default:
+        return 'dollar-circled';
+    }
+  };
+
+  return html`
+    <igc-rating
+      label=${ifDefined(label)}
+      dir=${ifDefined(direction)}
+      ?disabled=${disabled}
+      ?hover=${hover}
+      ?readonly=${readonly}
+      .icon=${icon || unfilled}
+      .filledIcon=${filledIcon}
+      .length=${length}
+      .value=${value}
+      .size=${size}
+    >
+    </igc-rating>
+    <h5>
+      If you set an empty string for the <em>icon</em> attribute the callback
+      for unrated symbols will take over.
+    </h5>
+  `;
 };
 
 export const Basic = Template.bind({});

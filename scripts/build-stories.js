@@ -70,6 +70,18 @@ function extractTags(meta) {
   return {
     component: meta.name,
     args: Array.from(meta.properties || [])
+      // Strip function types from the storybook generation
+      // TODO: Revise this whole pipeline and refactor it as it becomes unwieldy
+      .map((prop) => {
+        if (prop.type.includes('(')) {
+          prop.type = prop.type.split('|')
+            .map(part => part.trim())
+            .filter(part => !part.startsWith('('))
+            .join(' | ');
+          return prop;
+        }
+        return prop;
+      })
       .filter(
         (prop) =>
           SUPPORTED_TYPES.includes(prop.type) ||
