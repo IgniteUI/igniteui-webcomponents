@@ -25,9 +25,18 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   /** @private */
   public static styles = [styles];
 
+  public set src(val: string) {
+    const oldVal = this._src;
+    this._src = val;
+    this.hasError = false;
+    this.requestUpdate('src', oldVal);
+  }
+
   /** The image source to use. */
   @property()
-  public src!: string;
+  public get src() {
+    return this._src;
+  }
 
   @state()
   private hasError = false;
@@ -43,6 +52,8 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   /** The shape of the avatar. */
   @property({ reflect: true })
   public shape: 'circle' | 'rounded' | 'square' = 'square';
+
+  private _src!: string;
 
   private get classes() {
     const { size, shape } = this;
@@ -88,11 +99,6 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
     `;
   }
 }
-
-// export const avatarDefinition: IgcComponentDefinition = {
-//   tag: 'igc-avatar',
-//   component: IgcAvatarComponent,
-// };
 
 declare global {
   interface HTMLElementTagNameMap {
