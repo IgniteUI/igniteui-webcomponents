@@ -23,7 +23,7 @@ export { default as IgcNavDrawerHeaderItemComponent } from './components/nav-dra
 export { default as IgcNavDrawerItemComponent } from './components/nav-drawer/nav-drawer-item';
 export { default as IgcRadioComponent } from './components/radio/radio';
 export { default as IgcRadioGroupComponent } from './components/radio-group/radio-group';
-export { default as igcRatingComponent } from './components/rating/rating';
+export { default as IgcRatingComponent } from './components/rating/rating';
 export { default as IgcRippleComponent } from './components/ripple/ripple';
 export { default as IgcSwitchComponent } from './components/checkbox/switch';
 
