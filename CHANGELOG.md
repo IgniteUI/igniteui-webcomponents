@@ -5,11 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## 1.0.0 - 2021-11-22
 Initial release of Ignite UI Web Components
 
 ### Added
-
 - Avatar component
 - Badge component
 - Button component
