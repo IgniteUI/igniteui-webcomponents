@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './avatar.material.css';
 
@@ -25,18 +26,9 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   /** @private */
   public static styles = [styles];
 
-  public set src(val: string) {
-    const oldVal = this._src;
-    this._src = val;
-    this.hasError = false;
-    this.requestUpdate('src', oldVal);
-  }
-
   /** The image source to use. */
   @property()
-  public get src() {
-    return this._src;
-  }
+  public src!: string;
 
   @state()
   private hasError = false;
@@ -52,8 +44,6 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   /** The shape of the avatar. */
   @property({ reflect: true })
   public shape: 'circle' | 'rounded' | 'square' = 'square';
-
-  private _src!: string;
 
   private get classes() {
     const { size, shape } = this;
@@ -71,6 +61,11 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   constructor() {
     super();
     this.size = 'small';
+  }
+
+  @watch('src')
+  protected handleErrorState() {
+    this.hasError = false;
   }
 
   protected render() {
