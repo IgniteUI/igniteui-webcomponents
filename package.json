@@ -40,6 +40,7 @@
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "format": "eslint --ext .ts . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
     "format:stories": "prettier \"**/*.stories.ts\" --write --ignore-path .gitignore",
+    "release": "changelog",
     "test": "npm run build && wtr --coverage",
     "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
     "storybook": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"npm:watch-meta\" \"wds -c .storybook/server.mjs\"",
