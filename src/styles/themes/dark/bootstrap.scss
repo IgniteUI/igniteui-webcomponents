@@ -1,21 +1,21 @@
-@use '../utilities' as utils;
-@use '../../components/badge/badge.bootstrap' as badge;
-@use '../../components/button/button.bootstrap' as button;
-@use '../../components/button/icon-button.bootstrap' as icon-button;
-@use '../../components/card/card.bootstrap' as card;
-@use '../../components/checkbox/checkbox.bootstrap' as checkbox;
-@use '../../components/radio/radio.bootstrap' as radio;
-@use '../../components/checkbox/switch.bootstrap' as switch;
-@use '../../components/navbar/navbar.bootstrap' as navbar;
-@use '../../components/list/list.bootstrap' as list;
-@use '../../components/calendar/calendar.bootstrap' as calendar;
-@use '../../components/input/input.bootstrap' as input;
+@use '../../utilities' as utils;
+@use '../../../components/badge/badge.bootstrap' as badge;
+@use '../../../components/button/button.bootstrap' as button;
+@use '../../../components/button/icon-button.bootstrap' as icon-button;
+@use '../../../components/card/card.bootstrap' as card;
+@use '../../../components/checkbox/checkbox.bootstrap' as checkbox;
+@use '../../../components/radio/radio.bootstrap' as radio;
+@use '../../../components/checkbox/switch.bootstrap' as switch;
+@use '../../../components/navbar/navbar.bootstrap' as navbar;
+@use '../../../components/list/list.bootstrap' as list;
+@use '../../../components/calendar/calendar.bootstrap' as calendar;
+@use '../../../components/input/input.bootstrap' as input;
 
 $palette: utils.palette(
     $primary: #0d6efd,
     $secondary: #6c757d,
-    $gray: #adb5bd,
-    $surface: #f8f9fa,
+    $gray: #fff,
+    $surface: #333,
     $info: #0dcaf0,
     $success: #198754,
     $warn: #ffc107,

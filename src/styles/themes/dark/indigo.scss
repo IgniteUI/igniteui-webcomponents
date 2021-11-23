@@ -1,16 +1,16 @@
-@use '../utilities' as utils;
-@use '../../components/button/button.indigo' as button;
-@use '../../components/button/icon-button.indigo' as icon-button;
-@use '../../components/card/card.indigo' as card;
-@use '../../components/checkbox/checkbox.indigo' as checkbox;
-@use '../../components/radio/radio.indigo' as radio;
-@use '../../components/checkbox/switch.indigo' as switch;
-@use '../../components/navbar/navbar.indigo' as navbar;
-@use '../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
-@use '../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
-@use '../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
-@use '../../components/list/list.indigo' as list;
-@use '../../components/input/input.indigo' as input;
+@use '../../utilities' as utils;
+@use '../../../components/button/button.indigo' as button;
+@use '../../../components/button/icon-button.indigo' as icon-button;
+@use '../../../components/card/card.indigo' as card;
+@use '../../../components/checkbox/checkbox.indigo' as checkbox;
+@use '../../../components/radio/radio.indigo' as radio;
+@use '../../../components/checkbox/switch.indigo' as switch;
+@use '../../../components/navbar/navbar.indigo' as navbar;
+@use '../../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
+@use '../../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
+@use '../../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
+@use '../../../components/list/list.indigo' as list;
+@use '../../../components/input/input.indigo' as input;
 
 $palette: utils.palette(
     $primary: #3f51b5,

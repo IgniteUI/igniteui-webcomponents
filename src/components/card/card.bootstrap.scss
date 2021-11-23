@@ -5,7 +5,7 @@
 
 @mixin theme() {
     igc-card {
-        background: white;
+        background: #{utils.color(surface, 500)};
         border-radius: #{utils.rem(4px)};
     }
 
