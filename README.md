@@ -40,6 +40,22 @@ After the components are imported you could use them in your html:
 <igc-badge></igc-badge>
 ```
 
+### Tooling Support
+The package contains its own [Custom Elements Manifest](https://custom-elements-manifest.open-wc.org/blog/intro/) as well
+as [Custom Data Format](https://code.visualstudio.com/blogs/2020/02/24/custom-data-format) for VSCode.
+Refer to your IDE/toolchain documentation to see if you can take advantage of this metadata for linting, type hints and documentation.
+
+Here is a how to enable VSCode auto-completion and hover information for HTML entities from the package.
+
+Add the following line to your user or workspace settings:
+```json
+{
+    "html.customData": [
+        "./node_modules/igniteui-webcomponents/vscode-html-custom-data.json"
+    ]
+}
+```
+
 ## Setup
 
 In order to run the repository locally from the root folder run:
