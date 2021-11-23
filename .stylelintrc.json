@@ -1,4 +1,5 @@
 {
+    "extends": "stylelint-config-standard-scss",
     "plugins": ["stylelint-scss"],
     "rules": {
         "at-rule-disallowed-list": ["debug", {
