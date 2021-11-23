@@ -41,7 +41,6 @@
     "navbar",
     "navdrawer",
     "radio",
-    "slider",
     "switch"
   ],
   "dependencies": {
