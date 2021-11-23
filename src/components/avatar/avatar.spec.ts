@@ -1,8 +1,11 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { IgcAvatarComponent } from './avatar';
-import '../../../igniteui-webcomponents.js';
+import { defineComponents, IgcAvatarComponent } from '../../index.js';
 
 describe('Avatar', () => {
+  before(() => {
+    defineComponents(IgcAvatarComponent);
+  });
+
   it('passes the a11y audit', async () => {
     const el = await fixture<IgcAvatarComponent>(
       html`<igc-avatar></igc-avatar>`
@@ -12,6 +15,7 @@ describe('Avatar', () => {
   });
 
   it('should initialize avatar component with default values', async () => {
+    console.log(window.customElements.get('igc-avatar'));
     const el = await fixture<IgcAvatarComponent>(
       html`<igc-avatar></igc-avatar>`
     );

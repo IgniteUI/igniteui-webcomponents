@@ -2,11 +2,63 @@
 
 [![Node.js CI](https://github.com/IgniteUI/igniteui-webcomponents/workflows/Node.js%20CI/badge.svg)](https://github.com/IgniteUI/igniteui-webcomponents/actions/workflows/node.js.yml)
 [![Coverage Status](https://coveralls.io/repos/github/IgniteUI/igniteui-webcomponents/badge.svg)](https://coveralls.io/github/IgniteUI/igniteui-webcomponents)
+[![npm version](https://badge.fury.io/js/igniteui-webcomponents.svg)](https://badge.fury.io/js/igniteui-webcomponents)
 [![Discord](https://img.shields.io/discord/836634487483269200?logo=discord&logoColor=ffffff)](https://discord.gg/39MjrTRqds)
+
+[Ignite UI for Web Components](https://www.infragistics.com/products/ignite-ui-web-components) is a complete library of UI components, giving you the ability to build modern web applications using encapsulation and the concept of reusable components in a dependency-free approach.
+
+## Usage
+
+In order to use the Ignite UI Web Components in your application you should install the `igniteui-webcomponents` package:
+
+```
+npm install igniteui-webcomponents
+```
+
+Next you will need to import the components that you want to use. You could import one or more components using the `defineComponents` function like this:
+
+```ts
+import { defineComponents, IgcAvatarComponent, IgcBadgeComponent } from 'igniteui-webcomponents';
+
+defineComponents(IgcAvatarComponent, IgcBadgeComponent);
+```
+
+You could also import all of the components using the `defineAllComponents` function:
+
+```ts
+import { defineAllComponents } from 'igniteui-webcomponents';
+
+defineAllComponents();
+```
+
+Please note that importing all of the components will increase the bundle size of your application. That's why we recommend you to import only the components that you are actually using.
+
+After the components are imported you could use them in your html:
+
+```html
+<igc-avatar initials="AZ"></igc-avatar>
+<igc-badge></igc-badge>
+```
+
+### Tooling Support
+The package contains its own [Custom Elements Manifest](https://custom-elements-manifest.open-wc.org/blog/intro/) as well
+as [Custom Data Format](https://code.visualstudio.com/blogs/2020/02/24/custom-data-format) for VSCode.
+Refer to your IDE/toolchain documentation to see if you can take advantage of this metadata for linting, type hints and documentation.
+
+Here is a how to enable VSCode auto-completion and hover information for HTML entities from the package.
+
+Add the following line to your user or workspace settings:
+```json
+{
+    "html.customData": [
+        "./node_modules/igniteui-webcomponents/vscode-html-custom-data.json"
+    ]
+}
+```
 
 ## Setup
 
-From the root folder run:
+In order to run the repository locally from the root folder run:
 
 ```
 npm install

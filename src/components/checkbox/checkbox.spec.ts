@@ -1,5 +1,3 @@
-import { IgcCheckboxComponent } from './checkbox';
-import '../../../igniteui-webcomponents.js';
 import {
   elementUpdated,
   expect,
@@ -8,8 +6,13 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
+import { defineComponents, IgcCheckboxComponent } from '../../index.js';
 
 describe('Checkbox', () => {
+  before(() => {
+    defineComponents(IgcCheckboxComponent);
+  });
+
   const label = 'Label';
   let el: IgcCheckboxComponent;
   let input: HTMLInputElement;
@@ -212,7 +215,7 @@ describe('Checkbox', () => {
       el.click();
 
       await elementUpdated(el);
-      expect(eventSpy).calledWithExactly('igcChange');
+      expect(eventSpy).calledWithExactly('igcChange', { detail: true });
     });
 
     const createCheckboxComponent = (

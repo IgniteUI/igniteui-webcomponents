@@ -1,7 +1,5 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedNodes, state } from 'lit/decorators.js';
-import { live } from 'lit/directives/live.js';
-import { watch } from '../common/decorators';
 import { partNameMap } from '../common/util';
 import { styles } from './nav-drawer-item.material.css';
 
@@ -17,7 +15,10 @@ import { styles } from './nav-drawer-item.material.css';
  * @csspart icon - The icon container.
  * @csspart content - The content container.
  */
-export class IgcNavDrawerItemComponent extends LitElement {
+export default class IgcNavDrawerItemComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-nav-drawer-item';
+
   /** @private */
   public static styles = [styles];
 
@@ -35,10 +36,6 @@ export class IgcNavDrawerItemComponent extends LitElement {
   @queryAssignedNodes('content', true)
   private _text!: NodeListOf<HTMLElement>;
 
-  protected handleClick() {
-    this.active = true;
-  }
-
   public connectedCallback() {
     super.connectedCallback();
     this.shadowRoot?.addEventListener('slotchange', (_) => {
@@ -53,32 +50,9 @@ export class IgcNavDrawerItemComponent extends LitElement {
     };
   }
 
-  @watch('active', { waitUntilFirstUpdate: true })
-  protected handleChange() {
-    if (this.active) {
-      this.getDrawerItems().forEach((item) => {
-        item.active = false;
-      });
-    }
-  }
-
-  private getDrawerItems() {
-    const drawer = this.closest('igc-nav-drawer');
-    if (!drawer) return [];
-
-    return Array.from<IgcNavDrawerItemComponent>(
-      drawer.querySelectorAll('igc-nav-drawer-item')
-    ).filter((item) => item !== this);
-  }
-
   protected render() {
     return html`
-      <div
-        part="${partNameMap(this.resolvePartNames('base'))}"
-        .disabled="${this.disabled}"
-        .active="${live(this.active)}"
-        @click="${this.handleClick}"
-      >
+      <div part="${partNameMap(this.resolvePartNames('base'))}">
         <span part="icon">
           <slot name="icon"></slot>
         </span>
@@ -87,5 +61,11 @@ export class IgcNavDrawerItemComponent extends LitElement {
         </span>
       </div>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-nav-drawer-item': IgcNavDrawerItemComponent;
   }
 }

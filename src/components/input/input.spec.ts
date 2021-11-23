@@ -6,10 +6,13 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import '../../../igniteui-webcomponents';
-import { IgcInputComponent } from './input';
+import { defineComponents, IgcInputComponent } from '../../index.js';
 
 describe('Input component', () => {
+  before(() => {
+    defineComponents(IgcInputComponent);
+  });
+
   let el: IgcInputComponent;
   let input: HTMLInputElement;
 
@@ -20,7 +23,7 @@ describe('Input component', () => {
     });
 
     it('is initialized with the proper default values', async () => {
-      expect(el.size).to.equal('large');
+      expect(el.size).to.equal('medium');
       expect(el.type).to.equal('text');
       expect(el.value).to.equal('');
       expect(el.invalid).to.be.false;
@@ -153,12 +156,12 @@ describe('Input component', () => {
       el.autofocus = true;
       expect(el.autofocus).to.be.true;
       await elementUpdated(el);
-      expect(input.autofocus).to.be.true;
+      expect((input as any).autofocus).to.be.true;
 
       el.autofocus = false;
       expect(el.autofocus).to.be.false;
       await elementUpdated(el);
-      expect(input.autofocus).to.be.false;
+      expect((input as any).autofocus).to.be.false;
     });
 
     it('sets the autocomplete property successfully', async () => {

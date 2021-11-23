@@ -2,33 +2,30 @@
 
 @mixin theme() {
     igc-button[variant='contained']::part(base),
-    igc-link-button[variant='contained']::part(base),
-    igc-button[variant='fab']::part(base),
-    igc-link-button[variant='fab']::part(base) {
+    igc-button[variant='fab']::part(base) {
         box-shadow: var(--igc-elevation-0);
     }
 
-    igc-button[size='small']::part(base),
-    igc-link-button[size='small']::part(base) {
+    igc-button[size='small']::part(base) {
         border-radius: calc(var(--igc-border-radius) * 1);
         --size: #{utils.rem(24px)};
+        padding: 0 utils.rem(8px);
     }
 
-    igc-button[size='medium']::part(base),
-    igc-link-button[size='medium']::part(base) {
-        border-radius: calc(var(--igc-border-radius) * 1);
-        --size: #{utils.rem(28px)};
-    }
-
-    igc-button[size='large']::part(base),
-    igc-link-button[size='large']::part(base) {
+    igc-button[size='medium']::part(base) {
         border-radius: calc(var(--igc-border-radius) * 1);
         --size: #{utils.rem(32px)};
+        padding: 0 utils.rem(16px);
+    }
+
+    igc-button[size='large']::part(base) {
+        border-radius: calc(var(--igc-border-radius) * 1);
+        --size: #{utils.rem(38px)};
+        padding: 0 utils.rem(16px);
     }
 
     // FLAT
-    igc-button[variant='flat']:not([disabled])::part(base),
-    igc-link-button[variant='flat']:not([disabled])::part(base) {
+    igc-button[variant='flat']:not([disabled])::part(base) {
         color: #{utils.color(gray, 900)};
 
         &:hover {
@@ -49,8 +46,7 @@
     }
 
     // OUTLINED
-    igc-button[variant='outlined']:not([disabled])::part(base),
-    igc-link-button[variant='outlined']:not([disabled])::part(base) {
+    igc-button[variant='outlined']:not([disabled])::part(base) {
         color: #{utils.color(gray, 900)};
         transition: color .15s ease-out;
         box-shadow: 0 0 0 1px #{utils.color(gray, 700)};
@@ -103,9 +99,7 @@
 
     // FLAT & OUTLINED
     igc-button[variant='flat']:not([disabled])::part(base),
-    igc-link-button[variant='flat']:not([disabled])::part(base),
-    igc-button[variant='outlined']:not([disabled])::part(base),
-    igc-link-button[variant='outlined']:not([disabled])::part(base) {
+    igc-button[variant='outlined']:not([disabled])::part(base) {
         &:focus-visible {
             position: relative;
 
@@ -128,9 +122,7 @@
 
     // FAB & CONTAINED
     igc-button[variant='contained']:not([disabled])::part(base),
-    igc-link-button[variant='contained']:not([disabled])::part(base),
-    igc-button[variant='fab']:not([disabled])::part(base),
-    igc-link-button[variant='fab']:not([disabled])::part(base) {
+    igc-button[variant='fab']:not([disabled])::part(base) {
         color: #{utils.contrast-color(primary, 600)};
 
         &:hover,
@@ -181,8 +173,7 @@
         }
     }
 
-    igc-button[variant='fab']:not([disabled])::part(base),
-    igc-link-button[variant='fab']:not([disabled])::part(base) {
+    igc-button[variant='fab']:not([disabled])::part(base) {
         border-radius: calc(#{var(--igc-border-radius)} * 7);
 
         &::after {
@@ -191,16 +182,13 @@
     }
 
     // DISABLED START
-    igc-button[variant='flat'][disabled]::part(base),
-    igc-link-button[variant='flat'][disabled]::part(base){
+    igc-button[variant='flat'][disabled]::part(base) {
         color: #{utils.color(gray, 400)};
         background: transparent;
     }
 
     igc-button[variant='fab'][disabled]::part(base),
-    igc-link-button[variant='fab'][disabled]::part(base),
-    igc-button[variant='contained'][disabled]::part(base),
-    igc-link-button[variant='contained'][disabled]::part(base) {
+    igc-button[variant='contained'][disabled]::part(base) {
         color: #{utils.color(gray, 400)};
 
         &::before {
@@ -209,8 +197,7 @@
         }
     }
 
-    igc-button[variant='outlined'][disabled]::part(base),
-    igc-link-button[variant='outlined'][disabled]::part(base) {
+    igc-button[variant='outlined'][disabled]::part(base) {
         box-shadow: none;
         color: #{utils.color(gray, 500, 8)};
         background: #{utils.color(gray, 200)};

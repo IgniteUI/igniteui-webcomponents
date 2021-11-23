@@ -1,4 +1,7 @@
 @use '../../styles/utilities' as utils;
+@use 'card.header.bootstrap' as card-header;
+@use 'card.content.bootstrap' as card-content;
+@use 'card.actions.bootstrap' as card-actions;
 
 @mixin theme() {
     igc-card {
@@ -14,4 +17,8 @@
             box-shadow: var(--igc-elevation-2);
         }
     }
+
+    @include card-header.theme();
+    @include card-content.theme();
+    @include card-actions.theme();
 }

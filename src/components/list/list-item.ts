@@ -20,12 +20,19 @@ import { styles } from './list-item.material.css';
  * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  */
-export class IgcListItemComponent extends LitElement {
+export default class IgcListItemComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-list-item';
+
   /** @private */
   public static styles = styles;
 
   constructor() {
     super();
+  }
+
+  public connectedCallback() {
+    super.connectedCallback();
     this.setAttribute('role', 'listitem');
   }
 
@@ -45,5 +52,11 @@ export class IgcListItemComponent extends LitElement {
         <slot name="end"></slot>
       </section>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-list-item': IgcListItemComponent;
   }
 }

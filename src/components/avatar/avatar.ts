@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './avatar.material.css';
 
@@ -18,7 +19,10 @@ import { styles } from './avatar.material.css';
  * @csspart image - The image wrapper of the avatar.
  * @csspart icon - The icon wrapper of the avatar.
  */
-export class IgcAvatarComponent extends SizableMixin(LitElement) {
+export default class IgcAvatarComponent extends SizableMixin(LitElement) {
+  /** @private */
+  public static tagName = 'igc-avatar';
+
   /** @private */
   public static styles = [styles];
 
@@ -59,6 +63,11 @@ export class IgcAvatarComponent extends SizableMixin(LitElement) {
     this.size = 'small';
   }
 
+  @watch('src')
+  protected handleErrorState() {
+    this.hasError = false;
+  }
+
   protected render() {
     return html`
       <div
@@ -83,5 +92,11 @@ export class IgcAvatarComponent extends SizableMixin(LitElement) {
           : ''}
       </div>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-avatar': IgcAvatarComponent;
   }
 }

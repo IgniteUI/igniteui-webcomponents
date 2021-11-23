@@ -2,9 +2,15 @@
 
 @mixin theme() {
     igc-navbar {
+        padding: 0 utils.rem(8px);
         background: #{utils.color(surface, 500)};
         color: #{utils.contrast-color(surface, 500)};
         box-shadow: none;
+    }
+
+    igc-navbar::part(base) {
+        padding-inline-start: utils.rem(4px);
+        padding-inline-end: utils.rem(4px);
     }
 
     ::slotted(igc-icon) {

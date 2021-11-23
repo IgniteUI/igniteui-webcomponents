@@ -6,6 +6,7 @@
 @use '../../components/radio/radio.fluent' as radio;
 @use '../../components/list/list.fluent' as list;
 @use '../../components/checkbox/switch.fluent' as switch;
+@use '../../components/calendar/calendar.fluent' as calendar;
 @use '../../components/input/input.fluent' as input;
 
 $palette: utils.palette(
@@ -115,10 +116,11 @@ $fluent_subtitle-2: utils.type-style(
 $fluent_button: utils.type-style(
     $font-size: utils.rem(14px),
     $font-weight: 600,
-    $line-height: utils.rem(14px),
+    $line-height: normal,
     $text-transform: capitalize,
     $margin-top: 0,
-    $margin-bottom: 0
+    $margin-bottom: 0,
+    $letter-spacing: 0,
 );
 
 $fluent-type-scale: utils.type-scale(
@@ -157,6 +159,8 @@ $type-scale: utils.extend($fluent-type-scale);
 @include radio.theme();
 @include list.theme();
 @include switch.theme();
+@include calendar.theme();
 @include input.theme();
 @include icon-button.theme();
+
 

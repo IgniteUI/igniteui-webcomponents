@@ -8,7 +8,10 @@ import { styles } from './card.actions.material.css';
  * @slot - Renders items at the middle of actions area
  * @slot end - Renders items at the end of actions area
  */
-export class IgcCardActions extends LitElement {
+export default class IgcCardActionsComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-card-actions';
+
   /** @private */
   public static styles = styles;
 
@@ -18,5 +21,11 @@ export class IgcCardActions extends LitElement {
       <slot></slot>
       <slot name="end"></slot>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-card-actions': IgcCardActionsComponent;
   }
 }

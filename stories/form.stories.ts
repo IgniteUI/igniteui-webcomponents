@@ -1,5 +1,4 @@
 import { html } from 'lit-html';
-import '../igniteui-webcomponents.js';
 import { Context, Story } from './story.js';
 
 // region default

@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig",
+  "exclude": [
+    "**/*.spec.ts",
+    "stories"
+  ],
+  "compilerOptions": {
+    "rootDir": "./src",
+    "removeComments": true
+  },
+}

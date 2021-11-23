@@ -1,7 +1,6 @@
 import { html } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
 import { Context, Story } from './story';
-import '../igniteui-webcomponents.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { all } from '@igniteui/material-icons-extended';
 
@@ -28,35 +27,6 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    href: {
-      type: 'string',
-      description: 'The href attribute of the icon.',
-      control: 'text',
-    },
-    download: {
-      type: 'string',
-      description: 'The download attribute of the icon.',
-      control: 'text',
-    },
-    target: {
-      type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
-      description: 'The target attribute of the icon button.',
-      options: ['_blank', '_parent', '_self', '_top', 'undefined'],
-      control: {
-        type: 'select',
-      },
-    },
-    rel: {
-      type: 'string',
-      description: 'The rel attribute of the icon button.',
-      control: 'text',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Determines whether the button is disabled.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     variant: {
       type: '"flat" | "contained" | "outlined"',
       description: 'The visual variant of the icon button.',
@@ -64,7 +34,47 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'flat',
+      defaultValue: 'contained',
+    },
+    type: {
+      type: '"button" | "reset" | "submit"',
+      description: 'The type of the button. Defaults to undefined.',
+      options: ['button', 'reset', 'submit'],
+      control: {
+        type: 'inline-radio',
+      },
+    },
+    href: {
+      type: 'string',
+      description: 'The URL the button points to.',
+      control: 'text',
+    },
+    download: {
+      type: 'string',
+      description:
+        'Prompts to save the linked URL instead of navigating to it.',
+      control: 'text',
+    },
+    target: {
+      type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
+      description:
+        'Where to display the linked URL, as the name for a browsing context.',
+      options: ['_blank', '_parent', '_self', '_top', 'undefined'],
+      control: {
+        type: 'select',
+      },
+    },
+    rel: {
+      type: 'string',
+      description:
+        'The relationship of the linked URL.\nSee https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'Determines whether the button is disabled.',
+      control: 'boolean',
+      defaultValue: false,
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -82,12 +92,13 @@ interface ArgTypes {
   name: string;
   collection: string;
   mirrored: boolean;
+  variant: 'flat' | 'contained' | 'outlined';
+  type: 'button' | 'reset' | 'submit';
   href: string;
   download: string;
   target: '_blank' | '_parent' | '_self' | '_top' | undefined;
   rel: string;
   disabled: boolean;
-  variant: 'flat' | 'contained' | 'outlined';
   size: 'small' | 'medium' | 'large';
 }
 // endregion

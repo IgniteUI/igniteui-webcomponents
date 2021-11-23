@@ -20,10 +20,13 @@ export interface IgcFormEventMap {
  * @fires igcSubmit - Emitted when the form is submitted.
  * @fires igcReset - Emitted when the form is reset.
  */
-export class IgcFormComponent extends EventEmitterMixin<
+export default class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  /** @private */
+  public static tagName = 'igc-form';
+
   /**
    * @private
    */
@@ -41,7 +44,12 @@ export class IgcFormComponent extends EventEmitterMixin<
     'igc-checkbox',
   ];
   private _controlsWithValue = ['input', 'igc-input', 'textarea'];
-  private _controlsThatSubmit = ['input', 'button', 'igc-button'];
+  private _controlsThatSubmit = [
+    'input',
+    'button',
+    'igc-button',
+    'igc-icon-button',
+  ];
 
   /** Specifies if form data validation should be skipped on submit. */
   @property({ type: Boolean, reflect: true }) public novalidate = false;
@@ -166,5 +174,11 @@ export class IgcFormComponent extends EventEmitterMixin<
 
   protected render() {
     return html`<slot></slot>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-form': IgcFormComponent;
   }
 }

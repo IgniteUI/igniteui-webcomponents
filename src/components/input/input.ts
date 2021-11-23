@@ -4,7 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
 import { Constructor } from '../common/mixins/constructor.js';
-import { alternateName, watch } from '../common/decorators';
+import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util';
 import { SizableMixin } from '../common/mixins/sizable';
@@ -15,8 +15,8 @@ type Direction = 'ltr' | 'rtl' | 'auto';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
-  igcInput: CustomEvent<void>;
-  igcChange: CustomEvent<void>;
+  igcInput: CustomEvent<string>;
+  igcChange: CustomEvent<string>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
@@ -40,9 +40,12 @@ export interface IgcInputEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export class IgcInputComponent extends SizableMixin(
+export default class IgcInputComponent extends SizableMixin(
   EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  /** @private */
+  public static tagName = 'igc-input';
+
   /** @private */
   public static styles = styles;
 
@@ -106,6 +109,7 @@ export class IgcInputComponent extends SizableMixin(
 
   /** The value attribute of the control. */
   @property()
+  @blazorTwoWayBind('igcChange', 'detail')
   public value = '';
 
   /** The pattern attribute of the control. */
@@ -169,6 +173,11 @@ export class IgcInputComponent extends SizableMixin(
   @property()
   public autocomplete!: string;
 
+  constructor() {
+    super();
+    this.size = 'medium';
+  }
+
   public connectedCallback() {
     super.connectedCallback();
     const theme = document.defaultView
@@ -227,8 +236,8 @@ export class IgcInputComponent extends SizableMixin(
 
     if (this.value !== this.input.value) {
       this.value = this.input.value;
-      this.emitEvent('igcInput');
-      this.emitEvent('igcChange');
+      this.emitEvent('igcInput', { detail: this.value });
+      this.emitEvent('igcChange', { detail: this.value });
     }
   }
 
@@ -270,12 +279,12 @@ export class IgcInputComponent extends SizableMixin(
 
   private handleInput() {
     this.value = this.input.value;
-    this.emitEvent('igcInput');
+    this.emitEvent('igcInput', { detail: this.value });
   }
 
   private handleChange() {
     this.value = this.input.value;
-    this.emitEvent('igcChange');
+    this.emitEvent('igcChange', { detail: this.value });
   }
 
   private handleFocus() {
@@ -376,5 +385,11 @@ export class IgcInputComponent extends SizableMixin(
     return html`${this.theme === 'material'
       ? this.renderMaterial()
       : this.renderStandard()}`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-input': IgcInputComponent;
   }
 }

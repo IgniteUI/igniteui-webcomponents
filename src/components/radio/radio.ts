@@ -3,7 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { styles } from './radio.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { alternateName, watch } from '../common/decorators';
+import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { partNameMap } from '../common/util.js';
@@ -11,7 +11,7 @@ import { partNameMap } from '../common/util.js';
 let nextId = 0;
 
 export interface IgcRadioEventMap {
-  igcChange: CustomEvent<void>;
+  igcChange: CustomEvent<boolean>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
@@ -29,10 +29,13 @@ export interface IgcRadioEventMap {
  * @csspart control - The radio control.
  * @csspart label - The radio control label.
  */
-export class IgcRadioComponent extends EventEmitterMixin<
+export default class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  /** @private */
+  public static tagName = 'igc-radio';
+
   /** @private */
   public static styles = styles;
 
@@ -55,6 +58,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
 
   /** The checked state of the control. */
   @property({ type: Boolean })
+  @blazorTwoWayBind('igcChange', 'detail')
   public checked = false;
 
   /** Disables the radio control. */
@@ -130,7 +134,7 @@ export class IgcRadioComponent extends EventEmitterMixin<
       });
       this.input.focus();
       this._tabIndex = 0;
-      this.emitEvent('igcChange');
+      this.emitEvent('igcChange', { detail: this.checked });
     }
   }
 
@@ -178,5 +182,11 @@ export class IgcRadioComponent extends EventEmitterMixin<
         </span>
       </label>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-radio': IgcRadioComponent;
   }
 }

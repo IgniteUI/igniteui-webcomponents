@@ -68,8 +68,12 @@ span[part='suffix'] {
 }
 
 .flat {
-    background: transparent;
     color: color(secondary, 500);
+    background: transparent;
+
+    &.disabled {
+        background: transparent;
+    }
 
     &::before {
         opacity: 0;
