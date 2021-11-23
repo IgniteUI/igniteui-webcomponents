@@ -21,30 +21,30 @@
 15. **[DONE]** Radio component
 16. **[DONE]** Ripple component
 17. **[DONE]** Switch component
-18. **[IN PROGRESS]** Slider component
  
 
 ## Going down the road
 
-1. Dialog component
-2. Tooltip component
-3. Toggle component
-4. Dropdown component
-5. Select component
-6. Combobox component
-7. Auto-complete component
-8. Date editor component
-9. Date picker component
-10. Date range picker component
-11. Time picker component
-12. Toast component
-13. Snackbar component
-14. Splitter component
-15. Action strip component
-16. Chip component
-17. Carousel component
-18. Tab component
-19. Bottom navigation component
-20. Circular & linear progress bar
-21. Expansion panel
-22. Tree component
+1. Slider component
+2. Dialog component
+3. Tooltip component
+4. Toggle component
+5. Dropdown component
+6. Select component
+7. Combobox component
+8. Auto-complete component
+9. Date editor component
+10. Date picker component
+11. Date range picker component
+12. Time picker component
+13. Toast component
+14. Snackbar component
+15. Splitter component
+16. Action strip component
+17. Chip component
+18. Carousel component
+19. Tab component
+20. Bottom navigation component
+21. Circular & linear progress bar
+22. Expansion panel
+23. Tree component
