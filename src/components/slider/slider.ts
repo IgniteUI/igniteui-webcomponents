@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
@@ -102,7 +102,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   public firstUpdated() {
     this._hasViewInit = true;
     this.positionHandlersAndUpdateTrack();
-    this.normalizeByStep();
   }
 
   @query('#thumbFrom')
@@ -116,9 +115,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   @query('#labelTo')
   private labelTo!: HTMLElement;
-
-  @query('#fill')
-  private filledTrack!: HTMLElement;
 
   @state()
   private thumbLabelsVisible = false;
@@ -404,8 +400,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     );
   }
 
-  @watch('step', { waitUntilFirstUpdate: true })
-  private normalizeByStep() {
+  @watch('step')
+  protected normalizeByStep() {
     if (this.isRange) {
       const rangeValue = this.value as IRangeSliderValue;
       this.value = {
@@ -435,15 +431,15 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     }
   }
 
-  private updateTrack() {
-    const fromPosition = this.valueToFraction(this.lowerValue);
+  private getTrackStyle() {
     const toPosition = this.valueToFraction(this.upperValue);
-    const positionGap = toPosition - fromPosition;
-
-    let filledTrackStyle: Partial<CSSStyleDeclaration>;
-    let trackLeftIndention = fromPosition;
+    let filledTrackStyle: StyleInfo;
 
     if (this.isRange) {
+      const fromPosition = this.valueToFraction(this.lowerValue);
+      const positionGap = toPosition - fromPosition;
+      let trackLeftIndention = fromPosition;
+
       if (positionGap) {
         trackLeftIndention = Math.round((1 / positionGap) * fromPosition * 100);
       }
@@ -451,6 +447,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       trackLeftIndention = this.isLTR
         ? trackLeftIndention
         : -trackLeftIndention;
+
       filledTrackStyle = {
         transform: `scaleX(${positionGap}) translateX(${trackLeftIndention}%)`,
       };
@@ -460,9 +457,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       };
     }
 
-    if (this.filledTrack) {
-      Object.assign(this.filledTrack.style, filledTrackStyle);
-    }
+    return filledTrackStyle;
   }
 
   @watch('max')
@@ -482,8 +477,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         (this.value as IRangeSliderValue).lower
       );
     }
-
-    this.updateTrack();
   }
 
   private updateThumbValue(mouseX: number) {
@@ -713,7 +706,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
           ? html`<div part="ticks">${this.renderTicks()}</div>`
           : html``}
         <div part="track">
-          <div part="fill" id="fill"></div>
+          <div
+            part="fill"
+            id="fill"
+            style=${styleMap(this.getTrackStyle())}
+          ></div>
           <div part="inactive" id="inactive"></div>
           ${this.renderSteps()}
         </div>
