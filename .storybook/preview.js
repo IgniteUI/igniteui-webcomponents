@@ -36,7 +36,9 @@ const getTheme = (themeName) => {
 
 const themeProvider = (Story, context) => {
   const theme = getTheme(context.globals.theme);
-  return html`
+  const htmlNoMin = html;
+
+  return htmlNoMin`
     <style>
       ${theme.default}
     </style>
