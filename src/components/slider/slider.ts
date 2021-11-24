@@ -101,7 +101,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   public firstUpdated() {
     this._hasViewInit = true;
-    this.positionHandlersAndUpdateTrack();
   }
 
   @query('#thumbFrom')
@@ -110,12 +109,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @query('#thumbTo')
   private thumbTo!: HTMLElement;
 
-  @query('#labelFrom')
-  private labelFrom!: HTMLElement;
-
-  @query('#labelTo')
-  private labelTo!: HTMLElement;
-
   @state()
   private thumbLabelsVisible = false;
 
@@ -123,7 +116,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     const oldValue = this._value;
     if (this._hasViewInit) {
       this.setValue(value);
-      this.positionHandlersAndUpdateTrack();
     } else {
       this._value = value;
     }
@@ -241,13 +233,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @watch('lowerBound')
   protected updateMinTravelZoneAndTrack() {
     this._pMin = this.valueToFraction(this.lowerBound, 0, 1);
-    this.positionHandlersAndUpdateTrack();
   }
 
   @watch('upperBound')
   protected updateMaxTravelZoneAndTrack() {
     this._pMax = this.valueToFraction(this.upperBound, 0, 1);
-    this.positionHandlersAndUpdateTrack();
   }
 
   @watch('min')
@@ -414,23 +404,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     }
   }
 
-  private positionHandler(
-    thumbHandle: HTMLElement,
-    labelHandle: HTMLElement,
-    position: number
-  ) {
-    const percent = `${this.valueToFraction(position) * 100}%`;
-    const dir = this.isLTR ? 'left' : 'right';
-
-    if (thumbHandle) {
-      thumbHandle.style[dir] = percent;
-    }
-
-    if (labelHandle) {
-      labelHandle.style[dir] = percent;
-    }
-  }
-
   private getTrackStyle() {
     const toPosition = this.valueToFraction(this.upperValue);
     let filledTrackStyle: StyleInfo;
@@ -458,25 +431,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     }
 
     return filledTrackStyle;
-  }
-
-  @watch('max')
-  @watch('min')
-  protected positionHandlersAndUpdateTrack() {
-    if (!this.isRange) {
-      this.positionHandler(this.thumbTo, this.labelTo, this.value as number);
-    } else {
-      this.positionHandler(
-        this.thumbTo,
-        this.labelTo,
-        (this.value as IRangeSliderValue).upper
-      );
-      this.positionHandler(
-        this.thumbFrom,
-        this.labelFrom,
-        (this.value as IRangeSliderValue).lower
-      );
-    }
   }
 
   private updateThumbValue(mouseX: number) {
@@ -542,8 +496,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     }
 
     this.updateThumbValue(mouseX);
-
-    this.positionHandlersAndUpdateTrack();
   }
 
   private pointerDown = (event: PointerEvent) => {
@@ -597,7 +549,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       }
 
       this.updateValue(increment);
-      this.positionHandlersAndUpdateTrack();
     }
   };
 
@@ -652,10 +603,16 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         : (this.value as IRangeSliderValue).upper
       : (this.value as number);
 
+    const percent = `${this.valueToFraction(value) * 100}%`;
+    const dir = this.isLTR ? 'left' : 'right';
+
     return html` <div
         part="thumb-label"
         id=${isFrom ? 'labelFrom' : 'labelTo'}
-        style=${styleMap({ opacity: this.thumbLabelsVisible ? '1' : '0' })}
+        style=${styleMap({
+          opacity: this.thumbLabelsVisible ? '1' : '0',
+          [dir]: percent,
+        })}
       >
         ${value}
       </div>
@@ -663,6 +620,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         part="thumb"
         id=${isFrom ? 'thumbFrom' : 'thumbTo'}
         tabindex=${this.disabled ? -1 : 0}
+        style=${styleMap({ [dir]: percent })}
         role="slider"
         aria-valuemin=${this.min}
         aria-valuemax=${this.max}
