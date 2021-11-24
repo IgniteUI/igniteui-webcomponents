@@ -44,7 +44,7 @@ const themeProvider = (Story, context) => {
       ${theme.default}
     </style>`;
 
-  return htmlNoMin`
+  return html`
     ${styles}
     ${Story()}
   `;
