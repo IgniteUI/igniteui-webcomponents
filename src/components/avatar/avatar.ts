@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './avatar.material.css';
 
@@ -62,6 +63,11 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
     this.size = 'small';
   }
 
+  @watch('src')
+  protected handleErrorState() {
+    this.hasError = false;
+  }
+
   protected render() {
     return html`
       <div
@@ -88,11 +94,6 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
     `;
   }
 }
-
-// export const avatarDefinition: IgcComponentDefinition = {
-//   tag: 'igc-avatar',
-//   component: IgcAvatarComponent,
-// };
 
 declare global {
   interface HTMLElementTagNameMap {

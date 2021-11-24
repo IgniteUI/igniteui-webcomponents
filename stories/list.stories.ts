@@ -61,12 +61,8 @@ const BasicTemplate: Story<ArgTypes, Context> = (
             >
             <h2 slot="title">${employee.name}</h2>
             <span slot="subtitle">${employee.position}</span>
-            <igc-button slot="end" .size="${size}" variant="outlined"
-              >Text</igc-button
-            >
-            <igc-button slot="end" .size="${size}" variant="outlined"
-              >Call</igc-button
-            >
+            <igc-button slot="end">Text</igc-button>
+            <igc-button slot="end">Call</igc-button>
           </igc-list-item>
         `;
       })}

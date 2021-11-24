@@ -11,10 +11,10 @@ export const globalTypes = {
   theme: {
     name: 'Theme',
     description: 'Global theme for components',
-    defaultValue: 'material',
+    defaultValue: 'bootstrap',
     toolbar: {
       icon: 'cog',
-      items: ['material', 'bootstrap', 'fluent', 'indigo'],
+      items: ['bootstrap', 'material', 'fluent', 'indigo'],
       showName: 'True',
     },
   },
@@ -36,10 +36,16 @@ const getTheme = (themeName) => {
 
 const themeProvider = (Story, context) => {
   const theme = getTheme(context.globals.theme);
-  return html`
+
+  // Workaround for https://github.com/cfware/babel-plugin-template-html-minifier/issues/56
+  const htmlNoMin = html;
+  const styles = htmlNoMin`
     <style>
       ${theme.default}
-    </style>
+    </style>`;
+
+  return html`
+    ${styles}
     ${Story()}
   `;
 };

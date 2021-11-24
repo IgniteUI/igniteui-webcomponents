@@ -6,7 +6,7 @@
     width: 100%;
     min-height: rem(56px);
     max-height: rem(128px);
-    padding: rem(16px);
+    padding: 0 rem(16px);
     background: color(primary, 500);
     color: contrast-color(primary, 500);
     box-shadow: var(--igc-elevation-4);
@@ -29,7 +29,6 @@
     display: flex;
     flex-grow: 1;
     align-items: center;
-    margin-inline-start: rem(16px);
 }
 
 [part='start'],
@@ -37,6 +36,10 @@
     display: flex;
     align-items: center;
     user-select: none;
+}
+
+[name='start']::slotted(*) {
+    margin-inline-end: rem(16px);
 }
 
 [name='end']::slotted(*) {
@@ -47,3 +50,11 @@
     cursor: pointer;
     color: contrast-color(primary, 500);
 }
+
+::slotted(*) {
+    @include type-category('h5') {
+        line-height: normal;
+        margin: 0;
+    }
+}
+

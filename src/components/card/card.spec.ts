@@ -29,7 +29,7 @@ describe('Card Component', () => {
   it('check the default outlined value', async () => {
     el = await fixture<IgcCardComponent>(html`<igc-card></igc-card>`);
 
-    expect(el.outlined).to.be.false;
+    expect(el.outlined).to.be.true;
   });
 
   it('change outlined property', async () => {

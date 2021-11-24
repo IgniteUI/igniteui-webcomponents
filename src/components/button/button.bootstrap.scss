@@ -1,16 +1,24 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
+    igc-button::part(base) {
+        transition: all .15s ease-out;
+
+        &::before {
+            transition: all .15s ease-out;
+        }
+    }
+
     igc-button[size='large']::part(base) {
         --size: #{utils.rem(48px)};
     }
 
     igc-button[size='medium']::part(base) {
-        --size: #{utils.rem(40px)};
+        --size: #{utils.rem(38px)};
     }
 
     igc-button[size='small']::part(base) {
-        --size: #{utils.rem(32px)};
+        --size: #{utils.rem(31px)};
     }
 
     igc-button[variant='flat'][disabled]::part(base) {
@@ -20,18 +28,20 @@
 
     igc-button[variant='fab'][disabled]::part(base),
     igc-button[variant='contained'][disabled]::part(base) {
-        background: #{utils.color(primary, 100)};
-        color: #{utils.color(primary, 300)};
+        background: #{utils.color(primary, 200)};
+        color: #{utils.contrast-color(primary, 600)};
     }
 
     igc-button[variant='outlined'][disabled]::part(base) {
-        color: #{utils.color(primary, 100)};
-        box-shadow: 0 0 0 1px utils.color(primary, 100);
+        color: #{utils.color(primary, 500)};
+        box-shadow: 0 0 0 1px utils.color(primary, 500);
+        opacity: .65;
         background: transparent;
     }
 
     igc-button[variant='flat']:not([disabled])::part(base) {
         color: #{utils.color(primary, 500)};
+        border-radius: calc(var(--igc-border-radius) * 2);
 
         &:hover {
             color: #{utils.color(primary, 800)};
@@ -40,6 +50,7 @@
         &:focus,
         &:active {
             color: #{utils.color(primary, 600)};
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
         }
 
         &:hover::before {
@@ -48,7 +59,7 @@
 
         &:focus::before,
         &:active::before {
-            background: #{utils.color(gray, 100)};
+            background: transparent;
             opacity: 1;
         }
     }
@@ -63,7 +74,7 @@
         &:focus,
         &:active {
             color: #{utils.contrast-color(primary, 600)};
-            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
         }
 
         &::before {
@@ -81,7 +92,6 @@
 
     igc-button[variant='outlined']:not([disabled])::part(base) {
         color: #{utils.color(primary, 500)};
-        transition: color .15s ease-out;
         box-shadow: 0 0 0 1px utils.color(primary, 500);
         overflow: visible;
 
@@ -91,17 +101,17 @@
             width: 100%;
             height: 100%;
             border-radius: calc(var(--igc-border-radius) * 2);
-            transition: box-shadow .15s ease-out;
         }
 
         &:hover {
+            background: #{utils.color(primary, 600)};
             color: #{utils.contrast-color(primary, 600)};
         }
 
-        &:focus,
-        &:active {
-            color: #{utils.contrast-color(primary, 600)};
-        }
+        //&:focus,
+        //&:active {
+        //    color: #{utils.contrast-color(primary, 600)};
+        //}
 
         &:hover::before {
             background: #{utils.color(primary, 500)};
@@ -110,13 +120,13 @@
 
         &:focus::before,
         &:active::before {
-            background: #{utils.color(primary, 500)};
+            background: transparent;
             opacity: 1;
         }
 
         &:focus::after,
         &:active::after {
-            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
         }
     }
 
@@ -142,7 +152,7 @@
         &:focus,
         &:active {
             color: #{utils.contrast-color(primary, 600)};
-            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
         }
 
         &::before {
