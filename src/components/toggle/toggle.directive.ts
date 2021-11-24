@@ -5,10 +5,9 @@ import {
   Modifier,
 } from '@popperjs/core/lib/popper-lite';
 import { directive, Directive, PartInfo, ChildPart } from 'lit/directive.js';
-import { IgcPlacement, IToggleOptions } from './utilities';
+import { IgcPlacement, IToggleOptions } from './utilities.js';
 
 export class IgcToggleDirective extends Directive {
-  /** private */
   private styles = `
     color: #666;
     background: white;
@@ -107,7 +106,7 @@ export class IgcToggleDirective extends Directive {
     }
 
     if (options.offset) {
-      this.setOffset(options.offset[0], options.offset[1] ?? 0);
+      this.setOffset(options.offset.x, options.offset.y);
     }
     return this._modifiers;
   }
@@ -147,10 +146,6 @@ export class IgcToggleDirective extends Directive {
     this._part = partInfo;
     this.defineProcess();
   }
-
-  // public update(_part: ChildPart, [target, open, options]: [HTMLElement, boolean, IToggleOptions] ) {
-  //   return this.render(target, open, options);
-  // }
 
   public render(target: HTMLElement, open: boolean, options?: IToggleOptions) {
     return this.createToggleInstance(target, open, options);

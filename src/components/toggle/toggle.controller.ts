@@ -1,4 +1,6 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
+import { igcToggle } from './toggle.directive';
+import { IToggleOptions } from './utilities';
 
 export class IgcToggleDocEventsController implements ReactiveController {
   constructor(host: ReactiveControllerHost) {
@@ -24,5 +26,13 @@ export class IgcToggleDocEventsController implements ReactiveController {
   private removeEventListeners() {
     document.removeEventListener('click', this.documentClicked, true);
     document.removeEventListener('scroll', this.handleScroll, true);
+  }
+
+  public createToggle(
+    target: HTMLElement,
+    open = false,
+    options?: IToggleOptions
+  ) {
+    return igcToggle(target, open, options);
   }
 }

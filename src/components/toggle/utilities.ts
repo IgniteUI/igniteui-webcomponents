@@ -27,7 +27,7 @@ export interface IToggleOptions {
   strategy: 'absolute' | 'fixed';
   flip?: boolean;
   closeOnOutsideClick?: boolean;
-  offset?: number[];
+  offset?: { x: number; y: number };
 }
 
 export type IgcPlacement = BasePlacement | VariationPlacement;
