@@ -32,11 +32,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   private _pMin = 0;
   private _pMax = 1;
 
-  private _lowerValue?: number;
-  private _upperValue?: number;
-  private _value: number | IRangeSliderValue = 0;
-  private _hasViewInit = false;
-  private _activeThumb: HTMLElement | undefined;
+  @state()
+  private activeThumb: HTMLElement | undefined;
   private thumbHoverTimer: any;
 
   private get isLTR(): boolean {
@@ -48,46 +45,12 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return this.type === 'range';
   }
 
-  public get lowerValue(): number {
-    if (
-      !Number.isNaN(this._lowerValue) &&
-      this._lowerValue !== undefined &&
-      this._lowerValue >= this.lowerBound
-    ) {
-      return this._lowerValue;
-    }
-
-    return this.lowerBound;
-  }
-
-  public set lowerValue(value: number) {
-    value = this.valueInRange(value, this.lowerBound, this.upperBound);
-    this._lowerValue = value;
-  }
-
-  public get upperValue() {
-    if (
-      !Number.isNaN(this._upperValue) &&
-      this._upperValue !== undefined &&
-      this._upperValue <= this.upperBound
-    ) {
-      return this._upperValue;
-    }
-
-    return this.upperBound;
-  }
-
-  public set upperValue(value: number) {
-    value = this.valueInRange(value, this.lowerBound, this.upperBound);
-    this._upperValue = value;
-  }
-
   private get thumbPositionX() {
-    if (!this._activeThumb) {
+    if (!this.activeThumb) {
       return;
     }
 
-    const thumbBoundaries = this._activeThumb.getBoundingClientRect();
+    const thumbBoundaries = this.activeThumb.getBoundingClientRect();
     const thumbCenter = (thumbBoundaries.right - thumbBoundaries.left) / 2;
     return thumbBoundaries.left + thumbCenter;
   }
@@ -99,10 +62,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.addEventListener('keydown', this.handleKeydown);
   }
 
-  public firstUpdated() {
-    this._hasViewInit = true;
-  }
-
   @query('#thumbFrom')
   private thumbFrom!: HTMLElement;
 
@@ -112,39 +71,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @state()
   private thumbLabelsVisible = false;
 
-  public set value(value: number | IRangeSliderValue) {
-    const oldValue = this._value;
-    if (this._hasViewInit) {
-      this.setValue(value);
-    } else {
-      this._value = value;
-    }
-    this.requestUpdate('value', oldValue);
-  }
-
   @property({ attribute: false })
-  public get value(): number | IRangeSliderValue {
-    if (this.isRange) {
-      return {
-        lower: this.valueInRange(
-          this.lowerValue,
-          this.lowerBound,
-          this.upperBound
-        ),
-        upper: this.valueInRange(
-          this.upperValue,
-          this.lowerBound,
-          this.upperBound
-        ),
-      };
-    } else {
-      return this.valueInRange(
-        this.upperValue,
-        this.lowerBound,
-        this.upperBound
-      );
-    }
-  }
+  public value: number | IRangeSliderValue = 0;
 
   @property({ type: Number })
   public min = 0;
@@ -195,39 +123,45 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   public tickLabelRotation: 0 | 90 | -90 = 0;
 
-  private validateInitialRangeValue(value: IRangeSliderValue) {
-    if (value.lower < this.lowerBound && value.upper < this.lowerBound) {
-      value.upper = this.lowerBound;
-      value.lower = this.lowerBound;
-    }
+  @watch('value')
+  protected valueChanged() {
+    if (this.isRange) {
+      const rangeValue = this.value as IRangeSliderValue;
+      const lower = this.valueInRange(
+        rangeValue.lower,
+        this.lowerBound,
+        this.upperBound
+      );
+      const upper = this.valueInRange(
+        rangeValue.upper,
+        this.lowerBound,
+        this.upperBound
+      );
 
-    if (value.lower > this.upperBound && value.upper > this.upperBound) {
-      value.upper = this.upperBound;
-      value.lower = this.upperBound;
+      if (rangeValue.lower !== lower || rangeValue.upper !== upper) {
+        this.value = { lower, upper };
+      }
+    } else {
+      this.value = this.valueInRange(
+        this.value as number,
+        this.lowerBound,
+        this.upperBound
+      );
     }
-
-    if (value.upper < value.lower) {
-      value.upper = this.upperValue;
-      value.lower = this.lowerValue;
-    }
-
-    return value;
   }
 
-  protected setValue(value: number | IRangeSliderValue) {
-    let res;
-    if (!this.isRange) {
-      this.upperValue = (value as number) - ((value as number) % this.step);
-      res = this.upperValue;
+  @watch('type')
+  protected typeChanged(oldValue: any) {
+    if (this.isRange) {
+      this.value = {
+        lower: 0,
+        upper: this.value as number,
+      };
     } else {
-      value = this.validateInitialRangeValue(value as IRangeSliderValue);
-      this.upperValue = (value as IRangeSliderValue).upper;
-      this.lowerValue = (value as IRangeSliderValue).lower;
-      res = { lower: this.lowerValue, upper: this.upperValue };
+      if (oldValue === 'range') {
+        this.value = (this.value as IRangeSliderValue).upper;
+      }
     }
-
-    this._value = res;
-    this.emitEvent('igcChange');
   }
 
   @watch('lowerBound')
@@ -251,14 +185,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private swapThumb(value: IRangeSliderValue) {
-    if (this._activeThumb) {
-      if (this._activeThumb.id === 'thumbFrom') {
-        value.upper = this.upperValue;
-        value.lower = this.upperValue;
-      } else {
-        value.upper = this.lowerValue;
-        value.lower = this.lowerValue;
-      }
+    if (this.activeThumb) {
+      const lower = value.lower;
+      value.lower = value.upper;
+      value.upper = lower;
+
       this.toggleThumb();
     }
 
@@ -266,13 +197,14 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private toggleThumb() {
-    if (this._activeThumb?.id === 'thumbFrom') {
-      this.thumbTo.style.zIndex = '1';
-      this._activeThumb = this.thumbTo;
+    if (this.activeThumb?.id === 'thumbFrom') {
+      this.activeThumb = this.thumbTo;
     } else {
-      this.thumbFrom.style.zIndex = '1';
-      this._activeThumb = this.thumbFrom;
+      this.activeThumb = this.thumbFrom;
     }
+
+    // TODO handle focus and pointer capture
+    // this.activeThumb.focus();
   }
 
   private findClosestThumb(event: PointerEvent) {
@@ -280,7 +212,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       this.closestHandle(event);
     } else {
       this.thumbTo.focus();
-      this._activeThumb = this.thumbTo;
+      this.activeThumb = this.thumbTo;
     }
 
     this.updateSlider(event.clientX);
@@ -295,16 +227,16 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
     if (fromOffset === toOffset && toOffset < xPointer) {
       this.thumbTo.focus();
-      this._activeThumb = this.thumbTo;
+      this.activeThumb = this.thumbTo;
     } else if (fromOffset === toOffset && toOffset > xPointer) {
       this.thumbFrom.focus();
-      this._activeThumb = this.thumbFrom;
+      this.activeThumb = this.thumbFrom;
     } else if (match === fromOffset) {
       this.thumbFrom.focus();
-      this._activeThumb = this.thumbFrom;
+      this.activeThumb = this.thumbFrom;
     } else {
       this.thumbTo.focus();
-      this._activeThumb = this.thumbTo;
+      this.activeThumb = this.thumbTo;
     }
   }
 
@@ -405,11 +337,12 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private getTrackStyle() {
-    const toPosition = this.valueToFraction(this.upperValue);
     let filledTrackStyle: StyleInfo;
 
     if (this.isRange) {
-      const fromPosition = this.valueToFraction(this.lowerValue);
+      const rangeValue = this.value as IRangeSliderValue;
+      const toPosition = this.valueToFraction(rangeValue.upper);
+      const fromPosition = this.valueToFraction(rangeValue.lower);
       const positionGap = toPosition - fromPosition;
       let trackLeftIndention = fromPosition;
 
@@ -425,8 +358,9 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         transform: `scaleX(${positionGap}) translateX(${trackLeftIndention}%)`,
       };
     } else {
+      const position = this.valueToFraction(this.value as number);
       filledTrackStyle = {
-        transform: `scaleX(${toPosition})`,
+        transform: `scaleX(${position})`,
       };
     }
 
@@ -435,7 +369,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   private updateThumbValue(mouseX: number) {
     const calculatedValue = this.calculateTrackUpdate(mouseX);
-    if (this._activeThumb && calculatedValue !== 0) {
+    if (this.activeThumb && calculatedValue !== 0) {
       this.updateValue(calculatedValue);
     }
   }
@@ -443,7 +377,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   private updateValue(value: number) {
     let newValue: IRangeSliderValue;
     if (this.isRange) {
-      if (this._activeThumb?.id === 'thumbFrom') {
+      if (this.activeThumb?.id === 'thumbFrom') {
         newValue = {
           lower: (this.value as IRangeSliderValue).lower + value,
           upper: (this.value as IRangeSliderValue).upper,
@@ -501,23 +435,23 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   private pointerDown = (event: PointerEvent) => {
     this.findClosestThumb(event);
 
-    if (!this._activeThumb) {
+    if (!this.activeThumb) {
       return;
     }
 
-    this._activeThumb.setPointerCapture(event.pointerId);
-    this._activeThumb.addEventListener('pointermove', this.pointerMove);
+    this.activeThumb.setPointerCapture(event.pointerId);
+    this.activeThumb.addEventListener('pointermove', this.pointerMove);
     this.showThumbLabels();
     event.preventDefault();
   };
 
   private pointerUp = (event: PointerEvent) => {
-    if (!this._activeThumb) {
+    if (!this.activeThumb) {
       return;
     }
 
-    this._activeThumb.removeEventListener('pointermove', this.pointerMove);
-    this._activeThumb.releasePointerCapture(event.pointerId);
+    this.activeThumb.removeEventListener('pointermove', this.pointerMove);
+    this.activeThumb.releasePointerCapture(event.pointerId);
 
     this.hideThumbLabels();
     this.emitEvent('igcChange');
@@ -562,20 +496,34 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   public incrementValue() {
     if (this.isRange) {
-      if (this._activeThumb?.id === 'thumbFrom') {
-        this.lowerValue += this.step;
-      } else this.upperValue += this.step;
+      const rangeValue = this.value as IRangeSliderValue;
+
+      if (this.activeThumb?.id === 'thumbFrom') {
+        rangeValue.lower += this.step;
+      } else {
+        rangeValue.upper += this.step;
+      }
+
+      this.value = { ...rangeValue };
+    } else {
+      this.value = (this.value as number) + this.step;
     }
-    this.value = (this.value as number) + this.step;
   }
 
   public decrementValue() {
     if (this.isRange) {
-      if (this._activeThumb?.id === 'thumbFrom') {
-        this.lowerValue -= this.step;
-      } else this.upperValue -= this.step;
+      const rangeValue = this.value as IRangeSliderValue;
+
+      if (this.activeThumb?.id === 'thumbFrom') {
+        rangeValue.lower -= this.step;
+      } else {
+        rangeValue.upper -= this.step;
+      }
+
+      this.value = { ...rangeValue };
+    } else {
+      this.value = (this.value as number) - this.step;
     }
-    this.value = (this.value as number) - this.step;
   }
 
   protected renderTicks() {
@@ -605,6 +553,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
     const percent = `${this.valueToFraction(value) * 100}%`;
     const dir = this.isLTR ? 'left' : 'right';
+    const thumbId = isFrom ? 'thumbFrom' : 'thumbTo';
 
     return html` <div
         part="thumb-label"
@@ -618,9 +567,12 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       </div>
       <div
         part="thumb"
-        id=${isFrom ? 'thumbFrom' : 'thumbTo'}
+        id=${thumbId}
         tabindex=${this.disabled ? -1 : 0}
-        style=${styleMap({ [dir]: percent })}
+        style=${styleMap({
+          [dir]: percent,
+          zIndex: `${thumbId === this.activeThumb?.id ? 1 : 0}`,
+        })}
         role="slider"
         aria-valuemin=${this.min}
         aria-valuemax=${this.max}
