@@ -31,10 +31,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   // Limit handle travel zone
   private _pMin = 0;
   private _pMax = 1;
+  private _value: number | IRangeSliderValue = 0;
+  private thumbHoverTimer: any;
 
   @state()
   private activeThumb: HTMLElement | undefined;
-  private thumbHoverTimer: any;
 
   private get isLTR(): boolean {
     const styles = window.getComputedStyle(this);
@@ -71,8 +72,38 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @state()
   private thumbLabelsVisible = false;
 
+  public set value(val: number | IRangeSliderValue) {
+    const oldVal = this._value;
+
+    if (this.isRange) {
+      const rangeValue = val as IRangeSliderValue;
+      rangeValue.lower = this.valueInRange(
+        rangeValue.lower,
+        this.lowerBound,
+        this.upperBound
+      );
+      rangeValue.upper = this.valueInRange(
+        rangeValue.upper,
+        this.lowerBound,
+        this.upperBound
+      );
+
+      this._value = rangeValue;
+    } else {
+      this._value = this.valueInRange(
+        val as number,
+        this.lowerBound,
+        this.upperBound
+      );
+    }
+
+    this.requestUpdate('value', oldVal);
+  }
+
   @property({ attribute: false })
-  public value: number | IRangeSliderValue = 0;
+  public get value() {
+    return this._value;
+  }
 
   @property({ type: Number })
   public min = 0;
@@ -122,33 +153,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   public tickLabelRotation: 0 | 90 | -90 = 0;
-
-  @watch('value')
-  protected valueChanged() {
-    if (this.isRange) {
-      const rangeValue = this.value as IRangeSliderValue;
-      const lower = this.valueInRange(
-        rangeValue.lower,
-        this.lowerBound,
-        this.upperBound
-      );
-      const upper = this.valueInRange(
-        rangeValue.upper,
-        this.lowerBound,
-        this.upperBound
-      );
-
-      if (rangeValue.lower !== lower || rangeValue.upper !== upper) {
-        this.value = { lower, upper };
-      }
-    } else {
-      this.value = this.valueInRange(
-        this.value as number,
-        this.lowerBound,
-        this.upperBound
-      );
-    }
-  }
 
   @watch('type')
   protected typeChanged(oldValue: any) {
