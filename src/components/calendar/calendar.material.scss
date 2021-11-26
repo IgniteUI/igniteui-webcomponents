@@ -8,6 +8,7 @@
     flex-direction: column;
     font-family: var(--igc-font-family);
     background: $calendar-background;
+    color: $calendar-foreground;
 
     > * {
         font-family: var(--igc-font-family);
