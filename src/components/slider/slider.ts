@@ -37,40 +37,14 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @state()
   private activeThumb: HTMLElement | undefined;
 
-  private get isLTR(): boolean {
-    const styles = window.getComputedStyle(this);
-    return styles.getPropertyValue('direction') === 'ltr';
-  }
-
-  private get isRange(): boolean {
-    return this.type === 'range';
-  }
-
-  private get thumbPositionX() {
-    if (!this.activeThumb) {
-      return;
-    }
-
-    const thumbBoundaries = this.activeThumb.getBoundingClientRect();
-    const thumbCenter = (thumbBoundaries.right - thumbBoundaries.left) / 2;
-    return thumbBoundaries.left + thumbCenter;
-  }
-
-  constructor() {
-    super();
-    this.addEventListener('pointerdown', this.pointerDown);
-    this.addEventListener('pointerup', this.pointerUp);
-    this.addEventListener('keydown', this.handleKeydown);
-  }
+  @state()
+  private thumbLabelsVisible = false;
 
   @query('#thumbFrom')
   private thumbFrom!: HTMLElement;
 
   @query('#thumbTo')
   private thumbTo!: HTMLElement;
-
-  @state()
-  private thumbLabelsVisible = false;
 
   public set value(val: number | IRangeSliderValue) {
     const oldVal = this._value;
@@ -168,6 +142,20 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     }
   }
 
+  @watch('step')
+  protected normalizeByStep() {
+    if (this.isRange) {
+      const rangeValue = this.value as IRangeSliderValue;
+      this.value = {
+        lower: rangeValue.lower - (rangeValue.lower % this.step),
+        upper: rangeValue.upper - (rangeValue.upper % this.step),
+      };
+    } else {
+      const numValue = this.value as number;
+      this.value = numValue - (numValue % this.step);
+    }
+  }
+
   @watch('lowerBound')
   protected updateMinTravelZoneAndTrack() {
     this._pMin = this.valueToFraction(this.lowerBound, 0, 1);
@@ -186,6 +174,32 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @watch('max')
   protected updateMaxTravelZoneAndBound() {
     this._pMax = 1;
+  }
+
+  constructor() {
+    super();
+    this.addEventListener('pointerdown', this.pointerDown);
+    this.addEventListener('pointerup', this.pointerUp);
+    this.addEventListener('keydown', this.handleKeydown);
+  }
+
+  private get isLTR(): boolean {
+    const styles = window.getComputedStyle(this);
+    return styles.getPropertyValue('direction') === 'ltr';
+  }
+
+  private get isRange(): boolean {
+    return this.type === 'range';
+  }
+
+  private get thumbPositionX() {
+    if (!this.activeThumb) {
+      return;
+    }
+
+    const thumbBoundaries = this.activeThumb.getBoundingClientRect();
+    const thumbCenter = (thumbBoundaries.right - thumbBoundaries.left) / 2;
+    return thumbBoundaries.left + thumbCenter;
   }
 
   private swapThumb(value: IRangeSliderValue) {
@@ -324,20 +338,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       pMin,
       pMax
     );
-  }
-
-  @watch('step')
-  protected normalizeByStep() {
-    if (this.isRange) {
-      const rangeValue = this.value as IRangeSliderValue;
-      this.value = {
-        lower: rangeValue.lower - (rangeValue.lower % this.step),
-        upper: rangeValue.upper - (rangeValue.upper % this.step),
-      };
-    } else {
-      const numValue = this.value as number;
-      this.value = numValue - (numValue % this.step);
-    }
   }
 
   private getTrackStyle() {
