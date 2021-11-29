@@ -1,9 +1,9 @@
 @use '../../styles/utilities' as utils;
-@use 'checkbox.fluent.scss' as light-checkbox;
-
-@include light-checkbox.theme();
+@use 'checkbox.fluent' as light-checkbox;
 
 @mixin theme() {
+    @include light-checkbox.theme();
+
     igc-checkbox::part(control) {
         &::after {
             box-shadow: inset 0 0 0 1px #{utils.color(gray, 700)};

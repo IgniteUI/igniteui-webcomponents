@@ -1,9 +1,9 @@
 @use '../../styles/utilities' as utils;
-@use 'checkbox.indigo.scss' as light-checkbox;
-
-@include light-checkbox.theme();
+@use 'checkbox.indigo' as light-checkbox;
 
 @mixin theme() {
+    @include light-checkbox.theme();
+
     igc-checkbox::part(control)::after {
         border-color: #{utils.color(gray, 700)};
         transition: none;
