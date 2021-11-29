@@ -3,6 +3,7 @@
 @mixin theme() {
     igc-switch {
         font-weight: 600;
+
         --size: #{utils.rem(34px)};
         --thumb-size: #{utils.rem(8px)};
         --thumb-offset: calc(var(--thumb-size) / 2);

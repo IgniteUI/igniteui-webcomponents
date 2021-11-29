@@ -58,19 +58,32 @@
 /// - caption
 /// - overline
 /// @access public
-/// @param {Map} $h1 [null] - A map containing type style properties as produced by the igx-type-style function. This type scale styles h1 elements and elements with `igx-font-h1` class.
-/// @param {Map} $h2 [null] - A map containing type style properties as produced by the igx-type-style function. This type scale styles h2 elements and elements with `igx-font-h2` class.
-/// @param {Map} $h3 [null] - A map containing type style properties as produced by the igx-type-style function. This type scale styles h3 elements and elements with `igx-font-h3` class.
-/// @param {Map} $h4 [null] - A map containing type style properties as produced by the igx-type-style function. This type scale styles h4 elements and elements with `igx-font-h4` class.
-/// @param {Map} $h5 [null] - A map containing type style properties as produced by the igx-type-style function. This type scale styles h5 elements and elements with `igx-font-h5` class.
-/// @param {Map} $h6 [null] - A map containing type style properties as produced by the igx-type-style function. This type scale styles h6 elements and elements with `igx-font-h6` class.
-/// @param {Map} $subtitle-1 [null] - A map containing type style properties as produces by the igx-type-style function. This type scale styles elements with `igx-font-subtitle-1` class.
-/// @param {Map} $subtitle-2 [null] - A map containing type style properties as produces by the igx-type-style function. This type scale styles elements with `igx-font-subtitle-2` class.
-/// @param {Map} $body-1 [null] - A map containing type style properties as produces by the igx-type-style function. This type scale styles elements with `igx-font-body-1` class.
-/// @param {Map} $body-2 [null] - A map containing type style properties as produces by the igx-type-style function. This type scale styles elements with `igx-font-body-2` class.
-/// @param {Map} $button [null] - A map containing type style properties as produces by the igx-type-style function. This type scale styles elements with `igx-button` class.
-/// @param {Map} $caption [null] - A map containing type style properties as produces by the igx-type-style function. This type scale styles elements with `igx-font-caption` class.
-/// @param {Map} $overline [null] - A map containing type style properties as produces by the igx-type-style function. This type scale styles elements with `igx-font-overline` class.
+/// @param {Map} $h1 [null] - A map containing type style properties as produced by the igx-type-style function.
+/// This type scale styles h1 elements and elements with `igx-font-h1` class.
+/// @param {Map} $h2 [null] - A map containing type style properties as produced by the igx-type-style function.
+/// This type scale styles h2 elements and elements with `igx-font-h2` class.
+/// @param {Map} $h3 [null] - A map containing type style properties as produced by the igx-type-style function.
+/// This type scale styles h3 elements and elements with `igx-font-h3` class.
+/// @param {Map} $h4 [null] - A map containing type style properties as produced by the igx-type-style function.
+/// This type scale styles h4 elements and elements with `igx-font-h4` class.
+/// @param {Map} $h5 [null] - A map containing type style properties as produced by the igx-type-style function.
+/// This type scale styles h5 elements and elements with `igx-font-h5` class.
+/// @param {Map} $h6 [null] - A map containing type style properties as produced by the igx-type-style function.
+/// This type scale styles h6 elements and elements with `igx-font-h6` class.
+/// @param {Map} $subtitle-1 [null] - A map containing type style properties as produces by the igx-type-style function.
+/// This type scale styles elements with `igx-font-subtitle-1` class.
+/// @param {Map} $subtitle-2 [null] - A map containing type style properties as produces by the igx-type-style function.
+/// This type scale styles elements with `igx-font-subtitle-2` class.
+/// @param {Map} $body-1 [null] - A map containing type style properties as produces by the igx-type-style function.
+/// This type scale styles elements with `igx-font-body-1` class.
+/// @param {Map} $body-2 [null] - A map containing type style properties as produces by the igx-type-style function.
+/// This type scale styles elements with `igx-font-body-2` class.
+/// @param {Map} $button [null] - A map containing type style properties as produces by the igx-type-style function.
+/// This type scale styles elements with `igx-button` class.
+/// @param {Map} $caption [null] - A map containing type style properties as produces by the igx-type-style function.
+/// This type scale styles elements with `igx-font-caption` class.
+/// @param {Map} $overline [null] - A map containing type style properties as produces by the igx-type-style function.
+/// This type scale styles elements with `igx-font-overline` class.
 /// @requires igx-type-style
 /// @returns {Map} - A map of all defined type scales.
 @function type-scale(
@@ -264,6 +277,7 @@
 ///   }
 @mixin type-style($scale, $category) {
     $type-category: map.get($scale, $category);
+
     @each $key, $value in $type-category {
         #{$key}: #{$value};
     }
@@ -279,7 +293,9 @@
 ///   @include type-style-vars($h1-style);
 @mixin type-style-vars($name, $type-style) {
     @each $key, $value in $type-style {
+        /* stylelint-disable */
         --igc-#{$name}-#{$key}: #{$value};
+        /* stylelint-enable */
     }
 }
 
@@ -301,6 +317,7 @@
 
     #{$scope} {
         --igc-font-family: #{string.unquote($font-family)};
+
         @each $name, $style in map.remove($type-scale, '_meta') {
             @include type-style-vars($name, $style);
         }

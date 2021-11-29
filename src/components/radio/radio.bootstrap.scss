@@ -9,6 +9,7 @@
 
     igc-radio::part(control) {
         $size: var(--size, utils.rem(16px));
+
         width: $size;
         height: $size;
         min-width: $size;

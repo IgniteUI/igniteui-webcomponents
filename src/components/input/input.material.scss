@@ -10,7 +10,6 @@ $error-color: color(error, 500);
 $idle-border-width: rem(1px);
 $active-border-width: rem(2px);
 $fs: rem(16px);
-
 $input-height: (
     large: rem(56px),
     medium: rem(48px),
@@ -48,6 +47,7 @@ $input-height: (
     display: block;
     font-family: var(--igc-font-family);
     outline-style: none;
+
     --theme: material;
 
     input:not(:placeholder-shown) + [part='notch'] {
@@ -145,7 +145,12 @@ $input-height: (
 
 [part='label'] {
     display: inline-block;
-    transition: transform 150ms cubic-bezier(.4, 0, .2, 1), color 150ms cubic-bezier(.4, 0, .2, 1), font-size 150ms cubic-bezier(.4, 0, .2, 1);
+    /* stylelint-disable */
+    transition:
+        transform 150ms cubic-bezier(.4, 0, .2, 1),
+        color 150ms cubic-bezier(.4, 0, .2, 1),
+        font-size 150ms cubic-bezier(.4, 0, .2, 1);
+    /* stylelint-enable */
     white-space: nowrap;
     color: $idle-color;
     line-height: 1;
@@ -274,6 +279,7 @@ $input-height: (
         left: none;
         right: none;
     }
+
     overflow: visible;
 
     &:empty {
@@ -326,6 +332,7 @@ $input-height: (
 
 [part='helper-text'] {
     @include type-category('caption');
+
     padding: 0 rem(8px);
     margin-top: rem(4px);
     color: color(gray, 600);
@@ -351,7 +358,7 @@ $input-height: (
 }
 
 :host([invalid]:focus-within) {
-    [part='notch']  {
+    [part='notch'] {
         border-top: $idle-border-width solid transparent;
     }
 }
@@ -380,7 +387,6 @@ $input-height: (
         color: color(gray, 400);
         border-color: color(gray, 400);
     }
-
 
     input::placeholder {
         color: color(gray, 300);

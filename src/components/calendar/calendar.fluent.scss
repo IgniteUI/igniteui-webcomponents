@@ -129,7 +129,6 @@ $current-color: contrast-color(secondary, 600);
     igc-calendar::part(date-inner selected range) {
         border-top: 0;
         border-bottom: 0;
-
         color: $selected-color;
 
         &:hover {
@@ -186,7 +185,7 @@ $current-color: contrast-color(secondary, 600);
         }
     }
 
-    igc-calendar::part(date first selected range){
+    igc-calendar::part(date first selected range) {
         &::before {
             border-inline-end-color: transparent;
         }
@@ -279,7 +278,7 @@ $current-color: contrast-color(secondary, 600);
         border-top-color: $selected-background;
         border-bottom-color: $selected-background;
 
-        &::after{
+        &::after {
             border-top-style: solid;
             border-bottom-style: solid;
             border-top-color: $selected-background;
