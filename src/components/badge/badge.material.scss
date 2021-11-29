@@ -2,8 +2,9 @@
 @use '../../styles/utilities' as *;
 
 :host {
-    display: inline-flex;
     --size: #{rem(12px)};
+
+    display: inline-flex;
     font-weight: 500;
 }
 

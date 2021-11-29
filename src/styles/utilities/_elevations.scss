@@ -133,7 +133,7 @@
 
     @for $i from 1 through 24 {
         $elevation: (#{$i}: _elevation($i, $color-1, $color-2, $color-3));
-        $result: map.merge($result, $elevation)
+        $result: map.merge($result, $elevation);
     }
 
     @return $result;
