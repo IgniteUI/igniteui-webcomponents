@@ -2,7 +2,7 @@
 @use '../../../components/button/button.indigo' as button;
 @use '../../../components/button/icon-button.indigo' as icon-button;
 @use '../../../components/card/card.indigo' as card;
-@use '../../../components/checkbox/checkbox.dark.indigo' as checkbox;
+@use '../../../components/checkbox/checkbox.dark.indigo' as dark-checkbox;
 @use '../../../components/radio/radio.indigo' as radio;
 @use '../../../components/checkbox/switch.indigo' as switch;
 @use '../../../components/navbar/navbar.indigo' as navbar;
@@ -183,7 +183,7 @@ $type-scale: utils.extend($indigo-type-scale);
 
 @include button.theme();
 @include card.theme();
-@include checkbox.theme();
+@include dark-checkbox.theme();
 @include radio.theme();
 @include switch.theme();
 @include navbar.theme();
