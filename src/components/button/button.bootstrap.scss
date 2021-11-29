@@ -108,11 +108,6 @@
             color: #{utils.contrast-color(primary, 600)};
         }
 
-        //&:focus,
-        //&:active {
-        //    color: #{utils.contrast-color(primary, 600)};
-        //}
-
         &:hover::before {
             background: #{utils.color(primary, 500)};
             opacity: 1;

@@ -3,9 +3,7 @@
 @mixin theme() {
     igc-icon-button::part(base) {
         border-radius: utils.rem(4px);
-        transition: box-shadow .15s ease-out,
-            color .15s ease-out,
-            background .15s ease-out;
+        transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
     }
 
     igc-icon-button:not([disabled])::part(base) {

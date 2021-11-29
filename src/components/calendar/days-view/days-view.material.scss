@@ -38,8 +38,7 @@ $border-radius: rem(4px);
 }
 
 [part~='date-inner'][part~='current'][part~='selected'] {
-    box-shadow: inset 0 0 0 rem(1px) color(surface),
-        0 0 0 rem(1px) color(secondary, 500);
+    box-shadow: inset 0 0 0 rem(1px) color(surface), 0 0 0 rem(1px) color(secondary, 500);
 }
 
 [part~='current'][part~='date-inner'] {
@@ -185,9 +184,8 @@ $border-radius: rem(4px);
 [part~='date-inner'][part~='selected'][part~='weekend']:not([part~='range']),
 [part~='date-inner'][part~='selected'][part~='inactive']:not([part~='range']),
 [part~='date-inner'][part~='selected']:not([part~='range']) {
-    color: contrast-color(secondary, 700)
+    color: contrast-color(secondary, 700);
 }
-
 
 [part~='week-number'] {
     order: 0;
@@ -245,5 +243,3 @@ $border-radius: rem(4px);
 [part~='hidden'] {
     visibility: hidden;
 }
-
-

@@ -3,6 +3,7 @@
 @mixin theme() {
     igc-checkbox::part(control) {
         $size: var(--size, utils.rem(16px));
+
         width: $size;
         height: $size;
         min-width: $size;
@@ -95,7 +96,7 @@
     }
 
     igc-checkbox[disabled][indeterminate],
-    igc-checkbox[disabled][invalid][indeterminate]{
+    igc-checkbox[disabled][invalid][indeterminate] {
         &::part(control)::after {
             background: #{utils.color(primary, 200)};
             box-shadow: inset 0 0 0 1px #{utils.color(primary, 200)};
