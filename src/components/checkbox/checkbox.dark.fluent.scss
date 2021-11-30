@@ -85,6 +85,7 @@
 
         &::after {
             box-shadow: inset 0 0 0 1px #{utils.color(error, 200)};
+            background: transparent;
         }
     }
 
@@ -111,6 +112,36 @@
 
         &::after {
             box-shadow: inset 0 0 0 1px #{utils.color(error, 100)};
+            background: transparent;
+        }
+    }
+
+    igc-checkbox[disabled]::part(label) {
+        color: #{utils.color(gray, 200)};
+    }
+
+    igc-checkbox[disabled]::part(control),
+    igc-checkbox[disabled][invalid]::part(control) {
+        &::after {
+            box-shadow: inset 0 0 0 1px #{utils.color(gray, 200)};
+        }
+    }
+
+    igc-checkbox[disabled]::part(control checked),
+    igc-checkbox[disabled][invalid]::part(control checked) {
+        &::after {
+            background: #{utils.color(gray, 200)};
+        }
+    }
+
+    igc-checkbox[disabled][indeterminate]::part(control),
+    igc-checkbox[disabled][indeterminate][invalid]::part(control) {
+        &::before {
+            background: #{utils.color(gray, 200)};
+        }
+
+        &::after {
+            box-shadow: inset 0 0 0 1px #{utils.color(gray, 200)};
         }
     }
 }
