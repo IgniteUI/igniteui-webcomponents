@@ -1,6 +1,10 @@
 @use '../../styles/utilities' as utils;
 
 @mixin theme() {
+    igc-list {
+        @include utils.igc-scrollbar(var(--igc-scrollbar-track-size), color(gray, 200), color(gray, 400));
+    }
+
     igc-list-header {
         color: utils.color(primary, 500);
     }

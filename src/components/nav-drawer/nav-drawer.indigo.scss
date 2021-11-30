@@ -2,6 +2,8 @@
 
 @mixin theme() {
     igc-nav-drawer::part(base) {
+        @include utils.igc-scrollbar(var(--igc-scrollbar-track-size), color(gray, 200), color(gray, 400));
+
         background: #{utils.color(gray, 700)};
         border: none;
         box-shadow: none;

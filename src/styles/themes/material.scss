@@ -1,5 +1,4 @@
 @use '../utilities' as utils;
-@use '../../components/scrollbar/scrollbar.material' as scrollbar;
 
 $palette: utils.palette(
     $primary: #09f,
@@ -19,6 +18,8 @@ $type-scale: utils.type-scale();
     --igc-spacing-small: #{utils.rem(2px)};
     --igc-spacing-medium: #{utils.rem(4px)};
     --igc-spacing-large: #{utils.rem(8px)};
+    --igc-scrollbar-track-size: #{utils.rem(16px)};
+    --igc-scrolbar-theme: true;
 
     @include utils.palette($palette);
     @include utils.elevations($elevations);
@@ -27,5 +28,3 @@ $type-scale: utils.type-scale();
         $type-scale: $type-scale
     );
 }
-
-@include scrollbar.theme();

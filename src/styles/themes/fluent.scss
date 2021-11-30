@@ -8,7 +8,6 @@
 @use '../../components/checkbox/switch.fluent' as switch;
 @use '../../components/calendar/calendar.fluent' as calendar;
 @use '../../components/input/input.fluent' as input;
-@use '../../components/scrollbar/scrollbar.fluent' as scrollbar;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -141,8 +140,6 @@ $type-scale: utils.extend($fluent-type-scale);
     );
 }
 
-@include scrollbar.theme();
-@include scrollbar.theme();
 @include button.theme();
 @include card.theme();
 @include checkbox.theme();

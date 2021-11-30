@@ -2,6 +2,8 @@
 @use '../../styles/utilities' as *;
 
 :host {
+    @include igc-scrollbar(var(--igc-scrollbar-track-size), color(gray, 100), color(gray, 400));
+
     flex-shrink: 0;
     font-family: var(--igc-font-family);
 

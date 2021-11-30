@@ -1,0 +1,5 @@
+@use '../../styles/utilities' as *;
+
+@mixin theme() {
+    @include igc-scrollbar(var(--igc-scrollbar-track-size), color(gray, 200), color(gray, 400));
+}

@@ -4,6 +4,8 @@
 
 @mixin theme() {
     igc-card {
+        @include utils.igc-scrollbar(var(--igc-scrollbar-track-size), color(gray, 200), color(gray, 400));
+
         border: #{utils.rem(1px)} solid #{utils.color(gray, 400)};
     }
 
