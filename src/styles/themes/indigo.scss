@@ -11,6 +11,7 @@
 @use '../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
 @use '../../components/list/list.indigo' as list;
 @use '../../components/input/input.indigo' as input;
+@use '../../components/scrollbar/scrollbar.indigo' as scrollbar;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -166,6 +167,7 @@ $type-scale: utils.extend($indigo-type-scale);
     );
 }
 
+@include scrollbar.theme();
 @include button.theme();
 @include card.theme();
 @include checkbox.theme();

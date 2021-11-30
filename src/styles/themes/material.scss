@@ -1,4 +1,5 @@
 @use '../utilities' as utils;
+@use '../../components/scrollbar/scrollbar.material' as scrollbar;
 
 $palette: utils.palette(
     $primary: #09f,
@@ -26,3 +27,5 @@ $type-scale: utils.type-scale();
         $type-scale: $type-scale
     );
 }
+
+@include scrollbar.theme();

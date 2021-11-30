@@ -1,0 +1,11 @@
+@use '../../styles/utilities' as *;
+
+@mixin theme() {
+    .igc-scrollbar {
+        $track-size: rem(16px);
+        $track-bg: color(gray, 100);
+        $thumb-bg: color(gray, 400);
+
+        @include igc-scrollbar(#{$track-size}, #{$track-bg}, #{$thumb-bg});
+    }
+}

@@ -10,6 +10,7 @@
 @use '../../components/list/list.bootstrap' as list;
 @use '../../components/calendar/calendar.bootstrap' as calendar;
 @use '../../components/input/input.bootstrap' as input;
+@use '../../components/scrollbar/scrollbar.bootstrap' as scrollbar;
 
 $palette: utils.palette(
     $primary: #0d6efd,
@@ -175,6 +176,7 @@ $type-scale: utils.extend(
     /* stylelint-enable */
 }
 
+@include scrollbar.theme();
 @include badge.theme();
 @include button.theme();
 @include card.theme();
