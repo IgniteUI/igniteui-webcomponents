@@ -11,6 +11,7 @@ describe('Rating component', () => {
     el.shadowRoot!.querySelectorAll('igc-icon');
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector('div') as HTMLElement;
+  const fireKeyboardEvent = (key: string) => new KeyboardEvent('keydown', { key });
   let el: IgcRatingComponent;
 
   describe('', () => {
@@ -82,7 +83,7 @@ describe('Rating component', () => {
         .item(2)
         .dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
       expect(eventSpy).calledOnceWithExactly('igcHover', { detail: 3 });
-      expect(el.value).to.equal(-1);
+      expect(el.value).to.equal(0);
     });
 
     it('correctly resets value if the same rating value is clicked', async () => {
@@ -100,7 +101,7 @@ describe('Rating component', () => {
 
       getRatingSymbols(el).item(3).click();
       expect(eventSpy).to.not.called;
-      expect(el.value).to.equal(-1);
+      expect(el.value).to.equal(0);
     });
 
     it('does nothing on click if readonly', async () => {
@@ -110,37 +111,35 @@ describe('Rating component', () => {
 
       getRatingSymbols(el).item(3).click();
       expect(eventSpy).to.not.called;
-      expect(el.value).to.equal(-1);
+      expect(el.value).to.equal(0);
     });
 
     it('correctly increments rating value with arrow keys', async () => {
       el.value = 3;
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight' })
-      );
+      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
       expect(el.value).to.equal(4);
 
-      getRatingWrapper(el).dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp' })
-      );
+      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowUp'));
+      expect(el.value).to.equal(5);
+
+      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
       expect(el.value).to.equal(5);
     });
 
     it('correctly decrements rating value with arrow keys', async () => {
-      el.value = 3;
+      el.value = 2;
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowLeft' })
-      );
-      expect(el.value).to.equal(2);
-
-      getRatingWrapper(el).dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown' })
-      );
+      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
       expect(el.value).to.equal(1);
+
+      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowDown'));
+      expect(el.value).to.equal(0);
+
+      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
+      expect(el.value).to.equal(0);
     });
 
     it('sets min/max rating value on Home/End keys', async () => {
@@ -148,14 +147,10 @@ describe('Rating component', () => {
       el.value = 5;
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Home' })
-      );
+      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('Home'));
       expect(el.value).to.equal(1);
 
-      getRatingWrapper(el).dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'End' })
-      );
+      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('End'));
       expect(el.value).to.equal(10);
     });
   });

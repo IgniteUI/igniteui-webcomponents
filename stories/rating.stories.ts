@@ -1,4 +1,4 @@
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
@@ -41,7 +41,7 @@ const metadata = {
       type: 'number',
       description: 'The current value of the component',
       control: 'number',
-      defaultValue: '-1',
+      defaultValue: '0',
     },
     disabled: {
       type: 'boolean',

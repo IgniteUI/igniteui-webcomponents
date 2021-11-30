@@ -15,6 +15,7 @@ export interface IgcRatingEventMap {
  * @element igc-rating
  *
  * @fires igcChange - Emitted when the value of the control changes.
+ * @fires igcHover - Emitted when hover is enabled and the user mouses over a symbol of the rating.
  */
 export default class igcRatingComponent extends SizableMixin(
   EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
@@ -76,7 +77,7 @@ export default class igcRatingComponent extends SizableMixin(
    * @attr [value=0]
    */
   @property({ type: Number })
-  public value = -1;
+  public value = 0;
 
   /** Sets the disabled state of the component */
   @property({ type: Boolean, reflect: true })
@@ -160,11 +161,11 @@ export default class igcRatingComponent extends SizableMixin(
     switch (event.key) {
       case 'ArrowUp':
       case 'ArrowRight':
-        this.value += 1;
+        this.value = Math.min(this.value + 1, this.length);
         break;
       case 'ArrowDown':
       case 'ArrowLeft':
-        this.value -= 1;
+        this.value = Math.max(this.value - 1, 0);
         break;
       case 'Home':
         this.value = 1;
