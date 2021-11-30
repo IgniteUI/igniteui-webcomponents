@@ -11,7 +11,8 @@ describe('Rating component', () => {
     el.shadowRoot!.querySelectorAll('igc-icon');
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector('div') as HTMLElement;
-  const fireKeyboardEvent = (key: string) => new KeyboardEvent('keydown', { key });
+  const fireKeyboardEvent = (key: string) =>
+    new KeyboardEvent('keydown', { key });
   let el: IgcRatingComponent;
 
   describe('', () => {
