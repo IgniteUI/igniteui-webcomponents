@@ -1,4 +1,4 @@
-import { TemplateResult } from 'lit-html';
+import { TemplateResult } from 'lit';
 
 export type Direction = 'ltr' | 'rtl' | 'auto';
 

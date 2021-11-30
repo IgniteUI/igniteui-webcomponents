@@ -1,5 +1,5 @@
-import { html } from 'lit-html';
-import { ifDefined } from 'lit-html/directives/if-defined';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { Context, Story } from './story';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { all } from '@igniteui/material-icons-extended';

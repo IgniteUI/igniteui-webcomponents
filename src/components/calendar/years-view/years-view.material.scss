@@ -22,13 +22,13 @@
 }
 
 [part~='year-inner'][part~='selected'] {
-    @extend %item-inner--selected;
+    @extend %item-inner-selected;
 }
 
 [part~='year-inner'][part~='current'] {
-    @extend %item-inner--current;
+    @extend %item-inner-current;
 }
 
 [part~='year-inner'][part~='selected'][part~='current'] {
-    @extend %item-inner--selected--current;
+    @extend %item-inner-selected-current;
 }

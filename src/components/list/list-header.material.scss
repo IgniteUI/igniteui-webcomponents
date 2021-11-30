@@ -7,6 +7,7 @@
     justify-content: flex-start;
     color: color(secondary, 500);
     background: inherit;
+
     @include type-category('overline');
 }
 
