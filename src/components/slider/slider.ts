@@ -6,14 +6,11 @@ import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './slider.material.css';
 
-export interface SliderChangeParameters {
-  oldValue: number | IRangeSliderValue;
-}
-
 export interface IgcSliderEventMap {
-  igcChange: CustomEvent<SliderChangeParameters>;
+  igcInput: CustomEvent<number | IgcRangeSliderValue>;
+  igcChange: CustomEvent<number | IgcRangeSliderValue>;
 }
-export interface IRangeSliderValue {
+export interface IgcRangeSliderValue {
   lower: number;
   upper: number;
 }
@@ -28,10 +25,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   /** @private */
   public static styles = [styles];
 
-  // Limit handle travel zone
-  private _pMin = 0;
-  private _pMax = 1;
-  private _value: number | IRangeSliderValue = 0;
+  private _value: number | IgcRangeSliderValue = 0;
+  private _lowerBound?: number;
+  private _upperBound?: number;
+  private _min = 0;
+  private _max = 100;
   private thumbHoverTimer: any;
 
   @state()
@@ -46,31 +44,9 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @query('#thumbTo')
   private thumbTo!: HTMLElement;
 
-  public set value(val: number | IRangeSliderValue) {
+  public set value(val: number | IgcRangeSliderValue) {
     const oldVal = this._value;
-
-    if (this.isRange) {
-      const rangeValue = val as IRangeSliderValue;
-      rangeValue.lower = this.valueInRange(
-        rangeValue.lower,
-        this.lowerBound,
-        this.upperBound
-      );
-      rangeValue.upper = this.valueInRange(
-        rangeValue.upper,
-        this.lowerBound,
-        this.upperBound
-      );
-
-      this._value = rangeValue;
-    } else {
-      this._value = this.valueInRange(
-        val as number,
-        this.lowerBound,
-        this.upperBound
-      );
-    }
-
+    this.setValue(val);
     this.requestUpdate('value', oldVal);
   }
 
@@ -79,17 +55,71 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return this._value;
   }
 
-  @property({ type: Number })
-  public min = 0;
+  public set min(value: number) {
+    if (value < this.max) {
+      const oldVal = this._min;
+      this._min = value;
+      this.requestUpdate('min', oldVal);
+
+      if (typeof this.lowerBound === 'number' && this.lowerBound < value) {
+        this.lowerBound = value;
+      }
+    }
+  }
 
   @property({ type: Number })
-  public max = 100;
+  public get min() {
+    return this._min;
+  }
+
+  public set max(value: number) {
+    if (value > this.min) {
+      const oldVal = this._max;
+      this._max = value;
+      this.requestUpdate('max', oldVal);
+
+      if (typeof this.upperBound === 'number' && this.upperBound > value) {
+        this.upperBound = value;
+      }
+    }
+  }
+
+  @property({ type: Number })
+  public get max() {
+    return this._max;
+  }
+
+  public set lowerBound(value: number | undefined) {
+    const oldVal = this._lowerBound;
+
+    if (typeof value === 'number') {
+      this._lowerBound = this.valueInRange(value, this.min, this.actualMax);
+    } else {
+      this._lowerBound = value;
+    }
+    this.requestUpdate('lowerBound', oldVal);
+  }
 
   @property({ type: Number, attribute: 'lower-bound' })
-  public lowerBound = 0;
+  public get lowerBound(): number | undefined {
+    return this._lowerBound;
+  }
+
+  public set upperBound(value: number | undefined) {
+    const oldVal = this._upperBound;
+
+    if (typeof value === 'number') {
+      this._upperBound = this.valueInRange(value, this.actualMin, this.max);
+    } else {
+      this._upperBound = value;
+    }
+    this.requestUpdate('upperBound', oldVal);
+  }
 
   @property({ type: Number, attribute: 'upper-bound' })
-  public upperBound = 0;
+  public get upperBound(): number | undefined {
+    return this._upperBound;
+  }
 
   @property()
   public type: 'slider' | 'range' = 'slider';
@@ -130,50 +160,29 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   @watch('type')
   protected typeChanged(oldValue: any) {
-    if (this.isRange) {
+    if (this.isRange && typeof this.value === 'number') {
       this.value = {
-        lower: 0,
+        lower: this.actualMin,
         upper: this.value as number,
       };
     } else {
-      if (oldValue === 'range') {
-        this.value = (this.value as IRangeSliderValue).upper;
+      const rangeValue = this.value as IgcRangeSliderValue;
+      if (
+        oldValue === 'range' &&
+        (rangeValue.upper || rangeValue.upper === 0)
+      ) {
+        this.value = rangeValue.upper;
       }
     }
   }
 
-  @watch('step')
-  protected normalizeByStep() {
-    if (this.isRange) {
-      const rangeValue = this.value as IRangeSliderValue;
-      this.value = {
-        lower: rangeValue.lower - (rangeValue.lower % this.step),
-        upper: rangeValue.upper - (rangeValue.upper % this.step),
-      };
-    } else {
-      const numValue = this.value as number;
-      this.value = numValue - (numValue % this.step);
-    }
-  }
-
-  @watch('lowerBound')
-  protected updateMinTravelZoneAndTrack() {
-    this._pMin = this.valueToFraction(this.lowerBound, 0, 1);
-  }
-
-  @watch('upperBound')
-  protected updateMaxTravelZoneAndTrack() {
-    this._pMax = this.valueToFraction(this.upperBound, 0, 1);
-  }
-
-  @watch('min')
-  protected updateMinTravelZoneAndBound() {
-    this._pMin = 0;
-  }
-
-  @watch('max')
-  protected updateMaxTravelZoneAndBound() {
-    this._pMax = 1;
+  @watch('min', { waitUntilFirstUpdate: true })
+  @watch('max', { waitUntilFirstUpdate: true })
+  @watch('lowerBound', { waitUntilFirstUpdate: true })
+  @watch('upperBound', { waitUntilFirstUpdate: true })
+  @watch('step', { waitUntilFirstUpdate: true })
+  protected normalizeValue() {
+    this.setValue(this.value);
   }
 
   constructor() {
@@ -181,6 +190,23 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.addEventListener('pointerdown', this.pointerDown);
     this.addEventListener('pointerup', this.pointerUp);
     this.addEventListener('keydown', this.handleKeydown);
+  }
+
+  public connectedCallback() {
+    super.connectedCallback();
+    this.normalizeValue();
+  }
+
+  private get actualMin(): number {
+    return typeof this.lowerBound === 'number'
+      ? (this.lowerBound as number)
+      : this.min;
+  }
+
+  private get actualMax(): number {
+    return typeof this.upperBound === 'number'
+      ? (this.upperBound as number)
+      : this.max;
   }
 
   private get isLTR(): boolean {
@@ -202,7 +228,39 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return thumbBoundaries.left + thumbCenter;
   }
 
-  private swapThumb(value: IRangeSliderValue) {
+  private setValue(value: number | IgcRangeSliderValue) {
+    if (this.isRange) {
+      const rangeValue = value as IgcRangeSliderValue;
+      rangeValue.lower = this.valueInRange(
+        rangeValue.lower,
+        this.actualMin,
+        this.actualMax
+      );
+      rangeValue.upper = this.valueInRange(
+        rangeValue.upper,
+        this.actualMin,
+        this.actualMax
+      );
+
+      rangeValue.lower = this.normalizeByStep(rangeValue.lower);
+      rangeValue.upper = this.normalizeByStep(rangeValue.upper);
+    } else {
+      value = this.valueInRange(
+        value as number,
+        this.actualMin,
+        this.actualMax
+      );
+      value = this.normalizeByStep(value);
+    }
+
+    this._value = value;
+  }
+
+  private normalizeByStep(value: number) {
+    return value - ((value - this.actualMin) % this.step);
+  }
+
+  private swapThumb(value: IgcRangeSliderValue) {
     if (this.activeThumb) {
       const lower = value.lower;
       value.lower = value.upper;
@@ -225,18 +283,20 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     // this.activeThumb.focus();
   }
 
-  private findClosestThumb(event: PointerEvent) {
+  private activateClosestThumb(event: PointerEvent) {
+    let thumb = this.thumbTo;
+
     if (this.isRange) {
-      this.closestHandle(event);
-    } else {
-      this.thumbTo.focus();
-      this.activeThumb = this.thumbTo;
+      thumb = this.closestHandle(event);
     }
+
+    thumb.focus();
+    this.activeThumb = thumb;
 
     this.updateSlider(event.clientX);
   }
 
-  private closestHandle(event: PointerEvent) {
+  private closestHandle(event: PointerEvent): HTMLElement {
     const fromOffset =
       this.thumbFrom.offsetLeft + this.thumbFrom.offsetWidth / 2;
     const toOffset = this.thumbTo.offsetLeft + this.thumbTo.offsetWidth / 2;
@@ -244,17 +304,13 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     const match = this.closestTo(xPointer, [fromOffset, toOffset]);
 
     if (fromOffset === toOffset && toOffset < xPointer) {
-      this.thumbTo.focus();
-      this.activeThumb = this.thumbTo;
+      return this.thumbTo;
     } else if (fromOffset === toOffset && toOffset > xPointer) {
-      this.thumbFrom.focus();
-      this.activeThumb = this.thumbFrom;
+      return this.thumbFrom;
     } else if (match === fromOffset) {
-      this.thumbFrom.focus();
-      this.activeThumb = this.thumbFrom;
+      return this.thumbFrom;
     } else {
-      this.thumbTo.focus();
-      this.activeThumb = this.thumbTo;
+      return this.thumbTo;
     }
   }
 
@@ -322,29 +378,19 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     );
   }
 
-  private calculateStepDistance() {
-    return (
-      (this.getBoundingClientRect().width / (this.max - this.min)) * this.step
-    );
-  }
-
   private valueInRange(value: number, min = 0, max = 100) {
     return Math.max(Math.min(value, max), min);
   }
 
-  private valueToFraction(value: number, pMin = this._pMin, pMax = this._pMax) {
-    return this.valueInRange(
-      (value - this.min) / (this.max - this.min),
-      pMin,
-      pMax
-    );
+  private valueToFraction(value: number) {
+    return (value - this.min) / (this.max - this.min);
   }
 
   private getTrackStyle() {
     let filledTrackStyle: StyleInfo;
 
     if (this.isRange) {
-      const rangeValue = this.value as IRangeSliderValue;
+      const rangeValue = this.value as IgcRangeSliderValue;
       const toPosition = this.valueToFraction(rangeValue.upper);
       const fromPosition = this.valueToFraction(rangeValue.lower);
       const positionGap = toPosition - fromPosition;
@@ -371,37 +417,25 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return filledTrackStyle;
   }
 
-  private updateThumbValue(mouseX: number) {
-    const calculatedValue = this.calculateTrackUpdate(mouseX);
-    if (this.activeThumb && calculatedValue !== 0) {
-      this.updateValue(calculatedValue);
-    }
-  }
-
-  private updateValue(value: number) {
-    let newValue: IRangeSliderValue;
+  private updateValue(increment: number) {
     if (this.isRange) {
+      const newValue = { ...(this.value as IgcRangeSliderValue) };
       if (this.activeThumb?.id === 'thumbFrom') {
-        newValue = {
-          lower: (this.value as IRangeSliderValue).lower + value,
-          upper: (this.value as IRangeSliderValue).upper,
-        };
+        newValue.lower += increment;
       } else {
-        newValue = {
-          lower: (this.value as IRangeSliderValue).lower,
-          upper: (this.value as IRangeSliderValue).upper + value,
-        };
+        newValue.upper += increment;
       }
 
-      // Swap the thumbs if a collision appears.
       if (newValue.lower >= newValue.upper) {
         this.value = this.swapThumb(newValue);
       } else {
         this.value = newValue;
       }
     } else {
-      this.value = (this.value as number) + value;
+      this.value = (this.value as number) + increment;
     }
+
+    this.emitEvent('igcInput', { detail: this.value });
   }
 
   private calculateTrackUpdate(mouseX: number): number {
@@ -412,7 +446,9 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     const scaleX = this.isLTR
       ? mouseX - this.thumbPositionX
       : this.thumbPositionX - mouseX;
-    const stepDistanceCenter = this.calculateStepDistance() / 2;
+    const stepDistance =
+      (this.getBoundingClientRect().width / (this.max - this.min)) * this.step;
+    const stepDistanceCenter = stepDistance / 2;
 
     // If the thumb scale range (slider update) is less than a half step,
     // the position stays the same.
@@ -421,11 +457,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       return 0;
     }
 
-    return this.stepToProceed(scaleX, this.calculateStepDistance());
-  }
-
-  private stepToProceed(scaleX: number, stepDist: number) {
-    return Math.round(scaleX / stepDist) * this.step;
+    return Math.round(scaleX / stepDistance) * this.step;
   }
 
   private updateSlider(mouseX: number) {
@@ -433,11 +465,14 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       return;
     }
 
-    this.updateThumbValue(mouseX);
+    const increment = this.calculateTrackUpdate(mouseX);
+    if (this.activeThumb && increment !== 0) {
+      this.updateValue(increment);
+    }
   }
 
   private pointerDown = (event: PointerEvent) => {
-    this.findClosestThumb(event);
+    this.activateClosestThumb(event);
 
     if (!this.activeThumb) {
       return;
@@ -458,7 +493,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.activeThumb.releasePointerCapture(event.pointerId);
 
     this.hideThumbLabels();
-    this.emitEvent('igcChange');
+    this.emitEvent('igcChange', { detail: this.value });
   };
 
   private pointerMove = (event: PointerEvent) => {
@@ -487,6 +522,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       }
 
       this.updateValue(increment);
+      this.emitEvent('igcChange', { detail: this.value });
     }
   };
 
@@ -500,7 +536,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   public incrementValue() {
     if (this.isRange) {
-      const rangeValue = this.value as IRangeSliderValue;
+      const rangeValue = { ...(this.value as IgcRangeSliderValue) };
 
       if (this.activeThumb?.id === 'thumbFrom') {
         rangeValue.lower += this.step;
@@ -508,7 +544,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         rangeValue.upper += this.step;
       }
 
-      this.value = { ...rangeValue };
+      this.value = rangeValue;
     } else {
       this.value = (this.value as number) + this.step;
     }
@@ -516,7 +552,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   public decrementValue() {
     if (this.isRange) {
-      const rangeValue = this.value as IRangeSliderValue;
+      const rangeValue = { ...(this.value as IgcRangeSliderValue) };
 
       if (this.activeThumb?.id === 'thumbFrom') {
         rangeValue.lower -= this.step;
@@ -524,7 +560,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         rangeValue.upper -= this.step;
       }
 
-      this.value = { ...rangeValue };
+      this.value = rangeValue;
     } else {
       this.value = (this.value as number) - this.step;
     }
@@ -551,8 +587,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   private renderThumb(isFrom = false) {
     const value = this.isRange
       ? isFrom
-        ? (this.value as IRangeSliderValue).lower
-        : (this.value as IRangeSliderValue).upper
+        ? (this.value as IgcRangeSliderValue).lower
+        : (this.value as IgcRangeSliderValue).upper
       : (this.value as number);
 
     const percent = `${this.valueToFraction(value) * 100}%`;
