@@ -104,6 +104,7 @@ $thumb-label-height: rem(30px);
     line-height: .7;
     opacity: 1;
     transition: opacity .2s ease-in-out;
+
     @include type-category('caption');
 }
 
@@ -169,6 +170,7 @@ $thumb-label-height: rem(30px);
 
 [part='thumb-label'] {
     @include type-category('caption');
+
     margin-inline-start: calc((#{$thumb-label-width} / 2) * -1);
     flex: 0 0 auto;
     top: calc((#{$thumb-label-height} + #{$thumb-size}) * -1);
