@@ -1,0 +1,19 @@
+@use '../../styles/utilities' as *;
+@use 'list.bootstrap' as light-list;
+
+@mixin theme() {
+    @include light-list.theme();
+
+    igc-list-item,
+    igc-list {
+        background: color(gray, 50);
+    }
+
+    igc-list {
+        border: rem(1px) solid color(gray, 100);
+    }
+
+    igc-list-item {
+        border-bottom: rem(1px) solid color(gray, 100);
+    }
+}

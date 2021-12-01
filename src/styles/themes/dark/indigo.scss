@@ -9,7 +9,7 @@
 @use '../../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
 @use '../../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
 @use '../../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
-@use '../../../components/list/list.indigo' as list;
+@use '../../../components/list/list.dark.indigo' as dark-list;
 @use '../../../components/input/input.indigo' as input;
 
 $palette: utils.palette(
@@ -190,6 +190,6 @@ $type-scale: utils.extend($indigo-type-scale);
 @include nav-drawer.theme();
 @include nav-drawer-item.theme();
 @include nav-drawer-header.theme();
-@include list.theme();
+@include dark-list.theme();
 @include input.theme();
 @include icon-button.theme();

@@ -1,0 +1,13 @@
+@use '../../styles/utilities' as *;
+@use 'list.fluent' as light-list;
+
+@mixin theme() {
+    @include light-list.theme();
+
+    igc-list-item {
+        &:hover,
+        &:focus-within {
+            background: color(gray, 100);
+        }
+    }
+}

@@ -4,7 +4,7 @@
 @use '../../../components/card/card.fluent' as card;
 @use '../../../components/checkbox/checkbox.fluent' as checkbox;
 @use '../../../components/radio/radio.fluent' as radio;
-@use '../../../components/list/list.fluent' as list;
+@use '../../../components/list/list.dark.fluent' as dark-list;
 @use '../../../components/checkbox/switch.fluent' as switch;
 @use '../../../components/calendar/calendar.fluent' as calendar;
 @use '../../../components/input/input.fluent' as input;
@@ -159,7 +159,7 @@ $type-scale: utils.extend($fluent-type-scale);
 @include card.theme();
 @include checkbox.theme();
 @include radio.theme();
-@include list.theme();
+@include dark-list.theme();
 @include switch.theme();
 @include calendar.theme();
 @include input.theme();
