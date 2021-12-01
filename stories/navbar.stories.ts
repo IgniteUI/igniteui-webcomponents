@@ -29,12 +29,9 @@ const Template: Story<any, Context> = (
 ) => {
   return html`
     <igc-navbar dir=${ifDefined(direction)} style="height:30px">
+      <igc-icon slot="start" name="home"></igc-icon>
       <h2>${content}</h2>
-      <igc-icon-button
-        slot="end"
-        name="search"
-        variant="outlined"
-      ></igc-icon-button>
+      <igc-icon slot="end" name="search"></igc-icon>
     </igc-navbar>
   `;
 };

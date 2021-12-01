@@ -10,7 +10,7 @@
 
         &:hover,
         &:focus-within {
-            background: utils.color(primary, 50, .54);
+            background: utils.color(primary, 50);
         }
 
         &::part(subtitle) {

@@ -18,6 +18,7 @@
     igc-checkbox::part(indicator) {
         stroke-width: 1.5;
         transform: scale(.8);
+        stroke: white;
     }
 
     igc-checkbox:hover {

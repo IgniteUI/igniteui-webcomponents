@@ -1,14 +1,24 @@
-@use '../../styles/utilities' as utils;
+@use '../../styles/utilities' as *;
 
 @mixin theme() {
+    igc-list-item,
     igc-list {
-        border: utils.rem(1px) solid utils.color(gray, 300);
-        border-radius: utils.rem(4px);
+        background: contrast-color(gray, 900);
+    }
+
+    igc-list {
+        border: rem(1px) solid color(gray, 200);
+        border-radius: rem(4px);
     }
 
     igc-list-item {
-        color: utils.color(gray, 900);
-        border-bottom: utils.rem(1px) solid utils.color(gray, 300);
+        color: color(gray, 900);
+        border-bottom: rem(1px) solid color(gray, 200);
+
+        &:hover,
+        &:focus-within {
+            background: color(gray, 100);
+        }
 
         &:last-of-type {
             border-bottom: none;
