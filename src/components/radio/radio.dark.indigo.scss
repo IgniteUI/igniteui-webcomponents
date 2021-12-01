@@ -1,0 +1,30 @@
+@use '../../styles/utilities' as utils;
+@use 'radio.indigo' as light-radio;
+
+@mixin theme() {
+    @include light-radio.theme();
+
+    igc-radio:not([invalid])::part(control)::after {
+        border-color: #{utils.color(gray, 700)};
+    }
+
+    igc-radio:not([invalid])::part(control checked)::after {
+        border-color: #{utils.color(gray, 900)};
+    }
+
+    igc-radio:not([invalid])::part(control checked)::before {
+        background: #{utils.color(gray, 900)};
+        border-color: #{utils.color(gray, 900)};
+    }
+
+    igc-radio[disabled]::part(control)::after,
+    igc-radio[disabled]::part(control)::before,
+    igc-radio[disabled]::part(control checked)::after {
+        border-color: #{utils.color(gray, 400)};
+    }
+
+    igc-radio[disabled]::part(control checked)::before {
+        background: #{utils.color(gray, 400)};
+        border-color: #{utils.color(gray, 400)};
+    }
+}

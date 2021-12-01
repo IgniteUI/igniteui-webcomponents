@@ -1,0 +1,88 @@
+@use '../../styles/utilities' as utils;
+@use 'radio.fluent' as light-radio;
+
+@mixin theme {
+    @include light-radio.theme();
+
+    igc-radio:hover::part(control),
+    igc-radio:focus-within::part(control) {
+        &::before {
+            background: utils.color(gray, 500);
+        }
+    }
+
+    igc-radio:hover::part(control checked),
+    igc-radio:focus-within::part(control checked) {
+        &::after {
+            border-color: utils.color(primary, 100);
+        }
+
+        &::before {
+            background: utils.color(primary, 100);
+        }
+    }
+
+    igc-radio[invalid]::part(label) {
+        color: utils.color(error, 200);
+    }
+
+    igc-radio[invalid]::part(control) {
+        &::after {
+            border-color: utils.color(error, 200);
+        }
+    }
+
+    igc-radio[invalid]:hover::part(control) {
+        &::before {
+            background: utils.color(error, 200);
+        }
+    }
+
+    igc-radio[invalid]::part(control checked) {
+        &::after {
+            border-color: utils.color(error, 200);
+        }
+
+        &::before {
+            background: utils.color(error, 200);
+        }
+    }
+
+    igc-radio[invalid]:hover::part(control),
+    igc-radio[invalid]:focus-within::part(control) {
+        &::after {
+            border-color: utils.color(error, 100);
+        }
+    }
+
+    igc-radio[invalid]:hover::part(control checked),
+    igc-radio[invalid]:focus-within::part(control checked) {
+        &::after {
+            border-color: utils.color(error, 100);
+        }
+
+        &::before {
+            background: utils.color(error, 100);
+        }
+    }
+
+    igc-radio[disabled]::part(label) {
+        color: utils.color(gray, 200);
+    }
+
+    igc-radio[disabled]::part(control) {
+        &::after {
+            border-color: utils.color(gray, 200);
+        }
+    }
+
+    igc-radio[disabled]::part(control checked) {
+        &::after {
+            border-color: utils.color(gray, 200);
+        }
+
+        &::before {
+            background: utils.color(gray, 200);
+        }
+    }
+}

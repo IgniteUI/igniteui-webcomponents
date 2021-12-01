@@ -18,11 +18,11 @@ input[type='radio'] {
     transition: color .15s ease-in;
 
     &:hover [part='control'] {
-        background: color(gray, 200, .87);
+        background: color(gray, 600, .06);
     }
 
     &:focus-within [part='control'] {
-        background: color(gray, 300, .87);
+        background: color(gray, 600, .12);
     }
 }
 
@@ -64,11 +64,11 @@ input[type='radio'] {
 
 [part='base checked'] {
     &:hover [part~='control'] {
-        background: color(secondary, 50, .54);
+        background: color(secondary, 500, .06);
     }
 
     &:focus-within [part~='control'] {
-        background: color(secondary, 100, .72);
+        background: color(secondary, 500, .12);
     }
 }
 

@@ -39,7 +39,7 @@
 
     igc-radio[disabled] {
         pointer-events: none;
-        color: color(gray, 400);
+        color: utils.color(gray, 400);
         user-select: none;
 
         &::part(control) {

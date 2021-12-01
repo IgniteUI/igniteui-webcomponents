@@ -3,7 +3,7 @@
 @use '../../../components/button/icon-button.fluent' as icon-button;
 @use '../../../components/card/card.fluent' as card;
 @use '../../../components/checkbox/checkbox.dark.fluent' as dark-checkbox;
-@use '../../../components/radio/radio.fluent' as radio;
+@use '../../../components/radio/radio.dark.fluent' as dark-radio;
 @use '../../../components/checkbox/switch.dark.fluent' as dark-switch;
 @use '../../../components/list/list.dark.fluent' as dark-list;
 @use '../../../components/calendar/calendar.fluent' as calendar;
@@ -158,7 +158,7 @@ $type-scale: utils.extend($fluent-type-scale);
 @include button.theme();
 @include card.theme();
 @include dark-checkbox.theme();
-@include radio.theme();
+@include dark-radio.theme();
 @include dark-switch.theme();
 @include dark-list.theme();
 @include calendar.theme();
