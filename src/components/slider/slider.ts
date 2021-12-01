@@ -30,6 +30,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   private _upperBound?: number;
   private _min = 0;
   private _max = 100;
+  private startValue?: number | IgcRangeSliderValue;
   private thumbHoverTimer: any;
 
   @state()
@@ -283,19 +284,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     // this.activeThumb.focus();
   }
 
-  private activateClosestThumb(event: PointerEvent) {
-    let thumb = this.thumbTo;
-
-    if (this.isRange) {
-      thumb = this.closestHandle(event);
-    }
-
-    thumb.focus();
-    this.activeThumb = thumb;
-
-    this.updateSlider(event.clientX);
-  }
-
   private closestHandle(event: PointerEvent): HTMLElement {
     const fromOffset =
       this.thumbFrom.offsetLeft + this.thumbFrom.offsetWidth / 2;
@@ -418,6 +406,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private updateValue(increment: number) {
+    const oldValue = this.value;
+
     if (this.isRange) {
       const newValue = { ...(this.value as IgcRangeSliderValue) };
       if (this.activeThumb?.id === 'thumbFrom') {
@@ -435,7 +425,28 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       this.value = (this.value as number) + increment;
     }
 
+    if (this.areEqualValues(oldValue, this.value)) {
+      return false;
+    }
+
     this.emitEvent('igcInput', { detail: this.value });
+    return true;
+  }
+
+  private areEqualValues(
+    oldValue: number | IgcRangeSliderValue,
+    newValue: number | IgcRangeSliderValue
+  ) {
+    if (this.isRange) {
+      const oldRangeValue = oldValue as IgcRangeSliderValue;
+      const newRangeValue = newValue as IgcRangeSliderValue;
+      return (
+        oldRangeValue.lower === newRangeValue.lower &&
+        oldRangeValue.upper === newRangeValue.upper
+      );
+    } else {
+      return oldValue === newValue;
+    }
   }
 
   private calculateTrackUpdate(mouseX: number): number {
@@ -472,14 +483,20 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private pointerDown = (event: PointerEvent) => {
-    this.activateClosestThumb(event);
+    let thumb = this.thumbTo;
 
-    if (!this.activeThumb) {
-      return;
+    if (this.isRange) {
+      thumb = this.closestHandle(event);
     }
 
+    this.activeThumb = thumb;
+    this.startValue = this.value;
+    this.updateSlider(event.clientX);
+
+    this.activeThumb.focus();
     this.activeThumb.setPointerCapture(event.pointerId);
     this.activeThumb.addEventListener('pointermove', this.pointerMove);
+
     this.showThumbLabels();
     event.preventDefault();
   };
@@ -493,7 +510,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.activeThumb.releasePointerCapture(event.pointerId);
 
     this.hideThumbLabels();
-    this.emitEvent('igcChange', { detail: this.value });
+
+    if (!this.areEqualValues(this.startValue!, this.value)) {
+      this.emitEvent('igcChange', { detail: this.value });
+    }
+    this.startValue = undefined;
   };
 
   private pointerMove = (event: PointerEvent) => {
@@ -521,8 +542,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
           return;
       }
 
-      this.updateValue(increment);
-      this.emitEvent('igcChange', { detail: this.value });
+      const updated = this.updateValue(increment);
+
+      if (updated) {
+        this.emitEvent('igcChange', { detail: this.value });
+      }
     }
   };
 
