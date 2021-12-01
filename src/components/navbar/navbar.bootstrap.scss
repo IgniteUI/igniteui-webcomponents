@@ -16,4 +16,8 @@
     igc-navbar igc-icon {
         color: #{utils.contrast-color(surface, 500)};
     }
+
+    igc-input::part(helper-text) {
+        margin-top: 0 !important;
+    }
 }

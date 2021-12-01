@@ -8,6 +8,7 @@
 @use '../../../components/checkbox/switch.fluent' as switch;
 @use '../../../components/calendar/calendar.fluent' as calendar;
 @use '../../../components/input/input.fluent' as input;
+@use '../../../components/navbar/navbar.fluent' as navbar;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -162,3 +163,4 @@ $type-scale: utils.extend($fluent-type-scale);
 @include calendar.theme();
 @include input.theme();
 @include icon-button.theme();
+@include navbar.theme();
