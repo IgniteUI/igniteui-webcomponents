@@ -31,6 +31,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   private _min = 0;
   private _max = 100;
   private startValue?: number | IgcRangeSliderValue;
+  private pointerCaptured = false;
   private thumbHoverTimer: any;
 
   @state()
@@ -189,6 +190,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   constructor() {
     super();
     this.addEventListener('pointerdown', this.pointerDown);
+    this.addEventListener('pointermove', this.pointerMove);
+    this.addEventListener('lostpointercapture', this.lostPointerCapture);
     this.addEventListener('keydown', this.handleKeydown);
   }
 
@@ -260,27 +263,21 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return value - ((value - this.actualMin) % this.step);
   }
 
-  private swapThumb(value: IgcRangeSliderValue) {
-    if (this.activeThumb) {
-      const lower = value.lower;
-      value.lower = value.upper;
-      value.upper = lower;
-
-      this.toggleThumb();
-    }
+  private swapValues(value: IgcRangeSliderValue) {
+    const lower = value.lower;
+    value.lower = value.upper;
+    value.upper = lower;
 
     return value;
   }
 
-  private toggleThumb() {
+  private toggleActiveThumb() {
     if (this.activeThumb?.id === 'thumbFrom') {
       this.activeThumb = this.thumbTo;
     } else {
       this.activeThumb = this.thumbFrom;
     }
-
-    // TODO handle focus and pointer capture
-    // this.activeThumb.focus();
+    this.activeThumb.focus();
   }
 
   private closestHandle(event: PointerEvent): HTMLElement {
@@ -350,7 +347,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private hideThumbLabels() {
-    if (this.disabled) {
+    if (this.pointerCaptured) {
       return;
     }
 
@@ -416,7 +413,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       }
 
       if (newValue.lower >= newValue.upper) {
-        this.value = this.swapThumb(newValue);
+        this.value = this.swapValues(newValue);
+        this.toggleActiveThumb();
       } else {
         this.value = newValue;
       }
@@ -493,39 +491,26 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.updateSlider(event.clientX);
 
     this.activeThumb.focus();
-    this.activeThumb.setPointerCapture(event.pointerId);
-    this.activeThumb.addEventListener(
-      'lostpointercapture',
-      this.lostPointerCapture
-    );
-    this.activeThumb.addEventListener('pointermove', this.pointerMove);
-
+    this.setPointerCapture(event.pointerId);
+    this.pointerCaptured = true;
     this.showThumbLabels();
     event.preventDefault();
   };
 
-  private lostPointerCapture = (event: PointerEvent) => {
-    if (!this.activeThumb) {
-      return;
+  private pointerMove = (event: PointerEvent) => {
+    if (this.pointerCaptured) {
+      this.updateSlider(event.clientX);
     }
+  };
 
-    this.activeThumb.removeEventListener(
-      'lostpointercapture',
-      this.lostPointerCapture
-    );
-    this.activeThumb.removeEventListener('pointermove', this.pointerMove);
-    this.activeThumb.releasePointerCapture(event.pointerId);
-
+  private lostPointerCapture = () => {
+    this.pointerCaptured = false;
     this.hideThumbLabels();
 
     if (!this.areEqualValues(this.startValue!, this.value)) {
       this.emitEvent('igcChange', { detail: this.value });
     }
     this.startValue = undefined;
-  };
-
-  private pointerMove = (event: PointerEvent) => {
-    this.updateSlider(event.clientX);
   };
 
   private handleKeydown = (event: KeyboardEvent) => {
@@ -640,10 +625,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         part="thumb"
         id=${thumbId}
         tabindex=${this.disabled ? -1 : 0}
-        style=${styleMap({
-          [dir]: percent,
-          zIndex: `${thumbId === this.activeThumb?.id ? 1 : 0}`,
-        })}
+        style=${styleMap({ [dir]: percent })}
         role="slider"
         aria-valuemin=${this.min}
         aria-valuemax=${this.max}
