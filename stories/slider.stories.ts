@@ -167,5 +167,10 @@ const Template: Story<ArgTypes, Context> = (
     .tickLabelRotation=${tickLabelRotation}
     dir=${ifDefined(direction)}
   ></igc-slider>
+  <input
+    type="range"
+    @input=${(ev: any) => console.log('input: ' + ev.target.value)}
+    @change=${(ev: any) => console.log('change: ' + ev.target.value)}
+  />
 `;
 export const Basic = Template.bind({});

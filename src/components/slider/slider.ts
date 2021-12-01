@@ -189,7 +189,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   constructor() {
     super();
     this.addEventListener('pointerdown', this.pointerDown);
-    this.addEventListener('pointerup', this.pointerUp);
     this.addEventListener('keydown', this.handleKeydown);
   }
 
@@ -495,17 +494,25 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
     this.activeThumb.focus();
     this.activeThumb.setPointerCapture(event.pointerId);
+    this.activeThumb.addEventListener(
+      'lostpointercapture',
+      this.lostPointerCapture
+    );
     this.activeThumb.addEventListener('pointermove', this.pointerMove);
 
     this.showThumbLabels();
     event.preventDefault();
   };
 
-  private pointerUp = (event: PointerEvent) => {
+  private lostPointerCapture = (event: PointerEvent) => {
     if (!this.activeThumb) {
       return;
     }
 
+    this.activeThumb.removeEventListener(
+      'lostpointercapture',
+      this.lostPointerCapture
+    );
     this.activeThumb.removeEventListener('pointermove', this.pointerMove);
     this.activeThumb.releasePointerCapture(event.pointerId);
 
