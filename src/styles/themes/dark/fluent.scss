@@ -18,13 +18,11 @@ $palette: utils.palette(
     $warn: #797673,
     $error: #a80000,
 ) !default;
-
 $elevations: utils.elevations(
-    rgba(0, 0, 0, .26),
-    rgba(0, 0, 0, .12),
-    rgba(0, 0, 0, .08)
+    rgb(0 0 0 / 26%),
+    rgb(0 0 0 / 12%),
+    rgb(0 0 0 / 8%)
 ) !default;
-
 $fluent_h1: utils.type-style(
     $font-size: utils.rem(68px),
     $font-weight: 700,
@@ -33,7 +31,6 @@ $fluent_h1: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_h2: utils.type-style(
     $font-size: utils.rem(42px),
     $font-weight: 700,
@@ -42,7 +39,6 @@ $fluent_h2: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_h3: utils.type-style(
     $font-size: utils.rem(32px),
     $font-weight: 600,
@@ -51,7 +47,6 @@ $fluent_h3: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_h4: utils.type-style(
     $font-size: utils.rem(28px),
     $font-weight: 400,
@@ -60,7 +55,6 @@ $fluent_h4: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_h5: utils.type-style(
     $font-size: utils.rem(20px),
     $font-weight: 400,
@@ -69,7 +63,6 @@ $fluent_h5: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_h6: utils.type-style(
     $font-size: utils.rem(18px),
     $font-weight: 400,
@@ -78,7 +71,6 @@ $fluent_h6: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_body-1: utils.type-style(
     $font-size: utils.rem(16px),
     $font-weight: 400,
@@ -87,7 +79,6 @@ $fluent_body-1: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_body-2: utils.type-style(
     $font-size: utils.rem(14px),
     $font-weight: 400,
@@ -96,7 +87,6 @@ $fluent_body-2: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_subtitle-1: utils.type-style(
     $font-size: utils.rem(12px),
     $font-weight: 400,
@@ -105,7 +95,6 @@ $fluent_subtitle-1: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_subtitle-2: utils.type-style(
     $font-size: utils.rem(14px),
     $font-weight: 400,
@@ -114,7 +103,6 @@ $fluent_subtitle-2: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $fluent_button: utils.type-style(
     $font-size: utils.rem(14px),
     $font-weight: 600,
@@ -124,7 +112,6 @@ $fluent_button: utils.type-style(
     $margin-bottom: 0,
     $letter-spacing: 0,
 );
-
 $fluent-type-scale: utils.type-scale(
     $_meta: (variant: 'fluent'),
     $h1: $fluent_h1,
@@ -139,7 +126,6 @@ $fluent-type-scale: utils.type-scale(
     $body-2: $fluent_body-2,
     $button: $fluent_button
 );
-
 $type-scale: utils.extend($fluent-type-scale);
 
 :root {
@@ -147,6 +133,7 @@ $type-scale: utils.extend($fluent-type-scale);
     --igc-spacing-small: #{utils.rem(2px)};
     --igc-spacing-medium: #{utils.rem(4px)};
     --igc-spacing-large: #{utils.rem(8px)};
+
     @include utils.palette($palette);
     @include utils.elevations($elevations);
     @include utils.typography(
