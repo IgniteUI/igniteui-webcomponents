@@ -15,10 +15,6 @@ $disabled-color: #{utils.color(gray, 400)} !default;
         --thumb-offset: calc(var(--thumb-size) / 2);
     }
 
-    igc-switch::part(thumb) {
-        background: $thumb-color;
-    }
-
     igc-switch::part(control) {
         width: var(--size);
         height: utils.rem(20px);
@@ -109,7 +105,7 @@ $disabled-color: #{utils.color(gray, 400)} !default;
         min-width: var(--thumb-size);
         animation-name: thumb-off;
         margin-inline-start: var(--thumb-offset);
-        background: #{utils.color(gray, 700)};
+        background: $thumb-color;
         box-shadow: none;
 
         &::after {
