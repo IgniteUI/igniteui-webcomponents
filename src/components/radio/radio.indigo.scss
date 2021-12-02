@@ -73,4 +73,8 @@ $disabled-color: utils.color(gray, 300) !default;
     igc-radio[disabled]::part(control checked)::before {
         background: $disabled-color;
     }
+
+    igc-radio[disabled]::part(label) {
+        color: $disabled-color;
+    }
 }

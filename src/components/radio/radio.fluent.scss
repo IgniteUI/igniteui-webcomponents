@@ -1,6 +1,6 @@
 @use '../../styles/utilities' as utils;
 
-$idle-hover-color: utils.color(gray, 700) !default;
+$hover-color: utils.color(gray, 700) !default;
 $checked-hover-color: utils.color(primary, 900) !default;
 $invalid-color: utils.color(error, 500) !default;
 $invalid-hover-color: utils.color(error, 700) !default;
@@ -35,7 +35,7 @@ $disabled-color: utils.color(gray, 400) !default;
     igc-radio:hover::part(control),
     igc-radio:focus-within::part(control) {
         &::before {
-            background: $idle-hover-color;
+            background: $hover-color;
         }
     }
 

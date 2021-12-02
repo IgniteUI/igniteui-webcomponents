@@ -1,10 +1,22 @@
 @use '../../styles/utilities' as utils;
 
+$thumb-color: #{utils.color(gray, 700)} !default;
+$disabled-thumb-color: #{utils.color(surface, 500)} !default;
+$hover-color: #{utils.color(gray, 800)} !default;
+$checked-hover-color: #{utils.color(primary, 900)} !default;
+$invalid-color: #{utils.color(error, 500)} !default;
+$invalid-hover-color: #{utils.color(error, 700)} !default;
+$disabled-color: #{utils.color(gray, 400)} !default;
+
 @mixin theme() {
     igc-switch {
         --size: #{utils.rem(40px)};
         --thumb-size: #{utils.rem(12px)};
         --thumb-offset: calc(var(--thumb-size) / 2);
+    }
+
+    igc-switch::part(thumb) {
+        background: $thumb-color;
     }
 
     igc-switch::part(control) {
@@ -17,12 +29,12 @@
 
     igc-switch:hover::part(control),
     igc-switch:focus-within::part(control) {
-        box-shadow: inset 0 0 0 1px #{utils.color(gray, 800)};
+        box-shadow: inset 0 0 0 1px $hover-color;
     }
 
     igc-switch:hover::part(thumb),
     igc-switch:focus-within::part(thumb) {
-        background: #{utils.color(gray, 800)};
+        background: $hover-color;
     }
 
     igc-switch::part(control checked) {
@@ -32,54 +44,63 @@
 
     igc-switch:hover::part(control checked),
     igc-switch:focus-within::part(control checked) {
-        background: utils.color(primary, 900);
-        box-shadow: inset 0 0 0 1px #{utils.color(primary, 900)};
+        background: $checked-hover-color;
+        box-shadow: inset 0 0 0 1px $checked-hover-color;
+    }
+
+    igc-switch:not([disabled])[invalid]::part(label) {
+        color: $invalid-color;
     }
 
     igc-switch[invalid]::part(control) {
-        box-shadow: inset 0 0 0 1px #{utils.color(error, 500)};
+        box-shadow: inset 0 0 0 1px $invalid-color;
     }
 
     igc-switch[invalid]::part(thumb) {
-        background: utils.color(error, 500);
+        background: $invalid-color;
     }
 
     igc-switch[invalid]::part(control checked) {
-        background: utils.color(error, 500);
-        box-shadow: inset 0 0 0 1px #{utils.color(error, 500)};
+        background: $invalid-color;
+        box-shadow: inset 0 0 0 1px $invalid-color;
     }
 
     igc-switch[invalid]:hover::part(control),
     igc-switch[invalid]:focus-within::part(control) {
-        box-shadow: inset 0 0 0 1px #{utils.color(error, 700)};
+        box-shadow: inset 0 0 0 1px $invalid-hover-color;
     }
 
     igc-switch[invalid]:hover::part(thumb),
     igc-switch[invalid]:focus-within::part(thumb) {
-        background: utils.color(error, 700);
+        background: $invalid-hover-color;
     }
 
     igc-switch[invalid]::part(thumb checked),
     igc-switch[invalid]:hover::part(thumb checked),
     igc-switch[invalid]:focus-within::part(thumb checked) {
-        background: white;
+        background: #{utils.color(surface, 500)};
     }
 
     igc-switch[invalid]:hover::part(control checked),
     igc-switch[invalid]:focus-within::part(control checked) {
-        box-shadow: inset 0 0 0 1px #{utils.color(error, 700)};
-        background: utils.color(error, 700);
+        box-shadow: inset 0 0 0 1px $invalid-hover-color;
+        background: $invalid-hover-color;
+    }
+
+    igc-switch[disabled]::part(label) {
+        color: $disabled-color;
     }
 
     igc-switch[disabled]::part(control),
     igc-switch[disabled][invalid]::part(control) {
-        box-shadow: inset 0 0 0 1px #{utils.color(gray, 400)};
+        box-shadow: inset 0 0 0 1px $disabled-color;
     }
 
     igc-switch[disabled]::part(control checked),
     igc-switch[disabled][invalid]::part(control checked),
-    igc-switch[disabled]::part(thumb) {
-        background: #{utils.color(gray, 400)};
+    igc-switch[disabled]::part(thumb),
+    igc-switch[disabled][invalid]::part(thumb) {
+        background: $disabled-color;
     }
 
     igc-switch::part(thumb) {
@@ -102,10 +123,14 @@
 
     igc-switch::part(thumb checked),
     igc-switch:hover::part(thumb checked),
-    igc-switch:focus-within::part(thumb checked),
-    igc-switch[disabled]::part(thumb checked) {
-        background: white;
+    igc-switch:focus-within::part(thumb checked) {
+        background: #{utils.color(surface, 500)};
         animation-name: thumb-on;
         margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
+    }
+
+    igc-switch[disabled]::part(thumb checked),
+    igc-switch[disabled][invalid]::part(thumb checked) {
+        background: $disabled-thumb-color;
     }
 }
