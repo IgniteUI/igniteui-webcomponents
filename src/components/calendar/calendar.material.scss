@@ -222,9 +222,10 @@
 }
 
 [part='header-date'] {
+    @include type-category('h4');
+
     display: flex;
     white-space: pre-wrap;
-    @include type-category('h4');
 }
 
 [part='header-title'] {

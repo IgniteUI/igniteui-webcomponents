@@ -28,6 +28,7 @@ input[type='radio'] {
 
 [part~='control'] {
     $size: var(--size, rem(20px));
+
     position: relative;
     display: inline-flex;
     width: calc(#{$size } * 2);

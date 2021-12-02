@@ -25,6 +25,7 @@
 
 [part='middle'] {
     @include line-clamp(4, true, true);
+
     user-select: text;
     display: flex;
     flex-grow: 1;
@@ -73,4 +74,3 @@
         margin: 0;
     }
 }
-

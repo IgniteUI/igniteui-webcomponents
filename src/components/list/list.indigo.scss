@@ -2,7 +2,7 @@
 
 @mixin theme() {
     igc-list-header {
-        color: utils.color(primary, 500)
+        color: utils.color(primary, 500);
     }
 
     igc-list-item {

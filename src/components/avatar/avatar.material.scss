@@ -43,6 +43,7 @@ img {
 
 .large {
     $size: var(--size, rem(88px));
+
     width: $size;
     height: $size;
 
@@ -54,6 +55,7 @@ img {
 
 .medium {
     $size: var(--size, rem(64px));
+
     width: $size;
     height: $size;
 
@@ -65,6 +67,7 @@ img {
 
 .small {
     $size: var(--size, rem(40px));
+
     width: $size;
     height: $size;
 
@@ -73,4 +76,3 @@ img {
         line-height: calc(#{$size} / 2);
     }
 }
-

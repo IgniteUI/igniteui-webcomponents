@@ -1,6 +1,6 @@
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { Story, Context } from './story.js';
-import { ifDefined } from 'lit-html/directives/if-defined';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 // region default
 const metadata = {
