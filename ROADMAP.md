@@ -27,7 +27,6 @@
 9. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
 10. Tab component [#185](https://github.com/IgniteUI/igniteui-webcomponents/issues/185)
 11. Toast component [#186](https://github.com/IgniteUI/igniteui-webcomponents/issues/186)
-12. Toggle component [#187](https://github.com/IgniteUI/igniteui-webcomponents/issues/187)
 
 # Previous Milestone
 
