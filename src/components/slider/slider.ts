@@ -33,9 +33,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   private startValue?: number | IgcRangeSliderValue;
   private pointerCaptured = false;
   private thumbHoverTimer: any;
-
-  @state()
-  private activeThumb: HTMLElement | undefined;
+  private activeThumb?: HTMLElement;
 
   @state()
   private thumbLabelsVisible = false;
@@ -272,12 +270,9 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private toggleActiveThumb() {
-    if (this.activeThumb?.id === 'thumbFrom') {
-      this.activeThumb = this.thumbTo;
-    } else {
-      this.activeThumb = this.thumbFrom;
-    }
-    this.activeThumb.focus();
+    const thumb =
+      this.activeThumb?.id === 'thumbFrom' ? this.thumbTo : this.thumbFrom;
+    thumb.focus();
   }
 
   private closestHandle(event: PointerEvent): HTMLElement {
@@ -480,17 +475,12 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private pointerDown = (event: PointerEvent) => {
-    let thumb = this.thumbTo;
+    const thumb = this.isRange ? this.closestHandle(event) : this.thumbTo;
+    thumb.focus();
 
-    if (this.isRange) {
-      thumb = this.closestHandle(event);
-    }
-
-    this.activeThumb = thumb;
     this.startValue = this.value;
     this.updateSlider(event.clientX);
 
-    this.activeThumb.focus();
     this.setPointerCapture(event.pointerId);
     this.pointerCaptured = true;
     this.showThumbLabels();
@@ -535,6 +525,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       }
 
       const updated = this.updateValue(increment);
+      this.showThumbLabels();
+      this.hideThumbLabels();
 
       if (updated) {
         this.emitEvent('igcChange', { detail: this.value });
@@ -633,6 +625,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         aria-disabled=${this.disabled ? 'true' : 'false'}
         @pointerenter=${this.handleThumbPointerEnter}
         @pointerleave=${this.handleThumbPointerLeave}
+        @focus=${(ev: Event) => (this.activeThumb = ev.target as HTMLElement)}
+        @blur=${() => (this.activeThumb = undefined)}
       ></div>`;
   }
 
