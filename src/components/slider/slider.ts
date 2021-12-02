@@ -219,16 +219,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return this.type === 'range';
   }
 
-  private get thumbPositionX() {
-    if (!this.activeThumb) {
-      return;
-    }
-
-    const thumbBoundaries = this.activeThumb.getBoundingClientRect();
-    const thumbCenter = (thumbBoundaries.right - thumbBoundaries.left) / 2;
-    return thumbBoundaries.left + thumbCenter;
-  }
-
   private setValue(value: number | IgcRangeSliderValue) {
     if (this.isRange) {
       const rangeValue = value as IgcRangeSliderValue;
@@ -442,13 +432,17 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   private calculateTrackUpdate(mouseX: number): number {
-    if (!this.thumbPositionX) {
+    if (!this.activeThumb) {
       return 0;
     }
 
+    const thumbBoundaries = this.activeThumb.getBoundingClientRect();
+    const thumbCenter = (thumbBoundaries.right - thumbBoundaries.left) / 2;
+    const thumbPositionX = thumbBoundaries.left + thumbCenter;
+
     const scaleX = this.isLTR
-      ? mouseX - this.thumbPositionX
-      : this.thumbPositionX - mouseX;
+      ? mouseX - thumbPositionX
+      : thumbPositionX - mouseX;
     const stepDistance =
       (this.getBoundingClientRect().width / (this.max - this.min)) * this.step;
     const stepDistanceCenter = stepDistance / 2;
