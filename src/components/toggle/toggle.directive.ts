@@ -41,6 +41,13 @@ export class IgcToggleDirective extends Directive {
     flip: this._flip,
   };
 
+  /**
+   * Creates a popper instance
+   * @param target - The element, relative to which, the popper will be positioned.
+   * @param open - The initial open state.
+   * @param options - The popper configuration options.
+   * @returns The popper instance.
+   */
   private createToggleInstance(
     target: HTMLElement,
     open: boolean,
@@ -102,6 +109,11 @@ export class IgcToggleDirective extends Directive {
     return this._modifiers;
   }
 
+  /**
+   * Offsets the popper along the corresponding axis by the provided amount in pixels.
+   * @param deltaX - The amount of offset in horizontal direction.
+   * @param deltaY - The amount of offset in vertical direction.
+   */
   private setOffset(deltaX: number, deltaY: number) {
     let offset = [deltaX, deltaY];
     if (
@@ -137,7 +149,7 @@ export class IgcToggleDirective extends Directive {
     this._part = partInfo;
     if (partInfo.type !== PartType.ELEMENT) {
       throw new Error(
-        'The `igcToggle` directive must be attached to an Element.'
+        'The `igcToggle` directive must be attached to an element tag.'
       );
     }
     this.defineProcess();
