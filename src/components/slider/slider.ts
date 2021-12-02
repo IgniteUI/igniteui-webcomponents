@@ -642,7 +642,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
           x2="100%"
           y2="1"
           stroke="${color}"
-          stroke-dasharray="1.5px, ${interval}%"
+          stroke-dasharray="1.5px, calc(${interval * Math.sqrt(2)}% - 1.5px)"
           stroke-linecap="round"
           stroke-width="2px"
         ></line>
