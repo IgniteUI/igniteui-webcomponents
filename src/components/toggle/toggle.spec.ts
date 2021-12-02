@@ -4,7 +4,7 @@ import { IToggleOptions } from './utilities.js';
 
 customElements.define('test-popper', PopperTestComponent);
 
-describe.only('Toggle Directive', () => {
+describe('Toggle Directive', () => {
   let toggleDir: any;
   let popper: PopperTestComponent;
   let target: HTMLDivElement;
