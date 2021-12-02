@@ -4,7 +4,13 @@ import {
   Instance,
   Modifier,
 } from '@popperjs/core/lib/popper-lite.js';
-import { directive, Directive, PartInfo, ElementPart } from 'lit/directive.js';
+import {
+  directive,
+  Directive,
+  PartInfo,
+  ElementPart,
+  PartType,
+} from 'lit/directive.js';
 import { IgcPlacement, IToggleOptions } from './utilities.js';
 import { styles } from './toggle.material.css';
 
@@ -129,6 +135,11 @@ export class IgcToggleDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     this._part = partInfo;
+    if (partInfo.type !== PartType.ELEMENT) {
+      throw new Error(
+        'The `igcToggle` directive must be attached to an Element.'
+      );
+    }
     this.defineProcess();
   }
 
