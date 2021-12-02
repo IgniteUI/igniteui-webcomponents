@@ -2,7 +2,14 @@
 @use '../../../components/button/button.fluent' as button;
 @use '../../../components/button/icon-button.fluent' as icon-button;
 @use '../../../components/card/card.fluent' as card;
-@use '../../../components/checkbox/checkbox.dark.fluent' as dark-checkbox;
+@use '../../../components/checkbox/checkbox.fluent' as checkbox with (
+    $border-color: utils.color(gray, 700),
+    $hover-color: utils.color(gray, 900),
+    $checked-hover-color: utils.color(primary, 100),
+    $invalid-color: utils.color(error, 200),
+    $invalid-hover-color: utils.color(error, 100),
+    $disabled-color: utils.color(gray, 200)
+);
 @use '../../../components/radio/radio.fluent' as radio with (
     $hover-color: utils.color(gray, 500),
     $checked-hover-color: utils.color(primary, 100),
@@ -158,7 +165,7 @@ $type-scale: utils.extend($fluent-type-scale);
 
 @include button.theme();
 @include card.theme();
-@include dark-checkbox.theme();
+@include checkbox.theme();
 @include radio.theme();
 @include switch.theme();
 @include dark-list.theme();
