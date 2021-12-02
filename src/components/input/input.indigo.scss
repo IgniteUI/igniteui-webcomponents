@@ -1,5 +1,7 @@
 @use '../../styles/utilities' as utils;
 
+$label-focus-color: utils.color(primary, 500) !default;
+
 @mixin theme() {
     igc-input,
     igc-input[outlined] {
@@ -71,6 +73,10 @@
             &::after {
                 transform: scaleY(1);
             }
+        }
+
+        &::part(label) {
+            color: $label-focus-color;
         }
     }
 

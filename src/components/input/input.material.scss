@@ -3,13 +3,15 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-$idle-color: color(gray, 600);
-$idle-hover-color: color(gray, 800);
-$active-color: color(primary, 500);
-$error-color: color(error, 500);
-$idle-border-width: rem(1px);
-$active-border-width: rem(2px);
-$fs: rem(16px);
+$idle-color: color(gray, 600) !default;
+$idle-hover-color: color(gray, 800) !default;
+$hover-background: color(gray, 200) !default;
+$focus-background: color(gray, 300) !default;
+$active-color: color(primary, 500) !default;
+$error-color: color(error, 500) !default;
+$idle-border-width: rem(1px) !default;
+$active-border-width: rem(2px) !default;
+$fs: rem(16px) !default;
 
 $input-height: (
     large: rem(56px),
@@ -135,6 +137,7 @@ $input-height: (
     height: 100%;
     border: none;
     background: transparent;
+    color: color(gray, 900);
     outline-style: none;
     padding: 0 rem(4px);
     font-size: rem(16px);
@@ -449,14 +452,14 @@ $input-height: (
 
 :host(:not([outlined]):hover) {
     [part~='container'] {
-        background: color(gray, 200);
+        background: $hover-background;
         border-bottom: 1px solid color(gray, 800);
     }
 }
 
 :host(:not([outlined]):focus-within) {
     [part~='container'] {
-        background: color(gray, 300);
+        background: $focus-background;
         border-bottom: 1px solid $active-color;
 
         &::after {

@@ -9,7 +9,7 @@
 @use '../../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../../components/list/list.dark.bootstrap' as dark-list;
 @use '../../../components/calendar/calendar.bootstrap' as calendar;
-@use '../../../components/input/input.bootstrap' as input;
+@use '../../../components/input/input.bootstrap' as input with ($input-background: transparent);
 
 $palette: utils.palette(
     $primary: #0d6efd,

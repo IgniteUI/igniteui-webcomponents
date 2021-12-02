@@ -10,7 +10,7 @@
 @use '../../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
 @use '../../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
 @use '../../../components/list/list.dark.indigo' as dark-list;
-@use '../../../components/input/input.indigo' as input;
+@use '../../../components/input/input.indigo' as input with($label-focus-color: utils.color(gray, 800));
 
 $palette: utils.palette(
     $primary: #3f51b5,

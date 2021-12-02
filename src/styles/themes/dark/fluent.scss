@@ -7,7 +7,7 @@
 @use '../../../components/checkbox/switch.dark.fluent' as dark-switch;
 @use '../../../components/list/list.dark.fluent' as dark-list;
 @use '../../../components/calendar/calendar.fluent' as calendar;
-@use '../../../components/input/input.fluent' as input;
+@use '../../../components/input/input.fluent' as input with($container-background: transparent);
 
 $palette: utils.palette(
     $primary: #0078d4,
