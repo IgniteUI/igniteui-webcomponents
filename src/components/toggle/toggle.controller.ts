@@ -2,7 +2,7 @@ import { ReactiveController, ReactiveControllerHost } from 'lit';
 import { igcToggle } from './toggle.directive';
 import { IToggleOptions } from './utilities';
 
-export class IgcToggleDocEventsController implements ReactiveController {
+export class IgcToggleController implements ReactiveController {
   constructor(host: ReactiveControllerHost) {
     host.addController(this);
   }

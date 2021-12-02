@@ -3,12 +3,16 @@ import {
   createPopper,
   Instance,
   Modifier,
-} from '@popperjs/core/lib/popper-lite';
-import { directive, Directive, PartInfo, ChildPart } from 'lit/directive.js';
+} from '@popperjs/core/lib/popper-lite.js';
+import { directive, Directive, PartInfo, ElementPart } from 'lit/directive.js';
 import { IgcPlacement, IToggleOptions } from './utilities.js';
+import { styles } from './toggle.material.css';
 
 export class IgcToggleDirective extends Directive {
-  private styles = `
+  /** @private */
+  public static styles = [styles];
+  // public styles = styles;
+  private style = `
     color: #666;
     background: white;
     border: 1px solid #666;
@@ -25,7 +29,6 @@ export class IgcToggleDirective extends Directive {
   private _modifiers: Modifier<any, any>[] = [flip];
   private _instance!: Instance;
   private _popperElement!: HTMLElement;
-
   private _defaultOptions: IToggleOptions = {
     placement: this._placement,
     strategy: this._strategy,
@@ -55,27 +58,9 @@ export class IgcToggleDirective extends Directive {
   }
 
   private createPopperElement() {
-    const hostElement = (this._part as ChildPart).options?.host as HTMLElement;
-    hostElement.classList.add('igc-toggle--hidden');
-
     if (!this._popperElement) {
-      const parentNode = (this._part as ChildPart).parentNode as HTMLElement;
-      const nonSlotElements = [...parentNode.children].filter(
-        (el) => !(el instanceof HTMLSlotElement)
-      );
-
-      if (nonSlotElements.length === 0) {
-        this._popperElement = parentNode;
-      } else if (nonSlotElements.length === 1) {
-        this._popperElement = nonSlotElements[0] as HTMLElement;
-      } else {
-        this._popperElement = document.createElement('span');
-        for (const el of nonSlotElements) {
-          this._popperElement.appendChild(el.cloneNode(true));
-        }
-      }
-
-      this._popperElement.setAttribute('style', this.styles);
+      this._popperElement = (this._part as ElementPart).element as HTMLElement;
+      this._popperElement.setAttribute('style', this.style);
     }
 
     this._open
