@@ -1,5 +1,9 @@
 @use '../../styles/utilities' as utils;
 
+$idle-color: utils.color(gray, 600) !default;
+$checked-color: utils.color(secondary, 500) !default;
+$disabled-color: utils.color(gray, 300) !default;
+
 @mixin theme() {
     igc-radio {
         font-weight: 600;
@@ -13,12 +17,25 @@
         background: none;
     }
 
+    igc-radio:not([invalid])::part(control)::after {
+        border-color: $idle-color;
+    }
+
     igc-radio:hover::part(control) {
         box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 200, .87);
     }
 
     igc-radio:focus-within::part(control) {
         box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 300, .87);
+    }
+
+    igc-radio:not([invalid])::part(control checked)::after {
+        border-color: $checked-color;
+    }
+
+    igc-radio:not([invalid])::part(control checked)::before {
+        background: $checked-color;
+        border-color: $checked-color;
     }
 
     igc-radio:hover::part(control checked) {
@@ -39,7 +56,6 @@
 
     igc-radio[disabled] {
         pointer-events: none;
-        color: color(gray, 400);
         user-select: none;
 
         &::part(control) {
@@ -47,5 +63,14 @@
                 background: transparent;
             }
         }
+    }
+
+    igc-radio[disabled]::part(control)::after,
+    igc-radio[disabled]::part(control checked)::after {
+        border-color: $disabled-color;
+    }
+
+    igc-radio[disabled]::part(control checked)::before {
+        background: $disabled-color;
     }
 }

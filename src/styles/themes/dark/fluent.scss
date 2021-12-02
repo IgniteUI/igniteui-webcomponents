@@ -3,7 +3,13 @@
 @use '../../../components/button/icon-button.fluent' as icon-button;
 @use '../../../components/card/card.fluent' as card;
 @use '../../../components/checkbox/checkbox.dark.fluent' as dark-checkbox;
-@use '../../../components/radio/radio.fluent' as radio;
+@use '../../../components/radio/radio.fluent' as radio with (
+    $idle-hover-color: utils.color(gray, 500),
+    $checked-hover-color: utils.color(primary, 100),
+    $invalid-color: utils.color(error, 200),
+    $invalid-hover-color: utils.color(error, 100),
+    $disabled-color: utils.color(gray, 200)
+);
 @use '../../../components/checkbox/switch.dark.fluent' as dark-switch;
 @use '../../../components/list/list.dark.fluent' as dark-list;
 @use '../../../components/calendar/calendar.fluent' as calendar;
