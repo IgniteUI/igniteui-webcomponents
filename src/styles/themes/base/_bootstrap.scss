@@ -138,6 +138,12 @@ $type-scale: utils.extend(
     )
 );
 
+.igc-scrollbar {
+    --scrolbar-size: #{utils.rem(16px)};
+    --igc-scrollbar-track-color: #{utils.color(gray, 100)};
+    --igc-scrollbar-thumb-color: #{utils.color(gray, 400)};
+}
+
 @mixin root-styles($palette) {
     :root {
         --igc-border-radius: #{utils.rem(2px)};
