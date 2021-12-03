@@ -3,9 +3,12 @@
 @use '../../../components/button/button.fluent' as button with (
     $button-color: utils.color(surface, 500),
     $hover-color: utils.color(primary, 300),
-    $active-color: utils.color(primary, 100),
+    $active-color: utils.color(primary, 100)
 );
-@use '../../../components/button/icon-button.fluent' as icon-button;
+@use '../../../components/button/icon-button.fluent' as icon-button with (
+    $button-color: utils.color(surface, 500),
+    $hover-color: utils.color(primary, 300)
+);
 @use '../../../components/card/card.fluent' as card;
 @use '../../../components/checkbox/checkbox.fluent' as checkbox with (
     $border-color: utils.color(gray, 700),

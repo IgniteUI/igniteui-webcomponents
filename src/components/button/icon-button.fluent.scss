@@ -1,5 +1,8 @@
 @use '../../styles/utilities' as utils;
 
+$button-color: #{utils.contrast-color(primary, 600)} !default;
+$hover-color: #{utils.color(primary, 600)} !default;
+
 @mixin theme() {
     igc-icon-button::part(base) {
         background: transparent;
@@ -35,11 +38,11 @@
     }
 
     igc-icon-button[variant='contained']:not([disabled])::part(base) {
-        color: utils.contrast-color(primary, 600);
+        color: $button-color;
         background: utils.color(primary, 500);
 
         &:hover {
-            background: utils.color(primary, 600);
+            background: $hover-color;
         }
 
         &:focus-visible::after {
