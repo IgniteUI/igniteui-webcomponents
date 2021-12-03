@@ -32,7 +32,7 @@ describe('Rating component', () => {
 
     it('is initialized correctly with passed attributes', async () => {
       const value = 10,
-        length = 8,
+        length = 10,
         name = 'rating',
         label = 'Test rating',
         size = 'small';
@@ -52,6 +52,44 @@ describe('Rating component', () => {
       expect(el.name).to.equal(name);
       expect(el.label).to.equal(label);
       expect(el.size).to.equals(size);
+    });
+
+    it('value is truncated if greater than `length` attribute', async () => {
+      const value = 15,
+        length = 10,
+        name = 'rating',
+        label = 'Test rating',
+        size = 'small';
+
+      el = await fixture<IgcRatingComponent>(
+        html`<igc-rating
+          value=${value}
+          size=${size}
+          length=${length}
+          name=${name}
+          label=${label}
+        ></igc-rating>`
+      );
+
+      expect(el.value).not.to.equal(value);
+      expect(el.value).to.equal(length);
+      expect(el.length).to.equal(length);
+      expect(el.name).to.equal(name);
+      expect(el.label).to.equal(label);
+      expect(el.size).to.equals(size);
+    });
+
+    it('out of bounds value is normalized', async () => {
+      el.length = 10;
+      el.value = 20;
+      await elementUpdated(el);
+
+      expect(el.value).to.equal(10);
+
+      el.value = -10;
+      await elementUpdated(el);
+
+      expect(el.value).to.equal(0);
     });
 
     it('has appropriately sets ARIA attributes', async () => {
@@ -153,6 +191,16 @@ describe('Rating component', () => {
 
       getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('End'));
       expect(el.value).to.equal(10);
+    });
+
+    it('should not emit a change event if the value is unchanged', async () => {
+      const eventSpy = sinon.spy(el, 'emitEvent');
+      el.value = 5;
+
+      await elementUpdated(el);
+
+      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
+      expect(eventSpy).to.not.be.calledOnce;
     });
   });
 });

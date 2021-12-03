@@ -1,6 +1,7 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { registerIcon } from '../src/index.js';
 
 // region default
 const metadata = {
@@ -110,19 +111,34 @@ const Template: Story<ArgTypes, Context> = (
   const unfilled = (index: number) => {
     switch (index) {
       case 0:
-        return 'coronavirus';
+        return 'sentiment_very_dissatisfied';
       case 1:
-        return 'atm';
+        return 'sentiment_dissatisfied';
       case 2:
-        return 'biking';
+        return 'sentiment_neutral';
       case 3:
-        return 'award';
+        return 'sentiment_satisfied';
       case 4:
-        return 'bacteria';
+        return 'sentiment_very_satisfied';
       default:
         return 'dollar-circled';
     }
   };
+
+  Promise.all(
+    [
+      'sentiment_very_dissatisfied',
+      'sentiment_dissatisfied',
+      'sentiment_neutral',
+      'sentiment_satisfied',
+      'sentiment_very_satisfied',
+    ].map((icon) =>
+      registerIcon(
+        icon,
+        `https://unpkg.com/material-design-icons@3.0.1/social/svg/production/ic_${icon}_24px.svg`
+      )
+    )
+  ).then(() => {});
 
   return html`
     <igc-rating
@@ -133,8 +149,8 @@ const Template: Story<ArgTypes, Context> = (
       ?readonly=${readonly}
       .icon=${icon || unfilled}
       .filledIcon=${filledIcon}
-      .length=${length}
       .value=${value}
+      .length=${length}
       .size=${size}
     >
     </igc-rating>

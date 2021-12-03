@@ -8,7 +8,7 @@
 // Usage:
 //
 //  @watch('propName')
-//  handlePropChange(oldValue, newValue) {
+//  handlePropChange(newValue, oldValue) {
 //    ...
 //  }
 //
@@ -34,7 +34,7 @@ export function watch(propName: string, options?: WatchOptions) {
 
         if (oldValue !== newValue) {
           if (!options?.waitUntilFirstUpdate || this.hasUpdated) {
-            this[name].call(this, oldValue, newValue);
+            this[name].call(this, newValue, oldValue);
           }
         }
       }

@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, queryAll, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { watch } from '../common/decorators/watch';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { SizableMixin } from '../common/mixins/sizable';
@@ -91,7 +92,20 @@ export default class igcRatingComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public readonly = false;
 
-  public render() {
+  @watch('length')
+  protected handleLengthChange(newValue: number) {
+    this.length = Math.max(0, newValue);
+    if (this.length < this.value) {
+      this.value = this.length;
+    }
+  }
+
+  @watch('value')
+  protected handleValueChange(newValue: number) {
+    this.value = Math.max(0, Math.min(newValue, this.length));
+  }
+
+  protected render() {
     return this.hover
       ? html`
           <div
@@ -101,8 +115,8 @@ export default class igcRatingComponent extends SizableMixin(
             aria-valuemin="0"
             aria-valuenow=${this.value}
             aria-valuemax=${this.length}
-            @mouseenter=${() => (this.hoverState = true)}
-            @mouseleave=${() => (this.hoverState = false)}
+            @mouseenter=${this.handleMouseEnter}
+            @mouseleave=${this.handleMouseLeave}
             @mouseover=${this.handleMouseOver}
             @keydown=${this.handleKeyDown}
             @click=${this.handleClick}
@@ -154,44 +168,64 @@ export default class igcRatingComponent extends SizableMixin(
     }
   }
 
+  protected handleMouseEnter() {
+    if (!(this.readonly || this.disabled)) {
+      this.hoverState = true;
+    }
+  }
+
+  protected handleMouseLeave() {
+    if (!(this.readonly || this.disabled)) {
+      this.hoverState = false;
+    }
+  }
+
   protected handleKeyDown(event: KeyboardEvent) {
     if (!this.navigationKeys.has(event.key)) {
       return;
     }
+
+    let result = this.value;
+
     switch (event.key) {
       case 'ArrowUp':
       case 'ArrowRight':
-        this.value = Math.min(this.value + 1, this.length);
+        result += 1;
         break;
       case 'ArrowDown':
       case 'ArrowLeft':
-        this.value = Math.max(this.value - 1, 0);
+        result -= 1;
         break;
       case 'Home':
-        this.value = 1;
+        result = 1;
         break;
       case 'End':
-        this.value = this.length;
+        result = this.length;
         break;
       default:
         return;
     }
-    this.emitEvent('igcChange', { detail: this.value });
+
+    // Verify new value is in bounds and emit
+    this.value = Math.max(0, Math.min(result, this.length));
+    if (result === this.value) {
+      this.emitEvent('igcChange', { detail: this.value });
+    }
   }
 
-  private bindValue(index: number) {
+  protected bindValue(index: number) {
     const value = this.hoverState ? this.hoverValue : this.value;
     return index < value
       ? this.renderIcon(index, 'rated')
       : this.renderIcon(index, 'not-rated');
   }
 
-  private renderIcon(index: number, state: 'rated' | 'not-rated') {
+  protected renderIcon(index: number, state: 'rated' | 'not-rated') {
     const symbol = state === 'rated' ? this.filledIcon : this.icon;
     return typeof symbol === 'function' ? symbol(index) : symbol;
   }
 
-  private isIconElement(el: any): el is IgcIconComponent {
+  protected isIconElement(el: any): el is IgcIconComponent {
     return el.tagName.toLowerCase() === 'igc-icon';
   }
 }
