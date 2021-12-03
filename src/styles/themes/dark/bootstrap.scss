@@ -8,7 +8,9 @@
 @use '../../../components/radio/radio.bootstrap' as radio;
 @use '../../../components/checkbox/switch.bootstrap' as switch;
 @use '../../../components/navbar/navbar.bootstrap' as navbar;
-@use '../../../components/list/list.dark.bootstrap' as dark-list;
+@use '../../../components/list/list.bootstrap' as list with (
+    $separator-color: utils.color(gray, 100)
+);
 @use '../../../components/calendar/calendar.bootstrap' as calendar;
 @use '../../../components/input/input.bootstrap' as input with ($input-background: transparent);
 
@@ -31,7 +33,7 @@ $palette: utils.palette(
 @include radio.theme();
 @include switch.theme();
 @include navbar.theme();
-@include dark-list.theme();
+@include list.theme();
 @include calendar.theme();
 @include input.theme();
 @include icon-button.theme();

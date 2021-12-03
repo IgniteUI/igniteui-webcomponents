@@ -34,9 +34,11 @@
     $invalid-hover-color: utils.color(error, 100),
     $disabled-color: utils.color(gray, 200)
 );
-@use '../../../components/list/list.dark.fluent' as dark-list;
+@use '../../../components/list/list.fluent' as list with (
+    $item-hover-bg: utils.color(gray, 100),
+);
 @use '../../../components/calendar/calendar.fluent' as calendar;
-@use '../../../components/input/input.fluent' as input with($container-background: transparent);
+@use '../../../components/input/input.fluent' as input with ($container-background: transparent);
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -54,7 +56,7 @@ $palette: utils.palette(
 @include checkbox.theme();
 @include radio.theme();
 @include switch.theme();
-@include dark-list.theme();
+@include list.theme();
 @include calendar.theme();
 @include input.theme();
 @include icon-button.theme();

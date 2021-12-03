@@ -1,8 +1,16 @@
-@use '../../styles/utilities' as utils;
+@use '../../styles/utilities' as *;
+
+$separator-color: color(gray, 100) !default;
+$item-hover-bg: color(gray, 200) !default;
 
 @mixin theme() {
     igc-list-item {
-        border-bottom: utils.rem(1px) solid utils.color(gray, 100);
+        border-bottom: rem(1px) solid $separator-color;
+
+        &:hover,
+        &:focus-within {
+            background: $item-hover-bg;
+        }
 
         &:last-of-type {
             border-bottom: none;
