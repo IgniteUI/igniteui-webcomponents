@@ -1,0 +1,24 @@
+@use '../../utilities' as utils;
+
+$elevations: utils.elevations(
+    rgb(0 0 0 / 26%),
+    rgb(0 0 0 / 12%),
+    rgb(0 0 0 / 8%)
+) !default;
+$type-scale: utils.type-scale();
+
+@mixin root-styles($palette) {
+    :root {
+        --igc-border-radius: #{utils.rem(2px)};
+        --igc-spacing-small: #{utils.rem(2px)};
+        --igc-spacing-medium: #{utils.rem(4px)};
+        --igc-spacing-large: #{utils.rem(8px)};
+
+        @include utils.palette($palette);
+        @include utils.elevations($elevations);
+        @include utils.typography(
+            $font-family: 'Roboto, sans-serif',
+            $type-scale: $type-scale
+        );
+    }
+}
