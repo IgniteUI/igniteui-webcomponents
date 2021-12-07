@@ -98,12 +98,15 @@ $thumb-label-height: rem(30px);
     color: color(gray, 500);
     position: absolute;
     top: rem(24px);
-    transform: translate(-50%);
     line-height: .7;
     opacity: 1;
     transition: opacity .2s ease-in-out;
 
     @include type-category('caption');
+}
+
+[part='tick-label-inner'] {
+    margin-inline-start: -50%;
 }
 
 [part='thumbs'] {
@@ -204,17 +207,17 @@ $thumb-label-height: rem(30px);
     }
 }
 
-:host([tick-label-rotation='-90']) {
-    [part='tick-label'] {
+:host(:not([tick-label-rotation='0'])) {
+    [part='tick-label-inner'] {
         writing-mode: vertical-rl;
-        transform: translate(-50%) rotate(180deg);
+        margin-inline-start: 0px;
+        margin-block: -50%;
     }
 }
 
-:host([tick-label-rotation='90']) {
-    [part='tick-label'] {
-        writing-mode: vertical-rl;
-        transform: translate(-50%) rotate(0deg);
+:host([tick-label-rotation='-90']) {
+    [part='tick-label-inner'] {
+        transform: rotate(180deg);
     }
 }
 

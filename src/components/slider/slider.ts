@@ -566,11 +566,13 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       groups.push(html` <div part="tick-group">
         <div part="tick" data-primary=${this.isPrimary(i)}>
           ${this.hiddenTickLabels(i)
-            ? html`<span part="tick-label"
-                >${this.labelFormatter
-                  ? this.labelFormatter(this.tickLabel(i))
-                  : this.tickLabel(i)}</span
-              >`
+            ? html`<div part="tick-label">
+                <span part="tick-label-inner">
+                  ${this.labelFormatter
+                    ? this.labelFormatter(this.tickLabel(i))
+                    : this.tickLabel(i)}
+                </span>
+              </div>`
             : html``}
         </div>
       </div>`);
