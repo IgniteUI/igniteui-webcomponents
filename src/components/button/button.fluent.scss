@@ -1,5 +1,9 @@
 @use '../../styles/utilities' as utils;
 
+$button-color: #{utils.contrast-color(primary, 600)} !default;
+$hover-color: #{utils.color(primary, 600)} !default;
+$active-color: #{utils.color(primary, 700)} !default;
+
 @mixin theme() {
     igc-button[variant='contained']::part(base),
     igc-button[variant='fab']::part(base) {
@@ -129,21 +133,21 @@
     // FAB & CONTAINED
     igc-button[variant='contained']:not([disabled])::part(base),
     igc-button[variant='fab']:not([disabled])::part(base) {
-        color: #{utils.contrast-color(primary, 600)};
+        color: $button-color;
 
         &:hover,
         &:focus-visible:hover {
-            color: #{utils.contrast-color(primary, 600)};
+            color: $button-color;
 
             &::before {
                 opacity: 1;
-                background: #{utils.color(primary, 600)};
+                background: $hover-color;
             }
         }
 
         &:focus,
         &:active {
-            color: #{utils.contrast-color(primary, 600)};
+            color: $button-color;
         }
 
         &::before {
@@ -155,7 +159,7 @@
         &:focus-visible:active {
             &::before {
                 opacity: 1;
-                background: #{utils.color(primary, 700)};
+                background: $active-color;
             }
         }
 

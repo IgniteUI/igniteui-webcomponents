@@ -32,7 +32,7 @@
         &:focus,
         &:active {
             background: #{utils.color(primary, 600)};
-            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
         }
     }
 
@@ -48,7 +48,7 @@
         &:active {
             color: #{utils.contrast-color(primary, 600)};
             background: #{utils.color(primary, 600)};
-            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
         }
     }
 
