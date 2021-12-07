@@ -363,23 +363,15 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       const toPosition = this.valueToFraction(rangeValue.upper);
       const fromPosition = this.valueToFraction(rangeValue.lower);
       const positionGap = toPosition - fromPosition;
-      let trackLeftIndention = fromPosition;
-
-      if (positionGap) {
-        trackLeftIndention = Math.round((1 / positionGap) * fromPosition * 100);
-      }
-
-      trackLeftIndention = this.isLTR
-        ? trackLeftIndention
-        : -trackLeftIndention;
 
       filledTrackStyle = {
-        transform: `scaleX(${positionGap}) translateX(${trackLeftIndention}%)`,
+        width: `${positionGap * 100}%`,
+        insetInlineStart: `${fromPosition * 100}%`,
       };
     } else {
       const position = this.valueToFraction(this.value as number);
       filledTrackStyle = {
-        transform: `scaleX(${position})`,
+        width: `${position * 100}%`,
       };
     }
 
@@ -594,7 +586,6 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       : (this.value as number);
 
     const percent = `${this.valueToFraction(value) * 100}%`;
-    const dir = this.isLTR ? 'left' : 'right';
     const thumbId = isFrom ? 'thumbFrom' : 'thumbTo';
 
     return html` <div
@@ -602,7 +593,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         id=${isFrom ? 'labelFrom' : 'labelTo'}
         style=${styleMap({
           opacity: this.thumbLabelsVisible ? '1' : '0',
-          [dir]: percent,
+          insetInlineStart: percent,
         })}
       >
         ${value}
@@ -611,7 +602,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         part="thumb"
         id=${thumbId}
         tabindex=${this.disabled ? -1 : 0}
-        style=${styleMap({ [dir]: percent })}
+        style=${styleMap({ insetInlineStart: percent })}
         role="slider"
         aria-valuemin=${this.min}
         aria-valuemax=${this.max}
