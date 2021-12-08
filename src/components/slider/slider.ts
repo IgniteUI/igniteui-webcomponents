@@ -496,20 +496,46 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
     const { key } = event;
 
-    if (['ArrowLeft', 'ArrowRight'].includes(key)) {
-      let increment = 0;
+    let increment = 0;
+    const value = this.isRange
+      ? this.activeThumb?.id === 'thumbFrom'
+        ? (this.value as IgcRangeSliderValue).lower
+        : (this.value as IgcRangeSliderValue).upper
+      : (this.value as number);
 
-      switch (key) {
-        case 'ArrowLeft':
-          increment += this.isLTR ? -this.step : this.step;
-          break;
-        case 'ArrowRight':
-          increment += this.isLTR ? this.step : -this.step;
-          break;
-        default:
-          return;
-      }
+    switch (key) {
+      case 'ArrowLeft':
+        increment += this.isLTR ? -this.step : this.step;
+        break;
+      case 'ArrowRight':
+        increment += this.isLTR ? this.step : -this.step;
+        break;
+      case 'ArrowUp':
+        increment = this.step;
+        break;
+      case 'ArrowDown':
+        increment = -this.step;
+        break;
+      case 'Home':
+        increment = this.actualMin - value;
+        break;
+      case 'End':
+        increment = this.actualMax - value;
+        break;
+      case 'PageUp':
+        increment = Math.max((this.actualMax - this.actualMin) / 10, this.step);
+        break;
+      case 'PageDown':
+        increment = -Math.max(
+          (this.actualMax - this.actualMin) / 10,
+          this.step
+        );
+        break;
+      default:
+        return;
+    }
 
+    if (increment) {
       const updated = this.updateValue(increment);
       this.showThumbLabels();
       this.hideThumbLabels();
