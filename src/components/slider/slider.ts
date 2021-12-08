@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
@@ -153,7 +154,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   public showSecondaryLabels = true;
 
   @property({ attribute: false })
-  public labelFormatter: ((tickLabel: string) => string) | undefined;
+  public labelFormatter: ((value: number) => string) | undefined;
 
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   public tickLabelRotation: 0 | 90 | -90 = 0;
@@ -283,7 +284,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     }
   }
 
-  private totalTickNumber() {
+  private totalTickCount() {
     if (this.primaryTicks === 1) {
       this.primaryTicks = 2;
     }
@@ -295,15 +296,15 @@ export default class IgcSliderComponent extends EventEmitterMixin<
       : 0;
   }
 
-  private tickLabel(idx: number) {
+  private tickValue(idx: number) {
+    const tickCount = this.totalTickCount();
     const labelStep =
-      this.totalTickNumber() > 1
-        ? (Math.max(this.min, this.max) - Math.min(this.min, this.max)) /
-          (this.totalTickNumber() - 1)
-        : Math.max(this.min, this.max) - Math.min(this.min, this.max);
+      tickCount > 1
+        ? (this.max - this.min) / (tickCount - 1)
+        : this.max - this.min;
     const labelVal = labelStep * idx;
 
-    return (this.min + labelVal).toFixed(2);
+    return this.min + labelVal;
   }
 
   private hiddenTickLabels(idx: number) {
@@ -588,15 +589,15 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   protected renderTicks() {
     const groups = [];
-    for (let i = 0; i < this.totalTickNumber(); i++) {
+    for (let i = 0; i < this.totalTickCount(); i++) {
       groups.push(html` <div part="tick-group">
         <div part="tick" data-primary=${this.isPrimary(i)}>
           ${this.hiddenTickLabels(i)
             ? html`<div part="tick-label">
                 <span part="tick-label-inner">
                   ${this.labelFormatter
-                    ? this.labelFormatter(this.tickLabel(i))
-                    : this.tickLabel(i)}
+                    ? this.labelFormatter(this.tickValue(i))
+                    : this.tickValue(i)}
                 </span>
               </div>`
             : html``}
@@ -624,7 +625,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
           insetInlineStart: percent,
         })}
       >
-        ${value}
+        ${this.labelFormatter ? this.labelFormatter(value) : value}
       </div>
       <div
         part="thumb"
@@ -635,6 +636,9 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         aria-valuemin=${this.min}
         aria-valuemax=${this.max}
         aria-valuenow=${value}
+        aria-valuetext=${ifDefined(
+          this.labelFormatter ? this.labelFormatter(value) : undefined
+        )}
         aria-disabled=${this.disabled ? 'true' : 'false'}
         @pointerenter=${this.handleThumbPointerEnter}
         @pointerleave=${this.handleThumbPointerLeave}
