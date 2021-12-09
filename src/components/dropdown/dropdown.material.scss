@@ -9,7 +9,7 @@
 //     background: color(surface, 500);
 // }
 
-.igc-drop-down__list {
+.igc-drop-down-list {
     z-index: 10005;
 }
 
@@ -31,6 +31,6 @@
     padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
 }
 
-.igc-toggle--hidden {
+.igc-toggle-hidden {
     display: none;
 }
