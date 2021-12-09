@@ -1,22 +1,5 @@
-@use '../utilities' as utils;
-@use '../../components/button/button.fluent' as button;
-@use '../../components/button/icon-button.fluent' as icon-button;
-@use '../../components/card/card.fluent' as card;
-@use '../../components/checkbox/checkbox.fluent' as checkbox;
-@use '../../components/radio/radio.fluent' as radio;
-@use '../../components/list/list.fluent' as list;
-@use '../../components/checkbox/switch.fluent' as switch;
-@use '../../components/calendar/calendar.fluent' as calendar;
-@use '../../components/input/input.fluent' as input;
-@use '../../components/slider/slider.fluent' as slider;
+@use '../../utilities' as utils;
 
-$palette: utils.palette(
-    $primary: #0078d4,
-    $secondary: #0078d4,
-    $success: #107c10,
-    $warn: #797673,
-    $error: #a80000,
-) !default;
 $elevations: utils.elevations(
     rgb(0 0 0 / 26%),
     rgb(0 0 0 / 12%),
@@ -127,27 +110,24 @@ $fluent-type-scale: utils.type-scale(
 );
 $type-scale: utils.extend($fluent-type-scale);
 
-:root {
-    --igc-border-radius: #{utils.rem(2px)};
-    --igc-spacing-small: #{utils.rem(2px)};
-    --igc-spacing-medium: #{utils.rem(4px)};
-    --igc-spacing-large: #{utils.rem(8px)};
-
-    @include utils.palette($palette);
-    @include utils.elevations($elevations);
-    @include utils.typography(
-        $font-family: '\'Open Sans\', Helvetica, Arial, sans-serif',
-        $type-scale: $type-scale
-    );
+.igc-scrollbar {
+    --scrolbar-size: #{utils.rem(16px)};
+    --igc-scrollbar-track-color: #{utils.color(gray, 100)};
+    --igc-scrollbar-thumb-color: #{utils.color(gray, 400)};
 }
 
-@include button.theme();
-@include card.theme();
-@include checkbox.theme();
-@include radio.theme();
-@include list.theme();
-@include slider.theme();
-@include switch.theme();
-@include calendar.theme();
-@include input.theme();
-@include icon-button.theme();
+@mixin root-styles($palette) {
+    :root {
+        --igc-border-radius: #{utils.rem(2px)};
+        --igc-spacing-small: #{utils.rem(2px)};
+        --igc-spacing-medium: #{utils.rem(4px)};
+        --igc-spacing-large: #{utils.rem(8px)};
+
+        @include utils.palette($palette);
+        @include utils.elevations($elevations);
+        @include utils.typography(
+            $font-family: '\'Open Sans\', Helvetica, Arial, sans-serif',
+            $type-scale: $type-scale
+        );
+    }
+}

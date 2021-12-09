@@ -1,0 +1,54 @@
+@use '../../utilities' as utils;
+@use '../base/indigo' as base;
+@use '../../../components/button/button.indigo' as button;
+@use '../../../components/button/icon-button.indigo' as icon-button;
+@use '../../../components/card/card.indigo' as card;
+@use '../../../components/checkbox/checkbox.indigo' as checkbox with (
+    $border-color: utils.color(gray, 700),
+    $checked-color: utils.color(gray, 900),
+    $disabled-color: utils.color(gray, 400)
+);
+@use '../../../components/radio/radio.indigo' as radio with (
+    $border-color: utils.color(gray, 700),
+    $checked-color: utils.color(gray, 900),
+    $disabled-color: utils.color(gray, 400)
+);
+@use '../../../components/checkbox/switch.indigo' as switch with (
+    $border-color: utils.color(gray, 700),
+    $checked-color: utils.color(gray, 900),
+    $thumb-color: utils.color(gray, 700),
+    $disabled-color: utils.color(gray, 400)
+);
+@use '../../../components/navbar/navbar.indigo' as navbar;
+@use '../../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
+@use '../../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
+@use '../../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
+@use '../../../components/list/list.indigo' as list with (
+    $item-hover-bg: utils.color(primary, 500, .5)
+);
+@use '../../../components/input/input.indigo' as input with ($label-focus-color: utils.color(gray, 800));
+
+$palette: utils.palette(
+    $primary: #3f51b5,
+    $secondary: #3f51b5,
+    $gray: hsl(262deg 8% 98%),
+    $surface: #2a2b2f,
+    $info: #9208bc,
+    $success: #689f38,
+    $warn: #ff9800,
+    $error: #cf1a2b
+) !default;
+
+@include base.root-styles($palette);
+@include button.theme();
+@include card.theme();
+@include checkbox.theme();
+@include radio.theme();
+@include switch.theme();
+@include navbar.theme();
+@include nav-drawer.theme();
+@include nav-drawer-item.theme();
+@include nav-drawer-header.theme();
+@include list.theme();
+@include input.theme();
+@include icon-button.theme();
