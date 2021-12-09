@@ -8,39 +8,41 @@
     igc-button[size='large']::part(base) {
         --size: #{$l-size};
         --igc-border-radius: calc(var(--size) / 2);
+
         border-radius: var(--igc-border-radius);
 
         &::before,
         &::after {
-            border-radius: var(--igc-border-radius)
+            border-radius: var(--igc-border-radius);
         }
     }
 
     igc-button[size='medium']::part(base) {
         --size: #{$m-size};
         --igc-border-radius: calc(var(--size) / 2);
+
         border-radius: var(--igc-border-radius);
 
         &::before,
         &::after {
-            border-radius: var(--igc-border-radius)
+            border-radius: var(--igc-border-radius);
         }
     }
 
     igc-button[size='small']::part(base) {
         --size: #{$s-size};
         --igc-border-radius: calc(var(--size) / 2);
+
         border-radius: var(--igc-border-radius);
 
         &::before,
         &::after {
-            border-radius: var(--igc-border-radius)
+            border-radius: var(--igc-border-radius);
         }
     }
 
     igc-button[variant='flat']:not([disabled])::part(base) {
         color: #{utils.color(gray, 700)};
-
         transition: color .15s ease-in-out, box-shadow .15s ease-in-out;
 
         &:hover,
@@ -99,6 +101,16 @@
         }
     }
 
+    igc-button[variant='fab']::part(base),
+    igc-button[variant='contained']::part(base) {
+        box-shadow: var(--igc-elevation-0);
+    }
+
+    igc-button[variant='fab'][disabled]::part(base),
+    igc-button[variant='fab']:not([disabled])::part(base) {
+        border-radius: calc(var(--igc-border-radius) * 100);
+    }
+
     igc-button[variant='fab']:not([disabled])::part(base),
     igc-button[variant='contained']:not([disabled])::part(base) {
         color: #{utils.contrast-color(primary, 600)};
@@ -126,17 +138,6 @@
         }
     }
 
-    igc-button[variant='fab']:not([disabled])::part(base),
-    igc-button[variant='fab'][disabled]::part(base) {
-        border-radius: calc(var(--igc-border-radius) * 100);
-    }
-
-    igc-button[variant='contained']::part(base),
-    igc-button[variant='fab']::part(base) {
-        box-shadow: var(--igc-elevation-0);
-    }
-
-    // DISABLED START
     igc-button[variant='flat'][disabled]::part(base),
     igc-button[variant='outlined'][disabled]::part(base) {
         background: transparent;
@@ -149,6 +150,4 @@
         background: #{utils.color(gray, 100)};
         color: #{utils.color(gray, 400)};
     }
-    // DISABLED END
 }
-

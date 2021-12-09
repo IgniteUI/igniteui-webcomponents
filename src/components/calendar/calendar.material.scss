@@ -8,6 +8,7 @@
     flex-direction: column;
     font-family: var(--igc-font-family);
     background: $calendar-background;
+    color: $calendar-foreground;
 
     > * {
         font-family: var(--igc-font-family);
@@ -221,9 +222,10 @@
 }
 
 [part='header-date'] {
+    @include type-category('h4');
+
     display: flex;
     white-space: pre-wrap;
-    @include type-category('h4');
 }
 
 [part='header-title'] {

@@ -1,7 +1,7 @@
-import { html } from 'lit-html';
-import { ifDefined } from 'lit-html/directives/if-defined';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Context, Story } from './story';
+import { Context, Story } from './story.js';
 import {
   IgcNavDrawerComponent,
   IgcNavDrawerItemComponent,
@@ -96,12 +96,87 @@ const handleToggle = () => {
   drawer?.toggle();
 };
 
+const nabarItems = [
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+  {
+    icon: 'home',
+    text: 'Navbar item text',
+  },
+];
+
 const Template: Story<ArgTypes, Context> = (
   { open = false, position }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
-    <div style="display: flex;">
+    <div class="igc-scrollbar" style="display: flex;">
       <igc-nav-drawer
         dir=${ifDefined(direction)}
         .open=${open}
@@ -110,15 +185,14 @@ const Template: Story<ArgTypes, Context> = (
       >
         <igc-nav-drawer-header-item>Sample Drawer</igc-nav-drawer-header-item>
 
-        <igc-nav-drawer-item>
-          <igc-icon slot="icon" name="home"></igc-icon>
-          <span slot="content">Home</span>
-        </igc-nav-drawer-item>
-
-        <igc-nav-drawer-item>
-          <igc-icon slot="icon" name="search"></igc-icon>
-          <span slot="content">Search</span>
-        </igc-nav-drawer-item>
+        ${nabarItems.map((items) => {
+          return html`
+            <igc-nav-drawer-item>
+              <igc-icon slot="icon" name="${items.icon}"></igc-icon>
+              <span slot="content">${items.text}</span>
+            </igc-nav-drawer-item>
+          `;
+        })}
 
         <div slot="mini">
           <igc-nav-drawer-item>

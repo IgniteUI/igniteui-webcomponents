@@ -1,33 +1,10 @@
-@use '../utilities' as utils;
-@use '../../components/badge/badge.bootstrap' as badge;
-@use '../../components/button/button.bootstrap' as button;
-@use '../../components/button/icon-button.bootstrap' as icon-button;
-@use '../../components/card/card.bootstrap' as card;
-@use '../../components/checkbox/checkbox.bootstrap' as checkbox;
-@use '../../components/radio/radio.bootstrap' as radio;
-@use '../../components/checkbox/switch.bootstrap' as switch;
-@use '../../components/navbar/navbar.bootstrap' as navbar;
-@use '../../components/list/list.bootstrap' as list;
-@use '../../components/calendar/calendar.bootstrap' as calendar;
-@use '../../components/input/input.bootstrap' as input;
-
-$palette: utils.palette(
-    $primary: #0d6efd,
-    $secondary: #6c757d,
-    $gray: #adb5bd,
-    $surface: #f8f9fa,
-    $info: #0dcaf0,
-    $success: #198754,
-    $warn: #ffc107,
-    $error: #dc3545,
-) !default;
+@use '../../utilities' as utils;
 
 $elevations: utils.elevations(
-    rgba(0, 0, 0, .26),
-    rgba(0, 0, 0, .12),
-    rgba(0, 0, 0, .08)
+    rgb(0 0 0 / 26%),
+    rgb(0 0 0 / 12%),
+    rgb(0 0 0 / 8%)
 ) !default;
-
 $bootstrap_h1: utils.type-style(
     $font-size: utils.rem(40px),
     $font-weight: 500,
@@ -36,7 +13,6 @@ $bootstrap_h1: utils.type-style(
     $margin-top: 0,
     $margin-bottom: utils.rem(8px)
 );
-
 $bootstrap_h2: utils.type-style(
     $font-size: utils.rem(32px),
     $font-weight: 500,
@@ -45,7 +21,6 @@ $bootstrap_h2: utils.type-style(
     $margin-top: 0,
     $margin-bottom: utils.rem(8px)
 );
-
 $bootstrap_h3: utils.type-style(
     $font-size: utils.rem(28px),
     $font-weight: 500,
@@ -54,7 +29,6 @@ $bootstrap_h3: utils.type-style(
     $margin-top: 0,
     $margin-bottom: utils.rem(8px)
 );
-
 $bootstrap_h4: utils.type-style(
     $font-size: utils.rem(24px),
     $font-weight: 500,
@@ -63,7 +37,6 @@ $bootstrap_h4: utils.type-style(
     $margin-top: 0,
     $margin-bottom: utils.rem(8px)
 );
-
 $bootstrap_h5: utils.type-style(
     $font-size: utils.rem(20px),
     $font-weight: 500,
@@ -72,7 +45,6 @@ $bootstrap_h5: utils.type-style(
     $margin-top: 0,
     $margin-bottom: utils.rem(8px)
 );
-
 $bootstrap_h6: utils.type-style(
     $font-size: utils.rem(16px),
     $font-weight: 400,
@@ -81,7 +53,6 @@ $bootstrap_h6: utils.type-style(
     $margin-top: 0,
     $margin-bottom: utils.rem(8px)
 );
-
 $bootstrap_body-1: utils.type-style(
     $font-size: utils.rem(16px),
     $font-weight: 400,
@@ -90,7 +61,6 @@ $bootstrap_body-1: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $bootstrap_body-2: utils.type-style(
     $font-size: utils.rem(14.4px),
     $font-weight: 400,
@@ -99,7 +69,6 @@ $bootstrap_body-2: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $bootstrap_subtitle-1: utils.type-style(
     $font-size: utils.rem(14px),
     $font-weight: 400,
@@ -108,7 +77,6 @@ $bootstrap_subtitle-1: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $bootstrap_subtitle-2: utils.type-style(
     $font-size: utils.rem(14.4px),
     $font-weight: 400,
@@ -117,7 +85,6 @@ $bootstrap_subtitle-2: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $bootstrap_button: utils.type-style(
     $font-size: utils.rem(16px),
     $font-weight: 500,
@@ -126,7 +93,6 @@ $bootstrap_button: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $bootstrap_caption: utils.type-style(
     $font-size: utils.rem(12px),
     $font-weight: 400,
@@ -134,7 +100,6 @@ $bootstrap_caption: utils.type-style(
     $line-height: utils.rem(16px),
     $text-transform: none
 );
-
 $bootstrap_overline: utils.type-style(
     $font-size: utils.rem(10px),
     $font-weight: 400,
@@ -142,7 +107,6 @@ $bootstrap_overline: utils.type-style(
     $line-height: utils.rem(16px),
     $text-transform: uppercase
 );
-
 $bootstrap_weekday: utils.type-style(
     $font-size: utils.rem(13px),
     $font-weight: 400,
@@ -151,7 +115,6 @@ $bootstrap_weekday: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $_base-scale: utils.type-scale(
     $_meta: (variant: 'bootstrap'),
     $h1: $bootstrap_h1,
@@ -168,33 +131,33 @@ $_base-scale: utils.type-scale(
     $caption: $bootstrap_caption,
     $overline: $bootstrap_overline
 );
+$type-scale: utils.extend(
+    $_base-scale,
+    (
+        calendar-labels: $bootstrap_weekday,
+    )
+);
 
-$type-scale: utils.extend($_base-scale, (
-    calendar-labels: $bootstrap_weekday,
-));
-
-:root {
-    --igc-border-radius: #{utils.rem(2px)};
-    --igc-spacing-small: #{utils.rem(2px)};
-    --igc-spacing-medium: #{utils.rem(4px)};
-    --igc-spacing-large: #{utils.rem(8px)};
-    @include utils.palette($palette);
-    @include utils.elevations($elevations);
-    @include utils.typography(
-        $font-family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
-        $type-scale: $type-scale
-    );
+.igc-scrollbar {
+    --scrolbar-size: #{utils.rem(16px)};
+    --igc-scrollbar-track-color: #{utils.color(gray, 100)};
+    --igc-scrollbar-thumb-color: #{utils.color(gray, 400)};
 }
 
-@include badge.theme();
-@include button.theme();
-@include card.theme();
-@include checkbox.theme();
-@include radio.theme();
-@include switch.theme();
-@include navbar.theme();
-@include list.theme();
-@include calendar.theme();
-@include input.theme();
-@include icon-button.theme();
+@mixin root-styles($palette) {
+    :root {
+        --igc-border-radius: #{utils.rem(2px)};
+        --igc-spacing-small: #{utils.rem(2px)};
+        --igc-spacing-medium: #{utils.rem(4px)};
+        --igc-spacing-large: #{utils.rem(8px)};
 
+        @include utils.palette($palette);
+        @include utils.elevations($elevations);
+        /* stylelint-disable */
+        @include utils.typography(
+            $font-family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
+            $type-scale: $type-scale
+        );
+        /* stylelint-enable */
+    }
+}

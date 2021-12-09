@@ -1,7 +1,7 @@
-import { html } from 'lit-html';
-import { ifDefined } from 'lit-html/directives/if-defined';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Context, Story } from './story';
+import { Context, Story } from './story.js';
 
 // region default
 const metadata = {
@@ -19,8 +19,8 @@ registerIcon(
 );
 
 registerIcon(
-  'search',
-  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
+  'favorite',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg'
 );
 
 const Template: Story<any, Context> = (
@@ -29,12 +29,27 @@ const Template: Story<any, Context> = (
 ) => {
   return html`
     <igc-navbar dir=${ifDefined(direction)} style="height:30px">
+      <igc-icon slot="start" name="home"></igc-icon>
       <h2>${content}</h2>
-      <igc-icon-button
+      <igc-input
         slot="end"
-        name="search"
-        variant="outlined"
-      ></igc-icon-button>
+        style="align-self: center"
+        type="search"
+        placeholder="search"
+        size="small"
+        outlined
+      >
+        <igc-icon name="search" slot="suffix"></igc-icon>
+      </igc-input>
+      <igc-icon slot="end" name="favorite"></igc-icon>
+      <igc-avatar
+        slot="end"
+        size="small"
+        shape="circle"
+        src="https://i.pravatar.cc/200"
+        >MP</igc-avatar
+      >
+      <igc-button slot="end" name="search">Login</igc-button>
     </igc-navbar>
   `;
 };

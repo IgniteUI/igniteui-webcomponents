@@ -28,11 +28,13 @@
 
 [part='title'] {
     @include type-category('h6');
+
     opacity: .87;
 }
 
 [part='subtitle'] {
     @include type-category('subtitle-2');
+
     opacity: .6;
 }
 

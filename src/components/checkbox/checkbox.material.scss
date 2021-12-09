@@ -19,16 +19,17 @@ $mark-length: 24;
     flex-flow: row nowrap;
 
     &:hover [part='control'] {
-        background: color(gray, 200, .87);
+        background: color(gray, 600, .06);
     }
 
     &:focus-within [part='control'] {
-        background: color(gray, 300, .87);
+        background: color(gray, 600, .12);
     }
 }
 
 [part~='control'] {
     $size: var(--size, rem(20px));
+
     position: relative;
     display: inline-flex;
     width: calc(#{$size } * 2);
@@ -68,7 +69,7 @@ $mark-length: 24;
     right: 0;
     bottom: 0;
     left: 0;
-    stroke: white;
+    stroke: color(surface, 500);
     stroke-linecap: square;
     stroke-width: 3;
     stroke-dasharray: $mark-length;
@@ -82,11 +83,11 @@ $mark-length: 24;
 
 [part='base checked'] {
     &:hover [part~='control'] {
-        background: color(secondary, 50, .54);
+        background: color(secondary, 500, .06);
     }
 
     &:focus-within [part~='control'] {
-        background: color(secondary, 100, .72);
+        background: color(secondary, 500, .12);
     }
 }
 
@@ -104,11 +105,11 @@ $mark-length: 24;
 :host([indeterminate]) {
     [part~='base'] {
         &:hover [part~='control'] {
-            background: color(secondary, 50, .54);
+            background: color(secondary, 500, .06);
         }
 
         &:focus-within [part~='control'] {
-            background: color(secondary, 100, .72);
+            background: color(secondary, 500, .12);
         }
     }
 
@@ -143,16 +144,6 @@ $mark-length: 24;
     [part='control checked'] {
         &::after {
             background: color(error, 500);
-        }
-    }
-
-    [part~='base'] {
-        &:hover [part~='control'] {
-            background: color(error, 50, .54);
-        }
-
-        &:focus-within [part~='control'] {
-            background: color(error, 100, .72);
         }
     }
 }

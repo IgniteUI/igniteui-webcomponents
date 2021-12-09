@@ -1,3 +1,7 @@
+// stylelint-disable max-nesting-depth
+// stylelint-disable custom-property-pattern
+// stylelint-disable keyframes-name-pattern
+
 @use 'functions' as *;
 @use 'sass:color';
 @use 'sass:list';
@@ -47,7 +51,7 @@
 @mixin keyframes($name) {
     $keyframe: map.get($keyframes, $name);
 
-    @if $keyframe == null {
+    @if not($keyframe) {
         $keyframe: string.unique-id();
         $keyframes: map.merge($keyframes, (#{$name}: $keyframe)) !global;
 
@@ -72,13 +76,16 @@
 @mixin animation($animate...) {
     $max: list.length($animate);
     $animations: '';
+
     @for $i from 1 through $max {
         $animations: #{$animations + list.nth($animate, $i)};
+
         @if $i < $max {
             $animations: #{$animations + ', '};
         }
     }
-    animation: $animations;
+
+    animation: #{$animations};
 }
 
 /// Generates a CSS class name for a color from a
@@ -97,7 +104,6 @@
     }
 }
 
-// stylelint-disable max-nesting-depth
 /// Generates CSS class names for all colors from
 /// for a given property and color palette, with
 /// optional prefix and suffix attached to the class name.
@@ -136,6 +142,7 @@
 ///    @include igx-palette-vars($default-palette);
 ///
 @mixin palette($palette, $contrast: true) {
+    /* stylelint-disable */
     $scope: if(is-root(), ':root', '&');
     $_meta: map.get($palette, '_meta');
     $theme: if($_meta, map.get($_meta, 'variant'), null);
@@ -159,9 +166,8 @@
             }
         }
     }
+    /* stylelint-enable */
 }
-
-// stylelint-enable max-nesting-depth
 
 /// Generates CSS variables for a given elevations map.
 /// @access public
@@ -250,5 +256,22 @@
         &:first-child {
             margin-#{$left}: 0;
         }
+    }
+}
+
+@mixin igc-scrollbar($track-size, $track-bg, $thumb-bg) {
+    // Firefox only
+    scrollbar-width: $track-size;
+    scrollbar-color: $thumb-bg $track-bg;
+
+    // Chromium only
+    ::-webkit-scrollbar {
+        width: $track-size;
+        height: $track-size;
+        background: $track-bg;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: $thumb-bg;
     }
 }

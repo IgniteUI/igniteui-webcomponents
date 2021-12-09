@@ -1,34 +1,10 @@
-@use '../utilities' as utils;
-@use '../../components/button/button.indigo' as button;
-@use '../../components/button/icon-button.indigo' as icon-button;
-@use '../../components/card/card.indigo' as card;
-@use '../../components/checkbox/checkbox.indigo' as checkbox;
-@use '../../components/radio/radio.indigo' as radio;
-@use '../../components/checkbox/switch.indigo' as switch;
-@use '../../components/navbar/navbar.indigo' as navbar;
-@use '../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
-@use '../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
-@use '../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
-@use '../../components/list/list.indigo' as list;
-@use '../../components/input/input.indigo' as input;
-
-$palette: utils.palette(
-    $primary: #3f51b5,
-    $secondary: #3f51b5,
-    $gray: hsl(236, 8%, 5%),
-    $surface: #fff,
-    $info: #9208bc,
-    $success: #689f38,
-    $warn: #ff9800,
-    $error: #cf1a2b
-) !default;
+@use '../../utilities' as utils;
 
 $elevations: utils.elevations(
-    rgba(0, 0, 0, .26),
-    rgba(0, 0, 0, .12),
-    rgba(0, 0, 0, .08)
+    rgb(0 0 0 / 26%),
+    rgb(0 0 0 / 12%),
+    rgb(0 0 0 / 8%)
 ) !default;
-
 $indigo_h1: utils.type-style(
     $font-size: utils.rem(96px),
     $font-weight: 200,
@@ -38,7 +14,6 @@ $indigo_h1: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_h2: utils.type-style(
     $font-size: utils.rem(60px),
     $font-weight: 200,
@@ -48,7 +23,6 @@ $indigo_h2: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_h3: utils.type-style(
     $font-size: utils.rem(48px),
     $font-weight: 200,
@@ -57,7 +31,6 @@ $indigo_h3: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_h4: utils.type-style(
     $font-size: utils.rem(36px),
     $font-weight: 200,
@@ -66,7 +39,6 @@ $indigo_h4: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_h5: utils.type-style(
     $font-size: utils.rem(24px),
     $font-weight: 200,
@@ -75,7 +47,6 @@ $indigo_h5: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_h6: utils.type-style(
     $font-size: utils.rem(20px),
     $font-weight: 600,
@@ -84,7 +55,6 @@ $indigo_h6: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_body-1: utils.type-style(
     $font-size: utils.rem(16px),
     $font-weight: 400,
@@ -93,7 +63,6 @@ $indigo_body-1: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_body-2: utils.type-style(
     $font-size: utils.rem(14px),
     $font-weight: 400,
@@ -102,7 +71,6 @@ $indigo_body-2: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_subtitle-1: utils.type-style(
     $font-size: utils.rem(16px),
     $font-weight: 600,
@@ -111,7 +79,6 @@ $indigo_subtitle-1: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_subtitle-2: utils.type-style(
     $font-size: utils.rem(14px),
     $font-weight: 700,
@@ -120,7 +87,6 @@ $indigo_subtitle-2: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_button: utils.type-style(
     $font-size: utils.rem(12px),
     $font-weight: 700,
@@ -129,7 +95,6 @@ $indigo_button: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_caption: utils.type-style(
     $font-size: utils.rem(12px),
     $font-weight: 400,
@@ -138,7 +103,6 @@ $indigo_caption: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo_overline: utils.type-style(
     $font-size: utils.rem(10px),
     $font-weight: 700,
@@ -148,7 +112,6 @@ $indigo_overline: utils.type-style(
     $margin-top: 0,
     $margin-bottom: 0
 );
-
 $indigo-type-scale: utils.type-scale(
     $_meta: (variant: 'indigo'),
     $h1: $indigo_h1,
@@ -165,31 +128,26 @@ $indigo-type-scale: utils.type-scale(
     $caption: $indigo_caption,
     $overline: $indigo_overline
 );
-
 $type-scale: utils.extend($indigo-type-scale);
 
-:root {
-    --igc-border-radius: #{utils.rem(2px)};
-    --igc-spacing-small: #{utils.rem(2px)};
-    --igc-spacing-medium: #{utils.rem(4px)};
-    --igc-spacing-large: #{utils.rem(8px)};
-    @include utils.palette($palette);
-    @include utils.elevations($elevations);
-    @include utils.typography(
-        $font-family: '\'Nunito Sans\', sans-serif',
-        $type-scale: $type-scale
-    );
+.igc-scrollbar {
+    --scrolbar-size: #{utils.rem(16px)};
+    --igc-scrollbar-track-color: #{utils.color(gray, 200)};
+    --igc-scrollbar-thumb-color: #{utils.color(gray, 400)};
 }
 
-@include button.theme();
-@include card.theme();
-@include checkbox.theme();
-@include radio.theme();
-@include switch.theme();
-@include navbar.theme();
-@include nav-drawer.theme();
-@include nav-drawer-item.theme();
-@include nav-drawer-header.theme();
-@include list.theme();
-@include input.theme();
-@include icon-button.theme();
+@mixin root-styles($palette) {
+    :root {
+        --igc-border-radius: #{utils.rem(2px)};
+        --igc-spacing-small: #{utils.rem(2px)};
+        --igc-spacing-medium: #{utils.rem(4px)};
+        --igc-spacing-large: #{utils.rem(8px)};
+
+        @include utils.palette($palette);
+        @include utils.elevations($elevations);
+        @include utils.typography(
+            $font-family: '\'Nunito Sans\', sans-serif',
+            $type-scale: $type-scale
+        );
+    }
+}

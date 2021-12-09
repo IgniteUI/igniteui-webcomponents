@@ -3,9 +3,7 @@
 @mixin theme() {
     igc-icon-button::part(base) {
         border-radius: utils.rem(4px);
-        transition: box-shadow .15s ease-out,
-            color .15s ease-out,
-            background .15s ease-out;
+        transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
     }
 
     igc-icon-button:not([disabled])::part(base) {
@@ -34,7 +32,7 @@
         &:focus,
         &:active {
             background: #{utils.color(primary, 600)};
-            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
         }
     }
 
@@ -50,7 +48,7 @@
         &:active {
             color: #{utils.contrast-color(primary, 600)};
             background: #{utils.color(primary, 600)};
-            box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
         }
     }
 

@@ -2,7 +2,35 @@
 
 # Current Milestone
 
-## Milestone 1 (Due by Nov, 2021)
+## Milestone 2 (Due by Mar, 2021)
+
+1. Combobox component [#172](https://github.com/IgniteUI/igniteui-webcomponents/issues/172)
+2. Date editor component [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
+3. Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
+4. Dialog component [#175](https://github.com/IgniteUI/igniteui-webcomponents/issues/175)
+5. Dropdown component [#176](https://github.com/IgniteUI/igniteui-webcomponents/issues/176)
+6. Select component [#180](https://github.com/IgniteUI/igniteui-webcomponents/issues/180)
+7. Slider component [#181](https://github.com/IgniteUI/igniteui-webcomponents/issues/181)
+8. Rating component [#189](https://github.com/IgniteUI/igniteui-webcomponents/issues/189)
+9. Tree component [#188](https://github.com/IgniteUI/igniteui-webcomponents/issues/188)
+
+## Going down the road
+
+1. Bottom navigation component [#169](https://github.com/IgniteUI/igniteui-webcomponents/issues/169)
+2. Carousel component [#170](https://github.com/IgniteUI/igniteui-webcomponents/issues/170)
+3. Chip component [#171](https://github.com/IgniteUI/igniteui-webcomponents/issues/171)
+4. Expansion panel component [#177](https://github.com/IgniteUI/igniteui-webcomponents/issues/177)
+5. Linear progress bar component [#178](https://github.com/IgniteUI/igniteui-webcomponents/issues/178)
+6. Circular progress bar component [#179](https://github.com/IgniteUI/igniteui-webcomponents/issues/179)
+7. Snackbar component [#182](https://github.com/IgniteUI/igniteui-webcomponents/issues/182)
+8. Auto-complete component [#183](https://github.com/IgniteUI/igniteui-webcomponents/issues/183)
+9. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
+10. Tab component [#185](https://github.com/IgniteUI/igniteui-webcomponents/issues/185)
+11. Toast component [#186](https://github.com/IgniteUI/igniteui-webcomponents/issues/186)
+
+# Previous Milestone
+
+## Milestone 1 (Released November, 2021)
 
 1. **[DONE]** Avatar component
 2. **[DONE]** Badge component
@@ -22,29 +50,3 @@
 16. **[DONE]** Ripple component
 17. **[DONE]** Switch component
  
-
-## Going down the road
-
-1. Slider component
-2. Dialog component
-3. Tooltip component
-4. Toggle component
-5. Dropdown component
-6. Select component
-7. Combobox component
-8. Auto-complete component
-9. Date editor component
-10. Date picker component
-11. Date range picker component
-12. Time picker component
-13. Toast component
-14. Snackbar component
-15. Splitter component
-16. Action strip component
-17. Chip component
-18. Carousel component
-19. Tab component
-20. Bottom navigation component
-21. Circular & linear progress bar
-22. Expansion panel
-23. Tree component

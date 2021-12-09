@@ -33,17 +33,22 @@ $border-radius: rem(4px);
     &:hover,
     &:focus {
         background: color(secondary, 100);
+        color: contrast-color(secondary, 100);
         border-color: color(secondary, 100);
     }
 }
 
 [part~='date-inner'][part~='current'][part~='selected'] {
-    box-shadow: inset 0 0 0 rem(1px) color(surface),
-        0 0 0 rem(1px) color(secondary, 500);
+    box-shadow: inset 0 0 0 rem(1px) color(surface), 0 0 0 rem(1px) color(secondary, 500);
 }
 
 [part~='current'][part~='date-inner'] {
     box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
+
+    &:hover,
+    &:focus {
+        box-shadow: inset 0 0 0 rem(1px) color(surface);
+    }
 }
 
 [part~='date'],
@@ -146,6 +151,14 @@ $border-radius: rem(4px);
     color: $week-number-color;
 }
 
+[part~='date-inner'][part~='weekend'],
+[part~='date-inner'][part~='inactive'] {
+    &:hover,
+    &:focus {
+        color: contrast-color(secondary, 100);
+    }
+}
+
 [part~='date-inner'][part~='selected'][part~='range'][part~='first'],
 [part~='date-inner'][part~='selected'][part~='range'][part~='last'],
 [part~='date-inner'][part~='selected'][part~='range'][part~='weekend'][part~='first'],
@@ -185,9 +198,8 @@ $border-radius: rem(4px);
 [part~='date-inner'][part~='selected'][part~='weekend']:not([part~='range']),
 [part~='date-inner'][part~='selected'][part~='inactive']:not([part~='range']),
 [part~='date-inner'][part~='selected']:not([part~='range']) {
-    color: contrast-color(secondary, 700)
+    color: contrast-color(secondary, 700);
 }
-
 
 [part~='week-number'] {
     order: 0;
@@ -198,6 +210,10 @@ $border-radius: rem(4px);
 [part='week-number-inner first'] {
     border-top-left-radius: $border-radius;
     border-top-right-radius: $border-radius;
+
+    &::after {
+        display: none;
+    }
 }
 
 [part='week-number-inner last'] {
@@ -245,5 +261,3 @@ $border-radius: rem(4px);
 [part~='hidden'] {
     visibility: hidden;
 }
-
-

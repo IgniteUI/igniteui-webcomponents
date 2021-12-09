@@ -40,12 +40,12 @@
     margin-inline-start: calc(var(--igc-spacing-large) * 2);
 }
 
-
 [part='title'] {
     @include type-category('subtitle-1');
 }
 
 [part='subtitle'] {
     @include type-category('caption');
+
     opacity: .74;
 }

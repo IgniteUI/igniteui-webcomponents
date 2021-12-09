@@ -1,8 +1,14 @@
 @use '../../styles/utilities' as utils;
 
+$border-color: utils.color(gray, 500) !default;
+$checked-color: utils.color(secondary, 500) !default;
+$thumb-color: utils.color(gray, 600) !default;
+$disabled-color: utils.color(gray, 300) !default;
+
 @mixin theme() {
     igc-switch {
         font-weight: 600;
+
         --size: #{utils.rem(34px)};
         --thumb-size: #{utils.rem(8px)};
         --thumb-offset: calc(var(--thumb-size) / 2);
@@ -11,7 +17,7 @@
     igc-switch::part(control) {
         width: var(--size);
         height: utils.rem(16px);
-        box-shadow: inset 0 0 0 2px #{utils.color(gray, 500)};
+        box-shadow: inset 0 0 0 2px $border-color;
         border-radius: utils.rem(8px);
         background: transparent;
 
@@ -28,7 +34,7 @@
         box-shadow: 0 0 0 2px #{utils.color(gray, 200, .87)};
 
         &::after {
-            border: 2px solid #{utils.color(gray, 500)};
+            border: 2px solid $border-color;
         }
     }
 
@@ -36,20 +42,20 @@
         box-shadow: 0 0 0 2px #{utils.color(gray, 300, .87)};
 
         &::after {
-            border: 2px solid #{utils.color(gray, 500)};
+            border: 2px solid $border-color;
         }
     }
 
     igc-switch::part(control checked) {
-        background: #{utils.color(primary, 500)};
-        box-shadow: inset 0 0 0 2px #{utils.color(secondary, 500)};
+        background: $checked-color;
+        box-shadow: inset 0 0 0 2px $checked-color;
     }
 
     igc-switch:hover::part(control checked) {
         box-shadow: 0 0 0 2px #{utils.color(secondary, 100, .87)};
 
         &::after {
-            border: 2px solid #{utils.color(secondary, 500)};
+            border: 2px solid $checked-color;
         }
     }
 
@@ -57,7 +63,7 @@
         box-shadow: 0 0 0 2px #{utils.color(secondary, 200, .87)};
 
         &::after {
-            border: 2px solid #{utils.color(secondary, 500)};
+            border: 2px solid $checked-color;
         }
     }
 
@@ -69,7 +75,7 @@
 
     igc-switch[invalid]::part(control checked),
     igc-switch[invalid]::part(thumb) {
-        background: utils.color(error, 500);
+        background: #{utils.color(error, 500)};
     }
 
     igc-switch[invalid]:hover::part(control) {
@@ -91,7 +97,7 @@
 
     igc-switch[disabled]::part(control),
     igc-switch[disabled][invalid]::part(control) {
-        box-shadow: inset 0 0 0 2px #{utils.color(gray, 300)};
+        box-shadow: inset 0 0 0 2px $disabled-color;
     }
 
     igc-switch[disabled]::part(control checked),
@@ -106,7 +112,7 @@
         border-radius: utils.rem(10px);
         animation-name: thumb-off;
         margin-inline-start: var(--thumb-offset);
-        background: #{utils.color(gray, 600)};
+        background: $thumb-color;
         box-shadow: none;
 
         &::after {
@@ -120,13 +126,17 @@
 
     igc-switch::part(thumb checked),
     igc-switch[invalid]::part(thumb checked) {
-        background: white;
+        background: #{utils.color(surface, 500)};
         animation-name: thumb-on;
         margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
     }
 
     igc-switch[disabled]::part(thumb),
     igc-switch[disabled][invalid]::part(thumb) {
-        background: #{utils.color(gray, 400)};
+        background: $disabled-color;
+    }
+
+    igc-switch[disabled]::part(label) {
+        color: $disabled-color;
     }
 }

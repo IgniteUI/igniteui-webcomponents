@@ -1,3 +1,5 @@
+@use '../utilities/mixins' as *;
+
 :host {
     position: relative;
     box-sizing: border-box;
@@ -7,6 +9,8 @@
     *::after {
         box-sizing: border-box;
     }
+
+    @include igc-scrollbar(var(--scrolbar-size), var(--igc-scrollbar-track-color), var(--igc-scrollbar-thumb-color));
 }
 
 [hidden] {
