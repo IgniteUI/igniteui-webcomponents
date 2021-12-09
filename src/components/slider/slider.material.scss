@@ -8,6 +8,10 @@ $thumb-radius: calc(#{$thumb-size} / 2);
 $thumb-label-width: rem(40px);
 $thumb-label-height: rem(30px);
 
+:host {
+    display: block;
+}
+
 [part='base'] {
     display: flex;
     position: relative;
@@ -210,7 +214,7 @@ $thumb-label-height: rem(30px);
 :host(:not([tick-label-rotation='0'])) {
     [part='tick-label-inner'] {
         writing-mode: vertical-rl;
-        margin-inline-start: 0px;
+        margin-inline-start: 0;
         margin-block: -50%;
     }
 }

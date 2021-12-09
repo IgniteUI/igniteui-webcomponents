@@ -145,7 +145,7 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => html`
   <igc-slider
-    style="display: block; margin:40px 20px;"
+    style="margin: 40px 20px;"
     ?disabled=${disabled}
     ?continuous=${continuous}
     step=${step}
@@ -165,6 +165,7 @@ const Template: Story<ArgTypes, Context> = (
     .showSecondaryLabels=${showSecondaryLabels}
     .tickOrientation=${tickOrientation}
     .tickLabelRotation=${tickLabelRotation}
+    .labelFormatter=${(value: number) => `$${value}`}
     dir=${ifDefined(direction)}
   ></igc-slider>
   <input
@@ -173,4 +174,34 @@ const Template: Story<ArgTypes, Context> = (
     @change=${(ev: any) => console.log('change: ' + ev.target.value)}
   />
 `;
+
+const LabelFormatterTemplate: Story<ArgTypes, Context> = (
+  _args: ArgTypes,
+  { globals: { direction } }: Context
+) => html`
+  <igc-slider
+    style="margin: 40px 20px; width: 200px;"
+    min="0"
+    max="2"
+    primary-ticks="3"
+    continuous
+    .labelFormatter=${(value: number): string => {
+      switch (value) {
+        case 0:
+          return 'Low';
+        case 1:
+          return 'Medium';
+        case 2:
+          return 'High';
+        default:
+          return value.toString();
+      }
+    }}
+    dir=${ifDefined(direction)}
+  ></igc-slider>
+`;
 export const Basic = Template.bind({});
+export const LabelFormatter = LabelFormatterTemplate.bind({});
+(LabelFormatter as any).parameters = {
+  controls: { include: [] },
+};
