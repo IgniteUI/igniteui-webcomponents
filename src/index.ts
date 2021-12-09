@@ -10,6 +10,10 @@ export { default as IgcCardContentComponent } from './components/card/card.conte
 export { default as IgcCardHeaderComponent } from './components/card/card.header';
 export { default as IgcCardMediaComponent } from './components/card/card.media';
 export { default as IgcCheckboxComponent } from './components/checkbox/checkbox';
+export { default as IgcDropDownComponent } from './components/dropdown/dropdown';
+export { default as IgcDropDownGroupComponent } from './components/dropdown/dropdown-group';
+export { default as IgcDropDownHeaderComponent } from './components/dropdown/dropdown-header';
+export { default as IgcDropDownItemComponent } from './components/dropdown/dropdown-item';
 export { default as IgcFormComponent } from './components/form/form';
 export { default as IgcIconButtonComponent } from './components/button/icon-button';
 export { default as IgcIconComponent } from './components/icon/icon';

@@ -1,0 +1,36 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+// :host {
+//     display: flex;
+//     flex-flow: column nowrap;
+//     font-family: var(--igc-font-family);
+//     overflow: hidden;
+//     background: color(surface, 500);
+// }
+
+.igc-drop-down__list {
+    z-index: 10005;
+}
+
+:host([size='small']) ::slotted(igc-dropdown-item),
+:host([size='small']) ::slotted(igc-dropdown-group),
+:host([size='small']) ::slotted(igc-dropdown-header) {
+    padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
+}
+
+:host([size='medium']) ::slotted(igc-dropdown-item),
+:host([size='medium']) ::slotted(igc-dropdown-group),
+:host([size='medium']) ::slotted(igc-dropdown-header) {
+    padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
+}
+
+:host([size='large']) ::slotted(igc-dropdown-item),
+:host([size='large']) ::slotted(igc-dropdown-group),
+:host([size='large']) ::slotted(igc-dropdown-header) {
+    padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
+}
+
+.igc-toggle--hidden {
+    display: none;
+}

@@ -16,7 +16,7 @@ import { styles } from './toggle.material.css';
 
 export class IgcToggleDirective extends Directive {
   /** @private */
-  public static styles = [styles];
+  public static styles = styles;
   // public styles = styles;
   private style = `
     color: #666;
@@ -73,6 +73,7 @@ export class IgcToggleDirective extends Directive {
   private createPopperElement() {
     if (!this._popperElement) {
       this._popperElement = (this._part as ElementPart).element as HTMLElement;
+      this._popperElement.classList.add('igc-toggle');
       this._popperElement.setAttribute('style', this.style);
     }
 
