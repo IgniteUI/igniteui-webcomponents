@@ -30,7 +30,7 @@ describe('Toggle Directive', () => {
     it('successfully creates the popper element with default options.', () => {
       expect(popper).to.be.accessible;
       expect(
-        popper.renderRoot.children[0].classList.contains('igc-toggle--hidden')
+        popper.renderRoot.children[0].classList.contains('igc-toggle-hidden')
       ).to.be.true;
       const popperEl = popper.renderRoot.children[0];
       const attributes = popperEl.attributes;
@@ -64,7 +64,7 @@ describe('Toggle Directive', () => {
 
     it('successfully creates & shows the popper element.', async () => {
       expect(
-        popper.renderRoot.children[0].classList.contains('igc-toggle--hidden')
+        popper.renderRoot.children[0].classList.contains('igc-toggle-hidden')
       ).to.be.false;
     });
 
