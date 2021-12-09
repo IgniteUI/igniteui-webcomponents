@@ -78,8 +78,8 @@ export class IgcToggleDirective extends Directive {
     }
 
     this._open
-      ? this._popperElement.classList.remove('igc-toggle--hidden')
-      : this._popperElement.classList.add('igc-toggle--hidden');
+      ? this._popperElement.classList.remove('igc-toggle-hidden')
+      : this._popperElement.classList.add('igc-toggle-hidden');
 
     return this._popperElement;
   }

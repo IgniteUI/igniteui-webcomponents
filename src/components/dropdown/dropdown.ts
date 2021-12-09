@@ -534,13 +534,12 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     return html`
       <div
         id="igcDDLContent"
-        class="igc-drop-down__list"
+        class="igc-drop-down-list"
         ${this.toggleDirective}
       >
         <div
-          class="igc-drop-down__list-scroll"
+          class="igc-drop-down-list-scroll"
           role="listbox"
-          tabindex="-1"
           @click=${this.handleClick}
         >
           <slot></slot>
