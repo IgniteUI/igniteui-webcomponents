@@ -1,6 +1,10 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import { watch } from '../../common/decorators';
+import {
+  watch,
+  blazorIndirectRender,
+  blazorSuppressComponent,
+} from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { partNameMap } from '../../common/util';
@@ -21,6 +25,8 @@ import { styles } from './years-view.material.css';
  * @csspart year-inner - The inner year container.
  */
 @customElement('igc-years-view')
+@blazorIndirectRender
+@blazorSuppressComponent
 export default class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>

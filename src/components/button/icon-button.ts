@@ -4,6 +4,11 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './icon-button.material.css';
 import '../icon/icon';
+import { alternateName, blazorInclude } from '../common/decorators';
+import {
+  registerIcon as registerIcon_impl,
+  registerIconFromText as registerIconFromText_impl,
+} from '../icon/icon.registry.js';
 
 /**
  * @element igc-icon-button
@@ -19,6 +24,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static styles = [styles];
 
   /** The name of the icon. */
+  @alternateName('iconName')
   @property()
   public name!: string;
 
@@ -46,6 +52,24 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
         aria-hidden="true"
       ></igc-icon>
     `;
+  }
+
+  @blazorInclude()
+  protected async registerIcon(
+    name: string,
+    url: string,
+    collection = 'default'
+  ) {
+    await registerIcon_impl(name, url, collection);
+  }
+
+  @blazorInclude()
+  protected registerIconFromText(
+    name: string,
+    iconText: string,
+    collection = 'default'
+  ) {
+    registerIconFromText_impl(name, iconText, collection);
   }
 }
 
