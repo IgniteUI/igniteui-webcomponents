@@ -633,8 +633,8 @@ export default class IgcSliderComponent extends EventEmitterMixin<
         tabindex=${this.disabled ? -1 : 0}
         style=${styleMap({ insetInlineStart: percent })}
         role="slider"
-        aria-valuemin=${this.min}
-        aria-valuemax=${this.max}
+        aria-valuemin=${this.actualMin}
+        aria-valuemax=${this.actualMax}
         aria-valuenow=${value}
         aria-valuetext=${ifDefined(
           this.labelFormatter ? this.labelFormatter(value) : undefined
