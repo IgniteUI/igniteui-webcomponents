@@ -4,10 +4,14 @@ import { Context, Story } from './story.js';
 
 // region default
 const metadata = {
-  title: 'Slider',
-  component: 'igc-slider',
+  title: 'Range Slider',
+  component: 'igc-range-slider',
   argTypes: {
-    value: {
+    lower: {
+      type: 'number',
+      control: 'number',
+    },
+    upper: {
       type: 'number',
       control: 'number',
     },
@@ -82,7 +86,8 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  value: number;
+  lower: number;
+  upper: number;
   min: number;
   max: number;
   lowerBound: number | undefined;
@@ -119,7 +124,8 @@ const Template: Story<ArgTypes, Context> = (
     disabled = false,
     continuous = false,
     step = 2,
-    value = 100,
+    lower = 0,
+    upper = 0,
     min = 0,
     max = 100,
     lowerBound,
@@ -133,12 +139,13 @@ const Template: Story<ArgTypes, Context> = (
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
-  <igc-slider
+  <igc-range-slider
     style="margin: 40px 20px;"
     ?disabled=${disabled}
     ?continuous=${continuous}
     step=${step}
-    .value=${value}
+    .lower=${lower}
+    .lower=${upper}
     min=${min}
     max=${max}
     .lowerBound=${lowerBound}
@@ -150,41 +157,7 @@ const Template: Story<ArgTypes, Context> = (
     .tickOrientation=${tickOrientation}
     .tickLabelRotation=${tickLabelRotation}
     dir=${ifDefined(direction)}
-  ></igc-slider>
-  <input
-    type="range"
-    @input=${(ev: any) => console.log('input: ' + ev.target.value)}
-    @change=${(ev: any) => console.log('change: ' + ev.target.value)}
-  />
+  ></igc-range-slider>
 `;
 
-const LabelFormatterTemplate: Story<ArgTypes, Context> = (
-  _args: ArgTypes,
-  { globals: { direction } }: Context
-) => html`
-  <igc-slider
-    style="margin: 40px 20px; width: 200px;"
-    min="0"
-    max="2"
-    primary-ticks="3"
-    continuous
-    .labelFormatter=${(value: number): string => {
-      switch (value) {
-        case 0:
-          return 'Low';
-        case 1:
-          return 'Medium';
-        case 2:
-          return 'High';
-        default:
-          return value.toString();
-      }
-    }}
-    dir=${ifDefined(direction)}
-  ></igc-slider>
-`;
 export const Basic = Template.bind({});
-export const LabelFormatter = LabelFormatterTemplate.bind({});
-(LabelFormatter as any).parameters = {
-  controls: { include: [] },
-};
