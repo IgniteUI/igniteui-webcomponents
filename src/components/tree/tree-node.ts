@@ -1,5 +1,6 @@
 import { property, state } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
+import { arrayOf } from '../common/util.js';
 import { styles } from './tree-node.material.css';
 import IgcTreeComponent from './tree';
 
@@ -30,7 +31,7 @@ export default class IgcTreeNodeComponent extends LitElement {
   public static styles = styles;
 
   /** The orientation of the multiple months displayed in days view. */
-  @property()
+  @property({ reflect: true, type: Boolean })
   public expanded = false;
 
   @state()
@@ -57,12 +58,23 @@ export default class IgcTreeNodeComponent extends LitElement {
     return this.closest('igc-tree') as IgcTreeComponent;
   }
 
-  @property({ attribute: 'selection', reflect: true })
-  public selection: 'None' | 'Multiple' | 'Cascade' = 'None';
+  public get level(): number {
+    return this.parentElement?.tagName.toLowerCase() === 'igc-tree'
+      ? 0
+      : (this.parentElement as IgcTreeNodeComponent).level + 1;
+  }
+
+  @property()
+  public selection: 'none' | 'multiple' | 'cascade' = 'none';
 
   protected render() {
     return html`
       <div class="tree-node__header">
+        <section part="spacer">
+          ${arrayOf(this.level).map(
+            () => html`<span class="igc-tree-node__spacer"></span>`
+          )}
+        </section>
         <section
           part="expandIndicator"
           @click="${this.handleClick}"
@@ -76,8 +88,8 @@ export default class IgcTreeNodeComponent extends LitElement {
             collection="internal"
           ></igc-icon>
         </section>
-        <section part="selectIndicator" ?hidden="${this.selection === 'None'}">
-          <igc-checkbox .checked="false" .indeterminate="false"></igc-checkbox>
+        <section part="selectIndicator" ?hidden="${this.selection === 'none'}">
+          <igc-checkbox></igc-checkbox>
         </section>
         <section part="header">
           <slot name="header"></slot>

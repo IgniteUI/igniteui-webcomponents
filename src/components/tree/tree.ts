@@ -1,6 +1,8 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { watch } from '../common/decorators';
 import { SizableMixin } from '../common/mixins/sizable';
+import IgcTreeNodeComponent from './tree-node';
 
 let NEXT_ID = 0;
 
@@ -23,7 +25,7 @@ export default class IgcTreeComponent extends SizableMixin(LitElement) {
   }
 
   public get allNodes(): NodeList {
-    return document.querySelectorAll(`#${this.id} igc-tree-node`);
+    return this.querySelectorAll(`igc-tree-node`);
   }
 
   // public connectedCallback() {
@@ -31,8 +33,8 @@ export default class IgcTreeComponent extends SizableMixin(LitElement) {
   //   this.setAttribute('role', 'tree');
   // }
 
-  @property({ attribute: 'selection', reflect: true })
-  public selection: 'None' | 'Multiple' | 'Cascade' = 'None';
+  @property()
+  public selection: 'none' | 'multiple' | 'cascade' = 'none';
 
   @property({ attribute: 'id', reflect: true })
   public id = `igc-tree-${NEXT_ID++}`;
@@ -41,19 +43,11 @@ export default class IgcTreeComponent extends SizableMixin(LitElement) {
     return html`<slot></slot>`;
   }
 
-  public attributeChangedCallback(
-    name: string,
-    _old: string | null,
-    value: string | null
-  ): void {
-    if (
-      name === 'selection' &&
-      (value === 'None' || value === 'Multiple' || value === 'Cascade')
-    ) {
-      this.allNodes?.forEach((node: any) => {
-        node.selection = value;
-      });
-    }
+  @watch('selection')
+  public selectionModeChange() {
+    this.allNodes?.forEach((node: Node) => {
+      (node as IgcTreeNodeComponent).selection = this.selection;
+    });
   }
 }
 

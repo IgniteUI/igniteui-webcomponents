@@ -16,9 +16,9 @@ const metadata = {
       defaultValue: 'large',
     },
     selection: {
-      type: '"None" | "Multiple" | "Cascade"',
+      type: '"none" | "multiple" | "cascade"',
       description: 'Sets the selection mode of the tree.',
-      options: ['None', 'Multiple', 'Cascade'],
+      options: ['none', 'multiple', 'cascade'],
       control: {
         type: 'inline-radio',
       },
@@ -29,7 +29,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
-  selection: 'None' | 'Multiple' | 'Cascade';
+  selection: 'none' | 'multiple' | 'cascade';
 }
 // endregion
 
@@ -39,7 +39,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
 ) => {
   return html`
     <igc-tree .selection=${selection} .size=${size} dir=${direction}>
-      <igc-tree-node>
+      <igc-tree-node expanded>
         <p slot="header">Tree Node 1</p>
         <igc-tree-node slot="child">
           <p slot="header">Tree Node 1.1</p>

@@ -7,3 +7,7 @@ export const partNameMap = (partNameInfo: PartNameInfo) => {
     .filter((key) => partNameInfo[key])
     .join(' ');
 };
+
+export const arrayOf = (length: number) => {
+  return new Array(length).fill(1);
+};

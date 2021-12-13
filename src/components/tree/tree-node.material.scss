@@ -9,6 +9,11 @@
     background: color(surface, 500);
 }
 
+.igc-tree-node__spacer {
+    width: 10px;
+    display: inline-block;
+}
+
 // :host([size='small']) ::slotted(igc-list-item),
 // :host([size='small']) ::slotted(igc-list-header) {
 //     padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
