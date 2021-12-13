@@ -1,5 +1,11 @@
 @use '../../styles/utilities' as utils;
 
+$hover-color: utils.color(gray, 700) !default;
+$checked-hover-color: utils.color(primary, 900) !default;
+$invalid-color: utils.color(error, 500) !default;
+$invalid-hover-color: utils.color(error, 700) !default;
+$disabled-color: utils.color(gray, 400) !default;
+
 @mixin theme() {
     igc-radio::part(base) {
         transition-duration: .1s;
@@ -29,7 +35,7 @@
     igc-radio:hover::part(control),
     igc-radio:focus-within::part(control) {
         &::before {
-            background: utils.color(gray, 700);
+            background: $hover-color;
         }
     }
 
@@ -46,67 +52,75 @@
     igc-radio:hover::part(control checked),
     igc-radio:focus-within::part(control checked) {
         &::after {
-            border-color: utils.color(primary, 900);
+            border-color: $checked-hover-color;
         }
 
         &::before {
-            background: utils.color(primary, 900);
+            background: $checked-hover-color;
         }
+    }
+
+    igc-radio[invalid]::part(label) {
+        color: $invalid-color;
     }
 
     igc-radio[invalid]::part(control) {
         &::after {
-            border-color: utils.color(error, 500);
+            border-color: $invalid-color;
         }
     }
 
     igc-radio[invalid]:hover::part(control) {
         &::before {
-            background: utils.color(error, 500);
+            background: $invalid-color;
         }
     }
 
     igc-radio[invalid]::part(control checked) {
         &::after {
-            border-color: utils.color(error, 500);
+            border-color: $invalid-color;
         }
 
         &::before {
-            background: utils.color(error, 500);
+            background: $invalid-color;
         }
     }
 
     igc-radio[invalid]:hover::part(control),
     igc-radio[invalid]:focus-within::part(control) {
         &::after {
-            border-color: utils.color(error, 700);
+            border-color: $invalid-hover-color;
         }
     }
 
     igc-radio[invalid]:hover::part(control checked),
     igc-radio[invalid]:focus-within::part(control checked) {
         &::after {
-            border-color: utils.color(error, 700);
+            border-color: $invalid-hover-color;
         }
 
         &::before {
-            background: utils.color(error, 700);
+            background: $invalid-hover-color;
         }
+    }
+
+    igc-radio[disabled]::part(label) {
+        color: $disabled-color;
     }
 
     igc-radio[disabled]::part(control) {
         &::after {
-            border-color: utils.color(gray, 400);
+            border-color: $disabled-color;
         }
     }
 
     igc-radio[disabled]::part(control checked) {
         &::after {
-            border-color: utils.color(gray, 400);
+            border-color: $disabled-color;
         }
 
         &::before {
-            background: utils.color(gray, 400);
+            background: $disabled-color;
         }
     }
 }
