@@ -22,10 +22,10 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   public static tagName = 'igc-range-slider';
 
   @query(`#thumbFrom`)
-  private thumbTo!: HTMLElement;
+  private thumbFrom!: HTMLElement;
 
   @query(`#thumbTo`)
-  private thumbFrom!: HTMLElement;
+  private thumbTo!: HTMLElement;
 
   private _lower = 0;
   private _upper = 0;
