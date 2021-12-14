@@ -8,9 +8,9 @@ const metadata = {
   component: 'igc-badge',
   argTypes: {
     variant: {
-      type: '"primary" | "info" | "success" | "warning" | "danger" | undefined',
+      type: '"primary" | "info" | "success" | "warning" | "danger"',
       description: 'The type of badge.',
-      options: ['primary', 'info', 'success', 'warning', 'danger', 'undefined'],
+      options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: {
         type: 'select',
       },
@@ -23,9 +23,9 @@ const metadata = {
       defaultValue: false,
     },
     shape: {
-      type: '"rounded" | "square" | undefined',
+      type: '"rounded" | "square"',
       description: 'The shape of the badge.',
-      options: ['rounded', 'square', 'undefined'],
+      options: ['rounded', 'square'],
       control: {
         type: 'inline-radio',
       },
@@ -35,9 +35,9 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger' | undefined;
+  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
   outlined: boolean;
-  shape: 'rounded' | 'square' | undefined;
+  shape: 'rounded' | 'square';
 }
 // endregion
 
