@@ -1,6 +1,10 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import { watch } from '../../common/decorators';
+import {
+  blazorIndirectRender,
+  blazorSuppressComponent,
+  watch,
+} from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
@@ -22,6 +26,8 @@ import { setDateSafe } from '../common/utils';
  * @csspart month-inner - The inner month container.
  */
 @customElement('igc-months-view')
+@blazorIndirectRender
+@blazorSuppressComponent
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
