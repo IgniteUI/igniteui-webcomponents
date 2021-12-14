@@ -3,23 +3,9 @@ import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './slider.material.css';
 
-export interface IgcSliderEventMap {
-  igcInput: CustomEvent<number | IgcRangeSliderValue>;
-  igcChange: CustomEvent<number | IgcRangeSliderValue>;
-}
-export interface IgcRangeSliderValue {
-  lower: number;
-  upper: number;
-}
-
-export abstract class IgcSliderBaseComponent extends EventEmitterMixin<
-  IgcSliderEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export class IgcSliderBaseComponent extends LitElement {
   /** @private */
   public static styles = [styles];
 
@@ -27,7 +13,7 @@ export abstract class IgcSliderBaseComponent extends EventEmitterMixin<
   private _upperBound?: number;
   private _min = 0;
   private _max = 100;
-  private startValue?: number | IgcRangeSliderValue;
+  private startValue?: number;
   private pointerCaptured = false;
   private thumbHoverTimer: any;
   protected activeThumb?: HTMLElement;
@@ -160,15 +146,27 @@ export abstract class IgcSliderBaseComponent extends EventEmitterMixin<
     this.normalizeValue();
   }
 
-  protected abstract activeValue: number;
+  protected get activeValue() {
+    return 0;
+  }
 
-  protected abstract normalizeValue(): void;
+  protected normalizeValue(): void {}
 
-  protected abstract getTrackStyle(): StyleInfo;
+  protected getTrackStyle(): StyleInfo {
+    return {};
+  }
 
-  protected abstract updateValue(increment: number): boolean;
+  protected updateValue(_increment: number): boolean {
+    return false;
+  }
 
-  protected abstract renderThumbs(): TemplateResult<1>;
+  protected renderThumbs(): TemplateResult<1> {
+    return html``;
+  }
+
+  protected emitInputEvent() {}
+
+  protected emitChangeEvent() {}
 
   private get actualMin(): number {
     return typeof this.lowerBound === 'number'
@@ -329,7 +327,7 @@ export abstract class IgcSliderBaseComponent extends EventEmitterMixin<
     this.hideThumbLabels();
 
     if (this.startValue! !== this.activeValue) {
-      this.emitEvent('igcChange', { detail: this.activeValue });
+      this.emitChangeEvent();
     }
     this.startValue = undefined;
   };
@@ -382,7 +380,7 @@ export abstract class IgcSliderBaseComponent extends EventEmitterMixin<
       this.hideThumbLabels();
 
       if (updated) {
-        this.emitEvent('igcChange', { detail: this.activeValue });
+        this.emitChangeEvent();
       }
     }
   };

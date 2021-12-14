@@ -1,8 +1,22 @@
 import { html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { Constructor } from '../common/mixins/constructor';
+import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { IgcSliderBaseComponent } from './slider-base';
 
-export default class IgcRangeSliderComponent extends IgcSliderBaseComponent {
+export interface IgcRangeSliderValue {
+  lower: number;
+  upper: number;
+}
+export interface IgcRangeSliderEventMap {
+  igcInput: CustomEvent<IgcRangeSliderValue>;
+  igcChange: CustomEvent<IgcRangeSliderValue>;
+}
+
+export default class IgcRangeSliderComponent extends EventEmitterMixin<
+  IgcRangeSliderEventMap,
+  Constructor<IgcSliderBaseComponent>
+>(IgcSliderBaseComponent) {
   /** @private */
   public static tagName = 'igc-range-slider';
 
@@ -107,8 +121,20 @@ export default class IgcRangeSliderComponent extends IgcSliderBaseComponent {
       return false;
     }
 
-    this.emitEvent('igcInput', { detail: this.activeValue });
+    this.emitInputEvent();
     return true;
+  }
+
+  protected emitInputEvent() {
+    this.emitEvent('igcInput', {
+      detail: { lower: this.lower, upper: this.upper },
+    });
+  }
+
+  protected emitChangeEvent() {
+    this.emitEvent('igcChange', {
+      detail: { lower: this.lower, upper: this.upper },
+    });
   }
 
   private swapValues(lower: number, upper: number) {
