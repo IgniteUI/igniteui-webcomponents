@@ -1,6 +1,10 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { watch } from '../../common/decorators';
+import {
+  blazorIndirectRender,
+  blazorSuppress,
+  watch,
+} from '../../common/decorators';
 import { Calendar, DateRangeDescriptor } from './calendar.model';
 import { getWeekDayNumber } from './utils';
 
@@ -11,6 +15,7 @@ export interface IgcCalendarBaseEventMap {
   igcChange: CustomEvent<Date | Date[]>;
 }
 
+@blazorIndirectRender
 export class IgcCalendarBaseComponent extends LitElement {
   protected calendarModel = new Calendar();
 
@@ -19,8 +24,10 @@ export class IgcCalendarBaseComponent extends LitElement {
    * When selection is set to single, it accepts a single Date object.
    * Otherwise, it is an array of Date objects.
    */
+  @blazorSuppress()
   @property({ attribute: false })
   public value?: Date | Date[];
+  //we suppress value for blazor since we need to expose it on the leaves with the events for now.
 
   /** Sets the type of date selection. */
   @property()
