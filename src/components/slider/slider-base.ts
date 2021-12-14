@@ -9,6 +9,9 @@ export class IgcSliderBaseComponent extends LitElement {
   /** @private */
   public static styles = [styles];
 
+  @query(`[part='thumb']`)
+  protected thumb!: HTMLElement;
+
   private _lowerBound?: number;
   private _upperBound?: number;
   private _min = 0;
@@ -20,9 +23,6 @@ export class IgcSliderBaseComponent extends LitElement {
 
   @state()
   private thumbLabelsVisible = false;
-
-  @query('#thumbTo')
-  protected thumbTo!: HTMLElement;
 
   public set min(value: number) {
     if (value < this.max) {
@@ -197,7 +197,7 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   protected closestHandle(_event: PointerEvent): HTMLElement {
-    return this.thumbTo;
+    return this.thumb;
   }
 
   private totalTickCount() {
@@ -413,13 +413,11 @@ export class IgcSliderBaseComponent extends LitElement {
     return groups;
   }
 
-  protected renderThumb(value: number, isFrom = false) {
+  protected renderThumb(value: number, thumbId?: string) {
     const percent = `${this.valueToFraction(value) * 100}%`;
-    const thumbId = isFrom ? 'thumbFrom' : 'thumbTo';
 
     return html` <div
         part="thumb-label"
-        id=${isFrom ? 'labelFrom' : 'labelTo'}
         style=${styleMap({
           opacity: this.thumbLabelsVisible ? '1' : '0',
           insetInlineStart: percent,
@@ -429,7 +427,7 @@ export class IgcSliderBaseComponent extends LitElement {
       </div>
       <div
         part="thumb"
-        id=${thumbId}
+        id=${ifDefined(thumbId)}
         tabindex=${this.disabled ? -1 : 0}
         style=${styleMap({ insetInlineStart: percent })}
         role="slider"

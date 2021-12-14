@@ -8,6 +8,7 @@ export interface IgcRangeSliderValue {
   lower: number;
   upper: number;
 }
+
 export interface IgcRangeSliderEventMap {
   igcInput: CustomEvent<IgcRangeSliderValue>;
   igcChange: CustomEvent<IgcRangeSliderValue>;
@@ -20,7 +21,10 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   /** @private */
   public static tagName = 'igc-range-slider';
 
-  @query('#thumbFrom')
+  @query(`#thumbFrom`)
+  private thumbTo!: HTMLElement;
+
+  @query(`#thumbTo`)
   private thumbFrom!: HTMLElement;
 
   private _lower = 0;
@@ -49,7 +53,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   }
 
   protected get activeValue(): number {
-    return this.activeThumb?.id === 'thumbFrom' ? this.lower : this.upper;
+    return this.activeThumb === this.thumbFrom ? this.lower : this.upper;
   }
 
   protected normalizeValue(): void {
@@ -100,7 +104,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     let lower = this.lower;
     let upper = this.upper;
 
-    if (this.activeThumb?.id === 'thumbFrom') {
+    if (this.activeThumb === this.thumbFrom) {
       lower += increment;
     } else {
       upper += increment;
@@ -110,7 +114,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
       this.swapValues(lower, upper);
       this.toggleActiveThumb();
     } else {
-      if (this.activeThumb?.id === 'thumbFrom') {
+      if (this.activeThumb === this.thumbFrom) {
         this.lower = lower;
       } else {
         this.upper = upper;
@@ -144,13 +148,13 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
   private toggleActiveThumb() {
     const thumb =
-      this.activeThumb?.id === 'thumbFrom' ? this.thumbTo : this.thumbFrom;
+      this.activeThumb === this.thumbFrom ? this.thumbTo : this.thumbFrom;
     thumb.focus();
   }
 
   protected renderThumbs() {
-    return html`${this.renderThumb(this.lower, true)}
-    ${this.renderThumb(this.upper)}`;
+    return html`${this.renderThumb(this.lower, 'thumbFrom')}
+    ${this.renderThumb(this.upper, 'thumbTo')}`;
   }
 }
 
