@@ -37,6 +37,11 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    hideTooltip: {
+      type: 'boolean',
+      control: 'boolean',
+      defaultValue: false,
+    },
     step: {
       type: 'number',
       control: 'number',
@@ -89,6 +94,7 @@ interface ArgTypes {
   upperBound: number | undefined;
   disabled: boolean;
   discreteTrack: boolean;
+  hideTooltip: boolean;
   step: number;
   primaryTicks: number;
   secondaryTicks: number;
@@ -118,6 +124,7 @@ const Template: Story<ArgTypes, Context> = (
   {
     disabled = false,
     discreteTrack = false,
+    hideTooltip = false,
     step = 2,
     value = 100,
     min = 0,
@@ -137,6 +144,7 @@ const Template: Story<ArgTypes, Context> = (
     style="margin: 40px 20px;"
     ?disabled=${disabled}
     ?discrete-track=${discreteTrack}
+    ?hide-tooltip=${hideTooltip}
     step=${step}
     .value=${value}
     min=${min}

@@ -96,6 +96,9 @@ export class IgcSliderBaseComponent extends LitElement {
   @property({ type: Boolean, attribute: 'discrete-track' })
   public discreteTrack = false;
 
+  @property({ type: Boolean, attribute: 'hide-tooltip' })
+  public hideTooltip = false;
+
   @property({ type: Number })
   public step = 1;
 
@@ -240,7 +243,7 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   private showThumbLabels() {
-    if (this.disabled) {
+    if (this.disabled || this.hideTooltip) {
       return;
     }
 
@@ -253,7 +256,7 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   private hideThumbLabels() {
-    if (this.pointerCaptured) {
+    if (this.pointerCaptured || !this.thumbLabelsVisible) {
       return;
     }
 
@@ -420,15 +423,20 @@ export class IgcSliderBaseComponent extends LitElement {
   protected renderThumb(value: number, thumbId?: string) {
     const percent = `${this.valueToFraction(value) * 100}%`;
 
-    return html` <div
-        part="thumb-label"
-        style=${styleMap({
-          opacity: this.thumbLabelsVisible ? '1' : '0',
-          insetInlineStart: percent,
-        })}
-      >
-        ${this.labelFormatter ? this.labelFormatter(value) : value}
-      </div>
+    return html`
+      ${this.hideTooltip
+        ? html``
+        : html`
+            <div
+              part="thumb-label"
+              style=${styleMap({
+                opacity: this.thumbLabelsVisible ? '1' : '0',
+                insetInlineStart: percent,
+              })}
+            >
+              ${this.labelFormatter ? this.labelFormatter(value) : value}
+            </div>
+          `}
       <div
         part="thumb"
         id=${ifDefined(thumbId)}
@@ -446,7 +454,8 @@ export class IgcSliderBaseComponent extends LitElement {
         @pointerleave=${this.handleThumbPointerLeave}
         @focus=${(ev: Event) => (this.activeThumb = ev.target as HTMLElement)}
         @blur=${() => (this.activeThumb = undefined)}
-      ></div>`;
+      ></div>
+    `;
   }
 
   private renderSteps(valueFraction = 1) {
