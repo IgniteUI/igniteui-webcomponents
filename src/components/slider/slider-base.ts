@@ -200,7 +200,7 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   private normalizeByStep(value: number) {
-    return value - ((value - this.actualMin) % this.step);
+    return this.step ? value - ((value - this.actualMin) % this.step) : value;
   }
 
   protected closestHandle(_event: PointerEvent): HTMLElement {
@@ -282,21 +282,26 @@ export class IgcSliderBaseComponent extends LitElement {
     const thumbCenter = (thumbBoundaries.right - thumbBoundaries.left) / 2;
     const thumbPositionX = thumbBoundaries.left + thumbCenter;
 
-    const scaleX = this.isLTR
+    const scale = this.getBoundingClientRect().width / (this.max - this.min);
+    const change = this.isLTR
       ? mouseX - thumbPositionX
       : thumbPositionX - mouseX;
-    const stepDistance =
-      (this.getBoundingClientRect().width / (this.max - this.min)) * this.step;
-    const stepDistanceCenter = stepDistance / 2;
 
-    // If the thumb scale range (slider update) is less than a half step,
-    // the position stays the same.
-    const scaleXPositive = Math.abs(scaleX);
-    if (scaleXPositive < stepDistanceCenter) {
-      return 0;
+    if (this.step) {
+      const stepDistance = scale * this.step;
+      const stepDistanceCenter = stepDistance / 2;
+
+      // If the thumb scale range (slider update) is less than a half step,
+      // the position stays the same.
+      const scaleXPositive = Math.abs(change);
+      if (scaleXPositive < stepDistanceCenter) {
+        return 0;
+      }
+
+      return Math.round(change / stepDistance) * this.step;
+    } else {
+      return change / scale;
     }
-
-    return Math.round(scaleX / stepDistance) * this.step;
   }
 
   private updateSlider(mouseX: number) {
@@ -348,19 +353,20 @@ export class IgcSliderBaseComponent extends LitElement {
 
     let increment = 0;
     const value = this.activeValue;
+    const step = this.step ? this.step : 1;
 
     switch (key) {
       case 'ArrowLeft':
-        increment += this.isLTR ? -this.step : this.step;
+        increment += this.isLTR ? -step : step;
         break;
       case 'ArrowRight':
-        increment += this.isLTR ? this.step : -this.step;
+        increment += this.isLTR ? step : -step;
         break;
       case 'ArrowUp':
-        increment = this.step;
+        increment = step;
         break;
       case 'ArrowDown':
-        increment = -this.step;
+        increment = -step;
         break;
       case 'Home':
         increment = this.actualMin - value;
@@ -369,13 +375,10 @@ export class IgcSliderBaseComponent extends LitElement {
         increment = this.actualMax - value;
         break;
       case 'PageUp':
-        increment = Math.max((this.actualMax - this.actualMin) / 10, this.step);
+        increment = Math.max((this.actualMax - this.actualMin) / 10, step);
         break;
       case 'PageDown':
-        increment = -Math.max(
-          (this.actualMax - this.actualMin) / 10,
-          this.step
-        );
+        increment = -Math.max((this.actualMax - this.actualMin) / 10, step);
         break;
       default:
         return;
