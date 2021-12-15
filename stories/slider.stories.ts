@@ -32,7 +32,7 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    continuous: {
+    discreteTrack: {
       type: 'boolean',
       control: 'boolean',
       defaultValue: false,
@@ -88,7 +88,7 @@ interface ArgTypes {
   lowerBound: number | undefined;
   upperBound: number | undefined;
   disabled: boolean;
-  continuous: boolean;
+  discreteTrack: boolean;
   step: number;
   primaryTicks: number;
   secondaryTicks: number;
@@ -117,7 +117,7 @@ interface ArgTypes {
 const Template: Story<ArgTypes, Context> = (
   {
     disabled = false,
-    continuous = false,
+    discreteTrack = false,
     step = 2,
     value = 100,
     min = 0,
@@ -136,7 +136,7 @@ const Template: Story<ArgTypes, Context> = (
   <igc-slider
     style="margin: 40px 20px;"
     ?disabled=${disabled}
-    ?continuous=${continuous}
+    ?discrete-track=${discreteTrack}
     step=${step}
     .value=${value}
     min=${min}

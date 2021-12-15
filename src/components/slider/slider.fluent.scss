@@ -6,11 +6,11 @@
 
     igc-slider:hover {
         &::part(inactive) {
-            background: utils.color(primary, 500, .32);
+            color: utils.color(primary, 500, .32);
         }
 
         &::part(fill) {
-            background: utils.color(primary, 500);
+            color: utils.color(primary, 500);
         }
 
         &::part(thumb) {
@@ -25,12 +25,12 @@
     }
 
     igc-slider::part(inactive) {
-        background: utils.color(gray, 400);
+        color: utils.color(gray, 400);
         top: initial;
     }
 
     igc-slider::part(fill) {
-        background: utils.color(gray, 700);
+        color: utils.color(gray, 700);
     }
 
     igc-slider::part(steps) {
@@ -56,11 +56,11 @@
 
     igc-slider[disabled] {
         &::part(inactive) {
-            background: utils.color(gray, 200);
+            color: utils.color(gray, 200);
         }
 
         &::part(fill) {
-            background: utils.color(gray, 400);
+            color: utils.color(gray, 400);
         }
 
         &::part(thumb) {

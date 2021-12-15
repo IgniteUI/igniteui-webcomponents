@@ -24,7 +24,7 @@ $thumb-label-height: rem(30px);
 
 [part='track'] {
     position: relative;
-    height: rem(6px);
+    height: rem(2px);
     width: 100%;
     border-radius: rem(32px);
     overflow: hidden;
@@ -32,30 +32,19 @@ $thumb-label-height: rem(30px);
 
 [part='fill'] {
     position: absolute;
-    height: rem(6px);
-    background: color(secondary, 500);
+    height: rem(2px);
+    color: color(secondary, 500);
     border-radius: inherit;
 }
 
 [part='inactive'] {
     position: absolute;
-    height: rem(4px);
+    height: rem(2px);
     width: 100%;
-    top: rem(1px);
-    background: color(secondary, 500, .24);
-    transition: background .2s ease-out;
+    color: color(secondary, 500, .24);
+    transition: color .2s ease-out;
     border-radius: inherit;
     z-index: -1;
-}
-
-[part='steps'] {
-    position: absolute;
-    width: 100%;
-    height: rem(2px);
-    opacity: .85;
-    transition: opacity .2s ease-out;
-    z-index: 1;
-    top: rem(2px);
 }
 
 [part='ticks'] {
@@ -225,26 +214,20 @@ $thumb-label-height: rem(30px);
     }
 }
 
-:host([continuous]) {
-    [part='steps'] {
-        display: none;
-    }
-}
-
 :host([disabled]) {
     user-select: none;
     pointer-events: none;
     cursor: initial;
 
     [part='inactive'] {
-        background: color(gray, 200);
+        color: color(gray, 200);
     }
 
-    [part='fill'],
     [part='tick'] {
         background: color(gray, 400);
     }
 
+    [part='fill'],
     [part='tick-label'] {
         color: color(gray, 400);
     }
@@ -259,7 +242,7 @@ $thumb-label-height: rem(30px);
 
     &:hover {
         [part='inactive'] {
-            background: color(gray, 400);
+            color: color(gray, 400);
         }
 
         [part='thumb'] {

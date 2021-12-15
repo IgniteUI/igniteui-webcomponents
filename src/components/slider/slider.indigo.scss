@@ -6,16 +6,16 @@
 
     igc-slider:hover {
         &::part(inactive) {
-            background: utils.color(gray, 500);
+            color: utils.color(gray, 500);
         }
 
         &::part(fill) {
-            background: utils.color(primary, 400);
+            color: utils.color(primary, 400);
         }
     }
 
     igc-slider::part(inactive) {
-        background: utils.color(gray, 400);
+        color: utils.color(gray, 400);
     }
 
     igc-slider::part(track),
@@ -46,7 +46,7 @@
         &::part(inactive),
         &::part(fill),
         &::part(thumb) {
-            background: utils.color(gray, 300);
+            color: utils.color(gray, 300);
         }
     }
 }

@@ -33,6 +33,10 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return this.value;
   }
 
+  protected get fillValue() {
+    return this.value;
+  }
+
   protected normalizeValue(): void {
     this._value = this.validateValue(this._value);
   }

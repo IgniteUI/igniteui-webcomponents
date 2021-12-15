@@ -93,8 +93,8 @@ export class IgcSliderBaseComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  @property({ type: Boolean, reflect: true })
-  public continuous = false;
+  @property({ type: Boolean, attribute: 'discrete-track' })
+  public discreteTrack = false;
 
   @property({ type: Number })
   public step = 1;
@@ -147,6 +147,10 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   protected get activeValue() {
+    return 0;
+  }
+
+  protected get fillValue() {
     return 0;
   }
 
@@ -445,30 +449,40 @@ export class IgcSliderBaseComponent extends LitElement {
       ></div>`;
   }
 
-  private renderSteps() {
-    if (this.continuous || this.step <= 0) {
-      return html``;
+  private renderSteps(valueFraction = 1) {
+    if (!this.discreteTrack || !this.step) {
+      return html`
+        <svg width="100%" height="100%" style="display: flex">
+          <line
+            x1="0"
+            y1="1"
+            x2="100%"
+            y2="1"
+            stroke="currentColor"
+            stroke-width="2px"
+          ></line>
+        </svg>
+      `;
     }
 
-    const color = 'white';
-    const trackProgress = 100;
     const trackRange = this.max - this.min;
-    const interval = ((trackProgress / (trackRange / this.step)) * 10) / 10;
+    const interval = ((100 / (trackRange / this.step)) * 10) / 10;
 
-    return html`<div part="steps">
+    return html`
       <svg width="100%" height="100%" style="display: flex">
         <line
           x1="0"
           y1="1"
           x2="100%"
           y2="1"
-          stroke="${color}"
-          stroke-dasharray="1.5px, calc(${interval * Math.sqrt(2)}% - 1.5px)"
-          stroke-linecap="round"
+          stroke="currentColor"
+          stroke-dasharray="calc(${(interval / valueFraction) *
+          Math.sqrt(2)}% - 2px), 2px"
+          stroke-dashoffset="-1px"
           stroke-width="2px"
         ></line>
       </svg>
-    </div>`;
+    `;
   }
 
   protected render() {
@@ -478,13 +492,10 @@ export class IgcSliderBaseComponent extends LitElement {
           ? html`<div part="ticks">${this.renderTicks()}</div>`
           : html``}
         <div part="track">
-          <div
-            part="fill"
-            id="fill"
-            style=${styleMap(this.getTrackStyle())}
-          ></div>
-          <div part="inactive" id="inactive"></div>
-          ${this.renderSteps()}
+          <div part="fill" style=${styleMap(this.getTrackStyle())}>
+            ${this.renderSteps(this.valueToFraction(this.fillValue))}
+          </div>
+          <div part="inactive">${this.renderSteps()}</div>
         </div>
         ${this.tickOrientation !== 'start'
           ? html`<div part="ticks">${this.renderTicks()}</div>`
