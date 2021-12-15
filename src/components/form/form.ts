@@ -1,7 +1,7 @@
 import { css, html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { alternateName } from '../common/decorators';
+import { alternateName, blazorSuppress } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
 
 export interface IgcFormEventMap {
@@ -116,7 +116,9 @@ export default class IgcFormComponent extends EventEmitterMixin<
     return formElements;
   }
 
+  //suppressing in blazor for now due to an issue, bringing it back later
   /** Retrieves the data from the form in the format of a FormData object. */
+  @blazorSuppress()
   public getFormData() {
     const formData = new FormData();
 
