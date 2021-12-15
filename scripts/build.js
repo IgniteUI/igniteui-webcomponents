@@ -18,7 +18,7 @@ const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
 const THEMES_PATH = `src/styles/themes`;
 
 async function buildThemes() {
-  const paths = await globby(`${THEMES_PATH}/**/*.scss`);
+  const paths = await globby(`${THEMES_PATH}/{light,dark}/*.scss`);
 
   for (const sassFile of paths) {
     const result = await renderSass({
@@ -44,8 +44,9 @@ async function buildThemes() {
   console.info('Inlining styles...');
   await exec('npm run build:styles');
 
+  // https://github.com/microsoft/TypeScript/issues/14619
   console.info(`Building components...`);
-  await exec(`tsc -p tsconfig.prod.json`);
+  await exec(`tsc -p scripts/tsconfig.prod.json && tsc -p scripts/tsconfig.dts.prod.json`);
 
   console.info(`Generating theme files...`);
   await buildThemes();

@@ -14,7 +14,7 @@ import { styles } from './calendar.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model';
-import { watch } from '../common/decorators';
+import { blazorIndirectRender, watch } from '../common/decorators';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils';
 import { SizableMixin } from '../common/mixins/sizable';
 import {
@@ -56,6 +56,7 @@ import '../icon/icon';
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
+@blazorIndirectRender
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,

@@ -1,20 +1,25 @@
-@use '../../styles/utilities' as utils;
+@use '../../styles/utilities' as *;
+
+$header-color: color(primary, 500) !default;
+$item-color: color(gray, 900) !default;
+$item-hover-bg: color(gray, 50) !default;
+$subtitle-color: color(gray, 800) !default;
 
 @mixin theme() {
     igc-list-header {
-        color: utils.color(primary, 500);
+        color: $header-color;
     }
 
     igc-list-item {
-        color: utils.color(gray, 900);
+        color: $item-color;
 
         &:hover,
         &:focus-within {
-            background: utils.color(primary, 50, .54);
+            background: $item-hover-bg;
         }
 
         &::part(subtitle) {
-            color: utils.color(gray, 800);
+            color: $subtitle-color;
         }
     }
 }

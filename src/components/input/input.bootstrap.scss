@@ -1,5 +1,7 @@
 @use '../../styles/utilities' as utils;
 
+$input-background: #fff !default;
+
 @mixin theme() {
     igc-input,
     igc-input[outlined] {
@@ -12,7 +14,7 @@
         &::part(input) {
             padding: initial;
             border-radius: utils.rem(4px);
-            background: #fff;
+            background: $input-background;
             box-shadow: 0 0 0 0 transparent;
             z-index: 1;
             border: 1px solid utils.color(gray, 400);
@@ -53,6 +55,7 @@
         &::part(container) {
             border: none;
             grid-template-columns: auto 1fr auto;
+            background: $input-background;
 
             &::after {
                 display: none;
@@ -168,7 +171,7 @@
         }
 
         &::part(input), {
-            font-size: utils.rem(14px);
+            font-size: utils.rem(16px);
             padding: utils.rem(4px) utils.rem(8px);
         }
 
