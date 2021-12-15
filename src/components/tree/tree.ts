@@ -1,8 +1,12 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators';
-import { SizableMixin } from '../common/mixins/sizable';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
 import IgcTreeNodeComponent from './tree-node';
+import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common';
+import { IgcTreeSelectionService } from './tree.selection';
 
 let NEXT_ID = 0;
 
@@ -13,41 +17,52 @@ let NEXT_ID = 0;
  *
  * @slot - Renders the list items and list headers inside default slot.
  */
-export default class IgcTreeComponent extends SizableMixin(LitElement) {
+export default class IgcTreeComponent extends SizableMixin(
+  EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
+) {
   /** @private */
   public static tagName = 'igc-tree';
 
   // /** @private */
   // public static styles = styles;
 
-  constructor() {
-    super();
-  }
-
-  public get allNodes(): NodeList {
-    return this.querySelectorAll(`igc-tree-node`);
-  }
-
-  // public connectedCallback() {
-  //   super.connectedCallback();
-  //   this.setAttribute('role', 'tree');
-  // }
-
-  @property()
-  public selection: 'none' | 'multiple' | 'cascade' = 'none';
+  public selectionService!: IgcTreeSelectionService;
 
   @property({ attribute: 'id', reflect: true })
   public id = `igc-tree-${NEXT_ID++}`;
 
-  protected render() {
-    return html`<slot></slot>`;
-  }
+  @property()
+  public selection: IgcTreeSelectionType = 'none';
 
   @watch('selection')
   public selectionModeChange() {
-    this.allNodes?.forEach((node: Node) => {
-      (node as IgcTreeNodeComponent).selection = this.selection;
+    this.nodes?.forEach((node: IgcTreeNodeComponent) => {
+      node.selection = this.selection;
     });
+  }
+
+  public get nodes(): Array<IgcTreeNodeComponent> {
+    return Array.from(this.querySelectorAll(`igc-tree-node`));
+  }
+
+  constructor() {
+    super();
+    this.selectionService = new IgcTreeSelectionService(this);
+    this.updateNodes();
+  }
+
+  public connectedCallback() {
+    super.connectedCallback();
+  }
+
+  private updateNodes() {
+    this.nodes?.forEach((node: IgcTreeNodeComponent) => {
+      node.selectionService = this.selectionService;
+    });
+  }
+
+  protected render() {
+    return html`<slot></slot>`;
   }
 }
 

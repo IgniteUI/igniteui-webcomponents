@@ -1,4 +1,6 @@
 import { html } from 'lit';
+import { IgcTreeSelectionType } from '../src/components/tree/tree.common.js';
+import IgcTreeComponent from '../src/components/tree/tree.js';
 import { Context, Story } from './story.js';
 
 // region default
@@ -16,22 +18,32 @@ const metadata = {
       defaultValue: 'large',
     },
     selection: {
-      type: '"none" | "multiple" | "cascade"',
+      type: IgcTreeSelectionType,
       description: 'Sets the selection mode of the tree.',
       options: ['none', 'multiple', 'cascade'],
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'None',
+      defaultValue: IgcTreeSelectionType.None,
     },
   },
 };
 export default metadata;
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
-  selection: 'none' | 'multiple' | 'cascade';
+  selection: IgcTreeSelectionType;
 }
 // endregion
+
+const log = () => {
+  const tree = document.getElementById('igc-tree-0') as IgcTreeComponent;
+  console.log(tree);
+};
+
+const log1 = () => {
+  const tree = document.getElementById('igc-tree-1') as IgcTreeComponent;
+  console.log(tree);
+};
 
 const BasicTemplate: Story<ArgTypes, Context> = (
   { size, selection }: ArgTypes,
@@ -62,6 +74,13 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       </igc-tree-node>
       <igc-tree-node>
         <p slot="header">Tree Node 3</p>
+      </igc-tree-node>
+    </igc-tree>
+    <button @click=${log}>ASD</button>
+    <button @click=${log1}>ASD1</button>
+    <igc-tree>
+      <igc-tree-node>
+        <p slot="header">Tree Node 4</p>
       </igc-tree-node>
     </igc-tree>
   `;
