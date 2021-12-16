@@ -77,15 +77,15 @@ const metadata = {
       },
       defaultValue: 'end',
     },
-    showPrimaryLabels: {
+    hidePrimaryLabels: {
       type: 'boolean',
       control: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
     },
-    showSecondaryLabels: {
+    hideSecondaryLabels: {
       type: 'boolean',
       control: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
     },
     tickLabelRotation: {
       type: '0 | 90 | -90',
@@ -114,8 +114,8 @@ interface ArgTypes {
   primaryTicks: number;
   secondaryTicks: number;
   tickOrientation: 'start' | 'end' | 'mirror';
-  showPrimaryLabels: boolean;
-  showSecondaryLabels: boolean;
+  hidePrimaryLabels: boolean;
+  hideSecondaryLabels: boolean;
   tickLabelRotation: 0 | 90 | -90;
 }
 // endregion
@@ -149,8 +149,8 @@ const Template: Story<ArgTypes, Context> = (
     upperBound,
     primaryTicks = 3,
     secondaryTicks = 2,
-    showPrimaryLabels = true,
-    showSecondaryLabels = true,
+    hidePrimaryLabels = false,
+    hideSecondaryLabels = false,
     tickOrientation = 'end',
     tickLabelRotation = 0,
     ariaLabelLower,
@@ -174,8 +174,8 @@ const Template: Story<ArgTypes, Context> = (
     .upperBound=${upperBound}
     .primaryTicks=${primaryTicks}
     .secondaryTicks=${secondaryTicks}
-    .showPrimaryLabels=${showPrimaryLabels}
-    .showSecondaryLabels=${showSecondaryLabels}
+    .hidePrimaryLabels=${hidePrimaryLabels}
+    .hideSecondaryLabels=${hideSecondaryLabels}
     .tickOrientation=${tickOrientation}
     .tickLabelRotation=${tickLabelRotation}
     dir=${ifDefined(direction)}

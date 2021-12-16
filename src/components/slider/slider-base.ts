@@ -111,15 +111,11 @@ export class IgcSliderBaseComponent extends LitElement {
   @property({ attribute: 'tick-orientation' })
   public tickOrientation: 'mirror' | 'start' | 'end' = 'end';
 
-  @property({ type: Boolean, reflect: true, attribute: 'show-primary-labels' })
-  public showPrimaryLabels = true;
+  @property({ type: Boolean, attribute: 'hide-primary-labels' })
+  public hidePrimaryLabels = false;
 
-  @property({
-    type: Boolean,
-    reflect: true,
-    attribute: 'show-secondary-labels',
-  })
-  public showSecondaryLabels = true;
+  @property({ type: Boolean, attribute: 'hide-secondary-labels' })
+  public hideSecondaryLabels = false;
 
   @property({ attribute: false })
   public labelFormatter: ((value: number) => string) | undefined;
@@ -228,12 +224,6 @@ export class IgcSliderBaseComponent extends LitElement {
     const labelVal = labelStep * idx;
 
     return this.min + labelVal;
-  }
-
-  private hiddenTickLabels(idx: number) {
-    return this.isPrimary(idx)
-      ? this.showPrimaryLabels
-      : this.showSecondaryLabels;
   }
 
   private isPrimary(idx: number) {
@@ -406,19 +396,24 @@ export class IgcSliderBaseComponent extends LitElement {
   protected renderTicks() {
     const groups = [];
     for (let i = 0; i < this.totalTickCount(); i++) {
-      groups.push(html` <div part="tick-group">
-        <div part="tick" data-primary=${this.isPrimary(i)}>
-          ${this.hiddenTickLabels(i)
-            ? html`<div part="tick-label">
-                <span part="tick-label-inner">
-                  ${this.labelFormatter
-                    ? this.labelFormatter(this.tickValue(i))
-                    : this.tickValue(i)}
-                </span>
-              </div>`
-            : html``}
+      const isPrimary = this.isPrimary(i);
+      groups.push(html`
+        <div part="tick-group">
+          <div part="tick" data-primary=${isPrimary}>
+            ${(isPrimary ? this.hidePrimaryLabels : this.hideSecondaryLabels)
+              ? html``
+              : html`
+                  <div part="tick-label">
+                    <span part="tick-label-inner">
+                      ${this.labelFormatter
+                        ? this.labelFormatter(this.tickValue(i))
+                        : this.tickValue(i)}
+                    </span>
+                  </div>
+                `}
+          </div>
         </div>
-      </div>`);
+      `);
     }
     return groups;
   }

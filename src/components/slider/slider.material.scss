@@ -188,18 +188,6 @@ $thumb-label-height: rem(30px);
     }
 }
 
-:host(:not([show-primary-labels])) {
-    [part='tick'][data-primary='true'] > span {
-        display: none;
-    }
-}
-
-:host(:not([show-secondary-labels])) {
-    [part='tick'][data-primary='false'] > span {
-        display: none;
-    }
-}
-
 :host(:not([tick-label-rotation='0'])) {
     [part='tick-label-inner'] {
         writing-mode: vertical-rl;
