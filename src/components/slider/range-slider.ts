@@ -36,7 +36,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     this.requestUpdate('value', oldVal);
   }
 
-  @property({ attribute: false })
+  @property({ type: Number })
   public get lower() {
     return this._lower;
   }
@@ -47,10 +47,16 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     this.requestUpdate('value', oldVal);
   }
 
-  @property({ attribute: false })
+  @property({ type: Number })
   public get upper() {
     return this._upper;
   }
+
+  @property({ attribute: 'aria-label-lower' })
+  public ariaLabelLower!: string;
+
+  @property({ attribute: 'aria-label-upper' })
+  public ariaLabelUpper!: string;
 
   protected get activeValue(): number {
     return this.activeThumb === this.thumbFrom ? this.lower : this.upper;
@@ -157,8 +163,12 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   }
 
   protected renderThumbs() {
-    return html`${this.renderThumb(this.lower, 'thumbFrom')}
-    ${this.renderThumb(this.upper, 'thumbTo')}`;
+    return html`${this.renderThumb(
+      this.lower,
+      this.ariaLabelLower,
+      'thumbFrom'
+    )}
+    ${this.renderThumb(this.upper, this.ariaLabelUpper, 'thumbTo')}`;
   }
 }
 

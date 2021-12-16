@@ -15,6 +15,14 @@ const metadata = {
       type: 'number',
       control: 'number',
     },
+    ariaLabelLower: {
+      type: 'string',
+      control: 'text',
+    },
+    ariaLabelUpper: {
+      type: 'string',
+      control: 'text',
+    },
     min: {
       type: 'number',
       control: 'number',
@@ -93,6 +101,8 @@ export default metadata;
 interface ArgTypes {
   lower: number;
   upper: number;
+  ariaLabelLower: string;
+  ariaLabelUpper: string;
   min: number;
   max: number;
   lowerBound: number | undefined;
@@ -143,6 +153,8 @@ const Template: Story<ArgTypes, Context> = (
     showSecondaryLabels = true,
     tickOrientation = 'end',
     tickLabelRotation = 0,
+    ariaLabelLower,
+    ariaLabelUpper,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -156,6 +168,8 @@ const Template: Story<ArgTypes, Context> = (
     .lower=${upper}
     min=${min}
     max=${max}
+    .ariaLabelLower=${ariaLabelLower}
+    .ariaLabelUpper=${ariaLabelUpper}
     .lowerBound=${lowerBound}
     .upperBound=${upperBound}
     .primaryTicks=${primaryTicks}

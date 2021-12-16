@@ -17,6 +17,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   public static tagName = 'igc-slider';
 
   private _value = 0;
+  private _ariaLabel!: string;
 
   public set value(val: number) {
     const oldVal = this._value;
@@ -24,9 +25,22 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.requestUpdate('value', oldVal);
   }
 
-  @property({ attribute: false })
+  @property({ type: Number })
   public get value() {
     return this._value;
+  }
+
+  public set ariaLabel(value: string) {
+    this._ariaLabel = value;
+    if (this.hasAttribute('aria-label')) {
+      this.removeAttribute('aria-label');
+    }
+    this.requestUpdate('ariaLabel');
+  }
+
+  @property({ attribute: 'aria-label' })
+  public get ariaLabel() {
+    return this._ariaLabel;
   }
 
   protected get activeValue(): number {
@@ -80,7 +94,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   protected renderThumbs() {
-    return html`${this.renderThumb(this.value)}`;
+    return html`${this.renderThumb(this.value, this.ariaLabel)}`;
   }
 }
 

@@ -11,6 +11,10 @@ const metadata = {
       type: 'number',
       control: 'number',
     },
+    ariaLabel: {
+      type: 'string',
+      control: 'text',
+    },
     min: {
       type: 'number',
       control: 'number',
@@ -88,6 +92,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   value: number;
+  ariaLabel: string;
   min: number;
   max: number;
   lowerBound: number | undefined;
@@ -137,6 +142,7 @@ const Template: Story<ArgTypes, Context> = (
     showSecondaryLabels = true,
     tickOrientation = 'end',
     tickLabelRotation = 0,
+    ariaLabel,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -149,6 +155,7 @@ const Template: Story<ArgTypes, Context> = (
     .value=${value}
     min=${min}
     max=${max}
+    aria-label=${ifDefined(ariaLabel)}
     .lowerBound=${lowerBound}
     .upperBound=${upperBound}
     .primaryTicks=${primaryTicks}
@@ -175,7 +182,8 @@ const LabelFormatterTemplate: Story<ArgTypes, Context> = (
     min="0"
     max="2"
     primary-ticks="3"
-    continuous
+    discrete-track
+    aria-label="Priority"
     .labelFormatter=${(value: number): string => {
       switch (value) {
         case 0:
