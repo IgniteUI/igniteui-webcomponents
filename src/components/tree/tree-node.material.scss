@@ -1,17 +1,71 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-.tree-node__header {
-    display: flex;
-    flex-flow: row nowrap;
-    font-family: var(--igc-font-family);
-    overflow: hidden;
-    background: color(surface, 500);
+:host {
+  display: flex;
+  flex-direction: column;
 }
 
-.igc-tree-node__spacer {
-    width: 20px;
-    display: inline-block;
+:host(:focus-within) {
+  outline: none;
+}
+
+.tree-node__header {
+  display: flex;
+  align-items: center;
+  min-height: 3.125rem;
+  padding: 0 1.5rem;
+  position: relative;
+}
+
+.tree-node__spacer {
+  display: inline-block;
+  width: 1.5rem;
+}
+
+.tree-node__toggle-button {
+  display: flex;
+  align-items: center;
+  margin-right: 0.5rem;
+  z-index: 1;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  min-width: 1.5rem;
+}
+
+.tree-node__content {
+  display: block;
+  align-items: center;
+  flex: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-weight: 400;
+  font-size: 0.875rem;
+  font-style: normal;
+  letter-spacing: 0.015625rem;
+  text-transform: none;
+  line-height: 1.25rem;
+}
+
+.tree-node__select {
+  display: flex;
+  align-items: center;
+  margin-right: 0.5rem;
+  z-index: 1;
+}
+
+.tree-node__wrapper--active {
+  background: hsl(0deg 0% 93%);
+  color: black;
+}
+
+.tree-node__wrapper--focused {
+  box-shadow: inset 0 0 0 1px hsla(333deg 79% 50%);
 }
 
 // :host([size='small']) ::slotted(igc-list-item),

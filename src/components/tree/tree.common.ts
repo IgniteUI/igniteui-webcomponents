@@ -1,4 +1,3 @@
-import IgcTreeComponent from './tree';
 import IgcTreeNodeComponent from './tree-node';
 
 export const IgcTreeSelectionType = {
@@ -10,7 +9,7 @@ export type IgcTreeSelectionType =
   typeof IgcTreeSelectionType[keyof typeof IgcTreeSelectionType];
 
 export interface IgcTreeEventMap {
-  IgcTreeNodeSelectionEvent: CustomEvent<IgcTreeNodeSelectionEventArgs>;
+  IgcTreeNodeSelectionEvent: CustomEvent<any>;
   igcBlur: CustomEvent<void>;
 }
 
@@ -20,7 +19,6 @@ export interface IgcTreeNodeSelectionEventDetails {
   added: IgcTreeNodeComponent[];
   removed: IgcTreeNodeComponent[];
   cancel: boolean;
-  owner: IgcTreeComponent;
 }
 
 export interface IgcTreeNodeSelectionEventArgs {

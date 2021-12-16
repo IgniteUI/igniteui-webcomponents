@@ -181,7 +181,6 @@ export class IgcTreeSelectionService {
     if (this.areEqualCollections(currSelection, newSelection)) {
       return;
     }
-
     const args: IgcTreeNodeSelectionEventArgs = {
       detail: {
         oldSelection: currSelection,
@@ -189,11 +188,10 @@ export class IgcTreeSelectionService {
         added,
         removed,
         cancel: false,
-        owner: this.tree,
       },
       cancelable: true,
     };
-    // this.tree.nodeSelection.emit(args);
+    this.tree.emitEvent('IgcTreeNodeSelectionEvent', args);
     if (args.detail.cancel) {
       return;
     }
@@ -312,7 +310,6 @@ export class IgcTreeSelectionService {
       added,
       removed,
       cancel: false,
-      owner: this.tree,
     };
 
     this.calculateNodesNewSelectionState(args);
@@ -322,7 +319,10 @@ export class IgcTreeSelectionService {
     // retrieve nodes/parents/children which has been added/removed from the selection
     this.populateAddRemoveArgs(args);
 
-    // this.tree.nodeSelection.emit({detail: args, cancelable: true});
+    this.tree.emitEvent('IgcTreeNodeSelectionEvent', {
+      detail: args,
+      cancelable: true,
+    });
 
     if (args.cancel) {
       return;
@@ -448,25 +448,27 @@ export class IgcTreeSelectionService {
       }
     });
 
-    this.indeterminateNodes.forEach((n: IgcTreeNodeComponent) => {
-      if (oldIndeterminate && oldIndeterminate?.indexOf(n) < 0) {
-        n.requestUpdate();
-        // n.selectedChange.emit(true);
-      }
-    });
-
-    oldIndeterminate?.forEach((n) => {
-      if (!this.indeterminateNodes.has(n)) {
-        n.requestUpdate();
-        // n.selectedChange.emit(false);
-      }
-    });
-
     oldSelection.forEach((n) => {
       if (!this.nodeSelection.has(n)) {
         n.requestUpdate();
         // n.selectedChange.emit(false);
       }
     });
+
+    if (this.tree.selection === IgcTreeSelectionType.Cascade) {
+      this.indeterminateNodes.forEach((n: IgcTreeNodeComponent) => {
+        if (oldIndeterminate && oldIndeterminate?.indexOf(n) < 0) {
+          n.requestUpdate();
+          // n.selectedChange.emit(true);
+        }
+      });
+
+      oldIndeterminate?.forEach((n) => {
+        if (!this.indeterminateNodes.has(n)) {
+          n.requestUpdate();
+          // n.selectedChange.emit(false);
+        }
+      });
+    }
   }
 }

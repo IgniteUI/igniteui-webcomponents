@@ -6,6 +6,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import IgcTreeNodeComponent from './tree-node';
 import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common';
+import { IgcTreeNavigationService } from './tree.navigation';
 import { IgcTreeSelectionService } from './tree.selection';
 
 let NEXT_ID = 0;
@@ -27,6 +28,7 @@ export default class IgcTreeComponent extends SizableMixin(
   // public static styles = styles;
 
   public selectionService!: IgcTreeSelectionService;
+  public navService!: IgcTreeNavigationService;
 
   @property({ attribute: 'id', reflect: true })
   public id = `igc-tree-${NEXT_ID++}`;
@@ -36,6 +38,7 @@ export default class IgcTreeComponent extends SizableMixin(
 
   @watch('selection')
   public selectionModeChange() {
+    this.selectionService.clearNodesSelection();
     this.nodes?.forEach((node: IgcTreeNodeComponent) => {
       node.selection = this.selection;
     });
@@ -45,20 +48,35 @@ export default class IgcTreeComponent extends SizableMixin(
     return Array.from(this.querySelectorAll(`igc-tree-node`));
   }
 
+  public get rootNodes(): IgcTreeNodeComponent[] {
+    return this.nodes?.filter((node) => node.level === 0);
+  }
+
   constructor() {
     super();
     this.selectionService = new IgcTreeSelectionService(this);
+    this.navService = new IgcTreeNavigationService(this, this.selectionService);
     this.updateNodes();
   }
 
   public connectedCallback() {
     super.connectedCallback();
+    this.addEventListener('keydown', this.handleKeydown);
   }
 
   private updateNodes() {
     this.nodes?.forEach((node: IgcTreeNodeComponent) => {
       node.selectionService = this.selectionService;
+      node.navService = this.navService;
     });
+  }
+
+  private handleKeydown(event: KeyboardEvent) {
+    this.navService.handleKeydown(event);
+  }
+
+  public deselectAll(nodes?: IgcTreeNodeComponent[]) {
+    this.selectionService.deselectNodesWithNoEvent(nodes);
   }
 
   protected render() {

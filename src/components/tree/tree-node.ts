@@ -7,6 +7,8 @@ import IgcTreeComponent from './tree';
 import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
+import { IgcTreeNavigationService } from './tree.navigation.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 /**
  * The list-item component is a container
@@ -38,16 +40,41 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
   public static styles = styles;
 
   public selectionService!: IgcTreeSelectionService;
+  public navService!: IgcTreeNavigationService;
+  private _disabled = false;
+
+  @state()
+  private _expanded = false;
 
   @state()
   public directChildren: any;
 
+  @state()
+  public isFocused!: boolean;
+
   /** The orientation of the multiple months displayed in days view. */
   @property({ reflect: true, type: Boolean })
-  public expanded = false;
+  public get expanded(): boolean {
+    return this._expanded;
+  }
+
+  public set expanded(val: boolean) {
+    this._expanded = val;
+    this.navService.update_visible_cache(this, val);
+  }
 
   @property()
   public selection: IgcTreeSelectionType = 'none';
+
+  @property({ reflect: true, type: Boolean })
+  public get disabled(): boolean {
+    return this._disabled;
+  }
+
+  public set disabled(val: boolean) {
+    this._disabled = val;
+    this.navService.update_disabled_cache(this);
+  }
 
   @property({ reflect: true, type: Boolean })
   public get selected(): boolean {
@@ -75,6 +102,16 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     return this.closest('igc-tree') as IgcTreeComponent;
   }
 
+  public get header(): HTMLElement | null {
+    return this.querySelector('.tree-node__header');
+  }
+
+  public get path(): IgcTreeNodeComponent[] {
+    return this.parentTreeNode?.path
+      ? [...this.parentTreeNode.path, this]
+      : [this];
+  }
+
   public get parentTreeNode(): IgcTreeNodeComponent | null {
     return this.parentElement?.tagName.toLowerCase() === 'igc-tree-node'
       ? (this.parentElement as IgcTreeNodeComponent)
@@ -89,23 +126,55 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     return Array.from(this.querySelectorAll(`igc-tree-node`));
   }
 
+  public get focused() {
+    return this.isFocused && this.navService.focusedNode === this;
+  }
+
+  public set active(value: boolean) {
+    if (value) {
+      this.navService.activeNode = this;
+      // this.tree.activeNodeBindingChange.emit(this);
+    }
+  }
+
+  public get active(): boolean {
+    return this.navService.activeNode === this;
+  }
+
+  private get classes() {
+    return {
+      'tree-node__header': true,
+      'tree-node__wrapper--focused': this.focused,
+      'tree-node__wrapper--active': this.active,
+    };
+  }
+
   constructor() {
     super();
   }
 
   public connectedCallback() {
     super.connectedCallback();
+    this.navService.update_visible_cache(this, this._expanded);
     this.setAttribute('role', 'treeitem');
+    this.addEventListener('blur', this.clearFocus);
+    this.addEventListener('focus', this.handleFocus);
+    this.addEventListener('pointerdown', this.onPointerDown);
   }
 
-  private handleClick(): void {
+  private indicatorClick(): void {
     this.expanded = !this.expanded;
+    this.navService.setFocusedAndActiveNode(this);
+    // this.navService.update_visible_cache(this, this.expanded)
+  }
+
+  public onPointerDown(event: MouseEvent) {
+    event.stopPropagation();
+    this.navService.setFocusedAndActiveNode(this);
   }
 
   private onSelectorClick(event: MouseEvent) {
-    event.stopPropagation();
     event.preventDefault();
-    // this.navService.handleFocusedAndActiveNode(this);
     if (event.shiftKey) {
       this.selectionService.selectMultipleNodes(this);
       return;
@@ -121,18 +190,40 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     this.directChildren = event.target.assignedNodes();
   }
 
+  public handleFocus(): void {
+    if (this.disabled) {
+      return;
+    }
+    if (this.navService.focusedNode !== this) {
+      this.navService.focusedNode = this;
+    }
+    this.isFocused = true;
+    // if (this.linkChildren?.length) {
+    //   this.linkChildren.first.nativeElement.focus();
+    //   return;
+    // }
+    // if (this.registeredChildren.length) {
+    //   this.registeredChildren[0].elementRef.nativeElement.focus();
+    //   return;
+    // }
+  }
+
+  public clearFocus(): void {
+    this.isFocused = false;
+  }
+
   protected render() {
     return html`
-      <div class="tree-node__header">
+      <div part="wrapper" class=${classMap(this.classes)}>
         <section part="spacer">
           ${arrayOf(this.level).map(
-            () => html`<span class="igc-tree-node__spacer"></span>`
+            () => html`<span class="tree-node__spacer"></span>`
           )}
         </section>
         <section
           part="expandIndicator"
-          @click="${this.handleClick}"
-          style="width: 20px; height: 53.6px"
+          @click="${this.indicatorClick}"
+          class="tree-node__toggle-button"
         >
           <!--<igc-icon [attr.aria-label]="expanded ? resourceStrings.igx_collapse : resourceStrings.igx_expand"></igc-icon> -->
           <igc-icon
@@ -145,15 +236,17 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
         </section>
         <section
           part="selectIndicator"
+          class="tree-node__select"
           ?hidden="${this.selection === IgcTreeSelectionType.None}"
         >
           <igc-checkbox
             @click=${this.onSelectorClick}
             .checked=${this.selected}
             .indeterminate=${this.indeterminate}
+            .disabled=${this.disabled}
           ></igc-checkbox>
         </section>
-        <section part="header">
+        <section part="header" class="tree-node__content">
           <slot name="header"></slot>
         </section>
       </div>

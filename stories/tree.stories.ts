@@ -35,6 +35,10 @@ interface ArgTypes {
 }
 // endregion
 
+const handleEvent = (ev: any) => {
+  console.log(ev);
+};
+
 const log = () => {
   const tree = document.getElementById('igc-tree-0') as IgcTreeComponent;
   console.log(tree);
@@ -50,7 +54,12 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
-    <igc-tree .selection=${selection} .size=${size} dir=${direction}>
+    <igc-tree
+      .selection=${selection}
+      .size=${size}
+      dir=${direction}
+      @IgcTreeNodeSelectionEvent=${handleEvent}
+    >
       <igc-tree-node expanded>
         <p slot="header">Tree Node 1</p>
         <igc-tree-node slot="child">
@@ -58,9 +67,16 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           <igc-tree-node slot="child">
             <p slot="header">Tree Node 1.1.1</p>
           </igc-tree-node>
+          <igc-tree-node slot="child">
+            <p slot="header">
+              <a href="http://infragistics.com">Infragistics</a>
+            </p>
+          </igc-tree-node>
         </igc-tree-node>
         <igc-tree-node slot="child">
-          <p slot="header">Tree Node 1.2</p>
+          <p slot="header">
+            <a href="http://infragistics.com">Infragistics</a>
+          </p>
         </igc-tree-node>
       </igc-tree-node>
       <igc-tree-node>
