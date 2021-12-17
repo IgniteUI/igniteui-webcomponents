@@ -126,15 +126,6 @@ interface ArgTypes {
   },
 };
 
-(metadata as any).argTypes.value = {
-  type: 'number',
-  description: 'The value of the slider',
-  control: {
-    type: 'number',
-  },
-  defaultValue: '0',
-};
-
 const Template: Story<ArgTypes, Context> = (
   {
     disabled = false,
