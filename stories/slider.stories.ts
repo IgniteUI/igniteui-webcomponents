@@ -122,7 +122,7 @@ const Template: Story<ArgTypes, Context> = (
     discreteTrack = false,
     hideTooltip = false,
     step = 2,
-    value = 100,
+    value = 0,
     min = 0,
     max = 100,
     lowerBound,
@@ -157,11 +157,11 @@ const Template: Story<ArgTypes, Context> = (
     .tickLabelRotation=${tickLabelRotation}
     dir=${ifDefined(direction)}
   ></igc-slider>
-  <input
+  <!-- <input
     type="range"
     @input=${(ev: any) => console.log('input: ' + ev.target.value)}
     @change=${(ev: any) => console.log('change: ' + ev.target.value)}
-  />
+  /> -->
 `;
 
 const LabelFormatterTemplate: Story<ArgTypes, Context> = (
