@@ -65,19 +65,20 @@ export class IgcTreeNavigationService {
     return this._focusedNode;
   }
 
-  public set focusedNode(value: IgcTreeNodeComponent | null) {
+  public focusNode(value: IgcTreeNodeComponent | null, shouldFocus = true) {
     if (this._focusedNode === value) {
       return;
     }
     this._lastFocusedNode = this._focusedNode;
     if (this._lastFocusedNode) {
-      this._lastFocusedNode.tabIndex = -1;
+      this._lastFocusedNode.removeAttribute('tabindex');
     }
     this._focusedNode = value;
     if (this._focusedNode !== null) {
       this._focusedNode.tabIndex = 0;
-      // this._focusedNode.header?.focus();
-      this._focusedNode.focus();
+      if (shouldFocus) {
+        this._focusedNode.focus();
+      }
     }
     this._lastFocusedNode?.requestUpdate();
     this._focusedNode?.requestUpdate();
@@ -151,12 +152,13 @@ export class IgcTreeNavigationService {
    */
   public setFocusedAndActiveNode(
     node: IgcTreeNodeComponent,
-    isActive = true
+    isActive = true,
+    shouldFocus = true
   ): void {
     if (isActive) {
       this.activeNode = node;
     }
-    this.focusedNode = node;
+    this.focusNode(node, shouldFocus);
   }
 
   /** Handler for keydown events. Used in tree.component.ts */

@@ -69,6 +69,9 @@ export default class IgcTreeComponent extends SizableMixin(
       node.selectionService = this.selectionService;
       node.navService = this.navService;
     });
+    // if (!this.navService.activeNode) {
+    //   this.nodes.find((n: IgcTreeNodeComponent) => !n.disabled)!.tabIndex = 0;
+    // }
   }
 
   private handleKeydown(event: KeyboardEvent) {

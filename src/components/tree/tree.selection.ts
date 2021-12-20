@@ -187,12 +187,12 @@ export class IgcTreeSelectionService {
         newSelection,
         added,
         removed,
-        cancel: false,
       },
       cancelable: true,
     };
-    this.tree.emitEvent('IgcTreeNodeSelectionEvent', args);
-    if (args.detail.cancel) {
+
+    const allowed = this.tree.emitEvent('IgcTreeNodeSelectionEvent', args);
+    if (!allowed) {
       return;
     }
     this.selectNodesWithNoEvent(args.detail.newSelection, true);
@@ -309,7 +309,6 @@ export class IgcTreeSelectionService {
       newSelection,
       added,
       removed,
-      cancel: false,
     };
 
     this.calculateNodesNewSelectionState(args);
@@ -319,12 +318,12 @@ export class IgcTreeSelectionService {
     // retrieve nodes/parents/children which has been added/removed from the selection
     this.populateAddRemoveArgs(args);
 
-    this.tree.emitEvent('IgcTreeNodeSelectionEvent', {
+    const allowed = this.tree.emitEvent('IgcTreeNodeSelectionEvent', {
       detail: args,
       cancelable: true,
     });
 
-    if (args.cancel) {
+    if (!allowed) {
       return;
     }
 

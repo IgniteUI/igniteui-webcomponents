@@ -50,7 +50,7 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
   public directChildren: any;
 
   @state()
-  public isFocused!: boolean;
+  private isFocused!: boolean;
 
   /** The orientation of the multiple months displayed in days view. */
   @property({ reflect: true, type: Boolean })
@@ -160,6 +160,7 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     this.addEventListener('blur', this.clearFocus);
     this.addEventListener('focus', this.handleFocus);
     this.addEventListener('pointerdown', this.onPointerDown);
+    this.addEventListener('focusin', this.handleFocusIn);
   }
 
   private indicatorClick(): void {
@@ -171,6 +172,23 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
   public onPointerDown(event: MouseEvent) {
     event.stopPropagation();
     this.navService.setFocusedAndActiveNode(this);
+  }
+
+  private handleFocusIn(ev: Event) {
+    ev.stopPropagation();
+    if (this.disabled) {
+      return;
+    }
+    if (this.navService.focusedNode !== this) {
+      if (
+        (ev.target as HTMLElement).tagName.toLowerCase() !== 'igc-tree-node'
+      ) {
+        this.navService.setFocusedAndActiveNode(this, true, false);
+      }
+      this.navService.focusNode(this);
+    }
+    this.isFocused = true;
+    // this.foc
   }
 
   private onSelectorClick(event: MouseEvent) {
@@ -191,13 +209,14 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
   }
 
   public handleFocus(): void {
-    if (this.disabled) {
-      return;
-    }
-    if (this.navService.focusedNode !== this) {
-      this.navService.focusedNode = this;
-    }
-    this.isFocused = true;
+    // console.log('focus');
+    // if (this.disabled) {
+    //   return;
+    // }
+    // if (this.navService.focusedNode !== this) {
+    //   this.navService.focusedNode = this;
+    // }
+    // this.isFocused = true;
     // if (this.linkChildren?.length) {
     //   this.linkChildren.first.nativeElement.focus();
     //   return;
@@ -244,6 +263,7 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
             .checked=${this.selected}
             .indeterminate=${this.indeterminate}
             .disabled=${this.disabled}
+            tabindex="-1"
           ></igc-checkbox>
         </section>
         <section part="header" class="tree-node__content">

@@ -18,7 +18,6 @@ export interface IgcTreeNodeSelectionEventDetails {
   newSelection: IgcTreeNodeComponent[];
   added: IgcTreeNodeComponent[];
   removed: IgcTreeNodeComponent[];
-  cancel: boolean;
 }
 
 export interface IgcTreeNodeSelectionEventArgs {
