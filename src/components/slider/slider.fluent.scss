@@ -18,11 +18,11 @@
         }
     }
 
-    igc-slider::part(track),
-    igc-slider::part(fill),
-    igc-slider::part(inactive) {
-        height: utils.rem(4px);
-    }
+    // igc-slider::part(track),
+    // igc-slider::part(fill),
+    // igc-slider::part(inactive) {
+    //     height: utils.rem(4px);
+    // }
 
     igc-slider::part(inactive) {
         color: utils.color(gray, 400);
