@@ -7,3 +7,7 @@ export const partNameMap = (partNameInfo: PartNameInfo) => {
     .filter((key) => partNameInfo[key])
     .join(' ');
 };
+
+export const clamp = (number: number, min: number, max: number) => {
+  return Math.max(min, Math.min(number, max));
+};

@@ -1,11 +1,14 @@
 import { html, LitElement } from 'lit';
 import { property, queryAll, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators/watch';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { SizableMixin } from '../common/mixins/sizable';
-import IgcIconComponent from '../icon/icon';
+import { styles } from './rating.material.css';
+import { clamp } from '../common/util';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -13,10 +16,15 @@ export interface IgcRatingEventMap {
 }
 
 /**
+ * Rating provides insight regarding others' opinions and experiences,
+ * and can allow the user to submit a rating of their own
+ *
  * @element igc-rating
  *
  * @fires igcChange - Emitted when the value of the control changes.
  * @fires igcHover - Emitted when hover is enabled and the user mouses over a symbol of the rating.
+ *
+ * @csspart base - The main wrapper which holds all of the rating elements.
  */
 export default class igcRatingComponent extends SizableMixin(
   EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
@@ -24,8 +32,11 @@ export default class igcRatingComponent extends SizableMixin(
   /** @private */
   public static tagName = 'igc-rating';
 
-  @queryAll('igc-icon')
-  protected icons!: NodeListOf<IgcIconComponent>;
+  /** @private */
+  public static styles = [styles];
+
+  @queryAll('span[part="rating-symbol"]')
+  protected elements!: NodeListOf<HTMLSpanElement>;
 
   @state()
   protected hoverValue = -1;
@@ -42,28 +53,21 @@ export default class igcRatingComponent extends SizableMixin(
     'End',
   ]);
 
-  /**
-   * The number of icons to render
-   * @attr [length=5]
-   * */
+  /** The maximum value for the rating */
   @property({ type: Number })
-  public length = 5;
+  public max = 5;
+
+  /** The minimum increment value change allowed. */
+  @property({ type: Number })
+  public precision = 1;
 
   /**
-   * The unfilled symbol/icon to use.
-   * Additionally it accepts a callback function which accepts the current position
+   * The symbol to the rating will display.
+   * It also accepts a callback function which gets the current symbol
    * index so the symbol can be resolved per position.
    */
   @property()
-  public icon: string | ((index: number) => string) = 'dollar-circled';
-
-  /**
-   * The filled symbol/icon to use.
-   * Additionally it accepts a callback function which accepts the current position
-   * index so the symbol can be resolved per position.
-   */
-  @property()
-  public filledIcon: string | ((index: number) => string) = 'apple';
+  public symbol: string | ((index: number) => string) = '⭐';
 
   /** The name attribute of the control */
   @property()
@@ -74,9 +78,22 @@ export default class igcRatingComponent extends SizableMixin(
   public label!: string;
 
   /**
-   * The current value of the component
-   * @attr [value=0]
+   * A callback function which gets the value for the position
+   * and returns a user-friendly representation of the value setting it as aria-valuetext.
+   * Important for screen-readers and useful for localization.
    */
+  @property({ attribute: false })
+  public valueFormatter!: (value: number) => string;
+
+  /**
+   * A callback function which gets the index for each symbol in the control
+   * and returns a user-friendly representation for it setting it as aria-label.
+   * Important for screen-readers and useful for localization.
+   */
+  @property({ attribute: false })
+  public labelFormatter!: (index: number) => string;
+
+  /** The current value of the component */
   @property({ type: Number })
   public value = 0;
 
@@ -92,90 +109,109 @@ export default class igcRatingComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public readonly = false;
 
+  /**
+   * Increments the value of the control by `n` steps multiplied by the
+   * precision factor.
+   */
+  public stepUp(n = 1) {
+    this.value += this.round(n * this.precision, this.precision);
+  }
+
+  /**
+   * Decrements the value of the control by `n` steps multiplied by
+   * the precision factor.
+   */
+  public stepDown(n = 1) {
+    this.value -= this.round(n * this.precision, this.precision);
+  }
+
+  protected render() {
+    const value = this.hoverState ? this.hoverValue : this.value;
+    const percentage = Math.round((value / this.max) * 100);
+    return html`
+      <div
+        part="base"
+        role="slider"
+        tabindex=${ifDefined(this.readonly ? undefined : 0)}
+        aria-labelledby=${ifDefined(this.label)}
+        aria-valuemin="0"
+        aria-valuenow=${ifDefined(this.value > 0 ? this.value : undefined)}
+        aria-valuemax=${this.max}
+        aria-valuetext=${ifDefined(
+          this.valueFormatter ? this.valueFormatter(value) : undefined
+        )}
+        @keydown=${this.handleKeyDown}
+        @mouseenter=${this.handleMouseEnter}
+        @mouseleave=${this.handleMouseLeave}
+        @mousemove=${this.handleMouseMove}
+        @click=${this.handleClick}
+      >
+        ${this.renderSymbols()}
+        <div
+          part="overlay"
+          class=${classMap({ start: this.isLTR, end: !this.isLTR })}
+          style=${styleMap({ width: `${100 - percentage}%` })}
+        ></div>
+      </div>
+    `;
+  }
+
   @watch('length')
   protected handleLengthChange(newValue: number) {
-    this.length = Math.max(0, newValue);
-    if (this.length < this.value) {
-      this.value = this.length;
+    this.max = Math.max(0, newValue);
+    if (this.max < this.value) {
+      this.value = this.max;
     }
   }
 
   @watch('value')
   protected handleValueChange(newValue: number) {
-    this.value = Math.max(0, Math.min(newValue, this.length));
+    this.value = clamp(newValue, 0, this.max);
   }
 
-  protected render() {
-    return this.hover
-      ? html`
-          <div
-            part="base"
-            tabindex=${ifDefined(this.readonly ? undefined : 0)}
-            aria-labelledby=${ifDefined(this.label)}
-            aria-valuemin="0"
-            aria-valuenow=${this.value}
-            aria-valuemax=${this.length}
-            @mouseenter=${this.handleMouseEnter}
-            @mouseleave=${this.handleMouseLeave}
-            @mouseover=${this.handleMouseOver}
-            @keydown=${this.handleKeyDown}
-            @click=${this.handleClick}
-          >
-            ${this.renderIcons()}
-          </div>
-        `
-      : html`
-          <div
-            part="base"
-            tabindex=${ifDefined(this.readonly ? undefined : 0)}
-            aria-labelledby=${ifDefined(this.label)}
-            aria-valuemin="0"
-            aria-valuenow=${this.value}
-            aria-valuemax=${this.length}
-            @keydown=${this.handleKeyDown}
-            @click=${this.handleClick}
-          >
-            ${this.renderIcons()}
-          </div>
-        `;
+  @watch('precision')
+  protected handlePrecisionChange(newValue: number) {
+    this.precision = clamp(newValue, 0.001, 1);
   }
 
-  protected *renderIcons() {
-    for (let i = 0; i < this.length; i++) {
-      yield html`<igc-icon
-        .size=${this.size}
-        .name=${this.bindValue(i)}
-      ></igc-icon>`;
+  protected handleClick({ clientX }: MouseEvent) {
+    if (this.disabled || this.readonly) {
+      return;
     }
-  }
 
-  protected handleClick(event: MouseEvent) {
-    if (this.isIconElement(event.target) && !(this.readonly || this.disabled)) {
-      const index = [...this.icons].indexOf(event.target) + 1;
-      if (index === this.value) {
-        this.value = 0;
-      } else {
-        this.value = index;
-      }
-      this.emitEvent('igcChange', { detail: this.value });
+    const value = this.calcNewValue(clientX);
+
+    if (this.value === value) {
+      this.value = 0;
+    } else {
+      this.value = value;
     }
+
+    this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected handleMouseOver(event: MouseEvent) {
-    if (this.isIconElement(event.target) && !(this.readonly || this.disabled)) {
-      this.hoverValue = [...this.icons].indexOf(event.target) + 1;
+  protected handleMouseMove({ clientX }: MouseEvent) {
+    if (!this.hover || this.readonly || this.disabled) {
+      return;
+    }
+
+    const value = this.calcNewValue(clientX);
+
+    if (this.hoverValue !== value) {
+      // Since mousemove spams a lot, only emit on a value change
+      this.hoverValue = value;
       this.emitEvent('igcHover', { detail: this.hoverValue });
     }
   }
 
   protected handleMouseEnter() {
-    if (!(this.readonly || this.disabled)) {
+    if (!(this.readonly || this.disabled) && this.hover) {
       this.hoverState = true;
     }
   }
 
   protected handleMouseLeave() {
-    if (!(this.readonly || this.disabled)) {
+    if (!(this.readonly || this.disabled) && this.hover) {
       this.hoverState = false;
     }
   }
@@ -190,43 +226,73 @@ export default class igcRatingComponent extends SizableMixin(
     switch (event.key) {
       case 'ArrowUp':
       case 'ArrowRight':
-        result += 1;
+        result += this.isLTR ? this.precision : -this.precision;
         break;
       case 'ArrowDown':
       case 'ArrowLeft':
-        result -= 1;
+        result -= this.isLTR ? this.precision : -this.precision;
         break;
       case 'Home':
-        result = 1;
+        result = this.precision;
         break;
       case 'End':
-        result = this.length;
+        result = this.max;
         break;
       default:
         return;
     }
 
     // Verify new value is in bounds and emit
-    this.value = Math.max(0, Math.min(result, this.length));
+    this.value = clamp(result, 0, this.max);
+
     if (result === this.value) {
       this.emitEvent('igcChange', { detail: this.value });
     }
   }
 
-  protected bindValue(index: number) {
-    const value = this.hoverState ? this.hoverValue : this.value;
-    return index < value
-      ? this.renderIcon(index, 'rated')
-      : this.renderIcon(index, 'not-rated');
+  protected calcNewValue(x: number) {
+    const { width, left, right } = this.getBoundingClientRect();
+    const percent = this.isLTR ? (x - left) / width : (right - x) / width;
+    const value = this.round(
+      this.max * percent + this.precision / 2,
+      this.precision
+    );
+    return clamp(value, this.precision, this.max);
   }
 
-  protected renderIcon(index: number, state: 'rated' | 'not-rated') {
-    const symbol = state === 'rated' ? this.filledIcon : this.icon;
-    return typeof symbol === 'function' ? symbol(index) : symbol;
+  protected *renderSymbols() {
+    for (let i = 0; i < this.max; i++) {
+      yield html`
+        <span
+          part="rating-symbol"
+          aria-label=${this.labelFormatter
+            ? this.labelFormatter(i)
+            : `${i + 1} out of ${this.max}`}
+        >
+          ${this.renderSymbol(i)}
+        </span>
+      `;
+    }
   }
 
-  protected isIconElement(el: any): el is IgcIconComponent {
-    return el.tagName.toLowerCase() === 'igc-icon';
+  protected renderSymbol(index: number) {
+    return typeof this.symbol === 'function' ? this.symbol(index) : this.symbol;
+  }
+
+  protected getPrecision(num: number) {
+    const [_, decimal] = num.toString().split('.');
+    return decimal ? decimal.length : 0;
+  }
+
+  protected round(value: number, precision: number) {
+    value = Math.round(value / precision) * precision;
+    return Number(value.toFixed(this.getPrecision(precision)));
+  }
+
+  protected get isLTR() {
+    return (
+      window.getComputedStyle(this).getPropertyValue('direction') === 'ltr'
+    );
   }
 }
 

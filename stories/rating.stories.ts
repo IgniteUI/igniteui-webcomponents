@@ -1,32 +1,30 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIcon } from '../src/index.js';
 
 // region default
 const metadata = {
   title: 'Rating',
   component: 'igc-rating',
   argTypes: {
-    length: {
+    max: {
       type: 'number',
-      description: 'The number of icons to render',
+      description: 'The maximum value for the rating',
       control: 'number',
       defaultValue: '5',
     },
-    icon: {
-      type: 'string',
-      description:
-        'The unfilled symbol/icon to use.\nAdditionally it accepts a callback function which accepts the current position\nindex so the symbol can be resolved per position.',
-      control: 'text',
-      defaultValue: 'dollar-circled',
+    precision: {
+      type: 'number',
+      description: 'The minimum increment value change allowed.',
+      control: 'number',
+      defaultValue: '1',
     },
-    filledIcon: {
-      type: 'string',
+    symbol: {
+      type: 'string | ((index: number) => string)',
       description:
-        'The filled symbol/icon to use.\nAdditionally it accepts a callback function which accepts the current position\nindex so the symbol can be resolved per position.',
+        'The symbol to the rating will display.\nIt also accepts a callback function which gets the current symbol\nindex so the symbol can be resolved per position.',
       control: 'text',
-      defaultValue: 'apple',
+      defaultValue: '⭐',
     },
     name: {
       type: 'string',
@@ -42,7 +40,6 @@ const metadata = {
       type: 'number',
       description: 'The current value of the component',
       control: 'number',
-      defaultValue: '0',
     },
     disabled: {
       type: 'boolean',
@@ -75,9 +72,9 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  length: number;
-  icon: string;
-  filledIcon: string;
+  max: number;
+  precision: number;
+  symbol: string | ((index: number) => string);
   name: string;
   label: string;
   value: number;
@@ -98,9 +95,9 @@ const Template: Story<ArgTypes, Context> = (
   {
     size,
     hover,
-    icon,
-    filledIcon,
-    length,
+    symbol,
+    precision,
+    max,
     disabled,
     readonly,
     label,
@@ -111,34 +108,19 @@ const Template: Story<ArgTypes, Context> = (
   const unfilled = (index: number) => {
     switch (index) {
       case 0:
-        return 'sentiment_very_dissatisfied';
+        return '😣';
       case 1:
-        return 'sentiment_dissatisfied';
+        return '😔';
       case 2:
-        return 'sentiment_neutral';
+        return '😐';
       case 3:
-        return 'sentiment_satisfied';
+        return '🙂';
       case 4:
-        return 'sentiment_very_satisfied';
+        return '😆';
       default:
-        return 'dollar-circled';
+        return '🤔';
     }
   };
-
-  Promise.all(
-    [
-      'sentiment_very_dissatisfied',
-      'sentiment_dissatisfied',
-      'sentiment_neutral',
-      'sentiment_satisfied',
-      'sentiment_very_satisfied',
-    ].map((icon) =>
-      registerIcon(
-        icon,
-        `https://unpkg.com/material-design-icons@3.0.1/social/svg/production/ic_${icon}_24px.svg`
-      )
-    )
-  ).then(() => {});
 
   return html`
     <igc-rating
@@ -147,10 +129,10 @@ const Template: Story<ArgTypes, Context> = (
       ?disabled=${disabled}
       ?hover=${hover}
       ?readonly=${readonly}
-      .icon=${icon || unfilled}
-      .filledIcon=${filledIcon}
+      .precision=${Number(precision)}
+      .symbol=${symbol || unfilled}
       .value=${value}
-      .length=${length}
+      .max=${max}
       .size=${size}
     >
     </igc-rating>

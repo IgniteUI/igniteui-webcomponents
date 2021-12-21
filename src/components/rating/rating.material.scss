@@ -1,0 +1,54 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+$selected-color: color(primary, 500) !default;
+$bg-color: color(surface, A100) !default;
+$disabled-color: color(gray, 100) !default;
+
+:host {
+    display: inline-flex;
+    user-select: none;
+}
+
+:host([disabled]) {
+    pointer-events: none;
+    background-color: $disabled-color;
+    color: $disabled-color;
+}
+
+[part='base'] {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+[part='overlay'] {
+    cursor: default;
+    pointer-events: none;
+    background-color: $bg-color;
+    mix-blend-mode: color;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+
+    &.start {
+        right: 0;
+    }
+
+    &.end {
+        left: 0;
+    }
+}
+
+[part='rating-symbol'] {
+    cursor: default;
+    font-size: var(--size, rem(48px));
+    display: flex;
+    color: $selected-color;
+    transition: transform 120ms cubic-bezier(0.645, 0.045, 0.355, 1);
+
+    &:hover {
+        transform: scale(1.1);
+    }
+}

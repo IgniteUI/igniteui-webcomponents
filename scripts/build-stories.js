@@ -11,6 +11,7 @@ const SRC_DIR = path.resolve(__dirname, '../docs/json');
 const DEST_DIR = path.resolve(__dirname, '../stories');
 
 const REPLACE_REGEX = /\/\/ region default.*\/\/ endregion/gs;
+const UNION_TYPE_REGEX = /^[""\w\s-]+\|[""\w\s|-]+$/;
 const SUPPORTED_TYPES = ['string', 'number', 'boolean', 'Date'];
 
 const report = {
@@ -36,11 +37,14 @@ const capitalize = (str) => {
  * @returns
  */
 function fixControlProp(propType, options) {
-  if (propType === 'string') {
+  if (propType.startsWith('string')) {
     return 'text';
   }
-  if (propType === 'Date') {
+  if (propType.startsWith('Date')) {
     return 'date';
+  }
+  if (propType.startsWith('number')) {
+    return 'number';
   }
   if (options) {
     return {
@@ -70,27 +74,16 @@ function extractTags(meta) {
   return {
     component: meta.name,
     args: Array.from(meta.properties || [])
-      // Strip function types from the storybook generation
-      // TODO: Revise this whole pipeline and refactor it as it becomes unwieldy
-      .map((prop) => {
-        if (prop.type.includes('(')) {
-          prop.type = prop.type.split('|')
-            .map(part => part.trim())
-            .filter(part => !part.startsWith('('))
-            .join(' | ');
-          return prop;
-        }
-        return prop;
-      })
       .filter(
         (prop) =>
-          SUPPORTED_TYPES.includes(prop.type) ||
-          (prop.type.includes('|') && prop.type.startsWith('"'))
+          SUPPORTED_TYPES.some(type => prop.type === type || prop.type.startsWith(`${type} `)) ||
+          UNION_TYPE_REGEX.test(prop.type)
       )
       .map((prop) => {
-        const options = prop.type.includes('|')
-          ? prop.type.split('|').map((part) => part.trim().replace(/"/g, ''))
-          : undefined;
+        const options =
+          UNION_TYPE_REGEX.test(prop.type) && !SUPPORTED_TYPES.some(type => prop.type === type || prop.type.startsWith(`${type} `))
+            ? prop.type.split('|').map((part) => part.trim().replace(/"/g, ''))
+            : undefined;
         return [
           prop.name,
           {
@@ -102,8 +95,8 @@ function extractTags(meta) {
               ? prop.type === 'boolean'
                 ? prop.default === 'true'
                 : prop.type === 'Date'
-                ? undefined
-                : prop.default.replace(/"/g, '')
+                  ? undefined
+                  : prop.default.replace(/"/g, '')
               : undefined,
           },
         ];
