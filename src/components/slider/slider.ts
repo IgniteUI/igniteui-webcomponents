@@ -31,11 +31,13 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   public set ariaLabel(value: string) {
+    const oldVal = this._ariaLabel;
     this._ariaLabel = value;
+
     if (this.hasAttribute('aria-label')) {
       this.removeAttribute('aria-label');
     }
-    this.requestUpdate('ariaLabel');
+    this.requestUpdate('ariaLabel', oldVal);
   }
 
   @property({ attribute: 'aria-label' })

@@ -33,7 +33,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   public set lower(val: number) {
     const oldVal = this._lower;
     this._lower = this.validateValue(val);
-    this.requestUpdate('value', oldVal);
+    this.requestUpdate('lower', oldVal);
   }
 
   @property({ type: Number })
@@ -44,7 +44,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   public set upper(val: number) {
     const oldVal = this._upper;
     this._upper = this.validateValue(val);
-    this.requestUpdate('value', oldVal);
+    this.requestUpdate('upper', oldVal);
   }
 
   @property({ type: Number })
