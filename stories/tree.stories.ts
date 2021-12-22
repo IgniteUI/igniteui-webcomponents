@@ -17,6 +17,12 @@ const metadata = {
       },
       defaultValue: 'large',
     },
+    singleBranchExpand: {
+      type: Boolean,
+      description: 'Enable/Disable singleBranchExpand',
+      control: 'boolean',
+      defaultValue: false,
+    },
     selection: {
       type: IgcTreeSelectionType,
       description: 'Sets the selection mode of the tree.',
@@ -31,6 +37,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   size: 'small' | 'medium' | 'large';
+  singleBranchExpand: Boolean;
   selection: IgcTreeSelectionType;
 }
 // endregion
@@ -50,17 +57,18 @@ const log1 = () => {
 };
 
 const BasicTemplate: Story<ArgTypes, Context> = (
-  { size, selection }: ArgTypes,
+  { size, singleBranchExpand, selection }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
     <igc-tree
       .selection=${selection}
       .size=${size}
+      .singleBranchExpand=${singleBranchExpand}
       dir=${direction}
       @IgcTreeNodeSelectionEvent=${handleEvent}
     >
-      <igc-tree-node expanded>
+      <igc-tree-node expanded active>
         <p slot="header">Tree Node 1</p>
         <igc-tree-node slot="child">
           <p slot="header">Tree Node 1.1</p>

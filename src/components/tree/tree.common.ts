@@ -8,6 +8,11 @@ export const IgcTreeSelectionType = {
 export type IgcTreeSelectionType =
   typeof IgcTreeSelectionType[keyof typeof IgcTreeSelectionType];
 
+export type IgcTreeSearchResolver = (
+  value: any,
+  node: IgcTreeNodeComponent
+) => boolean;
+
 export interface IgcTreeEventMap {
   IgcTreeNodeSelectionEvent: CustomEvent<any>;
   igcBlur: CustomEvent<void>;

@@ -5,7 +5,11 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import IgcTreeNodeComponent from './tree-node';
-import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common';
+import {
+  IgcTreeEventMap,
+  IgcTreeSearchResolver,
+  IgcTreeSelectionType,
+} from './tree.common';
 import { IgcTreeNavigationService } from './tree.navigation';
 import { IgcTreeSelectionService } from './tree.selection';
 
@@ -32,6 +36,9 @@ export default class IgcTreeComponent extends SizableMixin(
 
   @property({ attribute: 'id', reflect: true })
   public id = `igc-tree-${NEXT_ID++}`;
+
+  @property({ reflect: true, type: Boolean })
+  public singleBranchExpand = false;
 
   @property()
   public selection: IgcTreeSelectionType = 'none';
@@ -64,6 +71,9 @@ export default class IgcTreeComponent extends SizableMixin(
     this.addEventListener('keydown', this.handleKeydown);
   }
 
+  private _comparer = <T>(value: T, node: IgcTreeNodeComponent) =>
+    node.value === value;
+
   private updateNodes() {
     this.nodes?.forEach((node: IgcTreeNodeComponent) => {
       node.selectionService = this.selectionService;
@@ -78,8 +88,37 @@ export default class IgcTreeComponent extends SizableMixin(
     this.navService.handleKeydown(event);
   }
 
-  public deselectAll(nodes?: IgcTreeNodeComponent[]) {
+  public deselect(nodes?: IgcTreeNodeComponent[]) {
     this.selectionService.deselectNodesWithNoEvent(nodes);
+  }
+
+  public select(nodes?: IgcTreeNodeComponent[]) {
+    if (!nodes) {
+      nodes =
+        this.selection === IgcTreeSelectionType.Cascade
+          ? this.rootNodes
+          : this.nodes;
+    }
+    this.selectionService.selectNodesWithNoEvent(nodes);
+  }
+
+  public collapse(nodes?: IgcTreeNodeComponent[]) {
+    nodes = nodes || this.nodes;
+    nodes.forEach((e) => (e.expanded = false));
+  }
+
+  public expand(nodes?: IgcTreeNodeComponent[]) {
+    nodes = nodes || this.nodes;
+    nodes.forEach((e) => (e.expanded = true));
+  }
+
+  public findNodes(
+    searchTerm: any,
+    comparer?: IgcTreeSearchResolver
+  ): IgcTreeNodeComponent[] | null {
+    const compareFunc = comparer || this._comparer;
+    const results = this.nodes.filter((node) => compareFunc(searchTerm, node));
+    return results?.length === 0 ? null : results;
   }
 
   protected render() {

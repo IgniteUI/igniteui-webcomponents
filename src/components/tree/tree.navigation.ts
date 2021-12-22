@@ -174,11 +174,7 @@ export class IgcTreeNavigationService {
       return;
     }
     event.preventDefault();
-    if (event.repeat) {
-      setTimeout(() => this.handleNavigation(event), 1);
-    } else {
-      this.handleNavigation(event);
-    }
+    this.handleNavigation(event);
   }
 
   // public ngOnDestroy() {

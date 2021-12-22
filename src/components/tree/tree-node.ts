@@ -41,6 +41,7 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
 
   public selectionService!: IgcTreeSelectionService;
   public navService!: IgcTreeNavigationService;
+
   private _disabled = false;
 
   @state()
@@ -51,6 +52,12 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
 
   @state()
   private isFocused!: boolean;
+
+  @property()
+  public selection: IgcTreeSelectionType = IgcTreeSelectionType.None;
+
+  @property()
+  public value: any;
 
   /** The orientation of the multiple months displayed in days view. */
   @property({ reflect: true, type: Boolean })
@@ -63,8 +70,17 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     this.navService.update_visible_cache(this, val);
   }
 
-  @property()
-  public selection: IgcTreeSelectionType = 'none';
+  @property({ type: Boolean })
+  public set active(value: boolean) {
+    if (value) {
+      this.navService.activeNode = this;
+      // this.tree.activeNodeBindingChange.emit(this);
+    }
+  }
+
+  public get active(): boolean {
+    return this.navService.activeNode === this;
+  }
 
   @property({ reflect: true, type: Boolean })
   public get disabled(): boolean {
@@ -102,10 +118,6 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     return this.closest('igc-tree') as IgcTreeComponent;
   }
 
-  public get header(): HTMLElement | null {
-    return this.querySelector('.tree-node__header');
-  }
-
   public get path(): IgcTreeNodeComponent[] {
     return this.parentTreeNode?.path
       ? [...this.parentTreeNode.path, this]
@@ -130,17 +142,6 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     return this.isFocused && this.navService.focusedNode === this;
   }
 
-  public set active(value: boolean) {
-    if (value) {
-      this.navService.activeNode = this;
-      // this.tree.activeNodeBindingChange.emit(this);
-    }
-  }
-
-  public get active(): boolean {
-    return this.navService.activeNode === this;
-  }
-
   private get classes() {
     return {
       'tree-node__header': true,
@@ -157,14 +158,27 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     super.connectedCallback();
     this.navService.update_visible_cache(this, this._expanded);
     this.setAttribute('role', 'treeitem');
-    this.addEventListener('blur', this.clearFocus);
-    this.addEventListener('focus', this.handleFocus);
-    this.addEventListener('pointerdown', this.onPointerDown);
+    this.addEventListener('focusout', this.clearFocus);
     this.addEventListener('focusin', this.handleFocusIn);
+    this.addEventListener('pointerdown', this.onPointerDown);
   }
 
+  private siblingComparer: (
+    value: IgcTreeNodeComponent,
+    node: IgcTreeNodeComponent
+  ) => boolean = (value: IgcTreeNodeComponent, node: IgcTreeNodeComponent) =>
+    node !== value && node.level === value.level;
+
   private indicatorClick(): void {
+    if (!this.expanded) {
+      if (this.tree.singleBranchExpand) {
+        this.tree.findNodes(this, this.siblingComparer)?.forEach((e) => {
+          e.expanded = false;
+        });
+      }
+    }
     this.expanded = !this.expanded;
+
     this.navService.setFocusedAndActiveNode(this);
     // this.navService.update_visible_cache(this, this.expanded)
   }
@@ -183,12 +197,11 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
       if (
         (ev.target as HTMLElement).tagName.toLowerCase() !== 'igc-tree-node'
       ) {
-        this.navService.setFocusedAndActiveNode(this, true, false);
+        this.navService.focusNode(this, false);
       }
       this.navService.focusNode(this);
     }
     this.isFocused = true;
-    // this.foc
   }
 
   private onSelectorClick(event: MouseEvent) {
@@ -206,25 +219,6 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
 
   public handleChange(event: any) {
     this.directChildren = event.target.assignedNodes();
-  }
-
-  public handleFocus(): void {
-    // console.log('focus');
-    // if (this.disabled) {
-    //   return;
-    // }
-    // if (this.navService.focusedNode !== this) {
-    //   this.navService.focusedNode = this;
-    // }
-    // this.isFocused = true;
-    // if (this.linkChildren?.length) {
-    //   this.linkChildren.first.nativeElement.focus();
-    //   return;
-    // }
-    // if (this.registeredChildren.length) {
-    //   this.registeredChildren[0].elementRef.nativeElement.focus();
-    //   return;
-    // }
   }
 
   public clearFocus(): void {
