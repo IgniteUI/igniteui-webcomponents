@@ -46,6 +46,19 @@ const handleEvent = (ev: any) => {
   console.log(ev);
 };
 
+const handleExpanding = (ev: any) => {
+  console.log(ev);
+};
+const handleExpanded = (ev: any) => {
+  console.log(ev);
+};
+const handleCollapsing = (ev: any) => {
+  console.log(ev);
+};
+const handleCollapsed = (ev: any) => {
+  console.log(ev);
+};
+
 const log = () => {
   const tree = document.getElementById('igc-tree-0') as IgcTreeComponent;
   console.log(tree);
@@ -66,7 +79,11 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       .size=${size}
       .singleBranchExpand=${singleBranchExpand}
       dir=${direction}
-      @IgcTreeNodeSelectionEvent=${handleEvent}
+      @igcTreeItemSelectionEvent=${handleEvent}
+      @igcItemExpanding=${handleExpanding}
+      @igcItemExpanded=${handleExpanded}
+      @igcItemCollapsing=${handleCollapsing}
+      @igcItemCollapsed=${handleCollapsed}
     >
       <igc-tree-item expanded active>
         <p slot="header">Tree Node 1</p>

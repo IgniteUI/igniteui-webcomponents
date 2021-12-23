@@ -191,7 +191,7 @@ export class IgcTreeSelectionService {
       cancelable: true,
     };
 
-    const allowed = this.tree.emitEvent('IgcTreeItemSelectionEvent', args);
+    const allowed = this.tree.emitEvent('igcTreeItemSelectionEvent', args);
     if (!allowed) {
       return;
     }
@@ -318,7 +318,7 @@ export class IgcTreeSelectionService {
     // retrieve items/parents/children which has been added/removed from the selection
     this.populateAddRemoveArgs(args);
 
-    const allowed = this.tree.emitEvent('IgcTreeItemSelectionEvent', {
+    const allowed = this.tree.emitEvent('igcTreeItemSelectionEvent', {
       detail: args,
       cancelable: true,
     });

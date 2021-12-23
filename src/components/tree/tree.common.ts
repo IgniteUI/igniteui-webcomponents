@@ -14,8 +14,11 @@ export type IgcTreeSearchResolver = (
 ) => boolean;
 
 export interface IgcTreeEventMap {
-  IgcTreeItemSelectionEvent: CustomEvent<any>;
-  igcBlur: CustomEvent<void>;
+  igcTreeItemSelectionEvent: CustomEvent<any>;
+  igcItemExpanding: CustomEvent<any>;
+  igcItemExpanded: CustomEvent<any>;
+  igcItemCollapsing: CustomEvent<any>;
+  igcItemCollapsed: CustomEvent<any>;
 }
 
 export interface IgcTreeItemSelectionEventDetails {

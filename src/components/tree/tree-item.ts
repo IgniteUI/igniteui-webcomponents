@@ -161,6 +161,53 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.addEventListener('pointerdown', this.onPointerDown);
   }
 
+  private expand(): void {
+    if (this.expanded) {
+      return;
+    }
+    const args = {
+      detail: {
+        node: this,
+      },
+      cancelable: true,
+    };
+
+    const allowed = this.tree.emitEvent('igcItemExpanding', args);
+
+    if (!allowed) {
+      return;
+    }
+
+    if (this.tree.singleBranchExpand) {
+      this.tree.findItems(this, this.siblingComparer)?.forEach((i) => {
+        i.expanded = false;
+      });
+    }
+
+    this.expanded = true;
+    this.tree.emitEvent('igcItemExpanded', { detail: this });
+  }
+
+  private collapse(): void {
+    if (!this.expanded) {
+      return;
+    }
+    const args = {
+      detail: {
+        node: this,
+      },
+      cancelable: true,
+    };
+
+    const allowed = this.tree.emitEvent('igcItemCollapsing', args);
+
+    if (!allowed) {
+      return;
+    }
+    this.expanded = false;
+    this.tree.emitEvent('igcItemCollapsed', { detail: this });
+  }
+
   private siblingComparer: (
     value: IgcTreeItemComponent,
     item: IgcTreeItemComponent
@@ -169,16 +216,10 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   private indicatorClick(): void {
     if (!this.expanded) {
-      if (this.tree.singleBranchExpand) {
-        this.tree.findItems(this, this.siblingComparer)?.forEach((e) => {
-          e.expanded = false;
-        });
-      }
+      this.expand();
+    } else {
+      this.collapse();
     }
-    this.expanded = !this.expanded;
-
-    this.navService.setFocusedAndActiveItem(this);
-    // this.navService.update_visible_cache(this, this.expanded)
   }
 
   public onPointerDown(event: MouseEvent) {
