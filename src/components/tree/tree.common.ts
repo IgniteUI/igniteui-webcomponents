@@ -1,4 +1,4 @@
-import IgcTreeNodeComponent from './tree-node';
+import IgcTreeItemComponent from './tree-item';
 
 export const IgcTreeSelectionType = {
   None: 'none',
@@ -10,22 +10,22 @@ export type IgcTreeSelectionType =
 
 export type IgcTreeSearchResolver = (
   value: any,
-  node: IgcTreeNodeComponent
+  item: IgcTreeItemComponent
 ) => boolean;
 
 export interface IgcTreeEventMap {
-  IgcTreeNodeSelectionEvent: CustomEvent<any>;
+  IgcTreeItemSelectionEvent: CustomEvent<any>;
   igcBlur: CustomEvent<void>;
 }
 
-export interface IgcTreeNodeSelectionEventDetails {
-  oldSelection: IgcTreeNodeComponent[];
-  newSelection: IgcTreeNodeComponent[];
-  added: IgcTreeNodeComponent[];
-  removed: IgcTreeNodeComponent[];
+export interface IgcTreeItemSelectionEventDetails {
+  oldSelection: IgcTreeItemComponent[];
+  newSelection: IgcTreeItemComponent[];
+  added: IgcTreeItemComponent[];
+  removed: IgcTreeItemComponent[];
 }
 
-export interface IgcTreeNodeSelectionEventArgs {
-  detail: IgcTreeNodeSelectionEventDetails;
+export interface IgcTreeItemSelectionEventArgs {
+  detail: IgcTreeItemSelectionEventDetails;
   cancelable: boolean;
 }

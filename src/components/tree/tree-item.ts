@@ -1,7 +1,7 @@
 import { property, state } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
 import { arrayOf } from '../common/util.js';
-import { styles } from './tree-node.material.css';
+import { styles } from './tree-item.material.css';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import IgcTreeComponent from './tree';
 import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common.js';
@@ -29,12 +29,12 @@ import { classMap } from 'lit/directives/class-map.js';
  * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  */
-export default class IgcTreeNodeComponent extends EventEmitterMixin<
+export default class IgcTreeItemComponent extends EventEmitterMixin<
   IgcTreeEventMap,
   Constructor<LitElement>
 >(LitElement) {
   /** @private */
-  public static tagName = 'igc-tree-node';
+  public static tagName = 'igc-tree-item';
 
   /** @private */
   public static styles = styles;
@@ -73,13 +73,13 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
   @property({ type: Boolean })
   public set active(value: boolean) {
     if (value) {
-      this.navService.activeNode = this;
+      this.navService.activeItem = this;
       // this.tree.activeNodeBindingChange.emit(this);
     }
   }
 
   public get active(): boolean {
-    return this.navService.activeNode === this;
+    return this.navService.activeItem === this;
   }
 
   @property({ reflect: true, type: Boolean })
@@ -94,7 +94,7 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
 
   @property({ reflect: true, type: Boolean })
   public get selected(): boolean {
-    return this.selectionService.isNodeSelected(this);
+    return this.selectionService.isItemSelected(this);
   }
 
   public set selected(val: boolean) {
@@ -102,44 +102,42 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     //   this.tree.forceSelect.push(this);
     //   return;
     // }
-    if (val && !this.selectionService.isNodeSelected(this)) {
-      this.selectionService.selectNodesWithNoEvent([this]);
+    if (val && !this.selectionService.isItemSelected(this)) {
+      this.selectionService.selectItemsWithNoEvent([this]);
     }
-    if (!val && this.selectionService.isNodeSelected(this)) {
-      this.selectionService.deselectNodesWithNoEvent([this]);
+    if (!val && this.selectionService.isItemSelected(this)) {
+      this.selectionService.deselectItemsWithNoEvent([this]);
     }
   }
 
   public get indeterminate(): boolean {
-    return this.selectionService.isNodeIndeterminate(this);
+    return this.selectionService.isItemIndeterminate(this);
   }
 
   public get tree(): IgcTreeComponent {
     return this.closest('igc-tree') as IgcTreeComponent;
   }
 
-  public get path(): IgcTreeNodeComponent[] {
-    return this.parentTreeNode?.path
-      ? [...this.parentTreeNode.path, this]
-      : [this];
+  public get path(): IgcTreeItemComponent[] {
+    return this.parentItem?.path ? [...this.parentItem.path, this] : [this];
   }
 
-  public get parentTreeNode(): IgcTreeNodeComponent | null {
-    return this.parentElement?.tagName.toLowerCase() === 'igc-tree-node'
-      ? (this.parentElement as IgcTreeNodeComponent)
+  public get parentItem(): IgcTreeItemComponent | null {
+    return this.parentElement?.tagName.toLowerCase() === 'igc-tree-item'
+      ? (this.parentElement as IgcTreeItemComponent)
       : null;
   }
 
   public get level(): number {
-    return this.parentTreeNode ? this.parentTreeNode.level + 1 : 0;
+    return this.parentItem ? this.parentItem.level + 1 : 0;
   }
 
-  public get allChildren(): Array<IgcTreeNodeComponent> {
-    return Array.from(this.querySelectorAll(`igc-tree-node`));
+  public get allChildren(): Array<IgcTreeItemComponent> {
+    return Array.from(this.querySelectorAll(`igc-tree-item`));
   }
 
   public get focused() {
-    return this.isFocused && this.navService.focusedNode === this;
+    return this.isFocused && this.navService.focusedItem === this;
   }
 
   private get classes() {
@@ -164,28 +162,28 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
   }
 
   private siblingComparer: (
-    value: IgcTreeNodeComponent,
-    node: IgcTreeNodeComponent
-  ) => boolean = (value: IgcTreeNodeComponent, node: IgcTreeNodeComponent) =>
-    node !== value && node.level === value.level;
+    value: IgcTreeItemComponent,
+    item: IgcTreeItemComponent
+  ) => boolean = (value: IgcTreeItemComponent, item: IgcTreeItemComponent) =>
+    item !== value && item.level === value.level;
 
   private indicatorClick(): void {
     if (!this.expanded) {
       if (this.tree.singleBranchExpand) {
-        this.tree.findNodes(this, this.siblingComparer)?.forEach((e) => {
+        this.tree.findItems(this, this.siblingComparer)?.forEach((e) => {
           e.expanded = false;
         });
       }
     }
     this.expanded = !this.expanded;
 
-    this.navService.setFocusedAndActiveNode(this);
+    this.navService.setFocusedAndActiveItem(this);
     // this.navService.update_visible_cache(this, this.expanded)
   }
 
   public onPointerDown(event: MouseEvent) {
     event.stopPropagation();
-    this.navService.setFocusedAndActiveNode(this);
+    this.navService.setFocusedAndActiveItem(this);
   }
 
   private handleFocusIn(ev: Event) {
@@ -193,13 +191,13 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
     if (this.disabled) {
       return;
     }
-    if (this.navService.focusedNode !== this) {
+    if (this.navService.focusedItem !== this) {
       if (
-        (ev.target as HTMLElement).tagName.toLowerCase() !== 'igc-tree-node'
+        (ev.target as HTMLElement).tagName.toLowerCase() !== 'igc-tree-item'
       ) {
-        this.navService.focusNode(this, false);
+        this.navService.focusItem(this, false);
       }
-      this.navService.focusNode(this);
+      this.navService.focusItem(this);
     }
     this.isFocused = true;
   }
@@ -207,13 +205,13 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
   private onSelectorClick(event: MouseEvent) {
     event.preventDefault();
     if (event.shiftKey) {
-      this.selectionService.selectMultipleNodes(this);
+      this.selectionService.selectMultipleItems(this);
       return;
     }
     if (this.selected) {
-      this.selectionService.deselectNode(this);
+      this.selectionService.deselectItem(this);
     } else {
-      this.selectionService.selectNode(this);
+      this.selectionService.selectItem(this);
     }
   }
 
@@ -275,6 +273,6 @@ export default class IgcTreeNodeComponent extends EventEmitterMixin<
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-tree-node': IgcTreeNodeComponent;
+    'igc-tree-item': IgcTreeItemComponent;
   }
 }

@@ -4,7 +4,7 @@ import { watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import IgcTreeNodeComponent from './tree-node';
+import IgcTreeItemComponent from './tree-item';
 import {
   IgcTreeEventMap,
   IgcTreeSearchResolver,
@@ -45,25 +45,25 @@ export default class IgcTreeComponent extends SizableMixin(
 
   @watch('selection')
   public selectionModeChange() {
-    this.selectionService.clearNodesSelection();
-    this.nodes?.forEach((node: IgcTreeNodeComponent) => {
-      node.selection = this.selection;
+    this.selectionService.clearItemsSelection();
+    this.items?.forEach((item: IgcTreeItemComponent) => {
+      item.selection = this.selection;
     });
   }
 
-  public get nodes(): Array<IgcTreeNodeComponent> {
-    return Array.from(this.querySelectorAll(`igc-tree-node`));
+  public get items(): Array<IgcTreeItemComponent> {
+    return Array.from(this.querySelectorAll(`igc-tree-item`));
   }
 
-  public get rootNodes(): IgcTreeNodeComponent[] {
-    return this.nodes?.filter((node) => node.level === 0);
+  public get rootItems(): IgcTreeItemComponent[] {
+    return this.items?.filter((item) => item.level === 0);
   }
 
   constructor() {
     super();
     this.selectionService = new IgcTreeSelectionService(this);
     this.navService = new IgcTreeNavigationService(this, this.selectionService);
-    this.updateNodes();
+    this.updateItems();
   }
 
   public connectedCallback() {
@@ -71,13 +71,13 @@ export default class IgcTreeComponent extends SizableMixin(
     this.addEventListener('keydown', this.handleKeydown);
   }
 
-  private _comparer = <T>(value: T, node: IgcTreeNodeComponent) =>
-    node.value === value;
+  private _comparer = <T>(value: T, item: IgcTreeItemComponent) =>
+    item.value === value;
 
-  private updateNodes() {
-    this.nodes?.forEach((node: IgcTreeNodeComponent) => {
-      node.selectionService = this.selectionService;
-      node.navService = this.navService;
+  private updateItems() {
+    this.items?.forEach((item: IgcTreeItemComponent) => {
+      item.selectionService = this.selectionService;
+      item.navService = this.navService;
     });
     // if (!this.navService.activeNode) {
     //   this.nodes.find((n: IgcTreeNodeComponent) => !n.disabled)!.tabIndex = 0;
@@ -88,36 +88,36 @@ export default class IgcTreeComponent extends SizableMixin(
     this.navService.handleKeydown(event);
   }
 
-  public deselect(nodes?: IgcTreeNodeComponent[]) {
-    this.selectionService.deselectNodesWithNoEvent(nodes);
+  public deselect(items?: IgcTreeItemComponent[]) {
+    this.selectionService.deselectItemsWithNoEvent(items);
   }
 
-  public select(nodes?: IgcTreeNodeComponent[]) {
-    if (!nodes) {
-      nodes =
+  public select(items?: IgcTreeItemComponent[]) {
+    if (!items) {
+      items =
         this.selection === IgcTreeSelectionType.Cascade
-          ? this.rootNodes
-          : this.nodes;
+          ? this.rootItems
+          : this.items;
     }
-    this.selectionService.selectNodesWithNoEvent(nodes);
+    this.selectionService.selectItemsWithNoEvent(items);
   }
 
-  public collapse(nodes?: IgcTreeNodeComponent[]) {
-    nodes = nodes || this.nodes;
-    nodes.forEach((e) => (e.expanded = false));
+  public collapse(items?: IgcTreeItemComponent[]) {
+    items = items || this.items;
+    items.forEach((item) => (item.expanded = false));
   }
 
-  public expand(nodes?: IgcTreeNodeComponent[]) {
-    nodes = nodes || this.nodes;
-    nodes.forEach((e) => (e.expanded = true));
+  public expand(items?: IgcTreeItemComponent[]) {
+    items = items || this.items;
+    items.forEach((item) => (item.expanded = true));
   }
 
-  public findNodes(
+  public findItems(
     searchTerm: any,
     comparer?: IgcTreeSearchResolver
-  ): IgcTreeNodeComponent[] | null {
+  ): IgcTreeItemComponent[] | null {
     const compareFunc = comparer || this._comparer;
-    const results = this.nodes.filter((node) => compareFunc(searchTerm, node));
+    const results = this.items.filter((item) => compareFunc(searchTerm, item));
     return results?.length === 0 ? null : results;
   }
 

@@ -24,7 +24,7 @@ import IgcRadioGroupComponent from '../../radio-group/radio-group';
 import IgcRadioComponent from '../../radio/radio';
 import IgcRippleComponent from '../../ripple/ripple';
 import IgcTreeComponent from '../../tree/tree';
-import IgcTreeNodeComponent from '../../tree/tree-node';
+import IgcTreeItemComponent from '../../tree/tree-item';
 import { defineComponents } from './defineComponents';
 
 const allComponents: CustomElementConstructor[] = [
@@ -54,7 +54,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcRadioGroupComponent,
   IgcRippleComponent,
   IgcTreeComponent,
-  IgcTreeNodeComponent,
+  IgcTreeItemComponent,
 ];
 
 export const defineAllComponents = () => {

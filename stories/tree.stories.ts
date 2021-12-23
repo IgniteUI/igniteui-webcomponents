@@ -68,44 +68,44 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       dir=${direction}
       @IgcTreeNodeSelectionEvent=${handleEvent}
     >
-      <igc-tree-node expanded active>
+      <igc-tree-item expanded active>
         <p slot="header">Tree Node 1</p>
-        <igc-tree-node slot="child">
+        <igc-tree-item slot="child">
           <p slot="header">Tree Node 1.1</p>
-          <igc-tree-node slot="child">
+          <igc-tree-item slot="child">
             <p slot="header">Tree Node 1.1.1</p>
-          </igc-tree-node>
-          <igc-tree-node slot="child">
+          </igc-tree-item>
+          <igc-tree-item slot="child">
             <p slot="header">
               <a href="http://infragistics.com">Infragistics</a>
             </p>
-          </igc-tree-node>
-        </igc-tree-node>
-        <igc-tree-node slot="child">
+          </igc-tree-item>
+        </igc-tree-item>
+        <igc-tree-item slot="child">
           <p slot="header">
             <a href="http://infragistics.com">Infragistics</a>
           </p>
-        </igc-tree-node>
-      </igc-tree-node>
-      <igc-tree-node>
+        </igc-tree-item>
+      </igc-tree-item>
+      <igc-tree-item>
         <p slot="header">Tree Node 2</p>
-        <igc-tree-node slot="child">
+        <igc-tree-item slot="child">
           <p slot="header">Tree Node 2.1</p>
-        </igc-tree-node>
-        <igc-tree-node slot="child">
+        </igc-tree-item>
+        <igc-tree-item slot="child">
           <p slot="header">Tree Node 2.2</p>
-        </igc-tree-node>
-      </igc-tree-node>
-      <igc-tree-node>
+        </igc-tree-item>
+      </igc-tree-item>
+      <igc-tree-item>
         <p slot="header">Tree Node 3</p>
-      </igc-tree-node>
+      </igc-tree-item>
     </igc-tree>
     <button @click=${log}>ASD</button>
     <button @click=${log1}>ASD1</button>
     <igc-tree>
-      <igc-tree-node>
+      <igc-tree-item>
         <p slot="header">Tree Node 4</p>
-      </igc-tree-node>
+      </igc-tree-item>
     </igc-tree>
   `;
 };

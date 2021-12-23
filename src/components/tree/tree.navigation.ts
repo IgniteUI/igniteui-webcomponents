@@ -1,5 +1,5 @@
 import IgcTreeComponent from './tree';
-import IgcTreeNodeComponent from './tree-node';
+import IgcTreeItemComponent from './tree-item';
 import { IgcTreeSelectionType } from './tree.common';
 import { IgcTreeSelectionService } from './tree.selection';
 
@@ -23,14 +23,14 @@ export class IgcTreeNavigationService {
   private tree!: IgcTreeComponent;
   private selectionService!: IgcTreeSelectionService;
 
-  private _focusedNode: IgcTreeNodeComponent | null = null;
+  private _focusedItem: IgcTreeItemComponent | null = null;
 
-  private _lastFocusedNode: IgcTreeNodeComponent | null = null;
-  private _activeNode: IgcTreeNodeComponent | null = null;
+  private _lastFocusedItem: IgcTreeItemComponent | null = null;
+  private _activeItem: IgcTreeItemComponent | null = null;
 
-  private _visibleChildren: IgcTreeNodeComponent[] = [];
-  private _invisibleChildren: Set<IgcTreeNodeComponent> = new Set();
-  private _disabledChildren: Set<IgcTreeNodeComponent> = new Set();
+  private _visibleChildren: IgcTreeItemComponent[] = [];
+  private _invisibleChildren: Set<IgcTreeItemComponent> = new Set();
+  private _disabledChildren: Set<IgcTreeItemComponent> = new Set();
 
   // private _cacheChange = new Subject<void>();
 
@@ -53,87 +53,87 @@ export class IgcTreeNavigationService {
   }
 
   public updateVisChild(): void {
-    this._visibleChildren = this.tree?.nodes
-      ? this.tree.nodes.filter(
+    this._visibleChildren = this.tree?.items
+      ? this.tree.items.filter(
           (e) =>
             !(this._invisibleChildren.has(e) || this._disabledChildren.has(e))
         )
       : [];
   }
 
-  public get focusedNode(): IgcTreeNodeComponent | null {
-    return this._focusedNode;
+  public get focusedItem(): IgcTreeItemComponent | null {
+    return this._focusedItem;
   }
 
-  public focusNode(value: IgcTreeNodeComponent | null, shouldFocus = true) {
-    if (this._focusedNode === value) {
+  public focusItem(value: IgcTreeItemComponent | null, shouldFocus = true) {
+    if (this._focusedItem === value) {
       return;
     }
-    this._lastFocusedNode = this._focusedNode;
-    if (this._lastFocusedNode) {
-      this._lastFocusedNode.removeAttribute('tabindex');
+    this._lastFocusedItem = this._focusedItem;
+    if (this._lastFocusedItem) {
+      this._lastFocusedItem.removeAttribute('tabindex');
     }
-    this._focusedNode = value;
-    if (this._focusedNode !== null) {
-      this._focusedNode.tabIndex = 0;
+    this._focusedItem = value;
+    if (this._focusedItem !== null) {
+      this._focusedItem.tabIndex = 0;
       if (shouldFocus) {
-        this._focusedNode.focus();
+        this._focusedItem.focus();
       }
     }
-    this._lastFocusedNode?.requestUpdate();
-    this._focusedNode?.requestUpdate();
+    this._lastFocusedItem?.requestUpdate();
+    this._focusedItem?.requestUpdate();
   }
 
-  public get activeNode(): IgcTreeNodeComponent | null {
-    return this._activeNode;
+  public get activeItem(): IgcTreeItemComponent | null {
+    return this._activeItem;
   }
 
-  public set activeNode(value: IgcTreeNodeComponent | null) {
-    if (this._activeNode === value) {
+  public set activeItem(value: IgcTreeItemComponent | null) {
+    if (this._activeItem === value) {
       return;
     }
-    this._activeNode?.requestUpdate();
-    this._activeNode = value;
-    this._activeNode?.requestUpdate();
-    // this.tree.activeNodeChanged.emit(this._activeNode);
+    this._activeItem?.requestUpdate();
+    this._activeItem = value;
+    this._activeItem?.requestUpdate();
+    // this.tree.activeItemChanged.emit(this._activeItem);
   }
 
-  public get visibleChildren(): IgcTreeNodeComponent[] {
+  public get visibleChildren(): IgcTreeItemComponent[] {
     return this._visibleChildren;
   }
 
-  public update_disabled_cache(node: IgcTreeNodeComponent): void {
-    if (node.disabled) {
-      this._disabledChildren.add(node);
+  public update_disabled_cache(item: IgcTreeItemComponent): void {
+    if (item.disabled) {
+      this._disabledChildren.add(item);
     } else {
-      this._disabledChildren.delete(node);
+      this._disabledChildren.delete(item);
     }
     // this._cacheChange.next();
     this.updateVisChild();
   }
 
   public init_invisible_cache() {
-    this.tree.nodes
+    this.tree.items
       .filter((e) => e.level === 0)
-      .forEach((node) => {
-        this.update_visible_cache(node, node.expanded, false);
+      .forEach((item) => {
+        this.update_visible_cache(item, item.expanded, false);
       });
     // this._cacheChange.next();
     this.updateVisChild();
   }
 
   public update_visible_cache(
-    node: IgcTreeNodeComponent,
+    item: IgcTreeItemComponent,
     expanded: boolean,
     shouldEmit = true
   ): void {
     if (expanded) {
-      node.directChildren?.forEach((child: IgcTreeNodeComponent) => {
+      item.directChildren?.forEach((child: IgcTreeItemComponent) => {
         this._invisibleChildren.delete(child);
         this.update_visible_cache(child, child.expanded, false);
       });
     } else {
-      node.allChildren.forEach((c: IgcTreeNodeComponent) =>
+      item.allChildren.forEach((c: IgcTreeItemComponent) =>
         this._invisibleChildren.add(c)
       );
     }
@@ -145,31 +145,31 @@ export class IgcTreeNavigationService {
   }
 
   /**
-   * Sets the node as focused (and active)
+   * Sets the item as focused (and active)
    *
-   * @param node target node
-   * @param isActive if true, sets the node as active
+   * @param item target item
+   * @param isActive if true, sets the item as active
    */
-  public setFocusedAndActiveNode(
-    node: IgcTreeNodeComponent,
+  public setFocusedAndActiveItem(
+    item: IgcTreeItemComponent,
     isActive = true,
     shouldFocus = true
   ): void {
     if (isActive) {
-      this.activeNode = node;
+      this.activeItem = item;
     }
-    this.focusNode(node, shouldFocus);
+    this.focusItem(item, shouldFocus);
   }
 
   /** Handler for keydown events. Used in tree.component.ts */
   public handleKeydown(event: KeyboardEvent) {
     const key = event.key.toLowerCase();
-    if (!this.focusedNode) {
+    if (!this.focusedItem) {
       return;
     }
     if (!(NAVIGATION_KEYS.has(key) || key === '*')) {
       if (key === 'enter') {
-        this.activeNode = this.focusedNode;
+        this.activeItem = this.focusedItem;
       }
       return;
     }
@@ -185,10 +185,10 @@ export class IgcTreeNavigationService {
   private handleNavigation(event: KeyboardEvent) {
     switch (event.key.toLowerCase()) {
       case 'home':
-        this.setFocusedAndActiveNode(this.visibleChildren[0]);
+        this.setFocusedAndActiveItem(this.visibleChildren[0]);
         break;
       case 'end':
-        this.setFocusedAndActiveNode(
+        this.setFocusedAndActiveItem(
           this.visibleChildren[this.visibleChildren.length - 1]
         );
         break;
@@ -222,62 +222,62 @@ export class IgcTreeNavigationService {
   }
 
   private handleArrowLeft(): void {
-    // if (this.focusedNode.expanded && !this.treeService.collapsingNodes.has(this.focusedNode) && this.focusedNode._children?.length) {
-    if (this.focusedNode?.expanded && this.focusedNode.directChildren?.length) {
-      this.activeNode = this.focusedNode;
-      // this.focusedNode.collapse();
-      this.focusedNode.expanded = false;
+    // if (this.focusedItem.expanded && !this.treeService.collapsingItems.has(this.focusedItem) && this.focusedItem._children?.length) {
+    if (this.focusedItem?.expanded && this.focusedItem.directChildren?.length) {
+      this.activeItem = this.focusedItem;
+      // this.focusedItem.collapse();
+      this.focusedItem.expanded = false;
     } else {
-      const parentNode = this.focusedNode?.parentTreeNode;
-      if (parentNode && !parentNode.disabled) {
-        this.setFocusedAndActiveNode(parentNode);
+      const parentItem = this.focusedItem?.parentItem;
+      if (parentItem && !parentItem.disabled) {
+        this.setFocusedAndActiveItem(parentItem);
       }
     }
   }
 
   private handleArrowRight(): void {
-    if (this.focusedNode!.directChildren?.length > 0) {
-      if (!this.focusedNode?.expanded) {
-        this.activeNode = this.focusedNode;
-        // this.focusedNode.expand();
-        this.focusedNode!.expanded = true;
+    if (this.focusedItem!.directChildren?.length > 0) {
+      if (!this.focusedItem?.expanded) {
+        this.activeItem = this.focusedItem;
+        // this.focusedItem.expand();
+        this.focusedItem!.expanded = true;
       } else {
-        // if (this.treeService.collapsingNodes.has(this.focusedNode)) {
-        //     this.focusedNode.expand();
+        // if (this.treeService.collapsingItems.has(this.focusedItem)) {
+        //     this.focusedItem.expand();
         //     return;
         // }
-        const firstChild = this.focusedNode.directChildren.find(
-          (node: IgcTreeNodeComponent) => !node.disabled
+        const firstChild = this.focusedItem.directChildren.find(
+          (item: IgcTreeItemComponent) => !item.disabled
         );
         if (firstChild) {
-          this.setFocusedAndActiveNode(firstChild);
+          this.setFocusedAndActiveItem(firstChild);
         }
       }
     }
   }
 
   private handleUpDownArrow(isUp: boolean, event: KeyboardEvent): void {
-    const next = this.getVisibleNode(this.focusedNode!, isUp ? -1 : 1);
-    if (next === this.focusedNode) {
+    const next = this.getVisibleItem(this.focusedItem!, isUp ? -1 : 1);
+    if (next === this.focusedItem) {
       return;
     }
 
     if (event.ctrlKey) {
-      this.setFocusedAndActiveNode(next, false);
+      this.setFocusedAndActiveItem(next, false);
     } else {
-      this.setFocusedAndActiveNode(next);
+      this.setFocusedAndActiveItem(next);
     }
   }
 
   private handleAsterisk(): void {
-    const nodes = this.focusedNode?.parentTreeNode
-      ? this.focusedNode!.parentTreeNode?.directChildren
-      : this.tree.rootNodes;
-    nodes?.forEach((node: IgcTreeNodeComponent) => {
-      // if (!node.disabled && (!node.expanded || this.treeService.collapsingNodes.has(node))) {
-      if (!node.disabled && !node.expanded) {
-        // node.expand();
-        node.expanded = true;
+    const items = this.focusedItem?.parentItem
+      ? this.focusedItem!.parentItem?.directChildren
+      : this.tree.rootItems;
+    items?.forEach((item: IgcTreeItemComponent) => {
+      // if (!item.disabled && (!item.expanded || this.treeService.collapsingItems.has(item))) {
+      if (!item.disabled && !item.expanded) {
+        // item.expand();
+        item.expanded = true;
       }
     });
   }
@@ -287,25 +287,25 @@ export class IgcTreeNavigationService {
       return;
     }
 
-    this.activeNode = this.focusedNode;
+    this.activeItem = this.focusedItem;
     if (shiftKey) {
-      this.selectionService.selectMultipleNodes(this.focusedNode!);
+      this.selectionService.selectMultipleItems(this.focusedItem!);
       return;
     }
 
-    if (this.focusedNode!.selected) {
-      this.selectionService.deselectNode(this.focusedNode!);
+    if (this.focusedItem!.selected) {
+      this.selectionService.deselectItem(this.focusedItem!);
     } else {
-      this.selectionService.selectNode(this.focusedNode!);
+      this.selectionService.selectItem(this.focusedItem!);
     }
   }
 
-  /** Gets the next visible node in the given direction - 1 -> next, -1 -> previous */
-  private getVisibleNode(
-    node: IgcTreeNodeComponent,
+  /** Gets the next visible item in the given direction - 1 -> next, -1 -> previous */
+  private getVisibleItem(
+    item: IgcTreeItemComponent,
     dir: 1 | -1 = 1
-  ): IgcTreeNodeComponent {
-    const nodeIndex = this.visibleChildren.indexOf(node);
-    return this.visibleChildren[nodeIndex + dir] || node;
+  ): IgcTreeItemComponent {
+    const itemIndex = this.visibleChildren.indexOf(item);
+    return this.visibleChildren[itemIndex + dir] || item;
   }
 }
