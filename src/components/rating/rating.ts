@@ -57,12 +57,12 @@ export default class igcRatingComponent extends SizableMixin(
   @property({ type: Number })
   public max = 5;
 
-  /** The minimum increment value change allowed. */
+  /** The minimum value change allowed. */
   @property({ type: Number })
   public precision = 1;
 
   /**
-   * The symbol to the rating will display.
+   * The symbol which the rating will display.
    * It also accepts a callback function which gets the current symbol
    * index so the symbol can be resolved per position.
    */
@@ -156,8 +156,8 @@ export default class igcRatingComponent extends SizableMixin(
     `;
   }
 
-  @watch('length')
-  protected handleLengthChange(newValue: number) {
+  @watch('max')
+  protected handleMaxChange(newValue: number) {
     this.max = Math.max(0, newValue);
     if (this.max < this.value) {
       this.value = this.max;

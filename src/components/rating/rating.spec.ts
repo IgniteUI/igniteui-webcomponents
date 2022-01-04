@@ -59,7 +59,7 @@ describe('Rating component', () => {
       expect(el.size).to.equals(size);
     });
 
-    it('value is truncated if greater than `length` attribute', async () => {
+    it('value is truncated if greater than `max` attribute', async () => {
       const value = 15,
         max = 10,
         name = 'rating',
@@ -232,7 +232,7 @@ describe('Rating component', () => {
 
     it('does nothing on click if readonly', async () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
-      el.disabled = true;
+      el.readonly = true;
       await elementUpdated(el);
 
       getRatingSymbols(el).item(3).click();

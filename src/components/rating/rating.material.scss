@@ -2,7 +2,7 @@
 @use '../../styles/utilities' as *;
 
 $selected-color: color(primary, 500) !default;
-$bg-color: color(surface, A100) !default;
+$bg-color: color(surface, a100) !default;
 $disabled-color: color(gray, 100) !default;
 
 :host {
@@ -46,7 +46,7 @@ $disabled-color: color(gray, 100) !default;
     font-size: var(--size, rem(48px));
     display: flex;
     color: $selected-color;
-    transition: transform 120ms cubic-bezier(0.645, 0.045, 0.355, 1);
+    transition: transform 120ms cubic-bezier(.645, .045, .355, 1);
 
     &:hover {
         transform: scale(1.1);

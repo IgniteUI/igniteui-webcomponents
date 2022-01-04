@@ -15,14 +15,14 @@ const metadata = {
     },
     precision: {
       type: 'number',
-      description: 'The minimum increment value change allowed.',
+      description: 'The minimum value change allowed.',
       control: 'number',
       defaultValue: '1',
     },
     symbol: {
       type: 'string | ((index: number) => string)',
       description:
-        'The symbol to the rating will display.\nIt also accepts a callback function which gets the current symbol\nindex so the symbol can be resolved per position.',
+        'The symbol which the rating will display.\nIt also accepts a callback function which gets the current symbol\nindex so the symbol can be resolved per position.',
       control: 'text',
       defaultValue: '⭐',
     },
@@ -40,6 +40,7 @@ const metadata = {
       type: 'number',
       description: 'The current value of the component',
       control: 'number',
+      defaultValue: '0',
     },
     disabled: {
       type: 'boolean',
