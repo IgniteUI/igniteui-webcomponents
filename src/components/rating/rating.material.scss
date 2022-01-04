@@ -2,7 +2,7 @@
 @use '../../styles/utilities' as *;
 
 $selected-color: color(primary, 500) !default;
-$bg-color: color(surface, a100) !default;
+$bg-color: color(surface, 'A100') !default;
 $disabled-color: color(gray, 100) !default;
 
 :host {
