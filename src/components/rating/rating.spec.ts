@@ -14,7 +14,7 @@ describe('Rating component', () => {
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
   const fireKeyboardEvent = (key: string) =>
-    new KeyboardEvent('keydown', { key });
+    new KeyboardEvent('keydown', { key, bubbles: true, composed: true });
   const fireMouseEvent = (type: string, opts: MouseEventInit) =>
     new MouseEvent(type, opts);
   const getBoundingRect = (el: Element) => el.getBoundingClientRect();
@@ -173,7 +173,11 @@ describe('Rating component', () => {
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
       symbol.dispatchEvent(
-        fireMouseEvent('click', { bubbles: true, clientX: x + width / 2 })
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 2,
+        })
       );
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
       expect(el.value).to.equal(3);
@@ -187,7 +191,11 @@ describe('Rating component', () => {
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
       symbol.dispatchEvent(
-        fireMouseEvent('click', { bubbles: true, clientX: x + width / 4 })
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 4,
+        })
       );
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 2.5 });
       expect(el.value).to.equal(2.5);
@@ -202,7 +210,11 @@ describe('Rating component', () => {
       const { x, width } = getBoundingRect(symbol);
 
       symbol.dispatchEvent(
-        fireMouseEvent('mousemove', { bubbles: true, clientX: x + width / 2 })
+        fireMouseEvent('mousemove', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 2,
+        })
       );
       expect(eventSpy).calledOnceWithExactly('igcHover', { detail: 3 });
       expect(el.value).to.equal(2);
@@ -215,7 +227,11 @@ describe('Rating component', () => {
       const { x, width } = getBoundingRect(symbol);
 
       symbol.dispatchEvent(
-        fireMouseEvent('click', { bubbles: true, clientX: x + width / 2 })
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 2,
+        })
       );
       expect(el.value).to.equal(0);
     });

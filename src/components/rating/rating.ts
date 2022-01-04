@@ -44,14 +44,9 @@ export default class igcRatingComponent extends SizableMixin(
   @state()
   protected hoverState = false;
 
-  protected navigationKeys = new Set([
-    'ArrowUp',
-    'ArrowDown',
-    'ArrowLeft',
-    'ArrowRight',
-    'Home',
-    'End',
-  ]);
+  protected get isInteractive() {
+    return !(this.readonly || this.disabled);
+  }
 
   /** The maximum value for the rating */
   @property({ type: Number })
@@ -109,12 +104,18 @@ export default class igcRatingComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public readonly = false;
 
+  constructor() {
+    super();
+    this.addEventListener('click', this.handleClick);
+    this.addEventListener('keydown', this.handleKeyDown);
+  }
+
   /**
    * Increments the value of the control by `n` steps multiplied by the
    * precision factor.
    */
   public stepUp(n = 1) {
-    this.value += this.round(n * this.precision, this.precision);
+    this.value += this.round(n * this.precision);
   }
 
   /**
@@ -122,12 +123,14 @@ export default class igcRatingComponent extends SizableMixin(
    * the precision factor.
    */
   public stepDown(n = 1) {
-    this.value -= this.round(n * this.precision, this.precision);
+    this.value -= this.round(n * this.precision);
   }
 
   protected render() {
     const value = this.hoverState ? this.hoverValue : this.value;
-    const percentage = Math.round((value / this.max) * 100);
+    const styles = { width: `${100 - Math.round((value / this.max) * 100)}%` };
+    const classes = { start: this.isLTR, end: !this.isLTR };
+
     return html`
       <div
         part="base"
@@ -140,17 +143,12 @@ export default class igcRatingComponent extends SizableMixin(
         aria-valuetext=${ifDefined(
           this.valueFormatter ? this.valueFormatter(value) : undefined
         )}
-        @keydown=${this.handleKeyDown}
-        @mouseenter=${this.handleMouseEnter}
-        @mouseleave=${this.handleMouseLeave}
-        @mousemove=${this.handleMouseMove}
-        @click=${this.handleClick}
       >
         ${this.renderSymbols()}
         <div
           part="overlay"
-          class=${classMap({ start: this.isLTR, end: !this.isLTR })}
-          style=${styleMap({ width: `${100 - percentage}%` })}
+          class=${classMap(classes)}
+          style=${styleMap(styles)}
         ></div>
       </div>
     `;
@@ -174,24 +172,33 @@ export default class igcRatingComponent extends SizableMixin(
     this.precision = clamp(newValue, 0.001, 1);
   }
 
+  @watch('hover')
+  protected handleHoverChange(newValue: boolean) {
+    this.hover = newValue;
+
+    if (this.hover) {
+      this.addEventListener('mousemove', this.handleMouseMove);
+      this.addEventListener('mouseenter', this.handleMouseEnter);
+      this.addEventListener('mouseleave', this.handleMouseLeave);
+    } else {
+      this.removeEventListener('mousemove', this.handleMouseMove);
+      this.removeEventListener('mouseenter', this.handleMouseEnter);
+      this.removeEventListener('mouseleave', this.handleMouseLeave);
+    }
+  }
+
   protected handleClick({ clientX }: MouseEvent) {
-    if (this.disabled || this.readonly) {
+    if (!this.isInteractive) {
       return;
     }
 
     const value = this.calcNewValue(clientX);
-
-    if (this.value === value) {
-      this.value = 0;
-    } else {
-      this.value = value;
-    }
-
+    this.value === value ? (this.value = 0) : (this.value = value);
     this.emitEvent('igcChange', { detail: this.value });
   }
 
   protected handleMouseMove({ clientX }: MouseEvent) {
-    if (!this.hover || this.readonly || this.disabled) {
+    if (!this.isInteractive) {
       return;
     }
 
@@ -205,25 +212,25 @@ export default class igcRatingComponent extends SizableMixin(
   }
 
   protected handleMouseEnter() {
-    if (!(this.readonly || this.disabled) && this.hover) {
+    if (this.isInteractive) {
       this.hoverState = true;
     }
   }
 
   protected handleMouseLeave() {
-    if (!(this.readonly || this.disabled) && this.hover) {
+    if (this.isInteractive) {
       this.hoverState = false;
     }
   }
 
-  protected handleKeyDown(event: KeyboardEvent) {
-    if (!this.navigationKeys.has(event.key)) {
+  protected handleKeyDown({ key }: KeyboardEvent) {
+    if (!this.isInteractive) {
       return;
     }
 
     let result = this.value;
 
-    switch (event.key) {
+    switch (key) {
       case 'ArrowUp':
       case 'ArrowRight':
         result += this.isLTR ? this.precision : -this.precision;
@@ -253,10 +260,8 @@ export default class igcRatingComponent extends SizableMixin(
   protected calcNewValue(x: number) {
     const { width, left, right } = this.getBoundingClientRect();
     const percent = this.isLTR ? (x - left) / width : (right - x) / width;
-    const value = this.round(
-      this.max * percent + this.precision / 2,
-      this.precision
-    );
+    const value = this.round(this.max * percent + this.precision / 2);
+
     return clamp(value, this.precision, this.max);
   }
 
@@ -284,9 +289,9 @@ export default class igcRatingComponent extends SizableMixin(
     return decimal ? decimal.length : 0;
   }
 
-  protected round(value: number, precision: number) {
-    value = Math.round(value / precision) * precision;
-    return Number(value.toFixed(this.getPrecision(precision)));
+  protected round(value: number) {
+    value = Math.round(value / this.precision) * this.precision;
+    return Number(value.toFixed(this.getPrecision(this.precision)));
   }
 
   protected get isLTR() {
