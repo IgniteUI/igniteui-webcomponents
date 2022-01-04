@@ -87,12 +87,20 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  public stepUp() {
-    this.value = this.value + this.step;
+  /**
+   * Increments the value of the slider by `stepIncrement * step`, where `stepIncrement` defaults to 1.
+   * @param stepIncrement Optional step increment. If no parameter is passed, it defaults to 1.
+   */
+  public stepUp(stepIncrement = 1) {
+    this.value = this.value + stepIncrement * this.step;
   }
 
-  public stepDown() {
-    this.value = this.value - this.step;
+  /**
+   * Decrements the value of the slider by `stepDecrement * step`, where `stepDecrement` defaults to 1.
+   * @param stepDecrement Optional step decrement. If no parameter is passed, it defaults to 1.
+   */
+  public stepDown(stepDecrement = 1) {
+    this.value = this.value - stepDecrement * this.step;
   }
 
   protected renderThumbs() {
