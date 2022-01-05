@@ -9,11 +9,13 @@
     //     height: utils.rem(6px);
     // }
 
-    igc-slider::part(fill) {
+    igc-slider::part(fill),
+    igc-range-slider::part(fill) {
         display: none;
     }
 
-    igc-slider::part(thumb) {
+    igc-slider::part(thumb),
+    igc-range-slider::part(thumb) {
         width: $thumb-size;
         height: $thumb-size;
         background: utils.color(primary, 500);
@@ -30,7 +32,8 @@
         }
     }
 
-    igc-slider[disabled] {
+    igc-slider[disabled],
+    igc-range-slider[disabled] {
         &::part(thumb) {
             background: utils.color(gray, 400);
         }

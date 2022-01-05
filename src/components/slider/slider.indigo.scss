@@ -4,7 +4,8 @@
     $thumb-size: utils.rem(14px);
     $thumb-radius: calc(#{$thumb-size} / 2);
 
-    igc-slider:hover {
+    igc-slider:hover,
+    igc-range-slider:hover {
         &::part(inactive) {
             color: utils.color(gray, 500);
         }
@@ -14,20 +15,24 @@
         }
     }
 
-    igc-slider::part(inactive) {
+    igc-slider::part(inactive),
+    igc-range-slider::part(inactive) {
         color: utils.color(gray, 400);
     }
 
     igc-slider::part(track),
     igc-slider::part(inactive),
     igc-slider::part(fill),
-    igc-slider::part(steps) {
+    igc-range-slider::part(track),
+    igc-range-slider::part(inactive),
+    igc-range-slider::part(fill) {
         height: utils.rem(2px);
         top: initial;
         border-radius: initial;
     }
 
-    igc-slider::part(thumb) {
+    igc-slider::part(thumb),
+    igc-range-slider::part(thumb) {
         width: $thumb-size;
         height: $thumb-size;
         top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
@@ -42,7 +47,8 @@
         }
     }
 
-    igc-slider[disabled] {
+    igc-slider[disabled],
+    igc-range-slider[disabled] {
         &::part(inactive),
         &::part(fill),
         &::part(thumb) {

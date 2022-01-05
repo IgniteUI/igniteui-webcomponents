@@ -4,7 +4,8 @@
     $thumb-size: utils.rem(16px);
     $thumb-radius: calc(#{$thumb-size} / 2);
 
-    igc-slider:hover {
+    igc-slider:hover,
+    igc-range-slider:hover {
         &::part(inactive) {
             color: utils.color(primary, 500, .32);
         }
@@ -24,20 +25,19 @@
     //     height: utils.rem(4px);
     // }
 
-    igc-slider::part(inactive) {
+    igc-slider::part(inactive),
+    igc-range-slider::part(inactive) {
         color: utils.color(gray, 400);
         top: initial;
     }
 
-    igc-slider::part(fill) {
+    igc-slider::part(fill),
+    igc-range-slider::part(fill) {
         color: utils.color(gray, 700);
     }
 
-    igc-slider::part(steps) {
-        top: utils.rem(1px);
-    }
-
-    igc-slider::part(thumb) {
+    igc-slider::part(thumb),
+    igc-range-slider::part(thumb) {
         background: utils.color(surface, 500);
         border: utils.rem(2px) solid utils.color(gray, 700);
         width: $thumb-size;
@@ -54,7 +54,8 @@
         }
     }
 
-    igc-slider[disabled] {
+    igc-slider[disabled],
+    igc-range-slider[disabled] {
         &::part(inactive) {
             color: utils.color(gray, 200);
         }
