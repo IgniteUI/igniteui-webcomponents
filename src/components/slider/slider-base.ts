@@ -442,7 +442,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   protected renderTicks() {
     const groups = [];
-    for (let i = 0; i < this.totalTickCount(); i++) {
+    for (let i = 0, totalCount = totalTickCount(); i < totalCount; i++) {
       const isPrimary = this.isPrimary(i);
       groups.push(html`
         <div part="tick-group">
