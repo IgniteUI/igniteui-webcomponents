@@ -1,4 +1,4 @@
-import { property, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
 import { arrayOf } from '../common/util.js';
 import { styles } from './tree-item.material.css';
@@ -39,16 +39,16 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   /** @private */
   public static styles = styles;
 
-  public selectionService!: IgcTreeSelectionService;
-  public navService!: IgcTreeNavigationService;
-
   private _disabled = false;
+
+  @query('.tree-node__header')
+  public header: any;
 
   @state()
   private _expanded = false;
 
   @state()
-  public directChildren: any;
+  public hasChildren = false;
 
   @state()
   private isFocused!: boolean;
@@ -59,6 +59,9 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   @property()
   public value: any;
 
+  @property({ reflect: true, type: Boolean })
+  public loading = false;
+
   /** The orientation of the multiple months displayed in days view. */
   @property({ reflect: true, type: Boolean })
   public get expanded(): boolean {
@@ -68,13 +71,17 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   public set expanded(val: boolean) {
     this._expanded = val;
     this.navService.update_visible_cache(this, val);
+    this.tree.scrollItemIntoView(this.navService.focusedItem?.header);
   }
 
   @property({ type: Boolean })
   public set active(value: boolean) {
     if (value) {
       this.navService.activeItem = this;
-      // this.tree.activeNodeBindingChange.emit(this);
+      this.tree.expandToItem(this);
+      requestAnimationFrame(() => {
+        this.tree.scrollItemIntoView(this.header);
+      });
     }
   }
 
@@ -98,10 +105,13 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   }
 
   public set selected(val: boolean) {
-    // if (!(this.tree?.nodes && this.tree.nodes.find((e) => e === this)) && val) {
-    //   this.tree.forceSelect.push(this);
-    //   return;
-    // }
+    if (
+      !(this.tree.connected && this.tree.items.find((i) => i === this)) &&
+      val
+    ) {
+      this.tree.forceSelect.push(this);
+      return;
+    }
     if (val && !this.selectionService.isItemSelected(this)) {
       this.selectionService.selectItemsWithNoEvent([this]);
     }
@@ -132,12 +142,26 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     return this.parentItem ? this.parentItem.level + 1 : 0;
   }
 
+  public get directChildren(): Array<IgcTreeItemComponent> {
+    return Array.from(this.children).filter(
+      (x) => x.tagName.toLowerCase() === 'igc-tree-item'
+    ) as IgcTreeItemComponent[];
+  }
+
   public get allChildren(): Array<IgcTreeItemComponent> {
     return Array.from(this.querySelectorAll(`igc-tree-item`));
   }
 
   public get focused() {
     return this.isFocused && this.navService.focusedItem === this;
+  }
+
+  private get selectionService(): IgcTreeSelectionService {
+    return this.tree.selectionService;
+  }
+
+  private get navService(): IgcTreeNavigationService {
+    return this.tree.navService;
   }
 
   private get classes() {
@@ -161,7 +185,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.addEventListener('pointerdown', this.onPointerDown);
   }
 
-  private expand(): void {
+  public expand(): void {
     if (this.expanded) {
       return;
     }
@@ -188,7 +212,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.tree.emitEvent('igcItemExpanded', { detail: this });
   }
 
-  private collapse(): void {
+  public collapse(): void {
     if (!this.expanded) {
       return;
     }
@@ -215,6 +239,9 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     item !== value && item.level === value.level;
 
   private indicatorClick(): void {
+    if (this.loading) {
+      return;
+    }
     if (!this.expanded) {
       this.expand();
     } else {
@@ -257,7 +284,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   }
 
   public handleChange(event: any) {
-    this.directChildren = event.target.assignedNodes();
+    this.hasChildren = !!event.target.assignedNodes().length;
   }
 
   public clearFocus(): void {
@@ -277,13 +304,18 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
           @click="${this.indicatorClick}"
           class="tree-node__toggle-button"
         >
-          <!--<igc-icon [attr.aria-label]="expanded ? resourceStrings.igx_collapse : resourceStrings.igx_expand"></igc-icon> -->
+          <igc-icon
+            name="navigate_before"
+            collection="internal"
+            ?hidden="${!this.loading}"
+          ></igc-icon>
+
           <igc-icon
             name="${this.expanded
               ? 'keyboard_arrow_down'
               : 'keyboard_arrow_right'}"
             collection="internal"
-            ?hidden="${!this.directChildren?.length}"
+            ?hidden="${this.loading || !this.directChildren?.length}"
           ></igc-icon>
         </section>
         <section

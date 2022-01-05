@@ -74,23 +74,30 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
-    <igc-tree
-      .selection=${selection}
-      .size=${size}
-      .singleBranchExpand=${singleBranchExpand}
-      dir=${direction}
-      @igcTreeItemSelectionEvent=${handleEvent}
-      @igcItemExpanding=${handleExpanding}
-      @igcItemExpanded=${handleExpanded}
-      @igcItemCollapsing=${handleCollapsing}
-      @igcItemCollapsed=${handleCollapsed}
-    >
-      <igc-tree-item expanded active>
-        <p slot="header">Tree Node 1</p>
-        <igc-tree-item slot="child">
-          <p slot="header">Tree Node 1.1</p>
+    <div style="height: 200px;">
+      <igc-tree
+        .selection=${selection}
+        .size=${size}
+        .singleBranchExpand=${singleBranchExpand}
+        dir=${direction}
+        @igcTreeItemSelectionEvent=${handleEvent}
+        @igcItemExpanding=${handleExpanding}
+        @igcItemExpanded=${handleExpanded}
+        @igcItemCollapsing=${handleCollapsing}
+        @igcItemCollapsed=${handleCollapsed}
+      >
+        <igc-tree-item expanded active>
+          <p slot="header">Tree Node 1</p>
           <igc-tree-item slot="child">
-            <p slot="header">Tree Node 1.1.1</p>
+            <p slot="header">Tree Node 1.1</p>
+            <igc-tree-item slot="child">
+              <p slot="header">Tree Node 1.1.1</p>
+            </igc-tree-item>
+            <igc-tree-item slot="child">
+              <p slot="header">
+                <a href="http://infragistics.com">Infragistics</a>
+              </p>
+            </igc-tree-item>
           </igc-tree-item>
           <igc-tree-item slot="child">
             <p slot="header">
@@ -98,25 +105,20 @@ const BasicTemplate: Story<ArgTypes, Context> = (
             </p>
           </igc-tree-item>
         </igc-tree-item>
-        <igc-tree-item slot="child">
-          <p slot="header">
-            <a href="http://infragistics.com">Infragistics</a>
-          </p>
+        <igc-tree-item>
+          <p slot="header">Tree Node 2</p>
+          <igc-tree-item slot="child">
+            <p slot="header">Tree Node 2.1</p>
+          </igc-tree-item>
+          <igc-tree-item slot="child">
+            <p slot="header">Tree Node 2.2</p>
+          </igc-tree-item>
         </igc-tree-item>
-      </igc-tree-item>
-      <igc-tree-item>
-        <p slot="header">Tree Node 2</p>
-        <igc-tree-item slot="child">
-          <p slot="header">Tree Node 2.1</p>
+        <igc-tree-item>
+          <p slot="header">Tree Node 3</p>
         </igc-tree-item>
-        <igc-tree-item slot="child">
-          <p slot="header">Tree Node 2.2</p>
-        </igc-tree-item>
-      </igc-tree-item>
-      <igc-tree-item>
-        <p slot="header">Tree Node 3</p>
-      </igc-tree-item>
-    </igc-tree>
+      </igc-tree>
+    </div>
     <button @click=${log}>ASD</button>
     <button @click=${log1}>ASD1</button>
     <igc-tree>

@@ -32,17 +32,6 @@ export class IgcTreeNavigationService {
   private _invisibleChildren: Set<IgcTreeItemComponent> = new Set();
   private _disabledChildren: Set<IgcTreeItemComponent> = new Set();
 
-  // private _cacheChange = new Subject<void>();
-
-  // constructor(private treeService: IgcTreeComponentService, private selectionService: IgcTreeComponentSelectionService) {
-  //     this._cacheChange.subscribe(() => {
-  //         this._visibleChildren =
-  //             this.tree?.nodes ?
-  //                 this.tree.nodes.filter(e => !(this._invisibleChildren.has(e) || this._disabledChildren.has(e))) :
-  //                 [];
-  //     });
-  // }
-
   constructor(
     tree: IgcTreeComponent,
     selectionService: IgcTreeSelectionService
@@ -95,7 +84,6 @@ export class IgcTreeNavigationService {
     this._activeItem?.requestUpdate();
     this._activeItem = value;
     this._activeItem?.requestUpdate();
-    // this.tree.activeItemChanged.emit(this._activeItem);
   }
 
   public get visibleChildren(): IgcTreeItemComponent[] {
@@ -108,7 +96,6 @@ export class IgcTreeNavigationService {
     } else {
       this._disabledChildren.delete(item);
     }
-    // this._cacheChange.next();
     this.updateVisChild();
   }
 
@@ -118,7 +105,6 @@ export class IgcTreeNavigationService {
       .forEach((item) => {
         this.update_visible_cache(item, item.expanded, false);
       });
-    // this._cacheChange.next();
     this.updateVisChild();
   }
 
@@ -133,13 +119,12 @@ export class IgcTreeNavigationService {
         this.update_visible_cache(child, child.expanded, false);
       });
     } else {
-      item.allChildren.forEach((c: IgcTreeItemComponent) =>
+      item.allChildren?.forEach((c: IgcTreeItemComponent) =>
         this._invisibleChildren.add(c)
       );
     }
 
     if (shouldEmit) {
-      // this._cacheChange.next();
       this.updateVisChild();
     }
   }
@@ -176,11 +161,6 @@ export class IgcTreeNavigationService {
     event.preventDefault();
     this.handleNavigation(event);
   }
-
-  // public ngOnDestroy() {
-  // this._cacheChange.next();
-  // this._cacheChange.complete();
-  // }
 
   private handleNavigation(event: KeyboardEvent) {
     switch (event.key.toLowerCase()) {
@@ -225,8 +205,7 @@ export class IgcTreeNavigationService {
     // if (this.focusedItem.expanded && !this.treeService.collapsingItems.has(this.focusedItem) && this.focusedItem._children?.length) {
     if (this.focusedItem?.expanded && this.focusedItem.directChildren?.length) {
       this.activeItem = this.focusedItem;
-      // this.focusedItem.collapse();
-      this.focusedItem.expanded = false;
+      this.focusedItem.collapse();
     } else {
       const parentItem = this.focusedItem?.parentItem;
       if (parentItem && !parentItem.disabled) {
@@ -239,8 +218,7 @@ export class IgcTreeNavigationService {
     if (this.focusedItem!.directChildren?.length > 0) {
       if (!this.focusedItem?.expanded) {
         this.activeItem = this.focusedItem;
-        // this.focusedItem.expand();
-        this.focusedItem!.expanded = true;
+        this.focusedItem!.expand();
       } else {
         // if (this.treeService.collapsingItems.has(this.focusedItem)) {
         //     this.focusedItem.expand();
@@ -276,8 +254,7 @@ export class IgcTreeNavigationService {
     items?.forEach((item: IgcTreeItemComponent) => {
       // if (!item.disabled && (!item.expanded || this.treeService.collapsingItems.has(item))) {
       if (!item.disabled && !item.expanded) {
-        // item.expand();
-        item.expanded = true;
+        item.expand();
       }
     });
   }
