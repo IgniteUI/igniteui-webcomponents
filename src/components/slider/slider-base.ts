@@ -36,6 +36,9 @@ export class IgcSliderBaseComponent extends LitElement {
     }
   }
 
+  /**
+   * The minimum value of the slider scale. Defaults to 0.
+   */
   @property({ type: Number })
   public get min() {
     return this._min;
@@ -53,6 +56,9 @@ export class IgcSliderBaseComponent extends LitElement {
     }
   }
 
+  /**
+   * The maximum value of the slider scale. Defaults to 100.
+   */
   @property({ type: Number })
   public get max() {
     return this._max;
@@ -69,6 +75,9 @@ export class IgcSliderBaseComponent extends LitElement {
     this.requestUpdate('lowerBound', oldVal);
   }
 
+  /**
+   * The lower bound of the slider value. If not set, the `min` value is applied.
+   */
   @property({ type: Number, attribute: 'lower-bound' })
   public get lowerBound(): number | undefined {
     return this._lowerBound;
@@ -85,41 +94,79 @@ export class IgcSliderBaseComponent extends LitElement {
     this.requestUpdate('upperBound', oldVal);
   }
 
+  /**
+   * The upper bound of the slider value. If not set, the `max` value is applied.
+   */
   @property({ type: Number, attribute: 'upper-bound' })
   public get upperBound(): number | undefined {
     return this._upperBound;
   }
 
+  /**
+   * Disables the UI interactions of the slider.
+   */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
+  /**
+   * Marks the slider track as discrete so it displays the steps.
+   * If the `step` is 0, the slider will remain continuos even if `discreteTrack` is `true`.
+   */
   @property({ type: Boolean, attribute: 'discrete-track' })
   public discreteTrack = false;
 
+  /**
+   * Hides the thumb tooltip.
+   */
   @property({ type: Boolean, attribute: 'hide-tooltip' })
   public hideTooltip = false;
 
+  /**
+   * Specifies the granularity that the value must adhere to.
+   * If set to 0 no stepping is implied and any value in the range is allowed.
+   */
   @property({ type: Number })
   public step = 1;
 
+  /**
+   * The number of primary ticks. It defaults to 0 which means no primary ticks are displayed.
+   */
   @property({ type: Number, attribute: 'primary-ticks' })
   public primaryTicks = 0;
 
+  /**
+   * The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed.
+   */
   @property({ type: Number, attribute: 'secondary-ticks' })
   public secondaryTicks = 0;
 
+  /**
+   * Changes the orientation of the ticks.
+   */
   @property({ attribute: 'tick-orientation' })
   public tickOrientation: 'mirror' | 'start' | 'end' = 'end';
 
+  /**
+   * Hides the primary tick labels.
+   */
   @property({ type: Boolean, attribute: 'hide-primary-labels' })
   public hidePrimaryLabels = false;
 
+  /**
+   * Hides the secondary tick labels.
+   */
   @property({ type: Boolean, attribute: 'hide-secondary-labels' })
   public hideSecondaryLabels = false;
 
+  /**
+   * Specifies a custom function to format the labels.
+   */
   @property({ attribute: false })
   public labelFormatter: ((value: number) => string) | undefined;
 
+  /**
+   * The degrees for the rotation of the tick labels. Defaults to 0.
+   */
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   public tickLabelRotation: 0 | 90 | -90 = 0;
 

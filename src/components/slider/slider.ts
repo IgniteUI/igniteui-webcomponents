@@ -5,7 +5,13 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { IgcSliderBaseComponent } from './slider-base';
 
 export interface IgcSliderEventMap {
+  /**
+   * Emitted when a value is changed via thumb drag or keyboard interaction.
+   */
   igcInput: CustomEvent<number>;
+  /**
+   * Emitted when a value change is committed on a thumb drag end or keyboard interaction.
+   */
   igcChange: CustomEvent<number>;
 }
 
@@ -25,6 +31,9 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.requestUpdate('value', oldVal);
   }
 
+  /**
+   * The current value of the slider.
+   */
   @property({ type: Number })
   public get value() {
     return this._value;
@@ -40,6 +49,9 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.requestUpdate('ariaLabel', oldVal);
   }
 
+  /**
+   * The aria label of the slider thumb.
+   */
   @property({ attribute: 'aria-label' })
   public get ariaLabel() {
     return this._ariaLabel;

@@ -10,7 +10,13 @@ export interface IgcRangeSliderValue {
 }
 
 export interface IgcRangeSliderEventMap {
+  /**
+   * Emitted when a value is changed via thumb drag or keyboard interaction.
+   */
   igcInput: CustomEvent<IgcRangeSliderValue>;
+  /**
+   * Emitted when a value change is committed on a thumb drag end or keyboard interaction.
+   */
   igcChange: CustomEvent<IgcRangeSliderValue>;
 }
 
@@ -36,6 +42,9 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     this.requestUpdate('lower', oldVal);
   }
 
+  /**
+   * The current value of the lower thumb.
+   */
   @property({ type: Number })
   public get lower() {
     return this._lower;
@@ -47,14 +56,23 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     this.requestUpdate('upper', oldVal);
   }
 
+  /**
+   * The current value of the upper thumb.
+   */
   @property({ type: Number })
   public get upper() {
     return this._upper;
   }
 
+  /**
+   * The aria label of the lower thumb.
+   */
   @property({ attribute: 'aria-label-lower' })
   public ariaLabelLower!: string;
 
+  /**
+   * The aria label of the upper thumb.
+   */
   @property({ attribute: 'aria-label-upper' })
   public ariaLabelUpper!: string;
 
