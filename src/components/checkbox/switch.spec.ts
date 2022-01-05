@@ -101,6 +101,21 @@ describe('Switch', () => {
       );
     });
 
+    it('should correctly report validity status', async () => {
+      el = await fixture<IgcSwitchComponent>(
+        html`<igc-switch required></igc-switch>`
+      );
+      expect(el.reportValidity()).to.equals(false);
+
+      el = await fixture<IgcSwitchComponent>(
+        html`<igc-switch required checked></igc-switch>`
+      );
+      expect(el.reportValidity()).to.equals(true);
+
+      el = await fixture<IgcSwitchComponent>(html`<igc-switch></igc-switch>`);
+      expect(el.reportValidity()).to.equals(true);
+    });
+
     it('should set the switch checked property correctly', async () => {
       const DIFF_OPTIONS = {
         ignoreAttributes: [
