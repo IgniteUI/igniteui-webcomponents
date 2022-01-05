@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Dark Themes
+- Slider component
+- Range Slider component
 
 ## 1.0.0 - 2021-11-22
 Initial release of Ignite UI Web Components
