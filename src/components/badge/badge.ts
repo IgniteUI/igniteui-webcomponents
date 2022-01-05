@@ -21,7 +21,7 @@ export default class IgcBadgeComponent extends LitElement {
 
   /** The type of badge. */
   @property({ reflect: true })
-  public variant?: 'primary' | 'info' | 'success' | 'warning' | 'danger' =
+  public variant: 'primary' | 'info' | 'success' | 'warning' | 'danger' =
     'primary';
 
   /** Sets whether to draw an outlined version of the badge. */
@@ -30,7 +30,7 @@ export default class IgcBadgeComponent extends LitElement {
 
   /** The shape of the badge. */
   @property({ reflect: true })
-  public shape?: 'rounded' | 'square' = 'rounded';
+  public shape: 'rounded' | 'square' = 'rounded';
 
   protected render() {
     return html`
@@ -40,11 +40,6 @@ export default class IgcBadgeComponent extends LitElement {
     `;
   }
 }
-
-// export const badgeDefinition: IgcComponentDefinition = {
-//   tag: 'igc-badge',
-//   component: IgcBadgeComponent,
-// };
 
 declare global {
   interface HTMLElementTagNameMap {
