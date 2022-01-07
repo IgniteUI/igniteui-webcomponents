@@ -192,30 +192,38 @@ export class IgcSliderBaseComponent extends LitElement {
     this.normalizeValue();
   }
 
+  /* c8 ignore next 3 */
   protected get activeValue() {
     return 0;
   }
 
+  /* c8 ignore next 3 */
   protected get fillValue() {
     return 0;
   }
 
+  /* c8 ignore next */
   protected normalizeValue(): void {}
 
+  /* c8 ignore next 3 */
   protected getTrackStyle(): StyleInfo {
     return {};
   }
 
+  /* c8 ignore next 3 */
   protected updateValue(_increment: number): boolean {
     return false;
   }
 
+  /* c8 ignore next 3 */
   protected renderThumbs(): TemplateResult<1> {
     return html``;
   }
 
+  /* c8 ignore next */
   protected emitInputEvent() {}
 
+  /* c8 ignore next */
   protected emitChangeEvent() {}
 
   private get actualMin(): number {
