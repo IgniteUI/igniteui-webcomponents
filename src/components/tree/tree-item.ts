@@ -2,13 +2,12 @@ import { property, query, state } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
 import { arrayOf } from '../common/util.js';
 import { styles } from './tree-item.material.css';
-import { IgcTreeSelectionService } from './tree.selection.js';
 import IgcTreeComponent from './tree';
 import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { IgcTreeNavigationService } from './tree.navigation.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { watch } from '../common/decorators';
 
 /**
  * The list-item component is a container
@@ -39,19 +38,28 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   /** @private */
   public static styles = styles;
 
-  private _disabled = false;
+  public tree?: IgcTreeComponent;
+  public parentItem: IgcTreeItemComponent | null = null;
+
+  /**
+   * Store the current selection state before changing the items' parent (drag/drop)
+   * Update those properties in disconnectedCallback
+   * Use them in the connectedCallback to retrieve the previous state
+   */
+  // private _hasBeenSelected = false;
+  // private _hasBeenIndeterminate = false;
 
   @query('.tree-node__header')
   public header: any;
 
   @state()
-  private _expanded = false;
-
-  @state()
   public hasChildren = false;
 
   @state()
-  private isFocused!: boolean;
+  public indeterminate = false;
+
+  @state()
+  private isFocused = false;
 
   @property()
   public selection: IgcTreeSelectionType = IgcTreeSelectionType.None;
@@ -64,78 +72,73 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   /** The orientation of the multiple months displayed in days view. */
   @property({ reflect: true, type: Boolean })
-  public get expanded(): boolean {
-    return this._expanded;
+  public expanded = false;
+
+  @watch('expanded')
+  public expandedChange(): void {
+    this.navService?.update_visible_cache(this, this.expanded);
+    this.tree?.scrollItemIntoView(this.navService?.focusedItem?.header);
   }
 
-  public set expanded(val: boolean) {
-    this._expanded = val;
-    this.navService.update_visible_cache(this, val);
-    this.tree.scrollItemIntoView(this.navService.focusedItem?.header);
-  }
-
-  @property({ type: Boolean })
-  public set active(value: boolean) {
-    if (value) {
-      this.navService.activeItem = this;
-      this.tree.expandToItem(this);
+  @watch('active', { waitUntilFirstUpdate: true })
+  public activeChange(): void {
+    if (this.active) {
+      if (this.navService) {
+        this.navService.activeItem = this;
+      }
+      this.tree?.expandToItem(this);
       requestAnimationFrame(() => {
-        this.tree.scrollItemIntoView(this.header);
+        this.tree?.scrollItemIntoView(this.header);
+        // this.header.scrollIntoView();
       });
     }
   }
 
-  public get active(): boolean {
-    return this.navService.activeItem === this;
+  @property({ type: Boolean })
+  public active = false;
+
+  @watch('disabled')
+  public disabledChange() {
+    this.navService?.update_disabled_cache(this);
   }
 
   @property({ reflect: true, type: Boolean })
-  public get disabled(): boolean {
-    return this._disabled;
-  }
+  public disabled = false;
 
-  public set disabled(val: boolean) {
-    this._disabled = val;
-    this.navService.update_disabled_cache(this);
-  }
-
-  @property({ reflect: true, type: Boolean })
-  public get selected(): boolean {
-    return this.selectionService.isItemSelected(this);
-  }
-
-  public set selected(val: boolean) {
+  @watch('selected', { waitUntilFirstUpdate: true })
+  public selectedChange() {
     if (
-      !(this.tree.connected && this.tree.items.find((i) => i === this)) &&
-      val
+      (this.selectionService?.isItemSelected(this) && this.selected) ||
+      (!this.selectionService?.isItemSelected(this) && !this.selected)
     ) {
-      this.tree.forceSelect.push(this);
       return;
     }
-    if (val && !this.selectionService.isItemSelected(this)) {
-      this.selectionService.selectItemsWithNoEvent([this]);
+
+    if (
+      !(this.tree?.connected && this.tree?.items.find((i) => i === this)) &&
+      this.selected
+    ) {
+      this.tree?.forceSelect.push(this);
+      return;
     }
-    if (!val && this.selectionService.isItemSelected(this)) {
-      this.selectionService.deselectItemsWithNoEvent([this]);
+
+    if (this.selected && !this.selectionService?.isItemSelected(this)) {
+      this.selectionService?.selectItemsWithNoEvent([this]);
+    }
+    if (!this.selected && this.selectionService?.isItemSelected(this)) {
+      this.selectionService?.deselectItemsWithNoEvent([this]);
     }
   }
 
-  public get indeterminate(): boolean {
-    return this.selectionService.isItemIndeterminate(this);
-  }
+  @property({ reflect: true, type: Boolean })
+  public selected = false;
 
-  public get tree(): IgcTreeComponent {
-    return this.closest('igc-tree') as IgcTreeComponent;
-  }
+  // public get indeterminate(): boolean {
+  //   return this.selectionService?.isItemIndeterminate(this) ?? false;
+  // }
 
   public get path(): IgcTreeItemComponent[] {
     return this.parentItem?.path ? [...this.parentItem.path, this] : [this];
-  }
-
-  public get parentItem(): IgcTreeItemComponent | null {
-    return this.parentElement?.tagName.toLowerCase() === 'igc-tree-item'
-      ? (this.parentElement as IgcTreeItemComponent)
-      : null;
   }
 
   public get level(): number {
@@ -153,15 +156,15 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   }
 
   public get focused() {
-    return this.isFocused && this.navService.focusedItem === this;
+    return this.isFocused && this.navService?.focusedItem === this;
   }
 
-  private get selectionService(): IgcTreeSelectionService {
-    return this.tree.selectionService;
+  private get selectionService() {
+    return this.tree?.selectionService;
   }
 
-  private get navService(): IgcTreeNavigationService {
-    return this.tree.navService;
+  private get navService() {
+    return this.tree?.navService;
   }
 
   private get classes() {
@@ -178,11 +181,23 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   public connectedCallback() {
     super.connectedCallback();
-    this.navService.update_visible_cache(this, this._expanded);
+    this.tree = this.closest('igc-tree') as IgcTreeComponent;
+    this.parentItem =
+      this.parentElement?.tagName.toLowerCase() === 'igc-tree-item'
+        ? (this.parentElement as IgcTreeItemComponent)
+        : null;
+    this.navService?.update_visible_cache(this, this.expanded);
     this.setAttribute('role', 'treeitem');
     this.addEventListener('focusout', this.clearFocus);
     this.addEventListener('focusin', this.handleFocusIn);
     this.addEventListener('pointerdown', this.onPointerDown);
+    this.selectedChange();
+    this.activeChange();
+  }
+
+  public disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.selectionService?.ensureStateOnItemDelete(this);
   }
 
   public expand(): void {
@@ -196,20 +211,20 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
       cancelable: true,
     };
 
-    const allowed = this.tree.emitEvent('igcItemExpanding', args);
+    const allowed = this.tree?.emitEvent('igcItemExpanding', args);
 
     if (!allowed) {
       return;
     }
 
-    if (this.tree.singleBranchExpand) {
-      this.tree.findItems(this, this.siblingComparer)?.forEach((i) => {
+    if (this.tree?.singleBranchExpand) {
+      this.tree?.findItems(this, this.siblingComparer)?.forEach((i) => {
         i.expanded = false;
       });
     }
 
     this.expanded = true;
-    this.tree.emitEvent('igcItemExpanded', { detail: this });
+    this.tree?.emitEvent('igcItemExpanded', { detail: this });
   }
 
   public collapse(): void {
@@ -223,13 +238,13 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
       cancelable: true,
     };
 
-    const allowed = this.tree.emitEvent('igcItemCollapsing', args);
+    const allowed = this.tree?.emitEvent('igcItemCollapsing', args);
 
     if (!allowed) {
       return;
     }
     this.expanded = false;
-    this.tree.emitEvent('igcItemCollapsed', { detail: this });
+    this.tree?.emitEvent('igcItemCollapsed', { detail: this });
   }
 
   private siblingComparer: (
@@ -251,7 +266,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   public onPointerDown(event: MouseEvent) {
     event.stopPropagation();
-    this.navService.setFocusedAndActiveItem(this);
+    this.navService?.setFocusedAndActiveItem(this);
   }
 
   private handleFocusIn(ev: Event) {
@@ -259,13 +274,13 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     if (this.disabled) {
       return;
     }
-    if (this.navService.focusedItem !== this) {
+    if (this.navService?.focusedItem !== this) {
       if (
         (ev.target as HTMLElement).tagName.toLowerCase() !== 'igc-tree-item'
       ) {
-        this.navService.focusItem(this, false);
+        this.navService?.focusItem(this, false);
       }
-      this.navService.focusItem(this);
+      this.navService?.focusItem(this);
     }
     this.isFocused = true;
   }
@@ -273,13 +288,13 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   private onSelectorClick(event: MouseEvent) {
     event.preventDefault();
     if (event.shiftKey) {
-      this.selectionService.selectMultipleItems(this);
+      this.selectionService?.selectMultipleItems(this);
       return;
     }
     if (this.selected) {
-      this.selectionService.deselectItem(this);
+      this.selectionService?.deselectItem(this);
     } else {
-      this.selectionService.selectItem(this);
+      this.selectionService?.selectItem(this);
     }
   }
 
@@ -335,11 +350,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
           <slot name="header"></slot>
         </section>
       </div>
-      <slot
-        name="child"
-        @slotchange=${this.handleChange}
-        ?hidden="${!this.expanded}"
-      ></slot>
+      <slot @slotchange=${this.handleChange} ?hidden="${!this.expanded}"></slot>
     `;
   }
 }

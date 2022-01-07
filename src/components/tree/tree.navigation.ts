@@ -81,9 +81,13 @@ export class IgcTreeNavigationService {
     if (this._activeItem === value) {
       return;
     }
-    this._activeItem?.requestUpdate();
+    if (this._activeItem) {
+      this._activeItem.active = false;
+    }
     this._activeItem = value;
-    this._activeItem?.requestUpdate();
+    if (this._activeItem) {
+      this._activeItem.active = true;
+    }
   }
 
   public get visibleChildren(): IgcTreeItemComponent[] {
