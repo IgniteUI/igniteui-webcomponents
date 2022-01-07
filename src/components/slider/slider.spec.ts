@@ -260,6 +260,10 @@ describe('Slider component', () => {
       slider.lowerBound = 60;
       await elementUpdated(slider);
       expect(slider.lowerBound).to.eq(50);
+
+      slider.min = 55;
+      await elementUpdated(slider);
+      expect(slider.lowerBound).to.eq(55);
     });
 
     it('upper bound should be restricted by the min, max and lower bound values', async () => {
@@ -281,6 +285,11 @@ describe('Slider component', () => {
       slider.upperBound = 40;
       await elementUpdated(slider);
       expect(slider.upperBound).to.eq(50);
+
+      slider.lowerBound = 30;
+      slider.max = 45;
+      await elementUpdated(slider);
+      expect(slider.upperBound).to.eq(45);
     });
 
     it('any value on the track should be accepted when step is set to 0', async () => {
