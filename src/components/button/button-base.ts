@@ -21,6 +21,8 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   @query('[part="base"]', true)
   private nativeElement!: HTMLElement;
 
+  private _ariaLabel!: string;
+
   /**
    * The type of the button. Defaults to undefined.
    */
@@ -53,6 +55,24 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
+  public set ariaLabel(value: string) {
+    const oldVal = this._ariaLabel;
+    this._ariaLabel = value;
+
+    if (this.hasAttribute('aria-label')) {
+      this.removeAttribute('aria-label');
+    }
+    this.requestUpdate('ariaLabel', oldVal);
+  }
+
+  /**
+   * The aria label of the button.
+   */
+  @property({ attribute: 'aria-label' })
+  public get ariaLabel() {
+    return this._ariaLabel;
+  }
+
   /** Sets focus in the button. */
   @alternateName('focusComponent')
   public focus(options?: FocusOptions) {
@@ -81,6 +101,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     return html`
       <button
         part="base"
+        aria-label=${ifDefined(this.ariaLabel)}
         .disabled=${this.disabled}
         class=${classMap(this.classes)}
         type=${ifDefined(this.type)}
@@ -102,6 +123,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
+        aria-label=${ifDefined(this.ariaLabel)}
         class=${classMap(this.classes)}
         @focus=${this.handleFocus}
         @blur=${this.handleBlur}

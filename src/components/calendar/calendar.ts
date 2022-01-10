@@ -622,7 +622,11 @@ export default class IgcCalendarComponent extends SizableMixin(
               aria-label=${this.previousButtonLabel}
               @click=${this.navigatePrevious}
             >
-              <igc-icon name="navigate_before" collection="internal"></igc-icon>
+              <igc-icon
+                aria-hidden="true"
+                name="navigate_before"
+                collection="internal"
+              ></igc-icon>
             </button>
             <button
               part=${partNameMap({
@@ -632,7 +636,11 @@ export default class IgcCalendarComponent extends SizableMixin(
               aria-label=${this.nextButtonLabel}
               @click=${this.navigateNext}
             >
-              <igc-icon name="navigate_next" collection="internal"></igc-icon>
+              <igc-icon
+                aria-hidden="true"
+                name="navigate_next"
+                collection="internal"
+              ></igc-icon>
             </button>
           </div>`
         : ''}
