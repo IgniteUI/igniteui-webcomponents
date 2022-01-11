@@ -1,20 +1,16 @@
 import { LitElement, html } from 'lit';
-import { IgcToggleController } from './toggle.controller';
+import { igcToggle } from './toggle.directive';
 import { IToggleOptions } from './utilities';
 
 export default class PopperTestComponent extends LitElement {
-  public target!: HTMLElement;
-  public options!: IToggleOptions;
-  public open = false;
-  public toggle = new IgcToggleController(this);
-  public toggleDirective!: any;
+  private toggleDirective: any;
+
+  constructor(target: HTMLElement, open: boolean, options?: IToggleOptions) {
+    super();
+    this.toggleDirective = igcToggle(target, open, options);
+  }
 
   protected render() {
-    this.toggleDirective = this.toggle.createToggle(
-      this.target,
-      this.open,
-      this.options
-    );
-    return html` <div ${this.toggleDirective}>Toggle Content</div>`;
+    return html`<div ${this.toggleDirective}>Toggle Content</div>`;
   }
 }

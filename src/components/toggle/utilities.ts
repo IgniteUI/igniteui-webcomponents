@@ -1,7 +1,7 @@
 import { BasePlacement, VariationPlacement } from '@popperjs/core/lib/enums';
 
 /**
- * Common interface for Components with show and hide functionality
+ * Common interface for components with show and hide functionality.
  */
 export interface IToggleView {
   element?: any;
@@ -22,10 +22,10 @@ export interface IgcToggleEventMap {
   igcClosed: CustomEvent<void>;
 }
 /**
- * Interface describing the options for toggle components' configuration
+ * Interface describing the options for toggle components' configuration.
  */
 export interface IToggleOptions {
-  /** The preferred placement of the popper element around the target element. */
+  /** The preferred placement of the toggle element around the target element. */
   placement: IgcPlacement;
   /** The positioning strategy to use.
    * Use the `fixed` strategy when the target element is in a fixed container, otherwise - use `absolute`.

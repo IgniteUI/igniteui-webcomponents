@@ -1,8 +1,9 @@
-import { flip } from '@popperjs/core/lib/modifiers';
+import { flip, offset } from '@popperjs/core/lib/modifiers';
 import {
   createPopper,
   Instance,
   Modifier,
+  OptionsGeneric,
 } from '@popperjs/core/lib/popper-lite.js';
 import {
   directive,
@@ -17,7 +18,7 @@ import { styles } from './toggle.material.css';
 export class IgcToggleDirective extends Directive {
   /** @private */
   public static styles = styles;
-  // public styles = styles;
+
   private style = `
     color: #666;
     background: white;
@@ -28,11 +29,11 @@ export class IgcToggleDirective extends Directive {
     border-radius: 4px;`;
 
   private _part: PartInfo;
-  private _open = false;
   private _placement: IgcPlacement = 'bottom-start';
   private _strategy: 'absolute' | 'fixed' = 'absolute';
-  private _flip = false;
-  private _modifiers: Modifier<any, any>[] = [flip];
+  private _flip? = false;
+  private _offset: { x: number; y: number } | undefined;
+  private _modifiers: Modifier<any, any>[] = [];
   private _instance!: Instance;
   private _popperElement!: HTMLElement;
   private _defaultOptions: IToggleOptions = {
@@ -44,68 +45,79 @@ export class IgcToggleDirective extends Directive {
   /**
    * Creates a popper instance
    * @param target - The element, relative to which, the popper will be positioned.
-   * @param open - The initial open state.
+   * @param open - The initial open state. Default is false.
    * @param options - The popper configuration options.
-   * @returns The popper instance.
+   * @returns The popper element.
    */
   private createToggleInstance(
     target: HTMLElement,
     open: boolean,
     options?: IToggleOptions
   ) {
-    this._open = open;
-    this._popperElement = this.createPopperElement();
+    this._popperElement = this.createPopperElement(open);
 
-    if (this._instance) {
-      this.updateToggleOptions(options);
-    } else {
+    const popperOptions = this.createPopperOptions(options);
+
+    if (!this._instance) {
       if (!target) {
         return;
       }
-
-      const toggleOptions = Object.assign({}, this._defaultOptions, options);
-      this._instance = createPopper(target, this._popperElement, toggleOptions);
+      this._instance = createPopper(target, this._popperElement, popperOptions);
+    } else {
+      this.updatePopperOptions(popperOptions);
     }
 
     return this._instance.state.elements.popper;
   }
 
-  private createPopperElement() {
+  /** Gets the popper element and sets the specified open state. */
+  private createPopperElement(open = false) {
     if (!this._popperElement) {
       this._popperElement = (this._part as ElementPart).element as HTMLElement;
       this._popperElement.classList.add('igc-toggle');
       this._popperElement.setAttribute('style', this.style);
     }
 
-    this._open
+    open
       ? this._popperElement.classList.remove('igc-toggle-hidden')
       : this._popperElement.classList.add('igc-toggle-hidden');
 
     return this._popperElement;
   }
 
-  private updateToggleOptions(options?: IToggleOptions) {
-    options = Object.assign({}, this._defaultOptions, options);
-    const popperOptions: PopperOptions = {
+  private createPopperOptions(options?: IToggleOptions) {
+    options = options
+      ? Object.assign({}, this._defaultOptions, options)
+      : this._defaultOptions;
+    this._placement = options.placement;
+    this._strategy = options.strategy;
+    this._modifiers = this.updateModifiers(options);
+    return {
       placement: options.placement,
       strategy: options.strategy,
-      modifiers: this.updateModifiers(options),
+      modifiers: this._modifiers,
     };
-
-    this._instance.setOptions(popperOptions);
   }
 
-  private updateModifiers(options: IToggleOptions) {
-    const flipModifier = this._modifiers.find((m) => m.name === 'flip');
-    this._flip = options.flip ?? this._flip;
-    if (flipModifier) {
-      flipModifier.enabled = this._flip;
-    } else if (this._flip) {
-      this._modifiers = [...this._modifiers, flip];
-    }
+  /** Updates the options of the popper _instance. */
+  private updatePopperOptions(
+    options: Partial<OptionsGeneric<Modifier<any, any>>>
+  ) {
+    this._instance?.setOptions(options);
+    this._instance?.update();
+  }
 
-    if (options.offset) {
-      this.setOffset(options.offset.x, options.offset.y);
+  /** Updates the popper modifiers. */
+  private updateModifiers(options: IToggleOptions) {
+    if (this._flip !== options.flip) {
+      this._flip = options.flip;
+      this._flip ? this.addModifier(flip) : this.removeModifier(flip);
+    }
+    if (this._offset !== options.offset) {
+      this._offset = options.offset;
+      this._offset
+        ? this.setOffset(this._offset.x, this._offset.y)
+        : this.removeModifier(offset);
     }
     return this._modifiers;
   }
@@ -116,26 +128,35 @@ export class IgcToggleDirective extends Directive {
    * @param deltaY - The amount of offset in vertical direction.
    */
   private setOffset(deltaX: number, deltaY: number) {
-    let offset = [deltaX, deltaY];
+    let offsetValue = [deltaX, deltaY];
     if (
       this._placement.toString().includes('left') ||
       this._placement.toString().includes('right')
     ) {
-      offset = [deltaY, deltaX];
+      offsetValue = [deltaY, deltaX];
     }
 
-    this._instance?.setOptions({
-      modifiers: [
-        ...this._modifiers,
-        {
-          name: 'offset',
-          options: {
-            offset: offset,
-          },
-        },
-      ],
-    });
-    this._instance.update();
+    this.addModifier(offset, { offset: offsetValue });
+  }
+
+  private addModifier(modifier: Modifier<any, any>, options?: any) {
+    let mod = this._modifiers.find((m) => m.name === modifier.name);
+    if (!mod) {
+      mod = modifier;
+      this._modifiers.push(mod);
+    }
+    if (options && mod.options !== options) {
+      mod.options = options;
+    }
+
+    return mod;
+  }
+
+  private removeModifier(modifier: Modifier<any, any>) {
+    const index = this._modifiers.findIndex((m) => m.name === modifier.name);
+    if (index > -1) {
+      this._modifiers.splice(index, 1);
+    }
   }
 
   // Temporary workaround for the unguarded environment checks in popperjs code before implementing the package bundling.
@@ -162,9 +183,3 @@ export class IgcToggleDirective extends Directive {
 }
 
 export const igcToggle = directive(IgcToggleDirective);
-
-interface PopperOptions {
-  placement: IgcPlacement;
-  strategy: 'absolute' | 'fixed';
-  modifiers?: Modifier<string, any>[];
-}
