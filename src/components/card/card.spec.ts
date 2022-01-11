@@ -23,7 +23,7 @@ describe('Card Component', () => {
 
   it('a11y audit', async () => {
     el = await fixture<IgcCardComponent>(html`<igc-card></igc-card>`);
-    expect(el).shadowDom.to.be.accessible();
+    await expect(el).shadowDom.to.be.accessible();
   });
 
   it('check the default outlined value', async () => {

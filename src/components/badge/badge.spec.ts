@@ -9,7 +9,7 @@ describe('Badge', () => {
   it('passes the a11y audit', async () => {
     const el = await fixture<IgcBadgeComponent>(html`<igc-badge></igc-badge>`);
 
-    expect(el).shadowDom.to.be.accessible();
+    await expect(el).shadowDom.to.be.accessible();
   });
 
   it('should initialize with default values', async () => {
