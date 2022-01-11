@@ -8,7 +8,7 @@
     max-height: rem(128px);
     padding: 0 rem(16px);
     background: color(primary, 500);
-    color: contrast-color(primary, 500);
+    color: contrast-color(primary, 600);
     box-shadow: var(--igc-elevation-4);
     font-family: var(--igc-font-family);
 }
@@ -41,15 +41,31 @@
 
 [name='start']::slotted(*) {
     margin-inline-end: rem(16px);
+    margin-inline-start: rem(1px);
 }
 
 [name='end']::slotted(*) {
     margin-inline-start: rem(16px);
+    margin-inline-end: rem(1px);
+}
+
+::slotted(igc-input[part='helper-text']) {
+    margin-top: 0 !important;
+}
+
+::slotted(igc-avatar[part='base']) {
+    max-width: rem(32px);
+    max-height: rem(32px);
+    min-height: 0;
+    min-width: 0;
 }
 
 ::slotted(igc-icon) {
     cursor: pointer;
-    color: contrast-color(primary, 500);
+    color: contrast-color(primary, 600);
+    width: rem(32px);
+    height: rem(32px);
+    font-size: rem(32px);
 }
 
 ::slotted(*) {

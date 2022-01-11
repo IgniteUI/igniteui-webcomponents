@@ -1,5 +1,7 @@
 @use '../../styles/utilities' as utils;
 
+$container-background: utils.color(surface, 500) !default;
+
 @mixin theme() {
     igc-input,
     igc-input[outlined] {
@@ -38,7 +40,7 @@
             border: 1px solid utils.color(gray, 500);
             border-radius: utils.rem(2px);
             transition: none;
-            background: utils.color(surface, 500);
+            background: $container-background;
             cursor: text;
             grid-template-columns: auto 1fr auto;
             overflow: hidden;

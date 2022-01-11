@@ -1,5 +1,9 @@
 import { html } from 'lit';
-import { watch } from '../../common/decorators';
+import {
+  blazorIndirectRender,
+  blazorSuppressComponent,
+  watch,
+} from '../../common/decorators';
 import {
   DateRangeType,
   ICalendarDate,
@@ -41,6 +45,8 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
  * @csspart week-number-inner - The inner week number container.
  */
 @customElement('igc-days-view')
+@blazorSuppressComponent
+@blazorIndirectRender
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>

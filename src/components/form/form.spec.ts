@@ -20,7 +20,7 @@ describe('Form', () => {
   it('passes the a11y audit', async () => {
     const el = await fixture<IgcFormComponent>(html`<igc-form></igc-form>`);
 
-    expect(el).shadowDom.to.be.accessible();
+    await expect(el).shadowDom.to.be.accessible();
   });
 
   it('displays content', async () => {

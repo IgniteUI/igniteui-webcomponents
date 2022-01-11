@@ -8,11 +8,16 @@ describe('Rating component', () => {
   });
 
   const getRatingSymbols = (el: IgcRatingComponent) =>
-    el.shadowRoot!.querySelectorAll('igc-icon');
+    el.shadowRoot!.querySelectorAll(
+      `[part='rating-symbol']`
+    ) as NodeListOf<HTMLSpanElement>;
   const getRatingWrapper = (el: IgcRatingComponent) =>
-    el.shadowRoot!.querySelector('div') as HTMLElement;
+    el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
   const fireKeyboardEvent = (key: string) =>
-    new KeyboardEvent('keydown', { key });
+    new KeyboardEvent('keydown', { key, bubbles: true, composed: true });
+  const fireMouseEvent = (type: string, opts: MouseEventInit) =>
+    new MouseEvent(type, opts);
+  const getBoundingRect = (el: Element) => el.getBoundingClientRect();
   let el: IgcRatingComponent;
 
   describe('', () => {
@@ -22,7 +27,7 @@ describe('Rating component', () => {
 
     it('is initialized with the proper default values', async () => {
       expect(el.size).to.equal('large');
-      expect(el.length).to.equal(5);
+      expect(el.max).to.equal(5);
       expect(el.hasAttribute('disabled')).to.be.false;
       expect(el.hasAttribute('hover')).to.be.false;
       expect(el.hasAttribute('readonly')).to.be.false;
@@ -32,7 +37,7 @@ describe('Rating component', () => {
 
     it('is initialized correctly with passed attributes', async () => {
       const value = 10,
-        length = 10,
+        max = 10,
         name = 'rating',
         label = 'Test rating',
         size = 'small';
@@ -41,22 +46,22 @@ describe('Rating component', () => {
         html`<igc-rating
           value=${value}
           size=${size}
-          length=${length}
+          max=${max}
           name=${name}
           label=${label}
         ></igc-rating>`
       );
 
       expect(el.value).to.equal(value);
-      expect(el.length).to.equal(length);
+      expect(el.max).to.equal(max);
       expect(el.name).to.equal(name);
       expect(el.label).to.equal(label);
       expect(el.size).to.equals(size);
     });
 
-    it('value is truncated if greater than `length` attribute', async () => {
+    it('value is truncated if greater than `max` attribute', async () => {
       const value = 15,
-        length = 10,
+        max = 10,
         name = 'rating',
         label = 'Test rating',
         size = 'small';
@@ -65,71 +70,169 @@ describe('Rating component', () => {
         html`<igc-rating
           value=${value}
           size=${size}
-          length=${length}
+          max=${max}
           name=${name}
           label=${label}
         ></igc-rating>`
       );
 
       expect(el.value).not.to.equal(value);
-      expect(el.value).to.equal(length);
-      expect(el.length).to.equal(length);
+      expect(el.value).to.equal(max);
+      expect(el.max).to.equal(max);
       expect(el.name).to.equal(name);
       expect(el.label).to.equal(label);
       expect(el.size).to.equals(size);
     });
 
     it('out of bounds value is normalized', async () => {
-      el.length = 10;
+      el.max = 10;
       el.value = 20;
+      el.precision = 10;
       await elementUpdated(el);
 
       expect(el.value).to.equal(10);
+      expect(el.precision).to.equal(1);
 
       el.value = -10;
+      el.precision = -1;
       await elementUpdated(el);
 
       expect(el.value).to.equal(0);
+      expect(el.precision).to.equal(0.001);
     });
 
-    it('has appropriately sets ARIA attributes', async () => {
+    it('has appropriately set ARIA attributes', async () => {
       const label = 'Test Rating';
 
       el.label = label;
-      el.length = 10;
-      el.value = 7;
+      el.max = 10;
       await elementUpdated(el);
 
       expect(getRatingWrapper(el).getAttribute('aria-labelledby')).to.equal(
         label
       );
-      expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal('7');
+      // initial render should not set valuenow if no value is passed
+      expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.be.null;
       expect(getRatingWrapper(el).getAttribute('aria-valuemax')).to.equal('10');
+      getRatingSymbols(el).forEach((symbol, key) =>
+        expect(symbol.getAttribute('aria-label')).to.equal(
+          `${key + 1} out of ${el.max}`
+        )
+      );
+
+      el.value = 7;
+      await elementUpdated(el);
+      expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal('7');
+    });
+
+    it('correctly reflects ARIA labels callbacks', async () => {
+      const valueText = (val: number) => `You have selected ${val}`;
+      const symbolLabel = (index: number) =>
+        `Rate it ${index + 1} of ${el.max}`;
+
+      el.valueFormatter = valueText;
+      el.labelFormatter = symbolLabel;
+      el.max = 9;
+      el.value = 6;
+
+      await elementUpdated(el);
+
+      expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
+        'You have selected 6'
+      );
+      getRatingSymbols(el).forEach((symbol, key) =>
+        expect(symbol.getAttribute('aria-label')).to.equal(
+          `Rate it ${key + 1} of ${el.max}`
+        )
+      );
+    });
+
+    it('correctly reflects stepUp calls', async () => {
+      el.precision = 0.5;
+      el.stepUp();
+      await elementUpdated(el);
+
+      expect(el.value).to.equal(0.5);
+      el.stepUp(3);
+      await elementUpdated(el);
+      expect(el.value).to.equal(2);
+    });
+
+    it('correctly reflects stepDown calls', async () => {
+      el.precision = 0.5;
+      el.value = 5;
+      await elementUpdated(el);
+
+      el.stepDown(5);
+      await elementUpdated(el);
+      expect(el.value).to.equal(2.5);
     });
 
     it('correctly updates value on click', async () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
-      getRatingSymbols(el).item(2).click();
+      const symbol = getRatingSymbols(el).item(2);
+      const { x, width } = getBoundingRect(symbol);
+      symbol.dispatchEvent(
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 2,
+        })
+      );
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 3 });
+      expect(el.value).to.equal(3);
+    });
+
+    it('correctly updates value on click [precision != 1]', async () => {
+      const eventSpy = sinon.spy(el, 'emitEvent');
+      el.precision = 0.5;
+      await elementUpdated(el);
+
+      const symbol = getRatingSymbols(el).item(2);
+      const { x, width } = getBoundingRect(symbol);
+      symbol.dispatchEvent(
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 4,
+        })
+      );
+      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 2.5 });
+      expect(el.value).to.equal(2.5);
     });
 
     it('correctly reflects hover state', async () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
+      el.value = 2;
       el.hover = true;
       await elementUpdated(el);
+      const symbol = getRatingSymbols(el).item(2);
+      const { x, width } = getBoundingRect(symbol);
 
-      getRatingSymbols(el)
-        .item(2)
-        .dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      symbol.dispatchEvent(
+        fireMouseEvent('mousemove', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 2,
+        })
+      );
       expect(eventSpy).calledOnceWithExactly('igcHover', { detail: 3 });
-      expect(el.value).to.equal(0);
+      expect(el.value).to.equal(2);
     });
 
     it('correctly resets value if the same rating value is clicked', async () => {
       el.value = 5;
       await elementUpdated(el);
+      const symbol = getRatingSymbols(el).item(4);
+      const { x, width } = getBoundingRect(symbol);
 
-      getRatingSymbols(el).item(4).click();
+      symbol.dispatchEvent(
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 2,
+        })
+      );
       expect(el.value).to.equal(0);
     });
 
@@ -145,7 +248,7 @@ describe('Rating component', () => {
 
     it('does nothing on click if readonly', async () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
-      el.disabled = true;
+      el.readonly = true;
       await elementUpdated(el);
 
       getRatingSymbols(el).item(3).click();
@@ -182,7 +285,7 @@ describe('Rating component', () => {
     });
 
     it('sets min/max rating value on Home/End keys', async () => {
-      el.length = 10;
+      el.max = 10;
       el.value = 5;
       await elementUpdated(el);
 

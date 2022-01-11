@@ -1,27 +1,5 @@
-@use '../utilities' as utils;
-@use '../../components/button/button.indigo' as button;
-@use '../../components/button/icon-button.indigo' as icon-button;
-@use '../../components/card/card.indigo' as card;
-@use '../../components/checkbox/checkbox.indigo' as checkbox;
-@use '../../components/radio/radio.indigo' as radio;
-@use '../../components/checkbox/switch.indigo' as switch;
-@use '../../components/navbar/navbar.indigo' as navbar;
-@use '../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
-@use '../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
-@use '../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
-@use '../../components/list/list.indigo' as list;
-@use '../../components/input/input.indigo' as input;
+@use '../../utilities' as utils;
 
-$palette: utils.palette(
-    $primary: #3f51b5,
-    $secondary: #3f51b5,
-    $gray: hsl(236deg 8% 5%),
-    $surface: #fff,
-    $info: #9208bc,
-    $success: #689f38,
-    $warn: #ff9800,
-    $error: #cf1a2b
-) !default;
 $elevations: utils.elevations(
     rgb(0 0 0 / 26%),
     rgb(0 0 0 / 12%),
@@ -152,29 +130,24 @@ $indigo-type-scale: utils.type-scale(
 );
 $type-scale: utils.extend($indigo-type-scale);
 
-:root {
-    --igc-border-radius: #{utils.rem(2px)};
-    --igc-spacing-small: #{utils.rem(2px)};
-    --igc-spacing-medium: #{utils.rem(4px)};
-    --igc-spacing-large: #{utils.rem(8px)};
-
-    @include utils.palette($palette);
-    @include utils.elevations($elevations);
-    @include utils.typography(
-        $font-family: '\'Nunito Sans\', sans-serif',
-        $type-scale: $type-scale
-    );
+.igc-scrollbar {
+    --scrolbar-size: #{utils.rem(16px)};
+    --igc-scrollbar-track-color: #{utils.color(gray, 200)};
+    --igc-scrollbar-thumb-color: #{utils.color(gray, 400)};
 }
 
-@include button.theme();
-@include card.theme();
-@include checkbox.theme();
-@include radio.theme();
-@include switch.theme();
-@include navbar.theme();
-@include nav-drawer.theme();
-@include nav-drawer-item.theme();
-@include nav-drawer-header.theme();
-@include list.theme();
-@include input.theme();
-@include icon-button.theme();
+@mixin root-styles($palette) {
+    :root {
+        --igc-border-radius: #{utils.rem(2px)};
+        --igc-spacing-small: #{utils.rem(2px)};
+        --igc-spacing-medium: #{utils.rem(4px)};
+        --igc-spacing-large: #{utils.rem(8px)};
+
+        @include utils.palette($palette);
+        @include utils.elevations($elevations);
+        @include utils.typography(
+            $font-family: '\'Nunito Sans\', sans-serif',
+            $type-scale: $type-scale
+        );
+    }
+}

@@ -23,7 +23,7 @@ describe('List', () => {
     });
 
     it('passes the a11y audit', async () => {
-      expect(el).shadowDom.to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
     });
 
     it('renders list with items', async () => {

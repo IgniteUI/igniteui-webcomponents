@@ -1,0 +1,39 @@
+@use '../../utilities' as utils;
+@use '../base/bootstrap' as base;
+@use '../../../components/badge/badge.bootstrap' as badge;
+@use '../../../components/button/button.bootstrap' as button;
+@use '../../../components/button/icon-button.bootstrap' as icon-button;
+@use '../../../components/card/card.bootstrap' as card;
+@use '../../../components/checkbox/checkbox.bootstrap' as checkbox;
+@use '../../../components/radio/radio.bootstrap' as radio;
+@use '../../../components/checkbox/switch.bootstrap' as switch;
+@use '../../../components/navbar/navbar.bootstrap' as navbar;
+@use '../../../components/list/list.bootstrap' as list with (
+    $separator-color: utils.color(gray, 100)
+);
+@use '../../../components/calendar/calendar.bootstrap' as calendar;
+@use '../../../components/input/input.bootstrap' as input with ($input-background: transparent);
+
+$palette: utils.palette(
+    $primary: #0d6efd,
+    $secondary: #6c757d,
+    $gray: #fff,
+    $surface: #333,
+    $info: #0dcaf0,
+    $success: #198754,
+    $warn: #ffc107,
+    $error: #dc3545,
+) !default;
+
+@include base.root-styles($palette);
+@include badge.theme();
+@include button.theme();
+@include card.theme();
+@include checkbox.theme();
+@include radio.theme();
+@include switch.theme();
+@include navbar.theme();
+@include list.theme();
+@include calendar.theme();
+@include input.theme();
+@include icon-button.theme();

@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.json",
+  "exclude": [
+    "../**/*.spec.ts",
+    "../stories"
+  ],
+  "compilerOptions": {
+    "outDir": "../dist",
+    "rootDir": "../src",
+    "declaration": false,
+    "declarationMap": false,
+    "removeComments": true
+  },
+  "include": [
+    "../**/*.ts"
+  ]
+}

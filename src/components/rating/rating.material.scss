@@ -4,20 +4,58 @@
 $size-small: rem(16px);
 $size-medium: rem(20px);
 $size-large: rem(24px);
-
 $spacing: rem(2px);
 
-[part~='base'] {
+$selected-color: color(primary, 500) !default;
+$bg-color: color(surface, 'A100') !default;
+$disabled-color: color(gray, 100) !default;
+
+:host {
     display: inline-flex;
-    align-items: center;
-    gap: $spacing;
-    padding: $spacing;
+    user-select: none;
 }
 
-[part~='icon-full'] {
-    position: absolute;
+:host([disabled]) {
     pointer-events: none;
-    color: color(gray, 900);
+    background-color: $disabled-color;
+    color: $disabled-color;
+}
+
+[part='base'] {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+[part='overlay'] {
+    cursor: default;
+    pointer-events: none;
+    background-color: $bg-color;
+    mix-blend-mode: color;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+
+    &.start {
+        right: 0;
+    }
+
+    &.end {
+        left: 0;
+    }
+}
+
+[part='rating-symbol'] {
+    cursor: default;
+    font-size: var(--size, rem(48px));
+    display: flex;
+    color: $selected-color;
+    transition: transform 120ms cubic-bezier(.645, .045, .355, 1);
+
+    &:hover {
+        transform: scale(1.1);
+    }
 }
 
 [part~='icon-fraction'] {
