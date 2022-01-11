@@ -197,11 +197,6 @@ export class IgcSliderBaseComponent extends LitElement {
     return 0;
   }
 
-  /* c8 ignore next 3 */
-  protected get fillValue() {
-    return 0;
-  }
-
   /* c8 ignore next */
   protected normalizeValue(): void {}
 
@@ -512,9 +507,16 @@ export class IgcSliderBaseComponent extends LitElement {
     `;
   }
 
-  private renderSteps(valueFraction = 1) {
+  private renderSteps() {
     if (!this.discreteTrack || !this.step) {
-      return html`
+      return html``;
+    }
+
+    const trackRange = this.max - this.min;
+    const interval = ((100 / (trackRange / this.step)) * 10) / 10;
+
+    return html`
+      <div part="steps">
         <svg width="100%" height="100%" style="display: flex">
           <line
             x1="0"
@@ -522,29 +524,12 @@ export class IgcSliderBaseComponent extends LitElement {
             x2="100%"
             y2="1"
             stroke="currentColor"
+            stroke-dasharray="1.5px, calc(${interval * Math.sqrt(2)}% - 1.5px)"
+            stroke-linecap="round"
             stroke-width="2px"
           ></line>
         </svg>
-      `;
-    }
-
-    const trackRange = this.max - this.min;
-    const interval = ((100 / (trackRange / this.step)) * 10) / 10;
-
-    return html`
-      <svg width="100%" height="100%" style="display: flex">
-        <line
-          x1="0"
-          y1="1"
-          x2="100%"
-          y2="1"
-          stroke="currentColor"
-          stroke-dasharray="calc(${(interval / valueFraction) *
-          Math.sqrt(2)}% - 2px), 2px"
-          stroke-dashoffset="-1px"
-          stroke-width="2px"
-        ></line>
-      </svg>
+      </div>
     `;
   }
 
@@ -555,10 +540,9 @@ export class IgcSliderBaseComponent extends LitElement {
           ? html`<div part="ticks">${this.renderTicks()}</div>`
           : html``}
         <div part="track">
-          <div part="fill" style=${styleMap(this.getTrackStyle())}>
-            ${this.renderSteps(this.valueToFraction(this.fillValue))}
-          </div>
-          <div part="inactive">${this.renderSteps()}</div>
+          <div part="fill" style=${styleMap(this.getTrackStyle())}></div>
+          <div part="inactive"></div>
+          ${this.renderSteps()}
         </div>
         ${this.tickOrientation !== 'start'
           ? html`<div part="ticks">${this.renderTicks()}</div>`

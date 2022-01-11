@@ -80,10 +80,6 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     return this.activeThumb === this.thumbFrom ? this.lower : this.upper;
   }
 
-  protected get fillValue() {
-    return this.upper - this.lower;
-  }
-
   protected normalizeValue(): void {
     this._lower = this.validateValue(this._lower);
     this._upper = this.validateValue(this._upper);

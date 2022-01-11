@@ -4,10 +4,12 @@
     $thumb-size: utils.rem(16px);
     $thumb-radius: calc(#{$thumb-size} / 2);
 
-    // igc-slider::part(track),
-    // igc-slider::part(inactive) {
-    //     height: utils.rem(6px);
-    // }
+    igc-slider::part(track),
+    igc-slider::part(inactive),
+    igc-range-slider::part(track),
+    igc-range-slider::part(inactive) {
+        height: utils.rem(6px);
+    }
 
     igc-slider::part(fill),
     igc-range-slider::part(fill) {

@@ -7,11 +7,11 @@
     igc-slider:hover,
     igc-range-slider:hover {
         &::part(inactive) {
-            color: utils.color(primary, 500, .32);
+            background: utils.color(primary, 500, .32);
         }
 
         &::part(fill) {
-            color: utils.color(primary, 500);
+            background: utils.color(primary, 500);
         }
 
         &::part(thumb) {
@@ -19,21 +19,29 @@
         }
     }
 
-    // igc-slider::part(track),
-    // igc-slider::part(fill),
-    // igc-slider::part(inactive) {
-    //     height: utils.rem(4px);
-    // }
+    igc-slider::part(track),
+    igc-slider::part(fill),
+    igc-slider::part(inactive),
+    igc-range-slider::part(track),
+    igc-range-slider::part(fill),
+    igc-range-slider::part(inactive) {
+        height: utils.rem(4px);
+    }
 
     igc-slider::part(inactive),
     igc-range-slider::part(inactive) {
-        color: utils.color(gray, 400);
+        background: utils.color(gray, 400);
         top: initial;
     }
 
     igc-slider::part(fill),
     igc-range-slider::part(fill) {
-        color: utils.color(gray, 700);
+        background: utils.color(gray, 700);
+    }
+
+    igc-slider::part(steps),
+    igc-range-slider::part(steps) {
+        top: utils.rem(1px);
     }
 
     igc-slider::part(thumb),
@@ -57,11 +65,11 @@
     igc-slider[disabled],
     igc-range-slider[disabled] {
         &::part(inactive) {
-            color: utils.color(gray, 200);
+            background: utils.color(gray, 200);
         }
 
         &::part(fill) {
-            color: utils.color(gray, 400);
+            background: utils.color(gray, 400);
         }
 
         &::part(thumb) {

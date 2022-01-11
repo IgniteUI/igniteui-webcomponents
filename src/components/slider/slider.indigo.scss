@@ -7,25 +7,27 @@
     igc-slider:hover,
     igc-range-slider:hover {
         &::part(inactive) {
-            color: utils.color(gray, 500);
+            background: utils.color(gray, 500);
         }
 
         &::part(fill) {
-            color: utils.color(primary, 400);
+            background: utils.color(primary, 400);
         }
     }
 
     igc-slider::part(inactive),
     igc-range-slider::part(inactive) {
-        color: utils.color(gray, 400);
+        background: utils.color(gray, 400);
     }
 
     igc-slider::part(track),
     igc-slider::part(inactive),
     igc-slider::part(fill),
+    igc-slider::part(steps),
     igc-range-slider::part(track),
     igc-range-slider::part(inactive),
-    igc-range-slider::part(fill) {
+    igc-range-slider::part(fill),
+    igc-range-slider::part(steps) {
         height: utils.rem(2px);
         top: initial;
         border-radius: initial;
@@ -52,7 +54,7 @@
         &::part(inactive),
         &::part(fill),
         &::part(thumb) {
-            color: utils.color(gray, 300);
+            background: utils.color(gray, 300);
         }
     }
 }
