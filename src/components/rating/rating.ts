@@ -6,6 +6,7 @@ import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { SizableMixin } from '../common/mixins/sizable';
 import IgcIconComponent from '../icon/icon';
+import { styles } from './rating.material.css';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -23,6 +24,8 @@ export default class igcRatingComponent extends SizableMixin(
 ) {
   /** @private */
   public static tagName = 'igc-rating';
+
+  public static styles = [styles];
 
   @queryAll('igc-icon')
   protected icons!: NodeListOf<IgcIconComponent>;
@@ -109,7 +112,7 @@ export default class igcRatingComponent extends SizableMixin(
     return this.hover
       ? html`
           <div
-            part="base"
+            part="base hover"
             tabindex=${ifDefined(this.readonly ? undefined : 0)}
             aria-labelledby=${ifDefined(this.label)}
             aria-valuemin="0"
@@ -142,10 +145,16 @@ export default class igcRatingComponent extends SizableMixin(
 
   protected *renderIcons() {
     for (let i = 0; i < this.length; i++) {
-      yield html`<igc-icon
-        .size=${this.size}
-        .name=${this.bindValue(i)}
-      ></igc-icon>`;
+      yield html` <div part="${this.size}">
+        <igc-icon
+          part="icon-full"
+          .name=${this.bindValue(i)}
+          .size=${this.size}
+        ></igc-icon>
+        <div part="icon-fraction ${this.size}">
+          <igc-icon .size=${this.size} .name=${this.bindValue(i)}> </igc-icon>
+        </div>
+      </div>`;
     }
   }
 

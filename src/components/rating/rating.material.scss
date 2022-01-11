@@ -1,0 +1,51 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+$size-small: rem(16px);
+$size-medium: rem(20px);
+$size-large: rem(24px);
+
+$spacing: rem(2px);
+
+[part~='base'] {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing;
+    padding: $spacing;
+}
+
+[part~='icon-full'] {
+    position: absolute;
+    pointer-events: none;
+    color: color(gray, 900);
+}
+
+[part~='icon-fraction'] {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    igc-icon {
+        position: absolute;
+        // TODO Make this RTL
+        left: 0;
+        color: limegreen;
+    }
+}
+
+[part~='small']{
+    width: $size-small;
+    height: $size-small;
+}
+
+[part~='medium']{
+    width: $size-medium;
+    height: $size-medium;
+}
+
+[part~='large']{
+    width: $size-large;
+    height: $size-large;
+}
