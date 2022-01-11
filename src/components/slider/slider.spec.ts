@@ -18,10 +18,8 @@ describe('Slider component', () => {
     el.shadowRoot!.querySelector(`[part='track']`) as HTMLElement;
   const getTrackFill = (el: IgcSliderBaseComponent) =>
     el.shadowRoot!.querySelector(`[part='fill']`) as HTMLElement;
-  const getTrackFillLine = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelector(`[part='fill'] line`) as SVGLineElement;
-  const getTrackInactiveLine = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelector(`[part='inactive'] line`) as SVGLineElement;
+  const getTrackSteps = (el: IgcSliderBaseComponent) =>
+    el.shadowRoot!.querySelector(`[part='steps']`) as HTMLElement;
   const getThumb = (el: IgcSliderComponent) =>
     el.shadowRoot!.querySelector(`[part='thumb']`) as HTMLElement;
   const getLowerThumb = (el: IgcRangeSliderComponent) =>
@@ -491,25 +489,21 @@ describe('Slider component', () => {
       }
     });
 
-    it('track and track fill should be continuos or discrete based on discreteTrack', async () => {
+    it('track should be continuos or discrete based on discreteTrack', async () => {
       slider.step = 10;
-      slider.value = 30;
       await elementUpdated(slider);
 
-      let fillLine = getTrackFillLine(slider);
-      let inactiveLine = getTrackInactiveLine(slider);
-      expect(fillLine.hasAttribute('stroke-dasharray')).to.be.false;
-      expect(inactiveLine.hasAttribute('stroke-dasharray')).to.be.false;
+      let steps = getTrackSteps(slider);
+      expect(steps).to.be.null;
 
       slider.discreteTrack = true;
       await elementUpdated(slider);
-      fillLine = getTrackFillLine(slider);
-      inactiveLine = getTrackInactiveLine(slider);
-      expect(fillLine.getAttribute('stroke-dasharray')).to.be.eq(
-        'calc(47.14045207910318% - 2px), 2px'
-      );
-      expect(inactiveLine.getAttribute('stroke-dasharray')).to.be.eq(
-        'calc(14.142135623730951% - 2px), 2px'
+      steps = getTrackSteps(slider);
+      expect(steps).not.to.be.null;
+
+      const line = steps.querySelector('line');
+      expect(line!.getAttribute('stroke-dasharray')).to.eq(
+        '1.5px, calc(14.142135623730951% - 1.5px)'
       );
     });
 
