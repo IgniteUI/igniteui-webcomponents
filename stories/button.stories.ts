@@ -56,6 +56,11 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    ariaLabel: {
+      type: 'string',
+      description: 'The aria label of the button.',
+      control: 'text',
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -76,6 +81,7 @@ interface ArgTypes {
   target: '_blank' | '_parent' | '_self' | '_top' | undefined;
   rel: string;
   disabled: boolean;
+  ariaLabel: string;
   size: 'small' | 'medium' | 'large';
 }
 // endregion

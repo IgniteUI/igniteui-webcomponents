@@ -11,7 +11,7 @@ describe('Avatar', () => {
       html`<igc-avatar></igc-avatar>`
     );
 
-    expect(el).shadowDom.to.be.accessible();
+    await expect(el).shadowDom.to.be.accessible();
   });
 
   it('should initialize avatar component with default values', async () => {

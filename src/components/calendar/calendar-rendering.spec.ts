@@ -20,7 +20,7 @@ describe('Calendar Rendering', () => {
     });
 
     it('passes the a11y audit', async () => {
-      expect(el).shadowDom.to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
     });
 
     it('renders calendar successfully', async () => {
