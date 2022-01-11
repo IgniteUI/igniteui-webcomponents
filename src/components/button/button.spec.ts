@@ -143,7 +143,7 @@ describe('Button component', () => {
     });
 
     it('renders a button element successfully', async () => {
-      expect(el).shadowDom.to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
       expect(el).shadowDom.to.equal(`<button/>`, {
         ignoreChildren: ['button'],
         ignoreAttributes: ['class', 'part'],
@@ -239,7 +239,9 @@ describe('Button component', () => {
     );
   });
 
-  const createButtonComponent = (template = '<igc-button/>') => {
+  const createButtonComponent = (
+    template = '<igc-button>Click</igc-button>'
+  ) => {
     return fixture<IgcButtonComponent>(html`${unsafeStatic(template)}`);
   };
 });
@@ -257,7 +259,7 @@ describe('LinkButton component', () => {
     });
 
     it('renders an anchor element successfully', async () => {
-      expect(el).shadowDom.to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
       expect(el).shadowDom.to.equal(
         `<a aria-disabled="false" class="${classValue(
           `contained medium`
@@ -386,7 +388,9 @@ describe('LinkButton component', () => {
     );
   });
 
-  const createLinkButtonComponent = (template = '<igc-button href="/"/>') => {
+  const createLinkButtonComponent = (
+    template = '<igc-button href="/">Click</igc-button>'
+  ) => {
     return fixture<IgcButtonComponent>(html`${unsafeStatic(template)}`);
   };
 });

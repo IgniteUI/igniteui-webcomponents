@@ -50,7 +50,7 @@ describe('Switch', () => {
     });
 
     it('should render a switch component successfully', async () => {
-      expect(el).shadowDom.to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
     });
 
     it('should set the switch name property correctly', async () => {

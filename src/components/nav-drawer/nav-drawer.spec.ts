@@ -30,7 +30,7 @@ describe('Navigation Drawer', () => {
     });
 
     it('passes the a11y audit', async () => {
-      expect(el).shadowDom.to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
     });
 
     it('renders nav drawer with items', async () => {
