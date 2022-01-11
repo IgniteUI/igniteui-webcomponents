@@ -25,7 +25,7 @@ describe('Calendar Rendering', () => {
     });
 
     it('passes the a11y audit', async () => {
-      expect(el).shadowDom.to.be.accessible();
+      await expect(daysView).shadowDom.to.be.accessible();
     });
 
     it('successfully switches to next month by pressing PageDown', async () => {
