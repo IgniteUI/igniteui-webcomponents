@@ -52,7 +52,7 @@ describe('Checkbox', () => {
     });
 
     it('should render a checkbox component successfully', async () => {
-      expect(el).shadowDom.to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
     });
 
     it('should set the checkbox name property correctly', async () => {

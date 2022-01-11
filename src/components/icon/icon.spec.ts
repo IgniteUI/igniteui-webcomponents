@@ -28,10 +28,10 @@ describe('Icon component', () => {
 
   it('passes the a11y audit', async () => {
     const el = await fixture<IgcIconComponent>(
-      html`<igc-icon name="bug"></igc-icon>`
+      html`<igc-icon name="bug" aria-label="Bug icon"></igc-icon>`
     );
 
-    expect(el).to.be.accessible();
+    await expect(el).to.be.accessible();
   });
 
   it('should render icon with a name and default collection', async () => {

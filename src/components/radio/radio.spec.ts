@@ -50,7 +50,7 @@ describe('Radio Component', () => {
     });
 
     it('renders a radio element successfully', async () => {
-      expect(radio).shadowDom.to.be.accessible();
+      await expect(radio).shadowDom.to.be.accessible();
     });
 
     it('sets label position properly', async () => {
