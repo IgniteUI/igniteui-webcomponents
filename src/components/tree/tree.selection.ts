@@ -60,8 +60,14 @@ export class IgcTreeSelectionService {
   // OK
   /** Clears item selection */
   public clearItemsSelection(): void {
+    const oldSelection = this.getSelectedItems();
+    const oldIndeterminate = this.getIndeterminateItems();
     this.itemSelection.clear();
     this.indeterminateItems.clear();
+    oldSelection.forEach((i: IgcTreeItemComponent) => (i.selected = false));
+    oldIndeterminate.forEach(
+      (i: IgcTreeItemComponent) => (i.indeterminate = false)
+    );
   }
 
   // OK
@@ -74,28 +80,27 @@ export class IgcTreeSelectionService {
     return this.indeterminateItems.has(item);
   }
 
+  // OK
   /** Called on `item.ngOnDestroy` to ensure state is correct after item is removed */
   public ensureStateOnItemDelete(item: IgcTreeItemComponent): void {
-    if (this.tree?.selection !== IgcTreeSelectionType.Cascade) {
+    if (this.tree?.selection === IgcTreeSelectionType.None) {
       return;
     }
-    // requestAnimationFrame(() => {
-    if (this.isItemSelected(item)) {
-      // item is destroyed, do not emit event // Da ama ne
-      this.deselectItemsWithNoEvent([item], true);
+
+    // Don't update the internal state of the deleted items because when moving they should keep it
+    // However update the state of their parents
+    this.deselectItemsWithNoEvent([item, ...item.allChildren], true);
+  }
+
+  // OK
+  public retriggerItemState(item: IgcTreeItemComponent): void {
+    if (item.selected) {
+      this.itemSelection.delete(item);
+      this.selectItemsWithNoEvent([item], false);
     } else {
-      if (!item.parentItem) {
-        return;
-      }
-      const assitantLeafItem = item.parentItem?.allChildren.find(
-        (e: IgcTreeItemComponent) => !e.directChildren?.length
-      );
-      if (!assitantLeafItem) {
-        return;
-      }
-      this.retriggerItemState(assitantLeafItem);
+      this.itemSelection.add(item);
+      this.deselectItemsWithNoEvent([item]);
     }
-    // });
   }
 
   // OK
@@ -140,15 +145,10 @@ export class IgcTreeSelectionService {
   /** Select specified items. No event is emitted. */
   public selectItemsWithNoEvent(
     items: IgcTreeItemComponent[],
-    clearPrevSelection = false,
-    requestUpdate = true
+    clearPrevSelection = false
   ): void {
     if (this.tree && this.tree.selection === IgcTreeSelectionType.Cascade) {
-      this.cascadeSelectItemsWithNoEvent(
-        items,
-        clearPrevSelection,
-        requestUpdate
-      );
+      this.cascadeSelectItemsWithNoEvent(items, clearPrevSelection);
       return;
     }
 
@@ -159,23 +159,23 @@ export class IgcTreeSelectionService {
     }
     items.forEach((item) => this.itemSelection.add(item));
 
-    if (requestUpdate) {
-      this.updateItemsState(oldSelection);
-    }
+    this.updateItemsState(oldSelection);
   }
 
   // OK
   /** Deselect specified items. No event is emitted. */
   public deselectItemsWithNoEvent(
     items?: IgcTreeItemComponent[],
-    requestUpdate = true
+    onDelete = false
   ): void {
     if (this.tree && this.tree.selection === IgcTreeSelectionType.Cascade) {
-      this.cascadeDeselectItemsWithNoEvent(items, requestUpdate);
+      this.cascadeDeselectItemsWithNoEvent(items, onDelete);
       return;
     }
-
-    const oldSelection = this.getSelectedItems();
+    const itemSet = new Set(items);
+    const oldSelection = onDelete
+      ? this.getSelectedItems().filter((i) => !itemSet!.has(i))
+      : this.getSelectedItems();
 
     if (!items) {
       this.itemSelection.clear();
@@ -183,9 +183,7 @@ export class IgcTreeSelectionService {
       items.forEach((item) => this.itemSelection.delete(item));
     }
 
-    if (requestUpdate) {
-      this.updateItemsState(oldSelection);
-    }
+    this.updateItemsState(oldSelection);
   }
 
   // OK
@@ -241,8 +239,7 @@ export class IgcTreeSelectionService {
   // OK
   private cascadeSelectItemsWithNoEvent(
     items: IgcTreeItemComponent[],
-    clearPrevSelection = false,
-    requestUpdate = true
+    clearPrevSelection = false
   ): void {
     const oldSelection = this.getSelectedItems();
     const oldIndeterminate = this.getIndeterminateItems();
@@ -267,18 +264,21 @@ export class IgcTreeSelectionService {
     this.itemSelection = new Set(this.itemsToBeSelected);
     this.indeterminateItems = new Set(this.itemsToBeIndeterminate);
 
-    if (requestUpdate) {
-      this.updateItemsState(oldSelection, oldIndeterminate);
-    }
+    this.updateItemsState(oldSelection, oldIndeterminate);
   }
 
   // OK
   private cascadeDeselectItemsWithNoEvent(
     items?: IgcTreeItemComponent[],
-    requestUpdate = true
+    onDelete = false
   ): void {
-    const oldSelection = this.getSelectedItems();
-    const oldIndeterminate = this.getIndeterminateItems();
+    const itemSet = new Set(items);
+    const oldSelection = onDelete
+      ? this.getSelectedItems().filter((i) => !itemSet!.has(i))
+      : this.getSelectedItems();
+    const oldIndeterminate = onDelete
+      ? this.getIndeterminateItems().filter((i) => !itemSet!.has(i))
+      : this.getIndeterminateItems();
 
     if (!items) {
       this.itemSelection.clear();
@@ -295,9 +295,7 @@ export class IgcTreeSelectionService {
       );
     }
 
-    if (requestUpdate) {
-      this.updateItemsState(oldSelection, oldIndeterminate);
-    }
+    this.updateItemsState(oldSelection, oldIndeterminate);
   }
 
   // OK (eventualno setovete)
@@ -494,17 +492,6 @@ export class IgcTreeSelectionService {
     } else {
       this.itemsToBeSelected.delete(item);
       this.itemsToBeIndeterminate.delete(item);
-    }
-  }
-
-  /** Retriggers a item's selection state */
-  private retriggerItemState(item: IgcTreeItemComponent): void {
-    if (item.selected) {
-      this.itemSelection.delete(item);
-      this.selectItemsWithNoEvent([item], false, false);
-    } else {
-      this.itemSelection.add(item);
-      this.deselectItemsWithNoEvent([item], false);
     }
   }
 }

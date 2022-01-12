@@ -40,6 +40,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   public tree?: IgcTreeComponent;
   public parentItem: IgcTreeItemComponent | null = null;
+  public init = false;
 
   /**
    * Store the current selection state before changing the items' parent (drag/drop)
@@ -54,6 +55,9 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   @state()
   public hasChildren = false;
+
+  @state()
+  public level = 0;
 
   @state()
   public indeterminate = false;
@@ -95,6 +99,9 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   }
 
   @property({ type: Boolean })
+  public loadOnDemand = false;
+
+  @property({ type: Boolean })
   public active = false;
 
   @watch('disabled')
@@ -107,21 +114,6 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   @watch('selected', { waitUntilFirstUpdate: true })
   public selectedChange() {
-    if (
-      (this.selectionService?.isItemSelected(this) && this.selected) ||
-      (!this.selectionService?.isItemSelected(this) && !this.selected)
-    ) {
-      return;
-    }
-
-    if (
-      !(this.tree?.connected && this.tree?.items.find((i) => i === this)) &&
-      this.selected
-    ) {
-      this.tree?.forceSelect.push(this);
-      return;
-    }
-
     if (this.selected && !this.selectionService?.isItemSelected(this)) {
       this.selectionService?.selectItemsWithNoEvent([this]);
     }
@@ -133,16 +125,8 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   @property({ reflect: true, type: Boolean })
   public selected = false;
 
-  // public get indeterminate(): boolean {
-  //   return this.selectionService?.isItemIndeterminate(this) ?? false;
-  // }
-
   public get path(): IgcTreeItemComponent[] {
     return this.parentItem?.path ? [...this.parentItem.path, this] : [this];
-  }
-
-  public get level(): number {
-    return this.parentItem ? this.parentItem.level + 1 : 0;
   }
 
   public get directChildren(): Array<IgcTreeItemComponent> {
@@ -186,13 +170,26 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
       this.parentElement?.tagName.toLowerCase() === 'igc-tree-item'
         ? (this.parentElement as IgcTreeItemComponent)
         : null;
+    this.level = this.parentItem ? this.parentItem.level + 1 : 0;
+    this.selection = this.tree.selection;
     this.navService?.update_visible_cache(this, this.expanded);
     this.setAttribute('role', 'treeitem');
     this.addEventListener('focusout', this.clearFocus);
     this.addEventListener('focusin', this.handleFocusIn);
     this.addEventListener('pointerdown', this.onPointerDown);
-    this.selectedChange();
     this.activeChange();
+    if (this.init) {
+      this.selectedChange();
+    } else {
+      if (
+        this.parentItem?.loadOnDemand &&
+        this.selection === IgcTreeSelectionType.Cascade
+      ) {
+        this.selected = this.parentItem.selected;
+      }
+      this.selectionService?.retriggerItemState(this);
+    }
+    this.init = false;
   }
 
   public disconnectedCallback(): void {
@@ -298,8 +295,8 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     }
   }
 
-  public handleChange(event: any) {
-    this.hasChildren = !!event.target.assignedNodes().length;
+  public handleChange() {
+    this.hasChildren = !!this.directChildren.length;
   }
 
   public clearFocus(): void {
@@ -330,7 +327,8 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
               ? 'keyboard_arrow_down'
               : 'keyboard_arrow_right'}"
             collection="internal"
-            ?hidden="${this.loading || !this.directChildren?.length}"
+            ?hidden="${this.loading ||
+            (!this.hasChildren && !this.loadOnDemand)}"
           ></igc-icon>
         </section>
         <section

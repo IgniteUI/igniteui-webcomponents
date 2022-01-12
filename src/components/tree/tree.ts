@@ -36,7 +36,6 @@ export default class IgcTreeComponent extends SizableMixin(
   public navService!: IgcTreeNavigationService;
 
   public forceSelect: IgcTreeItemComponent[] = [];
-  public connected = false;
 
   @property({ attribute: 'id', reflect: true })
   public id = `igc-tree-${NEXT_ID++}`;
@@ -44,7 +43,7 @@ export default class IgcTreeComponent extends SizableMixin(
   @property({ reflect: true, type: Boolean })
   public singleBranchExpand = false;
 
-  @property()
+  @property({ reflect: true })
   public selection: IgcTreeSelectionType = 'none';
 
   @watch('size', { waitUntilFirstUpdate: true })
@@ -52,11 +51,9 @@ export default class IgcTreeComponent extends SizableMixin(
     this.scrollItemIntoView(this.navService.activeItem?.header);
   }
 
-  @watch('selection')
-  public selectionModeChange(oldValue: IgcTreeSelectionType) {
-    if (oldValue) {
-      this.selectionService.clearItemsSelection();
-    }
+  @watch('selection', { waitUntilFirstUpdate: true })
+  public selectionModeChange() {
+    this.selectionService.clearItemsSelection();
     this.items?.forEach((item: IgcTreeItemComponent) => {
       item.selection = this.selection;
     });
@@ -78,24 +75,15 @@ export default class IgcTreeComponent extends SizableMixin(
 
   public connectedCallback() {
     super.connectedCallback();
-    this.connected = true;
     this.classList.add('igc-tree');
     this.addEventListener('keydown', this.handleKeydown);
-    this.updateItems();
-  }
-
-  public disconnectedCallback(): void {
-    this.connected = false;
+    this.items.forEach((i: IgcTreeItemComponent) => {
+      i.init = true;
+    });
   }
 
   private _comparer = <T>(value: T, item: IgcTreeItemComponent) =>
     item.value === value;
-
-  private updateItems() {
-    const toBeSelected = [...this.forceSelect];
-    this.selectionService.selectItemsWithNoEvent(toBeSelected);
-    this.forceSelect = [];
-  }
 
   private handleKeydown(event: KeyboardEvent) {
     this.navService.handleKeydown(event);
@@ -166,7 +154,7 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   protected render() {
-    return html`<slot @slotchange=${this.updateItems}></slot>`;
+    return html`<slot></slot>`;
   }
 }
 
