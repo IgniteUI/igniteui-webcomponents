@@ -27,7 +27,7 @@ describe('Radio Group Component', () => {
     });
 
     it('renders a radio element successfully', async () => {
-      expect(group).shadowDom.to.be.accessible();
+      await expect(group).shadowDom.to.be.accessible();
     });
 
     it('sets alignment properly', async () => {
@@ -118,7 +118,8 @@ describe('Radio Group Component', () => {
   const createRadioGroupComponent = (
     template = html`<igc-radio-group>
       ${values.map(
-        (value) => html`<igc-radio name="fruit" value=${value}></igc-radio>`
+        (value) =>
+          html`<igc-radio name="fruit" value=${value}>${value}</igc-radio>`
       )}
     </igc-radio-group>`
   ) => {

@@ -11,7 +11,7 @@ describe('Navbar component', () => {
       html`<igc-navbar></igc-navbar>`
     );
 
-    expect(el).shadowDom.to.be.accessible();
+    await expect(el).shadowDom.to.be.accessible();
   });
 
   it('displays content', async () => {

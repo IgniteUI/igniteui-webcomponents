@@ -14,7 +14,7 @@ describe('IconButton component', () => {
 
   const DIFF_OPTIONS = {
     ignoreChildren: ['a'],
-    ignoreAttributes: ['aria-disabled', 'part', 'role'],
+    ignoreAttributes: ['aria-label', 'aria-disabled', 'part', 'role'],
   };
   let el: IgcIconButtonComponent;
 
@@ -24,10 +24,11 @@ describe('IconButton component', () => {
     });
 
     it('renders a button element internally', async () => {
-      expect(el).shadowDom.to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
       expect(el).shadowDom.to.equal(`<button><igc-icon></igc-icon></button>`, {
         ignoreAttributes: [
           'variant',
+          'aria-label',
           'aria-disabled',
           'aria-hidden',
           'part',
@@ -41,10 +42,11 @@ describe('IconButton component', () => {
       el.href = 'https://test.com';
       await elementUpdated(el);
 
-      expect(el).shadowDom.to.be.accessible();
+      await expect(el).shadowDom.to.be.accessible();
       expect(el).shadowDom.to.equal(`<a><igc-icon></igc-icon></a>`, {
         ignoreAttributes: [
           'variant',
+          'aria-label',
           'aria-disabled',
           'aria-hidden',
           'part',
@@ -79,6 +81,7 @@ describe('IconButton component', () => {
         {
           ignoreAttributes: [
             'variant',
+            'aria-label',
             'aria-disabled',
             'aria-hidden',
             'part',
@@ -100,6 +103,7 @@ describe('IconButton component', () => {
         {
           ignoreAttributes: [
             'variant',
+            'aria-label',
             'aria-disabled',
             'aria-hidden',
             'part',
@@ -159,7 +163,14 @@ describe('IconButton component', () => {
           <igc-icon></igc-icon>
         </button>`,
         {
-          ignoreAttributes: ['aria-hidden', 'part', 'role', 'size', 'variant'],
+          ignoreAttributes: [
+            'aria-label',
+            'aria-hidden',
+            'part',
+            'role',
+            'size',
+            'variant',
+          ],
         }
       );
     });
@@ -186,7 +197,9 @@ describe('IconButton component', () => {
       DIFF_OPTIONS
     );
   });
-  const createIconButtonComponent = (template = '<igc-icon-button/>') => {
+  const createIconButtonComponent = (
+    template = '<igc-icon-button aria-label="Icon button"/>'
+  ) => {
     return fixture<IgcIconButtonComponent>(html`${unsafeStatic(template)}`);
   };
 });
