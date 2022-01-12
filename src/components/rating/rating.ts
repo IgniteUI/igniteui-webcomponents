@@ -35,7 +35,7 @@ export default class igcRatingComponent extends SizableMixin(
   /** @private */
   public static styles = [styles];
 
-  @queryAll('span[part="rating-symbol"]')
+  @queryAll('span[part="symbol"]')
   protected elements!: NodeListOf<HTMLSpanElement>;
 
   @state()
@@ -128,7 +128,7 @@ export default class igcRatingComponent extends SizableMixin(
 
   protected render() {
     const value = this.hoverState ? this.hoverValue : this.value;
-    const styles = { width: `${100 - Math.round((value / this.max) * 100)}%` };
+    const styles = { width: `${Math.round((value / this.max) * 100)}%` };
     const classes = { start: this.isLTR, end: !this.isLTR };
 
     return html`
@@ -144,12 +144,13 @@ export default class igcRatingComponent extends SizableMixin(
           this.valueFormatter ? this.valueFormatter(value) : undefined
         )}
       >
-        ${this.renderSymbols()}
-        <div
-          part="overlay"
-          class=${classMap(classes)}
-          style=${styleMap(styles)}
-        ></div>
+        <label part="label" for="">Label</label>
+        <div>
+          <div style=${styleMap(styles)} part="fraction large">
+            <div part="symbols-wrapper">${this.renderSymbols()}</div>
+          </div>
+          <div part="symbols-wrapper">${this.renderSymbols()}</div>
+        </div>
       </div>
     `;
   }
@@ -269,7 +270,7 @@ export default class igcRatingComponent extends SizableMixin(
     for (let i = 0; i < this.max; i++) {
       yield html`
         <span
-          part="rating-symbol"
+          part="symbol large"
           aria-label=${this.labelFormatter
             ? this.labelFormatter(i)
             : `${i + 1} out of ${this.max}`}
