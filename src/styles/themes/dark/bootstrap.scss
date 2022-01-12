@@ -13,7 +13,9 @@
 );
 @use '../../../components/calendar/calendar.bootstrap' as calendar;
 @use '../../../components/input/input.bootstrap' as input with ($input-background: transparent);
-@use '../../../components/slider/slider.bootstrap' as slider;
+@use '../../../components/slider/slider.bootstrap' as slider with (
+    $inactive-background: utils.color(secondary, 500, .48)
+);
 
 $palette: utils.palette(
     $primary: #0d6efd,

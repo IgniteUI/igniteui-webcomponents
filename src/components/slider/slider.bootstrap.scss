@@ -1,5 +1,7 @@
 @use '../../styles/utilities' as utils;
 
+$inactive-background: utils.color(secondary, 500, .24) !default;
+
 @mixin theme() {
     $thumb-size: utils.rem(16px);
     $thumb-radius: calc(#{$thumb-size} / 2);
@@ -14,6 +16,11 @@
     igc-slider::part(fill),
     igc-range-slider::part(fill) {
         display: none;
+    }
+
+    igc-slider::part(inactive),
+    igc-range-slider::part(inactive) {
+        background: $inactive-background;
     }
 
     igc-slider::part(thumb),

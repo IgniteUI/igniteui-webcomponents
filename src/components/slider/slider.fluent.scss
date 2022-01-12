@@ -1,5 +1,14 @@
 @use '../../styles/utilities' as utils;
 
+$inactive-background: utils.color(gray, 400) !default;
+$inactive-disabled-background: utils.color(gray, 200) !default;
+$fill-background: utils.color(gray, 700) !default;
+$fill-hover-background: utils.color(primary, 500) !default;
+$fill-disabled-background: utils.color(gray, 400) !default;
+$thumb-border: utils.color(gray, 700) !default;
+$thumb-hover-border: utils.color(primary, 500) !default;
+$thumb-disabled-border: utils.color(gray, 400) !default;
+
 @mixin theme() {
     $thumb-size: utils.rem(16px);
     $thumb-radius: calc(#{$thumb-size} / 2);
@@ -11,11 +20,11 @@
         }
 
         &::part(fill) {
-            background: utils.color(primary, 500);
+            background: $fill-hover-background;
         }
 
         &::part(thumb) {
-            border-color: utils.color(primary, 500);
+            border-color: $thumb-hover-border;
         }
     }
 
@@ -30,13 +39,13 @@
 
     igc-slider::part(inactive),
     igc-range-slider::part(inactive) {
-        background: utils.color(gray, 400);
+        background: $inactive-background;
         top: initial;
     }
 
     igc-slider::part(fill),
     igc-range-slider::part(fill) {
-        background: utils.color(gray, 700);
+        background: $fill-background;
     }
 
     igc-slider::part(steps),
@@ -47,15 +56,11 @@
     igc-slider::part(thumb),
     igc-range-slider::part(thumb) {
         background: utils.color(surface, 500);
-        border: utils.rem(2px) solid utils.color(gray, 700);
+        border: utils.rem(2px) solid $thumb-border;
         width: $thumb-size;
         height: $thumb-size;
         top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
         margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
-
-        &:focus {
-            border-color: utils.color(primary, 200);
-        }
 
         &::after {
             display: none;
@@ -65,16 +70,16 @@
     igc-slider[disabled],
     igc-range-slider[disabled] {
         &::part(inactive) {
-            background: utils.color(gray, 200);
+            background: $inactive-disabled-background;
         }
 
         &::part(fill) {
-            background: utils.color(gray, 400);
+            background: $fill-disabled-background;
         }
 
         &::part(thumb) {
             background: utils.color(surface, 500);
-            border-color: utils.color(gray, 400);
+            border-color: $thumb-disabled-border;
         }
     }
 }
