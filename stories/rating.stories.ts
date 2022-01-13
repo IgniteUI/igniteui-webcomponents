@@ -20,9 +20,8 @@ const metadata = {
       defaultValue: '1',
     },
     symbol: {
-      type: 'string | ((index: number) => string)',
-      description:
-        'The symbol which the rating will display.\nIt also accepts a callback function which gets the current symbol\nindex so the symbol can be resolved per position.',
+      type: 'string',
+      description: 'The symbol which the rating will display.',
       control: 'text',
       defaultValue: '⭐',
     },
@@ -75,7 +74,7 @@ export default metadata;
 interface ArgTypes {
   max: number;
   step: number;
-  symbol: string | ((index: number) => string);
+  symbol: string;
   name: string;
   label: string;
   value: number;
@@ -101,12 +100,12 @@ const Template: Story<ArgTypes, Context> = (
     max,
     disabled,
     readonly,
-    label,
+    label = 'Default',
     value,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  const unfilled = (index: number) => {
+  const customSymbols = (index: number) => {
     switch (index) {
       case 0:
         return '😣';
@@ -123,24 +122,66 @@ const Template: Story<ArgTypes, Context> = (
     }
   };
 
+  const customIcons = (_: number) => {
+    return html`<igc-icon name="diamond-circled"></igc-icon>`;
+  };
+
+  const hoverHandler = (e: CustomEvent) => {
+    const labels = ['', 'Terrible', 'Bad', 'Meh', 'Great', 'Superb'];
+    document.getElementById('selection')!.textContent = `${
+      labels[e.detail] ?? 'Unknown'
+    }!`;
+  };
+
   return html`
-    <igc-rating
-      label=${ifDefined(label)}
-      dir=${ifDefined(direction)}
-      ?disabled=${disabled}
-      ?hover=${hover}
-      ?readonly=${readonly}
-      .step=${Number(step)}
-      .symbol=${symbol || unfilled}
-      .value=${value}
-      .max=${max}
-      .size=${size}
-    >
-    </igc-rating>
-    <h5>
-      If you set an empty string for the <em>icon</em> attribute the callback
-      for unrated symbols will take over.
-    </h5>
+    <div>
+      <igc-rating
+        label=${ifDefined(label)}
+        dir=${ifDefined(direction)}
+        size=${ifDefined(size)}
+        ?disabled=${disabled}
+        ?hover=${hover}
+        ?readonly=${readonly}
+        .step=${Number(step)}
+        .symbol=${symbol}
+        .value=${value}
+        .max=${max}
+      >
+      </igc-rating>
+    </div>
+    <div>
+      <igc-rating
+        label="Custom symbols"
+        @igcChange=${hoverHandler}
+        @igcHover=${hoverHandler}
+        dir=${ifDefined(direction)}
+        size=${ifDefined(size)}
+        ?disabled=${disabled}
+        ?hover=${hover}
+        ?readonly=${readonly}
+        .step=${Number(step)}
+        .symbolFormatter=${customSymbols}
+        .value=${value}
+        .max=${max}
+      >
+      </igc-rating>
+      <span id="selection"></span>
+    </div>
+    <div>
+      <igc-rating
+        label="Icons"
+        dir=${ifDefined(direction)}
+        size=${ifDefined(size)}
+        ?disabled=${disabled}
+        ?hover=${hover}
+        ?readonly=${readonly}
+        .step=${Number(step)}
+        .symbolFormatter=${customIcons}
+        .value=${value}
+        .max=${max}
+      >
+      </igc-rating>
+    </div>
   `;
 };
 

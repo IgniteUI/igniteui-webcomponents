@@ -9,7 +9,7 @@ describe('Rating component', () => {
 
   const getRatingSymbols = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelectorAll(
-      `[part='rating-symbol']`
+      `[part~='symbol']`
     ) as NodeListOf<HTMLSpanElement>;
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
@@ -102,6 +102,8 @@ describe('Rating component', () => {
     });
 
     it('it is accessible', async () => {
+      el.label = 'Rating';
+      await elementUpdated(el);
       await expect(el).to.be.accessible();
     });
 
@@ -112,17 +114,9 @@ describe('Rating component', () => {
       el.max = 10;
       await elementUpdated(el);
 
-      expect(getRatingWrapper(el).getAttribute('aria-label')).to.equal(
-        label
-      );
-      // initial render should not set valuenow if no value is passed
-      expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.be.null;
+      expect(getRatingWrapper(el).getAttribute('aria-label')).to.equal(label);
+      expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal('0');
       expect(getRatingWrapper(el).getAttribute('aria-valuemax')).to.equal('10');
-      getRatingSymbols(el).forEach((symbol, key) =>
-        expect(symbol.getAttribute('aria-label')).to.equal(
-          `${key + 1} out of ${el.max}`
-        )
-      );
 
       el.value = 7;
       await elementUpdated(el);

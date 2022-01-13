@@ -55,13 +55,16 @@ export default class IgcRatingComponent extends SizableMixin(
   @property({ type: Number })
   public step = 1;
 
-  /**
-   * The symbol which the rating will display.
-   * It also accepts a callback function which gets the current symbol
-   * index so the symbol can be resolved per position.
-   */
+  /** The symbol which the rating will display. */
   @property()
-  public symbol: string | ((index: number) => string) = '⭐';
+  public symbol = '⭐';
+
+  /**
+   * Callback for customizing the rendered symbols (e.g. svg, icons, etc.)
+   * Takes precedence over symbol.
+   */
+  @property({ attribute: false })
+  public symbolFormatter!: (index: number) => any;
 
   /** The name attribute of the control */
   @property()
@@ -97,7 +100,6 @@ export default class IgcRatingComponent extends SizableMixin(
 
   constructor() {
     super();
-    this.addEventListener('click', this.handleClick);
     this.addEventListener('keydown', this.handleKeyDown);
   }
 
@@ -117,32 +119,6 @@ export default class IgcRatingComponent extends SizableMixin(
     this.value -= this.round(n * this.step);
   }
 
-  protected render() {
-    const value = this.hoverState ? this.hoverValue : this.value;
-    const styles = { width: `${Math.round((value / this.max) * 100)}%` };
-
-    return html`
-      <div
-        part="base"
-        role="slider"
-        tabindex=${ifDefined(this.disabled ? undefined : 0)}
-        aria-label=${this.label ?? nothing}
-        aria-valuemin="0"
-        aria-valuenow=${this.value}
-        aria-valuemax=${this.max}
-        aria-valuetext=${this.valueFormatter ? this.valueFormatter(value) : this.value}
-      >
-        <label part="label" for="">Label</label>
-        <div>
-          <div style=${styleMap(styles)} part="fraction large">
-            <div part="symbols-wrapper">${this.renderSymbols()}</div>
-          </div>
-          <div part="symbols-wrapper">${this.renderSymbols()}</div>
-        </div>
-      </div>
-    `;
-  }
-
   @watch('max')
   protected handleMaxChange() {
     this.max = Math.max(0, this.max);
@@ -159,19 +135,6 @@ export default class IgcRatingComponent extends SizableMixin(
   @watch('step')
   protected handlePrecisionChange() {
     this.step = clamp(this.step, 0.001, 1);
-  }
-
-  @watch('hover')
-  protected handleHoverChange() {
-    if (this.hover) {
-      this.addEventListener('mousemove', this.handleMouseMove);
-      this.addEventListener('mouseenter', this.handleMouseEnter);
-      this.addEventListener('mouseleave', this.handleMouseLeave);
-    } else {
-      this.removeEventListener('mousemove', this.handleMouseMove);
-      this.removeEventListener('mouseenter', this.handleMouseEnter);
-      this.removeEventListener('mouseleave', this.handleMouseLeave);
-    }
   }
 
   protected handleClick({ clientX }: MouseEvent) {
@@ -252,16 +215,6 @@ export default class IgcRatingComponent extends SizableMixin(
     return clamp(value, this.step, this.max);
   }
 
-  protected *renderSymbols() {
-    for (let i = 0; i < this.max; i++) {
-      yield html`
-        <span part="symbol large">
-          ${this.renderSymbol(i)}
-        </span>
-      `;
-    }
-  }
-
   protected getPrecision(num: number) {
     const [_, decimal] = num.toString().split('.');
     return decimal ? decimal.length : 0;
@@ -279,7 +232,61 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected renderSymbol(index: number) {
-    return typeof this.symbol === 'function' ? this.symbol(index) : this.symbol;
+    return this.symbolFormatter ? this.symbolFormatter(index) : this.symbol;
+  }
+
+  protected *renderSymbols() {
+    for (let i = 0; i < this.max; i++) {
+      yield html`
+        <span part="symbol ${this.size}"> ${this.renderSymbol(i)} </span>
+      `;
+    }
+  }
+
+  protected renderFractionWrapper(styles: { width: string }) {
+    return this.hover
+      ? html` <div
+          @click=${this.handleClick}
+          @mouseenter=${this.handleMouseEnter}
+          @mouseleave=${this.handleMouseLeave}
+          @mousemove=${this.handleMouseMove}
+        >
+          <div style=${styleMap(styles)} part="fraction ${this.size}">
+            <div part="symbols-wrapper">${this.renderSymbols()}</div>
+          </div>
+          <div part="symbols-wrapper">${this.renderSymbols()}</div>
+        </div>`
+      : html`
+          <div @click=${this.handleClick}>
+            <div style=${styleMap(styles)} part="fraction ${this.size}">
+              <div part="symbols-wrapper">${this.renderSymbols()}</div>
+            </div>
+            <div part="symbols-wrapper">${this.renderSymbols()}</div>
+          </div>
+        `;
+  }
+
+  protected render() {
+    const value = this.hoverState ? this.hoverValue : this.value;
+    const styles = { width: `${Math.round((value / this.max) * 100)}%` };
+
+    return html`
+      <div
+        part="base"
+        role="slider"
+        tabindex=${ifDefined(this.disabled ? undefined : 0)}
+        aria-label=${this.label ?? nothing}
+        aria-valuemin="0"
+        aria-valuenow=${this.value}
+        aria-valuemax=${this.max}
+        aria-valuetext=${this.valueFormatter
+          ? this.valueFormatter(value)
+          : this.value}
+      >
+        <label part="label ${this.size}" for="">${this.label}</label>
+        ${this.renderFractionWrapper(styles)}
+      </div>
+    `;
   }
 }
 

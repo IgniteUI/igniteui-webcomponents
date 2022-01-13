@@ -5,13 +5,10 @@ $size-small: rem(16px);
 $size-medium: rem(20px);
 $size-large: rem(24px);
 $spacing: rem(2px);
-
 $color: color(gray, 700) !default;
 $background: color(surface) !default;
-
 $selected-background: color(primary, 50) !default;
 $selected-color: color(primary) !default;
-
 $disabled-color: color(gray, 400) !default;
 $disabled-background: transparent !default;
 
@@ -62,6 +59,7 @@ $disabled-background: transparent !default;
 
     [part~='symbols-wrapper'] {
         position: absolute;
+
         // TODO Check wit Stefan if we need background at all
         background: $selected-background;
         color: $selected-color;
@@ -137,4 +135,3 @@ $disabled-background: transparent !default;
     min-height: calc(#{$size-large} + (#{$spacing} * 2));
     height: calc(#{$size-large} + (#{$spacing} * 2));
 }
-
