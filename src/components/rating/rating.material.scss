@@ -5,12 +5,15 @@ $size-small: rem(16px);
 $size-medium: rem(20px);
 $size-large: rem(24px);
 $spacing: rem(2px);
+
 $color: color(gray, 700) !default;
-$background: color(surface) !default;
-$selected-background: color(primary, 50) !default;
+//$background: color(surface) !default;
+
+//$selected-background: transparent !default;
 $selected-color: color(primary) !default;
+
 $disabled-color: color(gray, 400) !default;
-$disabled-background: transparent !default;
+//$disabled-background: transparent !default;
 
 :host {
     display: inline-flex;
@@ -22,32 +25,38 @@ $disabled-background: transparent !default;
     pointer-events: none;
 
     [part~='symbols-wrapper'] {
-        background: $disabled-background;
         color: $disabled-color;
         opacity: .6;
     }
 }
 
-[part='base'] {
-    display: inline-flex;
+[part='rating'] {
+    display: flex;
+    align-items: flex-start;
     flex-direction: column;
     gap: $spacing * 2;
+}
+
+[part='base'] {
     position: relative;
+    display: inline-flex;
 }
 
 [part='label'] {
+    @include type-category('body-1');
     padding-inline-start: $spacing;
 }
 
 [part~='symbols-wrapper'] {
     position: relative;
     display: flex;
-    background: $background;
+    //background: $background;
     justify-content: center;
     align-items: center;
     padding: $spacing;
     gap: $spacing;
     counter-reset: symbols;
+    inset-inline-start: 0;
 }
 
 [part~='fraction'] {
@@ -61,7 +70,7 @@ $disabled-background: transparent !default;
         position: absolute;
 
         // TODO Check wit Stefan if we need background at all
-        background: $selected-background;
+        //background: $selected-background;
         color: $selected-color;
         top: 0;
         inset-inline-start: 0;
@@ -80,6 +89,11 @@ $disabled-background: transparent !default;
     align-items: center;
     justify-content: center;
     filter: grayscale(100%);
+    cursor: pointer;
+
+    igc-icon {
+        color: inherit;
+    }
 
     &:empty {
         &::before {
@@ -131,7 +145,26 @@ $disabled-background: transparent !default;
     }
 }
 
+[part='label large'],
+[part='label medium'],
+[part='label small'] {
+    height: auto;
+    width: auto;
+    min-height: 0;
+    min-width: 0;
+}
+
 [part='fraction large'] {
     min-height: calc(#{$size-large} + (#{$spacing} * 2));
     height: calc(#{$size-large} + (#{$spacing} * 2));
+}
+
+[part='fraction medium'] {
+    min-height: calc(#{$size-medium} + (#{$spacing} * 2));
+    height: calc(#{$size-medium} + (#{$spacing} * 2));
+}
+
+[part='fraction small'] {
+    min-height: calc(#{$size-small} + (#{$spacing} * 2));
+    height: calc(#{$size-small} + (#{$spacing} * 2));
 }

@@ -271,20 +271,22 @@ export default class IgcRatingComponent extends SizableMixin(
     const styles = { width: `${Math.round((value / this.max) * 100)}%` };
 
     return html`
-      <div
-        part="base"
-        role="slider"
-        tabindex=${ifDefined(this.disabled ? undefined : 0)}
-        aria-label=${this.label ?? nothing}
-        aria-valuemin="0"
-        aria-valuenow=${this.value}
-        aria-valuemax=${this.max}
-        aria-valuetext=${this.valueFormatter
-          ? this.valueFormatter(value)
-          : this.value}
-      >
+      <div part="rating">
         <label part="label ${this.size}" for="">${this.label}</label>
-        ${this.renderFractionWrapper(styles)}
+        <div
+          part="base"
+          role="slider"
+          tabindex=${ifDefined(this.disabled ? undefined : 0)}
+          aria-label=${this.label ?? nothing}
+          aria-valuemin="0"
+          aria-valuenow=${this.value}
+          aria-valuemax=${this.max}
+          aria-valuetext=${this.valueFormatter
+            ? this.valueFormatter(value)
+            : this.value}
+        >
+          ${this.renderFractionWrapper(styles)}
+        </div>
       </div>
     `;
   }

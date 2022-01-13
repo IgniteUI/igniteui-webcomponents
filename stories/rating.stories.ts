@@ -149,7 +149,8 @@ const Template: Story<ArgTypes, Context> = (
       >
       </igc-rating>
     </div>
-    <div>
+    <br />
+    <div style="display: inline-flex; align-items: flex-end; gap: 8px;">
       <igc-rating
         label="Custom symbols"
         @igcChange=${hoverHandler}
@@ -165,8 +166,9 @@ const Template: Story<ArgTypes, Context> = (
         .max=${max}
       >
       </igc-rating>
-      <span id="selection"></span>
+      <span style="min-height: 24px" id="selection"></span>
     </div>
+    <br />
     <div>
       <igc-rating
         label="Icons"
