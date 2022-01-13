@@ -1,7 +1,7 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, queryAll, state } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { watch } from '../common/decorators/watch';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
@@ -34,7 +34,7 @@ export default class IgcRatingComponent extends SizableMixin(
   /** @private */
   public static styles = [styles];
 
-  @queryAll('span[part="rating-symbol"]')
+  @queryAll('span[part="symbol"]')
   protected elements!: NodeListOf<HTMLSpanElement>;
 
   @state()
@@ -115,6 +115,32 @@ export default class IgcRatingComponent extends SizableMixin(
    */
   public stepDown(n = 1) {
     this.value -= this.round(n * this.step);
+  }
+
+  protected render() {
+    const value = this.hoverState ? this.hoverValue : this.value;
+    const styles = { width: `${Math.round((value / this.max) * 100)}%` };
+
+    return html`
+      <div
+        part="base"
+        role="slider"
+        tabindex=${ifDefined(this.disabled ? undefined : 0)}
+        aria-label=${this.label ?? nothing}
+        aria-valuemin="0"
+        aria-valuenow=${this.value}
+        aria-valuemax=${this.max}
+        aria-valuetext=${this.valueFormatter ? this.valueFormatter(value) : this.value}
+      >
+        <label part="label" for="">Label</label>
+        <div>
+          <div style=${styleMap(styles)} part="fraction large">
+            <div part="symbols-wrapper">${this.renderSymbols()}</div>
+          </div>
+          <div part="symbols-wrapper">${this.renderSymbols()}</div>
+        </div>
+      </div>
+    `;
   }
 
   @watch('max')
@@ -226,6 +252,16 @@ export default class IgcRatingComponent extends SizableMixin(
     return clamp(value, this.step, this.max);
   }
 
+  protected *renderSymbols() {
+    for (let i = 0; i < this.max; i++) {
+      yield html`
+        <span part="symbol large">
+          ${this.renderSymbol(i)}
+        </span>
+      `;
+    }
+  }
+
   protected getPrecision(num: number) {
     const [_, decimal] = num.toString().split('.');
     return decimal ? decimal.length : 0;
@@ -244,44 +280,6 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected renderSymbol(index: number) {
     return typeof this.symbol === 'function' ? this.symbol(index) : this.symbol;
-  }
-
-  protected *renderSymbols() {
-    for (let i = 0; i < this.max; i++) {
-      yield html`
-        <span part="rating-symbol">
-          ${this.renderSymbol(i)}
-        </span>
-      `;
-    }
-  }
-
-  protected render() {
-    const value = this.hoverState ? this.hoverValue : this.value;
-    const styles = { width: `${100 - Math.round((value / this.max) * 100)}%` };
-    const classes = { start: this.isLTR, end: !this.isLTR };
-
-    return html`
-      <div
-        part="base"
-        role="slider"
-        tabindex=${this.disabled ? -1 : 0}
-        aria-label=${this.label ?? nothing}
-        aria-readonly=${this.readonly}
-        aria-disabled=${this.disabled}
-        aria-valuemin="0"
-        aria-valuenow=${this.value}
-        aria-valuemax=${this.max}
-        aria-valuetext=${this.valueFormatter ? this.valueFormatter(value) : this.value}
-      >
-        ${this.renderSymbols()}
-        <div
-          part="overlay"
-          class=${classMap(classes)}
-          style=${styleMap(styles)}
-        ></div>
-      </div>
-    `;
   }
 }
 
