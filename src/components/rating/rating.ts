@@ -1,6 +1,5 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property, queryAll, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators/watch';
@@ -26,7 +25,7 @@ export interface IgcRatingEventMap {
  *
  * @csspart base - The main wrapper which holds all of the rating elements.
  */
-export default class igcRatingComponent extends SizableMixin(
+export default class IgcRatingComponent extends SizableMixin(
   EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
 ) {
   /** @private */
@@ -54,7 +53,7 @@ export default class igcRatingComponent extends SizableMixin(
 
   /** The minimum value change allowed. */
   @property({ type: Number })
-  public precision = 1;
+  public step = 1;
 
   /**
    * The symbol which the rating will display.
@@ -80,14 +79,6 @@ export default class igcRatingComponent extends SizableMixin(
   @property({ attribute: false })
   public valueFormatter!: (value: number) => string;
 
-  /**
-   * A callback function which gets the index for each symbol in the control
-   * and returns a user-friendly representation for it setting it as aria-label.
-   * Important for screen-readers and useful for localization.
-   */
-  @property({ attribute: false })
-  public labelFormatter!: (index: number) => string;
-
   /** The current value of the component */
   @property({ type: Number })
   public value = 0;
@@ -112,70 +103,40 @@ export default class igcRatingComponent extends SizableMixin(
 
   /**
    * Increments the value of the control by `n` steps multiplied by the
-   * precision factor.
+   * step factor.
    */
   public stepUp(n = 1) {
-    this.value += this.round(n * this.precision);
+    this.value += this.round(n * this.step);
   }
 
   /**
    * Decrements the value of the control by `n` steps multiplied by
-   * the precision factor.
+   * the step factor.
    */
   public stepDown(n = 1) {
-    this.value -= this.round(n * this.precision);
-  }
-
-  protected render() {
-    const value = this.hoverState ? this.hoverValue : this.value;
-    const styles = { width: `${100 - Math.round((value / this.max) * 100)}%` };
-    const classes = { start: this.isLTR, end: !this.isLTR };
-
-    return html`
-      <div
-        part="base"
-        role="slider"
-        tabindex=${ifDefined(this.readonly ? undefined : 0)}
-        aria-labelledby=${ifDefined(this.label)}
-        aria-valuemin="0"
-        aria-valuenow=${ifDefined(this.value > 0 ? this.value : undefined)}
-        aria-valuemax=${this.max}
-        aria-valuetext=${ifDefined(
-          this.valueFormatter ? this.valueFormatter(value) : undefined
-        )}
-      >
-        ${this.renderSymbols()}
-        <div
-          part="overlay"
-          class=${classMap(classes)}
-          style=${styleMap(styles)}
-        ></div>
-      </div>
-    `;
+    this.value -= this.round(n * this.step);
   }
 
   @watch('max')
-  protected handleMaxChange(newValue: number) {
-    this.max = Math.max(0, newValue);
+  protected handleMaxChange() {
+    this.max = Math.max(0, this.max);
     if (this.max < this.value) {
       this.value = this.max;
     }
   }
 
   @watch('value')
-  protected handleValueChange(newValue: number) {
-    this.value = clamp(newValue, 0, this.max);
+  protected handleValueChange() {
+    this.value = clamp(this.value, 0, this.max);
   }
 
-  @watch('precision')
-  protected handlePrecisionChange(newValue: number) {
-    this.precision = clamp(newValue, 0.001, 1);
+  @watch('step')
+  protected handlePrecisionChange() {
+    this.step = clamp(this.step, 0.001, 1);
   }
 
   @watch('hover')
-  protected handleHoverChange(newValue: boolean) {
-    this.hover = newValue;
-
+  protected handleHoverChange() {
     if (this.hover) {
       this.addEventListener('mousemove', this.handleMouseMove);
       this.addEventListener('mouseenter', this.handleMouseEnter);
@@ -233,14 +194,14 @@ export default class igcRatingComponent extends SizableMixin(
     switch (key) {
       case 'ArrowUp':
       case 'ArrowRight':
-        result += this.isLTR ? this.precision : -this.precision;
+        result += this.isLTR ? this.step : -this.step;
         break;
       case 'ArrowDown':
       case 'ArrowLeft':
-        result -= this.isLTR ? this.precision : -this.precision;
+        result -= this.isLTR ? this.step : -this.step;
         break;
       case 'Home':
-        result = this.precision;
+        result = this.step;
         break;
       case 'End':
         result = this.max;
@@ -260,28 +221,9 @@ export default class igcRatingComponent extends SizableMixin(
   protected calcNewValue(x: number) {
     const { width, left, right } = this.getBoundingClientRect();
     const percent = this.isLTR ? (x - left) / width : (right - x) / width;
-    const value = this.round(this.max * percent + this.precision / 2);
+    const value = this.round(this.max * percent + this.step / 2);
 
-    return clamp(value, this.precision, this.max);
-  }
-
-  protected *renderSymbols() {
-    for (let i = 0; i < this.max; i++) {
-      yield html`
-        <span
-          part="rating-symbol"
-          aria-label=${this.labelFormatter
-            ? this.labelFormatter(i)
-            : `${i + 1} out of ${this.max}`}
-        >
-          ${this.renderSymbol(i)}
-        </span>
-      `;
-    }
-  }
-
-  protected renderSymbol(index: number) {
-    return typeof this.symbol === 'function' ? this.symbol(index) : this.symbol;
+    return clamp(value, this.step, this.max);
   }
 
   protected getPrecision(num: number) {
@@ -290,8 +232,8 @@ export default class igcRatingComponent extends SizableMixin(
   }
 
   protected round(value: number) {
-    value = Math.round(value / this.precision) * this.precision;
-    return Number(value.toFixed(this.getPrecision(this.precision)));
+    value = Math.round(value / this.step) * this.step;
+    return Number(value.toFixed(this.getPrecision(this.step)));
   }
 
   protected get isLTR() {
@@ -299,10 +241,52 @@ export default class igcRatingComponent extends SizableMixin(
       window.getComputedStyle(this).getPropertyValue('direction') === 'ltr'
     );
   }
+
+  protected renderSymbol(index: number) {
+    return typeof this.symbol === 'function' ? this.symbol(index) : this.symbol;
+  }
+
+  protected *renderSymbols() {
+    for (let i = 0; i < this.max; i++) {
+      yield html`
+        <span part="rating-symbol">
+          ${this.renderSymbol(i)}
+        </span>
+      `;
+    }
+  }
+
+  protected render() {
+    const value = this.hoverState ? this.hoverValue : this.value;
+    const styles = { width: `${100 - Math.round((value / this.max) * 100)}%` };
+    const classes = { start: this.isLTR, end: !this.isLTR };
+
+    return html`
+      <div
+        part="base"
+        role="slider"
+        tabindex=${this.disabled ? -1 : 0}
+        aria-label=${this.label ?? nothing}
+        aria-readonly=${this.readonly}
+        aria-disabled=${this.disabled}
+        aria-valuemin="0"
+        aria-valuenow=${this.value}
+        aria-valuemax=${this.max}
+        aria-valuetext=${this.valueFormatter ? this.valueFormatter(value) : this.value}
+      >
+        ${this.renderSymbols()}
+        <div
+          part="overlay"
+          class=${classMap(classes)}
+          style=${styleMap(styles)}
+        ></div>
+      </div>
+    `;
+  }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-rating': igcRatingComponent;
+    'igc-rating': IgcRatingComponent;
   }
 }

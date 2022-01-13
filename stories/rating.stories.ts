@@ -13,7 +13,7 @@ const metadata = {
       control: 'number',
       defaultValue: '5',
     },
-    precision: {
+    step: {
       type: 'number',
       description: 'The minimum value change allowed.',
       control: 'number',
@@ -74,7 +74,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   max: number;
-  precision: number;
+  step: number;
   symbol: string | ((index: number) => string);
   name: string;
   label: string;
@@ -97,7 +97,7 @@ const Template: Story<ArgTypes, Context> = (
     size,
     hover,
     symbol,
-    precision,
+    step,
     max,
     disabled,
     readonly,
@@ -130,7 +130,7 @@ const Template: Story<ArgTypes, Context> = (
       ?disabled=${disabled}
       ?hover=${hover}
       ?readonly=${readonly}
-      .precision=${Number(precision)}
+      .step=${Number(step)}
       .symbol=${symbol || unfilled}
       .value=${value}
       .max=${max}

@@ -87,18 +87,22 @@ describe('Rating component', () => {
     it('out of bounds value is normalized', async () => {
       el.max = 10;
       el.value = 20;
-      el.precision = 10;
+      el.step = 10;
       await elementUpdated(el);
 
       expect(el.value).to.equal(10);
-      expect(el.precision).to.equal(1);
+      expect(el.step).to.equal(1);
 
       el.value = -10;
-      el.precision = -1;
+      el.step = -1;
       await elementUpdated(el);
 
       expect(el.value).to.equal(0);
-      expect(el.precision).to.equal(0.001);
+      expect(el.step).to.equal(0.001);
+    });
+
+    it('it is accessible', async () => {
+      await expect(el).to.be.accessible();
     });
 
     it('has appropriately set ARIA attributes', async () => {
@@ -108,7 +112,7 @@ describe('Rating component', () => {
       el.max = 10;
       await elementUpdated(el);
 
-      expect(getRatingWrapper(el).getAttribute('aria-labelledby')).to.equal(
+      expect(getRatingWrapper(el).getAttribute('aria-label')).to.equal(
         label
       );
       // initial render should not set valuenow if no value is passed
@@ -127,11 +131,8 @@ describe('Rating component', () => {
 
     it('correctly reflects ARIA labels callbacks', async () => {
       const valueText = (val: number) => `You have selected ${val}`;
-      const symbolLabel = (index: number) =>
-        `Rate it ${index + 1} of ${el.max}`;
 
       el.valueFormatter = valueText;
-      el.labelFormatter = symbolLabel;
       el.max = 9;
       el.value = 6;
 
@@ -140,15 +141,10 @@ describe('Rating component', () => {
       expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
         'You have selected 6'
       );
-      getRatingSymbols(el).forEach((symbol, key) =>
-        expect(symbol.getAttribute('aria-label')).to.equal(
-          `Rate it ${key + 1} of ${el.max}`
-        )
-      );
     });
 
     it('correctly reflects stepUp calls', async () => {
-      el.precision = 0.5;
+      el.step = 0.5;
       el.stepUp();
       await elementUpdated(el);
 
@@ -159,7 +155,7 @@ describe('Rating component', () => {
     });
 
     it('correctly reflects stepDown calls', async () => {
-      el.precision = 0.5;
+      el.step = 0.5;
       el.value = 5;
       await elementUpdated(el);
 
@@ -185,7 +181,7 @@ describe('Rating component', () => {
 
     it('correctly updates value on click [precision != 1]', async () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
-      el.precision = 0.5;
+      el.step = 0.5;
       await elementUpdated(el);
 
       const symbol = getRatingSymbols(el).item(2);
