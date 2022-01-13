@@ -1,5 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
-import { property, queryAll, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { watch } from '../common/decorators/watch';
@@ -34,8 +34,8 @@ export default class IgcRatingComponent extends SizableMixin(
   /** @private */
   public static styles = [styles];
 
-  @queryAll('span[part="symbol"]')
-  protected elements!: NodeListOf<HTMLSpanElement>;
+  @query('[part="base"]', true)
+  protected container!: HTMLElement;
 
   @state()
   protected hoverValue = -1;
@@ -208,7 +208,7 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected calcNewValue(x: number) {
-    const { width, left, right } = this.getBoundingClientRect();
+    const { width, left, right } = this.container.getBoundingClientRect();
     const percent = this.isLTR ? (x - left) / width : (right - x) / width;
     const value = this.round(this.max * percent + this.step / 2);
 

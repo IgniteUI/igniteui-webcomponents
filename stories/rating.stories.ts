@@ -106,20 +106,7 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   const customSymbols = (index: number) => {
-    switch (index) {
-      case 0:
-        return '😣';
-      case 1:
-        return '😔';
-      case 2:
-        return '😐';
-      case 3:
-        return '🙂';
-      case 4:
-        return '😆';
-      default:
-        return '🤔';
-    }
+    return ['😣', '😔', '😐', '🙂', '😆'][index];
   };
 
   const customIcons = (_: number) => {
@@ -127,10 +114,17 @@ const Template: Story<ArgTypes, Context> = (
   };
 
   const hoverHandler = (e: CustomEvent) => {
-    const labels = ['', 'Terrible', 'Bad', 'Meh', 'Great', 'Superb'];
+    const labels = [
+      'Select a value',
+      'Terrible',
+      'Bad',
+      'Meh',
+      'Great',
+      'Superb',
+    ];
     document.getElementById('selection')!.textContent = `${
-      labels[e.detail] ?? 'Unknown'
-    }!`;
+      labels[Math.ceil(e.detail)] ?? 'Unknown'
+    }`;
   };
 
   return html`
@@ -152,7 +146,7 @@ const Template: Story<ArgTypes, Context> = (
     <br />
     <div style="display: inline-flex; align-items: flex-end; gap: 8px;">
       <igc-rating
-        label="Custom symbols"
+        label="Custom symbols with a really really long label"
         @igcChange=${hoverHandler}
         @igcHover=${hoverHandler}
         dir=${ifDefined(direction)}
@@ -162,11 +156,10 @@ const Template: Story<ArgTypes, Context> = (
         ?readonly=${readonly}
         .step=${Number(step)}
         .symbolFormatter=${customSymbols}
-        .value=${value}
-        .max=${max}
+        max="5"
       >
       </igc-rating>
-      <span style="min-height: 24px" id="selection"></span>
+      <span style="min-height: 24px" id="selection">Select a value</span>
     </div>
     <br />
     <div>
