@@ -1,0 +1,12 @@
+@use '../../styles/utilities' as *;
+
+$spacing: rem(6px);
+
+@mixin theme() {
+    igc-rating::part(label) {
+        @include type-category('subtitle-2');
+        color: color(gray, 900);
+        padding-inline-start: $spacing;
+    }
+}
+

@@ -7,26 +7,35 @@ $size-large: rem(24px);
 $spacing: rem(2px);
 
 $color: color(gray, 700) !default;
-//$background: color(surface) !default;
-
-//$selected-background: transparent !default;
 $selected-color: color(primary) !default;
 
-$disabled-color: color(gray, 400) !default;
-//$disabled-background: transparent !default;
+$disabled-color: color(gray, 300) !default;
+$disabled-selected-color: color(gray, 400) !default;
 
 :host {
     display: inline-flex;
     user-select: none;
     font-family: var(--igc-font-family);
+    // Uncomment the next line to test the light/dark mode
+    //background: color(gray, 50);
+    color: $color;
 }
 
 :host([disabled]) {
     pointer-events: none;
 
+    [part~='symbol'],
     [part~='symbols-wrapper'] {
         color: $disabled-color;
-        opacity: .6;
+    }
+
+    [part~='fraction'] {
+
+        [part~='symbol'],
+        [part~='symbols-wrapper'] {
+            color: $disabled-selected-color;
+            filter: grayscale(50%);
+        }
     }
 }
 
@@ -42,8 +51,9 @@ $disabled-color: color(gray, 400) !default;
     display: inline-flex;
 }
 
-[part='label'] {
-    @include type-category('body-1');
+[part~='label'] {
+    @include type-category('caption');
+    color: color(gray, 700);
     padding-inline-start: $spacing;
 }
 
@@ -68,9 +78,6 @@ $disabled-color: color(gray, 400) !default;
 
     [part~='symbols-wrapper'] {
         position: absolute;
-
-        // TODO Check wit Stefan if we need background at all
-        //background: $selected-background;
         color: $selected-color;
         top: 0;
         inset-inline-start: 0;
@@ -83,7 +90,7 @@ $disabled-color: color(gray, 400) !default;
 }
 
 [part~='symbol'] {
-    color: inherit;
+    color: $color;
     font-size: 100%;
     display: flex;
     align-items: center;

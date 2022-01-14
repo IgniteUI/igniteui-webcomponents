@@ -11,6 +11,7 @@
 @use '../../../components/list/list.bootstrap' as list;
 @use '../../../components/calendar/calendar.bootstrap' as calendar;
 @use '../../../components/input/input.bootstrap' as input;
+@use '../../../components/rating/rating.bootstrap' as rating;
 
 $palette: utils.palette(
     $primary: #0d6efd,
@@ -35,3 +36,4 @@ $palette: utils.palette(
 @include calendar.theme();
 @include input.theme();
 @include icon-button.theme();
+@include rating.theme();
