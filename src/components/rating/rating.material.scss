@@ -6,7 +6,9 @@ $size-medium: rem(20px);
 $size-large: rem(24px);
 $spacing: rem(2px);
 
-$color: color(gray, 700) !default;
+$color-label: color(gray, 700) !default;
+$color-symbols: color(gray, 900) !default;
+
 $selected-color: color(primary) !default;
 
 $disabled-color: color(gray, 300) !default;
@@ -18,7 +20,6 @@ $disabled-selected-color: color(gray, 400) !default;
     font-family: var(--igc-font-family);
     // Uncomment the next line to test the light/dark mode
     //background: color(gray, 50);
-    color: $color;
 }
 
 :host([disabled]) {
@@ -53,7 +54,7 @@ $disabled-selected-color: color(gray, 400) !default;
 
 [part~='label'] {
     @include type-category('caption');
-    color: color(gray, 700);
+    color: $color-label;
     padding-inline-start: $spacing;
 }
 
@@ -90,7 +91,7 @@ $disabled-selected-color: color(gray, 400) !default;
 }
 
 [part~='symbol'] {
-    color: $color;
+    color: $color-symbols;
     font-size: 100%;
     display: flex;
     align-items: center;

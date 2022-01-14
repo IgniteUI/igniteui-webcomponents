@@ -143,8 +143,9 @@ const Template: Story<ArgTypes, Context> = (
       >
       </igc-rating>
     </div>
-    <br />
-    <div style="display: inline-flex; align-items: flex-end; gap: 8px;">
+    <div
+      style="display: inline-flex; align-items: flex-end; gap: 8px; margin: 24px 0;"
+    >
       <igc-rating
         label="Custom symbols with a really really long label"
         @igcChange=${hoverHandler}
@@ -161,7 +162,6 @@ const Template: Story<ArgTypes, Context> = (
       </igc-rating>
       <span style="min-height: 24px" id="selection">Select a value</span>
     </div>
-    <br />
     <div>
       <igc-rating
         label="Icons"
