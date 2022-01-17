@@ -39,57 +39,55 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   @property({ type: Boolean, reflect: true })
   public indeterminate = false;
 
-  private handleClick() {
+  protected handleClick() {
     this.checked = !this.checked;
     this.indeterminate = false;
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   @watch('checked', { waitUntilFirstUpdate: true })
+  @watch('indeterminate', { waitUntilFirstUpdate: true })
   protected handleChange() {
-    if (this.checked) {
-      this.input.focus();
-    }
-    this.emitEvent('igcChange', { detail: this.checked });
+    this.invalid = !this.input.checkValidity();
   }
 
   protected render() {
     return html`
       <label
-        part="${partNameMap({ base: true, checked: this.checked })}"
-        for="${this.inputId}"
-        @mousedown="${this.handleMouseDown}"
+        part=${partNameMap({ base: true, checked: this.checked })}
+        for=${this.inputId}
+        @mousedown=${this.handleMouseDown}
       >
         <input
           id=${this.inputId}
           type="checkbox"
-          name="${ifDefined(this.name)}"
-          value="${ifDefined(this.value)}"
-          .disabled="${this.disabled}"
-          .checked="${live(this.checked)}"
-          .indeterminate="${live(this.indeterminate)}"
-          aria-checked="${this.indeterminate && !this.checked
+          name=${ifDefined(this.name)}
+          value=${ifDefined(this.value)}
+          .required=${this.required}
+          .disabled=${this.disabled}
+          .checked=${live(this.checked)}
+          .indeterminate=${live(this.indeterminate)}
+          aria-checked=${this.indeterminate && !this.checked
             ? 'mixed'
-            : this.checked}"
-          aria-disabled="${this.disabled ? 'true' : 'false'}"
-          aria-labelledby="${this.ariaLabelledby
+            : this.checked}
+          aria-disabled=${this.disabled ? 'true' : 'false'}
+          aria-labelledby=${this.ariaLabelledby
             ? this.ariaLabelledby
-            : this.labelId}"
-          @click="${this.handleClick}"
-          @blur="${this.handleBlur}"
-          @focus="${this.handleFocus}"
+            : this.labelId}
+          @click=${this.handleClick}
+          @blur=${this.handleBlur}
+          @focus=${this.handleFocus}
         />
-        <span part="${partNameMap({ control: true, checked: this.checked })}">
-          <span
-            part="${partNameMap({ indicator: true, checked: this.checked })}"
-          >
+        <span part=${partNameMap({ control: true, checked: this.checked })}>
+          <span part=${partNameMap({ indicator: true, checked: this.checked })}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <path d="M4.1,12.7 9,17.6 20.3,6.3" />
             </svg>
           </span>
         </span>
         <span
-          part="${partNameMap({ label: true, checked: this.checked })}"
-          id="${this.labelId}"
+          part=${partNameMap({ label: true, checked: this.checked })}
+          id=${this.labelId}
         >
           <slot></slot>
         </span>
