@@ -90,7 +90,7 @@ const addChildren = (
   for (let i = 0; i < count; i++) {
     const child = document.createElement('igc-tree-item');
     child.selected = selected;
-    child.innerHTML = `<p slot="header">Added Child ${i}</p>`;
+    child.innerHTML = `<p slot="content">Added Child ${i}</p>`;
     parent.appendChild(child);
   }
 };
@@ -206,56 +206,56 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         @igcItemCollapsed=${handleCollapsed}
       >
         <igc-tree-item expanded active selected>
-          <p slot="header">Tree Node 1</p>
+          <p slot="content">Tree Node 1</p>
           <igc-tree-item expanded id="parent">
-            <p slot="header">Tree Node 1.1</p>
+            <p slot="content">Tree Node 1.1</p>
             <igc-tree-item id="loadOnDemand" loadOnDemand>
-              <p slot="header">Tree Node 1.1.1</p>
+              <p slot="content">Tree Node 1.1.1</p>
               ${arr.map(
                 (i) => html`
                   <igc-tree-item>
-                    <p slot="header">Tree Node 1.1.1.${i}</p>
+                    <p slot="content">Tree Node 1.1.1.${i}</p>
                   </igc-tree-item>
                 `
               )}
             </igc-tree-item>
             <igc-tree-item id="asd">
-              <p slot="header">Tree Node 1.1.2</p>
+              <p slot="content">Tree Node 1.1.2</p>
               ${arr1.map(
                 (i) => html`
                   <igc-tree-item>
-                    <p slot="header">Tree Node 1.1.2.${i}</p>
+                    <p slot="content">Tree Node 1.1.2.${i}</p>
                   </igc-tree-item>
                 `
               )}
             </igc-tree-item>
             <igc-tree-item #asd>
-              <p slot="header">
+              <p slot="content">
                 <a href="http://infragistics.com">Infragistics</a>
               </p>
             </igc-tree-item>
           </igc-tree-item>
           <igc-tree-item>
-            <p slot="header">
+            <p slot="content">
               <a href="http://infragistics.com">Infragistics</a>
             </p>
           </igc-tree-item>
         </igc-tree-item>
         <igc-tree-item expanded id="asd1">
-          <p slot="header">Tree Node 2</p>
+          <p slot="content">Tree Node 2</p>
           <igc-tree-item selected>
-            <p slot="header">Tree Node 2.1</p>
+            <p slot="content">Tree Node 2.1</p>
           </igc-tree-item>
           <igc-tree-item id="asd">
-            <p slot="header">Tree Node 2.2</p>
+            <p slot="content">Tree Node 2.2</p>
           </igc-tree-item>
 
           <igc-tree-item selected>
-            <p slot="header">Tree Node 2.3</p>
+            <p slot="content">Tree Node 2.3</p>
           </igc-tree-item>
         </igc-tree-item>
         <igc-tree-item selected>
-          <p slot="header">Tree Node 3</p>
+          <p slot="content">Tree Node 3</p>
         </igc-tree-item>
       </igc-tree>
     </div>
@@ -265,11 +265,11 @@ const BasicTemplate: Story<ArgTypes, Context> = (
     <button @click=${log2}>Add new selected children for normal</button>
     <button @click=${log3}>Add new deselected children for normal</button>
     <button @click=${log4}>Move item</button>
-    <!-- <igc-tree>
+    <igc-tree>
       <igc-tree-item>
-        <p slot="header">Tree Node 4</p>
+        <p slot="content">Tree Node 4</p>
       </igc-tree-item>
-    </igc-tree> -->
+    </igc-tree>
   `;
 };
 

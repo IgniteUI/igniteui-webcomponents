@@ -355,29 +355,34 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     return html`
       <div part="wrapper" class=${classMap(this.classes)}>
         <section part="spacer">
-          ${arrayOf(this.level).map(
-            () => html`<span class="tree-node__spacer"></span>`
-          )}
+          <slot name="indentation"></slot>
+            ${arrayOf(this.level).map(
+              () => html`<span class="tree-node__spacer"></span>`
+            )}
+          </slot>
         </section>
         <section
           part="expandIndicator"
           @click="${this.expandIndicatorClick}"
           class="tree-node__toggle-button"
         >
-          <igc-icon
-            name="navigate_before"
-            collection="internal"
-            ?hidden="${!this.loading}"
-          ></igc-icon>
+          <slot name="expandIndicator">
+            <igc-icon
+              name="navigate_before"
+              collection="internal"
+              ?hidden="${!this.loading}"
+            ></igc-icon>
 
-          <igc-icon
-            name="${this.expanded
-              ? 'keyboard_arrow_down'
-              : 'keyboard_arrow_right'}"
-            collection="internal"
-            ?hidden="${this.loading ||
-            (!this.hasChildren && !this.loadOnDemand)}"
-          ></igc-icon>
+            <igc-icon
+              name="${
+                this.expanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
+              }"
+              collection="internal"
+              ?hidden="${
+                this.loading || (!this.hasChildren && !this.loadOnDemand)
+              }"
+            ></igc-icon>
+          </slot>
         </section>
         <section
           part="selectIndicator"
@@ -393,7 +398,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
           ></igc-checkbox>
         </section>
         <section part="header" class="tree-node__content">
-          <slot name="header"></slot>
+          <slot name="content"></slot>
         </section>
       </div>
       <slot @slotchange=${this.handleChange} ?hidden="${!this.expanded}"></slot>
