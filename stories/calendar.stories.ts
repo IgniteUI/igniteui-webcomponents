@@ -202,6 +202,8 @@ const Template: Story<ArgTypes, Context> = (
     orientation,
     title,
     visibleMonths,
+    value,
+    activeDate,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -238,6 +240,12 @@ const Template: Story<ArgTypes, Context> = (
       .formatOptions=${formatOptions}
       .disabledDates=${disabledDates}
       .specialDates=${specialDates}
+      .activeDate=${activeDate ? new Date(activeDate) : new Date()}
+      .value=${value
+        ? selection === 'single'
+          ? new Date(value as Date)
+          : [new Date(value as Date)]
+        : undefined}
       size=${ifDefined(size)}
       visible-months=${ifDefined(visibleMonths)}
       dir=${ifDefined(direction)}

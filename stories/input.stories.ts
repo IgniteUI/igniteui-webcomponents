@@ -184,6 +184,8 @@ const Template: Story<ArgTypes, Context> = (
     readonly,
     required,
     disabled,
+    min,
+    max,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -197,6 +199,8 @@ const Template: Story<ArgTypes, Context> = (
     maxlength=${ifDefined(maxlength)}
     step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
+    min=${ifDefined(min)}
+    max=${ifDefined(max)}
     .value=${value}
     ?autofocus=${autofocus}
     .readonly=${readonly}

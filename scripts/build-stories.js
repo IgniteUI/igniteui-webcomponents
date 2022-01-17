@@ -15,9 +15,9 @@ const UNION_TYPE_REGEX = /^[""\w\s-]+\|[""\w\s|-]+$/;
 const SUPPORTED_TYPES = ['string', 'number', 'boolean', 'Date'];
 
 const report = {
-  success: (s) => console.log("\x1b[32m%s\x1b[0m", s),
-  warn: (s) => console.warn("\x1b[33m%s\x1b[0m", s),
-  error: (s) => console.error("\x1b[31m%s\x1b[0m", s),
+  success: (s) => console.log('\x1b[32m%s\x1b[0m', s),
+  warn: (s) => console.warn('\x1b[33m%s\x1b[0m', s),
+  error: (s) => console.error('\x1b[31m%s\x1b[0m', s),
 };
 
 const capitalize = (str) => {
@@ -46,6 +46,7 @@ function fixControlProp(propType, options) {
   if (propType.startsWith('number')) {
     return 'number';
   }
+
   if (options) {
     return {
       type: options.length > 4 ? 'select' : 'inline-radio',
@@ -76,12 +77,16 @@ function extractTags(meta) {
     args: Array.from(meta.properties || [])
       .filter(
         (prop) =>
-          SUPPORTED_TYPES.some(type => prop.type === type || prop.type.startsWith(`${type} `)) ||
-          UNION_TYPE_REGEX.test(prop.type)
+          SUPPORTED_TYPES.some(
+            (type) => prop.type === type || prop.type.startsWith(`${type} `)
+          ) || UNION_TYPE_REGEX.test(prop.type)
       )
       .map((prop) => {
         const options =
-          UNION_TYPE_REGEX.test(prop.type) && !SUPPORTED_TYPES.some(type => prop.type === type || prop.type.startsWith(`${type} `))
+          UNION_TYPE_REGEX.test(prop.type) &&
+          !SUPPORTED_TYPES.some(
+            (type) => prop.type === type || prop.type.startsWith(`${type} `)
+          )
             ? prop.type.split('|').map((part) => part.trim().replace(/"/g, ''))
             : undefined;
         return [
@@ -95,8 +100,8 @@ function extractTags(meta) {
               ? prop.type === 'boolean'
                 ? prop.default === 'true'
                 : prop.type === 'Date'
-                  ? undefined
-                  : prop.default.replace(/"/g, '')
+                ? undefined
+                : prop.default.replace(/"/g, '')
               : undefined,
           },
         ];
@@ -115,7 +120,7 @@ const buildArgTypes = (meta, indent = '  ') => {
     ...meta.args.map(([name, obj]) => `${indent}${name}: ${obj.type};`),
     '}',
   ].join('\n');
-}
+};
 
 /**
  *
@@ -154,7 +159,9 @@ async function buildStories() {
       await writeFile(outFile, buildStoryMeta(story, meta), 'utf8');
     } catch (e) {
       if (e.code === 'ENOENT') {
-        report.warn(`!!! No such file '${e.path} !!! Does it need a story file?'`);
+        report.warn(
+          `!!! No such file '${e.path} !!! Does it need a story file?'`
+        );
       } else {
         report.error(e);
         process.exit(-1);

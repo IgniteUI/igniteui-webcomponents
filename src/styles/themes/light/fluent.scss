@@ -12,6 +12,7 @@
 @use '../../../components/navbar/navbar.fluent' as navbar;
 @use '../../../components/rating/rating.fluent' as rating;
 
+@use '../../../components/slider/slider.fluent' as slider;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -33,3 +34,4 @@ $palette: utils.palette(
 @include icon-button.theme();
 @include navbar.theme();
 @include rating.theme();
+@include slider.theme();

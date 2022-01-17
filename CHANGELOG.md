@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Dark Themes
+- Slider component
+- Range Slider component
 - Rating component
 
 ### Changed
