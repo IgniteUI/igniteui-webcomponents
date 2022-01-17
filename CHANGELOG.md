@@ -8,12 +8,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 ### Added
+
 - Dark Themes
 
+### Changed
+
+- Fix checkbox/switch validity status
+
 ## 1.0.0 - 2021-11-22
+
 Initial release of Ignite UI Web Components
 
 ### Added
+
 - Avatar component
 - Badge component
 - Button component

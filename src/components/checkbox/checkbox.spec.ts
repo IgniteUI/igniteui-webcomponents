@@ -103,6 +103,23 @@ describe('Checkbox', () => {
       );
     });
 
+    it('should correctly report validity status', async () => {
+      el = await fixture<IgcCheckboxComponent>(
+        html`<igc-checkbox required></igc-checkbox>`
+      );
+      expect(el.reportValidity()).to.equals(false);
+
+      el = await fixture<IgcCheckboxComponent>(
+        html`<igc-checkbox required checked></igc-checkbox>`
+      );
+      expect(el.reportValidity()).to.equals(true);
+
+      el = await fixture<IgcCheckboxComponent>(
+        html`<igc-checkbox></igc-checkbox>`
+      );
+      expect(el.reportValidity()).to.equals(true);
+    });
+
     it('should set the checkbox checked property correctly', async () => {
       const DIFF_OPTIONS = {
         ignoreAttributes: [
