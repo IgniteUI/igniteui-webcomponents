@@ -11,33 +11,12 @@ $color-symbols: color(gray, 900) !default;
 
 $selected-color: color(primary) !default;
 
-$disabled-color: color(gray, 300) !default;
-$disabled-selected-color: color(gray, 400) !default;
+$disabled-color: color(gray, 400) !default;
+$disabled-selected-color: color(gray, 600) !default;
 
 :host {
     display: inline-flex;
-    user-select: none;
     font-family: var(--igc-font-family);
-    // Uncomment the next line to test the light/dark mode
-    //background: color(gray, 50);
-}
-
-:host([disabled]) {
-    pointer-events: none;
-
-    [part~='symbol'],
-    [part~='symbols-wrapper'] {
-        color: $disabled-color;
-    }
-
-    [part~='fraction'] {
-
-        [part~='symbol'],
-        [part~='symbols-wrapper'] {
-            color: $disabled-selected-color;
-            filter: grayscale(50%);
-        }
-    }
 }
 
 [part='rating'] {
@@ -50,6 +29,7 @@ $disabled-selected-color: color(gray, 400) !default;
 [part='base'] {
     position: relative;
     display: inline-flex;
+    user-select: none;
 }
 
 [part~='label'] {
@@ -61,7 +41,6 @@ $disabled-selected-color: color(gray, 400) !default;
 [part~='symbols-wrapper'] {
     position: relative;
     display: flex;
-    //background: $background;
     justify-content: center;
     align-items: center;
     padding: $spacing;
@@ -107,6 +86,25 @@ $disabled-selected-color: color(gray, 400) !default;
         &::before {
             content: counter(symbols);
             counter-increment: symbols;
+        }
+    }
+}
+
+:host([disabled]) {
+    pointer-events: none;
+
+    [part~='label'],
+    [part~='symbol'],
+    [part~='symbols-wrapper'] {
+        color: $disabled-color !important;
+    }
+
+    [part~='fraction'] {
+
+        [part~='symbol'],
+        [part~='symbols-wrapper'] {
+            color: $disabled-selected-color !important;
+            filter: grayscale(50%);
         }
     }
 }
