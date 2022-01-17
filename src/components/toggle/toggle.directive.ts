@@ -38,7 +38,7 @@ export class IgcToggleDirective extends Directive {
   private _popperElement!: HTMLElement;
   private _defaultOptions: IToggleOptions = {
     placement: this._placement,
-    strategy: this._strategy,
+    positionStrategy: this._strategy,
     flip: this._flip,
   };
 
@@ -90,11 +90,11 @@ export class IgcToggleDirective extends Directive {
       ? Object.assign({}, this._defaultOptions, options)
       : this._defaultOptions;
     this._placement = options.placement;
-    this._strategy = options.strategy;
+    this._strategy = options.positionStrategy;
     this._modifiers = this.updateModifiers(options);
     return {
-      placement: options.placement,
-      strategy: options.strategy,
+      placement: this._placement,
+      strategy: this._strategy,
       modifiers: this._modifiers,
     };
   }

@@ -35,14 +35,14 @@ describe('Toggle directive', () => {
     values = (
       igcToggle(target, true, {
         placement: 'top-start',
-        strategy: 'fixed',
+        positionStrategy: 'fixed',
       }) as any
     ).values;
     expect(values.length).to.equal(3);
     expect(values[0]).to.be.instanceof(HTMLSpanElement);
     expect(values[1]).to.equal(true);
     expect(values[2].placement).to.equal('top-start');
-    expect(values[2].strategy).to.equal('fixed');
+    expect(values[2].positionStrategy).to.equal('fixed');
   });
 
   it('successfully creates & shows the popper element.', async () => {
@@ -74,7 +74,7 @@ describe('Toggle directive', () => {
   it('creates a popper with the passed options.', async () => {
     popper = await createPopper(target, true, {
       placement: 'bottom-end',
-      strategy: 'fixed',
+      positionStrategy: 'fixed',
     });
 
     const attributes = getAttributes(popper);
@@ -85,14 +85,14 @@ describe('Toggle directive', () => {
   it('honors the flip option.', async () => {
     popper = await createPopper(target, true, {
       placement: 'left-start',
-      strategy: 'fixed',
+      positionStrategy: 'fixed',
       flip: true,
     });
 
     verifyPlacement(popper, 'right-start');
     popper = await createPopper(target, true, {
       placement: 'left-start',
-      strategy: 'absolute',
+      positionStrategy: 'absolute',
       flip: false,
     });
     verifyPlacement(popper, 'left-start');
@@ -101,7 +101,7 @@ describe('Toggle directive', () => {
   it('properly reflects the offset if specified.', async () => {
     popper = await createPopper(target, true, {
       placement: 'right-start',
-      strategy: 'absolute',
+      positionStrategy: 'absolute',
       offset: { x: 100, y: 10 },
     });
 
@@ -115,7 +115,7 @@ describe('Toggle directive', () => {
 
     popper = await createPopper(target, true, {
       placement: 'bottom-end',
-      strategy: 'absolute',
+      positionStrategy: 'absolute',
       offset: { x: 100, y: 10 },
     });
 
@@ -131,7 +131,7 @@ describe('Toggle directive', () => {
 
     popper = await createPopper(target, true, {
       placement: 'bottom-start',
-      strategy: 'absolute',
+      positionStrategy: 'absolute',
     });
 
     targetRect = target.getBoundingClientRect();

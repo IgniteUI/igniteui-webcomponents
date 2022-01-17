@@ -30,7 +30,7 @@ export interface IToggleOptions {
   /** The positioning strategy to use.
    * Use the `fixed` strategy when the target element is in a fixed container, otherwise - use `absolute`.
    */
-  strategy: 'absolute' | 'fixed';
+  positionStrategy: 'absolute' | 'fixed';
   /**
    * Whether the element should be flipped to the opposite side once it's about to overflow the visible area.
    * Once enough space is detected on its preferred side, it will flip back.
