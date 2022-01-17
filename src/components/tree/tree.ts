@@ -14,41 +14,48 @@ import {
 import { IgcTreeNavigationService } from './tree.navigation';
 import { IgcTreeSelectionService } from './tree.selection';
 
-let NEXT_ID = 0;
-
 /**
- * Displays a collection of data items in a templatable list format.
+ * The tree allows users to represent hierarchical data in a tree-view structure,
+ * maintaining parent-child relationships, as well as to define static tree-view structure without a corresponding data model.
  *
- * @element igc-list
+ * @element igc-tree
  *
- * @slot - Renders the list items and list headers inside default slot.
+ * @slot - Renders the tree items inside default slot.
+ *
+ * @fires igcTreeItemSelectionEvent - Emitted when item selection is changing, before the selection completes.
+ * @fires igcItemExpanding - Emitted when tree item is about to expand.
+ * @fires igcItemExpanded - Emitted when tree item is expanded.
+ * @fires igcItemCollapsing - Emitted when tree item is about to collapse.
+ * @fires igcItemCollapsed - Emitted when tree item is collapsed.
  */
 export default class IgcTreeComponent extends SizableMixin(
   EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
 ) {
   /** @private */
   public static tagName = 'igc-tree';
-
   /** @private */
   public static styles = styles;
 
+  /** @private */
   public selectionService!: IgcTreeSelectionService;
+  /** @private */
   public navService!: IgcTreeNavigationService;
 
-  public forceSelect: IgcTreeItemComponent[] = [];
-
-  @property({ attribute: 'id', reflect: true })
-  public id = `igc-tree-${NEXT_ID++}`;
-
+  /** Whether a single or multiple of a parent's child items can be expanded. */
   @property({ reflect: true, type: Boolean })
   public singleBranchExpand = false;
 
+  /** The selection state of the tree. */
   @property({ reflect: true })
-  public selection: IgcTreeSelectionType = 'none';
+  public selection: 'none' | 'multiple' | 'cascade' = 'none';
 
   @watch('size', { waitUntilFirstUpdate: true })
   public onSizeChange() {
-    this.scrollItemIntoView(this.navService.activeItem?.header);
+    this.navService.activeItem?.wrapper.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    });
   }
 
   @watch('selection', { waitUntilFirstUpdate: true })
@@ -57,14 +64,6 @@ export default class IgcTreeComponent extends SizableMixin(
     this.items?.forEach((item: IgcTreeItemComponent) => {
       item.selection = this.selection;
     });
-  }
-
-  public get items(): Array<IgcTreeItemComponent> {
-    return Array.from(this.querySelectorAll(`igc-tree-item`));
-  }
-
-  public get rootItems(): IgcTreeItemComponent[] {
-    return this.items?.filter((item) => item.level === 0);
   }
 
   constructor() {
@@ -77,9 +76,20 @@ export default class IgcTreeComponent extends SizableMixin(
     super.connectedCallback();
     this.classList.add('igc-tree');
     this.addEventListener('keydown', this.handleKeydown);
+    // set init to true for all items which are rendered along with the tree
     this.items.forEach((i: IgcTreeItemComponent) => {
       i.init = true;
     });
+  }
+
+  /** Returns all of the tree's items. */
+  public get items(): Array<IgcTreeItemComponent> {
+    return Array.from(this.querySelectorAll(`igc-tree-item`));
+  }
+
+  /** Returns all of the tree's items that are on root level. */
+  public get rootItems(): IgcTreeItemComponent[] {
+    return this.items?.filter((item) => item.level === 0);
   }
 
   private _comparer = <T>(value: T, item: IgcTreeItemComponent) =>
@@ -89,27 +99,7 @@ export default class IgcTreeComponent extends SizableMixin(
     this.navService.handleKeydown(event);
   }
 
-  public scrollItemIntoView(el: HTMLElement) {
-    if (!el) {
-      return;
-    }
-    const nodeRect = el.getBoundingClientRect();
-    const treeRect = this.getBoundingClientRect();
-    const topOffset =
-      treeRect.top > nodeRect.top ? nodeRect.top - treeRect.top : 0;
-    const bottomOffset =
-      treeRect.bottom < nodeRect.bottom ? nodeRect.bottom - treeRect.bottom : 0;
-    const shouldScroll = !!topOffset || !!bottomOffset;
-    if (shouldScroll && this.scrollHeight > this.clientHeight) {
-      // this.nativeElement.scrollTop = nodeRect.y - treeRect.y - nodeRect.height;
-      this.scrollTop =
-        this.scrollTop +
-        bottomOffset +
-        topOffset +
-        (topOffset ? -1 : +1) * nodeRect.height;
-    }
-  }
-
+  /** @private */
   public expandToItem(item: IgcTreeItemComponent) {
     if (item && item.parentItem) {
       item.path.forEach((i) => {
@@ -120,10 +110,7 @@ export default class IgcTreeComponent extends SizableMixin(
     }
   }
 
-  public deselect(items?: IgcTreeItemComponent[]) {
-    this.selectionService.deselectItemsWithNoEvent(items);
-  }
-
+  /** Select all items if the items collection is empty. Otherwise, select the items in the items collection. */
   public select(items?: IgcTreeItemComponent[]) {
     if (!items) {
       items =
@@ -134,16 +121,41 @@ export default class IgcTreeComponent extends SizableMixin(
     this.selectionService.selectItemsWithNoEvent(items);
   }
 
-  public collapse(items?: IgcTreeItemComponent[]) {
-    items = items || this.items;
-    items.forEach((item) => (item.expanded = false));
+  /** Deselect all items if the items collection is empty. Otherwise, deselect the items in the items collection. */
+  public deselect(items?: IgcTreeItemComponent[]) {
+    this.selectionService.deselectItemsWithNoEvent(items);
   }
 
+  /**
+   * Expands all of the passed items.
+   * If no items are passed, expands ALL items.
+   */
   public expand(items?: IgcTreeItemComponent[]) {
     items = items || this.items;
     items.forEach((item) => (item.expanded = true));
   }
 
+  /**
+   * Collapses all of the passed items.
+   * If no items are passed, collapses ALL items.
+   */
+  public collapse(items?: IgcTreeItemComponent[]) {
+    items = items || this.items;
+    items.forEach((item) => (item.expanded = false));
+  }
+
+  /**
+   * Returns all of the items that match the passed searchTerm.
+   * Accepts a custom comparer function for evaluating the search term against the items.
+   *
+   * @remark
+   * Default search compares the passed `searchTerm` against the items's `value` Input.
+   * When using `findNodes` w/o a `comparer`, make sure all items have `value` passed.
+   *
+   * @param searchTerm The value of the searched item
+   * @param comparer A custom comparer function that evaluates the passed `searchTerm` against all items.
+   * @returns Array of items that match the search. `null` if no items are found.
+   */
   public findItems(
     searchTerm: any,
     comparer?: IgcTreeSearchResolver

@@ -20,7 +20,6 @@ export class IgcTreeSelectionService {
     this.tree = tree;
   }
 
-  // OK
   /** Select range from last selected item to the current specified item. */
   public selectMultipleItems(item: IgcTreeItemComponent): void {
     if (!this.itemSelection.size) {
@@ -41,7 +40,6 @@ export class IgcTreeSelectionService {
     this.emitItemSelectionEvent(newSelection, added, []);
   }
 
-  // OK
   /** Select the specified item and emit event. */
   public selectItem(item: IgcTreeItemComponent): void {
     if (this.tree.selection === IgcTreeSelectionType.None) {
@@ -50,14 +48,12 @@ export class IgcTreeSelectionService {
     this.emitItemSelectionEvent([...this.getSelectedItems(), item], [item], []);
   }
 
-  // OK
   /** Deselect the specified item and emit event. */
   public deselectItem(item: IgcTreeItemComponent): void {
     const newSelection = this.getSelectedItems().filter((r) => r !== item);
     this.emitItemSelectionEvent(newSelection, [], [item]);
   }
 
-  // OK
   /** Clears item selection */
   public clearItemsSelection(): void {
     const oldSelection = this.getSelectedItems();
@@ -70,18 +66,15 @@ export class IgcTreeSelectionService {
     );
   }
 
-  // OK
   public isItemSelected(item: IgcTreeItemComponent): boolean {
     return this.itemSelection.has(item);
   }
 
-  // OK
   public isItemIndeterminate(item: IgcTreeItemComponent): boolean {
     return this.indeterminateItems.has(item);
   }
 
-  // OK
-  /** Called on `item.ngOnDestroy` to ensure state is correct after item is removed */
+  /** Called on item`s disconnectedCallback */
   public ensureStateOnItemDelete(item: IgcTreeItemComponent): void {
     if (this.tree?.selection === IgcTreeSelectionType.None) {
       return;
@@ -89,10 +82,10 @@ export class IgcTreeSelectionService {
 
     // Don't update the internal state of the deleted items because when moving they should keep it
     // However update the state of their parents
-    this.deselectItemsWithNoEvent([item, ...item.allChildren], true);
+    this.deselectItemsWithNoEvent([item, ...item.getChildren()], true);
   }
 
-  // OK
+  /** Retrigger the selection state of the item. */
   public retriggerItemState(item: IgcTreeItemComponent): void {
     if (item.selected) {
       this.itemSelection.delete(item);
@@ -103,7 +96,6 @@ export class IgcTreeSelectionService {
     }
   }
 
-  // OK
   private emitItemSelectionEvent(
     newSelection: IgcTreeItemComponent[],
     added: IgcTreeItemComponent[],
@@ -141,7 +133,6 @@ export class IgcTreeSelectionService {
     this.selectItemsWithNoEvent(args.detail.newSelection, true);
   }
 
-  // OK
   /** Select specified items. No event is emitted. */
   public selectItemsWithNoEvent(
     items: IgcTreeItemComponent[],
@@ -162,7 +153,6 @@ export class IgcTreeSelectionService {
     this.updateItemsState(oldSelection);
   }
 
-  // OK
   /** Deselect specified items. No event is emitted. */
   public deselectItemsWithNoEvent(
     items?: IgcTreeItemComponent[],
@@ -186,7 +176,6 @@ export class IgcTreeSelectionService {
     this.updateItemsState(oldSelection);
   }
 
-  // OK
   private emitCascadeItemSelectionEvent(
     newSelection: IgcTreeItemComponent[],
     currSelection: IgcTreeItemComponent[],
@@ -236,7 +225,6 @@ export class IgcTreeSelectionService {
     }
   }
 
-  // OK
   private cascadeSelectItemsWithNoEvent(
     items: IgcTreeItemComponent[],
     clearPrevSelection = false
@@ -267,7 +255,6 @@ export class IgcTreeSelectionService {
     this.updateItemsState(oldSelection, oldIndeterminate);
   }
 
-  // OK
   private cascadeDeselectItemsWithNoEvent(
     items?: IgcTreeItemComponent[],
     onDelete = false
@@ -299,9 +286,7 @@ export class IgcTreeSelectionService {
   }
 
   // OK (eventualno setovete)
-  /**
-   * retrieve the items which should be added/removed to/from the old selection
-   */
+  /** Retrieve the items which should be added/removed to/from the old selection */
   private populateAddRemoveArgs(
     args: Partial<IgcTreeItemSelectionEventDetails>
   ): void {
@@ -346,7 +331,7 @@ export class IgcTreeSelectionService {
       this.selectDeselectItem(item, selected);
 
       // select/deselect all of their children
-      const itemAndAllChildren = item.allChildren || [];
+      const itemAndAllChildren = item.getChildren() || [];
       itemAndAllChildren.forEach((i: IgcTreeItemComponent) => {
         this.selectDeselectItem(i, selected);
       });
@@ -382,18 +367,19 @@ export class IgcTreeSelectionService {
    * Handle the selection state of a given item based the selection states of its direct children
    */
   private handleItemSelectionState(item: IgcTreeItemComponent) {
-    const itemsArray = item && item.directChildren ? item.directChildren : [];
+    const itemsArray =
+      item && item.getChildren(true) ? item.getChildren(true) : [];
     if (itemsArray.length) {
       if (
-        itemsArray.every((n: IgcTreeItemComponent) =>
-          this.itemsToBeSelected.has(n)
+        itemsArray.every((i: IgcTreeItemComponent) =>
+          this.itemsToBeSelected.has(i)
         )
       ) {
         this.selectDeselectItem(item, true);
       } else if (
         itemsArray.some(
-          (n: IgcTreeItemComponent) =>
-            this.itemsToBeSelected.has(n) || this.itemsToBeIndeterminate.has(n)
+          (i: IgcTreeItemComponent) =>
+            this.itemsToBeSelected.has(i) || this.itemsToBeIndeterminate.has(i)
         )
       ) {
         this.selectDeselectItem(item, false, true);
@@ -449,13 +435,11 @@ export class IgcTreeSelectionService {
     }
   }
 
-  // OK
   /** Returns array of the selected items. */
   private getSelectedItems(): IgcTreeItemComponent[] {
     return this.itemSelection.size ? Array.from(this.itemSelection) : [];
   }
 
-  // OK
   /** Returns array of the items in indeterminate state. */
   private getIndeterminateItems(): IgcTreeItemComponent[] {
     return this.indeterminateItems.size
@@ -463,7 +447,6 @@ export class IgcTreeSelectionService {
       : [];
   }
 
-  // OK
   private areEqualCollections(
     first: IgcTreeItemComponent[],
     second: IgcTreeItemComponent[]
@@ -474,7 +457,6 @@ export class IgcTreeSelectionService {
     );
   }
 
-  // OK
   private selectDeselectItem(
     item: IgcTreeItemComponent,
     select: boolean,

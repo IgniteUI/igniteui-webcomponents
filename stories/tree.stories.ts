@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import IgcTreeItemComponent from '../src/components/tree/tree-item.js';
-import { IgcTreeSelectionType } from '../src/components/tree/tree.common.js';
 import IgcTreeComponent from '../src/components/tree/tree.js';
 import { Context, Story } from './story.js';
 
@@ -9,6 +8,22 @@ const metadata = {
   title: 'Tree',
   component: 'igc-tree',
   argTypes: {
+    singleBranchExpand: {
+      type: 'boolean',
+      description:
+        "Whether a single or multiple of a parent's child items can be expanded.",
+      control: 'boolean',
+      defaultValue: false,
+    },
+    selection: {
+      type: '"none" | "multiple" | "cascade"',
+      description: 'The selection state of the tree.',
+      options: ['none', 'multiple', 'cascade'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'none',
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -18,28 +33,13 @@ const metadata = {
       },
       defaultValue: 'large',
     },
-    singleBranchExpand: {
-      type: Boolean,
-      description: 'Enable/Disable singleBranchExpand',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    selection: {
-      type: IgcTreeSelectionType,
-      description: 'Sets the selection mode of the tree.',
-      options: ['none', 'multiple', 'cascade'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: IgcTreeSelectionType.Cascade,
-    },
   },
 };
 export default metadata;
 interface ArgTypes {
+  singleBranchExpand: boolean;
+  selection: 'none' | 'multiple' | 'cascade';
   size: 'small' | 'medium' | 'large';
-  singleBranchExpand: Boolean;
-  selection: IgcTreeSelectionType;
 }
 // endregion
 
@@ -111,7 +111,7 @@ const log = () => {
 
 const log1 = () => {
   const item = document.getElementById('asd1') as IgcTreeItemComponent;
-  const firstChild = item.directChildren[0];
+  const firstChild = item.getChildren(true)[0];
   if (firstChild) {
     item.removeChild(firstChild);
   }
@@ -128,7 +128,7 @@ const log1 = () => {
 
 const log10 = () => {
   const item = document.getElementById('loadOnDemand') as IgcTreeItemComponent;
-  const firstChild = item.directChildren[0];
+  const firstChild = item.getChildren(true)[0];
   if (firstChild) {
     item.removeChild(firstChild);
   }
@@ -192,11 +192,11 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
-    <div style="height: 600px;">
+    <div style="height: 250px;">
       <igc-tree
         id="tree"
-        .selection=${selection}
         .size=${size}
+        .selection=${selection}
         .singleBranchExpand=${singleBranchExpand}
         dir=${direction}
         @igcTreeItemSelectionEvent=${handleEvent}
@@ -229,7 +229,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
                 `
               )}
             </igc-tree-item>
-            <igc-tree-item>
+            <igc-tree-item #asd>
               <p slot="header">
                 <a href="http://infragistics.com">Infragistics</a>
               </p>

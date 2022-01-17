@@ -10,23 +10,14 @@ import { classMap } from 'lit/directives/class-map.js';
 import { watch } from '../common/decorators';
 
 /**
- * The list-item component is a container
- * intended for row items in the list component.
+ * The tree-item component represents a child item of the tree component or another tree item.
  *
- * @element igc-list-item
+ * @element igc-tree-item
  *
- * @slot - Renders custom content.
- * @slot start - Renders content before all other content.
- * @slot end - Renders content after all other content.
- * @slot title - Renders the title.
- * @slot subtitle - Renders the subtitle.
- *
- * @csspart start - The start container.
- * @csspart end - The end container.
- * @csspart content - The header and custom content container.
- * @csspart header - The title and subtitle container.
- * @csspart title - The title container.
- * @csspart subtitle - The subtitle container.
+ * @slot - Renders nested tree-item component.
+ * @slot content - Renders the tree item container.
+ * @slot expandIndicator - Renders the expand indicator container.
+ * @slot indentation - Renders the container (by default the space) before the tree item.
  */
 export default class IgcTreeItemComponent extends EventEmitterMixin<
   IgcTreeEventMap,
@@ -34,83 +25,114 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 >(LitElement) {
   /** @private */
   public static tagName = 'igc-tree-item';
-
   /** @private */
   public static styles = styles;
 
+  /** A reference to the tree the item is a part of. */
   public tree?: IgcTreeComponent;
+  /** The parent item of the current tree item (if any) */
   public parentItem: IgcTreeItemComponent | null = null;
+
+  /** @private */
   public init = false;
 
-  /**
-   * Store the current selection state before changing the items' parent (drag/drop)
-   * Update those properties in disconnectedCallback
-   * Use them in the connectedCallback to retrieve the previous state
-   */
-  // private _hasBeenSelected = false;
-  // private _hasBeenIndeterminate = false;
-
-  @query('.tree-node__header')
-  public header: any;
-
-  @state()
-  public hasChildren = false;
-
-  @state()
-  public level = 0;
-
-  @state()
-  public indeterminate = false;
+  /** @private */
+  @query('.tree-node__wrapper')
+  public wrapper: any;
 
   @state()
   private isFocused = false;
 
-  @property()
+  /** @private */
+  @state()
+  public hasChildren = false;
+
+  /** The depth of the node, relative to the root. */
+  @state()
+  public level = 0;
+
+  /** @private */
+  @state()
+  public indeterminate = false;
+
+  /** @private */
+  @state()
   public selection: IgcTreeSelectionType = IgcTreeSelectionType.None;
 
-  @property()
-  public value: any;
-
-  @property({ reflect: true, type: Boolean })
-  public loading = false;
-
-  /** The orientation of the multiple months displayed in days view. */
+  /** The tree item expansion state. */
   @property({ reflect: true, type: Boolean })
   public expanded = false;
 
+  /** Marks the item as the tree's active item. */
+  @property({ type: Boolean })
+  public active = false;
+
+  /** Get/Set whether the tree item is disabled. Disabled items are ignored for user interactions. */
+  @property({ reflect: true, type: Boolean })
+  public disabled = false;
+
+  /** The tree item selection state. */
+  @property({ reflect: true, type: Boolean })
+  public selected = false;
+
+  /** To be used for load-on-demand scenarios in order to specify whether the item is loading data. */
+  @property({ reflect: true, type: Boolean })
+  public loading = false;
+
+  /** Specifies whether the item is loading data. Loading items do not render children. To be used for load-on-demand scenarios. */
+  @property({ type: Boolean })
+  public loadOnDemand = false;
+
+  /**
+   * The value entry that the tree item is visualizing. Required for searching through items.
+   * @type any
+   */
+  @property({ attribute: false })
+  public value = undefined;
+
   @watch('expanded')
-  public expandedChange(): void {
+  public expandedChange(oldValue: boolean): void {
+    // always update the visible cache
     this.navService?.update_visible_cache(this, this.expanded);
-    this.tree?.scrollItemIntoView(this.navService?.focusedItem?.header);
+    if (!oldValue) {
+      return;
+    }
+    // await for load on demand children
+    Promise.resolve().then(() => {
+      if (this.navService?.focusedItem !== this && !this.isFocused) {
+        this.navService?.focusedItem?.wrapper.scrollIntoView({
+          behavior: 'auto',
+          block: 'nearest',
+          inline: 'nearest',
+        });
+      }
+    });
   }
 
   @watch('active', { waitUntilFirstUpdate: true })
   public activeChange(): void {
-    if (this.active) {
-      if (this.navService) {
-        this.navService.activeItem = this;
-      }
-      this.tree?.expandToItem(this);
-      requestAnimationFrame(() => {
-        this.tree?.scrollItemIntoView(this.header);
-        // this.header.scrollIntoView();
-      });
+    if ((this.active && this.navService?.activeItem === this) || !this.active) {
+      return;
     }
+    if (this.navService) {
+      this.navService.activeItem = this;
+    }
+    // Expand and scroll to the newly active item
+    this.tree?.expandToItem(this);
+    // Await for expanding
+    Promise.resolve().then(() => {
+      this.wrapper.scrollIntoView({
+        behavior: 'auto',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+    });
   }
-
-  @property({ type: Boolean })
-  public loadOnDemand = false;
-
-  @property({ type: Boolean })
-  public active = false;
 
   @watch('disabled')
   public disabledChange() {
     this.navService?.update_disabled_cache(this);
   }
-
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
 
   @watch('selected', { waitUntilFirstUpdate: true })
   public selectedChange() {
@@ -120,43 +142,6 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     if (!this.selected && this.selectionService?.isItemSelected(this)) {
       this.selectionService?.deselectItemsWithNoEvent([this]);
     }
-  }
-
-  @property({ reflect: true, type: Boolean })
-  public selected = false;
-
-  public get path(): IgcTreeItemComponent[] {
-    return this.parentItem?.path ? [...this.parentItem.path, this] : [this];
-  }
-
-  public get directChildren(): Array<IgcTreeItemComponent> {
-    return Array.from(this.children).filter(
-      (x) => x.tagName.toLowerCase() === 'igc-tree-item'
-    ) as IgcTreeItemComponent[];
-  }
-
-  public get allChildren(): Array<IgcTreeItemComponent> {
-    return Array.from(this.querySelectorAll(`igc-tree-item`));
-  }
-
-  public get focused() {
-    return this.isFocused && this.navService?.focusedItem === this;
-  }
-
-  private get selectionService() {
-    return this.tree?.selectionService;
-  }
-
-  private get navService() {
-    return this.tree?.navService;
-  }
-
-  private get classes() {
-    return {
-      'tree-node__header': true,
-      'tree-node__wrapper--focused': this.focused,
-      'tree-node__wrapper--active': this.active,
-    };
   }
 
   constructor() {
@@ -171,22 +156,26 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
         ? (this.parentElement as IgcTreeItemComponent)
         : null;
     this.level = this.parentItem ? this.parentItem.level + 1 : 0;
-    this.selection = this.tree.selection;
-    this.navService?.update_visible_cache(this, this.expanded);
+    this.selection = this.tree?.selection;
+    // this.navService?.update_visible_cache(this, this.expanded);
     this.setAttribute('role', 'treeitem');
     this.addEventListener('focusout', this.clearFocus);
     this.addEventListener('focusin', this.handleFocusIn);
-    this.addEventListener('pointerdown', this.onPointerDown);
+    this.addEventListener('pointerdown', this.pointerDown);
     this.activeChange();
+    // if the item is not added/moved runtime
     if (this.init) {
       this.selectedChange();
     } else {
+      // set the selected state of lazy loaded items to the one of their parent in cascade mode
       if (
         this.parentItem?.loadOnDemand &&
         this.selection === IgcTreeSelectionType.Cascade
       ) {
         this.selected = this.parentItem.selected;
       }
+      // retriger the item selection state in order to update the collections within the selectionService
+      // and to handle correctly the itemParents recursively to the top-most ancestor
       this.selectionService?.retriggerItemState(this);
     }
     this.init = false;
@@ -195,8 +184,114 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   public disconnectedCallback(): void {
     super.disconnectedCallback();
     this.selectionService?.ensureStateOnItemDelete(this);
+    this.navService?.delete_item(this);
   }
 
+  private get selectionService() {
+    return this.tree?.selectionService;
+  }
+
+  private get navService() {
+    return this.tree?.navService;
+  }
+
+  private get classes() {
+    return {
+      'tree-node__wrapper': true,
+      'tree-node__wrapper--focused': this.isFocused,
+      'tree-node__wrapper--active': this.active,
+    };
+  }
+
+  private get directChildren(): Array<IgcTreeItemComponent> {
+    return Array.from(this.children).filter(
+      (x) => x.tagName.toLowerCase() === 'igc-tree-item'
+    ) as IgcTreeItemComponent[];
+  }
+
+  private get allChildren(): Array<IgcTreeItemComponent> {
+    return Array.from(this.querySelectorAll(`igc-tree-item`));
+  }
+
+  /** The full path to the tree item, starting from the top-most ancestor. */
+  public get path(): IgcTreeItemComponent[] {
+    return this.parentItem?.path ? [...this.parentItem.path, this] : [this];
+  }
+
+  private pointerDown(event: MouseEvent) {
+    event.stopPropagation();
+    this.navService?.setFocusedAndActiveItem(this);
+  }
+
+  private expandIndicatorClick(): void {
+    if (this.loading) {
+      return;
+    }
+    this.toggle();
+  }
+
+  private selectorClick(event: MouseEvent) {
+    event.preventDefault();
+    if (event.shiftKey) {
+      this.selectionService?.selectMultipleItems(this);
+      return;
+    }
+    if (this.selected) {
+      this.selectionService?.deselectItem(this);
+    } else {
+      this.selectionService?.selectItem(this);
+    }
+  }
+
+  private handleFocusIn(ev: Event) {
+    ev.stopPropagation();
+    if (this.disabled) {
+      return;
+    }
+    if (this.navService?.focusedItem !== this) {
+      // if tab/shift+tab leads to tabbable element within the igc-tree-item header
+      if (
+        (ev.target as HTMLElement).tagName.toLowerCase() !== 'igc-tree-item'
+      ) {
+        this.navService?.focusItem(this, false);
+      } else {
+        // when tab/shift+tab from element outside of the tree
+        // focuses the last focused igc-tree-item without tabbable content
+        this.navService?.focusItem(this);
+      }
+    }
+    this.isFocused = true;
+  }
+
+  private clearFocus(event: Event): void {
+    event.stopPropagation();
+    this.isFocused = false;
+  }
+
+  private handleChange() {
+    this.hasChildren = !!this.directChildren.length;
+  }
+
+  private siblingComparer: (
+    value: IgcTreeItemComponent,
+    item: IgcTreeItemComponent
+  ) => boolean = (value: IgcTreeItemComponent, item: IgcTreeItemComponent) =>
+    item !== value && item.level === value.level;
+
+  /**
+   * Returns a collection of child items.
+   * If the parameter value is true returns all tree item's direct children,
+   * otherwise - only the direct children.
+   */
+  public getChildren(direct = false): IgcTreeItemComponent[] {
+    if (direct) {
+      return this.directChildren;
+    } else {
+      return this.allChildren;
+    }
+  }
+
+  /** Expands the tree item. */
   public expand(): void {
     if (this.expanded) {
       return;
@@ -215,15 +310,18 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     }
 
     if (this.tree?.singleBranchExpand) {
-      this.tree?.findItems(this, this.siblingComparer)?.forEach((i) => {
-        i.expanded = false;
-      });
+      this.tree
+        ?.findItems(this, this.siblingComparer)
+        ?.forEach((i: IgcTreeItemComponent) => {
+          i.expanded = false;
+        });
     }
 
     this.expanded = true;
     this.tree?.emitEvent('igcItemExpanded', { detail: this });
   }
 
+  /** Collapses the tree item. */
   public collapse(): void {
     if (!this.expanded) {
       return;
@@ -244,63 +342,13 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.tree?.emitEvent('igcItemCollapsed', { detail: this });
   }
 
-  private siblingComparer: (
-    value: IgcTreeItemComponent,
-    item: IgcTreeItemComponent
-  ) => boolean = (value: IgcTreeItemComponent, item: IgcTreeItemComponent) =>
-    item !== value && item.level === value.level;
-
-  private indicatorClick(): void {
-    if (this.loading) {
-      return;
-    }
-    if (!this.expanded) {
-      this.expand();
-    } else {
+  /** Toggles tree item expansion state. */
+  public toggle() {
+    if (this.expanded) {
       this.collapse();
-    }
-  }
-
-  public onPointerDown(event: MouseEvent) {
-    event.stopPropagation();
-    this.navService?.setFocusedAndActiveItem(this);
-  }
-
-  private handleFocusIn(ev: Event) {
-    ev.stopPropagation();
-    if (this.disabled) {
-      return;
-    }
-    if (this.navService?.focusedItem !== this) {
-      if (
-        (ev.target as HTMLElement).tagName.toLowerCase() !== 'igc-tree-item'
-      ) {
-        this.navService?.focusItem(this, false);
-      }
-      this.navService?.focusItem(this);
-    }
-    this.isFocused = true;
-  }
-
-  private onSelectorClick(event: MouseEvent) {
-    event.preventDefault();
-    if (event.shiftKey) {
-      this.selectionService?.selectMultipleItems(this);
-      return;
-    }
-    if (this.selected) {
-      this.selectionService?.deselectItem(this);
     } else {
-      this.selectionService?.selectItem(this);
+      this.expand();
     }
-  }
-
-  public handleChange() {
-    this.hasChildren = !!this.directChildren.length;
-  }
-
-  public clearFocus(): void {
-    this.isFocused = false;
   }
 
   protected render() {
@@ -313,7 +361,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
         </section>
         <section
           part="expandIndicator"
-          @click="${this.indicatorClick}"
+          @click="${this.expandIndicatorClick}"
           class="tree-node__toggle-button"
         >
           <igc-icon
@@ -337,7 +385,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
           ?hidden="${this.selection === IgcTreeSelectionType.None}"
         >
           <igc-checkbox
-            @click=${this.onSelectorClick}
+            @click=${this.selectorClick}
             .checked=${this.selected}
             .indeterminate=${this.indeterminate}
             .disabled=${this.disabled}
