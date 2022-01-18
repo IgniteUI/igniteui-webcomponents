@@ -5,12 +5,9 @@ $size-small: rem(16px);
 $size-medium: rem(20px);
 $size-large: rem(24px);
 $spacing: rem(2px);
-
 $color-label: color(gray, 700) !default;
 $color-symbols: color(gray, 900) !default;
-
 $selected-color: color(primary) !default;
-
 $disabled-color: color(gray, 400) !default;
 $disabled-selected-color: color(gray, 600) !default;
 
@@ -34,6 +31,7 @@ $disabled-selected-color: color(gray, 600) !default;
 
 [part~='label'] {
     @include type-category('caption');
+
     color: $color-label;
     padding-inline-start: $spacing;
 }
