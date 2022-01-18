@@ -252,14 +252,14 @@ export default class IgcRatingComponent extends SizableMixin(
           @mousemove=${this.handleMouseMove}
         >
           <div style=${styleMap(styles)} part="fraction ${this.size}">
-            <div part="symbols-wrapper">${this.renderSymbols()}</div>
+            <div part="symbols-wrapper fraction">${this.renderSymbols()}</div>
           </div>
           <div part="symbols-wrapper">${this.renderSymbols()}</div>
         </div>`
       : html`
           <div @click=${this.handleClick}>
             <div style=${styleMap(styles)} part="fraction ${this.size}">
-              <div part="symbols-wrapper">${this.renderSymbols()}</div>
+              <div part="symbols-wrapper fraction">${this.renderSymbols()}</div>
             </div>
             <div part="symbols-wrapper">${this.renderSymbols()}</div>
           </div>

@@ -39,6 +39,7 @@ $disabled-selected-color: color(gray, 600) !default;
 }
 
 [part~='symbols-wrapper'] {
+    color: $color-symbols;
     position: relative;
     display: flex;
     justify-content: center;
@@ -55,22 +56,21 @@ $disabled-selected-color: color(gray, 600) !default;
     inset-inline-start: 0;
     min-width: 0 !important;
     z-index: 1;
+}
 
-    [part~='symbols-wrapper'] {
-        position: absolute;
-        color: $selected-color;
-        top: 0;
-        inset-inline-start: 0;
+[part='symbols-wrapper fraction'] {
+    position: absolute;
+    color: $selected-color;
+    top: 0;
+    inset-inline-start: 0;
 
-        [part~='symbol'] {
-            color: $selected-color;
-            filter: grayscale(0);
-        }
+    [part~='symbol'] {
+        filter: grayscale(0);
     }
 }
 
 [part~='symbol'] {
-    color: $color-symbols;
+    color: inherit;
     font-size: 100%;
     display: flex;
     align-items: center;
@@ -94,18 +94,13 @@ $disabled-selected-color: color(gray, 600) !default;
     pointer-events: none;
 
     [part~='label'],
-    [part~='symbol'],
     [part~='symbols-wrapper'] {
-        color: $disabled-color !important;
+        color: $disabled-color;
     }
 
-    [part~='fraction'] {
-
-        [part~='symbol'],
-        [part~='symbols-wrapper'] {
-            color: $disabled-selected-color !important;
-            filter: grayscale(50%);
-        }
+    [part='symbols-wrapper fraction'] {
+        color: $disabled-selected-color;
+        filter: grayscale(50%);
     }
 }
 
