@@ -24,6 +24,7 @@ describe('Radio Component', () => {
       'aria-checked',
       'aria-disabled',
       'aria-labelledby',
+      'aria-required',
       'tabindex',
       'type',
     ],
@@ -46,6 +47,8 @@ describe('Radio Component', () => {
       expect(radio.invalid).to.equal(false);
       expect(radio.disabled).to.equal(false);
       expect(input.disabled).to.equal(false);
+      expect(radio.required).to.equal(false);
+      expect(input.required).to.equal(false);
       expect(radio.labelPosition).to.equal('after');
     });
 
@@ -108,6 +111,7 @@ describe('Radio Component', () => {
           'part',
           'aria-disabled',
           'aria-labelledby',
+          'aria-required',
           'tabindex',
           'type',
         ],
@@ -135,6 +139,7 @@ describe('Radio Component', () => {
           'part',
           'aria-checked',
           'aria-labelledby',
+          'aria-required',
           'tabindex',
           'type',
         ],
@@ -154,6 +159,37 @@ describe('Radio Component', () => {
 
       expect(input).dom.to.equal(
         `<input aria-disabled="false" />`,
+        DIFF_OPTIONS
+      );
+    });
+
+    it('sets the required property successfully', async () => {
+      const DIFF_OPTIONS = {
+        ignoreAttributes: [
+          'id',
+          'part',
+          'aria-checked',
+          'aria-labelledby',
+          'aria-disabled',
+          'tabindex',
+          'type',
+        ],
+      };
+
+      radio.required = true;
+      expect(radio.required).to.be.true;
+      await elementUpdated(radio);
+      expect(input).dom.to.equal(
+        `<input required aria-required="true" />`,
+        DIFF_OPTIONS
+      );
+
+      radio.required = false;
+      expect(radio.required).to.be.false;
+      await elementUpdated(radio);
+
+      expect(input).dom.to.equal(
+        `<input aria-required="false" />`,
         DIFF_OPTIONS
       );
     });

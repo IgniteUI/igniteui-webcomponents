@@ -128,9 +128,21 @@ input[type='radio'] {
     }
 }
 
+:host([label-position='after'][required]) {
+    [part~='label']::after {
+        content: '*';
+    }
+}
+
 :host([label-position='before']) {
     [part~='label'] {
         order: -1;
         margin-inline-end: rem(8px);
+    }
+}
+
+:host([label-position='before'][required]) {
+    [part~='label']::before {
+        content: '*';
     }
 }

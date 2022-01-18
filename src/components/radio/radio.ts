@@ -56,6 +56,10 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   @property()
   public value!: string;
 
+  /** Makes the control a required field. */
+  @property({ type: Boolean, reflect: true })
+  public required = false;
+
   /** The checked state of the control. */
   @property({ type: Boolean })
   @blazorTwoWayBind('igcChange', 'detail')
@@ -159,11 +163,13 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           type="radio"
           name="${ifDefined(this.name)}"
           value="${ifDefined(this.value)}"
+          .required="${this.required}"
           .disabled="${this.disabled}"
           .checked="${live(this.checked)}"
           tabindex=${this._tabIndex}
           aria-checked="${this.checked ? 'true' : 'false'}"
           aria-disabled="${this.disabled ? 'true' : 'false'}"
+          aria-required="${this.required ? 'true' : 'false'}"
           aria-labelledby="${this.ariaLabelledby
             ? this.ariaLabelledby
             : this.labelId}"
