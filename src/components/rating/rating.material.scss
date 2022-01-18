@@ -93,7 +93,10 @@ $disabled-selected-color: color(gray, 600) !default;
 :host([disabled]) {
     pointer-events: none;
 
-    [part~='label'],
+    [part~='label'] {
+        color: $disabled-color !important;
+    }
+
     [part~='symbols-wrapper'] {
         color: $disabled-color;
     }
