@@ -128,12 +128,6 @@ input[type='radio'] {
     }
 }
 
-:host([label-position='after'][required]) {
-    [part~='label']::after {
-        content: '*';
-    }
-}
-
 :host([label-position='before']) {
     [part~='label'] {
         order: -1;
@@ -141,8 +135,8 @@ input[type='radio'] {
     }
 }
 
-:host([label-position='before'][required]) {
-    [part~='label']::before {
+:host([required]) {
+    [part~='label']::after {
         content: '*';
     }
 }

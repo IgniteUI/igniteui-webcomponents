@@ -169,7 +169,6 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           tabindex=${this._tabIndex}
           aria-checked="${this.checked ? 'true' : 'false'}"
           aria-disabled="${this.disabled ? 'true' : 'false'}"
-          aria-required="${this.required ? 'true' : 'false'}"
           aria-labelledby="${this.ariaLabelledby
             ? this.ariaLabelledby
             : this.labelId}"

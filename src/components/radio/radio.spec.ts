@@ -24,7 +24,6 @@ describe('Radio Component', () => {
       'aria-checked',
       'aria-disabled',
       'aria-labelledby',
-      'aria-required',
       'tabindex',
       'type',
     ],
@@ -111,7 +110,6 @@ describe('Radio Component', () => {
           'part',
           'aria-disabled',
           'aria-labelledby',
-          'aria-required',
           'tabindex',
           'type',
         ],
@@ -139,7 +137,6 @@ describe('Radio Component', () => {
           'part',
           'aria-checked',
           'aria-labelledby',
-          'aria-required',
           'tabindex',
           'type',
         ],
@@ -164,34 +161,16 @@ describe('Radio Component', () => {
     });
 
     it('sets the required property successfully', async () => {
-      const DIFF_OPTIONS = {
-        ignoreAttributes: [
-          'id',
-          'part',
-          'aria-checked',
-          'aria-labelledby',
-          'aria-disabled',
-          'tabindex',
-          'type',
-        ],
-      };
-
       radio.required = true;
       expect(radio.required).to.be.true;
       await elementUpdated(radio);
-      expect(input).dom.to.equal(
-        `<input required aria-required="true" />`,
-        DIFF_OPTIONS
-      );
+      expect(input).dom.to.equal(`<input required />`, DIFF_OPTIONS);
 
       radio.required = false;
       expect(radio.required).to.be.false;
       await elementUpdated(radio);
 
-      expect(input).dom.to.equal(
-        `<input aria-required="false" />`,
-        DIFF_OPTIONS
-      );
+      expect(input).dom.to.equal(`<input />`, DIFF_OPTIONS);
     });
 
     it('should emit focus/blur events when methods are called', () => {
