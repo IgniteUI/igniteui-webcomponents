@@ -158,7 +158,7 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 
 Please note that events are emitted only for user interactions with the component. If a property is changed via API, no events should be emitted.
 
-Events should be propagated from the child child components to the parent components.
+Events should be propagated from the child components to the parent components.
 
 ## Properties and Attributes
 
