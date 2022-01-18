@@ -51,7 +51,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     this.invalid = !this.input.checkValidity();
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <label
         part=${partNameMap({ base: true, checked: this.checked })}

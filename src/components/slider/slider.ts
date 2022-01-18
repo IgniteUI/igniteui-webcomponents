@@ -39,7 +39,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return this._value;
   }
 
-  public set ariaLabel(value: string) {
+  public override set ariaLabel(value: string) {
     const oldVal = this._ariaLabel;
     this._ariaLabel = value;
 
@@ -53,19 +53,19 @@ export default class IgcSliderComponent extends EventEmitterMixin<
    * The aria label of the slider thumb.
    */
   @property({ attribute: 'aria-label' })
-  public get ariaLabel() {
+  public override get ariaLabel() {
     return this._ariaLabel;
   }
 
-  protected get activeValue(): number {
+  protected override get activeValue(): number {
     return this.value;
   }
 
-  protected normalizeValue(): void {
+  protected override normalizeValue(): void {
     this._value = this.validateValue(this._value);
   }
 
-  protected getTrackStyle() {
+  protected override getTrackStyle() {
     const position = this.valueToFraction(this.value);
     const filledTrackStyle = {
       width: `${position * 100}%`,
@@ -74,7 +74,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return filledTrackStyle;
   }
 
-  protected updateValue(increment: number) {
+  protected override updateValue(increment: number) {
     const oldValue = this.value;
 
     this.value = (this.value as number) + increment;
@@ -87,11 +87,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     return true;
   }
 
-  protected emitInputEvent() {
+  protected override emitInputEvent() {
     this.emitEvent('igcInput', { detail: this.value });
   }
 
-  protected emitChangeEvent() {
+  protected override emitChangeEvent() {
     this.emitEvent('igcChange', { detail: this.value });
   }
 
@@ -111,7 +111,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
     this.value = this.value - stepDecrement * this.step;
   }
 
-  protected renderThumbs() {
+  protected override renderThumbs() {
     return html`${this.renderThumb(this.value, this.ariaLabel)}`;
   }
 }

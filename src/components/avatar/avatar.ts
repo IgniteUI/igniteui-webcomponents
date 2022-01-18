@@ -24,7 +24,7 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public static tagName = 'igc-avatar';
 
   /** @private */
-  public static styles = [styles];
+  public static override styles = [styles];
 
   /** The image source to use. */
   @property()
@@ -68,7 +68,7 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
     this.hasError = false;
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <div
         part="base"

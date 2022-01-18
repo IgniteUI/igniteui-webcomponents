@@ -14,18 +14,18 @@ export default class IgcListComponent extends SizableMixin(LitElement) {
   public static tagName = 'igc-list';
 
   /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   constructor() {
     super();
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'list');
   }
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }

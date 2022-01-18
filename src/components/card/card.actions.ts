@@ -13,9 +13,9 @@ export default class IgcCardActionsComponent extends LitElement {
   public static tagName = 'igc-card-actions';
 
   /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
-  protected render() {
+  protected override render() {
     return html`
       <slot name="start"></slot>
       <slot></slot>

@@ -8,7 +8,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   public static tagName = 'igc-radio-group';
 
   /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   @queryAssignedNodes(undefined, true, 'igc-radio')
   private _slottedRadios!: NodeListOf<IgcRadioComponent>;
@@ -62,7 +62,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     }
   };
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }

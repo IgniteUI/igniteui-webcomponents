@@ -127,7 +127,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     }
   }
 
-  protected render() {
+  protected override render() {
     return html`${this.months.map((row) => {
       return html`<div part="months-row" role="row">
         ${row.map((month) => {

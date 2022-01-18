@@ -25,7 +25,7 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
   /**
    * @private
    */
-  public static styles = styles;
+  public static override styles = styles;
 
   @state() private svg = '';
 
@@ -80,13 +80,13 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
     this.size = 'medium';
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'img');
     IconsRegistry.instance().subscribe(this.iconLoaded);
   }
 
-  public disconnectedCallback() {
+  public override disconnectedCallback() {
     super.disconnectedCallback();
     IconsRegistry.instance().unsubscribe(this.iconLoaded);
   }
@@ -105,7 +105,7 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
     this.svg = svg ?? '';
   }
 
-  protected render() {
+  protected override render() {
     return html` ${unsafeSVG(this.svg)} `;
   }
 

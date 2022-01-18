@@ -7,7 +7,7 @@ import { styles } from './slider.material.css';
 
 export class IgcSliderBaseComponent extends LitElement {
   /** @private */
-  public static styles = [styles];
+  public static override styles = [styles];
 
   @query(`[part='thumb']`)
   protected thumb!: HTMLElement;
@@ -187,7 +187,7 @@ export class IgcSliderBaseComponent extends LitElement {
     this.addEventListener('keydown', this.handleKeydown);
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.normalizeValue();
   }
@@ -533,7 +533,7 @@ export class IgcSliderBaseComponent extends LitElement {
     `;
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <div part="base">
         ${this.tickOrientation === 'mirror' || this.tickOrientation === 'start'

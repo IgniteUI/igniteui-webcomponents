@@ -40,7 +40,7 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
     /**
      * @private
      */
-    public addEventListener<
+    public override addEventListener<
       K extends keyof M,
       M extends E & HTMLElementEventMap
     >(
@@ -48,7 +48,7 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
       listener: (this: HTMLElement, ev: M[K]) => any,
       options?: boolean | AddEventListenerOptions
     ): void;
-    public addEventListener(
+    public override addEventListener(
       type: string,
       listener: EventListenerOrEventListenerObject,
       options?: boolean | AddEventListenerOptions
@@ -59,7 +59,7 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
     /**
      * @private
      */
-    public removeEventListener<
+    public override removeEventListener<
       K extends keyof M,
       M extends E & HTMLElementEventMap
     >(
@@ -67,7 +67,7 @@ export const EventEmitterMixin = <E, T extends Constructor<LitElement>>(
       listener: (this: HTMLElement, ev: M[K]) => any,
       options?: boolean | EventListenerOptions
     ): void;
-    public removeEventListener(
+    public override removeEventListener(
       type: string,
       listener: EventListenerOrEventListenerObject,
       options?: boolean | EventListenerOptions

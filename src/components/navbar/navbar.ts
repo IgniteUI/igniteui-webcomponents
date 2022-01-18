@@ -21,9 +21,9 @@ export default class IgcNavbarComponent extends LitElement {
   public static tagName = 'igc-navbar';
 
   /** @private */
-  public static styles = [styles];
+  public static override styles = [styles];
 
-  protected render() {
+  protected override render() {
     return html`
       <div part="base">
         <span part="start">

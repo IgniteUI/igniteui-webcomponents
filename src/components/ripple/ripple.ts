@@ -12,7 +12,7 @@ export default class IgcRippleComponent extends LitElement {
   public static tagName = 'igc-ripple';
 
   /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   constructor() {
     super();
@@ -62,7 +62,7 @@ export default class IgcRippleComponent extends LitElement {
     return { radius, top: _top, left: _left };
   }
 
-  protected render() {
+  protected override render() {
     return html`<div></div>`;
   }
 }

@@ -77,7 +77,7 @@ export default class IgcInputComponent extends SizableMixin(
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
-  public dir: Direction = 'auto';
+  public override dir: Direction = 'auto';
 
   /** The type attribute of the control. */
   @alternateName('displayType')
@@ -167,7 +167,7 @@ export default class IgcInputComponent extends SizableMixin(
 
   /** The autofocus attribute of the control. */
   @property({ type: Boolean })
-  public autofocus!: boolean;
+  public override autofocus!: boolean;
 
   /** The autocomplete attribute of the control. */
   @property()
@@ -178,7 +178,7 @@ export default class IgcInputComponent extends SizableMixin(
     this.size = 'medium';
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     const theme = document.defaultView
       ?.getComputedStyle(this)
@@ -255,13 +255,13 @@ export default class IgcInputComponent extends SizableMixin(
 
   /** Sets focus on the control. */
   @alternateName('focusComponent')
-  public focus(options?: FocusOptions) {
+  public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the control. */
   @alternateName('blurComponent')
-  public blur() {
+  public override blur() {
     this.input.blur();
   }
 
@@ -381,7 +381,7 @@ export default class IgcInputComponent extends SizableMixin(
     `;
   }
 
-  protected render() {
+  protected override render() {
     return html`${this.theme === 'material'
       ? this.renderMaterial()
       : this.renderStandard()}`;

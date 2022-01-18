@@ -76,16 +76,16 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   @property({ attribute: 'aria-label-upper' })
   public ariaLabelUpper!: string;
 
-  protected get activeValue(): number {
+  protected override get activeValue(): number {
     return this.activeThumb === this.thumbFrom ? this.lower : this.upper;
   }
 
-  protected normalizeValue(): void {
+  protected override normalizeValue(): void {
     this._lower = this.validateValue(this._lower);
     this._upper = this.validateValue(this._upper);
   }
 
-  protected getTrackStyle() {
+  protected override getTrackStyle() {
     const toPosition = this.valueToFraction(this.upper);
     const fromPosition = this.valueToFraction(this.lower);
     const positionGap = toPosition - fromPosition;
@@ -104,7 +104,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     );
   }
 
-  protected closestHandle(event: PointerEvent): HTMLElement {
+  protected override closestHandle(event: PointerEvent): HTMLElement {
     const fromOffset =
       this.thumbFrom.offsetLeft + this.thumbFrom.offsetWidth / 2;
     const toOffset = this.thumbTo.offsetLeft + this.thumbTo.offsetWidth / 2;
@@ -122,7 +122,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     }
   }
 
-  protected updateValue(increment: number) {
+  protected override updateValue(increment: number) {
     const oldValue = this.activeValue;
 
     let lower = this.lower;
@@ -153,13 +153,13 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     return true;
   }
 
-  protected emitInputEvent() {
+  protected override emitInputEvent() {
     this.emitEvent('igcInput', {
       detail: { lower: this.lower, upper: this.upper },
     });
   }
 
-  protected emitChangeEvent() {
+  protected override emitChangeEvent() {
     this.emitEvent('igcChange', {
       detail: { lower: this.lower, upper: this.upper },
     });
@@ -176,7 +176,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     thumb.focus();
   }
 
-  protected renderThumbs() {
+  protected override renderThumbs() {
     return html`${this.renderThumb(
       this.lower,
       this.ariaLabelLower,

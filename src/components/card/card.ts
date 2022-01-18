@@ -12,13 +12,13 @@ export default class IgcCardComponent extends LitElement {
   public static tagName = 'igc-card';
 
   /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   /** Sets card outline style, otherwise card looks elevated */
   @property({ type: Boolean, reflect: true })
   public outlined = true;
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }

@@ -12,9 +12,9 @@ export default class IgcNavDrawerHeaderItemComponent extends LitElement {
   public static tagName = 'igc-nav-drawer-header-item';
 
   /** @private */
-  public static styles = [styles];
+  public static override styles = [styles];
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }

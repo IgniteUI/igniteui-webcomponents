@@ -690,7 +690,7 @@ export default class IgcCalendarComponent extends SizableMixin(
       >`;
   }
 
-  protected render() {
+  protected override render() {
     const activeDates: Date[] = [];
     const monthsCount = this.visibleMonths > 1 ? this.visibleMonths : 1;
 

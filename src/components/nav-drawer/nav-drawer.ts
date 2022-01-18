@@ -125,7 +125,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     };
   }
 
-  protected render() {
+  protected override render() {
     return html` <div part="base">
       <div part="main">
         <slot></slot>

@@ -13,18 +13,18 @@ export default class IgcListHeaderComponent extends LitElement {
   public static tagName = 'igc-list-header';
 
   /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   constructor() {
     super();
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'separator');
   }
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }

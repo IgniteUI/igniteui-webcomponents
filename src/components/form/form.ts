@@ -174,7 +174,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
     return true;
   }
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }

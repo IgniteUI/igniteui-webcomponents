@@ -561,7 +561,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     </span>`;
   }
 
-  protected render() {
+  protected override render() {
     return html`${this.renderWeekHeaders()} ${this.renderDates()}`;
   }
 }

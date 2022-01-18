@@ -20,7 +20,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   public static tagName = 'igc-nav-drawer-item';
 
   /** @private */
-  public static styles = [styles];
+  public static override styles = [styles];
 
   /** Determines whether the drawer is disabled. */
   @property({ type: Boolean, reflect: true })
@@ -36,7 +36,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   @queryAssignedNodes('content', true)
   private _text!: NodeListOf<HTMLElement>;
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.shadowRoot?.addEventListener('slotchange', (_) => {
       this._textLength = this._text.length;
@@ -50,7 +50,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
     };
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <div part="${partNameMap(this.resolvePartNames('base'))}">
         <span part="icon">

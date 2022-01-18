@@ -16,9 +16,9 @@ export default class IgcCardHeaderComponent extends LitElement {
   public static tagName = 'igc-card-header';
 
   /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
-  protected render() {
+  protected override render() {
     return html`
       <section>
         <slot name="thumbnail"></slot>
