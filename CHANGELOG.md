@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Dark Themes
 - Slider component
 - Range Slider component
+- Support `required` property in Radio component.
 
 ### Changed
 
