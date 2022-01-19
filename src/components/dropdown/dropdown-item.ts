@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
@@ -23,7 +23,6 @@ export interface IgcDropDownItemEventMap {
  * @csspart content - The main content wrapper.
  * @csspart suffix - The suffix wrapper.
  */
-@customElement('igc-dropdown-item')
 export default class IgcDropDownItemComponent extends EventEmitterMixin<
   IgcDropDownItemEventMap,
   Constructor<LitElement>
@@ -77,5 +76,11 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
       <section part="content"><slot></slot></section>
       <section part="suffix"><slot name="suffix"></slot></section>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-dropdown-item': IgcDropDownItemComponent;
   }
 }

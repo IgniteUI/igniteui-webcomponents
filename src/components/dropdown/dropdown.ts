@@ -1,10 +1,5 @@
 import { LitElement, html } from 'lit';
-import {
-  customElement,
-  property,
-  query,
-  queryAssignedNodes,
-} from 'lit/decorators.js';
+import { property, query, queryAssignedNodes } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './dropdown.material.css';
@@ -43,7 +38,6 @@ export interface ISelectionChangeEventArgs {
  *
  *
  */
-@customElement('igc-dropdown')
 export default class IgcDropDownComponent extends EventEmitterMixin<
   IgcDropDownEventMap,
   Constructor<LitElement>
