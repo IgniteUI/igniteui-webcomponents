@@ -16,9 +16,9 @@ export interface IToggleView {
  * Common events interface for toggle components
  */
 export interface IgcToggleEventMap {
-  igcOpening: CustomEvent<any>;
+  igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
-  igcClosing: CustomEvent<any>;
+  igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
 }
 /**

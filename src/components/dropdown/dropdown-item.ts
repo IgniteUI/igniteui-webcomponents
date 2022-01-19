@@ -6,9 +6,23 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './dropdown-item.material.css';
 
 export interface IgcDropDownItemEventMap {
-  igcSelectedChange: CustomEvent<any>;
+  igcSelect: CustomEvent<boolean>;
+  igcActivate: CustomEvent<boolean>;
 }
 
+/**
+ * Represents an item in a dropdown list.
+ *
+ * @element igc-dropdown-item
+ *
+ * @slot prefix - Renders content before the item's main content.
+ * @slot - Renders the item's main content.
+ * @slot suffix - Renders content after the item's main content.
+ *
+ * @csspart prefix - The prefix wrapper.
+ * @csspart content - The main content wrapper.
+ * @csspart suffix - The suffix wrapper.
+ */
 @customElement('igc-dropdown-item')
 export default class IgcDropDownItemComponent extends EventEmitterMixin<
   IgcDropDownItemEventMap,
@@ -17,75 +31,44 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
   /** private */
   public static styles = styles;
 
+  private _value = '';
+
+  /**
+   * Determines whether the item is selected.
+   */
   @property({ type: Boolean, attribute: true, reflect: true })
   public selected = false;
 
-  @property({ type: Boolean, attribute: true, reflect: true })
-  public active = false;
-
+  /**
+   * Determines whether the item is disabled.
+   */
   @property({ type: Boolean, attribute: true, reflect: true })
   public disabled = false;
 
-  private _value!: string;
+  /**
+   * Тhe current value of the item.
+   * If not specified, the element's text content is used.
+   */
   @property({ type: String, attribute: true, reflect: true })
   public get value() {
     return this._value ? this._value : this.textContent;
   }
 
-  protected get classes() {
-    return {
-      disabled: this.disabled,
-      selected: this.selected,
-      active: this.active,
-    };
-  }
+  @watch('selected')
+  protected selectedChange() {
+    this.selected
+      ? this.setAttribute('aria-selected', 'true')
+      : this.removeAttribute('aria-selected');
+    this.selected
+      ? this.classList.add('active')
+      : this.classList.remove('active');
 
-  @watch('active')
-  protected focusChanged() {
-    if (this.active) {
-      this.focus();
-    }
+    this.emitEvent('igcSelect', { detail: this.selected });
   }
-
-  private handleClick(_ev: MouseEvent) {
-    if (this.disabled) {
-      return;
-    }
-    _ev.preventDefault();
-    this.active = true;
-    this.selected = true;
-  }
-
-  private handleKeyDown(event: KeyboardEvent) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      this.active = true;
-      this.selected = true;
-    }
-  }
-
-  // private ensureItemFocus() {
-  //   const activeItem = [...this._dropDown._items].find(
-  //     (item) => item.active
-  //   );
-  //   if (!activeItem) {
-  //     return;
-  //   }
-  //   activeItem.focus({ preventScroll: true });
-  // }
 
   public connectedCallback() {
     super.connectedCallback();
-    this.setAttribute('tabIndex', '0');
-
-    this.addEventListener('keydown', this.handleKeyDown);
-    this.addEventListener('click', this.handleClick);
-  }
-
-  public disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener('click', this.handleClick);
-    this.removeEventListener('keydown', this.handleKeyDown);
+    this.setAttribute('role', 'option');
   }
 
   protected render() {

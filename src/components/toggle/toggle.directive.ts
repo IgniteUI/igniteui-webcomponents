@@ -28,18 +28,18 @@ export class IgcToggleDirective extends Directive {
     font-size: 13px;
     border-radius: 4px;`;
 
-  private _part: PartInfo;
-  private _placement: IgcPlacement = 'bottom-start';
-  private _strategy: 'absolute' | 'fixed' = 'absolute';
-  private _flip? = false;
-  private _offset: { x: number; y: number } | undefined;
-  private _modifiers: Modifier<any, any>[] = [];
-  private _instance!: Instance;
-  private _popperElement!: HTMLElement;
-  private _defaultOptions: IToggleOptions = {
-    placement: this._placement,
-    positionStrategy: this._strategy,
-    flip: this._flip,
+  private part: PartInfo;
+  private placement: IgcPlacement = 'bottom-start';
+  private strategy: 'absolute' | 'fixed' = 'absolute';
+  private flip? = false;
+  private offset: { x: number; y: number } | undefined;
+  private modifiers: Modifier<any, any>[] = [];
+  private instance!: Instance;
+  private popperElement!: HTMLElement;
+  private defaultOptions: IToggleOptions = {
+    placement: this.placement,
+    positionStrategy: this.strategy,
+    flip: this.flip,
   };
 
   /**
@@ -54,72 +54,72 @@ export class IgcToggleDirective extends Directive {
     open: boolean,
     options?: IToggleOptions
   ) {
-    this._popperElement = this.createPopperElement(open);
+    this.popperElement = this.createPopperElement(open);
 
     const popperOptions = this.createPopperOptions(options);
 
-    if (!this._instance) {
+    if (!this.instance) {
       if (!target) {
         return;
       }
-      this._instance = createPopper(target, this._popperElement, popperOptions);
+      this.instance = createPopper(target, this.popperElement, popperOptions);
     } else {
       this.updatePopperOptions(popperOptions);
     }
 
-    return this._instance.state.elements.popper;
+    return this.instance.state.elements.popper;
   }
 
   /** Gets the popper element and sets the specified open state. */
   private createPopperElement(open = false) {
-    if (!this._popperElement) {
-      this._popperElement = (this._part as ElementPart).element as HTMLElement;
-      this._popperElement.classList.add('igc-toggle');
-      this._popperElement.setAttribute('style', this.style);
+    if (!this.popperElement) {
+      this.popperElement = (this.part as ElementPart).element as HTMLElement;
+      this.popperElement.classList.add('igc-toggle');
+      this.popperElement.setAttribute('style', this.style);
     }
 
     open
-      ? this._popperElement.classList.remove('igc-toggle-hidden')
-      : this._popperElement.classList.add('igc-toggle-hidden');
+      ? this.popperElement.classList.remove('igc-toggle-hidden')
+      : this.popperElement.classList.add('igc-toggle-hidden');
 
-    return this._popperElement;
+    return this.popperElement;
   }
 
   private createPopperOptions(options?: IToggleOptions) {
     options = options
-      ? Object.assign({}, this._defaultOptions, options)
-      : this._defaultOptions;
-    this._placement = options.placement;
-    this._strategy = options.positionStrategy;
-    this._modifiers = this.updateModifiers(options);
+      ? Object.assign({}, this.defaultOptions, options)
+      : this.defaultOptions;
+    this.placement = options.placement;
+    this.strategy = options.positionStrategy;
+    this.modifiers = this.updateModifiers(options);
     return {
-      placement: this._placement,
-      strategy: this._strategy,
-      modifiers: this._modifiers,
+      placement: this.placement,
+      strategy: this.strategy,
+      modifiers: this.modifiers,
     };
   }
 
-  /** Updates the options of the popper _instance. */
+  /** Updates the options of the popper instance. */
   private updatePopperOptions(
     options: Partial<OptionsGeneric<Modifier<any, any>>>
   ) {
-    this._instance?.setOptions(options);
-    this._instance?.update();
+    this.instance?.setOptions(options);
+    this.instance?.update();
   }
 
   /** Updates the popper modifiers. */
   private updateModifiers(options: IToggleOptions) {
-    if (this._flip !== options.flip) {
-      this._flip = options.flip;
-      this._flip ? this.addModifier(flip) : this.removeModifier(flip);
+    if (this.flip !== options.flip) {
+      this.flip = options.flip;
+      this.flip ? this.addModifier(flip) : this.removeModifier(flip);
     }
-    if (this._offset !== options.offset) {
-      this._offset = options.offset;
-      this._offset
-        ? this.setOffset(this._offset.x, this._offset.y)
+    if (this.offset !== options.offset) {
+      this.offset = options.offset;
+      this.offset
+        ? this.setOffset(this.offset.x, this.offset.y)
         : this.removeModifier(offset);
     }
-    return this._modifiers;
+    return this.modifiers;
   }
 
   /**
@@ -130,8 +130,8 @@ export class IgcToggleDirective extends Directive {
   private setOffset(deltaX: number, deltaY: number) {
     let offsetValue = [deltaX, deltaY];
     if (
-      this._placement.toString().includes('left') ||
-      this._placement.toString().includes('right')
+      this.placement.toString().includes('left') ||
+      this.placement.toString().includes('right')
     ) {
       offsetValue = [deltaY, deltaX];
     }
@@ -140,10 +140,10 @@ export class IgcToggleDirective extends Directive {
   }
 
   private addModifier(modifier: Modifier<any, any>, options?: any) {
-    let mod = this._modifiers.find((m) => m.name === modifier.name);
+    let mod = this.modifiers.find((m) => m.name === modifier.name);
     if (!mod) {
       mod = modifier;
-      this._modifiers.push(mod);
+      this.modifiers.push(mod);
     }
     if (options && mod.options !== options) {
       mod.options = options;
@@ -153,9 +153,9 @@ export class IgcToggleDirective extends Directive {
   }
 
   private removeModifier(modifier: Modifier<any, any>) {
-    const index = this._modifiers.findIndex((m) => m.name === modifier.name);
+    const index = this.modifiers.findIndex((m) => m.name === modifier.name);
     if (index > -1) {
-      this._modifiers.splice(index, 1);
+      this.modifiers.splice(index, 1);
     }
   }
 
@@ -168,7 +168,7 @@ export class IgcToggleDirective extends Directive {
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    this._part = partInfo;
+    this.part = partInfo;
     if (partInfo.type !== PartType.ELEMENT) {
       throw new Error(
         'The `igcToggle` directive must be attached to an element tag.'

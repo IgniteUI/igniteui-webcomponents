@@ -1,16 +1,15 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-// :host {
-//     display: flex;
-//     flex-flow: column nowrap;
-//     font-family: var(--igc-font-family);
-//     overflow: hidden;
-//     background: color(surface, 500);
-// }
-
-.igc-drop-down-list {
+:host {
+    display: flex;
     z-index: 10005;
+}
+
+.igc-dropdown-list {
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
 }
 
 :host([size='small']) ::slotted(igc-dropdown-item),

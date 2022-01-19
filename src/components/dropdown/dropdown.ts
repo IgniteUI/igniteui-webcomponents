@@ -21,23 +21,25 @@ import IgcDropDownGroupComponent from './dropdown-group';
 export enum DropDownActionKey {
   ESCAPE = 'escape',
   ENTER = 'enter',
-  SPACE = 'space',
 }
 
 export interface IgcDropDownEventMap extends IgcToggleEventMap {
-  igcSelect: CustomEvent<ISelectionEventArgs>;
+  igcChange: CustomEvent<ISelectionChangeEventArgs>;
 }
 
-export interface ISelectionEventArgs {
+export interface ISelectionChangeEventArgs {
   newItem: IgcDropDownItemComponent | null;
-  oldItem: IgcDropDownItemComponent | null;
-  cancel: boolean;
 }
 
 /**
- * DropDown component
+ * Represents a DropDown component.
  *
  * @element igc-dropdown
+ *
+ * @fires igcChange - Emitted when the selected item changes.
+ *
+ * @slot target - Renders the dropdown's target element.
+ * @slot - Renders the dropdown list items.
  *
  *
  */
@@ -49,203 +51,144 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   /** private */
   public static styles = styles;
 
-  private toggleDirective!: any;
-  private _options: IToggleOptions;
-  private _selectedItem!: IgcDropDownItemComponent;
-  private _activeItem!: IgcDropDownItemComponent;
-  private _toggleController!: IgcToggleController;
+  private toggleController!: IgcToggleController;
+  private selectedItem!: IgcDropDownItemComponent | null;
+  private activeItem!: IgcDropDownItemComponent;
+  private target!: HTMLElement;
 
-  @property({ type: Boolean })
-  public open = false;
-
-  @property({ attribute: false })
-  public strategy: 'absolute' | 'fixed' = 'absolute';
-
-  @property({ attribute: false })
-  public target!: HTMLElement;
-
-  @property({ attribute: false })
-  public placement: IgcPlacement = 'bottom-start';
-
-  @property({ type: Boolean })
-  public flip = false;
-
-  @property({ type: Boolean })
-  public closeOnOutsideClick = true;
-
-  @property({ attribute: false })
-  public scrollStrategy: 'absolute' | 'close' | 'block' | 'noop' = 'noop';
-
-  // @property({ type: Boolean })
-  // public allowItemsFocus = false;
-
-  @property({ attribute: false })
-  public offset!: { x: number; y: number };
+  private get allItems(): IgcDropDownItemComponent[] {
+    const groupItems: IgcDropDownItemComponent[] = [...this.groups].flatMap(
+      (group) => [...group.items]
+    );
+    return [...this.items, ...groupItems];
+  }
 
   @query('#igcDDLContent')
   protected content!: HTMLElement;
 
+  @query('#igcScrollContainer')
+  protected scrollContainer!: HTMLElement;
+
   @queryAssignedNodes(undefined, true, 'igc-dropdown-item')
-  public _items!: NodeListOf<IgcDropDownItemComponent>;
+  protected items!: NodeListOf<IgcDropDownItemComponent>;
 
   @queryAssignedNodes(undefined, true, 'igc-dropdown-group')
-  public _groups!: NodeListOf<IgcDropDownGroupComponent>;
+  protected groups!: NodeListOf<IgcDropDownGroupComponent>;
 
-  private get _allItems(): IgcDropDownItemComponent[] {
-    const groupItems: IgcDropDownItemComponent[] = [...this._groups].flatMap(
-      (group) => [...group.items]
-    );
-    return [...this._items, ...groupItems];
-  }
+  @queryAssignedNodes('target')
+  private targetNodes!: NodeListOf<HTMLElement>;
+
+  /** Sets the open state of the dropdown list. */
+  @property({ type: Boolean })
+  public open = false;
+
+  /** Sets the dropdown list's positioning strategy. */
+  @property({ attribute: false })
+  public positionStrategy: 'absolute' | 'fixed' = 'absolute';
+
+  /** The preferred placement of the dropdown list around the target element. */
+  @property({ attribute: false })
+  public placement: IgcPlacement = 'bottom-start';
+
+  /**
+   * Whether the list should be flipped to the opposite side of the target once it's about to overflow the visible area.
+   * When true, once enough space is detected on its preferred side, it will flip back.
+   */
+  @property({ type: Boolean })
+  public flip = false;
+
+  /** Whether the dropdown should be hidden on clicking outside of it. */
+  @property({ type: Boolean })
+  public closeOnOutsideClick = true;
+
+  /** Determines the behavior of the dropdown list during scrolling the container. */
+  @property({ attribute: false })
+  public scrollStrategy: 'scroll' | 'close' | 'block' | 'noop' = 'noop';
+
+  /** The amount of offset in horizontal and/or vertical direction. */
+  @property({ attribute: false })
+  public offset!: { x: number; y: number };
 
   @watch('target')
   @watch('open')
   protected toggleDirectiveChange() {
-    this.createToggleDirective();
+    if (!this.target) return;
+
+    this.toggleController.open = this.open;
+    this.toggleController.target = this.target;
+
+    if (this.scrollContainer) {
+      this.open
+        ? this.scrollContainer.setAttribute('aria-expanded', 'true')
+        : this.scrollContainer.removeAttribute('aria-expanded');
+    }
+
+    this.setAttribute(
+      'aria-activedescendant',
+      (this.activeItem
+        ? this.activeItem.value
+        : [...this.items][0]?.value) as string
+    );
   }
 
   @watch('placement')
   @watch('flip')
-  @watch('strategy')
+  @watch('positionStrategy')
   @watch('closeOnOutsideClick')
   @watch('offset')
   protected updateOptions() {
-    this._options.placement = this.placement;
-    this._options.flip = this.flip;
-    this._options.strategy = this.strategy;
-    this._options.closeOnOutsideClick = this.closeOnOutsideClick;
-    this._options.offset = this.offset;
+    if (!this.toggleController) return;
+
+    this.toggleController.options = {
+      placement: this.placement,
+      positionStrategy: this.positionStrategy,
+      flip: this.flip,
+      closeOnOutsideClick: this.closeOnOutsideClick,
+      offset: this.offset,
+    };
   }
 
-  public show() {
-    // this.updateToggleOptions();
+  constructor() {
+    super();
 
-    if (!this.handleOpening()) {
-      return;
+    const options: IToggleOptions = {
+      placement: this.placement,
+      positionStrategy: this.positionStrategy,
+      flip: this.flip,
+      closeOnOutsideClick: this.closeOnOutsideClick,
+      offset: this.offset,
+    };
+
+    this.toggleController = new IgcToggleController(this, this.target, options);
+    this.toggleController.documentClicked = (ev: MouseEvent) =>
+      this.handleDocumentClicked(ev);
+    this.toggleController.handleScroll = (ev: Event) => this.handleScroll(ev);
+  }
+
+  public connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  public disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  public firstUpdated() {
+    if (this.targetNodes.length) {
+      this.target = [...this.targetNodes][0];
     }
-
-    this.open = true;
-
-    this.handleOpened();
+    this.setAttribute('aria-owns', this.scrollContainer?.id);
   }
 
-  public hide(): void {
-    if (!this.handleClosing()) {
-      return;
-    }
-
-    this.open = false;
-    this.handleClosed();
-  }
-
-  public toggle(): void {
-    if (!this.open) {
-      this.show();
-    } else {
-      this.hide();
-    }
-  }
-
-  public select(value: string): IgcDropDownItemComponent {
-    const item = [...this._allItems].find(
-      (i) => i.value === value
-    ) as IgcDropDownItemComponent;
-    this.selectItem(item);
-    return item;
-  }
-
-  protected selectItem(item: IgcDropDownItemComponent): boolean {
-    const oldItem = this._selectedItem;
-
-    if (!item) {
-      return false;
-    }
-
-    if (oldItem) {
-      this._selectedItem.selected = false;
-    }
-
-    this._selectedItem = item;
-    return true;
-    // item.active = true;
-    // item.selected = true;
-  }
-
-  private handleClick(_ev: MouseEvent) {
-    // _ev.preventDefault();
-    const newSelectedItem = _ev.target as IgcDropDownItemComponent;
-    if (newSelectedItem) {
-      if (!this.handleSelection(newSelectedItem)) {
-        return;
-      }
-
-      this.selectItem(newSelectedItem);
-    }
-  }
-  protected handleOpening(): boolean {
-    const args = { detail: { cancel: false } };
-    this.emitEvent('igcOpening', args);
-    console.log(this.id, '=====Opening======');
-
-    if (args.detail.cancel) {
-      this.open = false;
-      return false;
-    }
-
-    return true;
-  }
-
-  protected handleOpened() {
-    this.emitEvent('igcOpened');
-    console.log('=====Opened======');
-  }
-
-  protected handleClosing(): boolean {
-    const args = { detail: { cancel: false } };
-    this.emitEvent('igcClosing', args);
-
-    if (args.detail.cancel) {
-      this.open = true;
-      return false;
-    }
-
-    return true;
-  }
-
-  protected handleClosed() {
-    this.emitEvent('igcClosed');
-    console.log('=====Closed======');
-  }
-
-  protected handleSelection(item: IgcDropDownItemComponent): boolean {
-    const oldItem = this._selectedItem;
-    const newItem = item;
-    const args = { detail: { oldItem, newItem, cancel: false } };
-
-    if (args.detail.cancel) {
-      return false;
-    }
-
-    this.emitEvent('igcSelect', args);
-    console.log(args);
-    return true;
-  }
-
-  private createToggleDirective() {
-    this.toggleDirective = this._toggleController.createToggle(
-      this.target,
-      this.open,
-      this._options
-    );
-  }
-
-  private documentClicked = (ev: MouseEvent) => {
+  private handleDocumentClicked = (event: MouseEvent) => {
     if (!this.open) {
       return;
     }
 
     if (this.closeOnOutsideClick) {
-      const target = ev.composed ? ev.composedPath() : [ev.target];
+      const target = event.composed ? event.composedPath() : [event.target];
       const isInsideClick: boolean =
         target.includes(this.content) ||
         (this.target !== undefined && target.includes(this.target));
@@ -257,35 +200,121 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     }
   };
 
-  private handleScroll = (ev: Event) => {
+  private handleScroll = (event: Event) => {
     if (!this.open) {
       return;
     }
 
     switch (this.scrollStrategy) {
-      case 'absolute':
+      case 'scroll':
         break;
       case 'block':
-        this.blockScroll(ev);
+        this.blockScroll(event);
         break;
       case 'close':
         this.hide();
         break;
       case 'noop':
-        ev.preventDefault();
-        ev.stopImmediatePropagation();
+        event.preventDefault();
+        event.stopImmediatePropagation();
         break;
     }
   };
+
+  private handleKeyDown = (event: KeyboardEvent) => {
+    if (
+      event &&
+      (event.composedPath().includes(this.target) ||
+        event.composedPath().includes(this.content))
+    ) {
+      const key = event.key.toLowerCase();
+      const navKeys = [
+        'esc',
+        'escape',
+        'enter',
+        'arrowup',
+        'up',
+        'arrowdown',
+        'down',
+      ];
+      if (navKeys.indexOf(key) === -1) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      switch (key) {
+        case 'esc':
+        case 'escape':
+          this.handleItemActionKey(DropDownActionKey.ESCAPE);
+          break;
+        case 'enter':
+          this.handleItemActionKey(DropDownActionKey.ENTER);
+          break;
+        case 'arrowup':
+        case 'up':
+          this.onArrowUpKeyDown();
+          break;
+        case 'arrowdown':
+        case 'down':
+          this.onArrowDownKeyDown();
+          break;
+        default:
+          return;
+      }
+    }
+  };
+
+  private handleItemActionKey(key: DropDownActionKey) {
+    switch (key) {
+      case DropDownActionKey.ENTER:
+        this.selectItem(this.activeItem);
+        this.handleSelection(this.activeItem);
+        break;
+      case DropDownActionKey.ESCAPE:
+        break;
+    }
+
+    this.hide();
+  }
+
+  private handleClick(event: MouseEvent) {
+    event.preventDefault();
+    const newSelectedItem =
+      event.target instanceof IgcDropDownItemComponent
+        ? (event.target as IgcDropDownItemComponent)
+        : null;
+    if (!newSelectedItem || newSelectedItem.disabled) return;
+
+    this.selectItem(newSelectedItem);
+    this.handleSelection(newSelectedItem);
+    this.hide();
+  }
+
+  private handleOpening() {
+    const args = { cancelable: true };
+    return this.emitEvent('igcOpening', args);
+  }
+
+  private handleClosing(): boolean {
+    const args = { cancelable: true };
+    return this.emitEvent('igcClosing', args);
+  }
+
+  private handleSelection(item: IgcDropDownItemComponent) {
+    const args = { detail: { newItem: item } };
+    this.emitEvent('igcChange', args);
+  }
 
   private _sourceElement?: Element;
   private _initialScrollTop = 0;
   private _initialScrollLeft = 0;
 
-  private blockScroll = (ev: Event) => {
-    ev.preventDefault();
-    if (!this._sourceElement || this._sourceElement !== ev.target) {
-      this._sourceElement = ev.target as Element;
+  private blockScroll = (event: Event) => {
+    event.preventDefault();
+    if (!this._sourceElement || this._sourceElement !== event.target) {
+      this._sourceElement = event.target as Element;
       this._initialScrollTop =
         this._sourceElement.scrollTop ??
         this._sourceElement.firstElementChild?.scrollTop;
@@ -303,61 +332,95 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     }
   };
 
-  // Keyboard navigation
+  private getItem(value: string) {
+    let itemIndex = -1;
+    let item!: IgcDropDownItemComponent;
+    [...this.allItems].find((i, index) => {
+      if (i.value === value) {
+        item = i;
+        itemIndex = index;
+      }
+    });
+    return { item: item, index: itemIndex };
+  }
+
+  private activateItem(value: IgcDropDownItemComponent) {
+    if (!value) return;
+
+    if (this.activeItem && this.activeItem !== value) {
+      this.activeItem.classList.remove('active');
+    }
+
+    this.activeItem = value;
+    this.activeItem.classList.add('active');
+  }
+
+  private selectItem(
+    item: IgcDropDownItemComponent
+  ): IgcDropDownItemComponent | null {
+    const oldItem = this.selectedItem;
+
+    if (!item) {
+      return null;
+    }
+
+    if (oldItem && oldItem !== item) {
+      oldItem.selected = false;
+    }
+
+    this.activateItem(item);
+    this.selectedItem = item;
+    this.selectedItem.selected = true;
+    return this.selectedItem;
+  }
+
   private navigate(direction: -1 | 1, currentIndex?: number) {
     let index = -1;
-    if (this._activeItem) {
+    if (this.activeItem) {
       index = currentIndex
         ? currentIndex
-        : [...this._allItems].indexOf(this._activeItem) ?? index;
+        : [...this.allItems].indexOf(this.activeItem) ?? index;
     }
 
     const newIndex = this.getNearestSiblingFocusableItemIndex(index, direction);
     this.navigateItem(newIndex);
   }
 
-  /**
-   * Navigates to the item on the specified index
-   *
-   * @param newIndex number - the index of the item in the `items` collection
-   */
-  private navigateItem(newIndex: number) {
-    if (!this._allItems) {
-      return;
-    }
-    if (newIndex < 0 || newIndex >= this._allItems.length) {
-      return;
+  private navigateItem(newIndex: number): IgcDropDownItemComponent | null {
+    if (!this.allItems) {
+      return null;
     }
 
-    const oldItem = this._activeItem;
-    const newItem = this._allItems[newIndex];
-    if (oldItem) {
-      oldItem.active = false;
+    if (newIndex < 0 || newIndex >= this.allItems.length) {
+      return null;
     }
-    this._activeItem = newItem;
-    // this.scrollToHiddenItem(newItem);
-    this._activeItem.active = true;
-    console.log('Active', this._activeItem.textContent);
+
+    const newItem = this.allItems[newIndex];
+
+    this.activateItem(newItem);
+    this.scrollToHiddenItem(newItem);
+
+    return newItem;
   }
 
-  // protected scrollToHiddenItem(newItem: IgxDropDownItemBaseDirective) {
-  //   const elementRect = newItem.element.nativeElement.getBoundingClientRect();
-  //   const parentRect = this.scrollContainer.getBoundingClientRect();
-  //   if (parentRect.top > elementRect.top) {
-  //       this.scrollContainer.scrollTop -= (parentRect.top - elementRect.top);
-  //   }
+  private scrollToHiddenItem(newItem: IgcDropDownItemComponent) {
+    const elementRect = newItem.getBoundingClientRect();
+    const parentRect = this.content.getBoundingClientRect();
+    if (parentRect.top > elementRect.top) {
+      this.content.scrollTop -= parentRect.top - elementRect.top;
+    }
 
-  //   if (parentRect.bottom < elementRect.bottom) {
-  //       this.scrollContainer.scrollTop += (elementRect.bottom - parentRect.bottom);
-  //   }
-  // }
+    if (parentRect.bottom < elementRect.bottom) {
+      this.content.scrollTop += elementRect.bottom - parentRect.bottom;
+    }
+  }
 
   private getNearestSiblingFocusableItemIndex(
     startIndex: number,
     direction: -1 | 1
   ): number {
     let index = startIndex;
-    const items = this._allItems;
+    const items = this.allItems;
     if (!items) {
       return -1;
     }
@@ -367,184 +430,121 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     }
 
     index += direction;
-    if (index >= 0 && index < items.length) {
-      return index;
-    } else {
-      return -1;
-    }
+
+    return index > -1 && index < items.length ? index : -1;
   }
 
-  /**
-   * @hidden @internal
-   */
-  private navigateFirst() {
-    this.navigate(1, -1);
-  }
-
-  /**
-   * @hidden @internal
-   */
-  private navigateLast() {
-    this.navigate(-1, this._allItems?.length);
-  }
-
-  /**
-   * @hidden @internal
-   */
   private navigateNext() {
     this.navigate(1);
   }
 
-  /**
-   * @hidden @internal
-   */
   private navigatePrev() {
     this.navigate(-1);
   }
-  /**
-   * Navigates to previous item
-   */
+
   private onArrowDownKeyDown() {
     this.navigateNext();
   }
 
-  /**
-   * Navigates to previous item
-   */
   private onArrowUpKeyDown() {
     this.navigatePrev();
   }
 
-  /**
-   * Navigates to last item
-   */
-  private onEndKeyDown() {
-    this.navigateLast();
-  }
+  /** Shows the dropdown. */
+  public show() {
+    if (this.open) return;
 
-  /**
-   * Navigates to first item
-   */
-  private onHomeKeyDown() {
-    this.navigateFirst();
-  }
+    if (!this.handleOpening()) return;
 
-  /**
-   * Captures keydown events and calls the appropriate handlers
-   */
-  private handleKeyDown = (event: KeyboardEvent) => {
-    if (event) {
-      const key = event.key.toLowerCase();
-      const navKeys = [
-        'esc',
-        'escape',
-        'enter',
-        'space',
-        'spacebar',
-        ' ',
-        'arrowup',
-        'up',
-        'arrowdown',
-        'down',
-        'home',
-        'end',
-      ];
-      if (navKeys.indexOf(key) === -1) {
-        // If key has appropriate function in DD
-        return;
-      }
+    this.open = true;
 
-      event.preventDefault();
-      event.stopPropagation();
-
-      switch (key) {
-        case 'esc':
-        case 'escape':
-          this.onItemActionKey(DropDownActionKey.ESCAPE);
-          break;
-        case 'enter':
-          this.onItemActionKey(DropDownActionKey.ENTER);
-          break;
-        case 'space':
-        case 'spacebar':
-        case ' ':
-          this.onItemActionKey(DropDownActionKey.SPACE);
-          break;
-        case 'arrowup':
-        case 'up':
-          this.onArrowUpKeyDown();
-          break;
-        case 'arrowdown':
-        case 'down':
-          this.onArrowDownKeyDown();
-          break;
-        case 'home':
-          this.onHomeKeyDown();
-          break;
-        case 'end':
-          this.onEndKeyDown();
-          break;
-        default:
-          return;
-      }
-    }
-  };
-
-  private onItemActionKey(key: DropDownActionKey) {
-    switch (key) {
-      case DropDownActionKey.ENTER:
-      case DropDownActionKey.SPACE:
-        if (!this.handleSelection(this._activeItem)) {
-          return;
-        }
-        this.selectItem(this._activeItem);
-        break;
-      case DropDownActionKey.ESCAPE:
-        break;
+    if (this.selectedItem) {
+      this.activateItem(this.selectedItem);
     }
 
-    this.hide();
+    this.emitEvent('igcOpened');
   }
 
-  constructor() {
-    super();
-    this._toggleController = new IgcToggleController(this);
-    this._toggleController.documentClicked = (ev: MouseEvent) =>
-      this.documentClicked(ev);
-    this._toggleController.handleScroll = (ev: Event) => this.handleScroll(ev);
+  /** Hides the dropdown. */
+  public hide(): void {
+    if (!this.open) return;
 
-    this._options = {
-      placement: this.placement,
-      strategy: this.strategy,
-      flip: this.flip,
-    };
+    if (!this.handleClosing()) {
+      return;
+    }
+
+    this.open = false;
+    this.emitEvent('igcClosed');
   }
 
-  public connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener('keydown', this.handleKeyDown);
+  /** Toggles the open state of the dropdown. */
+  public toggle(): void {
+    if (!this.open) {
+      this.show();
+    } else {
+      this.hide();
+    }
   }
 
-  public disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener('keydown', this.handleKeyDown);
+  /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
+  public navigateTo(value: string): IgcDropDownItemComponent | null;
+  /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
+  public navigateTo(index: number): IgcDropDownItemComponent | null;
+  /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
+  public navigateTo(value: any): IgcDropDownItemComponent | null {
+    const index =
+      typeof value === 'string' ? this.getItem(value).index : (value as number);
+
+    return this.navigateItem(index);
+  }
+
+  /** Selects the item with the specified value. If it exists, returns the found item, otherwise - null. */
+  public select(value: string): IgcDropDownItemComponent | null;
+  /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
+  public select(index: number): IgcDropDownItemComponent | null;
+  /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
+  public select(value: any): IgcDropDownItemComponent | null {
+    const item =
+      typeof value === 'string'
+        ? this.getItem(value).item
+        : this.allItems[value as number];
+
+    return this.selectItem(item);
+  }
+
+  /**  Clears the current selection of the dropdown. */
+  public clearSelection() {
+    if (this.selectedItem) {
+      this.selectedItem.selected = false;
+    }
+    this.selectedItem = null;
   }
 
   protected render() {
     return html`
+      <slot name="target"></slot>
       <div
         id="igcDDLContent"
-        class="igc-drop-down-list"
-        ${this.toggleDirective}
+        class="igc-dropdown-list"
+        part="base"
+        @click=${this.handleClick}
+        ${this.toggleController.toggleDirective}
       >
         <div
-          class="igc-drop-down-list-scroll"
+          id="igcScrollContainer"
+          class="igc-dropdown-list-scroll"
+          part="list"
           role="listbox"
-          @click=${this.handleClick}
         >
           <slot></slot>
         </div>
       </div>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-dropdown': IgcDropDownComponent;
   }
 }

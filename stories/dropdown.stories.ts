@@ -6,8 +6,7 @@ import {
   IgcDropDownComponent,
   IgcInputComponent,
 } from '../src/index.js';
-import { igcToggle } from '../src/components/toggle/toggle.directive';
-import { ISelectionEventArgs } from '../src/components/dropdown/dropdown.js';
+import { ISelectionChangeEventArgs } from '../src/components/dropdown/dropdown.js';
 
 defineComponents(IgcDropDownComponent, IgcInputComponent);
 const placements = [
@@ -67,11 +66,6 @@ const metadata = {
       },
       defaultValue: 'noop',
     },
-    allowItemsFocus: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: false,
-    },
   },
 };
 export default metadata;
@@ -81,7 +75,7 @@ interface ArgTypes {
   strategy: 'absolute' | 'fixed';
   flip: boolean;
   closeOnOutsideClick: boolean;
-  scrollStrategy: 'absolute' | 'close' | 'block' | 'noop';
+  scrollStrategy: 'scroll' | 'close' | 'block' | 'noop';
 }
 // end region
 
@@ -91,17 +85,11 @@ interface ArgTypes {
   },
 };
 const toggleDDL = (ev: Event, ddlId: string) => {
+  console.log(ev);
   const ddl = document.getElementById(ddlId) as IgcDropDownComponent;
-  ddl.target = ev.target as HTMLElement;
   ddl.toggle();
 };
 
-let toggleDir: any;
-const showTooltip = (ev: Event) => {
-  // const element = document.getElementById(elemId) as HTMLElement;
-  toggleDir = igcToggle(ev.target as HTMLElement, true);
-  console.log(toggleDir);
-};
 const items = [
   'Specification',
   'Implementation',
@@ -115,37 +103,49 @@ const Template: Story<ArgTypes, Context> = (
     flip = false,
     closeOnOutsideClick = true,
     placement = 'bottom-end',
-  }: ArgTypes,
+    scrollStrategy = 'block',
+  }: // offset = { x: 20, y: 20 },
+  ArgTypes,
   { globals: { direction } }: Context
 ) => html`
-  <div style="display:flex; justify-content: space-between">
-    <igc-button @click="${(ev: Event) => toggleDDL(ev, 'ddl1')}"
-      >Dropdown 1</igc-button
-    >
+  <div style="position: relative; height: 400px">
     <igc-dropdown
       id="ddl1"
       .flip=${flip}
       .closeOnOutsideClick=${closeOnOutsideClick}
       .placement=${placement}
       .dir=${direction}
+      .scrollStrategy=${scrollStrategy}
     >
+      <igc-button slot="target" @click="${(ev: Event) => toggleDDL(ev, 'ddl1')}"
+        >Dropdown 1</igc-button
+      >
       <igc-dropdown-header>Tasks</igc-dropdown-header>
-      ${items.map(
+      <!-- ${items.map(
         (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-      )}
+      )} -->
+      ${items
+        .slice(0, 2)
+        .map((item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`)}
+      ${html`<igc-dropdown-item disabled>${items[2]}</igc-dropdown-item>`}
+      ${html`<igc-dropdown-item>${items[3]}</igc-dropdown-item>`}
+      ${html`<igc-dropdown-item>${items[4]}</igc-dropdown-item>`}
+      ${html`<igc-dropdown-item disabled>${items[5]}</igc-dropdown-item>`}
     </igc-dropdown>
-    <igc-button @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
-      >Dropdown 1</igc-button
-    >
     <igc-dropdown
+      style="position: absolute; top: 0px; right: 0px;"
       id="ddl2"
       .flip=${flip}
       .closeOnOutsideClick=${closeOnOutsideClick}
       .placement=${placement}
+      .scrollStrategy=${scrollStrategy}
       .dir=${direction}
     >
+      <igc-button slot="target" @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
+        >Dropdown 1</igc-button
+      >
       <igc-dropdown-group>
-        <h3>Research & Development</h3>
+        <h3 slot="label">Research & Development</h3>
         ${items
           .slice(0, 3)
           .map((item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`)}
@@ -161,48 +161,44 @@ const Template: Story<ArgTypes, Context> = (
         <igc-dropdown-item>${items[5]}</igc-dropdown-item>
       </igc-dropdown-group>
     </igc-dropdown>
-  </div>
-  <div>
-    <igc-input size="small" @click="${(ev: Event) => toggleDDL(ev, 'ddl3')}"
-      >Dropdown 1</igc-input
-    >
     <igc-dropdown
+      style="position: absolute; bottom: 0px; left: 0px"
       id="ddl3"
       .flip=${flip}
       .closeOnOutsideClick=${closeOnOutsideClick}
-      .placement=${placement}
+      .placement=${'top-start'}
       .dir=${direction}
     >
-      ${items.slice(0, 4).map((item) => html`<h4>${item}</h4>`)}
-    </igc-dropdown>
-  </div>
-  <div style="display:flex; justify-content: space-between">
-    <igc-button @click="${(ev: Event) => toggleDDL(ev, 'ddl4')}"
-      >Dropdown 1</igc-button
-    >
-    <igc-dropdown
-      id="ddl4"
-      .flip=${flip}
-      .closeOnOutsideClick=${closeOnOutsideClick}
-      .placement=${placement}
-      .dir=${direction}
-    >
+      <input
+        type="button"
+        slot="target"
+        @click="${(ev: Event) => toggleDDL(ev, 'ddl3')}"
+        style="width: 150px"
+      />
+      <!-- ${items.slice(0, 5).map((item) => html`<h4>${item}</h4>`)} -->
       ${items.map(
         (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
       )}
     </igc-dropdown>
-  </div>
-  <div>
-    <!-- <igc-button id="btn" @mouseover="${(ev: Event) => showTooltip(ev)}"
-      >Show tooltip</igc-button
+    <igc-dropdown
+      style="position: fixed; bottom: 0px; right: 0px"
+      id="ddl4"
+      .flip=${true}
+      .closeOnOutsideClick=${closeOnOutsideClick}
+      .placement=${placement}
+      .dir=${direction}
     >
-    <span
-      ${(toggleDir = igcToggle(
-      document.getElementById('btn') as HTMLElement,
-      false
-    ))}
-      >I am a tooltip~</span
-    > -->
+      <input
+        type="button"
+        slot="target"
+        @click="${(ev: Event) => toggleDDL(ev, 'ddl4')}"
+        style="width: 150px"
+      />
+      <!-- ${items.slice(0, 5).map((item) => html`<h4>${item}</h4>`)} -->
+      ${items.map(
+        (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
+      )}
+    </igc-dropdown>
   </div>
 `;
 
@@ -215,26 +211,29 @@ const countries = [
   'Japan',
   'India',
 ];
+const scrollStrategy = 'block';
 const checkoutForm = html`
   <!-- <div> -->
   <igc-form>
     <div>
-      <igc-input
-        type="text"
-        label="Country"
-        id="txtCountry"
-        size="small"
-        @click="${(ev: Event) => toggleDDL(ev, 'ddlCountry')}"
-        style="width: 150px"
-      ></igc-input>
       <igc-dropdown
         id="ddlCountry"
         @igcSelect=${(_ev: CustomEvent) => {
           (document.getElementById('txtCountry') as IgcInputComponent).value = (
-            _ev.detail as ISelectionEventArgs
+            _ev.detail as ISelectionChangeEventArgs
           ).newItem?.textContent as string;
         }}
+        .scrollStrategy=${scrollStrategy}
       >
+        <igc-input
+          slot="target"
+          type="text"
+          label="Country"
+          id="txtCountry"
+          size="small"
+          @click="${(ev: Event) => toggleDDL(ev, 'ddlCountry')}"
+          style="width: 150px"
+        ></igc-input>
         <igc-dropdown-group>
           <igc-dropdown-header slot="label">Europe</igc-dropdown-header>
           ${countries

@@ -3,16 +3,38 @@
 
 :host {
     display: flex;
+    justify-content: flex-start;
     align-items: center;
+    width: 100%;
+    white-space: nowrap;
     position: relative;
-    color: color(gray, 800);
-    background: color(surface, 500);
-    transition: background .15s ease-out;
+    cursor: pointer;
 }
 
-:host(:hover),
-:host(:focus-within) {
+:host(:hover) {
     background: color(gray, 200);
+}
+
+:host([active]) {
+    outline: 0;
+    outline-color: transparent;
+    background: color(gray, 300);
+}
+
+:host(.active) {
+    outline: 0;
+    outline-color: transparent;
+    background: color(gray, 300);
+}
+
+:host([disabled]) {
+    color: color(gray, 500);
+    cursor: default;
+    pointer-events: none;
+}
+:host([selected]) {
+    background:  #09f;
+    color: white;
 }
 
 ::slotted(*) {

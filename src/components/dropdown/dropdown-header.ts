@@ -1,13 +1,21 @@
 import { html, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
 import { styles } from './dropdown-header.material.css';
 
-@customElement('igc-dropdown-header')
+/**
+ * @element igc-dropdown-header - Represents a header item in a dropdown list.
+ *
+ * @slot - Renders the header.
+ */
 export default class IgcDropDownHeaderComponent extends LitElement {
   /** private */
   public static styles = styles;
 
   public render() {
-    return html` <slot></slot> `;
+    return html`<slot></slot>`;
+  }
+}
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-dropdown-header': IgcDropDownHeaderComponent;
   }
 }
