@@ -15,6 +15,28 @@ export interface IgcSliderEventMap {
   igcChange: CustomEvent<number>;
 }
 
+/**
+ * A slider component used to select numeric value within a range.
+ *
+ * @element igc-slider
+ *
+ * @fires igcInput - Emitted when a value is changed via thumb drag or keyboard interaction.
+ * @fires igcChange - Emitted when a value change is committed on a thumb drag end or keyboard interaction.
+ *
+ * @csspart base - The base wrapper of the slider.
+ * @csspart ticks - The ticks container.
+ * @csspart tick-group - The tick group container.
+ * @csspart tick - The tick element.
+ * @csspart tick-label - The tick label element.
+ * @csspart tick-label-inner - The inner element of the tick label.
+ * @csspart thumbs - The thumbs container.
+ * @csspart thumb - The thumb element.
+ * @csspart thumb-label - The label of the thumb tooltip.
+ * @csspart track - The track container.
+ * @csspart steps - The track steps element.
+ * @csspart inactive - The inactive element of the track.
+ * @csspart fill - The filled part of the track.
+ */
 export default class IgcSliderComponent extends EventEmitterMixin<
   IgcSliderEventMap,
   Constructor<IgcSliderBaseComponent>
