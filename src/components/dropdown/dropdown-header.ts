@@ -7,6 +7,9 @@ import { styles } from './dropdown-header.material.css';
  * @slot - Renders the header.
  */
 export default class IgcDropDownHeaderComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-dropdown-header';
+
   /** private */
   public static styles = styles;
 

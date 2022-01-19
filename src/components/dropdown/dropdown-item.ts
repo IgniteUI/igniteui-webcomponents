@@ -27,6 +27,9 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
   IgcDropDownItemEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  /** @private */
+  public static tagName = 'igc-dropdown-item';
+
   /** private */
   public static styles = styles;
 

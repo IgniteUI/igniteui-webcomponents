@@ -12,6 +12,9 @@ import IgcDropDownItemComponent from './dropdown-item';
  * @csspart label - The native label element.
  */
 export default class IgcDropDownGroupComponent extends LitElement {
+  /** @private */
+  public static tagName = 'igc-dropdown-group';
+
   /** private */
   public static styles = styles;
 
