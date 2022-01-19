@@ -32,8 +32,9 @@
     cursor: default;
     pointer-events: none;
 }
+
 :host([selected]) {
-    background:  #09f;
+    background: #09f;
     color: white;
 }
 
