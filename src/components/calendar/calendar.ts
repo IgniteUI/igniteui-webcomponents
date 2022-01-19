@@ -455,8 +455,19 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private changeValue(event: CustomEvent<void>) {
     event.stopPropagation();
-    this.value = (event.target as IgcDaysViewComponent).value;
-    this.emitEvent('igcChange', { detail: this.value });
+
+    const daysView = event.target as IgcDaysViewComponent;
+    let newValue;
+
+    if (this.selection === 'single') {
+      this.value = daysView.value;
+      newValue = this.value;
+    } else {
+      this.values = daysView.values;
+      newValue = this.values;
+    }
+
+    this.emitEvent('igcChange', { detail: newValue });
   }
 
   private changeMonth(event: CustomEvent<void>) {
@@ -666,7 +677,7 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   private renderHeaderDate() {
     if (this.selection === 'single') {
-      const date = this.value as Date;
+      const date = this.value;
       return html`${date
         ? html`${this.formatterWeekday.format(date)},${this
             .headerOrientation === 'vertical'
@@ -675,7 +686,7 @@ export default class IgcCalendarComponent extends SizableMixin(
         : this.resourceStrings.selectedDate}`;
     }
 
-    const dates = this.value as Date[];
+    const dates = this.values;
 
     return html`<span
         >${dates && dates.length
@@ -739,6 +750,7 @@ export default class IgcCalendarComponent extends SizableMixin(
                   .locale=${this.locale}
                   .selection=${this.selection}
                   .value=${this.value}
+                  .values=${this.values}
                   .hideLeadingDays=${this.hideOutsideDays || i !== 0}
                   .hideTrailingDays=${this.hideOutsideDays ||
                   i !== activeDates.length - 1}
