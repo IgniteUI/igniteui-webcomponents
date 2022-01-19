@@ -26,10 +26,8 @@ let nextId = 0;
  * @csspart indicator - The checkbox icon.
  */
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
-  /** @private */
-  public static tagName = 'igc-checkbox';
+  public static readonly tagName = 'igc-checkbox';
 
-  /** @private */
   public static styles = styles;
 
   private inputId = `checkbox-${nextId++}`;

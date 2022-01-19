@@ -12,10 +12,8 @@ import { styles } from './card.header.material.css';
  * @csspart header - The card header container
  */
 export default class IgcCardHeaderComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-card-header';
+  public static readonly tagName = 'igc-card-header';
 
-  /** @private */
   public static override styles = styles;
 
   protected override render() {

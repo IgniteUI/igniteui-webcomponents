@@ -1,5 +1,10 @@
 import { html, LitElement } from 'lit';
-import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
@@ -43,13 +48,10 @@ export interface IgcInputEventMap {
 export default class IgcInputComponent extends SizableMixin(
   EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  /** @private */
-  public static tagName = 'igc-input';
+  public static readonly tagName = 'igc-input';
 
-  /** @private */
   public static styles = styles;
 
-  /** @private */
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
@@ -69,11 +71,11 @@ export default class IgcInputComponent extends SizableMixin(
   @query('input', true)
   private input!: HTMLInputElement;
 
-  @queryAssignedNodes('prefix', true)
-  private _prefix!: NodeListOf<HTMLElement>;
+  @queryAssignedElements({ slot: 'prefix' })
+  private _prefix!: Array<HTMLElement>;
 
-  @queryAssignedNodes('suffix', true)
-  private _suffix!: NodeListOf<HTMLElement>;
+  @queryAssignedElements({ slot: 'suffix' })
+  private _suffix!: Array<HTMLElement>;
 
   /** The direction attribute of the control. */
   @property({ reflect: true })

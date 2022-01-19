@@ -6,7 +6,6 @@ import { watch } from '../common/decorators';
 import { styles } from './slider.material.css';
 
 export class IgcSliderBaseComponent extends LitElement {
-  /** @private */
   public static override styles = [styles];
 
   @query(`[part='thumb']`)

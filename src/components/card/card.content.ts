@@ -7,10 +7,8 @@ import { styles } from './card.content.material.css';
  * @slot - Renders the card text content
  */
 export default class IgcCardContentComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-card-content';
+  public static readonly tagName = 'igc-card-content';
 
-  /** @private */
   public static override styles = styles;
 
   protected override render() {

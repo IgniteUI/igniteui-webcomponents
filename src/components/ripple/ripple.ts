@@ -8,10 +8,8 @@ import { styles } from './ripple.material.css';
  * @element igc-ripple
  */
 export default class IgcRippleComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-ripple';
+  public static readonly tagName = 'igc-ripple';
 
-  /** @private */
   public static override styles = styles;
 
   constructor() {

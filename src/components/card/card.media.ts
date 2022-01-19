@@ -7,10 +7,8 @@ import { styles } from './card.media.material.css';
  * @slot - Renders the card media content
  */
 export default class IgcCardMediaComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-card-media';
+  public static readonly tagName = 'igc-card-media';
 
-  /** @private */
   public static override styles = styles;
 
   protected override render() {

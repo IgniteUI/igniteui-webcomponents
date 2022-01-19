@@ -15,9 +15,6 @@ export interface IgcButtonEventMap {
 export abstract class IgcButtonBaseComponent extends SizableMixin(
   EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  /**
-   * @private
-   */
   @query('[part="base"]', true)
   private nativeElement!: HTMLElement;
 
@@ -55,7 +52,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  /** @private */
   public override set ariaLabel(value: string) {
     const oldVal = this._ariaLabel;
     this._ariaLabel = value;
@@ -66,7 +62,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     this.requestUpdate('ariaLabel', oldVal);
   }
 
-  /** @private */
   @property({ attribute: 'aria-label' })
   public override get ariaLabel() {
     return this._ariaLabel;
@@ -92,7 +87,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     this.emitEvent('igcBlur');
   }
 
-  /** @private */
   protected get classes() {
     return {};
   }

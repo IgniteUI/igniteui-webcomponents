@@ -33,10 +33,8 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
-  public static tagName = 'igc-radio';
+  public static readonly tagName = 'igc-radio';
 
-  /** @private */
   public static styles = styles;
 
   private inputId = `radio-${nextId++}`;

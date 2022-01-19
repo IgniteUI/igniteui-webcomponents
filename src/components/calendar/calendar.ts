@@ -63,12 +63,8 @@ export default class IgcCalendarComponent extends SizableMixin(
     Constructor<IgcCalendarBaseComponent>
   >(IgcCalendarBaseComponent)
 ) {
-  /** @private */
-  public static tagName = 'igc-calendar';
+  public static readonly tagName = 'igc-calendar';
 
-  /**
-   * @private
-   */
   public static styles = [styles];
 
   private formatterMonth!: Intl.DateTimeFormat;
@@ -735,7 +731,7 @@ export default class IgcCalendarComponent extends SizableMixin(
                   .active=${this.activeDaysViewIndex === i}
                   .activeDate=${activeDate}
                   .weekStart=${this.weekStart}
-                  .weekDayFormat=${this.formatOptions.weekday!}
+                  .weekDayFormat=${this.formatOptions.weekday}
                   .locale=${this.locale}
                   .selection=${this.selection}
                   .value=${this.value}
@@ -761,7 +757,7 @@ export default class IgcCalendarComponent extends SizableMixin(
                 part="months-view"
                 .value=${this.activeDate}
                 .locale=${this.locale}
-                .monthFormat=${this.formatOptions.month!}
+                .monthFormat=${this.formatOptions.month}
                 exportparts="month, selected, month-inner, current"
                 @igcChange=${this.changeMonth}
               ></igc-months-view>`

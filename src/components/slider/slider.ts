@@ -19,8 +19,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   IgcSliderEventMap,
   Constructor<IgcSliderBaseComponent>
 >(IgcSliderBaseComponent) {
-  /** @private */
-  public static tagName = 'igc-slider';
+  public static readonly tagName = 'igc-slider';
 
   private _value = 0;
   private _ariaLabel!: string;

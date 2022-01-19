@@ -24,8 +24,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   IgcRangeSliderEventMap,
   Constructor<IgcSliderBaseComponent>
 >(IgcSliderBaseComponent) {
-  /** @private */
-  public static tagName = 'igc-range-slider';
+  public static readonly tagName = 'igc-range-slider';
 
   @query(`#thumbFrom`)
   private thumbFrom!: HTMLElement;

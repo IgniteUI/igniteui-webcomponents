@@ -51,9 +51,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
-  /**
-   * @private
-   */
   public static styles = [styles];
 
   private formatterWeekday!: Intl.DateTimeFormat;

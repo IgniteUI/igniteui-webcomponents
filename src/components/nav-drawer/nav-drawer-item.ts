@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedNodes, state } from 'lit/decorators.js';
+import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { partNameMap } from '../common/util';
 import { styles } from './nav-drawer-item.material.css';
 
@@ -16,10 +16,8 @@ import { styles } from './nav-drawer-item.material.css';
  * @csspart content - The content container.
  */
 export default class IgcNavDrawerItemComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-nav-drawer-item';
+  public static readonly tagName = 'igc-nav-drawer-item';
 
-  /** @private */
   public static override styles = [styles];
 
   /** Determines whether the drawer is disabled. */
@@ -33,8 +31,8 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   @state()
   private _textLength!: number;
 
-  @queryAssignedNodes('content', true)
-  private _text!: NodeListOf<HTMLElement>;
+  @queryAssignedElements({ slot: 'content' })
+  private _text!: Array<HTMLElement>;
 
   public override connectedCallback() {
     super.connectedCallback();

@@ -1,20 +1,18 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedNodes } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import { default as IgcRadioComponent } from '../radio/radio';
 import { styles } from './radio-group.material.css';
 
 export default class IgcRadioGroupComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-radio-group';
+  public static readonly tagName = 'igc-radio-group';
 
-  /** @private */
   public static override styles = styles;
 
-  @queryAssignedNodes(undefined, true, 'igc-radio')
-  private _slottedRadios!: NodeListOf<IgcRadioComponent>;
+  @queryAssignedElements({ flatten: true, selector: 'igc-radio' })
+  private _slottedRadios!: Array<IgcRadioComponent>;
 
   private get radios() {
-    return Array.from(this._slottedRadios).filter((radio) => !radio.disabled);
+    return this._slottedRadios.filter((radio) => !radio.disabled);
   }
 
   private get isLTR(): boolean {

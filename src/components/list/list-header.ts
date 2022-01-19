@@ -9,10 +9,8 @@ import { styles } from './list-header.material.css';
  * @slot - Renders header list item's content.
  */
 export default class IgcListHeaderComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-list-header';
+  public static readonly tagName = 'igc-list-header';
 
-  /** @private */
   public static override styles = styles;
 
   constructor() {

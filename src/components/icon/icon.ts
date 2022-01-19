@@ -19,12 +19,8 @@ import {
  */
 @customElement('igc-icon')
 export default class IgcIconComponent extends SizableMixin(LitElement) {
-  /** @private */
-  public static tagName = 'igc-icon';
+  public static readonly tagName = 'igc-icon';
 
-  /**
-   * @private
-   */
   public static override styles = styles;
 
   @state() private svg = '';

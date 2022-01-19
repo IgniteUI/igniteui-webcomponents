@@ -32,9 +32,6 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /**
-   * @private
-   */
   public static styles = [styles];
 
   private calendarModel = new Calendar();

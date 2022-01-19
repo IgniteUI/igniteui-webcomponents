@@ -21,10 +21,8 @@ import { styles } from './list-item.material.css';
  * @csspart subtitle - The subtitle container.
  */
 export default class IgcListItemComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-list-item';
+  public static readonly tagName = 'igc-list-item';
 
-  /** @private */
   public static override styles = styles;
 
   constructor() {

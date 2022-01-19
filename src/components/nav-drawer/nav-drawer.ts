@@ -34,10 +34,8 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
   IgcNavDrawerEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
-  public static tagName = 'igc-nav-drawer';
+  public static readonly tagName = 'igc-nav-drawer';
 
-  /** @private */
   public static styles = [styles];
 
   /** The position of the drawer. */

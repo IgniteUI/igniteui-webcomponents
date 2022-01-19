@@ -9,10 +9,8 @@ import { styles } from './card.actions.material.css';
  * @slot end - Renders items at the end of actions area
  */
 export default class IgcCardActionsComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-card-actions';
+  public static readonly tagName = 'igc-card-actions';
 
-  /** @private */
   public static override styles = styles;
 
   protected override render() {

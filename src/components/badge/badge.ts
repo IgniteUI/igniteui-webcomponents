@@ -13,10 +13,8 @@ import { styles } from './badge.material.css';
  * @csspart base - The base wrapper of the badge.
  */
 export default class IgcBadgeComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-badge';
+  public static readonly tagName = 'igc-badge';
 
-  /** @private */
   public static override styles = styles;
 
   /** The type of badge. */

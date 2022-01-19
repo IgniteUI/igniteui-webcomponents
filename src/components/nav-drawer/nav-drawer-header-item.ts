@@ -8,10 +8,8 @@ import { styles } from './nav-drawer-header-item.material.css';
  * @slot - Renders the header content
  */
 export default class IgcNavDrawerHeaderItemComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-nav-drawer-header-item';
+  public static readonly tagName = 'igc-nav-drawer-header-item';
 
-  /** @private */
   public static override styles = [styles];
 
   protected override render() {
