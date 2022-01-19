@@ -176,7 +176,6 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     if (this.targetNodes.length) {
       this.target = [...this.targetNodes][0];
     }
-    this.setAttribute('aria-owns', this.scrollContainer?.id);
   }
 
   private handleDocumentClicked = (event: MouseEvent) => {
@@ -525,6 +524,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         class="igc-dropdown-list"
         part="base"
         @click=${this.handleClick}
+        aria-owns="igcScrollContainer"
         ${this.toggleController.toggleDirective}
       >
         <div

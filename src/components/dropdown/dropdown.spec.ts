@@ -15,7 +15,8 @@ describe('Dropdown component', () => {
       IgcDropDownComponent,
       IgcButtonComponent,
       IgcDropDownHeaderComponent,
-      IgcDropDownGroupComponent
+      IgcDropDownGroupComponent,
+      IgcDropDownItemComponent
     );
   });
 
