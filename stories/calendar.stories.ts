@@ -65,6 +65,12 @@ const metadata = {
       },
       defaultValue: 'large',
     },
+    value: {
+      type: 'Date | Date[] | undefined',
+      description:
+        'Тhe current value of the calendar.\nWhen selection is set to single, it accepts a single Date object.\nOtherwise, it is an array of Date objects.',
+      control: 'date',
+    },
     selection: {
       type: '"single" | "multiple" | "range"',
       description: 'Sets the type of date selection.',
@@ -121,6 +127,7 @@ interface ArgTypes {
   visibleMonths: number;
   activeView: 'days' | 'months' | 'years';
   size: 'small' | 'medium' | 'large';
+  value: Date | Date[] | undefined;
   selection: 'single' | 'multiple' | 'range';
   showWeekNumbers: boolean;
   weekStart:
@@ -195,6 +202,8 @@ const Template: Story<ArgTypes, Context> = (
     orientation,
     title,
     visibleMonths,
+    value,
+    activeDate,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -231,6 +240,12 @@ const Template: Story<ArgTypes, Context> = (
       .formatOptions=${formatOptions}
       .disabledDates=${disabledDates}
       .specialDates=${specialDates}
+      .activeDate=${activeDate ? new Date(activeDate) : new Date()}
+      .value=${value
+        ? selection === 'single'
+          ? new Date(value as Date)
+          : [new Date(value as Date)]
+        : undefined}
       size=${ifDefined(size)}
       visible-months=${ifDefined(visibleMonths)}
       dir=${ifDefined(direction)}
