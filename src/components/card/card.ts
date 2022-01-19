@@ -14,9 +14,9 @@ export default class IgcCardComponent extends LitElement {
   /** @private */
   public static styles = styles;
 
-  /** Sets card outline style, otherwise card looks elevated */
-  @property({ type: Boolean, reflect: true })
-  public outlined = true;
+  /** Sets card elevated style, otherwise card looks outlined. */
+  @property({ type: Boolean, attribute: 'elevated', reflect: true })
+  public elevated = false;
 
   protected render() {
     return html`<slot></slot>`;

@@ -6,17 +6,17 @@ const metadata = {
   title: 'Card',
   component: 'igc-card',
   argTypes: {
-    outlined: {
+    elevated: {
       type: 'boolean',
-      description: 'Sets card outline style, otherwise card looks elevated',
+      description: 'Sets card elevated style, otherwise card looks outlined.',
       control: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
     },
   },
 };
 export default metadata;
 interface ArgTypes {
-  outlined: boolean;
+  elevated: boolean;
 }
 // endregion
 interface Context {
@@ -24,13 +24,13 @@ interface Context {
 }
 
 const Template: Story<ArgTypes, Context> = (
-  { outlined = false }: ArgTypes,
+  { elevated = false }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
     <div style="display:flex; margin:16px">
       <div style="max-width: 344px; margin-right: 16px">
-        <igc-card ?outlined=${outlined} dir=${direction}>
+        <igc-card ?elevated=${elevated} dir=${direction}>
           <igc-card-media style="max-height: 194px">
             <img
               src="https://images.unsplash.com/photo-1518235506717-e1ed3306a89b?ixlib=rb-1.2.1&auto=format&fit=crop&w=320&q=180"
@@ -63,7 +63,7 @@ const Template: Story<ArgTypes, Context> = (
         </igc-card>
       </div>
       <div style="max-width: 344px">
-        <igc-card ?outlined=${outlined} dir=${direction}>
+        <igc-card dir=${direction} ?elevated=${elevated}>
           <igc-card-header>
             <igc-avatar
               slot="thumbnail"
@@ -100,7 +100,7 @@ const Template: Story<ArgTypes, Context> = (
     </div>
     <div style="display:flex; margin:16px">
       <div style="max-width: 400px; min-width: 250px; margin-right: 16px">
-        <igc-card ?outlined=${outlined}>
+        <igc-card ?elevated=${elevated}>
           <div style="display: flex; flex-direction: row">
             <div>
               <igc-card-header>
@@ -128,7 +128,7 @@ const Template: Story<ArgTypes, Context> = (
         </igc-card>
       </div>
       <div style="max-width: 400px; max-height: 250px;">
-        <igc-card ?outlined=${outlined}>
+        <igc-card ?elevated=${elevated}>
           <div style="display:flex; flex-direction:row">
             <div>
               <igc-card-header>
