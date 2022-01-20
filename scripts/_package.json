@@ -40,10 +40,12 @@
     "mask",
     "navbar",
     "navdrawer",
+    "range slider",
     "radio",
-    "switch"
+    "switch",
+    "slider"
   ],
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "^2.1.0"
   }
 }
