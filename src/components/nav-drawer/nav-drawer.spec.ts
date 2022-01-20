@@ -173,9 +173,7 @@ describe('Navigation Drawer', () => {
       el.show();
 
       await elementUpdated(el);
-
-      expect(eventSpy).calledWith('igcOpening');
-      expect(el.open).to.equal(false);
+      expect(eventSpy).calledOnceWith('igcOpening');
     });
 
     it('should successfully cancel closing events', async () => {
@@ -189,9 +187,7 @@ describe('Navigation Drawer', () => {
       el.hide();
 
       await elementUpdated(el);
-
-      expect(eventSpy).calledWith('igcClosing');
-      expect(el.open).to.equal(true);
+      expect(eventSpy).calledOnceWith('igcClosing');
     });
   });
 
