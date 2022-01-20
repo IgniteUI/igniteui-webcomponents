@@ -94,7 +94,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   @property({ type: Boolean, attribute: 'hide-outside-days' })
   public hideOutsideDays = false;
 
-  /** Determines whether the calendar shows its header. Even if set to false, the header is not displayed for `multiple` selection. */
+  /** Determines whether the calendar hides its header. Even if set to false, the header is not displayed for `multiple` selection. */
   @property({ type: Boolean, attribute: 'hide-header' })
   public hideHeader = false;
 

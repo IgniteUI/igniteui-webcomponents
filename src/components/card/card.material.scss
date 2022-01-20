@@ -16,9 +16,9 @@
     box-shadow: var(--igc-elevation-4);
     backface-visibility: hidden;
     transition: box-shadow .1s ease-out;
+}
 
-    &:hover,
-    &:focus-within {
-        box-shadow: var(--igc-elevation-6);
-    }
+:host([elevated]:hover),
+:host([elevated]:focus-within) {
+    box-shadow: var(--igc-elevation-6);
 }
