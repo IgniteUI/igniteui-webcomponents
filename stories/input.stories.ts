@@ -99,6 +99,16 @@ const metadata = {
       description: 'The maxlength attribute of the control.',
       control: 'number',
     },
+    min: {
+      type: 'string | number',
+      description: 'The min attribute of the control.',
+      control: 'text',
+    },
+    max: {
+      type: 'string | number',
+      description: 'The max attribute of the control.',
+      control: 'text',
+    },
     step: {
       type: 'number',
       description: 'The step attribute of the control.',
@@ -149,6 +159,8 @@ interface ArgTypes {
   readonly: boolean;
   minlength: number;
   maxlength: number;
+  min: string | number;
+  max: string | number;
   step: number;
   autofocus: boolean;
   autocomplete: string;
@@ -172,6 +184,8 @@ const Template: Story<ArgTypes, Context> = (
     readonly,
     required,
     disabled,
+    min,
+    max,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -185,6 +199,8 @@ const Template: Story<ArgTypes, Context> = (
     maxlength=${ifDefined(maxlength)}
     step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
+    min=${ifDefined(min)}
+    max=${ifDefined(max)}
     .value=${value}
     ?autofocus=${autofocus}
     .readonly=${readonly}

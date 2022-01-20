@@ -36,38 +36,37 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
 
   private handleClick() {
     this.checked = !this.checked;
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   @watch('checked', { waitUntilFirstUpdate: true })
   protected handleChange() {
-    if (this.checked) {
-      this.input.focus();
-    }
-    this.emitEvent('igcChange', { detail: this.checked });
+    this.invalid = !this.input.checkValidity();
   }
 
   protected render() {
     return html`
       <label
         part=${partNameMap({ base: true, checked: this.checked })}
-        for="${this.inputId}"
-        @mousedown="${this.handleMouseDown}"
+        for=${this.inputId}
+        @mousedown=${this.handleMouseDown}
       >
         <input
           id=${this.inputId}
           type="checkbox"
-          name="${ifDefined(this.name)}"
-          value="${ifDefined(this.value)}"
-          .disabled="${this.disabled}"
-          .checked="${live(this.checked)}"
-          aria-checked="${this.checked ? 'true' : 'false'}"
-          aria-disabled="${this.disabled ? 'true' : 'false'}"
-          aria-labelledby="${this.ariaLabelledby
+          name=${ifDefined(this.name)}
+          value=${ifDefined(this.value)}
+          .required=${this.required}
+          .disabled=${this.disabled}
+          .checked=${live(this.checked)}
+          aria-checked=${this.checked ? 'true' : 'false'}
+          aria-disabled=${this.disabled ? 'true' : 'false'}
+          aria-labelledby=${this.ariaLabelledby
             ? this.ariaLabelledby
-            : this.labelId}"
-          @click="${this.handleClick}"
-          @blur="${this.handleBlur}"
-          @focus="${this.handleFocus}"
+            : this.labelId}
+          @click=${this.handleClick}
+          @blur=${this.handleBlur}
+          @focus=${this.handleFocus}
         />
         <span part=${partNameMap({ control: true, checked: this.checked })}>
           <span
@@ -76,7 +75,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
         </span>
         <span
           part=${partNameMap({ label: true, checked: this.checked })}
-          id="${this.labelId}"
+          id=${this.labelId}
         >
           <slot></slot>
         </span>

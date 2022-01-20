@@ -39,6 +39,16 @@
 );
 @use '../../../components/calendar/calendar.fluent' as calendar;
 @use '../../../components/input/input.fluent' as input with ($container-background: transparent);
+@use '../../../components/slider/slider.fluent' as slider with (
+    $inactive-background: utils.color(gray, 100),
+    $fill-background: utils.color(gray, 400),
+    $thumb-border: utils.color(gray, 400),
+    $fill-hover-background: utils.color(primary, 300),
+    $thumb-hover-border: utils.color(primary, 300),
+    $inactive-disabled-background: utils.color(gray, 100),
+    $fill-disabled-background: utils.color(gray, 300),
+    $thumb-disabled-border: utils.color(gray, 200)
+);
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -60,3 +70,4 @@ $palette: utils.palette(
 @include calendar.theme();
 @include input.theme();
 @include icon-button.theme();
+@include slider.theme();
