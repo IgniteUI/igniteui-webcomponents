@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Fix checkbox/switch validity status
+- Split Calendar component's `value: Date | Date[]` property into two properties - `value: Date` and `values: Date[]`
 
 ## 1.0.0 - 2021-11-22
 
