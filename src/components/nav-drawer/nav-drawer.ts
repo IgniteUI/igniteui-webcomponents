@@ -87,32 +87,18 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
 
   private handleOpening() {
     const args = {
-      detail: { cancel: false },
       cancelable: true,
     };
-    this.emitEvent('igcOpening', args);
 
-    if (args.detail.cancel) {
-      this.open = false;
-      return false;
-    }
-
-    return true;
+    return this.emitEvent('igcOpening', args);
   }
 
   private handleClosing() {
     const args = {
-      detail: { cancel: false },
       cancelable: true,
     };
-    this.emitEvent('igcClosing', args);
 
-    if (args.detail.cancel) {
-      this.open = true;
-      return false;
-    }
-
-    return true;
+    return this.emitEvent('igcClosing', args);
   }
 
   private resolvePartNames(base: string) {

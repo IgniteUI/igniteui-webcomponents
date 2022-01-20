@@ -165,7 +165,7 @@ describe('Navigation Drawer', () => {
 
     it('should successfully cancel opening event', async () => {
       el.addEventListener('igcOpening', (ev: CustomEvent) => {
-        ev.detail.cancel = true;
+        ev.preventDefault();
       });
 
       const eventSpy = sinon.spy(el, 'emitEvent');
@@ -181,7 +181,7 @@ describe('Navigation Drawer', () => {
     it('should successfully cancel closing events', async () => {
       el.show();
       el.addEventListener('igcClosing', (ev: CustomEvent) => {
-        ev.detail.cancel = true;
+        ev.preventDefault();
       });
 
       const eventSpy = sinon.spy(el, 'emitEvent');
