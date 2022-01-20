@@ -50,8 +50,13 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
 
   /** The format of the month. Defaults to long. */
   @property({ attribute: 'month-format' })
-  public monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' =
-    'long';
+  public monthFormat:
+    | 'numeric'
+    | '2-digit'
+    | 'long'
+    | 'short'
+    | 'narrow'
+    | undefined = 'long';
 
   @watch('locale')
   @watch('monthFormat')

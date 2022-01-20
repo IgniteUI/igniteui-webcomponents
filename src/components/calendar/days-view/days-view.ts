@@ -77,7 +77,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /** The format of the days. Defaults to narrow. */
   @property({ attribute: 'week-day-format' })
-  public weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
+  public weekDayFormat: 'long' | 'short' | 'narrow' | undefined = 'narrow';
 
   /** The resource strings. */
   @property({ attribute: false })
