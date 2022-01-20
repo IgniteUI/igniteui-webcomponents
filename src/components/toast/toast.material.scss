@@ -1,0 +1,16 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+[part='base'] {
+    display: inline-block;
+    margin: rem(42px) auto;
+    padding: rem(16px) rem(24px);
+    min-width: 52px;
+    color: #fff;
+    background: color(gray, 700);
+    border-radius: 1;
+    backdrop-filter: blur(10px);
+    font-family: var(--igc-font-family);
+    position: relative;
+    bottom: 0;
+}

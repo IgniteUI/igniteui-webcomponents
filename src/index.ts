@@ -27,6 +27,7 @@ export { default as IgcRippleComponent } from './components/ripple/ripple';
 export { default as IgcSliderComponent } from './components/slider/slider';
 export { default as IgcRangeSliderComponent } from './components/slider/range-slider';
 export { default as IgcSwitchComponent } from './components/checkbox/switch';
+export { default as IgcToastComponent } from './components/toast/toast';
 
 export { SizableMixin } from './components/common/mixins/sizable';
 export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources';
