@@ -38,7 +38,6 @@ export class IgcTreeNavigationService {
   ) {
     this.tree = tree;
     this.selectionService = selectionService;
-    this.updateVisChild();
   }
 
   public updateVisChild(): void {
@@ -82,7 +81,7 @@ export class IgcTreeNavigationService {
     return this._activeItem;
   }
 
-  public set activeItem(value: IgcTreeItemComponent | null) {
+  public setActiveItem(value: IgcTreeItemComponent | null, shouldEmit = true) {
     if (this._activeItem === value) {
       return;
     }
@@ -92,6 +91,9 @@ export class IgcTreeNavigationService {
     this._activeItem = value;
     if (this._activeItem) {
       this._activeItem.active = true;
+    }
+    if (shouldEmit) {
+      this.tree.emitEvent('igcActiveItem', { detail: this._activeItem });
     }
   }
 
@@ -108,44 +110,35 @@ export class IgcTreeNavigationService {
     this.updateVisChild();
   }
 
-  public init_invisible_cache() {
-    this.tree.items
-      .filter((e) => e.level === 0)
-      .forEach((item) => {
-        this.update_visible_cache(item, item.expanded, false);
-      });
-    this.updateVisChild();
-  }
-
   public delete_item(item: IgcTreeItemComponent) {
-    // Promise.resolve().then(() => {
     if (this.activeItem === item) {
-      this.activeItem = null;
+      this.setActiveItem(null);
     }
     if (this.focusedItem === item) {
       this.focusItem(null);
     }
-    this.updateVisChild();
-    // });
   }
 
   public update_visible_cache(
     item: IgcTreeItemComponent,
     expanded: boolean,
-    shouldEmit = true
+    shouldUpdateNestedChildren = true,
+    shouldUpdate = true
   ): void {
     if (expanded) {
-      item.getChildren(true)?.forEach((child: IgcTreeItemComponent) => {
+      item.getChildren()?.forEach((child: IgcTreeItemComponent) => {
         this._invisibleChildren.delete(child);
-        this.update_visible_cache(child, child.expanded, false);
+        if (shouldUpdateNestedChildren) {
+          this.update_visible_cache(child, child.expanded, true, false);
+        }
       });
     } else {
       item
-        .getChildren()
+        .getChildren({ flatten: true })
         ?.forEach((c: IgcTreeItemComponent) => this._invisibleChildren.add(c));
     }
 
-    if (shouldEmit) {
+    if (shouldUpdate) {
       this.updateVisChild();
     }
   }
@@ -162,7 +155,7 @@ export class IgcTreeNavigationService {
     shouldFocus = true
   ): void {
     if (isActive) {
-      this.activeItem = item;
+      this.setActiveItem(item);
     }
     this.focusItem(item, shouldFocus);
   }
@@ -175,7 +168,7 @@ export class IgcTreeNavigationService {
     }
     if (!(NAVIGATION_KEYS.has(key) || key === '*')) {
       if (key === 'enter') {
-        this.activeItem = this.focusedItem;
+        this.setActiveItem(this.focusedItem);
       }
       return;
     }
@@ -224,14 +217,11 @@ export class IgcTreeNavigationService {
 
   private handleArrowLeft(): void {
     // if (this.focusedItem.expanded && !this.treeService.collapsingItems.has(this.focusedItem) && this.focusedItem._children?.length) {
-    if (
-      this.focusedItem?.expanded &&
-      this.focusedItem.getChildren(true)?.length
-    ) {
-      this.activeItem = this.focusedItem;
-      this.focusedItem.collapse();
+    if (this.focusedItem?.expanded && this.focusedItem.getChildren()?.length) {
+      this.setActiveItem(this.focusedItem);
+      this.focusedItem.collapseWithEvent();
     } else {
-      const parentItem = this.focusedItem?.parentItem;
+      const parentItem = this.focusedItem?.parent;
       if (parentItem && !parentItem.disabled) {
         this.setFocusedAndActiveItem(parentItem);
       }
@@ -239,13 +229,10 @@ export class IgcTreeNavigationService {
   }
 
   private handleArrowRight(): void {
-    if (
-      this.focusedItem!.getChildren(true)?.length > 0 ||
-      this.focusedItem?.loadOnDemand
-    ) {
+    if (this.focusedItem!.getChildren()?.length > 0) {
       if (!this.focusedItem?.expanded) {
-        this.activeItem = this.focusedItem;
-        this.focusedItem!.expand();
+        this.setActiveItem(this.focusedItem);
+        this.focusedItem!.expandWithEvent();
       } else {
         // collapsing items will be used when the tree has animations
         // if (this.treeService.collapsingItems.has(this.focusedItem)) {
@@ -253,7 +240,7 @@ export class IgcTreeNavigationService {
         //     return;
         // }
         const firstChild = this.focusedItem
-          .getChildren(true)
+          .getChildren()
           .find((item: IgcTreeItemComponent) => !item.disabled);
         if (firstChild) {
           this.setFocusedAndActiveItem(firstChild);
@@ -276,13 +263,15 @@ export class IgcTreeNavigationService {
   }
 
   private handleAsterisk(): void {
-    const items = this.focusedItem?.parentItem
-      ? this.focusedItem!.parentItem?.getChildren(true)
-      : this.tree.rootItems;
+    const items = this.focusedItem?.parent
+      ? this.focusedItem!.parent?.getChildren()
+      : this.tree.items?.filter(
+          (item: IgcTreeItemComponent) => item.level === 0
+        );
     items?.forEach((item: IgcTreeItemComponent) => {
       // if (!item.disabled && (!item.expanded || this.treeService.collapsingItems.has(item))) {
-      if (!item.disabled && !item.expanded) {
-        item.expand();
+      if (!item.disabled && !item.expanded && item.hasChildren) {
+        item.expandWithEvent();
       }
     });
   }
@@ -292,7 +281,7 @@ export class IgcTreeNavigationService {
       return;
     }
 
-    this.activeItem = this.focusedItem;
+    this.setActiveItem(this.focusedItem);
     if (shiftKey) {
       this.selectionService.selectMultipleItems(this.focusedItem!);
       return;

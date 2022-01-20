@@ -8,27 +8,15 @@ export const IgcTreeSelectionType = {
 export type IgcTreeSelectionType =
   typeof IgcTreeSelectionType[keyof typeof IgcTreeSelectionType];
 
-export type IgcTreeSearchResolver = (
-  value: any,
-  item: IgcTreeItemComponent
-) => boolean;
-
 export interface IgcTreeEventMap {
-  igcTreeItemSelectionEvent: CustomEvent<any>;
+  igcSelection: CustomEvent<any>;
   igcItemExpanding: CustomEvent<any>;
   igcItemExpanded: CustomEvent<any>;
   igcItemCollapsing: CustomEvent<any>;
   igcItemCollapsed: CustomEvent<any>;
+  igcActiveItem: CustomEvent<any>;
 }
-
-export interface IgcTreeItemSelectionEventDetails {
-  oldSelection: IgcTreeItemComponent[];
-  newSelection: IgcTreeItemComponent[];
-  added: IgcTreeItemComponent[];
-  removed: IgcTreeItemComponent[];
-}
-
-export interface IgcTreeItemSelectionEventArgs {
-  detail: IgcTreeItemSelectionEventDetails;
+export interface IgcSelectionEventArgs {
+  detail: { readonly newSelection: IgcTreeItemComponent[] };
   cancelable: boolean;
 }

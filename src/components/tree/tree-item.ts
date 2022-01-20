@@ -8,6 +8,8 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { watch } from '../common/decorators';
+import { IgcTreeSelectionService } from './tree.selection.js';
+import { IgcTreeNavigationService } from './tree.navigation.js';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -15,8 +17,8 @@ import { watch } from '../common/decorators';
  * @element igc-tree-item
  *
  * @slot - Renders nested tree-item component.
- * @slot content - Renders the tree item container.
- * @slot expandIndicator - Renders the expand indicator container.
+ * @slot label - Renders the tree item container.
+ * @slot indicator - Renders the expand indicator container.
  * @slot indentation - Renders the container (by default the space) before the tree item.
  */
 export default class IgcTreeItemComponent extends EventEmitterMixin<
@@ -31,7 +33,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   /** A reference to the tree the item is a part of. */
   public tree?: IgcTreeComponent;
   /** The parent item of the current tree item (if any) */
-  public parentItem: IgcTreeItemComponent | null = null;
+  public parent: IgcTreeItemComponent | null = null;
 
   /** @private */
   public init = false;
@@ -59,6 +61,10 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   @state()
   public selection: IgcTreeSelectionType = IgcTreeSelectionType.None;
 
+  /** The tree item label. */
+  @property({ reflect: true })
+  public label = '';
+
   /** The tree item expansion state. */
   @property({ reflect: true, type: Boolean })
   public expanded = false;
@@ -74,14 +80,6 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   /** The tree item selection state. */
   @property({ reflect: true, type: Boolean })
   public selected = false;
-
-  /** To be used for load-on-demand scenarios in order to specify whether the item is loading data. */
-  @property({ reflect: true, type: Boolean })
-  public loading = false;
-
-  /** Specifies whether the item is loading data. Loading items do not render children. To be used for load-on-demand scenarios. */
-  @property({ type: Boolean })
-  public loadOnDemand = false;
 
   /**
    * The value entry that the tree item is visualizing. Required for searching through items.
@@ -115,7 +113,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
       return;
     }
     if (this.navService) {
-      this.navService.activeItem = this;
+      this.navService.setActiveItem(this, false);
     }
     // Expand and scroll to the newly active item
     this.tree?.expandToItem(this);
@@ -130,12 +128,12 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   }
 
   @watch('disabled')
-  public disabledChange() {
+  public disabledChange(): void {
     this.navService?.update_disabled_cache(this);
   }
 
   @watch('selected', { waitUntilFirstUpdate: true })
-  public selectedChange() {
+  public selectedChange(): void {
     if (this.selected && !this.selectionService?.isItemSelected(this)) {
       this.selectionService?.selectItemsWithNoEvent([this]);
     }
@@ -148,14 +146,14 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     super();
   }
 
-  public connectedCallback() {
+  public connectedCallback(): void {
     super.connectedCallback();
     this.tree = this.closest('igc-tree') as IgcTreeComponent;
-    this.parentItem =
+    this.parent =
       this.parentElement?.tagName.toLowerCase() === 'igc-tree-item'
         ? (this.parentElement as IgcTreeItemComponent)
         : null;
-    this.level = this.parentItem ? this.parentItem.level + 1 : 0;
+    this.level = this.parent ? this.parent.level + 1 : 0;
     this.selection = this.tree?.selection;
     // this.navService?.update_visible_cache(this, this.expanded);
     this.setAttribute('role', 'treeitem');
@@ -167,13 +165,6 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     if (this.init) {
       this.selectedChange();
     } else {
-      // set the selected state of lazy loaded items to the one of their parent in cascade mode
-      if (
-        this.parentItem?.loadOnDemand &&
-        this.selection === IgcTreeSelectionType.Cascade
-      ) {
-        this.selected = this.parentItem.selected;
-      }
       // retriger the item selection state in order to update the collections within the selectionService
       // and to handle correctly the itemParents recursively to the top-most ancestor
       this.selectionService?.retriggerItemState(this);
@@ -187,11 +178,11 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.navService?.delete_item(this);
   }
 
-  private get selectionService() {
+  private get selectionService(): IgcTreeSelectionService | undefined {
     return this.tree?.selectionService;
   }
 
-  private get navService() {
+  private get navService(): IgcTreeNavigationService | undefined {
     return this.tree?.navService;
   }
 
@@ -215,22 +206,25 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   /** The full path to the tree item, starting from the top-most ancestor. */
   public get path(): IgcTreeItemComponent[] {
-    return this.parentItem?.path ? [...this.parentItem.path, this] : [this];
+    return this.parent?.path ? [...this.parent.path, this] : [this];
   }
 
-  private pointerDown(event: MouseEvent) {
+  private pointerDown(event: MouseEvent): void {
     event.stopPropagation();
+    if (this.disabled) {
+      return;
+    }
     this.navService?.setFocusedAndActiveItem(this);
   }
 
   private expandIndicatorClick(): void {
-    if (this.loading) {
+    if (this.disabled) {
       return;
     }
     this.toggle();
   }
 
-  private selectorClick(event: MouseEvent) {
+  private selectorClick(event: MouseEvent): void {
     event.preventDefault();
     if (event.shiftKey) {
       this.selectionService?.selectMultipleItems(this);
@@ -243,13 +237,13 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     }
   }
 
-  private handleFocusIn(ev: Event) {
+  private handleFocusIn(ev: Event): void {
     ev.stopPropagation();
     if (this.disabled) {
       return;
     }
     if (this.navService?.focusedItem !== this) {
-      // if tab/shift+tab leads to tabbable element within the igc-tree-item header
+      // if tab/shift+tab leads to tabbable element within the igc-tree-item label
       if (
         (ev.target as HTMLElement).tagName.toLowerCase() !== 'igc-tree-item'
       ) {
@@ -268,31 +262,32 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.isFocused = false;
   }
 
-  private handleChange() {
+  private handleChange(): void {
     this.hasChildren = !!this.directChildren.length;
+    // there is no need to update nested children beacuse they're state is already up to date
+    this.navService?.update_visible_cache(this, this.expanded, false);
   }
-
-  private siblingComparer: (
-    value: IgcTreeItemComponent,
-    item: IgcTreeItemComponent
-  ) => boolean = (value: IgcTreeItemComponent, item: IgcTreeItemComponent) =>
-    item !== value && item.level === value.level;
 
   /**
    * Returns a collection of child items.
    * If the parameter value is true returns all tree item's direct children,
    * otherwise - only the direct children.
    */
-  public getChildren(direct = false): IgcTreeItemComponent[] {
-    if (direct) {
-      return this.directChildren;
-    } else {
+  public getChildren(
+    options: { flatten: boolean } = { flatten: false }
+  ): IgcTreeItemComponent[] {
+    if (options.flatten) {
       return this.allChildren;
+    } else {
+      return this.directChildren;
     }
   }
 
-  /** Expands the tree item. */
-  public expand(): void {
+  /**
+   * @private
+   * Expands the tree item.
+   */
+  public expandWithEvent(): void {
     if (this.expanded) {
       return;
     }
@@ -310,19 +305,23 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     }
 
     if (this.tree?.singleBranchExpand) {
-      this.tree
-        ?.findItems(this, this.siblingComparer)
-        ?.forEach((i: IgcTreeItemComponent) => {
-          i.expanded = false;
-        });
+      const pathSet = new Set(this.path.splice(0, this.path.length - 1));
+      this.tree.items.forEach((item: IgcTreeItemComponent) => {
+        if (!pathSet.has(item)) {
+          item.collapseWithEvent();
+        }
+      });
     }
 
     this.expanded = true;
     this.tree?.emitEvent('igcItemExpanded', { detail: this });
   }
 
-  /** Collapses the tree item. */
-  public collapse(): void {
+  /**
+   * @private
+   * Collapses the tree item.
+   */
+  public collapseWithEvent(): void {
     if (!this.expanded) {
       return;
     }
@@ -343,18 +342,14 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   }
 
   /** Toggles tree item expansion state. */
-  public toggle() {
-    if (this.expanded) {
-      this.collapse();
-    } else {
-      this.expand();
-    }
+  public toggle(): void {
+    this.expanded = !this.expanded;
   }
 
   protected render() {
     return html`
       <div part="wrapper" class=${classMap(this.classes)}>
-        <section part="spacer">
+        <section part="indentation">
           <slot name="indentation"></slot>
             ${arrayOf(this.level).map(
               () => html`<span class="tree-node__spacer"></span>`
@@ -362,46 +357,47 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
           </slot>
         </section>
         <section
-          part="expandIndicator"
-          @click="${this.expandIndicatorClick}"
+          part="indicator"
           class="tree-node__toggle-button"
         >
-          <slot name="expandIndicator">
-            <igc-icon
-              name="navigate_before"
-              collection="internal"
-              ?hidden="${!this.loading}"
-            ></igc-icon>
-
-            <igc-icon
-              name="${
-                this.expanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
-              }"
-              collection="internal"
-              ?hidden="${
-                this.loading || (!this.hasChildren && !this.loadOnDemand)
-              }"
-            ></igc-icon>
+          <slot name="indicator">
+            ${
+              this.hasChildren
+                ? html`
+                    <igc-icon
+                      name=${this.expanded
+                        ? 'keyboard_arrow_down'
+                        : 'keyboard_arrow_right'}
+                      collection="internal"
+                      @click=${this.expandIndicatorClick}
+                    ></igc-icon>
+                  `
+                : ''
+            }
           </slot>
         </section>
-        <section
-          part="selectIndicator"
-          class="tree-node__select"
-          ?hidden="${this.selection === IgcTreeSelectionType.None}"
-        >
-          <igc-checkbox
-            @click=${this.selectorClick}
-            .checked=${this.selected}
-            .indeterminate=${this.indeterminate}
-            .disabled=${this.disabled}
-            tabindex="-1"
-          ></igc-checkbox>
-        </section>
-        <section part="header" class="tree-node__content">
-          <slot name="content"></slot>
+        ${
+          this.selection !== IgcTreeSelectionType.None
+            ? html`
+                <section part="selectIndicator" class="tree-node__select">
+                  <igc-checkbox
+                    @click=${this.selectorClick}
+                    .checked=${this.selected}
+                    .indeterminate=${this.indeterminate}
+                    .disabled=${this.disabled}
+                    tabindex="-1"
+                  ></igc-checkbox>
+                </section>
+              `
+            : ''
+        }
+        <section part="label" class="tree-node__content">
+          <slot name="label">
+            <p>${this.label}</p>
+          </slot>
         </section>
       </div>
-      <slot @slotchange=${this.handleChange} ?hidden="${!this.expanded}"></slot>
+      <slot @slotchange=${this.handleChange} ?hidden=${!this.expanded}></slot>
     `;
   }
 }

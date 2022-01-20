@@ -6,11 +6,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import IgcTreeItemComponent from './tree-item';
-import {
-  IgcTreeEventMap,
-  IgcTreeSearchResolver,
-  IgcTreeSelectionType,
-} from './tree.common';
+import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common';
 import { IgcTreeNavigationService } from './tree.navigation';
 import { IgcTreeSelectionService } from './tree.selection';
 
@@ -50,7 +46,7 @@ export default class IgcTreeComponent extends SizableMixin(
   public selection: 'none' | 'multiple' | 'cascade' = 'none';
 
   @watch('size', { waitUntilFirstUpdate: true })
-  public onSizeChange() {
+  public onSizeChange(): void {
     this.navService.activeItem?.wrapper.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
@@ -59,11 +55,29 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   @watch('selection', { waitUntilFirstUpdate: true })
-  public selectionModeChange() {
+  public selectionModeChange(): void {
     this.selectionService.clearItemsSelection();
     this.items?.forEach((item: IgcTreeItemComponent) => {
       item.selection = this.selection;
     });
+  }
+
+  @watch('singleBranchExpand')
+  public singleBranchExpandChange(): void {
+    if (this.singleBranchExpand) {
+      // if activeItem -> do not collapse its branch
+      if (this.navService.activeItem) {
+        const path = this.navService.activeItem.path;
+        const remainExpanded = new Set(path.splice(0, path.length - 1));
+        this.items.forEach((item) => {
+          if (!remainExpanded.has(item)) {
+            item.collapseWithEvent();
+          }
+        });
+      } else {
+        this.items.forEach((item) => item.collapseWithEvent());
+      }
+    }
   }
 
   constructor() {
@@ -72,7 +86,7 @@ export default class IgcTreeComponent extends SizableMixin(
     this.navService = new IgcTreeNavigationService(this, this.selectionService);
   }
 
-  public connectedCallback() {
+  public connectedCallback(): void {
     super.connectedCallback();
     this.classList.add('igc-tree');
     this.addEventListener('keydown', this.handleKeydown);
@@ -87,21 +101,13 @@ export default class IgcTreeComponent extends SizableMixin(
     return Array.from(this.querySelectorAll(`igc-tree-item`));
   }
 
-  /** Returns all of the tree's items that are on root level. */
-  public get rootItems(): IgcTreeItemComponent[] {
-    return this.items?.filter((item) => item.level === 0);
-  }
-
-  private _comparer = <T>(value: T, item: IgcTreeItemComponent) =>
-    item.value === value;
-
   private handleKeydown(event: KeyboardEvent) {
     this.navService.handleKeydown(event);
   }
 
   /** @private */
-  public expandToItem(item: IgcTreeItemComponent) {
-    if (item && item.parentItem) {
+  public expandToItem(item: IgcTreeItemComponent): void {
+    if (item && item.parent) {
       item.path.forEach((i) => {
         if (i !== item && !i.expanded) {
           i.expanded = true;
@@ -111,18 +117,18 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   /** Select all items if the items collection is empty. Otherwise, select the items in the items collection. */
-  public select(items?: IgcTreeItemComponent[]) {
+  public select(items?: IgcTreeItemComponent[]): void {
     if (!items) {
       items =
         this.selection === IgcTreeSelectionType.Cascade
-          ? this.rootItems
+          ? this.items.filter((item: IgcTreeItemComponent) => item.level === 0)
           : this.items;
     }
     this.selectionService.selectItemsWithNoEvent(items);
   }
 
   /** Deselect all items if the items collection is empty. Otherwise, deselect the items in the items collection. */
-  public deselect(items?: IgcTreeItemComponent[]) {
+  public deselect(items?: IgcTreeItemComponent[]): void {
     this.selectionService.deselectItemsWithNoEvent(items);
   }
 
@@ -130,7 +136,7 @@ export default class IgcTreeComponent extends SizableMixin(
    * Expands all of the passed items.
    * If no items are passed, expands ALL items.
    */
-  public expand(items?: IgcTreeItemComponent[]) {
+  public expand(items?: IgcTreeItemComponent[]): void {
     items = items || this.items;
     items.forEach((item) => (item.expanded = true));
   }
@@ -139,30 +145,9 @@ export default class IgcTreeComponent extends SizableMixin(
    * Collapses all of the passed items.
    * If no items are passed, collapses ALL items.
    */
-  public collapse(items?: IgcTreeItemComponent[]) {
+  public collapse(items?: IgcTreeItemComponent[]): void {
     items = items || this.items;
     items.forEach((item) => (item.expanded = false));
-  }
-
-  /**
-   * Returns all of the items that match the passed searchTerm.
-   * Accepts a custom comparer function for evaluating the search term against the items.
-   *
-   * @remark
-   * Default search compares the passed `searchTerm` against the items's `value` Input.
-   * When using `findNodes` w/o a `comparer`, make sure all items have `value` passed.
-   *
-   * @param searchTerm The value of the searched item
-   * @param comparer A custom comparer function that evaluates the passed `searchTerm` against all items.
-   * @returns Array of items that match the search. `null` if no items are found.
-   */
-  public findItems(
-    searchTerm: any,
-    comparer?: IgcTreeSearchResolver
-  ): IgcTreeItemComponent[] | null {
-    const compareFunc = comparer || this._comparer;
-    const results = this.items.filter((item) => compareFunc(searchTerm, item));
-    return results?.length === 0 ? null : results;
   }
 
   protected render() {

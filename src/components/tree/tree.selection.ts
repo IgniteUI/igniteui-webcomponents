@@ -1,10 +1,6 @@
 import IgcTreeComponent from './tree';
 import IgcTreeItemComponent from './tree-item';
-import {
-  IgcTreeItemSelectionEventArgs,
-  IgcTreeItemSelectionEventDetails,
-  IgcTreeSelectionType,
-} from './tree.common';
+import { IgcSelectionEventArgs, IgcTreeSelectionType } from './tree.common';
 
 export class IgcTreeSelectionService {
   private tree!: IgcTreeComponent;
@@ -12,7 +8,6 @@ export class IgcTreeSelectionService {
     new Set<IgcTreeItemComponent>();
   private indeterminateItems: Set<IgcTreeItemComponent> =
     new Set<IgcTreeItemComponent>();
-
   private itemsToBeSelected!: Set<IgcTreeItemComponent>;
   private itemsToBeIndeterminate!: Set<IgcTreeItemComponent>;
 
@@ -35,7 +30,9 @@ export class IgcTreeSelectionService {
       Math.max(currentItemIndex, lastSelectedItemIndex) + 1
     );
 
-    const added = items.filter((_item) => !this.isItemSelected(_item));
+    const added = items.filter(
+      (_item: IgcTreeItemComponent) => !this.isItemSelected(_item)
+    );
     const newSelection = this.getSelectedItems().concat(added);
     this.emitItemSelectionEvent(newSelection, added, []);
   }
@@ -50,7 +47,9 @@ export class IgcTreeSelectionService {
 
   /** Deselect the specified item and emit event. */
   public deselectItem(item: IgcTreeItemComponent): void {
-    const newSelection = this.getSelectedItems().filter((r) => r !== item);
+    const newSelection = this.getSelectedItems().filter(
+      (_item: IgcTreeItemComponent) => _item !== item
+    );
     this.emitItemSelectionEvent(newSelection, [], [item]);
   }
 
@@ -82,14 +81,17 @@ export class IgcTreeSelectionService {
 
     // Don't update the internal state of the deleted items because when moving they should keep it
     // However update the state of their parents
-    this.deselectItemsWithNoEvent([item, ...item.getChildren()], true);
+    this.deselectItemsWithNoEvent(
+      [item, ...item.getChildren({ flatten: true })],
+      true
+    );
   }
 
   /** Retrigger the selection state of the item. */
   public retriggerItemState(item: IgcTreeItemComponent): void {
     if (item.selected) {
       this.itemSelection.delete(item);
-      this.selectItemsWithNoEvent([item], false);
+      this.selectItemsWithNoEvent([item]);
     } else {
       this.itemSelection.add(item);
       this.deselectItemsWithNoEvent([item]);
@@ -100,55 +102,46 @@ export class IgcTreeSelectionService {
     newSelection: IgcTreeItemComponent[],
     added: IgcTreeItemComponent[],
     removed: IgcTreeItemComponent[]
-  ) {
+  ): void {
     const currSelection = this.getSelectedItems();
     if (this.areEqualCollections(currSelection, newSelection)) {
       return;
     }
 
     if (this.tree.selection === IgcTreeSelectionType.Cascade) {
-      this.emitCascadeItemSelectionEvent(
-        newSelection,
-        currSelection,
-        added,
-        removed
-      );
+      this.emitCascadeItemSelectionEvent(currSelection, added, removed);
       return;
     }
 
-    const args: IgcTreeItemSelectionEventArgs = {
+    const args: IgcSelectionEventArgs = {
       detail: {
-        oldSelection: currSelection,
         newSelection,
-        added,
-        removed,
       },
       cancelable: true,
     };
 
-    const allowed = this.tree.emitEvent('igcTreeItemSelectionEvent', args);
+    const allowed = this.tree.emitEvent('igcSelection', args);
     if (!allowed) {
       return;
     }
-    this.selectItemsWithNoEvent(args.detail.newSelection, true);
+
+    // if newSelection is overwritten do not proceed (Blazor)
+    if (this.areEqualCollections(newSelection, args.detail.newSelection)) {
+      this.itemSelection = new Set(newSelection);
+      this.updateItemsState(currSelection);
+    }
   }
 
   /** Select specified items. No event is emitted. */
-  public selectItemsWithNoEvent(
-    items: IgcTreeItemComponent[],
-    clearPrevSelection = false
-  ): void {
+  public selectItemsWithNoEvent(items: IgcTreeItemComponent[]): void {
+    const oldSelection = this.getSelectedItems();
+
     if (this.tree && this.tree.selection === IgcTreeSelectionType.Cascade) {
-      this.cascadeSelectItemsWithNoEvent(items, clearPrevSelection);
+      this.cascadeSelectItemsWithNoEvent(items, oldSelection);
       return;
     }
 
-    const oldSelection = this.getSelectedItems();
-
-    if (clearPrevSelection) {
-      this.itemSelection.clear();
-    }
-    items.forEach((item) => this.itemSelection.add(item));
+    items.forEach((item: IgcTreeItemComponent) => this.itemSelection.add(item));
 
     this.updateItemsState(oldSelection);
   }
@@ -164,54 +157,49 @@ export class IgcTreeSelectionService {
     }
     const itemSet = new Set(items);
     const oldSelection = onDelete
-      ? this.getSelectedItems().filter((i) => !itemSet!.has(i))
+      ? this.getSelectedItems().filter(
+          (i: IgcTreeItemComponent) => !itemSet!.has(i)
+        )
       : this.getSelectedItems();
 
     if (!items) {
       this.itemSelection.clear();
     } else {
-      items.forEach((item) => this.itemSelection.delete(item));
+      items.forEach((item: IgcTreeItemComponent) =>
+        this.itemSelection.delete(item)
+      );
     }
 
     this.updateItemsState(oldSelection);
   }
 
   private emitCascadeItemSelectionEvent(
-    newSelection: IgcTreeItemComponent[],
     currSelection: IgcTreeItemComponent[],
     added: IgcTreeItemComponent[],
     removed: IgcTreeItemComponent[]
   ): void {
     const oldIndeterminate = this.getIndeterminateItems();
 
-    const args: IgcTreeItemSelectionEventDetails = {
-      oldSelection: currSelection,
-      newSelection,
-      added,
-      removed,
+    this.calculateItemsNewSelectionState(currSelection, added, removed);
+
+    const args: IgcSelectionEventArgs = {
+      detail: {
+        newSelection: Array.from(this.itemsToBeSelected),
+      },
+      cancelable: true,
     };
 
-    this.calculateItemsNewSelectionState(args);
-
-    args.newSelection = Array.from(this.itemsToBeSelected);
-
-    // retrieve items/parents/children which has been added/removed from the selection
-    this.populateAddRemoveArgs(args);
-
-    const allowed = this.tree.emitEvent('igcTreeItemSelectionEvent', {
-      detail: args,
-      cancelable: true,
-    });
+    const allowed = this.tree.emitEvent('igcSelection', args);
 
     if (!allowed) {
       return;
     }
 
-    // if args.newSelection hasn't been modified
+    // if newSelection is overwritten do not proceed (Blazor)
     if (
       this.areEqualCollections(
         Array.from(this.itemsToBeSelected),
-        args.newSelection
+        args.detail.newSelection
       )
     ) {
       this.itemSelection = new Set<IgcTreeItemComponent>(
@@ -219,35 +207,23 @@ export class IgcTreeSelectionService {
       );
       this.indeterminateItems = new Set(this.itemsToBeIndeterminate);
       this.updateItemsState(currSelection, oldIndeterminate);
-    } else {
-      // select the items within the modified args.newSelection with no event
-      this.cascadeSelectItemsWithNoEvent(args.newSelection, true);
     }
   }
 
   private cascadeSelectItemsWithNoEvent(
     items: IgcTreeItemComponent[],
-    clearPrevSelection = false
+    oldSelection: IgcTreeItemComponent[]
   ): void {
-    const oldSelection = this.getSelectedItems();
     const oldIndeterminate = this.getIndeterminateItems();
 
-    if (clearPrevSelection) {
-      this.indeterminateItems.clear();
-      this.itemSelection.clear();
-      this.calculateItemsNewSelectionState({ added: items, removed: [] });
-    } else {
-      const newSelection = [...oldSelection, ...items];
-      const args: Partial<IgcTreeItemSelectionEventDetails> = {
-        oldSelection,
-        newSelection,
-      };
+    const newSelection = [...oldSelection, ...items];
 
-      // retrieve only the rows without their parents/children which has to be added to the selection
-      this.populateAddRemoveArgs(args);
+    // retrieve only the rows without their parents/children which has to be added to the selection
+    const newSelectionSet = new Set(newSelection);
+    const removed = oldSelection!.filter((x) => !newSelectionSet.has(x));
+    const added = newSelection!.filter((x) => !this.itemSelection.has(x));
 
-      this.calculateItemsNewSelectionState(args);
-    }
+    this.calculateItemsNewSelectionState(oldSelection, added, removed);
 
     this.itemSelection = new Set(this.itemsToBeSelected);
     this.indeterminateItems = new Set(this.itemsToBeIndeterminate);
@@ -261,18 +237,21 @@ export class IgcTreeSelectionService {
   ): void {
     const itemSet = new Set(items);
     const oldSelection = onDelete
-      ? this.getSelectedItems().filter((i) => !itemSet!.has(i))
+      ? this.getSelectedItems().filter(
+          (i: IgcTreeItemComponent) => !itemSet!.has(i)
+        )
       : this.getSelectedItems();
     const oldIndeterminate = onDelete
-      ? this.getIndeterminateItems().filter((i) => !itemSet!.has(i))
+      ? this.getIndeterminateItems().filter(
+          (i: IgcTreeItemComponent) => !itemSet!.has(i)
+        )
       : this.getIndeterminateItems();
 
     if (!items) {
       this.itemSelection.clear();
       this.indeterminateItems.clear();
     } else {
-      const args = { added: [], removed: items };
-      this.calculateItemsNewSelectionState(args);
+      this.calculateItemsNewSelectionState(oldSelection, [], items);
 
       this.itemSelection = new Set<IgcTreeItemComponent>(
         this.itemsToBeSelected
@@ -285,34 +264,23 @@ export class IgcTreeSelectionService {
     this.updateItemsState(oldSelection, oldIndeterminate);
   }
 
-  // OK (eventualno setovete)
-  /** Retrieve the items which should be added/removed to/from the old selection */
-  private populateAddRemoveArgs(
-    args: Partial<IgcTreeItemSelectionEventDetails>
-  ): void {
-    const newSelectionSet = new Set(args.newSelection);
-    const oldSelectionSet = new Set(args.oldSelection);
-    args.removed = args.oldSelection!.filter((x) => !newSelectionSet.has(x));
-    args.added = args.newSelection!.filter((x) => !oldSelectionSet.has(x));
-  }
-
   // OK (disabled children?)
   /**
-   * populates the nodesToBeSelected and nodesToBeIndeterminate sets
+   * populates the itemsToBeSelected and itemsToBeIndeterminate sets
    * with the items which will be eventually in selected/indeterminate state
    */
   private calculateItemsNewSelectionState(
-    args: Partial<IgcTreeItemSelectionEventDetails>
+    oldSelection: IgcTreeItemComponent[],
+    added: IgcTreeItemComponent[],
+    removed: IgcTreeItemComponent[]
   ): void {
-    this.itemsToBeSelected = new Set<IgcTreeItemComponent>(
-      args?.oldSelection ? args.oldSelection : this.getSelectedItems()
-    );
+    this.itemsToBeSelected = new Set<IgcTreeItemComponent>(oldSelection);
     this.itemsToBeIndeterminate = new Set<IgcTreeItemComponent>(
       this.getIndeterminateItems()
     );
 
-    this.cascadeSelectionState(args.removed, false);
-    this.cascadeSelectionState(args.added, true);
+    this.cascadeSelectionState(removed, false);
+    this.cascadeSelectionState(added, true);
   }
 
   // OK (disabled children?)
@@ -326,19 +294,19 @@ export class IgcTreeSelectionService {
     }
 
     const parents = new Set<IgcTreeItemComponent>();
-    items.forEach((item) => {
+    items.forEach((item: IgcTreeItemComponent) => {
       // select/deselect items passed by event/api
       this.selectDeselectItem(item, selected);
 
       // select/deselect all of their children
-      const itemAndAllChildren = item.getChildren() || [];
+      const itemAndAllChildren = item.getChildren({ flatten: true }) || [];
       itemAndAllChildren.forEach((i: IgcTreeItemComponent) => {
         this.selectDeselectItem(i, selected);
       });
 
       // add their direct parent to the set
-      if (item && item.parentItem) {
-        parents.add(item.parentItem);
+      if (item && item.parent) {
+        parents.add(item.parent);
       }
     });
 
@@ -352,13 +320,13 @@ export class IgcTreeSelectionService {
   /**
    * recursively handle the selection state of the direct and indirect parents
    */
-  private handleParentSelectionState(item: IgcTreeItemComponent) {
+  private handleParentSelectionState(item: IgcTreeItemComponent): void {
     if (!item) {
       return;
     }
     this.handleItemSelectionState(item);
-    if (item.parentItem) {
-      this.handleParentSelectionState(item.parentItem);
+    if (item.parent) {
+      this.handleParentSelectionState(item.parent);
     }
   }
 
@@ -366,9 +334,8 @@ export class IgcTreeSelectionService {
   /**
    * Handle the selection state of a given item based the selection states of its direct children
    */
-  private handleItemSelectionState(item: IgcTreeItemComponent) {
-    const itemsArray =
-      item && item.getChildren(true) ? item.getChildren(true) : [];
+  private handleItemSelectionState(item: IgcTreeItemComponent): void {
+    const itemsArray = item && item.getChildren() ? item.getChildren() : [];
     if (itemsArray.length) {
       if (
         itemsArray.every((i: IgcTreeItemComponent) =>
@@ -406,14 +373,12 @@ export class IgcTreeSelectionService {
 
     this.getSelectedItems().forEach((i: IgcTreeItemComponent) => {
       if (!selected.has(i)) {
-        // i.requestUpdate();
         i.selected = true;
       }
     });
 
     oldSelection.forEach((i: IgcTreeItemComponent) => {
       if (!this.itemSelection.has(i)) {
-        // i.requestUpdate();
         i.selected = false;
       }
     });
@@ -421,14 +386,12 @@ export class IgcTreeSelectionService {
     if (this.tree.selection === IgcTreeSelectionType.Cascade) {
       this.indeterminateItems.forEach((i: IgcTreeItemComponent) => {
         if (!indeterminated.has(i)) {
-          // i.requestUpdate();
           i.indeterminate = true;
         }
       });
 
-      oldIndeterminate.forEach((i) => {
+      oldIndeterminate.forEach((i: IgcTreeItemComponent) => {
         if (!this.indeterminateItems.has(i)) {
-          // i.requestUpdate();
           i.indeterminate = false;
         }
       });
@@ -461,7 +424,7 @@ export class IgcTreeSelectionService {
     item: IgcTreeItemComponent,
     select: boolean,
     indeterminate = false
-  ) {
+  ): void {
     if (indeterminate) {
       this.itemsToBeIndeterminate.add(item);
       this.itemsToBeSelected.delete(item);
