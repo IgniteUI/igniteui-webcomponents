@@ -19,7 +19,7 @@ In order to perform all the necessary checks before pulling your changes in, you
 When adding a new component make sure to order the class members like this:
 
 ```ts
-export export default class IgcSomethingComponent extends LitElement {
+export default class IgcSomethingComponent extends LitElement {
   /**
    * 1. Static members
    */
