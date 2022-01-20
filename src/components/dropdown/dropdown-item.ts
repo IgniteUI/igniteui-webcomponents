@@ -68,6 +68,13 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
     this.emitEvent('igcSelect', { detail: this.selected });
   }
 
+  @watch('disabled')
+  protected disabledChange() {
+    this.disabled
+      ? this.setAttribute('aria-disabled', 'true')
+      : this.removeAttribute('aria-disabled');
+  }
+
   public connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'option');
