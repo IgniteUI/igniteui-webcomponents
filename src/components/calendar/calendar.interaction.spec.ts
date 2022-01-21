@@ -56,6 +56,27 @@ describe('Calendar Interaction', () => {
       );
     });
 
+    it('Set value attribute', async () => {
+      const value = new Date(2022, 0, 19).toISOString();
+      calendar.setAttribute('value', value);
+      await elementUpdated(calendar);
+
+      expect(calendar.value?.toISOString()).to.equal(value);
+    });
+
+    it('Set values attribute', async () => {
+      const date1 = new Date(2022, 0, 19).toISOString();
+      const date2 = new Date(2022, 0, 22).toISOString();
+      calendar.selection = 'multiple';
+      calendar.setAttribute('values', `${date1}, ${date2}`);
+      await elementUpdated(calendar);
+
+      expect(calendar.values).not.to.be.undefined;
+      expect(calendar.values?.length).to.equal(2);
+      expect(calendar.values![0].toISOString()).to.equal(date1);
+      expect(calendar.values![1].toISOString()).to.equal(date2);
+    });
+
     it('Calendar selection - outside of the current month - 1', async () => {
       const expectedDate = new Date(2021, 9, 2);
 
@@ -69,19 +90,19 @@ describe('Calendar Interaction', () => {
       calendar.selection = 'multiple';
       await elementUpdated(calendar);
 
-      calendar.value = [];
+      calendar.values = [];
       await elementUpdated(calendar);
 
-      expect((calendar.value as Date[]).length).to.equal(0);
+      expect(calendar.values.length).to.equal(0);
 
       weekDays?.querySelectorAll('span').forEach((d: HTMLSpanElement) => {
         d.click();
       });
-      const selectedDates = [...calendar.value];
+      const selectedDates = [...calendar.values];
 
-      expect((calendar.value as Date[]).length).to.equal(7);
+      expect(calendar.values.length).to.equal(7);
 
-      for (const date of calendar.value) {
+      for (const date of calendar.values) {
         expect(isSelected(date)).to.be.true;
       }
 
@@ -89,7 +110,7 @@ describe('Calendar Interaction', () => {
       dates?.item(dates.length - 1).click();
       await elementUpdated(calendar);
 
-      expect((calendar.value as Date[]).length).to.equal(6);
+      expect(calendar.values.length).to.equal(6);
       expect(isSelected(selectedDates[selectedDates.length - 1])).to.be.false;
     });
 
@@ -101,14 +122,14 @@ describe('Calendar Interaction', () => {
       dates?.item(0).querySelector('span')?.click();
       await elementUpdated(calendar);
 
-      expect((calendar.value as Date[]).length).to.equal(1);
-      expect(isSelected((calendar.value as Date[])[0])).to.be.true;
+      expect(calendar.values?.length).to.equal(1);
+      expect(isSelected(calendar.values![0])).to.be.true;
 
       // ...and cancel it
       dates?.item(0).querySelector('span')?.click();
       await elementUpdated(calendar);
 
-      expect((calendar.value as Date[]).length).to.equal(0);
+      expect(calendar.values?.length).to.equal(0);
     });
 
     it('Calendar toggle and complete range selection', async () => {
@@ -126,17 +147,15 @@ describe('Calendar Interaction', () => {
       dates?.item(dates.length - 1).click();
       await elementUpdated(calendar);
 
-      expect((calendar.value as Date[]).length).to.equal(7);
-      expect((calendar.value as Date[])[0].toDateString()).to.equal(
+      expect(calendar.values?.length).to.equal(7);
+      expect(calendar.values![0].toDateString()).to.equal(
         firstDay.toDateString()
       );
       expect(
-        (calendar.value as Date[])[
-          (calendar.value as Date[]).length - 1
-        ].toDateString()
+        calendar.values![calendar.values!.length - 1].toDateString()
       ).to.equal(lastDay.toDateString());
 
-      for (const date of calendar.value as Date[]) {
+      for (const date of calendar.values!) {
         expect(isSelected(date)).to.be.true;
       }
     });
@@ -386,7 +405,7 @@ describe('Calendar Interaction', () => {
       await elementUpdated(calendar);
       dates?.item(dates.length - 1).click();
       await elementUpdated(calendar);
-      const calValues = calendar.value as Date[];
+      const calValues = calendar.values as Date[];
 
       const selectedDates = calendarDates.filter(
         (d) =>
@@ -542,7 +561,7 @@ describe('Calendar Interaction', () => {
 
   const isSelected = (date: Date) => {
     let selectedDates: Date | Date[];
-    const dates = calendar.value as Date[];
+    const dates = calendar.values as Date[];
 
     if (calendar.selection === 'single') {
       selectedDates = calendar.value as Date;
