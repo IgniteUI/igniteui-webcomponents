@@ -26,19 +26,19 @@ describe('Card Component', () => {
     await expect(el).shadowDom.to.be.accessible();
   });
 
-  it('check the default outlined value', async () => {
+  it('check the default elevated value', async () => {
     el = await fixture<IgcCardComponent>(html`<igc-card></igc-card>`);
 
-    expect(el.outlined).to.be.true;
+    expect(el.elevated).to.be.false;
   });
 
-  it('change outlined property', async () => {
+  it('change elevated property', async () => {
     el = await fixture<IgcCardComponent>(html`<igc-card></igc-card>`);
-    el.outlined = true;
+    el.elevated = true;
     await elementUpdated(el);
 
-    expect(el.outlined).to.be.true;
-    expect(el).dom.to.equal(`<igc-card outlined></igc-card>`);
+    expect(el.elevated).to.be.true;
+    expect(el).dom.to.equal(`<igc-card elevated></igc-card>`);
   });
 
   it('should render some content', async () => {

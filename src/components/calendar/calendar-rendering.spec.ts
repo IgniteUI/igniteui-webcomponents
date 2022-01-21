@@ -99,9 +99,9 @@ describe('Calendar Rendering', () => {
       );
     });
 
-    it('successfully enables and disables hasHeader', async () => {
-      el.hasHeader = false;
-      expect(el.hasHeader).to.equal(false);
+    it('successfully enables and disables hideHeader', async () => {
+      el.hideHeader = true;
+      expect(el.hideHeader).to.equal(true);
 
       await elementUpdated(el);
 
@@ -113,8 +113,8 @@ describe('Calendar Rendering', () => {
         { ignoreChildren: ['div'], ignoreAttributes: ['style'] }
       );
 
-      el.hasHeader = true;
-      expect(el.hasHeader).to.equal(true);
+      el.hideHeader = false;
+      expect(el.hideHeader).to.equal(false);
 
       await elementUpdated(el);
 

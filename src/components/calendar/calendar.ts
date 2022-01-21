@@ -94,9 +94,9 @@ export default class IgcCalendarComponent extends SizableMixin(
   @property({ type: Boolean, attribute: 'hide-outside-days' })
   public hideOutsideDays = false;
 
-  /** Determines whether the calendar has header. Even if set to true, the header is not displayed for `multiple` selection. */
-  @property({ type: Boolean, attribute: 'has-header' })
-  public hasHeader = true;
+  /** Determines whether the calendar hides its header. Even if set to false, the header is not displayed for `multiple` selection. */
+  @property({ type: Boolean, attribute: 'hide-header' })
+  public hideHeader = false;
 
   /** The orientation of the header. */
   @property({ attribute: 'header-orientation', reflect: true })
@@ -659,7 +659,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   }
 
   private renderHeader() {
-    if (!this.hasHeader || this.selection === 'multiple') {
+    if (this.hideHeader || this.selection === 'multiple') {
       return '';
     }
 

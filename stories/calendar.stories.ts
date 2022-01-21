@@ -15,12 +15,12 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    hasHeader: {
+    hideHeader: {
       type: 'boolean',
       description:
-        'Determines whether the calendar has header. Even if set to true, the header is not displayed for `multiple` selection.',
+        'Determines whether the calendar shows its header. Even if set to false, the header is not displayed for `multiple` selection.',
       control: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
     },
     headerOrientation: {
       type: '"vertical" | "horizontal"',
@@ -121,7 +121,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   hideOutsideDays: boolean;
-  hasHeader: boolean;
+  hideHeader: boolean;
   headerOrientation: 'vertical' | 'horizontal';
   orientation: 'vertical' | 'horizontal';
   visibleMonths: number;
@@ -203,7 +203,7 @@ const Template: Story<ArgTypes, Context> = (
     selection,
     activeView,
     size,
-    hasHeader = true,
+    hideHeader = false,
     headerOrientation,
     orientation,
     title,
@@ -235,7 +235,7 @@ const Template: Story<ArgTypes, Context> = (
 
   return html`
     <igc-calendar
-      ?has-header=${hasHeader}
+      ?hide-header=${hideHeader}
       ?show-week-numbers=${showWeekNumbers}
       ?hide-outside-days=${hideOutsideDays}
       header-orientation=${ifDefined(headerOrientation)}
