@@ -540,8 +540,8 @@ export class IgcSliderBaseComponent extends LitElement {
           ? html`<div part="ticks">${this.renderTicks()}</div>`
           : html``}
         <div part="track">
-          <div part="fill" style=${styleMap(this.getTrackStyle())}></div>
           <div part="inactive"></div>
+          <div part="fill" style=${styleMap(this.getTrackStyle())}></div>
           ${this.renderSteps()}
         </div>
         ${this.tickOrientation !== 'start'
