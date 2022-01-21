@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Fix checkbox/switch validity status
+- Replaced Card component's `outlined` property with `elevated`.
+- Replaced Calendar component's `hasHeader` property & `has-header` attribute with `hideHeader` & `hide-header` respectively.
 
 ## 1.0.0 - 2021-11-22
 
