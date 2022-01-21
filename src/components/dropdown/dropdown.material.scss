@@ -6,7 +6,7 @@
     z-index: 10005;
 }
 
-.igc-dropdown-list {
+[part='base'] {
     overflow-y: auto;
     overflow-x: hidden;
     position: relative;

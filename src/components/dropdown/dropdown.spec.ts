@@ -665,7 +665,7 @@ describe('Dropdown component', () => {
       [...el.querySelectorAll('igc-dropdown-group')] as HTMLElement[];
     let groups: HTMLElement[];
     beforeEach(async () => {
-      dropdown = await fixture<IgcDropDownComponent>(html` <igc-dropdown>
+      dropdown = await fixture<IgcDropDownComponent>(html`<igc-dropdown>
         <input type="button" slot="target" value="Dropdown" />
         <igc-dropdown-group>
           <h3 slot="label">Research & Development</h3>
@@ -765,6 +765,73 @@ describe('Dropdown component', () => {
       await elementUpdated(dropdown);
 
       expect(dropdown.open).to.be.true;
+    });
+
+    describe('', () => {
+      beforeEach(async () => {
+        const styles: Partial<CSSStyleDeclaration> = {
+          height: `150px`,
+        };
+        Object.assign(
+          (dropdown?.shadowRoot?.children[1] as HTMLElement).style,
+          styles
+        );
+        await elementUpdated(dropdown);
+      });
+
+      // it('scrolls to item on selection via the `select` method.', async () => {
+      //   expect(ddListWrapper(dropdown).scrollTop).to.eq(0);
+
+      //   dropdown.select('Documentation');
+      //   await elementUpdated(dropdown);
+      //   dropdown.open = true;
+      //   await elementUpdated(dropdown);
+
+      //   const wrapper = ddListWrapper(dropdown);
+      //   expect(wrapper.scrollTop).to.be.greaterThan(90);
+
+      //   const lastItem = ddItems(dropdown).pop();
+      //   const itemRect = lastItem?.getBoundingClientRect();
+      //   expect(Math.round(wrapper.getBoundingClientRect().bottom)).to.be.greaterThanOrEqual(Math.round(itemRect?.bottom as number));
+      // });
+
+      it('scrolls to item on activation via keyboard.', async () => {
+        expect(ddListWrapper(dropdown).scrollTop).to.eq(0);
+
+        pressKey('ArrowDown', 3);
+        await elementUpdated(dropdown);
+        expect(ddListWrapper(dropdown).scrollTop).to.eq(0);
+
+        pressKey('ArrowDown', 1);
+        await elementUpdated(dropdown);
+
+        const wrapper = ddListWrapper(dropdown);
+        expect(wrapper.scrollTop).to.be.greaterThan(90);
+
+        const lastItem = ddItems(dropdown).pop();
+        const itemRect = lastItem?.getBoundingClientRect();
+        expect(
+          Math.round(wrapper.getBoundingClientRect().bottom)
+        ).to.be.greaterThanOrEqual(Math.round(itemRect?.bottom as number));
+      });
+
+      it('scrolls to the selected item on opening the list.', async () => {
+        pressKey('ArrowDown', 4);
+        pressKey('Enter');
+        await elementUpdated(dropdown);
+
+        dropdown.open = true;
+        await elementUpdated(dropdown);
+
+        const wrapper = ddListWrapper(dropdown);
+        expect(wrapper.scrollTop).to.be.greaterThan(70);
+
+        const selectedItem = ddItems(dropdown)[3];
+        const itemRect = selectedItem?.getBoundingClientRect();
+        expect(
+          Math.round(wrapper.getBoundingClientRect().bottom)
+        ).to.be.greaterThanOrEqual(Math.round(itemRect?.bottom as number));
+      });
     });
   });
 

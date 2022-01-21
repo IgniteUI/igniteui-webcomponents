@@ -114,17 +114,14 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     this.toggleController.open = this.open;
     this.toggleController.target = this.target;
 
-    if (this.scrollContainer) {
-      this.open
-        ? this.scrollContainer.setAttribute('aria-expanded', 'true')
-        : this.scrollContainer.removeAttribute('aria-expanded');
-    }
-
-    this.setAttribute(
+    this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
+    this.target.setAttribute(
       'aria-activedescendant',
-      (this.activeItem
-        ? this.activeItem.value
-        : [...this.items][0]?.value) as string
+      (this.open
+        ? this.activeItem
+          ? this.activeItem.value
+          : [...this.items][0]?.value
+        : '') as string
     );
   }
 
@@ -175,6 +172,9 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   public firstUpdated() {
     if (this.targetNodes.length) {
       this.target = [...this.targetNodes][0];
+      this.target.setAttribute('tabIndex', '0');
+      // this.target.setAttribute('aria-controls', 'igcScrollContainer');
+      this.target.setAttribute('haspopup', 'listbox');
     }
   }
 
@@ -219,6 +219,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
 
   private handleKeyDown = (event: KeyboardEvent) => {
     if (
+      this.open &&
       event &&
       (event.composedPath().includes(this.target) ||
         event.composedPath().includes(this.content))
@@ -521,17 +522,15 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       <slot name="target"></slot>
       <div
         id="igcDDLContent"
-        class="igc-dropdown-list"
         part="base"
         @click=${this.handleClick}
-        aria-owns="igcScrollContainer"
         ${this.toggleController.toggleDirective}
       >
         <div
           id="igcScrollContainer"
+          role="listbox"
           class="igc-dropdown-list-scroll"
           part="list"
-          role="listbox"
         >
           <slot></slot>
         </div>
