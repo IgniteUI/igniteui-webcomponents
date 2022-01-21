@@ -62,18 +62,16 @@ export class IgcTreeNavigationService {
       this._lastFocusedItem.removeAttribute('tabindex');
     }
     this._focusedItem = value;
-    if (this._focusedItem !== null) {
+    if (this._focusedItem !== null && shouldFocus) {
       this._focusedItem.tabIndex = 0;
-      if (shouldFocus) {
-        this._focusedItem.focus({
-          preventScroll: true,
-        });
-        this._focusedItem.wrapper.scrollIntoView({
-          behavior: 'auto',
-          block: 'nearest',
-          inline: 'nearest',
-        });
-      }
+      this._focusedItem.focus({
+        preventScroll: true,
+      });
+      this._focusedItem.wrapper.scrollIntoView({
+        behavior: 'auto',
+        block: 'nearest',
+        inline: 'nearest',
+      });
     }
   }
 
@@ -115,7 +113,7 @@ export class IgcTreeNavigationService {
       this.setActiveItem(null);
     }
     if (this.focusedItem === item) {
-      this.focusItem(null);
+      this.focusItem(null, false);
     }
   }
 

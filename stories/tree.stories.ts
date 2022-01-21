@@ -16,6 +16,13 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    hasFocusableContent: {
+      type: 'boolean',
+      description:
+        'Determines whether the tree items has content which should be tabbable.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     selection: {
       type: '"none" | "multiple" | "cascade"',
       description: 'The selection state of the tree.',
@@ -39,6 +46,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   singleBranchExpand: boolean;
+  hasFocusableContent: boolean;
   selection: 'none' | 'multiple' | 'cascade';
   size: 'small' | 'medium' | 'large';
 }
@@ -168,7 +176,7 @@ const log4 = () => {
 };
 
 const BasicTemplate: Story<ArgTypes, Context> = (
-  { size, singleBranchExpand, selection }: ArgTypes,
+  { size, singleBranchExpand, selection, hasFocusableContent }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -178,6 +186,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         .size=${size}
         .selection=${selection}
         .singleBranchExpand=${singleBranchExpand}
+        .hasFocusableContent=${hasFocusableContent}
         dir=${direction}
         @igcSelection=${handleEvent}
         @igcActiveItem=${handleActive}
@@ -204,7 +213,10 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           </igc-tree-item>
           <igc-tree-item id="parent2">
             <p slot="label">
-              <a href="http://infragistics.com">Infragistics</a>
+              <span>
+                <input />
+                <button>asd</button>
+              </span>
             </p>
             <igc-tree-item label="I'm a child"></igc-tree-item>
           </igc-tree-item>

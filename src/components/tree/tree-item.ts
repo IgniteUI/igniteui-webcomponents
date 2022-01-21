@@ -1,4 +1,9 @@
-import { property, query, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
 import { arrayOf } from '../common/util.js';
 import { styles } from './tree-item.material.css';
@@ -30,6 +35,8 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   /** @private */
   public static styles = styles;
 
+  private tabbableEl!: NodeListOf<HTMLElement>;
+
   /** A reference to the tree the item is a part of. */
   public tree?: IgcTreeComponent;
   /** The parent item of the current tree item (if any) */
@@ -37,6 +44,9 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   /** @private */
   public init = false;
+
+  @queryAssignedElements({ slot: 'label', flatten: true })
+  private contentList!: Array<HTMLElement>;
 
   /** @private */
   @query('.tree-node__wrapper')
@@ -157,8 +167,8 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.selection = this.tree?.selection;
     // this.navService?.update_visible_cache(this, this.expanded);
     this.setAttribute('role', 'treeitem');
-    this.addEventListener('focusout', this.clearFocus);
-    this.addEventListener('focusin', this.handleFocusIn);
+    this.addEventListener('blur', this.onBlur);
+    this.addEventListener('focus', this.onFocus);
     this.addEventListener('pointerdown', this.pointerDown);
     this.activeChange();
     // if the item is not added/moved runtime
@@ -170,6 +180,23 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
       this.selectionService?.retriggerItemState(this);
     }
     this.init = false;
+  }
+
+  public updated(): void {
+    this.tabbableEl = this.contentList[0]?.querySelectorAll<HTMLElement>(
+      'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])'
+    );
+    if (this.tree?.hasFocusableContent) {
+      if (this.tabbableEl.length && this.navService?.focusedItem !== this) {
+        this.tabbableEl.forEach((element: HTMLElement) => {
+          element.tabIndex = -1;
+        });
+      }
+    } else {
+      this.tabbableEl.forEach((element: HTMLElement) => {
+        element.tabIndex = 1;
+      });
+    }
   }
 
   public disconnectedCallback(): void {
@@ -214,7 +241,8 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     if (this.disabled) {
       return;
     }
-    this.navService?.setFocusedAndActiveItem(this);
+    this.tabIndex = 0;
+    this.navService?.setFocusedAndActiveItem(this, true, false);
   }
 
   private expandIndicatorClick(): void {
@@ -237,29 +265,46 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     }
   }
 
-  private handleFocusIn(ev: Event): void {
-    ev.stopPropagation();
+  private onFocus(): void {
     if (this.disabled) {
       return;
     }
-    if (this.navService?.focusedItem !== this) {
-      // if tab/shift+tab leads to tabbable element within the igc-tree-item label
-      if (
-        (ev.target as HTMLElement).tagName.toLowerCase() !== 'igc-tree-item'
-      ) {
-        this.navService?.focusItem(this, false);
-      } else {
-        // when tab/shift+tab from element outside of the tree
-        // focuses the last focused igc-tree-item without tabbable content
-        this.navService?.focusItem(this);
-      }
+    if (this.tree?.hasFocusableContent && this.tabbableEl.length) {
+      // set tabIndex = 0 to all tabbable elements
+      // focus the first one
+      this.tabbableEl.forEach((element: HTMLElement) => {
+        element.tabIndex = 0;
+      });
+      this.tabbableEl[0].focus();
+      return;
     }
     this.isFocused = true;
   }
 
-  private clearFocus(event: Event): void {
-    event.stopPropagation();
+  private onBlur(): void {
     this.isFocused = false;
+  }
+
+  private onFocusIn(ev: Event): void {
+    ev?.stopPropagation();
+    if (this.tree?.hasFocusableContent && !this.disabled) {
+      this.removeAttribute('tabIndex');
+      if (this.navService?.focusedItem !== this) {
+        this.navService?.focusItem(this, false);
+      }
+      this.isFocused = true;
+    }
+  }
+
+  private onFocusOut(ev: Event): void {
+    ev?.stopPropagation();
+    if (this.tree?.hasFocusableContent) {
+      this.isFocused = false;
+      if (this.navService?.focusedItem === this) {
+        // called twice when clicking on already focused item with link
+        this.setAttribute('tabindex', '0');
+      }
+    }
   }
 
   private handleChange(): void {
@@ -392,7 +437,9 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
             : ''
         }
         <section part="label" class="tree-node__content">
-          <slot name="label">
+          <slot name="label" @focusin=${this.onFocusIn} @focusout=${
+      this.onFocusOut
+    }>
             <p>${this.label}</p>
           </slot>
         </section>

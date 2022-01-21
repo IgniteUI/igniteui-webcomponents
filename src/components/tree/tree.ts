@@ -41,6 +41,10 @@ export default class IgcTreeComponent extends SizableMixin(
   @property({ reflect: true, type: Boolean })
   public singleBranchExpand = false;
 
+  /** Determines whether the tree items has content which should be tabbable. */
+  @property({ reflect: true, type: Boolean })
+  public hasFocusableContent = false;
+
   /** The selection state of the tree. */
   @property({ reflect: true })
   public selection: 'none' | 'multiple' | 'cascade' = 'none';
@@ -51,6 +55,13 @@ export default class IgcTreeComponent extends SizableMixin(
       behavior: 'smooth',
       block: 'nearest',
       inline: 'nearest',
+    });
+  }
+
+  @watch('hasFocusableContent', { waitUntilFirstUpdate: true })
+  public hasFocusableContentChange(): void {
+    this.items.forEach((i: IgcTreeItemComponent) => {
+      i.requestUpdate();
     });
   }
 
