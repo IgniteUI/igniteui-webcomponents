@@ -153,11 +153,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private isLastInRange(date: ICalendarDate): boolean {
-    if (this.isSingleSelection || !this.value) {
+    if (this.isSingleSelection || !this.values || this.values.length === 0) {
       return false;
     }
 
-    const dates = this.value as Date[];
+    const dates = this.values;
     let lastDate = dates[dates.length - 1];
 
     if (this.rangePreviewDate) {
@@ -170,11 +170,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private isFirstInRange(date: ICalendarDate): boolean {
-    if (this.isSingleSelection || !this.value) {
+    if (this.isSingleSelection || !this.values || this.values.length === 0) {
       return false;
     }
 
-    const dates = this.value as Date[];
+    const dates = this.values;
     let firstDate = dates[0];
 
     if (this.rangePreviewDate) {
@@ -194,11 +194,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     return isDateInRanges(date, this.disabledDates);
   }
 
-  private isWithinRange(date: Date, min?: Date, max?: Date): boolean {
-    const valueArr = this.value as Date[];
-    min = min ? min : valueArr[0];
-    max = max ? max : valueArr[valueArr.length - 1];
-
+  private isWithinRange(date: Date, min: Date, max: Date): boolean {
     return isDateInRanges(date, [
       {
         type: DateRangeType.Between,
@@ -210,13 +206,13 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   private isRangeDate(date: Date) {
     if (
       this.selection !== 'range' ||
-      !this.value ||
-      (this.value as Date[]).length === 0
+      !this.values ||
+      this.values.length === 0
     ) {
       return false;
     }
 
-    const dates = this.value as Date[];
+    const dates = this.values;
     const min = dates[0];
     let max;
 
@@ -239,11 +235,16 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private isRangePreview(date: Date) {
-    if (this.selection === 'range' && this.rangePreviewDate) {
+    if (
+      this.selection === 'range' &&
+      this.values &&
+      this.values.length > 0 &&
+      this.rangePreviewDate
+    ) {
       return isDateInRanges(date, [
         {
           type: DateRangeType.Between,
-          dateRange: [(this.value as Date[])[0], this.rangePreviewDate],
+          dateRange: [this.values[0], this.rangePreviewDate],
         },
       ]);
     }
@@ -252,31 +253,31 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private isSelected(date: ICalendarDate) {
-    let selectedDates: Date | Date[];
-    if (
-      this.isDisabled(date.date) ||
-      !this.value ||
-      (Array.isArray(this.value) && this.value.length === 0)
-    ) {
+    if (this.isDisabled(date.date)) {
       return false;
     }
 
     if (this.selection === 'single') {
-      selectedDates = this.value as Date;
-      return getDateOnly(selectedDates).getTime() === date.date.getTime();
+      if (!this.value) {
+        return false;
+      }
+      return getDateOnly(this.value).getTime() === date.date.getTime();
     }
 
-    selectedDates = this.value as Date[];
-    if (this.selection === 'range' && selectedDates.length === 1) {
-      return getDateOnly(selectedDates[0]).getTime() === date.date.getTime();
+    if (!this.values || this.values.length === 0) {
+      return false;
+    }
+
+    if (this.selection === 'range' && this.values.length === 1) {
+      return getDateOnly(this.values[0]).getTime() === date.date.getTime();
     }
 
     if (this.selection === 'multiple') {
-      const start = getDateOnly(selectedDates[0]);
-      const end = getDateOnly(selectedDates[selectedDates.length - 1]);
+      const start = getDateOnly(this.values[0]);
+      const end = getDateOnly(this.values[this.values.length - 1]);
 
       if (this.isWithinRange(date.date, start, end)) {
-        const currentDate = selectedDates.find(
+        const currentDate = this.values.find(
           (element) => element.getTime() === date.date.getTime()
         );
         return !!currentDate;
@@ -284,7 +285,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
         return false;
       }
     } else {
-      return this.isWithinRange(date.date);
+      return this.isWithinRange(
+        date.date,
+        this.values[0],
+        this.values[this.values.length - 1]
+      );
     }
   }
 
@@ -344,7 +349,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
     switch (this.selection) {
       case 'single':
-        if ((this.value as Date)?.getTime() === value.getTime()) {
+        if (this.value?.getTime() === value.getTime()) {
           return false;
         }
         this.selectSingle(value);
@@ -375,14 +380,14 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   private selectRange(value: Date) {
     let start: Date;
     let end: Date;
-    let selectedDates: Date[] = (this.value ?? []) as Date[];
+    let selectedDates: Date[] = (this.values ?? []) as Date[];
 
     if (selectedDates.length !== 1) {
       // start new range
       selectedDates = [value];
     } else {
       if (selectedDates[0].getTime() === value.getTime()) {
-        this.value = [];
+        this.values = [];
         return;
       }
 
@@ -397,7 +402,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     // exclude disabled dates
     selectedDates = selectedDates.filter((d) => !this.isDisabled(d));
 
-    this.value = [...selectedDates];
+    this.values = [...selectedDates];
   }
 
   private selectSingle(value: Date) {
@@ -405,7 +410,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private selectMultiple(value: Date) {
-    let selectedDates: Date[] = (this.value ?? []) as Date[];
+    let selectedDates: Date[] = (this.values ?? []) as Date[];
     const valueDateOnly = getDateOnly(value);
     const newSelection = [];
 
@@ -427,7 +432,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
     selectedDates = selectedDates.filter((d) => !this.isDisabled(d));
     selectedDates.sort((a: Date, b: Date) => a.valueOf() - b.valueOf());
-    this.value = [...selectedDates];
+    this.values = [...selectedDates];
   }
 
   private changeActiveDate(day: ICalendarDate) {
@@ -445,9 +450,9 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   private changeRangePreview(date: Date) {
     if (
       this.selection === 'range' &&
-      this.value &&
-      (this.value as Date[]).length === 1 &&
-      !isEqual((this.value as Date[])[0], date)
+      this.values &&
+      this.values.length === 1 &&
+      !isEqual(this.values[0], date)
     ) {
       this.setRangePreviewDate(date);
     }
