@@ -16,7 +16,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Fix checkbox/switch validity status
-- Use preventDefault() to cancel Navigation Drawer events instead of using a `cancel` event argument.
+- Remove events in Navigation Drawer components.
+
+### Removed
+- Events in Navigation drawer component.
 
 ## 1.0.0 - 2021-11-22
 
