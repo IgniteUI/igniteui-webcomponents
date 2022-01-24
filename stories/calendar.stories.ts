@@ -18,7 +18,7 @@ const metadata = {
     hideHeader: {
       type: 'boolean',
       description:
-        'Determines whether the calendar shows its header. Even if set to false, the header is not displayed for `multiple` selection.',
+        'Determines whether the calendar hides its header. Even if set to false, the header is not displayed for `multiple` selection.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -68,7 +68,7 @@ const metadata = {
     value: {
       type: 'Date | undefined',
       description:
-        'Тhe current value of the calendar.\nUsed when the selection is set to single.',
+        'Тhe current value of the calendar.\nUsed when selection is set to single.',
       control: 'date',
     },
     selection: {
