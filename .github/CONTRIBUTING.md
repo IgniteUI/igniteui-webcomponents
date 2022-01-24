@@ -24,10 +24,10 @@ export default class IgcSomethingComponent extends LitElement {
    * 1. Static members
    */
   /** @private */
-  public static tagName = 'igc-something';
+  public static readonly tagName = 'igc-something';
 
   /** @private */
-  public static styles = [styles];
+  public static override styles = [styles];
 
   /**
    * 2. Private/protected members and properties
@@ -76,12 +76,12 @@ export default class IgcSomethingComponent extends LitElement {
   /**
    * 8. Lifecycle hooks
    */
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     // ...
   }
 
-  protected firstUpdated() {
+  protected override firstUpdated() {
     // ...
   }
 
@@ -127,7 +127,7 @@ export default class IgcSomethingComponent extends LitElement {
   /**
    * 13. Render method
    */
-  protected render() {
+  protected override render() {
     return html`
       ${this.renderHeader()}
       ${this.renderFooter()}
