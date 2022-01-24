@@ -38,12 +38,12 @@ export default class IgcToastComponent extends EventEmitterMixin<
   public message!: string;
 
   /** The position of the toast. */
-  @(property()({ reflect: true }))
+  @property({ reflect: true })
   public position!: 'top' | 'middle' | 'bottom';
 
   /** Determines whether the toast is opened. */
-  @(property()({ type: Boolean, reflect: true }))
-  public open = false;
+  @property({ reflect: true })
+  public open!: boolean;
 
   constructor() {
     super();
