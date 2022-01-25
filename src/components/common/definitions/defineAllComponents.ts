@@ -23,6 +23,7 @@ import IgcNavbarComponent from '../../navbar/navbar';
 import IgcRadioGroupComponent from '../../radio-group/radio-group';
 import IgcRadioComponent from '../../radio/radio';
 import IgcRippleComponent from '../../ripple/ripple';
+import IgcTreeSampleComponent from '../../tree-sample/tree-sample';
 import IgcTreeComponent from '../../tree/tree';
 import IgcTreeItemComponent from '../../tree/tree-item';
 import IgcRangeSliderComponent from '../../slider/range-slider';
@@ -59,6 +60,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcTreeItemComponent,
   IgcSliderComponent,
   IgcRangeSliderComponent,
+  IgcTreeSampleComponent,
 ];
 
 export const defineAllComponents = () => {

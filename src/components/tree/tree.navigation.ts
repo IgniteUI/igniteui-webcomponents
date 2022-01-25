@@ -123,7 +123,7 @@ export class IgcTreeNavigationService {
     shouldUpdateNestedChildren = true,
     shouldUpdate = true
   ): void {
-    if (expanded) {
+    if (expanded && !this._invisibleChildren.has(item)) {
       item.getChildren()?.forEach((child: IgcTreeItemComponent) => {
         this._invisibleChildren.delete(child);
         if (shouldUpdateNestedChildren) {
@@ -276,6 +276,7 @@ export class IgcTreeNavigationService {
 
   private handleSpace(shiftKey = false): void {
     if (this.tree.selection === IgcTreeSelectionType.None) {
+      this.setActiveItem(this.focusedItem);
       return;
     }
 
