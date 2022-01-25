@@ -30,6 +30,22 @@ export default class IgcRadioGroupComponent extends LitElement {
   @property({ reflect: true })
   public alignment: 'vertical' | 'horizontal' = 'vertical';
 
+  private setRequired() {
+    const hasRequired = this.radios.some((r) => r.required);
+
+    if (hasRequired) {
+      this.radios.forEach((r) => (r.required = false));
+
+      const hasChecked = this.radios.some((r) => r.checked);
+
+      if (hasChecked) {
+        this.radios.filter((r) => r.checked)[0].required = true;
+      } else {
+        this.radios[0].required = true;
+      }
+    }
+  }
+
   private handleKeydown = (event: KeyboardEvent) => {
     const { key } = event;
 
@@ -63,7 +79,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   };
 
   protected render() {
-    return html`<slot></slot>`;
+    return html`<slot @slotchange=${this.setRequired}></slot>`;
   }
 }
 

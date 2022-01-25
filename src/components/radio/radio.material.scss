@@ -134,9 +134,3 @@ input[type='radio'] {
         margin-inline-end: rem(8px);
     }
 }
-
-:host([required]) {
-    [part~='label']::after {
-        content: '*';
-    }
-}
