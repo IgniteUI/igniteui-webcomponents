@@ -4,26 +4,21 @@
 :host {
     display: flex;
     flex-direction: column;
-    box-shadow: var(--igc-elevation-4);
+    border: rem(1px) solid color(gray, 400);
     overflow: hidden;
     border-radius: rem(3px);
     background: color(surface, 500);
-    transition: box-shadow .1s ease-out;
-    backface-visibility: hidden;
     font-family: var(--igc-font-family);
 }
 
-:host(:hover),
-:host(:focus-within) {
-    box-shadow: var(--igc-elevation-6);
+:host([elevated]) {
+    border: none;
+    box-shadow: var(--igc-elevation-4);
+    backface-visibility: hidden;
+    transition: box-shadow .1s ease-out;
 }
 
-:host([outlined]) {
-    box-shadow: none;
-    border: rem(1px) solid color(gray, 400);
-
-    &:hover,
-    &:focus-within {
-        box-shadow: none;
-    }
+:host([elevated]:hover),
+:host([elevated]:focus-within) {
+    box-shadow: var(--igc-elevation-6);
 }

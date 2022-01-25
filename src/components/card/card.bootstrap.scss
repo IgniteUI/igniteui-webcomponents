@@ -9,7 +9,7 @@
         border-radius: #{utils.rem(4px)};
     }
 
-    igc-card:not([outlined]) {
+    igc-card[elevated] {
         box-shadow: var(--igc-elevation-2);
 
         &:hover,

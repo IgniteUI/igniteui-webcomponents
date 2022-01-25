@@ -21,13 +21,35 @@ export class IgcCalendarBaseComponent extends LitElement {
 
   /**
    * Тhe current value of the calendar.
-   * When selection is set to single, it accepts a single Date object.
-   * Otherwise, it is an array of Date objects.
+   * Used when selection is set to single.
    */
   @blazorSuppress()
-  @property({ attribute: false })
-  public value?: Date | Date[];
+  @property({
+    converter: (value) => {
+      return value ? new Date(value) : undefined;
+    },
+  })
+  public value?: Date;
   //we suppress value for blazor since we need to expose it on the leaves with the events for now.
+
+  /**
+   * Тhe current values of the calendar.
+   * Used when selection is set to multiple or range.
+   */
+  @blazorSuppress()
+  @property({
+    converter: (value) => {
+      if (!value) {
+        return undefined;
+      }
+      return value
+        .split(',')
+        .map((v) => v.trim())
+        .filter((v) => v)
+        .map((v) => new Date(v));
+    },
+  })
+  public values?: Date[];
 
   /** Sets the type of date selection. */
   @property()
