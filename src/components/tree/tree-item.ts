@@ -402,6 +402,16 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.expanded = !this.expanded;
   }
 
+  /** Expands the tree item. */
+  public expand(): void {
+    this.expanded = true;
+  }
+
+  /** Collapses the tree item. */
+  public collapse(): void {
+    this.expanded = false;
+  }
+
   protected render() {
     return html`
       <div part="wrapper" class=${classMap(this.classes)}>
