@@ -7,7 +7,7 @@
         border-radius: 0;
     }
 
-    igc-card:not([outlined]) {
+    igc-card[elevated] {
         &:hover,
         &:focus-within {
             &::after {
