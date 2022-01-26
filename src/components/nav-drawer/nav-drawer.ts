@@ -1,7 +1,5 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { partNameMap } from '../common/util';
 import { styles } from './nav-drawer.material.css';
 

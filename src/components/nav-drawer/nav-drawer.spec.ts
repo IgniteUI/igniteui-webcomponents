@@ -5,7 +5,6 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
 import {
   defineComponents,
   IgcNavDrawerComponent,
