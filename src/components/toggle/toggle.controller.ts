@@ -47,7 +47,7 @@ export class IgcToggleController implements ReactiveController {
   }
 
   private createToggleDir() {
-    this.toggleDirective = igcToggle(this.target, this.open, this._options);
+    this.toggleDirective = igcToggle(this._target, this.open, this._options);
   }
 
   private addEventListeners() {
