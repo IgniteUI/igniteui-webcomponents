@@ -472,19 +472,6 @@ export class IgcSliderBaseComponent extends LitElement {
     const percent = `${this.valueToFraction(value) * 100}%`;
 
     return html`
-      ${this.hideTooltip
-        ? html``
-        : html`
-            <div
-              part="thumb-label"
-              style=${styleMap({
-                opacity: this.thumbLabelsVisible ? '1' : '0',
-                insetInlineStart: percent,
-              })}
-            >
-              ${this.labelFormatter ? this.labelFormatter(value) : value}
-            </div>
-          `}
       <div
         part="thumb"
         id=${ifDefined(thumbId)}
@@ -504,6 +491,19 @@ export class IgcSliderBaseComponent extends LitElement {
         @focus=${(ev: Event) => (this.activeThumb = ev.target as HTMLElement)}
         @blur=${() => (this.activeThumb = undefined)}
       ></div>
+      ${this.hideTooltip
+        ? html``
+        : html`
+            <div
+              part="thumb-label"
+              style=${styleMap({
+                opacity: this.thumbLabelsVisible ? '1' : '0',
+                insetInlineStart: percent,
+              })}
+            >
+              ${this.labelFormatter ? this.labelFormatter(value) : value}
+            </div>
+          `}
     `;
   }
 
@@ -540,8 +540,8 @@ export class IgcSliderBaseComponent extends LitElement {
           ? html`<div part="ticks">${this.renderTicks()}</div>`
           : html``}
         <div part="track">
-          <div part="fill" style=${styleMap(this.getTrackStyle())}></div>
           <div part="inactive"></div>
+          <div part="fill" style=${styleMap(this.getTrackStyle())}></div>
           ${this.renderSteps()}
         </div>
         ${this.tickOrientation !== 'start'
