@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedNodes } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import { default as IgcRadioComponent } from '../radio/radio';
 import { styles } from './radio-group.material.css';
 
@@ -10,12 +10,11 @@ export default class IgcRadioGroupComponent extends LitElement {
   /** @private */
   public static styles = styles;
 
-  @queryAssignedNodes(undefined, true, 'igc-radio')
-  private _slottedRadios!: NodeListOf<IgcRadioComponent>;
-
-  private get radios() {
-    return Array.from(this._slottedRadios).filter((radio) => !radio.disabled);
-  }
+  @queryAssignedElements({
+    flatten: true,
+    selector: 'igc-radio:not([disabled])',
+  })
+  private radios!: Array<IgcRadioComponent>;
 
   private get isLTR(): boolean {
     const styles = window.getComputedStyle(this);
@@ -25,12 +24,13 @@ export default class IgcRadioGroupComponent extends LitElement {
   constructor() {
     super();
     this.addEventListener('keydown', this.handleKeydown);
+    this.addEventListener('igcChange', this.updateRequiredState);
   }
 
   @property({ reflect: true })
   public alignment: 'vertical' | 'horizontal' = 'vertical';
 
-  private setRequired() {
+  private updateRequiredState() {
     const hasRequired = this.radios.some((r) => r.required);
 
     if (hasRequired) {
@@ -79,7 +79,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   };
 
   protected render() {
-    return html`<slot @slotchange=${this.setRequired}></slot>`;
+    return html`<slot @slotchange=${this.updateRequiredState}></slot>`;
   }
 }
 
