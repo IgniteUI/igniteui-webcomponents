@@ -1,16 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { partNameMap } from '../common/util';
 import { styles } from './nav-drawer.material.css';
-
-export interface IgcNavDrawerEventMap {
-  igcOpening: CustomEvent<any>;
-  igcOpened: CustomEvent<void>;
-  igcClosing: CustomEvent<any>;
-  igcClosed: CustomEvent<void>;
-}
 
 /**
  * Represents a side navigation container that provides
@@ -21,19 +12,11 @@ export interface IgcNavDrawerEventMap {
  * @slot - The default slot for the drawer.
  * @slot mini - The slot for the mini variant of the drawer.
  *
- * @fires igcOpening - Emitted when the navigation drawer is about to open.
- * @fires igcOpened - Emitted when the navigation drawer is opened.
- * @fires igcClosing - Emitted when the navigation drawer is about to close.
- * @fires igcClosed - Emitted when the navigation drawer is closed.
- *
  * @csspart base - The base wrapper of the navigation drawer.
  * @csspart main - The main container.
  * @csspart mini - The mini container.
  */
-export default class IgcNavDrawerComponent extends EventEmitterMixin<
-  IgcNavDrawerEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcNavDrawerComponent extends LitElement {
   /** @private */
   public static tagName = 'igc-nav-drawer';
 
@@ -54,12 +37,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
       return;
     }
 
-    if (!this.handleOpening()) {
-      return;
-    }
-
     this.open = true;
-    this.emitEvent('igcOpened');
   }
 
   /** Closes the drawer. */
@@ -68,12 +46,7 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
       return;
     }
 
-    if (!this.handleClosing()) {
-      return;
-    }
-
     this.open = false;
-    this.emitEvent('igcClosed');
   }
 
   /** Toggles the open state of the drawer. */
@@ -83,36 +56,6 @@ export default class IgcNavDrawerComponent extends EventEmitterMixin<
     } else {
       this.show();
     }
-  }
-
-  private handleOpening() {
-    const args = {
-      detail: { cancel: false },
-      cancelable: true,
-    };
-    this.emitEvent('igcOpening', args);
-
-    if (args.detail.cancel) {
-      this.open = false;
-      return false;
-    }
-
-    return true;
-  }
-
-  private handleClosing() {
-    const args = {
-      detail: { cancel: false },
-      cancelable: true,
-    };
-    this.emitEvent('igcClosing', args);
-
-    if (args.detail.cancel) {
-      this.open = true;
-      return false;
-    }
-
-    return true;
   }
 
   private resolvePartNames(base: string) {
