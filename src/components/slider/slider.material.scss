@@ -45,7 +45,6 @@ $thumb-label-height: rem(30px);
     background: color(secondary, 500, .24);
     transition: background .2s ease-out;
     border-radius: inherit;
-    z-index: -1;
 }
 
 [part='steps'] {
@@ -55,7 +54,6 @@ $thumb-label-height: rem(30px);
     color: white;
     opacity: .85;
     transition: opacity .2s ease-out;
-    z-index: 1;
     top: rem(2px);
 }
 
@@ -65,7 +63,6 @@ $thumb-label-height: rem(30px);
     position: absolute;
     bottom: 0;
     justify-content: space-between;
-    z-index: 1;
 
     &:first-child {
         bottom: auto;
@@ -119,7 +116,6 @@ $thumb-label-height: rem(30px);
     width: 100%;
     height: 0;
     cursor: default;
-    z-index: 1;
     inset-inline-start: 0;
 }
 
@@ -187,7 +183,6 @@ $thumb-label-height: rem(30px);
     color: contrast-color(gray, 700);
     background: color(gray, 700);
     opacity: 0;
-    z-index: 1;
 
     &::after {
         content: '';
@@ -196,7 +191,6 @@ $thumb-label-height: rem(30px);
         border-left: rem(10px) solid transparent;
         border-right: rem(10px) solid transparent;
         border-top: rem(10px) solid color(gray, 700);
-        z-index: -1;
     }
 }
 

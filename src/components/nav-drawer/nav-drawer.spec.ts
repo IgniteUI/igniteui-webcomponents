@@ -5,7 +5,6 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
 import {
   defineComponents,
   IgcNavDrawerComponent,
@@ -148,50 +147,6 @@ describe('Navigation Drawer', () => {
 
       computedStyles = window.getComputedStyle(mini);
       expect(computedStyles.getPropertyValue('display')).to.not.equal('none');
-    });
-
-    it('should emit events on drawer toggle', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
-      el.toggle();
-
-      expect(eventSpy).calledWith('igcOpening');
-      expect(eventSpy).calledWith('igcOpened');
-
-      el.toggle();
-
-      expect(eventSpy).calledWith('igcClosing');
-      expect(eventSpy).calledWith('igcClosed');
-    });
-
-    it('should successfully cancel opening event', async () => {
-      el.addEventListener('igcOpening', (ev: CustomEvent) => {
-        ev.detail.cancel = true;
-      });
-
-      const eventSpy = sinon.spy(el, 'emitEvent');
-
-      el.show();
-
-      await elementUpdated(el);
-
-      expect(eventSpy).calledWith('igcOpening');
-      expect(el.open).to.equal(false);
-    });
-
-    it('should successfully cancel closing events', async () => {
-      el.show();
-      el.addEventListener('igcClosing', (ev: CustomEvent) => {
-        ev.detail.cancel = true;
-      });
-
-      const eventSpy = sinon.spy(el, 'emitEvent');
-
-      el.hide();
-
-      await elementUpdated(el);
-
-      expect(eventSpy).calledWith('igcClosing');
-      expect(el.open).to.equal(true);
     });
   });
 
