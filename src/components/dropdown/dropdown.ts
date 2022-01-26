@@ -114,15 +114,19 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     this.toggleController.open = this.open;
     this.toggleController.target = this.target;
 
+    if (this.open && !this.selectedItem) {
+      this.selectedItem = this.allItems.find((i) => i.selected) ?? null;
+    }
+
     this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
-    this.target.setAttribute(
-      'aria-activedescendant',
-      (this.open
-        ? this.activeItem
-          ? this.activeItem.value
-          : [...this.items][0]?.value
-        : '') as string
-    );
+    // this.content.setAttribute(
+    //   'aria-activedescendant',
+    //   (this.open
+    //     ? this.activeItem
+    //       ? this.activeItem.value
+    //       : [...this.items][0]?.value
+    //     : '') as string
+    // );
   }
 
   @watch('placement')
@@ -153,7 +157,11 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       offset: this.offset,
     };
 
-    this.toggleController = new IgcToggleController(this, this.target, options);
+    this.toggleController = new IgcToggleController(
+      this,
+      this.target ?? this.target,
+      options
+    );
     this.toggleController.documentClicked = (ev: MouseEvent) =>
       this.handleDocumentClicked(ev);
     this.toggleController.handleScroll = (ev: Event) => this.handleScroll(ev);
@@ -172,8 +180,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   public firstUpdated() {
     if (this.targetNodes.length) {
       this.target = [...this.targetNodes][0];
-      this.target.setAttribute('tabIndex', '0');
-      // this.target.setAttribute('aria-controls', 'igcScrollContainer');
+      // this.target.setAttribute('aria-owns', 'igcScrollContainer');
       this.target.setAttribute('haspopup', 'listbox');
     }
   }
@@ -191,7 +198,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       if (isInsideClick) {
         return;
       } else {
-        this.hide();
+        this._hide();
       }
     }
   };
@@ -208,7 +215,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         this.blockScroll(event);
         break;
       case 'close':
-        this.hide();
+        this._hide();
         break;
       case 'noop':
         event.preventDefault();
@@ -267,17 +274,16 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     switch (key) {
       case DropDownActionKey.ENTER:
         this.selectItem(this.activeItem);
-        this.handleSelection(this.activeItem);
+        this.handleChange(this.activeItem);
         break;
       case DropDownActionKey.ESCAPE:
         break;
     }
 
-    this.hide();
+    this._hide();
   }
 
   private handleClick(event: MouseEvent) {
-    event.preventDefault();
     const newSelectedItem =
       event.target instanceof IgcDropDownItemComponent
         ? (event.target as IgcDropDownItemComponent)
@@ -285,9 +291,19 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     if (!newSelectedItem || newSelectedItem.disabled) return;
 
     this.selectItem(newSelectedItem);
-    this.handleSelection(newSelectedItem);
-    this.hide();
+    this.handleChange(newSelectedItem);
+    this._hide();
   }
+
+  private handleTargetClick = () => {
+    if (!this.open) {
+      if (!this.handleOpening()) return;
+      this.show();
+      this.emitEvent('igcOpened');
+    } else {
+      this._hide();
+    }
+  };
 
   private handleOpening() {
     const args = { cancelable: true };
@@ -299,9 +315,20 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     return this.emitEvent('igcClosing', args);
   }
 
-  private handleSelection(item: IgcDropDownItemComponent) {
+  private handleChange(item: IgcDropDownItemComponent) {
     const args = { detail: { newItem: item } };
     this.emitEvent('igcChange', args);
+  }
+
+  private handleSlotChange() {
+    if (!this.target) return;
+    this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
+    // this.target.setAttribute(
+    //   'aria-activedescendant',
+    //   (this.activeItem
+    //       ? this.activeItem.value
+    //       : [...this.items][0]?.value) as string
+    // );
   }
 
   private _sourceElement?: Element;
@@ -353,7 +380,8 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   }
 
   private selectItem(
-    item: IgcDropDownItemComponent
+    item: IgcDropDownItemComponent,
+    emit = true
   ): IgcDropDownItemComponent | null {
     const oldItem = this.selectedItem;
 
@@ -368,6 +396,8 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     this.activateItem(item);
     this.selectedItem = item;
     this.selectedItem.selected = true;
+    if (emit) this.handleChange(this.selectedItem);
+
     return this.selectedItem;
   }
 
@@ -447,37 +477,36 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     this.navigatePrev();
   }
 
-  /** Shows the dropdown. */
-  public show() {
-    if (this.open) return;
+  private _hide(emit = true) {
+    if (emit && !this.handleClosing()) return;
 
-    if (!this.handleOpening()) return;
+    if (!this.open) return;
+
+    this.open = false;
+
+    if (emit) {
+      this.emitEvent('igcClosed');
+    }
+  }
+
+  /** Shows the dropdown. */
+  public show(target?: HTMLElement) {
+    if (this.open && !target) return;
+
+    if (target) this.target = target;
 
     this.open = true;
-
-    if (this.selectedItem) {
-      this.activateItem(this.selectedItem);
-    }
-
-    this.emitEvent('igcOpened');
   }
 
   /** Hides the dropdown. */
   public hide(): void {
-    if (!this.open) return;
-
-    if (!this.handleClosing()) {
-      return;
-    }
-
-    this.open = false;
-    this.emitEvent('igcClosed');
+    this._hide(false);
   }
 
   /** Toggles the open state of the dropdown. */
-  public toggle(): void {
+  public toggle(target?: HTMLElement): void {
     if (!this.open) {
-      this.show();
+      this.show(target);
     } else {
       this.hide();
     }
@@ -506,7 +535,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         ? this.getItem(value).item
         : this.allItems[value as number];
 
-    return this.selectItem(item);
+    return this.selectItem(item, false);
   }
 
   /**  Clears the current selection of the dropdown. */
@@ -519,7 +548,12 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
 
   protected render() {
     return html`
-      <slot name="target"></slot>
+      <slot
+        name="target"
+        @click=${this.handleTargetClick}
+        @slotchange=${this.handleSlotChange}
+      >
+      </slot>
       <div
         id="igcDDLContent"
         part="base"
@@ -531,6 +565,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
           role="listbox"
           class="igc-dropdown-list-scroll"
           part="list"
+          aria-label="dropdownList"
         >
           <slot></slot>
         </div>

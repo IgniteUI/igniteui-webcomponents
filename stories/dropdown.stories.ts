@@ -81,13 +81,28 @@ interface ArgTypes {
 
 (metadata as any).parameters = {
   actions: {
-    handles: ['igcSelect'],
+    handles: [
+      'igcChange',
+      'igcOpening',
+      'igcOpened',
+      'igcClosing',
+      'igcClosed',
+    ],
   },
 };
+
 const toggleDDL = (ev: Event, ddlId: string) => {
-  console.log(ev);
   const ddl = document.getElementById(ddlId) as IgcDropDownComponent;
-  ddl.toggle();
+  if (ddlId === 'ddl2') {
+    const styles: Partial<CSSStyleDeclaration> = {
+      height: `150px`,
+    };
+    Object.assign((ddl?.shadowRoot?.children[1] as HTMLElement).style, styles);
+    ddl.toggle(document.getElementById('ddlButton') as HTMLElement);
+  } else {
+    ev.stopPropagation();
+    ddl.toggle();
+  }
 };
 
 const items = [
@@ -117,9 +132,7 @@ const Template: Story<ArgTypes, Context> = (
       .dir=${direction}
       .scrollStrategy=${scrollStrategy}
     >
-      <igc-button slot="target" @click="${(ev: Event) => toggleDDL(ev, 'ddl1')}"
-        >Dropdown 1</igc-button
-      >
+      <igc-button slot="target">Dropdown 1</igc-button>
       <igc-dropdown-header>Tasks</igc-dropdown-header>
       <!-- ${items.map(
         (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
@@ -132,37 +145,45 @@ const Template: Story<ArgTypes, Context> = (
       ${html`<igc-dropdown-item>${items[4]}</igc-dropdown-item>`}
       ${html`<igc-dropdown-item disabled>${items[5]}</igc-dropdown-item>`}
     </igc-dropdown>
-    <igc-dropdown
-      style="position: absolute; top: 0px; right: 0px;"
-      id="ddl2"
-      .flip=${flip}
-      .closeOnOutsideClick=${closeOnOutsideClick}
-      .placement=${placement}
-      .scrollStrategy=${scrollStrategy}
-      .dir=${direction}
-    >
-      <igc-button slot="target" @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
-        >Dropdown 1</igc-button
+
+    <div style="position: absolute; right: 0px;">
+      <igc-button
+        id="ddlButton"
+        @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
+        >Dropdown 2</igc-button
       >
-      <igc-dropdown-group>
-        <h3 slot="label">Research & Development</h3>
-        ${items
-          .slice(0, 3)
-          .map((item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`)}
-      </igc-dropdown-group>
-      <igc-dropdown-group>
-        <h3>Product Guidance</h3>
-        ${items
-          .slice(3, 5)
-          .map((item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`)}
-      </igc-dropdown-group>
-      <igc-dropdown-group>
-        <h3>Release Engineering</h3>
-        <igc-dropdown-item>${items[5]}</igc-dropdown-item>
-      </igc-dropdown-group>
-    </igc-dropdown>
+      <igc-dropdown
+        id="ddl2"
+        .flip=${flip}
+        .closeOnOutsideClick=${closeOnOutsideClick}
+        .placement=${placement}
+        .scrollStrategy=${scrollStrategy}
+        .dir=${direction}
+      >
+        <igc-dropdown-group>
+          <h3 slot="label">Research & Development</h3>
+          ${items
+            .slice(0, 3)
+            .map(
+              (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
+            )}
+        </igc-dropdown-group>
+        <igc-dropdown-group>
+          <h3>Product Guidance</h3>
+          ${items
+            .slice(3, 5)
+            .map(
+              (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
+            )}
+        </igc-dropdown-group>
+        <igc-dropdown-group>
+          <h3>Release Engineering</h3>
+          <igc-dropdown-item>${items[5]}</igc-dropdown-item>
+        </igc-dropdown-group>
+      </igc-dropdown>
+    </div>
     <igc-dropdown
-      style="position: absolute; bottom: 0px; left: 0px"
+      style="position: absolute; bottom: 10px; left: 0px"
       id="ddl3"
       .flip=${flip}
       .closeOnOutsideClick=${closeOnOutsideClick}
@@ -172,8 +193,8 @@ const Template: Story<ArgTypes, Context> = (
       <input
         type="button"
         slot="target"
-        @click="${(ev: Event) => toggleDDL(ev, 'ddl3')}"
         style="width: 150px"
+        value="Dropdown 3"
       />
       <!-- ${items.slice(0, 5).map((item) => html`<h4>${item}</h4>`)} -->
       ${items.map(
@@ -189,7 +210,6 @@ const Template: Story<ArgTypes, Context> = (
       .dir=${direction}
     >
       <input
-        type="button"
         slot="target"
         @click="${(ev: Event) => toggleDDL(ev, 'ddl4')}"
         style="width: 150px"
@@ -218,7 +238,7 @@ const checkoutForm = html`
     <div>
       <igc-dropdown
         id="ddlCountry"
-        @igcSelect=${(_ev: CustomEvent) => {
+        @igcChange=${(_ev: CustomEvent) => {
           (document.getElementById('txtCountry') as IgcInputComponent).value = (
             _ev.detail as ISelectionChangeEventArgs
           ).newItem?.textContent as string;
@@ -231,7 +251,6 @@ const checkoutForm = html`
           label="Country"
           id="txtCountry"
           size="small"
-          @click="${(ev: Event) => toggleDDL(ev, 'ddlCountry')}"
           style="width: 150px"
         ></igc-input>
         <igc-dropdown-group>

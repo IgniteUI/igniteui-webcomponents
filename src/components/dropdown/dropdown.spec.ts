@@ -44,7 +44,12 @@ describe('Dropdown component', () => {
   describe('', () => {
     beforeEach(async () => {
       dropdown = await fixture<IgcDropDownComponent>(html` <igc-dropdown>
-        <input type="button" slot="target" value="Dropdown" />
+        <input
+          type="button"
+          slot="target"
+          value="Dropdown"
+          aria-label="dropdownButton"
+        />
         <igc-dropdown-header>Tasks</igc-dropdown-header>
         ${items.map(
           (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
@@ -60,6 +65,8 @@ describe('Dropdown component', () => {
     });
 
     it('is accessible.', async () => {
+      dropdown.open = true;
+      await elementUpdated(dropdown);
       await expect(dropdown).to.be.accessible();
     });
 
@@ -512,7 +519,7 @@ describe('Dropdown component', () => {
         expect(getSelectedItems().length).to.eq(0);
       });
 
-      it('emits `igcOpening` & `igcOpened` events on `show` method calls.', async () => {
+      it('does not emit `igcOpening` & `igcOpened` events on `show` method calls.', async () => {
         dropdown.open = false;
         await elementUpdated(dropdown);
 
@@ -521,17 +528,20 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         expect(dropdown.open).to.be.true;
-        expect(eventSpy).calledWith('igcOpening');
-        expect(eventSpy).calledWith('igcOpened');
+        expect(eventSpy).not.to.be.called;
       });
 
-      it('does not emit `igcOpening` & `igcOpened` events on an open list.', async () => {
+      it('emits `igcOpening` & `igcOpened` events on clicking the target.', async () => {
+        dropdown.open = false;
+        await elementUpdated(dropdown);
+
         const eventSpy = sinon.spy(dropdown, 'emitEvent');
-        dropdown.show();
+        target(dropdown).click();
         await elementUpdated(dropdown);
 
         expect(dropdown.open).to.be.true;
-        expect(eventSpy).not.called;
+        expect(eventSpy).calledWith('igcOpening');
+        expect(eventSpy).calledWith('igcOpened');
       });
 
       it('does not emit `igcOpened` event and does not show the list on canceling `igcOpening` event.', async () => {
@@ -542,7 +552,7 @@ describe('Dropdown component', () => {
         const eventSpy = sinon.spy(dropdown, 'emitEvent');
         await elementUpdated(dropdown);
 
-        dropdown.show();
+        target(dropdown).click();
         await elementUpdated(dropdown);
 
         expect(dropdown.open).to.be.false;
@@ -551,22 +561,21 @@ describe('Dropdown component', () => {
         });
       });
 
-      it('emits `igcClosing` & `igcClosed` events on `hide` method calls.', async () => {
+      it('does not emit `igcClosing` & `igcClosed` events on `hide` method calls.', async () => {
         const eventSpy = sinon.spy(dropdown, 'emitEvent');
         dropdown.hide();
+        await elementUpdated(dropdown);
+
+        expect(eventSpy).not.to.be.called;
+      });
+
+      it('emits `igcClosing` & `igcClosed` events on clicking the target.', async () => {
+        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        target(dropdown).click();
         await elementUpdated(dropdown);
 
         expect(eventSpy).calledWith('igcClosing');
         expect(eventSpy).calledWith('igcClosed');
-      });
-
-      it('does not emit `igcClosing` & `igcClosed` events on a closed list.', async () => {
-        dropdown.open = false;
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
-        dropdown.hide();
-        await elementUpdated(dropdown);
-
-        expect(eventSpy).not.called;
       });
 
       it('does not emit `igcClosed` event and does not hide the list on canceling `igcClosing` event.', async () => {
@@ -577,7 +586,7 @@ describe('Dropdown component', () => {
 
         const eventSpy = sinon.spy(dropdown, 'emitEvent');
 
-        dropdown.hide();
+        target(dropdown).click();
         await elementUpdated(dropdown);
 
         expect(dropdown.open).to.be.true;
@@ -586,7 +595,7 @@ describe('Dropdown component', () => {
         });
       });
 
-      it('emits `igcChange` event on selecting an item via mouse click.', async () => {
+      it('emits `igcChange`, `igcClosing` and `igcClosed` events on selecting an item via mouse click.', async () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
         ] as IgcDropDownItemComponent[];
@@ -597,9 +606,11 @@ describe('Dropdown component', () => {
 
         const args = { detail: { newItem: dropDownItems[2] } };
         expect(eventSpy).calledWithExactly('igcChange', args);
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).calledWith('igcClosed');
       });
 
-      it('emits `igcChange` event on selecting an item via `Enter` key.', async () => {
+      it('emits `igcChange`, `igcClosing` and `igcClosed` events on selecting an item via `Enter` key.', async () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
         ] as IgcDropDownItemComponent[];
@@ -611,6 +622,28 @@ describe('Dropdown component', () => {
 
         const args = { detail: { newItem: dropDownItems[0] } };
         expect(eventSpy).calledWithExactly('igcChange', args);
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).calledWith('igcClosed');
+      });
+
+      it('selects an item but does not close the dropdown on `Enter` key when `igcClosing` event is canceled.', async () => {
+        const dropDownItems = [
+          ...dropdown.querySelectorAll('igc-dropdown-item'),
+        ] as IgcDropDownItemComponent[];
+        dropdown.addEventListener('igcClosing', (event: CustomEvent) =>
+          event.preventDefault()
+        );
+        await elementUpdated(dropdown);
+        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+
+        pressKey('ArrowDown');
+        pressKey('Enter');
+        await elementUpdated(dropdown);
+
+        const args = { detail: { newItem: dropDownItems[0] } };
+        expect(eventSpy).calledWithExactly('igcChange', args);
+        expect(eventSpy).calledWith('igcClosing');
+        expect(dropdown.open).to.be.true;
       });
 
       it('emits `igcChange` event with the correct arguments on selecting an item.', async () => {
