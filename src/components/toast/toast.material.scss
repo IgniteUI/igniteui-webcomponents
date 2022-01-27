@@ -1,34 +1,27 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-.container {
-    height: 95vh;
+[part='base'] {
+    width: 100vw;
+    height: 90vh;
+    margin-left: rem(-7px);
     display: flex;
     justify-content: center;
+    align-items: flex-end;
+    overflow-y: hidden;
 
-    &.bottom {
-        align-items: flex-end;
+    &[open='false'] {
+        display: none;
     }
 
-    &.middle {
-        align-items: center;
+    > span {
+        display: inline-block;
+        padding: rem(24px);
+        min-width: 52px;
+        border-radius: rem(6px);
+        color: #fff;
+        background: color(gray, 800);
+        backdrop-filter: blur(10px);
+        font-family: var(--igc-font-family);
     }
-
-    &.top {
-        align-items: flex-start;
-    }
-}
-
-[part='base'] {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    padding: rem(16px) rem(24px);
-    margin: rem(42px) auto;
-    min-width: 52px;
-    color: #fff;
-    background: color(gray, 700, .9);
-    border-radius: 24px;
-    backdrop-filter: blur(10px);
-    font-family: var(--igc-font-family);
 }

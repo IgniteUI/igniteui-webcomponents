@@ -1,69 +1,44 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './toast.material.css';
-
-export interface IgcToastEventMap {
-  igcOpening: CustomEvent<any>;
-  igcOpened: CustomEvent<void>;
-  igcClosing: CustomEvent<any>;
-  igcClosed: CustomEvent<void>;
-}
 
 /**
  * A toast component is used to show a notification
  *
  * @element igc-toast
  *
- * @fires igcOpening - Emitted when the toast is about to open.
- * @fires igcOpened - Emitted when the toast is opened.
- * @fires igcClosing - Emitted when the toast is about to close.
- * @fires igcClosed - Emitted when the toast is closed.
- *
  * @csspart base - The base wrapper of the toast.
  */
-export default class IgcToastComponent extends EventEmitterMixin<
-  IgcToastEventMap,
-  Constructor<LitElement>
->(LitElement) {
+
+export default class IgcToastComponent extends LitElement {
   /** @private */
   public static tagName = 'igc-toast';
 
   /** @private */
   public static styles = [styles];
 
-  /** The text of the toast. */
-  @property()
-  public message!: string;
-
-  /** The position of the toast. */
-  @property({ reflect: true })
-  public position!: 'top' | 'middle' | 'bottom';
-
   /** Determines whether the toast is opened. */
   @property({ reflect: true })
   public open!: boolean;
 
+  /** Determines the time after which the toast will close */
+  @property({ reflect: false })
+  public displayTime!: number;
+
+  /** Determines whether the toast is closed automatically or not. */
+  @property({ reflect: true })
+  public keepOpen!: boolean;
+
+  /** The text of the toast. */
+  @property()
+  public message!: string;
+
   constructor() {
     super();
     this.open = false;
+    this.displayTime = 4000;
+    this.keepOpen = false;
     this.message = 'Toast message';
-    this.position = 'bottom';
-  }
-
-  /** Opens the toast. */
-  public show() {
-    if (this.open) {
-      return;
-    }
-
-    if (!this.handleOpening()) {
-      return;
-    }
-
-    this.open = true;
-    this.emitEvent('igcOpened');
   }
 
   /** Closes the toast. */
@@ -72,12 +47,18 @@ export default class IgcToastComponent extends EventEmitterMixin<
       return;
     }
 
-    if (!this.handleClosing()) {
+    this.open = false;
+  }
+
+  /** Opens the toast. */
+  public show() {
+    if (this.open) {
       return;
     }
 
-    this.open = false;
-    this.emitEvent('igcClosed');
+    this.open = true;
+
+    setTimeout(this.hide, this.displayTime);
   }
 
   /** Toggles the open state of the toast. */
@@ -89,40 +70,15 @@ export default class IgcToastComponent extends EventEmitterMixin<
     }
   }
 
-  private handleOpening() {
-    const args = {
-      detail: { cancel: false },
-      cancelable: true,
-    };
-    this.emitEvent('igcOpening', args);
-
-    if (args.detail.cancel) {
-      this.open = false;
-      return false;
-    }
-
-    return true;
-  }
-
-  private handleClosing() {
-    const args = {
-      detail: { cancel: false },
-      cancelable: true,
-    };
-    this.emitEvent('igcClosing', args);
-
-    if (args.detail.cancel) {
-      this.open = true;
-      return false;
-    }
-
-    return true;
-  }
-
   protected render() {
     return html`
-      <div class="container ${this.position}">
-        <div part="base">${this.message}</div>
+      <div
+        part="base"
+        open=${this.open}
+        displayTime=${this.displayTime}
+        keepOpen=${this.keepOpen}
+      >
+        <span>${this.message}</span>
       </div>
     `;
   }
