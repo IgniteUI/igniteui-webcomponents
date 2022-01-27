@@ -51,9 +51,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
-  /**
-   * @private
-   */
   public static styles = [styles];
 
   private formatterWeekday!: Intl.DateTimeFormat;
@@ -80,7 +77,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /** The format of the days. Defaults to narrow. */
   @property({ attribute: 'week-day-format' })
-  public weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
+  public weekDayFormat: 'long' | 'short' | 'narrow' | undefined = 'narrow';
 
   /** The resource strings. */
   @property({ attribute: false })
@@ -566,7 +563,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     </span>`;
   }
 
-  protected render() {
+  protected override render() {
     return html`${this.renderWeekHeaders()} ${this.renderDates()}`;
   }
 }
