@@ -5,13 +5,12 @@ import {
   state,
 } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
-import { arrayOf } from '../common/util.js';
+import { arrayOf, partNameMap } from '../common/util.js';
 import { styles } from './tree-item.material.css';
 import IgcTreeComponent from './tree';
 import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { watch } from '../common/decorators';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
@@ -49,7 +48,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   private contentList!: Array<HTMLElement>;
 
   /** @private */
-  @query('.tree-node__wrapper')
+  @query('[part="wrapper"]')
   public wrapper: any;
 
   @state()
@@ -201,11 +200,11 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     return this.tree?.navService;
   }
 
-  private get classes() {
+  private get parts() {
     return {
-      'tree-node__wrapper': true,
-      'tree-node__wrapper--focused': this.isFocused,
-      'tree-node__wrapper--active': this.active,
+      wrapper: true,
+      focused: this.isFocused,
+      active: this.active,
     };
   }
 
@@ -414,17 +413,14 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   protected render() {
     return html`
-      <div part="wrapper" class=${classMap(this.classes)}>
-        <section part="indentation">
+      <div part="${partNameMap(this.parts)}">
+        <div part="indentation">
           <slot name="indentation"></slot>
-            ${arrayOf(this.level).map(
-              () => html`<span class="tree-node__spacer"></span>`
-            )}
+            ${arrayOf(this.level).map(() => html`<span part="spacer"></span>`)}
           </slot>
-        </section>
-        <section
+        </div>
+        <div
           part="indicator"
-          class="tree-node__toggle-button"
         >
           ${
             this.loading
@@ -451,11 +447,11 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
                   </slot>
                 `
           }
-        </section>
+        </div>
         ${
           this.selection !== IgcTreeSelectionType.None
             ? html`
-                <section part="selectIndicator" class="tree-node__select">
+                <div part="select">
                   <igc-checkbox
                     @click=${this.selectorClick}
                     .checked=${this.selected}
@@ -463,17 +459,17 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
                     .disabled=${this.disabled}
                     tabindex="-1"
                   ></igc-checkbox>
-                </section>
+                </div>
               `
             : ''
         }
-        <section part="label" class="tree-node__content">
+        <div part="label">
           <slot name="label" @slotchange=${this.labelChange} @focusin=${
       this.onFocusIn
     } @focusout=${this.onFocusOut}>
-            <p>${this.label}</p>
+            <span part='text'>${this.label}</span>
           </slot>
-        </section>
+        </div>
       </div>
       <slot @slotchange=${this.handleChange} ?hidden=${!this.expanded}></slot>
     `;
