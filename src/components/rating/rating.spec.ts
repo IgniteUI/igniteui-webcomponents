@@ -194,7 +194,7 @@ describe('Rating component', () => {
     it('correctly reflects hover state', async () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
       el.value = 2;
-      el.hover = true;
+      el.hoverPreview = true;
       await elementUpdated(el);
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);

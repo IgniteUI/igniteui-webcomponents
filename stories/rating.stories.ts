@@ -47,7 +47,7 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    hover: {
+    hoverPreview: {
       type: 'boolean',
       description: 'Sets hover preview behavior for the component',
       control: 'boolean',
@@ -79,7 +79,7 @@ interface ArgTypes {
   label: string;
   value: number;
   disabled: boolean;
-  hover: boolean;
+  hoverPreview: boolean;
   readonly: boolean;
   size: 'small' | 'medium' | 'large';
 }
@@ -94,7 +94,7 @@ interface ArgTypes {
 const Template: Story<ArgTypes, Context> = (
   {
     size,
-    hover,
+    hoverPreview,
     symbol,
     step,
     max,
@@ -134,7 +134,7 @@ const Template: Story<ArgTypes, Context> = (
         dir=${ifDefined(direction)}
         size=${ifDefined(size)}
         ?disabled=${disabled}
-        ?hover=${hover}
+        ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
         .step=${Number(step)}
         .symbol=${symbol}
@@ -153,7 +153,7 @@ const Template: Story<ArgTypes, Context> = (
         dir=${ifDefined(direction)}
         size=${ifDefined(size)}
         ?disabled=${disabled}
-        ?hover=${hover}
+        ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
         .step=${Number(step)}
         .symbolFormatter=${customSymbols}
@@ -168,7 +168,7 @@ const Template: Story<ArgTypes, Context> = (
         dir=${ifDefined(direction)}
         size=${ifDefined(size)}
         ?disabled=${disabled}
-        ?hover=${hover}
+        ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
         .step=${Number(step)}
         .symbolFormatter=${customIcons}

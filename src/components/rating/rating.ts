@@ -28,10 +28,8 @@ export interface IgcRatingEventMap {
 export default class IgcRatingComponent extends SizableMixin(
   EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  /** @private */
-  public static tagName = 'igc-rating';
+  public static readonly tagName = 'igc-rating';
 
-  /** @private */
   public static styles = [styles];
 
   @query('[part="base"]', true)
@@ -45,6 +43,12 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected get isInteractive() {
     return !(this.readonly || this.disabled);
+  }
+
+  protected get isLTR() {
+    return (
+      window.getComputedStyle(this).getPropertyValue('direction') === 'ltr'
+    );
   }
 
   /** The maximum value for the rating */
@@ -91,33 +95,12 @@ export default class IgcRatingComponent extends SizableMixin(
   public disabled = false;
 
   /** Sets hover preview behavior for the component */
-  @property({ type: Boolean, reflect: true })
-  public hover = false;
+  @property({ type: Boolean, reflect: true, attribute: 'hover-preview' })
+  public hoverPreview = false;
 
   /** Sets the readonly state of the component */
   @property({ type: Boolean, reflect: true })
   public readonly = false;
-
-  constructor() {
-    super();
-    this.addEventListener('keydown', this.handleKeyDown);
-  }
-
-  /**
-   * Increments the value of the control by `n` steps multiplied by the
-   * step factor.
-   */
-  public stepUp(n = 1) {
-    this.value += this.round(n * this.step);
-  }
-
-  /**
-   * Decrements the value of the control by `n` steps multiplied by
-   * the step factor.
-   */
-  public stepDown(n = 1) {
-    this.value -= this.round(n * this.step);
-  }
 
   @watch('max')
   protected handleMaxChange() {
@@ -135,6 +118,11 @@ export default class IgcRatingComponent extends SizableMixin(
   @watch('step')
   protected handlePrecisionChange() {
     this.step = clamp(this.step, 0.001, 1);
+  }
+
+  constructor() {
+    super();
+    this.addEventListener('keydown', this.handleKeyDown);
   }
 
   protected handleClick({ clientX }: MouseEvent) {
@@ -225,10 +213,20 @@ export default class IgcRatingComponent extends SizableMixin(
     return Number(value.toFixed(this.getPrecision(this.step)));
   }
 
-  protected get isLTR() {
-    return (
-      window.getComputedStyle(this).getPropertyValue('direction') === 'ltr'
-    );
+  /**
+   * Increments the value of the control by `n` steps multiplied by the
+   * step factor.
+   */
+  public stepUp(n = 1) {
+    this.value += this.round(n * this.step);
+  }
+
+  /**
+   * Decrements the value of the control by `n` steps multiplied by
+   * the step factor.
+   */
+  public stepDown(n = 1) {
+    this.value -= this.round(n * this.step);
   }
 
   protected renderSymbol(index: number) {
@@ -244,7 +242,7 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected renderFractionWrapper(styles: { width: string }) {
-    return this.hover
+    return this.hoverPreview
       ? html` <div
           @click=${this.handleClick}
           @mouseenter=${this.handleMouseEnter}
@@ -266,7 +264,7 @@ export default class IgcRatingComponent extends SizableMixin(
         `;
   }
 
-  protected render() {
+  protected override render() {
     const value = this.hoverState ? this.hoverValue : this.value;
     const styles = { width: `${Math.round((value / this.max) * 100)}%` };
 
