@@ -10,7 +10,7 @@ export default class PopperTestComponent extends LitElement {
     this.toggleDirective = igcToggle(target, open, options);
   }
 
-  protected render() {
+  protected override render() {
     return html`<div ${this.toggleDirective}>Toggle Content</div>`;
   }
 }
