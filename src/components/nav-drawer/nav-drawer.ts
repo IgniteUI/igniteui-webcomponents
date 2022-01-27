@@ -17,7 +17,6 @@ import { styles } from './nav-drawer.material.css';
  * @csspart mini - The mini container.
  */
 export default class IgcNavDrawerComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-nav-drawer';
 
   public static styles = [styles];

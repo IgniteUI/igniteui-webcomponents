@@ -23,10 +23,8 @@ export default class IgcSomethingComponent extends LitElement {
   /**
    * 1. Static members
    */
-  /** @private */
   public static readonly tagName = 'igc-something';
 
-  /** @private */
   public static override styles = [styles];
 
   /**
