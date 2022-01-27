@@ -21,22 +21,20 @@ import { styles } from './list-item.material.css';
  * @csspart subtitle - The subtitle container.
  */
 export default class IgcListItemComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-list-item';
+  public static readonly tagName = 'igc-list-item';
 
-  /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   constructor() {
     super();
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'listitem');
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <section part="start">
         <slot name="start"></slot>

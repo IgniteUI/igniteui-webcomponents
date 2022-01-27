@@ -17,13 +17,11 @@ import { styles } from './navbar.material.css';
  * @csspart end - The right aligned action icons container.
  */
 export default class IgcNavbarComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-navbar';
+  public static readonly tagName = 'igc-navbar';
 
-  /** @private */
-  public static styles = [styles];
+  public static override styles = [styles];
 
-  protected render() {
+  protected override render() {
     return html`
       <div part="base">
         <span part="start">

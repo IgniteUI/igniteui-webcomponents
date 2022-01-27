@@ -9,22 +9,20 @@ import { styles } from './list-header.material.css';
  * @slot - Renders header list item's content.
  */
 export default class IgcListHeaderComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-list-header';
+  public static readonly tagName = 'igc-list-header';
 
-  /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   constructor() {
     super();
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'separator');
   }
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }
