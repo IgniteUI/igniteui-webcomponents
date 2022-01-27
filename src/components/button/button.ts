@@ -21,12 +21,8 @@ import { styles } from './button.material.css';
  * @csspart suffix - The suffix container.
  */
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
-  /** @private */
-  public static tagName = 'igc-button';
+  public static readonly tagName = 'igc-button';
 
-  /**
-   * @private
-   */
   public static styles = [styles];
 
   /** Sets the variant of the button. */
@@ -38,7 +34,7 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
     this.size = 'medium';
   }
 
-  protected get classes() {
+  protected override get classes() {
     const { size, variant } = this;
 
     return {

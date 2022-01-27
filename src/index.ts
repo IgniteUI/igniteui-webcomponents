@@ -41,6 +41,9 @@ export {
 
 export { IgcCheckboxBaseComponent } from './components/checkbox/checkbox-base';
 
+export { IgcSliderBaseComponent } from './components/slider/slider-base';
+export { IgcRangeSliderValue } from './components/slider/range-slider';
+
 export { defineComponents } from './components/common/definitions/defineComponents';
 export { defineAllComponents } from './components/common/definitions/defineAllComponents';
 
