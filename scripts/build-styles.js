@@ -5,6 +5,7 @@ const sass = require('sass');
 const globby = require('globby');
 const autoprefixer = require('autoprefixer');
 const postcss = require('postcss');
+const report = require('./report');
 
 const renderSass = util.promisify(sass.render);
 const readFile = util.promisify(fs.readFile);
@@ -22,7 +23,7 @@ async function sassToCss(sassFile) {
 
   // Strip BOM if any
   if (cssStr.charCodeAt(0) === 0xfeff) {
-    cssStr = cssStr.substr(1);
+    cssStr = cssStr.substring(1);
   }
   return cssStr;
 }
@@ -42,9 +43,10 @@ async function sassRender(sourceFile, templateFile, outputFile) {
 
   for (const sourceFile of paths) {
     const output = sourceFile.replace(/\.scss$/, '.css.ts');
-    sassRender(sourceFile, template, output).catch((err) => {
-      console.error(err);
+    await sassRender(sourceFile, template, output).catch((err) => {
+      report.error(err);
       process.exit(-1);
     });
   }
+  report.success('Styles generation finished');
 })();

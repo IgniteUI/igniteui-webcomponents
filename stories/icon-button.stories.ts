@@ -76,6 +76,10 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    ariaLabel: {
+      type: 'string',
+      control: 'text',
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',

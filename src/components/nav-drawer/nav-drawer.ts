@@ -17,11 +17,9 @@ import { styles } from './nav-drawer.material.css';
  * @csspart mini - The mini container.
  */
 export default class IgcNavDrawerComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-nav-drawer';
+  public static readonly tagName = 'igc-nav-drawer';
 
-  /** @private */
-  public static styles = [styles];
+  public static override styles = [styles];
 
   /** The position of the drawer. */
   @property({ reflect: true })
@@ -68,7 +66,7 @@ export default class IgcNavDrawerComponent extends LitElement {
     };
   }
 
-  protected render() {
+  protected override render() {
     return html` <div part="base">
       <div part="main">
         <slot></slot>

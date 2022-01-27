@@ -26,10 +26,8 @@ let nextId = 0;
  * @csspart indicator - The checkbox icon.
  */
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
-  /** @private */
-  public static tagName = 'igc-checkbox';
+  public static readonly tagName = 'igc-checkbox';
 
-  /** @private */
   public static styles = styles;
 
   private inputId = `checkbox-${nextId++}`;
@@ -51,7 +49,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
     this.invalid = !this.input.checkValidity();
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <label
         part=${partNameMap({ base: true, checked: this.checked })}
