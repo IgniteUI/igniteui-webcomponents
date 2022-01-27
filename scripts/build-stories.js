@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const prettier = require('prettier');
+const report = require('./report');
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -13,12 +15,6 @@ const DEST_DIR = path.resolve(__dirname, '../stories');
 const REPLACE_REGEX = /\/\/ region default.*\/\/ endregion/gs;
 const UNION_TYPE_REGEX = /^[""\w\s-]+\|[""\w\s|-]+$/;
 const SUPPORTED_TYPES = ['string', 'number', 'boolean', 'Date'];
-
-const report = {
-  success: (s) => console.log("\x1b[32m%s\x1b[0m", s),
-  warn: (s) => console.warn("\x1b[33m%s\x1b[0m", s),
-  error: (s) => console.error("\x1b[31m%s\x1b[0m", s),
-};
 
 const capitalize = (str) => {
   const arr = str.split('-');
@@ -77,8 +73,9 @@ function extractTags(meta) {
     args: Array.from(meta.properties || [])
       .filter(
         (prop) =>
-          SUPPORTED_TYPES.some(type => prop.type === type || prop.type.startsWith(`${type} `)) ||
-          UNION_TYPE_REGEX.test(prop.type)
+          prop.type &&
+          (SUPPORTED_TYPES.some(type => prop.type === type || prop.type.startsWith(`${type} `)) ||
+          UNION_TYPE_REGEX.test(prop.type))
       )
       .map((prop) => {
         const options =
@@ -132,11 +129,13 @@ function buildStoryMeta(story, meta) {
   };
 
   meta.args.forEach((arg) => (storyMeta.argTypes[arg[0]] = arg[1]));
-  const payload = `// region default\nconst metadata = ${JSON.stringify(
+  let payload = `// region default\nconst metadata = ${JSON.stringify(
     storyMeta,
     undefined,
     2
   )}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`;
+
+  payload = prettier.format(payload, { singleQuote: true, parser: 'babel' }).trim();
 
   return story.toString().replace(REPLACE_REGEX, payload);
 }
@@ -165,6 +164,6 @@ async function buildStories() {
 }
 
 (async () => {
-  buildStories();
+  await buildStories();
   report.success('Stories metadata generation finished');
 })();
