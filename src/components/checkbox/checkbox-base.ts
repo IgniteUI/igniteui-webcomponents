@@ -51,19 +51,19 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   public ariaLabelledby!: string;
 
   /** Simulates a click on the control. */
-  public click() {
+  public override click() {
     this.input.click();
   }
 
   /** Sets focus on the control. */
   @alternateName('focusComponent')
-  public focus(options?: FocusOptions) {
+  public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the control. */
   @alternateName('blurComponent')
-  public blur() {
+  public override blur() {
     this.input.blur();
   }
 

@@ -1,5 +1,10 @@
 import { html, LitElement } from 'lit';
-import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
@@ -43,13 +48,10 @@ export interface IgcInputEventMap {
 export default class IgcInputComponent extends SizableMixin(
   EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  /** @private */
-  public static tagName = 'igc-input';
+  public static readonly tagName = 'igc-input';
 
-  /** @private */
   public static styles = styles;
 
-  /** @private */
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
@@ -69,15 +71,15 @@ export default class IgcInputComponent extends SizableMixin(
   @query('input', true)
   private input!: HTMLInputElement;
 
-  @queryAssignedNodes('prefix', true)
-  private _prefix!: NodeListOf<HTMLElement>;
+  @queryAssignedElements({ slot: 'prefix' })
+  private _prefix!: Array<HTMLElement>;
 
-  @queryAssignedNodes('suffix', true)
-  private _suffix!: NodeListOf<HTMLElement>;
+  @queryAssignedElements({ slot: 'suffix' })
+  private _suffix!: Array<HTMLElement>;
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
-  public dir: Direction = 'auto';
+  public override dir: Direction = 'auto';
 
   /** The type attribute of the control. */
   @alternateName('displayType')
@@ -167,7 +169,7 @@ export default class IgcInputComponent extends SizableMixin(
 
   /** The autofocus attribute of the control. */
   @property({ type: Boolean })
-  public autofocus!: boolean;
+  public override autofocus!: boolean;
 
   /** The autocomplete attribute of the control. */
   @property()
@@ -178,7 +180,7 @@ export default class IgcInputComponent extends SizableMixin(
     this.size = 'medium';
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     const theme = document.defaultView
       ?.getComputedStyle(this)
@@ -255,13 +257,13 @@ export default class IgcInputComponent extends SizableMixin(
 
   /** Sets focus on the control. */
   @alternateName('focusComponent')
-  public focus(options?: FocusOptions) {
+  public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the control. */
   @alternateName('blurComponent')
-  public blur() {
+  public override blur() {
     this.input.blur();
   }
 
@@ -381,7 +383,7 @@ export default class IgcInputComponent extends SizableMixin(
     `;
   }
 
-  protected render() {
+  protected override render() {
     return html`${this.theme === 'material'
       ? this.renderMaterial()
       : this.renderStandard()}`;

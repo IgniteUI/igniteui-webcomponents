@@ -33,10 +33,8 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
-  public static tagName = 'igc-radio';
+  public static readonly tagName = 'igc-radio';
 
-  /** @private */
   public static styles = styles;
 
   private inputId = `radio-${nextId++}`;
@@ -82,19 +80,19 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   public ariaLabelledby!: string;
 
   /** Simulates a click on the radio control. */
-  public click() {
+  public override click() {
     this.input.click();
   }
 
   /** Sets focus on the radio control. */
   @alternateName('focusComponent')
-  public focus(options?: FocusOptions) {
+  public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the radio control. */
   @alternateName('blurComponent')
-  public blur() {
+  public override blur() {
     this.input.blur();
   }
 
@@ -160,7 +158,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     return Array.from<IgcRadioComponent>(group.querySelectorAll('igc-radio'));
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <label
         part="${partNameMap({ base: true, checked: this.checked })}"

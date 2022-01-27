@@ -4,11 +4,9 @@ import { default as IgcRadioComponent } from '../radio/radio';
 import { styles } from './radio-group.material.css';
 
 export default class IgcRadioGroupComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-radio-group';
+  public static readonly tagName = 'igc-radio-group';
 
-  /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   @queryAssignedElements({
     flatten: true,
@@ -78,7 +76,7 @@ export default class IgcRadioGroupComponent extends LitElement {
     }
   };
 
-  protected render() {
+  protected override render() {
     return html`<slot @slotchange=${this.updateRequiredState}></slot>`;
   }
 }

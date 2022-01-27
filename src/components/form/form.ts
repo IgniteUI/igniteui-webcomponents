@@ -24,12 +24,8 @@ export default class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
-  public static tagName = 'igc-form';
+  public static readonly tagName = 'igc-form';
 
-  /**
-   * @private
-   */
   public static styles = css`
     :host {
       display: block;
@@ -174,7 +170,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
     return true;
   }
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }
