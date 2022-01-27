@@ -17,10 +17,8 @@ import {
  * @csspart icon - The icon element.
  */
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
-  /** @private */
-  public static tagName = 'igc-icon-button';
+  public static readonly tagName = 'igc-icon-button';
 
-  /** @private */
   public static styles = [styles];
 
   /** The name of the icon. */

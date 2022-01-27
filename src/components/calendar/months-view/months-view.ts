@@ -32,9 +32,6 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /**
-   * @private
-   */
   public static styles = [styles];
 
   private calendarModel = new Calendar();
@@ -53,8 +50,13 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
 
   /** The format of the month. Defaults to long. */
   @property({ attribute: 'month-format' })
-  public monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow' =
-    'long';
+  public monthFormat:
+    | 'numeric'
+    | '2-digit'
+    | 'long'
+    | 'short'
+    | 'narrow'
+    | undefined = 'long';
 
   @watch('locale')
   @watch('monthFormat')
@@ -127,7 +129,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
     }
   }
 
-  protected render() {
+  protected override render() {
     return html`${this.months.map((row) => {
       return html`<div part="months-row" role="row">
         ${row.map((month) => {

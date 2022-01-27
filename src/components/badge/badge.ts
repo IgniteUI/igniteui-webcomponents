@@ -13,11 +13,9 @@ import { styles } from './badge.material.css';
  * @csspart base - The base wrapper of the badge.
  */
 export default class IgcBadgeComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-badge';
+  public static readonly tagName = 'igc-badge';
 
-  /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   /** The type of badge. */
   @property({ reflect: true })
@@ -32,7 +30,7 @@ export default class IgcBadgeComponent extends LitElement {
   @property({ reflect: true })
   public shape: 'rounded' | 'square' = 'rounded';
 
-  protected render() {
+  protected override render() {
     return html`
       <span part="base" role="img" aria-label="badge">
         <slot></slot>
