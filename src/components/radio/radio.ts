@@ -138,8 +138,8 @@ export default class IgcRadioComponent extends EventEmitterMixin<
       });
       this.input.focus();
       this._tabIndex = 0;
-      this.emitEvent('igcChange', { detail: this.checked });
     }
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   protected getSiblings() {
