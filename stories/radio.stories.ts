@@ -17,6 +17,12 @@ const metadata = {
       description: 'The value attribute of the control.',
       control: 'text',
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     checked: {
       type: 'boolean',
       description: 'The checked state of the control.',
@@ -55,6 +61,7 @@ export default metadata;
 interface ArgTypes {
   name: string;
   value: string;
+  required: boolean;
   checked: boolean;
   disabled: boolean;
   invalid: boolean;
@@ -64,13 +71,14 @@ interface ArgTypes {
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { labelPosition, checked, disabled }: ArgTypes,
+  { labelPosition, checked, disabled, required }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-radio
     label-position="${ifDefined(labelPosition)}"
     .disabled="${disabled}"
     .checked="${checked}"
+    .required=${required}
     dir=${ifDefined(direction)}
   >
     Label
