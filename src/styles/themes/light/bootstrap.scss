@@ -12,6 +12,8 @@
 @use '../../../components/calendar/calendar.bootstrap' as calendar;
 @use '../../../components/input/input.bootstrap' as input;
 @use '../../../components/slider/slider.bootstrap' as slider;
+@use '../../../components/toast/toast.bootstrap' as toast;
+
 
 $palette: utils.palette(
     $primary: #0d6efd,
@@ -37,3 +39,4 @@ $palette: utils.palette(
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();
+@include toast.theme();

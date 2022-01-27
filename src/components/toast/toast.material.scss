@@ -2,26 +2,21 @@
 @use '../../styles/utilities' as *;
 
 [part='base'] {
-    width: 100vw;
-    height: 90vh;
-    margin-left: rem(-7px);
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    overflow-y: hidden;
+    display: inline-block;
+    padding: rem(14px) rem(24px);
+    min-width: rem(48px);
+    border-radius: rem(2px);
+    color: #fff;
+    background: color(gray, 800);
+    backdrop-filter: blur(10px);
+    font-family: var(--igc-font-family);
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
 
     &[open='false'] {
         display: none;
-    }
-
-    > span {
-        display: inline-block;
-        padding: rem(24px);
-        min-width: 52px;
-        border-radius: rem(6px);
-        color: #fff;
-        background: color(gray, 800);
-        backdrop-filter: blur(10px);
-        font-family: var(--igc-font-family);
     }
 }

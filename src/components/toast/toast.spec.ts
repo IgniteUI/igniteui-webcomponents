@@ -16,6 +16,6 @@ describe('Toast', () => {
     console.log(window.customElements.get('igc-toast'));
     const el = await fixture<IgcToastComponent>(html`<igc-toast></igc-toast>`);
 
-    expect(el.position).to.equal('bottom');
+    expect(el.open).to.equal('false');
   });
 });
