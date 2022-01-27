@@ -63,10 +63,10 @@ export class IgcToggleDirective extends Directive {
         return;
       }
       this.instance = createPopper(target, this.popperElement, popperOptions);
-    } else if (this.instance.state.elements.reference !== target) {
-      this.instance.state.elements.reference = target;
-      this.instance.update();
     } else {
+      if (this.instance.state.elements.reference !== target) {
+        this.instance.state.elements.reference = target;
+      }
       this.updatePopperOptions(popperOptions);
     }
 

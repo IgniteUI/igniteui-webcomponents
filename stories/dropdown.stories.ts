@@ -98,7 +98,9 @@ const toggleDDL = (ev: Event, ddlId: string) => {
       height: `150px`,
     };
     Object.assign((ddl?.shadowRoot?.children[1] as HTMLElement).style, styles);
-    ddl.toggle(document.getElementById('ddlButton') as HTMLElement);
+    const target = ev.target as HTMLElement;
+    ddl.placement = target.id === 'ddlButton2' ? 'top-end' : 'bottom-start';
+    ddl.toggle(ev.target as HTMLElement);
   } else {
     ev.stopPropagation();
     ddl.toggle();
@@ -150,7 +152,12 @@ const Template: Story<ArgTypes, Context> = (
       <igc-button
         id="ddlButton"
         @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
-        >Dropdown 2</igc-button
+        >Dropdown 2.1</igc-button
+      >
+      <igc-button
+        id="ddlButton2"
+        @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
+        >Dropdown 2.2</igc-button
       >
       <igc-dropdown
         id="ddl2"
