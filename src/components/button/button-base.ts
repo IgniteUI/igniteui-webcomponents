@@ -15,9 +15,6 @@ export interface IgcButtonEventMap {
 export abstract class IgcButtonBaseComponent extends SizableMixin(
   EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  /**
-   * @private
-   */
   @query('[part="base"]', true)
   private nativeElement!: HTMLElement;
 
@@ -55,7 +52,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  public set ariaLabel(value: string) {
+  public override set ariaLabel(value: string) {
     const oldVal = this._ariaLabel;
     this._ariaLabel = value;
 
@@ -65,23 +62,20 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     this.requestUpdate('ariaLabel', oldVal);
   }
 
-  /**
-   * The aria label of the button.
-   */
   @property({ attribute: 'aria-label' })
-  public get ariaLabel() {
+  public override get ariaLabel() {
     return this._ariaLabel;
   }
 
   /** Sets focus in the button. */
   @alternateName('focusComponent')
-  public focus(options?: FocusOptions) {
+  public override focus(options?: FocusOptions) {
     this.nativeElement.focus(options);
   }
 
   /** Removes focus from the button. */
   @alternateName('blurComponent')
-  public blur() {
+  public override blur() {
     this.nativeElement.blur();
   }
 
@@ -135,7 +129,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   protected abstract renderContent(): TemplateResult;
 
-  protected render() {
+  protected override render() {
     const link = this.href !== undefined;
     return link ? this.renderLinkButton() : this.renderButton();
   }
