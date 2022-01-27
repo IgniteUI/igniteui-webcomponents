@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { queryAssignedNodes } from 'lit/decorators.js';
+import { queryAssignedElements } from 'lit/decorators.js';
 import { styles } from './dropdown-group.material.css';
 import IgcDropDownItemComponent from './dropdown-item';
 
@@ -17,8 +17,8 @@ export default class IgcDropDownGroupComponent extends LitElement {
   public static override styles = styles;
 
   /** All child `igc-dropdown-item`s. */
-  @queryAssignedNodes(undefined, true, 'igc-dropdown-item')
-  public items!: NodeListOf<IgcDropDownItemComponent>;
+  @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
+  public items!: Array<IgcDropDownItemComponent>;
 
   public override connectedCallback() {
     super.connectedCallback();

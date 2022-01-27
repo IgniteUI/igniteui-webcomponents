@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { property, query, queryAssignedNodes } from 'lit/decorators.js';
+import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './dropdown.material.css';
@@ -52,8 +52,8 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   private target!: HTMLElement;
 
   private get allItems(): IgcDropDownItemComponent[] {
-    const groupItems: IgcDropDownItemComponent[] = [...this.groups].flatMap(
-      (group) => [...group.items]
+    const groupItems: IgcDropDownItemComponent[] = this.groups.flatMap(
+      (group) => group.items
     );
     return [...this.items, ...groupItems];
   }
@@ -64,14 +64,14 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @query('#igcScrollContainer')
   protected scrollContainer!: HTMLElement;
 
-  @queryAssignedNodes(undefined, true, 'igc-dropdown-item')
-  protected items!: NodeListOf<IgcDropDownItemComponent>;
+  @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
+  protected items!: Array<IgcDropDownItemComponent>;
 
-  @queryAssignedNodes(undefined, true, 'igc-dropdown-group')
-  protected groups!: NodeListOf<IgcDropDownGroupComponent>;
+  @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-group' })
+  protected groups!: Array<IgcDropDownGroupComponent>;
 
-  @queryAssignedNodes('target')
-  private targetNodes!: NodeListOf<HTMLElement>;
+  @queryAssignedElements({ slot: 'target' })
+  private targetNodes!: Array<HTMLElement>;
 
   /** Sets the open state of the dropdown list. */
   @property({ type: Boolean })
@@ -122,7 +122,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     //   (this.open
     //     ? this.activeItem
     //       ? this.activeItem.value
-    //       : [...this.items][0]?.value
+    //       : this.items[0]?.value
     //     : '') as string
     // );
   }
@@ -177,7 +177,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
 
   public override firstUpdated() {
     if (this.targetNodes.length) {
-      this.target = [...this.targetNodes][0];
+      this.target = this.targetNodes[0];
       // this.target.setAttribute('aria-owns', 'igcScrollContainer');
       this.target.setAttribute('haspopup', 'listbox');
     }
@@ -325,7 +325,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     //   'aria-activedescendant',
     //   (this.activeItem
     //       ? this.activeItem.value
-    //       : [...this.items][0]?.value) as string
+    //       : this.items[0]?.value) as string
     // );
   }
 
