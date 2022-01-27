@@ -25,7 +25,7 @@
     "build:docs:json": "web-component-analyzer \"src/**/!(*.spec).ts\" --format json --outDir docs/json",
     "build:docs:schema": "web-component-analyzer src --format json --outFile custom-elements.json",
     "build:docs:vscode-schema": "web-component-analyzer src --format vscode --outFile vscode-html-custom-data.json",
-    "build:meta": "node scripts/build-stories.js && npm run format:stories",
+    "build:meta": "node scripts/build-stories.js",
     "watch-meta": "node scripts/stories-watcher.js ",
     "watch-scss": "node scripts/styles-watcher.js",
     "watch-ts": "tsc --watch --preserveWatchOutput",
@@ -39,7 +39,6 @@
     "lint:prettier": "prettier \"**/*.ts\" --check --ignore-path .gitignore",
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "format": "eslint --ext .ts . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
-    "format:stories": "prettier \"**/*.stories.ts\" --write --ignore-path .gitignore",
     "release": "changelog",
     "test": "npm run build && wtr --coverage",
     "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
@@ -87,8 +86,8 @@
     "tslib": "^2.3.1",
     "typedoc": "^0.21.0",
     "typedoc-plugin-localization": "^2.2.4",
-    "typescript": "^4.3.5",
-    "web-component-analyzer": "^1.1.6"
+    "typescript": "^4.5.4",
+    "web-component-analyzer": "^2.0.0-next.3"
   },
   "husky": {
     "hooks": {

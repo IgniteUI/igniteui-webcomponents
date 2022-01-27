@@ -20,11 +20,9 @@ import { styles } from './avatar.material.css';
  * @csspart icon - The icon wrapper of the avatar.
  */
 export default class IgcAvatarComponent extends SizableMixin(LitElement) {
-  /** @private */
-  public static tagName = 'igc-avatar';
+  public static readonly tagName = 'igc-avatar';
 
-  /** @private */
-  public static styles = [styles];
+  public static override styles = [styles];
 
   /** The image source to use. */
   @property()
@@ -68,7 +66,7 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
     this.hasError = false;
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <div
         part="base"
