@@ -112,6 +112,17 @@ describe('Radio Group Component', () => {
       expect(radio3).to.be.calledWith('igcFocus');
       expect(radio3).to.be.calledWith('igcChange');
     });
+
+    it('should set required attribute correctly', async () => {
+      expect(Array.from(radios).every((r) => r.required)).to.be.false;
+      expect(radios[0].required).to.be.true;
+
+      radios[1].checked = true;
+      await elementUpdated(group);
+
+      expect(radios[0].required).to.be.false;
+      expect(radios[1].required).to.be.true;
+    });
   });
 
   const values = ['orange', 'apple', 'mango'];
@@ -119,7 +130,9 @@ describe('Radio Group Component', () => {
     template = html`<igc-radio-group>
       ${values.map(
         (value) =>
-          html`<igc-radio name="fruit" value=${value}>${value}</igc-radio>`
+          html`<igc-radio name="fruit" required value=${value}
+            >${value}</igc-radio
+          >`
       )}
     </igc-radio-group>`
   ) => {

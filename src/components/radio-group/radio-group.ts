@@ -8,12 +8,11 @@ export default class IgcRadioGroupComponent extends LitElement {
 
   public static override styles = styles;
 
-  @queryAssignedElements({ flatten: true, selector: 'igc-radio' })
-  private _slottedRadios!: Array<IgcRadioComponent>;
-
-  private get radios() {
-    return this._slottedRadios.filter((radio) => !radio.disabled);
-  }
+  @queryAssignedElements({
+    flatten: true,
+    selector: 'igc-radio:not([disabled])',
+  })
+  private radios!: Array<IgcRadioComponent>;
 
   private get isLTR(): boolean {
     const styles = window.getComputedStyle(this);
@@ -23,10 +22,27 @@ export default class IgcRadioGroupComponent extends LitElement {
   constructor() {
     super();
     this.addEventListener('keydown', this.handleKeydown);
+    this.addEventListener('igcChange', this.updateRequiredState);
   }
 
   @property({ reflect: true })
   public alignment: 'vertical' | 'horizontal' = 'vertical';
+
+  private updateRequiredState() {
+    const hasRequired = this.radios.some((r) => r.required);
+
+    if (hasRequired) {
+      this.radios.forEach((r) => (r.required = false));
+
+      const hasChecked = this.radios.some((r) => r.checked);
+
+      if (hasChecked) {
+        this.radios.filter((r) => r.checked)[0].required = true;
+      } else {
+        this.radios[0].required = true;
+      }
+    }
+  }
 
   private handleKeydown = (event: KeyboardEvent) => {
     const { key } = event;
@@ -61,7 +77,7 @@ export default class IgcRadioGroupComponent extends LitElement {
   };
 
   protected override render() {
-    return html`<slot></slot>`;
+    return html`<slot @slotchange=${this.updateRequiredState}></slot>`;
   }
 }
 
