@@ -12,22 +12,20 @@ import IgcDropDownItemComponent from './dropdown-item';
  * @csspart label - The native label element.
  */
 export default class IgcDropDownGroupComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-dropdown-group';
+  public static readonly tagName = 'igc-dropdown-group';
 
-  /** private */
-  public static styles = styles;
+  public static override styles = styles;
 
   /** All child `igc-dropdown-item`s. */
   @queryAssignedNodes(undefined, true, 'igc-dropdown-item')
   public items!: NodeListOf<IgcDropDownItemComponent>;
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'group');
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <label part="label"><slot name="label"></slot></label>
       <slot></slot>

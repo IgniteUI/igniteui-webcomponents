@@ -27,10 +27,8 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
   IgcDropDownItemEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
-  public static tagName = 'igc-dropdown-item';
+  public static readonly tagName = 'igc-dropdown-item';
 
-  /** private */
   public static styles = styles;
 
   private _value = '';
@@ -75,12 +73,12 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
       : this.removeAttribute('aria-disabled');
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'option');
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <section part="prefix"><slot name="prefix"></slot></section>
       <section part="content"><slot></slot></section>

@@ -7,13 +7,11 @@ import { styles } from './dropdown-header.material.css';
  * @slot - Renders the header.
  */
 export default class IgcDropDownHeaderComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-dropdown-header';
+  public static readonly tagName = 'igc-dropdown-header';
 
-  /** private */
-  public static styles = styles;
+  public static override styles = styles;
 
-  public render() {
+  public override render() {
     return html`<slot></slot>`;
   }
 }

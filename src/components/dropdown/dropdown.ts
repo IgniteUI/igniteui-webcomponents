@@ -42,10 +42,8 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   IgcDropDownEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
-  public static tagName = 'igc-dropdown';
+  public static readonly tagName = 'igc-dropdown';
 
-  /** private */
   public static styles = styles;
 
   private toggleController!: IgcToggleController;
@@ -167,17 +165,17 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     this.toggleController.handleScroll = (ev: Event) => this.handleScroll(ev);
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     document.addEventListener('keydown', this.handleKeyDown);
   }
 
-  public disconnectedCallback() {
+  public override disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('keydown', this.handleKeyDown);
   }
 
-  public firstUpdated() {
+  public override firstUpdated() {
     if (this.targetNodes.length) {
       this.target = [...this.targetNodes][0];
       // this.target.setAttribute('aria-owns', 'igcScrollContainer');
@@ -546,7 +544,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     this.selectedItem = null;
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <slot
         name="target"
