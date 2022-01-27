@@ -19,7 +19,7 @@ import { styles } from './nav-drawer.material.css';
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
 
-  public static styles = [styles];
+  public static override styles = [styles];
 
   /** The position of the drawer. */
   @property({ reflect: true })
