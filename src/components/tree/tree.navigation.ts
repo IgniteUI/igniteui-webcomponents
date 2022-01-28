@@ -67,7 +67,7 @@ export class IgcTreeNavigationService {
       this._focusedItem.focus({
         preventScroll: true,
       });
-      this._focusedItem.wrapper.scrollIntoView({
+      this._focusedItem.wrapper?.scrollIntoView({
         behavior: 'auto',
         block: 'nearest',
         inline: 'nearest',

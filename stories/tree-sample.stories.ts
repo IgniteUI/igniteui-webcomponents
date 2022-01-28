@@ -27,7 +27,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { size }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  return html` <igc-tree-sample></igc-tree-sample> ${size} ${direction}`;
+  return html` <igc-tree-sample .size=${size}></igc-tree-sample>${direction}`;
 };
 
 export const Basic = BasicTemplate.bind({});

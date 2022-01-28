@@ -12,7 +12,7 @@ $node-height: (
     display: flex;
     flex-direction: column;
     font-family: inherit;
-    --igc-tree-indentation-size: #{rem(24px)};
+    --igc-tree-indentation-size: 24px;
 }
 
 :host(:focus-within) {
@@ -108,11 +108,6 @@ $node-height: (
     }
 }
 
-// TODO REMOVE THIS SELECTORS AFTER WE CHANGE THE WAY INDENTATION IS CALCULATED
-[part~='spacer'] {
-    display: inline-block;
-}
-
 
 // TODO RENAME ALL SPACERS PARTS TO INDENTATION
 // LARGE
@@ -120,7 +115,7 @@ $node-height: (
     height: map.get($node-height, 'large');
 }
 
-[part='spacer large'] {
+[part='indentation large'] {
     width: var(--igc-tree-indentation-size);
 }
 
@@ -129,8 +124,8 @@ $node-height: (
     height: map.get($node-height, 'medium');
 }
 
-[part='spacer medium'] {
-    $node-indentation: calc(var(--igc-tree-indentation-size) - #{rem(8px)});
+[part='indentation medium'] {
+    $node-indentation: calc(var(--igc-tree-indentation-size) * (2 / 3)) !important;
     width: $node-indentation;
 }
 
@@ -139,8 +134,8 @@ $node-height: (
     height: map.get($node-height, 'small');
 }
 
-[part='spacer small'] {
-    $node-indentation: calc(var(--igc-tree-indentation-size) - #{rem(12px)});
+[part='indentation small'] {
+    $node-indentation: calc(var(--igc-tree-indentation-size) / 2) !important;
     width: $node-indentation;
 }
 

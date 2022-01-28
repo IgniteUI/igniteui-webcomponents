@@ -5,7 +5,7 @@ import {
   state,
 } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
-import { arrayOf, partNameMap } from '../common/util.js';
+import { partNameMap } from '../common/util.js';
 import { styles } from './tree-item.material.css';
 import IgcTreeComponent from './tree';
 import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common.js';
@@ -48,8 +48,8 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   private contentList!: Array<HTMLElement>;
 
   /** @private */
-  @query('[part="wrapper"]')
-  public wrapper: any;
+  @query('#wrapper')
+  public wrapper!: HTMLElement;
 
   @state()
   private isFocused = false;
@@ -57,6 +57,10 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   /** @private */
   @state()
   public hasChildren = false;
+
+  /** @private */
+  @state()
+  public size = 'large';
 
   /** The depth of the node, relative to the root. */
   @state()
@@ -101,6 +105,18 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public value = undefined;
 
+  @watch('size')
+  public sizeMultiplier(): number {
+    switch (this.size) {
+      case 'medium':
+        return 2 / 3;
+      case 'small':
+        return 1 / 2;
+      default:
+        return 1;
+    }
+  }
+
   @watch('expanded')
   public expandedChange(oldValue: boolean): void {
     // always update the visible cache
@@ -111,7 +127,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     // await for load on demand children
     Promise.resolve().then(() => {
       if (this.navService?.focusedItem !== this && !this.isFocused) {
-        this.navService?.focusedItem?.wrapper.scrollIntoView({
+        this.navService?.focusedItem?.wrapper?.scrollIntoView({
           behavior: 'auto',
           block: 'nearest',
           inline: 'nearest',
@@ -132,7 +148,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.tree?.expandToItem(this);
     // Await for expanding
     Promise.resolve().then(() => {
-      this.wrapper.scrollIntoView({
+      this.wrapper?.scrollIntoView({
         behavior: 'auto',
         block: 'nearest',
         inline: 'nearest',
@@ -162,6 +178,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   public override connectedCallback(): void {
     super.connectedCallback();
     this.tree = this.closest('igc-tree') as IgcTreeComponent;
+    this.size = this.tree?.size;
     this.parent =
       this.parentElement?.tagName.toLowerCase() === 'igc-tree-item'
         ? (this.parentElement as IgcTreeItemComponent)
@@ -413,14 +430,13 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div part="small wrapper ${partNameMap(this.parts)}">
-        <!-- TODO AFTER REMOVING THE SPAN, MOVE HIS PARTS ONT THIS DIV -->
-        <div part="indentation">
-          <slot name="indentation">
-            ${arrayOf(this.level).map(
-              () => html`<span part="spacer small"></span>`
-            )}
-          </slot>
+      <div id="wrapper" part="wrapper ${this.size} ${partNameMap(this.parts)}">
+        <div
+          style="width: calc(${this
+            .level} * var(--igc-tree-indentation-size) * ${this.sizeMultiplier()})"
+          part="indentation"
+        >
+          <slot name="indentation"></slot>
         </div>
         <div part="indicator">
           ${this.loading

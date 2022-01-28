@@ -122,6 +122,7 @@ export default class IgcTreeSampleComponent extends SizableMixin(LitElement) {
         <igc-tree
           id="tree"
           selection="cascade"
+          .size=${this.size}
           @igcSelection=${this.handleSelection}
           @igcItemExpanded=${this.handleExpanded}
           @igcItemCollapsed=${this.handleCollapsed}

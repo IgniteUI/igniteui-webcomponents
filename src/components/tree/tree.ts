@@ -47,7 +47,10 @@ export default class IgcTreeComponent extends SizableMixin(
 
   @watch('size', { waitUntilFirstUpdate: true })
   public onSizeChange(): void {
-    this.navService.activeItem?.wrapper.scrollIntoView({
+    this.items.forEach((item: IgcTreeItemComponent) => {
+      item.size = this.size;
+    });
+    this.navService.activeItem?.wrapper?.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
       inline: 'nearest',
