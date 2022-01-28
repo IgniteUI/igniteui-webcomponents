@@ -98,6 +98,12 @@ export default class IgcTreeComponent extends SizableMixin(
     this.items.forEach((i: IgcTreeItemComponent) => {
       i.init = true;
     });
+    const firstNotDisabledItem = this.items.find(
+      (i: IgcTreeItemComponent) => !i.disabled
+    );
+    if (firstNotDisabledItem) {
+      firstNotDisabledItem.tabIndex = 0;
+    }
   }
 
   /** Returns all of the tree's items. */

@@ -114,6 +114,12 @@ export class IgcTreeNavigationService {
     }
     if (this.focusedItem === item) {
       this.focusItem(null, false);
+      const firstNotDisableItem = this.tree.items.find(
+        (i: IgcTreeItemComponent) => !i.disabled
+      );
+      if (firstNotDisableItem) {
+        firstNotDisableItem.tabIndex = 0;
+      }
     }
   }
 
