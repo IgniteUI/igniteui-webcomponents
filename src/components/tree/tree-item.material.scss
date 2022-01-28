@@ -8,6 +8,28 @@ $node-height: (
     small: rem(32px)
 );
 
+$disabled-color: color(gray, 500);
+
+$background: color(surface);
+$color: contrast-color(surface);
+$hover-background: color(gray, 200);
+$hover-color: contrast-color(gray, 200);
+
+$selected-background: color(secondary, 200);
+$selected-color: contrast-color(secondary, 200);
+$selected-hover-background: color(secondary, 300);
+$selected-hover-color: contrast-color(secondary, 300);
+
+$active-background: color(gray, 200);
+$active-color: contrast-color(gray, 200);
+
+$active-selected-background: color(secondary, 300);
+$active-selected-color: contrast-color(secondary, 300);
+
+$focused-border-color: color(secondary, 500);
+
+$toggle-icon-size: rem(24px);
+
 :host {
     display: flex;
     flex-direction: column;
@@ -19,49 +41,53 @@ $node-height: (
     outline: none;
 }
 
+:host([disabled]) {
+    color: $disabled-color;
+}
+
 [part~='wrapper'] {
     display: flex;
     align-items: center;
-    min-height: rem(50px);
     padding: 0 rem(24px);
     position: relative;
-    color: color(gray, 900);
+    background: $background;
+    color: $color;
 
     &:hover {
-        background: color(gray, 200);
-        color: contrast-color(gray, 200);
+        background: $hover-background;
+        color: $hover-color;
     }
 }
 
 [part~='active'] {
-    background: color(gray, 100);
-    color: contrast-color(gray, 100);
+    background: $active-background;
+    color: $active-color;
 }
 
 [part~='selected'] {
-    background: color(secondary, 200);
-    color: contrast-color(secondary, 200);
+    background: $selected-background;
+    color: $selected-color;
 
     &:hover {
-        background: color(secondary, 300);
-        color: contrast-color(secondary, 300);
+        background: $selected-hover-background;
+        color: $selected-hover-color;
     }
 }
 
-[part='wrapper selected focused active'],
-[part='wrapper selected focused'],
-[part='wrapper selected active'] {
-    background: color(secondary, 300);
-    color: contrast-color(secondary, 300);
+[part~='selected'][part~='focused'][part~='active'],
+[part~='selected'][part~='focused'],
+[part~='selected'][part~='active'] {
+    background: $active-selected-background;
+    color: $active-selected-color;
 
     &:hover {
-        background: color(secondary, 300);
-        color: contrast-color(secondary, 300);
+        background: $active-selected-background;
+        color: $active-selected-color;
     }
 }
 
 [part~='focused'] {
-    box-shadow: inset 0 0 0 1px color(secondary, 500);
+    box-shadow: inset 0 0 0 1px $focused-border-color;
 }
 
 [part~='indicator'] {
@@ -72,11 +98,12 @@ $node-height: (
     cursor: pointer;
     user-select: none;
     margin-inline-end: rem(4px);
+    min-width: $toggle-icon-size;
 
     igc-icon {
-        width: rem(24px);
-        height: rem(24px);
-        font-size: rem(24px);
+        width: $toggle-icon-size;
+        height: $toggle-icon-size;
+        font-size: $toggle-icon-size;
     }
 }
 
@@ -108,15 +135,9 @@ $node-height: (
     }
 }
 
-
-// TODO RENAME ALL SPACERS PARTS TO INDENTATION
 // LARGE
 [part~='large'] {
     height: map.get($node-height, 'large');
-}
-
-[part='indentation large'] {
-    width: var(--igc-tree-indentation-size);
 }
 
 // MEDIUM
@@ -124,18 +145,8 @@ $node-height: (
     height: map.get($node-height, 'medium');
 }
 
-[part='indentation medium'] {
-    $node-indentation: calc(var(--igc-tree-indentation-size) * (2 / 3)) !important;
-    width: $node-indentation;
-}
-
 // SMALL
 [part~='small'] {
     height: map.get($node-height, 'small');
-}
-
-[part='indentation small'] {
-    $node-indentation: calc(var(--igc-tree-indentation-size) / 2) !important;
-    width: $node-indentation;
 }
 
