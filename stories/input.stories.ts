@@ -17,7 +17,7 @@ const metadata = {
       defaultValue: 'text',
     },
     inputmode: {
-      type: '"none" | "numeric" | "email" | "search" | "tel" | "url" | "txt" | "decimal"',
+      type: '"numeric" | "email" | "search" | "tel" | "url" | "none" | "txt" | "decimal"',
       description: 'The input mode attribute of the control.',
       options: [
         'none',
@@ -138,15 +138,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   type: 'number' | 'email' | 'password' | 'search' | 'tel' | 'text' | 'url';
-  inputmode:
-    | 'none'
-    | 'numeric'
-    | 'email'
-    | 'search'
-    | 'tel'
-    | 'url'
-    | 'txt'
-    | 'decimal';
+  inputmode: 'numeric' | 'email' | 'search' | 'tel' | 'url' | 'txt' | 'decimal';
   name: string;
   value: string;
   pattern: string;

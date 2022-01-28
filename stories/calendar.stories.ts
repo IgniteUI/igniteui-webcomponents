@@ -72,9 +72,9 @@ const metadata = {
       control: 'date',
     },
     selection: {
-      type: '"multiple" | "single" | "range"',
+      type: '"single" | "multiple" | "range"',
       description: 'Sets the type of date selection.',
-      options: ['multiple', 'single', 'range'],
+      options: ['single', 'multiple', 'range'],
       control: {
         type: 'inline-radio',
       },
@@ -128,7 +128,7 @@ interface ArgTypes {
   activeView: 'days' | 'months' | 'years';
   size: 'small' | 'medium' | 'large';
   value: Date | undefined;
-  selection: 'multiple' | 'single' | 'range';
+  selection: 'single' | 'multiple' | 'range';
   showWeekNumbers: boolean;
   weekStart:
     | 'sunday'
