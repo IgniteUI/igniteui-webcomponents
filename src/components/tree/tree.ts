@@ -103,6 +103,7 @@ export default class IgcTreeComponent extends SizableMixin(
     );
     if (firstNotDisabledItem) {
       firstNotDisabledItem.tabIndex = 0;
+      this.navService.focusItem(firstNotDisabledItem);
     }
   }
 

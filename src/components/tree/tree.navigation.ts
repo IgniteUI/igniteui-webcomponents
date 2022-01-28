@@ -119,6 +119,7 @@ export class IgcTreeNavigationService {
       );
       if (firstNotDisableItem) {
         firstNotDisableItem.tabIndex = 0;
+        this.focusItem(firstNotDisableItem, false);
       }
     }
   }
