@@ -41,13 +41,13 @@ export default class IgcTreeSampleComponent extends SizableMixin(LitElement) {
     }
     ev.detail.newSelection.forEach((item: IgcTreeItemComponent) => {
       if (item.value) {
-        // item.value.selected = true;
+        item.value.selected = true;
       }
     });
     const newSelectedItems = new Set(ev.detail.newSelection);
     prevSelectedItems?.forEach((item) => {
       if (!newSelectedItems.has(item)) {
-        // item.value.selected = false;
+        item.value.selected = false;
       }
     });
     console.log(this.data);
