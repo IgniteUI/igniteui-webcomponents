@@ -46,6 +46,8 @@ describe('Radio Component', () => {
       expect(radio.invalid).to.equal(false);
       expect(radio.disabled).to.equal(false);
       expect(input.disabled).to.equal(false);
+      expect(radio.required).to.equal(false);
+      expect(input.required).to.equal(false);
       expect(radio.labelPosition).to.equal('after');
     });
 
@@ -156,6 +158,19 @@ describe('Radio Component', () => {
         `<input aria-disabled="false" />`,
         DIFF_OPTIONS
       );
+    });
+
+    it('sets the required property successfully', async () => {
+      radio.required = true;
+      expect(radio.required).to.be.true;
+      await elementUpdated(radio);
+      expect(input).dom.to.equal(`<input required />`, DIFF_OPTIONS);
+
+      radio.required = false;
+      expect(radio.required).to.be.false;
+      await elementUpdated(radio);
+
+      expect(input).dom.to.equal(`<input />`, DIFF_OPTIONS);
     });
 
     it('should emit focus/blur events when methods are called', () => {

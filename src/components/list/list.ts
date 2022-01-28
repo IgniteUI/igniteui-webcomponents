@@ -10,22 +10,20 @@ import { styles } from './list.material.css';
  * @slot - Renders the list items and list headers inside default slot.
  */
 export default class IgcListComponent extends SizableMixin(LitElement) {
-  /** @private */
-  public static tagName = 'igc-list';
+  public static readonly tagName = 'igc-list';
 
-  /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   constructor() {
     super();
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'list');
   }
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }
