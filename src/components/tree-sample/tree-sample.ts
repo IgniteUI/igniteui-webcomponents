@@ -29,7 +29,7 @@ export default class IgcTreeSampleComponent extends SizableMixin(LitElement) {
     this.size = 'medium';
   }
 
-  public connectedCallback() {
+  public override connectedCallback() {
     super.connectedCallback();
     DataService.getData().then((data) => (this.data = data));
   }
@@ -116,7 +116,7 @@ export default class IgcTreeSampleComponent extends SizableMixin(LitElement) {
     `;
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <div style="height: 250px;">
         <igc-tree

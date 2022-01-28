@@ -1,10 +1,18 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
+@use 'sass:map';
+
+$node-height: (
+    large: rem(50px),
+    medium: rem(40px),
+    small: rem(32px)
+);
 
 :host {
     display: flex;
     flex-direction: column;
     font-family: inherit;
+    --igc-tree-indentation-size: #{rem(24px)};
 }
 
 :host(:focus-within) {
@@ -30,13 +38,30 @@
     color: contrast-color(gray, 100);
 }
 
-[part~='focused'] {
-    box-shadow: inset 0 0 0 1px color(secondary, 500);
+[part~='selected'] {
+    background: color(secondary, 200);
+    color: contrast-color(secondary, 200);
+
+    &:hover {
+        background: color(secondary, 300);
+        color: contrast-color(secondary, 300);
+    }
 }
 
-[part='spacer'] {
-    display: inline-block;
-    width: rem(24px);
+[part='wrapper selected focused active'],
+[part='wrapper selected focused'],
+[part='wrapper selected active'] {
+    background: color(secondary, 300);
+    color: contrast-color(secondary, 300);
+
+    &:hover {
+        background: color(secondary, 300);
+        color: contrast-color(secondary, 300);
+    }
+}
+
+[part~='focused'] {
+    box-shadow: inset 0 0 0 1px color(secondary, 500);
 }
 
 [part~='indicator'] {
@@ -83,17 +108,39 @@
     }
 }
 
-// :host([size='small']) ::slotted(igc-list-item),
-// :host([size='small']) ::slotted(igc-list-header) {
-//     padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
-// }
+// TODO REMOVE THIS SELECTORS AFTER WE CHANGE THE WAY INDENTATION IS CALCULATED
+[part~='spacer'] {
+    display: inline-block;
+}
 
-// :host([size='medium']) ::slotted(igc-list-item),
-// :host([size='medium']) ::slotted(igc-list-header) {
-//     padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
-// }
 
-// :host([size='large']) ::slotted(igc-list-item),
-// :host([size='large']) ::slotted(igc-list-header) {
-//     padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
-// }
+// TODO RENAME ALL SPACERS PARTS TO INDENTATION
+// LARGE
+[part~='large'] {
+    height: map.get($node-height, 'large');
+}
+
+[part='spacer large'] {
+    width: var(--igc-tree-indentation-size);
+}
+
+// MEDIUM
+[part~='medium'] {
+    height: map.get($node-height, 'medium');
+}
+
+[part='spacer medium'] {
+    $node-indentation: calc(var(--igc-tree-indentation-size) - #{rem(8px)});
+    width: $node-indentation;
+}
+
+// SMALL
+[part~='small'] {
+    height: map.get($node-height, 'small');
+}
+
+[part='spacer small'] {
+    $node-indentation: calc(var(--igc-tree-indentation-size) - #{rem(12px)});
+    width: $node-indentation;
+}
+

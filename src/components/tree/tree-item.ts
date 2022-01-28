@@ -79,7 +79,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   public expanded = false;
 
   /** Marks the item as the tree's active item. */
-  @property({ type: Boolean })
+  @property({ reflect: true, type: Boolean })
   public active = false;
 
   /** Get/Set whether the tree item is disabled. Disabled items are ignored for user interactions. */
@@ -159,7 +159,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     super();
   }
 
-  public connectedCallback(): void {
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.tree = this.closest('igc-tree') as IgcTreeComponent;
     this.parent =
@@ -186,7 +186,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.labelChange();
   }
 
-  public disconnectedCallback(): void {
+  public override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.selectionService?.ensureStateOnItemDelete(this);
     this.navService?.delete_item(this);
@@ -202,7 +202,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
 
   private get parts() {
     return {
-      wrapper: true,
+      selected: this.selected,
       focused: this.isFocused,
       active: this.active,
     };
@@ -411,63 +411,63 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     this.expanded = false;
   }
 
-  protected render() {
+  protected override render() {
     return html`
-      <div part="${partNameMap(this.parts)}">
+      <div part="small wrapper ${partNameMap(this.parts)}">
+        <!-- TODO AFTER REMOVING THE SPAN, MOVE HIS PARTS ONT THIS DIV -->
         <div part="indentation">
-          <slot name="indentation"></slot>
-            ${arrayOf(this.level).map(() => html`<span part="spacer"></span>`)}
+          <slot name="indentation">
+            ${arrayOf(this.level).map(
+              () => html`<span part="spacer small"></span>`
+            )}
           </slot>
         </div>
-        <div
-          part="indicator"
-        >
-          ${
-            this.loading
-              ? html`
-                  <slot name="loading">
-                    <igc-icon
-                      name="navigate_before"
-                      collection="internal"
-                    ></igc-icon>
-                  </slot>
-                `
-              : html`
-                  <slot name="indicator" @click=${this.expandIndicatorClick}>
-                    ${this.hasChildren
-                      ? html`
-                          <igc-icon
-                            name=${this.expanded
-                              ? 'keyboard_arrow_down'
-                              : 'keyboard_arrow_right'}
-                            collection="internal"
-                          ></igc-icon>
-                        `
-                      : ''}
-                  </slot>
-                `
-          }
-        </div>
-        ${
-          this.selection !== IgcTreeSelectionType.None
+        <div part="indicator">
+          ${this.loading
             ? html`
-                <div part="select">
-                  <igc-checkbox
-                    @click=${this.selectorClick}
-                    .checked=${this.selected}
-                    .indeterminate=${this.indeterminate}
-                    .disabled=${this.disabled}
-                    tabindex="-1"
-                  ></igc-checkbox>
-                </div>
+                <slot name="loading">
+                  <igc-icon name="navigate_before" collection="internal">
+                  </igc-icon>
+                </slot>
               `
-            : ''
-        }
+            : html`
+                <slot name="indicator" @click=${this.expandIndicatorClick}>
+                  ${this.hasChildren
+                    ? html`
+                        <igc-icon
+                          name=${this.expanded
+                            ? 'keyboard_arrow_down'
+                            : 'keyboard_arrow_right'}
+                          collection="internal"
+                        >
+                        </igc-icon>
+                      `
+                    : ''}
+                </slot>
+              `}
+        </div>
+        ${this.selection !== IgcTreeSelectionType.None
+          ? html`
+              <div part="select">
+                <igc-checkbox
+                  @click=${this.selectorClick}
+                  .checked=${this.selected}
+                  .indeterminate=${this.indeterminate}
+                  .disabled=${this.disabled}
+                  tabindex="-1"
+                >
+                </igc-checkbox>
+              </div>
+            `
+          : ''}
         <div part="label">
-          <slot name="label" @slotchange=${this.labelChange} @focusin=${
-      this.onFocusIn
-    } @focusout=${this.onFocusOut}>
-            <span part='text'>${this.label}</span>
+          <slot
+            name="label"
+            @slotchange=${this.labelChange}
+            @focusin=${this.onFocusIn}
+            @focusout=${this.onFocusOut}
+          >
+            <span part="text">${this.label}</span>
           </slot>
         </div>
       </div>

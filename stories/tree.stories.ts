@@ -17,9 +17,9 @@ const metadata = {
       defaultValue: false,
     },
     selection: {
-      type: '"none" | "multiple" | "cascade"',
+      type: '"multiple" | "none" | "cascade"',
       description: 'The selection state of the tree.',
-      options: ['none', 'multiple', 'cascade'],
+      options: ['multiple', 'none', 'cascade'],
       control: {
         type: 'inline-radio',
       },
@@ -39,7 +39,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   singleBranchExpand: boolean;
-  selection: 'none' | 'multiple' | 'cascade';
+  selection: 'multiple' | 'none' | 'cascade';
   size: 'small' | 'medium' | 'large';
 }
 // endregion

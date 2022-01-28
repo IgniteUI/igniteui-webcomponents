@@ -86,7 +86,7 @@ export default class IgcTreeComponent extends SizableMixin(
     this.navService = new IgcTreeNavigationService(this, this.selectionService);
   }
 
-  public connectedCallback(): void {
+  public override connectedCallback(): void {
     super.connectedCallback();
     this.classList.add('igc-tree');
     this.addEventListener('keydown', this.handleKeydown);
@@ -150,7 +150,7 @@ export default class IgcTreeComponent extends SizableMixin(
     items.forEach((item) => (item.expanded = false));
   }
 
-  protected render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }
