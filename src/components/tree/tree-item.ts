@@ -35,6 +35,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   public static styles = styles;
 
   private tabbableEl!: NodeListOf<HTMLElement>;
+  private focusedProgrammatically = false;
 
   /** A reference to the tree the item is a part of. */
   public tree?: IgcTreeComponent;
@@ -103,7 +104,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
    * @type any
    */
   @property({ attribute: false })
-  public value = undefined;
+  public value: any = undefined;
 
   @watch('size')
   public sizeMultiplier(): number {
@@ -114,6 +115,18 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
         return 1 / 2;
       default:
         return 1;
+    }
+  }
+
+  @watch('expanded', { waitUntilFirstUpdate: true })
+  @watch('hasChildren', { waitUntilFirstUpdate: true })
+  protected bothChange(): void {
+    if (this.hasChildren) {
+      this.setAttribute('aria-expanded', this.expanded.toString());
+    } else {
+      this.removeAttribute('aria-expanded');
+
+      // this.expanded = false; and check for loadOnDemand
     }
   }
 
@@ -283,6 +296,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
       this.tabbableEl.forEach((element: HTMLElement) => {
         element.tabIndex = 0;
       });
+      this.focusedProgrammatically = true;
       this.tabbableEl[0].focus();
       return;
     }
@@ -296,41 +310,43 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   private onFocusIn(ev: Event): void {
     ev?.stopPropagation();
     if (!this.disabled) {
-      this.removeAttribute('tabIndex');
-      if (this.navService?.focusedItem !== this) {
-        this.navService?.focusItem(this, false);
+      // clicking directly over tabbable element when the item is not focused
+      if (!this.focusedProgrammatically) {
+        this.tabbableEl.forEach((element: HTMLElement) => {
+          element.tabIndex = 0;
+        });
       }
+      this.removeAttribute('tabIndex');
       this.isFocused = true;
+      this.focusedProgrammatically = false;
     }
   }
 
   private onFocusOut(ev: Event): void {
     ev?.stopPropagation();
-
     this.isFocused = false;
+    this.tabbableEl.forEach((element: HTMLElement) => {
+      element.tabIndex = -1;
+    });
+
     if (this.navService?.focusedItem === this) {
       // called twice when clicking on already focused item with link (pointerDown handler)
       this.setAttribute('tabindex', '0');
     }
-    this.removeTabIndexFromLabel();
   }
 
   private labelChange(): void {
     this.tabbableEl = this.contentList[0]?.querySelectorAll<HTMLElement>(
       'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])'
     );
-    this.removeTabIndexFromLabel();
-  }
-
-  private removeTabIndexFromLabel() {
-    if (
-      this.tabbableEl &&
-      this.tabbableEl.length &&
-      this.navService?.focusedItem !== this
-    ) {
+    if (this.tabbableEl && this.tabbableEl.length) {
+      this.setAttribute('role', 'none');
       this.tabbableEl.forEach((element: HTMLElement) => {
         element.tabIndex = -1;
+        element.setAttribute('role', 'treeitem');
       });
+    } else {
+      this.setAttribute('role', 'treeitem');
     }
   }
 
@@ -435,15 +451,18 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
           style="width: calc(${this
             .level} * var(--igc-tree-indentation-size) * ${this.sizeMultiplier()})"
           part="indentation"
+          aria-hidden="true"
         >
           <slot name="indentation"></slot>
         </div>
-        <div part="indicator">
+        <div part="indicator" aria-hidden="true">
           ${this.loading
             ? html`
                 <slot name="loading">
-                  <igc-icon name="navigate_before" collection="internal">
-                  </igc-icon>
+                  <igc-icon
+                    name="navigate_before"
+                    collection="internal"
+                  ></igc-icon>
                 </slot>
               `
             : html`
@@ -464,7 +483,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
         </div>
         ${this.selection !== IgcTreeSelectionType.None
           ? html`
-              <div part="select">
+              <div part="select" aria-hidden="true">
                 <igc-checkbox
                   @click=${this.selectorClick}
                   .checked=${this.selected}
@@ -487,7 +506,9 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
           </slot>
         </div>
       </div>
-      <slot @slotchange=${this.handleChange} ?hidden=${!this.expanded}></slot>
+      <div role="group" aria-hidden="true">
+        <slot @slotchange=${this.handleChange} ?hidden=${!this.expanded}></slot>
+      </div>
     `;
   }
 }

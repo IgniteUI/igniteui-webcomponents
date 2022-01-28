@@ -91,6 +91,7 @@ export default class IgcTreeComponent extends SizableMixin(
 
   public override connectedCallback(): void {
     super.connectedCallback();
+    this.setAttribute('role', 'tree');
     this.classList.add('igc-tree');
     this.addEventListener('keydown', this.handleKeydown);
     // set init to true for all items which are rendered along with the tree
