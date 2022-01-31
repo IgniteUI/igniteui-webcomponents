@@ -15,33 +15,25 @@ export default class IgcToastComponent extends LitElement {
   public static tagName = 'igc-toast';
 
   /** @private */
-  public static styles = [styles];
+  public static styles = styles;
 
   private displayTimeout: any;
 
   /** Determines whether the toast is opened. */
-  @property({ reflect: true })
-  public open!: boolean;
+  @property({ type: Boolean, reflect: true })
+  public open = false;
 
   /** Determines the time after which the toast will close */
-  @property({ reflect: false })
-  public displayTime!: number;
+  @property({ type: Number, reflect: false })
+  public displayTime = 4000;
 
   /** Determines whether the toast is closed automatically or not. */
-  @property({ reflect: true })
-  public keepOpen!: boolean;
+  @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
+  public keepOpen = false;
 
   /** The text of the toast. */
-  @property()
-  public message!: string;
-
-  constructor() {
-    super();
-    this.open = false;
-    this.displayTime = 4000;
-    this.keepOpen = false;
-    this.message = 'Toast message';
-  }
+  @property({ type: String })
+  public message = 'Toast message';
 
   /** Closes the toast. */
   public hide() {
@@ -58,11 +50,11 @@ export default class IgcToastComponent extends LitElement {
       this.open = true;
     }
 
-    // if (!this.keepOpen) {
-    this.displayTimeout = setTimeout(() => {
-      this.open = false;
-    }, this.displayTime);
-    // }
+    if (this.keepOpen === false) {
+      this.displayTimeout = setTimeout(() => {
+        this.open = false;
+      }, this.displayTime);
+    }
   }
 
   /** Toggles the open state of the toast. */

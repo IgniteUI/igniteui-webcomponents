@@ -70,9 +70,9 @@ const Template: Story<ArgTypes, Context> = ({
   <igc-button @click=${handleHide}>Hide Toast</igc-button>
   <igc-button @click=${handleToggle}>Toggle Toast</igc-button>
   <igc-toast
-    open="${ifDefined(open)}"
+    .open=${open}
     displayTime=${ifDefined(displayTime)}
-    keepOpen=${ifDefined(keepOpen)}
+    ?keep-open=${keepOpen}
     message=${ifDefined(message)}
   >
   </igc-toast>
