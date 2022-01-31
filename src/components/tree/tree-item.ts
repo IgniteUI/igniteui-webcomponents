@@ -103,7 +103,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
    * The value entry that the tree item is visualizing. Required for searching through items.
    * @type any
    */
-  @property({ attribute: false })
+  @property({ attribute: true })
   public value: any = undefined;
 
   @watch('size')
