@@ -1,5 +1,10 @@
 import { html, LitElement, nothing } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { watch } from '../common/decorators/watch';
@@ -35,6 +40,9 @@ export default class IgcRatingComponent extends SizableMixin(
   @query('[part="base"]', true)
   protected container!: HTMLElement;
 
+  @queryAssignedElements({ selector: 'template' })
+  protected template!: Array<HTMLTemplateElement>;
+
   @state()
   protected hoverValue = -1;
 
@@ -49,6 +57,12 @@ export default class IgcRatingComponent extends SizableMixin(
     return (
       window.getComputedStyle(this).getPropertyValue('direction') === 'ltr'
     );
+  }
+
+  protected get valueText() {
+    return this.valueFormat
+      ? this.valueFormat.replace(/\{0\}/gm, `${this.value}`)
+      : this.value;
   }
 
   /** The maximum value for the rating */
@@ -79,12 +93,12 @@ export default class IgcRatingComponent extends SizableMixin(
   public label!: string;
 
   /**
-   * A callback function which gets the value for the position
-   * and returns a user-friendly representation of the value setting it as aria-valuetext.
+   * A format string which sets aria-valuetext. All instances of '{0}' will be replaced
+   * with the current value of the control.
    * Important for screen-readers and useful for localization.
    */
-  @property({ attribute: false })
-  public valueFormatter!: (value: number) => string;
+  @property({ attribute: 'value-format' })
+  public valueFormat!: string;
 
   /** The current value of the component */
   @property({ type: Number })
@@ -195,6 +209,10 @@ export default class IgcRatingComponent extends SizableMixin(
     }
   }
 
+  protected handleSlotChange() {
+    this.requestUpdate();
+  }
+
   protected calcNewValue(x: number) {
     const { width, left, right } = this.container.getBoundingClientRect();
     const percent = this.isLTR ? (x - left) / width : (right - x) / width;
@@ -230,38 +248,33 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected renderSymbol(index: number) {
-    return this.symbolFormatter ? this.symbolFormatter(index) : this.symbol;
+    return this.symbolFormatter
+      ? this.symbolFormatter(index)
+      : this.template.length
+      ? this.template[0].content.cloneNode(true)
+      : this.symbol;
   }
 
   protected *renderSymbols() {
     for (let i = 0; i < this.max; i++) {
       yield html`
-        <span part="symbol ${this.size}"> ${this.renderSymbol(i)} </span>
+        <span part="symbol ${this.size}">${this.renderSymbol(i)}</span>
       `;
     }
   }
 
   protected renderFractionWrapper(styles: { width: string }) {
-    return this.hoverPreview
-      ? html` <div
-          @click=${this.handleClick}
-          @mouseenter=${this.handleMouseEnter}
-          @mouseleave=${this.handleMouseLeave}
-          @mousemove=${this.handleMouseMove}
-        >
-          <div style=${styleMap(styles)} part="fraction ${this.size}">
-            <div part="symbols-wrapper fraction">${this.renderSymbols()}</div>
-          </div>
-          <div part="symbols-wrapper">${this.renderSymbols()}</div>
-        </div>`
-      : html`
-          <div @click=${this.handleClick}>
-            <div style=${styleMap(styles)} part="fraction ${this.size}">
-              <div part="symbols-wrapper fraction">${this.renderSymbols()}</div>
-            </div>
-            <div part="symbols-wrapper">${this.renderSymbols()}</div>
-          </div>
-        `;
+    return html`<div
+      @click=${this.handleClick}
+      @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
+      @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
+      @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
+    >
+      <div style=${styleMap(styles)} part="fraction ${this.size}">
+        <div part="symbols-wrapper fraction">${this.renderSymbols()}</div>
+      </div>
+      <div part="symbols-wrapper">${this.renderSymbols()}</div>
+    </div>`;
   }
 
   protected override render() {
@@ -270,7 +283,7 @@ export default class IgcRatingComponent extends SizableMixin(
 
     return html`
       <div part="rating">
-        <label part="label ${this.size}" for="">${this.label}</label>
+        <label part="label ${this.size}">${this.label}</label>
         <div
           part="base"
           role="slider"
@@ -279,12 +292,11 @@ export default class IgcRatingComponent extends SizableMixin(
           aria-valuemin="0"
           aria-valuenow=${this.value}
           aria-valuemax=${this.max}
-          aria-valuetext=${this.valueFormatter
-            ? this.valueFormatter(value)
-            : this.value}
+          aria-valuetext=${this.valueText}
         >
           ${this.renderFractionWrapper(styles)}
         </div>
+        <slot @slotchange=${this.handleSlotChange}></slot>
       </div>
     `;
   }

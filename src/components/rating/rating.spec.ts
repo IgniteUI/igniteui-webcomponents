@@ -123,10 +123,8 @@ describe('Rating component', () => {
       expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal('7');
     });
 
-    it('correctly reflects ARIA labels callbacks', async () => {
-      const valueText = (val: number) => `You have selected ${val}`;
-
-      el.valueFormatter = valueText;
+    it('correctly reflects value-format', async () => {
+      el.valueFormat = 'You have selected {0}';
       el.max = 9;
       el.value = 6;
 
@@ -134,6 +132,28 @@ describe('Rating component', () => {
 
       expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
         'You have selected 6'
+      );
+    });
+
+    it('correctly renders symbols passed through the symbol callback', async () => {
+      el.symbolFormatter = (_: number) => '🐝';
+
+      await elementUpdated(el);
+
+      getRatingSymbols(el).forEach((symbol) =>
+        expect(symbol.textContent).to.eq('🐝')
+      );
+    });
+
+    it('correctly renders symbols passed through a template', async () => {
+      const template = document.createElement('template');
+      template.innerHTML = '🐝';
+      el.appendChild(template);
+
+      await elementUpdated(el);
+
+      getRatingSymbols(el).forEach((symbol) =>
+        expect(symbol.textContent).to.eq('🐝')
       );
     });
 

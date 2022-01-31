@@ -16,6 +16,10 @@ $disabled-selected-color: color(gray, 600) !default;
     font-family: var(--igc-font-family);
 }
 
+slot {
+    display: none;
+}
+
 [part='rating'] {
     display: flex;
     align-items: flex-start;

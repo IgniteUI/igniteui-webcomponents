@@ -35,6 +35,12 @@ const metadata = {
       description: 'The label of the control.',
       control: 'text',
     },
+    valueFormat: {
+      type: 'string',
+      description:
+        "A format string which sets aria-valuetext. All instances of '{0}' will be replaced\nwith the current value of the control.\nImportant for screen-readers and useful for localization.",
+      control: 'text',
+    },
     value: {
       type: 'number',
       description: 'The current value of the component',
@@ -77,6 +83,7 @@ interface ArgTypes {
   symbol: string;
   name: string;
   label: string;
+  valueFormat: string;
   value: number;
   disabled: boolean;
   hoverPreview: boolean;
@@ -107,10 +114,6 @@ const Template: Story<ArgTypes, Context> = (
 ) => {
   const customSymbols = (index: number) => {
     return ['😣', '😔', '😐', '🙂', '😆'][index];
-  };
-
-  const customIcons = (_: number) => {
-    return html`<igc-icon name="diamond-circled"></igc-icon>`;
   };
 
   const hoverHandler = (e: CustomEvent) => {
@@ -171,10 +174,14 @@ const Template: Story<ArgTypes, Context> = (
         ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
         .step=${Number(step)}
-        .symbolFormatter=${customIcons}
         .value=${value}
         .max=${max}
+        valueFormat="Custom icon {0} selected. That is {0}."
       >
+        <template>
+          <igc-icon name="diamond-circled"></igc-icon>
+        </template>
+        Am I here also
       </igc-rating>
     </div>
   `;
