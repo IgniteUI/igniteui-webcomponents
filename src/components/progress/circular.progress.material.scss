@@ -1,0 +1,62 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+.igx-circular-bar {
+  display: inline-flex;
+  flex: 1 1 auto;
+  width: 2rem;
+  height: 2rem;
+}
+
+.igx-circular-bar--indeterminate {
+  transform-origin: 50% 50%;
+  animation-duration: 3s;
+  animation-timing-function: linear;
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: none;
+  animation-play-state: running;
+  animation-name: rotate-center;
+}
+
+.igx-circular-bar svg {
+  width: 100%;
+  height: 100%;
+  min-width: inherit;
+  min-height: inherit;
+}
+
+.igx-circular-bar__inner {
+  stroke-width: 0.25rem;
+  fill: transparent;
+  stroke: blue;
+}
+
+.igx-circular-bar__outer {
+  fill: transparent;
+  stroke-width: 0.25rem;
+  stroke-dashoffset: 289;
+  transform-origin: 50% 50%;
+  transform: rotate(-90deg);
+}
+
+.igx-circular-bar__gradient-start {
+  stop-color: blue;
+}
+
+.igx-circular-bar__gradient-end {
+  stop-color: blueviolet;
+}
+
+.igx-circular-bar--indeterminate .igx-circular-bar__outer {
+  stroke-dasharray: 289;
+  animation-duration: 1.5s;
+  animation-timing-function: cubic-bezier(0, 0.085, 0.68, 0.53);
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: none;
+  animation-play-state: running;
+  animation-name: indeterminate-accordion;
+}
