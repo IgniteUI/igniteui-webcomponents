@@ -290,6 +290,14 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
     if (this.disabled) {
       return;
     }
+    if (this.navService?.focusedItem !== this) {
+      this.navService?.focusItem(this, false);
+      this.wrapper?.scrollIntoView({
+        behavior: 'auto',
+        block: 'nearest',
+        inline: 'nearest',
+      });
+    }
     if (this.tabbableEl && this.tabbableEl.length) {
       // set tabIndex = 0 to all tabbable elements
       // focus the first one
