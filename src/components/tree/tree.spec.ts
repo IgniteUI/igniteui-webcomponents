@@ -1,34 +1,19 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect } from '@open-wc/testing';
 import { _$LE } from 'lit';
 import sinon from 'sinon';
 import { defineComponents, IgcCheckboxComponent } from '../..';
 import IgcTreeComponent from './tree';
 import IgcTreeItemComponent from './tree-item';
-
-const DIFF_OPTIONS = {
-  ignoreAttributes: ['id', 'part', 'tabindex', 'role', 'size'],
-};
-
-const SLOTS = {
-  indentation: 'slot[name="indentation"',
-  indicator: 'slot[name="indicator"',
-  label: 'slot[name="label"]',
-  loading: 'slot[name="loading"]',
-};
-
-const PARTS = {
-  indentation: 'div[part="indentation"]',
-  indicator: 'div[part="indicator"',
-  select: 'div[part="select"]',
-  label: 'div[part="label"]',
-  spacer: 'span[part="spacer"]',
-};
+import {
+  activeItemsTree,
+  DIFF_OPTIONS,
+  expandCollapseTree,
+  PARTS,
+  simpleHierarchyTree,
+  simpleTree,
+  SLOTS,
+  TreeTestFunctions,
+} from './tree-utils.spec';
 
 describe('Tree', () => {
   before(() => {
@@ -39,11 +24,11 @@ describe('Tree', () => {
 
   describe('Basic', async () => {
     beforeEach(async () => {
-      tree = await createTreeElement();
+      tree = await TreeTestFunctions.createTreeElement();
     });
 
     it('Should render tree with items', async () => {
-      tree = await createTreeElement(simpleHierarchyTree);
+      tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
       //tree.items should return all tree items
       expect(tree.items.length).to.equal(14);
@@ -53,12 +38,10 @@ describe('Tree', () => {
 
       // Verify tree item slots are rendered successfully and elements are correctly displayed.
       tree.items.forEach((item) => {
-        const indentationSlot = item.shadowRoot?.querySelector(
-          SLOTS.indentation
+        const indentationPart = item.shadowRoot?.querySelector(
+          PARTS.indentation
         );
-        expect(indentationSlot).not.to.be.null;
-        const spacers = indentationSlot?.querySelectorAll(PARTS.spacer);
-        expect(spacers?.length).to.equal(item.level);
+        expect(indentationPart).not.to.be.null;
 
         const indicatorSlot = item.shadowRoot?.querySelector(SLOTS.indicator);
         expect(indicatorSlot).not.to.be.null;
@@ -78,7 +61,7 @@ describe('Tree', () => {
     });
 
     it('Should support multiple levels of nesting', async () => {
-      tree = await createTreeElement(simpleHierarchyTree);
+      tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
       const treeItem1 = tree.items[0];
       const treeItem1Chidlren = treeItem1.getChildren();
@@ -91,7 +74,7 @@ describe('Tree', () => {
     });
 
     it("Should calculate items' path and level correctly, depending on data hierarchy", async () => {
-      tree = await createTreeElement(simpleHierarchyTree);
+      tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       expect(topLevelItems.length).to.equal(2);
@@ -162,7 +145,7 @@ describe('Tree', () => {
     });
 
     it("Should be able to set tree item's value and label properties successfully", async () => {
-      tree = await createTreeElement(simpleTree);
+      tree = await TreeTestFunctions.createTreeElement(simpleTree);
 
       expect(tree.items[0].label).to.equal('Tree Node 1');
       expect(tree.items[0].value).to.equal('val1');
@@ -176,7 +159,7 @@ describe('Tree', () => {
     });
 
     it("Should not render collapsed item's children", async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
 
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       expect(topLevelItems[0].expanded).to.be.false; // collapsed by default
@@ -192,17 +175,17 @@ describe('Tree', () => {
     });
 
     it('Should not render expand indicator if an item has no children', async () => {
-      tree = await createTreeElement(simpleTree);
+      tree = await TreeTestFunctions.createTreeElement(simpleTree);
 
       tree.items.forEach((item) => {
-        const indSlot = getSlot(item, SLOTS.indicator);
+        const indSlot = TreeTestFunctions.getSlot(item, SLOTS.indicator);
         expect(indSlot).to.exist;
         expect(indSlot).shadowDom.not.to.have.descendant('igc-icon');
       });
     });
 
     it("Should not render default select indicator if selection mode is 'None'", async () => {
-      tree = await createTreeElement(simpleTree);
+      tree = await TreeTestFunctions.createTreeElement(simpleTree);
       expect(tree.selection).to.equal('none'); // by default
 
       tree.items.forEach((item) => {
@@ -216,7 +199,7 @@ describe('Tree', () => {
       tree.items.forEach((item) => {
         const selectionPart = item.shadowRoot!.querySelector(PARTS.select);
         expect(selectionPart).dom.to.equal(
-          `<div part="select">
+          `<div part="select" aria-hidden="true">
               <igc-checkbox></igc-checkbox>
           </div>`,
           DIFF_OPTIONS
@@ -225,22 +208,34 @@ describe('Tree', () => {
     });
 
     it('Should render default indicator for expansion properly depending on item state', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
 
-      const item1IndSlot = getSlot(topLevelItems[0], SLOTS.indicator);
+      const item1IndSlot = TreeTestFunctions.getSlot(
+        topLevelItems[0],
+        SLOTS.indicator
+      );
       expect(item1IndSlot).to.exist;
       expect(topLevelItems[0].expanded).to.be.false;
-      verifyIndicatorIcon(item1IndSlot, topLevelItems[0].expanded);
+      TreeTestFunctions.verifyIndicatorIcon(
+        item1IndSlot,
+        topLevelItems[0].expanded
+      );
 
-      const item2IndSlot = getSlot(topLevelItems[1], SLOTS.indicator);
+      const item2IndSlot = TreeTestFunctions.getSlot(
+        topLevelItems[1],
+        SLOTS.indicator
+      );
       expect(item2IndSlot).to.exist;
       expect(topLevelItems[1].expanded).to.be.true;
-      verifyIndicatorIcon(item2IndSlot, topLevelItems[1].expanded);
+      TreeTestFunctions.verifyIndicatorIcon(
+        item2IndSlot,
+        topLevelItems[1].expanded
+      );
     });
 
     it('Should render default select marker properly depending on item state', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
 
       tree.selection = 'multiple';
       await elementUpdated(tree);
@@ -278,11 +273,14 @@ describe('Tree', () => {
     });
 
     it('Should accept custom slot for the tree item expansion indicator', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
 
       const topLevelItems = tree.items.filter((i) => i.level === 0);
 
-      const indSlot1 = getSlot(topLevelItems[0], SLOTS.indicator);
+      const indSlot1 = TreeTestFunctions.getSlot(
+        topLevelItems[0],
+        SLOTS.indicator
+      );
 
       const els = indSlot1.assignedElements();
       expect(els.length).to.equal(1);
@@ -291,16 +289,22 @@ describe('Tree', () => {
       expect(els[0]).to.have.attribute('slot', 'indicator');
 
       // verify the default indicator is displayed for other top item
-      const indSlot2 = getSlot(topLevelItems[1], SLOTS.indicator);
-      verifyIndicatorIcon(indSlot2, topLevelItems[1].expanded);
+      const indSlot2 = TreeTestFunctions.getSlot(
+        topLevelItems[1],
+        SLOTS.indicator
+      );
+      TreeTestFunctions.verifyIndicatorIcon(
+        indSlot2,
+        topLevelItems[1].expanded
+      );
       expect(indSlot2.assignedElements().length).to.equal(0);
     });
 
     it('Should accept custom slot for the tree item indentation area', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
 
       const topLevelItems = tree.items.filter((i) => i.level === 0);
-      const indentationSlot11 = getSlot(
+      const indentationSlot11 = TreeTestFunctions.getSlot(
         topLevelItems[0].getChildren()[0],
         SLOTS.indentation
       );
@@ -311,23 +315,23 @@ describe('Tree', () => {
       expect(els[0].textContent).to.equal('-');
       expect(els[0]).to.have.attribute('slot', 'indentation');
 
-      // verify the default indentation span is displayed for other child item
-      const indentationSlot12 = getSlot(
-        topLevelItems[0].getChildren()[1],
-        SLOTS.indentation
-      );
-      expect(indentationSlot12).lightDom.to.equal(
-        `<span part="spacer"></span>`,
+      // verify the default indentation div is displayed for other child item
+      const indentationPart12 = topLevelItems[0]
+        .getChildren()[1]
+        .shadowRoot!.querySelector(PARTS.indentation);
+      expect(indentationPart12).dom.to.equal(
+        `<div part="indentation" aria-hidden="true">
+          <slot name="indentation"></slot>
+        </div>`,
         DIFF_OPTIONS
       );
-      expect(indentationSlot12.assignedElements().length).to.equal(0);
     });
 
     it('Should accept custom slot for the tree item label', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
 
       const item11 = tree.items[0].getChildren()[0];
-      const labelSlot11 = getSlot(item11, SLOTS.label);
+      const labelSlot11 = TreeTestFunctions.getSlot(item11, SLOTS.label);
 
       const els = labelSlot11.assignedElements();
       expect(els.length).to.equal(1);
@@ -339,12 +343,12 @@ describe('Tree', () => {
     });
 
     it('Should accept custom slot for the tree item loading indicator', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
 
       const item21 = topLevelItems[1].getChildren()[0];
-      let loadingSlot21 = getSlot(item21, SLOTS.loading);
-      let indSlot21 = getSlot(item21, SLOTS.indicator);
+      let loadingSlot21 = TreeTestFunctions.getSlot(item21, SLOTS.loading);
+      let indSlot21 = TreeTestFunctions.getSlot(item21, SLOTS.indicator);
       expect(indSlot21).not.to.be.null;
       expect(loadingSlot21).to.be.null;
       expect(item21.loading).to.be.false;
@@ -352,7 +356,7 @@ describe('Tree', () => {
       item21.loading = true;
       await elementUpdated(tree);
 
-      loadingSlot21 = getSlot(item21, SLOTS.loading);
+      loadingSlot21 = TreeTestFunctions.getSlot(item21, SLOTS.loading);
       expect(item21.loading).to.be.true;
 
       const els = loadingSlot21.assignedElements();
@@ -364,12 +368,12 @@ describe('Tree', () => {
       expect(item21).dom.not.to.have.descendants('igc-icon');
 
       //don't display indicator slot when item is loading
-      indSlot21 = getSlot(item21, SLOTS.indicator);
+      indSlot21 = TreeTestFunctions.getSlot(item21, SLOTS.indicator);
       expect(indSlot21).to.be.null;
     });
 
     it('Should emit igcActiveItem event when the active item changes', async () => {
-      tree = await createTreeElement(simpleHierarchyTree);
+      tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
       const eventSpy = sinon.spy(tree, 'emitEvent');
       await elementUpdated(tree);
@@ -404,10 +408,9 @@ describe('Tree', () => {
     });
 
     it('Should activate the last tree item set as active if there are multiple', async () => {
-      tree = await createTreeElement(activeItemsTree);
+      tree = await TreeTestFunctions.createTreeElement(activeItemsTree);
 
       tree.items.forEach(async (item) => {
-        //expect(item.wrapper).not.to.be.null;
         if (item.label === 'Tree Node 2.1') {
           await expect(item.active).to.be.true;
           await expect(tree.navService.activeItem).to.equal(item);
@@ -419,7 +422,7 @@ describe('Tree', () => {
     });
 
     it('When an item is added/deleted the visible tree items collection should be calculated properly', async () => {
-      tree = await createTreeElement(simpleTree);
+      tree = await TreeTestFunctions.createTreeElement(simpleTree);
 
       expect(tree.items.length).to.equal(3);
 
@@ -454,11 +457,11 @@ describe('Tree', () => {
 
   describe('Expand/Collapse', async () => {
     beforeEach(async () => {
-      tree = await createTreeElement();
+      tree = await TreeTestFunctions.createTreeElement();
     });
 
     it('Should expand all collapsed (including the disabled) items w/ tree.expand()', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
       tree.expand();
@@ -471,7 +474,7 @@ describe('Tree', () => {
     });
 
     it('Should expand only specified items w/ tree.expand(item: IgcTreeItemComponent[])', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const eventSpy = sinon.spy(tree, 'emitEvent');
       const items = [tree.items[0], ...tree.items[0].getChildren()];
 
@@ -485,7 +488,7 @@ describe('Tree', () => {
     });
 
     it('Should collapse all expanded (including the disabled) items w/ tree.collapse()', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
       tree.collapse();
@@ -498,7 +501,7 @@ describe('Tree', () => {
     });
 
     it('Should collapse only specified items w/ tree.collapse(item: IgcTreeItemComponent[])', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       const items = [topLevelItems[1], topLevelItems[1].getChildren()[0]];
       const eventSpy = sinon.spy(tree, 'emitEvent');
@@ -513,7 +516,7 @@ describe('Tree', () => {
     });
 
     it('Should collapse items when user interacts w/ indicator and item.expanded === false', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
 
       expect(topLevelItems[1].expanded).to.be.true;
@@ -522,12 +525,15 @@ describe('Tree', () => {
 
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
-      const item2IndSlot = getSlot(topLevelItems[1], SLOTS.indicator);
+      const item2IndSlot = TreeTestFunctions.getSlot(
+        topLevelItems[1],
+        SLOTS.indicator
+      );
 
       item2IndSlot?.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[1], false);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
 
       // Should emit ing and ed events when item state is toggled through UI
       const collapsingArgs = {
@@ -547,19 +553,22 @@ describe('Tree', () => {
 
       eventSpy.resetHistory();
 
-      const item21IndSlot = getSlot(childItem21, SLOTS.indicator);
+      const item21IndSlot = TreeTestFunctions.getSlot(
+        childItem21,
+        SLOTS.indicator
+      );
 
       item21IndSlot?.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
       // Should not collapse disabled item
       expect(childItem21.disabled).to.be.true;
-      verifyExpansionState(childItem21, true);
+      TreeTestFunctions.verifyExpansionState(childItem21, true);
       expect(eventSpy.notCalled).to.be.true;
     });
 
     it('Should expand items when user interacts w/ indicator and item.expanded === true', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       expect(topLevelItems[0].expanded).to.be.false;
       const childItem11 = topLevelItems[0].getChildren()[0];
@@ -567,12 +576,15 @@ describe('Tree', () => {
 
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
-      const item1IndSlot = getSlot(topLevelItems[0], SLOTS.indicator);
+      const item1IndSlot = TreeTestFunctions.getSlot(
+        topLevelItems[0],
+        SLOTS.indicator
+      );
 
       item1IndSlot?.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[0], true);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
 
       // Should emit ing and ed events when item state is toggled through UI
       const expandingArgs = {
@@ -589,19 +601,22 @@ describe('Tree', () => {
 
       eventSpy.resetHistory();
 
-      const item11IndSlot = getSlot(childItem11, SLOTS.indicator);
+      const item11IndSlot = TreeTestFunctions.getSlot(
+        childItem11,
+        SLOTS.indicator
+      );
 
       item11IndSlot?.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
       // Should not expand disabled item
       expect(childItem11.disabled).to.be.true;
-      verifyExpansionState(childItem11, false);
+      TreeTestFunctions.verifyExpansionState(childItem11, false);
       expect(eventSpy.notCalled).to.be.true;
     });
 
     it('Should collapse items when item.expanded is set to false', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
@@ -610,13 +625,13 @@ describe('Tree', () => {
       topLevelItems[1].expanded = false;
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[1], false);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
       // Should not emit event when collapsed through API
       expect(eventSpy.notCalled).to.be.true;
     });
 
     it('Should expand items when item.expanded is set to true', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
@@ -625,13 +640,13 @@ describe('Tree', () => {
       topLevelItems[0].expanded = true;
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[0], true);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
       // Should not emit event when collapsed through API
       expect(eventSpy.notCalled).to.be.true;
     });
 
     it('Should expand items when item.expand() is called', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
@@ -640,13 +655,13 @@ describe('Tree', () => {
       topLevelItems[0].expand();
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[0], true);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
       // Should not emit event when collapsed through API
       expect(eventSpy.notCalled).to.be.true;
     });
 
     it('Should collapse items when item.collapse() is called', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
@@ -655,13 +670,13 @@ describe('Tree', () => {
       topLevelItems[1].collapse();
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[1], false);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
       // Should not emit event when collapsed through API
       expect(eventSpy.notCalled).to.be.true;
     });
 
     it('Should toggle item state when item.toggle() is called', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
@@ -670,25 +685,28 @@ describe('Tree', () => {
       topLevelItems[1].toggle();
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[1], false);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
       // Should not emit event when collapsed through API
       expect(eventSpy.notCalled).to.be.true;
 
       topLevelItems[1].toggle();
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[1], true);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[1], true);
       // Should not emit event when collapsed through API
       expect(eventSpy.notCalled).to.be.true;
     });
 
     it('Should be able to prevent the expansion/collapsing through the ing events.', async () => {
-      tree = await createTreeElement(expandCollapseTree);
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
 
       const eventSpy = sinon.spy(tree, 'emitEvent');
 
-      const item1IndSlot = getSlot(topLevelItems[0], SLOTS.indicator);
+      const item1IndSlot = TreeTestFunctions.getSlot(
+        topLevelItems[0],
+        SLOTS.indicator
+      );
 
       tree.addEventListener('igcItemExpanding', (ev) => {
         ev.preventDefault();
@@ -697,7 +715,7 @@ describe('Tree', () => {
       item1IndSlot?.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[0], false);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
 
       const expandingArgs = {
         detail: {
@@ -709,7 +727,10 @@ describe('Tree', () => {
       expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs);
       eventSpy.resetHistory();
 
-      const item2IndSlot = getSlot(topLevelItems[1], SLOTS.indicator);
+      const item2IndSlot = TreeTestFunctions.getSlot(
+        topLevelItems[1],
+        SLOTS.indicator
+      );
 
       tree.addEventListener('igcItemCollapsing', (ev) => {
         ev.preventDefault();
@@ -718,7 +739,7 @@ describe('Tree', () => {
       item2IndSlot?.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
-      verifyExpansionState(topLevelItems[1], true);
+      TreeTestFunctions.verifyExpansionState(topLevelItems[1], true);
 
       const collapsingArgs = {
         detail: {
@@ -735,52 +756,64 @@ describe('Tree', () => {
 
     describe('singleBranchExpand', async () => {
       beforeEach(async () => {
-        tree = await createTreeElement();
+        tree = await TreeTestFunctions.createTreeElement();
       });
 
       it('If singleBranchExpand === true, should support only one expanded tree item per level.', async () => {
-        tree = await createTreeElement(simpleHierarchyTree);
+        tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
         tree.singleBranchExpand = true;
         await elementUpdated(tree);
 
         //Level 0
         const topLevelItems = tree.items.filter((i) => i.level === 0);
-        const item1IndSlot = getSlot(topLevelItems[0], SLOTS.indicator);
-        const item2IndSlot = getSlot(topLevelItems[1], SLOTS.indicator);
+        const item1IndSlot = TreeTestFunctions.getSlot(
+          topLevelItems[0],
+          SLOTS.indicator
+        );
+        const item2IndSlot = TreeTestFunctions.getSlot(
+          topLevelItems[1],
+          SLOTS.indicator
+        );
 
         item1IndSlot?.dispatchEvent(new MouseEvent('click'));
         await elementUpdated(tree);
 
-        verifyExpansionState(topLevelItems[0], true);
-        verifyExpansionState(topLevelItems[1], false);
+        TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
+        TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
 
         item2IndSlot?.dispatchEvent(new MouseEvent('click'));
         await elementUpdated(tree);
 
-        verifyExpansionState(topLevelItems[0], false);
-        verifyExpansionState(topLevelItems[1], true);
+        TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
+        TreeTestFunctions.verifyExpansionState(topLevelItems[1], true);
 
         // Level 1
         const item2Children = topLevelItems[1].getChildren();
         // topLevelItems[1] is currenlty expanded
-        const item21IndSlot = getSlot(item2Children[0], SLOTS.indicator);
-        const item22IndSlot = getSlot(item2Children[1], SLOTS.indicator);
+        const item21IndSlot = TreeTestFunctions.getSlot(
+          item2Children[0],
+          SLOTS.indicator
+        );
+        const item22IndSlot = TreeTestFunctions.getSlot(
+          item2Children[1],
+          SLOTS.indicator
+        );
 
         item21IndSlot?.dispatchEvent(new MouseEvent('click'));
         await elementUpdated(tree);
 
-        verifyExpansionState(item2Children[0], true);
-        verifyExpansionState(item2Children[1], false);
+        TreeTestFunctions.verifyExpansionState(item2Children[0], true);
+        TreeTestFunctions.verifyExpansionState(item2Children[1], false);
 
         item22IndSlot?.dispatchEvent(new MouseEvent('click'));
         await elementUpdated(tree);
 
-        verifyExpansionState(item2Children[0], false);
-        verifyExpansionState(item2Children[1], true);
+        TreeTestFunctions.verifyExpansionState(item2Children[0], false);
+        TreeTestFunctions.verifyExpansionState(item2Children[1], true);
       });
 
       it('If singleBranchExpand === true and item.active is set to true, should expand all item to the active one and collapse the other branches.', async () => {
-        tree = await createTreeElement(simpleHierarchyTree);
+        tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
         tree.expand();
         await elementUpdated(tree);
@@ -810,37 +843,43 @@ describe('Tree', () => {
       });
 
       it('If singleBranchExpand === true and the item is expanded through API, should not collapse the currently expanded items.', async () => {
-        tree = await createTreeElement(simpleHierarchyTree);
+        tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
         tree.singleBranchExpand = true;
         await elementUpdated(tree);
 
         //Level 0
         const topLevelItems = tree.items.filter((i) => i.level === 0);
-        const item2IndSlot = getSlot(topLevelItems[1], SLOTS.indicator);
+        const item2IndSlot = TreeTestFunctions.getSlot(
+          topLevelItems[1],
+          SLOTS.indicator
+        );
 
         item2IndSlot?.dispatchEvent(new MouseEvent('click'));
         await elementUpdated(tree);
 
-        verifyExpansionState(topLevelItems[1], true);
+        TreeTestFunctions.verifyExpansionState(topLevelItems[1], true);
 
         const item2Children = topLevelItems[1].getChildren();
-        const item21IndSlot = getSlot(item2Children[0], SLOTS.indicator);
+        const item21IndSlot = TreeTestFunctions.getSlot(
+          item2Children[0],
+          SLOTS.indicator
+        );
 
         item21IndSlot?.dispatchEvent(new MouseEvent('click'));
         await elementUpdated(tree);
 
-        verifyExpansionState(item2Children[0], true);
-        verifyExpansionState(item2Children[1], false);
+        TreeTestFunctions.verifyExpansionState(item2Children[0], true);
+        TreeTestFunctions.verifyExpansionState(item2Children[1], false);
 
         tree.expand([item2Children[1]]); // expand item22 through API
         await elementUpdated(tree);
 
-        verifyExpansionState(item2Children[0], true); // verify the other item on the same level is still expanded
-        verifyExpansionState(item2Children[1], true);
+        TreeTestFunctions.verifyExpansionState(item2Children[0], true); // verify the other item on the same level is still expanded
+        TreeTestFunctions.verifyExpansionState(item2Children[1], true);
       });
 
       it("When enabling singleBranchExpand and there is an active item, should collapse all tree items except the active item's ancestors.", async () => {
-        tree = await createTreeElement(simpleHierarchyTree);
+        tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
         tree.expand();
         await elementUpdated(tree);
@@ -866,94 +905,3 @@ describe('Tree', () => {
     });
   });
 });
-
-const createTreeElement = (template = '<igc-tree></igc-tree>') => {
-  return fixture<IgcTreeComponent>(html`${unsafeStatic(template)}`);
-};
-
-const simpleTree = `<igc-tree>
-                      <igc-tree-item label="Tree Node 1" value="val1"></igc-tree-item>
-                      <igc-tree-item label="Tree Node 2"></igc-tree-item>
-                      <igc-tree-item label="Tree Node 3"></igc-tree-item>
-                    </igc-tree>`;
-
-const simpleHierarchyTree = `<igc-tree>
-                              <igc-tree-item label="Tree Node 1">
-                                  <igc-tree-item label="Tree Node 1.1">
-                                    <igc-tree-item label="Tree Node 1.1.1"></igc-tree-item>
-                                    <igc-tree-item label="Tree Node 1.1.2"></igc-tree-item>
-                                  </igc-tree-item>
-                                  <igc-tree-item label="Tree Node 1.2">
-                                    <igc-tree-item label="Tree Node 1.2.1"></igc-tree-item>
-                                    <igc-tree-item label="Tree Node 1.2.2"></igc-tree-item>
-                                  </igc-tree-item>
-                                </igc-tree-item>
-                              <igc-tree-item label="Tree Node 2">
-                                  <igc-tree-item label="Tree Node 2.1">
-                                      <igc-tree-item label="Tree Node 2.1.1"></igc-tree-item>
-                                      <igc-tree-item label="Tree Node 2.1.2"></igc-tree-item>
-                                  </igc-tree-item>
-                                  <igc-tree-item label="Tree Node 2.2">
-                                    <igc-tree-item label="Tree Node 2.2.1"></igc-tree-item>
-                                    <igc-tree-item label="Tree Node 2.2.2"></igc-tree-item>
-                                  </igc-tree-item>
-                              </igc-tree-item>
-                          </igc-tree>`;
-
-const expandCollapseTree = `<igc-tree>
-                              <igc-tree-item label="Tree Node 1">
-                                <span slot="indicator">ind</span>
-                                <igc-tree-item label="Tree Node 1.1" disabled>
-                                  <span slot="indentation">-</span>
-                                  <span slot="label">Label via slot</span>
-                                  <igc-tree-item label="Tree Node 1.1.1"></igc-tree-item>
-                                  </igc-tree-item>
-                                  <igc-tree-item label="Tree Node 1.2"></igc-tree-item>
-                                </igc-tree-item>
-                                <igc-tree-item expanded label="Tree Node 2">
-                                  <igc-tree-item label="Tree Node 2.1" expanded disabled>
-                                    <span slot="loading">*</span>
-                                    <igc-tree-item label="Tree Node 2.1.1"></igc-tree-item>
-                                  </igc-tree-item>
-                              </igc-tree-item>
-                            </igc-tree>`;
-
-const activeItemsTree = `<igc-tree>
-                           <igc-tree-item expanded label="Tree Node 1" active>
-                              <igc-tree-item label="Tree Node 1.1" expanded active></igc-tree-item>
-                              <igc-tree-item label="Tree Node 1.2" expanded active></igc-tree-item>
-                            </igc-tree-item>
-                              <igc-tree-item expanded label="Tree Node 2" >
-                                <igc-tree-item label="Tree Node 2.1" expanded active>
-                                <igc-tree-item label="Tree Node 2.1.1"></igc-tree-item>
-                            </igc-tree-item>
-                          </igc-tree-item>
-                        </igc-tree>`;
-
-const verifyExpansionState = (
-  item: IgcTreeItemComponent,
-  expectedState: boolean
-): void => {
-  const indSlot = getSlot(item, SLOTS.indicator);
-  expect(item.expanded).to.equal(expectedState);
-  verifyIndicatorIcon(indSlot, expectedState);
-};
-
-const verifyIndicatorIcon = (
-  slot: HTMLSlotElement,
-  expanded: boolean
-): void => {
-  expect(slot).lightDom.to.equal(
-    `<igc-icon name=${
-      expanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
-    } collection="internal"></igc-icon>`,
-    DIFF_OPTIONS
-  );
-};
-
-const getSlot = (
-  item: IgcTreeItemComponent,
-  selector: string
-): HTMLSlotElement => {
-  return item.shadowRoot!.querySelector(selector) as HTMLSlotElement;
-};

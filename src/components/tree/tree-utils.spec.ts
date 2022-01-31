@@ -1,0 +1,185 @@
+import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
+import IgcTreeComponent from './tree';
+import IgcTreeItemComponent from './tree-item';
+
+export const DIFF_OPTIONS = {
+  ignoreAttributes: ['id', 'part', 'tabindex', 'role', 'size', 'style'],
+};
+
+export const SLOTS = {
+  indentation: 'slot[name="indentation"]',
+  indicator: 'slot[name="indicator"]',
+  label: 'slot[name="label"]',
+  loading: 'slot[name="loading"]',
+};
+
+export const PARTS = {
+  indentation: 'div[part="indentation"]',
+  indicator: 'div[part="indicator"]',
+  select: 'div[part="select"]',
+  label: 'div[part="label"]',
+};
+
+export class TreeTestFunctions {
+  public static createTreeElement = (template = '<igc-tree></igc-tree>') => {
+    return fixture<IgcTreeComponent>(html`${unsafeStatic(template)}`);
+  };
+
+  public static verifyIndicatorIcon = (
+    slot: HTMLSlotElement,
+    expanded: boolean
+  ): void => {
+    expect(slot).lightDom.to.equal(
+      `<igc-icon name=${
+        expanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right'
+      } collection="internal"></igc-icon>`,
+      DIFF_OPTIONS
+    );
+  };
+
+  public static getSlot = (
+    item: IgcTreeItemComponent,
+    selector: string
+  ): HTMLSlotElement => {
+    return item.shadowRoot!.querySelector(selector) as HTMLSlotElement;
+  };
+
+  public static verifyExpansionState = (
+    item: IgcTreeItemComponent,
+    expectedState: boolean
+  ): void => {
+    const indSlot = this.getSlot(item, SLOTS.indicator);
+    expect(item.expanded).to.equal(expectedState);
+    this.verifyIndicatorIcon(indSlot, expectedState);
+  };
+
+  public static verifyItemSelection = (
+    item: IgcTreeItemComponent,
+    selectedState: boolean
+  ): void => {
+    expect(item.selected).to.equal(selectedState);
+    expect(item.tree?.selectionService.isItemSelected(item)).to.equal(
+      selectedState
+    );
+  };
+}
+
+// Templates
+
+export const simpleTree = `<igc-tree>
+                                        <igc-tree-item label="Tree Node 1" value="val1"></igc-tree-item>
+                                        <igc-tree-item label="Tree Node 2"></igc-tree-item>
+                                        <igc-tree-item label="Tree Node 3"></igc-tree-item>
+                                      </igc-tree>`;
+
+export const simpleHierarchyTree = `<igc-tree>
+                                         <igc-tree-item label="Tree Node 1">
+                                           <igc-tree-item label="Tree Node 1.1">
+                                             <igc-tree-item label="Tree Node 1.1.1"></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 1.1.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 1.2">
+                                             <igc-tree-item label="Tree Node 1.2.1"></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 1.2.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item label="Tree Node 2">
+                                           <igc-tree-item label="Tree Node 2.1">
+                                             <igc-tree-item label="Tree Node 2.1.1"></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 2.1.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.2">
+                                             <igc-tree-item label="Tree Node 2.2.1"></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 2.2.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                         </igc-tree-item>
+                                       </igc-tree>`;
+
+export const expandCollapseTree = `<igc-tree>
+                                        <igc-tree-item label="Tree Node 1">
+                                          <span slot="indicator">ind</span>
+                                          <igc-tree-item label="Tree Node 1.1" disabled>
+                                            <span slot="indentation">-</span>
+                                            <span slot="label">Label via slot</span>
+                                            <igc-tree-item label="Tree Node 1.1.1"></igc-tree-item>
+                                          </igc-tree-item>
+                                          <igc-tree-item label="Tree Node 1.2"></igc-tree-item>
+                                        </igc-tree-item>
+                                        <igc-tree-item expanded label="Tree Node 2">
+                                          <igc-tree-item label="Tree Node 2.1" expanded disabled>
+                                            <span slot="loading">*</span>
+                                            <igc-tree-item label="Tree Node 2.1.1"></igc-tree-item>
+                                          </igc-tree-item>
+                                        </igc-tree-item>
+                                      </igc-tree>`;
+
+export const activeItemsTree = `<igc-tree>
+                                         <igc-tree-item expanded label="Tree Node 1" active>
+                                           <igc-tree-item label="Tree Node 1.1" expanded active></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 1.2" expanded active></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item expanded label="Tree Node 2">
+                                           <igc-tree-item label="Tree Node 2.1" expanded active></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                      </igc-tree>`;
+
+export const selectedItemsTree = `<igc-tree selection='multiple'>
+                                         <igc-tree-item expanded label="Tree Node 1" selected>
+                                           <igc-tree-item label="Tree Node 1.1" expanded selected>
+                                            <igc-tree-item label="Tree Node 1.1.1" expanded></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 1.2" expanded></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item expanded label="Tree Node 2" selected>
+                                           <igc-tree-item label="Tree Node 2.1" expanded></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.2"></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.3"></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item expanded label="Tree Node 3">
+                                           <igc-tree-item label="Tree Node 3.1" expanded></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 3.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item expanded label="Tree Node 4">
+                                           <igc-tree-item label="Tree Node 4.1" expanded></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 4.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                      </igc-tree>`;
+
+export const cascadeSelectionTree = `<igc-tree selection='cascade'>
+                                         <igc-tree-item expanded label="Tree Node 1" selected>
+                                           <igc-tree-item label="Tree Node 1.1" expanded>
+                                            <igc-tree-item label="Tree Node 1.1.1" expanded></igc-tree-item>
+                                            <igc-tree-item label="Tree Node 1.1.2" expanded></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 1.2" expanded></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item expanded label="Tree Node 2">
+                                           <igc-tree-item label="Tree Node 2.1" expanded>
+                                            <igc-tree-item label="Tree Node 2.1.1" expanded></igc-tree-item>
+                                            <igc-tree-item label="Tree Node 2.1.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.2"></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.3"></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item expanded label="Tree Node 3">
+                                           <igc-tree-item label="Tree Node 3.1" expanded>
+                                            <igc-tree-item label="Tree Node 3.1.1" expanded selected>
+                                              <igc-tree-item label="Tree Node 3.1.1.1" expanded></igc-tree-item>
+                                              <igc-tree-item label="Tree Node 3.1.1.2" expanded></igc-tree-item>
+                                            </igc-tree-item>
+                                            <igc-tree-item label="Tree Node 3.1.2" expanded></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 3.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item expanded label="Tree Node 4">
+                                           <igc-tree-item label="Tree Node 4.1" expanded>
+                                            <igc-tree-item label="Tree Node 4.1.1" selected expanded></igc-tree-item>
+                                            <igc-tree-item label="Tree Node 4.1.2" expanded></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 4.2">
+                                            <igc-tree-item label="Tree Node 4.2.1" selected expanded></igc-tree-item>
+                                            <igc-tree-item label="Tree Node 4.2.2" expanded></igc-tree-item>
+                                           </igc-tree-item>
+                                         </igc-tree-item>
+                                      </igc-tree>`;
