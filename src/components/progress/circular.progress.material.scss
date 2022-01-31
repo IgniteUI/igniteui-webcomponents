@@ -1,14 +1,14 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-.igx-circular-bar {
+[part~='wrapper'] {
   display: inline-flex;
   flex: 1 1 auto;
   width: 2rem;
   height: 2rem;
 }
 
-.igx-circular-bar--indeterminate {
+[part~='indeterminate'] {
   transform-origin: 50% 50%;
   animation-duration: 3s;
   animation-timing-function: linear;
@@ -20,20 +20,20 @@
   animation-name: rotate-center;
 }
 
-.igx-circular-bar svg {
+[part~='svg'] {
   width: 100%;
   height: 100%;
   min-width: inherit;
   min-height: inherit;
 }
 
-.igx-circular-bar__inner {
+[part~='inner'] {
   stroke-width: 0.25rem;
   fill: transparent;
-  stroke: blue;
+  stroke: #ddd;
 }
 
-.igx-circular-bar__outer {
+[part~='outer'] {
   fill: transparent;
   stroke-width: 0.25rem;
   stroke-dashoffset: 289;
@@ -41,15 +41,15 @@
   transform: rotate(-90deg);
 }
 
-.igx-circular-bar__gradient-start {
-  stop-color: blue;
+[part~='gradient_start'] {
+  stop-color: #09f;
 }
 
-.igx-circular-bar__gradient-end {
-  stop-color: blueviolet;
+[part~='gradient_end'] {
+  stop-color: #09f;
 }
 
-.igx-circular-bar--indeterminate .igx-circular-bar__outer {
+[part~='indeterminate'] [part~='outer'] {
   stroke-dasharray: 289;
   animation-duration: 1.5s;
   animation-timing-function: cubic-bezier(0, 0.085, 0.68, 0.53);
@@ -59,4 +59,25 @@
   animation-fill-mode: none;
   animation-play-state: running;
   animation-name: indeterminate-accordion;
+}
+
+@keyframes indeterminate-accordion {
+  from {
+    stroke-dashoffset: 578;
+    stroke-dasharray: 259;
+  }
+
+  to {
+    stroke-dashoffset: 120;
+  }
+}
+
+@keyframes rotate-center {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }

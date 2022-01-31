@@ -58,14 +58,13 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.classList.add('igx-circular-bar');
     this.triggerProgressTransition(MIN_VALUE, this._initValue);
     this._contentInit = true;
   }
 
   @watch('indeterminate')
   public indeterminateChange(): void {
-    this.classList.toggle('igx-circular-bar--indeterminate');
+    // this.setAttribute('part', 'indeterminate');
   }
 
   public slotChange(): void {
@@ -112,62 +111,61 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   protected override render() {
     return html`
-      <slot @slotchange=${this.slotChange}>
-        <svg
-          #svg
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          version="1.1"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="xMidYMid meet"
-          role="progressbar"
-          aria-valuemin="0"
-          .attr.aria-valuemax=${this.max}
-          .attr.aria-valuenow=${this.value}
-        >
-          <svg:circle class="igx-circular-bar__inner" cx="50" cy="50" r="46" />
-          <svg:circle
-            id="circle"
-            class="igx-circular-bar__outer"
-            cx="50"
-            cy="50"
-            r="46"
-          />
+      <div part="wrapper ${this.indeterminate ? 'indeterminate' : ''}">
+        <slot @slotchange=${this.slotChange}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            version="1.1"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="xMidYMid meet"
+            role="progressbar"
+            part="svg"
+            aria-valuemin="0"
+            .attr.aria-valuemax=${this.max}
+            .attr.aria-valuenow=${this.value}
+          >
+            <circle cx="50" cy="50" r="46" part="inner" />
+            <circle
+              id="circle"
+              style="stroke: url(#${this.gradientId})"
+              part="outer"
+              cx="50"
+              cy="50"
+              r="46"
+            />
 
-          ${this.textVisibility
-            ? html`
-                <svg:text text-anchor="middle" x="50" y="60">
-                  <slot name="textTemplate">
-                    <svg:tspan class="igx-circular-bar__text">
-                      ${this.textContent
-                        ? this.textContent
-                        : this.valueInPercent + '%'}
-                    </svg:tspan>
-                  </slot>
-                  <!-- <ng-container *ngTemplateOutlet="textTemplate ? textTemplate.template : defaultTextTemplate;
+            ${this.textVisibility
+              ? html`
+                  <svg:text text-anchor="middle" x="50" y="60">
+                    <slot name="textTemplate">
+                      <svg:tspan class="igx-circular-bar__text">
+                        ${this.textContent
+                          ? this.textContent
+                          : this.valueInPercent + '%'}
+                      </svg:tspan>
+                    </slot>
+                    <!-- <ng-container *ngTemplateOutlet="textTemplate ? textTemplate.template : defaultTextTemplate;
                         context: context">
                       </ng-container> -->
-                </svg:text>
-              `
-            : ''}
+                  </svg:text>
+                `
+              : ''}
 
-          <svg:defs>
-            <slot name="gardientTemplate">
-              <svg:linearGradient
-                [id]="gradientId"
+            <defs>
+              <!-- <slot name="gardientTemplate"> -->
+              <linearGradient
+                id=${this.gradientId}
                 gradientTransform="rotate(90)"
               >
-                <stop offset="0%" class="igx-circular-bar__gradient-start" />
-                <stop offset="100%" class="igx-circular-bar__gradient-end" />
-              </svg:linearGradient>
-            </slot>
-            <!-- <ng-container
-            *ngTemplateOutlet="gradientTemplate ? gradientTemplate.template : defaultGradientTemplate;
-            context: { $implicit: gradientId }"
-          ></ng-container> -->
-          </svg:defs>
-        </svg>
-      </slot>
+                <stop offset="0%" part="gradient_start" />
+                <stop offset="100%" part="gradient_end" />
+              </linearGradient>
+              <!-- </slot> -->
+            </defs>
+          </svg>
+        </slot>
+      </div>
     `;
   }
 }
