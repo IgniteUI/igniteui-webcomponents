@@ -15,12 +15,12 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    hasHeader: {
+    hideHeader: {
       type: 'boolean',
       description:
-        'Determines whether the calendar has header. Even if set to true, the header is not displayed for `multiple` selection.',
+        'Determines whether the calendar hides its header. Even if set to false, the header is not displayed for `multiple` selection.',
       control: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
     },
     headerOrientation: {
       type: '"vertical" | "horizontal"',
@@ -66,9 +66,9 @@ const metadata = {
       defaultValue: 'large',
     },
     value: {
-      type: 'Date | Date[] | undefined',
+      type: 'Date | undefined',
       description:
-        'Тhe current value of the calendar.\nWhen selection is set to single, it accepts a single Date object.\nOtherwise, it is an array of Date objects.',
+        'Тhe current value of the calendar.\nUsed when selection is set to single.',
       control: 'date',
     },
     selection: {
@@ -121,13 +121,13 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   hideOutsideDays: boolean;
-  hasHeader: boolean;
+  hideHeader: boolean;
   headerOrientation: 'vertical' | 'horizontal';
   orientation: 'vertical' | 'horizontal';
   visibleMonths: number;
   activeView: 'days' | 'months' | 'years';
   size: 'small' | 'medium' | 'large';
-  value: Date | Date[] | undefined;
+  value: Date | undefined;
   selection: 'single' | 'multiple' | 'range';
   showWeekNumbers: boolean;
   weekStart:
@@ -180,10 +180,16 @@ interface ArgTypes {
   control: 'text',
 };
 
+(metadata.argTypes as any).values = {
+  type: 'string',
+  control: 'text',
+};
+
 interface ArgTypes {
   weekDayFormat: 'long' | 'short' | 'narrow';
   monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
   title: string;
+  values: string;
 }
 
 const Template: Story<ArgTypes, Context> = (
@@ -197,12 +203,13 @@ const Template: Story<ArgTypes, Context> = (
     selection,
     activeView,
     size,
-    hasHeader = true,
+    hideHeader = false,
     headerOrientation,
     orientation,
     title,
     visibleMonths,
     value,
+    values,
     activeDate,
   }: ArgTypes,
   { globals: { direction } }: Context
@@ -228,7 +235,7 @@ const Template: Story<ArgTypes, Context> = (
 
   return html`
     <igc-calendar
-      ?has-header=${hasHeader}
+      ?hide-header=${hideHeader}
       ?show-week-numbers=${showWeekNumbers}
       ?hide-outside-days=${hideOutsideDays}
       header-orientation=${ifDefined(headerOrientation)}
@@ -241,17 +248,13 @@ const Template: Story<ArgTypes, Context> = (
       .disabledDates=${disabledDates}
       .specialDates=${specialDates}
       .activeDate=${activeDate ? new Date(activeDate) : new Date()}
-      .value=${value
-        ? selection === 'single'
-          ? new Date(value as Date)
-          : [new Date(value as Date)]
-        : undefined}
+      .value=${value ? new Date(value as Date) : undefined}
+      values=${ifDefined(values)}
       size=${ifDefined(size)}
       visible-months=${ifDefined(visibleMonths)}
       dir=${ifDefined(direction)}
       @igcChange=${(ev: Event) => {
         console.log(ev);
-        console.log(document.querySelector('igc-calendar')?.value);
       }}
     >
       ${title ? html`<span slot="title">${title}</span>` : ''}

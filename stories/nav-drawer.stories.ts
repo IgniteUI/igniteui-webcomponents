@@ -96,7 +96,7 @@ const handleToggle = () => {
   drawer?.toggle();
 };
 
-const nabarItems = [
+const navbarItems = [
   {
     icon: 'home',
     text: 'Navbar item text',
@@ -185,7 +185,7 @@ const Template: Story<ArgTypes, Context> = (
       >
         <igc-nav-drawer-header-item>Sample Drawer</igc-nav-drawer-header-item>
 
-        ${nabarItems.map((items) => {
+        ${navbarItems.map((items) => {
           return html`
             <igc-nav-drawer-item>
               <igc-icon slot="icon" name="${items.icon}"></igc-icon>

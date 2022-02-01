@@ -31,9 +31,6 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /**
-   * @private
-   */
   public static styles = [styles];
 
   private years!: Date[][];
@@ -114,7 +111,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
     }
   }
 
-  protected render() {
+  protected override render() {
     return html`${this.years.map((row) => {
       return html`<div part="years-row" role="row">
         ${row.map((year) => {

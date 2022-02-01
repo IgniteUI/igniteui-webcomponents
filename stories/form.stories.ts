@@ -43,7 +43,10 @@ The cat was playing<br> in the garden.</textarea
         <label>Gender:</label>
         <igc-radio-group id="gender">
           ${radios.map(
-            (v) => html`<igc-radio name="gender" value=${v}>${v}</igc-radio> `
+            (v) =>
+              html`<igc-radio name="gender" required value=${v}
+                >${v}</igc-radio
+              >`
           )}
         </igc-radio-group>
       </div>
