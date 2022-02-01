@@ -7,6 +7,7 @@ import IgcTreeItemComponent from './tree-item';
 import {
   activeItemsTree,
   DIFF_OPTIONS,
+  disabledItemsTree,
   expandCollapseTree,
   PARTS,
   simpleHierarchyTree,
@@ -900,6 +901,202 @@ describe('Tree', () => {
           if (item !== item11 && item !== topLevelItems[0]) {
             expect(item.expanded, item.label).to.be.false;
           }
+        });
+      });
+    });
+  });
+  describe('Disabled item', async () => {
+    let disabledItems: IgcTreeItemComponent[];
+    let topLevelItems: IgcTreeItemComponent[];
+
+    beforeEach(async () => {
+      tree = await TreeTestFunctions.createTreeElement(disabledItemsTree);
+      topLevelItems = tree.items.filter((i) => i.level === 0);
+      disabledItems = tree.items.filter((i) => i.disabled === true);
+    });
+
+    it('Should be able to select/activate/expand disabled item through API', async () => {
+      const eventSpy = sinon.spy(tree, 'emitEvent');
+
+      TreeTestFunctions.verifyItemSelection(disabledItems[0], false);
+
+      disabledItems[0].selected = true;
+      await elementUpdated(tree);
+
+      const selectionPart = disabledItems[0].shadowRoot!.querySelector(
+        PARTS.select
+      );
+      const cb = selectionPart?.children[0] as IgcCheckboxComponent;
+
+      TreeTestFunctions.verifyItemSelection(disabledItems[0], true);
+      expect(cb.checked).to.be.true;
+      expect(cb.indeterminate).to.be.false;
+
+      expect(eventSpy).not.to.be.called; // event not emitted when interacting through API
+
+      const item11 = disabledItems[1];
+      expect(item11.disabled).to.be.true;
+
+      tree.select([item11]);
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyItemSelection(item11, true);
+      expect(cb.checked).to.be.true;
+      expect(cb.indeterminate).to.be.false;
+      expect(eventSpy).not.to.be.called;
+
+      const item12 = disabledItems[2];
+      expect(item12.disabled).to.be.true;
+      expect(item12.active).to.be.false;
+
+      item12.active = true;
+      await elementUpdated(tree);
+
+      expect(item12.active).to.be.true;
+      expect(eventSpy).not.to.be.called;
+
+      item12.expand();
+      await elementUpdated(tree);
+
+      expect(item12.expanded).to.be.true;
+      expect(eventSpy).not.to.be.called;
+    });
+
+    it('If a tree item is expanded and all its children are disabled the focus and activation should not be moved from the item on Arrow Right key press', async () => {
+      const item2 = topLevelItems[1];
+      const item21 = item2.getChildren()[0];
+      expect(item21.expanded).to.be.true;
+      expect(item21.active).to.be.true;
+
+      item21.getChildren({ flatten: true }).forEach((child) => {
+        expect(child.disabled).to.be.true;
+      });
+
+      item21.dispatchEvent(new Event('focus'));
+      await elementUpdated(tree);
+      item21.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })
+      );
+      await elementUpdated(tree);
+
+      expect(item21.expanded).to.be.true;
+      expect(item21.active).to.be.true;
+      expect(item21.getChildren()[0].active).to.be.false;
+      expect(item21.getChildren()[1].active).to.be.false;
+      item21.getChildren({ flatten: true }).forEach((child) => {
+        expect(child.disabled).to.be.true;
+      });
+    });
+
+    it('If a tree item is expanded and has enabled children the focus and activation should be moved to the first enabled child on Arrow Right key press', async () => {
+      const item2 = topLevelItems[1];
+      const item22 = item2.getChildren()[1];
+      const item22Children = item22.getChildren();
+      expect(item22.expanded).to.be.true;
+      expect(item22.disabled).to.be.false;
+
+      item22.active = true;
+      await elementUpdated(tree);
+
+      expect(item22Children[0].disabled).to.be.true;
+      expect(item22Children[1].disabled).to.be.false;
+
+      item22.dispatchEvent(new Event('focus'));
+      await elementUpdated(tree);
+
+      expect(tree.navService.focusedItem).to.equal(item22);
+
+      item22.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })
+      );
+      await elementUpdated(tree);
+
+      expect(item22.active).to.be.false;
+      expect(item22Children[0].active).to.be.false;
+      expect(item22Children[1].active).to.be.true;
+    });
+
+    it('Pressing Arrow Up/Down should move the focus and activation to the previous/next enabled and visible item (if there is any) (skipping disabled)', async () => {
+      const item2 = topLevelItems[1];
+      const item21 = item2.getChildren()[0];
+      const item22 = item2.getChildren()[1];
+      const item21Children = item21.getChildren();
+
+      expect(item21.active).to.be.true;
+      expect(item21Children[0].disabled).to.be.true;
+      expect(item21Children[1].disabled).to.be.true;
+
+      item21.dispatchEvent(new Event('focus'));
+      await elementUpdated(tree);
+      expect(tree.navService.focusedItem).to.equal(item21);
+
+      item21.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+      );
+      await elementUpdated(tree);
+
+      expect(item21.active).to.be.false;
+      expect(item21Children[0].active).to.be.false;
+      expect(item21Children[1].active).to.be.false;
+      expect(item22.active).to.be.true; // item22 is the next non-disbaled
+
+      item22.dispatchEvent(new Event('focus'));
+      expect(tree.navService.focusedItem).to.equal(item22);
+
+      await elementUpdated(tree);
+      item22.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
+      );
+      await elementUpdated(tree);
+
+      expect(item21.active).to.be.true; // active item is back to item21
+      expect(item21Children[0].active).to.be.false;
+      expect(item21Children[1].active).to.be.false;
+      expect(item22.active).to.be.false;
+    });
+
+    it('Pressing Asterisk on a focused item should expand only the enabled and expandable items in the same group', async () => {
+      topLevelItems[0].collapse();
+      topLevelItems[1].collapse();
+      await elementUpdated(tree);
+
+      topLevelItems.forEach((item) => {
+        expect(item.expanded).to.be.false;
+      });
+
+      topLevelItems[2].dispatchEvent(new Event('focus'));
+      await elementUpdated(tree);
+      expect(tree.navService.focusedItem).to.equal(topLevelItems[2]);
+
+      topLevelItems[2].dispatchEvent(
+        new KeyboardEvent('keydown', { key: '*', bubbles: true })
+      );
+      await elementUpdated(tree);
+
+      expect(topLevelItems[3].expanded).to.be.false; // Item4 does not have children => not expanded
+      topLevelItems.pop();
+
+      expect(topLevelItems[0].disabled).to.be.true; // Item1 is disabled, therefore not expanded, even though it is a sibling
+      expect(topLevelItems[0].expanded).to.be.false;
+      topLevelItems.shift();
+
+      topLevelItems.forEach((item) => {
+        expect(item.expanded).to.be.true;
+
+        // the child items marked as expanded will be in a expanded state when expanding the parent
+        const expandableChildren = item
+          .getChildren()
+          .filter((i) => i.getChildren().length && !i.disabled && i.expanded);
+        expandableChildren.forEach((child) => {
+          expect(child.expanded, child.label).to.be.true;
+        });
+
+        // the child items not marked as expanded will be in a collapsed state when expanding the parent
+        const expandableCollapsedChildren = item
+          .getChildren()
+          .filter((i) => i.getChildren().length && !i.disabled && !i.expanded);
+        expandableCollapsedChildren.forEach((child) => {
+          expect(child.expanded, child.label).to.be.false;
         });
       });
     });

@@ -62,6 +62,38 @@ export class TreeTestFunctions {
       selectedState
     );
   };
+
+  public static setFocusAndTriggerKeydown = (
+    item: IgcTreeItemComponent,
+    tree: IgcTreeComponent,
+    eventKey: string,
+    ctrlKeyFlag = false,
+    shiftKeyFlag = false
+  ): void => {
+    item.dispatchEvent(new Event('focus'));
+    expect(tree.navService.focusedItem).to.equal(item);
+    item.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: eventKey,
+        bubbles: true,
+        ctrlKey: ctrlKeyFlag,
+        shiftKey: shiftKeyFlag,
+        cancelable: true,
+      })
+    );
+  };
+
+  public static checkKeydownDefaultPrevented = (
+    tree: IgcTreeComponent
+  ): void => {
+    tree.addEventListener('keydown', (ev: KeyboardEvent) => {
+      if (ev.key.toLowerCase() === 'enter') {
+        expect(ev.defaultPrevented).to.be.false;
+      } else {
+        expect(ev.defaultPrevented).to.be.true;
+      }
+    });
+  };
 }
 
 // Templates
@@ -183,3 +215,71 @@ export const cascadeSelectionTree = `<igc-tree selection='cascade'>
                                            </igc-tree-item>
                                          </igc-tree-item>
                                       </igc-tree>`;
+
+export const disabledItemsTree = `<igc-tree selection='multiple'>
+                                         <igc-tree-item label="Tree Node 1" disabled expanded>
+                                           <igc-tree-item label="Tree Node 1.1" disabled expanded>
+                                             <igc-tree-item label="Tree Node 1.1.1"></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 1.1.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 1.2" disabled>
+                                             <igc-tree-item label="Tree Node 1.2.1"></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 1.2.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item label="Tree Node 2" expanded>
+                                           <igc-tree-item label="Tree Node 2.1" active expanded>
+                                             <igc-tree-item label="Tree Node 2.1.1" expanded disabled></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 2.1.2" expanded disabled></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.2" expanded>
+                                             <igc-tree-item label="Tree Node 2.2.1" disabled></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 2.2.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item label="Tree Node 3">
+                                           <igc-tree-item label="Tree Node 3.1">
+                                             <igc-tree-item label="Tree Node 3.1.1"></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 3.1.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                           <igc-tree-item label="Tree Node 3.2">
+                                             <igc-tree-item label="Tree Node 3.2.1"></igc-tree-item>
+                                             <igc-tree-item label="Tree Node 2.2.2"></igc-tree-item>
+                                           </igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item label="Tree Node 4"></igc-tree-item>
+                                       </igc-tree>`;
+
+export const navigationTree = `<igc-tree selection='none'>
+                                       <igc-tree-item label="Tree Node 1">
+                                         <igc-tree-item label="Tree Node 1.1" expanded>
+                                           <igc-tree-item label="Tree Node 1.1.1"></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 1.1.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item label="Tree Node 1.2">
+                                           <igc-tree-item label="Tree Node 1.2.1"></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 1.2.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                       </igc-tree-item>
+                                       <igc-tree-item label="Tree Node 2" expanded>
+                                         <igc-tree-item label="Tree Node 2.1" expanded>
+                                           <igc-tree-item label="Tree Node 2.1.1"></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.1.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item label="Tree Node 2.2" expanded>
+                                           <igc-tree-item label="Tree Node 2.2.1"></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.2.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                       </igc-tree-item>
+                                       <igc-tree-item label="Tree Node 3">
+                                         <igc-tree-item label="Tree Node 3.1">
+                                           <igc-tree-item label="Tree Node 3.1.1"></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 3.1.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                         <igc-tree-item label="Tree Node 3.2">
+                                           <igc-tree-item label="Tree Node 3.2.1"></igc-tree-item>
+                                           <igc-tree-item label="Tree Node 2.2.2"></igc-tree-item>
+                                         </igc-tree-item>
+                                       </igc-tree-item>
+                                       <igc-tree-item label="Tree Node 4"></igc-tree-item>
+                                     </igc-tree>`;
