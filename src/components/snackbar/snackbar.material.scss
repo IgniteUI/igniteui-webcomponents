@@ -17,10 +17,28 @@
     min-height: rem(48px);
     width: rem(344px);
     padding: rem(6px) rem(16px);
-    color: contrast-color(gray, 900);
+    color: color(surface, 500);
     background: color(gray, 900);
     box-shadow: var(--igc-elevation-4);
     border-radius: rem(4px);
+}
+
+[part~='message'] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+:host([action-text]) {
+    [part='base'] {
+        padding-inline-end: rem(8px);
+    }
+
+    [part='action'] {
+        margin-inline-start: rem(8px);
+    }
 }
 
 :host(:not([open])) {

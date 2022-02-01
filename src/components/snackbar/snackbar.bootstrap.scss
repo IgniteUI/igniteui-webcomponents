@@ -1,0 +1,20 @@
+@use '../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-snackbar::part(base) {
+        background: utils.color(surface, 500);
+        color: utils.contrast-color(surface, 500);
+        border: 1px solid utils.color(gray, 300);
+        width: utils.rem(348px);
+        padding: utils.rem(8px) utils.rem(12px);
+        box-shadow: var(--igc-elevation-10);
+    }
+
+    igc-snackbar[action-text]::part(base) {
+        padding-inline-end: utils.rem(8px);
+    }
+
+    igc-snackbar[action-text]::part(action) {
+        margin-inline-start: utils.rem(8px);
+    }
+}
