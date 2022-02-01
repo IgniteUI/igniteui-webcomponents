@@ -15,7 +15,7 @@ export default class IgcToastComponent extends LitElement {
   public static tagName = 'igc-toast';
 
   /** @private */
-  public static styles = styles;
+  public static override styles = [styles];
 
   private displayTimeout: any;
 
@@ -66,7 +66,7 @@ export default class IgcToastComponent extends LitElement {
     }
   }
 
-  protected render() {
+  protected override render() {
     return html` <div part="base">${this.message}</div> `;
   }
 }
