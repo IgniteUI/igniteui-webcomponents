@@ -31,6 +31,7 @@
     $inactive-background: utils.color(gray, 200),
     $inactive-hover-background: utils.color(gray, 400)
 );
+@use '../../../components/toast/toast.indigo' as toast;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -57,3 +58,4 @@ $palette: utils.palette(
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();
+@include toast.theme();
