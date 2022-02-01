@@ -1,0 +1,10 @@
+@use '../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-toast::part(base) {
+        color: contrast-color(gray, 100);
+        background: color(gray, 100);
+        padding: rem(8px) rem(12px);
+        border-radius: 0;
+    }
+}

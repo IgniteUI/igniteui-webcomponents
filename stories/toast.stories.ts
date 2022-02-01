@@ -33,7 +33,6 @@ const metadata = {
       type: 'string',
       description: 'The text of the toast.',
       control: 'text',
-      defaultValue: 'Toast message',
     },
   },
 };
@@ -71,7 +70,7 @@ const Template: Story<ArgTypes, Context> = ({
   <igc-button @click=${handleToggle}>Toggle Toast</igc-button>
   <igc-toast
     .open=${open}
-    displayTime=${ifDefined(displayTime)}
+    display-time=${ifDefined(displayTime)}
     ?keep-open=${keepOpen}
     message=${ifDefined(message)}
   >

@@ -1,22 +1,27 @@
-@use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-[part='base'] {
-    display: inline-block;
-    padding: rem(14px) rem(24px);
-    min-width: rem(48px);
-    border-radius: rem(2px);
-    color: #fff;
-    background: color(gray, 800);
-    backdrop-filter: blur(10px);
+:host {
+    display: inline-flex;
     font-family: var(--igc-font-family);
     text-align: center;
     position: fixed;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
+}
 
-    &[open='false'] {
+[part='base'] {
+    background: color(gray, 700);
+    color: contrast-color(gray, 700);
+    padding: rem(16px) rem(24px);
+    margin: rem(42px) auto;
+    min-width: rem(52px);
+    border-radius: rem(26px);
+    backdrop-filter: blur(10px);
+}
+
+:host(:not([open])) {
+    [part='base'] {
         display: none;
     }
 }

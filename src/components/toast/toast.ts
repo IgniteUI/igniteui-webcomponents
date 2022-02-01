@@ -24,7 +24,7 @@ export default class IgcToastComponent extends LitElement {
   public open = false;
 
   /** Determines the time after which the toast will close */
-  @property({ type: Number, reflect: false })
+  @property({ type: Number, reflect: false, attribute: 'display-time' })
   public displayTime = 4000;
 
   /** Determines whether the toast is closed automatically or not. */
@@ -33,7 +33,7 @@ export default class IgcToastComponent extends LitElement {
 
   /** The text of the toast. */
   @property({ type: String })
-  public message = 'Toast message';
+  public message!: string;
 
   /** Closes the toast. */
   public hide() {
@@ -67,16 +67,7 @@ export default class IgcToastComponent extends LitElement {
   }
 
   protected render() {
-    return html`
-      <div
-        part="base"
-        open=${this.open}
-        displayTime=${this.displayTime}
-        keepOpen=${this.keepOpen}
-      >
-        ${this.message}
-      </div>
-    `;
+    return html` <div part="base">${this.message}</div> `;
   }
 }
 

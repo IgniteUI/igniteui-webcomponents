@@ -1,24 +1,12 @@
-@use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
 @mixin theme() {
-    [part='base'] {
-        display: inline-block;
-        padding: rem(14px) rem(24px);
-        min-width: rem(48px);
-        border-radius: rem(2px);
-        color: #000;
-        background: color(gray, 500);
-        backdrop-filter: blur(10px);
-        font-family: var(--igc-font-family);
-        text-align: center;
-        position: fixed;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
-
-        &[open='false'] {
-            display: none;
-        }
+    igc-toast::part(base) {
+        color: contrast-color(surface);
+        background: color(surface);
+        outline: 1px solid color(gray, 300);
+        border-radius: rem(4px);
+        padding: rem(11px);
+        box-shadow: var(--igc-elevation-10);
     }
 }
