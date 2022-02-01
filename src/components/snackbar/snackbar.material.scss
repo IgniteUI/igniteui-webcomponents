@@ -24,11 +24,7 @@
 }
 
 [part~='message'] {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    @include line-clamp(2, true, true);
 }
 
 :host([action-text]) {
