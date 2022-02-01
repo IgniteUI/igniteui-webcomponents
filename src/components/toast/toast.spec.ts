@@ -41,21 +41,21 @@ describe('Toast', () => {
       expect(el.displayTime).to.eq(10000);
       expect(el).dom.to.equal(`<igc-toast display-time='10000'></igc-toast>`);
     });
+
+    it('should change the toast keepOpen option correctly.', async () => {
+      el.keepOpen = true;
+      expect(el.keepOpen).to.be.true;
+      await elementUpdated(el);
+      expect(el).dom.to.equal(`<igc-toast keep-open></igc-toast>`);
+
+      el.keepOpen = false;
+      expect(el.keepOpen).to.be.false;
+      await elementUpdated(el);
+      expect(el).dom.to.equal(`<igc-toast></igc-toast>`);
+    });
+
+    const createToastComponent = (template = `<igc-toast></igc-toast>`) => {
+      return fixture<IgcToastComponent>(html`${unsafeStatic(template)}`);
+    };
   });
-
-  it('should change the toast keepOpen option correctly.', async () => {
-    el.keepOpen = true;
-    expect(el.keepOpen).to.be.true;
-    await elementUpdated(el);
-    expect(el).dom.to.equal(`<igc-toast keep-open></igc-toast>`);
-
-    el.keepOpen = false;
-    expect(el.keepOpen).to.be.false;
-    await elementUpdated(el);
-    expect(el).dom.to.equal(`<igc-toast></igc-toast>`);
-  });
-
-  const createToastComponent = (template = `<igc-toast></igc-toast>`) => {
-    return fixture<IgcToastComponent>(html`${unsafeStatic(template)}`);
-  };
 });
