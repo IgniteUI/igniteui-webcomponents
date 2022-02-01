@@ -14,7 +14,6 @@
 @use '../../../components/slider/slider.bootstrap' as slider;
 @use '../../../components/toast/toast.bootstrap' as toast;
 
-
 $palette: utils.palette(
     $primary: #0d6efd,
     $secondary: #6c757d,
