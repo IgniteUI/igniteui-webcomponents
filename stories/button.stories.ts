@@ -58,7 +58,6 @@ const metadata = {
     },
     ariaLabel: {
       type: 'string',
-      description: 'The aria label of the button.',
       control: 'text',
     },
     size: {

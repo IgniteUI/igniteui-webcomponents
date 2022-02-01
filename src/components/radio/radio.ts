@@ -33,10 +33,8 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
-  public static tagName = 'igc-radio';
+  public static readonly tagName = 'igc-radio';
 
-  /** @private */
   public static styles = styles;
 
   private inputId = `radio-${nextId++}`;
@@ -55,6 +53,10 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   /** The value attribute of the control. */
   @property()
   public value!: string;
+
+  /** Makes the control a required field. */
+  @property({ type: Boolean, reflect: true })
+  public required = false;
 
   /** The checked state of the control. */
   @property({ type: Boolean })
@@ -78,19 +80,19 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   public ariaLabelledby!: string;
 
   /** Simulates a click on the radio control. */
-  public click() {
+  public override click() {
     this.input.click();
   }
 
   /** Sets focus on the radio control. */
   @alternateName('focusComponent')
-  public focus(options?: FocusOptions) {
+  public override focus(options?: FocusOptions) {
     this.input.focus(options);
   }
 
   /** Removes focus from the radio control. */
   @alternateName('blurComponent')
-  public blur() {
+  public override blur() {
     this.input.blur();
   }
 
@@ -135,19 +137,28 @@ export default class IgcRadioComponent extends EventEmitterMixin<
       this.input.focus();
       this._tabIndex = 0;
       this.emitEvent('igcChange', { detail: this.checked });
+    } else {
+      if (this.required) {
+        this.required = false;
+        this.getAllInGroup()[0].required = true;
+      }
     }
   }
 
   protected getSiblings() {
+    return this.getAllInGroup().filter(
+      (radio) => radio.name === this.name && radio !== this
+    );
+  }
+
+  protected getAllInGroup() {
     const group = this.closest('igc-radio-group');
     if (!group) return [];
 
-    return Array.from<IgcRadioComponent>(
-      group.querySelectorAll('igc-radio')
-    ).filter((radio) => radio.name === this.name && radio !== this);
+    return Array.from<IgcRadioComponent>(group.querySelectorAll('igc-radio'));
   }
 
-  protected render() {
+  protected override render() {
     return html`
       <label
         part="${partNameMap({ base: true, checked: this.checked })}"
@@ -159,6 +170,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           type="radio"
           name="${ifDefined(this.name)}"
           value="${ifDefined(this.value)}"
+          .required="${this.required}"
           .disabled="${this.disabled}"
           .checked="${live(this.checked)}"
           tabindex=${this._tabIndex}
