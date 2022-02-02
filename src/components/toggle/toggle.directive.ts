@@ -1,4 +1,4 @@
-import { flip, offset } from '@popperjs/core/lib/modifiers';
+import { flip, offset, preventOverflow } from '@popperjs/core/lib/modifiers';
 import {
   createPopper,
   Instance,
@@ -12,7 +12,7 @@ import {
   ElementPart,
   PartType,
 } from 'lit/directive.js';
-import { IgcPlacement, IToggleOptions } from './utilities.js';
+import { IgcPlacement, IOverflowOptions, IToggleOptions } from './utilities.js';
 import { styles } from './toggle.material.css';
 
 export class IgcToggleDirective extends Directive {
@@ -31,7 +31,8 @@ export class IgcToggleDirective extends Directive {
   private part: PartInfo;
   private placement: IgcPlacement = 'bottom-start';
   private strategy: 'absolute' | 'fixed' = 'absolute';
-  private flip? = false;
+  private flip = false;
+  private preventOverflow: IOverflowOptions | undefined;
   private offset: { x: number; y: number } | undefined;
   private modifiers: Modifier<any, any>[] = [];
   private instance!: Instance;
@@ -93,7 +94,7 @@ export class IgcToggleDirective extends Directive {
       ? Object.assign({}, this.defaultOptions, options)
       : this.defaultOptions;
     this.placement = options.placement;
-    this.strategy = options.positionStrategy;
+    this.strategy = options.positionStrategy ?? this.strategy;
     this.modifiers = this.updateModifiers(options);
     return {
       placement: this.placement,
@@ -112,17 +113,36 @@ export class IgcToggleDirective extends Directive {
 
   /** Updates the popper modifiers. */
   private updateModifiers(options: IToggleOptions) {
-    if (this.flip !== options.flip) {
+    this.updateFlip(options);
+    this.updateOffset(options);
+    this.updatePreventOverflow(options);
+
+    return this.modifiers;
+  }
+
+  private updateFlip(options: IToggleOptions) {
+    if (options.flip && this.flip !== options.flip) {
       this.flip = options.flip;
       this.flip ? this.addModifier(flip) : this.removeModifier(flip);
     }
+  }
+
+  private updateOffset(options: IToggleOptions) {
     if (this.offset !== options.offset) {
       this.offset = options.offset;
       this.offset
         ? this.setOffset(this.offset.x, this.offset.y)
         : this.removeModifier(offset);
     }
-    return this.modifiers;
+  }
+
+  private updatePreventOverflow(options: IToggleOptions) {
+    if (this.preventOverflow !== options.preventOverflow) {
+      this.preventOverflow = options.preventOverflow;
+      this.preventOverflow
+        ? this.addModifier(preventOverflow, this.preventOverflow)
+        : this.removeModifier(preventOverflow);
+    }
   }
 
   /**
@@ -177,6 +197,7 @@ export class IgcToggleDirective extends Directive {
         'The `igcToggle` directive must be attached to an element tag.'
       );
     }
+
     this.defineProcess();
   }
 
