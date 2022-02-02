@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, svg } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { watch } from '../common/decorators';
 import { styles } from './circular.progress.material.css';
@@ -20,30 +20,23 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     return this.indeterminate;
   }
 
+  @watch('indeterminate')
+  public indeterminateChange() {
+    if (this.indeterminate) {
+      this.textVisibility = false;
+    }
+  }
+
   @property({ type: Boolean })
   public textVisibility = false;
 
-  @property({ attribute: false })
+  @property({ reflect: true, attribute: true })
   public text!: string;
-
-  // public textTemplate: IgxProcessBarTextTemplateDirective;
-
-  // public gradientTemplate: IgxProgressBarGradientDirective;
 
   @query('#circle')
   private _svgCircle!: HTMLElement;
 
   public gradientId = `igx-circular-gradient-${NEXT_GRADIENT_ID++}`;
-
-  public get context(): any {
-    return {
-      $implicit: {
-        value: this.value,
-        valueInPercent: this.valueInPercent,
-        max: this.max,
-      },
-    };
-  }
 
   private _circleRadius = 46;
   private _circumference = 2 * Math.PI * this._circleRadius;
@@ -58,13 +51,11 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.triggerProgressTransition(MIN_VALUE, this._initValue);
-    this._contentInit = true;
   }
 
-  @watch('indeterminate')
-  public indeterminateChange(): void {
-    // this.setAttribute('part', 'indeterminate');
+  public override firstUpdated(): void {
+    this.triggerProgressTransition(MIN_VALUE, this._initValue);
+    this._contentInit = true;
   }
 
   public slotChange(): void {
@@ -84,7 +75,6 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
     const FRAMES = [];
     FRAMES[0] = { ...this.animationState };
-
     this.animationState.strokeDashoffset = this.getProgress(valueInPercent);
     this.animationState.strokeOpacity =
       toPercent(value, this.max) / this.STROKE_OPACITY_DVIDER +
@@ -122,8 +112,8 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
             role="progressbar"
             part="svg"
             aria-valuemin="0"
-            .attr.aria-valuemax=${this.max}
-            .attr.aria-valuenow=${this.value}
+            aria-valuemax=${this.max}
+            aria-valuenow=${this.value}
           >
             <circle cx="50" cy="50" r="46" part="inner" />
             <circle
@@ -136,19 +126,18 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
             />
 
             ${this.textVisibility
-              ? html`
-                  <svg:text text-anchor="middle" x="50" y="60">
-                    <slot name="textTemplate">
-                      <svg:tspan class="igx-circular-bar__text">
-                        ${this.textContent
-                          ? this.textContent
-                          : this.valueInPercent + '%'}
-                      </svg:tspan>
-                    </slot>
-                    <!-- <ng-container *ngTemplateOutlet="textTemplate ? textTemplate.template : defaultTextTemplate;
-                        context: context">
-                      </ng-container> -->
-                  </svg:text>
+              ? svg`
+                  <text text-anchor="middle" x="50" y="60">
+                    <!-- <slot name="textTemplate"> -->
+                      <tspan class="igx-circular-bar__text">
+                        ${
+                          this.textContent
+                            ? this.textContent
+                            : this.valueInPercent + '%'
+                        }
+                      </tspan>
+                    <!-- </slot> -->
+                  </text>
                 `
               : ''}
 

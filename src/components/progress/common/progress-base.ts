@@ -1,5 +1,5 @@
 import { LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { IgcRadioEventMap } from '../../radio/radio';
@@ -33,23 +33,26 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  protected _interval!: any;
+  protected _initValue = 0;
+  protected _contentInit = false;
+
   @property({ type: Boolean })
   public indeterminate = false;
 
   @property({ reflect: true, attribute: false })
   public animationDuration = 2000;
 
-  public _interval!: any;
-
-  protected _initValue = 0;
-  protected _contentInit = false;
+  @state()
   protected _max = 100;
+  @state()
   protected _value = MIN_VALUE;
-  protected _newVal = MIN_VALUE;
+  @state()
   protected _animate = false;
+  @state()
   protected _step!: any;
+  @state()
   protected _animation!: any;
-  protected _valueInPercent!: any;
   protected _internalState = {
     oldVal: 0,
     newVal: 0,
@@ -125,10 +128,7 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
     return val;
   }
 
-  public get value(): number {
-    return this._value;
-  }
-
+  @property({ attribute: true, reflect: true, type: Number })
   public set value(val) {
     if (
       (this._animation && this._animation.playState !== 'finished') ||
@@ -151,6 +151,10 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
       }
       this._initValue = valInRange;
     }
+  }
+
+  public get value(): number {
+    return this._value;
   }
 
   protected triggerProgressTransition(
@@ -187,7 +191,7 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
     if (maxUpdate) {
       return;
     }
-    // this.progressChanged.emit(changedValues);
+    // this.emitEvent('igcAsd', { detail: { value: this.value } });
   }
 
   protected increase(newValue: number, step: number) {
