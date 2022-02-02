@@ -9,6 +9,7 @@ import {
   DIFF_OPTIONS,
   disabledItemsTree,
   expandCollapseTree,
+  navigationTree,
   PARTS,
   simpleHierarchyTree,
   simpleTree,
@@ -72,6 +73,39 @@ describe('Tree', () => {
       const treeItem1GrandChildren = treeItem1Chidlren[0].getChildren();
       expect(treeItem1GrandChildren.length).to.equal(2);
       expect(treeItem1Chidlren[0]).dom.to.have.descendants('igc-tree-item');
+    });
+
+    it('Should render items correctly depending on size settings', async () => {
+      tree = await TreeTestFunctions.createTreeElement(simpleTree);
+
+      expect(tree.size).to.equal('large');
+      tree.items.forEach((item) => {
+        expect(item.size).to.equal('large');
+        const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
+        expect(wrapperDiv).to.have.attribute('part').match(/large/);
+      });
+
+      tree.size = 'medium';
+      await elementUpdated(tree);
+
+      expect(tree.size).to.equal('medium');
+      tree.items.forEach((item) => {
+        expect(item.size).to.equal('medium');
+        const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
+        expect(wrapperDiv)
+          .to.have.attribute('part')
+          .match(/medium/);
+      });
+
+      tree.size = 'small';
+      await elementUpdated(tree);
+
+      expect(tree.size).to.equal('small');
+      tree.items.forEach((item) => {
+        expect(item.size).to.equal('small');
+        const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
+        expect(wrapperDiv).to.have.attribute('part').match(/small/);
+      });
     });
 
     it("Should calculate items' path and level correctly, depending on data hierarchy", async () => {
@@ -420,6 +454,45 @@ describe('Tree', () => {
           await expect(tree.navService.activeItem).not.to.equal(item);
         }
       });
+    });
+
+    it('Should scroll to active item (when set through API) if the tree has scrollbar and item is out of view', async () => {
+      tree = await TreeTestFunctions.createTreeElement(navigationTree);
+      const topLevelItems = tree.items.filter((i) => i.level === 0);
+
+      topLevelItems[0].expand();
+      topLevelItems[2].expand();
+      await elementUpdated(tree);
+
+      //expect that the last top item is initially out of view
+      let targetNode = topLevelItems[3];
+      let treeRect = tree.getBoundingClientRect();
+      let nodeRect = targetNode.getBoundingClientRect();
+
+      expect(treeRect.top <= nodeRect.top && treeRect.bottom >= nodeRect.bottom)
+        .to.be.false;
+
+      targetNode.active = true;
+      await elementUpdated(tree);
+
+      treeRect = tree.getBoundingClientRect();
+      nodeRect = targetNode.getBoundingClientRect();
+
+      expect(treeRect.top <= nodeRect.top && treeRect.bottom >= nodeRect.bottom)
+        .to.be.true;
+
+      targetNode = tree.items[0];
+      nodeRect = targetNode.getBoundingClientRect();
+
+      expect(treeRect.top <= nodeRect.top && treeRect.bottom >= nodeRect.bottom)
+        .to.be.false;
+
+      targetNode.active = true;
+      await elementUpdated(tree);
+
+      nodeRect = targetNode.getBoundingClientRect();
+      expect(treeRect.top <= nodeRect.top && treeRect.bottom >= nodeRect.bottom)
+        .to.be.true;
     });
 
     it('When an item is added/deleted the visible tree items collection should be calculated properly', async () => {
@@ -1099,6 +1172,60 @@ describe('Tree', () => {
           expect(child.expanded, child.label).to.be.false;
         });
       });
+    });
+  });
+  describe('ARIA', async () => {
+    beforeEach(async () => {
+      tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
+    });
+
+    it('Should render proper role and attributes for the tree and its items', async () => {
+      expect(tree.getAttribute('role')).to.eq('tree');
+
+      const topLevelItems = tree.items.filter((i) => i.level === 0);
+      const itemWithFocusableContent = topLevelItems[1]
+        .getChildren()[0]
+        .getChildren()[0];
+
+      tree.items.forEach((item) => {
+        if (item !== itemWithFocusableContent) {
+          expect(item).to.have.attribute('role', 'treeitem');
+        } else {
+          expect(item).not.to.have.attribute('role', 'treeitem');
+          expect(item).not.to.have.attribute('tabIndex');
+
+          const labelSlot = TreeTestFunctions.getSlot(item, SLOTS.label);
+
+          const els = labelSlot.assignedElements();
+          expect(els.length).to.equal(1);
+          expect(els[0].tagName).to.equal('P');
+
+          const anchor = els[0].children[0];
+          expect(anchor).to.have.attribute('role', 'treeitem');
+          expect(anchor).to.have.attribute('tabIndex');
+        }
+      });
+    });
+    it("An item's expanded state will be properly reflected in the item's aria-expanded attribute", async () => {
+      const topLevelItems = tree.items.filter((i) => i.level === 0);
+
+      expect(topLevelItems[0].expanded).to.be.false;
+      expect(topLevelItems[0]).to.have.attribute('aria-expanded', 'false');
+
+      topLevelItems[0].expand();
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0]).to.have.attribute('aria-expanded', 'true');
+
+      const initiallyExpandedItem = topLevelItems[1].getChildren()[0];
+      expect(initiallyExpandedItem).to.have.attribute('aria-expanded', 'true');
+
+      initiallyExpandedItem.collapse();
+
+      topLevelItems[0].expand();
+      await elementUpdated(tree);
+
+      expect(initiallyExpandedItem).to.have.attribute('aria-expanded', 'false');
     });
   });
 });

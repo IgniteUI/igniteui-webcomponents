@@ -140,7 +140,11 @@ export const expandCollapseTree = `<igc-tree>
                                         <igc-tree-item expanded label="Tree Node 2">
                                           <igc-tree-item label="Tree Node 2.1" expanded disabled>
                                             <span slot="loading">*</span>
-                                            <igc-tree-item label="Tree Node 2.1.1"></igc-tree-item>
+                                            <igc-tree-item label="Tree Node 2.1.1">
+                                              <p slot="label">
+                                                <a href="http://infragistics.com">Infragistics</a>
+                                              </p>
+                                            </igc-tree-item>
                                           </igc-tree-item>
                                         </igc-tree-item>
                                       </igc-tree>`;
@@ -250,7 +254,7 @@ export const disabledItemsTree = `<igc-tree selection='multiple'>
                                          <igc-tree-item label="Tree Node 4"></igc-tree-item>
                                        </igc-tree>`;
 
-export const navigationTree = `<igc-tree selection='none'>
+export const navigationTree = `<igc-tree selection='none' style="height: 400px;">
                                        <igc-tree-item label="Tree Node 1">
                                          <igc-tree-item label="Tree Node 1.1" expanded>
                                            <igc-tree-item label="Tree Node 1.1.1"></igc-tree-item>
