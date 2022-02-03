@@ -1,64 +1,31 @@
 @use '../../styles/common/component';
+@use './badge.base.scss';
 @use '../../styles/utilities' as *;
 
 :host {
     --size: #{rem(12px)};
 
-    display: inline-flex;
     font-weight: 500;
 }
 
-[part='base'] {
-    display: inline-flex;
-    min-width: var(--size);
-    min-height: var(--size);
-    max-height: calc(var(--size) * 2);
-    line-height: 1;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    white-space: nowrap;
-    font-family: var(--igc-font-family);
-    font-size: var(--igc-subtitle-1-font-size);
-    font-weight: inherit;
-}
-
-:host(:not(:empty)) [part='base'] {
-    padding: rem(4px) rem(8px);
-    min-width: calc(var(--size) * 2);
-}
-
 :host([variant='primary']) {
-    background: color(primary, 500);
     color: contrast-color(primary, 500);
 }
 
 :host([variant='info']) {
-    background: color(info, 500);
     color: contrast-color(info, 500);
 }
 
 :host([variant='success']) {
-    background: color(success, 500);
     color: contrast-color(success, 500);
 }
 
 :host([variant='warning']) {
-    background: color(warn, 500);
     color: contrast-color(warn, 500);
 }
 
 :host([variant='danger']) {
-    background: color(error, 500);
     color: contrast-color(error, 500);
-}
-
-:host([shape='rounded']) {
-    border-radius: var(--size);
-}
-
-:host([shape='square']) {
-    border-radius: 0;
 }
 
 :host([outlined]) {
