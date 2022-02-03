@@ -1,0 +1,119 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+[part~='wrapper'] {
+  position: relative;
+  display: flex;
+  width: 100%;
+  flex: 1 1 100%;
+  flex-direction: column;
+}
+
+[part~='base'] {
+  position: relative;
+  width: inherit;
+  height: 0.25rem;
+  background: hsl(0deg 0% 88%);
+  overflow: hidden;
+  z-index: 0;
+  //   border-radius: var(--track-border-radius);
+  border-radius: 0px;
+}
+
+[part~='indicator'] {
+  width: 100%;
+  position: relative;
+  height: inherit;
+  background: hsl(204deg 100% 50%);
+}
+
+[part~='stripped'] {
+  background-image: linear-gradient(
+    -45deg,
+    hsl(0deg 0% 98%) 25%,
+    transparent 25%,
+    transparent 50%,
+    hsl(0deg 0% 98%) 50%,
+    hsl(0deg 0% 98%) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 2.5rem 2.5rem;
+}
+
+[part~='indeterminate'] {
+  animation: indeterminate-bar 2s cubic-bezier(0, 0.085, 0.68, 0.53) normal
+    infinite;
+  width: 100% !important;
+
+  &::before {
+    position: absolute;
+    content: '';
+    top: 0;
+    left: -200%;
+    width: 100%;
+    height: inherit;
+    background-color: inherit;
+    transform-origin: top right;
+  }
+}
+
+[part~='danger'] {
+  background-color: hsl(346deg 100% 54%);
+}
+
+[part~='warning'] {
+  background-color: hsl(37deg 96% 61%);
+}
+
+[part~='info'] {
+  background-color: hsl(209deg 84% 45%);
+}
+
+[part~='success'] {
+  background-color: hsl(131deg 43% 51%);
+}
+
+[part~='value'] {
+  margin: 0;
+  color: black;
+  font-size: em(14px, 16px);
+  font-weight: 600;
+}
+
+[part~='start'] {
+  align-self: flex-start;
+}
+
+[part~='center'] {
+  align-self: center;
+}
+
+[part~='end'] {
+  align-self: flex-end;
+}
+
+[part~='top'] {
+  order: -1;
+}
+
+[part~='hidden'] {
+  display: none;
+}
+
+@keyframes indeterminate-bar {
+  0% {
+    transform: scaleX(0) translateX(-100%);
+    transform-origin: left;
+  }
+
+  50% {
+    transform: scaleX(1) translateX(50%);
+    transform-origin: right;
+  }
+
+  100% {
+    transform: scaleX(0) translateX(200%);
+    transform-origin: right;
+  }
+}

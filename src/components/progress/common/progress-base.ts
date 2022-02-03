@@ -58,13 +58,7 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
     newVal: 0,
   };
 
-  public get step(): number {
-    if (this._step) {
-      return this._step;
-    }
-    return this._max * ONE_PERCENT;
-  }
-
+  @property({ attribute: true, reflect: true, type: Number })
   public set step(val: number) {
     const step = Number(val);
     if (step > this.max) {
@@ -72,6 +66,13 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
     }
 
     this._step = step;
+  }
+
+  public get step(): number {
+    if (this._step) {
+      return this._step;
+    }
+    return this._max * ONE_PERCENT;
   }
 
   @property({ type: Boolean })
@@ -88,6 +89,7 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
     return this._animate;
   }
 
+  @property({ attribute: true, reflect: true, type: Number })
   public set max(maxNum: number) {
     if (
       maxNum < MIN_VALUE ||
@@ -119,6 +121,7 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
     return this._max;
   }
 
+  @property({ attribute: true, reflect: true, type: Number })
   public set valueInPercent(value: number) {
     this.value = toValue(value, this.max);
   }

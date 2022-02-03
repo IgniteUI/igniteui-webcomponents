@@ -21,6 +21,7 @@ import IgcNavDrawerHeaderItemComponent from '../../nav-drawer/nav-drawer-header-
 import IgcNavDrawerItemComponent from '../../nav-drawer/nav-drawer-item';
 import IgcNavbarComponent from '../../navbar/navbar';
 import IgcCircularProgressComponent from '../../progress/circular.progress';
+import IgcLinearProgressComponent from '../../progress/linear.progress';
 import IgcRadioGroupComponent from '../../radio-group/radio-group';
 import IgcRadioComponent from '../../radio/radio';
 import IgcRippleComponent from '../../ripple/ripple';
@@ -57,6 +58,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcSliderComponent,
   IgcRangeSliderComponent,
   IgcCircularProgressComponent,
+  IgcLinearProgressComponent,
 ];
 
 export const defineAllComponents = () => {
