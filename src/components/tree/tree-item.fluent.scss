@@ -3,6 +3,9 @@
 @use 'sass:map';
 
 @mixin theme() {
-
+    $node-height: (
+        large: rem(50px),
+        medium: rem(40px),
+        small: rem(32px)
+    );
 }
-

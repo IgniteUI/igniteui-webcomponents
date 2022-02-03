@@ -7,33 +7,27 @@ $node-height: (
     medium: rem(40px),
     small: rem(32px)
 );
-
 $disabled-color: color(gray, 500);
-
 $background: color(surface);
 $color: contrast-color(surface);
 $hover-background: color(gray, 200);
 $hover-color: contrast-color(gray, 200);
-
 $selected-background: color(secondary, 200);
 $selected-color: contrast-color(secondary, 200);
 $selected-hover-background: color(secondary, 300);
 $selected-hover-color: contrast-color(secondary, 300);
-
 $active-background: color(gray, 200);
 $active-color: contrast-color(gray, 200);
-
 $active-selected-background: color(secondary, 300);
 $active-selected-color: contrast-color(secondary, 300);
-
 $focused-border-color: color(secondary, 500);
-
 $toggle-icon-size: rem(24px);
 
 :host {
     display: flex;
     flex-direction: column;
     font-family: inherit;
+
     --igc-tree-indentation-size: 24px;
 }
 
@@ -149,4 +143,3 @@ $toggle-icon-size: rem(24px);
 [part~='small'] {
     height: map.get($node-height, 'small');
 }
-
