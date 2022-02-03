@@ -1,7 +1,6 @@
 @use '../../utilities' as utils;
 @use '../base/indigo' as base;
 @use '../../../components/button/button.indigo' as button;
-@use '../../../components/button/icon-button.indigo' as icon-button;
 @use '../../../components/card/card.indigo' as card;
 @use '../../../components/checkbox/checkbox.indigo' as checkbox with (
     $border-color: utils.color(gray, 700),
@@ -55,5 +54,4 @@ $palette: utils.palette(
 @include nav-drawer-header.theme();
 @include list.theme();
 @include input.theme();
-@include icon-button.theme();
 @include slider.theme();

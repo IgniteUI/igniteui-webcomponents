@@ -2,7 +2,7 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcButtonBaseComponent } from './button-base.js';
-import { styles } from './icon-button.material.css';
+import { styles } from './icon-button.fluent.css';
 import '../icon/icon';
 import { alternateName, blazorInclude } from '../common/decorators';
 import {

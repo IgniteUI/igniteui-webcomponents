@@ -5,10 +5,10 @@
     $hover-color: utils.color(primary, 300),
     $active-color: utils.color(primary, 100)
 );
-@use '../../../components/button/icon-button.fluent' as icon-button with (
-    $button-color: utils.color(surface, 500),
-    $hover-color: utils.color(primary, 300)
-);
+// @use '../../../components/button/icon-button.fluent' as icon-button with (
+//     $button-color: utils.color(surface, 500),
+//     $hover-color: utils.color(primary, 300)
+// );
 @use '../../../components/card/card.fluent' as card;
 @use '../../../components/checkbox/checkbox.fluent' as checkbox with (
     $border-color: utils.color(gray, 700),
@@ -69,5 +69,4 @@ $palette: utils.palette(
 @include list.theme();
 @include calendar.theme();
 @include input.theme();
-@include icon-button.theme();
 @include slider.theme();

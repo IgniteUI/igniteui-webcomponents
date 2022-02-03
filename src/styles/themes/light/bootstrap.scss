@@ -1,7 +1,6 @@
 @use '../../utilities' as utils;
 @use '../base/bootstrap' as base;
 @use '../../../components/button/button.bootstrap' as button;
-@use '../../../components/button/icon-button.bootstrap' as icon-button;
 @use '../../../components/card/card.bootstrap' as card;
 @use '../../../components/checkbox/checkbox.bootstrap' as checkbox;
 @use '../../../components/radio/radio.bootstrap' as radio;
@@ -33,5 +32,4 @@ $palette: utils.palette(
 @include list.theme();
 @include calendar.theme();
 @include input.theme();
-@include icon-button.theme();
 @include slider.theme();

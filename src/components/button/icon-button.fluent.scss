@@ -1,11 +1,12 @@
+@use './icon-button.base.scss';
 @use '../../styles/utilities' as utils;
 
 $button-color: #{utils.contrast-color(primary, 600)} !default;
 $hover-color: #{utils.color(primary, 600)} !default;
 
-@mixin theme() {
-    igc-icon-button::part(base) {
+    button {
         background: transparent;
+        color: utils.color(gray, 900);
         border-radius: utils.rem(1px);
         transition: color .15s ease-out, background .15s ease-out;
         box-shadow: none;
@@ -19,10 +20,6 @@ $hover-color: #{utils.color(primary, 600)} !default;
             width: calc(100% - 4px);
             height: calc(100% - 4px);
         }
-    }
-
-    igc-icon-button:not([disabled])::part(base) {
-        color: utils.color(gray, 900);
 
         &:hover {
             color: utils.color(primary, 500);
@@ -37,47 +34,52 @@ $hover-color: #{utils.color(primary, 600)} !default;
         }
     }
 
-    igc-icon-button[variant='contained']:not([disabled])::part(base) {
-        color: $button-color;
-        background: utils.color(primary, 500);
+    :host([variant='contained']) {
+        button {
+            color: $button-color;
+            background: utils.color(primary, 500);
 
-        &:hover {
-            background: $hover-color;
-        }
+            &:hover {
+                background: $hover-color;
+            }
 
-        &:focus-visible::after {
-            box-shadow: 0 0 0 utils.rem(1px) utils.contrast-color(primary, 600);
-        }
-    }
-
-    igc-icon-button[variant='outlined']:not([disabled])::part(base) {
-        color: utils.color(gray, 900);
-        box-shadow: 0 0 0 1px utils.color(gray, 700);
-
-        &:focus {
-            background: transparent;
-        }
-
-        &:hover,
-        &:focus:hover {
-            background: utils.color(gray, 100);
-        }
-
-        &:focus:active {
-            background: utils.color(gray, 200);
+            &:focus-visible::after {
+                box-shadow: 0 0 0 utils.rem(1px) utils.contrast-color(primary, 600);
+            }
         }
     }
 
-    igc-icon-button[disabled] {
-        &::part(base) {
+    :host([variant='outlined']) {
+        button {
+            color: utils.color(gray, 900);
+            box-shadow: 0 0 0 1px utils.color(gray, 700);
+
+            &:focus {
+                background: transparent;
+            }
+
+            &:hover,
+            &:focus:hover {
+                background: utils.color(gray, 100);
+            }
+
+            &:focus:active {
+                background: utils.color(gray, 200);
+            }
+        }
+    }
+
+    :host([disabled]) {
+        button {
             color: utils.color(gray, 400);
             background: transparent;
         }
+    }
 
-        &[variant='contained']::part(base),
-        &[variant='outlined']::part(base) {
+    :host([disabled][variant='contained']),
+    :host([disabled][variant='outlined']) {
+        button {
             color: utils.color(gray, 500);
             background: utils.color(gray, 100);
         }
     }
-}

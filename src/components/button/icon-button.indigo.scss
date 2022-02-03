@@ -1,27 +1,25 @@
+@use './icon-button.base.scss';
 @use '../../styles/utilities' as utils;
 
-@mixin theme() {
-    igc-icon-button::part(base) {
-        transition: color .15s ease-in-out, box-shadow .15s ease-in-out, background .15s ease-in-out;
+button {
+    transition: color .15s ease-in-out, box-shadow .15s ease-in-out, background .15s ease-in-out;
+    color: utils.color(gray, 700);
+
+    &:hover {
+        color: utils.color(gray, 900);
+        background: transparent;
     }
 
-    igc-icon-button:not([disabled])::part(base) {
-        color: utils.color(gray, 700);
-
-        &:hover {
-            color: utils.color(gray, 900);
-            background: transparent;
-        }
-
-        &:focus,
-        &:active {
-            color: utils.color(gray, 900);
-            background: transparent;
-            box-shadow: 0 0 0 utils.rem(3px) utils.color(gray, 300);
-        }
+    &:focus,
+    &:active {
+        color: utils.color(gray, 900);
+        background: transparent;
+        box-shadow: 0 0 0 utils.rem(3px) utils.color(gray, 300);
     }
+}
 
-    igc-icon-button[variant='contained']:not([disabled])::part(base) {
+:host([variant='contained']) {
+    button {
         color: utils.contrast-color(primary, 600);
         background: utils.color(primary, 500);
 
@@ -35,8 +33,10 @@
             box-shadow: 0 0 0 utils.rem(3px) utils.color(primary, 200);
         }
     }
+}
 
-    igc-icon-button[variant='outlined']:not([disabled])::part(base) {
+:host([variant='outlined']) {
+    button {
         box-shadow: none;
 
         &::after {
@@ -59,17 +59,19 @@
             box-shadow: 0 0 0 utils.rem(3px) utils.color(gray, 300);
         }
     }
+}
 
-    igc-icon-button[disabled] {
-        &::part(base) {
-            color: utils.color(gray, 400);
-            background: transparent;
-            box-shadow: none;
-        }
+:host([disabled]) {
+    button {
+        color: utils.color(gray, 400);
+        background: transparent;
+        box-shadow: none;
+    }
+}
 
-        &[variant='contained']::part(base) {
-            background: utils.color(gray, 100);
-            color: utils.color(gray, 400);
-        }
+:host([disabled][variant='contained']) {
+    button {
+        background: utils.color(gray, 100);
+        color: utils.color(gray, 400);
     }
 }
