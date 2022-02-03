@@ -4,6 +4,7 @@ import {
   expect,
   elementUpdated,
   unsafeStatic,
+  aTimeout,
 } from '@open-wc/testing';
 import { defineComponents, IgcSnackbarComponent } from '../../index.js';
 
@@ -69,6 +70,58 @@ describe('Snackbar', () => {
       expect(el).dom.to.equal(
         `<igc-snackbar action-text='Dismiss'></igc-snackbar>`
       );
+    });
+
+    it('should open the snackbar successfully', async () => {
+      el.open = false;
+      await elementUpdated(el);
+      expect(el.open).to.equal(false);
+      expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);
+
+      el.show();
+      await elementUpdated(el);
+      expect(el.open).to.equal(true);
+      expect(el).dom.to.equal(`<igc-snackbar open></igc-snackbar>`);
+    });
+
+    it('should hide the snackbar successfully', async () => {
+      el.open = true;
+      await elementUpdated(el);
+      expect(el.open).to.equal(true);
+      expect(el).dom.to.equal(`<igc-snackbar open></igc-snackbar>`);
+
+      el.hide();
+      await elementUpdated(el);
+      expect(el.open).to.equal(false);
+      expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);
+    });
+
+    it('should hide the snackbar automatically after the display time is over', async () => {
+      el.open = false;
+      el.displayTime = 1000;
+      await elementUpdated(el);
+      expect(el.open).to.equal(false);
+
+      el.show();
+      await elementUpdated(el);
+      expect(el.open).to.equal(true);
+      await aTimeout(1000);
+      expect(el.open).to.equal(false);
+    });
+
+    it('should not hide the snackbar automatically when the keepOpen property is set to true', async () => {
+      el.open = false;
+      el.displayTime = 1000;
+      el.keepOpen = true;
+      await elementUpdated(el);
+      expect(el.open).to.equal(false);
+
+      el.show();
+      await elementUpdated(el);
+      expect(el.open).to.equal(true);
+      expect(el.keepOpen).to.equal(true);
+      await aTimeout(1000);
+      expect(el.open).to.equal(true);
     });
 
     const createSnackbarComponent = (
