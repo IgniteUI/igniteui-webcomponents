@@ -39,7 +39,11 @@ async function sassRender(sourceFile, templateFile, outputFile) {
 
 (async () => {
   const template = path.resolve(process.argv[1], '../styles.tmpl');
-  const paths = await globby(['src/components/**/*.material.scss']);
+  const paths = await globby([
+    'src/components/**/*.material.scss',
+    'src/components/**/*.bootstrap.scss',
+    'src/components/**/*.indigo.scss', 'src/components/**/*.fluent.scss'
+  ]);
 
   for (const sourceFile of paths) {
     const output = sourceFile.replace(/\.scss$/, '.css.ts');
