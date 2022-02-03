@@ -8,9 +8,7 @@ import { html, LitElement } from 'lit';
 import { partNameMap } from '../common/util.js';
 import { styles } from './tree-item.material.css';
 import IgcTreeComponent from './tree';
-import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { IgcTreeSelectionType } from './tree.common.js';
 import { watch } from '../common/decorators';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
@@ -23,16 +21,14 @@ import { IgcTreeNavigationService } from './tree.navigation.js';
  * @slot - Renders nested tree-item component.
  * @slot label - Renders the tree item container.
  * @slot indicator - Renders the expand indicator container.
+ * @slot loading - Renders the tree item loading indicator container.
  * @slot indentation - Renders the container (by default the space) before the tree item.
  */
-export default class IgcTreeItemComponent extends EventEmitterMixin<
-  IgcTreeEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcTreeItemComponent extends LitElement {
   /** @private */
   public static tagName = 'igc-tree-item';
   /** @private */
-  public static styles = styles;
+  public static override styles = styles;
 
   private tabbableEl!: NodeListOf<HTMLElement>;
   private focusedProgrammatically = false;
@@ -62,6 +58,10 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
   /** @private */
   @state()
   public size = 'large';
+
+  /** @private */
+  @state()
+  public override dir = 'ltr';
 
   /** The depth of the node, relative to the root. */
   @state()
@@ -198,6 +198,7 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
         : null;
     this.level = this.parent ? this.parent.level + 1 : 0;
     this.selection = this.tree?.selection;
+    this.dir = this.tree?.dir;
     // this.navService?.update_visible_cache(this, this.expanded);
     this.setAttribute('role', 'treeitem');
     this.addEventListener('blur', this.onBlur);
@@ -480,6 +481,8 @@ export default class IgcTreeItemComponent extends EventEmitterMixin<
                         <igc-icon
                           name=${this.expanded
                             ? 'keyboard_arrow_down'
+                            : this.dir === 'rtl'
+                            ? 'navigate_before'
                             : 'keyboard_arrow_right'}
                           collection="internal"
                         >

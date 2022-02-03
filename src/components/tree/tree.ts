@@ -10,6 +10,8 @@ import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common';
 import { IgcTreeNavigationService } from './tree.navigation';
 import { IgcTreeSelectionService } from './tree.selection';
 
+type Direction = 'ltr' | 'rtl' | 'auto';
+
 /**
  * The tree allows users to represent hierarchical data in a tree-view structure,
  * maintaining parent-child relationships, as well as to define static tree-view structure without a corresponding data model.
@@ -45,9 +47,20 @@ export default class IgcTreeComponent extends SizableMixin(
   @property({ reflect: true })
   public selection: 'none' | 'multiple' | 'cascade' = 'none';
 
+  /** The direction attribute of the control. */
+  @property({ reflect: true })
+  public override dir: Direction = 'auto';
+
+  @watch('dir')
+  public onDirChange(): void {
+    this.items?.forEach((item: IgcTreeItemComponent) => {
+      item.dir = this.dir;
+    });
+  }
+
   @watch('size', { waitUntilFirstUpdate: true })
   public onSizeChange(): void {
-    this.items.forEach((item: IgcTreeItemComponent) => {
+    this.items?.forEach((item: IgcTreeItemComponent) => {
       item.size = this.size;
     });
     this.navService.activeItem?.wrapper?.scrollIntoView({

@@ -193,11 +193,19 @@ export class IgcTreeNavigationService {
         break;
       case 'arrowleft':
       case 'left':
-        this.handleArrowLeft();
+        if (this.tree.dir === 'rtl') {
+          this.handleArrowRight();
+        } else {
+          this.handleArrowLeft();
+        }
         break;
       case 'arrowright':
       case 'right':
-        this.handleArrowRight();
+        if (this.tree.dir === 'rtl') {
+          this.handleArrowLeft();
+        } else {
+          this.handleArrowRight();
+        }
         break;
       case 'arrowup':
       case 'up':
