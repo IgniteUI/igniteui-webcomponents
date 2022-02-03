@@ -73,7 +73,6 @@ const metadata = {
       description:
         'Specifies the granularity that the value must adhere to.\nIf set to 0 no stepping is implied and any value in the range is allowed.',
       control: 'number',
-      defaultValue: '1',
     },
     primaryTicks: {
       type: 'number',
@@ -110,6 +109,19 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    locale: {
+      type: 'string',
+      description:
+        'The locale used to format the thumb and tick label values in the slider.',
+      control: 'text',
+      defaultValue: 'en',
+    },
+    valueFormat: {
+      type: 'string | undefined',
+      description:
+        'String format used for the thumb and tick label values in the slider.',
+      control: 'text',
+    },
     tickLabelRotation: {
       type: '0 | 90 | -90',
       description:
@@ -141,6 +153,8 @@ interface ArgTypes {
   tickOrientation: 'start' | 'end' | 'mirror';
   hidePrimaryLabels: boolean;
   hideSecondaryLabels: boolean;
+  locale: string;
+  valueFormat: string | undefined;
   tickLabelRotation: 0 | 90 | -90;
 }
 // endregion
