@@ -28,6 +28,7 @@ import IgcTreeComponent from '../../tree/tree';
 import IgcTreeItemComponent from '../../tree/tree-item';
 import IgcRangeSliderComponent from '../../slider/range-slider';
 import IgcSliderComponent from '../../slider/slider';
+import IgcSliderLabelComponent from '../../slider/slider-label';
 import { defineComponents } from './defineComponents';
 
 const allComponents: CustomElementConstructor[] = [
@@ -59,6 +60,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcTreeComponent,
   IgcTreeItemComponent,
   IgcSliderComponent,
+  IgcSliderLabelComponent,
   IgcRangeSliderComponent,
   IgcTreeSampleComponent,
 ];

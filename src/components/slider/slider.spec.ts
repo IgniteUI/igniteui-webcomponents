@@ -10,6 +10,7 @@ import {
   defineComponents,
   IgcRangeSliderComponent,
   IgcSliderComponent,
+  IgcSliderLabelComponent,
 } from '../../index.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 
@@ -54,7 +55,7 @@ describe('Slider component', () => {
     let slider: IgcSliderComponent;
 
     before(() => {
-      defineComponents(IgcSliderComponent);
+      defineComponents(IgcSliderComponent, IgcSliderLabelComponent);
     });
 
     beforeEach(async () => {
@@ -181,7 +182,7 @@ describe('Slider component', () => {
 
       slider.value = 23;
       slider.setAttribute('aria-label', 'Price');
-      slider.labelFormatter = (value) => `$${value}`;
+      slider.valueFormatOptions = { style: 'currency', currency: 'USD' };
       await elementUpdated(slider);
 
       expect(slider.hasAttribute('aria-label')).to.be.false;
@@ -189,7 +190,7 @@ describe('Slider component', () => {
       expect(thumb.ariaValueMin).to.eq('0');
       expect(thumb.ariaValueMax).to.eq('100');
       expect(thumb.ariaValueNow).to.eq('23');
-      expect(thumb.ariaValueText).to.eq('$23');
+      expect(thumb.ariaValueText).to.eq('$23.00');
       expect(thumb.ariaDisabled).to.eq('false');
       expect(thumb.ariaLabel).to.eq('Price');
       await expect(slider).to.be.accessible();
@@ -519,24 +520,53 @@ describe('Slider component', () => {
       expect(getComputedStyle(slider).pointerEvents).to.eq('none');
     });
 
-    it('tick mark labels and thumb tooltip should be formatted by the labelFormatter function', async () => {
+    it('tick mark labels and thumb tooltip should be formatted by the value format properties', async () => {
       slider.primaryTicks = 3;
       slider.secondaryTicks = 4;
       slider.value = 23;
-      slider.labelFormatter = (value) => `$${value}`;
+      slider.valueFormat = 'P: {0}';
+      slider.valueFormatOptions = { style: 'currency', currency: 'USD' };
       await elementUpdated(slider);
       const tickLabels = getTickLabels(slider);
       const thumbLabel = getThumbLabel(slider);
 
       expect(tickLabels.length).to.eq(11);
-      expect(thumbLabel.innerText).to.eq('$23');
+      expect(thumbLabel.innerText).to.eq('P: $23.00');
 
       for (let i = 0; i < tickLabels.length; i++) {
         const label = tickLabels[i];
         expect(label.innerText).to.eq(
-          `$${(i / (tickLabels.length - 1)) * 100}`
+          `P: $${(i / (tickLabels.length - 1)) * 100}.00`
         );
       }
+    });
+
+    it('tick mark labels and thumb tooltip should use provided labels', async () => {
+      const labels = ['Low', 'Medium', 'High'];
+      const slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider primary-ticks="3">
+          ${labels.map((l) => html`<igc-slider-label>${l}</igc-slider-label>`)}
+        </igc-slider>`
+      );
+      await elementUpdated(slider);
+
+      const tickLabels = getTickLabels(slider);
+      const thumbLabel = getThumbLabel(slider);
+      const thumb = getThumb(slider);
+
+      expect(tickLabels.length).to.eq(3);
+      expect(thumbLabel.innerText).to.eq(labels[0]);
+      expect(thumb.ariaValueText).to.eq(labels[0]);
+
+      for (let i = 0; i < tickLabels.length; i++) {
+        const label = tickLabels[i];
+        expect(label.innerText).to.eq(labels[i]);
+      }
+
+      slider.value = 1;
+      await elementUpdated(slider);
+      expect(thumbLabel.innerText).to.eq(labels[1]);
+      expect(thumb.ariaValueText).to.eq(labels[1]);
     });
 
     it('thumb tooltip should be displayed on hovering the thumb', async () => {
@@ -943,14 +973,14 @@ describe('Slider component', () => {
       slider.upper = 70;
       slider.ariaLabelLower = 'Price From';
       slider.ariaLabelUpper = 'Price To';
-      slider.labelFormatter = (value) => `$${value}`;
+      slider.valueFormatOptions = { style: 'currency', currency: 'USD' };
       await elementUpdated(slider);
 
       expect(lowerThumb.getAttribute('role')).to.eq('slider');
       expect(lowerThumb.ariaValueMin).to.eq('0');
       expect(lowerThumb.ariaValueMax).to.eq('100');
       expect(lowerThumb.ariaValueNow).to.eq('20');
-      expect(lowerThumb.ariaValueText).to.eq('$20');
+      expect(lowerThumb.ariaValueText).to.eq('$20.00');
       expect(lowerThumb.ariaDisabled).to.eq('false');
       expect(lowerThumb.ariaLabel).to.eq('Price From');
 
@@ -958,7 +988,7 @@ describe('Slider component', () => {
       expect(upperThumb.ariaValueMin).to.eq('0');
       expect(upperThumb.ariaValueMax).to.eq('100');
       expect(upperThumb.ariaValueNow).to.eq('70');
-      expect(upperThumb.ariaValueText).to.eq('$70');
+      expect(upperThumb.ariaValueText).to.eq('$70.00');
       expect(upperThumb.ariaDisabled).to.eq('false');
       expect(upperThumb.ariaLabel).to.eq('Price To');
 

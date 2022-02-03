@@ -10,7 +10,7 @@ $inactive-background: utils.color(secondary, 500, .24) !default;
     igc-slider::part(inactive),
     igc-range-slider::part(track),
     igc-range-slider::part(inactive) {
-        height: utils.rem(6px);
+        height: utils.rem(8px);
     }
 
     igc-slider::part(fill),
