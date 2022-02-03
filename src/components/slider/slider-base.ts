@@ -517,7 +517,9 @@ export class IgcSliderBaseComponent extends LitElement {
                     <span part="tick-label-inner">
                       ${this.labels
                         ? isPrimary
-                          ? this.labels[i % this.labels.length]
+                          ? this.labels[
+                              Math.round(i / (this.secondaryTicks + 1))
+                            ]
                           : ''
                         : this.formatValue(this.tickValue(i))}
                     </span>
