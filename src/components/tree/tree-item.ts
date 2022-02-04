@@ -30,7 +30,7 @@ export default class IgcTreeItemComponent extends LitElement {
   /** @private */
   public static override styles = styles;
 
-  private tabbableEl!: NodeListOf<HTMLElement>;
+  private tabbableEl?: HTMLElement[];
   private focusedProgrammatically = false;
 
   /** A reference to the tree the item is a part of. */
@@ -76,7 +76,7 @@ export default class IgcTreeItemComponent extends LitElement {
   public selection: IgcTreeSelectionType = IgcTreeSelectionType.None;
 
   /** The tree item label. */
-  @property({ reflect: true })
+  @property()
   public label = '';
 
   /** The tree item expansion state. */
@@ -321,7 +321,7 @@ export default class IgcTreeItemComponent extends LitElement {
     if (!this.disabled) {
       // clicking directly over tabbable element when the item is not focused
       if (!this.focusedProgrammatically) {
-        this.tabbableEl.forEach((element: HTMLElement) => {
+        this.tabbableEl?.forEach((element: HTMLElement) => {
           element.tabIndex = 0;
         });
       }
@@ -334,7 +334,7 @@ export default class IgcTreeItemComponent extends LitElement {
   private onFocusOut(ev: Event): void {
     ev?.stopPropagation();
     this.isFocused = false;
-    this.tabbableEl.forEach((element: HTMLElement) => {
+    this.tabbableEl?.forEach((element: HTMLElement) => {
       element.tabIndex = -1;
     });
 
@@ -345,14 +345,23 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private labelChange(): void {
-    this.tabbableEl = this.contentList[0]?.querySelectorAll<HTMLElement>(
-      'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])'
-    );
+    const firstElement = this.contentList[0];
+    const tabbableSelector =
+      'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
+
+    this.tabbableEl = [
+      ...firstElement.querySelectorAll<HTMLElement>(tabbableSelector),
+    ];
+    if (firstElement.matches(tabbableSelector)) {
+      this.tabbableEl.splice(0, 0, firstElement);
+    }
+
     if (this.tabbableEl && this.tabbableEl.length) {
       this.setAttribute('role', 'none');
+      this.tabbableEl[0].setAttribute('role', 'treeitem');
+
       this.tabbableEl.forEach((element: HTMLElement) => {
         element.tabIndex = -1;
-        element.setAttribute('role', 'treeitem');
       });
     } else {
       this.setAttribute('role', 'treeitem');
@@ -517,7 +526,7 @@ export default class IgcTreeItemComponent extends LitElement {
           </slot>
         </div>
       </div>
-      <div role="group" aria-hidden="true">
+      <div role="group">
         <slot @slotchange=${this.handleChange} ?hidden=${!this.expanded}></slot>
       </div>
     `;

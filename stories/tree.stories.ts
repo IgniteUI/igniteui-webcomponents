@@ -197,13 +197,13 @@ const BasicTemplate: Story<ArgTypes, Context> = (
               )}
             </igc-tree-item>
             <igc-tree-item #asd>
-              <p slot="label">
+              <p slot="label" role="none">
                 <a href="http://infragistics.com">Infragistics</a>
               </p>
             </igc-tree-item>
           </igc-tree-item>
           <igc-tree-item id="parent2">
-            <p slot="label">
+            <p slot="label" role="none">
               <span>
                 <input />
                 <button>asd</button>
