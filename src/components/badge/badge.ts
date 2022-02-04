@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { styles } from './badge.bootstrap.css';
+import { styles } from './themes/light/badge.bootstrap.css';
 
 /**
  * The badge is a component indicating a status on a related item or an area

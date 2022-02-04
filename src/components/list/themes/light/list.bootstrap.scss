@@ -1,3 +1,5 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 @use './list.base.scss';
 
 $list-bg: contrast-color(gray, 900) !default;

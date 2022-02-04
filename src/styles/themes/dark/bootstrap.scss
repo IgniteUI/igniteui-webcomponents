@@ -6,9 +6,6 @@
 @use '../../../components/radio/radio.bootstrap' as radio;
 @use '../../../components/checkbox/switch.bootstrap' as switch;
 @use '../../../components/navbar/navbar.bootstrap' as navbar;
-// @use '../../../components/list/list.bootstrap' as list with (
-//     $separator-color: utils.color(gray, 100)
-// );
 @use '../../../components/calendar/calendar.bootstrap' as calendar;
 @use '../../../components/input/input.bootstrap' as input with ($input-background: transparent);
 @use '../../../components/slider/slider.bootstrap' as slider with (

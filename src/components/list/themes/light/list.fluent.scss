@@ -1,3 +1,5 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 @use './list.base.scss';
 
 $separator-color: color(gray, 100) !default;

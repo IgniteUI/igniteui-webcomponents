@@ -1,0 +1,4 @@
+@use '../../../../styles/utilities' as utils;
+@use '../light/list.fluent' with (
+    $item-hover-bg: utils.color(gray, 100),
+);

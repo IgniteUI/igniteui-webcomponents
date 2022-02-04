@@ -1,6 +1,6 @@
-@use '../../styles/common/component';
+@use '../../../../styles/common/component';
 @use './badge.base.scss';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/utilities' as *;
 
 :host {
     --size: #{rem(12px)};

@@ -1,6 +1,5 @@
-@use '../../styles/common/component';
 @use './icon-button.base.scss';
-@use '../../styles/utilities' as *;
+@use '../../../../../styles/utilities' as *;
 
 :host([variant='contained']) {
     button {

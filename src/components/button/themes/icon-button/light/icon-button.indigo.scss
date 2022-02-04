@@ -1,5 +1,5 @@
 @use './icon-button.base.scss';
-@use '../../styles/utilities' as utils;
+@use '../../../../../styles/utilities' as utils;
 
 button {
     transition: color .15s ease-in-out, box-shadow .15s ease-in-out, background .15s ease-in-out;

@@ -5,10 +5,6 @@
     $hover-color: utils.color(primary, 300),
     $active-color: utils.color(primary, 100)
 );
-// @use '../../../components/button/icon-button.fluent' as icon-button with (
-//     $button-color: utils.color(surface, 500),
-//     $hover-color: utils.color(primary, 300)
-// );
 @use '../../../components/card/card.fluent' as card;
 @use '../../../components/checkbox/checkbox.fluent' as checkbox with (
     $border-color: utils.color(gray, 700),
@@ -34,9 +30,6 @@
     $invalid-hover-color: utils.color(error, 100),
     $disabled-color: utils.color(gray, 200)
 );
-// @use '../../../components/list/list.fluent' as list with (
-//     $item-hover-bg: utils.color(gray, 100),
-// );
 @use '../../../components/calendar/calendar.fluent' as calendar;
 @use '../../../components/input/input.fluent' as input with ($container-background: transparent);
 @use '../../../components/slider/slider.fluent' as slider with (

@@ -22,9 +22,6 @@
 @use '../../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
 @use '../../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
 @use '../../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
-// @use '../../../components/list/list.indigo' as list with (
-//     $item-hover-bg: utils.color(primary, 500, .5)
-// );
 @use '../../../components/input/input.indigo' as input with ($label-focus-color: utils.color(gray, 800));
 @use '../../../components/slider/slider.indigo' as slider with (
     $inactive-background: utils.color(gray, 200),
