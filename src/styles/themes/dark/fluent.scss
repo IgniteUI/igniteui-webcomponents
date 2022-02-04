@@ -34,9 +34,9 @@
     $invalid-hover-color: utils.color(error, 100),
     $disabled-color: utils.color(gray, 200)
 );
-@use '../../../components/list/list.fluent' as list with (
-    $item-hover-bg: utils.color(gray, 100),
-);
+// @use '../../../components/list/list.fluent' as list with (
+//     $item-hover-bg: utils.color(gray, 100),
+// );
 @use '../../../components/calendar/calendar.fluent' as calendar;
 @use '../../../components/input/input.fluent' as input with ($container-background: transparent);
 @use '../../../components/slider/slider.fluent' as slider with (
@@ -66,7 +66,6 @@ $palette: utils.palette(
 @include checkbox.theme();
 @include radio.theme();
 @include switch.theme();
-@include list.theme();
 @include calendar.theme();
 @include input.theme();
 @include slider.theme();

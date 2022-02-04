@@ -1,25 +1,24 @@
-@use '../../styles/utilities' as *;
+@use './list.base.scss';
 
 $header-color: color(primary, 500) !default;
 $item-color: color(gray, 900) !default;
 $item-hover-bg: color(gray, 50) !default;
 $subtitle-color: color(gray, 800) !default;
 
-@mixin theme() {
-    igc-list-header {
-        color: $header-color;
+
+igc-list-header {
+    color: $header-color;
+}
+
+igc-list-item {
+    color: $item-color;
+
+    &:hover,
+    &:focus-within {
+        background: $item-hover-bg;
     }
 
-    igc-list-item {
-        color: $item-color;
-
-        &:hover,
-        &:focus-within {
-            background: $item-hover-bg;
-        }
-
-        &::part(subtitle) {
-            color: $subtitle-color;
-        }
+    &[part="subtitle"] {
+        color: $subtitle-color;
     }
 }

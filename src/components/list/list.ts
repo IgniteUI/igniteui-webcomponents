@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { SizableMixin } from '../common/mixins/sizable';
-import { styles } from './list.material.css';
+import { styles } from './list.bootstrap.css';
 
 /**
  * Displays a collection of data items in a templatable list format.
