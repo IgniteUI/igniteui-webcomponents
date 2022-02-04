@@ -12,7 +12,6 @@
 @use '../../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
 @use '../../../components/list/list.indigo' as list;
 @use '../../../components/input/input.indigo' as input;
-@use '../../../components/slider/slider.indigo' as slider;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -38,4 +37,3 @@ $palette: utils.palette(
 @include list.theme();
 @include input.theme();
 @include icon-button.theme();
-@include slider.theme();

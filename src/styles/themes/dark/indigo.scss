@@ -27,10 +27,6 @@
     $item-hover-bg: utils.color(primary, 500, .5)
 );
 @use '../../../components/input/input.indigo' as input with ($label-focus-color: utils.color(gray, 800));
-@use '../../../components/slider/slider.indigo' as slider with (
-    $inactive-background: utils.color(gray, 200),
-    $inactive-hover-background: utils.color(gray, 400)
-);
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -56,4 +52,3 @@ $palette: utils.palette(
 @include list.theme();
 @include input.theme();
 @include icon-button.theme();
-@include slider.theme();

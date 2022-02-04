@@ -8,7 +8,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators';
-import { styles } from './slider.material.css';
+import { styles } from './themes/light/slider.material.css';
 
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = [styles];

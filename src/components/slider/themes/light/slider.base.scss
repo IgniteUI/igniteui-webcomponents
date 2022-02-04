@@ -1,10 +1,10 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
-$ripple-size: rem(40px);
-$ripple-radius: calc(#{$ripple-size} / 2);
 $thumb-size: rem(20px);
 $thumb-radius: calc(#{$thumb-size} / 2);
+$ripple-size: rem(40px);
+$ripple-radius: calc(#{$ripple-size} / 2);
 $thumb-label-width: rem(40px);
 $thumb-label-height: rem(30px);
 
@@ -28,7 +28,6 @@ slot {
 
 [part='track'] {
     position: relative;
-    height: rem(6px);
     width: 100%;
     border-radius: rem(32px);
     overflow: hidden;
@@ -36,16 +35,14 @@ slot {
 
 [part='fill'] {
     position: absolute;
-    height: rem(6px);
     background: color(secondary, 500);
     border-radius: inherit;
 }
 
 [part='inactive'] {
     position: absolute;
-    height: rem(4px);
     width: 100%;
-    top: rem(1px);
+    top: rem(1px); // ?
     background: color(secondary, 500, .24);
     transition: background .2s ease-out;
     border-radius: inherit;
@@ -130,43 +127,9 @@ slot {
     align-items: center;
     flex-direction: column;
     outline-style: none;
-    width: $thumb-size;
-    height: $thumb-size;
-    background: color(secondary, 500);
     transition: transform .1s ease-out, border-radius .1s ease-out;
     border-radius: $thumb-radius;
-    top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
-    margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
-
-    &::after {
-        position: absolute;
-        content: '';
-        width: $ripple-size;
-        height: $ripple-size;
-        background: color(secondary, 500);
-        top: calc(50% - #{$ripple-radius});
-        inset-inline-start: calc(50% - #{$ripple-radius});
-        opacity: 0;
-        transform: scale(0);
-        transform-origin: center center;
-        transition: transform .1s ease-out, opacity .1s ease-out;
-        overflow: hidden;
-        border-radius: $ripple-radius;
-    }
-
-    &:hover::after {
-        opacity: .12;
-        transform: scale(1);
-    }
-
-    &:focus::after {
-        opacity: .18;
-        transform: scale(1);
-    }
-
-    &:active::after {
-        opacity: .24;
-    }
+    background: color(secondary, 500);
 }
 
 [part='thumb-label'] {
