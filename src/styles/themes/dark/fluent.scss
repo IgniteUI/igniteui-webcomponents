@@ -49,7 +49,6 @@
     $fill-disabled-background: utils.color(gray, 300),
     $thumb-disabled-border: utils.color(gray, 200)
 );
-@use '../../../components/toast/toast.fluent' as toast;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -72,4 +71,3 @@ $palette: utils.palette(
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();
-@include toast.theme();

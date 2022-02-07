@@ -16,7 +16,6 @@
 @use '../../../components/slider/slider.bootstrap' as slider with (
     $inactive-background: utils.color(secondary, 500, .48)
 );
-@use '../../../components/toast/toast.bootstrap' as toast;
 
 $palette: utils.palette(
     $primary: #0d6efd,
@@ -42,4 +41,3 @@ $palette: utils.palette(
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();
-@include toast.theme();

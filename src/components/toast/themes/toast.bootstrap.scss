@@ -1,0 +1,11 @@
+@use '../../../styles/utilities' as *;
+@use './toast.base.scss';
+
+div {
+    color: contrast-color(surface);
+    background: color(surface);
+    outline: 1px solid color(gray, 300);
+    border-radius: rem(4px);
+    padding: rem(11px);
+    box-shadow: var(--igc-elevation-10);
+}

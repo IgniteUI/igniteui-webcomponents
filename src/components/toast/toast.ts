@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { styles } from './toast.material.css';
+import { styles } from './themes/toast.fluent.css';
 
 /**
  * A toast component is used to show a notification
