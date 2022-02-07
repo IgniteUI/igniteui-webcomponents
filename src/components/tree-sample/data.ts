@@ -1,3 +1,4 @@
+/* c8 ignore next 152 */
 export const data = [
   {
     label: 'Child 1',

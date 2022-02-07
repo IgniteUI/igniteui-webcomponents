@@ -13,6 +13,7 @@ import { DataService } from './data.js';
  *
  *
  */
+/* c8 ignore next 124 */
 @customElement('igc-tree-sample')
 export default class IgcTreeSampleComponent extends SizableMixin(LitElement) {
   /** @private */
