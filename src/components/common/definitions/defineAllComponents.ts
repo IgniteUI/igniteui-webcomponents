@@ -9,6 +9,10 @@ import IgcCardContentComponent from '../../card/card.content';
 import IgcCardHeaderComponent from '../../card/card.header';
 import IgcCardMediaComponent from '../../card/card.media';
 import IgcCheckboxComponent from '../../checkbox/checkbox';
+import IgcDropDownComponent from '../../dropdown/dropdown';
+import IgcDropDownGroupComponent from '../../dropdown/dropdown-group';
+import IgcDropDownHeaderComponent from '../../dropdown/dropdown-header';
+import IgcDropDownItemComponent from '../../dropdown/dropdown-item';
 import IgcSwitchComponent from '../../checkbox/switch';
 import IgcFormComponent from '../../form/form';
 import IgcIconComponent from '../../icon/icon';
@@ -40,6 +44,10 @@ const allComponents: CustomElementConstructor[] = [
   IgcCardMediaComponent,
   IgcCardComponent,
   IgcCheckboxComponent,
+  IgcDropDownComponent,
+  IgcDropDownGroupComponent,
+  IgcDropDownHeaderComponent,
+  IgcDropDownItemComponent,
   IgcSwitchComponent,
   IgcFormComponent,
   IgcIconComponent,
