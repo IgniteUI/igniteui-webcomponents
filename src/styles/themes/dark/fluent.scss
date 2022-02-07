@@ -25,15 +25,6 @@
     $invalid-hover-color: utils.color(error, 100),
     $disabled-color: utils.color(gray, 200)
 );
-@use '../../../components/checkbox/switch.fluent' as switch with (
-    $thumb-color: utils.color(gray, 500),
-    $disabled-thumb-color: utils.color(surface, 100),
-    $hover-color: utils.color(gray, 900),
-    $checked-hover-color: utils.color(primary, 100),
-    $invalid-color: utils.color(error, 200),
-    $invalid-hover-color: utils.color(error, 100),
-    $disabled-color: utils.color(gray, 200)
-);
 @use '../../../components/list/list.fluent' as list with (
     $item-hover-bg: utils.color(gray, 100),
 );
@@ -65,7 +56,6 @@ $palette: utils.palette(
 @include card.theme();
 @include checkbox.theme();
 @include radio.theme();
-@include switch.theme();
 @include list.theme();
 @include calendar.theme();
 @include input.theme();

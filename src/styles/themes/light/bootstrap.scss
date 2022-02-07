@@ -6,7 +6,6 @@
 @use '../../../components/card/card.bootstrap' as card;
 @use '../../../components/checkbox/checkbox.bootstrap' as checkbox;
 @use '../../../components/radio/radio.bootstrap' as radio;
-@use '../../../components/checkbox/switch.bootstrap' as switch;
 @use '../../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../../components/list/list.bootstrap' as list;
 @use '../../../components/calendar/calendar.bootstrap' as calendar;
@@ -30,7 +29,6 @@ $palette: utils.palette(
 @include card.theme();
 @include checkbox.theme();
 @include radio.theme();
-@include switch.theme();
 @include navbar.theme();
 @include list.theme();
 @include calendar.theme();

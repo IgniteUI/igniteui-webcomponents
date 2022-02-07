@@ -13,12 +13,6 @@
     $checked-color: utils.color(gray, 900),
     $disabled-color: utils.color(gray, 400)
 );
-@use '../../../components/checkbox/switch.indigo' as switch with (
-    $border-color: utils.color(gray, 700),
-    $checked-color: utils.color(gray, 900),
-    $thumb-color: utils.color(gray, 700),
-    $disabled-color: utils.color(gray, 400)
-);
 @use '../../../components/navbar/navbar.indigo' as navbar;
 @use '../../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
 @use '../../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
@@ -48,7 +42,6 @@ $palette: utils.palette(
 @include card.theme();
 @include checkbox.theme();
 @include radio.theme();
-@include switch.theme();
 @include navbar.theme();
 @include nav-drawer.theme();
 @include nav-drawer-item.theme();
