@@ -20,9 +20,6 @@
     $disabled-color: utils.color(gray, 400)
 );
 @use '../../../components/navbar/navbar.indigo' as navbar;
-@use '../../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
-@use '../../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
-@use '../../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
 @use '../../../components/list/list.indigo' as list with (
     $item-hover-bg: utils.color(primary, 500, .5)
 );
@@ -50,9 +47,6 @@ $palette: utils.palette(
 @include radio.theme();
 @include switch.theme();
 @include navbar.theme();
-@include nav-drawer.theme();
-@include nav-drawer-item.theme();
-@include nav-drawer-header.theme();
 @include list.theme();
 @include input.theme();
 @include icon-button.theme();

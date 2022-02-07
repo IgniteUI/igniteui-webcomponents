@@ -1,9 +1,0 @@
-@use '../../styles/utilities' as utils;
-
-@mixin theme() {
-    igc-nav-drawer::part(base) {
-        background: #{utils.color(gray, 700)};
-        border: none;
-        box-shadow: none;
-    }
-}

@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { partNameMap } from '../common/util';
-import { styles } from './nav-drawer-item.material.css';
+import { styles } from './styles/indigo/nav-drawer-item.indigo.css';
 
 /**
  * Represents a navigation drawer item.
