@@ -349,6 +349,11 @@ export default class IgcTreeItemComponent extends LitElement {
     const tabbableSelector =
       'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 
+    if (!firstElement) {
+      this.setAttribute('role', 'treeitem');
+      return;
+    }
+
     this.tabbableEl = [
       ...firstElement.querySelectorAll<HTMLElement>(tabbableSelector),
     ];
