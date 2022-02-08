@@ -3,7 +3,6 @@
 @use '../../../components/badge/badge.bootstrap' as badge;
 @use '../../../components/button/button.bootstrap' as button;
 @use '../../../components/button/icon-button.bootstrap' as icon-button;
-@use '../../../components/card/card.bootstrap' as card;
 @use '../../../components/checkbox/checkbox.bootstrap' as checkbox;
 @use '../../../components/radio/radio.bootstrap' as radio;
 @use '../../../components/checkbox/switch.bootstrap' as switch;
@@ -31,7 +30,6 @@ $palette: utils.palette(
 @include base.root-styles($palette);
 @include badge.theme();
 @include button.theme();
-@include card.theme();
 @include checkbox.theme();
 @include radio.theme();
 @include switch.theme();

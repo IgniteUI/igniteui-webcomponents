@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { styles } from './card.actions.material.css';
+import { styles } from './themes/light/card.actions.material.css';
 
 /** A container for card action items like buttons
  * @element igc-card-actions
