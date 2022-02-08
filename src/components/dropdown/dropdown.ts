@@ -78,13 +78,13 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   public open = false;
 
   /** Sets the dropdown list's positioning strategy. */
-  @property({ attribute: false })
+  @property()
   public positionStrategy: 'absolute' | 'fixed' = 'absolute';
 
   /** The preferred placement of the dropdown list around the target element.
-   *  @type {"top"|"top-start"|"top-end"|"bottom"|"bottom-start"|"bottom-end"|"right"|"right-start"|"right-end"|"left"|"left-start"|"left-end"}
+   * @type {"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"}
    */
-  @property({ attribute: false })
+  @property()
   public placement: IgcPlacement = 'bottom-start';
 
   /**
@@ -99,11 +99,11 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   public closeOnOutsideClick = true;
 
   /** Determines the behavior of the dropdown list during scrolling the container. */
-  @property({ attribute: false })
+  @property()
   public scrollStrategy: 'scroll' | 'close' | 'block' | 'noop' = 'noop';
 
   /** The amount of offset in horizontal and/or vertical direction. */
-  @property({ attribute: false })
+  @property()
   public offset!: { x: number; y: number };
 
   @watch('open')

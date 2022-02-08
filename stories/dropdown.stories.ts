@@ -1,41 +1,19 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
-// import { IgcPlacement } from '../src/components/toggle/utilities.js';
 import {
   defineComponents,
   IgcDropDownComponent,
   IgcInputComponent,
 } from '../src/index.js';
 import { ISelectionChangeEventArgs } from '../src/components/dropdown/dropdown.js';
-import { IgcPlacement } from '../src/components/toggle/utilities.js';
 
 defineComponents(IgcDropDownComponent, IgcInputComponent);
-const placements = [
-  'top',
-  'top-start',
-  'top-end',
-  'bottom',
-  'bottom-start',
-  'bottom-end',
-  'right',
-  'right-start',
-  'right-end',
-  'left',
-  'left-start',
-  'left-end',
-];
 
 // region default
 const metadata = {
   title: 'Dropdown',
   component: 'igc-dropdown',
   argTypes: {
-    placement: {
-      type: placements,
-      control: 'select',
-      options: placements,
-      defaultValue: 'bottom-start',
-    },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the dropdown list.',
@@ -50,6 +28,29 @@ const metadata = {
         type: 'inline-radio',
       },
       defaultValue: 'absolute',
+    },
+    placement: {
+      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
+      description:
+        'The preferred placement of the dropdown list around the target element.',
+      options: [
+        'top',
+        'top-start',
+        'top-end',
+        'bottom',
+        'bottom-start',
+        'bottom-end',
+        'right',
+        'right-start',
+        'right-end',
+        'left',
+        'left-start',
+        'left-end',
+      ],
+      control: {
+        type: 'select',
+      },
+      defaultValue: 'bottom-start',
     },
     flip: {
       type: 'boolean',
@@ -79,14 +80,26 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  placement: IgcPlacement;
   open: boolean;
   positionStrategy: 'absolute' | 'fixed';
+  placement:
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'right'
+    | 'right-start'
+    | 'right-end'
+    | 'left'
+    | 'left-start'
+    | 'left-end';
   flip: boolean;
   closeOnOutsideClick: boolean;
   scrollStrategy: 'scroll' | 'close' | 'block' | 'noop';
 }
-// end region
+// endregion
 
 (metadata as any).parameters = {
   actions: {
@@ -129,7 +142,7 @@ const Template: Story<ArgTypes, Context> = (
     open = false,
     flip = false,
     closeOnOutsideClick = true,
-    placement = 'bottom-end',
+    placement = 'bottom-start',
     scrollStrategy = 'block',
   }: // offset = { x: 20, y: 20 },
   ArgTypes,
@@ -208,6 +221,7 @@ const Template: Story<ArgTypes, Context> = (
       .flip=${flip}
       .closeOnOutsideClick=${closeOnOutsideClick}
       .placement=${'top-start'}
+      .scrollStrategy=${scrollStrategy}
       .dir=${direction}
     >
       <input
@@ -228,6 +242,7 @@ const Template: Story<ArgTypes, Context> = (
       .flip=${true}
       .closeOnOutsideClick=${closeOnOutsideClick}
       .placement=${placement}
+      .scrollStrategy=${scrollStrategy}
       .dir=${direction}
     >
       <input
