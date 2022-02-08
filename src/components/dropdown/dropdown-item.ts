@@ -31,7 +31,20 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
 
   public static styles = styles;
 
-  private _value = '';
+  private _value!: string;
+
+  /**
+   * Тhe current value of the item.
+   * If not specified, the element's text content is used.
+   */
+  @property({ type: String, attribute: true, reflect: true })
+  public get value() {
+    return this._value ? this._value : this.textContent ?? '';
+  }
+
+  public set value(value: string) {
+    this._value = value;
+  }
 
   /**
    * Determines whether the item is selected.
@@ -44,15 +57,6 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean, attribute: true, reflect: true })
   public disabled = false;
-
-  /**
-   * Тhe current value of the item.
-   * If not specified, the element's text content is used.
-   */
-  @property({ type: String, attribute: true, reflect: true })
-  public get value() {
-    return this._value ? this._value : this.textContent;
-  }
 
   @watch('selected')
   protected selectedChange() {

@@ -1,12 +1,13 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
-import { IgcPlacement } from '../src/components/toggle/utilities.js';
+// import { IgcPlacement } from '../src/components/toggle/utilities.js';
 import {
   defineComponents,
   IgcDropDownComponent,
   IgcInputComponent,
 } from '../src/index.js';
 import { ISelectionChangeEventArgs } from '../src/components/dropdown/dropdown.js';
+import { IgcPlacement } from '../src/components/toggle/utilities.js';
 
 defineComponents(IgcDropDownComponent, IgcInputComponent);
 const placements = [
@@ -37,11 +38,13 @@ const metadata = {
     },
     open: {
       type: 'boolean',
+      description: 'Sets the open state of the dropdown list.',
       control: 'boolean',
       defaultValue: false,
     },
-    strategy: {
+    positionStrategy: {
       type: '"absolute" | "fixed"',
+      description: "Sets the dropdown list's positioning strategy.",
       options: ['absolute', 'fixed'],
       control: {
         type: 'inline-radio',
@@ -50,17 +53,23 @@ const metadata = {
     },
     flip: {
       type: 'boolean',
+      description:
+        "Whether the list should be flipped to the opposite side of the target once it's about to overflow the visible area.\nWhen true, once enough space is detected on its preferred side, it will flip back.",
       control: 'boolean',
       defaultValue: false,
     },
     closeOnOutsideClick: {
       type: 'boolean',
+      description:
+        'Whether the dropdown should be hidden on clicking outside of it.',
       control: 'boolean',
       defaultValue: true,
     },
     scrollStrategy: {
-      type: '"absolute" | "close" | "block" | "noop"',
-      options: ['absolute', 'close', 'block', 'noop'],
+      type: '"scroll" | "close" | "block" | "noop"',
+      description:
+        'Determines the behavior of the dropdown list during scrolling the container.',
+      options: ['scroll', 'close', 'block', 'noop'],
       control: {
         type: 'inline-radio',
       },
@@ -72,7 +81,7 @@ export default metadata;
 interface ArgTypes {
   placement: IgcPlacement;
   open: boolean;
-  strategy: 'absolute' | 'fixed';
+  positionStrategy: 'absolute' | 'fixed';
   flip: boolean;
   closeOnOutsideClick: boolean;
   scrollStrategy: 'scroll' | 'close' | 'block' | 'noop';

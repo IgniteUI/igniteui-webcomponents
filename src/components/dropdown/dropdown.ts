@@ -77,9 +77,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @property({ type: Boolean })
   public open = false;
 
-  /** Sets the dropdown list's positioning strategy.
-   * @type {"absolute" | "fixed"}
-   */
+  /** Sets the dropdown list's positioning strategy. */
   @property({ attribute: false })
   public positionStrategy: 'absolute' | 'fixed' = 'absolute';
 
@@ -100,9 +98,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @property({ type: Boolean })
   public closeOnOutsideClick = true;
 
-  /** Determines the behavior of the dropdown list during scrolling the container.
-   *  @type {"scroll" | "close" | "block" | "noop"}
-   */
+  /** Determines the behavior of the dropdown list during scrolling the container. */
   @property({ attribute: false })
   public scrollStrategy: 'scroll' | 'close' | 'block' | 'noop' = 'noop';
 
@@ -163,11 +159,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       offset: this.offset,
     };
 
-    this.toggleController = new IgcToggleController(
-      this,
-      this.target ?? this.target,
-      options
-    );
+    this.toggleController = new IgcToggleController(this, this.target, options);
     this.toggleController.documentClicked = (ev: MouseEvent) =>
       this.handleDocumentClicked(ev);
     this.toggleController.handleScroll = (ev: Event) => this.handleScroll(ev);
@@ -177,7 +169,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     if (this.targetNodes.length) {
       this.target = this.targetNodes[0];
       // this.target.setAttribute('aria-owns', 'igcScrollContainer');
-      this.target.setAttribute('haspopup', 'listbox');
+      this.target.setAttribute('aria-haspopup', 'listbox');
     }
   }
 
