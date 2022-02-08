@@ -6,7 +6,9 @@ import {
   unsafeStatic,
   aTimeout,
 } from '@open-wc/testing';
+import sinon from 'sinon';
 import { defineComponents, IgcSnackbarComponent } from '../../index.js';
+import IgcButtonComponent from '../button/button.js';
 
 describe('Snackbar', () => {
   before(() => {
@@ -14,6 +16,7 @@ describe('Snackbar', () => {
   });
 
   let el: IgcSnackbarComponent;
+  let button: IgcButtonComponent;
 
   describe('', () => {
     beforeEach(async () => {
@@ -122,6 +125,18 @@ describe('Snackbar', () => {
       expect(el.keepOpen).to.equal(true);
       await aTimeout(1000);
       expect(el.open).to.equal(true);
+    });
+
+    it('should emit event when the snackbar action button is clicked', async () => {
+      el.setAttribute('action-text', 'Dismiss');
+      await elementUpdated(el);
+
+      button = el.shadowRoot?.querySelector('igc-button') as IgcButtonComponent;
+      const eventSpy = sinon.spy(el, 'emitEvent');
+      button?.click();
+      await elementUpdated(el);
+
+      expect(eventSpy).calledOnceWithExactly('igcAction');
     });
 
     const createSnackbarComponent = (
