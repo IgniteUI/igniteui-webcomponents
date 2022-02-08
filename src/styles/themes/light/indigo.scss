@@ -1,6 +1,5 @@
 @use '../../utilities' as utils;
 @use '../base/indigo' as base;
-@use '../../../components/button/button.indigo' as button;
 @use '../../../components/card/card.indigo' as card;
 @use '../../../components/checkbox/checkbox.indigo' as checkbox;
 @use '../../../components/radio/radio.indigo' as radio;
@@ -24,7 +23,6 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include button.theme();
 @include card.theme();
 @include checkbox.theme();
 @include radio.theme();

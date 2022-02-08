@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { IgcButtonBaseComponent } from './button-base.js';
-import { styles } from './button.material.css';
+import { styles } from './themes/button/light/button.bootstrap.css';
 
 /**
  * Represents a clickable button, used to submit forms or anywhere in a

@@ -1,6 +1,5 @@
 @use '../../utilities' as utils;
 @use '../base/bootstrap' as base;
-@use '../../../components/button/button.bootstrap' as button;
 @use '../../../components/card/card.bootstrap' as card;
 @use '../../../components/checkbox/checkbox.bootstrap' as checkbox;
 @use '../../../components/radio/radio.bootstrap' as radio;
@@ -22,7 +21,6 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include button.theme();
 @include card.theme();
 @include checkbox.theme();
 @include radio.theme();

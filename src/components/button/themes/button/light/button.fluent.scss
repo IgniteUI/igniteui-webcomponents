@@ -1,0 +1,212 @@
+@use '../../../../../styles/utilities' as utils;
+@use './button.base.scss';
+
+$button-color: #{utils.contrast-color(primary, 600)} !default;
+$hover-color: #{utils.color(primary, 600)} !default;
+$active-color: #{utils.color(primary, 700)} !default;
+
+:host([size='small']) [part="base"]{
+    border-radius: calc(var(--igc-border-radius) * 1);
+
+    --size: #{utils.rem(24px)};
+
+    padding: 0 utils.rem(8px);
+}
+
+:host([size='medium']) [part="base"]{
+    border-radius: calc(var(--igc-border-radius) * 1);
+
+    --size: #{utils.rem(32px)};
+
+    padding: 0 utils.rem(16px);
+}
+
+:host([size='large']) [part="base"]{
+    border-radius: calc(var(--igc-border-radius) * 1);
+
+    --size: #{utils.rem(38px)};
+
+    padding: 0 utils.rem(16px);
+}
+
+// FLAT
+:host(:not([disabled])[variant='flat']) [part="base"]{
+    color: #{utils.color(gray, 900)};
+
+    &:hover {
+        color: #{utils.color(primary, 500)};
+    }
+
+    &:active {
+        color: #{utils.color(gray, 900)};
+    }
+
+    &:hover,
+    &:focus,
+    &:active {
+        &::before {
+            background: transparent;
+        }
+    }
+}
+
+// OUTLINED
+:host(:not([disabled])[variant='outlined']) [part="base"]{
+    color: #{utils.color(gray, 900)};
+    transition: color .15s ease-out;
+    box-shadow: 0 0 0 1px #{utils.color(gray, 700)};
+
+    &:hover,
+    &:focus:hover {
+        &::before {
+            opacity: 1;
+            background: #{utils.color(gray, 100)};
+        }
+    }
+
+    &:focus {
+        &::before {
+            opacity: 1;
+            background: transparent;
+        }
+    }
+
+    &:focus:active {
+        &::before {
+            opacity: 1;
+            background: #{utils.color(gray, 200)};
+        }
+    }
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: #{utils.color(gray, 900)};
+    }
+
+    &:active,
+    &:focus:active,
+    &:focus-visible:hover:active,
+    &:focus-visible:active {
+        &::before {
+            opacity: 1;
+            background: #{utils.color(gray, 200)};
+        }
+    }
+
+    &:focus-visible:hover {
+        &::before {
+            opacity: 1;
+            background: #{utils.color(gray, 100)};
+        }
+    }
+}
+
+// FLAT & OUTLINED
+:host(:not([disabled])[variant='flat']) [part="base"],
+:host(:not([disabled])[variant='outlined']) [part="base"]{
+    &:focus-visible {
+        position: relative;
+
+        &::after {
+            content: '';
+            box-shadow: 0 0 0 1px #{utils.color(gray, 800)};
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            pointer-events: none;
+            width: calc(100% - 4px);
+            height: calc(100% - 4px);
+        }
+
+        &::before {
+            background: transparent;
+        }
+    }
+}
+
+// FAB & CONTAINED
+:host(:not([disabled])[variant='contained']) [part="base"],
+:host(:not([disabled])[variant='fab']) [part="base"]{
+    color: $button-color;
+    box-shadow: var(--igc-elevation-0);
+
+    &:hover,
+    &:focus-visible:hover {
+        color: $button-color;
+
+        &::before {
+            opacity: 1;
+            background: $hover-color;
+        }
+    }
+
+    &:focus,
+    &:active {
+        color: $button-color;
+    }
+
+    &::before {
+        opacity: 1;
+        background: #{utils.color(primary, 500)};
+    }
+
+    &:active,
+    &:focus-visible:active {
+        &::before {
+            opacity: 1;
+            background: $active-color;
+        }
+    }
+
+    &:focus-visible {
+        position: relative;
+
+        &::after {
+            content: '';
+            box-shadow: 0 0 0 1px #{utils.contrast-color(primary, 600)};
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            pointer-events: none;
+            width: calc(100% - 6px);
+            height: calc(100% - 6px);
+        }
+
+        &::before {
+            background: transparent;
+        }
+    }
+}
+
+:host([variant='fab']) [part="base"]{
+    border-radius: calc(#{var(--igc-border-radius)} * 7);
+
+    &::after {
+        border-radius: calc(#{var(--igc-border-radius)} * 6);
+    }
+}
+
+// DISABLED START
+:host([disabled][variant='flat']) [part="base"] {
+    color: #{utils.color(gray, 400)};
+    background: transparent;
+}
+
+:host([disabled][variant='fab']) [part="base"],
+:host([disabled][variant='contained']) [part="base"]{
+    color: #{utils.color(gray, 400)};
+
+    &::before {
+        opacity: 1;
+        background: #{utils.color(gray, 100)};
+    }
+}
+
+:host([disabled][variant='outlined']) [part="base"]{
+    box-shadow: none;
+    color: #{utils.color(gray, 500, 8)};
+    background: #{utils.color(gray, 200)};
+}
+
+// DISABLED END

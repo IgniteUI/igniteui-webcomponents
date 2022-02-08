@@ -1,10 +1,5 @@
 @use '../../utilities' as utils;
 @use '../base/fluent' as base;
-@use '../../../components/button/button.fluent' as button with (
-    $button-color: utils.color(surface, 500),
-    $hover-color: utils.color(primary, 300),
-    $active-color: utils.color(primary, 100)
-);
 @use '../../../components/card/card.fluent' as card;
 @use '../../../components/checkbox/checkbox.fluent' as checkbox with (
     $border-color: utils.color(gray, 700),
@@ -54,7 +49,6 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include button.theme();
 @include card.theme();
 @include checkbox.theme();
 @include radio.theme();
