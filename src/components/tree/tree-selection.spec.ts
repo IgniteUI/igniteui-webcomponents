@@ -211,6 +211,8 @@ describe('Tree Selection', () => {
       TreeTestFunctions.verifyItemSelection(topLevelItems[0], false);
       expect(cb.checked).to.be.false;
       expect(cb.indeterminate).to.be.false;
+      expect(tree.selectionService.isItemIndeterminate(topLevelItems[0])).to.be
+        .false;
 
       initialSelection.shift();
 
@@ -235,6 +237,7 @@ describe('Tree Selection', () => {
       TreeTestFunctions.verifyItemSelection(item12, true);
       expect(cb.checked).to.be.true;
       expect(cb.indeterminate).to.be.false;
+      expect(tree.selectionService.isItemIndeterminate(item12)).to.be.false;
 
       // Should emit igcSelection event w/ correct args when an item is selected
       args = {
@@ -291,6 +294,7 @@ describe('Tree Selection', () => {
       tree.deselect();
       await elementUpdated(tree);
 
+      const eventSpy = sinon.spy(tree, 'emitEvent');
       const topLevelItems = tree.items.filter((i) => i.level === 0);
 
       // Select items from "Tree Node 1" to "Tree Node 2.2"
@@ -302,6 +306,13 @@ describe('Tree Selection', () => {
         topLevelItems[1].getChildren()[1],
       ];
 
+      let args: IgcSelectionEventArgs = {
+        detail: {
+          newSelection: [topLevelItems[0]],
+        },
+        cancelable: true,
+      };
+
       let selectionPart = topLevelItems[0].shadowRoot!.querySelector(
         PARTS.select
       );
@@ -310,6 +321,8 @@ describe('Tree Selection', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyItemSelection(topLevelItems[0], true);
+      expect(eventSpy).calledOnceWith('igcSelection', args);
+      eventSpy.resetHistory();
 
       const endOfSelectionRage = topLevelItems[1].getChildren()[1];
 
@@ -317,6 +330,14 @@ describe('Tree Selection', () => {
         PARTS.select
       );
       cb = selectionPart?.children[0] as IgcCheckboxComponent;
+
+      args = {
+        detail: {
+          newSelection: expectedSelection,
+        },
+        cancelable: true,
+      };
+
       cb?.dispatchEvent(new MouseEvent('click', { shiftKey: true }));
       await elementUpdated(tree);
 
@@ -328,6 +349,45 @@ describe('Tree Selection', () => {
           TreeTestFunctions.verifyItemSelection(item, true);
         }
       });
+
+      expect(eventSpy).calledOnceWith('igcSelection', args);
+      eventSpy.resetHistory();
+
+      // Select the same range and verify no event is emitted
+      selectionPart = expectedSelection[0].shadowRoot!.querySelector(
+        PARTS.select
+      );
+      cb = selectionPart?.children[0] as IgcCheckboxComponent;
+      cb?.dispatchEvent(new MouseEvent('click', { shiftKey: true }));
+      await elementUpdated(tree);
+
+      expect(eventSpy).not.to.be.called;
+    });
+
+    it('Should select a single item when there are no selected items and selction is performed with Shift + click', async () => {
+      tree.deselect();
+      await elementUpdated(tree);
+
+      const eventSpy = sinon.spy(tree, 'emitEvent');
+      const topLevelItems = tree.items.filter((i) => i.level === 0);
+
+      const args: IgcSelectionEventArgs = {
+        detail: {
+          newSelection: [topLevelItems[2]],
+        },
+        cancelable: true,
+      };
+
+      const selectionPart = topLevelItems[2].shadowRoot!.querySelector(
+        PARTS.select
+      );
+      const cb = selectionPart?.children[0] as IgcCheckboxComponent;
+      cb?.dispatchEvent(new MouseEvent('click', { shiftKey: true }));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyItemSelection(topLevelItems[2], true);
+      expect(eventSpy).calledOnceWith('igcSelection', args);
+      eventSpy.resetHistory();
     });
   });
 
@@ -389,9 +449,13 @@ describe('Tree Selection', () => {
       // Selecting a single child should mark the parent as indeterminate. All direct and non-direct parents should be affected correctly.
       TreeTestFunctions.verifyItemSelection(item211, true);
       expect(item2Children[0].indeterminate).to.be.true;
+      expect(tree.selectionService.isItemIndeterminate(item2Children[0])).to.be
+        .true;
       TreeTestFunctions.verifyItemSelection(item2Children[1], false);
       TreeTestFunctions.verifyItemSelection(item2Children[2], false);
       expect(topLevelItems[1].indeterminate).to.be.true;
+      expect(tree.selectionService.isItemIndeterminate(topLevelItems[1])).to.be
+        .true;
 
       // Selecting the last non-selected child should mark the parent as selected and NOT indeterminate. All direct and non-direct parents should be affected correctly.
       tree.select([item212]);
@@ -516,6 +580,7 @@ describe('Tree Selection', () => {
       const item11 = item1Children[0];
       const item11Children = item11.getChildren();
       const item111 = item11Children[0];
+      const item112 = item11Children[1];
 
       TreeTestFunctions.verifyItemSelection(topLevelItems[0], true);
       TreeTestFunctions.verifyItemSelection(item11, true);
@@ -528,10 +593,19 @@ describe('Tree Selection', () => {
       TreeTestFunctions.verifyItemSelection(topLevelItems[0], true);
       TreeTestFunctions.verifyItemSelection(item11, true);
 
+      item112.selected = true;
+      await elementUpdated(tree);
+
+      //Deleting the only child of aselected parent should not affect its selection state
+      item11.removeChild(item112);
+      TreeTestFunctions.verifyItemSelection(item11, true);
+      expect(tree.items.length).to.equal(treeItemsLength - 2);
+
       const item2Children = topLevelItems[1].getChildren();
       const item21 = item2Children[0];
       const item21Children = item21.getChildren();
       const item211 = item21Children[0];
+      const item212 = item21Children[1];
 
       TreeTestFunctions.verifyItemSelection(topLevelItems[1], false);
       TreeTestFunctions.verifyItemSelection(item21, false);
@@ -540,8 +614,12 @@ describe('Tree Selection', () => {
       item21.removeChild(item211); // delete item from deselected parent
       await elementUpdated(tree);
 
-      expect(tree.items.length).to.equal(treeItemsLength - 2);
+      expect(tree.items.length).to.equal(treeItemsLength - 3);
       TreeTestFunctions.verifyItemSelection(topLevelItems[1], false);
+      TreeTestFunctions.verifyItemSelection(item21, false);
+
+      //Deleting the only child of a deselected parent should not affect its selection state
+      item21.removeChild(item212);
       TreeTestFunctions.verifyItemSelection(item21, false);
     });
 

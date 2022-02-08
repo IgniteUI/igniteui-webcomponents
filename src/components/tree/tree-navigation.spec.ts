@@ -260,6 +260,16 @@ describe('Tree Navigation', () => {
         });
         eventSpy.resetHistory();
       }
+
+      // Arrow Down on last tree item
+      const item4 = topLevelItems[3];
+      item4.active = true;
+      await elementUpdated(tree);
+      TreeTestFunctions.setFocusAndTriggerKeydown(item4, tree, 'ArrowDown');
+      await elementUpdated(tree);
+
+      expect(treeNavService.activeItem).to.equal(item4);
+      expect(treeNavService.focusedItem).to.equal(item4);
     });
 
     it('Should only focus the next visible tree item on Arrow Down + Ctrl key press', async () => {
@@ -315,6 +325,16 @@ describe('Tree Navigation', () => {
         });
         eventSpy.resetHistory();
       }
+
+      // Arrow Up on first tree item
+      const item1 = topLevelItems[0];
+      item1.active = true;
+      await elementUpdated(tree);
+      TreeTestFunctions.setFocusAndTriggerKeydown(item1, tree, 'ArrowUp');
+      await elementUpdated(tree);
+
+      expect(treeNavService.activeItem).to.equal(item1);
+      expect(treeNavService.focusedItem).to.equal(item1);
     });
 
     it('Should only focus the previous visible tree item on Arrow Up + Ctrl key press', async () => {
@@ -434,6 +454,63 @@ describe('Tree Navigation', () => {
       expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
         detail: topLevelItems[0],
       });
+    });
+
+    it('Should toggle item selection on Space key press', async () => {
+      const eventSpy = sinon.spy(tree, 'emitEvent');
+
+      tree.selection = IgcTreeSelectionType.Multiple;
+      await elementUpdated(tree);
+
+      topLevelItems[0].dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: ' ',
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0].active).to.be.true;
+      expect(topLevelItems[0].selected).to.be.true;
+
+      let args: IgcSelectionEventArgs = {
+        detail: {
+          newSelection: [topLevelItems[0]],
+        },
+        cancelable: true,
+      };
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith('igcActiveItem', {
+        detail: topLevelItems[0],
+      });
+      expect(eventSpy.secondCall).calledWith('igcSelection', args);
+      eventSpy.resetHistory();
+
+      const expectedSelection: IgcTreeItemComponent[] = [];
+
+      topLevelItems[0].dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: ' ',
+          bubbles: true,
+          cancelable: true,
+        })
+      );
+
+      expect(topLevelItems[0].active).to.be.true;
+      expect(topLevelItems[0].selected).to.be.false;
+      expect(treeNavService.activeItem).to.equal(topLevelItems[0]);
+      expect(treeNavService.focusedItem).to.equal(topLevelItems[0]);
+
+      args = {
+        detail: {
+          newSelection: expectedSelection,
+        },
+        cancelable: true,
+      };
+
+      expect(eventSpy.callCount).to.equal(1);
+      expect(eventSpy.firstCall).calledWith('igcSelection', args);
     });
 
     it("Should only activate the tree item when tree.selection === 'None' on Space key press and also select it when tree.selection !== 'None'", async () => {
@@ -576,7 +653,9 @@ describe('Tree Navigation', () => {
 
       const item22 = item2.getChildren()[1];
 
-      item22.dispatchEvent(new Event('focus'));
+      const item22LabelSlot = TreeTestFunctions.getSlot(item22, SLOTS.label);
+      const assignedEl = item22LabelSlot.assignedElements()[0] as HTMLElement;
+      assignedEl.focus();
       await elementUpdated(tree);
 
       item21LabelSlot = TreeTestFunctions.getSlot(item21, SLOTS.label);

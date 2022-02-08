@@ -214,7 +214,6 @@ export default class IgcTreeItemComponent extends LitElement {
       this.selectionService?.retriggerItemState(this);
     }
     this.init = false;
-    this.labelChange();
   }
 
   public override disconnectedCallback(): void {
@@ -348,11 +347,6 @@ export default class IgcTreeItemComponent extends LitElement {
     const firstElement = this.contentList[0];
     const tabbableSelector =
       'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
-
-    if (!firstElement) {
-      this.setAttribute('role', 'treeitem');
-      return;
-    }
 
     this.tabbableEl = [
       ...firstElement.querySelectorAll<HTMLElement>(tabbableSelector),

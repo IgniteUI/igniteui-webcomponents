@@ -204,7 +204,9 @@ export const cascadeSelectionTree = `<igc-tree selection='cascade'>
                                               <igc-tree-item label="Tree Node 3.1.1.1" expanded></igc-tree-item>
                                               <igc-tree-item label="Tree Node 3.1.1.2" expanded></igc-tree-item>
                                             </igc-tree-item>
-                                            <igc-tree-item label="Tree Node 3.1.2" expanded></igc-tree-item>
+                                            <igc-tree-item label="Tree Node 3.1.2" expanded>
+                                              <igc-tree-item label="Tree Node 3.1.2.1" expanded>
+                                            </igc-tree-item></igc-tree-item>
                                            </igc-tree-item>
                                            <igc-tree-item label="Tree Node 3.2"></igc-tree-item>
                                          </igc-tree-item>
@@ -275,9 +277,7 @@ export const navigationTree = `<igc-tree selection='none' style="height: 400px;"
                                            <igc-tree-item label="Tree Node 2.1.2"></igc-tree-item>
                                          </igc-tree-item>
                                          <igc-tree-item label="Tree Node 2.2" expanded>
-                                           <p slot="label">
-                                              <button>asd</button>
-                                           </p>
+                                              <button slot="label">asd</button>
                                            <igc-tree-item label="Tree Node 2.2.1"></igc-tree-item>
                                            <igc-tree-item label="Tree Node 2.2.2"></igc-tree-item>
                                          </igc-tree-item>
