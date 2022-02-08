@@ -1,7 +1,7 @@
 @use '../../../../../styles/utilities' as utils;
 @use './button.base.scss';
 
-:host [part="base"] {
+:host [part='base'] {
     transition: all .15s ease-out;
 
     &::before {
@@ -9,39 +9,39 @@
     }
 }
 
-:host([size='large']) [part="base"] {
+:host([size='large']) [part='base'] {
     --size: #{utils.rem(48px)};
 }
 
-:host([size='medium']) [part="base"] {
+:host([size='medium']) [part='base'] {
     --size: #{utils.rem(38px)};
 }
 
-:host([size='small']) [part="base"] {
+:host([size='small']) [part='base'] {
     --size: #{utils.rem(31px)};
 }
 
-:host([disabled][variant='flat']) [part="base"] {
+:host([disabled][variant='flat']) [part='base'] {
     background: transparent;
     color: #{utils.color(primary, 100)};
 }
 
 :host([disabled][variant='fab']),
 :host([disabled][variant='contained']) {
-    [part="base"] {
+    [part='base'] {
         background: #{utils.color(primary, 200)};
         color: #{utils.contrast-color(primary, 600)};
     }
 }
 
-:host([disabled][variant='outlined']) [part="base"] {
+:host([disabled][variant='outlined']) [part='base'] {
     color: #{utils.color(primary, 500)};
     box-shadow: 0 0 0 1px utils.color(primary, 500);
     opacity: .65;
     background: transparent;
 }
 
-:host(:not([disabled])[variant='flat']) [part="base"] {
+:host(:not([disabled])[variant='flat']) [part='base'] {
     color: #{utils.color(primary, 500)};
     border-radius: calc(var(--igc-border-radius) * 2);
 
@@ -66,7 +66,7 @@
     }
 }
 
-:host(:not([disabled])[variant='contained']) [part="base"] {
+:host(:not([disabled])[variant='contained']) [part='base'] {
     color: #{utils.contrast-color(primary, 600)};
     box-shadow: var(--igc-elevation-0);
 
@@ -93,7 +93,7 @@
     }
 }
 
-:host(:not([disabled])[variant='outlined']) [part="base"] {
+:host(:not([disabled])[variant='outlined']) [part='base'] {
     color: #{utils.color(primary, 500)};
     box-shadow: 0 0 0 1px utils.color(primary, 500);
     overflow: visible;
@@ -128,19 +128,19 @@
     }
 }
 
-:host([variant='fab'][size='large']) [part="base"] {
+:host([variant='fab'][size='large']) [part='base'] {
     border-radius: calc(var(--igc-border-radius) * 8);
 }
 
-:host([variant='fab'][size='medium']) [part="base"] {
+:host([variant='fab'][size='medium']) [part='base'] {
     border-radius: calc(var(--igc-border-radius) * 6);
 }
 
-:host([variant='fab'][size='small']) [part="base"] {
+:host([variant='fab'][size='small']) [part='base'] {
     border-radius: calc(var(--igc-border-radius) * 4);
 }
 
-:host(:not([disabled])[variant='fab']) [part="base"] {
+:host(:not([disabled])[variant='fab']) [part='base'] {
     color: #{utils.contrast-color(primary, 600)};
     box-shadow: var(--igc-elevation-0);
 

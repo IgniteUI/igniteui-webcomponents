@@ -58,7 +58,7 @@ button {
         color: #{utils.color(primary, 100)};
         background: transparent;
     }
-}    
+}
 
 :host([disabled][variant='contained']) {
     button {

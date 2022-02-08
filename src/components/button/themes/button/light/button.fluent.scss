@@ -5,7 +5,7 @@ $button-color: #{utils.contrast-color(primary, 600)} !default;
 $hover-color: #{utils.color(primary, 600)} !default;
 $active-color: #{utils.color(primary, 700)} !default;
 
-:host([size='small']) [part="base"]{
+:host([size='small']) [part='base'] {
     border-radius: calc(var(--igc-border-radius) * 1);
 
     --size: #{utils.rem(24px)};
@@ -13,7 +13,7 @@ $active-color: #{utils.color(primary, 700)} !default;
     padding: 0 utils.rem(8px);
 }
 
-:host([size='medium']) [part="base"]{
+:host([size='medium']) [part='base'] {
     border-radius: calc(var(--igc-border-radius) * 1);
 
     --size: #{utils.rem(32px)};
@@ -21,7 +21,7 @@ $active-color: #{utils.color(primary, 700)} !default;
     padding: 0 utils.rem(16px);
 }
 
-:host([size='large']) [part="base"]{
+:host([size='large']) [part='base'] {
     border-radius: calc(var(--igc-border-radius) * 1);
 
     --size: #{utils.rem(38px)};
@@ -30,7 +30,7 @@ $active-color: #{utils.color(primary, 700)} !default;
 }
 
 // FLAT
-:host(:not([disabled])[variant='flat']) [part="base"]{
+:host(:not([disabled])[variant='flat']) [part='base'] {
     color: #{utils.color(gray, 900)};
 
     &:hover {
@@ -51,7 +51,7 @@ $active-color: #{utils.color(primary, 700)} !default;
 }
 
 // OUTLINED
-:host(:not([disabled])[variant='outlined']) [part="base"]{
+:host(:not([disabled])[variant='outlined']) [part='base'] {
     color: #{utils.color(gray, 900)};
     transition: color .15s ease-out;
     box-shadow: 0 0 0 1px #{utils.color(gray, 700)};
@@ -103,8 +103,8 @@ $active-color: #{utils.color(primary, 700)} !default;
 }
 
 // FLAT & OUTLINED
-:host(:not([disabled])[variant='flat']) [part="base"],
-:host(:not([disabled])[variant='outlined']) [part="base"]{
+:host(:not([disabled])[variant='flat']) [part='base'],
+:host(:not([disabled])[variant='outlined']) [part='base'] {
     &:focus-visible {
         position: relative;
 
@@ -126,8 +126,8 @@ $active-color: #{utils.color(primary, 700)} !default;
 }
 
 // FAB & CONTAINED
-:host(:not([disabled])[variant='contained']) [part="base"],
-:host(:not([disabled])[variant='fab']) [part="base"]{
+:host(:not([disabled])[variant='contained']) [part='base'],
+:host(:not([disabled])[variant='fab']) [part='base'] {
     color: $button-color;
     box-shadow: var(--igc-elevation-0);
 
@@ -179,7 +179,7 @@ $active-color: #{utils.color(primary, 700)} !default;
     }
 }
 
-:host([variant='fab']) [part="base"]{
+:host([variant='fab']) [part='base'] {
     border-radius: calc(#{var(--igc-border-radius)} * 7);
 
     &::after {
@@ -188,13 +188,13 @@ $active-color: #{utils.color(primary, 700)} !default;
 }
 
 // DISABLED START
-:host([disabled][variant='flat']) [part="base"] {
+:host([disabled][variant='flat']) [part='base'] {
     color: #{utils.color(gray, 400)};
     background: transparent;
 }
 
-:host([disabled][variant='fab']) [part="base"],
-:host([disabled][variant='contained']) [part="base"]{
+:host([disabled][variant='fab']) [part='base'],
+:host([disabled][variant='contained']) [part='base'] {
     color: #{utils.color(gray, 400)};
 
     &::before {
@@ -203,7 +203,7 @@ $active-color: #{utils.color(primary, 700)} !default;
     }
 }
 
-:host([disabled][variant='outlined']) [part="base"]{
+:host([disabled][variant='outlined']) [part='base'] {
     box-shadow: none;
     color: #{utils.color(gray, 500, 8)};
     background: #{utils.color(gray, 200)};
