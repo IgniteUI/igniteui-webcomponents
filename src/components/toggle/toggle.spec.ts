@@ -82,6 +82,23 @@ describe('Toggle directive', () => {
     expect(getStyleValue(attributes)).to.contain('position: fixed');
   });
 
+  it('does not create the popper without a target.', async () => {
+    const div = document.querySelector('input') as HTMLElement;
+    popper = await createPopper(div, true, {
+      placement: 'bottom-end',
+      positionStrategy: 'absolute',
+    });
+
+    const popperEl = popper.renderRoot.children[0];
+    expect(popperEl.classList.contains('igc-toggle')).to.be.true;
+
+    const attributes = popperEl.attributes;
+    expect(attributes.getNamedItem('data-popper-placement')).not.to.exist;
+    expect(attributes.getNamedItem('style')?.value).not.to.contain(
+      'position: absolute'
+    );
+  });
+
   it('honors the flip option.', async () => {
     popper = await createPopper(target, true, {
       placement: 'left-start',
@@ -139,6 +156,25 @@ describe('Toggle directive', () => {
 
     expect(toggleRect.x).to.eq(targetRect.x);
     expect(toggleRect.y).to.eq(Math.round(targetRect.bottom));
+  });
+
+  it('honors the preventOverflow option.', async () => {
+    target = document.body;
+    popper = await createPopper(target, true, {
+      placement: 'top',
+      positionStrategy: 'absolute',
+      preventOverflow: { altAxis: true },
+    });
+
+    let toggleRect = popper.renderRoot.children[0].getBoundingClientRect();
+    expect(toggleRect.y).to.equal(0);
+
+    popper = await createPopper(target, true, {
+      placement: 'top',
+      positionStrategy: 'absolute',
+    });
+    toggleRect = popper.renderRoot.children[0].getBoundingClientRect();
+    expect(toggleRect.y).to.be.lessThan(0);
   });
 
   const createPopper = async (
