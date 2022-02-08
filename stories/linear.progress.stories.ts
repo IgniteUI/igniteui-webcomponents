@@ -10,6 +10,19 @@ const metadata = {
 };
 export default metadata;
 
+const toggleIndeterminate = () => {
+  const bar = document.querySelector(
+    'igc-linear-bar'
+  ) as IgcLinearProgressComponent;
+  bar.indeterminate = !bar.indeterminate;
+  if (!bar.indeterminate) {
+    bar.textVisibility = true;
+    Promise.resolve().then(() => {
+      bar.value = 60;
+    });
+  }
+};
+
 let text = 0;
 
 const interval = setInterval(() => {
@@ -18,7 +31,7 @@ const interval = setInterval(() => {
   ) as IgcLinearProgressComponent;
   if (bar) {
     text = text + 1;
-    bar.text = text.toString();
+    bar.text = Math.round(bar.value).toString() + '%';
     console.log(text);
   }
 }, 10);
@@ -32,10 +45,12 @@ setTimeout(() => {
 const Template: Story<null, Context> = () => html`
   <igc-linear-bar
     type="error"
-    value="100"
+    max="120"
+    value="110"
     textVisibility
     textAlign="end"
   ></igc-linear-bar>
+  <igc-button @click=${toggleIndeterminate}>Toggle Indeterminate</igc-button>
 `;
 
 export const Basic = Template.bind({});

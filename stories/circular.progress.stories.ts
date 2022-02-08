@@ -12,16 +12,29 @@ export default metadata;
 
 let text = 0;
 
+const toggleIndeterminate = () => {
+  const bar = document.querySelector(
+    'igc-circular-bar'
+  ) as IgcCircularProgressComponent;
+  bar.indeterminate = !bar.indeterminate;
+  if (!bar.indeterminate) {
+    bar.textVisibility = true;
+    Promise.resolve().then(() => {
+      bar.value = 60;
+    });
+  }
+};
+
 const interval = setInterval(() => {
-  const bar = document.getElementById(
-    'igx-circular-bar-1'
+  const bar = document.querySelector(
+    'igc-circular-bar'
   ) as IgcCircularProgressComponent;
   if (bar) {
     text = text + 1;
-    bar.text = text.toString();
+    bar.text = Math.round(bar.value).toString() + '%';
     console.log(text);
   }
-}, 10);
+}, 1);
 
 setTimeout(() => {
   clearInterval(interval);
@@ -30,7 +43,13 @@ setTimeout(() => {
 // endregion
 
 const Template: Story<null, Context> = () => html`
-  <igc-circular-bar panimate textVisibility value="90"></igc-circular-bar>
+  <igc-circular-bar
+    textVisibility
+    max="120"
+    value="110"
+    animated
+  ></igc-circular-bar>
+  <igc-button @click=${toggleIndeterminate}>Toggle Indeterminate</igc-button>
 `;
 
 export const Basic = Template.bind({});

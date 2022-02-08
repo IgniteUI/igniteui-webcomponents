@@ -1,12 +1,7 @@
 import { html, svg } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { watch } from '../common/decorators';
 import { styles } from './circular.progress.material.css';
-import {
-  IgcProgressBaseComponent,
-  MIN_VALUE,
-  toPercent,
-} from './common/progress-base';
+import { IgcProgressBaseComponent, toPercent } from './common/progress-base';
 
 let NEXT_CIRCULAR_ID = 0;
 let NEXT_GRADIENT_ID = 0;
@@ -14,56 +9,36 @@ let NEXT_GRADIENT_ID = 0;
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-bar';
   public static styles = styles;
+
   public override id = `igx-circular-bar-${NEXT_CIRCULAR_ID++}`;
-
-  public get isIndeterminate() {
-    return this.indeterminate;
-  }
-
-  @watch('indeterminate')
-  public indeterminateChange() {
-    if (this.indeterminate) {
-      this.textVisibility = false;
-    }
-  }
-
-  @property({ type: Boolean })
-  public textVisibility = false;
-
-  @property({ reflect: true, attribute: true })
-  public text!: string;
-
-  @query('#circle')
-  private _svgCircle!: HTMLElement;
-
   public gradientId = `igx-circular-gradient-${NEXT_GRADIENT_ID++}`;
-
-  private _circleRadius = 46;
-  private _circumference = 2 * Math.PI * this._circleRadius;
 
   private readonly STROKE_OPACITY_DVIDER = 100;
   private readonly STROKE_OPACITY_ADDITION = 0.2;
 
+  private _circleRadius = 46;
+  private _circumference = 2 * Math.PI * this._circleRadius;
   private animationState = {
     strokeDashoffset: 289,
     strokeOpacity: 1,
   };
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-  }
+  @query('#circle')
+  private _svgCircle!: HTMLElement;
 
-  public override firstUpdated(): void {
-    this.triggerProgressTransition(MIN_VALUE, this._initValue);
-    this._contentInit = true;
-  }
+  @property({ reflect: true, attribute: true })
+  public text!: string;
 
-  public slotChange(): void {
+  private slotChange(): void {
     this._svgCircle.style.stroke = `url(#${this.gradientId})`;
   }
 
-  public override get textContent(): string {
-    return this.text;
+  private getProgress(percentage: number) {
+    // return this._directionality.rtl
+    //   ? this._circumference + (percentage * this._circumference) / 100
+    //   : this._circumference - (percentage * this._circumference) / 100;
+
+    return this._circumference - (percentage * this._circumference) / 100;
   }
 
   public override runAnimation(value: number): void {
@@ -89,14 +64,6 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       fill: 'forwards',
       duration: this.animationDuration,
     });
-  }
-
-  private getProgress(percentage: number) {
-    // return this._directionality.rtl
-    //   ? this._circumference + (percentage * this._circumference) / 100
-    //   : this._circumference - (percentage * this._circumference) / 100;
-
-    return this._circumference - (percentage * this._circumference) / 100;
   }
 
   protected override render() {
@@ -129,12 +96,8 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
               ? svg`
                   <text text-anchor="middle" x="50" y="60">
                     <!-- <slot name="textTemplate"> -->
-                      <tspan class="igx-circular-bar__text">
-                        ${
-                          this.textContent
-                            ? this.textContent
-                            : this.valueInPercent + '%'
-                        }
+                      <tspan part="text">
+                        ${this.text ? this.text : this.valueInPercent + '%'}
                       </tspan>
                     <!-- </slot> -->
                   </text>

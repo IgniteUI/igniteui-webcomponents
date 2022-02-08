@@ -1,5 +1,6 @@
 import { LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { watch } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
 import { IgcRadioEventMap } from '../../radio/radio';
@@ -36,12 +37,10 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
   protected _interval!: any;
   protected _initValue = 0;
   protected _contentInit = false;
-
-  @property({ type: Boolean })
-  public indeterminate = false;
-
-  @property({ reflect: true, attribute: false })
-  public animationDuration = 2000;
+  protected _internalState = {
+    oldVal: 0,
+    newVal: 0,
+  };
 
   @state()
   protected _max = 100;
@@ -50,33 +49,29 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
   @state()
   protected _animate = false;
   @state()
-  protected _step!: any;
-  @state()
-  protected _animation!: any;
-  protected _internalState = {
-    oldVal: 0,
-    newVal: 0,
-  };
-
-  @property({ attribute: true, reflect: true, type: Number })
-  public set step(val: number) {
-    const step = Number(val);
-    if (step > this.max) {
-      return;
-    }
-
-    this._step = step;
-  }
-
-  public get step(): number {
-    if (this._step) {
-      return this._step;
-    }
-    return this._max * ONE_PERCENT;
-  }
+  protected _animation!: Animation;
 
   @property({ type: Boolean })
-  public set panimate(animate: boolean) {
+  public indeterminate = false;
+
+  @watch('indeterminate')
+  public indeterminateChange() {
+    if (this.indeterminate) {
+      this.textVisibility = false;
+      this._animation?.cancel();
+    } else {
+      this._animation?.finish();
+    }
+  }
+
+  @property({ reflect: true, attribute: false })
+  public animationDuration = 2000;
+
+  @property({ type: Boolean })
+  public textVisibility = false;
+
+  @property({ type: Boolean })
+  public set animated(animate: boolean) {
     this._animate = animate;
     if (animate) {
       this.animationDuration = 2000;
@@ -85,7 +80,7 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
     }
   }
 
-  public get panimate(): boolean {
+  public get animated(): boolean {
     return this._animate;
   }
 
@@ -97,6 +92,10 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
       (this._animation && this._animation.playState !== 'finished')
     ) {
       return;
+    }
+
+    if (maxNum < this.value) {
+      this._value = maxNum;
     }
 
     this._internalState.newVal = Math.round(
@@ -119,16 +118,6 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
 
   public get max() {
     return this._max;
-  }
-
-  @property({ attribute: true, reflect: true, type: Number })
-  public set valueInPercent(value: number) {
-    this.value = toValue(value, this.max);
-  }
-
-  public get valueInPercent(): number {
-    const val = this.max <= 0 ? 0 : toPercent(this._value, this._max);
-    return val;
   }
 
   @property({ attribute: true, reflect: true, type: Number })
@@ -160,6 +149,26 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
     return this._value;
   }
 
+  public get step(): number {
+    return this._max * ONE_PERCENT;
+  }
+
+  public get valueInPercent(): number {
+    const val = this.max <= 0 ? 0 : toPercent(this._value, this._max);
+    return val;
+  }
+
+  public override firstUpdated(): void {
+    this.triggerProgressTransition(MIN_VALUE, this._initValue);
+    this._contentInit = true;
+  }
+
+  private updateProgress(val: number) {
+    this._value = valueInRange(val, this._max);
+    // this.valueInPercent = toPercent(val, this._max);
+    this.runAnimation(val);
+  }
+
   protected triggerProgressTransition(
     oldVal: any,
     newVal: any,
@@ -181,7 +190,7 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
       const duration =
         this.animationDuration /
         Math.abs(newToPercent - oldToPercent) /
-        (this._step ? this._step : 1);
+        this.step;
       this.runAnimation(newVal);
       this._interval = setInterval(
         () => this.increase(newVal, stepDirection),
@@ -216,10 +225,4 @@ export class IgcProgressBaseComponent extends EventEmitterMixin<
   }
 
   protected runAnimation(_value: number) {}
-
-  private updateProgress(val: number) {
-    this._value = valueInRange(val, this._max);
-    // this.valueInPercent = toPercent(val, this._max);
-    this.runAnimation(val);
-  }
 }

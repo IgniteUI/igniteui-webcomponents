@@ -1,11 +1,7 @@
 import { html } from 'lit';
 import { partNameMap } from '../common/util';
 import { styles } from './linear.progress.material.css';
-import {
-  IgcProgressBaseComponent,
-  MIN_VALUE,
-  toPercent,
-} from './common/progress-base';
+import { IgcProgressBaseComponent, toPercent } from './common/progress-base';
 import { property, query } from 'lit/decorators.js';
 
 let NEXT_LINEAR_ID = 0;
@@ -13,10 +9,11 @@ let NEXT_LINEAR_ID = 0;
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-bar';
   public static styles = styles;
+
   public override id = `igx-linear-bar-${NEXT_LINEAR_ID++}`;
 
-  // @HostBinding('attr.aria-valuemin')
-  public valueMin = 0;
+  @query('#indicator')
+  private _progressIndicator!: HTMLElement;
 
   @property({ type: Boolean })
   public striped = false;
@@ -28,9 +25,6 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
   public textAlign: 'start' | 'center' | 'end' = 'start';
 
   @property({ type: Boolean })
-  public textVisibility = false;
-
-  @property({ type: Boolean })
   public textTop = false;
 
   @property({ reflect: true, attribute: true })
@@ -38,9 +32,6 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
 
   @property({ reflect: true, attribute: true })
   public type: 'error' | 'info' | 'warning' | 'success' | 'default' = 'default';
-
-  @query('#indicator')
-  private _progressIndicator!: HTMLElement;
 
   private animationState = {
     width: '0%',
@@ -62,15 +53,31 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     return this.type === 'success';
   }
 
+  private get wrapperParts() {
+    return {
+      stripped: this.striped,
+      indeterminate: this.indeterminate,
+      success: this.success,
+      danger: this.error,
+      warning: this.warning,
+      info: this.info,
+    };
+  }
+
+  private get spanParts() {
+    return {
+      start: this.textAlign === 'start',
+      center: this.textAlign === 'center',
+      end: this.textAlign === 'end',
+      top: this.textTop,
+      hidden: !this.textVisibility,
+    };
+  }
+
   public override connectedCallback(): void {
     super.connectedCallback();
     this._animate = true;
-    this.setAttribute('aria-valuemin', this.valueMin.toString());
-  }
-
-  protected override firstUpdated() {
-    this.triggerProgressTransition(MIN_VALUE, this._initValue);
-    this._contentInit = true;
+    this.setAttribute('aria-valuemin', '0');
   }
 
   public override runAnimation(value: number) {
@@ -97,27 +104,6 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     });
   }
 
-  private get wrapperParts() {
-    return {
-      stripped: this.striped,
-      indeterminate: this.indeterminate,
-      success: this.success,
-      danger: this.error,
-      warning: this.warning,
-      info: this.info,
-    };
-  }
-
-  private get spanParts() {
-    return {
-      start: this.textAlign === 'start',
-      center: this.textAlign === 'center',
-      end: this.textAlign === 'end',
-      top: this.textTop,
-      hidden: !this.textVisibility,
-    };
-  }
-
   protected override render() {
     return html`
       <div part="wrapper">
@@ -128,10 +114,13 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
             style="width: 0"
           ></div>
         </div>
-
-        <span part="value ${partNameMap(this.spanParts)}">
-          ${this.text ? this.text : this.valueInPercent + '%'}
-        </span>
+        ${this.textVisibility
+          ? html`
+              <span part="value ${partNameMap(this.spanParts)}">
+                ${this.text ? this.text : this.valueInPercent + '%'}
+              </span>
+            `
+          : ''}
       </div>
     `;
   }

@@ -50,6 +50,12 @@
   stop-color: #09f;
 }
 
+[part~='text'] {
+  font-size: 2rem;
+  font-weight: 600;
+  fill: var(--text-color);
+}
+
 [part~='indeterminate'] [part~='outer'] {
   stroke-dasharray: 289;
   animation-duration: 1.5s;
