@@ -77,11 +77,15 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @property({ type: Boolean })
   public open = false;
 
-  /** Sets the dropdown list's positioning strategy. */
+  /** Sets the dropdown list's positioning strategy.
+   * @type {"absolute" | "fixed"}
+   */
   @property({ attribute: false })
   public positionStrategy: 'absolute' | 'fixed' = 'absolute';
 
-  /** The preferred placement of the dropdown list around the target element. */
+  /** The preferred placement of the dropdown list around the target element.
+   *  @type {"top"|"top-start"|"top-end"|"bottom"|"bottom-start"|"bottom-end"|"right"|"right-start"|"right-end"|"left"|"left-start"|"left-end"}
+   */
   @property({ attribute: false })
   public placement: IgcPlacement = 'bottom-start';
 
@@ -96,7 +100,9 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @property({ type: Boolean })
   public closeOnOutsideClick = true;
 
-  /** Determines the behavior of the dropdown list during scrolling the container. */
+  /** Determines the behavior of the dropdown list during scrolling the container.
+   *  @type {"scroll" | "close" | "block" | "noop"}
+   */
   @property({ attribute: false })
   public scrollStrategy: 'scroll' | 'close' | 'block' | 'noop' = 'noop';
 
@@ -104,7 +110,6 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public offset!: { x: number; y: number };
 
-  @watch('target')
   @watch('open')
   protected toggleDirectiveChange() {
     if (!this.target) return;
@@ -112,8 +117,11 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     this.toggleController.open = this.open;
     this.toggleController.target = this.target;
 
-    if (this.open && !this.selectedItem) {
+    if (this.open) {
+      document.addEventListener('keydown', this.handleKeyDown);
       this.selectedItem = this.allItems.find((i) => i.selected) ?? null;
+    } else {
+      document.removeEventListener('keydown', this.handleKeyDown);
     }
 
     this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
@@ -163,16 +171,6 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     this.toggleController.documentClicked = (ev: MouseEvent) =>
       this.handleDocumentClicked(ev);
     this.toggleController.handleScroll = (ev: Event) => this.handleScroll(ev);
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    document.addEventListener('keydown', this.handleKeyDown);
-  }
-
-  public override disconnectedCallback() {
-    super.disconnectedCallback();
-    document.removeEventListener('keydown', this.handleKeyDown);
   }
 
   public override firstUpdated() {
@@ -515,7 +513,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public navigateTo(index: number): IgcDropDownItemComponent | null;
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
-  public navigateTo(value: any): IgcDropDownItemComponent | null {
+  public navigateTo(value: string | number): IgcDropDownItemComponent | null {
     const index =
       typeof value === 'string' ? this.getItem(value).index : (value as number);
 
@@ -527,7 +525,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public select(index: number): IgcDropDownItemComponent | null;
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
-  public select(value: any): IgcDropDownItemComponent | null {
+  public select(value: string | number): IgcDropDownItemComponent | null {
     const item =
       typeof value === 'string'
         ? this.getItem(value).item

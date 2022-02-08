@@ -117,6 +117,7 @@ const items = [
 ];
 const Template: Story<ArgTypes, Context> = (
   {
+    open = false,
     flip = false,
     closeOnOutsideClick = true,
     placement = 'bottom-end',
@@ -128,6 +129,7 @@ const Template: Story<ArgTypes, Context> = (
   <div style="position: relative; height: 400px">
     <igc-dropdown
       id="ddl1"
+      .open=${open}
       .flip=${flip}
       .closeOnOutsideClick=${closeOnOutsideClick}
       .placement=${placement}
@@ -161,6 +163,7 @@ const Template: Story<ArgTypes, Context> = (
       >
       <igc-dropdown
         id="ddl2"
+        .open=${open}
         .flip=${flip}
         .closeOnOutsideClick=${closeOnOutsideClick}
         .placement=${placement}
@@ -192,6 +195,7 @@ const Template: Story<ArgTypes, Context> = (
     <igc-dropdown
       style="position: absolute; bottom: 10px; left: 0px"
       id="ddl3"
+      .open=${open}
       .flip=${flip}
       .closeOnOutsideClick=${closeOnOutsideClick}
       .placement=${'top-start'}
@@ -211,6 +215,7 @@ const Template: Story<ArgTypes, Context> = (
     <igc-dropdown
       style="position: fixed; bottom: 0px; right: 0px"
       id="ddl4"
+      .open=${open}
       .flip=${true}
       .closeOnOutsideClick=${closeOnOutsideClick}
       .placement=${placement}
