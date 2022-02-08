@@ -12,6 +12,10 @@ $thumb-label-height: rem(30px);
     display: block;
 }
 
+slot {
+    display: none;
+}
+
 [part='base'] {
     display: flex;
     position: relative;
@@ -119,17 +123,13 @@ $thumb-label-height: rem(30px);
     inset-inline-start: 0;
 }
 
-[part='thumb'],
-[part='thumb-label'] {
+[part='thumb'] {
     position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
     outline-style: none;
-}
-
-[part='thumb'] {
     width: $thumb-size;
     height: $thumb-size;
     background: color(secondary, 500);
@@ -170,19 +170,26 @@ $thumb-label-height: rem(30px);
 }
 
 [part='thumb-label'] {
-    @include type-category('caption');
-
-    margin-inline-start: calc((#{$thumb-label-width} / 2) * -1);
-    flex: 0 0 auto;
+    position: absolute;
     top: calc((#{$thumb-label-height} + #{$thumb-size}) * -1);
     pointer-events: none;
-    min-width: $thumb-label-width;
     height: $thumb-label-height;
+    display: flex;
+}
+
+[part='thumb-label-inner'] {
+    @include type-category('caption');
+
+    display: flex;
+    min-width: $thumb-label-width;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    margin-inline-start: -50%;
     padding: 0 rem(2px);
     border-radius: rem(2px);
     color: contrast-color(gray, 700);
     background: color(gray, 700);
-    opacity: 0;
 
     &::after {
         content: '';

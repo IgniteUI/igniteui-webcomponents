@@ -63,7 +63,6 @@ const metadata = {
       description:
         'Specifies the granularity that the value must adhere to.\nIf set to 0 no stepping is implied and any value in the range is allowed.',
       control: 'number',
-      defaultValue: '1',
     },
     primaryTicks: {
       type: 'number',
@@ -100,6 +99,19 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    locale: {
+      type: 'string',
+      description:
+        'The locale used to format the thumb and tick label values in the slider.',
+      control: 'text',
+      defaultValue: 'en',
+    },
+    valueFormat: {
+      type: 'string | undefined',
+      description:
+        'String format used for the thumb and tick label values in the slider.',
+      control: 'text',
+    },
     tickLabelRotation: {
       type: '0 | 90 | -90',
       description:
@@ -129,6 +141,8 @@ interface ArgTypes {
   tickOrientation: 'start' | 'end' | 'mirror';
   hidePrimaryLabels: boolean;
   hideSecondaryLabels: boolean;
+  locale: string;
+  valueFormat: string | undefined;
   tickLabelRotation: 0 | 90 | -90;
 }
 // endregion
@@ -157,11 +171,12 @@ const Template: Story<ArgTypes, Context> = (
     tickOrientation = 'end',
     tickLabelRotation = 0,
     ariaLabel,
+    locale = 'en',
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-slider
-    style="margin: 40px 20px;"
+    style="margin: 60px;"
     ?disabled=${disabled}
     ?discrete-track=${discreteTrack}
     ?hide-tooltip=${hideTooltip}
@@ -170,6 +185,7 @@ const Template: Story<ArgTypes, Context> = (
     min=${min}
     max=${max}
     aria-label=${ifDefined(ariaLabel)}
+    locale=${locale}
     .lowerBound=${lowerBound}
     .upperBound=${upperBound}
     .primaryTicks=${primaryTicks}
@@ -187,34 +203,56 @@ const Template: Story<ArgTypes, Context> = (
   /> -->
 `;
 
-const LabelFormatterTemplate: Story<ArgTypes, Context> = (
+const ValueFormatTemplate: Story<ArgTypes, Context> = (
+  _args: ArgTypes,
+  { globals: { direction } }: Context
+) => html`
+  <igc-slider
+    style="padding: 60px;"
+    primary-ticks="3"
+    secondary-ticks="4"
+    .valueFormatOptions=${{
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }}
+    dir=${ifDefined(direction)}
+  ></igc-slider>
+  <igc-slider
+    style="padding: 60px; overflow: hidden"
+    value-format="Distance: {0}"
+    locale="fr"
+    .valueFormatOptions=${{
+      style: 'unit',
+      unit: 'kilometer',
+      minimumFractionDigits: 2,
+    }}
+    dir=${ifDefined(direction)}
+  ></igc-slider>
+`;
+
+const LabelsTemplate: Story<ArgTypes, Context> = (
   _args: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-slider
     style="margin: 40px 20px; width: 200px;"
-    min="0"
-    max="2"
     primary-ticks="3"
     discrete-track
     aria-label="Priority"
-    .labelFormatter=${(value: number): string => {
-      switch (value) {
-        case 0:
-          return 'Low';
-        case 1:
-          return 'Medium';
-        case 2:
-          return 'High';
-        default:
-          return value.toString();
-      }
-    }}
     dir=${ifDefined(direction)}
-  ></igc-slider>
+  >
+    <igc-slider-label>Low</igc-slider-label>
+    <igc-slider-label>Medium</igc-slider-label>
+    <igc-slider-label>High</igc-slider-label>
+  </igc-slider>
 `;
 export const Basic = Template.bind({});
-export const LabelFormatter = LabelFormatterTemplate.bind({});
-(LabelFormatter as any).parameters = {
+export const ValueFormat = ValueFormatTemplate.bind({});
+export const Labels = LabelsTemplate.bind({});
+(ValueFormat as any).parameters = {
+  controls: { include: [] },
+};
+(Labels as any).parameters = {
   controls: { include: [] },
 };

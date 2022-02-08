@@ -13,7 +13,7 @@ const SRC_DIR = path.resolve(__dirname, '../docs/json');
 const DEST_DIR = path.resolve(__dirname, '../stories');
 
 const REPLACE_REGEX = /\/\/ region default.*\/\/ endregion/gs;
-const UNION_TYPE_REGEX = /^[""\w\s-]+\|[""\w\s|-]+$/;
+const UNION_TYPE_REGEX = /^("\w+"|[\d-]+)\s\|/;
 const SUPPORTED_TYPES = ['string', 'number', 'boolean', 'Date'];
 
 const capitalize = (str) => {

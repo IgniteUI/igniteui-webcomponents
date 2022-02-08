@@ -1,5 +1,10 @@
 import { html, LitElement, TemplateResult } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { watch } from '../common/decorators';
@@ -11,10 +16,14 @@ export class IgcSliderBaseComponent extends LitElement {
   @query(`[part='thumb']`)
   protected thumb!: HTMLElement;
 
+  @queryAssignedElements({ selector: 'igc-slider-label' })
+  private labelElements!: HTMLElement[];
+
   private _lowerBound?: number;
   private _upperBound?: number;
   private _min = 0;
   private _max = 100;
+  private _step = 1;
   private startValue?: number;
   private pointerCaptured = false;
   private thumbHoverTimer: any;
@@ -23,10 +32,13 @@ export class IgcSliderBaseComponent extends LitElement {
   @state()
   private thumbLabelsVisible = false;
 
+  @state()
+  private labels?: string[];
+
   public set min(value: number) {
     if (value < this.max) {
       const oldVal = this._min;
-      this._min = value;
+      this._min = this.labels ? 0 : value;
       this.requestUpdate('min', oldVal);
 
       if (typeof this.lowerBound === 'number' && this.lowerBound < value) {
@@ -46,7 +58,7 @@ export class IgcSliderBaseComponent extends LitElement {
   public set max(value: number) {
     if (value > this.min) {
       const oldVal = this._max;
-      this._max = value;
+      this._max = this.labels ? this.labels.length - 1 : value;
       this.requestUpdate('max', oldVal);
 
       if (typeof this.upperBound === 'number' && this.upperBound > value) {
@@ -120,12 +132,20 @@ export class IgcSliderBaseComponent extends LitElement {
   @property({ type: Boolean, attribute: 'hide-tooltip' })
   public hideTooltip = false;
 
+  public set step(value: number) {
+    const oldVal = this._step;
+    this._step = this.labels ? 1 : value;
+    this.requestUpdate('step', oldVal);
+  }
+
   /**
    * Specifies the granularity that the value must adhere to.
    * If set to 0 no stepping is implied and any value in the range is allowed.
    */
   @property({ type: Number })
-  public step = 1;
+  public get step() {
+    return this._step;
+  }
 
   /**
    * The number of primary ticks. It defaults to 0 which means no primary ticks are displayed.
@@ -158,10 +178,22 @@ export class IgcSliderBaseComponent extends LitElement {
   public hideSecondaryLabels = false;
 
   /**
-   * Specifies a custom function to format the labels.
+   * The locale used to format the thumb and tick label values in the slider.
+   */
+  @property()
+  public locale = 'en';
+
+  /**
+   * String format used for the thumb and tick label values in the slider.
+   */
+  @property({ attribute: 'value-format' })
+  public valueFormat?: string;
+
+  /**
+   * Number format options used for the thumb and tick label values in the slider.
    */
   @property({ attribute: false })
-  public labelFormatter: ((value: number) => string) | undefined;
+  public valueFormatOptions?: Intl.NumberFormatOptions;
 
   /**
    * The degrees for the rotation of the tick labels. Defaults to 0.
@@ -178,6 +210,15 @@ export class IgcSliderBaseComponent extends LitElement {
     this.normalizeValue();
   }
 
+  @watch('labels')
+  protected labelsChange() {
+    if (this.labels) {
+      this.min = 0;
+      this.max = this.labels.length - 1;
+      this.step = 1;
+    }
+  }
+
   constructor() {
     super();
     this.addEventListener('pointerdown', this.pointerDown);
@@ -189,6 +230,13 @@ export class IgcSliderBaseComponent extends LitElement {
   public override connectedCallback() {
     super.connectedCallback();
     this.normalizeValue();
+  }
+
+  protected handleSlotChange() {
+    this.labels =
+      this.labelElements && this.labelElements.length
+        ? this.labelElements.map((e) => e.textContent as string)
+        : undefined;
   }
 
   /* c8 ignore next 3 */
@@ -244,6 +292,15 @@ export class IgcSliderBaseComponent extends LitElement {
     return value;
   }
 
+  private formatValue(value: number) {
+    return this.valueFormat
+      ? this.valueFormat.replace(
+          '{0}',
+          value.toLocaleString(this.locale, this.valueFormatOptions)
+        )
+      : value.toLocaleString(this.locale, this.valueFormatOptions);
+  }
+
   private normalizeByStep(value: number) {
     return this.step ? value - ((value - this.actualMin) % this.step) : value;
   }
@@ -253,12 +310,16 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   private totalTickCount() {
-    if (this.primaryTicks === 1) {
-      this.primaryTicks = 2;
-    }
+    const primaryTicks = this.labels
+      ? this.primaryTicks > 0
+        ? this.labels.length
+        : 0
+      : this.primaryTicks === 1
+      ? 2
+      : this.primaryTicks;
 
-    return this.primaryTicks > 0
-      ? (this.primaryTicks - 1) * this.secondaryTicks + this.primaryTicks
+    return primaryTicks > 0
+      ? (primaryTicks - 1) * this.secondaryTicks + primaryTicks
       : this.secondaryTicks > 0
       ? this.secondaryTicks
       : 0;
@@ -454,9 +515,13 @@ export class IgcSliderBaseComponent extends LitElement {
               : html`
                   <div part="tick-label">
                     <span part="tick-label-inner">
-                      ${this.labelFormatter
-                        ? this.labelFormatter(this.tickValue(i))
-                        : this.tickValue(i)}
+                      ${this.labels
+                        ? isPrimary
+                          ? this.labels[
+                              Math.round(i / (this.secondaryTicks + 1))
+                            ]
+                          : ''
+                        : this.formatValue(this.tickValue(i))}
                     </span>
                   </div>
                 `}
@@ -481,7 +546,11 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-valuemax=${this.actualMax}
         aria-valuenow=${value}
         aria-valuetext=${ifDefined(
-          this.labelFormatter ? this.labelFormatter(value) : undefined
+          this.labels
+            ? this.labels[value]
+            : this.valueFormat || this.valueFormatOptions
+            ? this.formatValue(value)
+            : undefined
         )}
         aria-label=${ifDefined(ariaLabel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
@@ -500,7 +569,9 @@ export class IgcSliderBaseComponent extends LitElement {
                 insetInlineStart: percent,
               })}
             >
-              ${this.labelFormatter ? this.labelFormatter(value) : value}
+              <div part="thumb-label-inner">
+                ${this.labels ? this.labels[value] : this.formatValue(value)}
+              </div>
             </div>
           `}
     `;
@@ -547,6 +618,7 @@ export class IgcSliderBaseComponent extends LitElement {
           ? html`<div part="ticks">${this.renderTicks()}</div>`
           : html``}
         <div part="thumbs">${this.renderThumbs()}</div>
+        <slot @slotchange=${this.handleSlotChange}></slot>
       </div>
     `;
   }

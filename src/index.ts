@@ -26,6 +26,7 @@ export { default as IgcRadioGroupComponent } from './components/radio-group/radi
 export { default as IgcRatingComponent } from './components/rating/rating';
 export { default as IgcRippleComponent } from './components/ripple/ripple';
 export { default as IgcSliderComponent } from './components/slider/slider';
+export { default as IgcSliderLabelComponent } from './components/slider/slider-label';
 export { default as IgcRangeSliderComponent } from './components/slider/range-slider';
 export { default as IgcSwitchComponent } from './components/checkbox/switch';
 
