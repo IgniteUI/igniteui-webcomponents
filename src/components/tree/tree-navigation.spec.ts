@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { defineComponents } from '../..';
 import IgcTreeComponent from './tree';
 import IgcTreeItemComponent from './tree-item';
-import { navigationTree, TreeTestFunctions } from './tree-utils.spec';
+import { navigationTree, SLOTS, TreeTestFunctions } from './tree-utils.spec';
 import { IgcSelectionEventArgs, IgcTreeSelectionType } from './tree.common';
 import { IgcTreeNavigationService } from './tree.navigation';
 
@@ -550,6 +550,41 @@ describe('Tree Navigation', () => {
         detail: topLevelItems[1],
       });
       expect(eventSpy.secondCall).calledWith('igcSelection', args);
+    });
+
+    it('Should assign proper tabIndex for tree item labels containing tabbable elements on focus', async () => {
+      const item2 = topLevelItems[1];
+      const item21 = item2.getChildren()[0];
+
+      let item21LabelSlot = TreeTestFunctions.getSlot(item21, SLOTS.label);
+      let assignedEls = item21LabelSlot.assignedElements();
+      expect(assignedEls[0].tagName).to.equal('P');
+      expect(assignedEls[0]).not.to.have.attribute('tabIndex');
+
+      let inputs = assignedEls[0].children;
+
+      expect(treeNavService.focusedItem).to.equal(topLevelItems[0]);
+      expect(inputs[0]).to.have.attribute('tabIndex', '-1');
+      expect(inputs[1]).to.have.attribute('tabIndex', '-1');
+
+      item21.dispatchEvent(new Event('focus'));
+      await elementUpdated(tree);
+
+      expect(treeNavService.focusedItem).to.equal(item21);
+      expect(inputs[0]).to.have.attribute('tabIndex', '0');
+      expect(inputs[1]).to.have.attribute('tabIndex', '0');
+
+      const item22 = item2.getChildren()[1];
+
+      item22.dispatchEvent(new Event('focus'));
+      await elementUpdated(tree);
+
+      item21LabelSlot = TreeTestFunctions.getSlot(item21, SLOTS.label);
+      assignedEls = item21LabelSlot.assignedElements();
+      inputs = assignedEls[0].children;
+
+      expect(inputs[0]).to.have.attribute('tabIndex', '-1');
+      expect(inputs[1]).to.have.attribute('tabIndex', '-1');
     });
   });
 });

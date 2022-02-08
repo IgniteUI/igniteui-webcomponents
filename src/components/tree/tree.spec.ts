@@ -45,10 +45,10 @@ describe('Tree', () => {
         );
         expect(indentationPart).not.to.be.null;
 
-        const indicatorSlot = item.shadowRoot?.querySelector(SLOTS.indicator);
+        const indicatorSlot = TreeTestFunctions.getSlot(item, SLOTS.indicator);
         expect(indicatorSlot).not.to.be.null;
 
-        const labelSLot = item.shadowRoot?.querySelector(SLOTS.label);
+        const labelSLot = TreeTestFunctions.getSlot(item, SLOTS.label);
         expect(labelSLot).not.to.be.null;
         const label = labelSLot?.querySelector('span[part="text"]');
         expect(label?.textContent).to.equal(item.label);
@@ -732,6 +732,13 @@ describe('Tree', () => {
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
       // Should not emit event when collapsed through API
       expect(eventSpy.notCalled).to.be.true;
+
+      // Should not expand with event an already expanded item
+      topLevelItems[0].expandWithEvent();
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
+      expect(eventSpy.notCalled).to.be.true;
     });
 
     it('Should collapse items when item.collapse() is called', async () => {
@@ -1035,6 +1042,46 @@ describe('Tree', () => {
       expect(eventSpy).not.to.be.called;
     });
 
+    it('Should not be able to interact with disabled item through UI', async () => {
+      const eventSpy = sinon.spy(tree, 'emitEvent');
+      const item1 = topLevelItems[0];
+      const item11 = item1.getChildren()[0];
+
+      TreeTestFunctions.verifyExpansionState(item11, true);
+
+      const item11IndSlot = TreeTestFunctions.getSlot(item11, SLOTS.indicator);
+
+      item11IndSlot?.dispatchEvent(new MouseEvent('click'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(item11, true);
+      expect(item11.active).to.be.false;
+      expect(eventSpy).not.to.be.called;
+      expect(tree.navService.focusedItem).not.to.equal(item11);
+
+      const item11LabelSlot = TreeTestFunctions.getSlot(item11, SLOTS.label);
+
+      item11LabelSlot?.dispatchEvent(new MouseEvent('click'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(item11, true);
+      expect(tree.navService.focusedItem).not.to.equal(item11);
+      expect(item11.active).to.be.false;
+      expect(eventSpy).not.to.be.called;
+
+      item11.dispatchEvent(new MouseEvent('pointerdown'));
+      await elementUpdated(tree);
+
+      expect(item11.active).to.be.false;
+      expect(tree.navService.focusedItem).not.to.equal(item11);
+      expect(eventSpy).not.to.be.called;
+
+      item11.dispatchEvent(new Event('focus'));
+      await elementUpdated(tree);
+
+      expect(tree.navService.focusedItem).not.to.equal(item11);
+    });
+
     it('If a tree item is expanded and all its children are disabled the focus and activation should not be moved from the item on Arrow Right key press', async () => {
       const item2 = topLevelItems[1];
       const item21 = item2.getChildren()[0];
@@ -1226,6 +1273,72 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       expect(initiallyExpandedItem).to.have.attribute('aria-expanded', 'false');
+    });
+  });
+
+  describe('RTL', () => {
+    let topLevelItems: IgcTreeItemComponent[];
+    beforeEach(async () => {
+      tree = await TreeTestFunctions.createTreeElement(navigationTree);
+      topLevelItems = tree.items.filter((i) => i.level === 0);
+      tree.dir = 'rtl';
+      await elementUpdated(tree);
+    });
+
+    it('Should collapse expanded tree items on Arrow Right key press when the direction is RTL', async () => {
+      const eventSpy = sinon.spy(tree, 'emitEvent');
+      const item2 = topLevelItems[1];
+
+      item2.active = true;
+      await elementUpdated(tree);
+
+      TreeTestFunctions.setFocusAndTriggerKeydown(item2, tree, 'ArrowRight');
+      await elementUpdated(tree);
+
+      expect(item2.expanded).to.be.false;
+
+      const collapsingArgs = {
+        detail: {
+          node: item2,
+        },
+        cancelable: true,
+      };
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith(
+        'igcItemCollapsing',
+        collapsingArgs
+      );
+      expect(eventSpy.secondCall).calledWith('igcItemCollapsed', {
+        detail: item2,
+      });
+    });
+
+    it('Should expand collapsed tree item w/ children on Arrow Left key press when the direction is RTL', async () => {
+      const eventSpy = sinon.spy(tree, 'emitEvent');
+      const item1 = topLevelItems[0];
+
+      expect(item1.expanded).to.be.false;
+      expect(item1.getChildren().length).to.be.greaterThan(0);
+
+      item1.active = true;
+      await elementUpdated(tree);
+
+      TreeTestFunctions.setFocusAndTriggerKeydown(item1, tree, 'ArrowLeft');
+      await elementUpdated(tree);
+
+      expect(item1.expanded).to.be.true;
+
+      const expandingArgs = {
+        detail: {
+          node: item1,
+        },
+        cancelable: true,
+      };
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs);
+      expect(eventSpy.secondCall).calledWith('igcItemExpanded', {
+        detail: item1,
+      });
     });
   });
 });

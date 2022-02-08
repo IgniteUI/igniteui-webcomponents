@@ -267,10 +267,17 @@ export const navigationTree = `<igc-tree selection='none' style="height: 400px;"
                                        </igc-tree-item>
                                        <igc-tree-item label="Tree Node 2" expanded>
                                          <igc-tree-item label="Tree Node 2.1" expanded>
+                                           <p slot="label">
+                                            <input />
+                                            <input />
+                                           </p>
                                            <igc-tree-item label="Tree Node 2.1.1"></igc-tree-item>
                                            <igc-tree-item label="Tree Node 2.1.2"></igc-tree-item>
                                          </igc-tree-item>
                                          <igc-tree-item label="Tree Node 2.2" expanded>
+                                           <p slot="label">
+                                              <button>asd</button>
+                                           </p>
                                            <igc-tree-item label="Tree Node 2.2.1"></igc-tree-item>
                                            <igc-tree-item label="Tree Node 2.2.2"></igc-tree-item>
                                          </igc-tree-item>
