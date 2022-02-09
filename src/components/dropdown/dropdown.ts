@@ -78,13 +78,13 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   public open = false;
 
   /** Sets the dropdown list's positioning strategy. */
-  @property()
+  @property({ attribute: 'position-strategy' })
   public positionStrategy: 'absolute' | 'fixed' = 'absolute';
 
   /** The preferred placement of the dropdown list around the target element.
    * @type {"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"}
    */
-  @property()
+  @property({ type: String })
   public placement: IgcPlacement = 'bottom-start';
 
   /**
@@ -95,15 +95,31 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   public flip = false;
 
   /** Whether the dropdown should be hidden on clicking outside of it. */
-  @property({ type: Boolean })
+  @property({ type: Boolean, attribute: 'close-on-outside-click' })
   public closeOnOutsideClick = true;
 
   /** Determines the behavior of the dropdown list during scrolling the container. */
-  @property()
+  @property({ attribute: 'scroll-strategy' })
   public scrollStrategy: 'scroll' | 'close' | 'block' | 'noop' = 'noop';
 
   /** The amount of offset in horizontal and/or vertical direction. */
-  @property()
+  @property({
+    converter: {
+      fromAttribute: (value) => {
+        const dimensions = value ? (value as string).split(',') : undefined;
+        return dimensions
+          ? {
+              x: parseInt(dimensions[0]),
+              y: parseInt(dimensions[1] ?? dimensions[0]),
+            }
+          : undefined;
+      },
+      toAttribute: (value: { x: number; y: number }) => {
+        return value ? `${value.x}, ${value.y}` : undefined;
+      },
+    },
+    type: String,
+  })
   public offset!: { x: number; y: number };
 
   @watch('open')

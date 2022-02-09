@@ -43,7 +43,9 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
   }
 
   public set value(value: string) {
+    const oldVal = this._value;
     this._value = value;
+    this.requestUpdate('value', oldVal);
   }
 
   /**

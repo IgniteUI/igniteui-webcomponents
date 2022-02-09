@@ -144,19 +144,19 @@ const Template: Story<ArgTypes, Context> = (
     closeOnOutsideClick = true,
     placement = 'bottom-start',
     scrollStrategy = 'block',
-  }: // offset = { x: 20, y: 20 },
-  ArgTypes,
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <div style="position: relative; height: 400px">
     <igc-dropdown
       id="ddl1"
-      .open=${open}
-      .flip=${flip}
-      .closeOnOutsideClick=${closeOnOutsideClick}
-      .placement=${placement}
+      ?open=${open}
+      ?flip=${flip}
+      ?close-on-outside-click=${closeOnOutsideClick}
+      placement=${placement}
       .dir=${direction}
-      .scrollStrategy=${scrollStrategy}
+      scroll-strategy=${scrollStrategy}
+      offset=${`10, 0`}
     >
       <igc-button slot="target">Dropdown 1</igc-button>
       <igc-dropdown-header>Tasks</igc-dropdown-header>
