@@ -174,15 +174,18 @@ describe('Tree Selection', () => {
   });
 
   describe('Multiple', () => {
+    let topLevelItems: IgcTreeItemComponent[];
+    let eventSpy: any;
+
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(selectedItemsTree);
       treeSelectionService = tree.selectionService;
       initialSelection = tree.items.filter((item) => item.selected === true);
+      topLevelItems = tree.items.filter((i) => i.level === 0);
+      eventSpy = sinon.spy(tree, 'emitEvent');
     });
 
     it('Should be able to set item.selected correctly', async () => {
-      const topLevelItems = tree.items.filter((i) => i.level === 0);
-
       TreeTestFunctions.verifyItemSelection(topLevelItems[0], true);
       topLevelItems[0].selected = false;
       await elementUpdated(tree);
@@ -196,9 +199,6 @@ describe('Tree Selection', () => {
     });
 
     it('Should select/deselect an item by clicking on the checkbox and emit igcSelection event with proper arguments', async () => {
-      const eventSpy = sinon.spy(tree, 'emitEvent');
-
-      const topLevelItems = tree.items.filter((i) => i.level === 0);
       TreeTestFunctions.verifyItemSelection(topLevelItems[0], true);
 
       let selectionPart = topLevelItems[0].shadowRoot!.querySelector(
@@ -251,10 +251,6 @@ describe('Tree Selection', () => {
     });
 
     it('Should be able to prevent the igcSelection event.', async () => {
-      const eventSpy = sinon.spy(tree, 'emitEvent');
-
-      const topLevelItems = tree.items.filter((i) => i.level === 0);
-
       tree.addEventListener('igcSelection', (ev) => {
         ev.preventDefault();
       });
@@ -293,9 +289,6 @@ describe('Tree Selection', () => {
     it('When selecting a range of records using Shift + click key selection of parents should NOT select their children if they are not in the selected range', async () => {
       tree.deselect();
       await elementUpdated(tree);
-
-      const eventSpy = sinon.spy(tree, 'emitEvent');
-      const topLevelItems = tree.items.filter((i) => i.level === 0);
 
       // Select items from "Tree Node 1" to "Tree Node 2.2"
       const expectedSelection = [
@@ -367,9 +360,6 @@ describe('Tree Selection', () => {
     it('Should select a single item when there are no selected items and selction is performed with Shift + click', async () => {
       tree.deselect();
       await elementUpdated(tree);
-
-      const eventSpy = sinon.spy(tree, 'emitEvent');
-      const topLevelItems = tree.items.filter((i) => i.level === 0);
 
       const args: IgcSelectionEventArgs = {
         detail: {
