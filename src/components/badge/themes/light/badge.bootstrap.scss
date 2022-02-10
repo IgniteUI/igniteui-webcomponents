@@ -1,5 +1,5 @@
-@use './badge.base.scss';
 @use '../../../../styles/utilities' as *;
+@use './badge.base.scss';
 
 :host {
     --size: #{rem(18px)};
@@ -28,6 +28,6 @@
     color: contrast-color(error, 700);
 }
 
-:host([outlined]) {
+:host([outlined]) span {
     box-shadow: inset 0 0 0 rem(1px) color(gray, 50);
 }

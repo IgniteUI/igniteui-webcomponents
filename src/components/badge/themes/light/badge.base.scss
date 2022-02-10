@@ -45,10 +45,12 @@ span {
     background: color(error, 500);
 }
 
-:host([shape='rounded']) {
+:host([shape='rounded']),
+:host([outlined][shape='rounded']) span {
     border-radius: var(--size);
 }
 
-:host([shape='square']) {
+:host([shape='square']),
+:host([outlined][shape='square']) span {
     border-radius: 0;
 }
