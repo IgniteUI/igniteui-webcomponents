@@ -1,0 +1,117 @@
+@use '../../../../styles/utilities' as utils;
+@use './radio.base.scss';
+
+$hover-color: utils.color(gray, 700) !default;
+$checked-hover-color: utils.color(primary, 900) !default;
+$invalid-color: utils.color(error, 500) !default;
+$invalid-hover-color: utils.color(error, 700) !default;
+$disabled-color: utils.color(gray, 400) !default;
+
+:host [part='base'] {
+    transition-duration: .1s;
+}
+
+:host [part~='control'] {
+    width: var(--size, utils.rem(20px));
+    height: var(--size, utils.rem(20px));
+    min-width: var(--size, utils.rem(20px));
+    background: transparent;
+    transition: none;
+
+    &::before,
+    &::after {
+        transition-duration: .1s;
+    }
+
+    &::before {
+        transform: translate(-50%, -50%) scale(.5);
+    }
+
+    &::after {
+        border: calc(var(--size, 20px) / 20) solid utils.color(gray, 700);
+    }
+}
+
+:host(:hover),
+:host(:focus-within) {
+    [part='control'] {
+        &::before {
+            background: $hover-color;
+        }
+    }
+
+    [part='control checked'] {
+        &::after {
+            border-color: $checked-hover-color;
+        }
+
+        &::before {
+            background: $checked-hover-color;
+        }
+    }
+}
+
+:host [part='control checked'] {
+    &::before {
+        background: utils.color(primary, 500);
+    }
+
+    &::after {
+        border-color: utils.color(primary, 500);
+    }
+}
+
+:host(:not([disabled])[invalid]) {
+    [part~='label'] {
+        color: $invalid-color;
+    }
+
+    [part~='control'] {
+        &::before {
+            background: $invalid-color;
+        }
+    }
+
+    [part='control checked'] {
+        &::after {
+            border-color: $invalid-color;
+        }
+    }
+}
+
+:host(:not([disabled])[invalid]:hover),
+:host(:not([disabled])[invalid]:focus-within) {
+    [part='control'] {
+        &::after {
+            border-color: $invalid-hover-color;
+        }
+    }
+
+    [part='control checked'] {
+        &::after {
+            border-color: $invalid-hover-color;
+        }
+
+        &::before {
+            background: $invalid-hover-color;
+        }
+    }
+}
+
+:host([disabled]) {
+    [part~='label'] {
+        color: $disabled-color;
+    }
+
+    [part~='control'] {
+        &::after {
+            border-color: $disabled-color;
+        }
+    }
+
+    [part='control checked'] {
+        &::before {
+            background: $disabled-color;
+        }
+    }
+}

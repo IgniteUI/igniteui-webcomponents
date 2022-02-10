@@ -6,11 +6,6 @@
     $checked-color: utils.color(gray, 900),
     $disabled-color: utils.color(gray, 400)
 );
-@use '../../../components/radio/radio.indigo' as radio with (
-    $border-color: utils.color(gray, 700),
-    $checked-color: utils.color(gray, 900),
-    $disabled-color: utils.color(gray, 400)
-);
 @use '../../../components/checkbox/switch.indigo' as switch with (
     $border-color: utils.color(gray, 700),
     $checked-color: utils.color(gray, 900),
@@ -41,7 +36,6 @@ $palette: utils.palette(
 @include base.root-styles($palette);
 @include card.theme();
 @include checkbox.theme();
-@include radio.theme();
 @include switch.theme();
 @include navbar.theme();
 @include nav-drawer.theme();

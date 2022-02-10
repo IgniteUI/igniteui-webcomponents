@@ -1,5 +1,5 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
 :host {
     display: inline-flex;
@@ -16,10 +16,6 @@ input[type='radio'] {
     align-items: center;
     cursor: pointer;
     transition: color .15s ease-in;
-
-    &:hover [part='control'] {
-        background: color(gray, 600, .06);
-    }
 
     &:focus-within [part='control'] {
         background: color(gray, 600, .12);
@@ -63,16 +59,6 @@ input[type='radio'] {
     }
 }
 
-[part='base checked'] {
-    &:hover [part~='control'] {
-        background: color(secondary, 500, .06);
-    }
-
-    &:focus-within [part~='control'] {
-        background: color(secondary, 500, .12);
-    }
-}
-
 [part='control checked'] {
     &::before {
         border-color: color(secondary, 500);
@@ -93,12 +79,6 @@ input[type='radio'] {
     [part~='control'] {
         &::after {
             border-color: color(error, 500);
-        }
-    }
-
-    [part='control checked'] {
-        &::before {
-            background: color(error, 500);
         }
     }
 }
