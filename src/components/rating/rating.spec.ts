@@ -1,10 +1,14 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcRatingComponent } from '../../index.js';
+import {
+  defineComponents,
+  IgcRatingComponent,
+  IgcRatingSymbolComponent,
+} from '../../index.js';
 
 describe('Rating component', () => {
   before(() => {
-    defineComponents(IgcRatingComponent);
+    defineComponents(IgcRatingComponent, IgcRatingSymbolComponent);
   });
 
   const getRatingSymbols = (el: IgcRatingComponent) =>
@@ -145,14 +149,18 @@ describe('Rating component', () => {
       );
     });
 
-    it('correctly renders symbols passed through a template', async () => {
-      const template = document.createElement('template');
-      template.innerHTML = '🐝';
-      el.appendChild(template);
+    it('correctly renders symbols passed through igc-rating-symbol', async () => {
+      const projected = await fixture<IgcRatingComponent>(
+        html`<igc-rating>
+          <igc-rating-symbol>🐝</igc-rating-symbol>
+          <igc-rating-symbol>🐝</igc-rating-symbol>
+          <igc-rating-symbol>🐝</igc-rating-symbol>
+        </igc-rating>`
+      );
 
-      await elementUpdated(el);
+      expect(projected.max).to.equal(3);
 
-      getRatingSymbols(el).forEach((symbol) =>
+      getRatingSymbols(projected).forEach((symbol) =>
         expect(symbol.textContent).to.eq('🐝')
       );
     });

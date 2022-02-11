@@ -24,6 +24,7 @@ export { default as IgcNavDrawerItemComponent } from './components/nav-drawer/na
 export { default as IgcRadioComponent } from './components/radio/radio';
 export { default as IgcRadioGroupComponent } from './components/radio-group/radio-group';
 export { default as IgcRatingComponent } from './components/rating/rating';
+export { default as IgcRatingSymbolComponent } from './components/rating/rating-symbol';
 export { default as IgcRippleComponent } from './components/ripple/ripple';
 export { default as IgcSliderComponent } from './components/slider/slider';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label';

@@ -23,6 +23,7 @@ import IgcNavbarComponent from '../../navbar/navbar';
 import IgcRadioGroupComponent from '../../radio-group/radio-group';
 import IgcRadioComponent from '../../radio/radio';
 import IgcRatingComponent from '../../rating/rating';
+import IgcRatingSymbolComponent from '../../rating/rating-symbol';
 import IgcRippleComponent from '../../ripple/ripple';
 import IgcRangeSliderComponent from '../../slider/range-slider';
 import IgcSliderComponent from '../../slider/slider';
@@ -55,6 +56,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcRadioComponent,
   IgcRadioGroupComponent,
   IgcRatingComponent,
+  IgcRatingSymbolComponent,
   IgcRippleComponent,
   IgcSliderComponent,
   IgcSliderLabelComponent,

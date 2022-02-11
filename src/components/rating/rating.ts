@@ -13,6 +13,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { SizableMixin } from '../common/mixins/sizable';
 import { styles } from './rating.material.css';
 import { clamp } from '../common/util';
+import type IgcRatingSymbolComponent from './rating-symbol';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -40,8 +41,8 @@ export default class IgcRatingComponent extends SizableMixin(
   @query('[part="base"]', true)
   protected container!: HTMLElement;
 
-  @queryAssignedElements({ selector: 'template' })
-  protected template!: Array<HTMLTemplateElement>;
+  @queryAssignedElements({ selector: 'igc-rating-symbol' })
+  protected ratingSymbols!: Array<IgcRatingSymbolComponent>;
 
   @state()
   protected hoverValue = -1;
@@ -51,6 +52,10 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected get isInteractive() {
     return !(this.readonly || this.disabled);
+  }
+
+  protected get hasProjectedSymbols() {
+    return this.ratingSymbols.length > 0;
   }
 
   protected get isLTR() {
@@ -118,7 +123,9 @@ export default class IgcRatingComponent extends SizableMixin(
 
   @watch('max')
   protected handleMaxChange() {
-    this.max = Math.max(0, this.max);
+    this.hasProjectedSymbols
+      ? (this.max = this.ratingSymbols.length)
+      : (this.max = Math.max(0, this.max));
     if (this.max < this.value) {
       this.value = this.max;
     }
@@ -210,6 +217,9 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected handleSlotChange() {
+    if (this.hasProjectedSymbols) {
+      this.max = this.ratingSymbols.length;
+    }
     this.requestUpdate();
   }
 
@@ -248,11 +258,7 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected renderSymbol(index: number) {
-    return this.symbolFormatter
-      ? this.symbolFormatter(index)
-      : this.template.length
-      ? this.template[0].content.cloneNode(true)
-      : this.symbol;
+    return this.symbolFormatter ? this.symbolFormatter(index) : this.symbol;
   }
 
   protected *renderSymbols() {
@@ -263,6 +269,14 @@ export default class IgcRatingComponent extends SizableMixin(
     }
   }
 
+  protected renderProjected() {
+    return html`${this.ratingSymbols.map((each) => {
+      const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
+      clone.setAttribute('part', `symbol ${this.size}`);
+      return clone;
+    })}`;
+  }
+
   protected renderFractionWrapper(styles: { width: string }) {
     return html`<div
       @click=${this.handleClick}
@@ -270,10 +284,20 @@ export default class IgcRatingComponent extends SizableMixin(
       @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
       @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
     >
+      <slot @slotchange=${this.handleSlotChange}></slot>
+
       <div style=${styleMap(styles)} part="fraction ${this.size}">
-        <div part="symbols-wrapper fraction">${this.renderSymbols()}</div>
+        <div part="symbols-wrapper fraction">
+          ${this.hasProjectedSymbols
+            ? this.renderProjected()
+            : this.renderSymbols()}
+        </div>
       </div>
-      <div part="symbols-wrapper">${this.renderSymbols()}</div>
+      <div part="symbols-wrapper">
+        ${this.hasProjectedSymbols
+          ? this.renderProjected()
+          : this.renderSymbols()}
+      </div>
     </div>`;
   }
 
@@ -296,7 +320,6 @@ export default class IgcRatingComponent extends SizableMixin(
         >
           ${this.renderFractionWrapper(styles)}
         </div>
-        <slot @slotchange=${this.handleSlotChange}></slot>
       </div>
     `;
   }
