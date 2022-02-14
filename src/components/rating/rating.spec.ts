@@ -139,16 +139,6 @@ describe('Rating component', () => {
       );
     });
 
-    it('correctly renders symbols passed through the symbol callback', async () => {
-      el.symbolFormatter = (_: number) => '🐝';
-
-      await elementUpdated(el);
-
-      getRatingSymbols(el).forEach((symbol) =>
-        expect(symbol.textContent).to.eq('🐝')
-      );
-    });
-
     it('correctly renders symbols passed through igc-rating-symbol', async () => {
       const projected = await fixture<IgcRatingComponent>(
         html`<igc-rating>
@@ -163,6 +153,23 @@ describe('Rating component', () => {
       getRatingSymbols(projected).forEach((symbol) =>
         expect(symbol.textContent).to.eq('🐝')
       );
+    });
+
+    it('sets max value correctly when igc-rating-symbols are projected', async () => {
+      const projected = await fixture<IgcRatingComponent>(
+        html`<igc-rating>
+          <igc-rating-symbol>🐝</igc-rating-symbol>
+          <igc-rating-symbol>🐝</igc-rating-symbol>
+          <igc-rating-symbol>🐝</igc-rating-symbol>
+        </igc-rating>`
+      );
+
+      expect(projected.max).to.equal(3);
+
+      projected.max = 10;
+      await elementUpdated(projected);
+
+      expect(projected.max).to.equal(3);
     });
 
     it('correctly reflects stepUp calls', async () => {

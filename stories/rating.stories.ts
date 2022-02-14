@@ -1,6 +1,7 @@
 import { html, svg } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { range } from 'lit-html/directives/range.js';
 
 // region default
 const metadata = {
@@ -149,9 +150,7 @@ const Template: Story<ArgTypes, Context> = (
   </g>
 </svg>`;
 
-  const customSymbols = (index: number) => {
-    return ['😣', '😔', '😐', '🙂', '😆'][index];
-  };
+  const emoji = ['😣', '😔', '😐', '🙂', '😆'];
 
   const hoverHandler = (e: CustomEvent) => {
     const labels = [
@@ -196,9 +195,11 @@ const Template: Story<ArgTypes, Context> = (
         ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
         .step=${Number(step)}
-        .symbolFormatter=${customSymbols}
         max="5"
       >
+        ${emoji.map(
+          (each) => html`<igc-rating-symbol>${each}</igc-rating-symbol>`
+        )}
       </igc-rating>
       <span style="min-height: 24px" id="selection">Select a value</span>
     </div>
@@ -215,21 +216,11 @@ const Template: Story<ArgTypes, Context> = (
         .max=${max}
         valueFormat="Custom icon {0} selected. That is {0}."
       >
-        <igc-rating-symbol>
-          <igc-icon name="diamond-circled"></igc-icon>
-        </igc-rating-symbol>
-        <igc-rating-symbol>
-          <igc-icon name="diamond-circled"></igc-icon>
-        </igc-rating-symbol>
-        <igc-rating-symbol>
-          <igc-icon name="diamond-circled"></igc-icon>
-        </igc-rating-symbol>
-        <igc-rating-symbol>
-          <igc-icon name="diamond-circled"></igc-icon>
-        </igc-rating-symbol>
-        <igc-rating-symbol>
-          <igc-icon name="diamond-circled"></igc-icon>
-        </igc-rating-symbol>
+        ${Array.from(range(5)).map(
+          () => html`<igc-rating-symbol>
+            <igc-icon name="diamond-circled"></igc-icon>
+          </igc-rating-symbol>`
+        )}
       </igc-rating>
     </div>
     <div>
@@ -245,11 +236,9 @@ const Template: Story<ArgTypes, Context> = (
         .max=${max}
         valueFormat="Custom icon {0} selected. That is {0}."
       >
-        <igc-rating-symbol>${heartSVG}</igc-rating-symbol>
-        <igc-rating-symbol>${heartSVG}</igc-rating-symbol>
-        <igc-rating-symbol>${heartSVG}</igc-rating-symbol>
-        <igc-rating-symbol>${heartSVG}</igc-rating-symbol>
-        <igc-rating-symbol>${heartSVG}</igc-rating-symbol>
+        ${Array.from(range(5)).map(
+          () => html`<igc-rating-symbol>${heartSVG}</igc-rating-symbol>`
+        )}
       </igc-rating>
     </div>
   `;

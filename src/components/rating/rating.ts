@@ -82,13 +82,6 @@ export default class IgcRatingComponent extends SizableMixin(
   @property()
   public symbol = '⭐';
 
-  /**
-   * Callback for customizing the rendered symbols (e.g. svg, icons, etc.)
-   * Takes precedence over symbol.
-   */
-  @property({ attribute: false })
-  public symbolFormatter!: (index: number) => any;
-
   /** The name attribute of the control */
   @property()
   public name!: string;
@@ -257,15 +250,9 @@ export default class IgcRatingComponent extends SizableMixin(
     this.value -= this.round(n * this.step);
   }
 
-  protected renderSymbol(index: number) {
-    return this.symbolFormatter ? this.symbolFormatter(index) : this.symbol;
-  }
-
   protected *renderSymbols() {
     for (let i = 0; i < this.max; i++) {
-      yield html`
-        <span part="symbol ${this.size}">${this.renderSymbol(i)}</span>
-      `;
+      yield html`<span part="symbol ${this.size}">${this.symbol}</span>`;
     }
   }
 
