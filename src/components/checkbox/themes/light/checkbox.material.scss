@@ -1,0 +1,32 @@
+@use './checkbox.base.scss';
+@use '../../../../styles/utilities' as *;
+
+label {
+    &:hover [part='control'] {
+        background: color(gray, 600, .06);
+    }
+
+    &:focus-within [part='control'] {
+        background: color(gray, 600, .12);
+    }
+}
+
+[part~='control'] {
+    $size: var(--size, rem(20px));
+    width: calc(#{$size } * 2);
+    height: calc(#{$size } * 2);
+    min-width: calc(#{$size } * 2);
+    border-radius: 50%;
+    transition: background .15s ease-in;
+}
+
+:host([invalid]) label,
+:host([invalid][indeterminate]) label {
+    &:hover [part~='control'] {
+        background: color(error, 500, .06);
+    }
+
+    &:focus-within [part~='control'] {
+        background: color(error, 500, .12);
+    }
+}

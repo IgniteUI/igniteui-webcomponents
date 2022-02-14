@@ -3,11 +3,6 @@
 @use '../../../components/button/button.indigo' as button;
 @use '../../../components/button/icon-button.indigo' as icon-button;
 @use '../../../components/card/card.indigo' as card;
-@use '../../../components/checkbox/checkbox.indigo' as checkbox with (
-    $border-color: utils.color(gray, 700),
-    $checked-color: utils.color(gray, 900),
-    $disabled-color: utils.color(gray, 400)
-);
 @use '../../../components/radio/radio.indigo' as radio with (
     $border-color: utils.color(gray, 700),
     $checked-color: utils.color(gray, 900),
@@ -40,7 +35,6 @@ $palette: utils.palette(
 @include base.root-styles($palette);
 @include button.theme();
 @include card.theme();
-@include checkbox.theme();
 @include radio.theme();
 @include navbar.theme();
 @include nav-drawer.theme();
