@@ -13,7 +13,7 @@ import {
   YEARS_PER_ROW,
 } from '../common/calendar-base';
 import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
-import { styles } from './years-view.material.css';
+import { styles } from '../themes/bootstrap/calendar.bootstrap.css';
 
 /**
  * Instantiate a years view as a separate component in the calendar.

@@ -1,4 +1,5 @@
-@use '../../../styles/utilities' as *;
+@use '../../../../styles/utilities/index' as *;
+@use '../year-month' as *;
 @use 'sass:map';
 
 $border-width: rem(1px);
@@ -8,15 +9,10 @@ $week-number-radius: rem(4px);
 $row-gap: rem(6px);
 $border-radius: rem(4px);
 
-:host {
-    display: flex;
-    flex-direction: column;
-    min-width: 290px;
+[part='days-view'] {
+    @extend %host;
+
     gap: $row-gap;
-    outline: none;
-    padding: 0 rem(12px) rem(16px) rem(12px);
-    overflow: hidden;
-    box-sizing: border-box;
 }
 
 [part~='days-row'] {

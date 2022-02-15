@@ -37,7 +37,6 @@
 @use '../../../components/list/list.fluent' as list with (
     $item-hover-bg: utils.color(gray, 100),
 );
-@use '../../../components/calendar/calendar.fluent' as calendar;
 @use '../../../components/input/input.fluent' as input with ($container-background: transparent);
 @use '../../../components/slider/slider.fluent' as slider with (
     $inactive-background: utils.color(gray, 100),
@@ -67,7 +66,6 @@ $palette: utils.palette(
 @include radio.theme();
 @include switch.theme();
 @include list.theme();
-@include calendar.theme();
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();

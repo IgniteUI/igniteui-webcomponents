@@ -9,7 +9,6 @@
 @use '../../../components/checkbox/switch.bootstrap' as switch;
 @use '../../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../../components/list/list.bootstrap' as list;
-@use '../../../components/calendar/calendar.bootstrap' as calendar;
 @use '../../../components/input/input.bootstrap' as input;
 @use '../../../components/slider/slider.bootstrap' as slider;
 
@@ -33,7 +32,6 @@ $palette: utils.palette(
 @include switch.theme();
 @include navbar.theme();
 @include list.theme();
-@include calendar.theme();
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();

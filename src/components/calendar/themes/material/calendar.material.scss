@@ -1,9 +1,9 @@
-@use '../../styles/utilities' as *;
-@use 'shared-calendar' as *;
+@use '../../../../styles/utilities/index' as *;
+@use 'src/components/calendar/themes/shared-calendar' as *;
 @use 'sass:map';
 @use 'sass:math';
 
-:host {
+:host(igc-calendar) {
     display: flex;
     flex-direction: column;
     font-family: var(--igc-font-family);
@@ -15,7 +15,7 @@
     }
 }
 
-:host([size='large']) {
+:host(igc-calendar[size='large']) {
     igc-days-view::part(date),
     igc-days-view::part(week-number),
     igc-days-view::part(label),
@@ -58,7 +58,7 @@
     }
 }
 
-:host([size='medium']) {
+:host(igc-calendar[size='medium']) {
     igc-days-view::part(date),
     igc-days-view::part(week-number),
     igc-days-view::part(label),
@@ -101,7 +101,7 @@
     }
 }
 
-:host([size='small']) {
+:host(igc-calendar[size='small']) {
     igc-days-view::part(date),
     igc-days-view::part(week-number),
     igc-days-view::part(label),
@@ -190,7 +190,7 @@
     align-items: center;
 }
 
-:host([header-orientation='vertical']) {
+:host(igc-calendar[header-orientation='vertical']) {
     flex-direction: row;
 
     [part='header'] {
