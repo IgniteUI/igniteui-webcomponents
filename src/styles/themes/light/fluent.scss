@@ -11,7 +11,6 @@
 @use '../../../components/input/input.fluent' as input;
 @use '../../../components/navbar/navbar.fluent' as navbar;
 @use '../../../components/slider/slider.fluent' as slider;
-@use '../../../components/snackbar/snackbar.fluent' as snackbar;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -33,4 +32,3 @@ $palette: utils.palette(
 @include icon-button.theme();
 @include navbar.theme();
 @include slider.theme();
-@include snackbar.theme();

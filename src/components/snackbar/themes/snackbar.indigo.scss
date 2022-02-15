@@ -1,0 +1,12 @@
+@use '../../../styles/utilities' as *;
+@use './snackbar.material.scss';
+
+[part~='base'] {
+  background: color(gray, 700, .62);
+  color: contrast-color(gray, 700);
+  border-radius: rem(6px);
+  padding: rem(10px) rem(16px);
+  width: rem(352px);
+  backface-visibility: hidden;
+  backdrop-filter: blur(8px);
+}

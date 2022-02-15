@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { styles } from './snackbar.material.css';
+import { styles } from './themes/snackbar.material.css';
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
