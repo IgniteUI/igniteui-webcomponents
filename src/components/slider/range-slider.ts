@@ -36,7 +36,8 @@ export interface IgcRangeSliderEventMap {
  * @csspart tick-label-inner - The inner element of the tick label.
  * @csspart thumbs - The thumbs container.
  * @csspart thumb - The thumb element.
- * @csspart thumb-label - The thumb tooltip label.
+ * @csspart thumb-label - The thumb tooltip label container.
+ * @csspart thumb-label-inner - The thumb tooltip label inner element.
  * @csspart track - The track container.
  * @csspart steps - The track steps element.
  * @csspart inactive - The inactive element of the track.

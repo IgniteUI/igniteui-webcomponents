@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [2.0.0] - 2022-02-03
+
 ### Added
 
 - Dark Themes
@@ -25,7 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed `igcOpening`, `igcOpened`, `igcClosing` and `igcClosed` events from Navigation drawer component.
 
-## 1.0.0 - 2021-11-22
+## [1.0.0] - 2021-11-22
 
 Initial release of Ignite UI Web Components
 
@@ -48,3 +50,6 @@ Initial release of Ignite UI Web Components
 - Radio component
 - Ripple component
 - Switch component
+
+[2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v1.0.0...v2.0.0
+[1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/releases/tag/v1.0.0
