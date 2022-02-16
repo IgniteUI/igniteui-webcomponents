@@ -1,5 +1,5 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
 :host {
     display: flex;
@@ -19,20 +19,20 @@
     opacity: inherit;
 }
 
-[part='header'] {
+header {
     display: flex;
     flex-flow: column nowrap;
     overflow: hidden;
     flex: 1 1 auto;
 }
 
-[part='title'] {
+::slotted([slot='title']) {
     @include type-category('h6');
 
     opacity: .87;
 }
 
-[part='subtitle'] {
+::slotted([slot='subtitle']) {
     @include type-category('subtitle-2');
 
     opacity: .6;

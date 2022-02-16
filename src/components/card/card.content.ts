@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { styles } from './card.content.material.css';
+import { styles } from './themes/light/card.content.material.css';
 
 /** A container for card's text content
  * @element igc-card-content
