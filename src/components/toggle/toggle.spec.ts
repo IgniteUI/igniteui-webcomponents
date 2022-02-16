@@ -49,26 +49,23 @@ describe('Toggle directive', () => {
     popper = await createPopper(target, true);
 
     await expect(popper).to.be.accessible();
-    const classList = popper.renderRoot.children[0].classList;
-    expect(classList.contains('igc-toggle')).to.be.true;
-    expect(classList.contains('igc-toggle-hidden')).to.be.false;
+    const style =
+      popper.renderRoot.children[0].attributes.getNamedItem('style')?.value;
+    expect(style).not.to.contain('display: none');
   });
 
   it('successfully creates the popper element with default options.', async () => {
     popper = await createPopper(target, false);
 
-    expect(
-      popper.renderRoot.children[0].classList.contains('igc-toggle-hidden')
-    ).to.be.true;
     const popperEl = popper.renderRoot.children[0];
     const attributes = popperEl.attributes;
 
     expect(attributes.getNamedItem('data-popper-placement')?.value).to.equal(
       'bottom-start'
     );
-    expect(attributes.getNamedItem('style')?.value).to.contain(
-      'position: absolute'
-    );
+    const style = attributes.getNamedItem('style')?.value;
+    expect(style).to.contain('display: none');
+    expect(style).to.contain('position: absolute');
   });
 
   it('creates a popper with the passed options.', async () => {
@@ -158,23 +155,17 @@ describe('Toggle directive', () => {
     expect(toggleRect.y).to.eq(Math.round(targetRect.bottom));
   });
 
-  it('honors the preventOverflow option.', async () => {
-    target = document.body;
+  it('honors the sameWidth option.', async () => {
     popper = await createPopper(target, true, {
-      placement: 'top',
+      placement: 'bottom',
       positionStrategy: 'absolute',
-      preventOverflow: { altAxis: true },
+      sameWidth: true,
     });
 
-    let toggleRect = popper.renderRoot.children[0].getBoundingClientRect();
-    expect(toggleRect.y).to.equal(0);
+    const targetRect = target.getBoundingClientRect();
+    const toggleRect = popper.renderRoot.children[0].getBoundingClientRect();
 
-    popper = await createPopper(target, true, {
-      placement: 'top',
-      positionStrategy: 'absolute',
-    });
-    toggleRect = popper.renderRoot.children[0].getBoundingClientRect();
-    expect(toggleRect.y).to.be.lessThan(0);
+    expect(toggleRect.width).to.eq(targetRect.width);
   });
 
   const createPopper = async (
