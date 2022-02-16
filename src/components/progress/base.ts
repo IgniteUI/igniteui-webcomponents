@@ -1,10 +1,13 @@
-import { LitElement } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { html, LitElement } from 'lit';
+import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { watch } from '../common/decorators';
 import { asPercent, clamp } from '../common/util';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
   protected animation!: Animation;
+
+  @queryAssignedElements()
+  protected slotElements!: Array<HTMLElement>;
 
   @state()
   protected percentage = 0;
@@ -98,8 +101,16 @@ export abstract class IgcProgressBaseComponent extends LitElement {
       .replace(/\{1\}/gm, `${this.max}`);
   }
 
+  protected renderDefaultSlot() {
+    return html`<slot part="asd" @slotchange=${this.slotChanges}></slot>`;
+  }
+
   protected renderLabelText() {
     return this.labelFormat ? this.renderLabelFormat() : `${this.percentage}%`;
+  }
+
+  protected slotChanges() {
+    this.requestUpdate();
   }
 
   protected abstract runAnimation(start: number, end: number): void;

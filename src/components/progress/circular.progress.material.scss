@@ -1,6 +1,12 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
+[part~='asd'] {
+  background-color: red;
+  position: absolute;
+  display: block;
+}
+
 [part~='wrapper'] {
   display: inline-flex;
   flex: 1 1 auto;

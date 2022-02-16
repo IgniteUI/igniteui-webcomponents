@@ -82,7 +82,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       )} part="outer" cx="50" cy="50" r="46" />
 
       ${when(
-        this.indeterminate || this.hideLabel,
+        this.indeterminate || this.hideLabel || this.slotElements.length,
         () => nothing,
         () => this.renderLabel()
       )}
@@ -112,6 +112,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
         >
           ${this.renderSvg()}
         </svg>
+        ${this.renderDefaultSlot()}
       </div>
     `;
   }

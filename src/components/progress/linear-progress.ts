@@ -67,7 +67,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
 
   protected renderLabel() {
     return html`${when(
-      this.hideLabel || this.indeterminate,
+      this.hideLabel || this.indeterminate || this.slotElements.length,
       () => nothing,
       () => html`<span part="value ${this.labelAlign}">
         ${this.renderLabelText()}
@@ -87,7 +87,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
         >
           <div part="${partNameMap(this.wrapperParts)}"></div>
         </div>
-        ${this.renderLabel()}
+        ${this.renderLabel()} ${this.renderDefaultSlot()}
       </div>
     `;
   }
