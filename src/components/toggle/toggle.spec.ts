@@ -79,6 +79,18 @@ describe('Toggle directive', () => {
     expect(getStyleValue(attributes)).to.contain('position: fixed');
   });
 
+  it('does not create the popper without a target.', async () => {
+    const div = document.querySelector('input') as HTMLElement;
+    popper = await createPopper(div, true, {
+      placement: 'bottom-end',
+      positionStrategy: 'absolute',
+    });
+
+    const popperEl = popper.renderRoot.children[0];
+    const attributes = popperEl.attributes;
+    expect(attributes.length).to.eq(0);
+  });
+
   it('honors the flip option.', async () => {
     popper = await createPopper(target, true, {
       placement: 'left-start',

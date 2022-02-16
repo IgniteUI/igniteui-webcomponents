@@ -50,13 +50,13 @@
     "build:typedoc:en": "set NODE_ENV=production && node scripts/build-typedoc.js buildEN"
   },
   "dependencies": {
-    "lit": "^2.1.1"
+    "lit": "^2.1.1",
+    "@popperjs/core": "^2.10.2"
   },
   "devDependencies": {
     "@igniteui/material-icons-extended": "^2.10.0",
     "@open-wc/eslint-config": "^7.0.0",
     "@open-wc/testing": "^3.0.3",
-    "@popperjs/core": "^2.10.2",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
     "@web/dev-server": "^0.1.29",

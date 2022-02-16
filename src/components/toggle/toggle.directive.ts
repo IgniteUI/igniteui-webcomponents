@@ -13,12 +13,8 @@ import {
   PartType,
 } from 'lit/directive.js';
 import { IgcPlacement, IOverflowOptions, IToggleOptions } from './utilities.js';
-import { styles } from './toggle.material.css';
 
 export class IgcToggleDirective extends Directive {
-  /** @private */
-  public static styles = styles;
-
   private part: PartInfo;
   private placement: IgcPlacement = 'bottom-start';
   private strategy: 'absolute' | 'fixed' = 'absolute';
