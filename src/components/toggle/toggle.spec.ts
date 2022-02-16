@@ -87,13 +87,8 @@ describe('Toggle directive', () => {
     });
 
     const popperEl = popper.renderRoot.children[0];
-    expect(popperEl.classList.contains('igc-toggle')).to.be.true;
-
     const attributes = popperEl.attributes;
-    expect(attributes.getNamedItem('data-popper-placement')).not.to.exist;
-    expect(attributes.getNamedItem('style')?.value).not.to.contain(
-      'position: absolute'
-    );
+    expect(attributes.length).to.eq(0);
   });
 
   it('honors the flip option.', async () => {
