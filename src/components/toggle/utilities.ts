@@ -7,18 +7,6 @@ import {
 import { Padding } from '@popperjs/core/lib/popper-lite';
 
 /**
- * Common interface for components with show and hide functionality.
- */
-export interface IToggleView {
-  element?: any;
-  open?: boolean;
-
-  show(...args: any): void;
-  hide(...args: any): void;
-  toggle(...args: any): void;
-}
-
-/**
  * Common events interface for toggle components
  */
 export interface IgcToggleEventMap {
@@ -45,7 +33,7 @@ export interface IToggleOptions {
   /**
    * Whether to prevent the element from being cut off by moving it so it stays visible within its boundary area.
    */
-  preventOverflow?: IOverflowOptions;
+  // preventOverflow?: IOverflowOptions;
   /**
    * Whether the element should be hidden on clicking outside of it.
    */
@@ -54,6 +42,10 @@ export interface IToggleOptions {
    * The amount of offset in horizontal and/or vertical direction.
    */
   offset?: { x: number; y: number };
+  /**
+   * Whether to make the toggle the same width as the target.
+   */
+  sameWidth?: boolean;
 }
 
 /**

@@ -19,20 +19,13 @@ export class IgcToggleDirective extends Directive {
   /** @private */
   public static styles = styles;
 
-  private style = `
-    color: #666;
-    background: white;
-    border: 1px solid #666;
-    font-weight: bold;
-    padding: 4px 4px;
-    font-size: 13px;
-    border-radius: 4px;`;
-
   private part: PartInfo;
   private placement: IgcPlacement = 'bottom-start';
   private strategy: 'absolute' | 'fixed' = 'absolute';
   private flip = false;
-  private preventOverflow: IOverflowOptions | undefined;
+  private preventOverflow: IOverflowOptions | undefined = {
+    mainAxis: true,
+  };
   private offset: { x: number; y: number } | undefined;
   private modifiers: Modifier<any, any>[] = [];
   private instance!: Instance;
@@ -78,13 +71,11 @@ export class IgcToggleDirective extends Directive {
   private createPopperElement(open = false) {
     if (!this.popperElement) {
       this.popperElement = (this.part as ElementPart).element as HTMLElement;
-      this.popperElement.classList.add('igc-toggle');
-      this.popperElement.setAttribute('style', this.style);
     }
 
     open
-      ? this.popperElement.classList.remove('igc-toggle-hidden')
-      : this.popperElement.classList.add('igc-toggle-hidden');
+      ? (this.popperElement.style.display = '')
+      : (this.popperElement.style.display = 'none');
 
     return this.popperElement;
   }
@@ -115,7 +106,8 @@ export class IgcToggleDirective extends Directive {
   private updateModifiers(options: IToggleOptions) {
     this.updateFlip(options);
     this.updateOffset(options);
-    this.updatePreventOverflow(options);
+    this.updatePreventOverflow();
+    this.updateSameWidth(options);
 
     return this.modifiers;
   }
@@ -136,13 +128,34 @@ export class IgcToggleDirective extends Directive {
     }
   }
 
-  private updatePreventOverflow(options: IToggleOptions) {
-    if (this.preventOverflow !== options.preventOverflow) {
-      this.preventOverflow = options.preventOverflow;
-      this.preventOverflow
-        ? this.addModifier(preventOverflow, this.preventOverflow)
-        : this.removeModifier(preventOverflow);
-    }
+  private updatePreventOverflow() {
+    this.preventOverflow
+      ? this.addModifier(preventOverflow, this.preventOverflow)
+      : this.removeModifier(preventOverflow);
+  }
+
+  private updateSameWidth(options: IToggleOptions) {
+    options.sameWidth
+      ? this.addModifier(this.sameWidthModifier())
+      : this.removeModifier(this.sameWidthModifier());
+  }
+
+  /** Custom modifier that makes the popper the same width as the target element. */
+  private sameWidthModifier(): Modifier<'sameWidth', null> {
+    return {
+      name: 'sameWidth',
+      enabled: true,
+      phase: 'beforeWrite',
+      requires: ['computeStyles'],
+      fn: ({ state }) => {
+        state.styles.popper.width = `${state.rects.reference.width}px`;
+      },
+      effect: ({ state }) => {
+        state.elements.popper.style.width = `${
+          state.elements.reference.getBoundingClientRect().width
+        }px`;
+      },
+    };
   }
 
   /**

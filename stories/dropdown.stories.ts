@@ -14,25 +14,22 @@ const metadata = {
   title: 'Dropdown',
   component: 'igc-dropdown',
   argTypes: {
+    closeOnSelect: {
+      type: 'boolean',
+      description: 'Whether the dropdown should be hidden on selection.',
+      control: 'boolean',
+      defaultValue: true,
+    },
     open: {
       type: 'boolean',
-      description: 'Sets the open state of the dropdown list.',
+      description: 'Sets the open state of the component.',
       control: 'boolean',
       defaultValue: false,
-    },
-    positionStrategy: {
-      type: '"absolute" | "fixed"',
-      description: "Sets the dropdown list's positioning strategy.",
-      options: ['absolute', 'fixed'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'absolute',
     },
     placement: {
       type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
       description:
-        'The preferred placement of the dropdown list around the target element.',
+        'The preferred placement of the component around the target element.',
       options: [
         'top',
         'top-start',
@@ -52,36 +49,51 @@ const metadata = {
       },
       defaultValue: 'bottom-start',
     },
+    positionStrategy: {
+      type: '"absolute" | "fixed"',
+      description: "Sets the component's positioning strategy.",
+      options: ['absolute', 'fixed'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'absolute',
+    },
+    scrollStrategy: {
+      type: '"scroll" | "block" | "close" | "none"',
+      description:
+        'Determines the behavior of the component during scrolling the container.',
+      options: ['scroll', 'block', 'close', 'none'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'none',
+    },
     flip: {
       type: 'boolean',
       description:
-        "Whether the list should be flipped to the opposite side of the target once it's about to overflow the visible area.\nWhen true, once enough space is detected on its preferred side, it will flip back.",
+        "Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.\nWhen true, once enough space is detected on its preferred side, it will flip back.",
       control: 'boolean',
       defaultValue: false,
     },
     closeOnOutsideClick: {
       type: 'boolean',
       description:
-        'Whether the dropdown should be hidden on clicking outside of it.',
+        'Whether the component should be hidden on clicking outside of it.',
       control: 'boolean',
       defaultValue: true,
     },
-    scrollStrategy: {
-      type: '"scroll" | "close" | "block" | "noop"',
+    sameWidth: {
+      type: 'boolean',
       description:
-        'Determines the behavior of the dropdown list during scrolling the container.',
-      options: ['scroll', 'close', 'block', 'noop'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'noop',
+        "Whether the component's width should be the same as the target's one.",
+      control: 'boolean',
     },
   },
 };
 export default metadata;
 interface ArgTypes {
+  closeOnSelect: boolean;
   open: boolean;
-  positionStrategy: 'absolute' | 'fixed';
   placement:
     | 'top'
     | 'top-start'
@@ -95,9 +107,11 @@ interface ArgTypes {
     | 'left'
     | 'left-start'
     | 'left-end';
+  positionStrategy: 'absolute' | 'fixed';
+  scrollStrategy: 'scroll' | 'block' | 'close' | 'none';
   flip: boolean;
   closeOnOutsideClick: boolean;
-  scrollStrategy: 'scroll' | 'close' | 'block' | 'noop';
+  sameWidth: boolean;
 }
 // endregion
 
@@ -144,6 +158,7 @@ const Template: Story<ArgTypes, Context> = (
     closeOnOutsideClick = true,
     placement = 'bottom-start',
     scrollStrategy = 'block',
+    closeOnSelect = true,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -157,6 +172,7 @@ const Template: Story<ArgTypes, Context> = (
       .dir=${direction}
       scroll-strategy=${scrollStrategy}
       offset=${`10, 0`}
+      .closeOnSelect=${closeOnSelect}
     >
       <igc-button slot="target">Dropdown 1</igc-button>
       <igc-dropdown-header>Tasks</igc-dropdown-header>
@@ -191,6 +207,7 @@ const Template: Story<ArgTypes, Context> = (
         .placement=${placement}
         .scrollStrategy=${scrollStrategy}
         .dir=${direction}
+        .sameWidth=${true}
       >
         <igc-dropdown-group>
           <h3 slot="label">Research & Development</h3>
@@ -223,6 +240,7 @@ const Template: Story<ArgTypes, Context> = (
       .placement=${'top-start'}
       .scrollStrategy=${scrollStrategy}
       .dir=${direction}
+      .sameWidth=${true}
     >
       <input
         type="button"

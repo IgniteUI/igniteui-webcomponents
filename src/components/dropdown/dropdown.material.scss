@@ -29,7 +29,3 @@
 :host([size='large']) ::slotted(igc-dropdown-header) {
     padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
 }
-
-.igc-toggle-hidden {
-    display: none;
-}

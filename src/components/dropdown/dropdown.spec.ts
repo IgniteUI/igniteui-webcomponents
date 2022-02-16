@@ -8,7 +8,6 @@ import IgcDropDownGroupComponent from './dropdown-group';
 import IgcDropDownHeaderComponent from './dropdown-header';
 import IgcDropDownItemComponent from './dropdown-item';
 
-const HIDDEN_CLASS = 'igc-toggle-hidden';
 describe('Dropdown component', () => {
   before(() => {
     defineComponents(
@@ -54,13 +53,6 @@ describe('Dropdown component', () => {
         ${items.map(
           (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
         )}
-        <!-- ${items
-          .slice(0, 2)
-          .map((item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`)}
-        ${html`<igc-dropdown-item disabled>${items[2]}</igc-dropdown-item>`}
-        ${html`<igc-dropdown-item>${items[3]}</igc-dropdown-item>`}
-        ${html`<igc-dropdown-item>${items[4]}</igc-dropdown-item>`}
-        ${html`<igc-dropdown-item disabled>${items[5]}</igc-dropdown-item>`} -->
       </igc-dropdown>`);
     });
 
@@ -75,30 +67,26 @@ describe('Dropdown component', () => {
       expect(dropdown.open).to.be.false;
       expect(dropdown.flip).to.be.false;
       expect(dropdown.closeOnOutsideClick).to.be.true;
+      expect(dropdown.closeOnSelect).to.be.true;
       expect(dropdown.placement).to.eq('bottom-start');
       expect(dropdown.positionStrategy).to.eq('absolute');
-      expect(dropdown.scrollStrategy).to.eq('noop');
+      expect(dropdown.scrollStrategy).to.eq('none');
       expect(dropdown.offset).to.be.undefined;
+      expect(dropdown.sameWidth).to.be.undefined;
     });
 
     it('shows and hides the list when changing the value of `open`.', async () => {
       expect(ddListWrapper(dropdown).getBoundingClientRect()).to.be.empty;
-      expect(ddListWrapper(dropdown).classList.contains(HIDDEN_CLASS)).to.be
-        .true;
 
       dropdown.open = true;
       await elementUpdated(dropdown);
 
       expect(dropdown.open).to.be.true;
-      expect(ddListWrapper(dropdown).classList.contains(HIDDEN_CLASS)).to.be
-        .false;
 
       dropdown.open = false;
       await elementUpdated(dropdown);
 
       expect(dropdown.open).to.be.false;
-      expect(ddListWrapper(dropdown).classList.contains(HIDDEN_CLASS)).to.be
-        .true;
     });
 
     describe('', () => {
@@ -129,15 +117,13 @@ describe('Dropdown component', () => {
       });
 
       it('repositions the list immediately according to `placement` property.', async () => {
-        dropdown.placement = 'right-end';
+        dropdown.placement = 'right-start';
         await elementUpdated(dropdown);
 
-        expect(dropdown.placement).to.eq('right-end');
+        expect(dropdown.placement).to.eq('right-start');
 
         expect(listRect().x).to.eq(Math.round(targetRect().right));
-        expect(Math.round(listRect().bottom)).to.eq(
-          Math.round(targetRect().bottom)
-        );
+        expect(Math.round(listRect().top)).to.eq(Math.round(targetRect().top));
       });
 
       it('honors `flip` value when positioning the list according to the specified `placement`.', async () => {
@@ -153,6 +139,14 @@ describe('Dropdown component', () => {
 
         expect(dropdown.flip).to.be.true;
         expect(listRect().x).to.eq(Math.round(targetRect().right));
+      });
+
+      it('honors `preventOverflow` option and keeps the list in view.', async () => {
+        dropdown.placement = 'right-end';
+        await elementUpdated(dropdown);
+
+        expect(dropdown.placement).to.eq('right-end');
+        expect(Math.round(listRect().top)).to.eq(0);
       });
 
       it('offsets the list according to the `offset` property value.', async () => {
@@ -447,6 +441,24 @@ describe('Dropdown component', () => {
 
         expect(dropdown.open).to.be.true;
         expect(getSelectedItems()[0].textContent).to.eq('Samples');
+      });
+
+      it('keeps the list open on selection if `closeOnSelect` is set to false.', async () => {
+        expect(getSelectedItems().length).to.eq(0);
+
+        dropdown.closeOnSelect = false;
+        ddItems(dropdown)[3].click();
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.true;
+        expect(getSelectedItems()[0].textContent).to.eq('Samples');
+
+        pressKey('ArrowDown');
+        pressKey('Enter');
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.true;
+        expect(getSelectedItems()[0].textContent).to.eq('Documentation');
       });
 
       it('allows disabling items.', async () => {
@@ -811,22 +823,6 @@ describe('Dropdown component', () => {
         );
         await elementUpdated(dropdown);
       });
-
-      // it('scrolls to item on selection via the `select` method.', async () => {
-      //   expect(ddListWrapper(dropdown).scrollTop).to.eq(0);
-
-      //   dropdown.select('Documentation');
-      //   await elementUpdated(dropdown);
-      //   dropdown.open = true;
-      //   await elementUpdated(dropdown);
-
-      //   const wrapper = ddListWrapper(dropdown);
-      //   expect(wrapper.scrollTop).to.be.greaterThan(90);
-
-      //   const lastItem = ddItems(dropdown).pop();
-      //   const itemRect = lastItem?.getBoundingClientRect();
-      //   expect(Math.round(wrapper.getBoundingClientRect().bottom)).to.be.greaterThanOrEqual(Math.round(itemRect?.bottom as number));
-      // });
 
       it('scrolls to item on activation via keyboard.', async () => {
         expect(ddListWrapper(dropdown).scrollTop).to.eq(0);

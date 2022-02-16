@@ -1,17 +1,14 @@
-import { LitElement, html } from 'lit';
+import { html } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './dropdown.material.css';
 import { watch } from '../common/decorators';
-import {
-  IgcPlacement,
-  IgcToggleEventMap,
-  IToggleOptions,
-} from '../toggle/utilities';
+import { IgcToggleEventMap, IToggleOptions } from '../toggle/utilities';
 import IgcDropDownItemComponent from './dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller';
 import IgcDropDownGroupComponent from './dropdown-group';
+import { ToggleBaseComponent } from '../toggle/toggle.interface';
 
 export enum DropDownActionKey {
   ESCAPE = 'escape',
@@ -32,16 +29,22 @@ export interface ISelectionChangeEventArgs {
  * @element igc-dropdown
  *
  * @fires igcChange - Emitted when the selected item changes.
+ * @fires igcOpening - Emitted just before the dropdown is open.
+ * @fires igcOpened - Emitted after the dropdown is open.
+ * @fires igcClosing - Emitter just before the dropdown is closed.
+ * @fires igcClosed - Emitted after closing the dropdown.
  *
  * @slot target - Renders the dropdown's target element.
  * @slot - Renders the dropdown list items.
  *
- *
+ * @csspart target - The target element wrapper.
+ * @csspart base - The dropdown list wrapper.
+ * @csspart list - The dropdown list.
  */
 export default class IgcDropDownComponent extends EventEmitterMixin<
   IgcDropDownEventMap,
-  Constructor<LitElement>
->(LitElement) {
+  Constructor<ToggleBaseComponent>
+>(ToggleBaseComponent) {
   public static readonly tagName = 'igc-dropdown';
 
   public static styles = styles;
@@ -58,6 +61,9 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     return [...this.items, ...groupItems];
   }
 
+  @queryAssignedElements({ slot: 'target' })
+  private targetNodes!: Array<HTMLElement>;
+
   @query('#igcDDLContent')
   protected content!: HTMLElement;
 
@@ -70,63 +76,62 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-group' })
   protected groups!: Array<IgcDropDownGroupComponent>;
 
-  @queryAssignedElements({ slot: 'target' })
-  private targetNodes!: Array<HTMLElement>;
+  /** Whether the dropdown should be hidden on selection. */
+  @property({ type: Boolean, attribute: 'close-on-select' })
+  public closeOnSelect = true;
 
-  /** Sets the open state of the dropdown list. */
-  @property({ type: Boolean })
-  public open = false;
+  // /** Sets the open state of the dropdown list. */
+  // @property({ type: Boolean })
+  // public open = false;
 
-  /** Sets the dropdown list's positioning strategy. */
-  @property({ attribute: 'position-strategy' })
-  public positionStrategy: 'absolute' | 'fixed' = 'absolute';
+  // /** Sets the dropdown list's positioning strategy. */
+  // @property({ attribute: 'position-strategy' })
+  // public positionStrategy: 'absolute' | 'fixed' = 'absolute';
 
-  /** The preferred placement of the dropdown list around the target element.
-   * @type {"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"}
-   */
-  @property({ type: String })
-  public placement: IgcPlacement = 'bottom-start';
+  // /** The preferred placement of the dropdown list around the target element.
+  //  * @type {"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"}
+  //  */
+  // @property({ type: String })
+  // public placement: IgcPlacement = 'bottom-start';
 
   /**
    * Whether the list should be flipped to the opposite side of the target once it's about to overflow the visible area.
    * When true, once enough space is detected on its preferred side, it will flip back.
    */
-  @property({ type: Boolean })
-  public flip = false;
+  // @property({ type: Boolean })
+  // public flip = false;
 
-  /** Whether the dropdown should be hidden on clicking outside of it. */
-  @property({ type: Boolean, attribute: 'close-on-outside-click' })
-  public closeOnOutsideClick = true;
+  // /** Determines the behavior of the dropdown list during scrolling the container. */
+  // @property({ attribute: 'scroll-strategy' })
+  // public scrollStrategy: 'scroll' | 'close' | 'block' | 'none' = 'none';
 
-  /** Determines the behavior of the dropdown list during scrolling the container. */
-  @property({ attribute: 'scroll-strategy' })
-  public scrollStrategy: 'scroll' | 'close' | 'block' | 'noop' = 'noop';
+  // /** The amount of offset in horizontal and/or vertical direction. */
+  // @property({
+  //   converter: {
+  //     fromAttribute: (value) => {
+  //       const dimensions = value ? (value as string).split(',') : undefined;
+  //       return dimensions
+  //         ? {
+  //             x: parseInt(dimensions[0]),
+  //             y: parseInt(dimensions[1] ?? dimensions[0]),
+  //           }
+  //         : undefined;
+  //     },
+  //     toAttribute: (value: { x: number; y: number }) => {
+  //       return value ? `${value.x}, ${value.y}` : undefined;
+  //     },
+  //   },
+  //   type: String,
+  // })
+  // public offset!: { x: number; y: number };
 
-  /** The amount of offset in horizontal and/or vertical direction. */
-  @property({
-    converter: {
-      fromAttribute: (value) => {
-        const dimensions = value ? (value as string).split(',') : undefined;
-        return dimensions
-          ? {
-              x: parseInt(dimensions[0]),
-              y: parseInt(dimensions[1] ?? dimensions[0]),
-            }
-          : undefined;
-      },
-      toAttribute: (value: { x: number; y: number }) => {
-        return value ? `${value.x}, ${value.y}` : undefined;
-      },
-    },
-    type: String,
-  })
-  public offset!: { x: number; y: number };
+  // /** Whether the dropdown's width should be the same as the target's one. */
+  // @property({ type: Boolean, attribute: 'same-width' })
+  // public sameWidth = false;
 
   @watch('open')
   protected toggleDirectiveChange() {
     if (!this.target) return;
-
-    this.toggleController.open = this.open;
     this.toggleController.target = this.target;
 
     if (this.open) {
@@ -152,6 +157,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @watch('positionStrategy')
   @watch('closeOnOutsideClick')
   @watch('offset')
+  @watch('sameWidth')
   protected updateOptions() {
     if (!this.toggleController) return;
 
@@ -161,6 +167,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       flip: this.flip,
       closeOnOutsideClick: this.closeOnOutsideClick,
       offset: this.offset,
+      sameWidth: this.sameWidth,
     };
   }
 
@@ -173,12 +180,10 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       flip: this.flip,
       closeOnOutsideClick: this.closeOnOutsideClick,
       offset: this.offset,
+      sameWidth: this.sameWidth,
     };
 
     this.toggleController = new IgcToggleController(this, this.target, options);
-    this.toggleController.documentClicked = (ev: MouseEvent) =>
-      this.handleDocumentClicked(ev);
-    this.toggleController.handleScroll = (ev: Event) => this.handleScroll(ev);
   }
 
   public override firstUpdated() {
@@ -189,44 +194,44 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     }
   }
 
-  private handleDocumentClicked = (event: MouseEvent) => {
-    if (!this.open) {
-      return;
-    }
+  // private handleDocumentClicked = (event: MouseEvent) => {
+  //   if (!this.open) {
+  //     return;
+  //   }
 
-    if (this.closeOnOutsideClick) {
-      const target = event.composed ? event.composedPath() : [event.target];
-      const isInsideClick: boolean =
-        target.includes(this.content) ||
-        (this.target !== undefined && target.includes(this.target));
-      if (isInsideClick) {
-        return;
-      } else {
-        this._hide();
-      }
-    }
-  };
+  //   if (this.closeOnOutsideClick) {
+  //     const target = event.composed ? event.composedPath() : [event.target];
+  //     const isInsideClick: boolean =
+  //       target.includes(this.content) ||
+  //       (this.target !== undefined && target.includes(this.target));
+  //     if (isInsideClick) {
+  //       return;
+  //     } else {
+  //       this._hide();
+  //     }
+  //   }
+  // };
 
-  private handleScroll = (event: Event) => {
-    if (!this.open) {
-      return;
-    }
+  // private handleScroll = (event: Event) => {
+  //   if (!this.open) {
+  //     return;
+  //   }
 
-    switch (this.scrollStrategy) {
-      case 'scroll':
-        break;
-      case 'block':
-        this.blockScroll(event);
-        break;
-      case 'close':
-        this._hide();
-        break;
-      case 'noop':
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        break;
-    }
-  };
+  //   switch (this.scrollStrategy) {
+  //     case 'scroll':
+  //       break;
+  //     case 'block':
+  //       this.blockScroll(event);
+  //       break;
+  //     case 'close':
+  //       this._hide();
+  //       break;
+  //     case 'noop':
+  //       event.preventDefault();
+  //       event.stopImmediatePropagation();
+  //       break;
+  //   }
+  // };
 
   private handleKeyDown = (event: KeyboardEvent) => {
     if (
@@ -284,7 +289,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         break;
     }
 
-    this._hide();
+    if (this.closeOnSelect) this._hide();
   }
 
   private handleClick(event: MouseEvent) {
@@ -294,9 +299,10 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         : null;
     if (!newSelectedItem || newSelectedItem.disabled) return;
 
+    event.preventDefault();
     this.selectItem(newSelectedItem);
     this.handleChange(newSelectedItem);
-    this._hide();
+    if (this.closeOnSelect) this._hide();
   }
 
   private handleTargetClick = () => {
@@ -335,30 +341,30 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     // );
   }
 
-  private _sourceElement?: Element;
-  private _initialScrollTop = 0;
-  private _initialScrollLeft = 0;
+  // private _sourceElement?: Element;
+  // private _initialScrollTop = 0;
+  // private _initialScrollLeft = 0;
 
-  private blockScroll = (event: Event) => {
-    event.preventDefault();
-    if (!this._sourceElement || this._sourceElement !== event.target) {
-      this._sourceElement = event.target as Element;
-      this._initialScrollTop =
-        this._sourceElement.scrollTop ??
-        this._sourceElement.firstElementChild?.scrollTop;
-      this._initialScrollLeft =
-        this._sourceElement.scrollLeft ??
-        this._sourceElement.firstElementChild?.scrollLeft;
-    }
+  // private blockScroll = (event: Event) => {
+  //   event.preventDefault();
+  //   if (!this._sourceElement || this._sourceElement !== event.target) {
+  //     this._sourceElement = event.target as Element;
+  //     this._initialScrollTop =
+  //       this._sourceElement.scrollTop ??
+  //       this._sourceElement.firstElementChild?.scrollTop;
+  //     this._initialScrollLeft =
+  //       this._sourceElement.scrollLeft ??
+  //       this._sourceElement.firstElementChild?.scrollLeft;
+  //   }
 
-    this._sourceElement.scrollTop = this._initialScrollTop;
-    this._sourceElement.scrollLeft = this._initialScrollLeft;
-    if (this._sourceElement.firstElementChild) {
-      this._sourceElement.firstElementChild.scrollTop = this._initialScrollTop;
-      this._sourceElement.firstElementChild.scrollLeft =
-        this._initialScrollLeft;
-    }
-  };
+  //   this._sourceElement.scrollTop = this._initialScrollTop;
+  //   this._sourceElement.scrollLeft = this._initialScrollLeft;
+  //   if (this._sourceElement.firstElementChild) {
+  //     this._sourceElement.firstElementChild.scrollTop = this._initialScrollTop;
+  //     this._sourceElement.firstElementChild.scrollLeft =
+  //       this._initialScrollLeft;
+  //   }
+  // };
 
   private getItem(value: string) {
     let itemIndex = -1;
@@ -494,7 +500,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   }
 
   /** Shows the dropdown. */
-  public show(target?: HTMLElement) {
+  public override show(target?: HTMLElement) {
     if (this.open && !target) return;
 
     if (target) this.target = target;
@@ -503,12 +509,12 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   }
 
   /** Hides the dropdown. */
-  public hide(): void {
+  public override hide(): void {
     this._hide(false);
   }
 
   /** Toggles the open state of the dropdown. */
-  public toggle(target?: HTMLElement): void {
+  public override toggle(target?: HTMLElement): void {
     if (!this.open) {
       this.show(target);
     } else {
@@ -567,7 +573,6 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         <div
           id="igcScrollContainer"
           role="listbox"
-          class="igc-dropdown-list-scroll"
           part="list"
           aria-label="dropdownList"
         >
