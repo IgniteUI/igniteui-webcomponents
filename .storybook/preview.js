@@ -67,6 +67,12 @@ const getTheme = (themeName, variant) => {
 const themeProvider = (Story, context) => {
   const theme = getTheme(context.globals.theme, context.globals.variant);
 
+  window.dispatchEvent(
+    new CustomEvent('igc-change-theme', {
+      detail: { theme: context.globals.theme },
+    })
+  );
+
   // Workaround for https://github.com/cfware/babel-plugin-template-html-minifier/issues/56
   const htmlNoMin = html;
   const styles = htmlNoMin`
@@ -74,10 +80,7 @@ const themeProvider = (Story, context) => {
       ${theme.default}
     </style>`;
 
-  return html`
-    ${styles}
-    ${Story()}
-  `;
+  return html` ${styles} ${Story()} `;
 };
 
 export const decorators = [themeProvider];
