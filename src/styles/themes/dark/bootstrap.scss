@@ -3,7 +3,6 @@
 @use '../../../components/badge/badge.bootstrap' as badge;
 @use '../../../components/button/button.bootstrap' as button;
 @use '../../../components/button/icon-button.bootstrap' as icon-button;
-@use '../../../components/card/card.bootstrap' as card;
 @use '../../../components/radio/radio.bootstrap' as radio;
 @use '../../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../../components/list/list.bootstrap' as list with (
@@ -29,7 +28,6 @@ $palette: utils.palette(
 @include base.root-styles($palette);
 @include badge.theme();
 @include button.theme();
-@include card.theme();
 @include radio.theme();
 @include navbar.theme();
 @include list.theme();

@@ -2,7 +2,6 @@
 @use '../base/fluent' as base;
 @use '../../../components/button/button.fluent' as button;
 @use '../../../components/button/icon-button.fluent' as icon-button;
-@use '../../../components/card/card.fluent' as card;
 @use '../../../components/radio/radio.fluent' as radio;
 @use '../../../components/list/list.fluent' as list;
 @use '../../../components/calendar/calendar.fluent' as calendar;
@@ -20,7 +19,6 @@ $palette: utils.palette(
 
 @include base.root-styles($palette);
 @include button.theme();
-@include card.theme();
 @include radio.theme();
 @include list.theme();
 @include calendar.theme();

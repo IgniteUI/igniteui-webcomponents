@@ -2,7 +2,6 @@
 @use '../base/indigo' as base;
 @use '../../../components/button/button.indigo' as button;
 @use '../../../components/button/icon-button.indigo' as icon-button;
-@use '../../../components/card/card.indigo' as card;
 @use '../../../components/radio/radio.indigo' as radio;
 @use '../../../components/navbar/navbar.indigo' as navbar;
 @use '../../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
@@ -25,7 +24,6 @@ $palette: utils.palette(
 
 @include base.root-styles($palette);
 @include button.theme();
-@include card.theme();
 @include radio.theme();
 @include navbar.theme();
 @include nav-drawer.theme();

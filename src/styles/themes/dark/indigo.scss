@@ -2,7 +2,6 @@
 @use '../base/indigo' as base;
 @use '../../../components/button/button.indigo' as button;
 @use '../../../components/button/icon-button.indigo' as icon-button;
-@use '../../../components/card/card.indigo' as card;
 @use '../../../components/radio/radio.indigo' as radio with (
     $border-color: utils.color(gray, 700),
     $checked-color: utils.color(gray, 900),
@@ -34,7 +33,6 @@ $palette: utils.palette(
 
 @include base.root-styles($palette);
 @include button.theme();
-@include card.theme();
 @include radio.theme();
 @include navbar.theme();
 @include nav-drawer.theme();

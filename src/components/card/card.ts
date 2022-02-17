@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { styles } from './card.material.css';
+import { styles } from './themes/light/card.material.css';
 
 /** A container which wraps different elements related to a single subject
  * @element igc-card
