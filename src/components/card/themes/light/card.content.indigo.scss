@@ -2,9 +2,9 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
-  color: color(gray, 700);
+    color: color(gray, 700);
 }
 
 ::slotted(*) {
-  opacity: 1;
+    opacity: 1;
 }
