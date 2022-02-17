@@ -1,5 +1,5 @@
 import { html, nothing, svg } from 'lit';
-import { query } from 'lit/decorators.js';
+import { query, queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { asPercent, partNameMap } from '../common/util';
@@ -24,6 +24,9 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
   public static readonly tagName = 'igc-circular-progress';
   public static override styles = styles;
 
+  @queryAssignedElements({ slot: 'gradient' })
+  protected gradientElements!: Array<HTMLElement>;
+
   @query('#circle', true)
   protected svgCircle!: SVGCircleElement;
 
@@ -37,9 +40,8 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     return { stroke: `url(#${this.gradientId})` };
   }
 
-  protected get wrapperParts() {
+  protected get svgParts() {
     return {
-      wrapper: true,
       indeterminate: this.indeterminate,
     };
   }
@@ -76,10 +78,10 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   protected renderSvg() {
     return svg`
-      <circle cx="50" cy="50" r="46" part="inner" />
-      <circle id="circle" style=${styleMap(
+      <circle part="inner" style="r: calc(50px - var(--stroke-thicknes) / 2)"/>
+      <circle id="circle" style="r: calc(50px - var(--stroke-thicknes) / 2); ${styleMap(
         this.stroke
-      )} part="outer" cx="50" cy="50" r="46" />
+      )}" part="outer"/>
 
       ${when(
         this.indeterminate || this.hideLabel || this.slotElements.length,
@@ -88,24 +90,48 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       )}
 
       <defs>
-      <linearGradient id=${this.gradientId} gradientTransform="rotate(90)">
-        <stop offset="0%" part="gradient_start" />
-        <stop offset="100%" part="gradient_end" />
-      </linearGradient>
-    </defs>
+          <linearGradient id=${this.gradientId} gradientTransform="rotate(90)">
+            ${
+              this.gradientElements.length
+                ? this.renderGradient()
+                : svg`
+              <stop offset="0%" part="gradient_start" />
+              <stop offset="100%" part="gradient_end" />
+            `
+            }
+          </linearGradient>
+      </defs>
     `;
+  }
+
+  private renderGradient() {
+    const myNode = this.shadowRoot?.getElementById(this.gradientId);
+    if (!myNode) {
+      return;
+    }
+    while (myNode.lastElementChild) {
+      myNode.removeChild(myNode.lastElementChild);
+    }
+    myNode.appendChild(this.gradientElements[0]?.children[0]);
+    myNode.appendChild(this.gradientElements[0]?.children[1]);
+    // console.log(this.gradientElements[0].innerHTML)
+    // return svg`
+    //   <linearGradient id=${this.gradientId} gradientTransform="rotate(90)">
+    //     ${this.gradientElements[0].innerHTML}
+    //   </linearGradient>
+    // `;
   }
 
   protected renderWrapper() {
     return html`
-      <div part="${partNameMap(this.wrapperParts)}">
+      <div part="wrapper">
         <svg
+          part="svg ${partNameMap(this.svgParts)}"
           xmlns="http://www.w3.org/2000/svg"
           xmlns:xlink="http://www.w3.org/1999/xlink"
           version="1.1"
           viewBox="0 0 100 100"
           preserveAspectRatio="xMidYMid meet"
-          part="svg"
           aria-valuemin="0"
           aria-valuemax=${this.max}
           aria-valuenow=${this.value}
@@ -113,6 +139,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
           ${this.renderSvg()}
         </svg>
         ${this.renderDefaultSlot()}
+        <slot name="gradient"></slot>
       </div>
     `;
   }

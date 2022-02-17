@@ -1,96 +1,128 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-[part~='asd'] {
-  background-color: red;
-  position: absolute;
-  display: block;
+$danger-color: color(primary, 500);
+$warning-color: color(warn, 500);
+$success-color: color(success, 500);
+$info-color: color(error, 500);
+$primary-color: color(primary, 500);
+$text-color: color(gray, 900);
+$track-color: color(gray, 300);
+$fill-color: $primary-color;
+
+:host {
+    display: inline-block;
+    font-family: var(--igc-font-family);
+    color: $text-color;
+
+    --stroke-thicknes: #{rem(6px)};
+    --circle-radius: #{rem(46px)};
+    --size: #{rem(32px)};
+}
+
+[part~='custom_label'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+    color: inherit;
 }
 
 [part~='wrapper'] {
-  display: inline-flex;
-  flex: 1 1 auto;
-  width: 2rem;
-  height: 2rem;
+    display: inline-flex;
+    position: relative;
+    flex: 1 1 auto;
+    width: var(--size);
+    height: var(--size);
 }
 
 [part~='indeterminate'] {
-  transform-origin: 50% 50%;
-  animation-duration: 3s;
-  animation-timing-function: linear;
-  animation-delay: 0s;
-  animation-iteration-count: infinite;
-  animation-direction: normal;
-  animation-fill-mode: none;
-  animation-play-state: running;
-  animation-name: rotate-center;
+    transform-origin: 50% 50%;
+    animation-duration: 3s;
+    animation-timing-function: linear;
+    animation-delay: 0s;
+    animation-iteration-count: infinite;
+    animation-direction: normal;
+    animation-fill-mode: none;
+    animation-play-state: running;
+    animation-name: rotate-center;
 }
 
 [part~='svg'] {
-  width: 100%;
-  height: 100%;
-  min-width: inherit;
-  min-height: inherit;
+    width: 100%;
+    height: 100%;
+    min-width: inherit;
+    min-height: inherit;
 }
 
 [part~='inner'] {
-  stroke-width: 0.25rem;
-  fill: transparent;
-  stroke: #ddd;
+    stroke-width: var(--stroke-thicknes);
+    fill: transparent;
+    stroke: #ddd;
 }
 
 [part~='outer'] {
-  fill: transparent;
-  stroke-width: 0.25rem;
-  stroke-dashoffset: 289;
-  stroke-dasharray: 289;
-  transform-origin: 50% 50%;
-  transform: rotate(-90deg);
+    fill: transparent;
+    stroke-width: var(--stroke-thicknes);
+    stroke-dashoffset: 289;
+    stroke-dasharray: 289;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
+
+[part~='inner'],
+[part~='outer'] {
+    cx: 50;
+    cy: 50;
+    r: var(--circle-radius);
 }
 
 [part~='gradient_start'] {
-  stop-color: #09f;
+    stop-color: $fill-color;
 }
 
 [part~='gradient_end'] {
-  stop-color: #09f;
+    stop-color: $fill-color;
 }
 
 [part~='text'] {
-  font-size: 2rem;
-  font-weight: 600;
-  fill: var(--text-color);
+    font-size: 2rem;
+    font-weight: 600;
+    fill: $text-color;
 }
 
 [part~='indeterminate'] [part~='outer'] {
-  stroke-dasharray: 289;
-  animation-duration: 1.5s;
-  animation-timing-function: cubic-bezier(0, 0.085, 0.68, 0.53);
-  animation-delay: 0s;
-  animation-iteration-count: infinite;
-  animation-direction: normal;
-  animation-fill-mode: none;
-  animation-play-state: running;
-  animation-name: indeterminate-accordion;
+    stroke-dasharray: 289;
+    animation-duration: 1.5s;
+    animation-timing-function: cubic-bezier(0, .085, .68, .53);
+    animation-delay: 0s;
+    animation-iteration-count: infinite;
+    animation-direction: normal;
+    animation-fill-mode: none;
+    animation-play-state: running;
+    animation-name: indeterminate-accordion;
 }
 
 @keyframes indeterminate-accordion {
-  from {
-    stroke-dashoffset: 578;
-    stroke-dasharray: 259;
-  }
+    from {
+        stroke-dashoffset: 578;
+        stroke-dasharray: 259;
+    }
 
-  to {
-    stroke-dashoffset: 120;
-  }
+    to {
+        stroke-dashoffset: 120;
+    }
 }
 
 @keyframes rotate-center {
-  0% {
-    transform: rotate(0);
-  }
+    0% {
+        transform: rotate(0);
+    }
 
-  100% {
-    transform: rotate(360deg);
-  }
+    100% {
+        transform: rotate(360deg);
+    }
 }

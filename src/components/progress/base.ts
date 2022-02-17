@@ -102,7 +102,10 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   protected renderDefaultSlot() {
-    return html`<slot part="asd" @slotchange=${this.slotChanges}></slot>`;
+    return html`<slot
+      part="custom_label"
+      @slotchange=${this.slotChanges}
+    ></slot>`;
   }
 
   protected renderLabelText() {

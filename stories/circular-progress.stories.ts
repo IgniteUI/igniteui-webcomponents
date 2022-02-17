@@ -78,17 +78,41 @@ const Template: Story<ArgTypes, Context> = (
   },
   { globals: { direction } }
 ) => html`
-  <igc-circular-progress
-    style="width: 4em; height: 4em"
-    ?indeterminate=${indeterminate}
-    ?hide-label=${hideLabel}
-    dir=${direction}
-    value=${ifDefined(value)}
-    max=${ifDefined(max)}
-    animation-duration=${ifDefined(animationDuration)}
-    variant=${ifDefined(variant)}
-    label-format=${ifDefined(labelFormat)}
-  ></igc-circular-progress>
+  <div style="display: flex; align-items: center; gap: 16px">
+    <igc-circular-progress
+      ?indeterminate=${indeterminate}
+      ?hide-label=${hideLabel}
+      dir=${direction}
+      value=${ifDefined(value)}
+      max=${ifDefined(max)}
+      animation-duration=${ifDefined(animationDuration)}
+      variant=${ifDefined(variant)}
+      label-format=${ifDefined(labelFormat)}
+    ></igc-circular-progress>
+    <igc-circular-progress
+      style="--size: 42px; --stroke-thicknes: 8px"
+      ?indeterminate=${indeterminate}
+      ?hide-label=${hideLabel}
+      dir=${direction}
+      value=${ifDefined(value)}
+      max=${ifDefined(max)}
+      animation-duration=${ifDefined(animationDuration)}
+      variant=${ifDefined(variant)}
+      label-format=${ifDefined(labelFormat)}
+    ></igc-circular-progress>
+    <igc-circular-progress
+      style="--size: 52px;"
+      ?indeterminate=${indeterminate}
+      ?hide-label=${hideLabel}
+      dir=${direction}
+      value=${ifDefined(value)}
+      max=${ifDefined(max)}
+      animation-duration=${ifDefined(animationDuration)}
+      variant=${ifDefined(variant)}
+      label-format=${ifDefined(labelFormat)}
+      ><div>Label</div></igc-circular-progress
+    >
+  </div>
 `;
 
 export const Basic = Template.bind({});
