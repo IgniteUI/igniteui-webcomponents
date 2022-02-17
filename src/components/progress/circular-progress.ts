@@ -46,6 +46,18 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     };
   }
 
+  protected override firstUpdated(): void {
+    super.firstUpdated();
+    if (!this.gradientElements.length) {
+      return;
+    }
+    const myNode = this.shadowRoot?.getElementById(this.gradientId);
+    if (!myNode) {
+      return;
+    }
+    myNode.innerHTML = this.gradientElements[0].innerHTML;
+  }
+
   protected getOffset(val: number) {
     return this.isLTR ? C - (val * C) / 100 : C + (val * C) / 100;
   }
@@ -91,35 +103,11 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
       <defs>
           <linearGradient id=${this.gradientId} gradientTransform="rotate(90)">
-            ${
-              this.gradientElements.length
-                ? this.renderGradient()
-                : svg`
               <stop offset="0%" part="gradient_start" />
               <stop offset="100%" part="gradient_end" />
-            `
-            }
           </linearGradient>
       </defs>
     `;
-  }
-
-  private renderGradient() {
-    const myNode = this.shadowRoot?.getElementById(this.gradientId);
-    if (!myNode) {
-      return;
-    }
-    while (myNode.lastElementChild) {
-      myNode.removeChild(myNode.lastElementChild);
-    }
-    myNode.appendChild(this.gradientElements[0]?.children[0]);
-    myNode.appendChild(this.gradientElements[0]?.children[1]);
-    // console.log(this.gradientElements[0].innerHTML)
-    // return svg`
-    //   <linearGradient id=${this.gradientId} gradientTransform="rotate(90)">
-    //     ${this.gradientElements[0].innerHTML}
-    //   </linearGradient>
-    // `;
   }
 
   protected renderWrapper() {

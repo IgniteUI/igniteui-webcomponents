@@ -88,7 +88,12 @@ const Template: Story<ArgTypes, Context> = (
       animation-duration=${ifDefined(animationDuration)}
       variant=${ifDefined(variant)}
       label-format=${ifDefined(labelFormat)}
-    ></igc-circular-progress>
+      ><div slot="gradient">
+        <stop offset="0%" stop-color="#ff9a40"></stop>
+        <stop offset="50%" stop-color="#1eccd4"></stop>
+        <stop offset="100%" stop-color="#ff0079"></stop>
+      </div>
+    </igc-circular-progress>
     <igc-circular-progress
       style="--size: 42px; --stroke-thicknes: 8px"
       ?indeterminate=${indeterminate}
