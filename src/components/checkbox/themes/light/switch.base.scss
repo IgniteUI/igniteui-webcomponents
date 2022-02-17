@@ -4,6 +4,7 @@
 :host {
     display: inline-flex;
     font-family: var(--igc-font-family);
+
     --size: #{rem(36px)};
     --thumb-size: #{rem(20px)};
     --thumb-offset: #{rem(-1px)};

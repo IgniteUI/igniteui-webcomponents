@@ -1,5 +1,4 @@
 @use '../../../../styles/utilities' as *;
-
 @use '../../themes/light/switch.fluent' with (
     $thumb-color: color(gray, 500),
     $disabled-thumb-color: color(surface, 100),
