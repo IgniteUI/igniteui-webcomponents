@@ -2,11 +2,11 @@
 @use '../light/card.material.scss';
 
 :host {
-  border-radius: rem(4px);
+    border-radius: rem(4px);
 }
 
 :host([elevated]),
 :host([elevated]:hover),
 :host([elevated]:focus-within) {
-  box-shadow: var(--igc-elevation-2);
+    box-shadow: var(--igc-elevation-2);
 }
