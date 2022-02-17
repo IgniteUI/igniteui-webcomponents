@@ -13,13 +13,6 @@ declare global {
 /**
  * The possible details of the "igc-change-theme" event.
  */
-export type ChangeThemeEventDetail = ChangeTheme;
-
-/**
- * Detail of the "igc-change-theme" event.
- *
- * A "ready" status can be followed only by a "loading" status.
- */
-export interface ChangeTheme {
+export type ChangeThemeEventDetail = {
   theme: IgcTheme;
-}
+};
