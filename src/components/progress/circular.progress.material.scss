@@ -41,14 +41,7 @@ $fill-color: $primary-color;
 
 [part~='indeterminate'] {
     transform-origin: 50% 50%;
-    animation-duration: 3s;
-    animation-timing-function: linear;
-    animation-delay: 0s;
-    animation-iteration-count: infinite;
-    animation-direction: normal;
-    animation-fill-mode: none;
-    animation-play-state: running;
-    animation-name: rotate-center;
+    animation: 3s linear 0s infinite normal none running rotate-center;
 }
 
 [part~='svg'] {
@@ -96,14 +89,7 @@ $fill-color: $primary-color;
 
 [part~='indeterminate'] [part~='outer'] {
     stroke-dasharray: 289;
-    animation-duration: 1.5s;
-    animation-timing-function: cubic-bezier(0, .085, .68, .53);
-    animation-delay: 0s;
-    animation-iteration-count: infinite;
-    animation-direction: normal;
-    animation-fill-mode: none;
-    animation-play-state: running;
-    animation-name: indeterminate-accordion;
+    animation: 1.5s cubic-bezier(0, .085, .68, .53) 0s infinite normal none running indeterminate-accordion;
 }
 
 @keyframes indeterminate-accordion {

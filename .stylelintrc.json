@@ -15,7 +15,7 @@
         "declaration-block-no-duplicate-properties": true,
         "declaration-block-no-shorthand-property-overrides": true,
         "declaration-block-single-line-max-declarations": 1,
-        "declaration-colon-space-after": "always",
+        "declaration-colon-space-after": "always-single-line",
         "font-family-no-duplicate-names": true,
         "font-family-no-missing-generic-family-keyword": true,
         "font-weight-notation": "numeric",
