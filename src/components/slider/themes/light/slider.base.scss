@@ -42,7 +42,7 @@ slot {
 [part='inactive'] {
     position: absolute;
     width: 100%;
-    top: rem(1px); // ?
+    top: rem(1px);
     background: color(secondary, 500, .24);
     transition: background .2s ease-out;
     border-radius: inherit;

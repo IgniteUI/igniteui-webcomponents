@@ -1,5 +1,4 @@
 @use '../../../../styles/utilities' as *;
-
 @use '../../themes/light/slider.indigo' with (
     $inactive-background: color(gray, 200),
     $inactive-hover-background: color(gray, 400)

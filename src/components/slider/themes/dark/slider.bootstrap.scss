@@ -1,5 +1,4 @@
 @use '../../../../styles/utilities' as *;
-
 @use '../../themes/light/slider.bootstrap' with (
     $inactive-background: color(secondary, 500, .48)
 );

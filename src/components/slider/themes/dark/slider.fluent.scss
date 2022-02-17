@@ -1,5 +1,4 @@
 @use '../../../../styles/utilities' as *;
-
 @use '../../themes/light/slider.fluent' with (
     $inactive-background: color(gray, 100),
     $fill-background: color(gray, 400),
