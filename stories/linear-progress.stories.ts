@@ -110,18 +110,57 @@ const Template: Story<ArgTypes, Context> = (
   },
   { globals: { direction } }
 ) => html`
-  <igc-linear-progress
-    ?striped=${striped}
-    ?indeterminate=${indeterminate}
-    ?hide-label=${hideLabel}
-    dir=${direction}
-    value=${ifDefined(value)}
-    max=${ifDefined(max)}
-    animation-duration=${ifDefined(animationDuration)}
-    variant=${ifDefined(variant)}
-    label-align=${labelAlign}
-    label-format=${ifDefined(labelFormat)}
-  ></igc-linear-progress>
+  <div
+    style="display: flex; flex-direction: column; justify-content: center; gap: 16px"
+  >
+    <igc-linear-progress
+      ?striped=${striped}
+      ?indeterminate=${indeterminate}
+      ?hide-label=${hideLabel}
+      dir=${direction}
+      value=${ifDefined(value)}
+      max=${ifDefined(max)}
+      animation-duration=${ifDefined(animationDuration)}
+      variant=${ifDefined(variant)}
+      label-align=${labelAlign}
+      label-format=${ifDefined(labelFormat)}
+    ></igc-linear-progress>
+    <br />
+    <igc-linear-progress
+      style="--track-size: 10px"
+      ?striped=${striped}
+      ?indeterminate=${indeterminate}
+      ?hide-label=${hideLabel}
+      dir=${direction}
+      value=${ifDefined(value)}
+      max=${ifDefined(max)}
+      animation-duration=${ifDefined(animationDuration)}
+      variant=${ifDefined(variant)}
+      label-align=${labelAlign}
+      label-format=${ifDefined(labelFormat)}
+      ><div>TESTING LABEL</div></igc-linear-progress
+    >
+    <br />
+    <igc-linear-progress
+      style="--track-size: 20px"
+      ?striped=${striped}
+      ?indeterminate=${indeterminate}
+      ?hide-label=${hideLabel}
+      dir=${direction}
+      value=${ifDefined(value)}
+      max=${ifDefined(max)}
+      animation-duration=${ifDefined(animationDuration)}
+      variant=${ifDefined(variant)}
+      label-align=${labelAlign}
+      label-format=${ifDefined(labelFormat)}
+    >
+      <div slot="gradient">
+        <stop offset="0%" stop-color="#ff9a40"></stop>
+        <stop offset="50%" stop-color="#1eccd4"></stop>
+        <stop offset="100%" stop-color="#ff0079"></stop>
+      </div>
+    </igc-linear-progress>
+  </div>
 `;
 
 export const Basic = Template.bind({});

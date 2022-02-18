@@ -1,0 +1,52 @@
+@use '../../styles/utilities' as *;
+
+$danger-color: color(primary, 500);
+$warning-color: color(warn, 500);
+$success-color: color(success, 500);
+$info-color: color(error, 500);
+$primary-color: color(primary, 500);
+$text-color: color(gray, 900);
+$track-color: color(gray, 300);
+$fill-color: $primary-color;
+$track-roundness: 0;
+$background-size: rem(40px) rem(40px);
+$stripe-color: color(gray, 50, .7);
+$animation-direction: normal;
+
+@keyframes indeterminate-bar {
+    0% {
+        transform: scaleX(0) translateX(-100%);
+        transform-origin: left;
+    }
+
+    50% {
+        transform: scaleX(1) translateX(50%);
+        transform-origin: right;
+    }
+
+    100% {
+        transform: scaleX(0) translateX(200%);
+        transform-origin: right;
+    }
+}
+
+@keyframes indeterminate-accordion {
+    from {
+        stroke-dashoffset: 578;
+        stroke-dasharray: 259;
+    }
+
+    to {
+        stroke-dashoffset: 120;
+    }
+}
+
+@keyframes rotate-center {
+    0% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

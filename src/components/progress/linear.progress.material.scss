@@ -1,10 +1,21 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
+@use 'base' as *;
 
-[part~='asd'] {
-    background-color: red;
-    position: absolute;
-    display: block;
+:host {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--igc-font-family);
+    color: $text-color;
+
+    --track-size: 4px;
+}
+
+[part~='custom_label'] {
+    display: flex;
+    align-items: center;
+    color: inherit;
 }
 
 [part~='wrapper'] {
@@ -18,13 +29,11 @@
 [part~='base'] {
     position: relative;
     width: inherit;
-    height: .25rem;
-    background: hsl(0deg 0% 88%);
+    height: var(--track-size);
+    background: $track-color;
     overflow: hidden;
+    border-radius: $track-roundness;
     z-index: 0;
-
-    //   border-radius: var(--track-border-radius);
-    border-radius: 0;
 }
 
 [part~='indicator'] {
@@ -35,22 +44,23 @@
 }
 
 [part~='striped'] {
-    background-image:
-        linear-gradient(
-            -45deg,
-            hsl(0deg 0% 98%) 25%,
-            transparent 25%,
-            transparent 50%,
-            hsl(0deg 0% 98%) 50%,
-            hsl(0deg 0% 98%) 75%,
-            transparent 75%,
-            transparent
-        );
-    background-size: 2.5rem 2.5rem;
+    /* stylelint-disable */
+    background-image: linear-gradient(
+        -45deg,
+        $stripe-color 25%,
+        transparent 25%,
+        transparent 50%,
+        $stripe-color 50%,
+        $stripe-color 75%,
+        transparent 75%,
+        transparent
+    );
+    /* stylelint-enable */
+    background-size: $background-size;
 }
 
 [part~='indeterminate'] {
-    animation: indeterminate-bar 2s cubic-bezier(0, .085, .68, .53) normal infinite;
+    animation: indeterminate-bar 2s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
     width: 100% !important;
 
     &::before {
@@ -66,19 +76,19 @@
 }
 
 [part~='danger'] {
-    background-color: hsl(346deg 100% 54%);
+    background-color: $danger-color;
 }
 
 [part~='warning'] {
-    background-color: hsl(37deg 96% 61%);
+    background-color: $warning-color;
 }
 
 [part~='info'] {
-    background-color: hsl(209deg 84% 45%);
+    background-color: $info-color;
 }
 
 [part~='success'] {
-    background-color: hsl(131deg 43% 51%);
+    background-color: $success-color;
 }
 
 [part~='value'] {
@@ -88,39 +98,27 @@
     font-weight: 600;
 }
 
+[part~='top-start'],
 [part~='start'] {
     align-self: flex-start;
+}
+
+[part~='bottom-end'],
+[part~='top-end'],
+[part~='end'] {
+    align-self: flex-end;
+}
+
+[part~='top-end'],
+[part~='top-start'],
+[part~='top'] {
+    order: -1;
 }
 
 [part~='center'] {
     align-self: center;
 }
 
-[part~='end'] {
-    align-self: flex-end;
-}
-
-[part~='top'] {
-    order: -1;
-}
-
 [part~='hidden'] {
     display: none;
-}
-
-@keyframes indeterminate-bar {
-    0% {
-        transform: scaleX(0) translateX(-100%);
-        transform-origin: left;
-    }
-
-    50% {
-        transform: scaleX(1) translateX(50%);
-        transform-origin: right;
-    }
-
-    100% {
-        transform: scaleX(0) translateX(200%);
-        transform-origin: right;
-    }
 }

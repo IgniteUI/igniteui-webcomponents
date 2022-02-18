@@ -95,7 +95,7 @@ const Template: Story<ArgTypes, Context> = (
       </div>
     </igc-circular-progress>
     <igc-circular-progress
-      style="--size: 42px; --stroke-thicknes: 8px"
+      style="--size: 42px; --stroke-thicknes: 1px;"
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
       dir=${direction}
@@ -106,7 +106,7 @@ const Template: Story<ArgTypes, Context> = (
       label-format=${ifDefined(labelFormat)}
     ></igc-circular-progress>
     <igc-circular-progress
-      style="--size: 52px;"
+      style="--size: 72px; --stroke-thicknes: 12px;"
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
       dir=${direction}
@@ -115,8 +115,13 @@ const Template: Story<ArgTypes, Context> = (
       animation-duration=${ifDefined(animationDuration)}
       variant=${ifDefined(variant)}
       label-format=${ifDefined(labelFormat)}
-      ><div>Label</div></igc-circular-progress
-    >
+      ><div>Label</div>
+      <div slot="gradient">
+        <stop offset="0%" stop-color="#ff9a40"></stop>
+        <stop offset="50%" stop-color="#1eccd4"></stop>
+        <stop offset="100%" stop-color="#ff0079"></stop>
+      </div>
+    </igc-circular-progress>
   </div>
 `;
 

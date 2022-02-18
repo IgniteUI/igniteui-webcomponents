@@ -90,10 +90,8 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   protected renderSvg() {
     return svg`
-      <circle part="inner" style="r: calc(50px - var(--stroke-thicknes) / 2)"/>
-      <circle id="circle" style="r: calc(50px - var(--stroke-thicknes) / 2); ${styleMap(
-        this.stroke
-      )}" part="outer"/>
+      <circle part="inner"/>
+      <circle id="circle" style="${styleMap(this.stroke)}" part="outer"/>
 
       ${when(
         this.indeterminate || this.hideLabel || this.slotElements.length,
