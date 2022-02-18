@@ -136,9 +136,11 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
 
     if (this.open) {
       document.addEventListener('keydown', this.handleKeyDown);
+      this.target.addEventListener('focusout', this.handleFocusout);
       this.selectedItem = this.allItems.find((i) => i.selected) ?? null;
     } else {
       document.removeEventListener('keydown', this.handleKeyDown);
+      this.target.removeEventListener('focusout', this.handleFocusout);
     }
 
     this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
@@ -299,7 +301,6 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         : null;
     if (!newSelectedItem || newSelectedItem.disabled) return;
 
-    event.preventDefault();
     this.selectItem(newSelectedItem);
     this.handleChange(newSelectedItem);
     if (this.closeOnSelect) this._hide();
@@ -365,6 +366,11 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   //       this._initialScrollLeft;
   //   }
   // };
+
+  private handleFocusout(event: Event) {
+    event.preventDefault();
+    (event.target as HTMLElement).focus();
+  }
 
   private getItem(value: string) {
     let itemIndex = -1;

@@ -27,7 +27,7 @@ export class ToggleBaseComponent
   implements IToggleComponent
 {
   /** Sets the open state of the component. */
-  @property()
+  @property({ type: Boolean })
   public open = false;
 
   /** The preferred placement of the component around the target element.
@@ -72,11 +72,11 @@ export class ToggleBaseComponent
   public offset!: { x: number; y: number };
 
   /** Whether the component should be hidden on clicking outside of it. */
-  @property({ attribute: 'close-on-outside-click' })
+  @property({ type: Boolean, attribute: 'close-on-outside-click' })
   public closeOnOutsideClick = true;
 
   /** Whether the component's width should be the same as the target's one. */
-  @property({ attribute: 'same-width' })
+  @property({ type: Boolean, attribute: 'same-width' })
   public sameWidth!: boolean;
 
   /** Hides the component. */

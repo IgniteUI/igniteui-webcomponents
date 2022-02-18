@@ -32,7 +32,7 @@ describe('Dropdown component', () => {
   const ddListWrapper = (el: IgcDropDownComponent) =>
     el.shadowRoot!.querySelector('#igcDDLContent') as HTMLElement;
   const ddList = (el: IgcDropDownComponent) =>
-    ddListWrapper(el).querySelector('.igc-dropdown-list-scroll') as HTMLElement;
+    ddListWrapper(el).querySelector('#igcScrollContainer') as HTMLElement;
   const ddItems = (el: IgcDropDownComponent) =>
     [...el.querySelectorAll('igc-dropdown-item')] as HTMLElement[];
   const ddHeaders = (el: IgcDropDownComponent) =>
