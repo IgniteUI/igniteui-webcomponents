@@ -17,6 +17,7 @@ export { default as IgcInputComponent } from './components/input/input';
 export { default as IgcListComponent } from './components/list/list';
 export { default as IgcListHeaderComponent } from './components/list/list-header';
 export { default as IgcListItemComponent } from './components/list/list-item';
+export { default as IgcMaskedInputComponent } from './components/masked-input/masked-input';
 export { default as IgcNavbarComponent } from './components/navbar/navbar';
 export { default as IgcNavDrawerComponent } from './components/nav-drawer/nav-drawer';
 export { default as IgcNavDrawerHeaderItemComponent } from './components/nav-drawer/nav-drawer-header-item';

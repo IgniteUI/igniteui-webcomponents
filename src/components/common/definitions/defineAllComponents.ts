@@ -16,6 +16,7 @@ import IgcInputComponent from '../../input/input';
 import IgcListComponent from '../../list/list';
 import IgcListHeaderComponent from '../../list/list-header';
 import IgcListItemComponent from '../../list/list-item';
+import IgcMaskedInputComponent from '../../masked-input/masked-input';
 import IgcNavDrawerComponent from '../../nav-drawer/nav-drawer';
 import IgcNavDrawerHeaderItemComponent from '../../nav-drawer/nav-drawer-header-item';
 import IgcNavDrawerItemComponent from '../../nav-drawer/nav-drawer-item';
@@ -47,6 +48,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcListHeaderComponent,
   IgcListItemComponent,
   IgcListComponent,
+  IgcMaskedInputComponent,
   IgcNavDrawerHeaderItemComponent,
   IgcNavDrawerItemComponent,
   IgcNavDrawerComponent,
