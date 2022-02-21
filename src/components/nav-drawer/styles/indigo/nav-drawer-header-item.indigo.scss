@@ -1,0 +1,7 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+@use '../nav-drawer-header-item.base';
+
+:host {
+    color: color(gray, 50);
+}

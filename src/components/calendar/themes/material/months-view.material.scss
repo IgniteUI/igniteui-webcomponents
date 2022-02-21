@@ -1,6 +1,6 @@
-@import '../year-month';
+@use '../year-month' as *;
 
-:host {
+[part='months-view'] {
     @extend %host;
 }
 

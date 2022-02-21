@@ -4,7 +4,7 @@
 @use '../../../components/button/icon-button.fluent' as icon-button;
 @use '../../../components/radio/radio.fluent' as radio;
 @use '../../../components/list/list.fluent' as list;
-@use '../../../components/calendar/calendar.fluent' as calendar;
+@use '../../../components/checkbox/switch.fluent' as switch;
 @use '../../../components/input/input.fluent' as input;
 @use '../../../components/navbar/navbar.fluent' as navbar;
 
@@ -20,7 +20,7 @@ $palette: utils.palette(
 @include button.theme();
 @include radio.theme();
 @include list.theme();
-@include calendar.theme();
+@include switch.theme();
 @include input.theme();
 @include icon-button.theme();
 @include navbar.theme();

@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { styles } from './nav-drawer-header-item.material.css';
+import { styles } from './styles/bootstrap/nav-drawer-header-item.bootstrap.css';
 
 /**
  * A wrapper for navigation drawer's header.

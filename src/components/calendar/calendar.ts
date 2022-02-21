@@ -10,7 +10,7 @@ import {
   MONTHS_PER_ROW,
   YEARS_PER_ROW,
 } from './common/calendar-base';
-import { styles } from './calendar.material.css';
+import { styles } from './themes/bootstrap/calendar.bootstrap.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model';

@@ -19,7 +19,6 @@
 @use '../../../components/list/list.fluent' as list with (
     $item-hover-bg: utils.color(gray, 100),
 );
-@use '../../../components/calendar/calendar.fluent' as calendar;
 @use '../../../components/input/input.fluent' as input with ($container-background: transparent);
 
 $palette: utils.palette(
@@ -36,6 +35,5 @@ $palette: utils.palette(
 @include button.theme();
 @include radio.theme();
 @include list.theme();
-@include calendar.theme();
 @include input.theme();
 @include icon-button.theme();
