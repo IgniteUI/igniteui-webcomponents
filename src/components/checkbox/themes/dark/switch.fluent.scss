@@ -1,0 +1,10 @@
+@use '../../../../styles/utilities' as *;
+@use '../../themes/light/switch.fluent' with (
+    $thumb-color: color(gray, 500),
+    $disabled-thumb-color: color(surface, 100),
+    $hover-color: color(gray, 900),
+    $checked-hover-color: color(primary, 100),
+    $invalid-color: color(error, 200),
+    $invalid-hover-color: color(error, 100),
+    $disabled-color: color(gray, 200)
+);

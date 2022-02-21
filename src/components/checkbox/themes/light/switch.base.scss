@@ -1,5 +1,5 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
 :host {
     display: inline-flex;
@@ -14,10 +14,7 @@ input[type='checkbox'] {
     @include hide-default();
 }
 
-$ripple-size: rem(40px);
-$ripple-radius: calc(#{$ripple-size} / 2);
-
-[part~='base'] {
+label {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -39,42 +36,23 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 [part~='control'] {
     display: flex;
     align-items: center;
-    width: var(--size);
-    height: rem(14px);
-    border-radius: rem(7px);
-    background: color(gray, 600);
     user-select: none;
     transition: all .2s ease-in-out;
 }
 
 [part~='thumb'] {
     position: relative;
-    width: var(--thumb-size);
-    height: var(--thumb-size);
-    min-width: var(--thumb-size);
-    background: color(gray, 200);
     border-radius: rem(10px);
-    box-shadow: var(--igc-elevation-2);
-    margin-inline-start: var(--thumb-offset);
     animation-name: thumb-off;
     animation-duration: .2s;
     animation-fill-mode: none;
     transition: all .2s ease-in-out;
+}
 
-    &::after {
-        position: absolute;
-        content: '';
-        top: calc(50% - #{$ripple-radius});
-        left: calc(50% - #{$ripple-radius});
-        width: $ripple-size;
-        height: $ripple-size;
-        overflow: hidden;
-        border-radius: $ripple-radius;
-    }
-
-    &:hover {
-        box-shadow: var(--igc-elevation-3);
-    }
+[part~='thumb'][part~='checked'] {
+    animation-name: thumb-on;
+    animation-duration: .2s;
+    animation-fill-mode: forwards;
 }
 
 [part~='label'] {
@@ -86,44 +64,13 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     transition: all .2s ease-in-out;
 }
 
-[part~='base'][part~='checked'] {
-    &:hover [part~='thumb'][part~='checked'] {
-        &::after {
-            background: color(secondary, 500, .06);
-        }
-    }
-
-    &:focus-within [part~='thumb'][part~='checked'] {
-        &::after {
-            background: color(secondary, 500, .12);
-        }
-    }
-}
-
-[part~='control'][part~='checked'] {
-    background: color(secondary, 500, .5);
-}
-
-[part~='thumb'][part~='checked'] {
-    background: color(secondary, 500);
-    margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
-    animation-name: thumb-on;
-    animation-duration: .2s;
-    animation-fill-mode: forwards;
-}
-
 :host([disabled]) {
     user-select: none;
     pointer-events: none;
     cursor: initial;
 
-    [part~='control'] {
-        background: color(gray, 300);
-    }
-
     [part~='thumb'] {
         background: color(gray, 400);
-        box-shadow: var(--igc-elevation-1);
     }
 
     [part~='label'] {
@@ -134,10 +81,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 :host(:not([disabled])[invalid]) {
     [part~='label'] {
         color: color(error, 500);
-    }
-
-    [part~='control'] {
-        background: color(error, 500, .5);
     }
 
     [part~='thumb'] {

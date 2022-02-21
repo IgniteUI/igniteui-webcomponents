@@ -1,0 +1,130 @@
+@use './switch.base.scss';
+@use '../../../../styles/utilities' as *;
+
+$border-color: color(gray, 500) !default;
+$checked-color: color(secondary, 500) !default;
+$thumb-color: color(gray, 600) !default;
+$disabled-color: color(gray, 300) !default;
+
+:host {
+    font-weight: 600;
+
+    --size: #{rem(34px)};
+    --thumb-size: #{rem(8px)};
+    --thumb-offset: calc(var(--thumb-size) / 2);
+}
+
+[part~='control'] {
+    width: var(--size);
+    height: rem(16px);
+    box-shadow: inset 0 0 0 2px $border-color;
+    border-radius: rem(8px);
+    background: transparent;
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: inherit;
+        height: inherit;
+        border-radius: inherit;
+    }
+}
+
+:host(:hover) [part~='control'] {
+    box-shadow: 0 0 0 2px color(gray, 200, .87);
+
+    &::after {
+        border: 2px solid $border-color;
+    }
+}
+
+:host(:focus-within) [part~='control'] {
+    box-shadow: 0 0 0 2px color(gray, 300, .87);
+
+    &::after {
+        border: 2px solid $border-color;
+    }
+}
+
+[part~='control'][part~='checked'] {
+    background: $checked-color;
+    box-shadow: inset 0 0 0 2px $checked-color;
+}
+
+:host(:hover) [part~='control'][part~='checked'] {
+    box-shadow: 0 0 0 2px color(secondary, 100, .87);
+
+    &::after {
+        border: 2px solid $checked-color;
+    }
+}
+
+:host(:focus-within) [part~='control'][part~='checked'] {
+    box-shadow: 0 0 0 2px color(secondary, 200, .87);
+
+    &::after {
+        border: 2px solid $checked-color;
+    }
+}
+
+:host([invalid]) [part~='control'],
+:host([invalid]) [part~='control'][part~='checked'] {
+    box-shadow: inset 0 0 0 2px color(error, 500);
+}
+
+:host([invalid]) [part~='control'][part~='checked'],
+:host([invalid]) [part~='thumb'] {
+    background: color(error, 500);
+}
+
+:host([invalid]:hover) [part~='control'] {
+    box-shadow: 0 0 0 2px color(error, 100, .87);
+
+    &::after {
+        border: 2px solid color(error, 500);
+    }
+}
+
+:host([invalid]:focus-within) [part~='control'],
+:host([invalid]:focus-within) [part~='control'][part~='checked'] {
+    box-shadow: 0 0 0 2px color(error, 200, .87);
+
+    &::after {
+        border: 2px solid color(error, 500);
+    }
+}
+
+:host([disabled]) [part~='control'],
+:host([disabled][invalid]) [part~='control'] {
+    box-shadow: inset 0 0 0 2px $disabled-color;
+}
+
+:host([disabled]) [part~='control'][part~='checked'],
+:host([disabled][invalid]) [part~='control'][part~='checked'] {
+    background: transparent;
+}
+
+[part~='thumb'] {
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    min-width: var(--thumb-size);
+    animation-name: thumb-off;
+    margin-inline-start: var(--thumb-offset);
+    background: $thumb-color;
+}
+
+[part~='thumb'][part~='checked'],
+:host([invalid]) [part~='thumb'][part~='checked'] {
+    background: color(surface, 500);
+    animation-name: thumb-on;
+    margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
+}
+
+:host([disabled]) [part~='thumb'],
+:host([disabled][invalid]) [part~='thumb'] {
+    background: $disabled-color;
+}
+
+:host([disabled]) [part~='label'] {
+    color: $disabled-color;
+}

@@ -2,20 +2,9 @@
 @use '../base/indigo' as base;
 @use '../../../components/button/button.indigo' as button;
 @use '../../../components/button/icon-button.indigo' as icon-button;
-@use '../../../components/checkbox/checkbox.indigo' as checkbox with (
-    $border-color: utils.color(gray, 700),
-    $checked-color: utils.color(gray, 900),
-    $disabled-color: utils.color(gray, 400)
-);
 @use '../../../components/radio/radio.indigo' as radio with (
     $border-color: utils.color(gray, 700),
     $checked-color: utils.color(gray, 900),
-    $disabled-color: utils.color(gray, 400)
-);
-@use '../../../components/checkbox/switch.indigo' as switch with (
-    $border-color: utils.color(gray, 700),
-    $checked-color: utils.color(gray, 900),
-    $thumb-color: utils.color(gray, 700),
     $disabled-color: utils.color(gray, 400)
 );
 @use '../../../components/navbar/navbar.indigo' as navbar;
@@ -40,9 +29,7 @@ $palette: utils.palette(
 
 @include base.root-styles($palette);
 @include button.theme();
-@include checkbox.theme();
 @include radio.theme();
-@include switch.theme();
 @include navbar.theme();
 @include nav-drawer.theme();
 @include nav-drawer-item.theme();

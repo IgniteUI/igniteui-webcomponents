@@ -1,0 +1,6 @@
+@use '../../../../styles/utilities' as *;
+@use '../../themes/light/checkbox.indigo' with (
+    $border-color: color(gray, 700),
+    $checked-color: color(gray, 900),
+    $disabled-color: color(gray, 400)
+);

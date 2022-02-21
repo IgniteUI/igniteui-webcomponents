@@ -1,5 +1,5 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
 :host {
     display: inline-flex;
@@ -12,32 +12,12 @@ input[type='checkbox'] {
 
 $mark-length: 24;
 
-[part~='base'] {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    flex-flow: row nowrap;
-
-    &:hover [part='control'] {
-        background: color(gray, 600, .06);
-    }
-
-    &:focus-within [part='control'] {
-        background: color(gray, 600, .12);
-    }
-}
-
 [part~='control'] {
     $size: var(--size, rem(20px));
 
     position: relative;
     display: inline-flex;
-    width: calc(#{$size } * 2);
-    height: calc(#{$size } * 2);
-    min-width: calc(#{$size } * 2);
-    border-radius: 50%;
     user-select: none;
-    transition: background .15s ease-in;
 
     &::after {
         position: absolute;
@@ -81,12 +61,17 @@ $mark-length: 24;
     transform-origin: center;
 }
 
-[part='base checked'] {
-    &:hover [part~='control'] {
+label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    flex-flow: row nowrap;
+
+    &:hover [part='control checked'] {
         background: color(secondary, 500, .06);
     }
 
-    &:focus-within [part~='control'] {
+    &:focus-within [part='control checked'] {
         background: color(secondary, 500, .12);
     }
 }
@@ -119,11 +104,6 @@ $mark-length: 24;
     }
 
     [part~='indicator'] {
-        stroke-dashoffset: 0;
-        opacity: 1;
-    }
-
-    [part='indicator'] {
         stroke-dashoffset: 41;
         opacity: 1;
         transform: rotate(45deg) scale(.45) translateX(-.25rem);
@@ -149,7 +129,7 @@ $mark-length: 24;
 }
 
 :host(:not([disabled])[invalid][indeterminate]) {
-    [part='control'] {
+    [part~='control'] {
         &::after {
             background: color(error, 500);
         }
@@ -167,7 +147,7 @@ $mark-length: 24;
         }
     }
 
-    [part='base checked'] [part~='control'] {
+    [part='control checked'] {
         &::after {
             background: color(gray, 300);
         }
