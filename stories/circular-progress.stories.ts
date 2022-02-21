@@ -116,11 +116,6 @@ const Template: Story<ArgTypes, Context> = (
       variant=${ifDefined(variant)}
       label-format=${ifDefined(labelFormat)}
       ><div>Label</div>
-      <div slot="gradient">
-        <stop offset="0%" stop-color="#ff9a40"></stop>
-        <stop offset="50%" stop-color="#1eccd4"></stop>
-        <stop offset="100%" stop-color="#ff0079"></stop>
-      </div>
     </igc-circular-progress>
   </div>
 `;

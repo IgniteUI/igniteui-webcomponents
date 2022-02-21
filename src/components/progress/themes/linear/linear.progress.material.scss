@@ -1,28 +1,23 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
-@use 'base' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+@use '../base' as *;
 
 :host {
+    @extend %host !optional;
+
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--igc-font-family);
-    color: $text-color;
 
     --track-size: 4px;
 }
 
 [part~='custom_label'] {
-    display: flex;
-    align-items: center;
-    color: inherit;
+    @extend %costom-label !optional;
 }
 
 [part~='wrapper'] {
-    position: relative;
     display: flex;
+    position: relative;
     width: 100%;
-    flex: 1 1 100%;
     flex-direction: column;
 }
 
@@ -98,9 +93,28 @@
     font-weight: 600;
 }
 
+:host([label-align='top-start']),
+:host([label-align='start']) {
+    [part~='custom_label'] {
+        align-self: flex-start;
+    }
+}
+
 [part~='top-start'],
 [part~='start'] {
     align-self: flex-start;
+
+    [part~='custom_label'] {
+        align-self: flex-start;
+    }
+}
+
+:host([label-align='bottom-end']),
+:host([label-align='top-end']),
+:host([label-align='end']) {
+    [part~='custom_label'] {
+        align-self: flex-end;
+    }
 }
 
 [part~='bottom-end'],
@@ -109,14 +123,46 @@
     align-self: flex-end;
 }
 
+:host([label-align='top-end']),
+:host([label-align='top-start']),
+:host([label-align='top']) {
+    [part~='custom_label'] {
+        order: -1;
+    }
+}
+
 [part~='top-end'],
 [part~='top-start'],
 [part~='top'] {
     order: -1;
 }
 
+:host([label-align='center-top']) {
+    [part~='custom_label'] {
+        align-self: center;
+        order: -1;
+    }
+}
+
+[part~='center-top'] {
+    align-self: center;
+    order: -1;
+}
+
+:host([label-align='center']) {
+    [part~='custom_label'] {
+        align-self: center;
+    }
+}
+
 [part~='center'] {
     align-self: center;
+}
+
+:host([hide-label]) {
+    [part~='custom_label'] {
+        display: none;
+    }
 }
 
 [part~='hidden'] {

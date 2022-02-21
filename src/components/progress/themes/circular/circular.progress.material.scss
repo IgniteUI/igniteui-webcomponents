@@ -1,40 +1,35 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
-@use 'base' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+@use '../base' as *;
 
 :host {
+    @extend %host !optional;
+
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--igc-font-family);
-    color: $text-color;
 
     --stroke-thicknes: 4px;
     --size: #{rem(32px)};
 }
 
 [part~='custom_label'] {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    @extend %costom-label !optional;
+
     position: absolute;
     transform: translate(-50%, -50%);
     top: 50%;
     left: 50%;
-    color: inherit;
 }
 
 [part~='wrapper'] {
     display: inline-flex;
     position: relative;
-    flex: 1 1 auto;
     width: var(--size);
     height: var(--size);
 }
 
 [part~='indeterminate'] {
     transform-origin: 50% 50%;
-    animation: 3s linear 0s infinite normal none running rotate-center;
+    animation: 3s linear 0s infinite $animation-direction none running rotate-center;
 }
 
 [part~='svg'] {
@@ -64,12 +59,29 @@
     r: calc(49px - var(--stroke-thicknes) / 2);
 }
 
-[part~='gradient_start'] {
+[part~='gradient_start'],
+[part~='gradient_end'] {
     stop-color: $fill-color;
 }
 
-[part~='gradient_end'] {
-    stop-color: $fill-color;
+:host([variant='danger']) [part~='gradient_start'],
+:host([variant='danger']) [part~='gradient_end'] {
+    stop-color: $danger-color;
+}
+
+:host([variant='warning']) [part~='gradient_start'],
+:host([variant='warning']) [part~='gradient_end'] {
+    stop-color: $warning-color;
+}
+
+:host([variant='info']) [part~='gradient_start'],
+:host([variant='info']) [part~='gradient_end'] {
+    stop-color: $info-color;
+}
+
+:host([variant='success']) [part~='gradient_start'],
+:host([variant='success']) [part~='gradient_end'] {
+    stop-color: $success-color;
 }
 
 [part~='text'] {
@@ -80,5 +92,7 @@
 
 [part~='indeterminate'] [part~='outer'] {
     stroke-dasharray: 289;
-    animation: 1.5s cubic-bezier(0, .085, .68, .53) 0s infinite normal none running indeterminate-accordion;
+    /* stylelint-disable */
+    animation: 1.5s cubic-bezier(0, .085, .68, .53) 0s infinite $animation-direction none running indeterminate-accordion;
+    /* stylelint-enable */
 }

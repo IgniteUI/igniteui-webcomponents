@@ -3,7 +3,7 @@ import { property, query } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { asPercent, partNameMap } from '../common/util';
 import { IgcProgressBaseComponent } from './base';
-import { styles } from './linear.progress.material.css';
+import { styles } from './themes/linear/linear.progress.material.css';
 
 /**
  * A linear progress indicator used to express unspecified wait time or display

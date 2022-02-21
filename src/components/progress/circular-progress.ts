@@ -4,7 +4,7 @@ import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { asPercent, partNameMap } from '../common/util';
 import { IgcProgressBaseComponent } from './base';
-import { styles } from './circular.progress.material.css';
+import { styles } from './themes/circular/circular.progress.material.css';
 
 const R = 46;
 const C = 2 * Math.PI * R;
