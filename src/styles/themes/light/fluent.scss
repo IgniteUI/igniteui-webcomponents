@@ -1,12 +1,7 @@
 @use '../../utilities' as utils;
 @use '../base/fluent' as base;
-@use '../../../components/card/card.fluent' as card;
-@use '../../../components/checkbox/checkbox.fluent' as checkbox;
-@use '../../../components/checkbox/switch.fluent' as switch;
-@use '../../../components/calendar/calendar.fluent' as calendar;
 @use '../../../components/input/input.fluent' as input;
 @use '../../../components/navbar/navbar.fluent' as navbar;
-@use '../../../components/slider/slider.fluent' as slider;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -17,10 +12,5 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include card.theme();
-@include checkbox.theme();
-@include switch.theme();
-@include calendar.theme();
 @include input.theme();
 @include navbar.theme();
-@include slider.theme();

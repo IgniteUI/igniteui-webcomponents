@@ -1,0 +1,34 @@
+@use '../year-month' as *;
+
+[part='years-view'] {
+    @extend %host;
+}
+
+[part='years-row'] {
+    @extend %row;
+}
+
+[part~='year'] {
+    @extend %item;
+}
+
+[part~='year'],
+[part~='year-inner'] {
+    @extend %item-and-inner;
+}
+
+[part~='year-inner'] {
+    @extend %item-inner;
+}
+
+[part~='year-inner'][part~='selected'] {
+    @extend %item-inner-selected;
+}
+
+[part~='year-inner'][part~='current'] {
+    @extend %item-inner-current;
+}
+
+[part~='year-inner'][part~='selected'][part~='current'] {
+    @extend %item-inner-selected-current;
+}

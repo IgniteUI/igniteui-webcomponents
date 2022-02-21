@@ -12,7 +12,7 @@ import {
   IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
 } from '../common/calendar-base';
-import { styles } from './months-view.material.css';
+import { styles } from '../themes/bootstrap/calendar.bootstrap.css';
 import { partNameMap } from '../../common/util';
 import { setDateSafe } from '../common/utils';
 

@@ -2,7 +2,7 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
-import { styles } from './switch.material.css';
+import { styles } from './themes/light/switch.material.css';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { partNameMap } from '../common/util.js';
 

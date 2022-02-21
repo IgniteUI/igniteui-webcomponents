@@ -1,0 +1,11 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+@use '../nav-drawer.base';
+
+:host {
+    [part='base'] {
+        background: #{color(gray, 700)};
+        border: none;
+        box-shadow: none;
+    }
+}

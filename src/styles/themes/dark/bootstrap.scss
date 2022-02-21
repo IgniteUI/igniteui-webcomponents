@@ -1,14 +1,7 @@
 @use '../../utilities' as utils;
 @use '../base/bootstrap' as base;
-@use '../../../components/card/card.bootstrap' as card;
-@use '../../../components/checkbox/checkbox.bootstrap' as checkbox;
-@use '../../../components/checkbox/switch.bootstrap' as switch;
 @use '../../../components/navbar/navbar.bootstrap' as navbar;
-@use '../../../components/calendar/calendar.bootstrap' as calendar;
 @use '../../../components/input/input.bootstrap' as input with ($input-background: transparent);
-@use '../../../components/slider/slider.bootstrap' as slider with (
-    $inactive-background: utils.color(secondary, 500, .48)
-);
 
 $palette: utils.palette(
     $primary: #0d6efd,
@@ -22,10 +15,5 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include card.theme();
-@include checkbox.theme();
-@include switch.theme();
 @include navbar.theme();
-@include calendar.theme();
 @include input.theme();
-@include slider.theme();

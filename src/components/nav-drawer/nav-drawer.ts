@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { partNameMap } from '../common/util';
-import { styles } from './nav-drawer.material.css';
+import { styles } from './styles/bootstrap/nav-drawer.bootstrap.css';
 
 /**
  * Represents a side navigation container that provides

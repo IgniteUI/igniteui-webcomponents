@@ -1,0 +1,188 @@
+@use './checkbox.base.scss';
+@use '../../../../styles/utilities' as *;
+
+$border-color: color(gray, 500) !default;
+$hover-color: color(gray, 800) !default;
+$checked-hover-color: color(primary, 900) !default;
+$invalid-color: color(error, 500) !default;
+$invalid-hover-color: color(error, 700) !default;
+$disabled-color: color(gray, 400) !default;
+
+[part~='control'] {
+    width: var(--size, rem(20px));
+    height: var(--size, rem(20px));
+    min-width: var(--size, rem(20px));
+
+    &::after {
+        border: none;
+        background: transparent;
+        box-shadow: inset 0 0 0 1px $border-color;
+    }
+}
+
+[part~='indicator'] {
+    stroke-width: 1.5;
+    transform: scale(.8);
+}
+
+:host(:hover) {
+    [part~='indicator'] {
+        opacity: 1;
+        stroke: color(gray, 700);
+        stroke-dashoffset: 0;
+        transition: opacity .1s ease-out;
+    }
+
+    [part='indicator checked'] {
+        stroke: color(surface, 500);
+    }
+}
+
+:host(:hover),
+:host(:focus-within) {
+    [part~='control']::after {
+        box-shadow: inset 0 0 0 1px $hover-color;
+    }
+}
+
+:host([indeterminate]) {
+    [part~='indicator'] {
+        display: none;
+    }
+
+    [part~='control']::before {
+        display: block;
+        width: inherit;
+        height: inherit;
+        content: '';
+        transform: scale(.5);
+        transition-duration: .1s;
+        background: color(primary, 500);
+        border-radius: rem(2px);
+        z-index: 1;
+    }
+
+    [part~='control']::after {
+        box-shadow: inset 0 0 0 1px color(primary, 500);
+        background: transparent;
+    }
+}
+
+:host([indeterminate]:hover) [part~='control'],
+:host([indeterminate]:focus-within) [part~='control'] {
+    &::before {
+        background: $checked-hover-color;
+    }
+
+    &::after {
+        box-shadow: inset 0 0 0 1px $checked-hover-color;
+        background: transparent;
+    }
+}
+
+[part='control checked'] {
+    &::after {
+        background: color(primary, 500);
+        box-shadow: inset 0 0 0 1px color(primary, 500);
+    }
+}
+
+:host(:hover) [part='control checked'],
+:host(:focus-within) [part='control checked'] {
+    &::after {
+        background: $checked-hover-color;
+        box-shadow: inset 0 0 0 1px $checked-hover-color;
+    }
+}
+
+:host(:not([disabled])[invalid]) [part~='label'] {
+    color: $invalid-color;
+}
+
+:host([invalid]) [part~='control'] {
+    &::after {
+        box-shadow: inset 0 0 0 1px $invalid-color;
+    }
+}
+
+:host([invalid]:hover) [part~='indicator'] {
+    stroke: $invalid-color;
+}
+
+:host([invalid]:hover) [part='indicator checked'] {
+    stroke: color(surface, 500);
+}
+
+:host([invalid][checked]) [part='control checked'] {
+    &::after {
+        box-shadow: inset 0 0 0 1px $invalid-color;
+        background: $invalid-color;
+    }
+}
+
+:host(:not([disabled])[invalid][indeterminate]) [part~='control'] {
+    &::before {
+        background: $invalid-color;
+    }
+
+    &::after {
+        box-shadow: inset 0 0 0 1px $invalid-color;
+        background: transparent;
+    }
+}
+
+:host([invalid]:hover) [part~='control'],
+:host([invalid]:focus-within) [part~='control'] {
+    &::after {
+        box-shadow: inset 0 0 0 1px $invalid-hover-color;
+    }
+}
+
+:host([invalid]:hover) [part='control checked'],
+:host([invalid]:focus-within) [part='control checked'] {
+    &::after {
+        background: $invalid-hover-color;
+    }
+}
+
+:host([invalid][indeterminate]:hover) [part~='control'],
+:host([invalid][indeterminate]:focus-within) [part~='control'] {
+    &::before {
+        background: $invalid-hover-color;
+    }
+
+    &::after {
+        box-shadow: inset 0 0 0 1px $invalid-hover-color;
+        background: transparent;
+    }
+}
+
+:host([disabled]) [part~='label'] {
+    color: $disabled-color;
+}
+
+:host([disabled]) [part~='control'],
+:host([disabled][invalid]) [part~='control'] {
+    &::after {
+        box-shadow: inset 0 0 0 1px $disabled-color;
+    }
+}
+
+:host([disabled]) [part='control checked'],
+:host([disabled][invalid]) [part='control checked'] {
+    &::after {
+        background: $disabled-color;
+    }
+}
+
+:host([disabled][indeterminate]) [part~='control'],
+:host([disabled][invalid][indeterminate]) [part~='control'] {
+    &::before {
+        background: $disabled-color;
+    }
+
+    &::after {
+        box-shadow: inset 0 0 0 1px $disabled-color;
+        background: transparent;
+    }
+}

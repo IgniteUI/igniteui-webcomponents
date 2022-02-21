@@ -1,14 +1,7 @@
 @use '../../utilities' as utils;
 @use '../base/indigo' as base;
-@use '../../../components/card/card.indigo' as card;
-@use '../../../components/checkbox/checkbox.indigo' as checkbox;
-@use '../../../components/checkbox/switch.indigo' as switch;
 @use '../../../components/navbar/navbar.indigo' as navbar;
-@use '../../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
-@use '../../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
-@use '../../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
 @use '../../../components/input/input.indigo' as input;
-@use '../../../components/slider/slider.indigo' as slider;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -22,12 +15,5 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include card.theme();
-@include checkbox.theme();
-@include switch.theme();
 @include navbar.theme();
-@include nav-drawer.theme();
-@include nav-drawer-item.theme();
-@include nav-drawer-header.theme();
 @include input.theme();
-@include slider.theme();

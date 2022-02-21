@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
-import { styles } from './checkbox.material.css';
+import { styles } from './themes/light/checkbox.material.css';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { partNameMap } from '../common/util.js';
 
