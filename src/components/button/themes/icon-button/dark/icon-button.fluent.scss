@@ -1,0 +1,5 @@
+@use '../../../../../styles/utilities' as utils;
+@use '../light/icon-button.fluent' with (
+    $button-color: utils.color(surface, 500),
+    $hover-color: utils.color(primary, 300)
+);

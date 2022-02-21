@@ -1,16 +1,6 @@
 @use '../../utilities' as utils;
 @use '../base/indigo' as base;
-@use '../../../components/button/button.indigo' as button;
-@use '../../../components/button/icon-button.indigo' as icon-button;
-@use '../../../components/radio/radio.indigo' as radio with (
-    $border-color: utils.color(gray, 700),
-    $checked-color: utils.color(gray, 900),
-    $disabled-color: utils.color(gray, 400)
-);
 @use '../../../components/navbar/navbar.indigo' as navbar;
-@use '../../../components/list/list.indigo' as list with (
-    $item-hover-bg: utils.color(primary, 500, .5)
-);
 @use '../../../components/input/input.indigo' as input with ($label-focus-color: utils.color(gray, 800));
 
 $palette: utils.palette(
@@ -25,9 +15,5 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include button.theme();
-@include radio.theme();
 @include navbar.theme();
-@include list.theme();
 @include input.theme();
-@include icon-button.theme();

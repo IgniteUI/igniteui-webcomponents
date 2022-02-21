@@ -1,0 +1,4 @@
+@use '../../../../styles/utilities' as utils;
+@use '../light/list.bootstrap' with (
+    $separator-color: utils.color(gray, 100)
+);

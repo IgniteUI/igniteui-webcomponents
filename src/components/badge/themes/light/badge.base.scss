@@ -1,14 +1,11 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
 :host {
-    --size: #{rem(12px)};
-
     display: inline-flex;
-    font-weight: 500;
 }
 
-[part='base'] {
+span {
     display: inline-flex;
     min-width: var(--size);
     min-height: var(--size);
@@ -23,44 +20,37 @@
     font-weight: inherit;
 }
 
-:host(:not(:empty)) [part='base'] {
+:host(:not(:empty)) span {
     padding: rem(4px) rem(8px);
     min-width: calc(var(--size) * 2);
 }
 
 :host([variant='primary']) {
     background: color(primary, 500);
-    color: contrast-color(primary, 500);
 }
 
 :host([variant='info']) {
     background: color(info, 500);
-    color: contrast-color(info, 500);
 }
 
 :host([variant='success']) {
     background: color(success, 500);
-    color: contrast-color(success, 500);
 }
 
 :host([variant='warning']) {
     background: color(warn, 500);
-    color: contrast-color(warn, 500);
 }
 
 :host([variant='danger']) {
     background: color(error, 500);
-    color: contrast-color(error, 500);
 }
 
-:host([shape='rounded']) {
+:host([shape='rounded']),
+:host([outlined][shape='rounded']) span {
     border-radius: var(--size);
 }
 
-:host([shape='square']) {
+:host([shape='square']),
+:host([outlined][shape='square']) span {
     border-radius: 0;
-}
-
-:host([outlined]) {
-    box-shadow: inset 0 0 0 rem(2px) color(gray, 50);
 }

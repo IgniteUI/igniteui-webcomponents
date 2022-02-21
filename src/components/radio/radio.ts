@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { styles } from './radio.material.css';
+import { styles } from './themes/light/radio.bootstrap.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
@@ -172,6 +172,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           value="${ifDefined(this.value)}"
           .required="${this.required}"
           .disabled="${this.disabled}"
+          .invalid="${this.invalid}"
           .checked="${live(this.checked)}"
           tabindex=${this._tabIndex}
           aria-checked="${this.checked ? 'true' : 'false'}"

@@ -1,0 +1,33 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use './badge.base.scss';
+
+:host {
+    --size: #{rem(12px)};
+
+    font-weight: 500;
+}
+
+:host([variant='primary']) {
+    color: contrast-color(primary, 500);
+}
+
+:host([variant='info']) {
+    color: contrast-color(info, 500);
+}
+
+:host([variant='success']) {
+    color: contrast-color(success, 500);
+}
+
+:host([variant='warning']) {
+    color: contrast-color(warn, 500);
+}
+
+:host([variant='danger']) {
+    color: contrast-color(error, 500);
+}
+
+:host([outlined]) span {
+    box-shadow: inset 0 0 0 rem(2px) color(gray, 50);
+}

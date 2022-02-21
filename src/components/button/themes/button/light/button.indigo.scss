@@ -1,0 +1,160 @@
+@use '../../../../../styles/utilities' as utils;
+@use './button.base.scss';
+
+$l-size: utils.rem(36px);
+$m-size: utils.rem(32px);
+$s-size: utils.rem(24px);
+
+:host([size='large']) [part='base'] {
+    --size: #{$l-size};
+    --igc-border-radius: calc(var(--size) / 2);
+
+    border-radius: var(--igc-border-radius);
+
+    &::before,
+    &::after {
+        border-radius: var(--igc-border-radius);
+    }
+}
+
+:host([size='medium']) [part='base'] {
+    --size: #{$m-size};
+    --igc-border-radius: calc(var(--size) / 2);
+
+    border-radius: var(--igc-border-radius);
+
+    &::before,
+    &::after {
+        border-radius: var(--igc-border-radius);
+    }
+}
+
+:host([size='small']) [part='base'] {
+    --size: #{$s-size};
+    --igc-border-radius: calc(var(--size) / 2);
+
+    border-radius: var(--igc-border-radius);
+
+    &::before,
+    &::after {
+        border-radius: var(--igc-border-radius);
+    }
+}
+
+:host(:not([disabled])[variant='flat']) [part='base'] {
+    color: #{utils.color(gray, 700)};
+    transition: color .15s ease-in-out, box-shadow .15s ease-in-out;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: #{utils.color(gray, 900)};
+    }
+
+    &:hover::before {
+        background: transparent;
+    }
+
+    &:focus::before,
+    &:active::before {
+        background: transparent;
+    }
+
+    &:focus,
+    &:active {
+        box-shadow: 0 0 0 utils.rem(3px) #{utils.color(gray, 300)};
+    }
+}
+
+:host(:not([disabled])[variant='outlined']) [part='base'] {
+    color: #{utils.color(gray, 700)};
+    transition: color .15s ease-out;
+    box-shadow: inset 0 0 0 2px #{utils.color(gray, 500)};
+    overflow: visible;
+
+    &::after {
+        position: absolute;
+        content: '';
+        width: 100%;
+        height: 100%;
+        transition: box-shadow .15s ease-out;
+    }
+
+    &:hover {
+        color: #{utils.color(gray, 900)};
+        background: #{utils.color(gray, 50)};
+    }
+
+    &:focus,
+    &:active {
+        color: #{utils.color(gray, 900)};
+    }
+
+    &:focus::before,
+    &:active::before {
+        background: transparent;
+    }
+
+    &:focus::after,
+    &:active::after {
+        box-shadow: 0 0 0 utils.rem(3px) #{utils.color(gray, 300)};
+    }
+}
+
+:host([disabled][variant='fab']),
+:host(:not([disabled])[variant='fab']),
+:host([disabled][variant='contained']),
+:host(:not([disabled])[variant='contained']) {
+    [part='base'] {
+        box-shadow: var(--igc-elevation-0);
+
+        &:hover {
+            box-shadow: var(--igc-elevation-0);
+        }
+    }
+}
+
+:host([disabled][variant='fab']) [part='base'],
+:host(:not([disabled])[variant='fab']) [part='base'] {
+    border-radius: calc(var(--igc-border-radius) * 100);
+}
+
+:host(:not([disabled])[variant='fab']) [part='base'],
+:host(:not([disabled])[variant='contained']) [part='base'] {
+    color: #{utils.contrast-color(primary, 600)};
+
+    &:hover {
+        color: #{utils.contrast-color(primary, 600)};
+    }
+
+    &:focus,
+    &:active {
+        color: #{utils.contrast-color(primary, 600)};
+        box-shadow: 0 0 0 utils.rem(3px) #{utils.color(primary, 200)};
+    }
+
+    &::before {
+        background: #{utils.color(primary, 500)};
+        opacity: 1;
+    }
+
+    &:hover::before,
+    &:focus::before,
+    &:active::before {
+        background: #{utils.color(primary, 400)};
+        opacity: 1;
+    }
+}
+
+:host([disabled][variant='flat']) [part='base'],
+:host([disabled][variant='outlined']) [part='base'] {
+    background: transparent;
+    box-shadow: none;
+    color: #{utils.color(gray, 400)};
+}
+
+:host([disabled][variant='fab']) [part='base'],
+:host([disabled][variant='contained']) [part='base'] {
+    background: #{utils.color(gray, 100)};
+    color: #{utils.color(gray, 400)};
+}

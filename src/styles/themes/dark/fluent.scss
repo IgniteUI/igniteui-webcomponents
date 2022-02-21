@@ -1,24 +1,5 @@
 @use '../../utilities' as utils;
 @use '../base/fluent' as base;
-@use '../../../components/button/button.fluent' as button with (
-    $button-color: utils.color(surface, 500),
-    $hover-color: utils.color(primary, 300),
-    $active-color: utils.color(primary, 100)
-);
-@use '../../../components/button/icon-button.fluent' as icon-button with (
-    $button-color: utils.color(surface, 500),
-    $hover-color: utils.color(primary, 300)
-);
-@use '../../../components/radio/radio.fluent' as radio with (
-    $hover-color: utils.color(gray, 500),
-    $checked-hover-color: utils.color(primary, 100),
-    $invalid-color: utils.color(error, 200),
-    $invalid-hover-color: utils.color(error, 100),
-    $disabled-color: utils.color(gray, 200)
-);
-@use '../../../components/list/list.fluent' as list with (
-    $item-hover-bg: utils.color(gray, 100),
-);
 @use '../../../components/input/input.fluent' as input with ($container-background: transparent);
 
 $palette: utils.palette(
@@ -32,8 +13,4 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include button.theme();
-@include radio.theme();
-@include list.theme();
 @include input.theme();
-@include icon-button.theme();

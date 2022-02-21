@@ -1,0 +1,27 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use './radio.base.scss';
+
+[part~='base'] {
+    &:hover [part='control'] {
+        background: color(gray, 600, .06);
+    }
+}
+
+[part='base checked'] {
+    &:hover [part~='control'] {
+        background: color(secondary, 500, .06);
+    }
+
+    &:focus-within [part~='control'] {
+        background: color(secondary, 500, .12);
+    }
+}
+
+:host(:not([disabled])[invalid]) {
+    [part='control checked'] {
+        &::before {
+            background: color(error, 500);
+        }
+    }
+}

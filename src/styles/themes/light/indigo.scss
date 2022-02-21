@@ -1,10 +1,6 @@
 @use '../../utilities' as utils;
 @use '../base/indigo' as base;
-@use '../../../components/button/button.indigo' as button;
-@use '../../../components/button/icon-button.indigo' as icon-button;
-@use '../../../components/radio/radio.indigo' as radio;
 @use '../../../components/navbar/navbar.indigo' as navbar;
-@use '../../../components/list/list.indigo' as list;
 @use '../../../components/input/input.indigo' as input;
 
 $palette: utils.palette(
@@ -19,9 +15,5 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include button.theme();
-@include radio.theme();
 @include navbar.theme();
-@include list.theme();
 @include input.theme();
-@include icon-button.theme();

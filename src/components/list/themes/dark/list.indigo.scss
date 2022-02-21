@@ -1,0 +1,4 @@
+@use '../../../../styles/utilities' as utils;
+@use '../light/list.indigo' as list with (
+    $item-hover-bg: utils.color(primary, 500, .5)
+);

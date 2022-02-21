@@ -1,0 +1,33 @@
+@use '../../../../styles/utilities' as *;
+@use './badge.base.scss';
+
+:host {
+    --size: #{rem(18px)};
+    --igc-subtitle-1-font-size: #{rem(12px)};
+
+    font-weight: 700;
+}
+
+:host([variant='primary']) {
+    color: contrast-color(primary, 700);
+}
+
+:host([variant='info']) {
+    color: contrast-color(info, 700);
+}
+
+:host([variant='success']) {
+    color: contrast-color(success, 700);
+}
+
+:host([variant='warning']) {
+    color: contrast-color(warn, 700);
+}
+
+:host([variant='danger']) {
+    color: contrast-color(error, 700);
+}
+
+:host([outlined]) span {
+    box-shadow: inset 0 0 0 rem(1px) color(gray, 50);
+}
