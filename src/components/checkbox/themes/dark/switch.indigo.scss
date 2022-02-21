@@ -1,0 +1,7 @@
+@use '../../../../styles/utilities' as *;
+@use '../../themes/light/switch.indigo' with (
+    $border-color: color(gray, 700),
+    $checked-color: color(gray, 900),
+    $thumb-color: color(gray, 700),
+    $disabled-color: color(gray, 400)
+);

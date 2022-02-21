@@ -1,0 +1,24 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    flex-direction: column;
+    border: rem(1px) solid color(gray, 400);
+    overflow: hidden;
+    border-radius: rem(3px);
+    background: color(surface, 500);
+    font-family: var(--igc-font-family);
+}
+
+:host([elevated]) {
+    border: none;
+    box-shadow: var(--igc-elevation-4);
+    backface-visibility: hidden;
+    transition: box-shadow .1s ease-out;
+}
+
+:host([elevated]:hover),
+:host([elevated]:focus-within) {
+    box-shadow: var(--igc-elevation-6);
+}

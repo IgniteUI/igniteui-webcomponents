@@ -1,0 +1,36 @@
+@use './slider.base.scss';
+@use '../../../../styles/utilities' as *;
+
+$inactive-background: color(secondary, 500, .24) !default;
+$thumb-size: rem(16px);
+$thumb-radius: calc(#{$thumb-size} / 2);
+
+[part='track'],
+[part='inactive'] {
+    height: rem(8px);
+}
+
+[part='fill'] {
+    display: none;
+}
+
+[part='inactive'] {
+    background: $inactive-background;
+}
+
+[part='steps'] {
+    top: rem(3px);
+}
+
+[part='thumb'] {
+    width: $thumb-size;
+    height: $thumb-size;
+    background: color(primary, 500);
+    top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
+    margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
+
+    &:focus {
+        border: rem(1px) solid color(surface, 500);
+        box-shadow: 0 0 0 rem(3px) color(primary, 200);
+    }
+}

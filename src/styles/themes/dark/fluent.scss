@@ -9,26 +9,8 @@
     $button-color: utils.color(surface, 500),
     $hover-color: utils.color(primary, 300)
 );
-@use '../../../components/card/card.fluent' as card;
-@use '../../../components/checkbox/checkbox.fluent' as checkbox with (
-    $border-color: utils.color(gray, 700),
-    $hover-color: utils.color(gray, 900),
-    $checked-hover-color: utils.color(primary, 100),
-    $invalid-color: utils.color(error, 200),
-    $invalid-hover-color: utils.color(error, 100),
-    $disabled-color: utils.color(gray, 200)
-);
 @use '../../../components/radio/radio.fluent' as radio with (
     $hover-color: utils.color(gray, 500),
-    $checked-hover-color: utils.color(primary, 100),
-    $invalid-color: utils.color(error, 200),
-    $invalid-hover-color: utils.color(error, 100),
-    $disabled-color: utils.color(gray, 200)
-);
-@use '../../../components/checkbox/switch.fluent' as switch with (
-    $thumb-color: utils.color(gray, 500),
-    $disabled-thumb-color: utils.color(surface, 100),
-    $hover-color: utils.color(gray, 900),
     $checked-hover-color: utils.color(primary, 100),
     $invalid-color: utils.color(error, 200),
     $invalid-hover-color: utils.color(error, 100),
@@ -38,16 +20,6 @@
     $item-hover-bg: utils.color(gray, 100),
 );
 @use '../../../components/input/input.fluent' as input with ($container-background: transparent);
-@use '../../../components/slider/slider.fluent' as slider with (
-    $inactive-background: utils.color(gray, 100),
-    $fill-background: utils.color(gray, 400),
-    $thumb-border: utils.color(gray, 400),
-    $fill-hover-background: utils.color(primary, 300),
-    $thumb-hover-border: utils.color(primary, 300),
-    $inactive-disabled-background: utils.color(gray, 100),
-    $fill-disabled-background: utils.color(gray, 300),
-    $thumb-disabled-border: utils.color(gray, 200)
-);
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -61,11 +33,7 @@ $palette: utils.palette(
 
 @include base.root-styles($palette);
 @include button.theme();
-@include card.theme();
-@include checkbox.theme();
 @include radio.theme();
-@include switch.theme();
 @include list.theme();
 @include input.theme();
 @include icon-button.theme();
-@include slider.theme();
