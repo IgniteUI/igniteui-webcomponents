@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
+import { DynamicTheme, theme } from '../../theming';
 import { SizableMixin } from '../common/mixins/sizable';
-import { styles } from './themes/light/list.indigo.css';
 
 /**
  * Displays a collection of data items in a templatable list format.
@@ -11,8 +11,13 @@ import { styles } from './themes/light/list.indigo.css';
  */
 export default class IgcListComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-list';
-
-  public static override styles = styles;
+  @theme({
+    material: './list/themes/light/list.material.scss',
+    bootstrap: './list/themes/light/list.bootstrap.scss',
+    fluent: './list/themes/light/list.fluent.scss',
+    indigo: './list/themes/light/list.indigo.scss',
+  })
+  protected theme!: DynamicTheme;
 
   constructor() {
     super();

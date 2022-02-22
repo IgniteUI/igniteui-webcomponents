@@ -1,29 +1,29 @@
 import { html } from 'lit';
+import { customElement, property, query } from 'lit/decorators.js';
+import { DynamicTheme, theme } from '../../../theming';
 import {
   blazorIndirectRender,
   blazorSuppressComponent,
   watch,
 } from '../../common/decorators';
 import {
+  IgcCalendarResourceStringEN,
+  IgcCalendarResourceStrings,
+} from '../../common/i18n/calendar.resources';
+import { Constructor } from '../../common/mixins/constructor';
+import { EventEmitterMixin } from '../../common/mixins/event-emitter';
+import { partNameMap } from '../../common/util';
+import {
+  IgcCalendarBaseComponent,
+  IgcCalendarBaseEventMap,
+} from '../common/calendar-base';
+import {
   DateRangeType,
   ICalendarDate,
   isDateInRanges,
   TimeDeltaInterval,
 } from '../common/calendar.model';
-import {
-  IgcCalendarBaseComponent,
-  IgcCalendarBaseEventMap,
-} from '../common/calendar-base';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils';
-import { styles } from '../themes/bootstrap/calendar.bootstrap.css';
-import { EventEmitterMixin } from '../../common/mixins/event-emitter';
-import { Constructor } from '../../common/mixins/constructor';
-import { property, query, customElement } from 'lit/decorators.js';
-import { partNameMap } from '../../common/util';
-import {
-  IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
-} from '../../common/i18n/calendar.resources';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
@@ -51,7 +51,13 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
-  public static styles = [styles];
+  @theme({
+    bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
+    material: './calendar/themes/material/days-view.material.scss',
+    fluent: './calendar/themes/fluent/calendar.fluent.scss',
+    indigo: './calendar/themes/material/days-view.material.scss',
+  })
+  protected theme!: DynamicTheme;
 
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];

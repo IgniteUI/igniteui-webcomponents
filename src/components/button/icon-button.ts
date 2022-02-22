@@ -1,14 +1,14 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { IgcButtonBaseComponent } from './button-base.js';
-import { styles } from './themes/icon-button/light/icon-button.bootstrap.css';
-import '../icon/icon';
+import { DynamicTheme, theme } from '../../theming';
 import { alternateName, blazorInclude } from '../common/decorators';
+import '../icon/icon';
 import {
   registerIcon as registerIcon_impl,
   registerIconFromText as registerIconFromText_impl,
 } from '../icon/icon.registry.js';
+import { IgcButtonBaseComponent } from './button-base.js';
 
 /**
  * @element igc-icon-button
@@ -18,8 +18,13 @@ import {
  */
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
-
-  public static styles = [styles];
+  @theme({
+    bootstrap: './button/themes/icon-button/light/icon-button.bootstrap.scss',
+    material: './button/themes/icon-button/light/icon-button.material.scss',
+    fluent: './button/themes/icon-button/light/icon-button.fluent.scss',
+    indigo: './button/themes/icon-button/light/icon-button.indigo.scss',
+  })
+  protected theme!: DynamicTheme;
 
   /** The name of the icon. */
   @alternateName('iconName')

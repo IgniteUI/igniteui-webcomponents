@@ -10,10 +10,10 @@ import { DynamicTheme, theme } from '../../theming';
  */
 export default class IgcCardActionsComponent extends LitElement {
   @theme({
-    material: './themes/light/card.actions.material.scss',
-    bootstrap: './themes/light/card.actions.bootstrap.scss',
-    fluent: './themes/light/card.actions.material.scss',
-    indigo: './themes/light/card.actions.material.scss',
+    material: './card/themes/light/card.actions.material.scss',
+    bootstrap: './card/themes/light/card.actions.bootstrap.scss',
+    fluent: './card/themes/light/card.actions.material.scss',
+    indigo: './card/themes/light/card.actions.material.scss',
   })
   protected theme!: DynamicTheme;
   public static readonly tagName = 'igc-card-actions';

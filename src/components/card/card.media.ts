@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { DynamicTheme, theme } from '../../theming';
+import { styles } from './themes/light/card.media.material.css';
 
 /** A container for card's media - could be an image, gif, video
  * @element igc-card-media
@@ -7,22 +7,11 @@ import { DynamicTheme, theme } from '../../theming';
  * @slot - Renders the card media content
  */
 export default class IgcCardMediaComponent extends LitElement {
-  @theme({
-    material: './themes/light/card.media.material.scss',
-    bootstrap: './themes/light/card.media.material.scss',
-    fluent: './themes/light/card.media.material.scss',
-    indigo: './themes/light/card.media.material.scss',
-  })
-  protected theme!: DynamicTheme;
   public static readonly tagName = 'igc-card-media';
+  public static override styles = styles;
 
   protected override render() {
-    return html`
-      <style>
-        ${this.theme.styles}
-      </style>
-      <slot></slot>
-    `;
+    return html` <slot></slot> `;
   }
 }
 

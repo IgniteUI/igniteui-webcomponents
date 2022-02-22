@@ -8,10 +8,10 @@ import { DynamicTheme, theme } from '../../theming';
  */
 export default class IgcCardContentComponent extends LitElement {
   @theme({
-    material: './themes/light/card.content.material.scss',
-    bootstrap: './themes/light/card.content.bootstrap.scss',
-    fluent: './themes/light/card.content.material.scss',
-    indigo: './themes/light/card.content.material.scss',
+    material: './card/themes/light/card.content.material.scss',
+    bootstrap: './card/themes/light/card.content.bootstrap.scss',
+    fluent: './card/themes/light/card.content.material.scss',
+    indigo: './card/themes/light/card.content.material.scss',
   })
   protected theme!: DynamicTheme;
 

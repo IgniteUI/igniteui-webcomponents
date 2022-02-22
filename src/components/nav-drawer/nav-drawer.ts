@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { DynamicTheme, theme } from '../../theming';
 import { partNameMap } from '../common/util';
-import { styles } from './styles/bootstrap/nav-drawer.bootstrap.css';
 
 /**
  * Represents a side navigation container that provides
@@ -18,8 +18,13 @@ import { styles } from './styles/bootstrap/nav-drawer.bootstrap.css';
  */
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
-
-  public static override styles = [styles];
+  @theme({
+    material: './nav-drawer/styles/material/nav-drawer.material.scss',
+    bootstrap: './nav-drawer/styles/bootstrap/nav-drawer.bootstrap.scss',
+    indigo: './nav-drawer/styles/indigo/nav-drawer.indigo.scss',
+    fluent: './nav-drawer/styles/fluent/nav-drawer.fluent.scss',
+  })
+  protected theme!: DynamicTheme;
 
   /** The position of the drawer. */
   @property({ reflect: true })

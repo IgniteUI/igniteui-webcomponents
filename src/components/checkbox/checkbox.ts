@@ -2,10 +2,10 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { DynamicTheme, theme } from '../../theming';
 import { watch } from '../common/decorators/watch.js';
-import { styles } from './themes/light/checkbox.material.css';
-import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { partNameMap } from '../common/util.js';
+import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 
 let nextId = 0;
 
@@ -27,8 +27,13 @@ let nextId = 0;
  */
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
-
-  public static styles = styles;
+  @theme({
+    material: './checkbox/themes/light/checkbox.material.scss',
+    bootstrap: './checkbox/themes/light/checkbox.bootstrap.scss',
+    fluent: './checkbox/themes/light/checkbox.fluent.scss',
+    indigo: './checkbox/themes/light/checkbox.indigo.scss',
+  })
+  public theme!: DynamicTheme;
 
   private inputId = `checkbox-${nextId++}`;
   private labelId = `checkbox-label-${this.inputId}`;

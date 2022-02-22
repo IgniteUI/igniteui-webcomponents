@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
+import { DynamicTheme, theme } from '../../../theming';
 import {
   blazorIndirectRender,
   blazorSuppressComponent,
@@ -7,13 +8,12 @@ import {
 } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
-import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
+import { partNameMap } from '../../common/util';
 import {
   IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
 } from '../common/calendar-base';
-import { styles } from '../themes/bootstrap/calendar.bootstrap.css';
-import { partNameMap } from '../../common/util';
+import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
 import { setDateSafe } from '../common/utils';
 
 /**
@@ -32,7 +32,13 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  public static styles = [styles];
+  @theme({
+    bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
+    material: './calendar/themes/material/months-view.material.scss',
+    fluent: './calendar/themes/fluent/calendar.fluent.scss',
+    indigo: './calendar/themes/material/months-view.material.scss',
+  })
+  protected theme!: DynamicTheme;
 
   private calendarModel = new Calendar();
   private monthFormatter: any;

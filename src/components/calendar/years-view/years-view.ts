@@ -1,9 +1,10 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
+import { DynamicTheme, theme } from '../../../theming';
 import {
-  watch,
   blazorIndirectRender,
   blazorSuppressComponent,
+  watch,
 } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
@@ -13,7 +14,6 @@ import {
   YEARS_PER_ROW,
 } from '../common/calendar-base';
 import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
-import { styles } from '../themes/bootstrap/calendar.bootstrap.css';
 
 /**
  * Instantiate a years view as a separate component in the calendar.
@@ -31,7 +31,13 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  public static styles = [styles];
+  @theme({
+    bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
+    material: './calendar/themes/material/years-view.material.scss',
+    fluent: './calendar/themes/fluent/calendar.fluent.scss',
+    indigo: './calendar/themes/material/years-view.material.scss',
+  })
+  protected theme!: DynamicTheme;
 
   private years!: Date[][];
 

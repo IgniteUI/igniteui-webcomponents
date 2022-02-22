@@ -1,15 +1,23 @@
-import { ReactiveController, ReactiveControllerHost } from 'lit';
+import {
+  adoptStyles,
+  ReactiveController,
+  ReactiveControllerHost,
+  ReactiveElement,
+} from 'lit';
 import { DynamicTheme } from '.';
 import { CHANGE_THEME_EVENT } from './theming-event';
 import { IgcTheme, ThemeOptions } from './types';
 
 export class ThemingController implements DynamicTheme, ReactiveController {
   private options: ThemeOptions;
-  private host: ReactiveControllerHost;
+  private host: ReactiveControllerHost & ReactiveElement;
   public variant: IgcTheme = 'bootstrap';
   public styles!: string;
 
-  constructor(host: ReactiveControllerHost, options: ThemeOptions) {
+  constructor(
+    host: ReactiveControllerHost & ReactiveElement,
+    options: ThemeOptions
+  ) {
     this.host = host;
     this.options = options;
   }
@@ -18,32 +26,29 @@ export class ThemingController implements DynamicTheme, ReactiveController {
     event: WindowEventMap[typeof CHANGE_THEME_EVENT]
   ) => {
     this.variant = event.detail.theme as IgcTheme;
-    await this.applyStyles(this.options);
+    await this.adoptStyles();
     this.host.requestUpdate();
   };
 
   public hostConnected() {
     window.addEventListener(CHANGE_THEME_EVENT, this.__themingEventHandler);
-    window.dispatchEvent(
-      new CustomEvent(CHANGE_THEME_EVENT, {
-        detail: { theme: this.variant },
-      })
-    );
   }
 
   public hostDisconnected() {
     window.removeEventListener(CHANGE_THEME_EVENT, this.__themingEventHandler);
   }
 
-  private async applyStyles(options: ThemeOptions) {
-    const styles = Object.entries(options).filter((o) => o[0] === this.variant);
+  protected async adoptStyles() {
+    const styles = Object.entries(this.options).filter(
+      (o) => o[0] === this.variant
+    );
     const result = await import(styles[0][1]);
-    this.styles = result.styles.cssText;
+    adoptStyles(this.host.shadowRoot!, [result.styles] ?? []);
   }
 }
 
 const _updateWhenThemeChanges = (
-  host: ReactiveControllerHost,
+  host: ReactiveControllerHost & ReactiveElement,
   options: ThemeOptions
 ) => {
   const controller = new ThemingController(host, options);

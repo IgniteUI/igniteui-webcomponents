@@ -1,32 +1,31 @@
 import { html } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import type IgcDaysViewComponent from './days-view/days-view';
-import type IgcMonthsViewComponent from './months-view/months-view';
-import type IgcYearsViewComponent from './years-view/years-view';
+import { DynamicTheme, theme } from '../../theming';
+import { blazorIndirectRender, watch } from '../common/decorators';
+import {
+  IgcCalendarResourceStringEN,
+  IgcCalendarResourceStrings,
+} from '../common/i18n/calendar.resources';
+import { Constructor } from '../common/mixins/constructor';
+import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { SizableMixin } from '../common/mixins/sizable';
+import { partNameMap } from '../common/util';
+import '../icon/icon';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
   YEARS_PER_ROW,
 } from './common/calendar-base';
-import { styles } from './themes/bootstrap/calendar.bootstrap.css';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { Constructor } from '../common/mixins/constructor';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model';
-import { blazorIndirectRender, watch } from '../common/decorators';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils';
-import { SizableMixin } from '../common/mixins/sizable';
-import {
-  IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
-} from '../common/i18n/calendar.resources';
-import { partNameMap } from '../common/util';
-
 import './days-view/days-view';
+import type IgcDaysViewComponent from './days-view/days-view';
 import './months-view/months-view';
+import type IgcMonthsViewComponent from './months-view/months-view';
 import './years-view/years-view';
-import '../icon/icon';
+import type IgcYearsViewComponent from './years-view/years-view';
 
 /**
  * Represents a calendar that lets users
@@ -65,7 +64,13 @@ export default class IgcCalendarComponent extends SizableMixin(
 ) {
   public static readonly tagName = 'igc-calendar';
 
-  public static styles = [styles];
+  @theme({
+    bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
+    material: './calendar/themes/material/calendar.material.scss',
+    fluent: './calendar/themes/fluent/calendar.fluent.scss',
+    indigo: './calendar/themes/material/calendar.material.scss',
+  })
+  protected theme!: DynamicTheme;
 
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;

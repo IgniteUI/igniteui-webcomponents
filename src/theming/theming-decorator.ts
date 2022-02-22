@@ -1,4 +1,3 @@
-import callsites from 'callsites';
 import { ReactiveElement } from 'lit';
 import { updateWhenThemeChanges } from './theming-controlller';
 import { ThemeOptions } from './types';
@@ -41,16 +40,11 @@ export function theme(options: ThemeOptions) {
 }
 
 function transformOptionPaths(options: ThemeOptions): ThemeOptions {
-  const path = callsites()
-    .find((f) => f.getFileName()?.includes('components'))
-    ?.getFileName();
-  const startIndex = path?.indexOf('components');
-  const endIndex = path?.lastIndexOf('/');
-  const modulePath = path?.slice(startIndex, endIndex);
+  const baseRoot = './components';
   const result = {};
 
   Object.entries(options).forEach(([key, value]) => {
-    const themePath = `../${modulePath}/${value
+    const themePath = `../${baseRoot}/${value
       .replace('./', '')
       .replace('scss', 'css.js')}`;
     (result as any)[key] = themePath;

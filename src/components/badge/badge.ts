@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { styles } from './themes/light/badge.bootstrap.css';
+import { DynamicTheme, theme } from '../../theming';
 
 /**
  * The badge is a component indicating a status on a related item or an area
@@ -14,8 +14,13 @@ import { styles } from './themes/light/badge.bootstrap.css';
  */
 export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
-
-  public static override styles = styles;
+  @theme({
+    material: './badge/themes/light/badge.material.scss',
+    bootstrap: './badge/themes/light/badge.bootstrap.scss',
+    fluent: './badge/themes/light/badge.material.scss',
+    indigo: './badge/themes/light/badge.material.scss',
+  })
+  protected theme!: DynamicTheme;
 
   /** The type of badge. */
   @property({ reflect: true })

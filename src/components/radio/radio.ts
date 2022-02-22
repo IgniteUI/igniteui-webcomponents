@@ -1,11 +1,11 @@
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { styles } from './themes/light/radio.bootstrap.css';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { DynamicTheme, theme } from '../../theming';
+import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
 
 let nextId = 0;
@@ -34,8 +34,13 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-radio';
-
-  public static styles = styles;
+  @theme({
+    material: './radio/themes/light/radio.material.scss',
+    bootstrap: './radio/themes/light/radio.bootstrap.scss',
+    fluent: './radio/themes/light/radio.fluent.scss',
+    indigo: './radio/themes/light/radio.indigo.scss',
+  })
+  protected theme!: DynamicTheme;
 
   private inputId = `radio-${nextId++}`;
   private labelId = `radio-label-${this.inputId}`;

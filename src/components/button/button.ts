@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { DynamicTheme, theme } from '../../theming';
 import { IgcButtonBaseComponent } from './button-base.js';
-import { styles } from './themes/button/light/button.bootstrap.css';
 
 /**
  * Represents a clickable button, used to submit forms or anywhere in a
@@ -23,7 +23,13 @@ import { styles } from './themes/button/light/button.bootstrap.css';
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
 
-  public static styles = [styles];
+  @theme({
+    bootstrap: './button/themes/button/light/button.bootstrap.scss',
+    material: './button/themes/button/light/button.material.scss',
+    indigo: './button/themes/button/light/button.indigo.scss',
+    fluent: './button/themes/button/light/button.fluent.scss',
+  })
+  protected theme!: DynamicTheme;
 
   /** Sets the variant of the button. */
   @property({ reflect: true })

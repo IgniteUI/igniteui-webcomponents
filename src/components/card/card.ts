@@ -9,10 +9,10 @@ import { DynamicTheme, theme } from '../../theming';
  */
 export default class IgcCardComponent extends LitElement {
   @theme({
-    material: './themes/light/card.material.scss',
-    bootstrap: './themes/light/card.bootstrap.scss',
-    fluent: './themes/light/card.fluent.scss',
-    indigo: './themes/light/card.material.scss',
+    material: './card/themes/light/card.material.scss',
+    bootstrap: './card/themes/light/card.bootstrap.scss',
+    fluent: './card/themes/light/card.fluent.scss',
+    indigo: './card/themes/light/card.material.scss',
   })
   protected theme!: DynamicTheme;
   public static readonly tagName = 'igc-card';
@@ -22,12 +22,7 @@ export default class IgcCardComponent extends LitElement {
   public elevated = false;
 
   protected override render() {
-    return html`
-      <style>
-        ${this.theme.styles}
-      </style>
-      <slot></slot>
-    `;
+    return html` <slot></slot> `;
   }
 }
 

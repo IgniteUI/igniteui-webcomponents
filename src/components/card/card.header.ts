@@ -13,19 +13,16 @@ import { DynamicTheme, theme } from '../../theming';
  */
 export default class IgcCardHeaderComponent extends LitElement {
   @theme({
-    material: './themes/light/card.header.material.scss',
-    bootstrap: './themes/light/card.header.bootstrap.scss',
-    fluent: './themes/light/card.header.material.scss',
-    indigo: './themes/light/card.header.indigo.scss',
+    material: './card/themes/light/card.header.material.scss',
+    bootstrap: './card/themes/light/card.header.bootstrap.scss',
+    fluent: './card/themes/light/card.header.material.scss',
+    indigo: './card/themes/light/card.header.indigo.scss',
   })
   protected theme!: DynamicTheme;
   public static readonly tagName = 'igc-card-header';
 
   protected override render() {
     return html`
-      <style>
-        ${this.theme.styles}
-      </style>
       <section>
         <slot name="thumbnail"></slot>
       </section>
