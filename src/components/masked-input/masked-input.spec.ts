@@ -173,7 +173,6 @@ describe('Masked input', () => {
 
       masked.focus();
       await elementUpdated(masked);
-      console.log((masked as any).hasFocus);
 
       input().dispatchEvent(new DragEvent('dragenter'));
       await elementUpdated(masked);

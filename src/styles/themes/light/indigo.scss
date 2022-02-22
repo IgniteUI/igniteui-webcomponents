@@ -13,6 +13,7 @@
 @use '../../../components/list/list.indigo' as list;
 @use '../../../components/input/input.indigo' as input;
 @use '../../../components/slider/slider.indigo' as slider;
+@use '../../../components/masked-input/masked-input.indigo' as masked;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -39,3 +40,4 @@ $palette: utils.palette(
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();
+@include masked.theme();

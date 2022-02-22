@@ -5,24 +5,58 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { alternateName, watch } from '../common/decorators';
+import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { Constructor } from '../common/mixins/constructor';
 import { SizableMixin } from '../common/mixins/sizable';
 import { partNameMap } from '../common/util';
 import { MaskParser } from './mask-parser';
-import { styles } from '../input/input.material.css';
+import { styles } from './masked-input.material.css';
 
 interface MaskSelection {
   start: number;
   end: number;
 }
 
-export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
+export interface IgcMaskedInputEventMap {
+  /* alternateName: inputOcurred */
+  igcInput: CustomEvent<string>;
+  igcChange: CustomEvent<string>;
+  igcFocus: CustomEvent<void>;
+  igcBlur: CustomEvent<void>;
+}
+
+/**
+ * A masked input is an input field where a developer can control user input and format the visible value,
+ * based on configurable rules
+ *
+ * @element igc-masked-input
+ *
+ * @slot prefix - Renders content before the input
+ * @slot suffix - Renders content after the input
+ * @slot helper-text - Renders content below the input
+ *
+ * @fires igcInput - Emitted when the control receives user input
+ * @fires igcChange - Emitted when an alteration of the control's value is committed by the user
+ * @fires igcFocus - Emitted when the control gains focus
+ * @fires igcBlur - Emitted when the control loses focus
+ *
+ * @csspart container - The main wrapper that holds all main input elements
+ * @csspart input - The native input element
+ * @csspart label - The native label element
+ * @csspart prefix - The prefix wrapper
+ * @csspart suffix - The suffix wrapper
+ * @csspart helper-text - The helper text wrapper
+ */
+export default class IgcMaskedInputComponent extends SizableMixin(
+  EventEmitterMixin<IgcMaskedInputEventMap, Constructor<LitElement>>(LitElement)
+) {
   public static readonly tagName = 'igc-masked-input';
+  public static styles = styles;
 
-  public static override styles = styles;
-
-  public static override shadowRootOptions = {
+  public static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
@@ -31,13 +65,15 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
   protected _value!: string;
   protected selection: MaskSelection = { start: 0, end: 0 };
   protected droppedText = '';
-  protected historyStack: string[] = [];
 
   @state()
   protected theme!: string;
 
   @state()
   protected hasFocus = false;
+
+  @state()
+  protected maskedValue = '';
 
   @query('input', true)
   protected input!: HTMLInputElement;
@@ -48,9 +84,6 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
   @queryAssignedElements({ slot: 'suffix' })
   private suffixes!: Array<HTMLElement>;
 
-  @state()
-  protected maskedValue = '';
-
   protected get inputSelection(): MaskSelection {
     return {
       start: this.input.selectionStart || 0,
@@ -58,15 +91,41 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
     };
   }
 
+  /** The direction attribute of the control. */
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
+  @property()
+  public name!: string;
+
+  @property({ type: Boolean, reflect: true })
+  public readonly = false;
+
+  @property({ type: Boolean, reflect: true })
+  public disabled = false;
+
+  @property({ type: Boolean, reflect: true })
+  public required = false;
+
+  @property({ reflect: true, type: Boolean })
+  public outlined = false;
+
+  /**
+   * When enabled, retrieving the value of the control will return it
+   * with literal symbols applied.
+   */
   @property({ type: Boolean, attribute: 'with-literals' })
   public withLiterals = false;
 
+  /** The label for the control. */
   @property()
   public label!: string;
 
+  /**
+   * The value of the input.
+   *
+   * If `with-literals` is set, it will return the current value with the mask (literals and all) applied.
+   */
   @property()
   public get value() {
     return this.withLiterals
@@ -81,12 +140,15 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
     this.maskedValue = this.parser.apply(this._value);
   }
 
+  /** Placeholder for the input. */
   @property()
   public placeholder!: string;
 
+  /** The mask pattern to apply on the input. */
   @property()
   public mask!: string;
 
+  /** The prompt symbol to use for unfilled parts of the mask. */
   @property()
   public prompt!: string;
 
@@ -139,59 +201,77 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
     this.selection = this.inputSelection;
   }
 
-  protected handleBeforeInput() {
-    // XXX: Decide whether to handle undo/redo actions for the component
-    // if (!['historyUndo', 'historyRedo'].includes(inputType)) {
-    //   this.historyStack.push(this.maskedValue);
-    // }
+  protected handleCompositionStart() {
+    this.selection.start = this.inputSelection.start;
   }
 
-  protected handleInput(e: InputEvent) {
-    const target = e.target as HTMLInputElement;
-    const inputType = e.inputType;
-    const newValue = target.value;
-    let part = '';
-    let { start, end } = this.selection;
+  protected handleCompositionEnd() {
+    this.selection.end = this.inputSelection.end;
+  }
 
-    // console.log({ inputType });
+  protected handleInput({ inputType, data, isComposing }: InputEvent) {
+    const value = this.input.value;
+    const start = this.selection.start;
+    let end = this.selection.end;
 
     switch (inputType) {
+      case 'insertCompositionText':
+        return this.updateInput(data ?? '', start, end);
+
       case 'deleteContentForward':
-        end === start ? end++ : end;
-        break;
+        this.updateInput('', start, (end = start === end ? ++end : end));
+        return this.updateComplete.then(() =>
+          this.input.setSelectionRange(end, end)
+        );
 
       case 'deleteContentBackward':
-        start = this.inputSelection.start;
-        break;
+        if (isComposing) return;
+        return this.updateInput('', this.inputSelection.start, end);
+
+      case 'deleteByCut':
+        return this.updateInput('', start, end);
 
       case 'insertText':
-        part = newValue.substring(start, this.inputSelection.end);
-        break;
+        return this.updateInput(
+          value.substring(start, this.inputSelection.end),
+          start,
+          end
+        );
 
       case 'insertFromPaste':
-        end = this.inputSelection.start;
-        part = newValue.substring(start, this.inputSelection.end);
-        break;
+        return this.updateInput(
+          value.substring(start, this.inputSelection.end),
+          start,
+          this.inputSelection.start
+        );
 
       case 'insertFromDrop':
-        part = this.droppedText;
-        ({ start, end } = this.inputSelection);
-        end = start + part.length;
-        this.droppedText = '';
-        break;
-      case 'deleteByDrag':
-        part = newValue.substring(start, end);
-    }
+        return this.insertFromDrop(this.input.value);
 
-    const replace = this.parser.replace(this.maskedValue, part, start, end);
-    this.maskedValue = replace.value;
-    this._value = this.parser.parse(replace.value);
+      case 'deleteByDrag':
+        return;
+    }
+  }
+
+  protected insertFromDrop(value: string) {
+    const { start, end } = this.inputSelection;
+    this.maskedValue = this.parser.apply(value);
+    this._value = this.parser.parse(this.maskedValue);
+    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
+  }
+
+  protected updateInput(part: string, start: number, finish: number) {
+    const { value, end } = this.parser.replace(
+      this.maskedValue,
+      part,
+      start,
+      finish
+    );
+    this.maskedValue = value;
+    this._value = this.parser.parse(value);
 
     this.requestUpdate();
-    this.updateComplete.then(() => {
-      this.input.setSelectionRange(replace.end, replace.end);
-      this.resetSelection();
-    });
+    this.updateComplete.then(() => this.input.setSelectionRange(end, end));
   }
 
   /**
@@ -208,8 +288,8 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
     this.selection = this.inputSelection;
   }
 
-  protected handleDrop({ dataTransfer }: DragEvent) {
-    this.droppedText = dataTransfer?.getData('text') ?? '';
+  protected handleDrop(e: DragEvent) {
+    this.droppedText = e.dataTransfer?.getData('text') ?? '';
   }
 
   protected handleDragEnter() {
@@ -227,6 +307,7 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
   protected handleFocus() {
     this.hasFocus = true;
     this.updateMask();
+    this.emitEvent('igcFocus');
   }
 
   protected handleBlur() {
@@ -234,6 +315,7 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
     if (this.maskedValue === this.parser.apply()) {
       this.maskedValue = '';
     }
+    this.emitEvent('igcBlur');
   }
 
   protected updateMask() {
@@ -257,8 +339,12 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
       <input
         type="text"
         part=${partNameMap(this.resolvePartNames('input'))}
+        name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder || this.parser.apply())}
+        ?readonly=${this.readonly}
+        ?disabled=${this.disabled}
+        ?required=${this.required}
         @dragenter=${this.handleDragEnter}
         @dragleave=${this.handleDragLeave}
         @dragstart=${this.handleDragStart}
@@ -266,7 +352,8 @@ export default class IgcMaskedInputComponent extends SizableMixin(LitElement) {
         @blur=${this.handleBlur}
         @focus=${this.handleFocus}
         @cut=${this.handleCut}
-        @beforeinput=${this.handleBeforeInput}
+        @compositionstart=${this.handleCompositionStart}
+        @compositionend=${this.handleCompositionEnd}
         @input=${this.handleInput}
         @keydown=${this.handleKeydown}
       />
