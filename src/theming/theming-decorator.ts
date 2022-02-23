@@ -1,6 +1,6 @@
 import { ReactiveElement } from 'lit';
 import { updateWhenThemeChanges } from './theming-controlller';
-import { ThemeOptions } from './types';
+import { ReactiveTheme, ThemeOptions } from './types';
 
 /**
  * Property decorator that provides a DynamicTheme instance to
@@ -62,8 +62,15 @@ export function theme(options: ThemeOptions) {
  */
 export function themes(options: ThemeOptions) {
   return (clazz: any) => {
-    clazz.addInitializer((instance: ReactiveElement) => {
-      updateWhenThemeChanges(instance, transformOptionPaths(options));
+    clazz.addInitializer((instance: ReactiveElement & ReactiveTheme) => {
+      const controller = updateWhenThemeChanges(
+        instance,
+        transformOptionPaths(options)
+      );
+
+      if ('onControllerAttached' in instance) {
+        instance.onControllerAttached(controller);
+      }
     });
     return clazz;
   };

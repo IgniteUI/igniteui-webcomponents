@@ -6,14 +6,17 @@ import {
   ReactiveControllerHost,
   ReactiveElement,
 } from 'lit';
+import { ReactiveThemeController } from '.';
 import { getTheme } from './config';
 import { CHANGE_THEME_EVENT } from './theming-event';
 import { IgcTheme, ThemeOptions } from './types';
 
-export class ThemingController implements ReactiveController {
+export class ThemingController
+  implements ReactiveController, ReactiveThemeController
+{
   private options: ThemeOptions;
   private host: ReactiveControllerHost & ReactiveElement;
-  public variant: IgcTheme = 'bootstrap';
+  public theme!: IgcTheme;
 
   constructor(
     host: ReactiveControllerHost & ReactiveElement,
@@ -23,11 +26,9 @@ export class ThemingController implements ReactiveController {
     this.options = options;
   }
 
-  private readonly __themingEventHandler = async (
-    event: WindowEventMap[typeof CHANGE_THEME_EVENT]
-  ) => {
-    this.variant = event.detail.theme as IgcTheme;
+  private readonly __themingEventHandler = async () => {
     await this.adoptStyles();
+    this.host.requestUpdate();
   };
 
   public hostConnected() {
@@ -41,9 +42,10 @@ export class ThemingController implements ReactiveController {
 
   protected async adoptStyles() {
     let result = css``;
+    this.theme = getTheme() as IgcTheme;
 
     const styles = Object.entries(this.options).filter(
-      (o) => o[0] === getTheme()
+      (o) => o[0] === this.theme
     );
 
     if (styles[0]) {

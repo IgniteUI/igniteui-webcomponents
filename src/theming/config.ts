@@ -22,7 +22,3 @@ export const configureTheme = (theme: IgcTheme) => {
   setTheme(theme);
   dispatchThemingEvent({ theme });
 };
-
-export class IgcThemeConfig {
-  public static theme: IgcTheme = getTheme() as IgcTheme;
-}

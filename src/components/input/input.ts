@@ -7,12 +7,13 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { styles } from './input.material.css';
+import { ReactiveTheme, ReactiveThemeController, themes } from '../../theming';
+import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
-import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partNameMap } from '../common/util';
 import { SizableMixin } from '../common/mixins/sizable';
+import { partNameMap } from '../common/util';
+import { styles } from './input.material.css';
 
 let nextId = 0;
 
@@ -45,9 +46,13 @@ export interface IgcInputEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcInputComponent extends SizableMixin(
-  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
-) {
+@themes({})
+export default class IgcInputComponent
+  extends SizableMixin(
+    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
+  )
+  implements ReactiveTheme
+{
   public static readonly tagName = 'igc-input';
 
   public static styles = styles;
@@ -65,8 +70,7 @@ export default class IgcInputComponent extends SizableMixin(
   @state()
   private _suffixLength!: number;
 
-  @state()
-  private theme!: string | undefined;
+  private themeController!: ReactiveThemeController;
 
   @query('input', true)
   private input!: HTMLInputElement;
@@ -182,17 +186,15 @@ export default class IgcInputComponent extends SizableMixin(
 
   public override connectedCallback() {
     super.connectedCallback();
-    const theme = document.defaultView
-      ?.getComputedStyle(this)
-      .getPropertyValue('--theme')
-      .trim();
-
-    this.theme = theme;
 
     this.shadowRoot?.addEventListener('slotchange', (_) => {
       this._prefixLength = this._prefix.length;
       this._suffixLength = this._suffix.length;
     });
+  }
+
+  public onControllerAttached(controller: ReactiveThemeController) {
+    this.themeController = controller;
   }
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
@@ -384,7 +386,7 @@ export default class IgcInputComponent extends SizableMixin(
   }
 
   protected override render() {
-    return html`${this.theme === 'material'
+    return html`${this.themeController.theme === 'material'
       ? this.renderMaterial()
       : this.renderStandard()}`;
   }
