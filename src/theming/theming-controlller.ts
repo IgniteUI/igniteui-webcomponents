@@ -1,10 +1,12 @@
 import {
   adoptStyles,
+  css,
   LitElement,
   ReactiveController,
   ReactiveControllerHost,
   ReactiveElement,
 } from 'lit';
+import { getTheme } from './config';
 import { CHANGE_THEME_EVENT } from './theming-event';
 import { IgcTheme, ThemeOptions } from './types';
 
@@ -38,14 +40,21 @@ export class ThemingController implements ReactiveController {
   }
 
   protected async adoptStyles() {
+    let result = css``;
+
     const styles = Object.entries(this.options).filter(
-      (o) => o[0] === this.variant
+      (o) => o[0] === getTheme()
     );
-    const result = await import(styles[0][1]);
+
+    if (styles[0]) {
+      const module = await import(styles[0][1]);
+      result = module.styles;
+    }
+
     const ctor = this.host.constructor as typeof LitElement;
     adoptStyles(this.host.shadowRoot as ShadowRoot, [
       ...ctor.elementStyles,
-      result.styles,
+      result,
     ]);
   }
 }

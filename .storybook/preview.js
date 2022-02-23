@@ -1,4 +1,5 @@
 import { html } from 'lit-html';
+import { configureTheme } from '../dist/src/theming';
 
 const Themes = {
   material_light: await import('../src/styles/themes/light/material.scss'),
@@ -67,11 +68,7 @@ const getTheme = (themeName, variant) => {
 const themeProvider = (Story, context) => {
   const theme = getTheme(context.globals.theme, context.globals.variant);
 
-  window.dispatchEvent(
-    new CustomEvent('igc-change-theme', {
-      detail: { theme: context.globals.theme },
-    })
-  );
+  configureTheme(context.globals.theme);
 
   // Workaround for https://github.com/cfware/babel-plugin-template-html-minifier/issues/56
   const htmlNoMin = html;
