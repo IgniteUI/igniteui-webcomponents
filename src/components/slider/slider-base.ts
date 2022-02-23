@@ -7,18 +7,16 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { DynamicTheme, theme } from '../../theming';
+import { themes } from '../../theming';
 import { watch } from '../common/decorators';
 
+@themes({
+  material: './slider/themes/light/slider.material.scss',
+  bootstrap: './slider/themes/light/slider.bootstrap.scss',
+  fluent: './slider/themes/light/slider.fluent.scss',
+  indigo: './slider/themes/light/slider.indigo.scss',
+})
 export class IgcSliderBaseComponent extends LitElement {
-  @theme({
-    material: './slider/themes/light/slider.material.scss',
-    bootstrap: './slider/themes/light/slider.bootstrap.scss',
-    fluent: './slider/themes/light/slider.fluent.scss',
-    indigo: './slider/themes/light/slider.indigo.scss',
-  })
-  protected theme!: DynamicTheme;
-
   @query(`[part='thumb']`)
   protected thumb!: HTMLElement;
 

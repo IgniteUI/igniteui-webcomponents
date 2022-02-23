@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import { DynamicTheme, theme } from '../../../theming';
+import { themes } from '../../../theming';
 import {
   blazorIndirectRender,
   blazorSuppressComponent,
@@ -28,18 +28,16 @@ import { setDateSafe } from '../common/utils';
 @customElement('igc-months-view')
 @blazorIndirectRender
 @blazorSuppressComponent
+@themes({
+  bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
+  material: './calendar/themes/material/months-view.material.scss',
+  fluent: './calendar/themes/fluent/calendar.fluent.scss',
+  indigo: './calendar/themes/material/months-view.material.scss',
+})
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  @theme({
-    bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
-    material: './calendar/themes/material/months-view.material.scss',
-    fluent: './calendar/themes/fluent/calendar.fluent.scss',
-    indigo: './calendar/themes/material/months-view.material.scss',
-  })
-  protected theme!: DynamicTheme;
-
   private calendarModel = new Calendar();
   private monthFormatter: any;
 

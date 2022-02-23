@@ -5,6 +5,5 @@ export type ThemeOptions = {
 };
 
 export interface DynamicTheme {
-  styles: string;
   variant: IgcTheme;
 }

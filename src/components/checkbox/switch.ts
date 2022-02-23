@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { DynamicTheme, theme } from '../../theming';
+import { themes } from '../../theming';
 import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
@@ -24,15 +24,14 @@ let nextId = 0;
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
  */
+@themes({
+  material: './checkbox/themes/light/switch.material.scss',
+  bootstrap: './checkbox/themes/light/switch.bootstrap.scss',
+  fluent: './checkbox/themes/light/switch.fluent.scss',
+  indigo: './checkbox/themes/light/switch.indigo.scss',
+})
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
-  @theme({
-    material: './checkbox/themes/light/switch.material.scss',
-    bootstrap: './checkbox/themes/light/switch.bootstrap.scss',
-    fluent: './checkbox/themes/light/switch.fluent.scss',
-    indigo: './checkbox/themes/light/switch.indigo.scss',
-  })
-  public theme!: DynamicTheme;
 
   private inputId = `switch-${nextId++}`;
   private labelId = `switch-label-${this.inputId}`;

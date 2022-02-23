@@ -1,18 +1,17 @@
 import {
   adoptStyles,
+  LitElement,
   ReactiveController,
   ReactiveControllerHost,
   ReactiveElement,
 } from 'lit';
-import { DynamicTheme } from '.';
 import { CHANGE_THEME_EVENT } from './theming-event';
 import { IgcTheme, ThemeOptions } from './types';
 
-export class ThemingController implements DynamicTheme, ReactiveController {
+export class ThemingController implements ReactiveController {
   private options: ThemeOptions;
   private host: ReactiveControllerHost & ReactiveElement;
   public variant: IgcTheme = 'bootstrap';
-  public styles!: string;
 
   constructor(
     host: ReactiveControllerHost & ReactiveElement,
@@ -27,11 +26,11 @@ export class ThemingController implements DynamicTheme, ReactiveController {
   ) => {
     this.variant = event.detail.theme as IgcTheme;
     await this.adoptStyles();
-    this.host.requestUpdate();
   };
 
   public hostConnected() {
     window.addEventListener(CHANGE_THEME_EVENT, this.__themingEventHandler);
+    this.adoptStyles();
   }
 
   public hostDisconnected() {
@@ -43,7 +42,11 @@ export class ThemingController implements DynamicTheme, ReactiveController {
       (o) => o[0] === this.variant
     );
     const result = await import(styles[0][1]);
-    adoptStyles(this.host.shadowRoot!, [result.styles] ?? []);
+    const ctor = this.host.constructor as typeof LitElement;
+    adoptStyles(this.host.shadowRoot as ShadowRoot, [
+      ...ctor.elementStyles,
+      result.styles,
+    ]);
   }
 }
 

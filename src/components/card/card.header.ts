@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { DynamicTheme, theme } from '../../theming';
+import { themes } from '../../theming';
 
 /** A container for card's header
  * @element igc-card-header
@@ -11,14 +11,13 @@ import { DynamicTheme, theme } from '../../theming';
  *
  * @csspart header - The card header container
  */
+@themes({
+  material: './card/themes/light/card.header.material.scss',
+  bootstrap: './card/themes/light/card.header.bootstrap.scss',
+  fluent: './card/themes/light/card.header.material.scss',
+  indigo: './card/themes/light/card.header.indigo.scss',
+})
 export default class IgcCardHeaderComponent extends LitElement {
-  @theme({
-    material: './card/themes/light/card.header.material.scss',
-    bootstrap: './card/themes/light/card.header.bootstrap.scss',
-    fluent: './card/themes/light/card.header.material.scss',
-    indigo: './card/themes/light/card.header.indigo.scss',
-  })
-  protected theme!: DynamicTheme;
   public static readonly tagName = 'igc-card-header';
 
   protected override render() {

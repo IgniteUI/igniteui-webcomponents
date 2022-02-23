@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { DynamicTheme, theme } from '../../theming';
+import { themes } from '../../theming';
 import { blazorIndirectRender, watch } from '../common/decorators';
 import {
   IgcCalendarResourceStringEN,
@@ -56,6 +56,12 @@ import type IgcYearsViewComponent from './years-view/years-view';
  * @csspart days-view-container - The days view container.
  */
 @blazorIndirectRender
+@themes({
+  bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
+  material: './calendar/themes/material/calendar.material.scss',
+  fluent: './calendar/themes/fluent/calendar.fluent.scss',
+  indigo: './calendar/themes/material/calendar.material.scss',
+})
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
@@ -63,15 +69,6 @@ export default class IgcCalendarComponent extends SizableMixin(
   >(IgcCalendarBaseComponent)
 ) {
   public static readonly tagName = 'igc-calendar';
-
-  @theme({
-    bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
-    material: './calendar/themes/material/calendar.material.scss',
-    fluent: './calendar/themes/fluent/calendar.fluent.scss',
-    indigo: './calendar/themes/material/calendar.material.scss',
-  })
-  protected theme!: DynamicTheme;
-
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;

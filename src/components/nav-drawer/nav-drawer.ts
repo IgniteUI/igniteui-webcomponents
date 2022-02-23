@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { DynamicTheme, theme } from '../../theming';
+import { themes } from '../../theming';
 import { partNameMap } from '../common/util';
 
 /**
@@ -16,15 +16,14 @@ import { partNameMap } from '../common/util';
  * @csspart main - The main container.
  * @csspart mini - The mini container.
  */
+@themes({
+  material: './nav-drawer/styles/material/nav-drawer.material.scss',
+  bootstrap: './nav-drawer/styles/bootstrap/nav-drawer.bootstrap.scss',
+  indigo: './nav-drawer/styles/indigo/nav-drawer.indigo.scss',
+  fluent: './nav-drawer/styles/fluent/nav-drawer.fluent.scss',
+})
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
-  @theme({
-    material: './nav-drawer/styles/material/nav-drawer.material.scss',
-    bootstrap: './nav-drawer/styles/bootstrap/nav-drawer.bootstrap.scss',
-    indigo: './nav-drawer/styles/indigo/nav-drawer.indigo.scss',
-    fluent: './nav-drawer/styles/fluent/nav-drawer.fluent.scss',
-  })
-  protected theme!: DynamicTheme;
 
   /** The position of the drawer. */
   @property({ reflect: true })

@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { DynamicTheme, theme } from '../../theming';
+import { themes } from '../../theming';
 import { SizableMixin } from '../common/mixins/sizable';
 
 /**
@@ -9,15 +9,14 @@ import { SizableMixin } from '../common/mixins/sizable';
  *
  * @slot - Renders the list items and list headers inside default slot.
  */
+@themes({
+  material: './list/themes/light/list.material.scss',
+  bootstrap: './list/themes/light/list.bootstrap.scss',
+  fluent: './list/themes/light/list.fluent.scss',
+  indigo: './list/themes/light/list.indigo.scss',
+})
 export default class IgcListComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-list';
-  @theme({
-    material: './list/themes/light/list.material.scss',
-    bootstrap: './list/themes/light/list.bootstrap.scss',
-    fluent: './list/themes/light/list.fluent.scss',
-    indigo: './list/themes/light/list.indigo.scss',
-  })
-  protected theme!: DynamicTheme;
 
   constructor() {
     super();

@@ -2,7 +2,7 @@ import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { DynamicTheme, theme } from '../../theming';
+import { themes } from '../../theming';
 import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -29,18 +29,17 @@ export interface IgcRadioEventMap {
  * @csspart control - The radio control.
  * @csspart label - The radio control label.
  */
+@themes({
+  material: './radio/themes/light/radio.material.scss',
+  bootstrap: './radio/themes/light/radio.bootstrap.scss',
+  fluent: './radio/themes/light/radio.fluent.scss',
+  indigo: './radio/themes/light/radio.indigo.scss',
+})
 export default class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-radio';
-  @theme({
-    material: './radio/themes/light/radio.material.scss',
-    bootstrap: './radio/themes/light/radio.bootstrap.scss',
-    fluent: './radio/themes/light/radio.fluent.scss',
-    indigo: './radio/themes/light/radio.indigo.scss',
-  })
-  protected theme!: DynamicTheme;
 
   private inputId = `radio-${nextId++}`;
   private labelId = `radio-label-${this.inputId}`;

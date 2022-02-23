@@ -39,8 +39,38 @@ export function theme(options: ThemeOptions) {
   };
 }
 
+/**
+ * Class decorator to enable multiple theme support for a component.
+ * The component will re-render on theme changes.
+ *
+ * See also {@link updateWhenThemeChanges} for the same functionallity
+ * without the use of this decorator.
+ *
+ * Usage:
+ *  ```ts
+ *  import { LitElement, html } from 'lit';
+ *  import { themes } from 'igniteui-webcomponents/themes';
+ *
+ *  @themes({
+ *    material: './my-element/material.css',
+ *    bootstrap: './my-element/bootstrap.css',
+ *    fluent: './my-element/fluent.css',
+ *    indigo: './my-element/indigo.css',
+ *  })
+ *  class MyElement extends LitElement { }
+ *  ```
+ */
+export function themes(options: ThemeOptions) {
+  return (clazz: any) => {
+    clazz.addInitializer((instance: ReactiveElement) => {
+      updateWhenThemeChanges(instance, transformOptionPaths(options));
+    });
+    return clazz;
+  };
+}
+
 function transformOptionPaths(options: ThemeOptions): ThemeOptions {
-  const baseRoot = './components';
+  const baseRoot = 'components';
   const result = {};
 
   Object.entries(options).forEach(([key, value]) => {
