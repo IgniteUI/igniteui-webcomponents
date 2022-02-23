@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { css, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -33,6 +33,11 @@ let nextId = 0;
 })
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
+  protected static styles = css`
+    :host {
+      visibility: hidden;
+    }
+  `;
 
   private inputId = `checkbox-${nextId++}`;
   private labelId = `checkbox-label-${this.inputId}`;

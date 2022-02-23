@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -40,6 +40,11 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-radio';
+  protected static styles = css`
+    :host {
+      visibility: hidden;
+    }
+  `;
 
   private inputId = `radio-${nextId++}`;
   private labelId = `radio-label-${this.inputId}`;

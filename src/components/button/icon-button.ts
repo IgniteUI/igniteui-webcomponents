@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { DynamicTheme, theme } from '../../theming';
+import { themes } from '../../theming';
 import { alternateName, blazorInclude } from '../common/decorators';
 import '../icon/icon';
 import {
@@ -16,15 +16,14 @@ import { IgcButtonBaseComponent } from './button-base.js';
  * @csspart base - The wrapping element.
  * @csspart icon - The icon element.
  */
+@themes({
+  bootstrap: './button/themes/icon-button/light/icon-button.bootstrap.scss',
+  material: './button/themes/icon-button/light/icon-button.material.scss',
+  fluent: './button/themes/icon-button/light/icon-button.fluent.scss',
+  indigo: './button/themes/icon-button/light/icon-button.indigo.scss',
+})
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
-  @theme({
-    bootstrap: './button/themes/icon-button/light/icon-button.bootstrap.scss',
-    material: './button/themes/icon-button/light/icon-button.material.scss',
-    fluent: './button/themes/icon-button/light/icon-button.fluent.scss',
-    indigo: './button/themes/icon-button/light/icon-button.indigo.scss',
-  })
-  protected theme!: DynamicTheme;
 
   /** The name of the icon. */
   @alternateName('iconName')
