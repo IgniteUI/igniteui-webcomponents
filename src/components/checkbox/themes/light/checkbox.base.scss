@@ -28,7 +28,7 @@ $mark-length: 24;
         width: $size;
         height: $size;
         border: rem(2px) solid color(gray, 600);
-        border-radius: rem(2px);
+        border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1rem), 1rem);
         transition: all .15s ease-in;
     }
 }

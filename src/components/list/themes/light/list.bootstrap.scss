@@ -6,5 +6,5 @@ $separator-color: color(gray, 200) !default;
 :host {
     background: $list-bg;
     border: rem(1px) solid $separator-color;
-    border-radius: rem(4px);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 2rem), 2rem);
 }

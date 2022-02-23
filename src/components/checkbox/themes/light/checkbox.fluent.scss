@@ -58,7 +58,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
         transform: scale(.5);
         transition-duration: .1s;
         background: color(primary, 500);
-        border-radius: rem(2px);
+        border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1rem), 1rem);
         z-index: 1;
     }
 

@@ -42,7 +42,7 @@ label {
 
 [part~='thumb'] {
     position: relative;
-    border-radius: rem(10px);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 5rem), 5rem);
     animation-name: thumb-off;
     animation-duration: .2s;
     animation-fill-mode: none;

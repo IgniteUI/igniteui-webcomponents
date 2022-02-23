@@ -5,7 +5,7 @@ $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !defaul
 $active-background: var(--active-background, #{utils.color(primary, 700)}) !default;
 
 :host([size='small']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 1);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1rem), 1rem);
 
     --size: #{utils.rem(24px)};
 
@@ -13,7 +13,7 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
 }
 
 :host([size='medium']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 1);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1rem), 1rem);
 
     --size: #{utils.rem(32px)};
 
@@ -21,7 +21,7 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
 }
 
 :host([size='large']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 1);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1rem), 1rem);
 
     --size: #{utils.rem(38px)};
 
@@ -179,10 +179,10 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
 }
 
 :host([variant='fab']) [part='base'] {
-    border-radius: calc(#{var(--igc-border-radius)} * 7);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 7rem), 7rem);
 
     &::after {
-        border-radius: calc(#{var(--igc-border-radius)} * 6);
+        border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 6rem), 6rem);
     }
 }
 

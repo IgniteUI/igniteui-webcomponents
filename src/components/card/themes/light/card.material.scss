@@ -6,7 +6,7 @@
     flex-direction: column;
     border: rem(1px) solid color(gray, 400);
     overflow: hidden;
-    border-radius: rem(3px);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1.5rem), 1.5rem);
     background: color(surface, 500);
     font-family: var(--igc-font-family);
 }

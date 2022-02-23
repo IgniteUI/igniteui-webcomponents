@@ -30,7 +30,7 @@ slot {
 [part='track'] {
     position: relative;
     width: 100%;
-    border-radius: rem(32px);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 16rem), 16rem);
     overflow: hidden;
 }
 
@@ -151,7 +151,7 @@ slot {
     white-space: nowrap;
     margin-inline-start: -50%;
     padding: 0 rem(2px);
-    border-radius: rem(2px);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1rem), 1rem);
     color: contrast-color(gray, 700);
     background: color(gray, 700);
 

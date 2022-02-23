@@ -21,11 +21,11 @@
 }
 
 .rounded {
-    border-radius: calc(var(--igc-border-radius) * 4);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 4rem), 4rem);
 }
 
 .circle {
-    border-radius: calc(var(--igc-border-radius) * 22);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 22rem), 22rem);
 }
 
 img {

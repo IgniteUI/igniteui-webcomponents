@@ -13,7 +13,7 @@ $slot-spacing: var(--igc-spacing-large);
     align-items: center;
     justify-content: center;
     border: none;
-    border-radius: calc(var(--igc-border-radius) * 2);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 2rem), 2rem);
     user-select: none;
     outline-style: none;
     -webkit-tap-highlight-color: transparent;
@@ -133,7 +133,7 @@ span[part='suffix'] {
 }
 
 :host([variant='fab']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 12);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 12rem), 12rem);
 }
 
 :host([variant='fab'][size='large']) [part='base'] {

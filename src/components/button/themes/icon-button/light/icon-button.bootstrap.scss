@@ -1,7 +1,7 @@
 @use '../../../../../styles/utilities' as utils;
 
 button {
-    border-radius: utils.rem(4px);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 2rem), 2rem);
     transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
     color: #{utils.color(primary, 500)};
 

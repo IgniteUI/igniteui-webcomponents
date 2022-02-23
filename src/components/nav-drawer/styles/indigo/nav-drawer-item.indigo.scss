@@ -3,7 +3,7 @@
 :host {
     [part~='base'] {
         color: color(gray, 300, .8);
-        border-radius: rem(24px);
+        border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 12rem), 12rem);
         padding: rem(4px);
         margin: rem(15px) rem(8px) !important;
 

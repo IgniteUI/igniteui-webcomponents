@@ -6,7 +6,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 [part~='control'] {
     width: var(--size);
     height: rem(14px);
-    border-radius: rem(7px);
+    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 3.5rem), 3.5rem);
     background: color(gray, 600);
 }
 
@@ -15,7 +15,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
     background: color(gray, 200);
-    border-radius: rem(10px);
     box-shadow: var(--igc-elevation-2);
     margin-inline-start: var(--thumb-offset);
 
