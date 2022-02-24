@@ -1,0 +1,21 @@
+@use './chip.base.scss';
+@use '../../styles/utilities' as *;
+
+:host button {
+    background: color(gray, 300);
+    color: contrast-color(gray, 300);
+
+    &:hover {
+        background: color(gray, 400);
+        color: contrast-color(gray, 400);
+    }
+
+    &:focus {
+        background: color(gray, 500);
+        color: contrast-color(gray, 500);
+    }
+
+    &[disabled] {
+        background: color(gray, 200);
+    }
+}

@@ -9,6 +9,7 @@ import IgcCardContentComponent from '../../card/card.content';
 import IgcCardHeaderComponent from '../../card/card.header';
 import IgcCardMediaComponent from '../../card/card.media';
 import IgcCheckboxComponent from '../../checkbox/checkbox';
+import IgcChipComponent from '../../chip/chip';
 import IgcSwitchComponent from '../../checkbox/switch';
 import IgcFormComponent from '../../form/form';
 import IgcIconComponent from '../../icon/icon';
@@ -40,6 +41,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcCardMediaComponent,
   IgcCardComponent,
   IgcCheckboxComponent,
+  IgcChipComponent,
   IgcSwitchComponent,
   IgcFormComponent,
   IgcIconComponent,
