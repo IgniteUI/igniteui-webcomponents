@@ -14,8 +14,7 @@
     "components/calendar/months-view/months-view.js",
     "components/calendar/years-view/years-view.js",
     "components/icon/icon.js",
-    "*.css",
-    "*.css.js"
+    "*.css"
   ],
   "repository": {
     "type": "git",
