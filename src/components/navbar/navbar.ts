@@ -19,7 +19,7 @@ import { themes } from '../../theming';
 @themes({
   material: './navbar/themes/light/navbar.material.scss',
   bootstrap: './navbar/themes/light/navbar.bootstrap.scss',
-  fluent: './navbar/themes/light/navbar.fluent.scss',
+  fluent: './navbar/themes/light/navbar.material.scss',
   indigo: './navbar/themes/light/navbar.indigo.scss',
 })
 export default class IgcNavbarComponent extends LitElement {

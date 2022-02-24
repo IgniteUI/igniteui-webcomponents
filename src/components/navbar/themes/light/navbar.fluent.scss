@@ -1,6 +1,0 @@
-@use './navbar.material.scss';
-@use '../../../../styles/utilities' as *;
-
-igc-input::part(helper-text) {
-    margin-top: 0 !important;
-}
