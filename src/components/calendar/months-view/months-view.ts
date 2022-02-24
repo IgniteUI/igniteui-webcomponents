@@ -29,10 +29,10 @@ import { setDateSafe } from '../common/utils';
 @blazorIndirectRender
 @blazorSuppressComponent
 @themes({
-  bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
-  material: './calendar/themes/material/months-view.material.scss',
-  fluent: './calendar/themes/fluent/calendar.fluent.scss',
-  indigo: './calendar/themes/material/months-view.material.scss',
+  bootstrap: './calendar/themes/bootstrap/year-months-view.bootstrap.scss',
+  material: './calendar/themes/year-months-view.base.scss',
+  fluent: './calendar/themes/fluent/year-months-view.fluent.scss',
+  indigo: './calendar/themes/year-months-view.base.scss',
 })
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,

@@ -28,10 +28,10 @@ import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
 @blazorIndirectRender
 @blazorSuppressComponent
 @themes({
-  bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
-  material: './calendar/themes/material/years-view.material.scss',
-  fluent: './calendar/themes/fluent/calendar.fluent.scss',
-  indigo: './calendar/themes/material/years-view.material.scss',
+  bootstrap: './calendar/themes/bootstrap/year-month-view.bootstrap.scss',
+  material: './calendar/themes/year-months-view.base.scss',
+  fluent: './calendar/themes/fluent/year-month-view.fluent.scss',
+  indigo: './calendar/themes/year-months-view.base.scss',
 })
 export default class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,

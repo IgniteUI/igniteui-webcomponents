@@ -58,9 +58,9 @@ import type IgcYearsViewComponent from './years-view/years-view';
 @blazorIndirectRender
 @themes({
   bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
-  material: './calendar/themes/material/calendar.material.scss',
+  material: './calendar/themes/calendar.base.scss',
   fluent: './calendar/themes/fluent/calendar.fluent.scss',
-  indigo: './calendar/themes/material/calendar.material.scss',
+  indigo: './calendar/themes/calendar.base.scss',
 })
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<

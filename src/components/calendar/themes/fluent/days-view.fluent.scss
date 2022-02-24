@@ -1,0 +1,366 @@
+@use '../../../../styles/utilities/index' as *;
+@use '../days-view.base';
+@use '../shared-calendar' as *;
+@use 'sass:map';
+@use 'sass:math';
+@use 'vars' as *;
+
+[part~='date-inner'] {
+    &:focus,
+    &:hover {
+        background: $background-hover;
+        border-color: $background-hover;
+    }
+}
+
+[part~='date-inner'][part~='selected'][part~='single'] {
+    &:focus,
+    &:hover {
+        background: $background-hover;
+        border-color: $border-color;
+        color: $color-hover;
+    }
+}
+
+[part~='current'][part~='date-inner'][part~='current'],
+[part~='current'][part~='date-inner'],
+[part~='current'][part~='single'][part~='date-inner'] {
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+    color: $current-color;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: rem(1px);
+        inset-inline-start: rem(1px);
+        width: calc(100% - #{rem(2px)});
+        height: calc(100% - #{rem(2px)});
+        background: $current-background;
+        border-radius: rem(16px);
+        z-index: -1;
+    }
+
+    &:focus,
+    &:hover {
+        color: $current-color;
+
+        &::after {
+            background: $current-background;
+        }
+    }
+}
+
+[part~='selected'][part~='date-inner'][part~='single'] {
+    border-color: $border-color;
+    background: $selected-background;
+    color: $selected-color;
+    border-radius: 0;
+}
+
+[part~='date-inner'][part~='selected'][part~='current'][part~='single'] {
+    color: $current-color;
+}
+
+[part~='week-number-inner'] {
+    border-inline-end-color: $border-color;
+
+    &::after {
+        border-inline-end-color: $border-color;
+    }
+}
+
+[part='week-number-inner last'],
+[part='week-number-inner first'] {
+    border-radius: 0;
+}
+
+// SELECTED RANGE STYLES
+[part~='date-inner'][part~='selected'][part~='range'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='last'],
+[part~='date-inner'][part~='selected']:not([part~='range']) {
+    border-top-color: $border-color;
+    border-bottom-color: $border-color;
+    border-inline-start-color: $border-color;
+
+    &:hover,
+    &:focus {
+        border-color: $border-color;
+    }
+
+    &:hover {
+        background: $selected-background-hover;
+    }
+
+    &:focus {
+        background: $selected-background;
+    }
+}
+
+[part~='date-inner'][part~='selected'][part~='range'][part~='last'] {
+    border-inline-start-color: transparent;
+    border-inline-end: 0;
+}
+
+[part~='date-inner'][part~='selected'][part~='range'][part~='first'] {
+    border-inline-end-color: transparent;
+    border-inline-start: 0;
+}
+
+[part~='date-inner'][part~='selected'][part~='range'][part~='weekend'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='inactive'] {
+    &:hover,
+    &:focus {
+        color: $selected-color-hover;
+        background: $selected-background-hover;
+        border-color: $border-color;
+    }
+}
+
+[part~='date-inner'][part~='last'][part~='range'] {
+    border-color: transparent;
+}
+
+[part~='date-inner'][part~='selected'][part~='range'] {
+    border-top: 0;
+    border-bottom: 0;
+    color: $selected-color;
+
+    &:hover {
+        background: $selected-background-hover;
+        border-color: $border-color;
+    }
+
+    &:focus {
+        background: $selected-background;
+        border-color: $border-color;
+    }
+}
+
+[part~='date-inner'][part~='selected'][part~='range'][part~='preview'] {
+    &:focus {
+        background: $selected-background;
+        border-color: $selected-background;
+    }
+}
+
+[part~='date'][part~='selected'][part~='range'] {
+    background: $selected-background;
+    border-top-color: $border-color;
+    border-bottom-color: $border-color;
+}
+
+[part~='date'][part~='first'][part~='selected'][part~='range'],
+[part~='date'][part~='last'][part~='selected'][part~='range'] {
+    background: transparent;
+    border-color: transparent;
+
+    &::after {
+        background: $selected-background;
+        border-top-color: $border-color;
+        border-bottom-color: $border-color;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: -$border-width;
+        width: 50%;
+        height: 100%;
+        border: $border-width solid $border-color;
+        z-index: 3;
+        pointer-events: none;
+    }
+}
+
+[part~='date'][part~='first'][part~='selected'][part~='range'] {
+    &::before {
+        border-inline-end-color: transparent;
+    }
+}
+
+[part~='date'][part~='last'][part~='selected'][part~='range'] {
+    &::before {
+        border-inline-start-color: transparent;
+    }
+}
+
+// LARGE SIZE
+:host(igc-calendar[size='large']) {
+    igc-days-view::part(date first selected range) {
+        &::before {
+            margin: 0;
+            inset-inline-start: calc(50% - #{math.div($date-size-large, 2)});
+        }
+    }
+
+    igc-days-view::part(date last selected range) {
+        &::before {
+            inset-inline-end: calc(50% - #{math.div($date-size-large, 2)});
+        }
+    }
+}
+
+// MEDIUM SIZE
+:host(igc-calendar[size='medium']) {
+    igc-days-view::part(date first selected range) {
+        &::before {
+            inset-inline-start: calc(50% - #{math.div($date-size-medium, 2)});
+        }
+    }
+
+    igc-days-view::part(date last selected range) {
+        &::before {
+            inset-inline-end: calc(50% - #{math.div($date-size-medium, 2)});
+        }
+    }
+}
+
+// SMALL SIZE
+:host(igc-calendar[size='small']) {
+    igc-days-view::part(date first selected range) {
+        &::before {
+            inset-inline-start: calc(50% - #{math.div($date-size-small, 2)});
+        }
+    }
+
+    igc-days-view::part(date last selected range) {
+        &::before {
+            inset-inline-end: calc(50% - #{math.div($date-size-small, 2)});
+        }
+    }
+}
+
+[part~='date'][part~='first'][part~='last'][part~='selected'][part~='range'] {
+    &::before {
+        border-color: $selected-background;
+        border-inline-end-color: transparent;
+    }
+}
+
+[part~='date-inner'][part~='selected'][part~='current'][part~='range'],
+[part~='date-inner'][part~='first'][part~='last'][part~='selected'][part~='current'][part~='range'],
+[part~='date-inner'][part~='first'][part~='last'][part~='selected'][part~='current'],
+[part~='date-inner'][part~='first'][part~='selected'][part~='current'][part~='range'],
+[part~='date-inner'][part~='last'][part~='selected'][part~='current'][part~='range'] {
+    color: $current-color !important;
+
+    &:focus,
+    &:hover {
+        border-color: $border-color;
+    }
+}
+
+// PREVIEW STYLES
+[part~='date-inner'][part~='first'][part~='range'][part~='preview'],
+[part~='date-inner'][part~='first'][part~='selected'][part~='range'][part~='preview'] {
+    border-top-color: $selected-background;
+    border-bottom-color: $selected-background;
+    border-inline-start-color: $selected-background;
+    border-inline-end-color: transparent;
+    background: transparent;
+}
+
+[part~='date-inner'][part~='last'][part~='range'][part~='preview'],
+[part~='date-inner'][part~='last'][part~='selected'][part~='range'][part~='preview'] {
+    border-top-color: $selected-background;
+    border-bottom-color: $selected-background;
+    border-inline-end-color: $selected-background;
+    border-inline-start-color: transparent;
+    background: transparent;
+}
+
+[part~='date'][part~='range'][part~='preview'] {
+    border-top-style: solid;
+    border-bottom-style: solid;
+    border-top-color: $selected-background;
+    border-bottom-color: $selected-background;
+
+    &::after {
+        border-top-style: solid;
+        border-bottom-style: solid;
+        border-top-color: $selected-background;
+        border-bottom-color: $selected-background;
+        background: transparent;
+    }
+}
+
+[part~='date'][part~='range'][part~='preview'][part~='first'],
+[part~='date'][part~='range'][part~='preview'][part~='last'] {
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+
+    &::after {
+        border-top-style: solid;
+        border-bottom-style: solid;
+        border-top-color: $selected-background;
+        border-bottom-color: $selected-background;
+    }
+}
+
+[part~='date'][part~='first'][part~='selected'][part~='range'][part~='preview'],
+[part~='date'][part~='last'][part~='selected'][part~='range'][part~='preview'] {
+    background: transparent;
+
+    &::before {
+        border-block-start-color: $selected-background;
+        border-block-end-color: $selected-background;
+    }
+
+    &::after {
+        border-style: solid;
+        border-top-color: $selected-background;
+        border-bottom-color: $selected-background;
+        background: transparent;
+    }
+}
+
+[part~='date'][part~='first'][part~='selected'][part~='range'][part~='preview'] {
+    &::before {
+        border-inline-start-color: $selected-background;
+        border-inline-end-color: transparent;
+    }
+
+    &::after {
+        border-inline-end: 0;
+    }
+}
+
+[part~='date'][part~='last'][part~='selected'][part~='range'][part~='preview'] {
+    &::before {
+        border-inline-end-color: $selected-background;
+        border-inline-start-color: transparent;
+    }
+
+    &::after {
+        border-inline-start: 0;
+    }
+}
+
+[part~='date-inner'][part~='first'][part~='last'][part~='selected'] {
+    border-color: $border-color;
+}
+
+[part~='date-inner'][part~='first'][part~='last'][part~='selected'],
+[part~='date-inner'][part~='first'][part~='selected'],
+[part~='date-inner'][part~='last'][part~='selected'] {
+    background: $selected-background !important;
+    color: $selected-color !important;
+
+    &:focus {
+        background: $selected-background !important;
+        color: $selected-color !important;
+    }
+}
+
+[part~='date-inner'][part~='first'][part~='last'][part~='selected'][part~='current'] {
+    color: $current-color !important;
+}
+
+[part~='date-inner'][part~='first'][part~='selected'][part~='current'][part~='range'][part~='preview'],
+[part~='date-inner'][part~='last'][part~='selected'][part~='current'][part~='range'][part~='preview'] {
+    &:focus {
+        border-color: transparent;
+    }
+}
