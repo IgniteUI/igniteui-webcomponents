@@ -9,11 +9,16 @@
 
     --stroke-thicknes: 4px;
     --size: #{rem(32px)};
+    --percentage: 0;
+    --radius: calc(var(--size) / 2 - var(--stroke-thicknes) * 0.5);
+    --circumference: calc(var(--radius) * 2 * 3.14159);
 }
 
 [part~='custom_label'] {
-    @extend %costom-label !optional;
-
+    @extend %custom-label !optional;
+    font-size: calc(100% - var(--stroke-thicknes) - 2px);
+    font-weight: 600;
+    fill: $text-color;
     position: absolute;
     transform: translate(-50%, -50%);
     top: 50%;
@@ -33,10 +38,8 @@
 }
 
 [part~='svg'] {
-    width: 100%;
-    height: 100%;
-    min-width: inherit;
-    min-height: inherit;
+    width: var(--size);
+    height: var(--size);
 }
 
 [part~='inner'] {
@@ -44,8 +47,7 @@
 }
 
 [part~='outer'] {
-    stroke-dashoffset: 289;
-    stroke-dasharray: 289;
+    stroke-dasharray: var(--circumference) var(--circumference);
     transform-origin: 50% 50%;
     transform: rotate(-90deg);
 }
@@ -54,9 +56,9 @@
 [part~='outer'] {
     fill: transparent;
     stroke-width: var(--stroke-thicknes);
-    cx: 50;
-    cy: 50;
-    r: calc(49px - var(--stroke-thicknes) / 2);
+    cx: calc(var(--size) / 2);
+    cy: calc(var(--size) / 2);
+    r: var(--radius);
 }
 
 [part~='gradient_start'],
@@ -84,15 +86,7 @@
     stop-color: $success-color;
 }
 
-[part~='text'] {
-    font-size: rem(32px);
-    font-weight: 600;
-    fill: $text-color;
-}
-
 [part~='indeterminate'] [part~='outer'] {
-    stroke-dasharray: 289;
-    /* stylelint-disable */
-    animation: 1.5s cubic-bezier(0, .085, .68, .53) 0s infinite $animation-direction none running indeterminate-accordion;
-    /* stylelint-enable */
+    stroke-dashoffset: calc(var(--circumference) * 2);
+    animation: indeterminate-accordion 1.5s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
 }

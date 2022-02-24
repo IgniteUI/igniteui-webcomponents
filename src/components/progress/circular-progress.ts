@@ -1,13 +1,11 @@
-import { html, nothing, svg } from 'lit';
+import { html, svg } from 'lit';
 import { query, queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { asPercent, partNameMap } from '../common/util';
 import { IgcProgressBaseComponent } from './base';
 import { styles } from './themes/circular/circular.progress.material.css';
-
-const R = 46;
-const C = 2 * Math.PI * R;
+import IgcCircularGradientComponent from './circular-gradient';
 
 /**
  * A circular progress indicator used to express unspecified wait time or display
@@ -25,7 +23,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
   public static override styles = styles;
 
   @queryAssignedElements({ slot: 'gradient' })
-  protected gradientElements!: Array<HTMLElement>;
+  protected gradientElements!: Array<IgcCircularGradientComponent>;
 
   @query('#circle', true)
   protected svgCircle!: SVGCircleElement;
@@ -46,46 +44,50 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     };
   }
 
-  protected override firstUpdated(): void {
-    super.firstUpdated();
-    if (!this.gradientElements.length) {
-      return;
-    }
-    const myNode = this.shadowRoot?.getElementById(this.gradientId);
-    if (!myNode) {
-      return;
-    }
-    myNode.innerHTML = this.gradientElements[0].innerHTML;
+  private get circumference(): number {
+    const radiusInPixels = getComputedStyle(this.svgCircle).getPropertyValue(
+      'r'
+    );
+    const radius = Number(
+      radiusInPixels.substring(0, radiusInPixels.length - 2)
+    );
+    return radius * 2 * Math.PI;
+  }
+
+  private gradientChange() {
+    this.requestUpdate();
   }
 
   protected getOffset(val: number) {
-    return this.isLTR ? C - (val * C) / 100 : C + (val * C) / 100;
+    return this.isLTR
+      ? this.circumference -
+          (asPercent(val, this.max) / 100) * this.circumference
+      : this.circumference +
+          (asPercent(val, this.max) / 100) * this.circumference;
   }
 
-  protected override runAnimation(start: number, end: number): void {
+  protected override runAnimation(
+    start: number,
+    end: number,
+    indeterminateChange = false
+  ): void {
     this.animation?.finish();
 
     const opacity = asPercent(end, this.max) + 0.2;
-    const offset0 = this.getOffset(asPercent(start, this.max));
-    const offset1 = this.getOffset(asPercent(end, this.max));
+    const offset0 = this.getOffset(start);
+    const offset1 = this.getOffset(end);
 
     const frames = [
       { strokeDashoffset: offset0, strokeOpacity: 1 },
       { strokeDashoffset: offset1, strokeOpacity: opacity },
     ];
 
-    this.animation = this.svgCircle.animate(frames, this.animationOptions);
-    this.animateLabelTo(start, end);
-  }
-
-  protected renderLabel() {
-    return svg`
-      <text text-anchor="middle" x="50" y="60">
-          <tspan part="text">
-            ${this.renderLabelText()}
-          </tspan>
-      </text>
-    `;
+    const animOptions = {
+      ...this.animationOptions,
+      duration: indeterminateChange ? 0 : this.animationDuration,
+    };
+    this.animation = this.svgCircle.animate(frames, animOptions);
+    this.animateLabelTo(start, end, animOptions.duration);
   }
 
   protected renderSvg() {
@@ -93,16 +95,19 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       <circle part="inner"/>
       <circle id="circle" style="${styleMap(this.stroke)}" part="outer"/>
 
-      ${when(
-        this.indeterminate || this.hideLabel || this.slotElements.length,
-        () => nothing,
-        () => this.renderLabel()
-      )}
-
       <defs>
           <linearGradient id=${this.gradientId} gradientTransform="rotate(90)">
+          ${when(
+            this.gradientElements.length,
+            () =>
+              this.gradientElements.map((el: IgcCircularGradientComponent) => {
+                return svg`<stop offset=${el.offset} stop-color=${el.color} opacity=${el.opacity}/>`;
+              }),
+            () => svg`
               <stop offset="0%" part="gradient_start" />
               <stop offset="100%" part="gradient_end" />
+          `
+          )}
           </linearGradient>
       </defs>
     `;
@@ -113,20 +118,15 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       <div part="wrapper">
         <svg
           part="svg ${partNameMap(this.svgParts)}"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          version="1.1"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="xMidYMid meet"
           aria-valuemin="0"
           aria-valuemax=${this.max}
           aria-valuenow=${this.value}
         >
           ${this.renderSvg()}
         </svg>
-        ${this.renderDefaultSlot()}
-        <slot name="gradient"></slot>
       </div>
+      <slot name="gradient" @slotchange=${this.gradientChange}></slot>
+      ${this.renderDefaultSlot()}
     `;
   }
 

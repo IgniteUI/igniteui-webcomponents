@@ -50,7 +50,11 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     };
   }
 
-  protected override runAnimation(start: number, end: number) {
+  protected override runAnimation(
+    start: number,
+    end: number,
+    indeterminateChange = false
+  ) {
     this.animation?.finish();
 
     const frames = [
@@ -58,16 +62,17 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
       { width: `${asPercent(end, this.max)}%` },
     ];
 
-    this.animation = this.progressIndicator.animate(
-      frames,
-      this.animationOptions
-    );
-    this.animateLabelTo(start, end);
+    const animOptions = {
+      ...this.animationOptions,
+      duration: indeterminateChange ? 0 : this.animationDuration,
+    };
+    this.animation = this.progressIndicator.animate(frames, animOptions);
+    this.animateLabelTo(start, end, animOptions.duration);
   }
 
   protected renderLabel() {
     return html`${when(
-      this.hideLabel || this.indeterminate || this.slotElements.length,
+      this.hideLabel || this.indeterminate || this.assignedElements.length,
       () => nothing,
       () => html`<span part="value ${this.labelAlign}">
         ${this.renderLabelText()}
@@ -87,7 +92,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
         >
           <div part="${partNameMap(this.wrapperParts)}"></div>
         </div>
-        ${this.renderLabel()} ${this.renderDefaultSlot()}
+        ${this.renderDefaultSlot()}
       </div>
     `;
   }

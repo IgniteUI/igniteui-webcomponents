@@ -29,6 +29,7 @@ import IgcRangeSliderComponent from '../../slider/range-slider';
 import IgcSliderComponent from '../../slider/slider';
 import IgcSliderLabelComponent from '../../slider/slider-label';
 import { defineComponents } from './defineComponents';
+import IgcCircularGradientComponent from '../../progress/circular-gradient';
 
 const allComponents: CustomElementConstructor[] = [
   IgcAvatarComponent,
@@ -61,6 +62,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcRangeSliderComponent,
   IgcCircularProgressComponent,
   IgcLinearProgressComponent,
+  IgcCircularGradientComponent,
 ];
 
 export const defineAllComponents = () => {

@@ -1,5 +1,6 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property, queryAssignedElements, state } from 'lit/decorators.js';
+import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators';
 import { asPercent, clamp } from '../common/util';
 
@@ -7,7 +8,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   protected animation!: Animation;
 
   @queryAssignedElements()
-  protected slotElements!: Array<HTMLElement>;
+  protected assignedElements!: Array<HTMLElement>;
 
   @state()
   protected percentage = 0;
@@ -54,36 +55,57 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @property({ attribute: 'label-format' })
   public labelFormat!: string;
 
-  @watch('indeterminate')
+  @watch('indeterminate', { waitUntilFirstUpdate: true })
   protected indeterminateChange() {
-    this.indeterminate ? this.animation?.cancel() : this.animation?.finish();
+    if (!this.indeterminate) {
+      this.runAnimation(0, this.value, true);
+    } else {
+      setTimeout(() => {
+        this.animation?.finish();
+        setTimeout(() => {
+          this.animation?.cancel();
+        }, 0);
+      }, 0);
+    }
   }
 
   @watch('max', { waitUntilFirstUpdate: true })
   protected maxChange() {
     this.max = Math.max(0, this.max);
-    this.value > this.max
-      ? (this.value = this.max)
-      : this.runAnimation(0, this.value);
+    if (this.value > this.max) {
+      this.value = this.max;
+    } else {
+      if (!this.indeterminate) {
+        this.runAnimation(0, this.value);
+      }
+    }
   }
 
   @watch('value', { waitUntilFirstUpdate: true })
   protected valueChange(oldVal: number) {
     this.value = clamp(this.value, 0, this.max);
-    this.runAnimation(oldVal, this.value);
+    if (!this.indeterminate) {
+      this.runAnimation(oldVal, this.value);
+    }
   }
 
   protected override firstUpdated() {
-    this.runAnimation(0, this.value);
+    if (!this.indeterminate) {
+      this.runAnimation(0, this.value);
+    }
   }
 
-  protected animateLabelTo(start: number, end: number) {
+  protected animateLabelTo(
+    start: number,
+    end: number,
+    animationDuration: number
+  ) {
     let t0: number;
 
     const tick = (t1: number) => {
       t0 = t0 ?? t1;
 
-      const progress = Math.min((t1 - t0) / (this.animationDuration || 1), 1);
+      const progress = Math.min((t1 - t0) / (animationDuration || 1), 1);
       this.percentage = Math.floor(
         asPercent(Math.floor(progress * (end - start) + start), this.max)
       );
@@ -102,10 +124,13 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   protected renderDefaultSlot() {
-    return html`<slot
-      part="custom_label"
-      @slotchange=${this.slotChanges}
-    ></slot>`;
+    return html`<slot part="custom_label" @slotchange=${this.slotChanges}>
+      ${when(
+        this.indeterminate || this.hideLabel || this.assignedElements.length,
+        () => nothing,
+        () => html`<span part="value">${this.renderLabelText()}</span>`
+      )}
+    </slot>`;
   }
 
   protected renderLabelText() {
@@ -116,5 +141,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     this.requestUpdate();
   }
 
-  protected abstract runAnimation(start: number, end: number): void;
+  protected abstract runAnimation(
+    start: number,
+    end: number,
+    indeterminateChange?: boolean
+  ): void;
 }
