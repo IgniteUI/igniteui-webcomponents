@@ -23,6 +23,7 @@ export { defineAllComponents } from './components/common/definitions/defineAllCo
 export { defineComponents } from './components/common/definitions/defineComponents';
 export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources';
 export { SizableMixin } from './components/common/mixins/sizable';
+export { default as IgcChipComponent } from './components/chip/chip';
 export { default as IgcFormComponent } from './components/form/form';
 export { default as IgcIconComponent } from './components/icon/icon';
 // utility stuff

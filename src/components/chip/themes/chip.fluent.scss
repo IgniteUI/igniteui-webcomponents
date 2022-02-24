@@ -1,0 +1,21 @@
+@use './chip.base.scss';
+@use '../../styles/utilities' as *;
+
+:host button {
+    background: color(gray, 200);
+    color: contrast-color(gray, 200);
+
+    &:focus {
+        background: color(primary, 500);
+        color: contrast-color(primary, 700);
+    }
+
+    &[disabled] {
+        background: color(gray, 100);
+    }
+}
+
+:host([selected]) button:not([disabled]) {
+    background: color(primary, 500);
+    color: contrast-color(primary, 700);
+}
