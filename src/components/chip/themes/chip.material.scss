@@ -1,5 +1,5 @@
 @use './chip.base.scss';
-@use '../../styles/utilities' as *;
+@use '../../../styles/utilities' as *;
 
 :host button {
     background: color(gray, 300);
