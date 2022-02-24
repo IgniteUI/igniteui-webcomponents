@@ -33,12 +33,12 @@ $animation-direction-rtl: reverse;
 
 @keyframes indeterminate-accordion {
     from {
-        stroke-dashoffset: 578;
-        stroke-dasharray: 259;
+        stroke-dashoffset: calc(var(--circumference) * 2);
+        stroke-dasharray: calc(var(--circumference) * 9 / 10);
     }
 
     to {
-        stroke-dashoffset: 120;
+        stroke-dashoffset: calc(var(--circumference) * 2 / 5);
     }
 }
 
@@ -70,7 +70,7 @@ $animation-direction-rtl: reverse;
     color: $text-color;
 }
 
-%costom-label {
+%custom-label {
     display: flex;
     align-items: center;
     color: inherit;
