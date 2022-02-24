@@ -13,6 +13,8 @@
 @use '../../../components/list/list.indigo' as list;
 @use '../../../components/input/input.indigo' as input;
 @use '../../../components/slider/slider.indigo' as slider;
+@use '../../../components/progress/themes/linear/linear.progress.indigo' as linear-progress;
+@use '../../../components/progress/themes/circular/circular.progress.indigo' as circular-progress;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -39,3 +41,5 @@ $palette: utils.palette(
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();
+@include linear-progress.theme();
+@include circular-progress.theme();

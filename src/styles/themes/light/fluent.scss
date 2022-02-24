@@ -11,6 +11,8 @@
 @use '../../../components/input/input.fluent' as input;
 @use '../../../components/navbar/navbar.fluent' as navbar;
 @use '../../../components/slider/slider.fluent' as slider;
+@use '../../../components/progress/themes/linear/linear.progress.fluent' as linear-progress;
+@use '../../../components/progress/themes/circular/circular.progress.fluent' as circular-progress;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -32,3 +34,5 @@ $palette: utils.palette(
 @include icon-button.theme();
 @include navbar.theme();
 @include slider.theme();
+@include linear-progress.theme();
+@include circular-progress.theme();
