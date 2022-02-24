@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { themes } from '../../../theming';
+import { styles } from '../themes/year-month-view.base.css';
 import {
   blazorIndirectRender,
   blazorSuppressComponent,
@@ -29,14 +30,14 @@ import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
 @blazorSuppressComponent
 @themes({
   bootstrap: './calendar/themes/bootstrap/year-month-view.bootstrap.scss',
-  material: './calendar/themes/year-months-view.base.scss',
   fluent: './calendar/themes/fluent/year-month-view.fluent.scss',
-  indigo: './calendar/themes/year-months-view.base.scss',
 })
 export default class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  public static styles = styles;
+
   private years!: Date[][];
 
   @query('[tabindex="0"]')

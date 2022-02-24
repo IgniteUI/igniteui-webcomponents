@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { themes } from '../../../theming';
+import { styles } from '../themes/year-month-view.base.css';
 import {
   blazorIndirectRender,
   blazorSuppressComponent,
@@ -30,14 +31,13 @@ import { setDateSafe } from '../common/utils';
 @blazorSuppressComponent
 @themes({
   bootstrap: './calendar/themes/bootstrap/year-months-view.bootstrap.scss',
-  material: './calendar/themes/year-months-view.base.scss',
   fluent: './calendar/themes/fluent/year-months-view.fluent.scss',
-  indigo: './calendar/themes/year-months-view.base.scss',
 })
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  public static styles = styles;
   private calendarModel = new Calendar();
   private monthFormatter: any;
 

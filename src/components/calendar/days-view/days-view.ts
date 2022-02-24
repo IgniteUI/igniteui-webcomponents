@@ -1,6 +1,7 @@
 import { html } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { themes } from '../../../theming';
+import { styles } from '../themes/days-view.base.css';
 import {
   blazorIndirectRender,
   blazorSuppressComponent,
@@ -49,14 +50,13 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
 @blazorIndirectRender
 @themes({
   bootstrap: './calendar/themes/bootstrap/days-view.bootstrap.scss',
-  material: './calendar/themes/days-view.base.scss',
   fluent: './calendar/themes/fluent/days-view.fluent.scss',
-  indigo: './calendar/themes/days-view.base.scss',
 })
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
+  public static styles = styles;
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];
 

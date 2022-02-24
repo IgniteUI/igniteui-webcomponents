@@ -1,7 +1,6 @@
 @use '../../../../styles/utilities/index' as *;
-@use 'vars' as *;
-@use '../calendar.base';
 @use '../shared-calendar' as *;
+@use 'vars' as *;
 
 :host(igc-calendar) {
     border: rem(1px) solid $border-color;
@@ -15,4 +14,19 @@
     igc-years-view::part(year-inner) {
         border-radius: $border-radius;
     }
+}
+
+[part~='navigation-button'] {
+    color: color(primary, 500);
+
+    &:hover,
+    &:focus {
+        color: color(primary, 600);
+    }
+}
+
+[part~='navigation'],
+[part~='header'] {
+    background: $header-background;
+    color: $header-color;
 }

@@ -1,7 +1,7 @@
 @use '../../../styles/utilities/index' as *;
 @use 'sass:math';
 
-[part='month-view'],
+[part='months-view'],
 [part='years-view'] {
     display: flex;
     flex-direction: column;
@@ -13,7 +13,7 @@
     gap: rem(4px);
 }
 
-[part='month-row'],
+[part='months-row'],
 [part='years-row'] {
     display: flex;
 }

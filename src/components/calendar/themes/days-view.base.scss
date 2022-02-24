@@ -8,7 +8,7 @@ $week-number-radius: rem(4px);
 $row-gap: rem(6px);
 $border-radius: rem(4px);
 
-[part='days-view'] {
+:host([part='days-view']) {
     display: flex;
     flex-direction: column;
     min-width: rem(290px);

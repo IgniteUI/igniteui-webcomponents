@@ -1,6 +1,5 @@
-@use '../../../../styles/utilities/index' as *;
-@use '../year-month-view.base';
 @use 'sass:math';
+@use '../../../../styles/utilities/index' as *;
 @use 'vars' as *;
 
 [part~='month-view'],
