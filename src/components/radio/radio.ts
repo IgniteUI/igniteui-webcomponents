@@ -1,4 +1,4 @@
-import { css, html, LitElement } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
@@ -7,6 +7,11 @@ import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
+import { styles } from './themes/light/radio.base.css';
+import { styles as bootstrap } from './themes/light/radio.bootstrap.css';
+import { styles as fluent } from './themes/light/radio.fluent.css';
+import { styles as indigo } from './themes/light/radio.indigo.css';
+import { styles as material } from './themes/light/radio.material.css';
 
 let nextId = 0;
 
@@ -29,22 +34,13 @@ export interface IgcRadioEventMap {
  * @csspart control - The radio control.
  * @csspart label - The radio control label.
  */
-@themes({
-  material: './radio/themes/light/radio.material.scss',
-  bootstrap: './radio/themes/light/radio.bootstrap.scss',
-  fluent: './radio/themes/light/radio.fluent.scss',
-  indigo: './radio/themes/light/radio.indigo.scss',
-})
+@themes({ material, bootstrap, fluent, indigo })
 export default class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-radio';
-  protected static styles = css`
-    :host {
-      visibility: hidden;
-    }
-  `;
+  protected static styles = styles;
 
   private inputId = `radio-${nextId++}`;
   private labelId = `radio-label-${this.inputId}`;

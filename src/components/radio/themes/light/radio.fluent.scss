@@ -1,5 +1,4 @@
 @use '../../../../styles/utilities' as utils;
-@use './radio.base.scss';
 
 $hover-color: utils.color(gray, 700) !default;
 $checked-hover-color: utils.color(primary, 900) !default;

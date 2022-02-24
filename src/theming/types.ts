@@ -1,13 +1,27 @@
-export type IgcTheme = 'material' | 'bootstrap' | 'indigo' | 'fluent';
+import { CSSResult } from 'lit';
 
-export type ThemeOptions = {
-  [K in IgcTheme]?: string;
+export type Theme = 'material' | 'bootstrap' | 'indigo' | 'fluent';
+
+export type Themes = {
+  [K in Theme]?: CSSResult;
 };
 
-export interface ReactiveThemeController {
-  theme: IgcTheme;
+/**
+ * A controller responsible for adopting various comopnent themes;
+ * See also {@link updateWhenThemeChanges}.
+ */
+export interface ThemeController {
+  /**
+   * The name of the currently adopted theme. See {@link Theme}.
+   */
+  theme: Theme;
 }
 
 export interface ReactiveTheme {
-  onControllerAttached(controller: ReactiveThemeController): void;
+  /**
+   *  Provides the attached ThemeController to the component instance.
+   *  Can be used to get the currently adopted theme name.
+   *  See also {@link ThemeController}
+   */
+  themeAdopted(controller: ThemeController): void;
 }

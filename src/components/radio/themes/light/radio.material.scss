@@ -1,6 +1,4 @@
-@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use './radio.base.scss';
 
 [part~='base'] {
     &:hover [part='control'] {

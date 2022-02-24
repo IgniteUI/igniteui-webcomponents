@@ -2,6 +2,8 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming';
 import { partNameMap } from '../common/util';
+import { styles as indigo } from './styles/indigo/nav-drawer.indigo.css';
+import { styles } from './styles/nav-drawer.base.css';
 
 /**
  * Represents a side navigation container that provides
@@ -16,14 +18,10 @@ import { partNameMap } from '../common/util';
  * @csspart main - The main container.
  * @csspart mini - The mini container.
  */
-@themes({
-  material: './nav-drawer/styles/material/nav-drawer.material.scss',
-  bootstrap: './nav-drawer/styles/bootstrap/nav-drawer.bootstrap.scss',
-  indigo: './nav-drawer/styles/indigo/nav-drawer.indigo.scss',
-  fluent: './nav-drawer/styles/fluent/nav-drawer.fluent.scss',
-})
+@themes({ indigo })
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
+  public static override styles = styles;
 
   /** The position of the drawer. */
   @property({ reflect: true })

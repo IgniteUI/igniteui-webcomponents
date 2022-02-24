@@ -1,5 +1,8 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming';
+import { styles as bootstrap } from './themes/light/card.header.bootstrap.css';
+import { styles as indigo } from './themes/light/card.header.indigo.css';
+import { styles } from './themes/light/card.header.material.css';
 
 /** A container for card's header
  * @element igc-card-header
@@ -12,13 +15,12 @@ import { themes } from '../../theming';
  * @csspart header - The card header container
  */
 @themes({
-  material: './card/themes/light/card.header.material.scss',
-  bootstrap: './card/themes/light/card.header.bootstrap.scss',
-  fluent: './card/themes/light/card.header.material.scss',
-  indigo: './card/themes/light/card.header.indigo.scss',
+  bootstrap,
+  indigo,
 })
 export default class IgcCardHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-card-header';
+  public static override styles = styles;
 
   protected override render() {
     return html`

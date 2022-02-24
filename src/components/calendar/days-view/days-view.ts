@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { themes } from '../../../theming';
-import { styles } from '../themes/days-view.base.css';
 import {
   blazorIndirectRender,
   blazorSuppressComponent,
@@ -25,6 +24,9 @@ import {
   TimeDeltaInterval,
 } from '../common/calendar.model';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils';
+import { styles as bootstrap } from '../themes/bootstrap/days-view.bootstrap.css';
+import { styles } from '../themes/days-view.base.css';
+import { styles as fluent } from '../themes/fluent/days-view.fluent.css';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
@@ -49,8 +51,8 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
 @blazorSuppressComponent
 @blazorIndirectRender
 @themes({
-  bootstrap: './calendar/themes/bootstrap/days-view.bootstrap.scss',
-  fluent: './calendar/themes/fluent/days-view.fluent.scss',
+  bootstrap,
+  fluent,
 })
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,

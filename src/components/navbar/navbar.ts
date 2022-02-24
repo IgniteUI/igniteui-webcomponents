@@ -1,5 +1,9 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming';
+import { styles as bootstrap } from './navbar.bootstrap.css';
+import { styles as fluent } from './navbar.fluent.css';
+import { styles as indigo } from './navbar.indigo.css';
+import { styles as material } from './navbar.material.css';
 
 /**
  * A navigation bar component is used to facilitate navigation through
@@ -16,12 +20,7 @@ import { themes } from '../../theming';
  * @csspart middle - The navigation bar title container.
  * @csspart end - The right aligned action icons container.
  */
-@themes({
-  material: './navbar/navbar.material.scss',
-  bootstrap: './navbar/navbar.bootstrap.scss',
-  fluent: './navbar/navbar.fluent.scss',
-  indigo: './navbar/navbar.indigo.scss',
-})
+@themes({ material, bootstrap, fluent, indigo })
 export default class IgcNavbarComponent extends LitElement {
   public static readonly tagName = 'igc-navbar';
 

@@ -7,7 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { ReactiveTheme, ReactiveThemeController, themes } from '../../theming';
+import { ReactiveTheme, ThemeController, themes } from '../../theming';
 import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -70,7 +70,7 @@ export default class IgcInputComponent
   @state()
   private _suffixLength!: number;
 
-  private themeController!: ReactiveThemeController;
+  private themeController!: ThemeController;
 
   @query('input', true)
   private input!: HTMLInputElement;
@@ -193,7 +193,7 @@ export default class IgcInputComponent
     });
   }
 
-  public onControllerAttached(controller: ReactiveThemeController) {
+  public themeAdopted(controller: ThemeController) {
     this.themeController = controller;
   }
 

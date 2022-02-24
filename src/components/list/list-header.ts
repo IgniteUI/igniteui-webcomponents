@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { styles } from './themes/light/list-header.material.css';
+import { styles } from './themes/light/list-header.base.css';
 
 /**
  * Header list item.

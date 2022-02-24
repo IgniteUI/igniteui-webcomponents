@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './avatar.material.css';
+import { styles } from './avatar.base.css';
 
 /**
  * An avatar component is used as a representation of a user identity

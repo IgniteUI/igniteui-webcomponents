@@ -1,7 +1,7 @@
 import { ChangeThemeEventDetail, CHANGE_THEME_EVENT } from './theming-event';
-import { IgcTheme } from './types';
+import { Theme } from './types';
 
-let theme: IgcTheme;
+let theme: Theme = 'bootstrap';
 
 /**
  * Dispatch an "igc-change-theme" event to `window` with the given detail.
@@ -10,15 +10,15 @@ function dispatchThemingEvent(detail: ChangeThemeEventDetail) {
   window.dispatchEvent(new CustomEvent(CHANGE_THEME_EVENT, { detail }));
 }
 
-export const getTheme: () => string = () => {
+export const getTheme: () => Theme = () => {
   return theme;
 };
 
-export const setTheme = (value: IgcTheme) => {
+export const setTheme = (value: Theme) => {
   theme = value;
 };
 
-export const configureTheme = (theme: IgcTheme) => {
+export const configureTheme = (theme: Theme) => {
   setTheme(theme);
   dispatchThemingEvent({ theme });
 };

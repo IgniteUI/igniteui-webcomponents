@@ -3,7 +3,6 @@ import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming';
 import { blazorIndirectRender, watch } from '../common/decorators';
-import { styles } from './themes/calendar.base.css';
 import {
   IgcCalendarResourceStringEN,
   IgcCalendarResourceStrings,
@@ -25,6 +24,9 @@ import './days-view/days-view';
 import type IgcDaysViewComponent from './days-view/days-view';
 import './months-view/months-view';
 import type IgcMonthsViewComponent from './months-view/months-view';
+import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css';
+import { styles } from './themes/calendar.base.css';
+import { styles as fluent } from './themes/fluent/calendar.fluent.css';
 import './years-view/years-view';
 import type IgcYearsViewComponent from './years-view/years-view';
 
@@ -58,8 +60,8 @@ import type IgcYearsViewComponent from './years-view/years-view';
  */
 @blazorIndirectRender
 @themes({
-  bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
-  fluent: './calendar/themes/fluent/calendar.fluent.scss',
+  bootstrap,
+  fluent,
 })
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
