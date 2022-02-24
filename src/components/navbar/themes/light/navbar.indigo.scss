@@ -1,0 +1,10 @@
+@use './navbar.material.scss';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    box-shadow: none;
+}
+
+igc-input::part(helper-text) {
+    margin-top: 0 !important;
+}

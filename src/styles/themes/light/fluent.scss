@@ -1,7 +1,6 @@
 @use '../../utilities' as utils;
 @use '../base/fluent' as base;
 @use '../../../components/input/input.fluent' as input;
-@use '../../../components/navbar/navbar.fluent' as navbar;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -13,4 +12,3 @@ $palette: utils.palette(
 
 @include base.root-styles($palette);
 @include input.theme();
-@include navbar.theme();

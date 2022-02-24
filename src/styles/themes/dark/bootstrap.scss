@@ -1,6 +1,5 @@
 @use '../../utilities' as utils;
 @use '../base/bootstrap' as base;
-@use '../../../components/navbar/navbar.bootstrap' as navbar;
 @use '../../../components/input/input.bootstrap' as input with ($input-background: transparent);
 
 $palette: utils.palette(
@@ -15,5 +14,4 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include navbar.theme();
 @include input.theme();

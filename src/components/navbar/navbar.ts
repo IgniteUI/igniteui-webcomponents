@@ -17,10 +17,10 @@ import { themes } from '../../theming';
  * @csspart end - The right aligned action icons container.
  */
 @themes({
-  material: './navbar/navbar.material.scss',
-  bootstrap: './navbar/navbar.bootstrap.scss',
-  fluent: './navbar/navbar.fluent.scss',
-  indigo: './navbar/navbar.indigo.scss',
+  material: './navbar/themes/light/navbar.material.scss',
+  bootstrap: './navbar/themes/light/navbar.bootstrap.scss',
+  fluent: './navbar/themes/light/navbar.fluent.scss',
+  indigo: './navbar/themes/light/navbar.indigo.scss',
 })
 export default class IgcNavbarComponent extends LitElement {
   public static readonly tagName = 'igc-navbar';
