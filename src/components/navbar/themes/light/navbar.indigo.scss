@@ -1,0 +1,6 @@
+@use './navbar.material.scss';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    box-shadow: none;
+}

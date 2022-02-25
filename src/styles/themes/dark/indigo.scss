@@ -1,6 +1,5 @@
 @use '../../utilities' as utils;
 @use '../base/indigo' as base;
-@use '../../../components/navbar/navbar.indigo' as navbar;
 @use '../../../components/input/input.indigo' as input with ($label-focus-color: utils.color(gray, 800));
 
 $palette: utils.palette(
@@ -15,5 +14,4 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include navbar.theme();
 @include input.theme();

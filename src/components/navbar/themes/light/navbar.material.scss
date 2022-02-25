@@ -1,5 +1,5 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
 :host {
     display: flex;
@@ -47,10 +47,6 @@
 [name='end']::slotted(*) {
     margin-inline-start: rem(16px);
     margin-inline-end: rem(1px);
-}
-
-::slotted(igc-input[part='helper-text']) {
-    margin-top: 0 !important;
 }
 
 ::slotted(igc-avatar[part='base']) {
