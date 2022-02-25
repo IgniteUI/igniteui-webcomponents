@@ -64,6 +64,7 @@ export default class IgcMaskedInputComponent extends SizableMixin(
   protected parser = new MaskParser();
   protected _value!: string;
   protected selection: MaskSelection = { start: 0, end: 0 };
+  protected compositionStart = 0;
   protected droppedText = '';
 
   @state()
@@ -197,27 +198,25 @@ export default class IgcMaskedInputComponent extends SizableMixin(
     if (!e.key) {
       return;
     }
-
     this.selection = this.inputSelection;
   }
 
   protected handleCompositionStart() {
-    this.selection.start = this.inputSelection.start;
+    this.compositionStart = this.inputSelection.start;
   }
 
-  protected handleCompositionEnd() {
-    this.selection.end = this.inputSelection.end;
+  protected handleCompositionEnd({ data }: CompositionEvent) {
+    const start = this.compositionStart,
+      end = this.inputSelection.end;
+    this.updateInput(data, start, end);
   }
 
-  protected handleInput({ inputType, data, isComposing }: InputEvent) {
+  protected handleInput({ inputType, isComposing }: InputEvent) {
     const value = this.input.value;
     const start = this.selection.start;
     let end = this.selection.end;
 
     switch (inputType) {
-      case 'insertCompositionText':
-        return this.updateInput(data ?? '', start, end);
-
       case 'deleteContentForward':
         this.updateInput('', start, (end = start === end ? ++end : end));
         return this.updateComplete.then(() =>
@@ -247,9 +246,6 @@ export default class IgcMaskedInputComponent extends SizableMixin(
 
       case 'insertFromDrop':
         return this.insertFromDrop(this.input.value);
-
-      case 'deleteByDrag':
-        return;
     }
   }
 
