@@ -10,9 +10,12 @@ $track-color: color(gray, 300);
 $fill-color: $primary-color;
 $track-roundness: 0;
 $background-size: rem(40px) rem(40px);
-$stripe-color: color(gray, 50, .7);
+$stripe-grays: color(gray, 50, .7);
+$stripe-size: rem(16px);
 $animation-direction: normal;
 $animation-direction-rtl: reverse;
+$radius: calc(var(--diameter) / 2 - var(--stroke-thickness) * .5);
+$circumference: calc(#{$radius} * 2 * 3.1416);
 
 @keyframes indeterminate-bar {
     0% {
@@ -33,12 +36,12 @@ $animation-direction-rtl: reverse;
 
 @keyframes indeterminate-accordion {
     from {
-        stroke-dashoffset: calc(var(--circumference) * 2);
-        stroke-dasharray: calc(var(--circumference) * 9 / 10);
+        stroke-dashoffset: calc(#{$circumference} * 2);
+        stroke-dasharray: calc(#{$circumference} * 9 / 10);
     }
 
     to {
-        stroke-dashoffset: calc(var(--circumference) * 2 / 5);
+        stroke-dashoffset: calc(#{$circumference} * 2 / 5);
     }
 }
 
@@ -70,8 +73,21 @@ $animation-direction-rtl: reverse;
     color: $text-color;
 }
 
-%custom-label {
+%label {
     display: flex;
     align-items: center;
     color: inherit;
+    font-weight: 600;
+}
+
+@mixin stripe-colors($primary, $gray, $size, $deg: -45deg) {
+    /* stylelint-disable */
+    background: $primary repeating-linear-gradient(
+        $deg,
+        $primary,
+        $primary $size,
+        $gray $size,
+        $gray ($size * 2)
+    );
+    /* stylelint-enable */
 }

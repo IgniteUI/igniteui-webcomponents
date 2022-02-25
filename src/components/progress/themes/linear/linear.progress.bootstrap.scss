@@ -1,5 +1,36 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
+@use '../base' as *;
+
+$stripe-grays: color(gray, 50, .2);
+$stripe-size: rem(5px);
 
 @mixin theme() {
+    igc-linear-progress {
+        --track-size: #{rem(16px)};
+    }
+
+    igc-linear-progress::part(base) {
+        border-radius: #{rem(4px)};
+    }
+
+    igc-linear-progress::part(striped primary) {
+        @include stripe-colors($primary-color, $stripe-grays, $stripe-size, 45deg);
+    }
+
+    igc-linear-progress::part(striped danger) {
+        @include stripe-colors($danger-color, $stripe-grays, $stripe-size, 45deg);
+    }
+
+    igc-linear-progress::part(striped warning) {
+        @include stripe-colors($warning-color, $stripe-grays, $stripe-size, 45deg);
+    }
+
+    igc-linear-progress::part(striped info) {
+        @include stripe-colors($info-color, $stripe-grays, $stripe-size, 45deg);
+    }
+
+    igc-linear-progress::part(striped success) {
+        @include stripe-colors($success-color, $stripe-grays, $stripe-size, 45deg);
+    }
 }

@@ -16,6 +16,8 @@
 @use '../../../components/slider/slider.bootstrap' as slider with (
     $inactive-background: utils.color(secondary, 500, .48)
 );
+@use '../../../components/progress/themes/linear/linear.progress.bootstrap' as linear-progress;
+@use '../../../components/progress/themes/circular/circular.progress.bootstrap' as circular-progress;
 
 $palette: utils.palette(
     $primary: #0d6efd,
@@ -41,3 +43,5 @@ $palette: utils.palette(
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();
+@include linear-progress.theme();
+@include circular-progress.theme();

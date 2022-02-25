@@ -88,24 +88,9 @@ const Template: Story<ArgTypes, Context> = (
       animation-duration=${ifDefined(animationDuration)}
       variant=${ifDefined(variant)}
       label-format=${ifDefined(labelFormat)}
-      ><igc-circular-gradient
-        slot="gradient"
-        offset="0%"
-        color="#ff9a40"
-      ></igc-circular-gradient>
-      <igc-circular-gradient
-        slot="gradient"
-        offset="50%"
-        color="#1eccd4"
-      ></igc-circular-gradient>
-      <igc-circular-gradient
-        slot="gradient"
-        offset="100%"
-        color="#ff0079"
-      ></igc-circular-gradient
     ></igc-circular-progress>
     <igc-circular-progress
-      style="--size: 42px; --stroke-thicknes: 1px;"
+      style="--diameter: 42px; --stroke-thickness: 1px;"
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
       dir=${direction}
@@ -116,7 +101,7 @@ const Template: Story<ArgTypes, Context> = (
       label-format=${ifDefined(labelFormat)}
     ></igc-circular-progress>
     <igc-circular-progress
-      style="--size: 72px; --stroke-thicknes: 12px;"
+      style="--diameter: 72px; --stroke-thickness: 12px;"
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
       dir=${direction}

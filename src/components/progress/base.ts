@@ -124,7 +124,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   protected renderDefaultSlot() {
-    return html`<slot part="custom_label" @slotchange=${this.slotChanges}>
+    return html`<slot part="label" @slotchange=${this.slotChanges}>
       ${when(
         this.indeterminate || this.hideLabel || this.assignedElements.length,
         () => nothing,

@@ -7,17 +7,13 @@
 
     display: inline-flex;
 
-    --stroke-thicknes: 4px;
-    --size: #{rem(32px)};
-    --percentage: 0;
-    --radius: calc(var(--size) / 2 - var(--stroke-thicknes) * 0.5);
-    --circumference: calc(var(--radius) * 2 * 3.14159);
+    --stroke-thickness: 2px;
+    --diameter: #{rem(32px)};
 }
 
-[part~='custom_label'] {
-    @extend %custom-label !optional;
-    font-size: calc(100% - var(--stroke-thicknes) - 2px);
-    font-weight: 600;
+[part~='label'] {
+    @extend %label !optional;
+
     fill: $text-color;
     position: absolute;
     transform: translate(-50%, -50%);
@@ -25,11 +21,13 @@
     left: 50%;
 }
 
+[part~='value'] {
+    font-size: rem(10px);
+}
+
 [part~='wrapper'] {
     display: inline-flex;
     position: relative;
-    width: var(--size);
-    height: var(--size);
 }
 
 [part~='indeterminate'] {
@@ -38,8 +36,8 @@
 }
 
 [part~='svg'] {
-    width: var(--size);
-    height: var(--size);
+    width: var(--diameter);
+    height: var(--diameter);
 }
 
 [part~='inner'] {
@@ -47,7 +45,7 @@
 }
 
 [part~='outer'] {
-    stroke-dasharray: var(--circumference) var(--circumference);
+    stroke-dasharray: #{$circumference} #{$circumference};
     transform-origin: 50% 50%;
     transform: rotate(-90deg);
 }
@@ -55,10 +53,10 @@
 [part~='inner'],
 [part~='outer'] {
     fill: transparent;
-    stroke-width: var(--stroke-thicknes);
-    cx: calc(var(--size) / 2);
-    cy: calc(var(--size) / 2);
-    r: var(--radius);
+    stroke-width: var(--stroke-thickness);
+    cx: calc(var(--diameter) / 2);
+    cy: calc(var(--diameter) / 2);
+    r: $radius;
 }
 
 [part~='gradient_start'],
@@ -87,6 +85,6 @@
 }
 
 [part~='indeterminate'] [part~='outer'] {
-    stroke-dashoffset: calc(var(--circumference) * 2);
-    animation: indeterminate-accordion 1.5s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
+    stroke-dashoffset: calc(#{$circumference} * 2);
+    animation: indeterminate-accordion-bootstrap 1.5s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
 }

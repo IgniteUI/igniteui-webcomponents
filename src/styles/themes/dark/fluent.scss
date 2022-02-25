@@ -49,6 +49,8 @@
     $fill-disabled-background: utils.color(gray, 300),
     $thumb-disabled-border: utils.color(gray, 200)
 );
+@use '../../../components/progress/themes/linear/linear.progress.fluent' as linear-progress;
+@use '../../../components/progress/themes/circular/circular.progress.fluent' as circular-progress;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -71,3 +73,5 @@ $palette: utils.palette(
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();
+@include linear-progress.theme();
+@include circular-progress.theme();

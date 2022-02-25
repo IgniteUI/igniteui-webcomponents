@@ -31,6 +31,8 @@
     $inactive-background: utils.color(gray, 200),
     $inactive-hover-background: utils.color(gray, 400)
 );
+@use '../../../components/progress/themes/linear/linear.progress.indigo' as linear-progress;
+@use '../../../components/progress/themes/circular/circular.progress.indigo' as circular-progress;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -57,3 +59,5 @@ $palette: utils.palette(
 @include input.theme();
 @include icon-button.theme();
 @include slider.theme();
+@include linear-progress.theme();
+@include circular-progress.theme();

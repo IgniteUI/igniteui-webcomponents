@@ -10,8 +10,8 @@
     --track-size: 4px;
 }
 
-[part~='custom_label'] {
-    @extend %costom-label !optional;
+[part~='label'] {
+    @extend %label !optional;
 }
 
 [part~='wrapper'] {
@@ -35,23 +35,6 @@
     width: 100%;
     position: relative;
     height: inherit;
-    background: hsl(204deg 100% 50%);
-}
-
-[part~='striped'] {
-    /* stylelint-disable */
-    background-image: linear-gradient(
-        -45deg,
-        $stripe-color 25%,
-        transparent 25%,
-        transparent 50%,
-        $stripe-color 50%,
-        $stripe-color 75%,
-        transparent 75%,
-        transparent
-    );
-    /* stylelint-enable */
-    background-size: $background-size;
 }
 
 [part~='indeterminate'] {
@@ -66,45 +49,75 @@
         width: 100%;
         height: inherit;
         background-color: inherit;
+        background-image: inherit;
         transform-origin: top right;
     }
+}
+
+[part~='value'] {
+    margin: 0;
+    color: $text-color;
+    font-size: em(14px);
+    font-weight: 600;
+}
+
+// Colors
+[part~='primary'] {
+    background-color: $primary-color;
+}
+
+[part~='striped'][part~='primary'] {
+    width: 100%;
+    height: 100%;
+
+    @include stripe-colors($primary-color, $stripe-grays, $stripe-size, -45deg);
 }
 
 [part~='danger'] {
     background-color: $danger-color;
 }
 
+[part~='striped'][part~='danger'] {
+    @include stripe-colors($danger-color, $stripe-grays, $stripe-size, -45deg);
+}
+
 [part~='warning'] {
     background-color: $warning-color;
+}
+
+[part~='striped'][part~='warning'] {
+    @include stripe-colors($warning-color, $stripe-grays, $stripe-size, -45deg);
 }
 
 [part~='info'] {
     background-color: $info-color;
 }
 
+[part~='striped'][part~='info'] {
+    @include stripe-colors($info-color, $stripe-grays, $stripe-size, -45deg);
+}
+
 [part~='success'] {
     background-color: $success-color;
 }
 
-[part~='value'] {
-    margin: 0;
-    color: black;
-    font-size: em(14px, 16px);
-    font-weight: 600;
+[part~='striped'][part~='success'] {
+    @include stripe-colors($success-color, $stripe-grays, $stripe-size, -45deg);
 }
 
+// Label Positions
+:host([label-align='top']),
 :host([label-align='top-start']),
-:host([label-align='start']) {
-    [part~='custom_label'] {
-        align-self: flex-start;
+:host([label-align='top-end']) {
+    [part~='label'] {
+        order: -1;
     }
 }
 
-[part~='top-start'],
-[part~='start'] {
-    align-self: flex-start;
-
-    [part~='custom_label'] {
+:host([label-align='top-start']),
+:host([label-align='bottom-start']),
+:host([label-align='start']) {
+    [part~='label'] {
         align-self: flex-start;
     }
 }
@@ -112,56 +125,15 @@
 :host([label-align='bottom-end']),
 :host([label-align='top-end']),
 :host([label-align='end']) {
-    [part~='custom_label'] {
+    [part~='label'] {
         align-self: flex-end;
     }
 }
 
-[part~='bottom-end'],
-[part~='top-end'],
-[part~='end'] {
-    align-self: flex-end;
-}
-
-:host([label-align='top-end']),
-:host([label-align='top-start']),
-:host([label-align='top']) {
-    [part~='custom_label'] {
-        order: -1;
-    }
-}
-
-[part~='top-end'],
-[part~='top-start'],
-[part~='top'] {
-    order: -1;
-}
-
-:host([label-align='center-top']) {
-    [part~='custom_label'] {
+:host([label-align='top']),
+:host([label-align='bottom']) {
+    [part~='label'] {
         align-self: center;
-        order: -1;
-    }
-}
-
-[part~='center-top'] {
-    align-self: center;
-    order: -1;
-}
-
-:host([label-align='center']) {
-    [part~='custom_label'] {
-        align-self: center;
-    }
-}
-
-[part~='center'] {
-    align-self: center;
-}
-
-:host([hide-label]) {
-    [part~='custom_label'] {
-        display: none;
     }
 }
 
