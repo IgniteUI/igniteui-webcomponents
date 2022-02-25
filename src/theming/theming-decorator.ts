@@ -1,43 +1,6 @@
 import { ReactiveElement } from 'lit';
 import { updateWhenThemeChanges } from './theming-controlller';
-import { ReactiveTheme, ThemeOptions } from './types';
-
-/**
- * Property decorator that provides a DynamicTheme instance to
- * allow theme switching during component execution.
- *
- * Usage:
- *
- *   import { LitElement, html } from 'lit';
- *   import { themed, ThemingController } from 'igniteui-webcomponents/themed';
- *
- *   class MyElement extends LitElement {
- *      @themed({
- *        material: './material.css',
- *        bootstrap: './bootstrap.css'
- *      })
- *      private theme!: ThemingController;
- *
- *      render() {
- *        <style>
- *          ${this.theme.styles}
- *        </style>
- *        <slot></slot>
- *      }
- *   }
- */
-export function theme(options: ThemeOptions) {
-  return (proto: ReactiveElement, name: string): any => {
-    const ctor = proto.constructor as typeof ReactiveElement;
-
-    ctor.addInitializer((instance: ReactiveElement) => {
-      (instance as any)[name] = updateWhenThemeChanges(
-        instance,
-        transformOptionPaths(options)
-      );
-    });
-  };
-}
+import { ReactiveTheme, Themes } from './types';
 
 /**
  * Class decorator to enable multiple theme support for a component.
@@ -60,32 +23,15 @@ export function theme(options: ThemeOptions) {
  *  class MyElement extends LitElement { }
  *  ```
  */
-export function themes(options: ThemeOptions) {
+export function themes(themes: Themes) {
   return (clazz: any) => {
     clazz.addInitializer((instance: ReactiveElement & ReactiveTheme) => {
-      const controller = updateWhenThemeChanges(
-        instance,
-        transformOptionPaths(options)
-      );
+      const controller = updateWhenThemeChanges(instance, themes);
 
-      if ('onControllerAttached' in instance) {
-        instance.onControllerAttached(controller);
+      if ('themeAdopted' in instance) {
+        instance.themeAdopted(controller);
       }
     });
     return clazz;
   };
-}
-
-function transformOptionPaths(options: ThemeOptions): ThemeOptions {
-  const baseRoot = 'components';
-  const result = {};
-
-  Object.entries(options).forEach(([key, value]) => {
-    const themePath = `../${baseRoot}/${value
-      .replace('./', '')
-      .replace('scss', 'css.js')}`;
-    (result as any)[key] = themePath;
-  });
-
-  return result;
 }

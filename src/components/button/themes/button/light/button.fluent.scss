@@ -1,5 +1,4 @@
 @use '../../../../../styles/utilities' as utils;
-@use './button.base.scss';
 
 $button-color: #{utils.contrast-color(primary, 600)} !default;
 $hover-color: #{utils.color(primary, 600)} !default;

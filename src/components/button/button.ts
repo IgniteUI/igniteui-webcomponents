@@ -1,7 +1,11 @@
-import { css, html } from 'lit';
+import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming';
 import { IgcButtonBaseComponent } from './button-base.js';
+import { styles } from './themes/button/light/button.base.css';
+import { styles as bootstrap } from './themes/button/light/button.bootstrap.css';
+import { styles as fluent } from './themes/button/light/button.fluent.css';
+import { styles as indigo } from './themes/button/light/button.indigo.css';
 
 /**
  * Represents a clickable button, used to submit forms or anywhere in a
@@ -20,20 +24,12 @@ import { IgcButtonBaseComponent } from './button-base.js';
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
  */
-@themes({
-  bootstrap: './button/themes/button/light/button.bootstrap.scss',
-  material: './button/themes/button/light/button.material.scss',
-  indigo: './button/themes/button/light/button.indigo.scss',
-  fluent: './button/themes/button/light/button.fluent.scss',
-})
+@themes({ bootstrap, indigo, fluent })
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
 
-  protected static styles = css`
-    :host {
-      visibility: hidden;
-    }
-  `;
+  protected static styles = styles;
+
   /** Sets the variant of the button. */
   @property({ reflect: true })
   public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'contained';

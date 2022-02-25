@@ -1,5 +1,4 @@
 @use '../../../../styles/utilities' as *;
-@use './badge.base.scss';
 
 :host {
     --size: #{rem(18px)};

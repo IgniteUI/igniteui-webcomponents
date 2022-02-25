@@ -1,19 +1,17 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming';
+import { styles as bootstrap } from './themes/light/card.content.bootstrap.css';
+import { styles } from './themes/light/card.content.material.css';
 
 /** A container for card's text content
  * @element igc-card-content
  *
  * @slot - Renders the card text content
  */
-@themes({
-  material: './card/themes/light/card.content.material.scss',
-  bootstrap: './card/themes/light/card.content.bootstrap.scss',
-  fluent: './card/themes/light/card.content.material.scss',
-  indigo: './card/themes/light/card.content.material.scss',
-})
+@themes({ bootstrap })
 export default class IgcCardContentComponent extends LitElement {
   public static readonly tagName = 'igc-card-content';
+  public static override styles = styles;
 
   protected override render() {
     return html` <slot></slot> `;

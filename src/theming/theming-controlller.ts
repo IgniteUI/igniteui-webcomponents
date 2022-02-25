@@ -6,66 +6,60 @@ import {
   ReactiveControllerHost,
   ReactiveElement,
 } from 'lit';
-import { ReactiveThemeController } from '.';
 import { getTheme } from './config';
 import { CHANGE_THEME_EVENT } from './theming-event';
-import { IgcTheme, ThemeOptions } from './types';
+import { Theme, ThemeController, Themes } from './types';
 
-export class ThemingController
-  implements ReactiveController, ReactiveThemeController
-{
-  private options: ThemeOptions;
+class ThemingController implements ReactiveController, ThemeController {
+  private themes: Themes;
   private host: ReactiveControllerHost & ReactiveElement;
-  public theme!: IgcTheme;
+  public theme!: Theme;
 
-  constructor(
-    host: ReactiveControllerHost & ReactiveElement,
-    options: ThemeOptions
-  ) {
+  constructor(host: ReactiveControllerHost & ReactiveElement, themes: Themes) {
     this.host = host;
-    this.options = options;
+    this.themes = themes;
   }
 
-  private readonly __themingEventHandler = async () => {
-    await this.adoptStyles();
+  private readonly __themingEventHandler = () => {
+    this.adoptStyles();
     this.host.requestUpdate();
   };
 
   public hostConnected() {
-    window.addEventListener(CHANGE_THEME_EVENT, this.__themingEventHandler);
     this.adoptStyles();
+    window.addEventListener(CHANGE_THEME_EVENT, this.__themingEventHandler);
   }
 
   public hostDisconnected() {
     window.removeEventListener(CHANGE_THEME_EVENT, this.__themingEventHandler);
   }
 
-  protected async adoptStyles() {
-    let result = css``;
-    this.theme = getTheme() as IgcTheme;
+  protected adoptStyles() {
+    this.theme = getTheme();
+    const ctor = this.host.constructor as typeof LitElement;
+    let styleSheet = css``;
 
-    const styles = Object.entries(this.options).filter(
-      (o) => o[0] === this.theme
+    const [theme] = Object.entries(this.themes).filter(
+      ([name]) => name === this.theme
     );
 
-    if (styles[0]) {
-      const module = await import(styles[0][1]);
-      result = module.styles;
+    if (theme) {
+      const [_, cssResult] = theme;
+      styleSheet = cssResult;
     }
 
-    const ctor = this.host.constructor as typeof LitElement;
     adoptStyles(this.host.shadowRoot as ShadowRoot, [
       ...ctor.elementStyles,
-      result,
+      styleSheet,
     ]);
   }
 }
 
 const _updateWhenThemeChanges = (
   host: ReactiveControllerHost & ReactiveElement,
-  options: ThemeOptions
+  themes: Themes
 ) => {
-  const controller = new ThemingController(host, options);
+  const controller = new ThemingController(host, themes);
   host.addController(controller);
   return controller;
 };

@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { styles } from './themes/light/list-item.material.css';
+import { styles } from './themes/light/list-item.base.css';
 
 /**
  * The list-item component is a container

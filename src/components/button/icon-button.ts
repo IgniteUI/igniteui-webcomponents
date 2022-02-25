@@ -9,6 +9,11 @@ import {
   registerIconFromText as registerIconFromText_impl,
 } from '../icon/icon.registry.js';
 import { IgcButtonBaseComponent } from './button-base.js';
+import { styles } from './themes/icon-button/light/icon-button.base.css';
+import { styles as bootstrap } from './themes/icon-button/light/icon-button.bootstrap.css';
+import { styles as fluent } from './themes/icon-button/light/icon-button.fluent.css';
+import { styles as indigo } from './themes/icon-button/light/icon-button.indigo.css';
+import { styles as material } from './themes/icon-button/light/icon-button.material.css';
 
 /**
  * @element igc-icon-button
@@ -16,14 +21,10 @@ import { IgcButtonBaseComponent } from './button-base.js';
  * @csspart base - The wrapping element.
  * @csspart icon - The icon element.
  */
-@themes({
-  bootstrap: './button/themes/icon-button/light/icon-button.bootstrap.scss',
-  material: './button/themes/icon-button/light/icon-button.material.scss',
-  fluent: './button/themes/icon-button/light/icon-button.fluent.scss',
-  indigo: './button/themes/icon-button/light/icon-button.indigo.scss',
-})
+@themes({ bootstrap, material, fluent, indigo })
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
+  protected static styles = styles;
 
   /** The name of the icon. */
   @alternateName('iconName')

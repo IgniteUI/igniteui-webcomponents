@@ -9,14 +9,16 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming';
 import { watch } from '../common/decorators';
+import { styles } from './themes/light/slider.base.css';
+import { styles as bootstrap } from './themes/light/slider.bootstrap.css';
+import { styles as fluent } from './themes/light/slider.fluent.css';
+import { styles as indigo } from './themes/light/slider.indigo.css';
+import { styles as material } from './themes/light/slider.material.css';
 
-@themes({
-  material: './slider/themes/light/slider.material.scss',
-  bootstrap: './slider/themes/light/slider.bootstrap.scss',
-  fluent: './slider/themes/light/slider.fluent.scss',
-  indigo: './slider/themes/light/slider.indigo.scss',
-})
+@themes({ material, bootstrap, fluent, indigo })
 export class IgcSliderBaseComponent extends LitElement {
+  public static override styles = styles;
+
   @query(`[part='thumb']`)
   protected thumb!: HTMLElement;
 

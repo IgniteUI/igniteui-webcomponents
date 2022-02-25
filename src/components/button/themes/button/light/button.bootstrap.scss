@@ -1,5 +1,4 @@
 @use '../../../../../styles/utilities' as utils;
-@use './button.base.scss';
 
 :host [part='base'] {
     transition: all .15s ease-out;

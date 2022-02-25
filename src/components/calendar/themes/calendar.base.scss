@@ -1,5 +1,5 @@
-@use '../../../../styles/utilities/index' as *;
-@use 'src/components/calendar/themes/shared-calendar' as *;
+@use '../../../styles/utilities/index' as *;
+@use 'shared-calendar' as *;
 @use 'sass:map';
 @use 'sass:math';
 

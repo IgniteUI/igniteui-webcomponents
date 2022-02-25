@@ -1,4 +1,3 @@
-@use './icon-button.base.scss';
 @use '../../../../../styles/utilities' as utils;
 
 $button-color: #{utils.contrast-color(primary, 600)} !default;

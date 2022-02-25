@@ -1,5 +1,7 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming';
+import { styles as bootstrap } from './themes/light/card.actions.bootstrap.css';
+import { styles } from './themes/light/card.actions.material.css';
 
 /** A container for card action items like buttons
  * @element igc-card-actions
@@ -8,14 +10,10 @@ import { themes } from '../../theming';
  * @slot - Renders items at the middle of actions area
  * @slot end - Renders items at the end of actions area
  */
-@themes({
-  material: './card/themes/light/card.actions.material.scss',
-  bootstrap: './card/themes/light/card.actions.bootstrap.scss',
-  fluent: './card/themes/light/card.actions.material.scss',
-  indigo: './card/themes/light/card.actions.material.scss',
-})
+@themes({ bootstrap })
 export default class IgcCardActionsComponent extends LitElement {
   public static readonly tagName = 'igc-card-actions';
+  public static override styles = styles;
 
   protected override render() {
     return html`

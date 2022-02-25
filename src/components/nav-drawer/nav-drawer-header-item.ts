@@ -1,5 +1,7 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming';
+import { styles as indigo } from './styles/indigo/nav-drawer-header-item.indigo.css';
+import { styles } from './styles/nav-drawer-header-item.base.css';
 
 /**
  * A wrapper for navigation drawer's header.
@@ -7,15 +9,10 @@ import { themes } from '../../theming';
  *
  * @slot - Renders the header content
  */
-@themes({
-  material: './nav-drawer/styles/material/nav-drawer-header-item.material.scss',
-  bootstrap:
-    './nav-drawer/styles/bootstrap/nav-drawer-header-item.bootstrap.scss',
-  indigo: './nav-drawer/styles/indigo/nav-drawer-header-item.indigo.scss',
-  fluent: './nav-drawer/styles/fluent/nav-drawer-header-item.fluent.scss',
-})
+@themes({ indigo })
 export default class IgcNavDrawerHeaderItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-header-item';
+  public static override styles = styles;
 
   protected override render() {
     return html`<slot></slot>`;

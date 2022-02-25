@@ -24,6 +24,9 @@ import './days-view/days-view';
 import type IgcDaysViewComponent from './days-view/days-view';
 import './months-view/months-view';
 import type IgcMonthsViewComponent from './months-view/months-view';
+import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css';
+import { styles } from './themes/calendar.base.css';
+import { styles as fluent } from './themes/fluent/calendar.fluent.css';
 import './years-view/years-view';
 import type IgcYearsViewComponent from './years-view/years-view';
 
@@ -57,10 +60,8 @@ import type IgcYearsViewComponent from './years-view/years-view';
  */
 @blazorIndirectRender
 @themes({
-  bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
-  material: './calendar/themes/material/calendar.material.scss',
-  fluent: './calendar/themes/fluent/calendar.fluent.scss',
-  indigo: './calendar/themes/material/calendar.material.scss',
+  bootstrap,
+  fluent,
 })
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
@@ -68,6 +69,7 @@ export default class IgcCalendarComponent extends SizableMixin(
     Constructor<IgcCalendarBaseComponent>
   >(IgcCalendarBaseComponent)
 ) {
+  public static styles = styles;
   public static readonly tagName = 'igc-calendar';
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;

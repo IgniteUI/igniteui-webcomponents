@@ -14,6 +14,9 @@ import {
   YEARS_PER_ROW,
 } from '../common/calendar-base';
 import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
+import { styles as bootstrap } from '../themes/bootstrap/year-month-view.bootstrap.css';
+import { styles as fluent } from '../themes/fluent/year-month-view.fluent.css';
+import { styles } from '../themes/year-month-view.base.css';
 
 /**
  * Instantiate a years view as a separate component in the calendar.
@@ -28,15 +31,15 @@ import { calculateYearsRangeStart, setDateSafe } from '../common/utils';
 @blazorIndirectRender
 @blazorSuppressComponent
 @themes({
-  bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
-  material: './calendar/themes/material/years-view.material.scss',
-  fluent: './calendar/themes/fluent/calendar.fluent.scss',
-  indigo: './calendar/themes/material/years-view.material.scss',
+  bootstrap,
+  fluent,
 })
 export default class IgcYearsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  public static styles = styles;
+
   private years!: Date[][];
 
   @query('[tabindex="0"]')

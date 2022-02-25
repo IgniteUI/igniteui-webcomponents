@@ -15,6 +15,9 @@ import {
 } from '../common/calendar-base';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
 import { setDateSafe } from '../common/utils';
+import { styles as bootstrap } from '../themes/bootstrap/year-month-view.bootstrap.css';
+import { styles as fluent } from '../themes/fluent/year-month-view.fluent.css';
+import { styles } from '../themes/year-month-view.base.css';
 
 /**
  * Instantiate a months view as a separate component in the calendar.
@@ -29,15 +32,14 @@ import { setDateSafe } from '../common/utils';
 @blazorIndirectRender
 @blazorSuppressComponent
 @themes({
-  bootstrap: './calendar/themes/bootstrap/calendar.bootstrap.scss',
-  material: './calendar/themes/material/months-view.material.scss',
-  fluent: './calendar/themes/fluent/calendar.fluent.scss',
-  indigo: './calendar/themes/material/months-view.material.scss',
+  bootstrap,
+  fluent,
 })
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  public static styles = styles;
   private calendarModel = new Calendar();
   private monthFormatter: any;
 

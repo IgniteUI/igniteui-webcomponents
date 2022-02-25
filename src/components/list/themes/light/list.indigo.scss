@@ -1,6 +1,4 @@
-@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use './list.base.scss';
 
 $header-color: color(primary, 500) !default;
 $item-color: color(gray, 900) !default;
