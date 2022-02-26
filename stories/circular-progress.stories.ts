@@ -99,7 +99,14 @@ const Template: Story<ArgTypes, Context> = (
       animation-duration=${ifDefined(animationDuration)}
       variant=${ifDefined(variant)}
       label-format=${ifDefined(labelFormat)}
-    ></igc-circular-progress>
+    >
+      <igc-circular-gradient slot="gradient" offset="0%" color="#ff9a40">
+      </igc-circular-gradient>
+      <igc-circular-gradient slot="gradient" offset="50%" color="#1eccd4">
+      </igc-circular-gradient>
+      <igc-circular-gradient slot="gradient" offset="100%" color="#ff0079">
+      </igc-circular-gradient>
+    </igc-circular-progress>
     <igc-circular-progress
       style="--diameter: 72px; --stroke-thickness: 12px;"
       ?indeterminate=${indeterminate}

@@ -35,6 +35,11 @@
     animation: 3s linear 0s infinite $animation-direction none running rotate-center;
 }
 
+[part~='indeterminate'] [part~='outer'] {
+    stroke-dashoffset: calc(#{$circumference} * 2);
+    animation: indeterminate-accordion 1.5s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
+}
+
 [part~='svg'] {
     width: var(--diameter);
     height: var(--diameter);
@@ -82,9 +87,4 @@
 :host([variant='success']) [part~='gradient_start'],
 :host([variant='success']) [part~='gradient_end'] {
     stop-color: $success-color;
-}
-
-[part~='indeterminate'] [part~='outer'] {
-    stroke-dashoffset: calc(#{$circumference} * 2);
-    animation: indeterminate-accordion-bootstrap 1.5s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
 }
