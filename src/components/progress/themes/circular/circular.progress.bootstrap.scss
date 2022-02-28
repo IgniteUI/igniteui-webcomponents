@@ -4,6 +4,7 @@
 @mixin theme() {
     igc-circular-progress {
         --stroke-thickness: #{rem(4px)};
+        --diameter: calc(#{rem(28px)} + var(--stroke-thickness));
     }
 
     igc-circular-progress::part(svg indeterminate) {

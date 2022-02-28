@@ -9,7 +9,7 @@
     position: relative;
 
     --stroke-thickness: #{rem(2px)};
-    --diameter: #{rem(32px)};
+    --diameter: calc(#{rem(30px)} + var(--stroke-thickness));
 }
 
 [part~='label'] {
