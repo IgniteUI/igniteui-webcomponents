@@ -124,8 +124,23 @@ const Template: Story<ArgTypes, Context> = (
       variant=${ifDefined(variant)}
       label-align=${labelAlign}
       label-format=${ifDefined(labelFormat)}
-    ></igc-linear-progress>
-    <br />
+    >
+    </igc-linear-progress>
+    <igc-linear-progress
+      style="--track-size: 16px"
+      ?striped=${striped}
+      ?indeterminate=${indeterminate}
+      ?hide-label=${hideLabel}
+      dir=${direction}
+      value=${ifDefined(value)}
+      max=${ifDefined(max)}
+      animation-duration=${ifDefined(animationDuration)}
+      variant=${ifDefined(variant)}
+      label-align=${labelAlign}
+      label-format=${ifDefined(labelFormat)}
+    >
+      <div>${value}</div>
+    </igc-linear-progress></p>
     <igc-linear-progress
       style="--track-size: 32px"
       ?striped=${striped}
@@ -138,8 +153,9 @@ const Template: Story<ArgTypes, Context> = (
       variant=${ifDefined(variant)}
       label-align=${labelAlign}
       label-format=${ifDefined(labelFormat)}
-      ><div>LABEL</div></igc-linear-progress
     >
+      <div>LABEL</div>
+    </igc-linear-progress>
   </div>
 `;
 
