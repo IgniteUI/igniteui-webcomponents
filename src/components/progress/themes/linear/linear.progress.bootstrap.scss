@@ -10,7 +10,7 @@ $stripe-size: rem(5px);
         --track-size: #{rem(16px)};
     }
 
-    igc-linear-progress::part(base) {
+    igc-linear-progress::part(track) {
         border-radius: #{rem(4px)};
     }
 

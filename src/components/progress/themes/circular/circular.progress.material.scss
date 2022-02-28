@@ -6,8 +6,9 @@
     @extend %host !optional;
 
     display: inline-flex;
+    position: relative;
 
-    --stroke-thickness: 2px;
+    --stroke-thickness: #{rem(2px)};
     --diameter: #{rem(32px)};
 }
 
@@ -25,17 +26,12 @@
     font-size: rem(10px);
 }
 
-[part~='wrapper'] {
-    display: inline-flex;
-    position: relative;
-}
-
-[part~='indeterminate'] {
+[part='svg indeterminate'] {
     transform-origin: 50% 50%;
     animation: 3s linear 0s infinite $animation-direction none running rotate-center;
 }
 
-[part~='indeterminate'] [part~='outer'] {
+[part='svg indeterminate'] [part~='fill'] {
     stroke-dashoffset: calc(#{$circumference} * 2);
     animation: indeterminate-accordion 1.5s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
 }
@@ -45,18 +41,18 @@
     height: var(--diameter);
 }
 
-[part~='inner'] {
+[part~='track'] {
     stroke: $track-color;
 }
 
-[part~='outer'] {
+[part~='fill'] {
     stroke-dasharray: #{$circumference} #{$circumference};
     transform-origin: 50% 50%;
     transform: rotate(-90deg);
 }
 
-[part~='inner'],
-[part~='outer'] {
+[part~='track'],
+[part~='fill'] {
     fill: transparent;
     stroke-width: var(--stroke-thickness);
     cx: calc(var(--diameter) / 2);

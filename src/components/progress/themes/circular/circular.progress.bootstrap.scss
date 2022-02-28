@@ -2,4 +2,20 @@
 @use '../../../../styles/utilities/index' as *;
 
 @mixin theme() {
+    igc-circular-progress {
+        --stroke-thickness: #{rem(4px)};
+    }
+
+    igc-circular-progress::part(svg indeterminate) {
+        animation-duration: .75s;
+    }
+
+    igc-circular-progress::part(fill) {
+        stroke-dashoffset: 60%;
+        animation: none;
+    }
+
+    igc-circular-progress::part(track indeterminate) {
+        stroke: transparent;
+    }
 }

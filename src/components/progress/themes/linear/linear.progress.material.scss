@@ -6,6 +6,9 @@
     @extend %host !optional;
 
     display: flex;
+    position: relative;
+    width: 100%;
+    flex-direction: column;
 
     --track-size: 4px;
 }
@@ -14,14 +17,7 @@
     @extend %label !optional;
 }
 
-[part~='wrapper'] {
-    display: flex;
-    position: relative;
-    width: 100%;
-    flex-direction: column;
-}
-
-[part~='base'] {
+[part~='track'] {
     position: relative;
     width: inherit;
     height: var(--track-size);
@@ -31,7 +27,7 @@
     z-index: 0;
 }
 
-[part~='indicator'] {
+[part~='fill'] {
     width: 100%;
     position: relative;
     height: inherit;

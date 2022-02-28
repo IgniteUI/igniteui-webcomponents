@@ -90,7 +90,6 @@ const Template: Story<ArgTypes, Context> = (
       label-format=${ifDefined(labelFormat)}
     ></igc-circular-progress>
     <igc-circular-progress
-      style="--diameter: 42px; --stroke-thickness: 1px;"
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
       dir=${direction}

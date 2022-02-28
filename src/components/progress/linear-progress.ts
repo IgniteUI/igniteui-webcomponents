@@ -20,7 +20,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
   public static readonly tagName = 'igc-linear-progress';
   public static override styles = styles;
 
-  @query('[part~="indicator"]', true)
+  @query('[part~="fill"]', true)
   protected progressIndicator!: HTMLDivElement;
 
   /** Sets the striped look of the control. */
@@ -39,7 +39,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
 
   protected get wrapperParts() {
     return {
-      indicator: true,
+      fill: true,
       striped: this.striped,
       indeterminate: this.indeterminate,
       primary: this.variant === 'primary',
@@ -82,18 +82,16 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
 
   protected override render() {
     return html`
-      <div part="wrapper">
-        <div
-          part="base"
-          role="progressbar"
-          aria-valuemin=${this.indeterminate ? nothing : 0}
-          aria-valuemax=${this.indeterminate ? nothing : this.max}
-          aria-valuenow=${this.indeterminate ? nothing : this.value}
-        >
-          <div part="${partNameMap(this.wrapperParts)}"></div>
-        </div>
-        ${this.renderDefaultSlot()}
+      <div
+        part="track"
+        role="progressbar"
+        aria-valuemin=${this.indeterminate ? nothing : 0}
+        aria-valuemax=${this.indeterminate ? nothing : this.max}
+        aria-valuenow=${this.indeterminate ? nothing : this.value}
+      >
+        <div part="${partNameMap(this.wrapperParts)}"></div>
       </div>
+      ${this.renderDefaultSlot()}
     `;
   }
 }

@@ -92,8 +92,8 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   protected renderSvg() {
     return svg`
-      <circle part="inner"/>
-      <circle id="circle" style="${styleMap(this.stroke)}" part="outer"/>
+      <circle part="track ${partNameMap(this.svgParts)}"/>
+      <circle id="circle" style="${styleMap(this.stroke)}" part="fill"/>
 
       <defs>
           <linearGradient id=${this.gradientId} gradientTransform="rotate(90)">
@@ -115,16 +115,14 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
 
   protected renderWrapper() {
     return html`
-      <div part="wrapper">
-        <svg
-          part="svg ${partNameMap(this.svgParts)}"
-          aria-valuemin="0"
-          aria-valuemax=${this.max}
-          aria-valuenow=${this.value}
-        >
-          ${this.renderSvg()}
-        </svg>
-      </div>
+      <svg
+        part="svg ${partNameMap(this.svgParts)}"
+        aria-valuemin="0"
+        aria-valuemax=${this.max}
+        aria-valuenow=${this.value}
+      >
+        ${this.renderSvg()}
+      </svg>
       <slot name="gradient" @slotchange=${this.gradientChange}></slot>
       ${this.renderDefaultSlot()}
     `;
