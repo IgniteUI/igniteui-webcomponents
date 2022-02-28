@@ -1,5 +1,5 @@
 import { html, svg } from 'lit';
-import { query, queryAssignedElements } from 'lit/decorators.js';
+import { queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { asPercent, partNameMap } from '../common/util';
@@ -25,9 +25,6 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
   @queryAssignedElements({ slot: 'gradient' })
   protected gradientElements!: Array<IgcCircularGradientComponent>;
 
-  @query('#circle', true)
-  protected svgCircle!: SVGCircleElement;
-
   protected gradientId = Date.now().toString(16);
 
   protected get isLTR() {
@@ -45,19 +42,11 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
   }
 
   private get circumference(): number {
-    const radiusInPixels = getComputedStyle(this.svgCircle).getPropertyValue(
-      'r'
-    );
+    const radiusInPixels = getComputedStyle(
+      this.progressIndicator
+    ).getPropertyValue('r');
     const radius = parseInt(radiusInPixels, 10);
     return radius * 2 * Math.PI;
-  }
-
-  protected override indeterminateChange(): void {
-    if (this.indeterminate) {
-      this.svgCircle.getAnimations().forEach((animation) => animation.cancel());
-    } else {
-      this.runAnimation(0, this.value, true);
-    }
   }
 
   private gradientChange() {
@@ -72,11 +61,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
           (asPercent(val, this.max) / 100) * this.circumference;
   }
 
-  protected override runAnimation(
-    start: number,
-    end: number,
-    indeterminateChange = false
-  ): void {
+  protected override runAnimation(start: number, end: number): void {
     this.animation?.finish();
 
     const opacity = asPercent(end, this.max) + 0.2;
@@ -88,19 +73,18 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       { strokeDashoffset: offset1, strokeOpacity: opacity },
     ];
 
-    const animOptions = {
-      ...this.animationOptions,
-      duration: indeterminateChange ? 0 : this.animationDuration,
-    };
-    this.animation = this.svgCircle.animate(frames, animOptions);
+    this.animation = this.progressIndicator.animate(
+      frames,
+      this.animationOptions
+    );
     cancelAnimationFrame(this.tick);
-    this.animateLabelTo(start, end, animOptions.duration);
+    this.animateLabelTo(start, end, this.animationDuration);
   }
 
   protected renderSvg() {
     return svg`
       <circle part="track ${partNameMap(this.svgParts)}"/>
-      <circle id="circle" style="${styleMap(this.stroke)}" part="fill"/>
+      <circle style="${styleMap(this.stroke)}" part="fill"/>
 
       <defs>
           <linearGradient id=${this.gradientId} gradientTransform="rotate(90)">

@@ -1,5 +1,5 @@
 import { html, nothing } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { asPercent, partNameMap } from '../common/util';
 import { IgcProgressBaseComponent } from './base';
@@ -19,9 +19,6 @@ import { styles } from './themes/linear/linear.progress.material.css';
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
   public static override styles = styles;
-
-  @query('[part~="fill"]', true)
-  protected progressIndicator!: HTMLDivElement;
 
   /** Sets the striped look of the control. */
   @property({ type: Boolean, reflect: true })
@@ -50,21 +47,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     };
   }
 
-  protected override indeterminateChange(): void {
-    if (this.indeterminate) {
-      this.progressIndicator
-        .getAnimations()
-        .forEach((animation) => animation.cancel());
-    } else {
-      this.runAnimation(0, this.value, true);
-    }
-  }
-
-  protected override runAnimation(
-    start: number,
-    end: number,
-    indeterminateChange = false
-  ) {
+  protected override runAnimation(start: number, end: number) {
     this.animation?.finish();
 
     const frames = [
@@ -72,13 +55,12 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
       { width: `${asPercent(end, this.max)}%` },
     ];
 
-    const animOptions = {
-      ...this.animationOptions,
-      duration: indeterminateChange ? 0 : this.animationDuration,
-    };
-    this.animation = this.progressIndicator.animate(frames, animOptions);
+    this.animation = this.progressIndicator.animate(
+      frames,
+      this.animationOptions
+    );
     cancelAnimationFrame(this.tick);
-    this.animateLabelTo(start, end, animOptions.duration);
+    this.animateLabelTo(start, end, this.animationDuration);
   }
 
   protected renderLabel() {

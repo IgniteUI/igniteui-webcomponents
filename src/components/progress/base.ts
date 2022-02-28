@@ -1,14 +1,23 @@
 import { html, LitElement, nothing } from 'lit';
-import { property, queryAssignedElements, state } from 'lit/decorators.js';
+import {
+  property,
+  queryAssignedElements,
+  state,
+  query,
+} from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators';
 import { asPercent, clamp } from '../common/util';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
   protected animation!: Animation;
+  protected tick!: number;
 
   @queryAssignedElements()
   protected assignedElements!: Array<HTMLElement>;
+
+  @query('[part~="fill"]', true)
+  protected progressIndicator!: Element;
 
   @state()
   protected percentage = 0;
@@ -56,7 +65,13 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   public labelFormat!: string;
 
   @watch('indeterminate', { waitUntilFirstUpdate: true })
-  protected indeterminateChange() {}
+  protected indeterminateChange() {
+    if (this.indeterminate) {
+      this.cancelIndeterminate();
+    } else {
+      this.runAnimation(0, this.value);
+    }
+  }
 
   @watch('max', { waitUntilFirstUpdate: true })
   protected maxChange() {
@@ -88,7 +103,11 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     }
   }
 
-  protected tick!: number;
+  protected cancelIndeterminate() {
+    this.progressIndicator
+      ?.getAnimations()
+      .forEach((animation) => animation.cancel());
+  }
 
   protected animateLabelTo(
     start: number,
@@ -130,9 +149,6 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   protected renderLabelText() {
     return this.labelFormat ? this.renderLabelFormat() : `${this.percentage}%`;
   }
-  protected abstract runAnimation(
-    start: number,
-    end: number,
-    indeterminateChange?: boolean
-  ): void;
+
+  protected abstract runAnimation(start: number, end: number): void;
 }
