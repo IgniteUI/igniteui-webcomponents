@@ -168,7 +168,7 @@ describe('Masked input', () => {
       expect(input().value).to.equal(parser.apply());
     });
 
-    it.only('drag enter with focus', async () => {
+    it('drag enter with focus', async () => {
       syncParser();
 
       masked.focus();
@@ -177,9 +177,26 @@ describe('Masked input', () => {
       input().dispatchEvent(new DragEvent('dragenter'));
       await elementUpdated(masked);
 
+      expect(input().value).to.equal(parser.apply(masked.value));
+    });
+
+    it('drag leave without focus', async () => {
+      syncParser();
+
+      input().dispatchEvent(new DragEvent('dragleave'));
+      await elementUpdated(masked);
+
       expect(input().value).to.equal('');
     });
-    it('drag leave without focus', async () => {});
-    it('drag leave with focus', async () => {});
+
+    it('drag leave with focus', async () => {
+      masked.focus();
+      await elementUpdated(masked);
+
+      input().dispatchEvent(new DragEvent('dragleave'));
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal(parser.apply(masked.value));
+    });
   });
 });

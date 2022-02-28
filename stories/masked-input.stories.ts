@@ -102,6 +102,12 @@ interface ArgTypes {
 }
 // endregion
 
+(metadata as any).parameters = {
+  actions: {
+    handles: ['igcChange', 'igcInput'],
+  },
+};
+
 const Template: Story<ArgTypes, Context> = (
   {
     name,

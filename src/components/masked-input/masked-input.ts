@@ -253,6 +253,7 @@ export default class IgcMaskedInputComponent extends SizableMixin(
     const { start, end } = this.inputSelection;
     this.maskedValue = this.parser.apply(value);
     this._value = this.parser.parse(this.maskedValue);
+    this.droppedText = '';
     this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
@@ -267,15 +268,10 @@ export default class IgcMaskedInputComponent extends SizableMixin(
     this._value = this.parser.parse(value);
 
     this.requestUpdate();
+    this.emitEvent('igcInput', { detail: this.value });
     this.updateComplete.then(() => this.input.setSelectionRange(end, end));
   }
 
-  /**
-   * Saves the input `start:end` range at the cut event.
-   *
-   * Since cut triggers an input event of type `deleteByCut` it will
-   * fallthrough the switch and replace the `start:end` range with the mask prompt character.
-   */
   protected handleCut() {
     this.selection = this.inputSelection;
   }
@@ -290,7 +286,7 @@ export default class IgcMaskedInputComponent extends SizableMixin(
 
   protected handleDragEnter() {
     if (!this.hasFocus) {
-      this.updateMask();
+      this.maskedValue = this.parser.apply(this._value);
     }
   }
 
@@ -302,24 +298,45 @@ export default class IgcMaskedInputComponent extends SizableMixin(
 
   protected handleFocus() {
     this.hasFocus = true;
-    this.updateMask();
+    this.maskedValue = this.parser.apply(this._value);
     this.emitEvent('igcFocus');
   }
 
   protected handleBlur() {
     this.hasFocus = false;
-    if (this.maskedValue === this.parser.apply()) {
-      this.maskedValue = '';
-    }
+    this.updateMask();
     this.emitEvent('igcBlur');
   }
 
-  protected updateMask() {
-    this.maskedValue = this.parser.apply(this.input.value);
+  protected handleChange() {
+    this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected resetSelection() {
-    this.selection = { start: 0, end: 0 };
+  protected updateMask() {
+    this._value
+      ? (this.maskedValue = this.parser.apply(this._value))
+      : (this.maskedValue = '');
+  }
+
+  /** Sets the text selection range of the control */
+  public setSelectionRange(
+    start: number,
+    end: number,
+    direction: 'backward' | 'forward' | 'none' = 'none'
+  ) {
+    this.input.setSelectionRange(start, end, direction);
+  }
+
+  /** Replaces the selected text in the control and re-applies the mask */
+  public setRangeText(
+    replacement: string,
+    start: number,
+    end: number,
+    selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
+  ) {
+    this.input.setRangeText(replacement, start, end, selectMode);
+    this.maskedValue = this.parser.apply(this.input.value);
+    this._value = this.parser.parse(this.maskedValue);
   }
 
   private resolvePartNames(base: string) {
@@ -348,6 +365,7 @@ export default class IgcMaskedInputComponent extends SizableMixin(
         @blur=${this.handleBlur}
         @focus=${this.handleFocus}
         @cut=${this.handleCut}
+        @change=${this.handleChange}
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
         @input=${this.handleInput}
