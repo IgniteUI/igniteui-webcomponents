@@ -13,8 +13,9 @@
 @use '../../../components/slider/slider.fluent' as slider;
 
 $palette: utils.palette(
-    $primary: #0078d4,
-    $secondary: #0078d4,
+    $primary: #2b579a,
+    $secondary: #2b579a,
+    $info: #1377d5,
     $success: #107c10,
     $warn: #797673,
     $error: #a80000,

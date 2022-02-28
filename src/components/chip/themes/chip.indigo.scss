@@ -44,7 +44,7 @@
 
 :host([variant='primary']) button[disabled] {
     background: color(primary, 200);
-    color: contrast-color(primary, 400);
+    color: #fff;
 }
 
 :host([variant='info']) button,
@@ -65,7 +65,7 @@
 
 :host([variant='info']) button[disabled] {
     background: color(info, 200);
-    color: contrast-color(info, 200);
+    color: #fff;
 }
 
 :host([variant='success']) button,
@@ -86,7 +86,7 @@
 
 :host([variant='success']) button[disabled] {
     background: color(success, 200);
-    color: contrast-color(success, 200);
+    color: #fff;
 }
 
 :host([variant='warning']) button,
@@ -107,7 +107,7 @@
 
 :host([variant='warning']) button[disabled] {
     background: color(warn, 200);
-    color: contrast-color(warn, 200);
+    color: #fff;
 }
 
 :host([variant='danger']) button,
@@ -128,5 +128,5 @@
 
 :host([variant='danger']) button[disabled] {
     background: color(error, 200);
-    color: contrast-color(error, 400);
+    color: #fff;
 }

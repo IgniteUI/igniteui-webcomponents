@@ -3,7 +3,11 @@
 
 :host button {
     background: color(gray, 200);
-    color: contrast-color(gray, 200);
+    color: color(gray, 700);
+
+    &:hover {
+        color: contrast-color(gray, 200);
+    }
 
     &:focus {
         background: color(primary, 500);

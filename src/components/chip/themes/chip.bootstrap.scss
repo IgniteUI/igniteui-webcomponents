@@ -6,6 +6,11 @@
     background: color(gray, 200);
     color: contrast-color(gray, 200);
 
+    &:hover {
+        background: color(gray, 400);
+        color: contrast-color(gray, 400);
+    }
+
     &:focus {
         outline: 2px solid color(gray, 200);
         background: color(gray, 400);
@@ -24,11 +29,19 @@
     color: contrast-color(primary, 700);
 }
 
+:host([variant='primary']) button:focus {
+    outline: 2px solid color(primary, 200);
+}
+
 :host([variant='info']) button,
 :host([variant='info']) button:focus,
 :host([variant='info']) button:hover,
 :host([selected][variant='info']) button:not([disabled]) {
     color: contrast-color(info, 700);
+}
+
+:host([variant='info']) button:focus {
+    outline: 2px solid color(info, 200);
 }
 
 :host([variant='success']) button,
@@ -38,6 +51,10 @@
     color: contrast-color(success, 700);
 }
 
+:host([variant='success']) button:focus {
+    outline: 2px solid color(success, 200);
+}
+
 :host([variant='warning']) button,
 :host([variant='warning']) button:focus,
 :host([variant='warning']) button:hover,
@@ -45,9 +62,17 @@
     color: contrast-color(warn, 700);
 }
 
+:host([variant='warning']) button:focus {
+    outline: 2px solid color(warn, 200);
+}
+
 :host([variant='danger']) button,
 :host([variant='danger']) button:focus,
 :host([variant='danger']) button:hover,
 :host([selected][variant='danger']) button:not([disabled]) {
     color: contrast-color(error, 700);
+}
+
+:host([variant='danger']) button:focus {
+    outline: 2px solid color(error, 200);
 }
