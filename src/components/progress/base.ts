@@ -78,6 +78,10 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     }
   }
 
+  protected slotChanges() {
+    this.requestUpdate();
+  }
+
   protected override firstUpdated() {
     if (!this.indeterminate) {
       this.runAnimation(0, this.value);
@@ -115,23 +119,17 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   }
 
   protected renderDefaultSlot() {
-    return html`<slot part="label" @slotchange=${this.slotChanges}>
+    return html`<slot part="label" @slotchange=${this.slotChanges}></slot>
       ${when(
         this.indeterminate || this.hideLabel || this.assignedElements.length,
         () => nothing,
-        () => html`<span part="value">${this.renderLabelText()}</span>`
-      )}
-    </slot>`;
+        () => html`<span part="label value">${this.renderLabelText()}</span>`
+      )}`;
   }
 
   protected renderLabelText() {
     return this.labelFormat ? this.renderLabelFormat() : `${this.percentage}%`;
   }
-
-  protected slotChanges() {
-    this.requestUpdate();
-  }
-
   protected abstract runAnimation(
     start: number,
     end: number,

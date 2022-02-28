@@ -52,6 +52,14 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     return radius * 2 * Math.PI;
   }
 
+  protected override indeterminateChange(): void {
+    if (this.indeterminate) {
+      this.svgCircle.getAnimations().forEach((animation) => animation.cancel());
+    } else {
+      this.runAnimation(0, this.value, true);
+    }
+  }
+
   private gradientChange() {
     this.requestUpdate();
   }
@@ -62,14 +70,6 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
           (asPercent(val, this.max) / 100) * this.circumference
       : this.circumference +
           (asPercent(val, this.max) / 100) * this.circumference;
-  }
-
-  protected override indeterminateChange(): void {
-    if (this.indeterminate) {
-      this.svgCircle.getAnimations().forEach((animation) => animation.cancel());
-    } else {
-      this.runAnimation(0, this.value, true);
-    }
   }
 
   protected override runAnimation(
