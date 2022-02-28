@@ -48,9 +48,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     const radiusInPixels = getComputedStyle(this.svgCircle).getPropertyValue(
       'r'
     );
-    const radius = Number(
-      radiusInPixels.substring(0, radiusInPixels.length - 2)
-    );
+    const radius = parseInt(radiusInPixels, 10);
     return radius * 2 * Math.PI;
   }
 
@@ -64,6 +62,14 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
           (asPercent(val, this.max) / 100) * this.circumference
       : this.circumference +
           (asPercent(val, this.max) / 100) * this.circumference;
+  }
+
+  protected override indeterminateChange(): void {
+    if (this.indeterminate) {
+      this.svgCircle.getAnimations().forEach((animation) => animation.cancel());
+    } else {
+      this.runAnimation(0, this.value, true);
+    }
   }
 
   protected override runAnimation(
@@ -87,6 +93,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       duration: indeterminateChange ? 0 : this.animationDuration,
     };
     this.animation = this.svgCircle.animate(frames, animOptions);
+    cancelAnimationFrame(this.tick);
     this.animateLabelTo(start, end, animOptions.duration);
   }
 

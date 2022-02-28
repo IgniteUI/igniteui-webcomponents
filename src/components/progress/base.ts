@@ -56,18 +56,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   public labelFormat!: string;
 
   @watch('indeterminate', { waitUntilFirstUpdate: true })
-  protected indeterminateChange() {
-    if (!this.indeterminate) {
-      this.runAnimation(0, this.value, true);
-    } else {
-      setTimeout(() => {
-        this.animation?.finish();
-        setTimeout(() => {
-          this.animation?.cancel();
-        }, 0);
-      }, 0);
-    }
-  }
+  protected indeterminateChange() {}
 
   @watch('max', { waitUntilFirstUpdate: true })
   protected maxChange() {
@@ -95,6 +84,8 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     }
   }
 
+  protected tick!: number;
+
   protected animateLabelTo(
     start: number,
     end: number,
@@ -110,7 +101,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
         asPercent(Math.floor(progress * (end - start) + start), this.max)
       );
       progress < 1
-        ? requestAnimationFrame(tick)
+        ? (this.tick = requestAnimationFrame(tick))
         : cancelAnimationFrame(requestAnimationFrame(tick));
     };
 

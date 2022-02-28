@@ -50,6 +50,16 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     };
   }
 
+  protected override indeterminateChange(): void {
+    if (this.indeterminate) {
+      this.progressIndicator
+        .getAnimations()
+        .forEach((animation) => animation.cancel());
+    } else {
+      this.runAnimation(0, this.value, true);
+    }
+  }
+
   protected override runAnimation(
     start: number,
     end: number,
@@ -67,6 +77,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
       duration: indeterminateChange ? 0 : this.animationDuration,
     };
     this.animation = this.progressIndicator.animate(frames, animOptions);
+    cancelAnimationFrame(this.tick);
     this.animateLabelTo(start, end, animOptions.duration);
   }
 
