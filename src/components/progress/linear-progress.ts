@@ -1,6 +1,5 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { when } from 'lit/directives/when.js';
 import { asPercent, partNameMap } from '../common/util';
 import { IgcProgressBaseComponent } from './base';
 import { styles } from './themes/linear/linear.progress.material.css';
@@ -14,7 +13,22 @@ import { styles } from './themes/linear/linear.progress.material.css';
  * @slot - The text area container.
  *
  * @csspart track
- * @csspart indicator
+ * @csspart fill
+ * @csspart striped
+ * @csspart label
+ * @csspart value
+ * @csspart indeterminate
+ * @csspart primary
+ * @csspart danger
+ * @csspart warning
+ * @csspart info
+ * @csspart success
+ * @csspart top
+ * @csspart top-start
+ * @csspart top-end
+ * @csspart bottom
+ * @csspart bottom-start
+ * @csspart bottom-end
  */
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
@@ -61,16 +75,6 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     );
     cancelAnimationFrame(this.tick);
     this.animateLabelTo(start, end, this.animationDuration);
-  }
-
-  protected renderLabel() {
-    return html`${when(
-      this.hideLabel || this.indeterminate || this.assignedElements.length,
-      () => nothing,
-      () => html`<span part="value ${this.labelAlign}">
-        ${this.renderLabelText()}
-      </span>`
-    )}`;
   }
 
   protected override render() {

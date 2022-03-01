@@ -22,14 +22,6 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @state()
   protected percentage = 0;
 
-  protected get animationOptions(): KeyframeAnimationOptions {
-    return {
-      easing: 'ease-out',
-      fill: 'forwards',
-      duration: this.animationDuration,
-    };
-  }
-
   /** Maximum value of the control. */
   @property({ type: Number })
   public max = 100;
@@ -45,7 +37,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   /** Animation duration in milliseconds. */
   @property({ type: Number, attribute: 'animation-duration' })
-  public animationDuration = 2000;
+  public animationDuration = 500;
 
   /** The indeterminate state of the control. */
   @property({ type: Boolean, reflect: false })
@@ -93,6 +85,14 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     }
   }
 
+  protected get animationOptions(): KeyframeAnimationOptions {
+    return {
+      easing: 'ease-out',
+      fill: 'forwards',
+      duration: this.animationDuration,
+    };
+  }
+
   protected slotChanges() {
     this.requestUpdate();
   }
@@ -121,7 +121,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
       const progress = Math.min((t1 - t0) / (animationDuration || 1), 1);
       this.percentage = Math.floor(
-        asPercent(Math.floor(progress * (end - start) + start), this.max)
+        asPercent(progress * (end - start) + start, this.max)
       );
       progress < 1
         ? (this.tick = requestAnimationFrame(tick))

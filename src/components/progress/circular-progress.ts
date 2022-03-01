@@ -14,18 +14,38 @@ import IgcCircularGradientComponent from './circular-gradient';
  * @element igc-circular-progress
  *
  * @slot - The text area container.
+ * @slot gradient - Customize the progress bar in order to use a color gradient instead of a solid color. Accepts `igc-circular-gradient` elements.
  *
+ * @csspart svg
+ * @csspart gradient_start
+ * @csspart gradient_end
  * @csspart track
- * @csspart indicator
+ * @csspart fill
+ * @csspart label
+ * @csspart value
+ * @csspart indeterminate
+ * @csspart primary
+ * @csspart danger
+ * @csspart warning
+ * @csspart info
+ * @csspart success
  */
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';
   public static override styles = styles;
 
+  protected gradientId = Date.now().toString(16);
+
   @queryAssignedElements({ slot: 'gradient' })
   protected gradientElements!: Array<IgcCircularGradientComponent>;
 
-  protected gradientId = Date.now().toString(16);
+  private get circumference(): number {
+    const radiusInPixels = getComputedStyle(
+      this.progressIndicator
+    ).getPropertyValue('r');
+    const radius = parseInt(radiusInPixels, 10);
+    return radius * 2 * Math.PI;
+  }
 
   protected get isLTR() {
     return window.getComputedStyle(this).getPropertyValue('direction') == 'ltr';
@@ -39,14 +59,6 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     return {
       indeterminate: this.indeterminate,
     };
-  }
-
-  private get circumference(): number {
-    const radiusInPixels = getComputedStyle(
-      this.progressIndicator
-    ).getPropertyValue('r');
-    const radius = parseInt(radiusInPixels, 10);
-    return radius * 2 * Math.PI;
   }
 
   private gradientChange() {
@@ -92,7 +104,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
             this.gradientElements.length,
             () =>
               this.gradientElements.map((el: IgcCircularGradientComponent) => {
-                return svg`<stop offset=${el.offset} stop-color=${el.color} opacity=${el.opacity}/>`;
+                return svg`<stop offset=${el.offset} stop-color=${el.color} stop-opacity=${el.opacity}/>`;
               }),
             () => svg`
               <stop offset="0%" part="gradient_start" />

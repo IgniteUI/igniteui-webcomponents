@@ -2,33 +2,26 @@ import { LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 
 /**
- * The list-item component is a container
- * intended for row items in the list component.
+ * Used for defining gradient stops in the igc-circular-progress.
+ * For each `igc-circular-gradient` defined as `gradient` slot of `igc-circular-progress` element would be created a SVG stop element.
+ * The values passed as `color`, `offset` and `opacity` would be set as
+ * `stop-color`, `offset` and `stop-opacity` of the SVG element without further validations.
  *
- * @element igc-list-item
+ * @element igc-circular-gradient
  *
- * @slot - Renders custom content.
- * @slot start - Renders content before all other content.
- * @slot end - Renders content after all other content.
- * @slot title - Renders the title.
- * @slot subtitle - Renders the subtitle.
- *
- * @csspart start - The start container.
- * @csspart end - The end container.
- * @csspart content - The header and custom content container.
- * @csspart header - The title and subtitle container.
- * @csspart title - The title container.
- * @csspart subtitle - The subtitle container.
  */
 export default class IgcCircularGradientComponent extends LitElement {
   public static readonly tagName = 'igc-circular-gradient';
 
+  /** Defines where the gradient stop is placed along the gradient vector */
   @property()
   public offset = '0%';
 
+  /** Defines the color of the gradient stop */
   @property()
   public color!: string;
 
+  /** Defines the opacity of the gradient stop */
   @property({ type: Number })
   public opacity = 1;
 
