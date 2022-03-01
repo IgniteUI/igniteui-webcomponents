@@ -1,0 +1,5 @@
+@use '../../styles/utilities' as *;
+
+.rounded {
+    border-radius: calc(var(--igc-border-radius) * 2);
+}
