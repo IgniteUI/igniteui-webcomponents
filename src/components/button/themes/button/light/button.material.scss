@@ -1,54 +1,56 @@
 @use './button.base.scss';
 
 %contained {
-  transition: box-shadow 0.1s ease-out;
+    transition: box-shadow .1s ease-out;
 
-  &::before {
-    opacity: 0;
-  }
+    &::before {
+        opacity: 0;
+    }
 
-  &:hover {
-    box-shadow: var(--igc-elevation-4);
-  }
+    &:hover {
+        box-shadow: var(--igc-elevation-4);
+    }
 
-  &:hover::before {
-    background: #fff;
-    opacity: 0.12;
-  }
+    &:hover::before {
+        background: #fff;
+        opacity: .12;
+    }
 
-  &:focus,
-  &:active {
-    box-shadow: var(--igc-elevation-8);
-  }
+    &:focus,
+    &:active {
+        box-shadow: var(--igc-elevation-8);
+    }
 
-  &:focus::before,
-  &:active::before {
-    background: #fff;
-    opacity: 0.24;
-  }
+    &:focus::before,
+    &:active::before {
+        background: #fff;
+        opacity: .24;
+    }
 }
 
 :host(:not([disabled])[variant='contained']) [part='base'] {
-  @extend %contained;
-  box-shadow: var(--igc-elevation-2);
+    @extend %contained;
 
-  &:hover {
-    box-shadow: var(--igc-elevation-4);
-  }
+    box-shadow: var(--igc-elevation-2);
 
-  &:focus,
-  &:active {
-    box-shadow: var(--igc-elevation-8);
-  }
+    &:hover {
+        box-shadow: var(--igc-elevation-4);
+    }
+
+    &:focus,
+    &:active {
+        box-shadow: var(--igc-elevation-8);
+    }
 }
 
 :host(:not([disabled])[variant='fab']) [part='base'] {
-  @extend %contained;
-  box-shadow: var(--igc-elevation-6);
+    @extend %contained;
 
-  &:hover,
-  &:focus,
-  &:active {
-    box-shadow: var(--igc-elevation-12);
-  }
+    box-shadow: var(--igc-elevation-6);
+
+    &:hover,
+    &:focus,
+    &:active {
+        box-shadow: var(--igc-elevation-12);
+    }
 }
