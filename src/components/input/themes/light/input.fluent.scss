@@ -114,16 +114,14 @@ $focused-border-width: utils.rem(2px);
     }
 }
 
-:host(:hover) {
+:host(:not([invalid]):hover) {
     [part^='container'] {
         border-color: utils.color(gray, 700);
     }
 }
 
-:host(:focus-within),
-:host(:focus-within:hover) {
+:host(:focus-within) {
     [part^='container'] {
-        border-color: utils.color(primary, 500);
         border-width: #{$focused-border-width};
     }
 
@@ -133,6 +131,13 @@ $focused-border-width: utils.rem(2px);
 
     [part='suffix'] {
         margin-inline-end: utils.rem(-1px);
+    }
+}
+
+:host(:not([invalid]):focus-within),
+:host(:not([invalid]):focus-within:hover) {
+    [part^='container'] {
+        border-color: utils.color(primary, 500);
     }
 }
 
@@ -156,6 +161,10 @@ $focused-border-width: utils.rem(2px);
 
 :host([disabled]) {
     pointer-events: none;
+
+    [part^='container'] {
+        border-color: utils.color(gray, 100);
+    }
 
     [part^='container'],
     [part='prefix'],

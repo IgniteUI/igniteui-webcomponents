@@ -21,10 +21,7 @@ $label-focus-color: utils.color(primary, 500) !default;
     }
 
     [part='label'] {
-        position: relative;
-        left: 0;
-        transform: none;
-        transition: none;
+        color: utils.color(gray, 600);
         margin-bottom: utils.rem(4px);
         font-size: initial;
     }
@@ -51,6 +48,7 @@ $label-focus-color: utils.color(primary, 500) !default;
     }
 
     [part~='input'] {
+        font-size: utils.rem(16px);
         background: initial;
         padding: utils.rem(8px);
         border: none;
@@ -59,7 +57,7 @@ $label-focus-color: utils.color(primary, 500) !default;
 
     [part='helper-text'] {
         padding: 0;
-        color: color(gray, 600);
+        color: utils.color(gray, 600);
     }
 }
 
@@ -85,14 +83,18 @@ $label-focus-color: utils.color(primary, 500) !default;
     }
 }
 
-:host([invalid]),
-:host([invalid][outlined]) {
+:host([invalid]) {
     [part^='container'] {
         border-color: utils.color(error, 500);
 
         &::after {
             background: utils.color(error, 500);
         }
+    }
+
+    [part='label'],
+    [part^='helper-text'] {
+        color: utils.color(error, 500);
     }
 }
 
