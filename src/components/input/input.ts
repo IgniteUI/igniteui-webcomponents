@@ -304,7 +304,9 @@ export default class IgcInputComponent
 
   @watch('value', { waitUntilFirstUpdate: true })
   protected handleValueChange() {
-    this.invalid = !this.input.checkValidity();
+    this.updateComplete.then(
+      () => (this.invalid = !this.input.checkValidity())
+    );
   }
 
   private renderInput() {
