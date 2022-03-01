@@ -1,0 +1,90 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+$input-height: (
+    large: rem(56px),
+    medium: rem(48px),
+    small: rem(40px)
+);
+
+%starfix {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    color: color(gray, 700);
+}
+
+:host {
+    position: relative;
+    display: block;
+    font-family: var(--igc-font-family);
+    outline-style: none;
+}
+
+[part='label'] {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+[part~='input'] {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline-style: none;
+    font-family: var(--igc-font-family);
+    z-index: 1;
+}
+
+[part^='container'] {
+    position: relative;
+    display: grid;
+}
+
+[part='prefix'],
+[part='suffix'] {
+    display: none;
+}
+
+[part~='prefixed'] {
+    [part='prefix'] {
+        @extend %starfix;
+    }
+}
+
+[part~='suffixed'] {
+    [part='suffix'] {
+        @extend %starfix;
+    }
+}
+
+:host([required]) {
+    [part='label']::after {
+        content: '*';
+    }
+}
+
+[part='helper-text'] {
+    @include type-category('caption');
+}
+
+:host([size='large']) {
+    [part~='input'],
+    [part~='container'] {
+        height: map.get($input-height, 'large');
+    }
+}
+
+:host([size='medium']) {
+    [part~='input'],
+    [part~='container'] {
+        height: map.get($input-height, 'medium');
+    }
+}
+
+:host([size='small']) {
+    [part~='input'],
+    [part~='container'] {
+        height: map.get($input-height, 'small');
+    }
+}

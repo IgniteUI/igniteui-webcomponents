@@ -1,0 +1,113 @@
+@use '../../../../styles/utilities' as utils;
+
+$label-focus-color: utils.color(primary, 500) !default;
+
+:host {
+    [part='prefix'],
+    [part='suffix'] {
+        padding-top: utils.rem(8px);
+        padding-bottom: utils.rem(8px);
+        color: utils.color(gray, 600);
+    }
+
+    [part='prefix'] {
+        padding-inline-start: utils.rem(8px);
+        grid-area: 1 / 1;
+    }
+
+    [part='suffix'] {
+        padding-inline-end: utils.rem(8px);
+        grid-area: 1 / 3;
+    }
+
+    [part='label'] {
+        position: relative;
+        left: 0;
+        transform: none;
+        transition: none;
+        margin-bottom: utils.rem(4px);
+        font-size: initial;
+    }
+
+    [part^='container'] {
+        background: transparent;
+        border-bottom: 1px solid utils.color(gray, 500);
+        transition: background .25s ease-out;
+        grid-template-columns: auto 1fr auto;
+
+        &::after {
+            position: absolute;
+            content: '';
+            width: 100%;
+            height: utils.rem(2px);
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            background: utils.color(secondary, 500);
+            transform: scaleY(0);
+            transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
+            transform-origin: bottom center;
+        }
+    }
+
+    [part~='input'] {
+        background: initial;
+        padding: utils.rem(8px);
+        border: none;
+        grid-area: 1 / 2;
+    }
+
+    [part='helper-text'] {
+        padding: 0;
+        color: color(gray, 600);
+    }
+}
+
+:host(:hover),
+:host([outlined]:hover) {
+    [part^='container'] {
+        background: utils.color(gray, 100);
+    }
+}
+
+:host(:focus-within),
+:host([outlined]:focus-within) {
+    [part^='container'] {
+        background: utils.color(gray, 100);
+
+        &::after {
+            transform: scaleY(1);
+        }
+    }
+
+    [part='label'] {
+        color: $label-focus-color;
+    }
+}
+
+:host([invalid]),
+:host([invalid][outlined]) {
+    [part^='container'] {
+        border-color: utils.color(error, 500);
+
+        &::after {
+            background: utils.color(error, 500);
+        }
+    }
+}
+
+:host([disabled]) {
+    pointer-events: none;
+
+    [part^='container'] {
+        border-color: utils.color(gray, 300);
+    }
+
+    [part='prefix'],
+    [part='suffix'],
+    [part='label'],
+    [part~='input'],
+    [part='helper-text'] {
+        color: utils.color(gray, 300);
+    }
+}

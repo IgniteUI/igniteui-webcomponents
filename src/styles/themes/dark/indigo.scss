@@ -1,6 +1,7 @@
 @use '../../utilities' as utils;
 @use '../base/indigo' as base;
-@use '../../../components/input/input.indigo' as input with ($label-focus-color: utils.color(gray, 800));
+
+// @use '../../../components/input/themes/light/input.indigo' as input with ($label-focus-color: utils.color(gray, 800));
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -14,4 +15,5 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include input.theme();
+
+// @include input.theme();

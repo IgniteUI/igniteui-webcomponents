@@ -1,6 +1,7 @@
 @use '../../utilities' as utils;
 @use '../base/fluent' as base;
-@use '../../../components/input/input.fluent' as input with ($container-background: transparent);
+
+// @use '../../../components/input/themes/light/input.fluent' as input with ($container-background: transparent);
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -13,4 +14,5 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include input.theme();
+
+// @include input.theme();

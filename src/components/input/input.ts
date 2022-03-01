@@ -13,7 +13,11 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable';
 import { partNameMap } from '../common/util';
-import { styles } from './input.material.css';
+import { styles } from './themes/light/input.base.css';
+import { styles as bootstrap } from './themes/light/input.bootstrap.css';
+import { styles as fluent } from './themes/light/input.fluent.css';
+import { styles as indigo } from './themes/light/input.indigo.css';
+import { styles as material } from './themes/light/input.material.css';
 
 let nextId = 0;
 
@@ -46,7 +50,7 @@ export interface IgcInputEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes({})
+@themes({ bootstrap, material, fluent, indigo })
 export default class IgcInputComponent
   extends SizableMixin(
     EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
@@ -54,7 +58,6 @@ export default class IgcInputComponent
   implements ReactiveTheme
 {
   public static readonly tagName = 'igc-input';
-
   public static styles = styles;
 
   protected static shadowRootOptions = {

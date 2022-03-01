@@ -1,7 +1,5 @@
 @use 'sass:map';
-@use 'sass:math';
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/utilities' as *;
 
 $idle-color: color(gray, 600) !default;
 $idle-hover-color: color(gray, 800) !default;
@@ -12,11 +10,6 @@ $error-color: color(error, 500) !default;
 $idle-border-width: rem(1px) !default;
 $active-border-width: rem(2px) !default;
 $fs: rem(16px) !default;
-$input-height: (
-    large: rem(56px),
-    medium: rem(48px),
-    small: rem(40px)
-);
 
 %large-label {
     transform: translateY(-26px);
@@ -37,54 +30,25 @@ $input-height: (
     border-top: $idle-border-width solid transparent;
 }
 
-%starfix {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    color: color(gray, 700);
-}
-
 :host {
-    position: relative;
-    display: block;
-    font-family: var(--igc-font-family);
-    outline-style: none;
-
-    --theme: material;
-
     input:not(:placeholder-shown) + [part='notch'] {
         @extend %floated-styles;
     }
 }
 
 :host([size='large']) {
-    [part~='input'],
-    [part~='container'] {
-        height: map.get($input-height, 'large');
-    }
-
     input:not(:placeholder-shown) + [part='notch'] [part='label'] {
         @extend %large-label;
     }
 }
 
 :host([size='medium']) {
-    [part~='input'],
-    [part~='container'] {
-        height: map.get($input-height, 'medium');
-    }
-
     input:not(:placeholder-shown) + [part='notch'] [part='label'] {
         @extend %medium-label;
     }
 }
 
 :host([size='small']) {
-    [part~='input'],
-    [part~='container'] {
-        height: map.get($input-height, 'small');
-    }
-
     input:not(:placeholder-shown) + [part='notch'] [part='label'] {
         @extend %small-label;
     }
@@ -133,29 +97,21 @@ $input-height: (
 }
 
 [part~='input'] {
-    width: 100%;
-    height: 100%;
-    border: none;
     background: transparent;
     color: color(gray, 900);
-    outline-style: none;
     padding: 0 rem(4px);
     font-size: rem(16px);
-    font-family: var(--igc-font-family);
     grid-area: 1 / 2 / span 1 / span 2;
-    z-index: 1;
 }
 
 [part='label'] {
-    display: inline-block;
+    color: $idle-color;
     /* stylelint-disable */
     transition:
         transform 150ms cubic-bezier(.4, 0, .2, 1),
         color 150ms cubic-bezier(.4, 0, .2, 1),
         font-size 150ms cubic-bezier(.4, 0, .2, 1);
     /* stylelint-enable */
-    white-space: nowrap;
-    color: $idle-color;
     line-height: 1;
     will-change: font-size, color, transform;
 }
@@ -216,26 +172,7 @@ $input-height: (
 }
 
 [part^='container'] {
-    position: relative;
-    display: grid;
     grid-template-columns: auto auto 1fr auto;
-}
-
-[part='prefix'],
-[part='suffix'] {
-    display: none;
-}
-
-[part~='prefixed'] {
-    [part='prefix'] {
-        @extend %starfix;
-    }
-}
-
-[part~='suffixed'] {
-    [part='suffix'] {
-        @extend %starfix;
-    }
 }
 
 [part='start'] {
@@ -363,12 +300,6 @@ $input-height: (
 :host([invalid]:focus-within) {
     [part='notch'] {
         border-top: $idle-border-width solid transparent;
-    }
-}
-
-:host([required]) {
-    [part='label']::after {
-        content: '*';
     }
 }
 
