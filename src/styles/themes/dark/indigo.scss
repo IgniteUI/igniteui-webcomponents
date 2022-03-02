@@ -5,6 +5,7 @@
 @use '../../../components/input/themes/dark/input.dark.indigo' as input;
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
 @use '../../../components/slider/themes/dark/slider.indigo' as slider;
+@use '../../../components/list/themes/dark/list.indigo' as list;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -23,3 +24,4 @@ $palette: utils.palette(
 @include input.theme();
 @include radio.theme();
 @include slider.theme();
+@include list.theme();

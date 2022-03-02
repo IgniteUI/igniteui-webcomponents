@@ -1,4 +1,7 @@
 @use '../../../../styles/utilities' as utils;
-@use '../light/list.fluent' with (
-    $item-hover-bg: utils.color(gray, 100),
-);
+
+@mixin theme() {
+    igc-list-item {
+        --item-hover-bg: #{utils.color(gray, 100)};
+    }
+}

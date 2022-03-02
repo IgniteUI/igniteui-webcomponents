@@ -1,4 +1,8 @@
 @use '../../../../styles/utilities' as utils;
-@use '../light/list.bootstrap' with (
-    $separator-color: utils.color(gray, 100)
-);
+
+@mixin theme() {
+    igc-list,
+    igc-list-item {
+        --separator-color: #{utils.color(gray, 100)};
+    }
+}
