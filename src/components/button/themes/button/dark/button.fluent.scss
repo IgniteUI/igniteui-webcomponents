@@ -1,6 +1,9 @@
 @use '../../../../../styles/utilities' as utils;
-@use '../light/button.fluent.scss' with (
-    $button-color: utils.color(surface, 500),
-    $hover-color: utils.color(primary, 300),
-    $active-color: utils.color(primary, 100)
-);
+
+@mixin theme() {
+    igc-button {
+        --text-color: #{utils.color(surface, 500)};
+        --hover-background: #{utils.color(primary, 300)};
+        --active-background: #{utils.color(primary, 100)};
+    }
+}

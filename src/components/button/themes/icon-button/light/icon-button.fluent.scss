@@ -1,7 +1,7 @@
 @use '../../../../../styles/utilities' as utils;
 
-$button-color: #{utils.contrast-color(primary, 600)} !default;
-$hover-color: #{utils.color(primary, 600)} !default;
+$text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
+$hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
 
 button {
     background: transparent;
@@ -35,11 +35,11 @@ button {
 
 :host([variant='contained']) {
     button {
-        color: $button-color;
+        color: $text-color;
         background: utils.color(primary, 500);
 
         &:hover {
-            background: $hover-color;
+            background: $hover-background;
         }
 
         &:focus-visible::after {

@@ -1,11 +1,11 @@
 @use '../../../../styles/utilities' as *;
 
-$border-color: color(gray, 500) !default;
-$hover-color: color(gray, 800) !default;
-$checked-hover-color: color(primary, 900) !default;
-$invalid-color: color(error, 500) !default;
-$invalid-hover-color: color(error, 700) !default;
-$disabled-color: color(gray, 400) !default;
+$border-color: var(--border-color, color(gray, 500)) !default;
+$hover-color: var(--hover-color, color(gray, 800)) !default;
+$checked-hover-color: var(--checked-hover-color, color(primary, 900)) !default;
+$invalid-color: var(--invalid-color, color(error, 500)) !default;
+$invalid-hover-color: var(--invalid-hover-color, color(error, 700)) !default;
+$disabled-color: var(--disabled-color, color(gray, 400)) !default;
 
 [part~='control'] {
     width: var(--size, rem(20px));
@@ -20,6 +20,7 @@ $disabled-color: color(gray, 400) !default;
 }
 
 [part~='indicator'] {
+    stroke: color(surface, 500);
     stroke-width: 1.5;
     transform: scale(.8);
 }

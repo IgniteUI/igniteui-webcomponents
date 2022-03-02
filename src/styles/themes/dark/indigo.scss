@@ -1,5 +1,8 @@
 @use '../../utilities' as utils;
 @use '../base/indigo' as base;
+@use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
+@use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
+@use '../../../components/input/themes/dark/input.dark.indigo' as input;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -13,3 +16,6 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
+@include checkbox.theme();
+@include switch.theme();
+@include input.theme();

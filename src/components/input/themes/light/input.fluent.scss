@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as utils;
 
-$container-background: utils.color(surface, 500) !default;
+$container-background: var(--container-background, utils.color(surface, 500)) !default;
 $input-height: (
     large: utils.rem(48px),
     medium: utils.rem(40px),
@@ -63,6 +63,7 @@ $focused-border-width: utils.rem(2px);
     [part='helper-text'] {
         padding: 0;
         margin-top: utils.rem(8px);
+        color: utils.color(gray, 600);
     }
 }
 

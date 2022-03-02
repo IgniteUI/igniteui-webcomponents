@@ -2,6 +2,6 @@
 
 @mixin theme() {
     igc-input {
-        --focus-background: #{utils.color(gray, 100)};
+        --label-focus-color: #{utils.color(gray, 800)};
     }
 }

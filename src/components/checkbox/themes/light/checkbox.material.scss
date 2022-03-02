@@ -10,6 +10,10 @@ label {
     }
 }
 
+[part~='indicator'] {
+    stroke: color(surface, 500);
+}
+
 [part~='control'] {
     $size: var(--size, rem(20px));
 

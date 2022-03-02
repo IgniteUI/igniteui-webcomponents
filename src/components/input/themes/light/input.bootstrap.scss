@@ -1,6 +1,6 @@
 @use '../../../../styles/utilities' as utils;
 
-$input-background: #fff !default;
+$input-background: var(--input-background, #fff) !default;
 
 :host {
     &::after {
@@ -41,7 +41,6 @@ $input-background: #fff !default;
     [part~='container'] {
         border: none;
         grid-template-columns: auto 1fr auto;
-        background: $input-background;
 
         &::after {
             display: none;

@@ -4,7 +4,7 @@
 $idle-color: color(gray, 600) !default;
 $idle-hover-color: color(gray, 800) !default;
 $hover-background: color(gray, 200) !default;
-$focus-background: color(gray, 300) !default;
+$focus-background: var(--focus-background, color(gray, 300)) !default;
 $active-color: color(primary, 500) !default;
 $error-color: color(error, 500) !default;
 $idle-border-width: rem(1px) !default;
@@ -98,7 +98,6 @@ $fs: rem(16px) !default;
 
 [part~='input'] {
     background: transparent;
-    color: color(gray, 900);
     padding: 0 rem(4px);
     font-size: rem(16px);
     grid-area: 1 / 2 / span 1 / span 2;

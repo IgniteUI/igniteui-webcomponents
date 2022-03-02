@@ -1,6 +1,6 @@
 @use '../../../../styles/utilities' as utils;
 
-$label-focus-color: utils.color(primary, 500) !default;
+$label-focus-color: var(--label-focus-color, utils.color(primary, 500)) !default;
 
 :host {
     [part='prefix'],

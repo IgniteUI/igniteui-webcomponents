@@ -1,7 +1,6 @@
 @use '../../utilities' as utils;
 @use '../base/bootstrap' as base;
-
-// @use '../../../components/input/themes/light/input.bootstrap' as input with ($input-background: transparent);
+@use '../../../components/input/themes/dark/input.dark.bootstrap' as input;
 
 $palette: utils.palette(
     $primary: #0d6efd,
@@ -15,5 +14,4 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-
-// @include input.theme();
+@include input.theme();

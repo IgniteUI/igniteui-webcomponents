@@ -1,8 +1,8 @@
 @use '../../../../../styles/utilities' as utils;
 
-$button-color: #{utils.contrast-color(primary, 600)} !default;
-$hover-color: #{utils.color(primary, 600)} !default;
-$active-color: #{utils.color(primary, 700)} !default;
+$text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
+$hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
+$active-background: var(--active-background, #{utils.color(primary, 700)}) !default;
 
 :host([size='small']) [part='base'] {
     border-radius: calc(var(--igc-border-radius) * 1);
@@ -127,22 +127,22 @@ $active-color: #{utils.color(primary, 700)} !default;
 // FAB & CONTAINED
 :host(:not([disabled])[variant='contained']) [part='base'],
 :host(:not([disabled])[variant='fab']) [part='base'] {
-    color: $button-color;
+    color: $text-color;
     box-shadow: var(--igc-elevation-0);
 
     &:hover,
     &:focus-visible:hover {
-        color: $button-color;
+        color: $text-color;
 
         &::before {
             opacity: 1;
-            background: $hover-color;
+            background: $hover-background;
         }
     }
 
     &:focus,
     &:active {
-        color: $button-color;
+        color: $text-color;
     }
 
     &::before {
@@ -154,7 +154,7 @@ $active-color: #{utils.color(primary, 700)} !default;
     &:focus-visible:active {
         &::before {
             opacity: 1;
-            background: $active-color;
+            background: $active-background;
         }
     }
 

@@ -1,12 +1,12 @@
 @use '../../../../styles/utilities' as *;
 
-$thumb-color: color(gray, 700) !default;
-$disabled-thumb-color: color(surface, 500) !default;
-$hover-color: color(gray, 800) !default;
-$checked-hover-color: color(primary, 900) !default;
-$invalid-color: color(error, 500) !default;
-$invalid-hover-color: color(error, 700) !default;
-$disabled-color: color(gray, 400) !default;
+$thumb-color: var(--thumb-color, color(gray, 700)) !default;
+$disabled-thumb-color: var(--disabled-thumb-color, color(surface, 500)) !default;
+$hover-color: var(--hover-color, color(gray, 800)) !default;
+$checked-hover-color: var(--checked-hover-color, color(primary, 900)) !default;
+$invalid-color: var(--invalid-color, color(error, 500)) !default;
+$invalid-hover-color: var(--invalid-hover-color, color(error, 700)) !default;
+$disabled-color: var(--disabled-color, color(gray, 400)) !default;
 
 :host {
     --size: #{rem(40px)};
