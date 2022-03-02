@@ -1,4 +1,4 @@
-import { html, svg } from 'lit';
+import { html, nothing, svg } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -120,9 +120,10 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     return html`
       <svg
         part="svg ${partNameMap(this.svgParts)}"
+        role="progressbar"
         aria-valuemin="0"
         aria-valuemax=${this.max}
-        aria-valuenow=${this.value}
+        aria-valuenow=${this.indeterminate ? nothing : this.value}
       >
         ${this.renderSvg()}
       </svg>

@@ -82,8 +82,8 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
       <div
         part="track"
         role="progressbar"
-        aria-valuemin=${this.indeterminate ? nothing : 0}
-        aria-valuemax=${this.indeterminate ? nothing : this.max}
+        aria-valuemin="0"
+        aria-valuemax=${this.max}
         aria-valuenow=${this.indeterminate ? nothing : this.value}
       >
         <div part="${partNameMap(this.wrapperParts)}"></div>
