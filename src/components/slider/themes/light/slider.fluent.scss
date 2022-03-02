@@ -12,7 +12,7 @@ $thumb-disabled-border: var(--thumb-disabled-border, color(gray, 400)) !default;
 $thumb-size: rem(16px);
 $thumb-radius: math.div($thumb-size, 2);
 
-[part='base']:hover {
+:host(:hover) {
     [part='inactive'] {
         background: color(primary, 500, .32);
     }
