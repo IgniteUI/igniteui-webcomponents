@@ -33,6 +33,7 @@ export { SizableMixin } from './components/common/mixins/sizable';
 export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources';
 
 export { IgcButtonBaseComponent } from './components/button/button-base';
+export { IgcInputBaseComponent } from './components/input/input-base';
 
 export { IgcCalendarBaseComponent } from './components/calendar/common/calendar-base';
 export {

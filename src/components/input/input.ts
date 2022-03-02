@@ -1,30 +1,13 @@
-import { html, LitElement } from 'lit';
-import {
-  property,
-  query,
-  queryAssignedElements,
-  state,
-} from 'lit/decorators.js';
+import { html } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
-import { Constructor } from '../common/mixins/constructor.js';
 import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util';
-import { SizableMixin } from '../common/mixins/sizable';
-
-let nextId = 0;
+import { IgcInputBaseComponent } from './input-base';
 
 type Direction = 'ltr' | 'rtl' | 'auto';
-
-export interface IgcInputEventMap {
-  /* alternateName: inputOcurred */
-  igcInput: CustomEvent<string>;
-  igcChange: CustomEvent<string>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
-}
 
 /**
  * @element igc-input
@@ -45,37 +28,19 @@ export interface IgcInputEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcInputComponent extends SizableMixin(
-  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
-) {
+export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
-
   public static styles = styles;
 
-  protected static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
-  private inputId = `input-${nextId++}`;
-  private labelId = `input-label-${this.inputId}`;
+  @property()
+  @blazorTwoWayBind('igcChange', 'detail')
+  public value = '';
 
   @state()
   private _prefixLength!: number;
 
   @state()
   private _suffixLength!: number;
-
-  @state()
-  private theme!: string | undefined;
-
-  @query('input', true)
-  private input!: HTMLInputElement;
-
-  @queryAssignedElements({ slot: 'prefix' })
-  private _prefix!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'suffix' })
-  private _suffix!: Array<HTMLElement>;
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
@@ -105,47 +70,13 @@ export default class IgcInputComponent extends SizableMixin(
     | 'email'
     | 'url';
 
-  /** The name attribute of the control. */
-  @property()
-  public name!: string;
-
-  /** The value attribute of the control. */
-  @property()
-  @blazorTwoWayBind('igcChange', 'detail')
-  public value = '';
-
   /** The pattern attribute of the control. */
   @property({ type: String })
   public pattern!: string;
 
-  /** The label of the control.
-   * @attr [label=Label]
-   */
-  @property({ type: String })
-  public label!: string;
-
-  /** The placeholder attribute of the control. */
-  @property({ type: String })
-  public placeholder!: string;
-
   /** Controls the validity of the control. */
   @property({ reflect: true, type: Boolean })
   public invalid = false;
-
-  @property({ reflect: true, type: Boolean })
-  public outlined = false;
-
-  /** Makes the control a required field. */
-  @property({ reflect: true, type: Boolean })
-  public required = false;
-
-  /** Makes the control a disabled field. */
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
-
-  /** Makes the control a readonly field. */
-  @property({ reflect: true, type: Boolean })
-  public readonly = false;
 
   /** The minlength attribute of the control. */
   @property({ type: Number })
@@ -175,11 +106,6 @@ export default class IgcInputComponent extends SizableMixin(
   @property()
   public autocomplete!: string;
 
-  constructor() {
-    super();
-    this.size = 'medium';
-  }
-
   public override connectedCallback() {
     super.connectedCallback();
     const theme = document.defaultView
@@ -190,8 +116,8 @@ export default class IgcInputComponent extends SizableMixin(
     this.theme = theme;
 
     this.shadowRoot?.addEventListener('slotchange', (_) => {
-      this._prefixLength = this._prefix.length;
-      this._suffixLength = this._suffix.length;
+      this._prefixLength = this.prefixes.length;
+      this._suffixLength = this.suffixes.length;
     });
   }
 
@@ -214,35 +140,6 @@ export default class IgcInputComponent extends SizableMixin(
     return this.input.select();
   }
 
-  /** Sets the text selection range of the input. */
-  public setSelectionRange(
-    selectionStart: number,
-    selectionEnd: number,
-    selectionDirection: 'backward' | 'forward' | 'none' = 'none'
-  ) {
-    return this.input.setSelectionRange(
-      selectionStart,
-      selectionEnd,
-      selectionDirection
-    );
-  }
-
-  /** Replaces the selected text in the input. */
-  public setRangeText(
-    replacement: string,
-    start: number,
-    end: number,
-    selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
-  ) {
-    this.input.setRangeText(replacement, start, end, selectMode);
-
-    if (this.value !== this.input.value) {
-      this.value = this.input.value;
-      this.emitEvent('igcInput', { detail: this.value });
-      this.emitEvent('igcChange', { detail: this.value });
-    }
-  }
-
   /** Increments the numeric value of the input by one or more steps. */
   public stepUp(n?: number) {
     this.input.stepUp(n);
@@ -255,26 +152,6 @@ export default class IgcInputComponent extends SizableMixin(
     this.handleChange();
   }
 
-  /** Sets focus on the control. */
-  @alternateName('focusComponent')
-  public override focus(options?: FocusOptions) {
-    this.input.focus(options);
-  }
-
-  /** Removes focus from the control. */
-  @alternateName('blurComponent')
-  public override blur() {
-    this.input.blur();
-  }
-
-  private resolvePartNames(base: string) {
-    return {
-      [base]: true,
-      prefixed: this._prefixLength > 0,
-      suffixed: this._suffixLength > 0,
-    };
-  }
-
   private handleInvalid() {
     this.invalid = true;
   }
@@ -284,19 +161,6 @@ export default class IgcInputComponent extends SizableMixin(
     this.emitEvent('igcInput', { detail: this.value });
   }
 
-  private handleChange() {
-    this.value = this.input.value;
-    this.emitEvent('igcChange', { detail: this.value });
-  }
-
-  private handleFocus() {
-    this.emitEvent('igcFocus');
-  }
-
-  private handleBlur() {
-    this.emitEvent('igcBlur');
-  }
-
   @watch('value', { waitUntilFirstUpdate: true })
   protected handleValueChange() {
     this.updateComplete.then(
@@ -304,7 +168,15 @@ export default class IgcInputComponent extends SizableMixin(
     );
   }
 
-  private renderInput() {
+  protected override resolvePartNames(base: string) {
+    return {
+      [base]: true,
+      prefixed: this._prefixLength > 0,
+      suffixed: this._suffixLength > 0,
+    };
+  }
+
+  protected renderInput() {
     return html`
       <input
         id="${this.inputId}"
@@ -333,62 +205,6 @@ export default class IgcInputComponent extends SizableMixin(
         @blur="${this.handleBlur}"
       />
     `;
-  }
-
-  private renderLabel() {
-    return this.label
-      ? html`<label id="${this.labelId}" part="label" for="${this.inputId}">
-          ${this.label}
-        </label>`
-      : null;
-  }
-
-  private renderPrefix() {
-    return html`<div part="prefix">
-      <slot name="prefix"></slot>
-    </div>`;
-  }
-
-  private renderSuffix() {
-    return html`<div part="suffix">
-      <slot name="suffix"></slot>
-    </div>`;
-  }
-
-  private renderStandard() {
-    return html`${this.renderLabel()}
-      <div part="${partNameMap(this.resolvePartNames('container'))}">
-        ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
-      </div>
-      <div part="helper-text">
-        <slot name="helper-text"></slot>
-      </div>`;
-  }
-
-  private renderMaterial() {
-    return html`
-      <div
-        part="${partNameMap({
-          ...this.resolvePartNames('container'),
-          labelled: this.label,
-        })}"
-      >
-        <div part="start">${this.renderPrefix()}</div>
-        ${this.renderInput()}
-        <div part="notch">${this.renderLabel()}</div>
-        <div part="filler"></div>
-        <div part="end">${this.renderSuffix()}</div>
-      </div>
-      <div part="helper-text">
-        <slot name="helper-text"></slot>
-      </div>
-    `;
-  }
-
-  protected override render() {
-    return html`${this.theme === 'material'
-      ? this.renderMaterial()
-      : this.renderStandard()}`;
   }
 }
 
