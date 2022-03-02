@@ -2,7 +2,7 @@
 
 :host {
     --size: #{rem(32px)};
-    --thumb-size: #{rem(11px)};
+    --thumb-size: #{rem(10px)};
     --thumb-offset: calc(var(--thumb-size) / 4);
 }
 
