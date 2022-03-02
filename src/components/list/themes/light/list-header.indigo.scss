@@ -1,0 +1,6 @@
+@use './list-header.base.scss';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    color: color(primary, 500);
+}
