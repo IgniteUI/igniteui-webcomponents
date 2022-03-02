@@ -6,6 +6,7 @@ import { styles } from './themes/button/light/button.base.css';
 import { styles as bootstrap } from './themes/button/light/button.bootstrap.css';
 import { styles as fluent } from './themes/button/light/button.fluent.css';
 import { styles as indigo } from './themes/button/light/button.indigo.css';
+import { styles as material } from './themes/button/light/button.material.css';
 
 /**
  * Represents a clickable button, used to submit forms or anywhere in a
@@ -24,7 +25,7 @@ import { styles as indigo } from './themes/button/light/button.indigo.css';
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
  */
-@themes({ bootstrap, indigo, fluent })
+@themes({ bootstrap, indigo, fluent, material })
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
 
