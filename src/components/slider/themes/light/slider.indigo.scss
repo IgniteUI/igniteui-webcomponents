@@ -1,9 +1,10 @@
+@use 'sass:math';
 @use '../../../../styles/utilities' as *;
 
-$inactive-background: color(gray, 400) !default;
-$inactive-hover-background: color(gray, 500) !default;
+$inactive-background: var(--inactive-background, color(gray, 400)) !default;
+$inactive-hover-background: var(--inactive-hover-background, color(gray, 500)) !default;
 $thumb-size: rem(14px);
-$thumb-radius: calc(#{$thumb-size} / 2);
+$thumb-radius: math.div($thumb-size, 2);
 
 [part='base']:hover {
     [part='inactive'] {

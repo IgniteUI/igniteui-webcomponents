@@ -1,10 +1,11 @@
+@use 'sass:math';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
 $thumb-size: rem(20px);
-$thumb-radius: calc(#{$thumb-size} / 2);
+$thumb-radius: math.div($thumb-size, 2);
 $ripple-size: rem(40px);
-$ripple-radius: calc(#{$ripple-size} / 2);
+$ripple-radius: math.div($ripple-size, 2);
 $thumb-label-width: rem(40px);
 $thumb-label-height: rem(30px);
 

@@ -1,6 +1,6 @@
 @use '../../../../styles/utilities' as *;
 
-$inactive-background: color(secondary, 500, .24) !default;
+$inactive-background: var(--inactive-background, color(secondary, 500, .24)) !default;
 $thumb-size: rem(16px);
 $thumb-radius: calc(#{$thumb-size} / 2);
 

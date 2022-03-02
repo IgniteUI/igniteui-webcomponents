@@ -1,15 +1,16 @@
+@use 'sass:math';
 @use '../../../../styles/utilities' as *;
 
-$inactive-background: color(gray, 400) !default;
-$inactive-disabled-background: color(gray, 200) !default;
-$fill-background: color(gray, 700) !default;
-$fill-hover-background: color(primary, 500) !default;
-$fill-disabled-background: color(gray, 400) !default;
-$thumb-border: color(gray, 700) !default;
-$thumb-hover-border: color(primary, 500) !default;
-$thumb-disabled-border: color(gray, 400) !default;
+$inactive-background: var(--inactive-background, color(gray, 400)) !default;
+$inactive-disabled-background: var(--inactive-disabled-background, color(gray, 200)) !default;
+$fill-background: var(--fill-background, color(gray, 700)) !default;
+$fill-hover-background: var(--fill-hover-background, color(primary, 500)) !default;
+$fill-disabled-background: var(--fill-disabled-background, color(gray, 400)) !default;
+$thumb-border: var(--thumb-border, color(gray, 700)) !default;
+$thumb-hover-border: var(--thumb-hover-border, color(primary, 500)) !default;
+$thumb-disabled-border: var(--thumb-disabled-border, color(gray, 400)) !default;
 $thumb-size: rem(16px);
-$thumb-radius: calc(#{$thumb-size} / 2);
+$thumb-radius: math.div($thumb-size, 2);
 
 [part='base']:hover {
     [part='inactive'] {

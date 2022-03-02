@@ -1,9 +1,10 @@
+@use 'sass:math';
 @use '../../../../styles/utilities' as *;
 
 $ripple-size: rem(40px);
-$ripple-radius: calc(#{$ripple-size} / 2);
+$ripple-radius: math.div($ripple-size, 2);
 $thumb-size: rem(20px);
-$thumb-radius: calc(#{$thumb-size} / 2);
+$thumb-radius: math.div($thumb-size, 2);
 
 [part='track'] {
     height: rem(6px);

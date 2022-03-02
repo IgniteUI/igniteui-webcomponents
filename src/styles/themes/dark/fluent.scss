@@ -5,6 +5,8 @@
 @use '../../../components/checkbox/themes/dark/checkbox.fluent' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.fluent' as switch;
 @use '../../../components/input/themes/dark/input.dark.fluent' as input;
+@use '../../../components/radio/themes/dark/radio.fluent' as radio;
+@use '../../../components/slider/themes/dark/slider.fluent.scss' as slider;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -22,3 +24,5 @@ $palette: utils.palette(
 @include checkbox.theme();
 @include switch.theme();
 @include input.theme();
+@include radio.theme();
+@include slider.theme();

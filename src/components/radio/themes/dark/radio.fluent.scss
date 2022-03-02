@@ -1,8 +1,11 @@
 @use '../../../../styles/utilities' as utils;
-@use '../light/radio.fluent' with (
-    $hover-color: utils.color(gray, 500),
-    $checked-hover-color: utils.color(primary, 100),
-    $invalid-color: utils.color(error, 200),
-    $invalid-hover-color: utils.color(error, 100),
-    $disabled-color: utils.color(gray, 200)
-);
+
+@mixin theme() {
+    igc-radio {
+        --hover-color: #{utils.color(gray, 500)};
+        --checked-hover-color: #{utils.color(primary, 100)};
+        --invalid-color: #{utils.color(error, 200)};
+        --invalid-hover-color: #{utils.color(error, 100)};
+        --disabled-color: #{utils.color(gray, 200)};
+    }
+}

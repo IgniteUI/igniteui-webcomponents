@@ -1,8 +1,8 @@
 @use '../../../../styles/utilities' as utils;
 
-$border-color: utils.color(gray, 600) !default;
-$checked-color: utils.color(secondary, 500) !default;
-$disabled-color: utils.color(gray, 300) !default;
+$border-color: var(--border-color, utils.color(gray, 600)) !default;
+$checked-color: var(--checked-color, utils.color(secondary, 500)) !default;
+$disabled-color: var(--disabled-color, utils.color(gray, 300)) !default;
 
 :host {
     font-weight: 600;
