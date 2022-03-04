@@ -138,6 +138,8 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
     selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
   ) {
     this.input.setRangeText(replacement, start, end, selectMode);
+
+    this.value = this.input.value;
   }
 
   private renderPrefix() {
