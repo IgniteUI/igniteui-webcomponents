@@ -1,8 +1,7 @@
 @use '../../../styles/utilities/index' as *;
 @use 'sass:math';
 
-[part='months-view'],
-[part='years-view'] {
+:host {
     display: flex;
     flex-direction: column;
     min-width: rem(290px);

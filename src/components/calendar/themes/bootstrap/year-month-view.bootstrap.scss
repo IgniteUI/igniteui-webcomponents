@@ -2,8 +2,7 @@
 @use '../../../../styles/utilities/index' as *;
 @use 'vars' as *;
 
-[part~='month-view'],
-[part~='years-view'] {
+:host {
     padding-block-start: rem(16px);
 }
 

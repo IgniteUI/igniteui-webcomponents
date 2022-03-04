@@ -4,6 +4,7 @@
 
 :host(igc-calendar) {
     border: rem(1px) solid $border-color;
+    border-radius: $border-radius;
 }
 
 :host(igc-calendar[size='large']),
