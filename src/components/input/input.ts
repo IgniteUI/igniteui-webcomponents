@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styles } from './input.material.css';
@@ -35,12 +35,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
   public value = '';
-
-  @state()
-  private _prefixLength!: number;
-
-  @state()
-  private _suffixLength!: number;
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
@@ -106,21 +100,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   public autocomplete!: string;
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    const theme = document.defaultView
-      ?.getComputedStyle(this)
-      .getPropertyValue('--theme')
-      .trim();
-
-    this.theme = theme;
-
-    this.shadowRoot?.addEventListener('slotchange', (_) => {
-      this._prefixLength = this.prefixes.length;
-      this._suffixLength = this.suffixes.length;
-    });
-  }
-
   /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity() {
     return this.input.reportValidity();
@@ -166,14 +145,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.updateComplete.then(
       () => (this.invalid = !this.input.checkValidity())
     );
-  }
-
-  protected override resolvePartNames(base: string) {
-    return {
-      [base]: true,
-      prefixed: this._prefixLength > 0,
-      suffixed: this._suffixLength > 0,
-    };
   }
 
   protected renderInput() {

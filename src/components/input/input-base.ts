@@ -78,6 +78,14 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
     this.size = 'medium';
   }
 
+  public override connectedCallback() {
+    super.connectedCallback();
+
+    this.theme = getComputedStyle(this).getPropertyValue('--theme').trim();
+
+    this.shadowRoot!.addEventListener('slotchange', () => this.requestUpdate());
+  }
+
   /** Sets focus on the control. */
   @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
@@ -130,12 +138,6 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
     selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
   ) {
     this.input.setRangeText(replacement, start, end, selectMode);
-
-    if (this.value !== this.input.value) {
-      this.value = this.input.value;
-      this.emitEvent('igcInput', { detail: this.value });
-      this.emitEvent('igcChange', { detail: this.value });
-    }
   }
 
   private renderPrefix() {
