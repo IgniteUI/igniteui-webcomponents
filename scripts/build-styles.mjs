@@ -1,15 +1,13 @@
-const fs = require('fs');
-const util = require('util');
-const path = require('path');
-const sass = require('sass');
-const globby = require('globby');
-const autoprefixer = require('autoprefixer');
-const postcss = require('postcss');
-const report = require('./report');
+import path from 'path';
+import { promisify } from 'util';
+import { readFile, writeFile } from 'fs/promises';
+import { globby } from 'globby';
+import sass from 'sass';
+import autoprefixer from 'autoprefixer';
+import postcss from 'postcss';
+import report from './report.js';
 
-const renderSass = util.promisify(sass.render);
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
+const renderSass = promisify(sass.render);
 
 async function sassToCss(sassFile) {
   const result = await renderSass({
