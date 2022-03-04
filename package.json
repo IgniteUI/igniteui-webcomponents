@@ -47,7 +47,8 @@
     "build:typedoc:watch": "node scripts/build-typedoc.js watch",
     "build:typedoc:serve": "node scripts/build-typedoc.js serve  && concurrently -k -r \"npm:build:typedoc:watch\"",
     "build:typedoc:ja": "set NODE_ENV=production && node scripts/build-typedoc.js buildJA",
-    "build:typedoc:en": "set NODE_ENV=production && node scripts/build-typedoc.js buildEN"
+    "build:typedoc:en": "set NODE_ENV=production && node scripts/build-typedoc.js buildEN",
+    "prepare": "husky install"
   },
   "dependencies": {
     "lit": "^2.1.1"
@@ -68,7 +69,7 @@
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.4.0",
     "globby": "^11.0.4",
-    "husky": "^4.3.8",
+    "husky": "^7.0.0",
     "igniteui-typedoc-theme": "^3.0.0",
     "keep-a-changelog": "^2.0.1",
     "lint-staged": "^12.3.4",
@@ -87,11 +88,6 @@
     "typedoc-plugin-localization": "^2.2.4",
     "typescript": "^4.5.4",
     "web-component-analyzer": "^2.0.0-next.3"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "*.ts": [
