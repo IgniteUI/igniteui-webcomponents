@@ -1,16 +1,9 @@
-import { html, LitElement, nothing } from 'lit';
-import {
-  property,
-  query,
-  queryAssignedElements,
-  state,
-} from 'lit/decorators.js';
+import { html } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { alternateName, watch } from '../common/decorators';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { Constructor } from '../common/mixins/constructor';
-import { SizableMixin } from '../common/mixins/sizable';
+import { IgcInputBaseComponent } from '../input/input-base';
+import { watch } from '../common/decorators';
 import { partNameMap } from '../common/util';
 import { MaskParser } from './mask-parser';
 import { styles } from './masked-input.material.css';
@@ -18,14 +11,6 @@ import { styles } from './masked-input.material.css';
 interface MaskSelection {
   start: number;
   end: number;
-}
-
-export interface IgcMaskedInputEventMap {
-  /* alternateName: inputOcurred */
-  igcInput: CustomEvent<string>;
-  igcChange: CustomEvent<string>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
 }
 
 /**
@@ -50,16 +35,9 @@ export interface IgcMaskedInputEventMap {
  * @csspart suffix - The suffix wrapper
  * @csspart helper-text - The helper text wrapper
  */
-export default class IgcMaskedInputComponent extends SizableMixin(
-  EventEmitterMixin<IgcMaskedInputEventMap, Constructor<LitElement>>(LitElement)
-) {
+export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-masked-input';
   public static styles = styles;
-
-  public static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
 
   protected parser = new MaskParser();
   protected _value!: string;
@@ -68,22 +46,10 @@ export default class IgcMaskedInputComponent extends SizableMixin(
   protected droppedText = '';
 
   @state()
-  protected theme!: string;
-
-  @state()
   protected hasFocus = false;
 
   @state()
   protected maskedValue = '';
-
-  @query('input', true)
-  protected input!: HTMLInputElement;
-
-  @queryAssignedElements({ slot: 'prefix' })
-  private prefixes!: Array<HTMLElement>;
-
-  @queryAssignedElements({ slot: 'suffix' })
-  private suffixes!: Array<HTMLElement>;
 
   protected get inputSelection(): MaskSelection {
     return {
@@ -96,31 +62,12 @@ export default class IgcMaskedInputComponent extends SizableMixin(
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
-  @property()
-  public name!: string;
-
-  @property({ type: Boolean, reflect: true })
-  public readonly = false;
-
-  @property({ type: Boolean, reflect: true })
-  public disabled = false;
-
-  @property({ type: Boolean, reflect: true })
-  public required = false;
-
-  @property({ reflect: true, type: Boolean })
-  public outlined = false;
-
   /**
    * When enabled, retrieving the value of the control will return it
    * with literal symbols applied.
    */
   @property({ type: Boolean, attribute: 'with-literals' })
   public withLiterals = false;
-
-  /** The label for the control. */
-  @property()
-  public label!: string;
 
   /**
    * The value of the input.
@@ -140,10 +87,6 @@ export default class IgcMaskedInputComponent extends SizableMixin(
     this._value = string;
     this.maskedValue = this.parser.apply(this._value);
   }
-
-  /** Placeholder for the input. */
-  @property()
-  public placeholder!: string;
 
   /** The mask pattern to apply on the input. */
   @property()
@@ -169,29 +112,11 @@ export default class IgcMaskedInputComponent extends SizableMixin(
     }
   }
 
-  constructor() {
-    super();
-    this.size = 'medium';
-  }
-
   public override connectedCallback() {
     super.connectedCallback();
 
     this.mask = this.mask || this.parser.mask;
     this.prompt = this.prompt || this.parser.prompt;
-    this.theme = getComputedStyle(this).getPropertyValue('--theme').trim();
-
-    this.shadowRoot!.addEventListener('slotchange', () => this.requestUpdate());
-  }
-
-  @alternateName('focusComponent')
-  public override focus(options?: FocusOptions) {
-    this.input.focus(options);
-  }
-
-  @alternateName('blurComponent')
-  public override blur() {
-    this.input.blur();
   }
 
   protected handleKeydown(e: KeyboardEvent) {
@@ -296,19 +221,19 @@ export default class IgcMaskedInputComponent extends SizableMixin(
     }
   }
 
-  protected handleFocus() {
+  protected override handleFocus() {
     this.hasFocus = true;
     this.maskedValue = this.parser.apply(this._value);
-    this.emitEvent('igcFocus');
+    super.handleFocus();
   }
 
-  protected handleBlur() {
+  protected override handleBlur() {
     this.hasFocus = false;
     this.updateMask();
-    this.emitEvent('igcBlur');
+    super.handleBlur();
   }
 
-  protected handleChange() {
+  protected override handleChange() {
     this.emitEvent('igcChange', { detail: this.value });
   }
 
@@ -318,36 +243,19 @@ export default class IgcMaskedInputComponent extends SizableMixin(
       : (this.maskedValue = '');
   }
 
-  /** Sets the text selection range of the control */
-  public setSelectionRange(
-    start: number,
-    end: number,
-    direction: 'backward' | 'forward' | 'none' = 'none'
-  ) {
-    this.input.setSelectionRange(start, end, direction);
-  }
-
   /** Replaces the selected text in the control and re-applies the mask */
-  public setRangeText(
+  public override setRangeText(
     replacement: string,
     start: number,
     end: number,
     selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
   ) {
-    this.input.setRangeText(replacement, start, end, selectMode);
+    super.setRangeText(replacement, start, end, selectMode);
     this.maskedValue = this.parser.apply(this.input.value);
     this._value = this.parser.parse(this.maskedValue);
   }
 
-  private resolvePartNames(base: string) {
-    return {
-      [base]: true,
-      prefixed: this.prefixes.length > 0,
-      suffixed: this.suffixes.length > 0,
-    };
-  }
-
-  protected renderInput() {
+  protected override renderInput() {
     return html`<div>
       <input
         type="text"
@@ -372,60 +280,6 @@ export default class IgcMaskedInputComponent extends SizableMixin(
         @keydown=${this.handleKeydown}
       />
     </div>`;
-  }
-
-  private renderLabel() {
-    return this.label
-      ? html`<label part="label">${this.label}</label>`
-      : nothing;
-  }
-
-  private renderPrefix() {
-    return html`<div part="prefix">
-      <slot name="prefix"></slot>
-    </div>`;
-  }
-
-  private renderSuffix() {
-    return html`<div part="suffix">
-      <slot name="suffix"></slot>
-    </div>`;
-  }
-
-  private renderStandard() {
-    return html`${this.renderLabel()}
-      <div part="${partNameMap(this.resolvePartNames('container'))}">
-        ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
-      </div>
-      <div part="helper-text">
-        <slot name="helper-text"></slot>
-      </div>`;
-  }
-
-  private renderMaterial() {
-    return html`
-      <div
-        part="${partNameMap({
-          ...this.resolvePartNames('container'),
-          labelled: this.label,
-        })}"
-      >
-        <div part="start">${this.renderPrefix()}</div>
-        ${this.renderInput()}
-        <div part="notch">${this.renderLabel()}</div>
-        <div part="filler"></div>
-        <div part="end">${this.renderSuffix()}</div>
-      </div>
-      <div part="helper-text">
-        <slot name="helper-text"></slot>
-      </div>
-    `;
-  }
-
-  protected override render() {
-    return html`${this.theme === 'material'
-      ? this.renderMaterial()
-      : this.renderStandard()}`;
   }
 }
 

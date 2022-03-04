@@ -16,52 +16,12 @@ const metadata = {
       },
       defaultValue: 'auto',
     },
-    name: {
-      type: 'string',
-      control: 'text',
-    },
-    readonly: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    disabled: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    outlined: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: false,
-    },
     withLiterals: {
       type: 'boolean',
       description:
         'When enabled, retrieving the value of the control will return it\nwith literal symbols applied.',
       control: 'boolean',
       defaultValue: false,
-    },
-    label: {
-      type: 'string',
-      description: 'The label for the control.',
-      control: 'text',
-    },
-    value: {
-      type: 'string',
-      description:
-        'The value of the input.\n\nIf `with-literals` is set, it will return the current value with the mask (literals and all) applied.',
-      control: 'text',
-    },
-    placeholder: {
-      type: 'string',
-      description: 'Placeholder for the input.',
-      control: 'text',
     },
     mask: {
       type: 'string',
@@ -71,6 +31,50 @@ const metadata = {
     prompt: {
       type: 'string',
       description: 'The prompt symbol to use for unfilled parts of the mask.',
+      control: 'text',
+    },
+    value: {
+      type: 'string',
+      description:
+        'The value of the input.\n\nIf `with-literals` is set, it will return the current value with the mask (literals and all) applied.',
+      control: 'text',
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    outlined: {
+      type: 'boolean',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'Makes the control a disabled field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    readonly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    placeholder: {
+      type: 'string',
+      description: 'The placeholder attribute of the control.',
+      control: 'text',
+    },
+    label: {
+      type: 'string',
+      description: 'The label for the control.',
       control: 'text',
     },
     size: {
@@ -87,17 +91,17 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   dir: 'ltr' | 'rtl' | 'auto';
-  name: string;
-  readonly: boolean;
-  disabled: boolean;
-  required: boolean;
-  outlined: boolean;
   withLiterals: boolean;
-  label: string;
-  value: string;
-  placeholder: string;
   mask: string;
   prompt: string;
+  value: string;
+  name: string;
+  outlined: boolean;
+  required: boolean;
+  disabled: boolean;
+  readonly: boolean;
+  placeholder: string;
+  label: string;
   size: 'small' | 'medium' | 'large';
 }
 // endregion
