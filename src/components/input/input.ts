@@ -105,6 +105,17 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this.input.reportValidity();
   }
 
+  /** Replaces the selected text in the input. */
+  public override setRangeText(
+    replacement: string,
+    start: number,
+    end: number,
+    selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
+  ) {
+    super.setRangeText(replacement, start, end, selectMode);
+    this.value = this.input.value;
+  }
+
   /**
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
