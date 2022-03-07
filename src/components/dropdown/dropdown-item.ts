@@ -1,14 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './dropdown-item.material.css';
-
-export interface IgcDropDownItemEventMap {
-  igcSelect: CustomEvent<boolean>;
-  igcActivate: CustomEvent<boolean>;
-}
 
 /**
  * Represents an item in a dropdown list.
@@ -23,13 +16,10 @@ export interface IgcDropDownItemEventMap {
  * @csspart content - The main content wrapper.
  * @csspart suffix - The suffix wrapper.
  */
-export default class IgcDropDownItemComponent extends EventEmitterMixin<
-  IgcDropDownItemEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcDropDownItemComponent extends LitElement {
   public static readonly tagName = 'igc-dropdown-item';
 
-  public static styles = styles;
+  public static override styles = styles;
 
   private _value!: string;
 
@@ -37,7 +27,7 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
    * Тhe current value of the item.
    * If not specified, the element's text content is used.
    */
-  @property({ type: String, attribute: true, reflect: true })
+  @property({ type: String, reflect: true })
   public get value() {
     return this._value ? this._value : this.textContent ?? '';
   }
@@ -51,13 +41,19 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
   /**
    * Determines whether the item is selected.
    */
-  @property({ type: Boolean, attribute: true, reflect: true })
+  @property({ type: Boolean, reflect: true })
   public selected = false;
+
+  /**
+   * Determines whether the item is active.
+   */
+  @property({ type: Boolean, reflect: true })
+  public active = false;
 
   /**
    * Determines whether the item is disabled.
    */
-  @property({ type: Boolean, attribute: true, reflect: true })
+  @property({ type: Boolean, reflect: true })
   public disabled = false;
 
   @watch('selected')
@@ -68,8 +64,6 @@ export default class IgcDropDownItemComponent extends EventEmitterMixin<
     this.selected
       ? this.classList.add('active')
       : this.classList.remove('active');
-
-    this.emitEvent('igcSelect', { detail: this.selected });
   }
 
   @watch('disabled')

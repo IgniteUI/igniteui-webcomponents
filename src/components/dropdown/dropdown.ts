@@ -375,7 +375,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   private getItem(value: string) {
     let itemIndex = -1;
     let item!: IgcDropDownItemComponent;
-    [...this.allItems].find((i, index) => {
+    this.allItems.find((i, index) => {
       if (i.value === value) {
         item = i;
         itemIndex = index;
@@ -388,11 +388,11 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     if (!value) return;
 
     if (this.activeItem && this.activeItem !== value) {
-      this.activeItem.classList.remove('active');
+      this.activeItem.active = false;
     }
 
     this.activeItem = value;
-    this.activeItem.classList.add('active');
+    this.activeItem.active = true;
   }
 
   private selectItem(
@@ -576,12 +576,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         @click=${this.handleClick}
         ${this.toggleController.toggleDirective}
       >
-        <div
-          id="igcScrollContainer"
-          role="listbox"
-          part="list"
-          aria-label="dropdownList"
-        >
+        <div id="igcScrollContainer" role="listbox" part="list">
           <slot></slot>
         </div>
       </div>

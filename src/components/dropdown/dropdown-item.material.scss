@@ -21,12 +21,6 @@
     background: color(gray, 300);
 }
 
-:host(.active) {
-    outline: 0;
-    outline-color: transparent;
-    background: color(gray, 300);
-}
-
 :host([disabled]) {
     color: color(gray, 500);
     cursor: default;

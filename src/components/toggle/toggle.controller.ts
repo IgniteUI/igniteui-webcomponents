@@ -11,11 +11,15 @@ import { IToggleComponent } from './toggle.interface';
 export class IgcToggleController implements ReactiveController {
   private defaultOptions: IToggleOptions;
   private host: IToggleComponent & HTMLElement;
+  private sourceElement?: Element;
+  private initialScrollTop = 0;
+  private initialScrollLeft = 0;
+  private _options!: IToggleOptions;
+  private _target!: HTMLElement;
 
   /** The directive that marks the toggle. */
   public toggleDirective!: DirectiveResult<typeof IgcToggleDirective>;
 
-  private _options!: IToggleOptions;
   public set options(value: IToggleOptions) {
     this._options = Object.assign({}, this.defaultOptions, value);
     this.createToggleDir();
@@ -26,7 +30,6 @@ export class IgcToggleController implements ReactiveController {
     return this._options;
   }
 
-  private _target!: HTMLElement;
   public set target(value: HTMLElement) {
     this._target = value;
     this.createToggleDir();
@@ -35,29 +38,6 @@ export class IgcToggleController implements ReactiveController {
   /** The element, relative to which, the toggle will be positioned. */
   public get target() {
     return this._target;
-  }
-
-  private createToggleDir() {
-    this.toggleDirective = igcToggle(
-      this._target,
-      this.host.open,
-      this._options
-    );
-    this.addEventListeners();
-  }
-
-  private addEventListeners() {
-    if (this.host.open) {
-      document.addEventListener('scroll', this.handleScroll, true);
-      if (this.host.closeOnOutsideClick) {
-        document.addEventListener('click', this.documentClicked, true);
-      }
-    }
-  }
-
-  private removeEventListeners() {
-    document.removeEventListener('click', this.documentClicked, true);
-    document.removeEventListener('scroll', this.handleScroll, true);
   }
 
   constructor(
@@ -92,33 +72,51 @@ export class IgcToggleController implements ReactiveController {
     this.removeEventListeners();
   }
 
-  private _sourceElement?: Element;
-  private _initialScrollTop = 0;
-  private _initialScrollLeft = 0;
+  private createToggleDir() {
+    this.toggleDirective = igcToggle(
+      this._target,
+      this.host.open,
+      this._options
+    );
+    this.addEventListeners();
+  }
+
+  private addEventListeners() {
+    if (this.host.open) {
+      document.addEventListener('scroll', this.handleScroll, true);
+      if (this.host.closeOnOutsideClick) {
+        document.addEventListener('click', this.documentClicked, true);
+      }
+    }
+  }
+
+  private removeEventListeners() {
+    document.removeEventListener('click', this.documentClicked, true);
+    document.removeEventListener('scroll', this.handleScroll, true);
+  }
 
   private blockScroll = (event: Event) => {
     event.preventDefault();
-    if (!this._sourceElement || this._sourceElement !== event.target) {
-      this._sourceElement = event.target as Element;
-      this._initialScrollTop =
-        this._sourceElement.scrollTop ??
-        this._sourceElement.firstElementChild?.scrollTop;
-      this._initialScrollLeft =
-        this._sourceElement.scrollLeft ??
-        this._sourceElement.firstElementChild?.scrollLeft;
+    if (!this.sourceElement || this.sourceElement !== event.target) {
+      this.sourceElement = event.target as Element;
+      this.initialScrollTop =
+        this.sourceElement.scrollTop ??
+        this.sourceElement.firstElementChild?.scrollTop;
+      this.initialScrollLeft =
+        this.sourceElement.scrollLeft ??
+        this.sourceElement.firstElementChild?.scrollLeft;
     }
 
-    this._sourceElement.scrollTop = this._initialScrollTop;
-    this._sourceElement.scrollLeft = this._initialScrollLeft;
-    if (this._sourceElement.firstElementChild) {
-      this._sourceElement.firstElementChild.scrollTop = this._initialScrollTop;
-      this._sourceElement.firstElementChild.scrollLeft =
-        this._initialScrollLeft;
+    this.sourceElement.scrollTop = this.initialScrollTop;
+    this.sourceElement.scrollLeft = this.initialScrollLeft;
+    if (this.sourceElement.firstElementChild) {
+      this.sourceElement.firstElementChild.scrollTop = this.initialScrollTop;
+      this.sourceElement.firstElementChild.scrollLeft = this.initialScrollLeft;
     }
   };
 
   /** The document's click event handler to override in the host component if necessary. */
-  public documentClicked = (event: MouseEvent) => {
+  private documentClicked = (event: MouseEvent) => {
     if (this.host.closeOnOutsideClick) {
       const target = event.composed ? event.composedPath() : [event.target];
       const isInsideClick: boolean =
@@ -133,7 +131,7 @@ export class IgcToggleController implements ReactiveController {
   };
 
   /** The document's scroll event handler to override in the host component if necessary. */
-  public handleScroll = (event: Event) => {
+  private handleScroll = (event: Event) => {
     switch (this.host.scrollStrategy) {
       case 'scroll':
         break;

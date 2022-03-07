@@ -53,19 +53,14 @@ export class ToggleBaseComponent
 
   /** The amount of offset in horizontal and/or vertical direction. */
   @property({
-    converter: {
-      fromAttribute: (value) => {
-        const dimensions = value ? (value as string).split(',') : undefined;
-        return dimensions
-          ? {
-              x: parseInt(dimensions[0]),
-              y: parseInt(dimensions[1] ?? dimensions[0]),
-            }
-          : undefined;
-      },
-      toAttribute: (value: { x: number; y: number }) => {
-        return value ? `${value.x}, ${value.y}` : undefined;
-      },
+    converter: (value) => {
+      const dimensions = value ? (value as string).split(',') : undefined;
+      return dimensions
+        ? {
+            x: parseInt(dimensions[0]),
+            y: parseInt(dimensions[1] ?? dimensions[0]),
+          }
+        : undefined;
     },
     type: String,
   })
