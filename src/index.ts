@@ -31,6 +31,7 @@ export {
   registerIconFromText,
 } from './components/icon/icon.registry';
 export { default as IgcInputComponent } from './components/input/input';
+export { IgcInputBaseComponent } from './components/input/input-base';
 export { default as IgcListComponent } from './components/list/list';
 export { default as IgcListHeaderComponent } from './components/list/list-header';
 export { default as IgcListItemComponent } from './components/list/list-item';
