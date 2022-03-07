@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { LitElement } from 'lit';
 
 /**
  *
@@ -11,8 +11,8 @@ import { html, LitElement } from 'lit';
 export default class IgcRatingSymbolComponent extends LitElement {
   public static readonly tagName = 'igc-rating-symbol';
 
-  protected override render() {
-    return html`<slot></slot>`;
+  protected override createRenderRoot() {
+    return this;
   }
 }
 
