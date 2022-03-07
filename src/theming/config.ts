@@ -2,7 +2,6 @@ import { ChangeThemeEventDetail, CHANGE_THEME_EVENT } from './theming-event';
 import { Theme } from './types';
 
 let theme: Theme = 'bootstrap';
-let installed = false;
 
 /**
  * Dispatch an "igc-change-theme" event to `window` with the given detail.
@@ -28,9 +27,5 @@ export const configureTheme = (t: Theme) => {
     setTheme(t);
   }
 
-  if (!installed) {
-    installed = true;
-  } else {
-    dispatchThemingEvent({ theme });
-  }
+  dispatchThemingEvent({ theme });
 };
