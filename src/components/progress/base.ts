@@ -31,7 +31,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   public value = 0;
 
   /** The variant of the control. */
-  @property()
+  @property({ reflect: true })
   public variant: 'primary' | 'info' | 'success' | 'warning' | 'danger' =
     'primary';
 

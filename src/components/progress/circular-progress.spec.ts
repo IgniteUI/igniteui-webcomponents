@@ -1,8 +1,11 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { defineComponents, IgcCircularProgressComponent } from '../../index.js';
+import IgcCircularGradientComponent from './circular-gradient.js';
 
 describe('Circular progress component', () => {
-  before(() => defineComponents(IgcCircularProgressComponent));
+  before(() =>
+    defineComponents(IgcCircularProgressComponent, IgcCircularGradientComponent)
+  );
 
   let progress: IgcCircularProgressComponent;
 
@@ -16,8 +19,9 @@ describe('Circular progress component', () => {
     it('is initialized with sensible defaults', async () => {
       expect(progress.max).to.equal(100);
       expect(progress.value).to.equal(0);
-      expect(progress.animationDuration).to.equal(2000);
+      expect(progress.animationDuration).to.equal(500);
       expect(progress.indeterminate).to.equal(false);
+      expect(progress.hideLabel).to.equal(false);
       expect(progress.variant).to.equal('primary');
       expect(progress.labelFormat).to.equal(undefined);
     });
@@ -63,6 +67,18 @@ describe('Circular progress component', () => {
       expect(progress.value).to.equal(95);
     });
 
+    it('updates the value when it is increased/decreased', async () => {
+      progress.value++;
+
+      await elementUpdated(progress);
+      expect(progress.value).to.equal(1);
+
+      progress.value--;
+
+      await elementUpdated(progress);
+      expect(progress.value).to.equal(0);
+    });
+
     it('correctly reflects indeterminate modifier', async () => {
       progress.indeterminate = true;
 
@@ -71,28 +87,229 @@ describe('Circular progress component', () => {
         .to.be.null;
     });
 
+    it('correctly reflects updated value in indeterminate mode when switched to determinate', async () => {
+      progress.indeterminate = true;
+
+      await elementUpdated(progress);
+
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
+        .to.be.null;
+
+      progress.value = 50;
+      progress.indeterminate = false;
+
+      await elementUpdated(progress);
+
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
+        .be.null;
+      expect(progress.value).to.equal(50);
+    });
+
+    it('handles animations correctly when toggling indeterminate and rtl mode', async () => {
+      progress.indeterminate = true;
+      await elementUpdated(progress);
+
+      let animations = progress
+        .shadowRoot!.querySelector('[part~="fill"]')
+        ?.getAnimations() as Animation[];
+
+      expect(animations.length).to.equal(1);
+      expect(animations[0]).to.be.instanceOf(CSSAnimation);
+      expect((animations[0] as CSSAnimation).animationName).to.equal(
+        'indeterminate-accordion'
+      );
+
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
+        .to.be.null;
+
+      progress.indeterminate = false;
+      await elementUpdated(progress);
+
+      animations = progress
+        .shadowRoot!.querySelector('[part~="fill"]')
+        ?.getAnimations() as Animation[];
+
+      animations.forEach((anim) => {
+        expect(anim).to.be.instanceOf(Animation);
+        expect(anim).not.to.be.instanceOf(CSSAnimation);
+      });
+
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
+        .be.null;
+
+      progress.indeterminate = true;
+      await elementUpdated(progress);
+
+      animations = progress
+        .shadowRoot!.querySelector('[part~="fill"]')
+        ?.getAnimations() as Animation[];
+
+      expect(animations.length).to.equal(1);
+      expect(animations[0]).to.be.instanceOf(CSSAnimation);
+      expect((animations[0] as CSSAnimation).animationName).to.equal(
+        'indeterminate-accordion'
+      );
+
+      progress.dir = 'rtl';
+      progress.indeterminate = false;
+      await elementUpdated(progress);
+
+      expect((progress as any).isLTR).to.equal(false);
+
+      progress.indeterminate = true;
+      await elementUpdated(progress);
+
+      const svgElement = progress.shadowRoot!.querySelector(
+        'svg'
+      ) as SVGElement;
+      expect((progress as any).isLTR).to.equal(false);
+      expect(getComputedStyle(svgElement).animationDirection).to.equal(
+        'reverse'
+      );
+    });
+
+    it('hides the default label when in indeterminate mode', async () => {
+      let defaultLabel =
+        progress.shadowRoot!.querySelector(`span[part~="label"]`);
+      expect(defaultLabel).not.to.be.null;
+
+      progress.indeterminate = true;
+
+      await elementUpdated(progress);
+      defaultLabel = progress.shadowRoot!.querySelector(`span[part~="label"]`);
+      expect(defaultLabel).to.be.null;
+    });
+
+    it('shows/hides the default label depending on the hideLabel property', async () => {
+      let defaultLabel =
+        progress.shadowRoot!.querySelector(`span[part~="label"]`);
+      expect(defaultLabel).not.to.be.null;
+
+      progress.hideLabel = true;
+
+      await elementUpdated(progress);
+      defaultLabel = progress.shadowRoot!.querySelector(`span[part~="label"]`);
+      expect(defaultLabel).to.be.null;
+    });
+
+    it('indeterminate and hideLabel properties should not affect the slotted label', async () => {
+      progress = await fixture<IgcCircularProgressComponent>(
+        html`<igc-circular-progress>
+          <div>Label</div>
+        </igc-circular-progress>`
+      );
+      let defaultLabel =
+        progress.shadowRoot!.querySelector(`slot[part="label"]`);
+      expect(defaultLabel).not.to.be.null;
+
+      progress.hideLabel = true;
+
+      await elementUpdated(progress);
+      defaultLabel = progress.shadowRoot!.querySelector(`slot[part="label"]`);
+      expect(defaultLabel).not.to.be.null;
+
+      progress.indeterminate = true;
+
+      await elementUpdated(progress);
+      defaultLabel = progress.shadowRoot!.querySelector(`slot[part="label"]`);
+      expect(defaultLabel).not.to.be.null;
+    });
+
     it('correctly reflects its variant', async () => {
       const variants = ['primary', 'success', 'info', 'danger', 'warning'];
 
       for (const variant of variants) {
         progress.variant = variant as any;
         await elementUpdated(progress);
-        expect(progress.shadowRoot!.querySelector(`[part~="${variant}"]`)).not
-          .to.be.null;
+        expect(progress).to.have.attribute('variant', variant);
       }
     });
 
     it('correctly applies a custom label format', async () => {
+      let label = progress
+        .shadowRoot!.querySelector('span[part~="label"]')
+        ?.textContent?.trim();
+      expect(label).to.equal('0%');
+
       progress.labelFormat = 'Task {0} of {1} completed';
       progress.value = 8;
       progress.max = 10;
 
       await elementUpdated(progress);
-      expect(
-        progress
-          .shadowRoot!.querySelector('[part~="text"]')
-          ?.textContent?.trim()
-      ).to.equal('Task 8 of 10 completed');
+
+      label = progress
+        .shadowRoot!.querySelector('span[part~="label"]')
+        ?.textContent?.trim();
+      expect(label).to.equal('Task 8 of 10 completed');
+    });
+
+    it('is able to define a gradient color using the igc-circular-gradient elements instead of solid via the exposed gradient slot', async () => {
+      progress = await fixture<IgcCircularProgressComponent>(
+        html`<igc-circular-progress>
+          <igc-circular-gradient slot="gradient" opacity="0.5">
+          </igc-circular-gradient>
+          <igc-circular-gradient
+            slot="gradient"
+            offset="50%"
+            color="#ff0079"
+            opacity="0.8"
+          >
+          </igc-circular-gradient>
+          <igc-circular-gradient slot="gradient" offset="100%" color="#1eccd4">
+          </igc-circular-gradient>
+        </igc-circular-progress>`
+      );
+
+      await elementUpdated(progress);
+
+      const gradientElements = (progress as any).gradientElements;
+      const linearGradient = progress.shadowRoot!.querySelector(
+        'linearGradient'
+      ) as SVGLinearGradientElement;
+      const stopElements = Array.from(
+        linearGradient.children
+      ) as SVGStopElement[];
+
+      expect(gradientElements.length).to.equal(stopElements?.length);
+
+      gradientElements.forEach(
+        (el: IgcCircularGradientComponent, idx: number) => {
+          expect(stopElements[idx]).to.have.attribute('stop-color', el.color);
+          expect(stopElements[idx]).to.have.attribute('offset', el.offset);
+          expect(stopElements[idx]).to.have.attribute(
+            'stop-opacity',
+            el.opacity.toString()
+          );
+        }
+      );
+    });
+
+    it('renders proper aria attributes', async () => {
+      let svgElement = progress.shadowRoot!.querySelector('svg');
+      expect(svgElement).to.have.attribute('role', 'progressbar');
+      expect(svgElement).to.have.attribute('aria-valuemin', '0');
+      expect(svgElement).to.have.attribute(
+        'aria-valuemax',
+        progress.max.toString()
+      );
+      expect(svgElement).to.have.attribute(
+        'aria-valuenow',
+        progress.value.toString()
+      );
+
+      progress.max = 150;
+      progress.value = 50;
+      await elementUpdated(progress);
+
+      svgElement = progress.shadowRoot!.querySelector('svg');
+      expect(svgElement).to.have.attribute('aria-valuemax', '150');
+      expect(svgElement).to.have.attribute('aria-valuenow', '50');
+
+      progress.indeterminate = true;
+      await elementUpdated(progress);
+
+      svgElement = progress.shadowRoot!.querySelector('svg');
+      expect(svgElement).not.to.have.attribute('aria-valuenow');
     });
   });
 });

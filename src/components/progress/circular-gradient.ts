@@ -19,7 +19,7 @@ export default class IgcCircularGradientComponent extends LitElement {
 
   /** Defines the color of the gradient stop */
   @property()
-  public color!: string;
+  public color = 'black';
 
   /** Defines the opacity of the gradient stop */
   @property({ type: Number })
@@ -27,10 +27,6 @@ export default class IgcCircularGradientComponent extends LitElement {
 
   constructor() {
     super();
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
   }
 
   protected override render() {

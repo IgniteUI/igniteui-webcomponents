@@ -39,7 +39,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
   public striped = false;
 
   /** The position for the default label of the control. */
-  @property({ attribute: 'label-align' })
+  @property({ attribute: 'label-align', reflect: true })
   public labelAlign:
     | 'top-start'
     | 'top'
