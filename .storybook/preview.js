@@ -68,7 +68,10 @@ const getTheme = (themeName, variant) => {
 const themeProvider = (Story, context) => {
   const theme = getTheme(context.globals.theme, context.globals.variant);
 
-  configureTheme(context.globals.theme);
+  configureTheme({
+    theme: context.globals.theme,
+    variant: context.globals.variant,
+  });
 
   // Workaround for https://github.com/cfware/babel-plugin-template-html-minifier/issues/56
   const htmlNoMin = html;

@@ -3,6 +3,11 @@ import { Theme } from './types';
 
 let theme: Theme = 'bootstrap';
 
+type ThemeConfig = {
+  theme: Theme;
+  variant: 'light' | 'dark';
+};
+
 /**
  * Dispatch an "igc-change-theme" event to `window` with the given detail.
  */
@@ -22,7 +27,17 @@ export const setTheme = (value: Theme) => {
   theme = value;
 };
 
-export const configureTheme = (t: Theme) => {
+/**
+ * Allows the global configuration of the active theme.
+ *
+ * Usage:
+ *  ```ts
+ *  import { configureTheme } from 'igniteui-webcomponents';
+ *
+ *  configureTheme({ theme: 'material' });
+ *  ```
+ */
+export const configureTheme = ({ theme: t }: ThemeConfig) => {
   if (isOfTypeTheme(t)) {
     setTheme(t);
   }
