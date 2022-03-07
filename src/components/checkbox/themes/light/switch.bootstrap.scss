@@ -1,0 +1,120 @@
+@use '../../../../styles/utilities' as *;
+
+:host {
+    --size: #{rem(32px)};
+    --thumb-size: #{rem(10px)};
+    --thumb-offset: calc(var(--thumb-size) / 4);
+}
+
+[part~='control'] {
+    width: var(--size);
+    height: rem(16px);
+    box-shadow: inset 0 0 0 1px color(gray, 400);
+    border-radius: rem(32px);
+    background: transparent;
+    transition: background-color .15s ease-in-out;
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: inherit;
+        height: inherit;
+        border-radius: inherit;
+    }
+}
+
+[part~='label'] {
+    transition: none;
+}
+
+:host(:focus-within) {
+    [part~='control'] {
+        box-shadow: 0 0 0 4px color(primary, 100);
+
+        &::after {
+            border: 1px solid color(primary, 200);
+        }
+    }
+
+    [part~='thumb'] {
+        background: color(primary, 200);
+    }
+}
+
+:host(:focus-within) [part~='control'][part~='checked'] {
+    box-shadow: 0 0 0 4px color(primary, 200);
+
+    &::after {
+        border: 1px solid color(primary, 500);
+    }
+}
+
+[part~='control'][part~='checked'] {
+    background: color(primary, 500);
+    box-shadow: inset 0 0 0 1px color(primary, 500);
+}
+
+:host([invalid]) [part~='control'],
+:host([invalid]) [part~='control'][part~='checked'] {
+    box-shadow: inset 0 0 0 1px color(error, 500);
+}
+
+:host([invalid]) [part~='control'][part~='checked'],
+:host([invalid]) [part~='thumb'] {
+    background: color(error, 500);
+}
+
+:host([invalid]:focus-within) [part~='control'] {
+    box-shadow: 0 0 0 4px color(error, 100);
+    background: transparent;
+
+    &::after {
+        border: 1px solid color(error, 500);
+    }
+}
+
+:host([invalid]:focus-within) [part~='control'][part~='checked'] {
+    box-shadow: 0 0 0 4px color(error, 200);
+    background: color(error, 500);
+
+    &::after {
+        border: 1px solid color(error, 500);
+    }
+}
+
+:host([disabled]) [part~='control'],
+:host([disabled][invalid]) [part~='control'] {
+    box-shadow: inset 0 0 0 1px color(gray, 300);
+}
+
+:host([disabled]) [part~='control'][part~='checked'],
+:host([disabled][invalid]) [part~='control'][part~='checked'] {
+    background: color(primary, 200);
+    box-shadow: inset 0 0 0 1px color(primary, 200);
+}
+
+[part~='thumb'] {
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    min-width: var(--thumb-size);
+    margin-inline-start: var(--thumb-offset);
+    background: color(gray, 400);
+    border-radius: rem(32px);
+}
+
+:host(:focus-within) [part~='thumb'][part~='checked'],
+[part~='thumb'][part~='checked'] {
+    background: white;
+    margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
+}
+
+:host([disabled]) [part~='thumb'],
+:host([disabled][invalid]) [part~='thumb'] {
+    background: color(gray, 300);
+}
+
+:host([disabled]) [part~='thumb'][part~='checked'],
+:host([invalid]) [part~='thumb'][part~='checked'],
+:host([disabled][invalid]) [part~='thumb'][part~='checked'] {
+    background: white;
+}

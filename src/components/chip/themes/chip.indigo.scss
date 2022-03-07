@@ -24,6 +24,14 @@
     border-color: transparent;
     background: color(primary, 500);
     color: contrast-color(primary, 700);
+
+    &:hover {
+        background: color(primary, 600);
+    }
+
+    &:focus {
+        outline: 3px solid color(primary, 200);
+    }
 }
 
 :host([variant='primary']) button,

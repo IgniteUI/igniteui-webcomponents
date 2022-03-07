@@ -1,0 +1,8 @@
+@use '../../../../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-icon-button {
+        --text-color: #{utils.color(surface, 500)};
+        --hover-background: #{utils.color(primary, 300)};
+    }
+}

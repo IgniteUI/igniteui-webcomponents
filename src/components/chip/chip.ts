@@ -1,10 +1,15 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { styles } from './themes/chip.material.css';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { blazorTwoWayBind } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { themes } from '../../theming';
+import { styles } from './themes/chip.base.css';
+import { styles as bootstrap } from './themes/chip.bootstrap.css';
+import { styles as fluent } from './themes/chip.fluent.css';
+import { styles as indigo } from './themes/chip.indigo.css';
+import { styles as material } from './themes/chip.material.css';
 
 export interface IgcChipEventMap {
   igcRemove: CustomEvent<boolean>;
@@ -26,13 +31,13 @@ export interface IgcChipEventMap {
  * @csspart prefix - The prefix container of the chip.
  * @csspart suffix - The suffix container of the chip.
  */
+@themes({ material, bootstrap, fluent, indigo })
 export default class IgcChipComponent extends EventEmitterMixin<
   IgcChipEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-chip';
-
-  public static styles = [styles];
+  protected static styles = styles;
 
   /** Sets the disabled state for the chip. */
   @property({ type: Boolean, reflect: true })

@@ -1,0 +1,14 @@
+@use './card.content.material.scss';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    @include type-category('body-1');
+
+    color: color(gray, 900);
+}
+
+::slotted(*) {
+    @include type-category('body-1');
+
+    opacity: 1;
+}

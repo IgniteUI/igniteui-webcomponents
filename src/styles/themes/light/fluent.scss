@@ -1,16 +1,5 @@
 @use '../../utilities' as utils;
 @use '../base/fluent' as base;
-@use '../../../components/button/button.fluent' as button;
-@use '../../../components/button/icon-button.fluent' as icon-button;
-@use '../../../components/card/card.fluent' as card;
-@use '../../../components/checkbox/checkbox.fluent' as checkbox;
-@use '../../../components/radio/radio.fluent' as radio;
-@use '../../../components/list/list.fluent' as list;
-@use '../../../components/checkbox/switch.fluent' as switch;
-@use '../../../components/calendar/calendar.fluent' as calendar;
-@use '../../../components/input/input.fluent' as input;
-@use '../../../components/navbar/navbar.fluent' as navbar;
-@use '../../../components/slider/slider.fluent' as slider;
 
 $palette: utils.palette(
     $primary: #2b579a,
@@ -22,14 +11,3 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include button.theme();
-@include card.theme();
-@include checkbox.theme();
-@include radio.theme();
-@include list.theme();
-@include switch.theme();
-@include calendar.theme();
-@include input.theme();
-@include icon-button.theme();
-@include navbar.theme();
-@include slider.theme();
