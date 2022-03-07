@@ -179,6 +179,7 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
     this.maskedValue = this.parser.apply(value);
     this._value = this.parser.parse(this.maskedValue);
     this.droppedText = '';
+    this.requestUpdate();
     this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
@@ -211,25 +212,25 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
 
   protected handleDragEnter() {
     if (!this.hasFocus) {
-      this.maskedValue = this.parser.apply(this._value);
+      this.maskedValue = this.parser.apply(this.input.value);
     }
   }
 
   protected handleDragLeave() {
     if (!this.hasFocus) {
-      this.updateMask();
+      this.updateMaskedValue();
     }
   }
 
   protected override handleFocus() {
     this.hasFocus = true;
-    this.maskedValue = this.parser.apply(this._value);
+    this.maskedValue = this.parser.apply(this.input.value);
     super.handleFocus();
   }
 
   protected override handleBlur() {
     this.hasFocus = false;
-    this.updateMask();
+    this.updateMaskedValue();
     super.handleBlur();
   }
 
@@ -237,10 +238,10 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected updateMask() {
-    this._value
-      ? (this.maskedValue = this.parser.apply(this._value))
-      : (this.maskedValue = '');
+  protected updateMaskedValue() {
+    if (this.maskedValue === this.parser.apply()) {
+      this.maskedValue = '';
+    }
   }
 
   /** Replaces the selected text in the control and re-applies the mask */
