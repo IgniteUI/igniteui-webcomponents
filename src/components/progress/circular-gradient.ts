@@ -25,10 +25,6 @@ export default class IgcCircularGradientComponent extends LitElement {
   @property({ type: Number })
   public opacity = 1;
 
-  constructor() {
-    super();
-  }
-
   protected override render() {
     return nothing;
   }

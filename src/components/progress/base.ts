@@ -109,17 +109,13 @@ export abstract class IgcProgressBaseComponent extends LitElement {
       .forEach((animation) => animation.cancel());
   }
 
-  protected animateLabelTo(
-    start: number,
-    end: number,
-    animationDuration: number
-  ) {
+  protected animateLabelTo(start: number, end: number) {
     let t0: number;
 
     const tick = (t1: number) => {
       t0 = t0 ?? t1;
 
-      const progress = Math.min((t1 - t0) / (animationDuration || 1), 1);
+      const progress = Math.min((t1 - t0) / (this.animationDuration || 1), 1);
       this.percentage = Math.floor(
         asPercent(progress * (end - start) + start, this.max)
       );

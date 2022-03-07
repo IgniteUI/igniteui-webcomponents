@@ -90,7 +90,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
       this.animationOptions
     );
     cancelAnimationFrame(this.tick);
-    this.animateLabelTo(start, end, this.animationDuration);
+    this.animateLabelTo(start, end);
   }
 
   protected renderSvg() {

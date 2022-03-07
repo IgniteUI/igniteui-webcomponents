@@ -74,7 +74,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
       this.animationOptions
     );
     cancelAnimationFrame(this.tick);
-    this.animateLabelTo(start, end, this.animationDuration);
+    this.animateLabelTo(start, end);
   }
 
   protected override render() {

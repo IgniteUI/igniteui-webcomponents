@@ -32,7 +32,7 @@ const metadata = {
       type: 'number',
       description: 'Animation duration in milliseconds.',
       control: 'number',
-      defaultValue: '2000',
+      defaultValue: '500',
     },
     indeterminate: {
       type: 'boolean',
