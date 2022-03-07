@@ -3,15 +3,15 @@
 $separator-color: color(gray, 100) !default;
 $item-hover-bg: var(--item-hover-bg, color(gray, 200)) !default;
 
-igc-list-item {
+:host {
     border-bottom: rem(1px) solid $separator-color;
+}
 
-    &:hover,
-    &:focus-within {
-        background: $item-hover-bg;
-    }
+:host(:hover),
+:host(:focus-within) {
+    background: $item-hover-bg;
+}
 
-    &:last-of-type {
-        border-bottom: none;
-    }
+:host(:last-of-type) {
+    border-bottom: none;
 }

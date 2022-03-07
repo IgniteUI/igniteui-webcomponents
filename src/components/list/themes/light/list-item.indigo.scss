@@ -1,23 +1,18 @@
 @use '../../../../styles/utilities' as *;
 
-$header-color: color(primary, 500) !default;
 $item-color: color(gray, 900) !default;
 $item-hover-bg: var(--item-hover-bg, color(gray, 50)) !default;
 $subtitle-color: color(gray, 800) !default;
 
-igc-list-header {
-    color: $header-color;
-}
-
-igc-list-item {
+:host {
     color: $item-color;
 
-    &:hover,
-    &:focus-within {
-        background: $item-hover-bg;
-    }
-
-    &[part='subtitle'] {
+    [part='subtitle'] {
         color: $subtitle-color;
     }
+}
+
+:host(:hover),
+:host(:focus-within) {
+    background: $item-hover-bg;
 }

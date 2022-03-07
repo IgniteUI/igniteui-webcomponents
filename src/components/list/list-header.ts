@@ -1,5 +1,7 @@
 import { html, LitElement } from 'lit';
+import { themes } from '../../theming';
 import { styles } from './themes/light/list-header.base.css';
+import { styles as indigo } from './themes/light/list-header.indigo.css';
 
 /**
  * Header list item.
@@ -8,6 +10,7 @@ import { styles } from './themes/light/list-header.base.css';
  *
  * @slot - Renders header list item's content.
  */
+@themes({ indigo })
 export default class IgcListHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-list-header';
 
