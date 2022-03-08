@@ -1,7 +1,8 @@
 import { ChangeThemeEventDetail, CHANGE_THEME_EVENT } from './theming-event';
 import { Theme } from './types';
+import { getAllCSSVariables } from './utils';
 
-let theme: Theme = 'bootstrap';
+let theme: Theme;
 
 type ThemeConfig = {
   theme: Theme;
@@ -20,6 +21,14 @@ function isOfTypeTheme(theme: string): theme is Theme {
 }
 
 export const getTheme: () => Theme = () => {
+  if (!theme) {
+    const [_, t] =
+      Object.entries(getAllCSSVariables()).find(([v]) => v === 'igcTheme') ||
+      [];
+
+    theme = t && isOfTypeTheme(t) ? (t as Theme) : 'bootstrap';
+  }
+
   return theme;
 };
 
