@@ -198,5 +198,82 @@ describe('Masked input', () => {
 
       expect(input().value).to.equal(parser.apply(masked.value));
     });
+
+    it('Delete key behavior', async () => {
+      masked.value = '1234';
+      await elementUpdated(masked);
+      masked.setSelectionRange(3, 4);
+
+      fireKeyboardEvent(input(), 'keydown', { key: 'Delete' });
+      fireInputEvent(input(), 'deleteContentForward');
+      await elementUpdated(masked);
+
+      expect(masked.value).to.equal('123');
+      expect(input().value).to.equal(parser.apply(masked.value));
+    });
+
+    it('Backspace key behavior', async () => {
+      masked.value = '1234';
+      await elementUpdated(masked);
+      masked.setSelectionRange(0, 1);
+
+      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
+      fireInputEvent(input(), 'deleteContentBackward');
+      await elementUpdated(masked);
+
+      expect(masked.value).to.equal('234');
+      expect(input().value).to.equal(parser.apply(input().value));
+    });
+
+    it('Backspace key behavior with composition', async () => {
+      masked.value = '1234';
+      await elementUpdated(masked);
+
+      masked.setSelectionRange(0, 1);
+
+      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
+      fireInputEvent(input(), 'deleteContentBackward', { isComposing: true });
+      await elementUpdated(masked);
+
+      expect(masked.value).to.equal('1234');
+      expect(input().value).to.equal(parser.apply(masked.value));
+    });
+
+    it('Default input behavior', async () => {
+      masked.value = 'xxxx';
+      await elementUpdated(masked);
+
+      masked.setSelectionRange(4, 4);
+      input().value = masked.value + 'zz';
+      fireInputEvent(input(), 'insertText');
+      await elementUpdated(masked);
+
+      expect(masked.value).to.equal('xxxxzz');
+      expect(input().value).to.equal(parser.apply(masked.value));
+    });
   });
 });
+
+type KeyboardEventType = 'keydown' | 'keypress' | 'keyup';
+type InputEventType =
+  | 'insertText'
+  | 'deleteContentForward'
+  | 'deleteContentBackward';
+
+const fireKeyboardEvent = (
+  target: HTMLElement,
+  type: KeyboardEventType,
+  options: Partial<KeyboardEventInit> = {}
+) => {
+  target.dispatchEvent(new KeyboardEvent(type, { ...options }));
+};
+
+const fireInputEvent = (
+  target: HTMLElement,
+  type: InputEventType,
+  options: Partial<InputEventInit> = {}
+) => {
+  target.dispatchEvent(
+    new InputEvent('input', { inputType: type, ...options })
+  );
+};

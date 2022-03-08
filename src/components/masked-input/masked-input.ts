@@ -6,7 +6,6 @@ import { IgcInputBaseComponent } from '../input/input-base';
 import { watch } from '../common/decorators';
 import { partNameMap } from '../common/util';
 import { MaskParser } from './mask-parser';
-import { styles } from './masked-input.material.css';
 
 interface MaskSelection {
   start: number;
@@ -37,7 +36,6 @@ interface MaskSelection {
  */
 export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-masked-input';
-  public static styles = styles;
 
   protected parser = new MaskParser();
   protected _value!: string;
@@ -254,6 +252,23 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
     super.setRangeText(replacement, start, end, selectMode);
     this.maskedValue = this.parser.apply(this.input.value);
     this._value = this.parser.parse(this.maskedValue);
+  }
+
+  public override setSelectionRange(
+    start: number,
+    end: number,
+    direction?: 'backward' | 'forward' | 'none'
+  ): void {
+    super.setSelectionRange(start, end, direction);
+    this.selection = { start, end };
+  }
+
+  public reportValidity() {
+    return this.input.reportValidity();
+  }
+
+  public select() {
+    this.input.select();
   }
 
   protected override renderInput() {
