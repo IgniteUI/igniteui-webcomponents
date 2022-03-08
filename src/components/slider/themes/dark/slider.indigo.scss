@@ -1,0 +1,8 @@
+@use '../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-slider {
+        --inactive-background: #{color(gray, 200)};
+        --inactive-hover-background: #{color(gray, 400)};
+    }
+}
