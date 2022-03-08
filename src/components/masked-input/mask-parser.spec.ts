@@ -68,6 +68,14 @@ describe('Mask parser', () => {
     expect(parser.apply(' =% p]')).to.equal('_=%. p]');
   });
 
+  it.only('mask escape sequences', () => {
+    parser.mask = 'CCCC-\\C-CCC';
+    expect(parser.apply()).to.equal('____-C-___');
+
+    parser.mask = '\\# \\(###)-###';
+    expect(parser.apply('123456')).to.equal('# \\(123)-456');
+  });
+
   it('apply', () => {
     parser.mask = '(000) 0000-000';
     parser.prompt = '*';

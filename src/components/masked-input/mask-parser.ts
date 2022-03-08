@@ -46,6 +46,8 @@ export class MaskParser {
 
   protected literals = new Map<number, string>();
 
+  protected unescapedMask!: string;
+
   protected get literalValues() {
     return Array.from(this.literals.values());
   }
@@ -74,12 +76,21 @@ export class MaskParser {
 
   protected getMaskLiterals() {
     this.literals.clear();
+    this.unescapedMask = this.mask;
 
-    Array.from(this.mask).forEach((char, pos) => {
-      if (!FLAGS.has(char)) {
-        this.literals.set(pos, char);
+    for (let i = 0, j = 0; i < this.mask.length; i++, j++) {
+      const [current, next] = [this.mask.charAt(i), this.mask.charAt(i + 1)];
+
+      if (current === '\\' && FLAGS.has(next)) {
+        this.unescapedMask = this.replaceCharAt(this.unescapedMask, j, '');
+        this.literals.set(j, next);
+        i++;
+      } else {
+        if (!FLAGS.has(current)) {
+          this.literals.set(j, current);
+        }
       }
-    });
+    }
   }
 
   protected replaceCharAt(string: string, pos: number, char: string) {
@@ -133,7 +144,7 @@ export class MaskParser {
 
       if (
         chars[0] &&
-        !this.validate(chars[0], this.mask[i]) &&
+        !this.validate(chars[0], this.unescapedMask[i]) &&
         chars[0] !== this.prompt
       ) {
         break;
@@ -167,7 +178,9 @@ export class MaskParser {
     this.getMaskLiterals();
 
     const nonLiteralPositions = this.getNonLiteralPositions(this.mask);
-    let output = new Array(this.mask.length).fill(this.prompt).join('');
+    let output = new Array(this.unescapedMask.length)
+      .fill(this.prompt)
+      .join('');
 
     this.literals.forEach((char, pos) => {
       output = this.replaceCharAt(output, pos, char);
@@ -182,7 +195,10 @@ export class MaskParser {
     for (let i = 0; i < nonLiteralValues.length; i++) {
       const char = nonLiteralValues[i];
       if (
-        !this.validate(char, this.mask.charAt(nonLiteralPositions[i])) &&
+        !this.validate(
+          char,
+          this.unescapedMask.charAt(nonLiteralPositions[i])
+        ) &&
         char !== this.prompt
       ) {
         nonLiteralValues[i] = this.prompt;
