@@ -5,7 +5,7 @@ let theme: Theme = 'bootstrap';
 
 type ThemeConfig = {
   theme: Theme;
-  variant: 'light' | 'dark';
+  variant?: 'light' | 'dark';
 };
 
 /**
