@@ -4,11 +4,6 @@ import { getAllCSSVariables } from './utils';
 
 let theme: Theme;
 
-type ThemeConfig = {
-  theme: Theme;
-  variant?: 'light' | 'dark';
-};
-
 /**
  * Dispatch an "igc-change-theme" event to `window` with the given detail.
  */
@@ -46,7 +41,7 @@ export const setTheme = (value: Theme) => {
  *  configureTheme({ theme: 'material' });
  *  ```
  */
-export const configureTheme = ({ theme: t }: ThemeConfig) => {
+export const configureTheme = (t: Theme) => {
   if (isOfTypeTheme(t)) {
     setTheme(t);
   }

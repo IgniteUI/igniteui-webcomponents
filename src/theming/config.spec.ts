@@ -7,7 +7,7 @@ describe('Theming Config', () => {
     const theme = 'material';
 
     setTimeout(() => {
-      configureTheme({ theme });
+      configureTheme(theme);
       expect(getTheme()).to.equal(theme);
     });
 
