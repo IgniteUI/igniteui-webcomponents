@@ -1,0 +1,51 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    align-items: center;
+    position: relative;
+    color: color(gray, 800);
+    background: color(surface, 500);
+    transition: background .15s ease-out;
+}
+
+:host(:hover),
+:host(:focus-within) {
+    background: color(gray, 200);
+}
+
+::slotted(*) {
+    margin: 0;
+    font: inherit;
+    opacity: inherit;
+}
+
+[part='content'] {
+    flex-grow: 1;
+}
+
+[part='start'],
+[part='end'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[name='start']::slotted(*) {
+    margin-inline-end: calc(var(--igc-spacing-large) * 2);
+}
+
+[name='end']::slotted(*) {
+    margin-inline-start: calc(var(--igc-spacing-large) * 2);
+}
+
+[part='title'] {
+    @include type-category('subtitle-1');
+}
+
+[part='subtitle'] {
+    @include type-category('caption');
+
+    opacity: .74;
+}

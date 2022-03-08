@@ -1,0 +1,21 @@
+@use '../../../../styles/utilities' as *;
+
+$list-bg: contrast-color(gray, 900) !default;
+$separator-color: color(gray, 200) !default;
+$item-color: color(gray, 900) !default;
+$item-hover-bg: color(gray, 100) !default;
+
+:host {
+    background: $list-bg;
+    color: $item-color;
+    border-bottom: rem(1px) solid $separator-color;
+}
+
+:host(:hover),
+:host(:focus-within) {
+    background: $item-hover-bg;
+}
+
+:host(:last-of-type) {
+    border-bottom: none;
+}

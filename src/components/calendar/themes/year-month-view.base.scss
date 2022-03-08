@@ -1,0 +1,75 @@
+@use '../../../styles/utilities/index' as *;
+@use 'sass:math';
+
+:host {
+    display: flex;
+    flex-direction: column;
+    min-width: rem(290px);
+    outline: none;
+    padding: 0 rem(12px) rem(16px) rem(12px);
+    overflow: hidden;
+    box-sizing: border-box;
+    gap: rem(4px);
+}
+
+[part='months-row'],
+[part='years-row'] {
+    display: flex;
+}
+
+[part~='month'],
+[part~='year'] {
+    flex: 1;
+}
+
+[part~='month'],
+[part~='year'],
+[part~='month-inner'],
+[part~='year-inner'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[part~='month-inner'],
+[part~='year-inner'] {
+    user-select: none;
+    cursor: pointer;
+    padding: 0 rem(12px);
+
+    &:hover,
+    &:focus {
+        background: color(gray, 200);
+    }
+
+    &:hover {
+        background: color(gray, 200);
+    }
+}
+
+[part~='month-inner'][part~='selected'],
+[part~='year-inner'][part~='selected'] {
+    background: color(secondary, 500);
+    color: contrast-color(secondary, 600);
+
+    &:hover {
+        background: color(secondary, 500);
+        color: contrast-color(secondary, 600);
+    }
+
+    &:focus {
+        outline: none;
+        background: color(secondary, 700);
+        color: contrast-color(secondary, 700);
+    }
+}
+
+[part~='month-inner'][part~='current'],
+[part~='year-inner'][part~='current'] {
+    box-shadow: inset 0 0 0 rem(1px) color(gray, 600);
+}
+
+[part~='month-inner'][part~='selected'][part~='current'],
+[part~='year-inner'][part~='selected'][part~='current'] {
+    box-shadow: inset 0 0 0 rem(1px) color(surface), 0 0 0 rem(1px) color(secondary, 500);
+}

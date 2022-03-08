@@ -2,9 +2,11 @@ import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './avatar.material.css';
+import { styles } from './avatar.base.css';
+import { styles as bootstrap } from './avatar.bootstrap.css';
 
 /**
  * An avatar component is used as a representation of a user identity
@@ -19,10 +21,10 @@ import { styles } from './avatar.material.css';
  * @csspart image - The image wrapper of the avatar.
  * @csspart icon - The icon wrapper of the avatar.
  */
+@themes({ bootstrap })
 export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-avatar';
-
-  public static override styles = [styles];
+  public static override styles = styles;
 
   /** The image source to use. */
   @property()
