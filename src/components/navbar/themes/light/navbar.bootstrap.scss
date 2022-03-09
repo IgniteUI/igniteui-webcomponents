@@ -1,0 +1,17 @@
+@use '../../../../styles/utilities' as *;
+
+:host {
+    padding: 0 rem(8px);
+    background: color(surface, 500);
+    color: contrast-color(surface, 500);
+    box-shadow: none;
+}
+
+::slotted(igc-icon) {
+    color: contrast-color(surface, 500);
+}
+
+[part='base'] {
+    padding-inline-start: rem(4px);
+    padding-inline-end: rem(4px);
+}

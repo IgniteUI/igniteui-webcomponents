@@ -1,38 +1,11 @@
 @use '../../utilities' as utils;
 @use '../base/indigo' as base;
-@use '../../../components/button/button.indigo' as button;
-@use '../../../components/button/icon-button.indigo' as icon-button;
-@use '../../../components/card/card.indigo' as card;
-@use '../../../components/checkbox/checkbox.indigo' as checkbox with (
-    $border-color: utils.color(gray, 700),
-    $checked-color: utils.color(gray, 900),
-    $disabled-color: utils.color(gray, 400)
-);
-@use '../../../components/radio/radio.indigo' as radio with (
-    $border-color: utils.color(gray, 700),
-    $checked-color: utils.color(gray, 900),
-    $disabled-color: utils.color(gray, 400)
-);
-@use '../../../components/checkbox/switch.indigo' as switch with (
-    $border-color: utils.color(gray, 700),
-    $checked-color: utils.color(gray, 900),
-    $thumb-color: utils.color(gray, 700),
-    $disabled-color: utils.color(gray, 400)
-);
-@use '../../../components/navbar/navbar.indigo' as navbar;
-@use '../../../components/nav-drawer/nav-drawer.indigo' as nav-drawer;
-@use '../../../components/nav-drawer/nav-drawer-item.indigo' as nav-drawer-item;
-@use '../../../components/nav-drawer/nav-drawer-header-item.indigo' as nav-drawer-header;
-@use '../../../components/list/list.indigo' as list with (
-    $item-hover-bg: utils.color(primary, 500, .5)
-);
-@use '../../../components/input/input.indigo' as input with ($label-focus-color: utils.color(gray, 800));
-@use '../../../components/slider/slider.indigo' as slider with (
-    $inactive-background: utils.color(gray, 200),
-    $inactive-hover-background: utils.color(gray, 400)
-);
-@use '../../../components/progress/themes/linear/linear.progress.indigo' as linear-progress;
-@use '../../../components/progress/themes/circular/circular.progress.indigo' as circular-progress;
+@use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
+@use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
+@use '../../../components/input/themes/dark/input.dark.indigo' as input;
+@use '../../../components/radio/themes/dark/radio.indigo' as radio;
+@use '../../../components/slider/themes/dark/slider.indigo' as slider;
+@use '../../../components/list/themes/dark/list.indigo' as list;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -46,18 +19,9 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include button.theme();
-@include card.theme();
 @include checkbox.theme();
-@include radio.theme();
 @include switch.theme();
-@include navbar.theme();
-@include nav-drawer.theme();
-@include nav-drawer-item.theme();
-@include nav-drawer-header.theme();
-@include list.theme();
 @include input.theme();
-@include icon-button.theme();
+@include radio.theme();
 @include slider.theme();
-@include linear-progress.theme();
-@include circular-progress.theme();
+@include list.theme();

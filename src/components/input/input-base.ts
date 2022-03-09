@@ -1,15 +1,16 @@
-import { SizableMixin } from '../common/mixins/sizable.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { Constructor } from '../common/mixins/constructor.js';
 import { html, LitElement, nothing, TemplateResult } from 'lit';
-import {
-  property,
-  query,
-  queryAssignedElements,
-  state,
-} from 'lit/decorators.js';
+import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { ReactiveTheme, ThemeController, themes } from '../../theming';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
+import { styles } from './themes/light/input.base.css';
+import { styles as bootstrap } from './themes/light/input.bootstrap.css';
+import { styles as fluent } from './themes/light/input.fluent.css';
+import { styles as indigo } from './themes/light/input.indigo.css';
+import { styles as material } from './themes/light/input.material.css';
 
 let nextId = 0;
 
@@ -21,13 +22,18 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-export abstract class IgcInputBaseComponent extends SizableMixin(
-  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
-) {
+@themes({ bootstrap, material, fluent, indigo })
+export abstract class IgcInputBaseComponent
+  extends SizableMixin(
+    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
+  )
+  implements ReactiveTheme
+{
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
+  public static styles = styles;
 
   protected inputId = `input-${nextId++}`;
 
@@ -43,8 +49,7 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
   @queryAssignedElements({ slot: 'suffix' })
   protected suffixes!: Array<HTMLElement>;
 
-  @state()
-  protected theme!: string | undefined;
+  protected themeController!: ThemeController;
 
   /** The name attribute of the control. */
   @property()
@@ -80,10 +85,11 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
 
   public override connectedCallback() {
     super.connectedCallback();
-
-    this.theme = getComputedStyle(this).getPropertyValue('--theme').trim();
-
     this.shadowRoot!.addEventListener('slotchange', () => this.requestUpdate());
+  }
+
+  public themeAdopted(controller: ThemeController): void {
+    this.themeController = controller;
   }
 
   /** Sets focus on the control. */
@@ -189,7 +195,7 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
   }
 
   protected override render() {
-    return html`${this.theme === 'material'
+    return html`${this.themeController.theme === 'material'
       ? this.renderMaterial()
       : this.renderStandard()}`;
   }

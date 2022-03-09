@@ -1,0 +1,8 @@
+@use '../../../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-list,
+    igc-list-item {
+        --separator-color: #{utils.color(gray, 100)};
+    }
+}

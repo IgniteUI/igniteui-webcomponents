@@ -1,0 +1,84 @@
+@use '../../../../../styles/utilities' as utils;
+
+$text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
+$hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
+
+button {
+    background: transparent;
+    color: utils.color(gray, 900);
+    border-radius: utils.rem(1px);
+    transition: color .15s ease-out, background .15s ease-out;
+    box-shadow: none;
+
+    &::after {
+        position: absolute;
+        content: '';
+        pointer-events: none;
+        top: 2px;
+        left: 2px;
+        width: calc(100% - 4px);
+        height: calc(100% - 4px);
+    }
+
+    &:hover {
+        color: utils.color(primary, 500);
+    }
+
+    &:focus-visible {
+        color: utils.color(gray, 900);
+    }
+
+    &:focus-visible::after {
+        box-shadow: 0 0 0 utils.rem(1px) utils.color(gray, 900);
+    }
+}
+
+:host([variant='contained']) {
+    button {
+        color: $text-color;
+        background: utils.color(primary, 500);
+
+        &:hover {
+            background: $hover-background;
+        }
+
+        &:focus-visible::after {
+            box-shadow: 0 0 0 utils.rem(1px) utils.contrast-color(primary, 600);
+        }
+    }
+}
+
+:host([variant='outlined']) {
+    button {
+        color: utils.color(gray, 900);
+        box-shadow: 0 0 0 1px utils.color(gray, 700);
+
+        &:focus {
+            background: transparent;
+        }
+
+        &:hover,
+        &:focus:hover {
+            background: utils.color(gray, 100);
+        }
+
+        &:focus:active {
+            background: utils.color(gray, 200);
+        }
+    }
+}
+
+:host([disabled]) {
+    button {
+        color: utils.color(gray, 400);
+        background: transparent;
+    }
+}
+
+:host([disabled][variant='contained']),
+:host([disabled][variant='outlined']) {
+    button {
+        color: utils.color(gray, 500);
+        background: utils.color(gray, 100);
+    }
+}
