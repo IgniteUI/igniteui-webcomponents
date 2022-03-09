@@ -24,6 +24,7 @@ export { defineComponents } from './components/common/definitions/defineComponen
 export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources';
 export { SizableMixin } from './components/common/mixins/sizable';
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress';
+export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient';
 export { default as IgcFormComponent } from './components/form/form';
 export { default as IgcIconComponent } from './components/icon/icon';
 // utility stuff
