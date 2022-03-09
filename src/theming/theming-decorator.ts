@@ -13,15 +13,14 @@ import { ReactiveTheme, Themes } from './types';
  *  ```ts
  *  import { LitElement, html } from 'lit';
  *  import { themes } from 'igniteui-webcomponents/themes';
- *  import { styles } from './themes/my-element.base.css';
- *  import { styles as material } from './themes/my-element.material.css';
- *  import { styles as bootstrap } from './themes/my-element.bootstrap.css';
- *  import { styles as indigo } from './themes/my-element.indigo.css';
  *
- *  @themes({ material, bootstrap, indigo })
- *  class MyElement extends LitElement {
- *    public static styles = styles;
- *  }
+ *  @themes({
+ *    material: './my-element/material.css',
+ *    bootstrap: './my-element/bootstrap.css',
+ *    fluent: './my-element/fluent.css',
+ *    indigo: './my-element/indigo.css',
+ *  })
+ *  class MyElement extends LitElement { }
  *  ```
  */
 export function themes(themes: Themes) {

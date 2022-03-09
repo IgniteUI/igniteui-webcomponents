@@ -17,6 +17,7 @@ export { default as IgcCardContentComponent } from './components/card/card.conte
 export { default as IgcCardHeaderComponent } from './components/card/card.header';
 export { default as IgcCardMediaComponent } from './components/card/card.media';
 export { default as IgcCheckboxComponent } from './components/checkbox/checkbox';
+export { default as IgcChipComponent } from './components/chip/chip';
 export { IgcCheckboxBaseComponent } from './components/checkbox/checkbox-base';
 export { default as IgcSwitchComponent } from './components/checkbox/switch';
 export { defineAllComponents } from './components/common/definitions/defineAllComponents';

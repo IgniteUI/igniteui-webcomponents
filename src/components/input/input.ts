@@ -2,9 +2,19 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { ReactiveTheme, ThemeController, themes } from '../../theming';
 import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { SizableMixin } from '../common/mixins/sizable';
 import { partNameMap } from '../common/util';
-import { IgcInputBaseComponent } from './input-base';
+import { styles } from './themes/light/input.base.css';
+import { styles as bootstrap } from './themes/light/input.bootstrap.css';
+import { styles as fluent } from './themes/light/input.fluent.css';
+import { styles as indigo } from './themes/light/input.indigo.css';
+import { styles as material } from './themes/light/input.material.css';
+
+let nextId = 0;
 
 type Direction = 'ltr' | 'rtl' | 'auto';
 
@@ -27,12 +37,39 @@ type Direction = 'ltr' | 'rtl' | 'auto';
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcInputComponent extends IgcInputBaseComponent {
+@themes({ bootstrap, material, fluent, indigo })
+export default class IgcInputComponent
+  extends SizableMixin(
+    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
+  )
+  implements ReactiveTheme
+{
   public static readonly tagName = 'igc-input';
+  public static styles = styles;
 
-  @property()
-  @blazorTwoWayBind('igcChange', 'detail')
-  public value = '';
+  protected static shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+  private inputId = `input-${nextId++}`;
+  private labelId = `input-label-${this.inputId}`;
+
+  @state()
+  private _prefixLength!: number;
+
+  @state()
+  private _suffixLength!: number;
+
+  private themeController!: ThemeController;
+
+  @query('input', true)
+  private input!: HTMLInputElement;
+
+  @queryAssignedElements({ slot: 'prefix' })
+  private _prefix!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'suffix' })
+  private _suffix!: Array<HTMLElement>;
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
@@ -97,6 +134,24 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   /** The autocomplete attribute of the control. */
   @property()
   public autocomplete!: string;
+
+  constructor() {
+    super();
+    this.size = 'medium';
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+
+    this.shadowRoot?.addEventListener('slotchange', (_) => {
+      this._prefixLength = this._prefix.length;
+      this._suffixLength = this._suffix.length;
+    });
+  }
+
+  public themeAdopted(controller: ThemeController) {
+    this.themeController = controller;
+  }
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity() {
@@ -185,6 +240,62 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         @blur="${this.handleBlur}"
       />
     `;
+  }
+
+  private renderLabel() {
+    return this.label
+      ? html`<label id="${this.labelId}" part="label" for="${this.inputId}">
+          ${this.label}
+        </label>`
+      : null;
+  }
+
+  private renderPrefix() {
+    return html`<div part="prefix">
+      <slot name="prefix"></slot>
+    </div>`;
+  }
+
+  private renderSuffix() {
+    return html`<div part="suffix">
+      <slot name="suffix"></slot>
+    </div>`;
+  }
+
+  private renderStandard() {
+    return html`${this.renderLabel()}
+      <div part="${partNameMap(this.resolvePartNames('container'))}">
+        ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
+      </div>
+      <div part="helper-text">
+        <slot name="helper-text"></slot>
+      </div>`;
+  }
+
+  private renderMaterial() {
+    return html`
+      <div
+        part="${partNameMap({
+          ...this.resolvePartNames('container'),
+          labelled: this.label,
+        })}"
+      >
+        <div part="start">${this.renderPrefix()}</div>
+        ${this.renderInput()}
+        <div part="notch">${this.renderLabel()}</div>
+        <div part="filler"></div>
+        <div part="end">${this.renderSuffix()}</div>
+      </div>
+      <div part="helper-text">
+        <slot name="helper-text"></slot>
+      </div>
+    `;
+  }
+
+  protected override render() {
+    return html`${this.themeController.theme === 'material'
+      ? this.renderMaterial()
+      : this.renderStandard()}`;
   }
 }
 
