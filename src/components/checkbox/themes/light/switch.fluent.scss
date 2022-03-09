@@ -93,7 +93,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
 
 [part~='thumb'][part~='checked'],
 :host(:hover) [part~='thumb'][part~='checked'] {
-    background: white;
+    background: color(gray, 50);
     margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
 }
 
