@@ -2,7 +2,11 @@ import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { asPercent, partNameMap } from '../common/util';
 import { IgcProgressBaseComponent } from './base';
-import { styles } from './themes/linear/linear.progress.material.css';
+import { styles } from './themes/linear/linear.progress.base.css';
+import { styles as bootstrap } from './themes/linear/linear.progress.bootstrap.css';
+import { styles as fluent } from './themes/linear/linear.progress.fluent.css';
+import { styles as indigo } from './themes/linear/linear.progress.indigo.css';
+import { themes } from '../../theming';
 
 /**
  * A linear progress indicator used to express unspecified wait time or display
@@ -30,6 +34,7 @@ import { styles } from './themes/linear/linear.progress.material.css';
  * @csspart bottom-start
  * @csspart bottom-end
  */
+@themes({ bootstrap, indigo, fluent })
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
   public static override styles = styles;

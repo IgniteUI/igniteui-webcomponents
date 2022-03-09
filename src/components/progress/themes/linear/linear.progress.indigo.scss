@@ -6,16 +6,14 @@ $stripe-primary: color(secondary, 500);
 $stripe-size: rem(6px);
 $stripe-space: rem(14px);
 
-@mixin theme() {
-    igc-linear-progress::part(striped) {
-        /* stylelint-disable */
-        background: $stripe-primary repeating-linear-gradient(
-            45deg,
-            $stripe-primary,
-            $stripe-primary $stripe-size,
-            $stripe-grays $stripe-size,
-            $stripe-grays $stripe-space
-        );
-        /* stylelint-enable */
-    }
+[part~='striped'] {
+    /* stylelint-disable */
+    background: $stripe-primary repeating-linear-gradient(
+        45deg,
+        $stripe-primary,
+        $stripe-primary $stripe-size,
+        $stripe-grays $stripe-size,
+        $stripe-grays $stripe-space
+    );
+    /* stylelint-enable */
 }

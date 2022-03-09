@@ -4,8 +4,11 @@ import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { asPercent, partNameMap } from '../common/util';
 import { IgcProgressBaseComponent } from './base';
-import { styles } from './themes/circular/circular.progress.material.css';
+import { styles } from './themes/circular/circular.progress.base.css';
+import { styles as bootstrap } from './themes/circular/circular.progress.bootstrap.css';
+import { styles as fluent } from './themes/circular/circular.progress.fluent.css';
 import IgcCircularGradientComponent from './circular-gradient';
+import { themes } from '../../theming';
 
 /**
  * A circular progress indicator used to express unspecified wait time or display
@@ -30,6 +33,8 @@ import IgcCircularGradientComponent from './circular-gradient';
  * @csspart info
  * @csspart success
  */
+
+@themes({ bootstrap, fluent })
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';
   public static override styles = styles;

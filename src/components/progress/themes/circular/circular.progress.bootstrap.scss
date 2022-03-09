@@ -1,22 +1,19 @@
-@use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
 
-@mixin theme() {
-    igc-circular-progress {
-        --stroke-thickness: #{rem(4px)};
-        --diameter: calc(#{rem(28px)} + var(--stroke-thickness));
-    }
+:host {
+    --stroke-thickness: #{rem(4px)};
+    --diameter: calc(#{rem(28px)} + var(--stroke-thickness));
+}
 
-    igc-circular-progress::part(svg indeterminate) {
-        animation-duration: .75s;
-    }
+[part~='svg'][part~='indeterminate'] {
+    animation-duration: .75s;
+}
 
-    igc-circular-progress::part(fill) {
-        stroke-dashoffset: 60%;
-        animation: none;
-    }
+[part='svg indeterminate'] [part~='fill'] {
+    stroke-dashoffset: 60%;
+    animation: none;
+}
 
-    igc-circular-progress::part(track indeterminate) {
-        stroke: transparent;
-    }
+[part~='track'][part~='indeterminate'] {
+    stroke: transparent;
 }

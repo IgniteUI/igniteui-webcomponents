@@ -1,7 +1,5 @@
-@use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
 
-/* stylelint-disable */
-@mixin theme() {
+:host {
+    --track-size: #{rem(2px)};
 }
-/* stylelint-enable */
