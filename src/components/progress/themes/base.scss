@@ -34,6 +34,18 @@ $circumference: calc(#{$radius} * 2 * 3.1416);
     }
 }
 
+@keyframes indeterminate-bar-fluent {
+    0% {
+        transform: translateX(-133%);
+        transform-origin: left;
+    }
+
+    100% {
+        transform: translateX(300%);
+        transform-origin: right;
+    }
+}
+
 @keyframes indeterminate-accordion {
     from {
         stroke-dashoffset: calc(#{$circumference} * 2);

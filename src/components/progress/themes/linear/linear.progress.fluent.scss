@@ -1,5 +1,38 @@
 @use '../../../../styles/utilities/index' as *;
+@use '../base' as *;
 
 :host {
     --track-size: #{rem(2px)};
+}
+
+[part~='indeterminate'] {
+    width: 0 !important;
+    min-width: 33%;
+    animation-name: indeterminate-bar-fluent;
+    animation-duration: 3s;
+    animation-timing-function: ease;
+
+    &::before {
+        display: none;
+    }
+}
+
+[part='fill indeterminate primary'] {
+    background: linear-gradient(90deg, transparent 0%, $primary-color 50%, transparent 100%);
+}
+
+[part~='danger'][part~='indeterminate'] {
+    background: linear-gradient(90deg, transparent 0%, $danger-color 50%, transparent 100%);
+}
+
+[part~='warning'][part~='indeterminate'] {
+    background: linear-gradient(90deg, transparent 0%, $warning-color 50%, transparent 100%);
+}
+
+[part~='info'][part~='indeterminate'] {
+    background: linear-gradient(90deg, transparent 0%, $info-color 50%, transparent 100%);
+}
+
+[part~='success'][part~='indeterminate'] {
+    background: linear-gradient(90deg, transparent 0%, $success-color 50%, transparent 100%);
 }
