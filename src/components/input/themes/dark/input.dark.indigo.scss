@@ -1,0 +1,7 @@
+@use '../../../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-input {
+        --label-focus-color: #{utils.color(gray, 800)};
+    }
+}

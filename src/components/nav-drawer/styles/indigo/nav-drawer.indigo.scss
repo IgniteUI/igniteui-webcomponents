@@ -1,0 +1,9 @@
+@use '../../../../styles/utilities/index' as *;
+
+:host {
+    [part='base'] {
+        background: #{color(gray, 700)};
+        border: none;
+        box-shadow: none;
+    }
+}

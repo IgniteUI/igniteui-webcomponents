@@ -1,12 +1,17 @@
 import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { styles } from './radio.material.css';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { themes } from '../../theming';
+import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
+import { styles } from './themes/light/radio.base.css';
+import { styles as bootstrap } from './themes/light/radio.bootstrap.css';
+import { styles as fluent } from './themes/light/radio.fluent.css';
+import { styles as indigo } from './themes/light/radio.indigo.css';
+import { styles as material } from './themes/light/radio.material.css';
 
 let nextId = 0;
 
@@ -29,13 +34,13 @@ export interface IgcRadioEventMap {
  * @csspart control - The radio control.
  * @csspart label - The radio control label.
  */
+@themes({ material, bootstrap, fluent, indigo })
 export default class IgcRadioComponent extends EventEmitterMixin<
   IgcRadioEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-radio';
-
-  public static styles = styles;
+  protected static styles = styles;
 
   private inputId = `radio-${nextId++}`;
   private labelId = `radio-label-${this.inputId}`;
@@ -172,6 +177,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           value="${ifDefined(this.value)}"
           .required="${this.required}"
           .disabled="${this.disabled}"
+          .invalid="${this.invalid}"
           .checked="${live(this.checked)}"
           tabindex=${this._tabIndex}
           aria-checked="${this.checked ? 'true' : 'false'}"
