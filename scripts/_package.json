@@ -46,6 +46,6 @@
     "slider"
   ],
   "dependencies": {
-    "lit": "^2.1.0"
+    "lit": "^2.2.0"
   }
 }
