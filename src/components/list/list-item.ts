@@ -1,5 +1,9 @@
 import { html, LitElement } from 'lit';
-import { styles } from './list-item.material.css';
+import { themes } from '../../theming';
+import { styles } from './themes/light/list-item.base.css';
+import { styles as bootstrap } from './themes/light/list-item.bootstrap.css';
+import { styles as fluent } from './themes/light/list-item.fluent.css';
+import { styles as indigo } from './themes/light/list-item.indigo.css';
 
 /**
  * The list-item component is a container
@@ -20,6 +24,7 @@ import { styles } from './list-item.material.css';
  * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  */
+@themes({ bootstrap, fluent, indigo })
 export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';
 

@@ -1,0 +1,98 @@
+@use '../../../../styles/utilities' as *;
+
+$border-color: var(--border-color, color(gray, 500)) !default;
+$checked-color: var(--checked-color, color(secondary, 500)) !default;
+$disabled-color: var(--disabled-color, color(gray, 300)) !default;
+
+:host {
+    font-weight: 600;
+}
+
+[part~='control'] {
+    width: var(--size, rem(20px));
+    height: var(--size, rem(20px));
+    min-width: var(--size, rem(20px));
+    border-radius: rem(3px);
+
+    &::after {
+        border-radius: inherit;
+        border-color: $border-color;
+    }
+}
+
+[part~='indicator'] {
+    stroke: color(surface, 500);
+    transform: scale(.8);
+}
+
+:host([indeterminate]) [part~='indicator'] {
+    transform: rotate(45deg) translateX(-.125rem) scale(.8);
+}
+
+:host(:not([invalid])) [part='control checked'],
+:host(:not([invalid])[indeterminate]) [part~='control'] {
+    &::after {
+        background: $checked-color;
+        border-color: $checked-color;
+    }
+}
+
+:host(:hover) [part~='control'] {
+    box-shadow: 0 0 0 4px color(gray, 200, .87);
+}
+
+:host(:focus-within) [part~='control'] {
+    box-shadow: 0 0 0 4px color(gray, 300, .87);
+}
+
+:host(:hover) [part='control checked'],
+:host([indeterminate]:hover) [part~='control'] {
+    box-shadow: 0 0 0 4px color(secondary, 100, .87);
+}
+
+:host(:focus-within) [part='control checked'],
+:host([indeterminate]:focus-within) [part~='control'] {
+    box-shadow: 0 0 0 4px color(secondary, 200, .87);
+}
+
+:host(:not([disabled])[invalid]) [part='control checked'],
+:host(:not([disabled])[invalid][indeterminate]) [part~='control'] {
+    box-shadow: inset 0 0 0 4px color(error, 500);
+    background: color(error, 500);
+}
+
+:host([invalid]:hover) [part~='control'],
+:host([invalid]:hover) [part='control checked'],
+:host([invalid][indeterminate]:hover) [part~='control'] {
+    box-shadow: 0 0 0 4px color(error, 100, .87);
+}
+
+:host([invalid]:focus-within) [part~='control'],
+:host([invalid]:focus-within) [part='control checked'],
+:host([invalid][indeterminate]:focus-within) [part~='control'] {
+    box-shadow: 0 0 0 4px color(error, 200, .87);
+}
+
+:host([disabled]),
+:host([disabled][invalid]) {
+    [part~='control'] {
+        &::after {
+            border-color: $disabled-color;
+        }
+    }
+
+    [part='control checked']::after {
+        background: $disabled-color;
+    }
+
+    [part~='label'] {
+        color: $disabled-color;
+    }
+}
+
+:host([disabled][indeterminate]) {
+    [part~='control']::after {
+        background: $disabled-color;
+        border-color: $disabled-color;
+    }
+}

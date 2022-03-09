@@ -1,0 +1,116 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    display: inline-flex;
+    color: color(gray, 900);
+    font-family: var(--igc-font-family);
+}
+
+input[type='radio'] {
+    @include hide-default();
+}
+
+[part~='base'] {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: color .15s ease-in;
+
+    &:focus-within [part='control'] {
+        background: color(gray, 600, .12);
+    }
+}
+
+[part~='control'] {
+    $size: var(--size, rem(20px));
+
+    position: relative;
+    display: inline-flex;
+    width: calc(#{$size } * 2);
+    height: calc(#{$size } * 2);
+    min-width: calc(#{$size } * 2);
+    border-radius: 50%;
+    user-select: none;
+    transition: background .15s ease-in;
+
+    &::before,
+    &::after {
+        position: absolute;
+        content: '';
+        width: $size;
+        height: $size;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        transition: all .15s ease-in;
+    }
+
+    &::before {
+        backface-visibility: hidden;
+        transform: translate(-50%, -50%) scale(.1);
+        transform-origin: center;
+        z-index: 1;
+    }
+
+    &::after {
+        border: calc(#{$size} / 10) solid color(gray, 600);
+    }
+}
+
+[part='control checked'] {
+    &::before {
+        border-color: color(secondary, 500);
+        background: color(secondary, 500);
+        transform: translate(-50%, -50%) scale(.5);
+    }
+
+    &::after {
+        border-color: color(secondary, 500);
+    }
+}
+
+:host(:not([disabled])[invalid]) {
+    [part~='label'] {
+        color: color(error, 500);
+    }
+
+    [part~='control'] {
+        &::after {
+            border-color: color(error, 500);
+        }
+    }
+}
+
+:host([disabled]) {
+    pointer-events: none;
+    color: color(gray, 400);
+    user-select: none;
+
+    [part~='control'] {
+        &::after {
+            border-color: color(gray, 300);
+        }
+    }
+
+    [part='control checked'] {
+        &::before {
+            background: color(gray, 300);
+            border-color: transparent;
+        }
+    }
+}
+
+:host([label-position='after']) {
+    [part~='label'] {
+        margin-inline-start: rem(8px);
+    }
+}
+
+:host([label-position='before']) {
+    [part~='label'] {
+        order: -1;
+        margin-inline-end: rem(8px);
+    }
+}
