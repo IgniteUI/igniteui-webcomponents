@@ -251,6 +251,19 @@ describe('Input component', () => {
     });
   });
 
+  it('should reflect validation state when updating through attribute', async () => {
+    el = await fixture<IgcInputComponent>(
+      html`<igc-input required></igc-input>`
+    );
+
+    expect(el.reportValidity()).to.equal(false);
+
+    el.value = '1';
+    await elementUpdated(el);
+
+    expect(el.reportValidity()).to.equal(true);
+  });
+
   const createInputComponent = (template = '<igc-input></igc-input>') => {
     return fixture<IgcInputComponent>(html`${unsafeStatic(template)}`);
   };

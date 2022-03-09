@@ -1,0 +1,25 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    flex-flow: column nowrap;
+    font-family: var(--igc-font-family);
+    overflow: hidden;
+    background: color(surface, 500);
+}
+
+:host([size='small']) ::slotted(igc-list-item),
+:host([size='small']) ::slotted(igc-list-header) {
+    padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
+}
+
+:host([size='medium']) ::slotted(igc-list-item),
+:host([size='medium']) ::slotted(igc-list-header) {
+    padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
+}
+
+:host([size='large']) ::slotted(igc-list-item),
+:host([size='large']) ::slotted(igc-list-header) {
+    padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
+}

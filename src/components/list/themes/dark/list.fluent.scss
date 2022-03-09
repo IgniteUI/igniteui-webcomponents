@@ -1,0 +1,7 @@
+@use '../../../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-list-item {
+        --item-hover-bg: #{utils.color(gray, 100)};
+    }
+}
