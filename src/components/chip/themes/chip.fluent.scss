@@ -22,4 +22,12 @@
 :host([selected]) button:not([disabled]) {
     background: color(primary, 500);
     color: contrast-color(primary, 700);
+
+    &:hover {
+        background: color(primary, 600);
+    }
+
+    &:focus {
+        background: color(primary, 800);
+    }
 }
