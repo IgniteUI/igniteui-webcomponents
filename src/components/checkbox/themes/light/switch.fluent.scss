@@ -3,7 +3,7 @@
 $thumb-color: var(--thumb-color, color(gray, 700)) !default;
 $disabled-thumb-color: var(--disabled-thumb-color, color(surface, 500)) !default;
 $hover-color: var(--hover-color, color(gray, 800)) !default;
-$checked-hover-color: var(--checked-hover-color, color(primary, 900)) !default;
+$checked-hover-color: var(--checked-hover-color, color(primary, 800)) !default;
 $invalid-color: var(--invalid-color, color(error, 500)) !default;
 $invalid-hover-color: var(--invalid-hover-color, color(error, 700)) !default;
 $disabled-color: var(--disabled-color, color(gray, 400)) !default;
@@ -22,13 +22,11 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
     background: transparent;
 }
 
-:host(:hover) [part~='control'],
-:host(:focus-within) [part~='control'] {
+:host(:hover) [part~='control'] {
     box-shadow: inset 0 0 0 1px $hover-color;
 }
 
-:host(:hover) [part~='thumb'],
-:host(:focus-within) [part~='thumb'] {
+:host(:hover) [part~='thumb'] {
     background: $hover-color;
 }
 
@@ -37,8 +35,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
     box-shadow: inset 0 0 0 1px color(primary, 500);
 }
 
-:host(:hover) [part~='control'][part~='checked'],
-:host(:focus-within) [part~='control'][part~='checked'] {
+:host(:hover) [part~='control'][part~='checked'] {
     background: $checked-hover-color;
     box-shadow: inset 0 0 0 1px $checked-hover-color;
 }
@@ -52,24 +49,20 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
     box-shadow: inset 0 0 0 1px $invalid-color;
 }
 
-:host([invalid]:hover) [part~='control'],
-:host([invalid]:focus-within) [part~='control'] {
+:host([invalid]:hover) [part~='control'] {
     box-shadow: inset 0 0 0 1px $invalid-hover-color;
 }
 
-:host([invalid]:hover) [part~='thumb'],
-:host([invalid]:focus-within) [part~='thumb'] {
+:host([invalid]:hover) [part~='thumb'] {
     background: $invalid-hover-color;
 }
 
 :host([invalid]) [part~='thumb'][part~='checked'],
-:host([invalid]:hover) [part~='thumb'][part~='checked'],
-:host([invalid]:focus-within) [part~='thumb'][part~='checked'] {
+:host([invalid]:hover) [part~='thumb'][part~='checked'] {
     background: color(surface, 500);
 }
 
-:host([invalid]:hover) [part~='control'][part~='checked'],
-:host([invalid]:focus-within) [part~='control'][part~='checked'] {
+:host([invalid]:hover) [part~='control'][part~='checked'] {
     box-shadow: inset 0 0 0 1px $invalid-hover-color;
     background: $invalid-hover-color;
 }
@@ -99,8 +92,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
 }
 
 [part~='thumb'][part~='checked'],
-:host(:hover) [part~='thumb'][part~='checked'],
-:host(:focus-within) [part~='thumb'][part~='checked'] {
+:host(:hover) [part~='thumb'][part~='checked'] {
     background: color(surface, 500);
     margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
 }
