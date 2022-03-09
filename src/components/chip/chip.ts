@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { blazorTwoWayBind } from '../common/decorators';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming';
 import { styles } from './themes/chip.base.css';
 import { styles as bootstrap } from './themes/chip.bootstrap.css';
@@ -75,14 +74,12 @@ export default class IgcChipComponent extends EventEmitterMixin<
     if (this.selectable) {
       this.selected = !this.selected;
       this.emitEvent('igcSelect', { detail: this.selected });
-      console.log('igcSelect');
     }
   }
 
   protected handleRemove(e: Event) {
     document.getElementsByName('remove');
     this.emitEvent('igcRemove');
-    console.log('igcRemove');
     e.stopPropagation();
   }
 
@@ -91,7 +88,6 @@ export default class IgcChipComponent extends EventEmitterMixin<
       <button
         part="base"
         .disabled="${this.disabled}"
-        variant="${ifDefined(this.variant)}"
         aria-selected="${this.selected ? 'true' : 'false'}"
         aria-disabled="${this.disabled ? 'true' : 'false'}"
         @click=${this.handleSelect}
