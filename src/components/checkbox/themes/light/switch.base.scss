@@ -69,10 +69,6 @@ label {
     pointer-events: none;
     cursor: initial;
 
-    [part~='thumb'] {
-        background: color(gray, 400);
-    }
-
     [part~='label'] {
         color: color(gray, 400);
     }
