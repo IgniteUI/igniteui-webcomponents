@@ -127,7 +127,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
       );
       progress < 1
         ? (this.tick = requestAnimationFrame(tick))
-        : cancelAnimationFrame(requestAnimationFrame(tick));
+        : cancelAnimationFrame(this.tick);
     };
 
     requestAnimationFrame(tick);
