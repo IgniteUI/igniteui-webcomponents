@@ -51,7 +51,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "lit": "^2.1.1"
+    "lit": "^2.2.0"
   },
   "devDependencies": {
     "@igniteui/material-icons-extended": "^2.10.0",
