@@ -10,7 +10,7 @@
     width: 100%;
     flex-direction: column;
 
-    --track-size: 4px;
+    --track-size: #{rem(4px)};
 }
 
 [part~='label'] {
