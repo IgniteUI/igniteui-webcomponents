@@ -55,7 +55,7 @@ span {
 
 :host([shape='rounded']),
 :host([outlined][shape='rounded']) span {
-    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 6rem), 6rem);
+    border-radius: calc(var(--size) / 2);
 }
 
 :host([shape='square']),

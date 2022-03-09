@@ -23,27 +23,29 @@ input[type='radio'] {
 }
 
 [part~='control'] {
-    $size: var(--size, rem(20px));
+    @include border-radius(var(--size));
+
+    --size: #{rem(20px)};
 
     position: relative;
     display: inline-flex;
-    width: calc(#{$size } * 2);
-    height: calc(#{$size } * 2);
-    min-width: calc(#{$size } * 2);
-    border-radius: 50%;
+    width: calc(var(--size) * 2);
+    height: calc(var(--size) * 2);
+    min-width: calc(var(--size) * 2);
     user-select: none;
     transition: background .15s ease-in;
 
     &::before,
     &::after {
+        @include border-radius(calc(var(--size) / 2));
+
         position: absolute;
         content: '';
-        width: $size;
-        height: $size;
+        width: var(--size);
+        height: var(--size);
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-        border-radius: 50%;
         transition: all .15s ease-in;
     }
 
@@ -55,7 +57,7 @@ input[type='radio'] {
     }
 
     &::after {
-        border: calc(#{$size} / 10) solid color(gray, 600);
+        border: calc(var(--size) / 10) solid color(gray, 600);
     }
 }
 

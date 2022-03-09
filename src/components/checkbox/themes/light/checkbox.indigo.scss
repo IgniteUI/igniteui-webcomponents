@@ -9,10 +9,11 @@ $disabled-color: var(--disabled-color, color(gray, 300)) !default;
 }
 
 [part~='control'] {
+    @include border-radius(rem(3px));
+
     width: var(--size, rem(20px));
     height: var(--size, rem(20px));
     min-width: var(--size, rem(20px));
-    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1.5rem), 1.5rem);
 
     &::after {
         border-radius: inherit;

@@ -35,8 +35,9 @@ $focused-border-width: utils.rem(2px);
     }
 
     [part^='container'] {
+        @include utils.border-radius(2px);
+
         border: #{$resting-border-width} solid utils.color(gray, 500);
-        border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1rem), 1rem);
         transition: none;
         background: $container-background;
         cursor: text;

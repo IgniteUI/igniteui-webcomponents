@@ -139,7 +139,7 @@ $type-scale: utils.extend($indigo-type-scale);
 @mixin root-styles($palette) {
     :root {
         --igc-theme: indigo;
-        --igc-radius-factor: .125;
+        --igc-radius-factor: 1;
         --igc-spacing-small: #{utils.rem(2px)};
         --igc-spacing-medium: #{utils.rem(4px)};
         --igc-spacing-large: #{utils.rem(8px)};

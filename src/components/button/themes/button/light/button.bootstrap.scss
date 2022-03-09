@@ -1,3 +1,4 @@
+@use 'sass:math';
 @use '../../../../../styles/utilities' as utils;
 
 :host [part='base'] {
@@ -41,8 +42,9 @@
 }
 
 :host(:not([disabled])[variant='flat']) [part='base'] {
+    @include utils.border-radius(utils.rem(4px));
+
     color: #{utils.color(primary, 500)};
-    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 2rem), 2rem);
 
     &:hover {
         color: #{utils.color(primary, 800)};
@@ -98,11 +100,12 @@
     overflow: visible;
 
     &::after {
+        @include utils.border-radius(utils.rem(4px));
+
         position: absolute;
         content: '';
         width: 100%;
         height: 100%;
-        border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 2rem), 2rem);
     }
 
     &:hover {
@@ -128,15 +131,15 @@
 }
 
 :host([variant='fab'][size='large']) [part='base'] {
-    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 8rem), 8rem);
+    @include utils.border-radius(utils.rem(16px));
 }
 
 :host([variant='fab'][size='medium']) [part='base'] {
-    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 6rem), 6rem);
+    @include utils.border-radius(utils.rem(12px));
 }
 
 :host([variant='fab'][size='small']) [part='base'] {
-    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 4rem), 4rem);
+    @include utils.border-radius(utils.rem(8px));
 }
 
 :host(:not([disabled])[variant='fab']) [part='base'] {

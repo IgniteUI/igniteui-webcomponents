@@ -7,10 +7,11 @@
 }
 
 [part~='control'] {
+    @include border-radius(rem(4px));
+
     width: var(--size);
     height: rem(16px);
     box-shadow: inset 0 0 0 1px color(gray, 400);
-    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 2rem), 2rem);
     background: transparent;
     transition: background-color .15s ease-in-out;
 
@@ -94,12 +95,13 @@
 }
 
 [part~='thumb'] {
+    @include border-radius(rem(2px));
+
     width: var(--thumb-size);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
     margin-inline-start: var(--thumb-offset);
     background: color(gray, 400);
-    border-radius: clamp(0rem, calc(var(--igc-radius-factor) * 1rem), 1rem);
 }
 
 :host(:focus-within) [part~='thumb'][part~='checked'],
