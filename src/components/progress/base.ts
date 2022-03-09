@@ -97,6 +97,12 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     this.requestUpdate();
   }
 
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    this.max = Math.max(0, this.max);
+    this.value = clamp(this.value, 0, this.max);
+  }
+
   protected override firstUpdated() {
     if (!this.indeterminate) {
       this.runAnimation(0, this.value);

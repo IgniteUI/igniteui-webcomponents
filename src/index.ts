@@ -11,6 +11,7 @@ export { default as IgcCardHeaderComponent } from './components/card/card.header
 export { default as IgcCardMediaComponent } from './components/card/card.media';
 export { default as IgcCheckboxComponent } from './components/checkbox/checkbox';
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress';
+export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient';
 export { default as IgcFormComponent } from './components/form/form';
 export { default as IgcIconButtonComponent } from './components/button/icon-button';
 export { default as IgcIconComponent } from './components/icon/icon';
