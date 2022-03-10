@@ -1,0 +1,10 @@
+@use '../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-switch {
+        --border-color: #{color(gray, 700)};
+        --checked-color: #{color(gray, 900)};
+        --thumb-color: #{color(gray, 700)};
+        --disabled-color: #{color(gray, 400)};
+    }
+}

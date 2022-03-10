@@ -7,15 +7,17 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import {
-  blazorSuppress,
-  blazorTypeOverride,
-  watch,
-} from '../common/decorators';
-import { styles } from './slider.material.css';
+import { themes } from '../../theming';
+import { blazorSuppress, blazorTypeOverride, watch } from '../common/decorators';
+import { styles } from './themes/light/slider.base.css';
+import { styles as bootstrap } from './themes/light/slider.bootstrap.css';
+import { styles as fluent } from './themes/light/slider.fluent.css';
+import { styles as indigo } from './themes/light/slider.indigo.css';
+import { styles as material } from './themes/light/slider.material.css';
 
+@themes({ material, bootstrap, fluent, indigo })
 export class IgcSliderBaseComponent extends LitElement {
-  public static override styles = [styles];
+  public static override styles = styles;
 
   @query(`[part='thumb']`)
   protected thumb!: HTMLElement;

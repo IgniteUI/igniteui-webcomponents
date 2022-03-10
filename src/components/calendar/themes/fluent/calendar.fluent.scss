@@ -1,0 +1,14 @@
+@use 'sass:math';
+@use '../../../../styles/utilities/index' as *;
+@use '../calendar.base';
+@use '../shared-calendar' as *;
+
+:host(igc-calendar[size='large']),
+:host(igc-calendar[size='medium']),
+:host(igc-calendar[size='small']) {
+    igc-days-view::part(date-inner),
+    igc-months-view::part(month-inner),
+    igc-years-view::part(year-inner) {
+        border-radius: 0;
+    }
+}

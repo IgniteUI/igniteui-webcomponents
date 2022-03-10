@@ -13,3 +13,9 @@ export default class IgcSliderLabelComponent extends LitElement {
     return this;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'igc-slider-label': IgcSliderLabelComponent;
+  }
+}
