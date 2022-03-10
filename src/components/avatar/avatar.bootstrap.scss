@@ -1,5 +1,0 @@
-@use '../../styles/utilities' as *;
-
-:host([shape='rounded']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 2);
-}
