@@ -15,10 +15,11 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
 }
 
 [part~='control'] {
+    @include border-radius(rem(10px));
+
     width: var(--size);
     height: rem(20px);
     box-shadow: inset 0 0 0 1px color(gray, 500);
-    border-radius: rem(10px);
     background: transparent;
 }
 

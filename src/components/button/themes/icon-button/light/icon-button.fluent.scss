@@ -4,9 +4,10 @@ $text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
 $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
 
 button {
+    @include utils.border-radius(utils.rem(1px));
+
     background: transparent;
     color: utils.color(gray, 900);
-    border-radius: utils.rem(1px);
     transition: color .15s ease-out, background .15s ease-out;
     box-shadow: none;
 
