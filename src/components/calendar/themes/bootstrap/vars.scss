@@ -1,6 +1,6 @@
 @use '../../../../styles/utilities/index' as *;
 
-$border-radius: rem(4px);
+$border-radius: border-radius(rem(4px));
 $special-background: color(primary, 300);
 $special-color: contrast-color(primary, 600);
 $selected-background: color(primary, 500);

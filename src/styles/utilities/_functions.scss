@@ -709,3 +709,7 @@ $p-test: palette(#fff, #000);
 
     @return $string;
 }
+
+@function border-radius($radius, $min: rem(0), $max: $radius) {
+    @return clamp($min, calc(var(--igc-radius-factor) * $radius), $max);
+}

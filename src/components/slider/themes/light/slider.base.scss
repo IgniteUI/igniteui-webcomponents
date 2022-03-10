@@ -28,9 +28,10 @@ slot {
 }
 
 [part='track'] {
+    @include border-radius(rem(32px));
+
     position: relative;
     width: 100%;
-    border-radius: rem(32px);
     overflow: hidden;
 }
 
@@ -122,6 +123,8 @@ slot {
 }
 
 [part='thumb'] {
+    @include border-radius($thumb-radius);
+
     position: absolute;
     display: flex;
     justify-content: center;
@@ -129,7 +132,6 @@ slot {
     flex-direction: column;
     outline-style: none;
     transition: transform .1s ease-out, border-radius .1s ease-out;
-    border-radius: $thumb-radius;
     background: color(secondary, 500);
 }
 
@@ -143,6 +145,7 @@ slot {
 
 [part='thumb-label-inner'] {
     @include type-category('caption');
+    @include border-radius(rem(2px));
 
     display: flex;
     min-width: $thumb-label-width;
@@ -151,7 +154,6 @@ slot {
     white-space: nowrap;
     margin-inline-start: -50%;
     padding: 0 rem(2px);
-    border-radius: rem(2px);
     color: contrast-color(gray, 700);
     background: color(gray, 700);
 

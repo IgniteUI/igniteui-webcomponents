@@ -7,11 +7,11 @@
 }
 
 :host [part~='control'] {
-    $size: var(--size, utils.rem(16px));
+    --size: #{utils.rem(16px)};
 
-    width: $size;
-    height: $size;
-    min-width: $size;
+    width: var(--size);
+    height: var(--size);
+    min-width: var(--size);
     background: none;
     transition: transparent;
 

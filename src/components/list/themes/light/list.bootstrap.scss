@@ -1,10 +1,11 @@
 @use '../../../../styles/utilities' as *;
 
 $list-bg: contrast-color(gray, 900) !default;
-$separator-color: color(gray, 200) !default;
+$separator-color: color(gray, 300) !default;
 
 :host {
+    @include border-radius(rem(4px));
+
     background: $list-bg;
     border: rem(1px) solid $separator-color;
-    border-radius: rem(4px);
 }
