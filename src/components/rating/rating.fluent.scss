@@ -5,23 +5,23 @@ $disabled-color: color(gray, 200) !default;
 $disabled-selected-color: color(gray, 500) !default;
 $disabled-label-color: color(gray, 400) !default;
 
-@mixin theme() {
-    igc-rating::part(label) {
-        @include type-category('subtitle-2');
+[part~='label'] {
+    @include type-category('subtitle-2');
 
-        color: color(gray, 900);
-        padding-inline-start: $spacing;
-    }
+    color: color(gray, 900);
+    padding-inline-start: $spacing;
+}
 
-    igc-rating[disabled]::part(symbols-wrapper) {
+:host([disabled]) {
+    [part~='symbols-wrapper'] {
         color: $disabled-color;
     }
 
-    igc-rating[disabled]::part(label) {
+    [part~='label'] {
         color: $disabled-label-color;
     }
 
-    igc-rating[disabled]::part(symbols-wrapper fraction) {
+    [part~='symbols-wrapper'] [part~='fraction'] {
         color: $disabled-selected-color;
     }
 }

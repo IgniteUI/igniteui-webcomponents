@@ -2,11 +2,9 @@
 
 $spacing: rem(4px);
 
-@mixin theme() {
-    igc-rating::part(label) {
-        @include type-category('body-1');
+[part~='label'] {
+    @include type-category('body-1');
 
-        color: color(gray, 900);
-        padding-inline-start: $spacing;
-    }
+    color: color(gray, 900);
+    padding-inline-start: $spacing;
 }

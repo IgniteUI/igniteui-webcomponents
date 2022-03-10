@@ -11,9 +11,13 @@ import { watch } from '../common/decorators/watch';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { SizableMixin } from '../common/mixins/sizable';
-import { styles } from './rating.material.css';
+import { styles } from './rating.base.css';
+import { styles as bootstrap } from './rating.bootstrap.css';
+import { styles as fluent } from './rating.fluent.css';
+import { styles as indigo } from './rating.indigo.css';
 import { clamp } from '../common/util';
 import type IgcRatingSymbolComponent from './rating-symbol';
+import { themes } from '../../theming';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -31,6 +35,7 @@ export interface IgcRatingEventMap {
  *
  * @csspart base - The main wrapper which holds all of the rating elements.
  */
+@themes({ fluent, bootstrap, indigo })
 export default class IgcRatingComponent extends SizableMixin(
   EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
 ) {
