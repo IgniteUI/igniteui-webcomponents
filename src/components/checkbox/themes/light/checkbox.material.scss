@@ -15,12 +15,13 @@ label {
 }
 
 [part~='control'] {
-    $size: var(--size, rem(20px));
+    --size: #{rem(20px)};
 
-    width: calc(#{$size } * 2);
-    height: calc(#{$size } * 2);
-    min-width: calc(#{$size } * 2);
-    border-radius: 50%;
+    @include border-radius(calc(var(--size) / 2));
+
+    width: calc(var(--size) * 2);
+    height: calc(var(--size) * 2);
+    min-width: calc(var(--size) * 2);
     transition: background .15s ease-in;
 }
 
