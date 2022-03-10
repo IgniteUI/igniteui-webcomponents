@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+} from '@open-wc/testing';
 import { defineComponents, IgcLinearProgressComponent } from '../../index.js';
 
 describe('Linear progress component', () => {
@@ -99,6 +105,8 @@ describe('Linear progress component', () => {
           label-align="bottom"
         ></igc-linear-progress>`
       );
+
+      await aTimeout(0);
 
       expect(progress.value).to.equal(50);
       expect(progress.max).to.equal(150);
