@@ -8,8 +8,9 @@ $input-background: var(--input-background, #fff) !default;
     }
 
     [part~='input'] {
+        @include utils.border-radius(utils.rem(4px));
+
         padding: initial;
-        border-radius: utils.rem(4px);
         background: $input-background;
         box-shadow: 0 0 0 0 transparent;
         z-index: 1;
