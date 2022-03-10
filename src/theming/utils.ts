@@ -1,3 +1,4 @@
+/*eslint no-empty: ['error', {allowEmptyCatch: true}]*/
 const CssKeyToJsKey = (key: string) =>
   key.replace('--', '').replace(/-./g, (x) => x.toUpperCase()[1]);
 
@@ -7,17 +8,19 @@ const getAllCSSVariableNames = (
   const cssVars: string[] = [];
 
   Array.from(styleSheets).forEach((styleSheet) => {
-    Array.from(styleSheet.cssRules).forEach((rule: any) => {
-      if (!rule || !rule['style']) {
-        return;
-      }
-
-      Array.from(rule['style']).forEach((style: any) => {
-        if (style.startsWith('--') && cssVars.indexOf(style) == -1) {
-          cssVars.push(style);
+    try {
+      Array.from(styleSheet.cssRules).forEach((rule: any) => {
+        if (!rule || !rule['style']) {
+          return;
         }
+
+        Array.from(rule['style']).forEach((style: any) => {
+          if (style.startsWith('--') && cssVars.indexOf(style) == -1) {
+            cssVars.push(style);
+          }
+        });
       });
-    });
+    } catch (e) {}
   });
 
   return cssVars;
