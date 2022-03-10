@@ -1,0 +1,75 @@
+@use '../../../../../styles/utilities' as utils;
+
+button {
+    @include utils.border-radius(utils.rem(4px));
+
+    transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
+    color: #{utils.color(primary, 500)};
+
+    &:hover {
+        color: #{utils.color(primary, 800)};
+    }
+
+    &:focus,
+    &:active {
+        color: #{utils.color(primary, 600)};
+        background: #{utils.color(gray, 100)};
+        box-shadow: none;
+    }
+}
+
+:host([variant='contained']) {
+    button {
+        color: #{utils.contrast-color(primary, 600)};
+        background: #{utils.color(primary, 500)};
+
+        &:hover {
+            background: #{utils.color(primary, 600)};
+        }
+
+        &:focus,
+        &:active {
+            background: #{utils.color(primary, 600)};
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
+        }
+    }
+}
+
+:host([variant='outlined']) {
+    button {
+        box-shadow: 0 0 0 utils.rem(1px) utils.color(primary, 500);
+
+        &:hover {
+            color: #{utils.contrast-color(primary, 600)};
+            background: #{utils.color(primary, 600)};
+        }
+
+        &:focus,
+        &:active {
+            color: #{utils.contrast-color(primary, 600)};
+            background: #{utils.color(primary, 600)};
+            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
+        }
+    }
+}
+
+:host([disabled]) {
+    button {
+        color: #{utils.color(primary, 100)};
+        background: transparent;
+    }
+}
+
+:host([disabled][variant='contained']) {
+    button {
+        background: #{utils.color(primary, 100)};
+        color: #{utils.color(primary, 300)};
+    }
+}
+
+:host([disabled][variant='outlined']) {
+    button {
+        color: #{utils.color(primary, 100)};
+        box-shadow: 0 0 0 utils.rem(1px) utils.color(primary, 100);
+    }
+}

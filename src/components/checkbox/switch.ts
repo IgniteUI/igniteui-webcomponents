@@ -1,10 +1,15 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+import { themes } from '../../theming';
 import { watch } from '../common/decorators/watch.js';
-import { styles } from './switch.material.css';
-import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { partNameMap } from '../common/util.js';
+import { IgcCheckboxBaseComponent } from './checkbox-base.js';
+import { styles } from './themes/light/switch.base.css';
+import { styles as bootstrap } from './themes/light/switch.bootstrap.css';
+import { styles as fluent } from './themes/light/switch.fluent.css';
+import { styles as indigo } from './themes/light/switch.indigo.css';
+import { styles as material } from './themes/light/switch.material.css';
 
 let nextId = 0;
 
@@ -24,9 +29,9 @@ let nextId = 0;
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
  */
+@themes({ material, bootstrap, fluent, indigo })
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
-
   public static styles = styles;
 
   private inputId = `switch-${nextId++}`;

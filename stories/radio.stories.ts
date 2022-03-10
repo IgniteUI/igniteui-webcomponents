@@ -71,7 +71,7 @@ interface ArgTypes {
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { labelPosition, checked, disabled, required }: ArgTypes,
+  { labelPosition, checked, disabled, required, invalid }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-radio
@@ -79,6 +79,7 @@ const Template: Story<ArgTypes, Context> = (
     .disabled="${disabled}"
     .checked="${checked}"
     .required=${required}
+    .invalid="${invalid}"
     dir=${ifDefined(direction)}
   >
     Label

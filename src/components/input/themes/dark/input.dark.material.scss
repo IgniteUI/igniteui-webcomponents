@@ -1,0 +1,7 @@
+@use '../../../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-input {
+        --focus-background: #{utils.color(gray, 100)};
+    }
+}
