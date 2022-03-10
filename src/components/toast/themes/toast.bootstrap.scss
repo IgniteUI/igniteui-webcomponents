@@ -1,10 +1,11 @@
 @use '../../../styles/utilities' as *;
 
 :host {
+    @include border-radius(rem(4px));
+
     color: contrast-color(surface);
     background: color(surface);
     outline: 1px solid color(gray, 300);
-    border-radius: rem(4px);
     padding: rem(11px);
     box-shadow: var(--igc-elevation-10);
 }

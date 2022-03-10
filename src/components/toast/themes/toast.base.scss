@@ -1,6 +1,8 @@
 @use '../../../styles/utilities' as *;
 
 :host {
+    @include border-radius(rem(26px));
+
     display: inline-flex;
     font-family: var(--igc-font-family);
     text-align: center;
@@ -13,7 +15,6 @@
     padding: rem(16px) rem(24px);
     margin: rem(42px) auto;
     min-width: rem(52px);
-    border-radius: rem(26px);
     backdrop-filter: blur(10px);
 }
 
