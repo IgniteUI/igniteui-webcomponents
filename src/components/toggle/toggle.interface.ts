@@ -27,7 +27,7 @@ export class ToggleBaseComponent
   implements IToggleComponent
 {
   /** Sets the open state of the component. */
-  @property()
+  @property({ type: Boolean })
   public open = false;
 
   /** The preferred placement of the component around the target element.
@@ -53,30 +53,25 @@ export class ToggleBaseComponent
 
   /** The amount of offset in horizontal and/or vertical direction. */
   @property({
-    converter: {
-      fromAttribute: (value) => {
-        const dimensions = value ? (value as string).split(',') : undefined;
-        return dimensions
-          ? {
-              x: parseInt(dimensions[0]),
-              y: parseInt(dimensions[1] ?? dimensions[0]),
-            }
-          : undefined;
-      },
-      toAttribute: (value: { x: number; y: number }) => {
-        return value ? `${value.x}, ${value.y}` : undefined;
-      },
+    converter: (value) => {
+      const dimensions = value ? (value as string).split(',') : undefined;
+      return dimensions
+        ? {
+            x: parseInt(dimensions[0]),
+            y: parseInt(dimensions[1] ?? dimensions[0]),
+          }
+        : undefined;
     },
     type: String,
   })
   public offset!: { x: number; y: number };
 
   /** Whether the component should be hidden on clicking outside of it. */
-  @property({ attribute: 'close-on-outside-click' })
+  @property({ type: Boolean, attribute: 'close-on-outside-click' })
   public closeOnOutsideClick = true;
 
   /** Whether the component's width should be the same as the target's one. */
-  @property({ attribute: 'same-width' })
+  @property({ type: Boolean, attribute: 'same-width' })
   public sameWidth!: boolean;
 
   /** Hides the component. */

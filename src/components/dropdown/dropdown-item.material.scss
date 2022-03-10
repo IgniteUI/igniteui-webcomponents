@@ -1,0 +1,58 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    white-space: nowrap;
+    position: relative;
+    cursor: pointer;
+}
+
+:host(:hover) {
+    background: color(gray, 200);
+}
+
+:host([active]) {
+    outline: 0;
+    outline-color: transparent;
+    background: color(gray, 300);
+}
+
+:host([disabled]) {
+    color: color(gray, 500);
+    cursor: default;
+    pointer-events: none;
+}
+
+:host([selected]) {
+    background: #09f;
+    color: white;
+}
+
+::slotted(*) {
+    margin: 0;
+    font: inherit;
+    opacity: inherit;
+}
+
+[part='content'] {
+    flex-grow: 1;
+}
+
+[part='prefix'],
+[part='suffix'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[name='prefix']::slotted(*) {
+    margin-inline-end: calc(var(--igc-spacing-large) * 2);
+}
+
+[name='suffix']::slotted(*) {
+    margin-inline-start: calc(var(--igc-spacing-large) * 2);
+}
