@@ -2,7 +2,7 @@
 
 :host {
     --stroke-thickness: #{rem(4px)};
-    --diameter: calc(#{rem(28px)} + var(--stroke-thickness));
+    --diameter: #{rem(28px)};
 }
 
 [part~='svg'][part~='indeterminate'] {

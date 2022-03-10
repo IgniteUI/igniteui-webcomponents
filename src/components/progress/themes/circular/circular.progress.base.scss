@@ -10,7 +10,7 @@
     position: relative;
 
     --stroke-thickness: #{rem(2px)};
-    --diameter: calc(#{rem(30px)} + var(--stroke-thickness));
+    --diameter: #{rem(30px)};
 }
 
 [part~='label'] {
@@ -23,8 +23,10 @@
     left: 50%;
 }
 
+[part~='label'],
 [part~='value'] {
-    font-size: rem(10px);
+    font-size: calc(var(--diameter) / 3 - var(--stroke-thickness));
+    line-height: normal;
 }
 
 [part='svg indeterminate'] {
@@ -38,8 +40,8 @@
 }
 
 [part~='svg'] {
-    width: var(--diameter);
-    height: var(--diameter);
+    width: $diameter;
+    height: $diameter;
 }
 
 [part~='track'] {
@@ -56,8 +58,8 @@
 [part~='fill'] {
     fill: transparent;
     stroke-width: var(--stroke-thickness);
-    cx: calc(var(--diameter) / 2);
-    cy: calc(var(--diameter) / 2);
+    cx: calc(#{$diameter} / 2);
+    cy: calc(#{$diameter} / 2);
     r: $radius;
 }
 

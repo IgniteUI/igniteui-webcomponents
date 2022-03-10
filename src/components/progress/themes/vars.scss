@@ -14,5 +14,6 @@ $stripe-grays: color(gray, 50, .7);
 $stripe-size: rem(16px);
 $animation-direction: normal;
 $animation-direction-rtl: reverse;
+$diameter: calc(var(--diameter) + var(--stroke-thickness));
 $radius: calc(var(--diameter) / 2 - var(--stroke-thickness) * .5);
 $circumference: calc(#{$radius} * 2 * 3.1416);
