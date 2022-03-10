@@ -10,6 +10,8 @@
 }
 
 [part~='base'] {
+    @include border-radius(rem(4px));
+
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -20,7 +22,6 @@
     color: color(surface, 500);
     background: color(gray, 900);
     box-shadow: var(--igc-elevation-4);
-    border-radius: rem(4px);
 }
 
 [part~='message'] {
