@@ -8,12 +8,13 @@ $slot-spacing: var(--igc-spacing-large);
 }
 
 [part='base'] {
+    @include border-radius(rem(4px));
+
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border: none;
-    border-radius: calc(var(--igc-border-radius) * 2);
     user-select: none;
     outline-style: none;
     -webkit-tap-highlight-color: transparent;
@@ -133,20 +134,20 @@ span[part='suffix'] {
 }
 
 :host([variant='fab']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 12);
+    @include border-radius(calc(var(--size) / 2));
+
+    min-width: var(--size);
+    min-height: var(--size);
 }
 
 :host([variant='fab'][size='large']) [part='base'] {
-    min-width: rem(48px);
-    min-height: rem(48px);
+    --size: #{rem(48px)};
 }
 
 :host([variant='fab'][size='medium']) [part='base'] {
-    min-width: rem(40px);
-    min-height: rem(40px);
+    --size: #{rem(40px)};
 }
 
 :host([variant='fab'][size='small']) [part='base'] {
-    min-width: rem(32px);
-    min-height: rem(32px);
+    --size: #{rem(32px)};
 }
