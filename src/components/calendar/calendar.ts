@@ -56,7 +56,6 @@ import '../icon/icon';
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@blazorIndirectRender
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,

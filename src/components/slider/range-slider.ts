@@ -1,5 +1,6 @@
 import { html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { blazorSuppress } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { IgcSliderBaseComponent } from './slider-base';
