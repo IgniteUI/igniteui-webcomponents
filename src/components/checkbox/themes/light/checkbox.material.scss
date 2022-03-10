@@ -1,0 +1,37 @@
+@use '../../../../styles/utilities' as *;
+
+label {
+    &:hover [part='control'] {
+        background: color(gray, 600, .06);
+    }
+
+    &:focus-within [part='control'] {
+        background: color(gray, 600, .12);
+    }
+}
+
+[part~='indicator'] {
+    stroke: color(surface, 500);
+}
+
+[part~='control'] {
+    --size: #{rem(20px)};
+
+    @include border-radius(calc(var(--size) / 2));
+
+    width: calc(var(--size) * 2);
+    height: calc(var(--size) * 2);
+    min-width: calc(var(--size) * 2);
+    transition: background .15s ease-in;
+}
+
+:host([invalid]) label,
+:host([invalid][indeterminate]) label {
+    &:hover [part~='control'] {
+        background: color(error, 500, .06);
+    }
+
+    &:focus-within [part~='control'] {
+        background: color(error, 500, .12);
+    }
+}

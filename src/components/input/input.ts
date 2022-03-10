@@ -2,8 +2,7 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { styles } from './input.material.css';
-import { alternateName, watch, blazorTwoWayBind } from '../common/decorators';
+import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
 import { partNameMap } from '../common/util';
 import { IgcInputBaseComponent } from './input-base';
 
@@ -30,7 +29,6 @@ type Direction = 'ltr' | 'rtl' | 'auto';
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
-  public static styles = styles;
 
   @property()
   @blazorTwoWayBind('igcChange', 'detail')

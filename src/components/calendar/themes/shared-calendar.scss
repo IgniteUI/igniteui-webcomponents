@@ -1,0 +1,7 @@
+@use '../../../styles/utilities/index' as *;
+
+$date-size-large: rem(32px);
+$date-size-medium: rem(28px);
+$date-size-small: rem(24px);
+$calendar-background: color(surface);
+$calendar-foreground: contrast-color(surface);

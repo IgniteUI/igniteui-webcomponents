@@ -1,0 +1,7 @@
+@use '../../../../styles/utilities' as *;
+
+$header-color: color(primary, 500) !default;
+
+:host {
+    color: $header-color;
+}

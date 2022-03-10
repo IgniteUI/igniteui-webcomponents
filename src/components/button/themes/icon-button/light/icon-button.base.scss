@@ -1,0 +1,58 @@
+@use '../../../../../styles/common/component';
+@use '../../../../../styles/utilities' as *;
+
+:host {
+    display: inline-flex;
+}
+
+button {
+    @include border-radius(50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    outline-style: none;
+    background: transparent;
+    padding: 0;
+    color: color(gray, 900);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    transition: box-shadow .2s ease-in, background .15s ease-out;
+    transition-delay: .05s;
+}
+
+:host([size='small']) {
+    igc-icon {
+        --size: #{rem(16px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-small) * 2);
+    }
+}
+
+:host([size='medium']) {
+    igc-icon {
+        --size: #{rem(20px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-medium) * 1.5);
+    }
+}
+
+:host([size='large']) {
+    igc-icon {
+        --size: #{rem(24px)};
+    }
+
+    button {
+        padding: var(--igc-spacing-large);
+    }
+}
+
+:host([disabled]) {
+    pointer-events: none;
+}
