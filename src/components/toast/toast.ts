@@ -37,10 +37,6 @@ export default class IgcToastComponent extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
   public keepOpen = false;
 
-  /** The text of the toast. */
-  @property({ type: String })
-  public message!: string;
-
   /** Closes the toast. */
   public hide() {
     if (this.open) {
@@ -73,7 +69,7 @@ export default class IgcToastComponent extends LitElement {
   }
 
   protected override render() {
-    return html` <div part="base">${this.message}</div> `;
+    return html`<slot></slot>`;
   }
 }
 

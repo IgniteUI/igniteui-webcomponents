@@ -1,6 +1,6 @@
 @use '../../../styles/utilities' as *;
 
-div {
+:host {
     color: contrast-color(gray, 700);
     background: color(gray, 700);
     padding: rem(10px) rem(16px);

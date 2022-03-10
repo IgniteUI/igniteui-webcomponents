@@ -1,6 +1,6 @@
 @use '../../../styles/utilities' as *;
 
-div {
+:host {
     color: contrast-color(surface);
     background: color(surface);
     outline: 1px solid color(gray, 300);

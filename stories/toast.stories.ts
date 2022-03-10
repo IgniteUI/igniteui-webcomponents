@@ -29,11 +29,6 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    message: {
-      type: 'string',
-      description: 'The text of the toast.',
-      control: 'text',
-    },
   },
 };
 export default metadata;
@@ -41,7 +36,6 @@ interface ArgTypes {
   open: boolean;
   displayTime: number;
   keepOpen: boolean;
-  message: string;
 }
 // endregion
 const handleShow = () => {
@@ -63,7 +57,6 @@ const Template: Story<ArgTypes, Context> = ({
   open = false,
   displayTime = 4000,
   keepOpen = false,
-  message = 'Toast message',
 }: ArgTypes) => html`
   <igc-button @click=${handleShow}>Show Toast</igc-button>
   <igc-button @click=${handleHide}>Hide Toast</igc-button>
@@ -72,8 +65,8 @@ const Template: Story<ArgTypes, Context> = ({
     .open=${open}
     display-time=${ifDefined(displayTime)}
     ?keep-open=${keepOpen}
-    message=${ifDefined(message)}
   >
+    Toast Message
   </igc-toast>
 `;
 

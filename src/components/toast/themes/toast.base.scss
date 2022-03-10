@@ -8,9 +8,6 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-}
-
-div {
     background: color(gray, 700);
     color: contrast-color(gray, 700);
     padding: rem(16px) rem(24px);
@@ -21,7 +18,5 @@ div {
 }
 
 :host(:not([open])) {
-    [part='base'] {
-        display: none;
-    }
+    display: none;
 }
