@@ -4,8 +4,6 @@
 $item-margin: rem(8px);
 
 [part~='base'] {
-    @include border-radius(rem(4px));
-
     display: flex;
     align-items: center;
     flex-flow: row nowrap;
@@ -24,6 +22,7 @@ $item-margin: rem(8px);
     justify-content: flex-start;
     transition: background .15s ease-out;
 
+    @include border-radius(rem(4px));
     @include type-category('subtitle-2');
 
     ::slotted(igc-icon) {
