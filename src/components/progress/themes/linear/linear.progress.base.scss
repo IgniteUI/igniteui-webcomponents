@@ -29,7 +29,7 @@
 }
 
 [part~='fill'] {
-    transition: width var(--duration) ease 0s, background-color var(--duration) ease 0s;;
+    transition: width var(--duration) linear, background-color var(--duration) linear;
     position: relative;
     height: inherit;
 }

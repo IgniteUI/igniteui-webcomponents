@@ -13,6 +13,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @state()
   protected percentage = 0;
 
+  private oldMax!: number;
+  private oldVal!: number;
+
   /** Maximum value of the control. */
   @property({ type: Number })
   public max = 100;
@@ -66,27 +69,25 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     }
   }
 
-  protected get animationOptions(): KeyframeAnimationOptions {
-    return {
-      easing: 'ease-out',
-      fill: 'forwards',
-      duration: this.animationDuration,
-    };
-  }
-
   protected slotChanges() {
     this.requestUpdate();
   }
 
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.value = clamp(this.value, 0, this.max);
-    this.animateLabelTo(0, this.value);
+    this.oldMax = Math.max(0, this.max);
+    this.oldVal = clamp(this.value, 0, this.oldMax);
+    this.value = 0;
+    this.max = 100;
   }
 
   protected override firstUpdated() {
     if (!this.indeterminate) {
-      this.max = Math.max(0, this.max);
+      // trigger transition initially
+      setTimeout(() => {
+        this.max = this.oldMax;
+        this.value = this.oldVal;
+      }, 0);
     }
   }
 
