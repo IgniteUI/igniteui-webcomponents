@@ -103,7 +103,11 @@
     }
 
     // Valid only for circular progress bar
-    [part~='indeterminate'] [part~='outer'] {
+    [part~='indeterminate'] [part~='track'] {
         animation-direction: $animation-direction-rtl;
+    }
+
+    [part~='fill'] {
+        stroke-dashoffset: calc(#{$circumference} + var(--percentage) * #{$circumference});
     }
 }

@@ -1,5 +1,10 @@
 import { html, LitElement, nothing } from 'lit';
-import { property, queryAssignedElements, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators';
 import { asPercent, clamp } from '../common/util';
@@ -9,6 +14,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   @queryAssignedElements()
   protected assignedElements!: Array<HTMLElement>;
+
+  @query('[part~="fill"]', true)
+  protected progressIndicator!: Element;
 
   @state()
   protected percentage = 0;
@@ -50,22 +58,34 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @property({ attribute: 'label-format' })
   public labelFormat!: string;
 
+  @watch('indeterminate', { waitUntilFirstUpdate: true })
+  protected indeterminateChange() {
+    this.cancelAnimations();
+    if (!this.indeterminate) {
+      this.percentage = Math.floor(asPercent(this.value, this.max));
+    }
+  }
+
   @watch('max', { waitUntilFirstUpdate: true })
   protected maxChange() {
     this.max = Math.max(0, this.max);
     if (this.value > this.max) {
       this.value = this.max;
+    } else {
+      if (!this.indeterminate) {
+        this.animateLabelTo(this.max, this.value);
+      }
     }
   }
 
   @watch('value', { waitUntilFirstUpdate: true })
   protected valueChange(oldVal: number) {
     this.value = clamp(this.value, 0, this.max);
-    if (this.indeterminate) {
-      this.percentage = asPercent(this.value, this.max);
-    } else {
+    if (!this.indeterminate) {
       cancelAnimationFrame(this.tick);
-      this.animateLabelTo(oldVal, this.value);
+      if (this.percentage !== Math.floor(asPercent(this.value, this.max))) {
+        this.animateLabelTo(oldVal, this.value);
+      }
     }
   }
 
@@ -89,6 +109,17 @@ export abstract class IgcProgressBaseComponent extends LitElement {
         this.value = this.oldVal;
       }, 0);
     }
+  }
+
+  protected cancelAnimations() {
+    requestAnimationFrame(() => {
+      this.progressIndicator?.getAnimations().forEach((animation) => {
+        if (animation instanceof CSSTransition) {
+          animation.cancel();
+        }
+      });
+    });
+    cancelAnimationFrame(this.tick);
   }
 
   protected animateLabelTo(start: number, end: number) {
