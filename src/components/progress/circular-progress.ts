@@ -1,5 +1,5 @@
-import { html, nothing, svg } from 'lit';
-import { queryAssignedElements } from 'lit/decorators.js';
+import { html, nothing, PropertyValueMap, svg } from 'lit';
+import { queryAssignedElements, state } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { asPercent, partNameMap } from '../common/util';
@@ -8,7 +8,8 @@ import { styles } from './themes/circular/circular.progress.base.css';
 import { styles as bootstrap } from './themes/circular/circular.progress.bootstrap.css';
 import { styles as fluent } from './themes/circular/circular.progress.fluent.css';
 import IgcCircularGradientComponent from './circular-gradient';
-import { themes } from '../../theming';
+import { ReactiveTheme, Theme, ThemeController, themes } from '../../theming';
+import { watch } from '../common/decorators';
 
 /**
  * A circular progress indicator used to express unspecified wait time or display
@@ -35,11 +36,23 @@ import { themes } from '../../theming';
  */
 
 @themes({ bootstrap, fluent })
-export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
+export default class IgcCircularProgressComponent
+  extends IgcProgressBaseComponent
+  implements ReactiveTheme
+{
   public static readonly tagName = 'igc-circular-progress';
   public static override styles = styles;
 
   protected gradientId = Date.now().toString(16);
+  protected themeController!: ThemeController;
+
+  @state()
+  public theme!: Theme;
+
+  @watch('theme', { waitUntilFirstUpdate: true })
+  public func() {
+    this.runAnimation(0, this.value);
+  }
 
   @queryAssignedElements({ slot: 'gradient' })
   protected gradientElements!: Array<IgcCircularGradientComponent>;
@@ -64,6 +77,17 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
     return {
       indeterminate: this.indeterminate,
     };
+  }
+
+  protected override willUpdate(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {
+    super.willUpdate(_changedProperties);
+    this.theme = this.themeController.theme;
+  }
+
+  public themeAdopted(controller: ThemeController): void {
+    this.themeController = controller;
   }
 
   private gradientChange() {
