@@ -11,7 +11,7 @@ $stripe-size: rem(5px);
 }
 
 [part~='track'] {
-    border-radius: #{rem(4px)};
+    @include border-radius(rem(4px));
 }
 
 [part~='striped'][part~='primary'] {
