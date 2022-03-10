@@ -87,6 +87,48 @@ describe('Circular progress component', () => {
         .to.be.null;
     });
 
+    it('correctly sets properties through attribute values', async () => {
+      progress = await fixture<IgcCircularProgressComponent>(
+        html`<igc-circular-progress
+          value="50"
+          max="150"
+          label-format="{0} val"
+          animation-duration="2100"
+          variant="warning"
+        ></igc-circular-progress>`
+      );
+
+      expect(progress.value).to.equal(50);
+      expect(progress.max).to.equal(150);
+      expect(progress.labelFormat).to.equal('{0} val');
+      expect(progress.animationDuration).to.equal(2100);
+      expect(progress.variant).to.equal('warning');
+
+      progress.setAttribute('indeterminate', '');
+      await elementUpdated(progress);
+
+      expect(progress.indeterminate).to.equal(true);
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
+        .to.be.null;
+      let defaultLabel =
+        progress.shadowRoot!.querySelector(`span[part~="label"]`);
+      expect(defaultLabel).to.be.null;
+
+      progress.removeAttribute('indeterminate');
+      await elementUpdated(progress);
+
+      expect(progress.indeterminate).to.equal(false);
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
+        .be.null;
+      defaultLabel = progress.shadowRoot!.querySelector(`span[part~="label"]`);
+      expect(defaultLabel).not.to.be.null;
+
+      progress.max = 20;
+      await elementUpdated(progress);
+
+      expect(progress.value).to.equal(20);
+    });
+
     it('correctly reflects updated value in indeterminate mode when switched to determinate', async () => {
       progress.indeterminate = true;
 
@@ -110,13 +152,13 @@ describe('Circular progress component', () => {
       await elementUpdated(progress);
 
       let animations = progress
-        .shadowRoot!.querySelector('[part~="fill"]')
+        .shadowRoot!.querySelector('[part~="svg"]')
         ?.getAnimations() as Animation[];
 
       expect(animations.length).to.equal(1);
       expect(animations[0]).to.be.instanceOf(CSSAnimation);
       expect((animations[0] as CSSAnimation).animationName).to.equal(
-        'indeterminate-accordion'
+        'rotate-center'
       );
 
       expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
@@ -126,7 +168,7 @@ describe('Circular progress component', () => {
       await elementUpdated(progress);
 
       animations = progress
-        .shadowRoot!.querySelector('[part~="fill"]')
+        .shadowRoot!.querySelector('[part~="svg"]')
         ?.getAnimations() as Animation[];
 
       animations.forEach((anim) => {
@@ -141,13 +183,13 @@ describe('Circular progress component', () => {
       await elementUpdated(progress);
 
       animations = progress
-        .shadowRoot!.querySelector('[part~="fill"]')
+        .shadowRoot!.querySelector('[part~="svg"]')
         ?.getAnimations() as Animation[];
 
       expect(animations.length).to.equal(1);
       expect(animations[0]).to.be.instanceOf(CSSAnimation);
       expect((animations[0] as CSSAnimation).animationName).to.equal(
-        'indeterminate-accordion'
+        'rotate-center'
       );
 
       progress.dir = 'rtl';

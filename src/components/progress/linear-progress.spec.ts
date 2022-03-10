@@ -88,6 +88,52 @@ describe('Linear progress component', () => {
         .to.be.null;
     });
 
+    it('correctly sets properties through attribute values', async () => {
+      progress = await fixture<IgcLinearProgressComponent>(
+        html`<igc-linear-progress
+          value="50"
+          max="150"
+          label-format="{0} val"
+          animation-duration="2100"
+          variant="warning"
+          label-align="bottom"
+        ></igc-linear-progress>`
+      );
+
+      expect(progress.value).to.equal(50);
+      expect(progress.max).to.equal(150);
+      expect(progress.labelFormat).to.equal('{0} val');
+      expect(progress.animationDuration).to.equal(2100);
+      expect(progress.variant).to.equal('warning');
+      expect(progress.labelAlign).to.equal('bottom');
+
+      progress.setAttribute('indeterminate', '');
+      progress.labelAlign = 'top-start';
+      await elementUpdated(progress);
+
+      expect(progress.indeterminate).to.equal(true);
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
+        .to.be.null;
+      let defaultLabel =
+        progress.shadowRoot!.querySelector(`span[part~="label"]`);
+      expect(defaultLabel).to.be.null;
+      expect(progress.labelAlign).to.equal('top-start');
+
+      progress.removeAttribute('indeterminate');
+      await elementUpdated(progress);
+
+      expect(progress.indeterminate).to.equal(false);
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
+        .be.null;
+      defaultLabel = progress.shadowRoot!.querySelector(`span[part~="label"]`);
+      expect(defaultLabel).not.to.be.null;
+
+      progress.max = 20;
+      await elementUpdated(progress);
+
+      expect(progress.value).to.equal(20);
+    });
+
     it('correctly reflects updated value in indeterminate mode when switched to determinate', async () => {
       progress.indeterminate = true;
       await elementUpdated(progress);
