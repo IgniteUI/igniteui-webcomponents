@@ -26,8 +26,20 @@
     }
 
     to {
-        transform: translateX(300%);
+        transform: translateX(333%);
         transform-origin: right;
+    }
+}
+
+@keyframes indeterminate-bar-fluent-rtl {
+    from {
+        transform: translateX(-333%);
+        transform-origin: right;
+    }
+
+    to {
+        transform: translateX(100%);
+        transform-origin: left;
     }
 }
 

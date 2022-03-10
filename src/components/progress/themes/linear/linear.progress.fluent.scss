@@ -1,14 +1,20 @@
 @use '../../../../styles/utilities/index' as *;
 @use '../vars' as *;
 
-$danger-color: color(error, 500);
-$warning-color: color(warn, 500);
-$success-color: color(success, 500);
-$info-color: color(info, 500);
-$primary-color: color(primary, 500);
+$track-color: color(gray, 200);
 
 :host {
     --track-size: #{rem(2px)};
+}
+
+[part~='track'] {
+    background: $track-color;
+    margin: rem(8px) 0;
+}
+
+[part~='label'] {
+    font-size: rem(14px);
+    font-weight: 400;
 }
 
 [part~='indeterminate'] {
@@ -21,6 +27,12 @@ $primary-color: color(primary, 500);
 
     &::before {
         display: none;
+    }
+}
+
+:host([dir='rtl']) {
+    [part~='indeterminate'] {
+        animation-name: indeterminate-bar-fluent-rtl;
     }
 }
 

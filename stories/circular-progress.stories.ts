@@ -105,7 +105,7 @@ const Template: Story<ArgTypes, Context> = (
       </igc-circular-gradient>
       <igc-circular-gradient slot="gradient" offset="100%" color="#ff0079">
       </igc-circular-gradient>
-      <p>${value}</p>
+      <span>${value}</span>
     </igc-circular-progress>
     <igc-circular-progress
       style="--diameter: 72px; --stroke-thickness: 12px;"
