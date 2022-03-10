@@ -1,18 +1,17 @@
-const fs = require('fs');
-const path = require('path');
-const sass = require('sass');
-const globby = require('globby');
-const autoprefixer = require('autoprefixer');
-const postcss = require('postcss');
-const { promisify } = require('util');
+import path from 'path';
+import { mkdirSync as makeDir } from 'fs';
+import { copyFile, writeFile } from 'fs/promises';
+import { exec as _exec } from 'child_process';
+import { promisify } from 'util';
+import { fileURLToPath } from 'url';
+import { globby } from 'globby';
+import sass from 'sass';
+import postcss from 'postcss';
+import autoprefixer from 'autoprefixer';
 
-const exec = promisify(require('child_process').exec);
-const getDirName = path.dirname;
-const makeDir = fs.mkdirSync;
-const copyFile = promisify(fs.copyFile);
-const writeFile = promisify(fs.writeFile);
+const exec = promisify(_exec);
 const renderSass = promisify(sass.render);
-
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
 const THEMES_PATH = `src/styles/themes`;
@@ -23,20 +22,22 @@ async function buildThemes() {
   for (const sassFile of paths) {
     const result = await renderSass({
       file: sassFile,
-      outputStyle: 'compressed'
+      outputStyle: 'compressed',
     });
 
-    let outCss = await postcss([autoprefixer]).process(result.css.toString()).css;
+    let outCss = await postcss([autoprefixer]).process(result.css.toString())
+      .css;
     if (outCss.charCodeAt(0) === 0xfeff) {
-      outCss = outCss.substr(1);
+      outCss = outCss.substring(1);
     }
 
-    const outputFile = DEST_DIR(sassFile.replace(/\.scss$/, '.css').replace('src/styles/', ''));
-    makeDir(getDirName(outputFile), { recursive: true });
+    const outputFile = DEST_DIR(
+      sassFile.replace(/\.scss$/, '.css').replace('src/styles/', '')
+    );
+    makeDir(path.dirname(outputFile), { recursive: true });
     await writeFile(outputFile, outCss, 'utf-8');
   }
 }
-
 
 (async () => {
   await exec('npm run clean');
@@ -46,7 +47,9 @@ async function buildThemes() {
 
   // https://github.com/microsoft/TypeScript/issues/14619
   console.info(`Building components...`);
-  await exec(`tsc -p scripts/tsconfig.prod.json && tsc -p scripts/tsconfig.dts.prod.json`);
+  await exec(
+    `tsc -p scripts/tsconfig.prod.json && tsc -p scripts/tsconfig.dts.prod.json`
+  );
 
   console.info(`Generating theme files...`);
   await buildThemes();
@@ -57,7 +60,10 @@ async function buildThemes() {
 
   console.info(`Generating VSCode custom data file...`);
   await exec(`npm run build:docs:vscode-schema`);
-  await copyFile('vscode-html-custom-data.json', DEST_DIR('vscode-html-custom-data.json'));
+  await copyFile(
+    'vscode-html-custom-data.json',
+    DEST_DIR('vscode-html-custom-data.json')
+  );
 
   console.info(`Generating package.json...`);
   await copyFile('scripts/_package.json', DEST_DIR('package.json'));
