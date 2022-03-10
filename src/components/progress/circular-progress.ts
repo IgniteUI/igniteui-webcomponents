@@ -1,5 +1,5 @@
-import { html, nothing, PropertyValueMap, svg } from 'lit';
-import { queryAssignedElements, state } from 'lit/decorators.js';
+import { html, nothing, svg } from 'lit';
+import { queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { asPercent, partNameMap } from '../common/util';
@@ -8,8 +8,7 @@ import { styles } from './themes/circular/circular.progress.base.css';
 import { styles as bootstrap } from './themes/circular/circular.progress.bootstrap.css';
 import { styles as fluent } from './themes/circular/circular.progress.fluent.css';
 import IgcCircularGradientComponent from './circular-gradient';
-import { ReactiveTheme, Theme, ThemeController, themes } from '../../theming';
-import { watch } from '../common/decorators';
+import { themes } from '../../theming';
 
 /**
  * A circular progress indicator used to express unspecified wait time or display
@@ -36,41 +35,21 @@ import { watch } from '../common/decorators';
  */
 
 @themes({ bootstrap, fluent })
-export default class IgcCircularProgressComponent
-  extends IgcProgressBaseComponent
-  implements ReactiveTheme
-{
+export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';
   public static override styles = styles;
 
   protected gradientId = Date.now().toString(16);
-  protected themeController!: ThemeController;
-
-  @state()
-  public theme!: Theme;
-
-  @watch('theme', { waitUntilFirstUpdate: true })
-  public func() {
-    this.runAnimation(0, this.value);
-  }
 
   @queryAssignedElements({ slot: 'gradient' })
   protected gradientElements!: Array<IgcCircularGradientComponent>;
 
-  private get circumference(): number {
-    const radiusInPixels = getComputedStyle(
-      this.progressIndicator
-    ).getPropertyValue('r');
-    const radius = parseInt(radiusInPixels, 10);
-    return radius * 2 * Math.PI;
-  }
-
-  protected get isLTR() {
-    return window.getComputedStyle(this).getPropertyValue('direction') == 'ltr';
-  }
-
   protected get stroke() {
-    return { stroke: `url(#${this.gradientId})` };
+    return {
+      stroke: `url(#${this.gradientId})`,
+      '--percentage': (asPercent(this.value, this.max) / 100).toString(),
+      '--duration': this.animationDuration + 'ms',
+    };
   }
 
   protected get svgParts() {
@@ -79,47 +58,8 @@ export default class IgcCircularProgressComponent
     };
   }
 
-  protected override willUpdate(
-    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void {
-    super.willUpdate(_changedProperties);
-    this.theme = this.themeController.theme;
-  }
-
-  public themeAdopted(controller: ThemeController): void {
-    this.themeController = controller;
-  }
-
   private gradientChange() {
     this.requestUpdate();
-  }
-
-  protected getOffset(val: number) {
-    return this.isLTR
-      ? this.circumference -
-          (asPercent(val, this.max) / 100) * this.circumference
-      : this.circumference +
-          (asPercent(val, this.max) / 100) * this.circumference;
-  }
-
-  protected override runAnimation(start: number, end: number): void {
-    this.animation?.finish();
-
-    const opacity = asPercent(end, this.max) + 0.2;
-    const offset0 = this.getOffset(start);
-    const offset1 = this.getOffset(end);
-
-    const frames = [
-      { strokeDashoffset: offset0, strokeOpacity: 1 },
-      { strokeDashoffset: offset1, strokeOpacity: opacity },
-    ];
-
-    this.animation = this.progressIndicator.animate(
-      frames,
-      this.animationOptions
-    );
-    cancelAnimationFrame(this.tick);
-    this.animateLabelTo(start, end);
   }
 
   protected renderSvg() {

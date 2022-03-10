@@ -50,8 +50,12 @@
 
 [part~='fill'] {
     stroke-dasharray: #{$circumference} #{$circumference};
+    stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
+    transition: stroke-dashoffset var(--duration) ease 0s;
     transform-origin: 50% 50%;
     transform: rotate(-90deg);
+    --percentage: 0;
+    --duration: 500ms;
 }
 
 [part~='track'],

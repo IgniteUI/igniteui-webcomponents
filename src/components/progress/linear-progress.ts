@@ -7,6 +7,7 @@ import { styles as bootstrap } from './themes/linear/linear.progress.bootstrap.c
 import { styles as fluent } from './themes/linear/linear.progress.fluent.css';
 import { styles as indigo } from './themes/linear/linear.progress.indigo.css';
 import { themes } from '../../theming';
+import { styleMap } from 'lit/directives/style-map.js';
 
 /**
  * A linear progress indicator used to express unspecified wait time or display
@@ -66,20 +67,11 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
     };
   }
 
-  protected override runAnimation(start: number, end: number) {
-    this.animation?.finish();
-
-    const frames = [
-      { width: start },
-      { width: `${asPercent(end, this.max)}%` },
-    ];
-
-    this.animation = this.progressIndicator.animate(
-      frames,
-      this.animationOptions
-    );
-    cancelAnimationFrame(this.tick);
-    this.animateLabelTo(start, end);
+  protected get animInfo() {
+    return {
+      width: asPercent(this.value, this.max) + '%',
+      '--duration': this.animationDuration + 'ms',
+    };
   }
 
   protected override render() {
@@ -91,7 +83,10 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
         aria-valuemax=${this.max}
         aria-valuenow=${this.indeterminate ? nothing : this.value}
       >
-        <div part="${partNameMap(this.wrapperParts)}"></div>
+        <div
+          part="${partNameMap(this.wrapperParts)}"
+          style="${styleMap(this.animInfo)}"
+        ></div>
       </div>
       ${this.renderDefaultSlot()}
     `;
