@@ -1,5 +1,4 @@
 @use '../../../styles/utilities' as *;
-@use './snackbar.material.scss';
 
 [part~='base'] {
     background: color(gray, 100);

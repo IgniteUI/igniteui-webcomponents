@@ -1,0 +1,30 @@
+@use '../../../../styles/utilities/index' as *;
+@use '../year-month-view.base';
+@use 'sass:math';
+@use 'vars' as *;
+
+[part~='month-inner'][part~='current'],
+[part~='year-inner'][part~='current'] {
+    box-shadow: none;
+    background: $current-background;
+    color: $current-color;
+
+    &:hover,
+    &:focus {
+        background: $current-background;
+        color: $current-color;
+    }
+}
+
+[part~='month-inner'][part~='selected'][part~='current'],
+[part~='year-inner'][part~='selected'][part~='current'] {
+    box-shadow: none;
+    background: $selected-background;
+    color: $selected-color;
+
+    &:hover,
+    &:focus {
+        background: $selected-background;
+        color: $selected-color;
+    }
+}

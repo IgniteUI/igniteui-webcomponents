@@ -3,7 +3,12 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { styles } from './themes/snackbar.material.css';
+import { themes } from '../../theming';
+import { styles } from './themes/snackbar.base.css';
+import { styles as bootstrap } from './themes/snackbar.bootstrap.css';
+import { styles as fluent } from './themes/snackbar.fluent.css';
+import { styles as indigo } from './themes/snackbar.indigo.css';
+import { styles as material } from './themes/snackbar.material.css';
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
@@ -23,6 +28,7 @@ export interface IgcSnackbarEventMap {
  * @csspart message - The snackbar message.
  * @csspart action - The snackbar action button.
  */
+@themes({ material, bootstrap, fluent, indigo })
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,
   Constructor<LitElement>
@@ -31,7 +37,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   public static tagName = 'igc-snackbar';
 
   /** @private */
-  public static styles = [styles];
+  public static styles = styles;
 
   private autoHideTimeout!: number;
 

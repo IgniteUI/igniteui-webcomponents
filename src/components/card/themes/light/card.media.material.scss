@@ -1,0 +1,14 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+::slotted(*) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

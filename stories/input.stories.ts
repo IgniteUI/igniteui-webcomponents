@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import { Story, Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Context, Story } from './story.js';
 
 // region default
 const metadata = {
@@ -33,59 +33,14 @@ const metadata = {
         type: 'select',
       },
     },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
-    value: {
-      type: 'string',
-      description: 'The value attribute of the control.',
-      control: 'text',
-      defaultValue: '',
-    },
     pattern: {
       type: 'string',
       description: 'The pattern attribute of the control.',
       control: 'text',
     },
-    label: {
-      type: 'string',
-      description: 'The label of the control.',
-      control: 'text',
-      defaultValue: 'Label',
-    },
-    placeholder: {
-      type: 'string',
-      description: 'The placeholder attribute of the control.',
-      control: 'text',
-    },
     invalid: {
       type: 'boolean',
       description: 'Controls the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    outlined: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Makes the control a disabled field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    readonly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -124,6 +79,50 @@ const metadata = {
       description: 'The autocomplete attribute of the control.',
       control: 'text',
     },
+    value: {
+      type: 'string',
+      description: 'The value attribute of the control.',
+      control: 'text',
+      defaultValue: '',
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    outlined: {
+      type: 'boolean',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'Makes the control a disabled field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    readonly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    placeholder: {
+      type: 'string',
+      description: 'The placeholder attribute of the control.',
+      control: 'text',
+    },
+    label: {
+      type: 'string',
+      description: 'The label for the control.',
+      control: 'text',
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -147,16 +146,8 @@ interface ArgTypes {
     | 'none'
     | 'txt'
     | 'decimal';
-  name: string;
-  value: string;
   pattern: string;
-  label: string;
-  placeholder: string;
   invalid: boolean;
-  outlined: boolean;
-  required: boolean;
-  disabled: boolean;
-  readonly: boolean;
   minlength: number;
   maxlength: number;
   min: string | number;
@@ -164,6 +155,14 @@ interface ArgTypes {
   step: number;
   autofocus: boolean;
   autocomplete: string;
+  value: string;
+  name: string;
+  outlined: boolean;
+  required: boolean;
+  disabled: boolean;
+  readonly: boolean;
+  placeholder: string;
+  label: string;
   size: 'small' | 'medium' | 'large';
 }
 // endregion
