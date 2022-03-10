@@ -1,7 +1,7 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
-    border-radius: rem(4px);
+    @include border-radius(rem(4px));
 }
 
 :host([elevated]),

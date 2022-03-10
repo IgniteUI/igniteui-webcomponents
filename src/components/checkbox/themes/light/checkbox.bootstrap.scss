@@ -1,13 +1,14 @@
 @use '../../../../styles/utilities' as *;
 
 [part~='control'] {
+    @include border-radius(rem(4px));
+
     $size: var(--size, rem(16px));
 
     width: $size;
     height: $size;
     min-width: $size;
     transition: background-color .15s ease-in-out;
-    border-radius: rem(4px);
 
     &::after {
         width: inherit;

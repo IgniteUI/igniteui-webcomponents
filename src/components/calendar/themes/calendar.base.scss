@@ -36,7 +36,7 @@
     }
 
     igc-days-view::part(date-inner) {
-        border-radius: math.div($date-size-large, 2) + rem(2px);
+        @include border-radius(math.div($date-size-large, 2) + rem(2px));
     }
 
     igc-months-view {
@@ -44,7 +44,8 @@
 
         &::part(month-inner) {
             height: $date-size-large;
-            border-radius: math.div($date-size-large, 2) + rem(2px);
+
+            @include border-radius(math.div($date-size-large, 2) + rem(2px));
         }
     }
 
@@ -53,7 +54,8 @@
 
         &::part(year-inner) {
             height: $date-size-large;
-            border-radius: math.div($date-size-large, 2) + rem(2px);
+
+            @include border-radius(math.div($date-size-large, 2) + rem(2px));
         }
     }
 }
@@ -79,7 +81,7 @@
     }
 
     igc-days-view::part(date-inner) {
-        border-radius: math.div($date-size-medium, 2) + rem(2px);
+        @include border-radius(math.div($date-size-medium, 2) + rem(2px));
     }
 
     igc-months-view {
@@ -87,7 +89,8 @@
 
         &::part(month-inner) {
             height: $date-size-medium;
-            border-radius: math.div($date-size-medium, 2) + rem(2px);
+
+            @include border-radius(math.div($date-size-medium, 2) + rem(2px));
         }
     }
 
@@ -96,7 +99,8 @@
 
         &::part(year-inner) {
             height: $date-size-medium;
-            border-radius: math.div($date-size-medium, 2) + rem(2px);
+
+            @include border-radius(math.div($date-size-medium, 2) + rem(2px));
         }
     }
 }
@@ -122,7 +126,7 @@
     }
 
     igc-days-view::part(date-inner) {
-        border-radius: math.div($date-size-small, 2) + rem(2px);
+        @include border-radius(math.div($date-size-small, 2) + rem(2px));
     }
 
     igc-months-view {
@@ -130,7 +134,8 @@
 
         &::part(month-inner) {
             height: $date-size-small;
-            border-radius: math.div($date-size-small, 2) + rem(2px);
+
+            @include border-radius(math.div($date-size-small, 2) + rem(2px));
         }
     }
 
@@ -139,7 +144,8 @@
 
         &::part(year-inner) {
             height: $date-size-small;
-            border-radius: math.div($date-size-small, 2) + rem(2px);
+
+            @include border-radius(math.div($date-size-small, 2) + rem(2px));
         }
     }
 }
