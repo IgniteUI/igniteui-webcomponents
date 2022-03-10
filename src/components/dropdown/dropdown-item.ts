@@ -61,9 +61,7 @@ export default class IgcDropDownItemComponent extends LitElement {
     this.selected
       ? this.setAttribute('aria-selected', 'true')
       : this.removeAttribute('aria-selected');
-    this.selected
-      ? this.classList.add('active')
-      : this.classList.remove('active');
+    this.active = this.selected;
   }
 
   @watch('disabled')

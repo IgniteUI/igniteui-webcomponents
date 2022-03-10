@@ -565,6 +565,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <slot
+        id="igcDDLTarget"
         name="target"
         @click=${this.handleTargetClick}
         @slotchange=${this.handleSlotChange}
@@ -576,7 +577,12 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         @click=${this.handleClick}
         ${this.toggleController.toggleDirective}
       >
-        <div id="igcScrollContainer" role="listbox" part="list">
+        <div
+          id="igcScrollContainer"
+          role="listbox"
+          part="list"
+          aria-labelledby="igcDDLTarget"
+        >
           <slot></slot>
         </div>
       </div>

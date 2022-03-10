@@ -213,7 +213,7 @@ describe('Dropdown component', () => {
         expect(selectedItem?.value).to.eq(itemValue);
 
         const item = ddItems(dropdown).find((i) => i.innerText === itemValue);
-        expect(item?.classList.contains('active')).to.be.true;
+        expect(item?.hasAttribute('active')).to.be.true;
         expect(item?.attributes.getNamedItem('selected')).to.exist;
         expect(item?.attributes.getNamedItem('aria-selected')).to.exist;
 
@@ -232,7 +232,7 @@ describe('Dropdown component', () => {
         expect(selectedItem?.value).to.eq(itemValue);
 
         const item = ddItems(dropdown).find((i) => i.innerText === itemValue);
-        expect(item?.classList.contains('active')).to.be.true;
+        expect(item?.hasAttribute('active')).to.be.true;
         expect(item?.attributes.getNamedItem('selected')).to.exist;
         expect(item?.attributes.getNamedItem('aria-selected')).to.exist;
 
@@ -282,31 +282,31 @@ describe('Dropdown component', () => {
         dropdown.clearSelection();
         await elementUpdated(dropdown);
         expect(getSelectedItems().length).to.eq(0);
-        expect(item?.classList.contains('active')).to.be.false;
+        expect(item?.hasAttribute('active')).to.be.false;
       });
 
       it('navigates to the item with the specified value on `navigateTo` method calls.', async () => {
         dropdown.navigateTo('Implementation');
         await elementUpdated(dropdown);
 
-        expect(ddItems(dropdown)[1].classList.contains('active')).to.be.true;
+        expect(ddItems(dropdown)[1].hasAttribute('active')).to.be.true;
 
         dropdown.navigateTo('Implementations');
         await elementUpdated(dropdown);
 
-        expect(ddItems(dropdown)[1].classList.contains('active')).to.be.true;
+        expect(ddItems(dropdown)[1].hasAttribute('active')).to.be.true;
       });
 
       it('navigates to the item at the specified index on `navigateTo` method calls.', async () => {
         dropdown.navigateTo(1);
         await elementUpdated(dropdown);
 
-        expect(ddItems(dropdown)[1].classList.contains('active')).to.be.true;
+        expect(ddItems(dropdown)[1].hasAttribute('active')).to.be.true;
 
         dropdown.navigateTo(10);
         await elementUpdated(dropdown);
 
-        expect(ddItems(dropdown)[1].classList.contains('active')).to.be.true;
+        expect(ddItems(dropdown)[1].hasAttribute('active')).to.be.true;
       });
 
       it('activates the first item on pressing `arrowdown` key when no selection is available.', async () => {
@@ -314,9 +314,9 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         const item = ddItems(dropdown)[0];
-        expect(item?.classList.contains('active')).to.be.true;
+        expect(item?.hasAttribute('active')).to.be.true;
         expect(
-          ddItems(dropdown).filter((i) => i.classList.contains('active')).length
+          ddItems(dropdown).filter((i) => i.hasAttribute('active')).length
         ).to.eq(1);
       });
 
@@ -326,9 +326,9 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         const item = ddItems(dropdown)[1];
-        expect(item?.classList.contains('active')).to.be.true;
+        expect(item?.hasAttribute('active')).to.be.true;
         expect(
-          ddItems(dropdown).filter((i) => i.classList.contains('active')).length
+          ddItems(dropdown).filter((i) => i.hasAttribute('active')).length
         ).to.eq(1);
       });
 
@@ -337,9 +337,9 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         const item = ddItems(dropdown).pop();
-        expect(item?.classList.contains('active')).to.be.true;
+        expect(item?.hasAttribute('active')).to.be.true;
         expect(
-          ddItems(dropdown).filter((i) => i.classList.contains('active')).length
+          ddItems(dropdown).filter((i) => i.hasAttribute('active')).length
         ).to.eq(1);
       });
 
@@ -349,9 +349,9 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         const item = ddItems(dropdown)[0];
-        expect(item?.classList.contains('active')).to.be.true;
+        expect(item?.hasAttribute('active')).to.be.true;
         expect(
-          ddItems(dropdown).filter((i) => i.classList.contains('active')).length
+          ddItems(dropdown).filter((i) => i.hasAttribute('active')).length
         ).to.eq(1);
       });
 
@@ -361,9 +361,9 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         const item = ddItems(dropdown)[0];
-        expect(item?.classList.contains('active')).to.be.true;
+        expect(item?.hasAttribute('active')).to.be.true;
         expect(
-          ddItems(dropdown).filter((i) => i.classList.contains('active')).length
+          ddItems(dropdown).filter((i) => i.hasAttribute('active')).length
         ).to.eq(1);
       });
 
@@ -383,7 +383,7 @@ describe('Dropdown component', () => {
           ddItems(dropdown).filter((i) => i.attributes.getNamedItem('selected'))
             .length
         ).to.eq(1);
-        expect(ddItems(dropdown)[1]?.classList.contains('active')).to.be.true;
+        expect(ddItems(dropdown)[1]?.hasAttribute('active')).to.be.true;
         expect(ddItems(dropdown)[1]?.attributes.getNamedItem('selected')).to
           .exist;
       });
@@ -404,7 +404,7 @@ describe('Dropdown component', () => {
           ddItems(dropdown).filter((i) => i.attributes.getNamedItem('selected'))
             .length
         ).to.eq(0);
-        expect(ddItems(dropdown)[1]?.classList.contains('active')).to.be.true;
+        expect(ddItems(dropdown)[1]?.hasAttribute('active')).to.be.true;
         expect(ddItems(dropdown)[1]?.attributes.getNamedItem('selected')).to.be
           .null;
       });
@@ -425,7 +425,7 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         expect(dropdown.open).to.be.false;
-        expect(ddItems(dropdown)[3]?.classList.contains('active')).to.be.true;
+        expect(ddItems(dropdown)[3]?.hasAttribute('active')).to.be.true;
         expect(getSelectedItems().length).to.eq(1);
         expect(getSelectedItems()[0].textContent).to.eq('Samples');
       });
@@ -506,14 +506,14 @@ describe('Dropdown component', () => {
         pressKey('ArrowDown');
         await elementUpdated(dropdown);
 
-        expect(ddItems(dropdown)[0]?.classList.contains('active')).to.be.false;
-        expect(ddItems(dropdown)[1]?.classList.contains('active')).to.be.true;
+        expect(ddItems(dropdown)[0]?.hasAttribute('active')).to.be.false;
+        expect(ddItems(dropdown)[1]?.hasAttribute('active')).to.be.true;
 
         pressKey('ArrowUp');
         await elementUpdated(dropdown);
 
-        expect(ddItems(dropdown)[0]?.classList.contains('active')).to.be.false;
-        expect(ddItems(dropdown)[1]?.classList.contains('active')).to.be.true;
+        expect(ddItems(dropdown)[0]?.hasAttribute('active')).to.be.false;
+        expect(ddItems(dropdown)[1]?.hasAttribute('active')).to.be.true;
       });
 
       it('does not activate disabled items on mouse click.', async () => {
@@ -526,7 +526,7 @@ describe('Dropdown component', () => {
         dropDownItems[0].click();
         await elementUpdated(dropdown);
 
-        expect(ddItems(dropdown)[0]?.classList.contains('active')).to.be.false;
+        expect(ddItems(dropdown)[0]?.hasAttribute('active')).to.be.false;
         expect(dropdown.open).to.be.true;
         expect(getSelectedItems().length).to.eq(0);
       });
@@ -768,18 +768,18 @@ describe('Dropdown component', () => {
 
       const groupItems = [...groups[0].querySelectorAll('igc-dropdown-item')];
 
-      expect(groupItems[1]?.classList.contains('active')).to.be.true;
-      expect(
-        groupItems.filter((i) => i.classList.contains('active')).length
-      ).to.eq(1);
+      expect(groupItems[1]?.hasAttribute('active')).to.be.true;
+      expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
+        1
+      );
 
       pressKey('ArrowUp');
       await elementUpdated(dropdown);
 
-      expect(groupItems[0]?.classList.contains('active')).to.be.true;
-      expect(
-        groupItems.filter((i) => i.classList.contains('active')).length
-      ).to.eq(1);
+      expect(groupItems[0]?.hasAttribute('active')).to.be.true;
+      expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
+        1
+      );
     });
 
     it('skips disabled items when navigating through grouped items.', async () => {
@@ -788,20 +788,20 @@ describe('Dropdown component', () => {
 
       let groupItems = [...groups[2].querySelectorAll('igc-dropdown-item')];
 
-      expect(groupItems[0]?.classList.contains('active')).to.be.true;
-      expect(
-        groupItems.filter((i) => i.classList.contains('active')).length
-      ).to.eq(1);
+      expect(groupItems[0]?.hasAttribute('active')).to.be.true;
+      expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
+        1
+      );
 
       pressKey('ArrowUp');
       await elementUpdated(dropdown);
 
       groupItems = [...groups[1].querySelectorAll('igc-dropdown-item')];
-      expect(groupItems.pop()?.classList.contains('active')).to.be.false;
+      expect(groupItems.pop()?.hasAttribute('active')).to.be.false;
       expect(
         [...groups[0].querySelectorAll('igc-dropdown-item')]
           .pop()
-          ?.classList.contains('active')
+          ?.hasAttribute('active')
       ).to.be.true;
     });
 
