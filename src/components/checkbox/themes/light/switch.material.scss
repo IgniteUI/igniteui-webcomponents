@@ -4,9 +4,10 @@ $ripple-size: rem(40px);
 $ripple-radius: calc(#{$ripple-size} / 2);
 
 [part~='control'] {
+    @include border-radius(rem(7px));
+
     width: var(--size);
     height: rem(14px);
-    border-radius: rem(7px);
     background: color(gray, 500);
 }
 
@@ -15,11 +16,12 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
     background: color(gray, 50);
-    border-radius: rem(10px);
     box-shadow: var(--igc-elevation-2);
     margin-inline-start: var(--thumb-offset);
 
     &::after {
+        @include border-radius($ripple-radius);
+
         position: absolute;
         content: '';
         top: calc(50% - #{$ripple-radius});
@@ -27,7 +29,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         width: $ripple-size;
         height: $ripple-size;
         overflow: hidden;
-        border-radius: $ripple-radius;
     }
 
     &:hover {

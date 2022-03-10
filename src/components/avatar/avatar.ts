@@ -5,8 +5,8 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './avatar.base.css';
-import { styles as bootstrap } from './avatar.bootstrap.css';
+import { styles } from './themes/avatar.base.css';
+import { styles as bootstrap } from './themes/avatar.bootstrap.css';
 
 /**
  * An avatar component is used as a representation of a user identity

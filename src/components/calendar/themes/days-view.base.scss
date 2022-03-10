@@ -6,7 +6,7 @@ $week-number-bg: color(gray, 200);
 $week-number-color: color(gray, 500);
 $week-number-radius: rem(4px);
 $row-gap: rem(6px);
-$border-radius: rem(4px);
+$border-radius: border-radius(rem(4px));
 
 :host([part='days-view']) {
     display: flex;

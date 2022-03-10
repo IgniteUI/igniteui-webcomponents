@@ -41,8 +41,9 @@ label {
 }
 
 [part~='thumb'] {
+    @include border-radius(rem(10px));
+
     position: relative;
-    border-radius: rem(10px);
     animation-name: thumb-off;
     animation-duration: .2s;
     animation-fill-mode: none;
