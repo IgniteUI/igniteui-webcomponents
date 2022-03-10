@@ -1,6 +1,7 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
-@use '../base' as *;
+@use '../shared' as *;
+@use '../vars' as *;
 
 :host {
     @extend %host !optional;
@@ -47,6 +48,12 @@
         background-color: inherit;
         background-image: inherit;
         transform-origin: top right;
+    }
+}
+
+:host([dir='rtl']) {
+    [part~='indeterminate'] {
+        animation-direction: $animation-direction-rtl;
     }
 }
 

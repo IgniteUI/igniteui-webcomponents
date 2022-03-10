@@ -1,6 +1,7 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
-@use '../base' as *;
+@use '../shared' as *;
+@use '../vars' as *;
 
 :host {
     @extend %host !optional;
@@ -83,4 +84,19 @@
 :host([variant='success']) [part~='gradient_start'],
 :host([variant='success']) [part~='gradient_end'] {
     stop-color: $success-color;
+}
+
+:host([dir='rtl']) {
+    [part='svg indeterminate'] [part~='fill'] {
+        animation-name: indeterminate-accordion-rtl;
+    }
+
+    [part~='indeterminate'] {
+        animation-direction: $animation-direction-rtl;
+    }
+
+    // Valid only for circular progress bar
+    [part~='indeterminate'] [part~='outer'] {
+        animation-direction: $animation-direction-rtl;
+    }
 }

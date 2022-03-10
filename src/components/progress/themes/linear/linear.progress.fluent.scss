@@ -1,16 +1,23 @@
 @use '../../../../styles/utilities/index' as *;
-@use '../base' as *;
+@use '../vars' as *;
+
+$danger-color: color(error, 500);
+$warning-color: color(warn, 500);
+$success-color: color(success, 500);
+$info-color: color(info, 500);
+$primary-color: color(primary, 500);
 
 :host {
     --track-size: #{rem(2px)};
 }
 
 [part~='indeterminate'] {
-    width: 0 !important;
+    width: 33% !important;
     min-width: 33%;
     animation-name: indeterminate-bar-fluent;
     animation-duration: 3s;
     animation-timing-function: ease;
+    animation-iteration-count: infinite;
 
     &::before {
         display: none;

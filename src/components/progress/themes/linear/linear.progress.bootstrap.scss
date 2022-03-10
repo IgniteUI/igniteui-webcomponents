@@ -1,6 +1,7 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
-@use '../base' as *;
+@use '../shared' as *;
+@use '../vars' as *;
 
 $stripe-grays: color(gray, 50, .2);
 $stripe-size: rem(5px);

@@ -1,22 +1,7 @@
 @use '../../../styles/utilities/index' as *;
+@use 'vars' as *;
 
-$danger-color: color(error, 500);
-$warning-color: color(warn, 500);
-$success-color: color(success, 500);
-$info-color: color(info, 500);
-$primary-color: color(primary, 500);
-$text-color: color(gray, 900);
-$track-color: color(gray, 300);
-$fill-color: $primary-color;
-$track-roundness: 0;
-$background-size: rem(40px) rem(40px);
-$stripe-grays: color(gray, 50, .7);
-$stripe-size: rem(16px);
-$animation-direction: normal;
-$animation-direction-rtl: reverse;
-$radius: calc(var(--diameter) / 2 - var(--stroke-thickness) * .5);
-$circumference: calc(#{$radius} * 2 * 3.1416);
-
+// Linear animation
 @keyframes indeterminate-bar {
     0% {
         transform: scaleX(0) translateX(-100%);
@@ -35,17 +20,18 @@ $circumference: calc(#{$radius} * 2 * 3.1416);
 }
 
 @keyframes indeterminate-bar-fluent {
-    0% {
-        transform: translateX(-133%);
+    from {
+        transform: translateX(-100%);
         transform-origin: left;
     }
 
-    100% {
+    to {
         transform: translateX(300%);
         transform-origin: right;
     }
 }
 
+// Circular animation
 @keyframes indeterminate-accordion {
     from {
         stroke-dashoffset: calc(#{$circumference} * 2);
@@ -57,6 +43,17 @@ $circumference: calc(#{$radius} * 2 * 3.1416);
     }
 }
 
+@keyframes indeterminate-accordion-rtl {
+    from {
+        stroke-dashoffset: calc(#{$circumference} * -2);
+        stroke-dasharray: calc(#{$circumference} * 9 / 10);
+    }
+
+    to {
+        stroke-dashoffset: calc(#{$circumference} * -2 / 5);
+    }
+}
+
 @keyframes rotate-center {
     0% {
         transform: rotate(0);
@@ -64,17 +61,6 @@ $circumference: calc(#{$radius} * 2 * 3.1416);
 
     100% {
         transform: rotate(360deg);
-    }
-}
-
-:host([dir='rtl']) {
-    [part~='indeterminate'] {
-        animation-direction: $animation-direction-rtl;
-    }
-
-    // Valid only for circular progress bar
-    [part~='indeterminate'] [part~='outer'] {
-        animation-direction: $animation-direction-rtl;
     }
 }
 
