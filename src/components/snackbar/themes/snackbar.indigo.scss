@@ -3,8 +3,8 @@
 [part~='base'] {
     @include border-radius(rem(6px));
 
-    background: color(gray, 700, .62);
-    color: contrast-color(gray, 700);
+    background: color(surface, 500);
+    color: color(gray, 700);
     padding: rem(10px) rem(16px);
     width: rem(352px);
     backface-visibility: hidden;
