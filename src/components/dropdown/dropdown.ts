@@ -9,6 +9,7 @@ import IgcDropDownItemComponent from './dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller';
 import IgcDropDownGroupComponent from './dropdown-group';
 import { ToggleBaseComponent } from '../toggle/toggle.interface';
+import { styleMap } from 'lit/directives/style-map.js';
 
 export enum DropDownActionKey {
   ESCAPE = 'escape',
@@ -580,6 +581,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       <div
         id="igcDDLContent"
         part="base"
+        style=${styleMap({ position: this.positionStrategy })}
         @click=${this.handleClick}
         ${this.toggleController.toggleDirective}
       >
