@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Linear Progress component
+- Circular Progress component
+- Chip Component
+- Snackbar Component
+- Toast Component
+- Component themes can be changed at runtime by calling the `configureTheme(theme: Theme)` function
+
 ## [2.0.0] - 2022-02-03
 
 ### Added
