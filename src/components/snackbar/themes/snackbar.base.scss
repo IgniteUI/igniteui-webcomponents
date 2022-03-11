@@ -13,7 +13,7 @@
     @include border-radius(rem(4px));
 
     display: flex;
-    flex-flow: row nowrap;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     min-height: rem(48px);
@@ -34,7 +34,7 @@
     }
 
     [part='action'] {
-        margin-inline-start: rem(8px);
+        margin-inline-start: auto;
     }
 }
 
