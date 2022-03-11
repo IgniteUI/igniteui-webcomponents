@@ -2,7 +2,7 @@
 
 # Current Milestone
 
-## Milestone 2 (Due by Mar, 2021)
+## Milestone 2 (Due by Mar, 2022)
 
 1. Combobox component [#172](https://github.com/IgniteUI/igniteui-webcomponents/issues/172)
 2. Date editor component [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)

@@ -1,0 +1,56 @@
+@use './button.base.scss';
+
+%contained {
+    transition: box-shadow .1s ease-out;
+
+    &::before {
+        opacity: 0;
+    }
+
+    &:hover {
+        box-shadow: var(--igc-elevation-4);
+    }
+
+    &:hover::before {
+        background: #fff;
+        opacity: .12;
+    }
+
+    &:focus,
+    &:active {
+        box-shadow: var(--igc-elevation-8);
+    }
+
+    &:focus::before,
+    &:active::before {
+        background: #fff;
+        opacity: .24;
+    }
+}
+
+:host(:not([disabled])[variant='contained']) [part='base'] {
+    @extend %contained;
+
+    box-shadow: var(--igc-elevation-2);
+
+    &:hover {
+        box-shadow: var(--igc-elevation-4);
+    }
+
+    &:focus,
+    &:active {
+        box-shadow: var(--igc-elevation-8);
+    }
+}
+
+:host(:not([disabled])[variant='fab']) [part='base'] {
+    @extend %contained;
+
+    box-shadow: var(--igc-elevation-6);
+
+    &:hover,
+    &:focus,
+    &:active {
+        box-shadow: var(--igc-elevation-12);
+    }
+}
