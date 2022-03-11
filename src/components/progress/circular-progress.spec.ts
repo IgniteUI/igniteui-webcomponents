@@ -139,7 +139,6 @@ describe('Circular progress component', () => {
 
     it('correctly reflects updated value in indeterminate mode when switched to determinate', async () => {
       progress.indeterminate = true;
-
       await elementUpdated(progress);
 
       expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
@@ -147,7 +146,6 @@ describe('Circular progress component', () => {
 
       progress.value = 50;
       progress.indeterminate = false;
-
       await elementUpdated(progress);
 
       expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
@@ -155,68 +153,89 @@ describe('Circular progress component', () => {
       expect(progress.value).to.equal(50);
     });
 
-    // it('handles animations correctly when toggling indeterminate and rtl mode', async () => {
-    //   progress.indeterminate = true;
-    //   await elementUpdated(progress);
+    it('correctly reflects updated max in indeterminate mode when switched to determinate', async () => {
+      progress.indeterminate = true;
+      progress.value = 100;
+      await elementUpdated(progress);
 
-    //   let animations = progress
-    //     .shadowRoot!.querySelector('[part~="svg"]')
-    //     ?.getAnimations() as Animation[];
+      progress.max = 80;
+      await elementUpdated(progress);
 
-    //   expect(animations.length).to.equal(1);
-    //   expect(animations[0]).to.be.instanceOf(CSSAnimation);
-    //   expect((animations[0] as CSSAnimation).animationName).to.equal(
-    //     'rotate-center'
-    //   );
+      progress.indeterminate = false;
+      await elementUpdated(progress);
 
-    //   expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
-    //     .to.be.null;
+      expect(progress.value).to.equal(80);
+      expect((progress as any).percentage).to.equal(100);
 
-    //   progress.indeterminate = false;
-    //   await elementUpdated(progress);
+      progress.indeterminate = true;
+      await elementUpdated(progress);
 
-    //   animations = progress
-    //     .shadowRoot!.querySelector('[part~="svg"]')
-    //     ?.getAnimations() as Animation[];
+      progress.max = 100;
+      await elementUpdated(progress);
 
-    //   animations.forEach((anim) => {
-    //     expect(anim).to.be.instanceOf(Animation);
-    //     expect(anim).not.to.be.instanceOf(CSSAnimation);
-    //   });
+      progress.indeterminate = false;
+      await elementUpdated(progress);
 
-    //   expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
-    //     .be.null;
+      expect(progress.value).to.equal(80);
+      expect((progress as any).percentage).to.equal(80);
+    });
 
-    //   progress.indeterminate = true;
-    //   await elementUpdated(progress);
+    it('handles animations correctly when toggling indeterminate and rtl mode', async () => {
+      progress.indeterminate = true;
+      await elementUpdated(progress);
 
-    //   animations = progress
-    //     .shadowRoot!.querySelector('[part~="svg"]')
-    //     ?.getAnimations() as Animation[];
+      let animations = progress
+        .shadowRoot!.querySelector('[part~="svg"]')
+        ?.getAnimations() as Animation[];
 
-    //   expect(animations.length).to.equal(1);
-    //   expect(animations[0]).to.be.instanceOf(CSSAnimation);
-    //   expect((animations[0] as CSSAnimation).animationName).to.equal(
-    //     'rotate-center'
-    //   );
+      expect(animations.length).to.equal(1);
+      expect(animations[0]).to.be.instanceOf(CSSAnimation);
+      expect((animations[0] as CSSAnimation).animationName).to.equal(
+        'rotate-center'
+      );
 
-    //   progress.dir = 'rtl';
-    //   progress.indeterminate = false;
-    //   await elementUpdated(progress);
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
+        .to.be.null;
 
-    //   expect((progress as any).isLTR).to.equal(false);
+      progress.indeterminate = false;
+      await elementUpdated(progress);
 
-    //   progress.indeterminate = true;
-    //   await elementUpdated(progress);
+      animations = progress
+        .shadowRoot!.querySelector('[part~="svg"]')
+        ?.getAnimations() as CSSTransition[];
 
-    //   const svgElement = progress.shadowRoot!.querySelector(
-    //     'svg'
-    //   ) as SVGElement;
-    //   expect((progress as any).isLTR).to.equal(false);
-    //   expect(getComputedStyle(svgElement).animationDirection).to.equal(
-    //     'reverse'
-    //   );
-    // });
+      animations.forEach((anim) => {
+        expect(anim).to.be.instanceOf(CSSTransition);
+        expect(anim).not.to.be.instanceOf(CSSAnimation);
+      });
+
+      expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
+        .be.null;
+
+      progress.indeterminate = true;
+      await elementUpdated(progress);
+
+      animations = progress
+        .shadowRoot!.querySelector('[part~="svg"]')
+        ?.getAnimations() as Animation[];
+
+      expect(animations.length).to.equal(1);
+      expect(animations[0]).to.be.instanceOf(CSSAnimation);
+      expect((animations[0] as CSSAnimation).animationName).to.equal(
+        'rotate-center'
+      );
+
+      progress.dir = 'rtl';
+      progress.indeterminate = true;
+      await elementUpdated(progress);
+
+      const svgElement = progress.shadowRoot!.querySelector(
+        'svg'
+      ) as SVGElement;
+      expect(getComputedStyle(svgElement).animationDirection).to.equal(
+        'reverse'
+      );
+    });
 
     it('hides the default label when in indeterminate mode', async () => {
       let defaultLabel =

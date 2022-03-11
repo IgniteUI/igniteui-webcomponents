@@ -10,6 +10,9 @@ import { watch } from '../common/decorators';
 import { asPercent, clamp } from '../common/util';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
+  private oldMax!: number;
+  private oldVal!: number;
+
   protected tick!: number;
 
   @queryAssignedElements()
@@ -20,9 +23,6 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   @state()
   protected percentage = 0;
-
-  private oldMax!: number;
-  private oldVal!: number;
 
   /** Maximum value of the control. */
   @property({ type: Number })

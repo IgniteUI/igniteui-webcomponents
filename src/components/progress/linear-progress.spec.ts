@@ -158,6 +158,33 @@ describe('Linear progress component', () => {
       expect(progress.value).to.equal(50);
     });
 
+    it('correctly reflects updated max in indeterminate mode when switched to determinate', async () => {
+      progress.indeterminate = true;
+      progress.value = 100;
+      await elementUpdated(progress);
+
+      progress.max = 80;
+      await elementUpdated(progress);
+
+      progress.indeterminate = false;
+      await elementUpdated(progress);
+
+      expect(progress.value).to.equal(80);
+      expect((progress as any).percentage).to.equal(100);
+
+      progress.indeterminate = true;
+      await elementUpdated(progress);
+
+      progress.max = 100;
+      await elementUpdated(progress);
+
+      progress.indeterminate = false;
+      await elementUpdated(progress);
+
+      expect(progress.value).to.equal(80);
+      expect((progress as any).percentage).to.equal(80);
+    });
+
     it('handles animations correctly when toggling indeterminate and rtl mode', async () => {
       progress.indeterminate = true;
       await elementUpdated(progress);
@@ -179,10 +206,10 @@ describe('Linear progress component', () => {
 
       animations = progress
         .shadowRoot!.querySelector('[part~="fill"]')
-        ?.getAnimations() as Animation[];
+        ?.getAnimations() as CSSTransition[];
 
       animations.forEach((anim) => {
-        expect(anim).to.be.instanceOf(Animation);
+        expect(anim).to.be.instanceOf(CSSTransition);
         expect(anim).not.to.be.instanceOf(CSSAnimation);
       });
 
