@@ -8,6 +8,7 @@ export const partNameMap = (partNameInfo: PartNameInfo) => {
     .join(' ');
 };
 
-export const clamp = (number: number, min: number, max: number) => {
-  return Math.max(min, Math.min(number, max));
-};
+export const asPercent = (part: number, whole: number) => (part / whole) * 100;
+
+export const clamp = (number: number, min: number, max: number) =>
+  Math.max(min, Math.min(number, max));

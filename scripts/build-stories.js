@@ -74,15 +74,18 @@ function extractTags(meta) {
       .filter(
         (prop) =>
           prop.type &&
-          (SUPPORTED_TYPES.some(type => prop.type === type || prop.type.startsWith(`${type} `)) ||
+          (SUPPORTED_TYPES.some(
+            (type) => prop.type === type || prop.type.startsWith(`${type} `)
+          ) ||
             UNION_TYPE_REGEX.test(prop.type))
       )
       .map((prop) => {
         const options =
           UNION_TYPE_REGEX.test(prop.type) &&
-            !SUPPORTED_TYPES.some(
-              (type) => prop.type === type || prop.type.startsWith(`${type} `)
-            )
+
+          !SUPPORTED_TYPES.some(
+            (type) => prop.type === type || prop.type.startsWith(`${type} `)
+          )
             ? prop.type.split('|').map((part) => part.trim().replace(/"/g, ''))
             : undefined;
         return [
@@ -138,7 +141,9 @@ function buildStoryMeta(story, meta) {
     2
   )}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`;
 
-  payload = prettier.format(payload, { singleQuote: true, parser: 'babel' }).trim();
+  payload = prettier
+    .format(payload, { singleQuote: true, parser: 'babel' })
+    .trim();
 
   return story.toString().replace(REPLACE_REGEX, payload);
 }
