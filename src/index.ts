@@ -49,6 +49,7 @@ export {
   default as IgcRangeSliderComponent,
   IgcRangeSliderValue,
 } from './components/slider/range-slider';
+export { default as IgcSnackbarComponent } from './components/snackbar/snackbar';
 export { default as IgcSliderComponent } from './components/slider/slider';
 export { IgcSliderBaseComponent } from './components/slider/slider-base';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label';
