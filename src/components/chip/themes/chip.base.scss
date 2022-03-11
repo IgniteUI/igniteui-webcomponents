@@ -20,46 +20,46 @@
 
 :host([size='small']) {
     button {
-        height: 20px;
+        height: rem(20px);
         padding: rem(2px);
     }
 
     [part='prefix'] {
-        margin-right: rem(3px);
+        margin-inline-end: rem(3px);
     }
 
     [part='suffix'] {
-        margin-left: rem(3px);
+        margin-inline-start: rem(3px);
     }
 }
 
 :host([size='medium']) {
     button {
-        height: 24px;
+        height: rem(24px);
         padding: rem(6px);
     }
 
     [part='prefix'] {
-        margin-right: rem(6px);
+        margin-inline-end: rem(6px);
     }
 
     [part='suffix'] {
-        margin-left: rem(6px);
+        margin-inline-start: rem(6px);
     }
 }
 
 :host([size='large']) {
     button {
-        height: 32px;
+        height: rem(32px);
         padding: rem(12px);
     }
 
     [part='prefix'] {
-        margin-right: rem(8px);
+        margin-inline-end: rem(8px);
     }
 
     [part='suffix'] {
-        margin-left: rem(8px);
+        margin-inline-start: rem(8px);
     }
 
     igc-icon[size='large'] {

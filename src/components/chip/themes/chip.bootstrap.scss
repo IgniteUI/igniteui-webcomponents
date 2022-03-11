@@ -13,7 +13,7 @@
     }
 
     &:focus {
-        outline: 2px solid color(gray, 200);
+        outline: rem(2px) solid color(gray, 200);
         background: color(gray, 400);
         color: contrast-color(gray, 400);
     }
@@ -31,7 +31,7 @@
 }
 
 :host([variant='primary']) button:focus {
-    outline: 2px solid color(primary, 200);
+    outline: rem(2px) solid color(primary, 200);
 }
 
 :host([variant='info']) button,
@@ -42,7 +42,7 @@
 }
 
 :host([variant='info']) button:focus {
-    outline: 2px solid color(info, 200);
+    outline: rem(2px) solid color(info, 200);
 }
 
 :host([variant='success']) button,
@@ -53,7 +53,7 @@
 }
 
 :host([variant='success']) button:focus {
-    outline: 2px solid color(success, 200);
+    outline: rem(2px) solid color(success, 200);
 }
 
 :host([variant='warning']) button,
@@ -64,7 +64,7 @@
 }
 
 :host([variant='warning']) button:focus {
-    outline: 2px solid color(warn, 200);
+    outline: rem(2px) solid color(warn, 200);
 }
 
 :host([variant='danger']) button,
@@ -75,5 +75,5 @@
 }
 
 :host([variant='danger']) button:focus {
-    outline: 2px solid color(error, 200);
+    outline: rem(2px) solid color(error, 200);
 }

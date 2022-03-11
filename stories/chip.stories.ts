@@ -32,23 +32,23 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    variant: {
+      type: '"primary" | "info" | "success" | "warning" | "danger"',
+      description:
+        'A property that sets the color variant of the chip component.',
+      options: ['primary', 'info', 'success', 'warning', 'danger'],
+      control: {
+        type: 'select',
+      },
+    },
     size: {
       type: '"small" | "medium" | "large"',
-      description: 'A property that sets the size of the chip component.',
+      description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
       control: {
         type: 'inline-radio',
       },
       defaultValue: 'medium',
-    },
-    variant: {
-      type: '"primary" | "info" | "success" | "warning" | "danger" | "none"',
-      description:
-        'A property that sets the color variant of the chip component.',
-      options: ['primary', 'info', 'success', 'warning', 'danger', 'none'],
-      control: {
-        type: 'select',
-      },
     },
   },
 };
@@ -58,8 +58,8 @@ interface ArgTypes {
   removable: boolean;
   selectable: boolean;
   selected: boolean;
+  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
   size: 'small' | 'medium' | 'large';
-  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger' | 'none';
 }
 // endregion
 

@@ -1,8 +1,9 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { blazorTwoWayBind } from '../common/decorators';
+import { SizableMixin } from '../common/mixins/sizable.js';
 import { themes } from '../../theming';
 import { styles } from './themes/chip.base.css';
 import { styles as bootstrap } from './themes/chip.bootstrap.css';
@@ -31,10 +32,9 @@ export interface IgcChipEventMap {
  * @csspart suffix - The suffix container of the chip.
  */
 @themes({ material, bootstrap, fluent, indigo })
-export default class IgcChipComponent extends EventEmitterMixin<
-  IgcChipEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcChipComponent extends SizableMixin(
+  EventEmitterMixin<IgcChipEventMap, Constructor<LitElement>>(LitElement)
+) {
   public static readonly tagName = 'igc-chip';
 
   public static styles = styles;
@@ -56,19 +56,14 @@ export default class IgcChipComponent extends EventEmitterMixin<
   @blazorTwoWayBind('igcSelected', 'detail')
   public selected = false;
 
-  /** A property that sets the size of the chip component. */
-  @property({ reflect: true })
-  public size: 'small' | 'medium' | 'large' = 'medium';
-
   /** A property that sets the color variant of the chip component. */
   @property({ reflect: true })
-  public variant!:
-    | 'none'
-    | 'primary'
-    | 'success'
-    | 'danger'
-    | 'warning'
-    | 'info';
+  public variant!: 'primary' | 'success' | 'danger' | 'warning' | 'info';
+
+  constructor() {
+    super();
+    this.size = 'medium';
+  }
 
   protected handleSelect() {
     if (this.selectable) {
@@ -78,7 +73,6 @@ export default class IgcChipComponent extends EventEmitterMixin<
   }
 
   protected handleRemove(e: Event) {
-    document.getElementsByName('remove');
     this.emitEvent('igcRemove');
     e.stopPropagation();
   }
@@ -97,7 +91,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
             ? html`<slot @slotchange=${this.slotChanges} name="select">
                 <igc-icon size=${this.size} name="select"></igc-icon>
               </slot>`
-            : ''}
+            : nothing}
           <slot name="start"></slot>
         </span>
         <slot></slot>
@@ -111,7 +105,7 @@ export default class IgcChipComponent extends EventEmitterMixin<
               >
                 <igc-icon size=${this.size} name="cancel"></igc-icon>
               </slot>`
-            : ''}
+            : nothing}
         </span>
       </button>
     `;
