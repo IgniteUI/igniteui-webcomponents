@@ -5,7 +5,6 @@ import { styles } from './themes/toast.base.css';
 import { styles as bootstrap } from './themes/toast.bootstrap.css';
 import { styles as fluent } from './themes/toast.fluent.css';
 import { styles as indigo } from './themes/toast.indigo.css';
-import { styles as material } from './themes/toast.material.css';
 
 /**
  * A toast component is used to show a notification
@@ -15,7 +14,7 @@ import { styles as material } from './themes/toast.material.css';
  * @csspart base - The base wrapper of the toast.
  */
 
-@themes({ material, bootstrap, fluent, indigo })
+@themes({ bootstrap, fluent, indigo })
 export default class IgcToastComponent extends LitElement {
   /** @private */
   public static tagName = 'igc-toast';
