@@ -45,7 +45,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   public open = false;
 
   /** Determines the duration in ms in which the snackbar will be visible. */
-  @property({ attribute: 'display-time' })
+  @property({ type: Number, attribute: 'display-time' })
   public displayTime = 4000;
 
   /** Determines whether the snackbar should close after the displayTime is over. */
