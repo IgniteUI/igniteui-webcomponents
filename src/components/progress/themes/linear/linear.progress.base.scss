@@ -29,7 +29,7 @@
 }
 
 [part~='fill'] {
-    width: 100%;
+    transition: width var(--duration) linear, background-color var(--duration) linear;
     position: relative;
     height: inherit;
 }

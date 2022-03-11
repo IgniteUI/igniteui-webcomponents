@@ -50,8 +50,13 @@
 
 [part~='fill'] {
     stroke-dasharray: #{$circumference} #{$circumference};
+    stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
+    transition: stroke-dashoffset var(--duration) linear;
     transform-origin: 50% 50%;
     transform: rotate(-90deg);
+
+    --percentage: 0;
+    --duration: 500ms;
 }
 
 [part~='track'],
@@ -98,7 +103,11 @@
     }
 
     // Valid only for circular progress bar
-    [part~='indeterminate'] [part~='outer'] {
+    [part~='indeterminate'] [part~='track'] {
         animation-direction: $animation-direction-rtl;
+    }
+
+    [part~='fill'] {
+        stroke-dashoffset: calc(#{$circumference} + var(--percentage) * #{$circumference});
     }
 }

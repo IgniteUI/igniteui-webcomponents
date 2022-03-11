@@ -1,4 +1,10 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+} from '@open-wc/testing';
 import { defineComponents, IgcCircularProgressComponent } from '../../index.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 
@@ -98,6 +104,8 @@ describe('Circular progress component', () => {
         ></igc-circular-progress>`
       );
 
+      await aTimeout(0);
+
       expect(progress.value).to.equal(50);
       expect(progress.max).to.equal(150);
       expect(progress.labelFormat).to.equal('{0} val');
@@ -131,7 +139,6 @@ describe('Circular progress component', () => {
 
     it('correctly reflects updated value in indeterminate mode when switched to determinate', async () => {
       progress.indeterminate = true;
-
       await elementUpdated(progress);
 
       expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
@@ -139,12 +146,38 @@ describe('Circular progress component', () => {
 
       progress.value = 50;
       progress.indeterminate = false;
-
       await elementUpdated(progress);
 
       expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).to
         .be.null;
       expect(progress.value).to.equal(50);
+    });
+
+    it('correctly reflects updated max in indeterminate mode when switched to determinate', async () => {
+      progress.indeterminate = true;
+      progress.value = 100;
+      await elementUpdated(progress);
+
+      progress.max = 80;
+      await elementUpdated(progress);
+
+      progress.indeterminate = false;
+      await elementUpdated(progress);
+
+      expect(progress.value).to.equal(80);
+      expect((progress as any).percentage).to.equal(100);
+
+      progress.indeterminate = true;
+      await elementUpdated(progress);
+
+      progress.max = 100;
+      await elementUpdated(progress);
+
+      progress.indeterminate = false;
+      await elementUpdated(progress);
+
+      expect(progress.value).to.equal(80);
+      expect((progress as any).percentage).to.equal(80);
     });
 
     it('handles animations correctly when toggling indeterminate and rtl mode', async () => {
@@ -169,10 +202,10 @@ describe('Circular progress component', () => {
 
       animations = progress
         .shadowRoot!.querySelector('[part~="svg"]')
-        ?.getAnimations() as Animation[];
+        ?.getAnimations() as CSSTransition[];
 
       animations.forEach((anim) => {
-        expect(anim).to.be.instanceOf(Animation);
+        expect(anim).to.be.instanceOf(CSSTransition);
         expect(anim).not.to.be.instanceOf(CSSAnimation);
       });
 
@@ -193,18 +226,12 @@ describe('Circular progress component', () => {
       );
 
       progress.dir = 'rtl';
-      progress.indeterminate = false;
-      await elementUpdated(progress);
-
-      expect((progress as any).isLTR).to.equal(false);
-
       progress.indeterminate = true;
       await elementUpdated(progress);
 
       const svgElement = progress.shadowRoot!.querySelector(
         'svg'
       ) as SVGElement;
-      expect((progress as any).isLTR).to.equal(false);
       expect(getComputedStyle(svgElement).animationDirection).to.equal(
         'reverse'
       );

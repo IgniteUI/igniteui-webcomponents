@@ -1,16 +1,18 @@
 import { html, LitElement, nothing } from 'lit';
 import {
   property,
+  query,
   queryAssignedElements,
   state,
-  query,
 } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators';
 import { asPercent, clamp } from '../common/util';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
-  protected animation!: Animation;
+  private initialMax!: number;
+  private initialValue!: number;
+
   protected tick!: number;
 
   @queryAssignedElements()
@@ -58,10 +60,9 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   @watch('indeterminate', { waitUntilFirstUpdate: true })
   protected indeterminateChange() {
-    if (this.indeterminate) {
-      this.cancelIndeterminate();
-    } else {
-      this.runAnimation(0, this.value);
+    this.cancelAnimations();
+    if (!this.indeterminate) {
+      this.percentage = Math.floor(asPercent(this.value, this.max));
     }
   }
 
@@ -72,7 +73,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
       this.value = this.max;
     } else {
       if (!this.indeterminate) {
-        this.runAnimation(0, this.value);
+        this.animateLabelTo(this.max, this.value);
       }
     }
   }
@@ -81,16 +82,11 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   protected valueChange(oldVal: number) {
     this.value = clamp(this.value, 0, this.max);
     if (!this.indeterminate) {
-      this.runAnimation(oldVal, this.value);
+      cancelAnimationFrame(this.tick);
+      if (this.percentage !== Math.floor(asPercent(this.value, this.max))) {
+        this.animateLabelTo(oldVal, this.value);
+      }
     }
-  }
-
-  protected get animationOptions(): KeyframeAnimationOptions {
-    return {
-      easing: 'ease-out',
-      fill: 'forwards',
-      duration: this.animationDuration,
-    };
   }
 
   protected slotChanges() {
@@ -99,20 +95,31 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.max = Math.max(0, this.max);
-    this.value = clamp(this.value, 0, this.max);
+    this.initialMax = Math.max(0, this.max);
+    this.initialValue = clamp(this.value, 0, this.initialMax);
+    this.value = 0;
+    this.max = 100;
   }
 
   protected override firstUpdated() {
     if (!this.indeterminate) {
-      this.runAnimation(0, this.value);
+      // trigger transition initially
+      setTimeout(() => {
+        this.max = this.initialMax;
+        this.value = this.initialValue;
+      }, 0);
     }
   }
 
-  protected cancelIndeterminate() {
-    this.progressIndicator
-      ?.getAnimations()
-      .forEach((animation) => animation.cancel());
+  protected cancelAnimations() {
+    requestAnimationFrame(() => {
+      this.progressIndicator?.getAnimations().forEach((animation) => {
+        if (animation instanceof CSSTransition) {
+          animation.cancel();
+        }
+      });
+    });
+    cancelAnimationFrame(this.tick);
   }
 
   protected animateLabelTo(start: number, end: number) {
@@ -151,6 +158,4 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   protected renderLabelText() {
     return this.labelFormat ? this.renderLabelFormat() : `${this.percentage}%`;
   }
-
-  protected abstract runAnimation(start: number, end: number): void;
 }
