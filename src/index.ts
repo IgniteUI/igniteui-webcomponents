@@ -50,4 +50,5 @@ export { default as IgcSnackbarComponent } from './components/snackbar/snackbar'
 export { default as IgcSliderComponent } from './components/slider/slider';
 export { IgcSliderBaseComponent } from './components/slider/slider-base';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label';
+export { default as IgcToastComponent } from './components/toast/toast';
 export { configureTheme } from './theming/config';

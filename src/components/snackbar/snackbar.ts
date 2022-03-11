@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Constructor } from '../common/mixins/constructor.js';
@@ -49,7 +49,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   public displayTime!: number;
 
   /** Determines whether the snackbar should close after the displayTime is over. */
-  @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
+  @property({ type: Boolean, attribute: 'keep-open' })
   public keepOpen = false;
 
   /** The snackbar action button. */
@@ -103,7 +103,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
                 ${ifDefined(this.actionText)}
               </igc-button>
             `
-          : ''}
+          : nothing}
       </div>
     `;
   }
