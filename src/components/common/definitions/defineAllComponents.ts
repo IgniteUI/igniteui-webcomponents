@@ -25,6 +25,7 @@ import IgcRadioComponent from '../../radio/radio';
 import IgcRippleComponent from '../../ripple/ripple';
 import IgcRangeSliderComponent from '../../slider/range-slider';
 import IgcSliderComponent from '../../slider/slider';
+import IgcSnackbarComponent from '../../snackbar/snackbar';
 import IgcToastComponent from '../../toast/toast';
 import IgcSliderLabelComponent from '../../slider/slider-label';
 import { defineComponents } from './defineComponents';
@@ -59,6 +60,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcToastComponent,
   IgcSliderLabelComponent,
   IgcRangeSliderComponent,
+  IgcSnackbarComponent,
 ];
 
 export const defineAllComponents = () => {
