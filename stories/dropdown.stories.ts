@@ -156,9 +156,11 @@ const Template: Story<ArgTypes, Context> = (
     open = false,
     flip = false,
     closeOnOutsideClick = true,
+    positionStrategy = 'absolute',
     placement = 'bottom-start',
     scrollStrategy = 'block',
     closeOnSelect = true,
+    sameWidth = false,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -172,6 +174,8 @@ const Template: Story<ArgTypes, Context> = (
       .dir=${direction}
       scroll-strategy=${scrollStrategy}
       offset=${`10, 0`}
+      .sameWidth=${sameWidth}
+      .positionStrategy=${positionStrategy}
       .closeOnSelect=${closeOnSelect}
     >
       <igc-button slot="target">Dropdown 1</igc-button>
@@ -206,8 +210,9 @@ const Template: Story<ArgTypes, Context> = (
         .closeOnOutsideClick=${closeOnOutsideClick}
         .placement=${placement}
         .scrollStrategy=${scrollStrategy}
+        .sameWidth=${sameWidth}
+        .positionStrategy=${positionStrategy}
         .dir=${direction}
-        .sameWidth=${true}
       >
         <igc-dropdown-group>
           <h3 slot="label">Research & Development</h3>
@@ -239,8 +244,9 @@ const Template: Story<ArgTypes, Context> = (
       .closeOnOutsideClick=${closeOnOutsideClick}
       .placement=${'top-start'}
       .scrollStrategy=${scrollStrategy}
+      .sameWidth=${sameWidth}
+      .positionStrategy=${positionStrategy}
       .dir=${direction}
-      .sameWidth=${true}
     >
       <input
         type="button"
@@ -260,7 +266,9 @@ const Template: Story<ArgTypes, Context> = (
       .flip=${true}
       .closeOnOutsideClick=${closeOnOutsideClick}
       .placement=${placement}
+      .positionStrategy=${positionStrategy}
       .scrollStrategy=${scrollStrategy}
+      .sameWidth=${sameWidth}
       .dir=${direction}
     >
       <input

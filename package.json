@@ -51,8 +51,8 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "lit": "^2.2.0",
-    "@popperjs/core": "^2.10.2"
+    "@floating-ui/dom": "^0.4.0",
+    "lit": "^2.2.0"
   },
   "devDependencies": {
     "@igniteui/material-icons-extended": "^2.10.0",

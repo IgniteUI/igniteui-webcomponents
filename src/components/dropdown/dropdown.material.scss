@@ -9,7 +9,8 @@
 [part='base'] {
     overflow-y: auto;
     overflow-x: hidden;
-    position: relative;
+    position: absolute;
+    border: 1px solid gainsboro;
 }
 
 :host([size='small']) ::slotted(igc-dropdown-item),

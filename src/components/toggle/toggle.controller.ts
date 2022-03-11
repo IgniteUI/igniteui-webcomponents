@@ -19,6 +19,7 @@ export class IgcToggleController implements ReactiveController {
 
   /** The directive that marks the toggle. */
   public toggleDirective!: DirectiveResult<typeof IgcToggleDirective>;
+  public rendered!: Promise<void>;
 
   public set options(value: IToggleOptions) {
     this._options = Object.assign({}, this.defaultOptions, value);
@@ -76,7 +77,8 @@ export class IgcToggleController implements ReactiveController {
     this.toggleDirective = igcToggle(
       this._target,
       this.host.open,
-      this._options
+      this._options,
+      this
     );
     this.addEventListeners();
   }

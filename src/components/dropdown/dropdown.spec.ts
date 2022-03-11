@@ -122,7 +122,7 @@ describe('Dropdown component', () => {
 
         expect(dropdown.placement).to.eq('right-start');
 
-        expect(listRect().x).to.eq(Math.round(targetRect().right));
+        expect(listRect().x).to.eq(targetRect().right);
         expect(Math.round(listRect().top)).to.eq(Math.round(targetRect().top));
       });
 
@@ -138,7 +138,7 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         expect(dropdown.flip).to.be.true;
-        expect(listRect().x).to.eq(Math.round(targetRect().right));
+        expect(listRect().x).to.eq(targetRect().right);
       });
 
       it('honors `preventOverflow` option and keeps the list in view.', async () => {

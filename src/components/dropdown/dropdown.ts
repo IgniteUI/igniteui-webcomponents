@@ -196,6 +196,12 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
     }
   }
 
+  protected override async getUpdateComplete() {
+    const result = await super.getUpdateComplete();
+    await this.toggleController.rendered;
+    return result;
+  }
+
   // private handleDocumentClicked = (event: MouseEvent) => {
   //   if (!this.open) {
   //     return;
