@@ -4,7 +4,7 @@
     background: color(surface, 500);
     color: contrast-color(surface, 500);
     border: 1px solid color(gray, 300);
-    width: rem(348px);
+    min-width: rem(348px);
     padding: rem(8px) rem(12px);
     box-shadow: var(--igc-elevation-10);
 }

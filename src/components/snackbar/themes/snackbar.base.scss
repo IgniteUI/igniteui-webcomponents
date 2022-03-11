@@ -17,7 +17,7 @@
     align-items: center;
     justify-content: space-between;
     min-height: rem(48px);
-    width: rem(344px);
+    min-width: rem(344px);
     padding: rem(6px) rem(16px);
     color: color(surface, 500);
     background: color(gray, 900);
@@ -26,6 +26,8 @@
 
 [part~='message'] {
     @include line-clamp(2, true, true);
+
+    flex: 1 1 50%;
 }
 
 :host([action-text]) {
@@ -35,6 +37,7 @@
 
     [part='action'] {
         margin-inline-start: auto;
+        flex: 0 0 auto;
     }
 }
 
