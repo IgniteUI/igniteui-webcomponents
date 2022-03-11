@@ -23,6 +23,8 @@ export { defineAllComponents } from './components/common/definitions/defineAllCo
 export { defineComponents } from './components/common/definitions/defineComponents';
 export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources';
 export { SizableMixin } from './components/common/mixins/sizable';
+export { default as IgcCircularProgressComponent } from './components/progress/circular-progress';
+export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient';
 export { default as IgcFormComponent } from './components/form/form';
 export { default as IgcIconComponent } from './components/icon/icon';
 // utility stuff
@@ -32,6 +34,7 @@ export {
 } from './components/icon/icon.registry';
 export { default as IgcInputComponent } from './components/input/input';
 export { IgcInputBaseComponent } from './components/input/input-base';
+export { default as IgcLinearProgressComponent } from './components/progress/linear-progress';
 export { default as IgcListComponent } from './components/list/list';
 export { default as IgcListHeaderComponent } from './components/list/list-header';
 export { default as IgcListItemComponent } from './components/list/list-item';

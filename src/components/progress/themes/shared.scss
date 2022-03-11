@@ -1,0 +1,103 @@
+@use '../../../styles/utilities/index' as *;
+@use 'vars' as *;
+
+// Linear animation
+@keyframes indeterminate-bar {
+    0% {
+        transform: scaleX(0) translateX(-100%);
+        transform-origin: left;
+    }
+
+    50% {
+        transform: scaleX(1) translateX(50%);
+        transform-origin: right;
+    }
+
+    100% {
+        transform: scaleX(0) translateX(200%);
+        transform-origin: right;
+    }
+}
+
+@keyframes indeterminate-bar-fluent {
+    from {
+        transform: translateX(-100%);
+        transform-origin: left;
+    }
+
+    to {
+        transform: translateX(310%);
+        transform-origin: right;
+    }
+}
+
+@keyframes indeterminate-bar-fluent-rtl {
+    from {
+        transform: translateX(-310%);
+        transform-origin: right;
+    }
+
+    to {
+        transform: translateX(100%);
+        transform-origin: left;
+    }
+}
+
+// Circular animation
+@keyframes indeterminate-accordion {
+    from {
+        stroke-dashoffset: calc(#{$circumference} * 2);
+        stroke-dasharray: calc(#{$circumference} * 9 / 10);
+    }
+
+    to {
+        stroke-dashoffset: calc(#{$circumference} * 2 / 5);
+    }
+}
+
+@keyframes indeterminate-accordion-rtl {
+    from {
+        stroke-dashoffset: calc(#{$circumference} * -2);
+        stroke-dasharray: calc(#{$circumference} * 9 / 10);
+    }
+
+    to {
+        stroke-dashoffset: calc(#{$circumference} * -2 / 5);
+    }
+}
+
+@keyframes rotate-center {
+    0% {
+        transform: rotate(0);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+%host {
+    align-items: center;
+    justify-content: center;
+    font-family: var(--igc-font-family);
+    color: $text-color;
+}
+
+%label {
+    display: flex;
+    align-items: center;
+    color: inherit;
+    font-weight: 600;
+}
+
+@mixin stripe-colors($primary, $gray, $size, $deg: -45deg) {
+    /* stylelint-disable */
+    background: $primary repeating-linear-gradient(
+        $deg,
+        $primary,
+        $primary $size,
+        $gray $size,
+        $gray ($size * 2)
+    );
+    /* stylelint-enable */
+}
