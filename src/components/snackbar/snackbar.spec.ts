@@ -40,12 +40,11 @@ describe('Snackbar', () => {
     });
 
     it('should set the snackbar displayTime property successfully', async () => {
-      expect(el.displayTime).to.be.undefined;
       expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);
 
       el.setAttribute('display-time', '10000');
       await elementUpdated(el);
-      expect(el.displayTime).to.eq(10000);
+      expect(el.displayTime).to.eq('10000');
       expect(el).dom.to.equal(
         `<igc-snackbar display-time='10000'></igc-snackbar>`
       );
