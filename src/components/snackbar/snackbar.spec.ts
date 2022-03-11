@@ -39,18 +39,6 @@ describe('Snackbar', () => {
       expect(el).dom.to.have.text(content);
     });
 
-    it('should set the snackbar keepOpen property correctly', async () => {
-      el.keepOpen = true;
-      expect(el.keepOpen).to.be.true;
-      await elementUpdated(el);
-      expect(el).dom.to.equal(`<igc-snackbar keep-open></igc-snackbar>`);
-
-      el.keepOpen = false;
-      expect(el.keepOpen).to.be.false;
-      await elementUpdated(el);
-      expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);
-    });
-
     it('should set the snackbar displayTime property successfully', async () => {
       expect(el.displayTime).to.be.undefined;
       expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);

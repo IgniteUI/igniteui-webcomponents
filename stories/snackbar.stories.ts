@@ -19,6 +19,7 @@ const metadata = {
       description:
         'Determines the duration in ms in which the snackbar will be visible.',
       control: 'number',
+      defaultValue: '4000',
     },
     keepOpen: {
       type: 'boolean',
@@ -58,7 +59,7 @@ const handleHide = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { open, keepOpen, displayTime = 4000, actionText = 'Close' }: ArgTypes,
+  { open, keepOpen, displayTime, actionText = 'Close' }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-snackbar
