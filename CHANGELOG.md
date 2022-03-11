@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Linear Progress component
+- Circular Progress component
+
 ## [2.0.0] - 2022-02-03
 
 ### Added
