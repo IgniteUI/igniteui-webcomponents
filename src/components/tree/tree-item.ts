@@ -476,10 +476,7 @@ export default class IgcTreeItemComponent extends LitElement {
           ${this.loading
             ? html`
                 <slot name="loading">
-                  <igc-icon
-                    name="navigate_before"
-                    collection="internal"
-                  ></igc-icon>
+                  <igc-circular-progress indeterminate></igc-circular-progress>
                 </slot>
               `
             : html`

@@ -94,10 +94,10 @@ export default class IgcTreeSampleComponent extends SizableMixin(LitElement) {
         .label=${dataItem.label}
         .value=${dataItem}
       >
-        <div
+        <!-- <div
           slot="loading"
           style="width: 20px; height: 20px; background-image: url('http://localhost:8000/src/components/tree-sample/assets/Settings.gif'); background-size: 20px 20px"
-        ></div>
+        ></div> -->
         ${dataItem.loadOnDemand
           ? html`
               <div slot="indicator">
