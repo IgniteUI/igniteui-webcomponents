@@ -8,7 +8,6 @@ import { styles } from './themes/snackbar.base.css';
 import { styles as bootstrap } from './themes/snackbar.bootstrap.css';
 import { styles as fluent } from './themes/snackbar.fluent.css';
 import { styles as indigo } from './themes/snackbar.indigo.css';
-import { styles as material } from './themes/snackbar.material.css';
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
@@ -28,7 +27,7 @@ export interface IgcSnackbarEventMap {
  * @csspart message - The snackbar message.
  * @csspart action - The snackbar action button.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({ bootstrap, fluent, indigo })
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,
   Constructor<LitElement>
