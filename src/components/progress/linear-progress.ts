@@ -28,12 +28,6 @@ import { styleMap } from 'lit/directives/style-map.js';
  * @csspart warning
  * @csspart info
  * @csspart success
- * @csspart top
- * @csspart top-start
- * @csspart top-end
- * @csspart bottom
- * @csspart bottom-start
- * @csspart bottom-end
  */
 @themes({ bootstrap, indigo, fluent })
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
