@@ -10,8 +10,8 @@ import { watch } from '../common/decorators';
 import { asPercent, clamp } from '../common/util';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
-  private oldMax!: number;
-  private oldVal!: number;
+  private initialMax!: number;
+  private initialValue!: number;
 
   protected tick!: number;
 
@@ -95,8 +95,8 @@ export abstract class IgcProgressBaseComponent extends LitElement {
 
   public override connectedCallback(): void {
     super.connectedCallback();
-    this.oldMax = Math.max(0, this.max);
-    this.oldVal = clamp(this.value, 0, this.oldMax);
+    this.initialMax = Math.max(0, this.max);
+    this.initialValue = clamp(this.value, 0, this.initialMax);
     this.value = 0;
     this.max = 100;
   }
@@ -105,8 +105,8 @@ export abstract class IgcProgressBaseComponent extends LitElement {
     if (!this.indeterminate) {
       // trigger transition initially
       setTimeout(() => {
-        this.max = this.oldMax;
-        this.value = this.oldVal;
+        this.max = this.initialMax;
+        this.value = this.initialValue;
       }, 0);
     }
   }
