@@ -14,7 +14,7 @@ import { styles } from './calendar.material.css';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { Constructor } from '../common/mixins/constructor';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model';
-import { blazorIndirectRender, watch } from '../common/decorators';
+import { watch } from '../common/decorators';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils';
 import { SizableMixin } from '../common/mixins/sizable';
 import {

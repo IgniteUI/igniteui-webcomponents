@@ -8,7 +8,6 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import {
-  blazorSuppress,
   blazorTypeOverride,
   watch,
 } from '../common/decorators';
