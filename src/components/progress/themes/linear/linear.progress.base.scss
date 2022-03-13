@@ -1,0 +1,145 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+@use '../shared' as *;
+@use '../vars' as *;
+
+:host {
+    @extend %host !optional;
+
+    display: flex;
+    position: relative;
+    width: 100%;
+    flex-direction: column;
+
+    --track-size: #{rem(4px)};
+}
+
+[part~='label'] {
+    @extend %label !optional;
+}
+
+[part~='track'] {
+    position: relative;
+    width: inherit;
+    height: var(--track-size);
+    background: $track-color;
+    overflow: hidden;
+    border-radius: $track-roundness;
+    z-index: 0;
+}
+
+[part~='fill'] {
+    transition: width var(--duration) linear, background-color var(--duration) linear;
+    position: relative;
+    height: inherit;
+}
+
+[part~='indeterminate'] {
+    animation: indeterminate-bar 2s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
+    width: 100% !important;
+
+    &::before {
+        position: absolute;
+        content: '';
+        top: 0;
+        left: -200%;
+        width: 100%;
+        height: inherit;
+        background-color: inherit;
+        background-image: inherit;
+        transform-origin: top right;
+    }
+}
+
+:host([dir='rtl']) {
+    [part~='indeterminate'] {
+        animation-direction: $animation-direction-rtl;
+    }
+}
+
+[part~='value'] {
+    margin: 0;
+    color: $text-color;
+    font-size: em(14px);
+    font-weight: 600;
+}
+
+// Colors
+[part~='primary'] {
+    background-color: $primary-color;
+}
+
+[part~='striped'][part~='primary'] {
+    width: 100%;
+    height: 100%;
+
+    @include stripe-colors($primary-color, $stripe-grays, $stripe-size, -45deg);
+}
+
+[part~='danger'] {
+    background-color: $danger-color;
+}
+
+[part~='striped'][part~='danger'] {
+    @include stripe-colors($danger-color, $stripe-grays, $stripe-size, -45deg);
+}
+
+[part~='warning'] {
+    background-color: $warning-color;
+}
+
+[part~='striped'][part~='warning'] {
+    @include stripe-colors($warning-color, $stripe-grays, $stripe-size, -45deg);
+}
+
+[part~='info'] {
+    background-color: $info-color;
+}
+
+[part~='striped'][part~='info'] {
+    @include stripe-colors($info-color, $stripe-grays, $stripe-size, -45deg);
+}
+
+[part~='success'] {
+    background-color: $success-color;
+}
+
+[part~='striped'][part~='success'] {
+    @include stripe-colors($success-color, $stripe-grays, $stripe-size, -45deg);
+}
+
+// Label Positions
+:host([label-align='top']),
+:host([label-align='top-start']),
+:host([label-align='top-end']) {
+    [part~='label'] {
+        order: -1;
+    }
+}
+
+:host([label-align='top-start']),
+:host([label-align='bottom-start']),
+:host([label-align='start']) {
+    [part~='label'] {
+        align-self: flex-start;
+    }
+}
+
+:host([label-align='bottom-end']),
+:host([label-align='top-end']),
+:host([label-align='end']) {
+    [part~='label'] {
+        align-self: flex-end;
+    }
+}
+
+:host([label-align='top']),
+:host([label-align='bottom']) {
+    [part~='label'] {
+        align-self: center;
+    }
+}
+
+[part~='hidden'] {
+    display: none;
+}

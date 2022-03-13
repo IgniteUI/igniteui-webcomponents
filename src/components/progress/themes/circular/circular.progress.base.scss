@@ -1,0 +1,113 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+@use '../shared' as *;
+@use '../vars' as *;
+
+:host {
+    @extend %host !optional;
+
+    display: inline-flex;
+    position: relative;
+
+    --stroke-thickness: #{rem(2px)};
+    --diameter: #{rem(30px)};
+}
+
+[part~='label'] {
+    @extend %label !optional;
+
+    fill: $text-color;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+}
+
+[part~='label'],
+[part~='value'] {
+    font-size: calc(var(--diameter) / 3 - var(--stroke-thickness));
+    line-height: normal;
+}
+
+[part='svg indeterminate'] {
+    transform-origin: 50% 50%;
+    animation: 3s linear 0s infinite $animation-direction none running rotate-center;
+}
+
+[part='svg indeterminate'] [part~='fill'] {
+    stroke-dashoffset: calc(#{$circumference} * 2);
+    animation: indeterminate-accordion 1.5s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
+}
+
+[part~='svg'] {
+    width: $diameter;
+    height: $diameter;
+}
+
+[part~='track'] {
+    stroke: $track-color;
+}
+
+[part~='fill'] {
+    stroke-dasharray: #{$circumference} #{$circumference};
+    stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
+    transition: stroke-dashoffset var(--duration) linear;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+
+    --percentage: 0;
+    --duration: 500ms;
+}
+
+[part~='track'],
+[part~='fill'] {
+    fill: transparent;
+    stroke-width: var(--stroke-thickness);
+    cx: calc(#{$diameter} / 2);
+    cy: calc(#{$diameter} / 2);
+    r: $radius;
+}
+
+[part~='gradient_start'],
+[part~='gradient_end'] {
+    stop-color: $fill-color;
+}
+
+:host([variant='danger']) [part~='gradient_start'],
+:host([variant='danger']) [part~='gradient_end'] {
+    stop-color: $danger-color;
+}
+
+:host([variant='warning']) [part~='gradient_start'],
+:host([variant='warning']) [part~='gradient_end'] {
+    stop-color: $warning-color;
+}
+
+:host([variant='info']) [part~='gradient_start'],
+:host([variant='info']) [part~='gradient_end'] {
+    stop-color: $info-color;
+}
+
+:host([variant='success']) [part~='gradient_start'],
+:host([variant='success']) [part~='gradient_end'] {
+    stop-color: $success-color;
+}
+
+:host([dir='rtl']) {
+    [part='svg indeterminate'] [part~='fill'] {
+        animation-name: indeterminate-accordion-rtl;
+    }
+
+    [part~='indeterminate'] {
+        animation-direction: $animation-direction-rtl;
+    }
+
+    // Valid only for circular progress bar
+    [part~='indeterminate'] [part~='track'] {
+        animation-direction: $animation-direction-rtl;
+    }
+
+    [part~='fill'] {
+        stroke-dashoffset: calc(#{$circumference} + var(--percentage) * #{$circumference});
+    }
+}

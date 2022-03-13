@@ -1,0 +1,57 @@
+@use '../../../../styles/utilities/index' as *;
+@use '../vars' as *;
+
+$track-color: color(gray, 200);
+
+:host {
+    --track-size: #{rem(2px)};
+}
+
+[part~='track'] {
+    background: $track-color;
+    margin: rem(8px) 0;
+}
+
+[part~='label'] {
+    font-size: rem(14px);
+    font-weight: 400;
+}
+
+[part~='indeterminate'] {
+    width: 33% !important;
+    min-width: 33%;
+    animation-name: indeterminate-bar-fluent;
+    animation-duration: 3s;
+    animation-timing-function: ease;
+    animation-iteration-count: infinite;
+
+    &::before {
+        display: none;
+    }
+}
+
+:host([dir='rtl']) {
+    [part~='indeterminate'] {
+        animation-name: indeterminate-bar-fluent-rtl;
+    }
+}
+
+[part='fill indeterminate primary'] {
+    background: linear-gradient(90deg, transparent 0%, $primary-color 50%, transparent 100%);
+}
+
+[part~='danger'][part~='indeterminate'] {
+    background: linear-gradient(90deg, transparent 0%, $danger-color 50%, transparent 100%);
+}
+
+[part~='warning'][part~='indeterminate'] {
+    background: linear-gradient(90deg, transparent 0%, $warning-color 50%, transparent 100%);
+}
+
+[part~='info'][part~='indeterminate'] {
+    background: linear-gradient(90deg, transparent 0%, $info-color 50%, transparent 100%);
+}
+
+[part~='success'][part~='indeterminate'] {
+    background: linear-gradient(90deg, transparent 0%, $success-color 50%, transparent 100%);
+}
