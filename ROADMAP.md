@@ -12,21 +12,20 @@
 6. Chip component [#171](https://github.com/IgniteUI/igniteui-webcomponents/issues/171)
 7. Rating component [#189](https://github.com/IgniteUI/igniteui-webcomponents/issues/189)
 8. Toast component [#186](https://github.com/IgniteUI/igniteui-webcomponents/issues/186)
+9. Snackbar component [#182](https://github.com/IgniteUI/igniteui-webcomponents/issues/182)
 
 ## Going down the road
 
 1. Combobox component [#172](https://github.com/IgniteUI/igniteui-webcomponents/issues/172)
-2. Select component [#180](https://github.com/IgniteUI/igniteui-webcomponents/issues/180)
-3. Slider component [#181](https://github.com/IgniteUI/igniteui-webcomponents/issues/181)
-4. Expansion panel component [#177](https://github.com/IgniteUI/igniteui-webcomponents/issues/177)
-5.  Bottom navigation component [#169](https://github.com/IgniteUI/igniteui-webcomponents/issues/169)
-6. Carousel component [#170](https://github.com/IgniteUI/igniteui-webcomponents/issues/170)
-7. Snackbar component [#182](https://github.com/IgniteUI/igniteui-webcomponents/issues/182)
-8. Auto-complete component [#183](https://github.com/IgniteUI/igniteui-webcomponents/issues/183)
-9. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
-10. Tab component [#185](https://github.com/IgniteUI/igniteui-webcomponents/issues/185)
-11. Date editor component [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
-12. Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
+2. Select component [#180](https://github.com/IgniteUI/igniteui-webcomponents/issues/180) 
+3. Expansion panel component [#177](https://github.com/IgniteUI/igniteui-webcomponents/issues/177)
+4. Bottom navigation component [#169](https://github.com/IgniteUI/igniteui-webcomponents/issues/169)
+5. Carousel component [#170](https://github.com/IgniteUI/igniteui-webcomponents/issues/170)
+6. Auto-complete component [#183](https://github.com/IgniteUI/igniteui-webcomponents/issues/183)
+7. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
+8. Tab component [#185](https://github.com/IgniteUI/igniteui-webcomponents/issues/185)
+9. Date editor component [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
+10. Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
 
 # Previous Milestone
 
@@ -49,4 +48,4 @@
 15. **[DONE]** Radio component
 16. **[DONE]** Ripple component
 17. **[DONE]** Switch component
- 
+18. **[DONE]** Slider component [#181](https://github.com/IgniteUI/igniteui-webcomponents/issues/181)
