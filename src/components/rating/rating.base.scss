@@ -14,17 +14,21 @@ $disabled-selected-color: color(gray, 600) !default;
 :host {
     display: inline-flex;
     font-family: var(--igc-font-family);
+    align-items: flex-start;
+    flex-direction: column;
+    gap: $spacing * 2;
+}
+
+%fraction {
+    position: absolute;
+    overflow: hidden;
+    inset-inline-start: 0;
+    min-width: 0 !important;
+    z-index: 1;
 }
 
 slot {
     display: none;
-}
-
-[part='rating'] {
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: $spacing * 2;
 }
 
 [part='base'] {
@@ -53,21 +57,16 @@ slot {
 }
 
 [part~='fraction'] {
-    position: absolute;
-    overflow: hidden;
-    inset-inline-start: 0;
-    min-width: 0 !important;
-    z-index: 1;
-}
+    @extend %fraction;
 
-[part='symbols-wrapper fraction'] {
-    position: absolute;
-    color: $selected-color;
-    top: 0;
-    inset-inline-start: 0;
+    [part='symbols-wrapper'] {
+        @extend %fraction;
 
-    [part~='symbol'] {
-        filter: grayscale(0);
+        color: $selected-color;
+
+        [part~='symbol'] {
+            filter: grayscale(0);
+        }
     }
 }
 
@@ -103,9 +102,11 @@ slot {
         color: $disabled-color;
     }
 
-    [part='symbols-wrapper fraction'] {
-        color: $disabled-selected-color;
-        filter: grayscale(50%);
+    [part~='fraction'] {
+        [part='symbols-wrapper'] {
+            color: $disabled-selected-color;
+            filter: grayscale(50%);
+        }
     }
 }
 

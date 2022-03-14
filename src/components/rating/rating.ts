@@ -279,7 +279,7 @@ export default class IgcRatingComponent extends SizableMixin(
       <slot @slotchange=${this.handleSlotChange}></slot>
 
       <div style=${styleMap(styles)} part="fraction ${this.size}">
-        <div part="symbols-wrapper fraction">
+        <div part="symbols-wrapper">
           ${this.hasProjectedSymbols
             ? this.renderProjected()
             : this.renderSymbols()}
@@ -298,20 +298,18 @@ export default class IgcRatingComponent extends SizableMixin(
     const styles = { width: `${Math.round((value / this.max) * 100)}%` };
 
     return html`
-      <div part="rating">
-        <label part="label ${this.size}">${this.label}</label>
-        <div
-          part="base"
-          role="slider"
-          tabindex=${ifDefined(this.disabled ? undefined : 0)}
-          aria-label=${this.label ?? nothing}
-          aria-valuemin="0"
-          aria-valuenow=${this.value}
-          aria-valuemax=${this.max}
-          aria-valuetext=${this.valueText}
-        >
-          ${this.renderFractionWrapper(styles)}
-        </div>
+      <label part="label ${this.size}">${this.label}</label>
+      <div
+        part="base"
+        role="slider"
+        tabindex=${ifDefined(this.disabled ? undefined : 0)}
+        aria-label=${this.label ?? nothing}
+        aria-valuemin="0"
+        aria-valuenow=${this.value}
+        aria-valuemax=${this.max}
+        aria-valuetext=${this.valueText}
+      >
+        ${this.renderFractionWrapper(styles)}
       </div>
     `;
   }
