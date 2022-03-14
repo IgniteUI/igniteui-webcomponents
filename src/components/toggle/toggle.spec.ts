@@ -61,10 +61,6 @@ describe('Toggle directive', () => {
     const popperEl = popper.renderRoot.children[0];
     const attributes = popperEl.attributes;
 
-    // TODO
-    // expect(attributes.getNamedItem('data-popper-placement')?.value).to.equal(
-    //   'bottom-start'
-    // );
     const style = attributes.getNamedItem('style')?.value;
     expect(style).to.contain('display: none');
     expect(style).to.contain('position: absolute');
@@ -99,15 +95,23 @@ describe('Toggle directive', () => {
       flip: true,
     });
 
-    // TODO
-    // verifyPlacement(popper, 'right-start');
+    let targetRect = target.getBoundingClientRect();
+    let toggleRect = popper.renderRoot.children[0].getBoundingClientRect();
+
+    expect(toggleRect.x).to.eq(targetRect.right);
+    expect(toggleRect.y).to.eq(targetRect.y);
+
     popper = await createPopper(target, true, {
       placement: 'left-start',
       positionStrategy: 'absolute',
       flip: false,
     });
-    // TODO
-    // verifyPlacement(popper, 'left-start');
+
+    targetRect = target.getBoundingClientRect();
+    toggleRect = popper.renderRoot.children[0].getBoundingClientRect();
+
+    expect(Math.round(toggleRect.right)).to.eq(targetRect.x);
+    expect(toggleRect.y).to.eq(targetRect.y);
   });
 
   it('properly reflects the offset if specified.', async () => {
