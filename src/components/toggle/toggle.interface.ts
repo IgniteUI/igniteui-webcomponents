@@ -62,7 +62,6 @@ export class ToggleBaseComponent
           }
         : undefined;
     },
-    type: String,
   })
   public offset!: { x: number; y: number };
 

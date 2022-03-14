@@ -127,6 +127,14 @@ interface ArgTypes {
   },
 };
 
+(metadata.argTypes as any).offset = {
+  type: 'string',
+};
+
+interface ArgTypes {
+  offset: string;
+}
+
 const toggleDDL = (ev: Event, ddlId: string) => {
   const ddl = document.getElementById(ddlId) as IgcDropDownComponent;
   if (ddlId === 'ddl2') {
@@ -161,10 +169,11 @@ const Template: Story<ArgTypes, Context> = (
     scrollStrategy = 'block',
     closeOnSelect = true,
     sameWidth = false,
+    offset,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
-  <div style="position: relative; height: 400px">
+  <div style="display: flex; position: relative; height: 400px">
     <igc-dropdown
       id="ddl1"
       ?open=${open}
@@ -192,7 +201,7 @@ const Template: Story<ArgTypes, Context> = (
       ${html`<igc-dropdown-item disabled>${items[5]}</igc-dropdown-item>`}
     </igc-dropdown>
 
-    <div style="position: absolute; right: 0px;">
+    <div style="position: absolute; right: 0px; top: 50px">
       <igc-button
         id="ddlButton"
         @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
@@ -236,13 +245,33 @@ const Template: Story<ArgTypes, Context> = (
         </igc-dropdown-group>
       </igc-dropdown>
     </div>
+
     <igc-dropdown
-      style="position: absolute; bottom: 10px; left: 0px"
       id="ddl3"
+      style="align-self: center;"
+      offset=${offset}
       .open=${open}
       .flip=${flip}
       .closeOnOutsideClick=${closeOnOutsideClick}
-      .placement=${'top-start'}
+      .placement=${placement}
+      .scrollStrategy=${scrollStrategy}
+      .sameWidth=${sameWidth}
+      .positionStrategy=${positionStrategy}
+      .dir=${direction}
+    >
+      <igc-button slot="target">Dropdown 3</igc-button>
+      ${items.map(
+        (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
+      )}
+    </igc-dropdown>
+
+    <igc-dropdown
+      style="position: absolute; bottom: 10px; left: 0px"
+      id="ddl4"
+      .open=${open}
+      .flip=${flip}
+      .closeOnOutsideClick=${closeOnOutsideClick}
+      .placement=${placement}
       .scrollStrategy=${scrollStrategy}
       .sameWidth=${sameWidth}
       .positionStrategy=${positionStrategy}
@@ -252,7 +281,7 @@ const Template: Story<ArgTypes, Context> = (
         type="button"
         slot="target"
         style="width: 150px"
-        value="Dropdown 3"
+        value="Dropdown 4"
       />
       <!-- ${items.slice(0, 5).map((item) => html`<h4>${item}</h4>`)} -->
       ${items.map(
