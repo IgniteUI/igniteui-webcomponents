@@ -34,6 +34,13 @@ export interface IgcRatingEventMap {
  * @fires igcHover - Emitted when hover is enabled and the user mouses over a symbol of the rating.
  *
  * @csspart base - The main wrapper which holds all of the rating elements.
+ * @csspart label - The label part.
+ * @csspart symbol - The part for a single symbol.
+ * @csspart fraction -The part for the selected symbols.
+ * @csspart symbols-wrapper - The wrapper that holds all symbols.
+ * @csspart large - A part responsible for the symbols size.
+ * @csspart medium - A part responsible for the symbols size.
+ * @csspart small- A part responsible for the symbols size.
  */
 @themes({ fluent, bootstrap, indigo })
 export default class IgcRatingComponent extends SizableMixin(
