@@ -110,6 +110,7 @@ const Template: Story<ArgTypes, Context> = (
     readonly,
     label = 'Default',
     value,
+    valueFormat,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -179,6 +180,7 @@ const Template: Story<ArgTypes, Context> = (
         .symbol=${symbol}
         .value=${value}
         .max=${max}
+        .valueFormat=${valueFormat}
       >
       </igc-rating>
     </div>
@@ -195,6 +197,7 @@ const Template: Story<ArgTypes, Context> = (
         ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
         .step=${Number(step)}
+        .valueFormat=${valueFormat}
         max="5"
       >
         ${emoji.map(
@@ -214,7 +217,7 @@ const Template: Story<ArgTypes, Context> = (
         .step=${Number(step)}
         .value=${value}
         .max=${max}
-        valueFormat="Custom icon {0} selected. That is {0}."
+        .valueFormat=${valueFormat}
       >
         ${Array.from(range(5)).map(
           () => html`<igc-rating-symbol>
@@ -234,7 +237,7 @@ const Template: Story<ArgTypes, Context> = (
         .step=${Number(step)}
         .value=${value}
         .max=${max}
-        valueFormat="Custom icon {0} selected. That is {0}."
+        .valueFormat=${valueFormat}
       >
         ${Array.from(range(5)).map(
           () => html`<igc-rating-symbol>${heartSVG}</igc-rating-symbol>`

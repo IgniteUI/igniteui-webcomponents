@@ -11,9 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Linear Progress component
 - Circular Progress component
-- Chip Component
-- Snackbar Component
-- Toast Component
+- Chip component
+- Snackbar component
+- Toast component
+- Rating component
 - Component themes can be changed at runtime by calling the `configureTheme(theme: Theme)` function
 
 ## [2.0.0] - 2022-02-03
@@ -24,7 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Slider component
 - Range Slider component
 - Support `required` property in Radio component.
-- Rating component
 
 ### Changed
 
