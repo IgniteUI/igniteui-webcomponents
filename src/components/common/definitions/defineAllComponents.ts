@@ -9,6 +9,7 @@ import IgcCardContentComponent from '../../card/card.content';
 import IgcCardHeaderComponent from '../../card/card.header';
 import IgcCardMediaComponent from '../../card/card.media';
 import IgcCheckboxComponent from '../../checkbox/checkbox';
+import IgcChipComponent from '../../chip/chip';
 import IgcCircularProgressComponent from '../../progress/circular-progress';
 import IgcDropDownComponent from '../../dropdown/dropdown';
 import IgcDropDownGroupComponent from '../../dropdown/dropdown-group';
