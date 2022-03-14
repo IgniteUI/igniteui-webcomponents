@@ -92,7 +92,7 @@ export class IgcToggleDirective extends Directive {
       middleware.push(
         offset({
           mainAxis: leftRight ? x : y,
-          alignmentAxis: leftRight ? y : x,
+          crossAxis: leftRight ? y : x,
         })
       );
     }
