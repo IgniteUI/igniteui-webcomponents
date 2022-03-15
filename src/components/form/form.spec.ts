@@ -10,6 +10,7 @@ import {
   defineAllComponents,
   IgcFormComponent,
   IgcRadioComponent,
+  IgcRatingComponent,
 } from '../../index.js';
 
 describe('Form', () => {
@@ -87,6 +88,7 @@ describe('Form', () => {
     const expectedValues = new Map<string, any>();
     expectedValues.set('textarea', 'textareaValue');
     expectedValues.set('inputText', 'inputTextValue');
+    expectedValues.set('igcRating', '3');
     let formData = el.getFormData();
     verifyFormDataValues(formData, expectedValues);
 
@@ -120,6 +122,8 @@ describe('Form', () => {
     inputCheckbox.checked = true;
     const igcRadio = el.querySelector('igc-radio') as IgcRadioComponent;
     igcRadio.checked = true;
+    const rating = el.querySelector('igc-rating') as IgcRatingComponent;
+    rating.value = 5;
     await elementUpdated(el);
     el.reset();
     await elementUpdated(el);
@@ -127,6 +131,7 @@ describe('Form', () => {
     const expectedValues = new Map<string, any>();
     expectedValues.set('textarea', 'textareaValue');
     expectedValues.set('inputText', 'inputTextValue');
+    expectedValues.set('igcRating', '3');
     const formData = el.getFormData();
     verifyFormDataValues(formData, expectedValues);
   });
@@ -170,6 +175,7 @@ describe('Form', () => {
         <input type="checkbox" name="inputCheckbox" value="inputCheckboxValue">
         <igc-radio name="igcRadio" value="igcRadioValue"></igc-radio>
         <igc-button type="submit">Submit</igc-button>
+        <igc-rating name="igcRating" value="3"></igc-rating>
       </igc-form>
     `
   ) => {

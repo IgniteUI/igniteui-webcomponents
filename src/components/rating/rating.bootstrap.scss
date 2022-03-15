@@ -1,0 +1,10 @@
+@use '../../styles/utilities' as *;
+
+$spacing: rem(4px);
+
+[part~='label'] {
+    @include type-category('body-1');
+
+    color: color(gray, 900);
+    padding-inline-start: $spacing;
+}
