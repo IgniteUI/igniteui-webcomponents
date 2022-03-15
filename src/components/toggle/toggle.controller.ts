@@ -86,7 +86,7 @@ export class IgcToggleController implements ReactiveController {
   private addEventListeners() {
     if (this.host.open) {
       document.addEventListener('scroll', this.handleScroll, true);
-      if (this.host.closeOnOutsideClick) {
+      if (!this.host.keepOpenOnOutsideClick) {
         document.addEventListener('click', this.documentClicked, true);
       }
     }
@@ -119,7 +119,7 @@ export class IgcToggleController implements ReactiveController {
 
   /** The document's click event handler to override in the host component if necessary. */
   private documentClicked = (event: MouseEvent) => {
-    if (this.host.closeOnOutsideClick) {
+    if (!this.host.keepOpenOnOutsideClick) {
       const target = event.composed ? event.composedPath() : [event.target];
       const isInsideClick: boolean =
         target.includes(this.host) ||

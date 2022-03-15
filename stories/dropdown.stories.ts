@@ -14,11 +14,11 @@ const metadata = {
   title: 'Dropdown',
   component: 'igc-dropdown',
   argTypes: {
-    closeOnSelect: {
+    keepOpenOnSelect: {
       type: 'boolean',
-      description: 'Whether the dropdown should be hidden on selection.',
+      description: 'Whether the dropdown should be kept open on selection.',
       control: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
     },
     open: {
       type: 'boolean',
@@ -81,12 +81,12 @@ const metadata = {
       control: 'number',
       defaultValue: '0',
     },
-    closeOnOutsideClick: {
+    keepOpenOnOutsideClick: {
       type: 'boolean',
       description:
-        'Whether the component should be hidden on clicking outside of it.',
+        'Whether the component should be kept open on clicking outside of it.',
       control: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
     },
     sameWidth: {
       type: 'boolean',
@@ -99,7 +99,7 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  closeOnSelect: boolean;
+  keepOpenOnSelect: boolean;
   open: boolean;
   placement:
     | 'top'
@@ -118,7 +118,7 @@ interface ArgTypes {
   scrollStrategy: 'scroll' | 'block' | 'close';
   flip: boolean;
   distance: number;
-  closeOnOutsideClick: boolean;
+  keepOpenOnOutsideClick: boolean;
   sameWidth: boolean;
 }
 // endregion
@@ -163,11 +163,11 @@ const Template: Story<ArgTypes, Context> = (
   {
     open = false,
     flip = false,
-    closeOnOutsideClick = true,
+    keepOpenOnOutsideClick = false,
     positionStrategy = 'absolute',
     placement = 'bottom-start',
     scrollStrategy = 'block',
-    closeOnSelect = true,
+    keepOpenOnSelect = false,
     sameWidth = false,
     distance = 0,
   }: ArgTypes,
@@ -180,14 +180,14 @@ const Template: Story<ArgTypes, Context> = (
       id="ddl1"
       ?open=${open}
       ?flip=${flip}
-      ?close-on-outside-click=${closeOnOutsideClick}
+      ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
       placement=${placement}
       .dir=${direction}
       scroll-strategy=${scrollStrategy}
       distance=${distance}
       .sameWidth=${sameWidth}
       .positionStrategy=${positionStrategy}
-      .closeOnSelect=${closeOnSelect}
+      .keepOpenOnSelect=${keepOpenOnSelect}
     >
       <igc-button slot="target">Dropdown 1</igc-button>
       <igc-dropdown-header>Tasks</igc-dropdown-header>
@@ -218,7 +218,7 @@ const Template: Story<ArgTypes, Context> = (
         id="ddl2"
         .open=${open}
         .flip=${flip}
-        .closeOnOutsideClick=${closeOnOutsideClick}
+        .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
         .placement=${placement}
         .scrollStrategy=${scrollStrategy}
         .sameWidth=${sameWidth}
@@ -254,7 +254,7 @@ const Template: Story<ArgTypes, Context> = (
       distance=${distance}
       .open=${open}
       .flip=${flip}
-      .closeOnOutsideClick=${closeOnOutsideClick}
+      .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
       .placement=${placement}
       .scrollStrategy=${scrollStrategy}
       .sameWidth=${sameWidth}
@@ -272,7 +272,7 @@ const Template: Story<ArgTypes, Context> = (
       id="ddl4"
       .open=${open}
       .flip=${flip}
-      .closeOnOutsideClick=${closeOnOutsideClick}
+      .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
       .placement=${placement}
       .scrollStrategy=${scrollStrategy}
       .sameWidth=${sameWidth}
@@ -295,7 +295,7 @@ const Template: Story<ArgTypes, Context> = (
       id="ddl5"
       .open=${open}
       .flip=${true}
-      .closeOnOutsideClick=${closeOnOutsideClick}
+      .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
       .placement=${placement}
       .positionStrategy=${positionStrategy}
       .scrollStrategy=${scrollStrategy}

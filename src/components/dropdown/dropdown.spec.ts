@@ -66,8 +66,8 @@ describe('Dropdown component', () => {
       expect(document.querySelector('igc-dropdown')).to.exist;
       expect(dropdown.open).to.be.false;
       expect(dropdown.flip).to.be.false;
-      expect(dropdown.closeOnOutsideClick).to.be.true;
-      expect(dropdown.closeOnSelect).to.be.true;
+      expect(dropdown.keepOpenOnOutsideClick).to.be.false;
+      expect(dropdown.keepOpenOnSelect).to.be.false;
       expect(dropdown.placement).to.eq('bottom-start');
       expect(dropdown.positionStrategy).to.eq('absolute');
       expect(dropdown.scrollStrategy).to.eq('scroll');
@@ -442,7 +442,7 @@ describe('Dropdown component', () => {
       it('keeps the list open on selection if `closeOnSelect` is set to false.', async () => {
         expect(getSelectedItems().length).to.eq(0);
 
-        dropdown.closeOnSelect = false;
+        dropdown.keepOpenOnSelect = true;
         ddItems(dropdown)[3].click();
         await elementUpdated(dropdown);
 
@@ -690,7 +690,7 @@ describe('Dropdown component', () => {
       });
 
       it('does not close the list on clicking outside when `closeOnOutsideClick` is false.', async () => {
-        dropdown.closeOnOutsideClick = false;
+        dropdown.keepOpenOnOutsideClick = true;
         await elementUpdated(dropdown);
 
         document.dispatchEvent(new MouseEvent('click'));

@@ -11,7 +11,7 @@ export interface IToggleComponent {
   scrollStrategy?: 'scroll' | 'block' | 'close';
   flip?: boolean;
   distance?: number;
-  closeOnOutsideClick?: boolean;
+  keepOpenOnOutsideClick?: boolean;
   sameWidth?: boolean;
 
   hide(): void;
@@ -55,9 +55,9 @@ export class ToggleBaseComponent
   @property({ type: Number })
   public distance = 0;
 
-  /** Whether the component should be hidden on clicking outside of it. */
-  @property({ type: Boolean, attribute: 'close-on-outside-click' })
-  public closeOnOutsideClick = true;
+  /** Whether the component should be kept open on clicking outside of it. */
+  @property({ type: Boolean, attribute: 'keep-open-on-outside-click' })
+  public keepOpenOnOutsideClick = false;
 
   /** Whether the component's width should be the same as the target's one. */
   @property({ type: Boolean, attribute: 'same-width' })

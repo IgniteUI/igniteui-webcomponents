@@ -29,10 +29,6 @@ export interface IToggleOptions {
    */
   // preventOverflow?: IOverflowOptions;
   /**
-   * Whether the element should be hidden on clicking outside of it.
-   */
-  closeOnOutsideClick?: boolean;
-  /**
    * The amount of offset in horizontal and/or vertical direction.
    */
   distance?: number;

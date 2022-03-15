@@ -77,9 +77,9 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-group' })
   protected groups!: Array<IgcDropDownGroupComponent>;
 
-  /** Whether the dropdown should be hidden on selection. */
-  @property({ type: Boolean, attribute: 'close-on-select' })
-  public closeOnSelect = true;
+  /** Whether the dropdown should be kept open on selection. */
+  @property({ type: Boolean, attribute: 'keep-open-on-select' })
+  public keepOpenOnSelect = false;
 
   // /** Sets the open state of the dropdown list. */
   // @property({ type: Boolean })
@@ -168,7 +168,6 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       placement: this.placement,
       positionStrategy: this.positionStrategy,
       flip: this.flip,
-      closeOnOutsideClick: this.closeOnOutsideClick,
       distance: this.distance,
       sameWidth: this.sameWidth,
     };
@@ -181,7 +180,6 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       placement: this.placement,
       positionStrategy: this.positionStrategy,
       flip: this.flip,
-      closeOnOutsideClick: this.closeOnOutsideClick,
       distance: this.distance,
       sameWidth: this.sameWidth,
     };
@@ -298,7 +296,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
         break;
     }
 
-    if (this.closeOnSelect) this._hide();
+    if (!this.keepOpenOnSelect) this._hide();
   }
 
   private handleClick(event: MouseEvent) {
@@ -310,7 +308,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
 
     this.selectItem(newSelectedItem);
     this.handleChange(newSelectedItem);
-    if (this.closeOnSelect) this._hide();
+    if (!this.keepOpenOnSelect) this._hide();
   }
 
   private handleTargetClick = () => {
