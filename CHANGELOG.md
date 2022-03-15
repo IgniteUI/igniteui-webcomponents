@@ -75,6 +75,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[2.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/1.0.0...2.0.0
 [1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
