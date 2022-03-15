@@ -41,7 +41,6 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
   protected _value!: string;
   protected selection: MaskSelection = { start: 0, end: 0 };
   protected compositionStart = 0;
-  protected droppedText = '';
 
   @state()
   protected hasFocus = false;
@@ -176,7 +175,6 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
     const { start, end } = this.inputSelection;
     this.maskedValue = this.parser.apply(value);
     this._value = this.parser.parse(this.maskedValue);
-    this.droppedText = '';
     this.requestUpdate();
     this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
@@ -202,10 +200,6 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
 
   protected handleDragStart() {
     this.selection = this.inputSelection;
-  }
-
-  protected handleDrop(e: DragEvent) {
-    this.droppedText = e.dataTransfer?.getData('text') ?? '';
   }
 
   protected handleDragEnter() {
@@ -285,7 +279,6 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
         @dragenter=${this.handleDragEnter}
         @dragleave=${this.handleDragLeave}
         @dragstart=${this.handleDragStart}
-        @drop=${this.handleDrop}
         @blur=${this.handleBlur}
         @focus=${this.handleFocus}
         @cut=${this.handleCut}

@@ -251,14 +251,58 @@ describe('Masked input', () => {
       expect(masked.value).to.equal('xxxxzz');
       expect(input().value).to.equal(parser.apply(masked.value));
     });
+
+    it('Composition behavior', async () => {
+      const data = 'ときょお１２や';
+      masked.value = ' ';
+      masked.mask = 'CCCC::###';
+
+      await elementUpdated(masked);
+      syncParser();
+
+      masked.setSelectionRange(0, 0);
+      fireCompositionEvent(input(), 'compositionstart');
+      input().setSelectionRange(0, data.length);
+      fireCompositionEvent(input(), 'compositionend', { data });
+      await elementUpdated(masked);
+
+      expect(masked.value).to.equal('ときょお12');
+      expect(input().value).to.equal(parser.apply(masked.value));
+    });
+
+    it('Cut behavior', async () => {
+      masked.value = 'xxxyyyxxx';
+      masked.mask = 'CCC-CCC-CCC';
+
+      await elementUpdated(masked);
+      syncParser();
+
+      masked.setSelectionRange(4, 7);
+      input().dispatchEvent(new ClipboardEvent('cut'));
+      fireInputEvent(input(), 'deleteByCut');
+      await elementUpdated(masked);
+
+      expect(masked.value).to.equal('xxxxxx');
+      expect(input().value).to.equal('xxx-___-xxx');
+    });
   });
 });
 
 type KeyboardEventType = 'keydown' | 'keypress' | 'keyup';
 type InputEventType =
   | 'insertText'
+  | 'insertFromDrop'
   | 'deleteContentForward'
-  | 'deleteContentBackward';
+  | 'deleteContentBackward'
+  | 'deleteByCut';
+
+type CompositionEventType = 'compositionstart' | 'compositionend';
+
+const fireCompositionEvent = (
+  target: HTMLElement,
+  type: CompositionEventType,
+  options: Partial<CompositionEventInit> = {}
+) => target.dispatchEvent(new CompositionEvent(type, { ...options }));
 
 const fireKeyboardEvent = (
   target: HTMLElement,
