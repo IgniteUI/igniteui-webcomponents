@@ -87,18 +87,21 @@ input[type='radio'] {
 
 :host([disabled]) {
     pointer-events: none;
-    color: color(gray, 400);
     user-select: none;
+
+    [part~='label'] {
+        color: color(gray, 400);
+    }
 
     [part~='control'] {
         &::after {
-            border-color: color(gray, 300);
+            border-color: color(gray, 400);
         }
     }
 
     [part='control checked'] {
         &::before {
-            background: color(gray, 300);
+            background: color(gray, 400);
             border-color: transparent;
         }
     }
