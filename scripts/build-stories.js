@@ -82,6 +82,7 @@ function extractTags(meta) {
       .map((prop) => {
         const options =
           UNION_TYPE_REGEX.test(prop.type) &&
+
           !SUPPORTED_TYPES.some(
             (type) => prop.type === type || prop.type.startsWith(`${type} `)
           )
@@ -98,8 +99,8 @@ function extractTags(meta) {
               ? prop.type === 'boolean'
                 ? prop.default === 'true'
                 : prop.type === 'Date'
-                ? undefined
-                : prop.default.replace(/"/g, '')
+                  ? undefined
+                  : prop.default.replace(/"/g, '')
               : undefined,
           },
         ];

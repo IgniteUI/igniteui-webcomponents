@@ -25,6 +25,8 @@ import IgcNavDrawerItemComponent from '../../nav-drawer/nav-drawer-item';
 import IgcNavbarComponent from '../../navbar/navbar';
 import IgcRadioGroupComponent from '../../radio-group/radio-group';
 import IgcRadioComponent from '../../radio/radio';
+import IgcRatingComponent from '../../rating/rating';
+import IgcRatingSymbolComponent from '../../rating/rating-symbol';
 import IgcRippleComponent from '../../ripple/ripple';
 import IgcTreeSampleComponent from '../../tree-sample/tree-sample';
 import IgcTreeComponent from '../../tree/tree';
@@ -63,6 +65,8 @@ const allComponents: CustomElementConstructor[] = [
   IgcNavbarComponent,
   IgcRadioComponent,
   IgcRadioGroupComponent,
+  IgcRatingComponent,
+  IgcRatingSymbolComponent,
   IgcRippleComponent,
   IgcTreeComponent,
   IgcTreeItemComponent,
