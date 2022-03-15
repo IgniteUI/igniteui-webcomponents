@@ -1,0 +1,12 @@
+@use '../../../styles/utilities' as *;
+
+[part~='base'] {
+    @include border-radius(rem(6px));
+
+    background: color(surface, 500);
+    color: color(gray, 700);
+    padding: rem(10px) rem(16px);
+    min-width: rem(352px);
+    backface-visibility: hidden;
+    backdrop-filter: blur(8px);
+}

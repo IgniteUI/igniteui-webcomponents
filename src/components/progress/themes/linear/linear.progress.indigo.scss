@@ -1,0 +1,19 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+
+$stripe-grays: color(gray, 50, .7);
+$stripe-primary: color(secondary, 500);
+$stripe-size: rem(6px);
+$stripe-space: rem(14px);
+
+[part~='striped'] {
+    /* stylelint-disable */
+    background: $stripe-primary repeating-linear-gradient(
+        45deg,
+        $stripe-primary,
+        $stripe-primary $stripe-size,
+        $stripe-grays $stripe-size,
+        $stripe-grays $stripe-space
+    );
+    /* stylelint-enable */
+}
