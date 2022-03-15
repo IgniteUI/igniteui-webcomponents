@@ -6,12 +6,16 @@ import {
 } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
 import { partNameMap } from '../common/util.js';
-import { styles } from './tree-item.material.css';
+import { styles } from './tree-item.base.css';
+import { styles as bootstrap } from './tree-item.bootstrap.css';
+import { styles as fluent } from './tree-item.fluent.css';
+import { styles as indigo } from './tree-item.indigo.css';
 import IgcTreeComponent from './tree';
 import { IgcTreeSelectionType } from './tree.common.js';
 import { watch } from '../common/decorators';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
+import { themes } from '../../theming';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -24,6 +28,7 @@ import { IgcTreeNavigationService } from './tree.navigation.js';
  * @slot loading - Renders the tree item loading indicator container.
  * @slot indentation - Renders the container (by default the space) before the tree item.
  */
+@themes({ bootstrap, fluent, indigo })
 export default class IgcTreeItemComponent extends LitElement {
   /** @private */
   public static tagName = 'igc-tree-item';

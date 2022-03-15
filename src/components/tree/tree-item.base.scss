@@ -7,7 +7,13 @@ $node-height: (
     medium: rem(40px),
     small: rem(32px)
 );
+$node-padding: (
+    large: 0 rem(24px),
+    medium: 0 rem(16px),
+    small: 0 rem(12px)
+);
 $disabled-color: color(gray, 500);
+$disabled-background: color(surface);
 $background: color(surface);
 $color: contrast-color(surface);
 $hover-background: color(gray, 200);
@@ -37,12 +43,12 @@ $toggle-icon-size: rem(24px);
 
 :host([disabled]) {
     color: $disabled-color;
+    background: $disabled-background;
 }
 
 [part~='wrapper'] {
     display: flex;
     align-items: center;
-    padding: 0 rem(24px);
     position: relative;
     background: $background;
     color: $color;
@@ -129,17 +135,26 @@ $toggle-icon-size: rem(24px);
     }
 }
 
-// LARGE
 [part~='large'] {
     height: map.get($node-height, 'large');
 }
 
-// MEDIUM
 [part~='medium'] {
     height: map.get($node-height, 'medium');
 }
 
-// SMALL
 [part~='small'] {
     height: map.get($node-height, 'small');
+}
+
+[part~='wrapper'][part~='large'] {
+    padding: map.get($node-padding, 'large');
+}
+
+[part~='wrapper'][part~='medium'] {
+    padding: map.get($node-padding, 'medium');
+}
+
+[part~='wrapper'][part~='small'] {
+    padding: map.get($node-padding, 'small');
 }
