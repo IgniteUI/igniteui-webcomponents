@@ -1,5 +1,6 @@
-import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
+import { elementUpdated, expect, fixture } from '@open-wc/testing';
+import sinon from 'sinon';
 import { defineComponents } from '../../index.js';
 import { MaskParser } from './mask-parser.js';
 import IgcMaskedInputComponent from './masked-input';
@@ -121,6 +122,45 @@ describe('Masked input', () => {
       await elementUpdated(masked);
 
       expect(masked.value).to.equal('1234');
+    });
+
+    it('setRangeText() method', async () => {
+      masked.mask = '(CC) (CC)';
+      masked.value = '1111';
+
+      await elementUpdated(masked);
+      syncParser();
+
+      masked.setRangeText('22', 0, 2); // (22) (11)
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(masked.value).to.equal('2211');
+    });
+
+    it('igcChange event', async () => {
+      syncParser();
+
+      const eventSpy = sinon.spy(masked, 'emitEvent');
+      masked.value = 'abc';
+      await elementUpdated(masked);
+
+      input().dispatchEvent(new Event('change'));
+      expect(eventSpy).calledWith('igcChange', { detail: 'abc' });
+    });
+
+    it('igcChange event with literals', async () => {
+      syncParser();
+
+      const eventSpy = sinon.spy(masked, 'emitEvent');
+      masked.value = 'abc';
+      masked.withLiterals = true;
+      await elementUpdated(masked);
+
+      input().dispatchEvent(new Event('change'));
+      expect(eventSpy).calledWith('igcChange', {
+        detail: parser.apply(masked.value),
+      });
     });
 
     it('is accessible', async () => await expect(masked).to.be.accessible());
@@ -285,6 +325,39 @@ describe('Masked input', () => {
       expect(masked.value).to.equal('xxxxxx');
       expect(input().value).to.equal('xxx-___-xxx');
     });
+
+    it('Paste behavior', async () => {
+      masked.value = '111111';
+      masked.mask = 'CCC::CCC';
+
+      await elementUpdated(masked);
+      syncParser();
+
+      // Emulate paste behavior
+      input().value = '112222';
+      input().setSelectionRange(2, 8);
+
+      fireInputEvent(input(), 'insertFromPaste');
+      await elementUpdated(masked);
+      expect(input().value).to.equal(parser.apply(masked.value));
+    });
+
+    it('Drop behavior', async () => {
+      masked.mask = 'CCC::CCC';
+      masked.value = '123456';
+
+      await elementUpdated(masked);
+      syncParser();
+
+      // Emulate drop behavior
+      input().value = '   abc';
+      input().setSelectionRange(3, 8);
+
+      fireInputEvent(input(), 'insertFromDrop');
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal(parser.apply(masked.value));
+    });
   });
 });
 
@@ -292,6 +365,7 @@ type KeyboardEventType = 'keydown' | 'keypress' | 'keyup';
 type InputEventType =
   | 'insertText'
   | 'insertFromDrop'
+  | 'insertFromPaste'
   | 'deleteContentForward'
   | 'deleteContentBackward'
   | 'deleteByCut';
