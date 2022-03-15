@@ -8,7 +8,7 @@ export interface IToggleComponent {
   open: boolean;
   placement: IgcPlacement;
   positionStrategy: 'absolute' | 'fixed';
-  scrollStrategy?: 'scroll' | 'block' | 'close' | 'none';
+  scrollStrategy?: 'scroll' | 'block' | 'close';
   flip?: boolean;
   offset?: { x: number; y: number };
   closeOnOutsideClick?: boolean;
@@ -42,7 +42,7 @@ export class ToggleBaseComponent
 
   /** Determines the behavior of the component during scrolling the container. */
   @property({ attribute: 'scroll-strategy' })
-  public scrollStrategy: 'scroll' | 'block' | 'close' | 'none' = 'none';
+  public scrollStrategy: 'scroll' | 'block' | 'close' = 'scroll';
 
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.

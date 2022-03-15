@@ -143,10 +143,6 @@ export class IgcToggleController implements ReactiveController {
       case 'close':
         this.host.hide();
         break;
-      case 'none':
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        break;
     }
   };
 }

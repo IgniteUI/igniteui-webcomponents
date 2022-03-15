@@ -70,7 +70,7 @@ describe('Dropdown component', () => {
       expect(dropdown.closeOnSelect).to.be.true;
       expect(dropdown.placement).to.eq('bottom-start');
       expect(dropdown.positionStrategy).to.eq('absolute');
-      expect(dropdown.scrollStrategy).to.eq('none');
+      expect(dropdown.scrollStrategy).to.eq('scroll');
       expect(dropdown.offset).to.be.undefined;
       expect(dropdown.sameWidth).to.be.undefined;
     });

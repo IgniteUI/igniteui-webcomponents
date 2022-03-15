@@ -59,14 +59,14 @@ const metadata = {
       defaultValue: 'absolute',
     },
     scrollStrategy: {
-      type: '"scroll" | "block" | "close" | "none"',
+      type: '"scroll" | "block" | "close"',
       description:
         'Determines the behavior of the component during scrolling the container.',
-      options: ['scroll', 'block', 'close', 'none'],
+      options: ['scroll', 'block', 'close'],
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'none',
+      defaultValue: 'scroll',
     },
     flip: {
       type: 'boolean',
@@ -108,7 +108,7 @@ interface ArgTypes {
     | 'left-start'
     | 'left-end';
   positionStrategy: 'absolute' | 'fixed';
-  scrollStrategy: 'scroll' | 'block' | 'close' | 'none';
+  scrollStrategy: 'scroll' | 'block' | 'close';
   flip: boolean;
   closeOnOutsideClick: boolean;
   sameWidth: boolean;
@@ -184,7 +184,7 @@ const Template: Story<ArgTypes, Context> = (
       placement=${placement}
       .dir=${direction}
       scroll-strategy=${scrollStrategy}
-      .offset=${offset}
+      offset=${offset}
       .sameWidth=${sameWidth}
       .positionStrategy=${positionStrategy}
       .closeOnSelect=${closeOnSelect}
