@@ -3,13 +3,13 @@
 
 :host {
     display: flex;
-    z-index: 10005;
 }
 
 [part='base'] {
     overflow-y: auto;
     overflow-x: hidden;
     border: 1px solid gainsboro;
+    z-index: 10005;
 }
 
 :host([size='small']) ::slotted(igc-dropdown-item),
