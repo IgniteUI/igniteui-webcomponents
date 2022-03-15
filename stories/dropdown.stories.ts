@@ -173,7 +173,9 @@ const Template: Story<ArgTypes, Context> = (
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
-  <div style="display: flex; position: relative; height: 400px">
+  <div
+    style="display: flex; align-items: flex-start; position: relative; height: 400px"
+  >
     <igc-dropdown
       id="ddl1"
       ?open=${open}
@@ -182,7 +184,7 @@ const Template: Story<ArgTypes, Context> = (
       placement=${placement}
       .dir=${direction}
       scroll-strategy=${scrollStrategy}
-      offset=${`10, 0`}
+      .offset=${offset}
       .sameWidth=${sameWidth}
       .positionStrategy=${positionStrategy}
       .closeOnSelect=${closeOnSelect}
@@ -290,7 +292,7 @@ const Template: Story<ArgTypes, Context> = (
     </igc-dropdown>
     <igc-dropdown
       style="position: fixed; bottom: 0px; right: 0px"
-      id="ddl4"
+      id="ddl5"
       .open=${open}
       .flip=${true}
       .closeOnOutsideClick=${closeOnOutsideClick}
@@ -300,11 +302,7 @@ const Template: Story<ArgTypes, Context> = (
       .sameWidth=${sameWidth}
       .dir=${direction}
     >
-      <input
-        slot="target"
-        @click="${(ev: Event) => toggleDDL(ev, 'ddl4')}"
-        style="width: 150px"
-      />
+      <input slot="target" style="width: 150px" />
       <!-- ${items.slice(0, 5).map((item) => html`<h4>${item}</h4>`)} -->
       ${items.map(
         (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
