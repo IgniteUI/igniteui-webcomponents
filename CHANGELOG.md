@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.1.0] - 2022-03-15
 
 ### Added
 
@@ -61,5 +61,6 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
-[2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v1.0.0...v2.0.0
-[1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/releases/tag/v1.0.0
+[2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.0.0...2.1.0
+[2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/1.0.0...2.0.0
+[1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
