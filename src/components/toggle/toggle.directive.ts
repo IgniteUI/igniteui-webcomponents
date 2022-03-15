@@ -82,17 +82,10 @@ export class IgcToggleDirective extends Directive {
   private createMiddleware(options: IToggleOptions) {
     const middleware: Middleware[] = [];
 
-    if (options.offset) {
-      const leftRight =
-        options.placement.toString().includes('left') ||
-        options.placement.toString().includes('right');
-      const x = options.offset.x;
-      const y = options.offset.y;
-
+    if (options.distance) {
       middleware.push(
         offset({
-          mainAxis: leftRight ? x : y,
-          crossAxis: leftRight ? y : x,
+          mainAxis: options.distance,
         })
       );
     }

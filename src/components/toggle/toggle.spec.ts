@@ -118,29 +118,27 @@ describe('Toggle directive', () => {
     popper = await createPopper(target, true, {
       placement: 'right-start',
       positionStrategy: 'absolute',
-      offset: { x: 100, y: 10 },
+      distance: 100,
     });
 
     let targetRect = target.getBoundingClientRect();
     let toggleRect = popper.renderRoot.children[0].getBoundingClientRect();
 
     expect(toggleRect.x).to.eq(targetRect.right + 100);
-    expect(toggleRect.y).to.eq(Math.round(targetRect.y + 10));
+    expect(toggleRect.y).to.eq(Math.round(targetRect.y));
 
     document.getElementsByTagName('test-popper')[0].remove();
 
     popper = await createPopper(target, true, {
       placement: 'bottom-end',
       positionStrategy: 'absolute',
-      offset: { x: 100, y: 10 },
+      distance: 10,
     });
 
     targetRect = target.getBoundingClientRect();
     toggleRect = popper.renderRoot.children[0].getBoundingClientRect();
 
-    expect(Math.round(toggleRect.right)).to.eq(
-      Math.round(targetRect.right + 100)
-    );
+    expect(toggleRect.left).to.eq(0);
     expect(toggleRect.y).to.eq(Math.round(targetRect.bottom + 10));
 
     document.getElementsByTagName('test-popper')[0].remove();

@@ -75,6 +75,12 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    distance: {
+      type: 'number',
+      description: 'The distance from the target element.',
+      control: 'number',
+      defaultValue: '0',
+    },
     closeOnOutsideClick: {
       type: 'boolean',
       description:
@@ -87,6 +93,7 @@ const metadata = {
       description:
         "Whether the component's width should be the same as the target's one.",
       control: 'boolean',
+      defaultValue: false,
     },
   },
 };
@@ -110,6 +117,7 @@ interface ArgTypes {
   positionStrategy: 'absolute' | 'fixed';
   scrollStrategy: 'scroll' | 'block' | 'close';
   flip: boolean;
+  distance: number;
   closeOnOutsideClick: boolean;
   sameWidth: boolean;
 }
@@ -126,14 +134,6 @@ interface ArgTypes {
     ],
   },
 };
-
-(metadata.argTypes as any).offset = {
-  type: 'string',
-};
-
-interface ArgTypes {
-  offset: string;
-}
 
 const toggleDDL = (ev: Event, ddlId: string) => {
   const ddl = document.getElementById(ddlId) as IgcDropDownComponent;
@@ -169,7 +169,7 @@ const Template: Story<ArgTypes, Context> = (
     scrollStrategy = 'block',
     closeOnSelect = true,
     sameWidth = false,
-    offset,
+    distance = 0,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -184,7 +184,7 @@ const Template: Story<ArgTypes, Context> = (
       placement=${placement}
       .dir=${direction}
       scroll-strategy=${scrollStrategy}
-      offset=${offset}
+      distance=${distance}
       .sameWidth=${sameWidth}
       .positionStrategy=${positionStrategy}
       .closeOnSelect=${closeOnSelect}
@@ -251,7 +251,7 @@ const Template: Story<ArgTypes, Context> = (
     <igc-dropdown
       id="ddl3"
       style="align-self: center;"
-      offset=${offset}
+      distance=${distance}
       .open=${open}
       .flip=${flip}
       .closeOnOutsideClick=${closeOnOutsideClick}

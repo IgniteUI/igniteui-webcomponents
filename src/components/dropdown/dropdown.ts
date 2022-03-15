@@ -159,7 +159,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @watch('flip')
   @watch('positionStrategy')
   @watch('closeOnOutsideClick')
-  @watch('offset')
+  @watch('distance')
   @watch('sameWidth')
   protected updateOptions() {
     if (!this.toggleController) return;
@@ -169,7 +169,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       positionStrategy: this.positionStrategy,
       flip: this.flip,
       closeOnOutsideClick: this.closeOnOutsideClick,
-      offset: this.offset,
+      distance: this.distance,
       sameWidth: this.sameWidth,
     };
   }
@@ -182,7 +182,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
       positionStrategy: this.positionStrategy,
       flip: this.flip,
       closeOnOutsideClick: this.closeOnOutsideClick,
-      offset: this.offset,
+      distance: this.distance,
       sameWidth: this.sameWidth,
     };
 

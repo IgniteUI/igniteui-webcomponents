@@ -35,7 +35,7 @@ export interface IToggleOptions {
   /**
    * The amount of offset in horizontal and/or vertical direction.
    */
-  offset?: { x: number; y: number };
+  distance?: number;
   /**
    * Whether to make the toggle the same width as the target.
    */

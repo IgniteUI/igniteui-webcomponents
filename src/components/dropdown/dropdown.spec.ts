@@ -71,8 +71,8 @@ describe('Dropdown component', () => {
       expect(dropdown.placement).to.eq('bottom-start');
       expect(dropdown.positionStrategy).to.eq('absolute');
       expect(dropdown.scrollStrategy).to.eq('scroll');
-      expect(dropdown.offset).to.be.undefined;
-      expect(dropdown.sameWidth).to.be.undefined;
+      expect(dropdown.distance).to.eq(0);
+      expect(dropdown.sameWidth).to.be.false;
     });
 
     it('shows and hides the list when changing the value of `open`.', async () => {
@@ -150,24 +150,20 @@ describe('Dropdown component', () => {
       });
 
       it('offsets the list according to the `offset` property value.', async () => {
-        dropdown.offset = { x: 20, y: 5 };
+        dropdown.distance = 5;
         await elementUpdated(dropdown);
 
-        expect(dropdown.offset).to.deep.eq({ x: 20, y: 5 });
-
-        expect(listRect().x).to.eq(targetRect().x + 20);
+        expect(listRect().x).to.eq(targetRect().x);
         expect(Math.round(listRect().top)).to.eq(
           Math.round(targetRect().bottom + 5)
         );
 
         dropdown.placement = 'left-start';
-        dropdown.offset = { x: 20, y: 5 };
+        dropdown.distance = 20;
         await elementUpdated(dropdown);
 
         expect(Math.round(listRect().right)).to.eq(targetRect().x - 20);
-        expect(Math.round(listRect().top)).to.eq(
-          Math.round(targetRect().top + 5)
-        );
+        expect(Math.round(listRect().top)).to.eq(Math.round(targetRect().top));
       });
 
       it('toggles the list on `show`/`hide` method calls.', async () => {

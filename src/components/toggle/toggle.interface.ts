@@ -10,7 +10,7 @@ export interface IToggleComponent {
   positionStrategy: 'absolute' | 'fixed';
   scrollStrategy?: 'scroll' | 'block' | 'close';
   flip?: boolean;
-  offset?: { x: number; y: number };
+  distance?: number;
   closeOnOutsideClick?: boolean;
   sameWidth?: boolean;
 
@@ -51,19 +51,9 @@ export class ToggleBaseComponent
   @property({ type: Boolean })
   public flip = false;
 
-  /** The amount of offset in horizontal and/or vertical direction. */
-  @property({
-    converter: (value) => {
-      const dimensions = value ? (value as string).split(',') : undefined;
-      return dimensions
-        ? {
-            x: parseInt(dimensions[0]),
-            y: parseInt(dimensions[1] ?? dimensions[0]),
-          }
-        : undefined;
-    },
-  })
-  public offset!: { x: number; y: number };
+  /** The distance from the target element. */
+  @property({ type: Number })
+  public distance = 0;
 
   /** Whether the component should be hidden on clicking outside of it. */
   @property({ type: Boolean, attribute: 'close-on-outside-click' })
@@ -71,7 +61,7 @@ export class ToggleBaseComponent
 
   /** Whether the component's width should be the same as the target's one. */
   @property({ type: Boolean, attribute: 'same-width' })
-  public sameWidth!: boolean;
+  public sameWidth = false;
 
   /** Hides the component. */
   public hide() {
