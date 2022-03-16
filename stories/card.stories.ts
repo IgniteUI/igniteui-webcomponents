@@ -48,7 +48,7 @@ const Template: Story<ArgTypes, Context> = (
             <h5 slot="subtitle">Subtitle</h5>
           </igc-card-header>
           <igc-card-content>
-            <p>
+            <p slotted-styles>
               New York City comprises 5 boroughs sitting where the Hudson River
               meets the Atlantic Ocean. At its core is Manhattan, a densely
               populated borough that’s among the world’s major commercial,
@@ -81,7 +81,7 @@ const Template: Story<ArgTypes, Context> = (
             />
           </igc-card-media>
           <igc-card-content>
-            <p>
+            <p slotted-styles>
               New York City comprises 5 boroughs sitting where the Hudson River
               meets the Atlantic Ocean. At its core is Manhattan, a densely
               populated borough that’s among the world’s major commercial,
@@ -143,7 +143,7 @@ const Template: Story<ArgTypes, Context> = (
                 <h5 slot="subtitle">By Mellow D</h5>
               </igc-card-header>
               <igc-card-content>
-                <p>
+                <p slotted-styles>
                   Far far away, behind the word mountains, far from the
                   countries Vokalia and Consonantia, there live the blind texts.
                 </p>
