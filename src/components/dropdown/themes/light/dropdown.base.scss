@@ -1,31 +1,33 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
 :host {
     display: flex;
+    font-family: var(--igc-font-family);
 }
 
 [part='base'] {
     overflow-y: auto;
     overflow-x: hidden;
-    border: 1px solid gainsboro;
+    border-radius: 4px;
+    background: color(surface, 500);
+    box-shadow: var(--igc-elevation-8);
+    min-width: rem(128px);
+    padding: rem(8px) 0;
     z-index: 10005;
 }
 
 :host([size='small']) ::slotted(igc-dropdown-item),
-:host([size='small']) ::slotted(igc-dropdown-group),
 :host([size='small']) ::slotted(igc-dropdown-header) {
     padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
 }
 
 :host([size='medium']) ::slotted(igc-dropdown-item),
-:host([size='medium']) ::slotted(igc-dropdown-group),
 :host([size='medium']) ::slotted(igc-dropdown-header) {
     padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
 }
 
 :host([size='large']) ::slotted(igc-dropdown-item),
-:host([size='large']) ::slotted(igc-dropdown-group),
 :host([size='large']) ::slotted(igc-dropdown-header) {
     padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
 }

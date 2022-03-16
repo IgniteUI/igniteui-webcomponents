@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
-import { styles } from './dropdown-group.material.css';
+import { styles } from './themes/light/dropdown-group.base.css';
 import IgcDropDownItemComponent from './dropdown-item';
 
 /**

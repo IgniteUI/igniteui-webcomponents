@@ -1,7 +1,8 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
 :host {
+    @include type-category('body-2');
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -9,16 +10,23 @@
     white-space: nowrap;
     position: relative;
     cursor: pointer;
+    color: color(gray, 800);
 }
 
-:host(:hover) {
+:host(:hover),
+:host(:focus) {
     background: color(gray, 200);
 }
 
-:host([active]) {
-    outline: 0;
-    outline-color: transparent;
-    background: color(gray, 300);
+:host([selected]) {
+    background: color(secondary, 100);
+    color: contrast-color(secondary, 100);
+}
+
+:host([selected]:hover),
+:host([selected]:focus) {
+    background: color(secondary, 200);
+    color: contrast-color(secondary, 200);
 }
 
 :host([disabled]) {
@@ -27,19 +35,14 @@
     pointer-events: none;
 }
 
-:host([selected]) {
-    background: #09f;
-    color: white;
-}
-
 ::slotted(*) {
-    margin: 0;
     font: inherit;
-    opacity: inherit;
 }
 
 [part='content'] {
-    flex-grow: 1;
+    display: flex;
+    width: 100%;
+    align-items: center;
 }
 
 [part='prefix'],
