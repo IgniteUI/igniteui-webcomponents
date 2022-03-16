@@ -7,6 +7,7 @@
     justify-content: space-between;
     align-items: center;
     padding: rem(8px);
+    flex-basis: min-content;
 }
 
 :host(:not([orientation='vertical'])) {

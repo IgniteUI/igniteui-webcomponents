@@ -100,31 +100,29 @@ const Template: Story<ArgTypes, Context> = (
     </div>
     <div style="display:flex; margin:16px">
       <div style="max-width: 400px; min-width: 250px; margin-right: 16px">
-        <igc-card ?elevated=${elevated}>
-          <div style="display: flex; flex-direction: row">
-            <div>
-              <igc-card-header>
-                <igc-avatar
-                  slot="thumbnail"
-                  size="small"
-                  shape="rounded"
-                  src="https://www.infragistics.com/angular-demos/assets/images/card/media/ROZES-Under-the-Grave.jpg"
-                >
-                </igc-avatar>
-                <h3 slot="title">Rozes</h3>
-                <h5 slot="subtitle">Under the Grave (2016)</h5>
-              </igc-card-header>
-              <igc-card-content>
-                As I have always said: I write what’s real and what’s true, even
-                if it means throwing myself under the bus.
-              </igc-card-content>
-            </div>
-            <igc-card-actions orientation="vertical">
-              <igc-icon-button name="facebook"></igc-icon-button>
-              <igc-icon-button name="instagram"></igc-icon-button>
-              <igc-icon-button name="twitter"></igc-icon-button>
-            </igc-card-actions>
+        <igc-card ?elevated=${elevated} style="flex-direction: row">
+          <div>
+            <igc-card-header>
+              <igc-avatar
+                slot="thumbnail"
+                size="small"
+                shape="rounded"
+                src="https://www.infragistics.com/angular-demos/assets/images/card/media/ROZES-Under-the-Grave.jpg"
+              >
+              </igc-avatar>
+              <h3 slot="title">Rozes</h3>
+              <h5 slot="subtitle">Under the Grave (2016)</h5>
+            </igc-card-header>
+            <igc-card-content>
+              As I have always said: I write what’s real and what’s true, even
+              if it means throwing myself under the bus.
+            </igc-card-content>
           </div>
+          <igc-card-actions orientation="vertical">
+            <igc-icon-button name="facebook"></igc-icon-button>
+            <igc-icon-button name="instagram"></igc-icon-button>
+            <igc-icon-button name="twitter"></igc-icon-button>
+          </igc-card-actions>
         </igc-card>
       </div>
       <div style="max-width: 400px; max-height: 250px;">
