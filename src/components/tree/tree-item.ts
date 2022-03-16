@@ -6,10 +6,10 @@ import {
 } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
 import { partNameMap } from '../common/util.js';
-import { styles } from './tree-item.base.css';
-import { styles as bootstrap } from './tree-item.bootstrap.css';
-import { styles as fluent } from './tree-item.fluent.css';
-import { styles as indigo } from './tree-item.indigo.css';
+import { styles } from './themes/light/tree-item.base.css';
+import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css';
+import { styles as fluent } from './themes/light/tree-item.fluent.css';
+import { styles as indigo } from './themes/light/tree-item.indigo.css';
 import IgcTreeComponent from './tree';
 import { IgcTreeSelectionType } from './tree.common.js';
 import { watch } from '../common/decorators';

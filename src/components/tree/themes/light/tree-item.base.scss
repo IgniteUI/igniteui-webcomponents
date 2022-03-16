@@ -1,5 +1,5 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
 @use 'sass:map';
 
 $node-height: (
@@ -16,12 +16,9 @@ $disabled-color: color(gray, 500);
 $disabled-background: color(surface);
 $background: color(surface);
 $color: contrast-color(surface);
-$hover-background: color(gray, 200);
-$hover-color: contrast-color(gray, 200);
+$hover-color: var(--hover-color, color(gray, 900, .1)) !default;
 $selected-background: color(secondary, 200);
 $selected-color: contrast-color(secondary, 200);
-$selected-hover-background: color(secondary, 300);
-$selected-hover-color: contrast-color(secondary, 300);
 $active-background: color(gray, 200);
 $active-color: contrast-color(gray, 200);
 $active-selected-background: color(secondary, 300);
@@ -53,9 +50,21 @@ $toggle-icon-size: rem(24px);
     background: $background;
     color: $color;
 
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        background: transparent;
+    }
+
     &:hover {
-        background: $hover-background;
-        color: $hover-color;
+        &::after {
+            background: $hover-color;
+        }
     }
 }
 
@@ -67,11 +76,6 @@ $toggle-icon-size: rem(24px);
 [part~='selected'] {
     background: $selected-background;
     color: $selected-color;
-
-    &:hover {
-        background: $selected-hover-background;
-        color: $selected-hover-color;
-    }
 }
 
 [part~='selected'][part~='focused'][part~='active'],
@@ -79,11 +83,6 @@ $toggle-icon-size: rem(24px);
 [part~='selected'][part~='active'] {
     background: $active-selected-background;
     color: $active-selected-color;
-
-    &:hover {
-        background: $active-selected-background;
-        color: $active-selected-color;
-    }
 }
 
 [part~='focused'] {
@@ -117,6 +116,7 @@ $toggle-icon-size: rem(24px);
 
 [part~='label'],
 [part~='text'] {
+    z-index: 1;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
