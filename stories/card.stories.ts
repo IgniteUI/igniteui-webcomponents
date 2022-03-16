@@ -119,7 +119,7 @@ const Template: Story<ArgTypes, Context> = (
                 if it means throwing myself under the bus.
               </igc-card-content>
             </div>
-            <igc-card-actions>
+            <igc-card-actions orientation="vertical">
               <igc-icon-button name="facebook"></igc-icon-button>
               <igc-icon-button name="instagram"></igc-icon-button>
               <igc-icon-button name="twitter"></igc-icon-button>

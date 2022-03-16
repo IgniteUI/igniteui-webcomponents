@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { property } from 'lit/decorators.js';
 import { themes } from '../../theming';
 import { styles as bootstrap } from './themes/light/card.actions.bootstrap.css';
 import { styles } from './themes/light/card.actions.material.css';
@@ -14,6 +15,10 @@ import { styles } from './themes/light/card.actions.material.css';
 export default class IgcCardActionsComponent extends LitElement {
   public static readonly tagName = 'igc-card-actions';
   public static override styles = styles;
+
+  /** The orientation of the actions. */
+  @property({ reflect: true })
+  public orientation: 'vertical' | 'horizontal' = 'horizontal';
 
   protected override render() {
     return html`

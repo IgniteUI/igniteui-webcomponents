@@ -9,8 +9,11 @@
     padding: rem(8px);
 }
 
-::slotted(igc-button:not(:first-of-type)) {
-    margin-inline-start: rem(8px);
+:host(:not([orientation='vertical'])) {
+    ::slotted(igc-icon-button:not(:first-of-type)),
+    ::slotted(igc-button:not(:first-of-type)) {
+        margin-inline-start: rem(8px);
+    }
 }
 
 ::slotted([slot='start']) {
