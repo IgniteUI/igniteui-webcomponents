@@ -1,39 +1,26 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
 import { igcToggle, IgcToggleDirective } from './toggle.directive';
-import { IToggleOptions } from './utilities.js';
 import { DirectiveResult } from 'lit/directive';
-import { IToggleComponent } from './toggle.interface';
+import { IgcToggleComponent } from './toggle.interface';
 
 /**
  * Controller, bundling the creation of a toggle directive and handling global events,
  * related to the configuration of togglable components.
  */
 export class IgcToggleController implements ReactiveController {
-  private defaultOptions: IToggleOptions;
-  private host: IToggleComponent & HTMLElement;
+  private host: IgcToggleComponent & HTMLElement;
   private sourceElement?: Element;
   private initialScrollTop = 0;
   private initialScrollLeft = 0;
-  private _options!: IToggleOptions;
   private _target!: HTMLElement;
 
   /** The directive that marks the toggle. */
   public toggleDirective!: DirectiveResult<typeof IgcToggleDirective>;
   public rendered!: Promise<void>;
 
-  public set options(value: IToggleOptions) {
-    this._options = Object.assign({}, this.defaultOptions, value);
-    this.createToggleDir();
-  }
-
-  /** The options describing the positioning and behavior of the toggle. */
-  public get options() {
-    return this._options;
-  }
-
   public set target(value: HTMLElement) {
     this._target = value;
-    this.createToggleDir();
+    this.updateToggleDir();
   }
 
   /** The element, relative to which, the toggle will be positioned. */
@@ -42,27 +29,18 @@ export class IgcToggleController implements ReactiveController {
   }
 
   constructor(
-    host: ReactiveControllerHost & IToggleComponent & HTMLElement,
-    target?: HTMLElement,
-    options?: IToggleOptions
+    host: ReactiveControllerHost & IgcToggleComponent & HTMLElement,
+    target?: HTMLElement
   ) {
     host.addController(this);
 
     this.host = host;
-    this.defaultOptions = {
-      placement: this.host.placement,
-      positionStrategy: this.host.positionStrategy,
-    };
 
     if (target) {
       this._target = target;
     }
 
-    if (options) {
-      this._options = options;
-    }
-
-    this.createToggleDir();
+    this.updateToggleDir();
   }
 
   public hostConnected() {
@@ -73,13 +51,8 @@ export class IgcToggleController implements ReactiveController {
     this.removeEventListeners();
   }
 
-  private createToggleDir() {
-    this.toggleDirective = igcToggle(
-      this._target,
-      this.host.open,
-      this._options,
-      this
-    );
+  public updateToggleDir() {
+    this.toggleDirective = igcToggle(this._target, this.host, this);
     this.addEventListeners();
   }
 

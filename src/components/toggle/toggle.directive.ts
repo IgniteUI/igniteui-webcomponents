@@ -13,7 +13,7 @@ import {
   ElementPart,
   PartType,
 } from 'lit/directive.js';
-import { IToggleOptions } from './utilities.js';
+import { IgcToggleOptions } from './utilities.js';
 import { noChange } from 'lit';
 import { IgcToggleController } from './toggle.controller.js';
 
@@ -24,23 +24,13 @@ export class IgcToggleDirective extends Directive {
   };
 
   private floatingElement!: HTMLElement;
-  private defaultOptions: IToggleOptions = {
-    placement: 'bottom-start',
-    positionStrategy: 'absolute',
-    flip: false,
-  };
 
   private updatePosition(
     target: HTMLElement,
-    open: boolean,
-    options?: IToggleOptions,
+    options: IgcToggleOptions,
     controller?: IgcToggleController
   ) {
-    options = options
-      ? Object.assign({}, this.defaultOptions, options)
-      : this.defaultOptions;
-
-    this.floatingElement = this.createFloatingElement(open);
+    this.floatingElement = this.createFloatingElement(options.open);
 
     if (!target) {
       if (controller) {
@@ -50,8 +40,8 @@ export class IgcToggleDirective extends Directive {
     }
 
     const promise = computePosition(target, this.floatingElement, {
-      placement: options.placement,
-      strategy: options.positionStrategy,
+      placement: options.placement ?? 'bottom-start',
+      strategy: options.positionStrategy ?? 'absolute',
       middleware: this.createMiddleware(options),
     }).then(({ x, y }) => {
       Object.assign(this.floatingElement.style, {
@@ -72,14 +62,12 @@ export class IgcToggleDirective extends Directive {
       this.floatingElement = (this.part as ElementPart).element as HTMLElement;
     }
 
-    open
-      ? (this.floatingElement.style.display = '')
-      : (this.floatingElement.style.display = 'none');
+    this.floatingElement.style.display = open ? '' : 'none';
 
     return this.floatingElement;
   }
 
-  private createMiddleware(options: IToggleOptions) {
+  private createMiddleware(options: IgcToggleOptions) {
     const middleware: Middleware[] = [];
 
     if (options.distance) {
@@ -126,11 +114,10 @@ export class IgcToggleDirective extends Directive {
 
   public render(
     target: HTMLElement,
-    open: boolean,
-    options?: IToggleOptions,
+    options: IgcToggleOptions,
     controller?: IgcToggleController
   ) {
-    return this.updatePosition(target, open, options, controller);
+    return this.updatePosition(target, options, controller);
   }
 }
 

@@ -7,8 +7,7 @@ import {
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
 import PopperTestComponent from './test.component.spec.js';
-import { igcToggle } from './toggle.directive.js';
-import { IToggleOptions } from './utilities.js';
+import { IgcToggleOptions } from './utilities.js';
 
 describe('Toggle directive', () => {
   let popper: any;
@@ -27,27 +26,8 @@ describe('Toggle directive', () => {
     });
   });
 
-  it('is created with the values specified.', () => {
-    let values = (igcToggle(target, false) as any).values;
-    expect(values.length).to.equal(2);
-    expect(values[0]).to.be.instanceof(HTMLSpanElement);
-    expect(values[1]).to.equal(false);
-
-    values = (
-      igcToggle(target, true, {
-        placement: 'top-start',
-        positionStrategy: 'fixed',
-      }) as any
-    ).values;
-    expect(values.length).to.equal(3);
-    expect(values[0]).to.be.instanceof(HTMLSpanElement);
-    expect(values[1]).to.equal(true);
-    expect(values[2].placement).to.equal('top-start');
-    expect(values[2].positionStrategy).to.equal('fixed');
-  });
-
   it('successfully creates & shows the popper element.', async () => {
-    popper = await createPopper(target, true);
+    popper = await createPopper(target, { open: true });
 
     await expect(popper).to.be.accessible();
     const style =
@@ -56,7 +36,7 @@ describe('Toggle directive', () => {
   });
 
   it('successfully creates the popper element with default options.', async () => {
-    popper = await createPopper(target, false);
+    popper = await createPopper(target, { open: false });
 
     const popperEl = popper.renderRoot.children[0];
     const attributes = popperEl.attributes;
@@ -67,7 +47,8 @@ describe('Toggle directive', () => {
   });
 
   it('creates a popper with the passed options.', async () => {
-    popper = await createPopper(target, true, {
+    popper = await createPopper(target, {
+      open: true,
       placement: 'bottom-end',
       positionStrategy: 'fixed',
     });
@@ -78,7 +59,8 @@ describe('Toggle directive', () => {
 
   it('does not create the popper without a target.', async () => {
     const div = document.querySelector('input') as HTMLElement;
-    popper = await createPopper(div, true, {
+    popper = await createPopper(div, {
+      open: true,
       placement: 'bottom-end',
       positionStrategy: 'absolute',
     });
@@ -89,7 +71,8 @@ describe('Toggle directive', () => {
   });
 
   it('honors the flip option.', async () => {
-    popper = await createPopper(target, true, {
+    popper = await createPopper(target, {
+      open: true,
       placement: 'left-start',
       positionStrategy: 'fixed',
       flip: true,
@@ -101,7 +84,8 @@ describe('Toggle directive', () => {
     expect(toggleRect.x).to.eq(targetRect.right);
     expect(toggleRect.y).to.eq(targetRect.y);
 
-    popper = await createPopper(target, true, {
+    popper = await createPopper(target, {
+      open: true,
       placement: 'left-start',
       positionStrategy: 'absolute',
       flip: false,
@@ -115,7 +99,8 @@ describe('Toggle directive', () => {
   });
 
   it('properly reflects the offset if specified.', async () => {
-    popper = await createPopper(target, true, {
+    popper = await createPopper(target, {
+      open: true,
       placement: 'right-start',
       positionStrategy: 'absolute',
       distance: 100,
@@ -129,7 +114,8 @@ describe('Toggle directive', () => {
 
     document.getElementsByTagName('test-popper')[0].remove();
 
-    popper = await createPopper(target, true, {
+    popper = await createPopper(target, {
+      open: true,
       placement: 'bottom-end',
       positionStrategy: 'absolute',
       distance: 10,
@@ -143,7 +129,8 @@ describe('Toggle directive', () => {
 
     document.getElementsByTagName('test-popper')[0].remove();
 
-    popper = await createPopper(target, true, {
+    popper = await createPopper(target, {
+      open: true,
       placement: 'bottom-start',
       positionStrategy: 'absolute',
     });
@@ -156,7 +143,8 @@ describe('Toggle directive', () => {
   });
 
   it('honors the sameWidth option.', async () => {
-    popper = await createPopper(target, true, {
+    popper = await createPopper(target, {
+      open: true,
       placement: 'bottom',
       positionStrategy: 'absolute',
       sameWidth: true,
@@ -170,10 +158,9 @@ describe('Toggle directive', () => {
 
   const createPopper = async (
     target: HTMLElement,
-    open: boolean,
-    options?: IToggleOptions
+    options: IgcToggleOptions
   ) => {
-    const el = await fixture(new PopperTestComponent(target, open, options));
+    const el = await fixture(new PopperTestComponent(target, options));
 
     await elementUpdated(el);
     await nextFrame();

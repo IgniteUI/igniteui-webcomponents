@@ -2,17 +2,11 @@ import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { IgcPlacement, IgcToggleEventMap } from './utilities';
+import { IgcPlacement, IgcToggleEventMap, IgcToggleOptions } from './utilities';
 
-export interface IToggleComponent {
-  open: boolean;
-  placement: IgcPlacement;
-  positionStrategy: 'absolute' | 'fixed';
+export interface IgcToggleComponent extends IgcToggleOptions {
   scrollStrategy?: 'scroll' | 'block' | 'close';
-  flip?: boolean;
-  distance?: number;
   keepOpenOnOutsideClick?: boolean;
-  sameWidth?: boolean;
 
   hide(): void;
   show(): void;
@@ -24,7 +18,7 @@ export class ToggleBaseComponent
   extends EventEmitterMixin<IgcToggleEventMap, Constructor<LitElement>>(
     LitElement
   )
-  implements IToggleComponent
+  implements IgcToggleComponent
 {
   /** Sets the open state of the component. */
   @property({ type: Boolean })

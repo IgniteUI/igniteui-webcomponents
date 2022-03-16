@@ -12,10 +12,16 @@ export interface IgcToggleEventMap {
 /**
  * Interface describing the options for toggle components' configuration.
  */
-export interface IToggleOptions {
-  /** The preferred placement of the toggle element around the target element. */
-  placement: IgcPlacement;
-  /** The positioning strategy to use.
+export interface IgcToggleOptions {
+  /**
+   * Whether the toggle is open.
+   */
+  open: boolean;
+  /**
+   * The preferred placement of the toggle element around the target element. */
+  placement?: IgcPlacement;
+  /**
+   * The positioning strategy to use.
    * Use the `fixed` strategy when the target element is in a fixed container, otherwise - use `absolute`.
    */
   positionStrategy?: 'absolute' | 'fixed';
@@ -26,10 +32,6 @@ export interface IToggleOptions {
   flip?: boolean;
   /**
    * Whether to prevent the element from being cut off by moving it so it stays visible within its boundary area.
-   */
-  // preventOverflow?: IOverflowOptions;
-  /**
-   * The amount of offset in horizontal and/or vertical direction.
    */
   distance?: number;
   /**

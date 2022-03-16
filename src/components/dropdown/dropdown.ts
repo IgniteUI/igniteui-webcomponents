@@ -4,7 +4,7 @@ import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './dropdown.material.css';
 import { watch } from '../common/decorators';
-import { IgcToggleEventMap, IToggleOptions } from '../toggle/utilities';
+import { IgcToggleEventMap } from '../toggle/utilities';
 import IgcDropDownItemComponent from './dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller';
 import IgcDropDownGroupComponent from './dropdown-group';
@@ -164,27 +164,13 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   protected updateOptions() {
     if (!this.toggleController) return;
 
-    this.toggleController.options = {
-      placement: this.placement,
-      positionStrategy: this.positionStrategy,
-      flip: this.flip,
-      distance: this.distance,
-      sameWidth: this.sameWidth,
-    };
+    this.toggleController.updateToggleDir();
   }
 
   constructor() {
     super();
 
-    const options: IToggleOptions = {
-      placement: this.placement,
-      positionStrategy: this.positionStrategy,
-      flip: this.flip,
-      distance: this.distance,
-      sameWidth: this.sameWidth,
-    };
-
-    this.toggleController = new IgcToggleController(this, this.target, options);
+    this.toggleController = new IgcToggleController(this, this.target);
   }
 
   public override firstUpdated() {

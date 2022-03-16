@@ -1,18 +1,14 @@
 import { LitElement, html } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { igcToggle } from './toggle.directive';
-import { IToggleOptions } from './utilities';
+import { IgcToggleOptions } from './utilities';
 
 export default class PopperTestComponent extends LitElement {
   private toggleDirective: any;
 
-  constructor(
-    target: HTMLElement,
-    open: boolean,
-    private options?: IToggleOptions
-  ) {
+  constructor(target: HTMLElement, private options: IgcToggleOptions) {
     super();
-    this.toggleDirective = igcToggle(target, open, options);
+    this.toggleDirective = igcToggle(target, options);
   }
 
   protected override render() {
