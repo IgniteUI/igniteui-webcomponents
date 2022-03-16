@@ -1,0 +1,23 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    pointer-events: auto;
+
+    label {
+        @include type-category('overline');
+
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+        white-space: nowrap;
+        position: relative;
+        color: color(secondary, 500);
+        pointer-events: none;
+    }
+
+    ::slotted(igc-dropdown-item) {
+        text-indent: rem(24px);
+    }
+}

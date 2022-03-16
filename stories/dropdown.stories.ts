@@ -95,6 +95,15 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'medium',
+    },
   },
 };
 export default metadata;
@@ -120,6 +129,7 @@ interface ArgTypes {
   flip: boolean;
   distance: number;
   sameWidth: boolean;
+  size: 'small' | 'medium' | 'large';
 }
 // endregion
 
@@ -161,6 +171,7 @@ const items = [
 ];
 const Template: Story<ArgTypes, Context> = (
   {
+    size = 'large',
     open = false,
     flip = false,
     keepOpenOnOutsideClick = false,
@@ -178,6 +189,7 @@ const Template: Story<ArgTypes, Context> = (
   >
     <igc-dropdown
       id="ddl1"
+      size=${size}
       ?open=${open}
       ?flip=${flip}
       ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
@@ -196,11 +208,39 @@ const Template: Story<ArgTypes, Context> = (
       )} -->
       ${items
         .slice(0, 2)
-        .map((item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`)}
-      ${html`<igc-dropdown-item disabled>${items[2]}</igc-dropdown-item>`}
-      ${html`<igc-dropdown-item>${items[3]}</igc-dropdown-item>`}
-      ${html`<igc-dropdown-item>${items[4]}</igc-dropdown-item>`}
-      ${html`<igc-dropdown-item disabled>${items[5]}</igc-dropdown-item>`}
+        .map(
+          (item) =>
+            html`<igc-dropdown-item
+              ><igc-icon slot="prefix" name="home"></igc-icon>${item}<igc-icon
+                name="github"
+                slot="suffix"
+              ></igc-icon
+            ></igc-dropdown-item>`
+        )}
+      ${html`<igc-dropdown-item disabled
+        ><igc-icon slot="prefix" name="home"></igc-icon>${items[2]}<igc-icon
+          name="github"
+          slot="suffix"
+        ></igc-icon
+      ></igc-dropdown-item>`}
+      ${html`<igc-dropdown-item
+        ><igc-icon slot="prefix" name="home"></igc-icon>${items[3]}<igc-icon
+          name="github"
+          slot="suffix"
+        ></igc-icon
+      ></igc-dropdown-item>`}
+      ${html`<igc-dropdown-item
+        ><igc-icon slot="prefix" name="home"></igc-icon>${items[4]}<igc-icon
+          name="github"
+          slot="suffix"
+        ></igc-icon
+      ></igc-dropdown-item>`}
+      ${html`<igc-dropdown-item disabled
+        ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<igc-icon
+          name="github"
+          slot="suffix"
+        ></igc-icon
+      ></igc-dropdown-item>`}
     </igc-dropdown>
 
     <div style="position: absolute; right: 0px; top: 50px">
@@ -216,6 +256,7 @@ const Template: Story<ArgTypes, Context> = (
       >
       <igc-dropdown
         id="ddl2"
+        size=${size}
         .open=${open}
         .flip=${flip}
         .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -252,6 +293,7 @@ const Template: Story<ArgTypes, Context> = (
       id="ddl3"
       style="align-self: center;"
       distance=${distance}
+      size=${size}
       .open=${open}
       .flip=${flip}
       .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -270,6 +312,7 @@ const Template: Story<ArgTypes, Context> = (
     <igc-dropdown
       style="position: absolute; bottom: 10px; left: 0px"
       id="ddl4"
+      size=${size}
       .open=${open}
       .flip=${flip}
       .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -293,6 +336,7 @@ const Template: Story<ArgTypes, Context> = (
     <igc-dropdown
       style="position: fixed; bottom: 0px; right: 0px"
       id="ddl5"
+      size=${size}
       .open=${open}
       .flip=${true}
       .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}

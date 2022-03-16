@@ -1,7 +1,11 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators';
-import { styles } from './dropdown-item.material.css';
+import { themes } from '../../theming';
+import { styles } from './themes/light/dropdown-item.base.css';
+import { styles as bootstrap } from './themes/light/dropdown-item.bootstrap.css';
+import { styles as fluent } from './themes/light/dropdown-item.fluent.css';
+import { styles as indigo } from './themes/light/dropdown-item.indigo.css';
 
 /**
  * Represents an item in a dropdown list.
@@ -16,6 +20,7 @@ import { styles } from './dropdown-item.material.css';
  * @csspart content - The main content wrapper.
  * @csspart suffix - The suffix wrapper.
  */
+@themes({ bootstrap, fluent, indigo })
 export default class IgcDropDownItemComponent extends LitElement {
   public static readonly tagName = 'igc-dropdown-item';
 

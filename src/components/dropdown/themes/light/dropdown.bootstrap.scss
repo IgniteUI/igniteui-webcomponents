@@ -1,0 +1,8 @@
+@use '../../../../styles/utilities' as *;
+
+[part='base'] {
+    background: white;
+    box-shadow: none;
+    min-width: rem(160px);
+    border: 1px solid color(gray, 300);
+}

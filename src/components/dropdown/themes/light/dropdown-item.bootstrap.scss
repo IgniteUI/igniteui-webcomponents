@@ -1,0 +1,26 @@
+@use '../../../../styles/utilities' as *;
+
+:host {
+    color: color(gray, 900);
+}
+
+:host(:hover),
+:host(:focus) {
+    background: color(gray, 100);
+    color: contrast-color(gray, 100);
+}
+
+:host([selected]) {
+    background: color(primary, 500);
+    color: contrast-color(primary, 600);
+}
+
+:host([selected]:hover),
+:host([selected]:focus) {
+    background: color(primary, 600);
+    color: contrast-color(primary, 600);
+}
+
+:host([disabled]) {
+    color: color(gray, 400);
+}

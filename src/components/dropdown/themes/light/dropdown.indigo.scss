@@ -1,0 +1,7 @@
+@use '../../../../styles/utilities' as *;
+
+[part='base'] {
+    box-shadow: var(--igc-elevation-3);
+    border-radius: rem(2px);
+    padding: 0;
+}

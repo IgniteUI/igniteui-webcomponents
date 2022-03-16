@@ -1,11 +1,14 @@
 import { html, LitElement } from 'lit';
-import { styles } from './dropdown-header.material.css';
+import { themes } from '../../theming';
+import { styles } from './themes/light/dropdown-header.base.css';
+import { styles as bootstrap } from './themes/light/dropdown-header.bootstrap.css';
 
 /**
  * @element igc-dropdown-header - Represents a header item in a dropdown list.
  *
  * @slot - Renders the header.
  */
+@themes({ bootstrap })
 export default class IgcDropDownHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-dropdown-header';
 

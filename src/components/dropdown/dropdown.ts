@@ -2,7 +2,11 @@ import { html } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { styles } from './dropdown.material.css';
+import { themes } from '../../theming';
+import { styles } from './themes/light/dropdown.base.css';
+import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css';
+import { styles as fluent } from './themes/light/dropdown.fluent.css';
+import { styles as indigo } from './themes/light/dropdown.indigo.css';
 import { watch } from '../common/decorators';
 import { IgcToggleEventMap } from '../toggle/utilities';
 import IgcDropDownItemComponent from './dropdown-item';
@@ -42,6 +46,7 @@ export interface ISelectionChangeEventArgs {
  * @csspart base - The dropdown list wrapper.
  * @csspart list - The dropdown list.
  */
+@themes({ bootstrap, fluent, indigo })
 export default class IgcDropDownComponent extends EventEmitterMixin<
   IgcDropDownEventMap,
   Constructor<ToggleBaseComponent>
