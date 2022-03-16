@@ -40,6 +40,15 @@ export interface IgcToggleOptions {
   sameWidth?: boolean;
 }
 
+export interface IgcToggleComponent extends IgcToggleOptions {
+  scrollStrategy?: 'scroll' | 'block' | 'close';
+  keepOpenOnOutsideClick?: boolean;
+
+  hide(): void;
+  show(): void;
+  toggle(): void;
+}
+
 /**
  * Describes the preferred placement of a toggle component.
  */

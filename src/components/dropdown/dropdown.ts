@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, LitElement } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
@@ -8,12 +8,12 @@ import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css';
 import { styles as fluent } from './themes/light/dropdown.fluent.css';
 import { styles as indigo } from './themes/light/dropdown.indigo.css';
 import { watch } from '../common/decorators';
-import { IgcToggleEventMap } from '../toggle/utilities';
+import { IgcPlacement, IgcToggleEventMap } from '../toggle/utilities';
 import IgcDropDownItemComponent from './dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller';
 import IgcDropDownGroupComponent from './dropdown-group';
-import { ToggleBaseComponent } from '../toggle/toggle.interface';
 import { styleMap } from 'lit/directives/style-map.js';
+import { SizableMixin } from '../common/mixins/sizable';
 
 export enum DropDownActionKey {
   ESCAPE = 'escape',
@@ -47,10 +47,9 @@ export interface ISelectionChangeEventArgs {
  * @csspart list - The dropdown list.
  */
 @themes({ bootstrap, fluent, indigo })
-export default class IgcDropDownComponent extends EventEmitterMixin<
-  IgcDropDownEventMap,
-  Constructor<ToggleBaseComponent>
->(ToggleBaseComponent) {
+export default class IgcDropDownComponent extends SizableMixin(
+  EventEmitterMixin<IgcDropDownEventMap, Constructor<LitElement>>(LitElement)
+) {
   public static readonly tagName = 'igc-dropdown';
 
   public static styles = styles;
@@ -86,54 +85,42 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   @property({ type: Boolean, attribute: 'keep-open-on-select' })
   public keepOpenOnSelect = false;
 
-  // /** Sets the open state of the dropdown list. */
-  // @property({ type: Boolean })
-  // public open = false;
+  /** Sets the open state of the component. */
+  @property({ type: Boolean })
+  public open = false;
 
-  // /** Sets the dropdown list's positioning strategy. */
-  // @property({ attribute: 'position-strategy' })
-  // public positionStrategy: 'absolute' | 'fixed' = 'absolute';
+  /** The preferred placement of the component around the target element.
+   * @type {"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"}
+   */
+  @property()
+  public placement: IgcPlacement = 'bottom-start';
 
-  // /** The preferred placement of the dropdown list around the target element.
-  //  * @type {"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"}
-  //  */
-  // @property({ type: String })
-  // public placement: IgcPlacement = 'bottom-start';
+  /** Sets the component's positioning strategy. */
+  @property({ attribute: 'position-strategy' })
+  public positionStrategy: 'absolute' | 'fixed' = 'absolute';
+
+  /** Determines the behavior of the component during scrolling the container. */
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: 'scroll' | 'block' | 'close' = 'scroll';
 
   /**
-   * Whether the list should be flipped to the opposite side of the target once it's about to overflow the visible area.
+   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
    * When true, once enough space is detected on its preferred side, it will flip back.
    */
-  // @property({ type: Boolean })
-  // public flip = false;
+  @property({ type: Boolean })
+  public flip = false;
 
-  // /** Determines the behavior of the dropdown list during scrolling the container. */
-  // @property({ attribute: 'scroll-strategy' })
-  // public scrollStrategy: 'scroll' | 'close' | 'block' | 'none' = 'none';
+  /** The distance from the target element. */
+  @property({ type: Number })
+  public distance = 0;
 
-  // /** The amount of offset in horizontal and/or vertical direction. */
-  // @property({
-  //   converter: {
-  //     fromAttribute: (value) => {
-  //       const dimensions = value ? (value as string).split(',') : undefined;
-  //       return dimensions
-  //         ? {
-  //             x: parseInt(dimensions[0]),
-  //             y: parseInt(dimensions[1] ?? dimensions[0]),
-  //           }
-  //         : undefined;
-  //     },
-  //     toAttribute: (value: { x: number; y: number }) => {
-  //       return value ? `${value.x}, ${value.y}` : undefined;
-  //     },
-  //   },
-  //   type: String,
-  // })
-  // public offset!: { x: number; y: number };
+  /** Whether the component should be kept open on clicking outside of it. */
+  @property({ type: Boolean, attribute: 'keep-open-on-outside-click' })
+  public keepOpenOnOutsideClick = false;
 
-  // /** Whether the dropdown's width should be the same as the target's one. */
-  // @property({ type: Boolean, attribute: 'same-width' })
-  // public sameWidth = false;
+  /** Whether the dropdown's width should be the same as the target's one. */
+  @property({ type: Boolean, attribute: 'same-width' })
+  public sameWidth = false;
 
   @watch('open')
   protected toggleDirectiveChange() {
@@ -502,7 +489,7 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   }
 
   /** Shows the dropdown. */
-  public override show(target?: HTMLElement) {
+  public show(target?: HTMLElement) {
     if (this.open && !target) return;
 
     if (target) this.target = target;
@@ -511,12 +498,12 @@ export default class IgcDropDownComponent extends EventEmitterMixin<
   }
 
   /** Hides the dropdown. */
-  public override hide(): void {
+  public hide(): void {
     this._hide(false);
   }
 
   /** Toggles the open state of the dropdown. */
-  public override toggle(target?: HTMLElement): void {
+  public toggle(target?: HTMLElement): void {
     if (!this.open) {
       this.show(target);
     } else {

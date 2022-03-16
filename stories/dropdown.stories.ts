@@ -20,23 +20,6 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    scrollStrategy: {
-      type: '"scroll" | "block" | "close"',
-      description:
-        'Determines the behavior of the component during scrolling the container.',
-      options: ['scroll', 'block', 'close'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'scroll',
-    },
-    keepOpenOnOutsideClick: {
-      type: 'boolean',
-      description:
-        'Whether the component should be kept open on clicking outside of it.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the component.',
@@ -75,6 +58,16 @@ const metadata = {
       },
       defaultValue: 'absolute',
     },
+    scrollStrategy: {
+      type: '"scroll" | "block" | "close"',
+      description:
+        'Determines the behavior of the component during scrolling the container.',
+      options: ['scroll', 'block', 'close'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'scroll',
+    },
     flip: {
       type: 'boolean',
       description:
@@ -88,10 +81,17 @@ const metadata = {
       control: 'number',
       defaultValue: '0',
     },
+    keepOpenOnOutsideClick: {
+      type: 'boolean',
+      description:
+        'Whether the component should be kept open on clicking outside of it.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     sameWidth: {
       type: 'boolean',
       description:
-        "Whether the component's width should be the same as the target's one.",
+        "Whether the dropdown's width should be the same as the target's one.",
       control: 'boolean',
       defaultValue: false,
     },
@@ -102,15 +102,13 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'medium',
+      defaultValue: 'large',
     },
   },
 };
 export default metadata;
 interface ArgTypes {
   keepOpenOnSelect: boolean;
-  scrollStrategy: 'scroll' | 'block' | 'close';
-  keepOpenOnOutsideClick: boolean;
   open: boolean;
   placement:
     | 'top'
@@ -126,8 +124,10 @@ interface ArgTypes {
     | 'left-start'
     | 'left-end';
   positionStrategy: 'absolute' | 'fixed';
+  scrollStrategy: 'scroll' | 'block' | 'close';
   flip: boolean;
   distance: number;
+  keepOpenOnOutsideClick: boolean;
   sameWidth: boolean;
   size: 'small' | 'medium' | 'large';
 }
