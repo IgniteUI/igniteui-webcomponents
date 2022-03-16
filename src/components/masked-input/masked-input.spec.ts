@@ -124,6 +124,40 @@ describe('Masked input', () => {
       expect(masked.value).to.equal('1234');
     });
 
+    it('invalid state is correctly reflected', async () => {
+      masked.required = true;
+      await elementUpdated(masked);
+
+      expect(masked.reportValidity()).to.be.false;
+      expect(masked.invalid).to.be.true;
+
+      masked.required = false;
+      await elementUpdated(masked);
+
+      expect(masked.reportValidity()).to.be.true;
+      expect(masked.invalid).to.be.false;
+
+      // Disabled inputs are always valid
+      masked.required = true;
+      masked.disabled = true;
+      await elementUpdated(masked);
+
+      expect(masked.reportValidity()).to.be.true;
+      expect(masked.invalid).to.be.false;
+    });
+
+    it('setCustomValidity', async () => {
+      masked.setCustomValidity('Fill in the value');
+      await elementUpdated(masked);
+
+      expect(masked.invalid).to.be.true;
+
+      masked.setCustomValidity('');
+      await elementUpdated(masked);
+
+      expect(masked.invalid).to.be.false;
+    });
+
     it('setRangeText() method', async () => {
       masked.mask = '(CC) (CC)';
       masked.value = '1111';

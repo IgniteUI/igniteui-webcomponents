@@ -16,6 +16,12 @@ const metadata = {
       },
       defaultValue: 'auto',
     },
+    invalid: {
+      type: 'boolean',
+      description: 'Controls the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     withLiterals: {
       type: 'boolean',
       description:
@@ -91,6 +97,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   dir: 'ltr' | 'rtl' | 'auto';
+  invalid: boolean;
   withLiterals: boolean;
   mask: string;
   prompt: string;

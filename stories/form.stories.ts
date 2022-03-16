@@ -116,6 +116,13 @@ The cat was playing<br> in the garden.</textarea
         label="Confirm email"
         value="..."
       ></igc-input>
+      <igc-masked-input
+        name="part-number"
+        required
+        prompt="#"
+        mask="\\C\\C (CC) - #### - [###CC]"
+        label="Part number"
+      ></igc-masked-input>
       <igc-checkbox name="checkbox-longform"
         >Check if you think this is a long form</igc-checkbox
       >

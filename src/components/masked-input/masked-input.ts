@@ -59,6 +59,10 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
+  /** Controls the validity of the control. */
+  @property({ reflect: true, type: Boolean })
+  public invalid = false;
+
   /**
    * When enabled, retrieving the value of the control will return it
    * with literal symbols applied.
@@ -93,7 +97,7 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
   @property()
   public prompt!: string;
 
-  @watch('prompt', { waitUntilFirstUpdate: true })
+  @watch('prompt')
   protected promptChange() {
     this.parser.prompt = this.prompt;
     if (this.value) {
@@ -101,12 +105,21 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
     }
   }
 
-  @watch('mask', { waitUntilFirstUpdate: true })
+  @watch('mask')
   protected maskChange() {
     this.parser.mask = this.mask;
     if (this.value) {
       this.maskedValue = this.parser.apply(this._value);
     }
+  }
+
+  @watch('required', { waitUntilFirstUpdate: true })
+  @watch('disabled', { waitUntilFirstUpdate: true })
+  @watch('value', { waitUntilFirstUpdate: true })
+  protected handleInvalidState() {
+    this.updateComplete.then(
+      () => (this.invalid = !this.input.checkValidity())
+    );
   }
 
   public override connectedCallback() {
@@ -230,6 +243,10 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
     this.emitEvent('igcChange', { detail: this.value });
   }
 
+  protected handleInvalid() {
+    this.invalid = true;
+  }
+
   protected updateMaskedValue() {
     if (this.maskedValue === this.parser.apply()) {
       this.maskedValue = '';
@@ -257,10 +274,21 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
     this.selection = { start, end };
   }
 
+  /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity() {
     return this.input.reportValidity();
   }
 
+  /**
+   * Sets a custom validation message for the control.
+   * As long as `message` is not empty, the control is considered invalid.
+   */
+  public setCustomValidity(message: string) {
+    this.input.setCustomValidity(message);
+    this.invalid = !this.input.checkValidity();
+  }
+
+  /** Selects all text within the input. */
   public select() {
     this.input.select();
   }
@@ -286,6 +314,8 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
         @input=${this.handleInput}
+        aria-invalid="${this.invalid ? 'true' : 'false'}"
+        @invalid="${this.handleInvalid}"
         @keydown=${this.handleKeydown}
       />
     </div>`;
