@@ -24,7 +24,7 @@ $type-scale: utils.type-scale();
         @include utils.palette($palette);
         @include utils.elevations($elevations);
         @include utils.typography(
-            $font-family: 'Roboto, sans-serif',
+            $font-family: '\'Roboto\', sans-serif',
             $type-scale: $type-scale
         );
     }

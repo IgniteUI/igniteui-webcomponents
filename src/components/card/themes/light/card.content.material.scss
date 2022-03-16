@@ -2,16 +2,18 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
+    @include type-category('body-2');
+
     display: block;
     width: 100%;
     flex: 1 1 auto;
     padding: rem(16px);
     color: contrast-color(surface, 500);
+    opacity: .6;
 }
 
 ::slotted(*) {
     @include type-category('body-2');
 
-    opacity: .6;
-    margin: 0;
+    margin: 0 !important;
 }
