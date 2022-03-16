@@ -1,0 +1,36 @@
+@use 'sass:map';
+@use '../../utilities/typography' as *;
+/* stylelint-disable max-nesting-depth */
+
+@mixin _map-scale-to-elements() {
+    // Maps type scale typographic categories
+    // to native elements.
+    $category-element-map: (
+        h1: 'h1',
+        h2: 'h2',
+        h3: 'h3',
+        h4: 'h4',
+        h5: 'h5',
+        h6: 'h6',
+        body-1: 'p',
+    );
+
+    @each $category, $type-style in type-scale() {
+        @if $category != _meta {
+            // Get the native element that uses typographic styles directly
+            // as mapped in the $category-element-map
+            $e: map.get($category-element-map, $category);
+
+            // Add native element typographic styles.
+            @if $e {
+                #{$e}:not([slot]) {
+                    @each $key, $value in $type-style {
+                        #{$key}: var(--igc-#{$category}-#{$key});
+                    }
+                }
+            }
+        }
+    }
+}
+
+@include _map-scale-to-elements();
