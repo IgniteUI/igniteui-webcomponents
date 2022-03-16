@@ -5,3 +5,4 @@ export * from './blazorInclude';
 export * from './blazorTwoWayBind';
 export * from './blazorIndirectRender';
 export * from './blazorSuppressComponent';
+export * from './blazorTypeOverride';
