@@ -1,8 +1,9 @@
 @use '../../../../styles/utilities' as *;
 
+$border-color: var(--border-color, color(gray, 300)) !default;
+
 [part='base'] {
-    background: white;
     box-shadow: none;
     min-width: rem(160px);
-    border: 1px solid color(gray, 300);
+    border: 1px solid $border-color;
 }

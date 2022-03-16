@@ -1,5 +1,7 @@
 @use '../../../../styles/utilities' as *;
 
+$selected-item-color: var(--selected-item-color, contrast-color(gray, 200)) !default;
+
 :host(:hover),
 :host(:focus) {
     background: color(gray, 100);
@@ -8,13 +10,13 @@
 
 :host([selected]) {
     background: color(gray, 200);
-    color: contrast-color(gray, 200);
+    color: $selected-item-color;
 }
 
 :host([selected]:hover),
 :host([selected]:focus) {
     background: color(gray, 200);
-    color: contrast-color(gray, 200);
+    color: $selected-item-color;
 }
 
 :host([disabled]) {

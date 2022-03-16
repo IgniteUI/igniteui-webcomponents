@@ -1,13 +1,16 @@
 @use '../../../../styles/utilities' as *;
 
+$item-color: var(--item-color, color(gray, 900)) !default;
+$hover-item-color: var(--hover-item-color, contrast-color(gray, 100)) !default;
+
 :host {
-    color: color(gray, 900);
+    color: $item-color;
 }
 
 :host(:hover),
 :host(:focus) {
     background: color(gray, 100);
-    color: contrast-color(gray, 100);
+    color: $hover-item-color;
 }
 
 :host([selected]) {

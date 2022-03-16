@@ -1,6 +1,8 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
+$header-color: var(--header-color, color(secondary, 500)) !default;
+
 :host {
     @include type-category('overline');
 
@@ -10,7 +12,7 @@
     width: 100%;
     white-space: nowrap;
     position: relative;
-    color: color(secondary, 500);
+    color: $header-color;
     pointer-events: none;
 }
 
