@@ -27,7 +27,7 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
     }
 
     &::after {
-        border: calc(var(--size, 20px) / 20) solid utils.color(gray, 700);
+        border: calc(var(--size, 20px) / 20) solid utils.color(gray, 900);
     }
 }
 
