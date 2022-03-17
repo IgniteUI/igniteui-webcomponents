@@ -21,3 +21,15 @@
         text-indent: rem(24px);
     }
 }
+
+:host([size='small']) ::slotted(igc-dropdown-item) {
+    padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
+}
+
+:host([size='medium']) ::slotted(igc-dropdown-item) {
+    padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
+}
+
+:host([size='large']) ::slotted(igc-dropdown-item) {
+    padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
+}

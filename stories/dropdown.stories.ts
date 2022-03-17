@@ -275,7 +275,7 @@ const Template: Story<ArgTypes, Context> = (
             )}
         </igc-dropdown-group>
         <igc-dropdown-group>
-          <h3>Product Guidance</h3>
+          <h3 slot="label">Product Guidance</h3>
           ${items
             .slice(3, 5)
             .map(

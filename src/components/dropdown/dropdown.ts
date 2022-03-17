@@ -165,6 +165,11 @@ export default class IgcDropDownComponent
     this.toggleController.updateToggleDir();
   }
 
+  @watch('size')
+  protected sizeChange() {
+    this.groups.forEach((g) => (g.size = this.size));
+  }
+
   constructor() {
     super();
 

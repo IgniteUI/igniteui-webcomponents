@@ -1,7 +1,8 @@
 import { html, LitElement } from 'lit';
-import { queryAssignedElements } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import { styles } from './themes/light/dropdown-group.base.css';
 import IgcDropDownItemComponent from './dropdown-item';
+import IgcDropDownComponent from './dropdown';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
@@ -20,9 +21,16 @@ export default class IgcDropDownGroupComponent extends LitElement {
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
   public items!: Array<IgcDropDownItemComponent>;
 
+  /** @private */
+  @property({ reflect: true })
+  public size: 'small' | 'medium' | 'large' = 'large';
+
   public override connectedCallback() {
     super.connectedCallback();
+
     this.setAttribute('role', 'group');
+    const dropdown = this.closest('igc-dropdown') as IgcDropDownComponent;
+    this.size = dropdown.size;
   }
 
   protected override render() {
