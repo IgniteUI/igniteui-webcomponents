@@ -2,7 +2,7 @@ import { html } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming';
-import { blazorIndirectRender, watch } from '../common/decorators';
+import { watch } from '../common/decorators';
 import {
   IgcCalendarResourceStringEN,
   IgcCalendarResourceStrings,
@@ -58,7 +58,6 @@ import type IgcYearsViewComponent from './years-view/years-view';
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@blazorIndirectRender
 @themes({
   bootstrap,
   fluent,

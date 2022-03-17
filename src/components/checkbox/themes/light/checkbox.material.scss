@@ -17,7 +17,7 @@ label {
 [part~='control'] {
     --size: #{rem(20px)};
 
-    @include border-radius(calc(var(--size) / 2));
+    @include border-radius(calc(var(--size)));
 
     width: calc(var(--size) * 2);
     height: calc(var(--size) * 2);
@@ -33,5 +33,32 @@ label {
 
     &:focus-within [part~='control'] {
         background: color(error, 500, .12);
+    }
+}
+
+:host([disabled]) {
+    [part~='label'] {
+        color: color(gray, 400);
+    }
+
+    [part~='control'] {
+        &::after {
+            border-color: color(gray, 400);
+        }
+    }
+
+    [part='control checked'] {
+        &::after {
+            background: color(gray, 400);
+        }
+    }
+}
+
+:host([disabled][indeterminate]) {
+    [part~='control'] {
+        &::after {
+            background: color(secondary, 100);
+            border-color: transparent;
+        }
     }
 }

@@ -140,22 +140,6 @@ label {
     user-select: none;
     cursor: initial;
     pointer-events: none;
-
-    [part~='control'] {
-        &::after {
-            border-color: color(gray, 300);
-        }
-    }
-
-    [part='control checked'] {
-        &::after {
-            background: color(gray, 300);
-        }
-    }
-
-    [part~='label'] {
-        color: color(gray, 400);
-    }
 }
 
 :host([disabled][indeterminate]) {
