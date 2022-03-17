@@ -17,7 +17,7 @@ label {
 [part~='control'] {
     --size: #{rem(20px)};
 
-    @include border-radius(calc(var(--size) / 2));
+    @include border-radius(calc(var(--size)));
 
     width: calc(var(--size) * 2);
     height: calc(var(--size) * 2);
