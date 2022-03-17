@@ -1,6 +1,10 @@
 @use '../../../styles/common/component';
 @use '../../../styles/utilities' as *;
 
+:host {
+    display: inline-flex;
+}
+
 :host button {
     @include border-radius(rem(16px));
 
