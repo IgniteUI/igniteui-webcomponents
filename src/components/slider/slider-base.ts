@@ -8,7 +8,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming';
-import { watch } from '../common/decorators';
+import { blazorTypeOverride, watch } from '../common/decorators';
 import { styles } from './themes/light/slider.base.css';
 import { styles as bootstrap } from './themes/light/slider.bootstrap.css';
 import { styles as fluent } from './themes/light/slider.fluent.css';
@@ -205,6 +205,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * The degrees for the rotation of the tick labels. Defaults to 0.
    */
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
+  @blazorTypeOverride('TickLabelRotation', true)
   public tickLabelRotation: 0 | 90 | -90 = 0;
 
   @watch('min', { waitUntilFirstUpdate: true })
