@@ -8,7 +8,11 @@ import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css';
 import { styles as fluent } from './themes/light/dropdown.fluent.css';
 import { styles as indigo } from './themes/light/dropdown.indigo.css';
 import { watch } from '../common/decorators';
-import { IgcPlacement, IgcToggleEventMap } from '../toggle/utilities';
+import {
+  IgcPlacement,
+  IgcToggleComponent,
+  IgcToggleEventMap,
+} from '../toggle/utilities';
 import IgcDropDownItemComponent from './dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller';
 import IgcDropDownGroupComponent from './dropdown-group';
@@ -42,14 +46,16 @@ export interface ISelectionChangeEventArgs {
  * @slot target - Renders the dropdown's target element.
  * @slot - Renders the dropdown list items.
  *
- * @csspart target - The target element wrapper.
  * @csspart base - The dropdown list wrapper.
  * @csspart list - The dropdown list.
  */
 @themes({ bootstrap, fluent, indigo })
-export default class IgcDropDownComponent extends SizableMixin(
-  EventEmitterMixin<IgcDropDownEventMap, Constructor<LitElement>>(LitElement)
-) {
+export default class IgcDropDownComponent
+  extends SizableMixin(
+    EventEmitterMixin<IgcDropDownEventMap, Constructor<LitElement>>(LitElement)
+  )
+  implements IgcToggleComponent
+{
   public static readonly tagName = 'igc-dropdown';
 
   public static styles = styles;
@@ -179,45 +185,6 @@ export default class IgcDropDownComponent extends SizableMixin(
     return result;
   }
 
-  // private handleDocumentClicked = (event: MouseEvent) => {
-  //   if (!this.open) {
-  //     return;
-  //   }
-
-  //   if (this.closeOnOutsideClick) {
-  //     const target = event.composed ? event.composedPath() : [event.target];
-  //     const isInsideClick: boolean =
-  //       target.includes(this.content) ||
-  //       (this.target !== undefined && target.includes(this.target));
-  //     if (isInsideClick) {
-  //       return;
-  //     } else {
-  //       this._hide();
-  //     }
-  //   }
-  // };
-
-  // private handleScroll = (event: Event) => {
-  //   if (!this.open) {
-  //     return;
-  //   }
-
-  //   switch (this.scrollStrategy) {
-  //     case 'scroll':
-  //       break;
-  //     case 'block':
-  //       this.blockScroll(event);
-  //       break;
-  //     case 'close':
-  //       this._hide();
-  //       break;
-  //     case 'noop':
-  //       event.preventDefault();
-  //       event.stopImmediatePropagation();
-  //       break;
-  //   }
-  // };
-
   private handleKeyDown = (event: KeyboardEvent) => {
     if (
       this.open &&
@@ -324,31 +291,6 @@ export default class IgcDropDownComponent extends SizableMixin(
     //       : this.items[0]?.value) as string
     // );
   }
-
-  // private _sourceElement?: Element;
-  // private _initialScrollTop = 0;
-  // private _initialScrollLeft = 0;
-
-  // private blockScroll = (event: Event) => {
-  //   event.preventDefault();
-  //   if (!this._sourceElement || this._sourceElement !== event.target) {
-  //     this._sourceElement = event.target as Element;
-  //     this._initialScrollTop =
-  //       this._sourceElement.scrollTop ??
-  //       this._sourceElement.firstElementChild?.scrollTop;
-  //     this._initialScrollLeft =
-  //       this._sourceElement.scrollLeft ??
-  //       this._sourceElement.firstElementChild?.scrollLeft;
-  //   }
-
-  //   this._sourceElement.scrollTop = this._initialScrollTop;
-  //   this._sourceElement.scrollLeft = this._initialScrollLeft;
-  //   if (this._sourceElement.firstElementChild) {
-  //     this._sourceElement.firstElementChild.scrollTop = this._initialScrollTop;
-  //     this._sourceElement.firstElementChild.scrollLeft =
-  //       this._initialScrollLeft;
-  //   }
-  // };
 
   private handleFocusout(event: Event) {
     event.preventDefault();
