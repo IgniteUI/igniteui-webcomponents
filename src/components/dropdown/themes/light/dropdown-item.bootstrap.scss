@@ -8,7 +8,7 @@ $hover-item-color: var(--hover-item-color, contrast-color(gray, 100)) !default;
 }
 
 :host(:hover),
-:host(:focus) {
+:host([active]) {
     background: color(gray, 100);
     color: $hover-item-color;
 }
@@ -19,7 +19,7 @@ $hover-item-color: var(--hover-item-color, contrast-color(gray, 100)) !default;
 }
 
 :host([selected]:hover),
-:host([selected]:focus) {
+:host([selected][active]) {
     background: color(primary, 600);
     color: contrast-color(primary, 600);
 }

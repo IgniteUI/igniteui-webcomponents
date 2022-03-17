@@ -6,7 +6,7 @@
 }
 
 :host(:hover),
-:host(:focus) {
+:host([active]) {
     background: color(primary, 500, .15);
 }
 
@@ -16,7 +16,7 @@
 }
 
 :host([selected]:hover),
-:host([selected]:focus) {
+:host([selected][active]) {
     background: color(primary, 400);
     color: contrast-color(primary, 400);
 }
