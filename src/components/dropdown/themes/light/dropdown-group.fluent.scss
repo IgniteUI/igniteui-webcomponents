@@ -1,22 +1,16 @@
 @use '../../../../styles/utilities' as *;
 
 :host([size='small']) ::slotted(igc-dropdown-item),
-:host([size='small']) ::slotted(igc-dropdown-header) {
+:host([size='small']) ::slotted([slot='label']) {
     padding: var(--igc-spacing-small);
 }
 
 :host([size='medium']) ::slotted(igc-dropdown-item),
-:host([size='medium']) ::slotted(igc-dropdown-header) {
+:host([size='medium']) ::slotted([slot='label']) {
     padding: var(--igc-spacing-medium);
 }
 
 :host([size='large']) ::slotted(igc-dropdown-item),
-:host([size='large']) ::slotted(igc-dropdown-header) {
+:host([size='large']) ::slotted([slot='label']) {
     padding: var(--igc-spacing-large);
-}
-
-[part='base'] {
-    border-radius: rem(2px);
-    box-shadow: var(--igc-elevation-4);
-    padding: 0;
 }

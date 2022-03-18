@@ -4,32 +4,42 @@
 :host {
     pointer-events: auto;
 
-    label {
+    ::slotted([slot='label']) {
         @include type-category('overline');
 
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        width: 100%;
         white-space: nowrap;
         position: relative;
         color: color(secondary, 500);
         pointer-events: none;
     }
+}
 
+:host([size='small']) {
     ::slotted(igc-dropdown-item) {
-        text-indent: rem(24px);
+        padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 3);
+    }
+
+    ::slotted([slot='label']) {
+        padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
     }
 }
 
-:host([size='small']) ::slotted(igc-dropdown-item) {
-    padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
+:host([size='medium']) {
+    ::slotted(igc-dropdown-item) {
+        padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 3);
+    }
+
+    ::slotted([slot='label']) {
+        padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
+    }
 }
 
-:host([size='medium']) ::slotted(igc-dropdown-item) {
-    padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
-}
+:host([size='large']) {
+    ::slotted(igc-dropdown-item) {
+        padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 3);
+    }
 
-:host([size='large']) ::slotted(igc-dropdown-item) {
-    padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
+    ::slotted([slot='label']) {
+        padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
+    }
 }

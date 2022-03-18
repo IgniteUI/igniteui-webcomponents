@@ -6,10 +6,6 @@ $header-color: var(--header-color, color(secondary, 500)) !default;
 :host {
     @include type-category('overline');
 
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
     white-space: nowrap;
     position: relative;
     color: $header-color;
@@ -17,5 +13,5 @@ $header-color: var(--header-color, color(secondary, 500)) !default;
 }
 
 ::slotted(*) {
-    @include type-category('overline');
+    font: inherit;
 }

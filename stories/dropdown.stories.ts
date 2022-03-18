@@ -283,8 +283,13 @@ const Template: Story<ArgTypes, Context> = (
             )}
         </igc-dropdown-group>
         <igc-dropdown-group>
-          <h3>Release Engineering</h3>
-          <igc-dropdown-item>${items[5]}</igc-dropdown-item>
+          <h3 slot="label">Release Engineering</h3>
+          <igc-dropdown-item
+            ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<span
+              slot="suffix"
+              >-</span
+            ></igc-dropdown-item
+          >
         </igc-dropdown-group>
       </igc-dropdown>
     </div>

@@ -4,6 +4,5 @@ $border-color: var(--border-color, color(gray, 300)) !default;
 
 [part='base'] {
     box-shadow: none;
-    min-width: rem(160px);
     border: 1px solid $border-color;
 }

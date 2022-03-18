@@ -1,6 +1,8 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
+import { themes } from '../../theming';
 import { styles } from './themes/light/dropdown-group.base.css';
+import { styles as fluent } from './themes/light/dropdown-group.fluent.css';
 import IgcDropDownItemComponent from './dropdown-item';
 import IgcDropDownComponent from './dropdown';
 
@@ -12,6 +14,7 @@ import IgcDropDownComponent from './dropdown';
  *
  * @csspart label - The native label element.
  */
+@themes({ fluent })
 export default class IgcDropDownGroupComponent extends LitElement {
   public static readonly tagName = 'igc-dropdown-group';
 
