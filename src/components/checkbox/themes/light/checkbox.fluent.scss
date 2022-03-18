@@ -1,6 +1,6 @@
 @use '../../../../styles/utilities' as *;
 
-$border-color: var(--border-color, color(gray, 500)) !default;
+$border-color: var(--border-color, color(gray, 900)) !default;
 $hover-color: var(--hover-color, color(gray, 800)) !default;
 $checked-hover-color: var(--checked-hover-color, color(primary, 900)) !default;
 $invalid-color: var(--invalid-color, color(error, 500)) !default;
