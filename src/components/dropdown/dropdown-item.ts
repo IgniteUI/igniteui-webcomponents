@@ -32,7 +32,7 @@ export default class IgcDropDownItemComponent extends LitElement {
    * Тhe current value of the item.
    * If not specified, the element's text content is used.
    */
-  @property({ type: String, reflect: true })
+  @property({ type: String })
   public get value() {
     return this._value ? this._value : this.textContent ?? '';
   }
