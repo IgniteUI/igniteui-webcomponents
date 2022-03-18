@@ -148,10 +148,6 @@ interface ArgTypes {
 const toggleDDL = (ev: Event, ddlId: string) => {
   const ddl = document.getElementById(ddlId) as IgcDropDownComponent;
   if (ddlId === 'ddl2') {
-    const styles: Partial<CSSStyleDeclaration> = {
-      height: `150px`,
-    };
-    Object.assign((ddl?.shadowRoot?.children[1] as HTMLElement).style, styles);
     const target = ev.target as HTMLElement;
     ddl.placement = target.id === 'ddlButton2' ? 'top-end' : 'bottom-start';
     ddl.toggle(ev.target as HTMLElement);
@@ -244,6 +240,11 @@ const Template: Story<ArgTypes, Context> = (
     </igc-dropdown>
 
     <div style="position: absolute; right: 0px; top: 50px">
+      <style>
+        #ddl2::part(list) {
+          height: 150px;
+        }
+      </style>
       <igc-button
         id="ddlButton"
         @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
