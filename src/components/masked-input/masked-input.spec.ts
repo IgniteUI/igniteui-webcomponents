@@ -146,6 +146,45 @@ describe('Masked input', () => {
       expect(masked.invalid).to.be.false;
     });
 
+    it('valid/invalid state based on mask pattern', async () => {
+      masked.mask = '(####)';
+      await elementUpdated(masked);
+
+      masked.value = '111';
+      input().dispatchEvent(new Event('change'));
+
+      await elementUpdated(masked);
+      expect(masked.invalid).to.be.true;
+
+      masked.value = '2222';
+      await elementUpdated(masked);
+      input().dispatchEvent(new Event('change'));
+
+      await elementUpdated(masked);
+      expect(masked.invalid).to.be.false;
+
+      masked.mask = 'CCC';
+      masked.value = '';
+      await elementUpdated(masked);
+      input().dispatchEvent(new Event('change'));
+
+      await elementUpdated(masked);
+      expect(masked.invalid).to.be.false;
+
+      masked.mask = 'CC &';
+      await elementUpdated(masked);
+      input().dispatchEvent(new Event('change'));
+
+      await elementUpdated(masked);
+      expect(masked.invalid).to.be.true;
+
+      masked.value = 'R';
+      input().dispatchEvent(new Event('change'));
+
+      await elementUpdated(masked);
+      expect(masked.invalid).to.be.false;
+    });
+
     it('setCustomValidity', async () => {
       masked.setCustomValidity('Fill in the value');
       await elementUpdated(masked);
@@ -195,6 +234,34 @@ describe('Masked input', () => {
       expect(eventSpy).calledWith('igcChange', {
         detail: parser.apply(masked.value),
       });
+    });
+
+    it('igcInput event', async () => {
+      masked.mask = 'CCC';
+      await elementUpdated(masked);
+      syncParser();
+
+      const eventSpy = sinon.spy(masked, 'emitEvent');
+      masked.value = '111';
+      masked.setSelectionRange(2, 3);
+      await elementUpdated(masked);
+
+      fireInputEvent(input(), 'insertText');
+      expect(eventSpy).calledWith('igcInput', { detail: '111' });
+    });
+
+    it('igInput event (end of pattern)', async () => {
+      masked.mask = 'CCC';
+      await elementUpdated(masked);
+      syncParser();
+
+      const eventSpy = sinon.spy(masked, 'emitEvent');
+      masked.value = '111';
+      masked.setSelectionRange(3, 3);
+      await elementUpdated(masked);
+
+      fireInputEvent(input(), 'insertText');
+      expect(eventSpy).not.calledWith('igcInput', { detail: '111' });
     });
 
     it('is accessible', async () => await expect(masked).to.be.accessible());

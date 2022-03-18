@@ -203,7 +203,9 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
     this._value = this.parser.parse(value);
 
     this.requestUpdate();
-    this.emitEvent('igcInput', { detail: this.value });
+    if (start !== this.mask.length) {
+      this.emitEvent('igcInput', { detail: this.value });
+    }
     this.updateComplete.then(() => this.input.setSelectionRange(end, end));
   }
 
@@ -241,6 +243,8 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
 
   protected override handleChange() {
     this.emitEvent('igcChange', { detail: this.value });
+    // TODO: should we run the same logic in reportValidity as well?
+    this.invalid = !this.parser.isValidString(this._value);
   }
 
   protected handleInvalid() {
@@ -261,7 +265,8 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
     selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
   ) {
     super.setRangeText(replacement, start, end, selectMode);
-    this.maskedValue = this.parser.apply(this.input.value);
+    const r = this.parser.replace(this.input.value, replacement, start, end);
+    this.maskedValue = this.parser.apply(r.value);
     this._value = this.parser.parse(this.maskedValue);
   }
 

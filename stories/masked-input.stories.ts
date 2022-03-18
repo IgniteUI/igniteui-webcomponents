@@ -137,25 +137,24 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`<igc-masked-input
-      dir=${direction}
-      name=${ifDefined(name)}
-      placeholder=${ifDefined(placeholder)}
-      value=${ifDefined(value)}
-      mask=${ifDefined(mask)}
-      prompt=${ifDefined(prompt)}
-      label=${ifDefined(label)}
-      size=${ifDefined(size)}
-      ?with-literals=${ifDefined(withLiterals)}
-      ?readonly=${ifDefined(readonly)}
-      ?outlined=${ifDefined(outlined)}
-      ?required=${ifDefined(required)}
-      ?disabled=${ifDefined(disabled)}
-    >
-      <igc-icon name="github" slot="prefix"></igc-icon>
-      <igc-icon name="github" slot="suffix"></igc-icon>
-      <span slot="helper-text">This is some helper text</span>
-    </igc-masked-input>
-    <igc-input></igc-input> `;
+    dir=${direction}
+    name=${ifDefined(name)}
+    placeholder=${ifDefined(placeholder)}
+    value=${ifDefined(value)}
+    mask=${ifDefined(mask)}
+    prompt=${ifDefined(prompt)}
+    label=${ifDefined(label)}
+    size=${ifDefined(size)}
+    ?with-literals=${ifDefined(withLiterals)}
+    ?readonly=${ifDefined(readonly)}
+    ?outlined=${ifDefined(outlined)}
+    ?required=${ifDefined(required)}
+    ?disabled=${ifDefined(disabled)}
+  >
+    <igc-icon name="github" slot="prefix"></igc-icon>
+    <igc-icon name="github" slot="suffix"></igc-icon>
+    <span slot="helper-text">This is some helper text</span>
+  </igc-masked-input>`;
 };
 
 export const Basic = Template.bind({});

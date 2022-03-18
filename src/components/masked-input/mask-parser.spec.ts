@@ -68,12 +68,47 @@ describe('Mask parser', () => {
     expect(parser.apply(' =% p]')).to.equal('_=%. p]');
   });
 
-  it.only('mask escape sequences', () => {
+  it('mask escape sequences', () => {
     parser.mask = 'CCCC-\\C-CCC';
     expect(parser.apply()).to.equal('____-C-___');
 
     parser.mask = '\\# \\(###)-###';
     expect(parser.apply('123456')).to.equal('# \\(123)-456');
+  });
+
+  it('validates mask pattern rules', () => {
+    parser.mask = '000 [000]';
+
+    // Invalid: 121 [2__]
+    expect(parser.isValidString('1212')).to.be.false;
+
+    // Invalid: 121 [233](3)
+    expect(parser.isValidString('1212333')).to.be.false;
+
+    // Valid: 121 [233]
+    expect(parser.isValidString('121233')).to.be.true;
+
+    parser.mask = '000 [999]';
+
+    // Valid: 121 [___]
+    expect(parser.isValidString('121')).to.be.true;
+
+    parser.mask = '00\\0 [999]';
+
+    // Valid: 110 [___]
+    expect(parser.isValidString('11')).to.be.true;
+
+    // Invalid: __0 [___]
+    expect(parser.isValidString('aa')).to.be.false;
+
+    // Invalid 1_0 [___]
+    expect(parser.isValidString('1')).to.be.false;
+
+    parser.mask = '(99) (0)';
+    expect(parser.isValidString('')).to.be.false;
+
+    parser.mask = '(99) (9)';
+    expect(parser.isValidString('')).to.be.true;
   });
 
   it('apply', () => {

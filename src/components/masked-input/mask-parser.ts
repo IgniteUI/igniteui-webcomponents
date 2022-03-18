@@ -15,6 +15,7 @@ const REGEX = new Map([
   ['9', /[\d\p{Separator}]/u], // Numeric & whitespace
   ['#', /[\d\-+]/], // Numeric and sign
 ]);
+const REQUIRED = new Set('0#LA&');
 
 const replaceIMENumbers = (string: string) => {
   return string.replace(
@@ -115,6 +116,19 @@ export class MaskParser {
     return result;
   }
 
+  protected getRequiredNonLiteralPositions(mask: string) {
+    const positions = this.literalPositions;
+    const result: number[] = [];
+
+    for (let i = 0; i < mask.length; i++) {
+      if (REQUIRED.has(mask.charAt(i)) && !positions.includes(i)) {
+        result.push(i);
+      }
+    }
+
+    return result;
+  }
+
   protected getNonLiteralValues(input: string) {
     const result: string[] = [];
 
@@ -174,6 +188,33 @@ export class MaskParser {
     return output;
   }
 
+  public isValidString(input = '') {
+    this.getMaskLiterals();
+
+    const requiredNotLiteralPositions = this.getRequiredNonLiteralPositions(
+      this.mask
+    );
+
+    if (requiredNotLiteralPositions.length < 1) {
+      return true;
+    }
+
+    const chars = Array.from(input);
+    const combined = zip(chars, requiredNotLiteralPositions);
+
+    for (const [char, position] of combined) {
+      if (
+        position === undefined ||
+        char === undefined ||
+        !this.validate(char, this.unescapedMask.charAt(position))
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   public apply(input = '') {
     this.getMaskLiterals();
 
@@ -216,4 +257,15 @@ export class MaskParser {
 
     return output;
   }
+}
+
+function zip<S, T>(first: Array<S>, second: Array<T>): Array<[S, T]> {
+  const length = Math.max(first.length, second.length);
+  const zipped: Array<[S, T]> = [];
+
+  for (let index = 0; index < length; index++) {
+    zipped.push([first[index], second[index]]);
+  }
+
+  return zipped;
 }
