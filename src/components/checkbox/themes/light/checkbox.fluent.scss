@@ -188,7 +188,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
     }
 }
 
-:host(:focus-within) [part~='base'] {
+:host(:focus-visible) [part~='base'] {
     position: relative;
 
     $focus-outline-offset-top: rem(2px);
