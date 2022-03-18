@@ -243,55 +243,57 @@ const Template: Story<ArgTypes, Context> = (
       ></igc-dropdown-item>`}
     </igc-dropdown>
 
-    <div style="position: absolute; right: 0px; top: 50px">
-      <igc-button
-        id="ddlButton"
-        @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
-        >Dropdown 2.1</igc-button
-      >
-      <igc-button
-        id="ddlButton2"
-        @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
-        >Dropdown 2.2</igc-button
-      >
-      <igc-dropdown
-        id="ddl2"
-        size=${size}
-        .open=${open}
-        .flip=${flip}
-        .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
-        .placement=${placement}
-        .scrollStrategy=${scrollStrategy}
-        .sameWidth=${sameWidth}
-        .positionStrategy=${positionStrategy}
-        .dir=${direction}
-      >
-        <igc-dropdown-group>
-          <h3 slot="label">Research & Development</h3>
-          ${items
-            .slice(0, 3)
-            .map(
-              (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-            )}
-        </igc-dropdown-group>
-        <igc-dropdown-group>
-          <h3 slot="label">Product Guidance</h3>
-          ${items
-            .slice(3, 5)
-            .map(
-              (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-            )}
-        </igc-dropdown-group>
-        <igc-dropdown-group>
-          <h3 slot="label">Release Engineering</h3>
-          <igc-dropdown-item
-            ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<span
-              slot="suffix"
-              >-</span
-            ></igc-dropdown-item
-          >
-        </igc-dropdown-group>
-      </igc-dropdown>
+    <div class="igc-scrollbar" style="display: flex;">
+      <div style="position: absolute; right: 0px; top: 50px">
+        <igc-button
+          id="ddlButton"
+          @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
+          >Dropdown 2.1</igc-button
+        >
+        <igc-button
+          id="ddlButton2"
+          @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
+          >Dropdown 2.2</igc-button
+        >
+        <igc-dropdown
+          id="ddl2"
+          size=${size}
+          .open=${open}
+          .flip=${flip}
+          .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
+          .placement=${placement}
+          .scrollStrategy=${scrollStrategy}
+          .sameWidth=${sameWidth}
+          .positionStrategy=${positionStrategy}
+          .dir=${direction}
+        >
+          <igc-dropdown-group>
+            <h3 slot="label">Research & Development</h3>
+            ${items
+              .slice(0, 3)
+              .map(
+                (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
+              )}
+          </igc-dropdown-group>
+          <igc-dropdown-group>
+            <h3 slot="label">Product Guidance</h3>
+            ${items
+              .slice(3, 5)
+              .map(
+                (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
+              )}
+          </igc-dropdown-group>
+          <igc-dropdown-group>
+            <h3 slot="label">Release Engineering</h3>
+            <igc-dropdown-item
+              ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<span
+                slot="suffix"
+                >-</span
+              ></igc-dropdown-item
+            >
+          </igc-dropdown-group>
+        </igc-dropdown>
+      </div>
     </div>
 
     <igc-dropdown
