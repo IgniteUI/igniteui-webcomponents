@@ -831,8 +831,6 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         const wrapper = ddListWrapper(dropdown);
-        expect(wrapper.scrollTop).to.be.greaterThan(90);
-
         const lastItem = ddItems(dropdown).pop();
         const itemRect = lastItem?.getBoundingClientRect();
         expect(
@@ -849,8 +847,6 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         const wrapper = ddListWrapper(dropdown);
-        expect(wrapper.scrollTop).to.be.greaterThan(70);
-
         const selectedItem = ddItems(dropdown)[3];
         const itemRect = selectedItem?.getBoundingClientRect();
         expect(
