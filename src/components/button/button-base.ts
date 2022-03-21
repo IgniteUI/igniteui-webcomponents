@@ -119,8 +119,8 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         aria-disabled=${this.disabled ? 'true' : 'false'}
         aria-label=${ifDefined(this.ariaLabel)}
         class=${classMap(this.classes)}
-        @focus=${this.handleFocus}
-        @blur=${this.handleBlur}
+        @focus=${!this.disabled && this.handleFocus}
+        @blur=${!this.disabled && this.handleBlur}
       >
         ${this.renderContent()}
       </a>
