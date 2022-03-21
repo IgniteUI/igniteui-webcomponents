@@ -45,11 +45,14 @@ $slot-spacing: var(--igc-spacing-large);
     cursor: pointer;
 }
 
-:host([disabled]) [part='base'] {
-    background: color(gray, 300);
-    color: color(gray, 500);
+:host([disabled]) {
     pointer-events: none;
-    box-shadow: none;
+
+    [part='base'] {
+        background: color(gray, 300);
+        color: color(gray, 500);
+        box-shadow: none;
+    }
 }
 
 :host([size='large']) [part='base'] {
