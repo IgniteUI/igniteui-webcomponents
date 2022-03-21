@@ -299,7 +299,7 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
   }
 
   protected override renderInput() {
-    return html`<div>
+    return html`
       <input
         type="text"
         part=${partNameMap(this.resolvePartNames('input'))}
@@ -323,7 +323,7 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
         @invalid="${this.handleInvalid}"
         @keydown=${this.handleKeydown}
       />
-    </div>`;
+    `;
   }
 }
 
