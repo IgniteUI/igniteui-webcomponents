@@ -41,7 +41,9 @@
 }
 
 [part='content'] {
-    display: flex;
+    @include ellipsis();
+
+    display: block;
     width: 100%;
     align-items: center;
 }

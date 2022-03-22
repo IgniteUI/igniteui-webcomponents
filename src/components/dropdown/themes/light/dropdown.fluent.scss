@@ -16,7 +16,8 @@
 }
 
 [part='base'] {
-    border-radius: rem(2px);
+    @include border-radius(rem(2px));
+
     box-shadow: var(--igc-elevation-4);
     padding: 0;
 }

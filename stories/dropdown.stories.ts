@@ -244,6 +244,7 @@ const Template: Story<ArgTypes, Context> = (
         <style>
           #ddl2::part(list) {
             height: 150px;
+            width: 200px;
           }
         </style>
         <igc-button

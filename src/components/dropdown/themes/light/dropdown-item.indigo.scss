@@ -1,7 +1,8 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
-    border-radius: 2px;
+    @include border-radius(rem(2px));
+
     color: color(gray, 700);
 }
 

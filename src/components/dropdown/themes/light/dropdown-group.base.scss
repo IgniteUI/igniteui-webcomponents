@@ -6,7 +6,9 @@
 
     ::slotted([slot='label']) {
         @include type-category('overline');
+        @include ellipsis();
 
+        display: block;
         white-space: nowrap;
         position: relative;
         color: color(secondary, 500);

@@ -7,9 +7,10 @@
 }
 
 [part='base'] {
+    @include border-radius(rem(4px));
+
     overflow-y: auto;
     overflow-x: hidden;
-    border-radius: 4px;
     background: color(surface, 500);
     box-shadow: var(--igc-elevation-8);
     min-width: rem(112px);
