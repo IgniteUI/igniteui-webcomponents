@@ -3,14 +3,21 @@
 
 :host {
     display: flex;
-    flex-wrap: wrap;
+    flex-flow: column nowrap;
+    align-items: flex-end;
     justify-content: space-between;
-    align-items: center;
     padding: rem(8px);
+    flex-basis: min-content;
 }
 
-::slotted(igc-button:not(:first-of-type)) {
-    margin-inline-start: rem(8px);
+:host(:not([orientation='vertical'])) {
+    flex-flow: row wrap;
+    align-items: center;
+
+    ::slotted(igc-icon-button:not(:first-of-type)),
+    ::slotted(igc-button:not(:first-of-type)) {
+        margin-inline-start: rem(8px);
+    }
 }
 
 ::slotted([slot='start']) {
