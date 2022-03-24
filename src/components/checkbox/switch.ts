@@ -52,7 +52,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
       <label
         part=${partNameMap({ base: true, checked: this.checked })}
         for=${this.inputId}
-        @mousedown=${this.handleMouseDown}
+        @pointerdown=${this.handleMouseDown}
         .focused=${this.focused}
       >
         <input

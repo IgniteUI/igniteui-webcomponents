@@ -134,7 +134,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     this.invalid = !this.input.checkValidity();
   }
 
-  protected handleMouseDown(event: MouseEvent) {
+  protected handleMouseDown(event: PointerEvent) {
     event.preventDefault();
     this.input.focus();
     this.focused = false;
@@ -189,7 +189,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
       <label
         part="${partNameMap({ base: true, checked: this.checked })}"
         for="${this.inputId}"
-        @mousedown="${this.handleMouseDown}"
+        @pointerdown="${this.handleMouseDown}"
         .focused="${this.focused}"
       >
         <input

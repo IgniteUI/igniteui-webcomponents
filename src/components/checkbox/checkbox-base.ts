@@ -1,8 +1,8 @@
 import { LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { Constructor } from '../common/mixins/constructor.js';
 import { alternateName, blazorTwoWayBind } from '../common/decorators';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;
@@ -94,7 +94,7 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
     this.emitEvent('igcFocus');
   }
 
-  protected handleMouseDown(event: MouseEvent) {
+  protected handleMouseDown(event: PointerEvent) {
     event.preventDefault();
     this.input.focus();
     this.focused = false;
