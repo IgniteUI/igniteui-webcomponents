@@ -72,7 +72,13 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           @blur=${this.handleBlur}
           @focus=${this.handleFocus}
         />
-        <span part=${partNameMap({ control: true, checked: this.checked })}>
+        <span
+          part=${partNameMap({
+            control: true,
+            checked: this.checked,
+            focused: this.focused,
+          })}
+        >
           <span
             part=${partNameMap({ thumb: true, checked: this.checked })}
           ></span>

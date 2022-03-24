@@ -1,5 +1,5 @@
 import { LitElement } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { alternateName, blazorTwoWayBind } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -16,6 +16,9 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 >(LitElement) {
   @query('input[type="checkbox"]', true)
   protected input!: HTMLInputElement;
+
+  @state()
+  protected focused = false;
 
   /** The name attribute of the control. */
   @property()
@@ -41,10 +44,6 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   /** Controls the validity of the control. */
   @property({ type: Boolean, reflect: true })
   public invalid = false;
-
-  /** Controls the keyboard focus of the element. */
-  @property({ type: Boolean, reflect: true })
-  public focused = false;
 
   /** The label position of the control. */
   @property({ reflect: true, attribute: 'label-position' })

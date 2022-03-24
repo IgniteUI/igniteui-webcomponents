@@ -51,6 +51,9 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   @state()
   private _tabIndex = 0;
 
+  @state()
+  private focused = false;
+
   /** The name attribute of the control. */
   @property()
   public name!: string;
@@ -83,10 +86,6 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   /** Sets the aria-labelledby attribute for the radio control. */
   @property({ reflect: true, attribute: 'aria-labelledby' })
   public ariaLabelledby!: string;
-
-  /** Controls the keyboard focus of the radio. */
-  @property({ type: Boolean, reflect: true })
-  public focused = false;
 
   /** Simulates a click on the radio control. */
   public override click() {
@@ -187,7 +186,11 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <label
-        part="${partNameMap({ base: true, checked: this.checked })}"
+        part="${partNameMap({
+          base: true,
+          checked: this.checked,
+          focused: this.focused,
+        })}"
         for="${this.inputId}"
         @pointerdown="${this.handleMouseDown}"
         .focused="${this.focused}"

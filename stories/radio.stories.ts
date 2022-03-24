@@ -55,12 +55,6 @@ const metadata = {
       description: 'Sets the aria-labelledby attribute for the radio control.',
       control: 'text',
     },
-    focused: {
-      type: 'boolean',
-      description: 'Controls the keyboard focus of the radio.',
-      control: 'boolean',
-      defaultValue: false,
-    },
   },
 };
 export default metadata;
@@ -73,7 +67,6 @@ interface ArgTypes {
   invalid: boolean;
   labelPosition: 'before' | 'after';
   ariaLabelledby: string;
-  focused: boolean;
 }
 // endregion
 

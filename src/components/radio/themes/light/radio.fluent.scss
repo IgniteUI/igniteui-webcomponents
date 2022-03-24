@@ -115,7 +115,7 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
     }
 }
 
-:host([focused]) [part~='base'] {
+[part~='focused'] {
     position: relative;
 
     $focus-outline-offset-top: utils.rem(2px);

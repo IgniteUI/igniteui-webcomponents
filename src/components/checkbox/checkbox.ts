@@ -58,7 +58,11 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   protected override render() {
     return html`
       <label
-        part=${partNameMap({ base: true, checked: this.checked })}
+        part=${partNameMap({
+          base: true,
+          checked: this.checked,
+          focused: this.focused,
+        })}
         for=${this.inputId}
         @pointerdown=${this.handleMouseDown}
         .focused=${this.focused}

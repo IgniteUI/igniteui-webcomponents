@@ -27,7 +27,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
     box-shadow: inset 0 0 0 1px $hover-color;
 }
 
-:host([focused]) [part~='control'] {
+[part~='focused'] {
     position: relative;
 
     $focus-outline-offset-top: rem(2px);
