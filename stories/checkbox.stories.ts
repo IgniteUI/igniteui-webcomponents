@@ -47,6 +47,12 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    focused: {
+      type: 'boolean',
+      description: 'Controls the keyboard focus of the element.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     labelPosition: {
       type: '"before" | "after"',
       description: 'The label position of the control.',
@@ -72,6 +78,7 @@ interface ArgTypes {
   checked: boolean;
   required: boolean;
   invalid: boolean;
+  focused: boolean;
   labelPosition: 'before' | 'after';
   ariaLabelledby: string;
 }

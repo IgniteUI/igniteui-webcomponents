@@ -84,9 +84,26 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   @property({ reflect: true, attribute: 'aria-labelledby' })
   public ariaLabelledby!: string;
 
+  /** Controls the keyboard focus of the radio. */
+  @property({ type: Boolean, reflect: true })
+  public focused = false;
+
   /** Simulates a click on the radio control. */
   public override click() {
     this.input.click();
+  }
+
+  protected override firstUpdated() {
+    this.addEventListener('keyup', this.handleKeyUp);
+    this.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  protected handleKeyUp() {
+    this.focused = true;
+  }
+
+  protected handleKeyDown() {
+    this.focused = false;
   }
 
   /** Sets focus on the radio control. */
@@ -169,6 +186,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
         part="${partNameMap({ base: true, checked: this.checked })}"
         for="${this.inputId}"
         @mousedown="${this.handleMouseDown}"
+        .focused="${this.focused}"
       >
         <input
           id="${this.inputId}"

@@ -42,6 +42,10 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   @property({ type: Boolean, reflect: true })
   public invalid = false;
 
+  /** Controls the keyboard focus of the element. */
+  @property({ type: Boolean, reflect: true })
+  public focused = false;
+
   /** The label position of the control. */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
@@ -92,5 +96,18 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   protected handleMouseDown(event: MouseEvent) {
     event.preventDefault();
     this.input.focus();
+  }
+
+  protected override firstUpdated() {
+    this.addEventListener('keyup', this.handleKeyUp);
+    this.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  protected handleKeyUp() {
+    this.focused = true;
+  }
+
+  protected handleKeyDown() {
+    this.focused = false;
   }
 }
