@@ -87,6 +87,7 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
+    this.focused = false;
   }
 
   protected handleFocus() {
@@ -96,18 +97,21 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   protected handleMouseDown(event: MouseEvent) {
     event.preventDefault();
     this.input.focus();
+    this.focused = false;
   }
 
-  protected override firstUpdated() {
+  public override connectedCallback() {
+    super.connectedCallback();
     this.addEventListener('keyup', this.handleKeyUp);
-    this.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  public override disconnectedCallback() {
+    this.removeEventListener('keyup', this.handleKeyUp);
   }
 
   protected handleKeyUp() {
-    this.focused = true;
-  }
-
-  protected handleKeyDown() {
-    this.focused = false;
+    if (!this.focused) {
+      this.focused = true;
+    }
   }
 }

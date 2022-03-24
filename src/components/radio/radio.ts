@@ -93,17 +93,19 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     this.input.click();
   }
 
-  protected override firstUpdated() {
+  public override connectedCallback() {
+    super.connectedCallback();
     this.addEventListener('keyup', this.handleKeyUp);
-    this.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  public override disconnectedCallback() {
+    this.removeEventListener('keyup', this.handleKeyUp);
   }
 
   protected handleKeyUp() {
-    this.focused = true;
-  }
-
-  protected handleKeyDown() {
-    this.focused = false;
+    if (!this.focused) {
+      this.focused = true;
+    }
   }
 
   /** Sets focus on the radio control. */
@@ -135,6 +137,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   protected handleMouseDown(event: MouseEvent) {
     event.preventDefault();
     this.input.focus();
+    this.focused = false;
   }
 
   protected handleClick() {
@@ -143,6 +146,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
+    this.focused = false;
   }
 
   protected handleFocus() {
