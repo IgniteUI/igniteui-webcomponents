@@ -246,10 +246,12 @@ export default class IgcDropDownComponent
   }
 
   private handleClick(event: MouseEvent) {
-    const newSelectedItem =
-      event.target instanceof IgcDropDownItemComponent
-        ? (event.target as IgcDropDownItemComponent)
-        : null;
+    const newSelectedItem = event
+      .composedPath()
+      .find(
+        (e) => e instanceof IgcDropDownItemComponent
+      ) as IgcDropDownItemComponent;
+
     if (!newSelectedItem || newSelectedItem.disabled) return;
 
     this.selectItem(newSelectedItem);
