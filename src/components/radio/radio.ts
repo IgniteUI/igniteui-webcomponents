@@ -51,6 +51,9 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   @state()
   private _tabIndex = 0;
 
+  @state()
+  private focused = false;
+
   /** The name attribute of the control. */
   @property()
   public name!: string;
@@ -89,6 +92,21 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     this.input.click();
   }
 
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('keyup', this.handleKeyUp);
+  }
+
+  public override disconnectedCallback() {
+    this.removeEventListener('keyup', this.handleKeyUp);
+  }
+
+  protected handleKeyUp() {
+    if (!this.focused) {
+      this.focused = true;
+    }
+  }
+
   /** Sets focus on the radio control. */
   @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
@@ -115,9 +133,10 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     this.invalid = !this.input.checkValidity();
   }
 
-  protected handleMouseDown(event: MouseEvent) {
+  protected handleMouseDown(event: PointerEvent) {
     event.preventDefault();
     this.input.focus();
+    this.focused = false;
   }
 
   protected handleClick() {
@@ -126,6 +145,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
+    this.focused = false;
   }
 
   protected handleFocus() {
@@ -166,9 +186,14 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <label
-        part="${partNameMap({ base: true, checked: this.checked })}"
+        part="${partNameMap({
+          base: true,
+          checked: this.checked,
+          focused: this.focused,
+        })}"
         for="${this.inputId}"
-        @mousedown="${this.handleMouseDown}"
+        @pointerdown="${this.handleMouseDown}"
+        .focused="${this.focused}"
       >
         <input
           id="${this.inputId}"
