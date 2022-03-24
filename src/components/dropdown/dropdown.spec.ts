@@ -612,7 +612,7 @@ describe('Dropdown component', () => {
         ddItems(dropdown)[2].click();
         await elementUpdated(dropdown);
 
-        const args = { detail: { newItem: dropDownItems[2] } };
+        const args = { detail: dropDownItems[2] };
         expect(eventSpy).calledWithExactly('igcChange', args);
         expect(eventSpy).calledWith('igcClosing');
         expect(eventSpy).calledWith('igcClosed');
@@ -628,7 +628,7 @@ describe('Dropdown component', () => {
         pressKey('Enter');
         await elementUpdated(dropdown);
 
-        const args = { detail: { newItem: dropDownItems[0] } };
+        const args = { detail: dropDownItems[0] };
         expect(eventSpy).calledWithExactly('igcChange', args);
         expect(eventSpy).calledWith('igcClosing');
         expect(eventSpy).calledWith('igcClosed');
@@ -648,7 +648,7 @@ describe('Dropdown component', () => {
         pressKey('Enter');
         await elementUpdated(dropdown);
 
-        const args = { detail: { newItem: dropDownItems[0] } };
+        const args = { detail: dropDownItems[0] };
         expect(eventSpy).calledWithExactly('igcChange', args);
         expect(eventSpy).calledWith('igcClosing');
         expect(dropdown.open).to.be.true;
@@ -667,7 +667,7 @@ describe('Dropdown component', () => {
         ddItems(dropdown)[0].click();
         await elementUpdated(dropdown);
 
-        let args = { detail: { newItem: dropDownItems[0] } };
+        let args = { detail: dropDownItems[0] };
         expect(eventSpy).calledWithExactly('igcChange', args);
 
         dropdown.open = true;
@@ -678,7 +678,7 @@ describe('Dropdown component', () => {
 
         await elementUpdated(dropdown);
 
-        args = { detail: { newItem: dropDownItems[1] } };
+        args = { detail: dropDownItems[1] };
         expect(eventSpy).calledWithExactly('igcChange', args);
       });
 

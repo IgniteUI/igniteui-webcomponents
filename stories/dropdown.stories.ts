@@ -3,9 +3,9 @@ import { Context, Story } from './story.js';
 import {
   defineComponents,
   IgcDropDownComponent,
+  IgcDropDownItemComponent,
   IgcInputComponent,
 } from '../src/index.js';
-import { ISelectionChangeEventArgs } from '../src/components/dropdown/dropdown.js';
 
 defineComponents(IgcDropDownComponent, IgcInputComponent);
 
@@ -382,8 +382,8 @@ const checkoutForm = html`
         id="ddlCountry"
         @igcChange=${(_ev: CustomEvent) => {
           (document.getElementById('txtCountry') as IgcInputComponent).value = (
-            _ev.detail as ISelectionChangeEventArgs
-          ).newItem?.textContent as string;
+            _ev.detail as IgcDropDownItemComponent
+          ).value;
         }}
         .scrollStrategy=${scrollStrategy}
       >

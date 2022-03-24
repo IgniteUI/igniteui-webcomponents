@@ -25,11 +25,7 @@ export enum DropDownActionKey {
 }
 
 export interface IgcDropDownEventMap extends IgcToggleEventMap {
-  igcChange: CustomEvent<ISelectionChangeEventArgs>;
-}
-
-export interface ISelectionChangeEventArgs {
-  newItem: IgcDropDownItemComponent | null;
+  igcChange: CustomEvent<IgcDropDownItemComponent>;
 }
 
 /**
@@ -282,7 +278,7 @@ export default class IgcDropDownComponent
   }
 
   private handleChange(item: IgcDropDownItemComponent) {
-    const args = { detail: { newItem: item } };
+    const args = { detail: item };
     this.emitEvent('igcChange', args);
   }
 
