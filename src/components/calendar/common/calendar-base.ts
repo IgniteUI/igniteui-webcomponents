@@ -71,7 +71,11 @@ export class IgcCalendarBaseComponent extends LitElement {
     | 'saturday' = 'sunday';
 
   /** Sets the date which is shown in view and is highlighted. By default it is the current date. */
-  @property({ attribute: false })
+  @blazorSuppress()
+  @property({
+    attribute: 'active-date',
+    converter: (value) => (value ? new Date(value) : new Date()),
+  })
   public activeDate = new Date();
 
   /** Sets the locale used for formatting and displaying the dates in the calendar. */

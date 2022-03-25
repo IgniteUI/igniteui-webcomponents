@@ -5,12 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Calendar: Active date can be set via an attribute
+
 ## [2.1.1] - 2022-03-15
 
 ### Added
+
 - Control border radius and elevation from `--igc-radius-factor` and `--igc-elevation-factor`:
 
   Example:
+
   ```css
   /* Make all components square and remove all shadows */
   :root {
