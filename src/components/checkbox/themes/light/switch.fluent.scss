@@ -27,7 +27,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
     box-shadow: inset 0 0 0 1px $hover-color;
 }
 
-:host(:focus-within) [part~='control'] {
+[part~='focused'] {
     position: relative;
 
     $focus-outline-offset-top: rem(2px);
@@ -38,7 +38,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
         position: absolute;
         top: -$focus-outline-offset-top;
         left: -$focus-outline-offset-left;
-        box-shadow: 0 0 0 1px color(gray, 800);
+        box-shadow: 0 0 0 1px color(gray, 700);
         width: calc(100% + (#{$focus-outline-offset-left} * 2));
         height: calc(100% + (#{$focus-outline-offset-top} * 2));
     }
