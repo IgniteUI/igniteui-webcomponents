@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Drop Down component
 - Calendar: Active date can be set via an attribute
 
 ## [2.1.1] - 2022-03-15
