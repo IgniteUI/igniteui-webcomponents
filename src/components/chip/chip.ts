@@ -53,7 +53,7 @@ export default class IgcChipComponent extends SizableMixin(
 
   /**	Defines if the chip is selected or not. */
   @property({ type: Boolean, reflect: true })
-  @blazorTwoWayBind('igcSelected', 'detail')
+  @blazorTwoWayBind('igcSelect', 'detail')
   public selected = false;
 
   /** A property that sets the color variant of the chip component. */

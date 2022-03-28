@@ -1,5 +1,3 @@
-import { Placement } from '@floating-ui/dom';
-
 /**
  * Common events interface for toggle components
  */
@@ -52,4 +50,16 @@ export interface IgcToggleComponent extends IgcToggleOptions {
 /**
  * Describes the preferred placement of a toggle component.
  */
-export type IgcPlacement = Placement;
+export type IgcPlacement =
+  | 'top'
+  | 'top-start'
+  | 'top-end'
+  | 'bottom'
+  | 'bottom-start'
+  | 'bottom-end'
+  | 'right'
+  | 'right-start'
+  | 'right-end'
+  | 'left'
+  | 'left-start'
+  | 'left-end';
