@@ -1,5 +1,6 @@
 @use '../../utilities' as utils;
 @use '../base/bootstrap' as base;
+@use '../../../components/dropdown/themes/dark/dropdown.bootstrap' as dropdown;
 @use '../../../components/input/themes/dark/input.dark.bootstrap' as input;
 @use '../../../components/slider/themes/dark/slider.bootstrap' as slider;
 @use '../../../components/list/themes/dark/list.bootstrap' as list;
@@ -17,6 +18,7 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
+@include dropdown.theme();
 @include input.theme();
 @include slider.theme();
 @include list.theme();
