@@ -165,6 +165,15 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
     }
   }
 
+  @watch('prompt', { waitUntilFirstUpdate: true })
+  protected override promptChange() {
+    if (!this.prompt) {
+      this.prompt = this.parser.prompt;
+    } else {
+      this.parser.prompt = this.prompt;
+    }
+  }
+
   public increment(datePart?: DateParts, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
@@ -460,6 +469,33 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
     this.emitEvent('igcChange', { detail: this.value });
   }
 
+  protected override handleDragLeave() {
+    if (!this.hasFocus) {
+      this.updateMask();
+    }
+  }
+
+  protected override handleDragEnter() {
+    if (!this.hasFocus) {
+      this.maskedValue = this.parser.apply(this._value);
+    }
+  }
+
+  protected override insertFromDrop(value: string) {
+    const { start, end } = this.inputSelection;
+    this.maskedValue = this.parser.apply(value);
+
+    if (this.isComplete()) {
+      const parsedDate = this.parseDate(this.maskedValue);
+      if (DateTimeUtil.isValidDate(parsedDate)) {
+        this.value = parsedDate.toISOString();
+      }
+    }
+
+    this.droppedText = '';
+    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
+  }
+
   protected override renderInput() {
     return html`<div>
       <input
@@ -474,6 +510,12 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
         @change=${this.handleChange}
         @input=${this.handleInput}
         @keydown=${this.handleKeydown}
+        @cut=${this.handleCut}
+        @compositionstart=${this.handleCompositionStart}
+        @compositionend=${this.handleCompositionEnd}
+        @dragenter=${this.handleDragEnter}
+        @dragleave=${this.handleDragLeave}
+        @dragstart=${this.handleDragStart}
       />
     </div>`;
   }
