@@ -406,8 +406,7 @@ describe('Tree', () => {
       expect(els[0].tagName).to.equal('SPAN');
       expect(els[0].textContent).to.equal('*');
       expect(els[0]).to.have.attribute('slot', 'loading');
-      // verify default loading icon //TODO: this will be changed
-      expect(item21).dom.not.to.have.descendants('igc-icon');
+      expect(item21).dom.not.to.have.descendants('igc-circular-progress');
 
       //don't display indicator slot when item is loading
       indSlot21 = TreeTestFunctions.getSlot(item21, SLOTS.indicator);
