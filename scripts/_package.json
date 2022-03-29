@@ -46,6 +46,7 @@
     "slider"
   ],
   "dependencies": {
+    "@floating-ui/dom": "^0.4.0",
     "lit": "^2.2.0"
   }
 }
