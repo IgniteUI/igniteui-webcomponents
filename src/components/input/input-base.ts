@@ -17,6 +17,7 @@ let nextId = 0;
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
   igcInput: CustomEvent<string>;
+  /* blazorSuppress */
   igcChange: CustomEvent<string>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
