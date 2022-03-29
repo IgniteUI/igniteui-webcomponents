@@ -22,14 +22,14 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
   private _dateValue!: Date | null;
   private _inputDateParts!: DatePartInfo[];
   private _inputFormat!: string;
-  private _datePartDeltas: DatePartDeltas = {
-    date: 1,
-    month: 1,
-    year: 1,
-    hours: 1,
-    minutes: 1,
-    seconds: 1,
-  };
+  // private _datePartDeltas: DatePartDeltas = {
+  //   date: 1,
+  //   month: 1,
+  //   year: 1,
+  //   hours: 1,
+  //   minutes: 1,
+  //   seconds: 1,
+  // };
 
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
@@ -54,6 +54,9 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
 
   @property({ attribute: false })
   public spinDelta!: DatePartDeltas;
+
+  @property({ type: Boolean, attribute: 'spin-loop' })
+  public spinLoop = true;
 
   @property()
   public override get value(): string {
@@ -100,22 +103,29 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
   //   return Object.assign({}, this._datePartDeltas, this.spinDelta);
   // }
 
-  private get targetDatePart(): DateParts | undefined {
+  private get targetDatePart(): DateParts {
+    let result = DateParts.Year;
+
     if (document.activeElement === this) {
-      return this._inputDateParts.find(
+      const partType = this._inputDateParts.find(
         (p) =>
           p.start <= this.inputSelection.start &&
           this.inputSelection.start <= p.end &&
           p.type !== DateParts.Literal
       )?.type;
+
+      if (partType) {
+        result = partType;
+      }
     } else {
       if (this._inputDateParts.some((p) => p.type === DateParts.Date)) {
-        return DateParts.Date;
+        result = DateParts.Date;
       } else if (this._inputDateParts.some((p) => p.type === DateParts.Hours)) {
-        return DateParts.Hours;
+        result = DateParts.Hours;
       }
     }
-    return undefined;
+
+    return result;
   }
 
   public override connectedCallback() {
@@ -201,22 +211,22 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
     let formatPart, amPmFromMask;
     switch (datePart) {
       case DateParts.Date:
-        DateTimeUtil.spinDate(delta, newDate, true); //this.spinLoop
+        DateTimeUtil.spinDate(delta, newDate, this.spinLoop);
         break;
       case DateParts.Month:
-        DateTimeUtil.spinMonth(delta, newDate, true); //this.spinLoop
+        DateTimeUtil.spinMonth(delta, newDate, this.spinLoop);
         break;
       case DateParts.Year:
         DateTimeUtil.spinYear(delta, newDate);
         break;
       case DateParts.Hours:
-        DateTimeUtil.spinHours(delta, newDate, true); //this.spinLoop
+        DateTimeUtil.spinHours(delta, newDate, this.spinLoop);
         break;
       case DateParts.Minutes:
-        DateTimeUtil.spinMinutes(delta, newDate, true); //this.spinLoop
+        DateTimeUtil.spinMinutes(delta, newDate, this.spinLoop);
         break;
       case DateParts.Seconds:
-        DateTimeUtil.spinSeconds(delta, newDate, true); //this.spinLoop
+        DateTimeUtil.spinSeconds(delta, newDate, this.spinLoop);
         break;
       case DateParts.AmPm:
         formatPart = this._inputDateParts.find(
@@ -285,10 +295,9 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
   protected override updateMask() {
     if (this.hasFocus) {
       // store the cursor position as it will be moved during masking
-      // const cursor = this.selectionEnd;
-      // this.inputValue = this.getMaskedValue();
-      // this.setSelectionRange(cursor);
+      const cursor = this.input.selectionEnd;
       this.maskedValue = this.getMaskedValue();
+      this.input.setSelectionRange(cursor, cursor);
     } else {
       if (!this._dateValue || !DateTimeUtil.isValidDate(this._dateValue)) {
         this.maskedValue = '';
