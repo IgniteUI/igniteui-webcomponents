@@ -7,7 +7,7 @@ import { styles } from './themes/light/dropdown.base.css';
 import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css';
 import { styles as fluent } from './themes/light/dropdown.fluent.css';
 import { styles as indigo } from './themes/light/dropdown.indigo.css';
-import { watch } from '../common/decorators';
+import { blazorSuppress, watch } from '../common/decorators';
 import {
   IgcPlacement,
   IgcToggleComponent,
@@ -434,6 +434,7 @@ export default class IgcDropDownComponent
   }
 
   /** Shows the dropdown. */
+  @blazorSuppress()
   public show(target?: HTMLElement) {
     if (this.open && !target) return;
 
@@ -448,6 +449,7 @@ export default class IgcDropDownComponent
   }
 
   /** Toggles the open state of the dropdown. */
+  @blazorSuppress()
   public toggle(target?: HTMLElement): void {
     if (!this.open) {
       this.show(target);
@@ -461,6 +463,7 @@ export default class IgcDropDownComponent
   /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public navigateTo(index: number): IgcDropDownItemComponent | null;
   /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
+  @blazorSuppress()
   public navigateTo(value: string | number): IgcDropDownItemComponent | null {
     const index =
       typeof value === 'string' ? this.getItem(value).index : (value as number);
@@ -473,6 +476,7 @@ export default class IgcDropDownComponent
   /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
   public select(index: number): IgcDropDownItemComponent | null;
   /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
+  @blazorSuppress()
   public select(value: string | number): IgcDropDownItemComponent | null {
     const item =
       typeof value === 'string'
