@@ -4,6 +4,7 @@ import { live } from 'lit/directives/live.js';
 import { DatePartInfo, DateParts, DateTimeUtil } from './date-util';
 import IgcMaskedInputComponent from './../masked-input/masked-input';
 import { watch } from '../common/decorators';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 export interface DatePartDeltas {
   date?: number;
@@ -30,6 +31,11 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
   //   minutes: 1,
   //   seconds: 1,
   // };
+
+  constructor() {
+    super();
+    this.addEventListener('wheel', this.onWheel);
+  }
 
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
@@ -70,12 +76,14 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
 
     if (parse !== null) {
       this._dateValue = parse;
+    } else {
+      this._dateValue = null;
     }
 
     this.updateMask();
   }
 
-  @property()
+  @property({ attribute: 'min-value' })
   public get minValue(): string | Date {
     return this._minValue;
   }
@@ -85,7 +93,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
     //this.onValidatorChange();
   }
 
-  @property()
+  @property({ attribute: 'max-value' })
   public get maxValue(): string | Date {
     return this._maxValue;
   }
@@ -159,14 +167,14 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
   }
 
   @watch('mask', { waitUntilFirstUpdate: true })
-  protected override maskChange() {
+  protected override maskChange(): void {
     if (this.value) {
       this.updateMask();
     }
   }
 
   @watch('prompt', { waitUntilFirstUpdate: true })
-  protected override promptChange() {
+  protected override promptChange(): void {
     if (!this.prompt) {
       this.prompt = this.parser.prompt;
     } else {
@@ -174,7 +182,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
     }
   }
 
-  public increment(datePart?: DateParts, delta?: number): void {
+  public stepUp(datePart?: DateParts, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
     if (!targetPart) {
@@ -185,7 +193,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
     this.value = newValue.toISOString();
   }
 
-  public decrement(datePart?: DateParts, delta?: number): void {
+  public stepDown(datePart?: DateParts, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
     if (!targetPart) {
@@ -194,6 +202,11 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
 
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue.toISOString();
+  }
+
+  public clear(): void {
+    this.value = '';
+    this.setSelectionRange(0, this.input.value.length);
   }
 
   private trySpinValue(
@@ -254,6 +267,21 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
     return newDate;
   }
 
+  private onWheel(event: WheelEvent) {
+    if (!this.hasFocus) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.deltaY > 0) {
+      this.stepDown();
+    } else {
+      this.stepUp();
+    }
+  }
+
   private updateDefaultMask(): void {
     this._defaultMask = DateTimeUtil.getDefaultMask(this.locale);
   }
@@ -293,7 +321,14 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
     this.hasFocus = false;
 
     if (!this.isComplete() && this.maskedValue !== this.emptyMask) {
-      this.value = this.parseDate(this.maskedValue)!.toISOString();
+      const parse = this.parseDate(this.maskedValue);
+
+      if (parse) {
+        this.value = parse.toISOString();
+      } else {
+        this.value = '';
+        this.maskedValue = '';
+      }
     } else {
       this.updateMask();
     }
@@ -358,7 +393,6 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
       return mask;
     }
 
-    //if (!this.isComplete() || !this._onClear) {
     if (!this.isComplete()) {
       return this.maskedValue;
     }
@@ -500,6 +534,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
     return html`<div>
       <input
         type="text"
+        name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder || this.emptyMask)}
         ?readonly=${this.readonly}
@@ -510,6 +545,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputComponent {
         @change=${this.handleChange}
         @input=${this.handleInput}
         @keydown=${this.handleKeydown}
+        @drop=${this.handleDrop}
         @cut=${this.handleCut}
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
