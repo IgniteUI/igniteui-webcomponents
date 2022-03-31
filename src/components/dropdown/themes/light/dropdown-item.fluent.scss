@@ -1,0 +1,24 @@
+@use '../../../../styles/utilities' as *;
+
+$selected-item-color: var(--selected-item-color, contrast-color(gray, 200)) !default;
+
+:host(:hover),
+:host([active]) {
+    background: color(gray, 100);
+    color: contrast-color(gray, 100);
+}
+
+:host([selected]) {
+    background: color(gray, 200);
+    color: $selected-item-color;
+}
+
+:host([selected]:hover),
+:host([selected][active]) {
+    background: color(gray, 200);
+    color: $selected-item-color;
+}
+
+:host([disabled]) {
+    color: color(gray, 400);
+}

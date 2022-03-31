@@ -4,7 +4,7 @@
 const hmr = process.argv.includes('--hmr');
 
 export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
-  nodeResolve: true,
+  // nodeResolve: true,
   open: '/demo/',
   watch: !hmr,
 
@@ -15,9 +15,9 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
   // appIndex: 'demo/index.html',
 
   /** Confgure bare import resolve plugin */
-  // nodeResolve: {
-  //   exportConditions: ['browser', 'development']
-  // },
+  nodeResolve: {
+    exportConditions: ['browser', 'development']
+  },
 
   plugins: [
     /** Use Hot Module Replacement by uncommenting. Requires @open-wc/dev-server-hmr plugin */

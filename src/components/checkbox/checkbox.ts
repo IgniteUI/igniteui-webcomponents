@@ -49,6 +49,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   }
 
   @watch('checked', { waitUntilFirstUpdate: true })
+  @watch('focused', { waitUntilFirstUpdate: true })
   @watch('indeterminate', { waitUntilFirstUpdate: true })
   protected handleChange() {
     this.invalid = !this.input.checkValidity();
@@ -57,9 +58,14 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   protected override render() {
     return html`
       <label
-        part=${partNameMap({ base: true, checked: this.checked })}
+        part=${partNameMap({
+          base: true,
+          checked: this.checked,
+          focused: this.focused,
+        })}
         for=${this.inputId}
-        @mousedown=${this.handleMouseDown}
+        @pointerdown=${this.handleMouseDown}
+        .focused=${this.focused}
       >
         <input
           id=${this.inputId}

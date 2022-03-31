@@ -11,6 +11,10 @@ import IgcCardMediaComponent from '../../card/card.media';
 import IgcCheckboxComponent from '../../checkbox/checkbox';
 import IgcChipComponent from '../../chip/chip';
 import IgcCircularProgressComponent from '../../progress/circular-progress';
+import IgcDropDownComponent from '../../dropdown/dropdown';
+import IgcDropDownGroupComponent from '../../dropdown/dropdown-group';
+import IgcDropDownHeaderComponent from '../../dropdown/dropdown-header';
+import IgcDropDownItemComponent from '../../dropdown/dropdown-item';
 import IgcSwitchComponent from '../../checkbox/switch';
 import IgcFormComponent from '../../form/form';
 import IgcIconComponent from '../../icon/icon';
@@ -25,6 +29,8 @@ import IgcNavDrawerItemComponent from '../../nav-drawer/nav-drawer-item';
 import IgcNavbarComponent from '../../navbar/navbar';
 import IgcRadioGroupComponent from '../../radio-group/radio-group';
 import IgcRadioComponent from '../../radio/radio';
+import IgcRatingComponent from '../../rating/rating';
+import IgcRatingSymbolComponent from '../../rating/rating-symbol';
 import IgcRippleComponent from '../../ripple/ripple';
 import IgcRangeSliderComponent from '../../slider/range-slider';
 import IgcSliderComponent from '../../slider/slider';
@@ -47,6 +53,10 @@ const allComponents: CustomElementConstructor[] = [
   IgcCardComponent,
   IgcCheckboxComponent,
   IgcChipComponent,
+  IgcDropDownComponent,
+  IgcDropDownGroupComponent,
+  IgcDropDownHeaderComponent,
+  IgcDropDownItemComponent,
   IgcSwitchComponent,
   IgcFormComponent,
   IgcIconComponent,
@@ -60,6 +70,8 @@ const allComponents: CustomElementConstructor[] = [
   IgcNavbarComponent,
   IgcRadioComponent,
   IgcRadioGroupComponent,
+  IgcRatingComponent,
+  IgcRatingSymbolComponent,
   IgcRippleComponent,
   IgcSliderComponent,
   IgcToastComponent,

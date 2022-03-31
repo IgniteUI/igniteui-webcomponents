@@ -18,6 +18,10 @@ export { default as IgcCardHeaderComponent } from './components/card/card.header
 export { default as IgcCardMediaComponent } from './components/card/card.media';
 export { default as IgcCheckboxComponent } from './components/checkbox/checkbox';
 export { IgcCheckboxBaseComponent } from './components/checkbox/checkbox-base';
+export { default as IgcDropDownComponent } from './components/dropdown/dropdown';
+export { default as IgcDropDownGroupComponent } from './components/dropdown/dropdown-group';
+export { default as IgcDropDownHeaderComponent } from './components/dropdown/dropdown-header';
+export { default as IgcDropDownItemComponent } from './components/dropdown/dropdown-item';
 export { default as IgcSwitchComponent } from './components/checkbox/switch';
 export { defineAllComponents } from './components/common/definitions/defineAllComponents';
 export { defineComponents } from './components/common/definitions/defineComponents';
@@ -45,6 +49,8 @@ export { default as IgcNavDrawerItemComponent } from './components/nav-drawer/na
 export { default as IgcNavbarComponent } from './components/navbar/navbar';
 export { default as IgcRadioGroupComponent } from './components/radio-group/radio-group';
 export { default as IgcRadioComponent } from './components/radio/radio';
+export { default as IgcRatingComponent } from './components/rating/rating';
+export { default as IgcRatingSymbolComponent } from './components/rating/rating-symbol';
 export { default as IgcRippleComponent } from './components/ripple/ripple';
 export {
   default as IgcRangeSliderComponent,
