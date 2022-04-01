@@ -9,7 +9,7 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
 
   /** Configure bare import resolve plugin */
   nodeResolve: {
-    exportConditions: ['browser', 'development']
+    exportConditions: ['browser', 'production'],
   },
 
   /** Amount of browsers to run concurrently */
