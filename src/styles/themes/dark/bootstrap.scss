@@ -14,6 +14,7 @@ $palette: utils.palette(
     $success: #198754,
     $warn: #ffc107,
     $error: #dc3545,
+    $variant: 'bootstrap'
 ) !default;
 
 @include base.root-styles($palette);

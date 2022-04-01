@@ -8,6 +8,7 @@ $palette: utils.palette(
     $success: #107c10,
     $warn: #797673,
     $error: #a80000,
+    $variant: 'fluent'
 ) !default;
 
 @include base.root-styles($palette);
