@@ -16,7 +16,8 @@ $palette: utils.palette(
     $info: #9208bc,
     $success: #689f38,
     $warn: #ff9800,
-    $error: #cf1a2b
+    $error: #cf1a2b,
+    $variant: 'indigo'
 ) !default;
 
 @include base.root-styles($palette);
