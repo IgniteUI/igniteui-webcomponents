@@ -39,6 +39,7 @@ export {
 } from './components/icon/icon.registry';
 export { default as IgcInputComponent } from './components/input/input';
 export { IgcInputBaseComponent } from './components/input/input-base';
+export { IgcMaskedInputBaseComponent } from './components/date-input/masked-input-base';
 export { default as IgcLinearProgressComponent } from './components/progress/linear-progress';
 export { default as IgcListComponent } from './components/list/list';
 export { default as IgcListHeaderComponent } from './components/list/list-header';
@@ -61,4 +62,5 @@ export { default as IgcSliderComponent } from './components/slider/slider';
 export { IgcSliderBaseComponent } from './components/slider/slider-base';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label';
 export { default as IgcToastComponent } from './components/toast/toast';
+export { default as IgcDateInputComponent } from './components/date-input/date-input';
 export { configureTheme } from './theming/config';
