@@ -39,7 +39,7 @@ export abstract class IgcInputBaseComponent
   protected inputId = `input-${nextId++}`;
 
   /** The value attribute of the control. */
-  public abstract value: string;
+  //public abstract value: string;
 
   @query('input', true)
   protected input!: HTMLInputElement;
@@ -123,10 +123,10 @@ export abstract class IgcInputBaseComponent
     this.emitEvent('igcBlur');
   }
 
-  protected handleChange() {
-    this.value = this.input.value;
-    this.emitEvent('igcChange', { detail: this.value });
-  }
+  // protected handleChange() {
+  //   this.value = this.input.value;
+  //   this.emitEvent('igcChange', { detail: this.value });
+  // }
 
   /** Sets the text selection range of the control */
   public setSelectionRange(

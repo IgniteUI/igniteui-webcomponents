@@ -149,6 +149,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.emitEvent('igcInput', { detail: this.value });
   }
 
+  private handleChange() {
+    this.value = this.input.value;
+    this.emitEvent('igcChange', { detail: this.value });
+  }
+
   @watch('value', { waitUntilFirstUpdate: true })
   protected handleValueChange() {
     this.updateComplete.then(

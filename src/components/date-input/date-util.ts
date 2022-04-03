@@ -425,9 +425,9 @@ export abstract class DateTimeUtil {
     return formattedDate;
   }
 
+  //TODO: Decide with the team whether we should keep/edit this or remove it.
   private static setFormatOptions(format: string, locale: string) {
     const options: Intl.DateTimeFormatOptions = {};
-    // dd/MM
     const parts = this.parseDateTimeFormat(format, locale);
 
     parts.forEach((p) => {
@@ -445,12 +445,6 @@ export abstract class DateTimeUtil {
               break;
             case 'MM':
               options['month'] = '2-digit';
-              break;
-            case 'MMM':
-              options['month'] = 'short';
-              break;
-            case 'MMMM':
-              options['month'] = 'long';
               break;
           }
           break;
