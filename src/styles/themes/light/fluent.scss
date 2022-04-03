@@ -1,34 +1,14 @@
 @use '../../utilities' as utils;
 @use '../base/fluent' as base;
-@use '../../../components/button/button.fluent' as button;
-@use '../../../components/button/icon-button.fluent' as icon-button;
-@use '../../../components/card/card.fluent' as card;
-@use '../../../components/checkbox/checkbox.fluent' as checkbox;
-@use '../../../components/radio/radio.fluent' as radio;
-@use '../../../components/list/list.fluent' as list;
-@use '../../../components/checkbox/switch.fluent' as switch;
-@use '../../../components/calendar/calendar.fluent' as calendar;
-@use '../../../components/input/input.fluent' as input;
-@use '../../../components/navbar/navbar.fluent' as navbar;
-@use '../../../components/slider/slider.fluent' as slider;
 
 $palette: utils.palette(
     $primary: #0078d4,
     $secondary: #0078d4,
+    $info: #1377d5,
     $success: #107c10,
     $warn: #797673,
     $error: #a80000,
+    $variant: 'fluent'
 ) !default;
 
 @include base.root-styles($palette);
-@include button.theme();
-@include card.theme();
-@include checkbox.theme();
-@include radio.theme();
-@include list.theme();
-@include switch.theme();
-@include calendar.theme();
-@include input.theme();
-@include icon-button.theme();
-@include navbar.theme();
-@include slider.theme();

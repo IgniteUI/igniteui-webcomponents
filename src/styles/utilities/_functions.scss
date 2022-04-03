@@ -98,66 +98,66 @@
 /// @group Palettes
 /// @param {Color} $color - The base color to be used to generate a color shade.
 /// @param {number|string} $shade - The shade.
-@function _get-shade($name, $color, $shade) {
-    $lumen: luminance($color);
+@function _get-shade($name, $color, $shade, $base) {
+    $lumen: luminance($base);
 
     @if $shade == 50 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 98%, 13%));
+            @return color.change($color, $lightness: if($lumen > .5, 98%, 13%));
         } @else {
             @return lighten(saturate($color, 10.4), 37.7);
         }
     } @else if $shade == 100 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 96%, 26%));
+            @return color.change($color, $lightness: if($lumen > .5, 96%, 26%));
         } @else {
             @return lighten(desaturate($color, 10.4), 31.8);
         }
     } @else if $shade == 200 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 93%, 38%));
+            @return color.change($color, $lightness: if($lumen > .5, 93%, 38%));
         } @else {
             @return lighten(desaturate($color, 17), 18.7);
         }
     } @else if $shade == 300 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 88%, 54%));
+            @return color.change($color, $lightness: if($lumen > .5, 88%, 54%));
         } @else {
             @return lighten(desaturate($color, 12.9), 9.1);
         }
     } @else if $shade == 400 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 74%, 62%));
+            @return color.change($color, $lightness: if($lumen > .5, 74%, 62%));
         } @else {
             @return lighten(desaturate($color, 6.6), 4.1);
         }
     } @else if $shade == 500 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 62%, 74%));
+            @return color.change($color, $lightness: if($lumen > .5, 62%, 74%));
         } @else {
             @return $color;
         }
     } @else if $shade == 600 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 54%, 88%));
+            @return color.change($color, $lightness: if($lumen > .5, 54%, 88%));
         } @else {
             @return darken(saturate($color, 12.4), 5.1);
         }
     } @else if $shade == 700 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 38%, 93%));
+            @return color.change($color, $lightness: if($lumen > .5, 38%, 93%));
         } @else {
             @return darken(saturate($color, 24.5), 8.8);
         }
     } @else if $shade == 800 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 26%, 96%));
+            @return color.change($color, $lightness: if($lumen > .5, 26%, 96%));
         } @else {
             @return darken(saturate($color, 23.2), 12.7);
         }
     } @else if $shade == 900 {
         @if $name == 'gray' {
-            @return color.change($color, $lightness: if($lumen < .5, 13%, 98%));
+            @return color.change($color, $lightness: if($lumen > .5, 13%, 98%));
         } @else {
             @return darken(saturate($color, 16.1), 17);
         }
@@ -178,69 +178,69 @@
 /// @param {Color} $name - The base color name (primary, secondary, etc.) to be used to generate a color variant.
 /// @param {number|string} $shade - The target shade variant.
 /// @param {number|string} $theme - The target theme variant.
-@function _get-hsla-color($name, $color, $shade) {
+@function _get-hsla-color($name, $color, $shade, $base) {
     $h: var(--igc-#{$name}-h);
     $s: var(--igc-#{$name}-s);
     $l: var(--igc-#{$name}-l);
-    $lumen: luminance($color);
+    $lumen: luminance($base);
 
     @if $shade == 50 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 98%, 13%)};
+            @return #{$h, $s, if($lumen > .5, 98%, 13%)};
         } @else {
             @return #{$h, calc(#{$s} * 1.23), calc(#{$l} * 1.78)};
         }
     } @else if $shade == 100 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 96%, 26%)};
+            @return #{$h, $s, if($lumen > .5, 96%, 26%)};
         } @else {
             @return #{$h, calc(#{$s} / 1.25), calc(#{$l} * 1.66)};
         }
     } @else if $shade == 200 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 93%, 38%)};
+            @return #{$h, $s, if($lumen > .5, 93%, 38%)};
         } @else {
             @return #{$h, calc(#{$s} * .64), calc(#{$l} * 1.43)};
         }
     } @else if $shade == 300 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 88%, 54%)};
+            @return #{$h, $s, if($lumen > .5, 88%, 54%)};
         } @else {
             @return #{$h, calc(#{$s} * .73), calc(#{$l} * 1.19)};
         }
     } @else if $shade == 400 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 74%, 62%)};
+            @return #{$h, $s, if($lumen > .5, 74%, 62%)};
         } @else {
             @return #{$h, calc(#{$s} * .875), calc(#{$l} * 1.08)};
         }
     } @else if $shade == 500 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 62%, 74%)};
+            @return #{$h, $s, if($lumen > .5, 62%, 74%)};
         } @else {
             @return #{$h, $s, $l};
         }
     } @else if $shade == 600 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 54%, 88%)};
+            @return #{$h, $s, if($lumen > .5, 54%, 88%)};
         } @else {
             @return #{$h, calc(#{$s} * 1.26), calc(#{$l} * .89)};
         }
     } @else if $shade == 700 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 38%, 93%)};
+            @return #{$h, $s, if($lumen > .5, 38%, 93%)};
         } @else {
             @return #{$h, calc(#{$s} * 1.52), calc(#{$l} * .81)};
         }
     } @else if $shade == 800 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 26%, 96%)};
+            @return #{$h, $s, if($lumen > .5, 26%, 96%)};
         } @else {
             @return #{$h, calc(#{$s} * 1.5), calc(#{$l} * .73)};
         }
     } @else if $shade == 900 {
         @if $name == 'gray' {
-            @return #{$h, $s, if($lumen < .5, 13%, 98%)};
+            @return #{$h, $s, if($lumen > .5, 13%, 98%)};
         } @else {
             @return #{$h, calc(#{$s} * 1.34), calc(#{$l} * .64)};
         }
@@ -275,8 +275,8 @@
     $result: ();
 
     @each $shade in $shades {
-        $hsla-color: _get-hsla-color($name, $color, $shade);
-        $contrast-color: contrast(to-opaque(_get-shade($name, $color, $shade), $base));
+        $hsla-color: _get-hsla-color($name, $color, $shade, $base);
+        $contrast-color: contrast(to-opaque(_get-shade($name, $color, $shade, $base), $base));
         $result: map.merge(
             $result,
             (
@@ -708,4 +708,8 @@ $p-test: palette(#fff, #000);
     }
 
     @return $string;
+}
+
+@function border-radius($radius, $min: rem(0), $max: $radius) {
+    @return clamp($min, calc(var(--igc-radius-factor) * $radius), $max);
 }

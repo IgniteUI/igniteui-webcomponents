@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
+import { themes } from '../../../theming';
 import {
   blazorIndirectRender,
   blazorSuppressComponent,
@@ -7,14 +8,16 @@ import {
 } from '../../common/decorators';
 import { Constructor } from '../../common/mixins/constructor';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter';
-import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
+import { partNameMap } from '../../common/util';
 import {
   IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
 } from '../common/calendar-base';
-import { styles } from './months-view.material.css';
-import { partNameMap } from '../../common/util';
+import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
 import { setDateSafe } from '../common/utils';
+import { styles as bootstrap } from '../themes/bootstrap/year-month-view.bootstrap.css';
+import { styles as fluent } from '../themes/fluent/year-month-view.fluent.css';
+import { styles } from '../themes/year-month-view.base.css';
 
 /**
  * Instantiate a months view as a separate component in the calendar.
@@ -28,12 +31,15 @@ import { setDateSafe } from '../common/utils';
 @customElement('igc-months-view')
 @blazorIndirectRender
 @blazorSuppressComponent
+@themes({
+  bootstrap,
+  fluent,
+})
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  public static styles = [styles];
-
+  public static styles = styles;
   private calendarModel = new Calendar();
   private monthFormatter: any;
 

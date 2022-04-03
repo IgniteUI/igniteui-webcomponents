@@ -1,0 +1,7 @@
+@use '../../../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-dropdown-header {
+        --header-color: #{utils.contrast-color(surface, 500)};
+    }
+}

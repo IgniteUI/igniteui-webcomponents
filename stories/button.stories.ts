@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Context, Story } from './story.js';
 
 // region default
 const metadata = {
@@ -85,12 +85,23 @@ interface ArgTypes {
 }
 // endregion
 
+(metadata as any).parameters = {
+  actions: {
+    handles: ['igcBlur', 'igcFocus'],
+  },
+};
+
 const ButtonTemplate: Story<ArgTypes, Context> = (
   { disabled = false, size, variant, type }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
+  const handleClick = () => {
+    console.log('the button was clicked');
+  };
+
   return html`
     <igc-button
+      @click=${handleClick}
       .disabled=${disabled}
       .size=${size}
       .variant=${variant}

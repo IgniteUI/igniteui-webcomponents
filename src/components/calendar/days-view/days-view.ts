@@ -1,29 +1,32 @@
 import { html } from 'lit';
+import { customElement, property, query } from 'lit/decorators.js';
+import { themes } from '../../../theming';
 import {
   blazorIndirectRender,
   blazorSuppressComponent,
   watch,
 } from '../../common/decorators';
 import {
+  IgcCalendarResourceStringEN,
+  IgcCalendarResourceStrings,
+} from '../../common/i18n/calendar.resources';
+import { Constructor } from '../../common/mixins/constructor';
+import { EventEmitterMixin } from '../../common/mixins/event-emitter';
+import { partNameMap } from '../../common/util';
+import {
+  IgcCalendarBaseComponent,
+  IgcCalendarBaseEventMap,
+} from '../common/calendar-base';
+import {
   DateRangeType,
   ICalendarDate,
   isDateInRanges,
   TimeDeltaInterval,
 } from '../common/calendar.model';
-import {
-  IgcCalendarBaseComponent,
-  IgcCalendarBaseEventMap,
-} from '../common/calendar-base';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils';
-import { styles } from './days-view.material.css';
-import { EventEmitterMixin } from '../../common/mixins/event-emitter';
-import { Constructor } from '../../common/mixins/constructor';
-import { property, query, customElement } from 'lit/decorators.js';
-import { partNameMap } from '../../common/util';
-import {
-  IgcCalendarResourceStringEN,
-  IgcCalendarResourceStrings,
-} from '../../common/i18n/calendar.resources';
+import { styles as bootstrap } from '../themes/bootstrap/days-view.bootstrap.css';
+import { styles } from '../themes/days-view.base.css';
+import { styles as fluent } from '../themes/fluent/days-view.fluent.css';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
@@ -47,12 +50,15 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
 @customElement('igc-days-view')
 @blazorSuppressComponent
 @blazorIndirectRender
+@themes({
+  bootstrap,
+  fluent,
+})
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
-  public static styles = [styles];
-
+  public static styles = styles;
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];
 

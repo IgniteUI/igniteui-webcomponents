@@ -32,20 +32,29 @@
     "button",
     "calendar",
     "card",
+    "circular progress",
     "checkbox",
+    "chip",
+    "dropdown",
     "form",
     "icon",
     "input",
+    "linear progress",
     "list",
     "mask",
     "navbar",
     "navdrawer",
+    "progress",
     "range slider",
     "radio",
+    "rating",
+    "snackbar",
     "switch",
-    "slider"
+    "slider",
+    "toast"
   ],
   "dependencies": {
-    "lit": "^2.1.0"
+    "@floating-ui/dom": "^0.4.0",
+    "lit": "^2.2.0"
   }
 }

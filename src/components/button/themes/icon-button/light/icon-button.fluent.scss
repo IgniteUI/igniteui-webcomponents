@@ -1,0 +1,91 @@
+@use '../../../../../styles/utilities' as utils;
+
+$text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
+$hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
+
+button {
+    @include utils.border-radius(utils.rem(2px));
+
+    background: transparent;
+    color: utils.color(primary, 500);
+    transition: color .15s ease-out, background .15s ease-out;
+    box-shadow: none;
+
+    &::after {
+        position: absolute;
+        content: '';
+        pointer-events: none;
+        top: 2px;
+        left: 2px;
+        width: calc(100% - 4px);
+        height: calc(100% - 4px);
+    }
+
+    &:hover {
+        color: utils.color(primary, 500);
+        background: utils.color(gray, 200);
+    }
+
+    &:active {
+        color: utils.color(primary, 500);
+        background: utils.color(gray, 300);
+    }
+
+    &:focus-visible::after {
+        box-shadow: 0 0 0 utils.rem(1px) utils.color(gray, 500);
+    }
+}
+
+:host([variant='contained']) {
+    button {
+        color: $text-color;
+        background: utils.color(primary, 500);
+
+        &:hover {
+            background: $hover-background;
+        }
+
+        &:active {
+            color: utils.contrast-color(primary, 800);
+            background: utils.color(primary, 800);
+        }
+
+        &:focus-visible::after {
+            box-shadow: 0 0 0 utils.rem(1px) utils.contrast-color(primary, 600);
+        }
+    }
+}
+
+:host([variant='outlined']) {
+    button {
+        color: utils.color(gray, 900);
+        box-shadow: 0 0 0 1px utils.color(gray, 700);
+
+        &:focus {
+            background: transparent;
+        }
+
+        &:hover,
+        &:focus:hover {
+            background: utils.color(gray, 100);
+        }
+
+        &:focus:active {
+            background: utils.color(gray, 200);
+        }
+    }
+}
+
+:host([disabled]) {
+    button {
+        color: utils.color(gray, 400);
+        background: utils.color(gray, 100);
+    }
+}
+
+:host([disabled][variant='contained']),
+:host([disabled][variant='outlined']) {
+    button {
+        color: utils.color(gray, 500);
+    }
+}
