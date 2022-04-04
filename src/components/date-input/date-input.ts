@@ -494,6 +494,28 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     }
   }
 
+  private getNewPosition(value: string, direction = 0): number {
+    const literals = this._inputDateParts.filter(
+      (p) => p.type === DateParts.Literal
+    );
+    let cursorPos = this.selection.start;
+
+    if (!direction) {
+      do {
+        cursorPos = cursorPos > 0 ? --cursorPos : cursorPos;
+      } while (!literals.some((l) => l.end === cursorPos) && cursorPos > 0);
+      return cursorPos;
+    } else {
+      do {
+        cursorPos++;
+      } while (
+        !literals.some((l) => l.start === cursorPos) &&
+        cursorPos < value.length
+      );
+      return cursorPos;
+    }
+  }
+
   protected override handleFocus() {
     this.hasFocus = true;
     this.updateMask();
@@ -517,6 +539,39 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     }
 
     this.emitEvent('igcBlur');
+  }
+
+  protected override handleKeydown(e: KeyboardEvent) {
+    super.handleKeydown(e);
+
+    const key = e.key;
+
+    switch (key) {
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        if (e.ctrlKey) {
+          e.preventDefault();
+          const value = (e.target as HTMLInputElement).value;
+          const dir = key === 'ArrowRight' ? 1 : 0;
+          const pos = this.getNewPosition(value, dir);
+
+          this.setSelectionRange(pos, pos);
+        }
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        this.stepUp();
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        this.stepDown();
+        break;
+      case ';':
+        if (e.ctrlKey) {
+          this.value = new Date();
+        }
+        break;
+    }
   }
 
   protected override renderInput() {
