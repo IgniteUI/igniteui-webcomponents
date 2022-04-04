@@ -16,7 +16,7 @@ interface MaskSelection {
  * A masked input is an input field where a developer can control user input and format the visible value,
  * based on configurable rules
  *
- * @element igc-masked-input
+ * @element igc-mask-input
  *
  * @slot prefix - Renders content before the input
  * @slot suffix - Renders content after the input
@@ -34,8 +34,8 @@ interface MaskSelection {
  * @csspart suffix - The suffix wrapper
  * @csspart helper-text - The helper text wrapper
  */
-export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
-  public static readonly tagName = 'igc-masked-input';
+export default class IgcMaskInputComponent extends IgcInputBaseComponent {
+  public static readonly tagName = 'igc-mask-input';
 
   protected parser = new MaskParser();
   protected _value!: string;
@@ -329,6 +329,6 @@ export default class IgcMaskedInputComponent extends IgcInputBaseComponent {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-masked-input': IgcMaskedInputComponent;
+    'igc-mask-input': IgcMaskInputComponent;
   }
 }

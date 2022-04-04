@@ -4,8 +4,8 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 
 // region default
 const metadata = {
-  title: 'Masked Input',
-  component: 'igc-masked-input',
+  title: 'Mask Input',
+  component: 'igc-mask-input',
   argTypes: {
     dir: {
       type: '"ltr" | "rtl" | "auto"',
@@ -136,7 +136,7 @@ const Template: Story<ArgTypes, Context> = (
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  return html`<igc-masked-input
+  return html`<igc-mask-input
     dir=${direction}
     name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
@@ -154,7 +154,7 @@ const Template: Story<ArgTypes, Context> = (
     <igc-icon name="github" slot="prefix"></igc-icon>
     <igc-icon name="github" slot="suffix"></igc-icon>
     <span slot="helper-text">This is some helper text</span>
-  </igc-masked-input>`;
+  </igc-mask-input>`;
 };
 
 export const Basic = Template.bind({});

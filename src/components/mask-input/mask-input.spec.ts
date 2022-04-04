@@ -3,10 +3,10 @@ import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents } from '../../index.js';
 import { MaskParser } from './mask-parser.js';
-import IgcMaskedInputComponent from './masked-input';
+import IgcMaskInputComponent from './mask-input';
 
 describe('Masked input', () => {
-  before(() => defineComponents(IgcMaskedInputComponent));
+  before(() => defineComponents(IgcMaskInputComponent));
 
   const parser = new MaskParser();
   const defaultPrompt = '_';
@@ -19,12 +19,12 @@ describe('Masked input', () => {
   const input = () =>
     masked.shadowRoot!.querySelector('input') as HTMLInputElement;
 
-  let masked: IgcMaskedInputComponent;
+  let masked: IgcMaskInputComponent;
 
   describe('', async () => {
     beforeEach(async () => {
-      masked = await fixture<IgcMaskedInputComponent>(
-        html`<igc-masked-input></igc-masked-input>`
+      masked = await fixture<IgcMaskInputComponent>(
+        html`<igc-mask-input></igc-mask-input>`
       );
     });
 

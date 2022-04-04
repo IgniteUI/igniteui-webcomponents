@@ -23,7 +23,7 @@ import IgcLinearProgressComponent from '../../progress/linear-progress';
 import IgcListComponent from '../../list/list';
 import IgcListHeaderComponent from '../../list/list-header';
 import IgcListItemComponent from '../../list/list-item';
-import IgcMaskedInputComponent from '../../masked-input/masked-input';
+import IgcMaskInputComponent from '../../mask-input/mask-input';
 import IgcNavDrawerComponent from '../../nav-drawer/nav-drawer';
 import IgcNavDrawerHeaderItemComponent from '../../nav-drawer/nav-drawer-header-item';
 import IgcNavDrawerItemComponent from '../../nav-drawer/nav-drawer-item';
@@ -65,7 +65,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcListHeaderComponent,
   IgcListItemComponent,
   IgcListComponent,
-  IgcMaskedInputComponent,
+  IgcMaskInputComponent,
   IgcNavDrawerHeaderItemComponent,
   IgcNavDrawerItemComponent,
   IgcNavDrawerComponent,
