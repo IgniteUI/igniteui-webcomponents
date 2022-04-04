@@ -9,12 +9,13 @@
 $palette: utils.palette(
     $primary: #0d6efd,
     $secondary: #6c757d,
-    $gray: #fff,
-    $surface: #333,
+    $gray: #adb5bd,
+    $surface: #212529,
     $info: #0dcaf0,
     $success: #198754,
     $warn: #ffc107,
     $error: #dc3545,
+    $variant: 'bootstrap'
 ) !default;
 
 @include base.root-styles($palette);

@@ -12,13 +12,14 @@
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 
 $palette: utils.palette(
-    $primary: #217346,
-    $secondary: #217346,
+    $primary: #0078d4,
+    $secondary: #0078d4,
     $gray: #fff,
     $surface: #222,
     $success: #107c10,
     $warn: #797673,
     $error: #a80000,
+    $variant: 'fluent'
 ) !default;
 
 @include base.root-styles($palette);
