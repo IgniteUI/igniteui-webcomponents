@@ -3,7 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { IgcInputBaseComponent } from '../input/input-base';
-import { watch } from '../common/decorators';
+import { blazorTwoWayBind, watch } from '../common/decorators';
 import { partNameMap } from '../common/util';
 import { MaskParser } from './mask-parser';
 
@@ -76,6 +76,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
    * If `with-literals` is set, it will return the current value with the mask (literals and all) applied.
    */
   @property()
+  @blazorTwoWayBind('igcChange', 'detail')
   public get value() {
     return this.withLiterals
       ? this.maskedValue
