@@ -77,6 +77,15 @@
     }
 }
 
+:host([position='relative']) {
+    [part='base'] {
+        position: relative;
+        width: fit-content;
+        height: 100vh;
+        box-shadow: none;
+    }
+}
+
 :host([open]) {
     [part='mini'] {
         display: none;
