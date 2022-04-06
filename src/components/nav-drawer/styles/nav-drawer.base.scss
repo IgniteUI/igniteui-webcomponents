@@ -96,8 +96,8 @@
     [part='base'] {
         border-inline-end: none;
         border-inline-start: 1px solid color(gray, 900, .14);
-        left: auto;
-        right: 0;
+        inset-inline-start: auto;
+        inset-inline-end: 0;
     }
 }
 
