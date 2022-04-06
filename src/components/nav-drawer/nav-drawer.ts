@@ -69,15 +69,18 @@ export default class IgcNavDrawerComponent extends LitElement {
   }
 
   protected override render() {
-    return html` <div part="base">
-      <div part="main">
-        <slot></slot>
-      </div>
+    return html`
+      <div part="overlay" @click=${this.hide}></div>
+      <div part="base">
+        <div part="main">
+          <slot></slot>
+        </div>
 
-      <div part="${partNameMap(this.resolvePartNames('mini'))}">
-        <slot name="mini"></slot>
+        <div part="${partNameMap(this.resolvePartNames('mini'))}">
+          <slot name="mini"></slot>
+        </div>
       </div>
-    </div>`;
+    `;
   }
 }
 
