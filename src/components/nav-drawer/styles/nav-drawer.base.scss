@@ -46,7 +46,7 @@
 
 :host([position='start']) [part='mini'] {
     border-inline-end: 1px solid color(gray, 900, .14);
-    left: 0;
+    inset-inline-start: 0;
 }
 
 :host([position='end']) [part='mini'] {
