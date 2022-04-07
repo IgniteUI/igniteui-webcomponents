@@ -22,12 +22,15 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    withLiterals: {
-      type: 'boolean',
+    valueMode: {
+      type: '"raw" | "withFormatting"',
       description:
-        'When enabled, retrieving the value of the control will return it\nwith literal symbols applied.',
-      control: 'boolean',
-      defaultValue: false,
+        'Dictates the behavior when retrieving the value of the control:\n\n- `raw` will return the clean user input.\n- `withFormatting` will return the value with all literals and prompts.',
+      options: ['raw', 'withFormatting'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'raw',
     },
     mask: {
       type: 'string',
@@ -42,7 +45,7 @@ const metadata = {
     value: {
       type: 'string',
       description:
-        'The value of the input.\n\nIf `with-literals` is set, it will return the current value with the mask (literals and all) applied.',
+        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
       control: 'text',
     },
     name: {
@@ -98,7 +101,7 @@ export default metadata;
 interface ArgTypes {
   dir: 'ltr' | 'rtl' | 'auto';
   invalid: boolean;
-  withLiterals: boolean;
+  valueMode: 'raw' | 'withFormatting';
   mask: string;
   prompt: string;
   value: string;
@@ -126,7 +129,7 @@ const Template: Story<ArgTypes, Context> = (
     disabled,
     required,
     outlined,
-    withLiterals,
+    valueMode,
     label,
     value,
     placeholder,
@@ -145,7 +148,7 @@ const Template: Story<ArgTypes, Context> = (
     prompt=${ifDefined(prompt)}
     label=${ifDefined(label)}
     size=${ifDefined(size)}
-    ?with-literals=${ifDefined(withLiterals)}
+    value-mode=${ifDefined(valueMode)}
     ?readonly=${ifDefined(readonly)}
     ?outlined=${ifDefined(outlined)}
     ?required=${ifDefined(required)}

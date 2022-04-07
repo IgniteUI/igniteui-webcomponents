@@ -74,6 +74,9 @@ describe('Mask parser', () => {
 
     parser.mask = '\\# \\(###)-###';
     expect(parser.apply('123456')).to.equal('# \\(123)-456');
+
+    parser.mask = '\\C\\C-CCCC-CCC-\\9\\9';
+    expect(parser.apply('ABCD99')).to.equal('CC-ABCD-99_-99');
   });
 
   it('validates mask pattern rules', () => {

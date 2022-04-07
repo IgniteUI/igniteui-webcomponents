@@ -38,7 +38,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
 
   protected parser = new MaskParser();
-  protected _value!: string;
+  protected _value = '';
   protected selection: MaskSelection = { start: 0, end: 0 };
   protected compositionStart = 0;
 
@@ -64,24 +64,28 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
   public invalid = false;
 
   /**
-   * When enabled, retrieving the value of the control will return it
-   * with literal symbols applied.
+   * Dictates the behavior when retrieving the value of the control:
+   *
+   * - `raw` will return the clean user input.
+   * - `withFormatting` will return the value with all literals and prompts.
+   *
    */
-  @property({ type: Boolean, attribute: 'with-literals' })
-  public withLiterals = false;
+  @property({ attribute: 'value-mode' })
+  public valueMode: 'raw' | 'withFormatting' = 'raw';
 
   /**
    * The value of the input.
    *
-   * If `with-literals` is set, it will return the current value with the mask (literals and all) applied.
+   * Regardless of the currently set `value-mode`, an empty value will return an empty string.
+   *
    */
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
   public get value() {
-    return this.withLiterals
-      ? this.maskedValue
+    return this._value
+      ? this.valueMode !== 'raw'
         ? this.maskedValue
-        : this.parser.apply()
+        : this._value
       : this._value;
   }
 
@@ -263,11 +267,15 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
     replacement: string,
     start: number,
     end: number,
-    selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
+    _selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
   ) {
-    super.setRangeText(replacement, start, end, selectMode);
-    const r = this.parser.replace(this.input.value, replacement, start, end);
-    this.maskedValue = this.parser.apply(r.value);
+    this.input.value = this.parser.replace(
+      this.input.value,
+      replacement,
+      start,
+      end
+    ).value;
+    this.maskedValue = this.parser.apply(this.parser.parse(this.input.value));
     this._value = this.parser.parse(this.maskedValue);
   }
 
@@ -306,7 +314,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
         part=${partNameMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
-        .placeholder=${live(this.placeholder || this.parser.apply())}
+        .placeholder=${live(this.placeholder || this.parser.escapedMask)}
         ?readonly=${this.readonly}
         ?disabled=${this.disabled}
         ?required=${this.required}

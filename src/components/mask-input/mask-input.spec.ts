@@ -31,8 +31,8 @@ describe('Masked input', () => {
     it('sensible default values', async () => {
       expect(masked.prompt).to.equal(defaultPrompt);
       expect(masked.mask).to.equal(defaultMask);
-      expect(masked.value).to.be.undefined;
-      expect(input().placeholder).to.equal(parser.apply());
+      expect(masked.value).to.equal('');
+      expect(input().placeholder).to.equal(parser.escapedMask);
     });
 
     it('prompt character change (no value)', async () => {
@@ -40,7 +40,7 @@ describe('Masked input', () => {
       syncParser();
 
       await elementUpdated(masked);
-      expect(input().placeholder).to.equal(parser.apply());
+      expect(input().placeholder).to.equal(parser.escapedMask);
     });
 
     it('prompt character change (value)', async () => {
@@ -59,7 +59,7 @@ describe('Masked input', () => {
       syncParser();
 
       await elementUpdated(masked);
-      expect(input().placeholder).to.equal(parser.apply());
+      expect(input().placeholder).to.equal(parser.escapedMask);
     });
 
     it('mask change (value)', async () => {
@@ -85,19 +85,19 @@ describe('Masked input', () => {
       masked.placeholder = '';
       await elementUpdated(masked);
 
-      expect(input().placeholder).to.equal(parser.apply());
+      expect(input().placeholder).to.equal(parser.escapedMask);
     });
 
     it('empty value without literals', async () => {
-      expect(masked.value).to.be.undefined;
+      expect(masked.value).to.equal('');
     });
 
     it('empty value with literals', async () => {
-      masked.withLiterals = true;
+      masked.valueMode = 'withFormatting';
       syncParser();
       await elementUpdated(masked);
 
-      expect(masked.value).to.equal(parser.apply());
+      expect(masked.value).to.equal('');
     });
 
     it('get value without literals', async () => {
@@ -112,13 +112,13 @@ describe('Masked input', () => {
     it('value with literals then value without', async () => {
       masked.mask = '(CC) (CC)';
       masked.value = '1234';
-      masked.withLiterals = true;
+      masked.valueMode = 'withFormatting';
 
       await elementUpdated(masked);
 
       expect(masked.value).to.equal('(12) (34)');
 
-      masked.withLiterals = false;
+      masked.valueMode = 'raw';
       await elementUpdated(masked);
 
       expect(masked.value).to.equal('1234');
@@ -209,6 +209,24 @@ describe('Masked input', () => {
 
       expect(input().value).to.equal(parser.apply(masked.value));
       expect(masked.value).to.equal('2211');
+
+      masked.value = '';
+      await elementUpdated(masked);
+
+      masked.setRangeText('xx', 0, 4);
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(masked.value).to.equal('xx');
+
+      masked.value = 'xx';
+      await elementUpdated(masked);
+
+      masked.setRangeText('yy', 2, 5);
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal(parser.apply(masked.value));
+      expect(masked.value).to.equal('xyy');
     });
 
     it('igcChange event', async () => {
@@ -227,7 +245,7 @@ describe('Masked input', () => {
 
       const eventSpy = sinon.spy(masked, 'emitEvent');
       masked.value = 'abc';
-      masked.withLiterals = true;
+      masked.valueMode = 'withFormatting';
       await elementUpdated(masked);
 
       input().dispatchEvent(new Event('change'));
