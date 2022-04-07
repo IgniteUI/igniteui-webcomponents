@@ -121,17 +121,3 @@
         display: none;
     }
 }
-
-:host([position='relative']) {
-    [part='base'] {
-        position: relative;
-        width: fit-content;
-        height: 100vh;
-        box-shadow: none;
-        border-inline-end: 1px solid color(gray, 900, .14);
-    }
-
-    [part='overlay'] {
-        display: none;
-    }
-}
