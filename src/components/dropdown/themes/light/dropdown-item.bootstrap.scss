@@ -1,0 +1,29 @@
+@use '../../../../styles/utilities' as *;
+
+$item-color: var(--item-color, color(gray, 900)) !default;
+$hover-item-color: var(--hover-item-color, contrast-color(gray, 100)) !default;
+
+:host {
+    color: $item-color;
+}
+
+:host(:hover),
+:host([active]) {
+    background: color(gray, 100);
+    color: $hover-item-color;
+}
+
+:host([selected]) {
+    background: color(primary, 500);
+    color: contrast-color(primary, 600);
+}
+
+:host([selected]:hover),
+:host([selected][active]) {
+    background: color(primary, 600);
+    color: contrast-color(primary, 600);
+}
+
+:host([disabled]) {
+    color: color(gray, 400);
+}

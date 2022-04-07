@@ -6,6 +6,7 @@
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
 @use '../../../components/slider/themes/dark/slider.indigo' as slider;
 @use '../../../components/list/themes/dark/list.indigo' as list;
+@use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -15,7 +16,8 @@ $palette: utils.palette(
     $info: #9208bc,
     $success: #689f38,
     $warn: #ff9800,
-    $error: #cf1a2b
+    $error: #cf1a2b,
+    $variant: 'indigo'
 ) !default;
 
 @include base.root-styles($palette);
@@ -25,3 +27,4 @@ $palette: utils.palette(
 @include radio.theme();
 @include slider.theme();
 @include list.theme();
+@include dropdown.theme();
