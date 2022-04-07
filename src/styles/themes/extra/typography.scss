@@ -2,6 +2,12 @@
 @use '../../utilities/typography' as *;
 /* stylelint-disable max-nesting-depth */
 
+@mixin _map-style-to-rules($type-style, $category) {
+    @each $key, $value in $type-style {
+        #{$key}: var(--igc-#{$category}-#{$key});
+    }
+}
+
 @mixin _map-scale-to-elements() {
     // Maps type scale typographic categories
     // to native elements.
@@ -24,13 +30,19 @@
             // Add native element typographic styles.
             @if $e {
                 #{$e}:not([slot], [slotted-styles]) {
-                    @each $key, $value in $type-style {
-                        #{$key}: var(--igc-#{$category}-#{$key});
-                    }
+                    @include _map-style-to-rules($type-style, $category);
                 }
+            }
+
+            // Add class rules for each typography style.
+            &__#{$category} {
+                @include _map-style-to-rules($type-style, $category);
             }
         }
     }
 }
 
-@include _map-scale-to-elements();
+// Scope so that h1-h6 and p rules apply when this class is present.
+.igc-typography {
+    @include _map-scale-to-elements();
+}
