@@ -18,7 +18,7 @@
 }
 
 :host([size='small']) [part='base'] {
-    --size: #{utils.rem(31px)};
+    --size: #{utils.rem(32px)};
 }
 
 :host([disabled][variant='flat']) [part='base'] {
