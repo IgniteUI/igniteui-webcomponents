@@ -90,7 +90,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
   }
 
   public set value(string: string) {
-    this._value = string;
+    this._value = string ?? '';
     this.maskedValue = this.parser.apply(this._value);
   }
 
@@ -224,7 +224,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
 
   protected handleDragEnter() {
     if (!this.hasFocus) {
-      this.maskedValue = this.parser.apply(this.input.value);
+      this.maskedValue = this.parser.apply(this._value);
     }
   }
 
@@ -236,8 +236,13 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
 
   protected override handleFocus() {
     this.hasFocus = true;
-    this.maskedValue = this.parser.apply(this.input.value);
+    this.maskedValue = this.parser.apply(this._value);
     super.handleFocus();
+
+    // In case of empty value, select the whole mask
+    if (!this._value) {
+      this.updateComplete.then(() => this.select());
+    }
   }
 
   protected override handleBlur() {
@@ -248,12 +253,21 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
 
   protected override handleChange() {
     this.emitEvent('igcChange', { detail: this.value });
-    // TODO: should we run the same logic in reportValidity as well?
     this.invalid = !this.parser.isValidString(this._value);
   }
 
   protected handleInvalid() {
     this.invalid = true;
+  }
+
+  protected handleClick() {
+    // Clicking at the end of the input field will select the entire mask
+    if (
+      this.input.selectionStart === this.input.selectionEnd &&
+      this.input.selectionStart === this.maskedValue.length
+    ) {
+      this.select();
+    }
   }
 
   protected updateMaskedValue() {
@@ -290,7 +304,9 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity() {
-    return this.input.reportValidity();
+    return (
+      this.input.reportValidity() && this.parser.isValidString(this._value)
+    );
   }
 
   /**
@@ -325,6 +341,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
         @focus=${this.handleFocus}
         @cut=${this.handleCut}
         @change=${this.handleChange}
+        @click=${this.handleClick}
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
         @input=${this.handleInput}

@@ -183,28 +183,18 @@ export class MaskParser {
   public isValidString(input = '') {
     this.getMaskLiterals();
 
-    const requiredNotLiteralPositions = this.getRequiredNonLiteralPositions(
-      this.mask
-    );
+    const required = this.getRequiredNonLiteralPositions(this._escapedMask);
 
-    if (requiredNotLiteralPositions.length < 1) {
-      return true;
+    if (input.length > this.getNonLiteralPositions(this._escapedMask).length) {
+      return false;
     }
 
-    const chars = Array.from(input);
-    const combined = zip(chars, requiredNotLiteralPositions);
-
-    for (const [char, position] of combined) {
-      if (
-        position === undefined ||
-        char === undefined ||
-        !this.validate(char, this._escapedMask.charAt(position))
-      ) {
-        return false;
-      }
-    }
-
-    return true;
+    return required.every((pos, index) => {
+      const char = input.charAt(index);
+      return (
+        char !== undefined && this.validate(char, this._escapedMask.charAt(pos))
+      );
+    });
   }
 
   public apply(input = '') {
@@ -247,15 +237,4 @@ export class MaskParser {
 
     return output;
   }
-}
-
-function zip<S, T>(first: Array<S>, second: Array<T>): Array<[S, T]> {
-  const length = Math.max(first.length, second.length);
-  const zipped: Array<[S, T]> = [];
-
-  for (let index = 0; index < length; index++) {
-    zipped.push([first[index], second[index]]);
-  }
-
-  return zipped;
 }
