@@ -12,11 +12,9 @@
         overflow-x: hidden;
         top: 0;
         bottom: 0;
-        left: 0;
+        inset-inline-start: 0;
         z-index: 999;
         background: color(surface, 500);
-        border-inline-end: 1px solid color(gray, 900, .14);
-        box-shadow: var(--igc-elevation-16);
         border-radius: 0;
         transition: all ease-out .3s, .3s;
     }
@@ -28,6 +26,32 @@
     [part='mini'] {
         width: rem(60px);
     }
+
+    [part='overlay'] {
+        background: color(gray, 500, .54);
+        position: fixed;
+        inset: 0;
+        z-index: 2;
+    }
+}
+
+:host([position='start']) [part='mini'],
+:host([position='end']) [part='mini'] {
+    background: color(surface, 500);
+    box-shadow: var(--igc-elevation-16);
+    position: fixed;
+    top: 0;
+    bottom: 0;
+}
+
+:host([position='start']) [part='mini'] {
+    border-inline-end: 1px solid color(gray, 900, .14);
+    inset-inline-start: 0;
+}
+
+:host([position='end']) [part='mini'] {
+    border-inline-start: 1px solid color(gray, 900, .14);
+    inset-inline-end: 0;
 }
 
 :host([position='top']),
@@ -68,12 +92,12 @@
     }
 }
 
-:host([position='end']) {
+:host([open][position='end']) {
     [part='base'] {
         border-inline-end: none;
         border-inline-start: 1px solid color(gray, 900, .14);
-        left: auto;
-        right: 0;
+        inset-inline-start: auto;
+        inset-inline-end: 0;
     }
 }
 
@@ -81,10 +105,19 @@
     [part='mini'] {
         display: none;
     }
+
+    [part='base'] {
+        border-inline-end: 1px solid color(gray, 900, .14);
+        box-shadow: var(--igc-elevation-16);
+    }
 }
 
 :host(:not([open])) {
     [part='main'] {
+        display: none;
+    }
+
+    [part='overlay'] {
         display: none;
     }
 }
