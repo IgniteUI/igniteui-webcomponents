@@ -67,6 +67,7 @@ describe('Navigation Drawer', () => {
 
     it('render nav drawer slots successfully', async () => {
       expect(el).shadowDom.equal(`
+        <div part="overlay"></div>
         <div part="base">
           <div part="main">
             <slot></slot>
