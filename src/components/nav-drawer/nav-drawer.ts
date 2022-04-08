@@ -25,7 +25,7 @@ export default class IgcNavDrawerComponent extends LitElement {
 
   /** The position of the drawer. */
   @property({ reflect: true })
-  public position: 'start' | 'end' | 'top' | 'bottom' = 'start';
+  public position: 'start' | 'end' | 'top' | 'bottom' | 'relative' = 'start';
 
   /** Determines whether the drawer is opened. */
   @property({ type: Boolean, reflect: true })
