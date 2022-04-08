@@ -101,11 +101,25 @@
     }
 }
 
+:host([position='relative']) {
+    [part='base'] {
+        position: relative;
+        width: fit-content;
+        box-shadow: none;
+    }
+
+    [part='overlay'] {
+        display: none;
+    }
+}
+
 :host([open]) {
     [part='mini'] {
         display: none;
     }
+}
 
+:host([open]:not([position='relative'])) {
     [part='base'] {
         border-inline-end: 1px solid color(gray, 900, .14);
         box-shadow: var(--igc-elevation-16);
