@@ -361,7 +361,6 @@ $fs: rem(16px) !default;
         padding-bottom: rem(6px);
     }
 
-
     input:placeholder-shown + [part='notch'] [part='label'],
     [part~='filled'] + [part='notch'] [part='label'] {
         transform: translateY(-106%);
