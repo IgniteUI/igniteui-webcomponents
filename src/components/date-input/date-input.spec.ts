@@ -89,6 +89,14 @@ describe('Date Input component', () => {
       await elementUpdated(el);
       expect(input.value).to.equal('');
     });
+
+    it('Set value attribute', async () => {
+      const value = new Date(2020, 2, 3).toISOString();
+      el.setAttribute('value', value);
+      await elementUpdated(input);
+
+      expect(el.value?.toISOString()).to.equal(value);
+    });
   });
 
   const createDateInputComponent = (

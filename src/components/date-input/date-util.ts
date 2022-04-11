@@ -1,6 +1,7 @@
 import { isDate } from '../calendar/common/utils';
+import { MaskParser } from '../masked-input/mask-parser';
 
-const enum FormatDesc {
+export const enum FormatDesc {
   Numeric = 'numeric',
   TwoDigits = '2-digit',
 }
@@ -24,14 +25,12 @@ export interface DatePartInfo {
   format: string;
 }
 
-// const TIME_CHARS = ['d', 'D', 'M', 'y', 'Y'];
-// const DATE_CHARS = ['h', 'H', 'm', 's', 'S', 't', 'T'];
-
 export abstract class DateTimeUtil {
   public static readonly DEFAULT_INPUT_FORMAT = 'MM/dd/yyyy';
   public static readonly DEFAULT_TIME_INPUT_FORMAT = 'hh:mm tt';
   private static readonly SEPARATOR = 'literal';
   private static readonly DEFAULT_LOCALE = 'en';
+  private static _parser = new MaskParser();
 
   public static parseValueFromMask(
     inputData: string,
@@ -385,11 +384,12 @@ export abstract class DateTimeUtil {
   }
 
   public static formatDate(
-    value: number | Date,
+    value: Date,
     locale: string,
     format: string
   ): string {
-    let options: Intl.DateTimeFormatOptions = {};
+    const options: Intl.DateTimeFormatOptions = {};
+    let formattedDate = '';
 
     switch (format.toLowerCase()) {
       case 'short':
@@ -409,8 +409,7 @@ export abstract class DateTimeUtil {
         options['timeStyle'] = 'full';
         break;
       default:
-        options = this.setFormatOptions(format, locale);
-        break;
+        return (formattedDate = this.setFormatOptions(value, format, locale));
     }
 
     let formatter;
@@ -420,50 +419,118 @@ export abstract class DateTimeUtil {
       formatter = new Intl.DateTimeFormat(this.DEFAULT_LOCALE, options);
     }
 
-    const formattedDate = formatter.format(value);
+    formattedDate = formatter.format(value);
 
     return formattedDate;
   }
 
   //TODO: Decide with the team whether we should keep/edit this or remove it.
-  private static setFormatOptions(format: string, locale: string) {
-    const options: Intl.DateTimeFormatOptions = {};
+  private static setFormatOptions(value: Date, format: string, locale: string) {
     const parts = this.parseDateTimeFormat(format, locale);
+    const val = parts.map((p) => p.format).join('');
 
-    parts.forEach((p) => {
-      switch (p.type) {
-        case DateParts.Date:
-          options['day'] = p.format === 'dd' ? '2-digit' : 'numeric';
-          break;
-        case DateParts.Year:
-          options['year'] = p.format === 'yy' ? '2-digit' : 'numeric';
-          break;
-        case DateParts.Month:
-          switch (p.format) {
-            case 'M':
-              options['month'] = 'numeric';
-              break;
-            case 'MM':
-              options['month'] = '2-digit';
-              break;
-          }
-          break;
-        case DateParts.Hours:
-          options['hour'] = p.format === 'hh' ? '2-digit' : 'numeric';
-          break;
-        case DateParts.Minutes:
-          options['minute'] = p.format === 'mm' ? '2-digit' : 'numeric';
-          break;
-        case DateParts.Seconds:
-          options['second'] = p.format === 'ss' ? '2-digit' : 'numeric';
-          break;
-        case DateParts.AmPm:
-          options['dayPeriod'] = 'short';
-          break;
+    const newMask = val.replace(new RegExp(/(?=[^t])[\w]/, 'g'), '0');
+
+    this._parser.mask =
+      newMask.indexOf('tt') !== -1
+        ? newMask.replace(new RegExp('tt', 'g'), 'LL')
+        : newMask;
+
+    let emptyMask = this._parser.apply();
+
+    for (const part of parts) {
+      if (part.type === DateParts.Literal) {
+        continue;
       }
-    });
+      const targetValue = this.getPartValue(part, part.format.length, value);
 
-    return options;
+      emptyMask = this._parser.replace(
+        emptyMask,
+        targetValue,
+        part.start,
+        part.end
+      ).value;
+    }
+
+    return emptyMask;
+  }
+
+  public static getPartValue(
+    datePartInfo: DatePartInfo,
+    partLength: number,
+    _dateValue: Date | null
+  ): string {
+    let maskedValue: any;
+    const datePart = datePartInfo.type;
+
+    switch (datePart) {
+      case DateParts.Date:
+        maskedValue = _dateValue!.getDate();
+        break;
+      case DateParts.Month:
+        // months are zero based
+        maskedValue = _dateValue!.getMonth() + 1;
+        break;
+      case DateParts.Year:
+        if (partLength === 2) {
+          maskedValue = this.prependValue(
+            parseInt(_dateValue!.getFullYear().toString().slice(-2), 10),
+            partLength,
+            '0'
+          );
+        } else {
+          maskedValue = _dateValue!.getFullYear();
+        }
+        break;
+      case DateParts.Hours:
+        if (datePartInfo.format.indexOf('h') !== -1) {
+          maskedValue = this.prependValue(
+            this.toTwelveHourFormat(_dateValue!.getHours().toString()),
+            partLength,
+            '0'
+          );
+        } else {
+          maskedValue = _dateValue!.getHours();
+        }
+        break;
+      case DateParts.Minutes:
+        maskedValue = _dateValue!.getMinutes();
+        break;
+      case DateParts.Seconds:
+        maskedValue = _dateValue!.getSeconds();
+        break;
+      case DateParts.AmPm:
+        maskedValue = _dateValue!.getHours() >= 12 ? 'PM' : 'AM';
+        break;
+    }
+
+    if (datePartInfo.type !== DateParts.AmPm) {
+      return this.prependValue(maskedValue, partLength, '0');
+    }
+
+    return maskedValue;
+  }
+
+  private static prependValue(
+    value: number,
+    partLength: number,
+    prependChar: string
+  ): string {
+    return (prependChar + value.toString()).slice(-partLength);
+  }
+
+  private static toTwelveHourFormat(value: string): number {
+    let hour = parseInt(
+      value.replace(new RegExp(this._parser.prompt, 'g'), '0'),
+      10
+    );
+    if (hour > 12) {
+      hour -= 12;
+    } else if (hour === 0) {
+      hour = 12;
+    }
+
+    return hour;
   }
 
   public static spinYear(delta: number, newDate: Date): Date {
@@ -593,5 +660,102 @@ export abstract class DateTimeUtil {
     }
 
     return newDate;
+  }
+
+  public static greaterThanMaxValue(
+    value: Date,
+    maxValue: Date,
+    includeTime = true,
+    includeDate = true
+  ): boolean {
+    if (includeTime && includeDate) {
+      return value.getTime() > maxValue.getTime();
+    }
+
+    const _value = new Date(value.getTime());
+    const _maxValue = new Date(maxValue.getTime());
+    if (!includeTime) {
+      _value.setHours(0, 0, 0, 0);
+      _maxValue.setHours(0, 0, 0, 0);
+    }
+    if (!includeDate) {
+      _value.setFullYear(0, 0, 0);
+      _maxValue.setFullYear(0, 0, 0);
+    }
+
+    return _value.getTime() > _maxValue.getTime();
+  }
+
+  /**
+   * Determines whether the provided value is less than the provided min value.
+   *
+   * @param includeTime set to false if you want to exclude time portion of the two dates
+   * @param includeDate set to false if you want to exclude the date portion of the two dates
+   * @returns true if provided value is less than provided minValue
+   */
+  public static lessThanMinValue(
+    value: Date,
+    minValue: Date,
+    includeTime = true,
+    includeDate = true
+  ): boolean {
+    if (includeTime && includeDate) {
+      return value.getTime() < minValue.getTime();
+    }
+
+    const _value = new Date(value.getTime());
+    const _minValue = new Date(minValue.getTime());
+    if (!includeTime) {
+      _value.setHours(0, 0, 0, 0);
+      _minValue.setHours(0, 0, 0, 0);
+    }
+    if (!includeDate) {
+      _value.setFullYear(0, 0, 0);
+      _minValue.setFullYear(0, 0, 0);
+    }
+
+    return _value.getTime() < _minValue.getTime();
+  }
+
+  /**
+   * Validates a value within a given min and max value range.
+   *
+   * @param value The value to validate
+   * @param minValue The lowest possible value that `value` can take
+   * @param maxValue The largest possible value that `value` can take
+   */
+  public static validateMinMax(
+    value: Date,
+    minValue: Date | string,
+    maxValue: Date | string,
+    includeTime = true,
+    includeDate = true
+  ) {
+    // if (!value) {
+    //     return null;
+    // }
+    const errors = {};
+    const min = DateTimeUtil.isValidDate(minValue)
+      ? minValue
+      : DateTimeUtil.parseIsoDate(minValue);
+    const max = DateTimeUtil.isValidDate(maxValue)
+      ? maxValue
+      : DateTimeUtil.parseIsoDate(maxValue);
+    if (
+      min &&
+      value &&
+      DateTimeUtil.lessThanMinValue(value, min, includeTime, includeDate)
+    ) {
+      Object.assign(errors, { minValue: true });
+    }
+    if (
+      max &&
+      value &&
+      DateTimeUtil.greaterThanMaxValue(value, max, includeTime, includeDate)
+    ) {
+      Object.assign(errors, { maxValue: true });
+    }
+
+    return errors;
   }
 }

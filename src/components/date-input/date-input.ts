@@ -5,6 +5,7 @@ import { DatePartInfo, DateParts, DateTimeUtil } from './date-util';
 import { watch } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcMaskedInputBaseComponent } from './masked-input-base';
+import { partNameMap } from '../common/util';
 
 export interface DatePartDeltas {
   date?: number;
@@ -62,27 +63,14 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     this._dateValue = DateTimeUtil.isValidDate(val) ? val : null;
 
     this.updateMask();
+    this.updateValidity();
   }
 
   @property({ attribute: 'min-value' })
-  public get minValue(): string | Date {
-    return this._minValue;
-  }
-
-  public set minValue(value: string | Date) {
-    this._minValue = value;
-    //this.onValidatorChange();
-  }
+  public minValue!: Date | string;
 
   @property({ attribute: 'max-value' })
-  public get maxValue(): string | Date {
-    return this._maxValue;
-  }
-
-  public set maxValue(value: string | Date) {
-    this._maxValue = value;
-    //this.onValidatorChange();
-  }
+  public maxValue!: Date | string;
 
   @property()
   public displayFormat!: string;
@@ -113,9 +101,13 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
 
   @watch('displayFormat', { waitUntilFirstUpdate: true })
   protected setDisplayFormat(): void {
-    if (this._dateValue) {
+    if (this.displayFormat) {
+      this.placeholder = this.displayFormat;
+    }
+
+    if (this.value && this.displayFormat) {
       this.maskedValue = DateTimeUtil.formatDate(
-        this._dateValue,
+        this._dateValue!, //TODO check if we can remove _dateValue and use value
         this.locale,
         this.displayFormat
       );
@@ -136,6 +128,75 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     } else {
       this.parser.prompt = this.prompt;
     }
+  }
+
+  @watch('required', { waitUntilFirstUpdate: true })
+  @watch('disabled', { waitUntilFirstUpdate: true })
+  @watch('value', { waitUntilFirstUpdate: true })
+  protected handleInvalidState(): void {
+    this.updateComplete.then(
+      () => (this.invalid = !this.input.checkValidity())
+    );
+  }
+
+  @watch('maxValue')
+  @watch('minValue')
+  protected updateValidity() {
+    // this.updateComplete.then(
+    //   () => (this.invalid = !this.input.checkValidity())
+    // );
+
+    if (!this.value) {
+      return null;
+    }
+
+    let errors = {};
+
+    const minValueDate = DateTimeUtil.isValidDate(this.minValue)
+      ? this.minValue
+      : this.parseDate(this.minValue);
+    const maxValueDate = DateTimeUtil.isValidDate(this.maxValue)
+      ? this.maxValue
+      : this.parseDate(this.maxValue);
+
+    if (minValueDate || maxValueDate) {
+      errors = DateTimeUtil.validateMinMax(
+        this.value!,
+        minValueDate!,
+        maxValueDate!,
+        this.hasTimeParts,
+        this.hasDateParts
+      );
+
+      if (Object.keys(errors).length > 0) {
+        this.invalid = true;
+        this.setCustomValidity(
+          'Date doesnt fullfil ' + Object.keys(errors).join(', ')
+        );
+      } else {
+        this.invalid = false;
+      }
+    }
+
+    return errors;
+  }
+
+  private get hasDateParts(): boolean {
+    return this._inputDateParts.some(
+      (p) =>
+        p.type === DateParts.Date ||
+        p.type === DateParts.Month ||
+        p.type === DateParts.Year
+    );
+  }
+
+  private get hasTimeParts(): boolean {
+    return this._inputDateParts.some(
+      (p) =>
+        p.type === DateParts.Hours ||
+        p.type === DateParts.Minutes ||
+        p.type === DateParts.Seconds
+    );
   }
 
   private get targetDatePart(): DateParts {
@@ -390,7 +451,13 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
         if (part.type === DateParts.Literal) {
           continue;
         }
-        const targetValue = this.getPartValue(part, part.format.length);
+
+        const targetValue = DateTimeUtil.getPartValue(
+          part,
+          part.format.length,
+          this._dateValue
+        );
+
         mask = this.parser.replace(
           mask,
           targetValue,
@@ -412,76 +479,76 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     return this.maskedValue.indexOf(this.prompt) === -1;
   }
 
-  private getPartValue(datePartInfo: DatePartInfo, partLength: number): string {
-    let maskedValue: any;
-    const datePart = datePartInfo.type;
+  // private getPartValue(datePartInfo: DatePartInfo, partLength: number): string {
+  //   let maskedValue: any;
+  //   const datePart = datePartInfo.type;
 
-    switch (datePart) {
-      case DateParts.Date:
-        maskedValue = this._dateValue!.getDate();
-        break;
-      case DateParts.Month:
-        // months are zero based
-        maskedValue = this._dateValue!.getMonth() + 1;
-        break;
-      case DateParts.Year:
-        if (partLength === 2) {
-          maskedValue = this.prependValue(
-            parseInt(this._dateValue!.getFullYear().toString().slice(-2), 10),
-            partLength,
-            '0'
-          );
-        } else {
-          maskedValue = this._dateValue!.getFullYear();
-        }
-        break;
-      case DateParts.Hours:
-        if (datePartInfo.format.indexOf('h') !== -1) {
-          maskedValue = this.prependValue(
-            this.toTwelveHourFormat(this._dateValue!.getHours().toString()),
-            partLength,
-            '0'
-          );
-        } else {
-          maskedValue = this._dateValue!.getHours();
-        }
-        break;
-      case DateParts.Minutes:
-        maskedValue = this._dateValue!.getMinutes();
-        break;
-      case DateParts.Seconds:
-        maskedValue = this._dateValue!.getSeconds();
-        break;
-      case DateParts.AmPm:
-        maskedValue = this._dateValue!.getHours() >= 12 ? 'PM' : 'AM';
-        break;
-    }
+  //   switch (datePart) {
+  //     case DateParts.Date:
+  //       maskedValue = this._dateValue!.getDate();
+  //       break;
+  //     case DateParts.Month:
+  //       // months are zero based
+  //       maskedValue = this._dateValue!.getMonth() + 1;
+  //       break;
+  //     case DateParts.Year:
+  //       if (partLength === 2) {
+  //         maskedValue = this.prependValue(
+  //           parseInt(this._dateValue!.getFullYear().toString().slice(-2), 10),
+  //           partLength,
+  //           '0'
+  //         );
+  //       } else {
+  //         maskedValue = this._dateValue!.getFullYear();
+  //       }
+  //       break;
+  //     case DateParts.Hours:
+  //       if (datePartInfo.format.indexOf('h') !== -1) {
+  //         maskedValue = this.prependValue(
+  //           this.toTwelveHourFormat(this._dateValue!.getHours().toString()),
+  //           partLength,
+  //           '0'
+  //         );
+  //       } else {
+  //         maskedValue = this._dateValue!.getHours();
+  //       }
+  //       break;
+  //     case DateParts.Minutes:
+  //       maskedValue = this._dateValue!.getMinutes();
+  //       break;
+  //     case DateParts.Seconds:
+  //       maskedValue = this._dateValue!.getSeconds();
+  //       break;
+  //     case DateParts.AmPm:
+  //       maskedValue = this._dateValue!.getHours() >= 12 ? 'PM' : 'AM';
+  //       break;
+  //   }
 
-    if (datePartInfo.type !== DateParts.AmPm) {
-      return this.prependValue(maskedValue, partLength, '0');
-    }
+  //   if (datePartInfo.type !== DateParts.AmPm) {
+  //     return this.prependValue(maskedValue, partLength, '0');
+  //   }
 
-    return maskedValue;
-  }
+  //   return maskedValue;
+  // }
 
-  private prependValue(
-    value: number,
-    partLength: number,
-    prependChar: string
-  ): string {
-    return (prependChar + value.toString()).slice(-partLength);
-  }
+  // private prependValue(
+  //   value: number,
+  //   partLength: number,
+  //   prependChar: string
+  // ): string {
+  //   return (prependChar + value.toString()).slice(-partLength);
+  // }
 
-  private toTwelveHourFormat(value: string): number {
-    let hour = parseInt(value.replace(new RegExp(this.prompt, 'g'), '0'), 10);
-    if (hour > 12) {
-      hour -= 12;
-    } else if (hour === 0) {
-      hour = 12;
-    }
+  // private toTwelveHourFormat(value: string): number {
+  //   let hour = parseInt(value.replace(new RegExp(this.prompt, 'g'), '0'), 10);
+  //   if (hour > 12) {
+  //     hour -= 12;
+  //   } else if (hour === 0) {
+  //     hour = 12;
+  //   }
 
-    return hour;
-  }
+  //   return hour;
+  // }
 
   private updateValue(): void {
     if (this.isComplete()) {
@@ -578,12 +645,14 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     return html`<div>
       <input
         type="text"
+        part=${partNameMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder || this.emptyMask)}
         ?readonly=${this.readonly}
         ?disabled=${this.disabled}
         ?required=${this.required}
+        @invalid="${this.handleInvalid}"
         @blur=${this.handleBlur}
         @focus=${this.handleFocus}
         @change=${this.handleChange}

@@ -3,6 +3,7 @@ import { Story, Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import IgcDateInputComponent from './../src/components/date-input/date-input';
 import { DateParts } from '../src/components/date-input/date-util.js';
+import { registerIcon } from '../src/components/icon/icon.registry.js';
 
 // region default
 const metadata = {
@@ -56,6 +57,12 @@ const metadata = {
       type: 'string',
       description: 'The prompt symbol to use for unfilled parts of the mask.',
       control: 'text',
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Controls the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
     },
     name: {
       type: 'string',
@@ -118,6 +125,7 @@ interface ArgTypes {
   locale: string;
   mask: string;
   prompt: string;
+  invalid: boolean;
   name: string;
   outlined: boolean;
   required: boolean;
@@ -129,6 +137,21 @@ interface ArgTypes {
 }
 // endregion
 
+registerIcon(
+  'clear',
+  'https://unpkg.com/material-design-icons@3.0.1/content/svg/production/ic_clear_24px.svg'
+);
+
+registerIcon(
+  'up',
+  'https://unpkg.com/material-design-icons@3.0.1/navigation/svg/production/ic_arrow_drop_up_24px.svg'
+);
+
+registerIcon(
+  'down',
+  'https://unpkg.com/material-design-icons@3.0.1/navigation/svg/production/ic_arrow_drop_down_24px.svg'
+);
+
 const handleIncrement = () => {
   const input = document.querySelector(
     'igc-date-input'
@@ -137,6 +160,13 @@ const handleIncrement = () => {
 };
 
 const handleDecrement = () => {
+  const input = document.querySelector(
+    'igc-date-input'
+  ) as IgcDateInputComponent;
+  input?.stepDown();
+};
+
+const handleClear = () => {
   const input = document.querySelector(
     'igc-date-input'
   ) as IgcDateInputComponent;
@@ -153,8 +183,15 @@ const Template: Story<ArgTypes, Context> = (
   {
     inputFormat,
     prompt,
+    readonly,
+    disabled,
+    required,
+    outlined,
     placeholder,
     displayFormat,
+    minValue,
+    maxValue,
+    size,
     locale,
     spinLoop,
     value,
@@ -163,19 +200,26 @@ const Template: Story<ArgTypes, Context> = (
 ) => {
   return html`<igc-date-input
     dir=${direction}
-    .value=${value ? new Date(value as Date) : undefined}
+    .value=${value ? new Date(value as Date) : null}
+    min-value=${ifDefined(minValue)}
+    max-value=${ifDefined(maxValue)}
+    locale=${ifDefined(locale)}
     inputFormat=${ifDefined(inputFormat)}
+    displayFormat=${ifDefined(displayFormat)}
     prompt=${ifDefined(prompt)}
     placeholder=${ifDefined(placeholder)}
-    displayFormat=${ifDefined(displayFormat)}
-    locale=${ifDefined(locale)}
+    size=${ifDefined(size)}
     ?spin-loop=${ifDefined(spinLoop)}
+    ?readonly=${ifDefined(readonly)}
+    ?outlined=${ifDefined(outlined)}
+    ?required=${ifDefined(required)}
+    ?disabled=${ifDefined(disabled)}
   >
-    <igc-icon name="github" slot="prefix"></igc-icon>
-    <igc-icon name="github" slot="suffix" @click=${handleIncrement}></igc-icon>
-    <igc-icon name="github" slot="suffix" @click=${handleDecrement}></igc-icon>
+    <igc-icon name="clear" slot="prefix" @click=${handleClear}></igc-icon>
+    <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
+    <igc-icon name="down" slot="suffix" @click=${handleDecrement}></igc-icon>
     <span slot="helper-text">This is some helper text</span>
-  </igc-date-input> `;
+  </igc-date-input>`;
 };
 
 export const Basic = Template.bind({});
