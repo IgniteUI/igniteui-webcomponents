@@ -122,9 +122,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
   @watch('disabled', { waitUntilFirstUpdate: true })
   @watch('value', { waitUntilFirstUpdate: true })
   protected handleInvalidState() {
-    this.updateComplete.then(
-      () => (this.invalid = !this.input.checkValidity())
-    );
+    this.updateComplete.then(() => (this.invalid = !this.checkValidity()));
   }
 
   public override connectedCallback() {
@@ -253,7 +251,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
 
   protected override handleChange() {
     this.emitEvent('igcChange', { detail: this.value });
-    this.invalid = !this.parser.isValidString(this._value);
+    this.invalid = !this.checkValidity();
   }
 
   protected handleInvalid() {
@@ -316,6 +314,21 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
   public setCustomValidity(message: string) {
     this.input.setCustomValidity(message);
     this.invalid = !this.input.checkValidity();
+  }
+
+  /** Check for validity of the control */
+  public checkValidity() {
+    if (this.disabled) {
+      return this.input.checkValidity();
+    }
+
+    if (this.required && this.hasFocus && !this._value) {
+      return false;
+    } else {
+      return (
+        this.input.checkValidity() && this.parser.isValidString(this._value)
+      );
+    }
   }
 
   /** Selects all text within the input. */
