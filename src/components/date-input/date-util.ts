@@ -123,40 +123,6 @@ export abstract class DateTimeUtil {
     return '';
   }
 
-  private static getMask(dateStruct: any[]): string {
-    const mask = [];
-
-    for (const part of dateStruct) {
-      switch (part.formatType) {
-        case FormatDesc.Numeric: {
-          if (part.type === DateParts.Day) {
-            mask.push('d');
-          } else if (part.type === DateParts.Month) {
-            mask.push('M');
-          } else {
-            mask.push('yyyy');
-          }
-          break;
-        }
-        case FormatDesc.TwoDigits: {
-          if (part.type === DateParts.Day) {
-            mask.push('dd');
-          } else if (part.type === DateParts.Month) {
-            mask.push('MM');
-          } else {
-            mask.push('yy');
-          }
-        }
-      }
-
-      if (part.type === DateTimeUtil.SEPARATOR) {
-        mask.push(part.value);
-      }
-    }
-
-    return mask.join('');
-  }
-
   public static parseDateTimeFormat(
     mask: string,
     locale: string = DateTimeUtil.DEFAULT_LOCALE
@@ -204,155 +170,6 @@ export abstract class DateTimeUtil {
     }
 
     return dateTimeParts;
-  }
-
-  private static addCurrentPart(
-    currentPart: DatePartInfo,
-    dateTimeParts: DatePartInfo[]
-  ): void {
-    DateTimeUtil.ensureLeadingZero(currentPart);
-    currentPart.end = currentPart.start + currentPart.format.length;
-    dateTimeParts.push(currentPart);
-  }
-
-  private static ensureLeadingZero(part: DatePartInfo) {
-    switch (part.type) {
-      case DateParts.Date:
-      case DateParts.Month:
-      case DateParts.Hours:
-      case DateParts.Minutes:
-      case DateParts.Seconds:
-        if (part.format.length === 1) {
-          part.format = part.format.repeat(2);
-        }
-        break;
-    }
-  }
-
-  private static determineDatePart(char: string): DateParts {
-    switch (char) {
-      case 'd':
-      case 'D':
-        return DateParts.Date;
-      case 'M':
-        return DateParts.Month;
-      case 'y':
-      case 'Y':
-        return DateParts.Year;
-      case 'h':
-      case 'H':
-        return DateParts.Hours;
-      case 'm':
-        return DateParts.Minutes;
-      case 's':
-      case 'S':
-        return DateParts.Seconds;
-      case 't':
-      case 'T':
-        return DateParts.AmPm;
-      default:
-        return DateParts.Literal;
-    }
-  }
-
-  private static getDefaultLocaleMask(locale: string) {
-    const dateStruct: any = [];
-    let formatter;
-    try {
-      formatter = new Intl.DateTimeFormat(locale);
-    } catch {
-      return;
-    }
-
-    const formatToParts = formatter.formatToParts(new Date());
-
-    for (const part of formatToParts) {
-      if (part.type === DateTimeUtil.SEPARATOR) {
-        dateStruct.push({
-          type: DateTimeUtil.SEPARATOR,
-          value: part.value,
-        });
-      } else {
-        dateStruct.push({
-          type: part.type,
-        });
-      }
-    }
-
-    const formatterOptions = formatter.resolvedOptions();
-
-    for (const part of dateStruct) {
-      switch (part.type) {
-        case DateParts.Day: {
-          part.formatType = formatterOptions.day;
-          break;
-        }
-        case DateParts.Month: {
-          part.formatType = formatterOptions.month;
-          break;
-        }
-        case DateParts.Year: {
-          part.formatType = formatterOptions.year;
-          break;
-        }
-      }
-    }
-
-    DateTimeUtil.fillDatePartsPositions(dateStruct);
-    return dateStruct;
-  }
-
-  private static fillDatePartsPositions(dateArray: any[]): void {
-    let currentPos = 0;
-
-    for (const part of dateArray) {
-      // Day|Month part positions
-      if (part.type === DateParts.Day || part.type === DateParts.Month) {
-        // Offset 2 positions for number
-        part.position = [currentPos, currentPos + 2];
-        currentPos += 2;
-      } else if (part.type === DateParts.Year) {
-        // Year part positions
-        switch (part.formatType) {
-          case FormatDesc.Numeric: {
-            // Offset 4 positions for full year
-            part.position = [currentPos, currentPos + 4];
-            currentPos += 4;
-            break;
-          }
-          case FormatDesc.TwoDigits: {
-            // Offset 2 positions for short year
-            part.position = [currentPos, currentPos + 2];
-            currentPos += 2;
-            break;
-          }
-        }
-      } else if (part.type === DateTimeUtil.SEPARATOR) {
-        // Separator positions
-        part.position = [currentPos, currentPos + 1];
-        currentPos++;
-      }
-    }
-  }
-
-  private static getCleanVal(
-    inputData: string,
-    datePart: DatePartInfo,
-    prompt?: string
-  ): string {
-    return DateTimeUtil.trimEmptyPlaceholders(
-      inputData.substring(datePart.start, datePart.end),
-      prompt
-    );
-  }
-
-  private static trimEmptyPlaceholders(value: string, prompt?: string): string {
-    const result = value.replace(new RegExp(prompt || '_', 'g'), '');
-    return result;
-  }
-
-  private static daysInMonth(fullYear: number, month: number): number {
-    return new Date(fullYear, month + 1, 0).getDate();
   }
 
   public static parseIsoDate(value: string): Date | null {
@@ -424,37 +241,6 @@ export abstract class DateTimeUtil {
     return formattedDate;
   }
 
-  //TODO: Decide with the team whether we should keep/edit this or remove it.
-  private static setFormatOptions(value: Date, format: string, locale: string) {
-    const parts = this.parseDateTimeFormat(format, locale);
-    const val = parts.map((p) => p.format).join('');
-
-    const newMask = val.replace(new RegExp(/(?=[^t])[\w]/, 'g'), '0');
-
-    this._parser.mask =
-      newMask.indexOf('tt') !== -1
-        ? newMask.replace(new RegExp('tt', 'g'), 'LL')
-        : newMask;
-
-    let emptyMask = this._parser.apply();
-
-    for (const part of parts) {
-      if (part.type === DateParts.Literal) {
-        continue;
-      }
-      const targetValue = this.getPartValue(part, part.format.length, value);
-
-      emptyMask = this._parser.replace(
-        emptyMask,
-        targetValue,
-        part.start,
-        part.end
-      ).value;
-    }
-
-    return emptyMask;
-  }
-
   public static getPartValue(
     datePartInfo: DatePartInfo,
     partLength: number,
@@ -509,28 +295,6 @@ export abstract class DateTimeUtil {
     }
 
     return maskedValue;
-  }
-
-  private static prependValue(
-    value: number,
-    partLength: number,
-    prependChar: string
-  ): string {
-    return (prependChar + value.toString()).slice(-partLength);
-  }
-
-  private static toTwelveHourFormat(value: string): number {
-    let hour = parseInt(
-      value.replace(new RegExp(this._parser.prompt, 'g'), '0'),
-      10
-    );
-    if (hour > 12) {
-      hour -= 12;
-    } else if (hour === 0) {
-      hour = 12;
-    }
-
-    return hour;
   }
 
   public static spinYear(delta: number, newDate: Date): Date {
@@ -757,5 +521,240 @@ export abstract class DateTimeUtil {
     }
 
     return errors;
+  }
+
+  private static getMask(dateStruct: any[]): string {
+    const mask = [];
+
+    for (const part of dateStruct) {
+      switch (part.formatType) {
+        case FormatDesc.Numeric: {
+          if (part.type === DateParts.Day) {
+            mask.push('d');
+          } else if (part.type === DateParts.Month) {
+            mask.push('M');
+          } else {
+            mask.push('yyyy');
+          }
+          break;
+        }
+        case FormatDesc.TwoDigits: {
+          if (part.type === DateParts.Day) {
+            mask.push('dd');
+          } else if (part.type === DateParts.Month) {
+            mask.push('MM');
+          } else {
+            mask.push('yy');
+          }
+        }
+      }
+
+      if (part.type === DateTimeUtil.SEPARATOR) {
+        mask.push(part.value);
+      }
+    }
+
+    return mask.join('');
+  }
+
+  private static addCurrentPart(
+    currentPart: DatePartInfo,
+    dateTimeParts: DatePartInfo[]
+  ): void {
+    DateTimeUtil.ensureLeadingZero(currentPart);
+    currentPart.end = currentPart.start + currentPart.format.length;
+    dateTimeParts.push(currentPart);
+  }
+
+  private static ensureLeadingZero(part: DatePartInfo) {
+    switch (part.type) {
+      case DateParts.Date:
+      case DateParts.Month:
+      case DateParts.Hours:
+      case DateParts.Minutes:
+      case DateParts.Seconds:
+        if (part.format.length === 1) {
+          part.format = part.format.repeat(2);
+        }
+        break;
+    }
+  }
+
+  private static determineDatePart(char: string): DateParts {
+    switch (char) {
+      case 'd':
+      case 'D':
+        return DateParts.Date;
+      case 'M':
+        return DateParts.Month;
+      case 'y':
+      case 'Y':
+        return DateParts.Year;
+      case 'h':
+      case 'H':
+        return DateParts.Hours;
+      case 'm':
+        return DateParts.Minutes;
+      case 's':
+      case 'S':
+        return DateParts.Seconds;
+      case 't':
+      case 'T':
+        return DateParts.AmPm;
+      default:
+        return DateParts.Literal;
+    }
+  }
+
+  private static getDefaultLocaleMask(locale: string) {
+    const dateStruct: any = [];
+    let formatter;
+    try {
+      formatter = new Intl.DateTimeFormat(locale);
+    } catch {
+      return;
+    }
+
+    const formatToParts = formatter.formatToParts(new Date());
+
+    for (const part of formatToParts) {
+      if (part.type === DateTimeUtil.SEPARATOR) {
+        dateStruct.push({
+          type: DateTimeUtil.SEPARATOR,
+          value: part.value,
+        });
+      } else {
+        dateStruct.push({
+          type: part.type,
+        });
+      }
+    }
+
+    const formatterOptions = formatter.resolvedOptions();
+
+    for (const part of dateStruct) {
+      switch (part.type) {
+        case DateParts.Day: {
+          part.formatType = formatterOptions.day;
+          break;
+        }
+        case DateParts.Month: {
+          part.formatType = formatterOptions.month;
+          break;
+        }
+        case DateParts.Year: {
+          part.formatType = formatterOptions.year;
+          break;
+        }
+      }
+    }
+
+    DateTimeUtil.fillDatePartsPositions(dateStruct);
+    return dateStruct;
+  }
+
+  private static fillDatePartsPositions(dateArray: any[]): void {
+    let currentPos = 0;
+
+    for (const part of dateArray) {
+      // Day|Month part positions
+      if (part.type === DateParts.Day || part.type === DateParts.Month) {
+        // Offset 2 positions for number
+        part.position = [currentPos, currentPos + 2];
+        currentPos += 2;
+      } else if (part.type === DateParts.Year) {
+        // Year part positions
+        switch (part.formatType) {
+          case FormatDesc.Numeric: {
+            // Offset 4 positions for full year
+            part.position = [currentPos, currentPos + 4];
+            currentPos += 4;
+            break;
+          }
+          case FormatDesc.TwoDigits: {
+            // Offset 2 positions for short year
+            part.position = [currentPos, currentPos + 2];
+            currentPos += 2;
+            break;
+          }
+        }
+      } else if (part.type === DateTimeUtil.SEPARATOR) {
+        // Separator positions
+        part.position = [currentPos, currentPos + 1];
+        currentPos++;
+      }
+    }
+  }
+
+  private static getCleanVal(
+    inputData: string,
+    datePart: DatePartInfo,
+    prompt?: string
+  ): string {
+    return DateTimeUtil.trimEmptyPlaceholders(
+      inputData.substring(datePart.start, datePart.end),
+      prompt
+    );
+  }
+
+  private static trimEmptyPlaceholders(value: string, prompt?: string): string {
+    const result = value.replace(new RegExp(prompt || '_', 'g'), '');
+    return result;
+  }
+
+  private static daysInMonth(fullYear: number, month: number): number {
+    return new Date(fullYear, month + 1, 0).getDate();
+  }
+
+  private static setFormatOptions(value: Date, format: string, locale: string) {
+    const parts = this.parseDateTimeFormat(format, locale);
+    const val = parts.map((p) => p.format).join('');
+
+    const newMask = val.replace(new RegExp(/(?=[^t])[\w]/, 'g'), '0');
+
+    this._parser.mask =
+      newMask.indexOf('tt') !== -1
+        ? newMask.replace(new RegExp('tt', 'g'), 'LL')
+        : newMask;
+
+    let emptyMask = this._parser.apply();
+
+    for (const part of parts) {
+      if (part.type === DateParts.Literal) {
+        continue;
+      }
+      const targetValue = this.getPartValue(part, part.format.length, value);
+
+      emptyMask = this._parser.replace(
+        emptyMask,
+        targetValue,
+        part.start,
+        part.end
+      ).value;
+    }
+
+    return emptyMask;
+  }
+
+  private static prependValue(
+    value: number,
+    partLength: number,
+    prependChar: string
+  ): string {
+    return (prependChar + value.toString()).slice(-partLength);
+  }
+
+  private static toTwelveHourFormat(value: string): number {
+    let hour = parseInt(
+      value.replace(new RegExp(this._parser.prompt, 'g'), '0'),
+      10
+    );
+    if (hour > 12) {
+      hour -= 12;
+    } else if (hour === 0) {
+      hour = 12;
+    }
+
+    return hour;
   }
 }

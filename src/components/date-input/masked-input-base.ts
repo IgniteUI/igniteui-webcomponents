@@ -7,7 +7,7 @@ interface MaskSelection {
 }
 
 export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent {
-  protected parser = new MaskParser();
+  protected parser = new MaskParser(); //dateinnputparser
   protected selection: MaskSelection = { start: 0, end: 0 };
   protected droppedText = '';
   protected compositionStart = 0;
@@ -26,6 +26,10 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
   @property()
   public prompt!: string;
 
+  /** Controls the validity of the control. */
+  @property({ reflect: true, type: Boolean })
+  public invalid = false;
+
   protected get inputSelection(): MaskSelection {
     return {
       start: this.input.selectionStart || 0,
@@ -42,6 +46,25 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
 
     this.mask = this.mask || this.parser.mask;
     this.prompt = this.prompt || this.parser.prompt;
+  }
+
+  /** Checks for validity of the control and shows the browser message if it's invalid. */
+  public reportValidity() {
+    return this.input.reportValidity();
+  }
+
+  /**
+   * Sets a custom validation message for the control.
+   * As long as `message` is not empty, the control is considered invalid.
+   */
+  public setCustomValidity(message: string) {
+    this.input.setCustomValidity(message);
+    this.invalid = !this.input.checkValidity();
+  }
+
+  /** Selects all text within the input. */
+  public select() {
+    this.input.select();
   }
 
   protected handleKeydown(e: KeyboardEvent) {
@@ -109,6 +132,10 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
     const start = this.compositionStart,
       end = this.inputSelection.end;
     this.updateInput(data, start, end);
+  }
+
+  protected handleInvalid() {
+    this.invalid = true;
   }
 
   protected abstract updateInput(
