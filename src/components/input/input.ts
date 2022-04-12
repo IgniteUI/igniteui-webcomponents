@@ -164,7 +164,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         name="${ifDefined(this.name)}"
         type="${ifDefined(this.type)}"
         pattern="${ifDefined(this.pattern)}"
-        placeholder="${this.placeholder ?? ' '}"
+        placeholder="${ifDefined(this.placeholder)}"
         .value="${live(this.value)}"
         ?readonly="${this.readonly}"
         ?disabled="${this.disabled}"

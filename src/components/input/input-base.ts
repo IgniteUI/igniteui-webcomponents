@@ -112,6 +112,7 @@ export abstract class IgcInputBaseComponent
       [base]: true,
       prefixed: this.prefixes.length > 0,
       suffixed: this.suffixes.length > 0,
+      filled: !!this.value,
     };
   }
 
