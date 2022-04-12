@@ -8,8 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 ### Added
-
 - Mask input
+
+## [3.0.0] - 2022-04-12
+
+### Changed
+- **Breaking Change**: All dropdown related classes renamed from `IgcDropDown*` to `IgcDropdown*`
 
 ## [2.2.0] - 2022-04-01
 
@@ -90,6 +94,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[3.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.2.0...3.0.0
 [2.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.1...2.2.0
 [2.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.0.0...2.1.0
