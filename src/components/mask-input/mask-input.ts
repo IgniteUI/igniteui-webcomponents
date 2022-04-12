@@ -302,9 +302,11 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity() {
-    return (
-      this.input.reportValidity() && this.parser.isValidString(this._value)
-    );
+    const state = this._value
+      ? this.parser.isValidString(this._value)
+      : this.input.reportValidity();
+    this.invalid = !state;
+    return state;
   }
 
   /**

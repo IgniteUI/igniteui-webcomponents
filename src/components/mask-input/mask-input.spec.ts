@@ -4,9 +4,10 @@ import sinon from 'sinon';
 import { defineComponents } from '../../index.js';
 import { MaskParser } from './mask-parser.js';
 import IgcMaskInputComponent from './mask-input';
+import IgcFormComponent from '../form/form';
 
 describe('Masked input', () => {
-  before(() => defineComponents(IgcMaskInputComponent));
+  before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
 
   const parser = new MaskParser();
   const defaultPrompt = '_';
@@ -21,7 +22,7 @@ describe('Masked input', () => {
 
   let masked: IgcMaskInputComponent;
 
-  describe('', async () => {
+  describe('Generic properties', async () => {
     beforeEach(async () => {
       masked = await fixture<IgcMaskInputComponent>(
         html`<igc-mask-input></igc-mask-input>`
@@ -476,6 +477,44 @@ describe('Masked input', () => {
       await elementUpdated(masked);
 
       expect(input().value).to.equal(parser.apply(masked.value));
+    });
+  });
+
+  describe('igc-form interaction', async () => {
+    let form: IgcFormComponent;
+
+    beforeEach(async () => {
+      form = await fixture<IgcFormComponent>(html`
+        <igc-form>
+          <igc-mask-input></igc-mask-input>
+        </igc-form>
+      `);
+      masked = form.querySelector('igc-mask-input') as IgcMaskInputComponent;
+    });
+
+    it('empty non-required mask with required pattern position', async () => {
+      masked.mask = '&&&';
+      await elementUpdated(masked);
+
+      expect(form.submit()).to.equal(true);
+    });
+
+    it('empty required mask with required pattern position', async () => {
+      masked.mask = '&&&';
+      masked.required = true;
+      await elementUpdated(masked);
+
+      expect(form.submit()).to.equal(false);
+      expect(masked.invalid).to.equal(true);
+    });
+
+    it('non-empty non-required mask with required pattern positions', async () => {
+      masked.mask = '&&CC';
+      masked.value = 'F';
+      await elementUpdated(masked);
+
+      expect(form.submit()).to.equal(false);
+      expect(masked.invalid).to.equal(true);
     });
   });
 });
