@@ -2,12 +2,12 @@ import { html } from 'lit';
 import { Context, Story } from './story.js';
 import {
   defineComponents,
-  IgcDropDownComponent,
-  IgcDropDownItemComponent,
+  IgcDropdownComponent,
+  IgcDropdownItemComponent,
   IgcInputComponent,
 } from '../src/index.js';
 
-defineComponents(IgcDropDownComponent, IgcInputComponent);
+defineComponents(IgcDropdownComponent, IgcInputComponent);
 
 // region default
 const metadata = {
@@ -146,7 +146,7 @@ interface ArgTypes {
 };
 
 const toggleDDL = (ev: Event, ddlId: string) => {
-  const ddl = document.getElementById(ddlId) as IgcDropDownComponent;
+  const ddl = document.getElementById(ddlId) as IgcDropdownComponent;
   if (ddlId === 'ddl2') {
     const target = ev.target as HTMLElement;
     ddl.placement = target.id === 'ddlButton2' ? 'top-end' : 'bottom-start';
@@ -382,7 +382,7 @@ const checkoutForm = html`
         id="ddlCountry"
         @igcChange=${(_ev: CustomEvent) => {
           (document.getElementById('txtCountry') as IgcInputComponent).value = (
-            _ev.detail as IgcDropDownItemComponent
+            _ev.detail as IgcDropdownItemComponent
           ).value;
         }}
         .scrollStrategy=${scrollStrategy}

@@ -3,23 +3,23 @@ import { html } from 'lit';
 import sinon from 'sinon';
 import IgcButtonComponent from '../button/button';
 import { defineComponents } from '../common/definitions/defineComponents';
-import IgcDropDownComponent from './dropdown';
-import IgcDropDownGroupComponent from './dropdown-group';
-import IgcDropDownHeaderComponent from './dropdown-header';
-import IgcDropDownItemComponent from './dropdown-item';
+import IgcDropdownComponent from './dropdown';
+import IgcDropdownGroupComponent from './dropdown-group';
+import IgcDropdownHeaderComponent from './dropdown-header';
+import IgcDropdownItemComponent from './dropdown-item';
 
 describe('Dropdown component', () => {
   before(() => {
     defineComponents(
-      IgcDropDownComponent,
+      IgcDropdownComponent,
       IgcButtonComponent,
-      IgcDropDownHeaderComponent,
-      IgcDropDownGroupComponent,
-      IgcDropDownItemComponent
+      IgcDropdownHeaderComponent,
+      IgcDropdownGroupComponent,
+      IgcDropdownItemComponent
     );
   });
 
-  let dropdown: IgcDropDownComponent;
+  let dropdown: IgcDropdownComponent;
   const items = [
     'Specification',
     'Implementation',
@@ -29,20 +29,20 @@ describe('Dropdown component', () => {
     'Builds',
   ];
 
-  const ddListWrapper = (el: IgcDropDownComponent) =>
-    el.shadowRoot!.querySelector('#igcDDLContent') as HTMLElement;
-  const ddList = (el: IgcDropDownComponent) =>
-    ddListWrapper(el).querySelector('#igcScrollContainer') as HTMLElement;
-  const ddItems = (el: IgcDropDownComponent) =>
+  const ddListWrapper = (el: IgcDropdownComponent) =>
+    el.shadowRoot!.querySelector('[part="base"]') as HTMLElement;
+  const ddList = (el: IgcDropdownComponent) =>
+    ddListWrapper(el).querySelector('[part="list"]') as HTMLElement;
+  const ddItems = (el: IgcDropdownComponent) =>
     [...el.querySelectorAll('igc-dropdown-item')] as HTMLElement[];
-  const ddHeaders = (el: IgcDropDownComponent) =>
+  const ddHeaders = (el: IgcDropdownComponent) =>
     [...el.querySelectorAll('igc-dropdown-header')] as HTMLElement[];
-  const target = (el: IgcDropDownComponent) =>
+  const target = (el: IgcDropdownComponent) =>
     el.querySelector('input') as HTMLElement;
 
   describe('', () => {
     beforeEach(async () => {
-      dropdown = await fixture<IgcDropDownComponent>(html` <igc-dropdown>
+      dropdown = await fixture<IgcDropdownComponent>(html` <igc-dropdown>
         <input
           type="button"
           slot="target"
@@ -460,7 +460,7 @@ describe('Dropdown component', () => {
       it('allows disabling items.', async () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
-        ] as IgcDropDownItemComponent[];
+        ] as IgcDropdownItemComponent[];
 
         expect(dropDownItems[0].disabled).to.eq(false);
         dropDownItems[0].disabled = true;
@@ -495,7 +495,7 @@ describe('Dropdown component', () => {
       it('does not activate disabled items during keyboard navigation.', async () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
-        ] as IgcDropDownItemComponent[];
+        ] as IgcDropdownItemComponent[];
         dropDownItems[0].disabled = true;
         await elementUpdated(dropdown);
 
@@ -515,7 +515,7 @@ describe('Dropdown component', () => {
       it('does not activate disabled items on mouse click.', async () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
-        ] as IgcDropDownItemComponent[];
+        ] as IgcDropdownItemComponent[];
         dropDownItems[0].disabled = true;
         await elementUpdated(dropdown);
 
@@ -606,7 +606,7 @@ describe('Dropdown component', () => {
       it('emits `igcChange`, `igcClosing` and `igcClosed` events on selecting an item via mouse click.', async () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
-        ] as IgcDropDownItemComponent[];
+        ] as IgcDropdownItemComponent[];
         const eventSpy = sinon.spy(dropdown, 'emitEvent');
 
         ddItems(dropdown)[2].click();
@@ -621,7 +621,7 @@ describe('Dropdown component', () => {
       it('emits `igcChange`, `igcClosing` and `igcClosed` events on selecting an item via `Enter` key.', async () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
-        ] as IgcDropDownItemComponent[];
+        ] as IgcDropdownItemComponent[];
         const eventSpy = sinon.spy(dropdown, 'emitEvent');
 
         pressKey('ArrowDown');
@@ -637,7 +637,7 @@ describe('Dropdown component', () => {
       it('selects an item but does not close the dropdown on `Enter` key when `igcClosing` event is canceled.', async () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
-        ] as IgcDropDownItemComponent[];
+        ] as IgcDropdownItemComponent[];
         dropdown.addEventListener('igcClosing', (event: CustomEvent) =>
           event.preventDefault()
         );
@@ -661,7 +661,7 @@ describe('Dropdown component', () => {
 
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
-        ] as IgcDropDownItemComponent[];
+        ] as IgcDropdownItemComponent[];
         const eventSpy = sinon.spy(dropdown, 'emitEvent');
 
         ddItems(dropdown)[0].click();
@@ -702,11 +702,11 @@ describe('Dropdown component', () => {
   });
 
   describe('', () => {
-    const ddGroups = (el: IgcDropDownComponent) =>
+    const ddGroups = (el: IgcDropdownComponent) =>
       [...el.querySelectorAll('igc-dropdown-group')] as HTMLElement[];
     let groups: HTMLElement[];
     beforeEach(async () => {
-      dropdown = await fixture<IgcDropDownComponent>(html`<igc-dropdown>
+      dropdown = await fixture<IgcDropdownComponent>(html`<igc-dropdown>
         <input type="button" slot="target" value="Dropdown" />
         <igc-dropdown-group>
           <h3 slot="label">Research & Development</h3>
