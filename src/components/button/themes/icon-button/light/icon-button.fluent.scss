@@ -36,6 +36,26 @@ button {
     }
 }
 
+:host([size='medium']) {
+    igc-icon {
+        --size: #{utils.rem(20px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-medium) * 1.5);
+    }
+}
+
+:host([size='large']) {
+    igc-icon {
+        --size: #{utils.rem(24px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-large) * .875);
+    }
+}
+
 :host([variant='contained']) {
     button {
         color: $text-color;

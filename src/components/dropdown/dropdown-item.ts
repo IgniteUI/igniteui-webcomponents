@@ -21,7 +21,7 @@ import { styles as indigo } from './themes/light/dropdown-item.indigo.css';
  * @csspart suffix - The suffix wrapper.
  */
 @themes({ bootstrap, fluent, indigo })
-export default class IgcDropDownItemComponent extends LitElement {
+export default class IgcDropdownItemComponent extends LitElement {
   public static readonly tagName = 'igc-dropdown-item';
 
   public static override styles = styles;
@@ -92,6 +92,6 @@ export default class IgcDropDownItemComponent extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-dropdown-item': IgcDropDownItemComponent;
+    'igc-dropdown-item': IgcDropdownItemComponent;
   }
 }
