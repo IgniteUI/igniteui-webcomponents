@@ -14,7 +14,7 @@ export default class IgcDropDownHeaderComponent extends LitElement {
 
   public static override styles = styles;
 
-  public override render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }
