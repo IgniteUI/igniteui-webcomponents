@@ -35,6 +35,7 @@ import IgcToastComponent from '../../toast/toast';
 import IgcSliderLabelComponent from '../../slider/slider-label';
 import { defineComponents } from './defineComponents';
 import IgcCircularGradientComponent from '../../progress/circular-gradient';
+import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel';
 
 const allComponents: CustomElementConstructor[] = [
   IgcAvatarComponent,
@@ -50,6 +51,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcCheckboxComponent,
   IgcChipComponent,
   IgcSwitchComponent,
+  IgcExpansionPanelComponent,
   IgcFormComponent,
   IgcIconComponent,
   IgcInputComponent,

@@ -26,6 +26,7 @@ export { SizableMixin } from './components/common/mixins/sizable';
 export { default as IgcChipComponent } from './components/chip/chip';
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress';
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient';
+export { default as IgcExpansionPanelComponent } from './components/expansion-panel/expansion-panel';
 export { default as IgcFormComponent } from './components/form/form';
 export { default as IgcIconComponent } from './components/icon/icon';
 // utility stuff
