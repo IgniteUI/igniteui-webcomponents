@@ -97,10 +97,12 @@ export default class IgcChipComponent extends SizableMixin(
               </slot>`
             : nothing}
           <slot name="start"></slot>
+          <slot name="prefix"></slot>
         </span>
         <slot></slot>
         <span part="suffix">
           <slot name="end"></slot>
+          <slot name="suffix"></slot>
           ${this.removable && !this.disabled
             ? html`<slot
                 @slotchange=${this.slotChanges}

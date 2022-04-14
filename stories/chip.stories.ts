@@ -82,7 +82,9 @@ const ChipTemplate: Story<ArgTypes, Context> = (
     dir=${direction}
     variant=${ifDefined(variant)}
   >
+    <span slot="prefix">😱</span>
     Chip
+    <span slot="suffix">👀</span>
   </igc-chip>
 `;
 

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Chip: Added `prefix` and `suffix` slots
+
+### Deprecated
+- Chip: Previously exposed `start` and `end` slots are replaced by prefix and suffix. They remain active, but are now deprecated and will be removed in a future version.
+
 ## [3.0.0] - 2022-04-12
 ### Changed
 - **Breaking Change**: All dropdown related classes renamed from `IgcDropDown*` to `IgcDropdown*`
