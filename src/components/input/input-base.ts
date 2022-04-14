@@ -1,6 +1,7 @@
 import { html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { ReactiveTheme, ThemeController, themes } from '../../theming';
+import { blazorSuppress } from '../common/decorators';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -39,6 +40,7 @@ export abstract class IgcInputBaseComponent
   protected inputId = `input-${nextId++}`;
 
   /** The value attribute of the control. */
+  @blazorSuppress()
   public abstract value: string;
 
   @query('input', true)
