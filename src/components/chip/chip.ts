@@ -89,7 +89,11 @@ export default class IgcChipComponent extends SizableMixin(
         <span part="prefix">
           ${this.selectable && this.selected
             ? html`<slot @slotchange=${this.slotChanges} name="select">
-                <igc-icon size=${this.size} name="select"></igc-icon>
+                <igc-icon
+                  size=${this.size}
+                  name="chip_select"
+                  collection="internal"
+                ></igc-icon>
               </slot>`
             : nothing}
           <slot name="start"></slot>
@@ -103,7 +107,11 @@ export default class IgcChipComponent extends SizableMixin(
                 @click=${this.handleRemove}
                 name="remove"
               >
-                <igc-icon size=${this.size} name="cancel"></igc-icon>
+                <igc-icon
+                  size=${this.size}
+                  name="chip_cancel"
+                  collection="internal"
+                ></igc-icon>
               </slot>`
             : nothing}
         </span>
