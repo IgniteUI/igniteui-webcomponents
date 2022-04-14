@@ -29,21 +29,17 @@ interface Context {
 }
 
 const handleOpening = (ev: any) => {
-  //console.log(ev);
+  console.log(ev);
 };
 
 const handleOpened = (ev: any) => {
-  //console.log(ev);
+  console.log(ev);
 };
 
 const handleClosing = (ev: any) => {
-  //console.log(ev);
+  console.log(ev);
 };
 const handleClosed = (ev: any) => {
-  //console.log(ev);
-};
-
-const clickHandle = (ev: any) => {
   console.log(ev);
 };
 
@@ -60,22 +56,27 @@ const Template: Story<ArgTypes, Context> = (
       @igcContentClosing=${handleClosing}
       @igcContentClosed=${handleClosed}
     >
-      <div slot="title">
-        <span onkeydown=${clickHandle} style="margin: 0; padding: 0;"
+      <span slot="title">
+        <span style="margin: 0; padding: 0;"
           >Sample header text</span
-        >
-      </div>
-      <div slot="subTitle">Sample subtitle</div>
+        > <input></input>
+      </span>
+      <div slot="subTitle">Sample subtitle <input></input> <a href="https://google.com" target="_blank">Link</a></div>
 
       <!--
       <igc-icon
-          slot="icon"
+          slot="indicator"
           name='select'>
       </igc-icon> 
       -->
+      <div slot="indicator">
+        <button
+        >Button
+        </button> 
+      </div> 
 
-      <p slot="content">content</p>
-      <p slot="content">content 2</p>
+      <p slot="content">content <input/></p>
+      <p slot="content">content 2 <button>Button in content</button></p>
     </igc-expansion-panel>
     <p style="visibility: collapse">"${direction}"</p>
   `;

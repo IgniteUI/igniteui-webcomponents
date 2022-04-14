@@ -11,12 +11,20 @@ export interface IgcExpansionPanelComponentEventMap {
   igcContentClosed: CustomEvent<any>;
 }
 
+const TABBABLE_SELECTORS =
+  'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
+
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   /** @private */
   public static tagName = 'igc-expansion-panel';
+
+  public static shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
 
   public static styles = [expansionPanelStyles];
 
@@ -26,18 +34,37 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
+  private focusedElement!: HTMLElement;
+
   constructor() {
     super();
   }
 
-  public override connectedCallback(): void {
+  public override connectedCallback() {
     super.connectedCallback();
     this.addEventListener('keydown', this.handleKeydown);
   }
 
-  private panelClicked(): void {
+  private handleClicked(event: Event) {
     if (this.disabled) {
       return;
+    }
+
+    const el = event.target as HTMLElement;
+
+    if (!el.matches(TABBABLE_SELECTORS)) {
+      if (this.focusedElement) {
+        this.focusedElement.blur();
+        this.focus();
+      }
+    } else {
+      const closestSlot = el.closest('[slot]');
+      if (closestSlot) {
+        const slot = closestSlot.getAttribute('slot');
+        if (slot !== 'indicator') {
+          return;
+        }
+      }
     }
 
     if (this.open) {
@@ -47,7 +74,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
   }
 
-  private handleKeydown(event: KeyboardEvent): void {
+  public handleKeydown(event: Event) {
+    //event.preventDefault();
     console.log(event);
   }
 
@@ -73,6 +101,13 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
     this.open = true;
     this.emitEvent('igcContentOpened', { detail: this });
+  }
+
+  public focusIn(event: FocusEvent) {
+    const el = event.target as HTMLElement;
+    if (el.matches(TABBABLE_SELECTORS)) {
+      this.focusedElement = el;
+    }
   }
 
   /**
@@ -114,10 +149,10 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this.open = true;
   }
 
-  private iconTemplate() {
+  private indicatorTemplate() {
     return html`
-      <div part="icon">
-        <slot name="icon">
+      <div part="indicator">
+        <slot name="indicator" @focusin=${this.focusIn}>
           <igc-icon
             name=${this.open ? 'keyboard_arrow_right' : 'keyboard_arrow_down'}
             collection="internal"
@@ -134,7 +169,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         part="header"
         role="heading"
         aria-level="3"
-        @click=${this.panelClicked}
+        @click=${this.handleClicked}
       >
         <div
           role="button"
@@ -143,10 +178,10 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
           tabindex=${this.disabled ? '-1' : '0'}
           class="expansionPanel"
         >
-          ${this.iconTemplate()}
-          <div part="headerText">
-            <slot name="title">ddd</slot>
-            <slot name="subTitle">ddd</slot>
+          ${this.indicatorTemplate()}
+          <div part="headerText" @focusin=${this.focusIn}>
+            <slot name="title"></slot>
+            <slot name="subTitle">Default subtitle</slot>
           </div>
         </div>
       </div>
@@ -162,7 +197,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    return html` ${this.headerTemplate()} ${this.contentTemplate()} `;
+    return html` ${this.headerTemplate()} ${this.contentTemplate()}`;
   }
 }
 
