@@ -124,8 +124,22 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
         );
 
       case 'insertFromDrop':
-        return this.insertFromDrop(this.input.value);
+        return this.updateInput(
+          value.substring(this.inputSelection.start, this.inputSelection.end),
+          this.inputSelection.start,
+          this.inputSelection.end
+        );
+      //return this.insertFromDrop(this.input.value);
     }
+  }
+
+  public override setSelectionRange(
+    start: number,
+    end: number,
+    direction?: 'backward' | 'forward' | 'none'
+  ): void {
+    super.setSelectionRange(start, end, direction);
+    this.selection = { start, end };
   }
 
   protected handleCompositionEnd({ data }: CompositionEvent) {

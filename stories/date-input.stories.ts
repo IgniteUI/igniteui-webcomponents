@@ -1,9 +1,10 @@
 import { html } from 'lit';
 import { Story, Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import IgcDateInputComponent from './../src/components/date-input/date-input';
+import { DatePartDeltas } from './../src/components/date-input/date-input';
 import { DateParts } from '../src/components/date-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
+import { IgcDateInputComponent } from '../src/index.js';
 
 // region default
 const metadata = {
@@ -156,7 +157,7 @@ const handleIncrement = () => {
   const input = document.querySelector(
     'igc-date-input'
   ) as IgcDateInputComponent;
-  input?.stepUp(DateParts.Date);
+  input!.stepUp(DateParts.Date);
 };
 
 const handleDecrement = () => {
@@ -198,8 +199,14 @@ const Template: Story<ArgTypes, Context> = (
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
+  const spinDelta: DatePartDeltas = {
+    date: 2,
+    year: 10,
+  };
+
   return html`<igc-date-input
     dir=${direction}
+    size=${size}
     .value=${value ? new Date(value as Date) : null}
     min-value=${ifDefined(minValue)}
     max-value=${ifDefined(maxValue)}
@@ -208,12 +215,12 @@ const Template: Story<ArgTypes, Context> = (
     displayFormat=${ifDefined(displayFormat)}
     prompt=${ifDefined(prompt)}
     placeholder=${ifDefined(placeholder)}
-    size=${ifDefined(size)}
-    ?spin-loop=${ifDefined(spinLoop)}
-    ?readonly=${ifDefined(readonly)}
-    ?outlined=${ifDefined(outlined)}
-    ?required=${ifDefined(required)}
-    ?disabled=${ifDefined(disabled)}
+    ?spin-loop=${spinLoop}
+    .readonly=${readonly}
+    .outlined=${outlined}
+    .required=${required}
+    .disabled=${disabled}
+    .spinDelta=${spinDelta}
   >
     <igc-icon name="clear" slot="prefix" @click=${handleClear}></igc-icon>
     <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
