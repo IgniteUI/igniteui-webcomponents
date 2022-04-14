@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Mask input
+- Chip: Added `prefix` and `suffix` slots
+
+### Deprecated
+- Chip: Previously exposed `start` and `end` slots are replaced by prefix and suffix. They remain active, but are now deprecated and will be removed in a future version.
 
 ## [3.0.0] - 2022-04-12
 

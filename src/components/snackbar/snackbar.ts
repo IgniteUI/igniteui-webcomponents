@@ -83,6 +83,11 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
     clearTimeout(this.autoHideTimeout);
   }
 
+  /** Toggles the open state of the component. */
+  public toggle() {
+    this.open ? this.hide() : this.show();
+  }
+
   private handleClick() {
     this.emitEvent('igcAction');
   }
