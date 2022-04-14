@@ -234,8 +234,13 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
 
   protected override handleFocus() {
     this.hasFocus = true;
-    this.maskedValue = this.parser.apply(this._value);
     super.handleFocus();
+
+    if (this.readonly) {
+      return;
+    }
+
+    this.maskedValue = this.parser.apply(this._value);
 
     // In case of empty value, select the whole mask
     if (!this._value) {
@@ -345,7 +350,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
         part=${partNameMap(this.resolvePartNames('input'))}
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
-        .placeholder=${live(this.placeholder || this.parser.escapedMask)}
+        .placeholder=${live(this.placeholder ?? this.parser.escapedMask)}
         ?readonly=${this.readonly}
         ?disabled=${this.disabled}
         ?required=${this.required}

@@ -123,6 +123,15 @@ describe('Mask parser', () => {
   it('parse', () => {
     parser.mask = '#.##';
     expect(parser.parse('3.14')).to.equal('314');
+
+    parser.mask = '##-##';
+    expect(parser.parse('-----')).to.equal('----');
+
+    parser.mask = '+35\\9 999999';
+    expect(parser.parse('+359 123456')).to.equal('123456');
+
+    parser.mask = 'LLLL (\\and) LLL';
+    expect(parser.parse('QWER (and) TYY')).to.equal('QWERTYY');
   });
 
   it('replace', () => {

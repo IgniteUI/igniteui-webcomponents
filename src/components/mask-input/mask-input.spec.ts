@@ -86,6 +86,11 @@ describe('Masked input', () => {
       masked.placeholder = '';
       await elementUpdated(masked);
 
+      expect(input().placeholder).to.equal('');
+
+      masked.placeholder = null as any;
+      await elementUpdated(masked);
+
       expect(input().placeholder).to.equal(parser.escapedMask);
     });
 
@@ -99,6 +104,17 @@ describe('Masked input', () => {
       await elementUpdated(masked);
 
       expect(masked.value).to.equal('');
+    });
+
+    it('empty value and readonly on focus', async () => {
+      masked.readonly = true;
+      syncParser();
+      await elementUpdated(masked);
+
+      masked.focus();
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal('');
     });
 
     it('get value without literals', async () => {

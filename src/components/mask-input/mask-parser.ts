@@ -171,11 +171,11 @@ export class MaskParser {
     let output = '';
     this.getMaskLiterals();
 
-    for (const char of masked) {
-      if (!this.literalValues.includes(char) && char !== this.prompt) {
+    Array.from(masked).forEach((char, pos) => {
+      if (!this.literalPositions.includes(pos) && char !== this.prompt) {
         output += char;
       }
-    }
+    });
 
     return output;
   }
