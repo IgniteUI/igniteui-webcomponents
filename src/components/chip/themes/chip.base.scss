@@ -3,6 +3,7 @@
 
 :host {
     display: inline-flex;
+    vertical-align: top;
 }
 
 :host button {
@@ -12,7 +13,7 @@
     justify-content: center;
     align-items: center;
     font-family: var(--igc-font-family);
-    border: 0;
+    border-style: none;
     box-shadow: none;
     cursor: pointer;
 
