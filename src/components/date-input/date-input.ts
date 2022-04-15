@@ -259,8 +259,9 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
   }
 
   public clear(): void {
-    this.value = null;
     this._dataValue = '';
+    this.maskedValue = '';
+    this.value = null;
     this.setSelectionRange(0, this.input.value.length);
   }
 
