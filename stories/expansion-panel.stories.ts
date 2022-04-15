@@ -16,12 +16,22 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    indicatorAlignment: {
+      type: '"start" | "end"',
+      description: 'The indicator alignment of the expansion panel.',
+      options: ['start', 'end'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'start',
+    },
   },
 };
 export default metadata;
 interface ArgTypes {
   open: boolean;
   disabled: boolean;
+  indicatorAlignment: 'start' | 'end';
 }
 // endregion
 interface Context {
@@ -44,11 +54,12 @@ const handleClosed = (ev: any) => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { open = false, disabled = false }: ArgTypes,
+  { open = false, disabled = false, indicatorAlignment = 'start' }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
     <igc-expansion-panel
+      indicator-alignment="${indicatorAlignment}"
       .open="${open}"
       .disabled="${disabled}"
       @igcContentOpening=${handleOpening}
@@ -68,15 +79,22 @@ const Template: Story<ArgTypes, Context> = (
           slot="indicator"
           name='select'>
       </igc-icon> 
-      -->
+      
       <div slot="indicator">
         <button
         >Button
         </button> 
       </div> 
+      -->
 
       <p slot="content">content <input/></p>
       <p slot="content">content 2 <button>Button in content</button></p>
+    </igc-expansion-panel>
+
+    <igc-expansion-panel indicator-alignment="${indicatorAlignment}"
+    .open="${open}"
+    .disabled="${disabled}">
+    <div slot="title"><p>Title</p></div>
     </igc-expansion-panel>
     <p style="visibility: collapse">"${direction}"</p>
   `;

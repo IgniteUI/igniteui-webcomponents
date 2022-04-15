@@ -34,6 +34,10 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
+  /** The indicator alignment of the expansion panel. */
+  @property({ reflect: true, attribute: 'indicator-alignment' })
+  public indicatorAlignment: 'start' | 'end' = 'start';
+
   private focusedElement!: HTMLElement;
 
   constructor() {
@@ -47,6 +51,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private handleClicked(event: Event) {
     if (this.disabled) {
+      event.preventDefault();
       return;
     }
 
@@ -74,16 +79,38 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
   }
 
-  public handleKeydown(event: Event) {
+  public handleKeydown(event: KeyboardEvent) {
     //event.preventDefault();
     console.log(event);
+    if (this.disabled) {
+      event.preventDefault();
+      return;
+    }
+    switch (event.key.toLowerCase()) {
+      case 'arrowdown':
+      case 'down':
+        if (event.altKey) {
+          this.openWithEvent();
+        }
+        break;
+      case 'arrowup':
+      case 'up':
+        if (event.altKey) {
+          this.closeWithEvent();
+        }
+        break;
+      case 'enter':
+      case ' ':
+        this.open ? this.closeWithEvent() : this.openWithEvent();
+        break;
+    }
   }
 
   /**
    * @private
    * Opens the panel.
    */
-  public openWithEvent() {
+  private openWithEvent() {
     if (this.open) {
       return;
     }
@@ -114,7 +141,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
    * @private
    * Close the panel.
    */
-  public closeWithEvent() {
+  private closeWithEvent() {
     if (!this.open) {
       return;
     }
@@ -154,7 +181,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       <div part="indicator">
         <slot name="indicator" @focusin=${this.focusIn}>
           <igc-icon
-            name=${this.open ? 'keyboard_arrow_right' : 'keyboard_arrow_down'}
+            name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
             collection="internal"
           >
           </igc-icon>
