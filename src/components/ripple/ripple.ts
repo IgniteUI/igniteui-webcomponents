@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { styles } from './ripple.material.css';
+import { styles } from './ripple.material.css.js';
 
 /**
  * A ripple can be applied to an element to represent

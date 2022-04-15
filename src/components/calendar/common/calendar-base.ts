@@ -1,12 +1,10 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import {
-  blazorIndirectRender,
-  blazorSuppress,
-  watch,
-} from '../../common/decorators';
-import { Calendar, DateRangeDescriptor } from './calendar.model';
-import { getWeekDayNumber } from './utils';
+import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
+import { blazorSuppress } from '../../common/decorators/blazorSuppress.js';
+import { watch } from '../../common/decorators/watch.js';
+import { Calendar, DateRangeDescriptor } from './calendar.model.js';
+import { getWeekDayNumber } from './utils.js';
 
 export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;

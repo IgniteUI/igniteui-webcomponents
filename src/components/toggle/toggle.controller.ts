@@ -1,7 +1,7 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
-import { igcToggle, IgcToggleDirective } from './toggle.directive';
-import { DirectiveResult } from 'lit/directive';
-import { IgcToggleComponent } from './utilities';
+import { igcToggle, IgcToggleDirective } from './toggle.directive.js';
+import type { DirectiveResult } from 'lit/directive';
+import type { IgcToggleComponent } from './types';
 
 /**
  * Controller, bundling the creation of a toggle directive and handling global events,

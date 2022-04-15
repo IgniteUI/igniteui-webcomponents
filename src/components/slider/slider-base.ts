@@ -7,13 +7,14 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming';
-import { blazorTypeOverride, watch } from '../common/decorators';
-import { styles } from './themes/light/slider.base.css';
-import { styles as bootstrap } from './themes/light/slider.bootstrap.css';
-import { styles as fluent } from './themes/light/slider.fluent.css';
-import { styles as indigo } from './themes/light/slider.indigo.css';
-import { styles as material } from './themes/light/slider.material.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { blazorTypeOverride } from '../common/decorators/blazorTypeOverride.js';
+import { watch } from '../common/decorators/watch.js';
+import { styles } from './themes/light/slider.base.css.js';
+import { styles as bootstrap } from './themes/light/slider.bootstrap.css.js';
+import { styles as fluent } from './themes/light/slider.fluent.css.js';
+import { styles as indigo } from './themes/light/slider.indigo.css.js';
+import { styles as material } from './themes/light/slider.material.css.js';
 
 @themes({ material, bootstrap, fluent, indigo })
 export class IgcSliderBaseComponent extends LitElement {

@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming';
-import { styles } from './themes/light/dropdown-header.base.css';
-import { styles as bootstrap } from './themes/light/dropdown-header.bootstrap.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './themes/light/dropdown-header.base.css.js';
+import { styles as bootstrap } from './themes/light/dropdown-header.bootstrap.css.js';
 
 /**
  * @element igc-dropdown-header - Represents a header item in a dropdown list.
