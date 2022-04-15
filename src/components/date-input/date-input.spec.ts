@@ -8,6 +8,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents';
 import { MaskParser } from '../masked-input/mask-parser';
 import IgcDateInputComponent from './date-input';
+import { DateParts, DatePartDeltas } from './date-util';
 
 //TODO Add all tests.
 describe('Date Input component', () => {
@@ -74,10 +75,10 @@ describe('Date Input component', () => {
 
       expect(input.value).to.equal('03/03/2020');
 
-      el.displayFormat = 'yyyy';
+      el.displayFormat = 'dd.MM/yyyy';
       await elementUpdated(el);
 
-      expect(input.value).to.equal('2020');
+      expect(input.value).to.equal('03.03/2020');
     });
 
     it('should clear input date on clear', async () => {
@@ -90,12 +91,173 @@ describe('Date Input component', () => {
       expect(input.value).to.equal('');
     });
 
-    it('Set value attribute', async () => {
+    it('set value attribute', async () => {
       const value = new Date(2020, 2, 3).toISOString();
       el.setAttribute('value', value);
       await elementUpdated(input);
 
       expect(el.value?.toISOString()).to.equal(value);
+    });
+
+    it('set value', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value;
+      await elementUpdated(el);
+
+      expect(el.value).to.equal(value);
+    });
+
+    it('stepUp should initialize new date if value is empty', async () => {
+      const today = new Date();
+
+      expect(input.value).to.equal('');
+
+      el.stepUp();
+      await elementUpdated(el);
+
+      expect(el.value).to.not.be.null;
+      expect(el.value!.setHours(0, 0, 0, 0)).to.equal(
+        today.setHours(0, 0, 0, 0)
+      );
+    });
+
+    it('stepDown should initialize new date if value is empty', async () => {
+      const today = new Date();
+
+      expect(input.value).to.equal('');
+
+      el.stepDown();
+      await elementUpdated(el);
+
+      expect(el.value).to.not.be.null;
+      expect(el.value!.setHours(0, 0, 0, 0)).to.equal(
+        today.setHours(0, 0, 0, 0)
+      );
+    });
+
+    it('should stepUp correctly', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value;
+
+      el.stepUp();
+      await elementUpdated(el);
+
+      expect(el.value!.getDate()).to.equal(value.getDate() + 1);
+
+      el.stepUp(DateParts.Month);
+      await elementUpdated(el);
+
+      expect(el.value!.getMonth()).to.equal(value.getMonth() + 1);
+    });
+
+    it('should stepDown correctly', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value;
+
+      el.stepDown();
+      await elementUpdated(el);
+
+      expect(el.value!.getDate()).to.equal(value.getDate() - 1);
+
+      el.stepDown(DateParts.Month);
+      await elementUpdated(el);
+
+      expect(el.value!.getMonth()).to.equal(value.getMonth() - 1);
+    });
+
+    it('should respect spinDelta', async () => {
+      const spinDelta: DatePartDeltas = {
+        date: 2,
+        year: 10,
+      };
+
+      const value = new Date(2020, 2, 3);
+
+      el.value = value;
+      el.spinDelta = spinDelta;
+
+      el.stepDown();
+      await elementUpdated(el);
+
+      expect(el.value!.getDate()).to.equal(value.getDate() - 2);
+
+      el.stepDown(DateParts.Year);
+      await elementUpdated(el);
+
+      expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 10);
+    });
+
+    it('ArrowUp should stepUp correctly', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value;
+
+      el.focus();
+      await elementUpdated(el);
+
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
+      );
+
+      await elementUpdated(el);
+
+      expect(el.value!.getFullYear()).to.equal(value.getFullYear() + 1);
+    });
+
+    it('ArrowDown should stepUp correctly', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value;
+
+      el.focus();
+      await elementUpdated(el);
+
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+      );
+
+      await elementUpdated(el);
+
+      expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
+    });
+
+    it('ctrl + ; should set date correctly', async () => {
+      const today = new Date().setHours(0, 0, 0, 0);
+
+      el.focus();
+      await elementUpdated(el);
+
+      expect(el.value).to.be.undefined;
+
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: ';', bubbles: true, ctrlKey: true })
+      );
+
+      await elementUpdated(el);
+
+      expect(el.value).to.not.be.undefined;
+      expect(el.value!.setHours(0, 0, 0, 0)).to.equal(today);
+    });
+
+    it('should respect spinLoop', async () => {
+      const value = new Date(2020, 2, 31);
+
+      el.value = value;
+      el.spinLoop = false;
+
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
+      );
+      await elementUpdated(el);
+
+      expect(el.value!.getDate()).to.equal(value.getDate());
+
+      el.spinLoop = true;
+
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
+      );
+      await elementUpdated(el);
+
+      expect(el.value!.getDate()).to.equal(1);
     });
   });
 

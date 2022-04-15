@@ -1,20 +1,16 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
-import { DatePartInfo, DateParts, DateTimeUtil } from './date-util';
+import {
+  DatePartDeltas,
+  DatePartInfo,
+  DateParts,
+  DateTimeUtil,
+} from './date-util';
 import { watch } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcMaskedInputBaseComponent } from './masked-input-base';
 import { partNameMap } from '../common/util';
-
-export interface DatePartDeltas {
-  date?: number;
-  month?: number;
-  year?: number;
-  hours?: number;
-  minutes?: number;
-  seconds?: number;
-}
 
 export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
   public static readonly tagName = 'igc-date-input';

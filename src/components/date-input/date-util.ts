@@ -25,6 +25,15 @@ export interface DatePartInfo {
   format: string;
 }
 
+export interface DatePartDeltas {
+  date?: number;
+  month?: number;
+  year?: number;
+  hours?: number;
+  minutes?: number;
+  seconds?: number;
+}
+
 export abstract class DateTimeUtil {
   public static readonly DEFAULT_INPUT_FORMAT = 'MM/dd/yyyy';
   public static readonly DEFAULT_TIME_INPUT_FORMAT = 'hh:mm tt';
