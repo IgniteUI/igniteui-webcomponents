@@ -1,9 +1,10 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-import { alternateName, blazorInclude } from '../common/decorators';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './icon.material.css';
+import { styles } from './icon.material.css.js';
 import {
   IconsRegistry,
   registerIcon as registerIcon_impl,

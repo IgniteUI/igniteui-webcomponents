@@ -1,6 +1,7 @@
 import { LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
-import { alternateName, blazorTwoWayBind } from '../common/decorators';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 

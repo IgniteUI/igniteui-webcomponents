@@ -1,13 +1,13 @@
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { themes } from '../../theming';
-import { styles } from './themes/snackbar.base.css';
-import { styles as bootstrap } from './themes/snackbar.bootstrap.css';
-import { styles as fluent } from './themes/snackbar.fluent.css';
-import { styles as indigo } from './themes/snackbar.indigo.css';
+import { styles } from './themes/snackbar.base.css.js';
+import { styles as bootstrap } from './themes/snackbar.bootstrap.css.js';
+import { styles as fluent } from './themes/snackbar.fluent.css.js';
+import { styles as indigo } from './themes/snackbar.indigo.css.js';
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;

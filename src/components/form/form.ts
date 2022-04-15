@@ -1,8 +1,9 @@
 import { css, html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { alternateName, blazorSuppress } from '../common/decorators';
-import { Constructor } from '../common/mixins/constructor';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 export interface IgcFormEventMap {
   igcSubmit: CustomEvent<FormData>;
