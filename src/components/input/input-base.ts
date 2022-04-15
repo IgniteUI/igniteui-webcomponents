@@ -107,11 +107,13 @@ export abstract class IgcInputBaseComponent
 
   protected abstract renderInput(): TemplateResult;
 
+  //Remove from here since we wont have value prop in input-base
   protected resolvePartNames(base: string) {
     return {
       [base]: true,
       prefixed: this.prefixes.length > 0,
       suffixed: this.suffixes.length > 0,
+      //filled: !!this.value,
     };
   }
 

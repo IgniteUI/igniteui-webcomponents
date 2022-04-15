@@ -333,6 +333,15 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     this.updateComplete.then(() => this.input.setSelectionRange(end, end));
   }
 
+  protected override resolvePartNames(base: string) {
+    return {
+      [base]: true,
+      prefixed: this.prefixes.length > 0,
+      suffixed: this.suffixes.length > 0,
+      filled: !!this.value,
+    };
+  }
+
   private trySpinValue(
     datePart: DateParts,
     delta?: number,
