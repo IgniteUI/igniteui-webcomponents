@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { styles } from './themes/light/card.media.material.css';
+import { styles } from './themes/light/card.media.material.css.js';
 
 /** A container for card's media - could be an image, gif, video
  * @element igc-card-media

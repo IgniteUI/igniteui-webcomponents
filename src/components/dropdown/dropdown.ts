@@ -1,23 +1,24 @@
 import { html, LitElement } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { themes } from '../../theming';
-import { styles } from './themes/light/dropdown.base.css';
-import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css';
-import { styles as fluent } from './themes/light/dropdown.fluent.css';
-import { styles as indigo } from './themes/light/dropdown.indigo.css';
-import { blazorSuppress, watch } from '../common/decorators';
-import {
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { styles } from './themes/light/dropdown.base.css.js';
+import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
+import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
+import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
+import type {
   IgcPlacement,
   IgcToggleComponent,
   IgcToggleEventMap,
-} from '../toggle/utilities';
-import IgcDropdownItemComponent from './dropdown-item';
-import { IgcToggleController } from '../toggle/toggle.controller';
-import IgcDropdownGroupComponent from './dropdown-group';
+} from '../toggle/types';
+import IgcDropdownItemComponent from './dropdown-item.js';
+import { IgcToggleController } from '../toggle/toggle.controller.js';
+import type IgcDropdownGroupComponent from './dropdown-group';
 import { styleMap } from 'lit/directives/style-map.js';
-import { SizableMixin } from '../common/mixins/sizable';
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { watch } from '../common/decorators/watch.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 export enum DropdownActionKey {
   ESCAPE = 'escape',

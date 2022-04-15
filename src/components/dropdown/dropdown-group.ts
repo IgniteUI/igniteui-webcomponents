@@ -1,10 +1,10 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { themes } from '../../theming';
-import { styles } from './themes/light/dropdown-group.base.css';
-import { styles as fluent } from './themes/light/dropdown-group.fluent.css';
-import IgcDropdownItemComponent from './dropdown-item';
-import IgcDropdownComponent from './dropdown';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './themes/light/dropdown-group.base.css.js';
+import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
+import type IgcDropdownItemComponent from './dropdown-item';
+import type IgcDropdownComponent from './dropdown';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.

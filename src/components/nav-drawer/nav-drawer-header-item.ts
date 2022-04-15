@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming';
-import { styles as indigo } from './styles/indigo/nav-drawer-header-item.indigo.css';
-import { styles } from './styles/nav-drawer-header-item.base.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles as indigo } from './styles/indigo/nav-drawer-header-item.indigo.css.js';
+import { styles } from './styles/nav-drawer-header-item.base.css.js';
 
 /**
  * A wrapper for navigation drawer's header.

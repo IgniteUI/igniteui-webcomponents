@@ -2,10 +2,11 @@ import { html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { IgcInputBaseComponent } from '../input/input-base';
-import { blazorTwoWayBind, watch } from '../common/decorators';
-import { partNameMap } from '../common/util';
-import { MaskParser } from './mask-parser';
+import { watch } from '../common/decorators/watch.js';
+import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
+import { partNameMap } from '../common/util.js';
+import { IgcInputBaseComponent } from '../input/input-base.js';
+import { MaskParser } from './mask-parser.js';
 
 interface MaskSelection {
   start: number;

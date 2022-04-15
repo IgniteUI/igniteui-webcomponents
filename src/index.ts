@@ -1,65 +1,74 @@
 // Components
+export { default as IgcAvatarComponent } from './components/avatar/avatar.js';
+export { default as IgcBadgeComponent } from './components/badge/badge.js';
+export { default as IgcButtonComponent } from './components/button/button.js';
+export { default as IgcCalendarComponent } from './components/calendar/calendar.js';
+export { default as IgcCardComponent } from './components/card/card.js';
+export { default as IgcCardActionsComponent } from './components/card/card.actions.js';
+export { default as IgcCardContentComponent } from './components/card/card.content.js';
+export { default as IgcCardHeaderComponent } from './components/card/card.header.js';
+export { default as IgcCardMediaComponent } from './components/card/card.media.js';
+export { default as IgcCheckboxComponent } from './components/checkbox/checkbox.js';
+export { default as IgcCircularProgressComponent } from './components/progress/circular-progress.js';
+export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
+export { default as IgcChipComponent } from './components/chip/chip.js';
+export { default as IgcDropdownComponent } from './components/dropdown/dropdown.js';
+export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group.js';
+export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header.js';
+export { default as IgcDropdownItemComponent } from './components/dropdown/dropdown-item.js';
+export { default as IgcIconComponent } from './components/icon/icon.js';
+export { default as IgcIconButtonComponent } from './components/button/icon-button.js';
+export { default as IgcInputComponent } from './components/input/input.js';
+export { default as IgcFormComponent } from './components/form/form.js';
+export { default as IgcLinearProgressComponent } from './components/progress/linear-progress.js';
+export { default as IgcListComponent } from './components/list/list.js';
+export { default as IgcListHeaderComponent } from './components/list/list-header.js';
+export { default as IgcListItemComponent } from './components/list/list-item.js';
+export { default as IgcMaskInputComponent } from './components/mask-input/mask-input.js';
+export { default as IgcNavDrawerComponent } from './components/nav-drawer/nav-drawer.js';
+export { default as IgcNavDrawerHeaderItemComponent } from './components/nav-drawer/nav-drawer-header-item.js';
+export { default as IgcNavDrawerItemComponent } from './components/nav-drawer/nav-drawer-item.js';
+export { default as IgcNavbarComponent } from './components/navbar/navbar.js';
+export { default as IgcRadioGroupComponent } from './components/radio-group/radio-group.js';
+export { default as IgcRadioComponent } from './components/radio/radio.js';
+export { default as IgcRatingComponent } from './components/rating/rating.js';
+export { default as IgcRatingSymbolComponent } from './components/rating/rating-symbol.js';
+export { default as IgcRippleComponent } from './components/ripple/ripple.js';
+export { default as IgcRangeSliderComponent } from './components/slider/range-slider.js';
+export { default as IgcSnackbarComponent } from './components/snackbar/snackbar.js';
+export { default as IgcSliderComponent } from './components/slider/slider.js';
+export { default as IgcSliderLabelComponent } from './components/slider/slider-label.js';
+export { default as IgcToastComponent } from './components/toast/toast.js';
+export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 
-export { default as IgcAvatarComponent } from './components/avatar/avatar';
-export { default as IgcBadgeComponent } from './components/badge/badge';
-export { default as IgcButtonComponent } from './components/button/button';
-export { IgcButtonBaseComponent } from './components/button/button-base';
-export { default as IgcIconButtonComponent } from './components/button/icon-button';
-export { default as IgcCalendarComponent } from './components/calendar/calendar';
-export { IgcCalendarBaseComponent } from './components/calendar/common/calendar-base';
-export {
-  DateRangeDescriptor,
-  DateRangeType,
-} from './components/calendar/common/calendar.model';
-export { default as IgcCardComponent } from './components/card/card';
-export { default as IgcCardActionsComponent } from './components/card/card.actions';
-export { default as IgcCardContentComponent } from './components/card/card.content';
-export { default as IgcCardHeaderComponent } from './components/card/card.header';
-export { default as IgcCardMediaComponent } from './components/card/card.media';
-export { default as IgcCheckboxComponent } from './components/checkbox/checkbox';
-export { IgcCheckboxBaseComponent } from './components/checkbox/checkbox-base';
-export { default as IgcDropdownComponent } from './components/dropdown/dropdown';
-export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group';
-export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header';
-export { default as IgcDropdownItemComponent } from './components/dropdown/dropdown-item';
-export { default as IgcSwitchComponent } from './components/checkbox/switch';
-export { defineAllComponents } from './components/common/definitions/defineAllComponents';
-export { defineComponents } from './components/common/definitions/defineComponents';
-export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources';
-export { SizableMixin } from './components/common/mixins/sizable';
-export { default as IgcChipComponent } from './components/chip/chip';
-export { default as IgcCircularProgressComponent } from './components/progress/circular-progress';
-export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient';
-export { default as IgcFormComponent } from './components/form/form';
-export { default as IgcIconComponent } from './components/icon/icon';
-// utility stuff
+// definitions
+export { defineComponents } from './components/common/definitions/defineComponents.js';
+export { defineAllComponents } from './components/common/definitions/defineAllComponents.js';
+
+// icon registration
 export {
   registerIcon,
   registerIconFromText,
-} from './components/icon/icon.registry';
-export { default as IgcInputComponent } from './components/input/input';
-export { IgcInputBaseComponent } from './components/input/input-base';
-export { default as IgcLinearProgressComponent } from './components/progress/linear-progress';
-export { default as IgcListComponent } from './components/list/list';
-export { default as IgcListHeaderComponent } from './components/list/list-header';
-export { default as IgcListItemComponent } from './components/list/list-item';
-export { default as IgcMaskInputComponent } from './components/mask-input/mask-input';
-export { default as IgcNavbarComponent } from './components/navbar/navbar';
-export { default as IgcNavDrawerComponent } from './components/nav-drawer/nav-drawer';
-export { default as IgcNavDrawerHeaderItemComponent } from './components/nav-drawer/nav-drawer-header-item';
-export { default as IgcNavDrawerItemComponent } from './components/nav-drawer/nav-drawer-item';
-export { default as IgcRadioGroupComponent } from './components/radio-group/radio-group';
-export { default as IgcRadioComponent } from './components/radio/radio';
-export { default as IgcRatingComponent } from './components/rating/rating';
-export { default as IgcRatingSymbolComponent } from './components/rating/rating-symbol';
-export { default as IgcRippleComponent } from './components/ripple/ripple';
+} from './components/icon/icon.registry.js';
+
+// theming configuration
+export { configureTheme } from './theming/config.js';
+
+// localization objects
+export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources.js';
+
+// Types
 export {
-  default as IgcRangeSliderComponent,
-  IgcRangeSliderValue,
-} from './components/slider/range-slider';
-export { default as IgcSnackbarComponent } from './components/snackbar/snackbar';
-export { default as IgcSliderComponent } from './components/slider/slider';
-export { IgcSliderBaseComponent } from './components/slider/slider-base';
-export { default as IgcSliderLabelComponent } from './components/slider/slider-label';
-export { default as IgcToastComponent } from './components/toast/toast';
-export { configureTheme } from './theming/config';
+  DateRangeDescriptor,
+  DateRangeType,
+} from './components/calendar/common/calendar.model.js';
+export { IgcRangeSliderValue } from './components/slider/range-slider.js';
+
+// Base classes
+// TODO(rkaraivanov): Revise these exports
+export { SizableMixin } from './components/common/mixins/sizable.js';
+export { IgcCheckboxBaseComponent } from './components/checkbox/checkbox-base.js';
+export { IgcInputBaseComponent } from './components/input/input-base.js';
+export { IgcSliderBaseComponent } from './components/slider/slider-base.js';
+export { IgcButtonBaseComponent } from './components/button/button-base.js';
+export { IgcCalendarBaseComponent } from './components/calendar/common/calendar-base.js';

@@ -1,9 +1,9 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming';
-import { partNameMap } from '../common/util';
-import { styles as indigo } from './styles/indigo/nav-drawer.indigo.css';
-import { styles } from './styles/nav-drawer.base.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { partNameMap } from '../common/util.js';
+import { styles as indigo } from './styles/indigo/nav-drawer.indigo.css.js';
+import { styles } from './styles/nav-drawer.base.css.js';
 
 /**
  * Represents a side navigation container that provides
