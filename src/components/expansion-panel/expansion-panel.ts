@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { expansionPanelStyles } from './expansion-panel.styles';
@@ -21,11 +21,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   /** @private */
   public static tagName = 'igc-expansion-panel';
 
-  public static shadowRootOptions = {
-    ...LitElement.shadowRootOptions,
-    delegatesFocus: true,
-  };
-
   public static styles = [expansionPanelStyles];
 
   @property({ reflect: true, type: Boolean })
@@ -38,7 +33,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   @property({ reflect: true, attribute: 'indicator-alignment' })
   public indicatorAlignment: 'start' | 'end' = 'start';
 
-  private focusedElement!: HTMLElement;
+  @query('[part~="header"]', true)
+  protected panelHeader!: HTMLElement;
 
   constructor() {
     super();
@@ -46,7 +42,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   public override connectedCallback() {
     super.connectedCallback();
-    this.addEventListener('keydown', this.handleKeydown);
   }
 
   private handleClicked(event: Event) {
@@ -58,10 +53,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     const el = event.target as HTMLElement;
 
     if (!el.matches(TABBABLE_SELECTORS)) {
-      if (this.focusedElement) {
-        this.focusedElement.blur();
-        this.focus();
-      }
+      this.panelHeader!.focus();
     } else {
       const closestSlot = el.closest('[slot]');
       if (closestSlot) {
@@ -130,13 +122,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this.emitEvent('igcContentOpened', { detail: this });
   }
 
-  public focusIn(event: FocusEvent) {
-    const el = event.target as HTMLElement;
-    if (el.matches(TABBABLE_SELECTORS)) {
-      this.focusedElement = el;
-    }
-  }
-
   /**
    * @private
    * Close the panel.
@@ -179,7 +164,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   private indicatorTemplate() {
     return html`
       <div part="indicator">
-        <slot name="indicator" @focusin=${this.focusIn}>
+        <slot name="indicator">
           <igc-icon
             name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
             collection="internal"
@@ -196,19 +181,20 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         part="header"
         role="heading"
         aria-level="3"
+        tabindex=${this.disabled ? '-1' : '0'}
         @click=${this.handleClicked}
+        @keydown=${this.handleKeydown}
       >
         <div
           role="button"
           aria-expanded="${this.open}"
           aria-disabled="${this.disabled}"
-          tabindex=${this.disabled ? '-1' : '0'}
           class="expansionPanel"
         >
           ${this.indicatorTemplate()}
-          <div part="headerText" @focusin=${this.focusIn}>
+          <div part="headerText">
             <slot name="title"></slot>
-            <slot name="subTitle">Default subtitle</slot>
+            <slot name="subTitle"></slot>
           </div>
         </div>
       </div>
