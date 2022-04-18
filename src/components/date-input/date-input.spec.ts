@@ -8,7 +8,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents';
 import { MaskParser } from '../masked-input/mask-parser';
 import IgcDateInputComponent from './date-input';
-import { DateParts, DatePartDeltas } from './date-util';
+import { DatePart, DatePartDeltas } from './date-util';
 
 //TODO Add all tests.
 describe('Date Input component', () => {
@@ -81,6 +81,41 @@ describe('Date Input component', () => {
       expect(input.value).to.equal('03.03/2020');
     });
 
+    it('should correctly swtich between different pre-defined date formats', async () => {
+      const targetDate = new Date(2020, 2, 3, 0, 0, 0, 0);
+
+      const shortDate = setDateFormat('short', targetDate);
+
+      expect(el.displayFormat).to.be.undefined;
+
+      el.value = new Date(2020, 2, 3);
+      el.displayFormat = 'short';
+      await elementUpdated(el);
+
+      expect(input.value).to.equal(shortDate);
+
+      const mediumDate = setDateFormat('medium', targetDate);
+
+      el.displayFormat = 'medium';
+      await elementUpdated(el);
+
+      expect(input.value).to.equal(mediumDate);
+
+      const longDate = setDateFormat('long', targetDate);
+
+      el.displayFormat = 'long';
+      await elementUpdated(el);
+
+      expect(input.value).to.equal(longDate);
+
+      const fullDate = setDateFormat('full', targetDate);
+
+      el.displayFormat = 'full';
+      await elementUpdated(el);
+
+      expect(input.value).to.equal(fullDate);
+    });
+
     it('should clear input date on clear', async () => {
       el.value = new Date(2020, 2, 3);
       await elementUpdated(el);
@@ -136,33 +171,76 @@ describe('Date Input component', () => {
     });
 
     it('should stepUp correctly', async () => {
-      const value = new Date(2020, 2, 3);
-      el.value = value;
+      const value = new Date(2020, 2, 3, 0, 0, 0, 0);
 
+      el.value = value;
+      el.inputFormat = 'dd.MM.yyyy hh:mm';
       el.stepUp();
       await elementUpdated(el);
-
       expect(el.value!.getDate()).to.equal(value.getDate() + 1);
 
-      el.stepUp(DateParts.Month);
+      el.inputFormat = 'MM.yy hh:mm';
+      el.stepUp();
       await elementUpdated(el);
+      expect(el.value!.getHours()).to.equal(value.getHours() + 1);
 
+      el.inputFormat = 'MM.yy';
+      el.stepUp();
+      await elementUpdated(el);
+      expect(el.value!.getFullYear()).to.equal(value.getFullYear() + 1);
+
+      el.inputFormat = 'dd.MM.yy hh:mm:ss tt';
+      el.stepUp(DatePart.Month);
+      await elementUpdated(el);
       expect(el.value!.getMonth()).to.equal(value.getMonth() + 1);
+
+      el.stepUp(DatePart.Minutes);
+      await elementUpdated(el);
+      expect(el.value!.getMinutes()).to.equal(value.getMinutes() + 1);
+
+      el.stepUp(DatePart.Seconds);
+      await elementUpdated(el);
+      expect(el.value!.getSeconds()).to.equal(value.getSeconds() + 1);
+
+      expect(input.value.indexOf('AM')).to.be.greaterThan(-1);
+      expect(input.value.indexOf('PM')).to.equal(-1);
+
+      el.stepUp(DatePart.AmPm);
+      await elementUpdated(el);
+      expect(input.value.indexOf('AM')).to.equal(-1);
+      expect(input.value.indexOf('PM')).to.be.greaterThan(-1);
     });
 
     it('should stepDown correctly', async () => {
-      const value = new Date(2020, 2, 3);
-      el.value = value;
+      const value = new Date(2020, 2, 3, 1, 1, 1, 1);
 
+      el.value = value;
+      el.inputFormat = 'dd.MM.yyyy hh:mm';
       el.stepDown();
       await elementUpdated(el);
-
       expect(el.value!.getDate()).to.equal(value.getDate() - 1);
 
-      el.stepDown(DateParts.Month);
+      el.inputFormat = 'MM.yy hh:mm';
+      el.stepDown();
       await elementUpdated(el);
+      expect(el.value!.getHours()).to.equal(value.getHours() - 1);
 
+      el.inputFormat = 'MM.yy';
+      el.stepDown();
+      await elementUpdated(el);
+      expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
+
+      el.stepDown(DatePart.Month);
+      await elementUpdated(el);
       expect(el.value!.getMonth()).to.equal(value.getMonth() - 1);
+
+      el.stepDown(DatePart.Minutes);
+      await elementUpdated(el);
+      expect(el.value!.getMinutes()).to.equal(value.getMinutes() - 1);
+
+      el.stepDown(DatePart.Seconds);
+      await elementUpdated(el);
+      expect(el.value!.getSeconds()).to.equal(value.getSeconds() - 1);
     });
 
     it('should respect spinDelta', async () => {
@@ -181,10 +259,33 @@ describe('Date Input component', () => {
 
       expect(el.value!.getDate()).to.equal(value.getDate() - 2);
 
-      el.stepDown(DateParts.Year);
+      el.stepDown(DatePart.Year);
       await elementUpdated(el);
 
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 10);
+    });
+
+    it('mouse wheel should correctly step up/down', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value;
+      el.focus();
+      await elementUpdated(el);
+
+      el.dispatchEvent(
+        new WheelEvent('wheel', { deltaY: -125, bubbles: true })
+      );
+
+      await elementUpdated(el);
+
+      expect(el.value.getFullYear()).to.equal(value.getFullYear() + 1);
+
+      el.setSelectionRange(0, 0);
+
+      el.dispatchEvent(new WheelEvent('wheel', { deltaY: 125, bubbles: true }));
+
+      await elementUpdated(el);
+
+      expect(el.value.getMonth()).to.equal(value.getMonth() - 1);
     });
 
     it('ArrowUp should stepUp correctly', async () => {
@@ -260,6 +361,19 @@ describe('Date Input component', () => {
       expect(el.value!.getDate()).to.equal(1);
     });
   });
+
+  const setDateFormat = (
+    format: 'medium' | 'full' | 'long' | 'short' | undefined,
+    date: Date
+  ) => {
+    const options: Intl.DateTimeFormatOptions = {
+      dateStyle: format,
+      timeStyle: format,
+    };
+    const formatter = new Intl.DateTimeFormat('en', options);
+
+    return formatter.format(date);
+  };
 
   const createDateInputComponent = (
     template = '<igc-date-input></igc-date-input>'

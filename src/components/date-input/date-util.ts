@@ -6,7 +6,7 @@ export const enum FormatDesc {
   TwoDigits = '2-digit',
 }
 
-export const enum DateParts {
+export enum DateParts {
   Day = 'day',
   Month = 'month',
   Year = 'year',
@@ -16,6 +16,16 @@ export const enum DateParts {
   Seconds = 'seconds',
   AmPm = 'ampm',
   Literal = 'literal',
+}
+
+export enum DatePart {
+  Month = 'month',
+  Year = 'year',
+  Date = 'date',
+  Hours = 'hours',
+  Minutes = 'minutes',
+  Seconds = 'seconds',
+  AmPm = 'ampm',
 }
 
 export interface DatePartInfo {

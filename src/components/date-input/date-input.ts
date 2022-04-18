@@ -5,6 +5,7 @@ import {
   DatePartDeltas,
   DatePartInfo,
   DateParts,
+  DatePart,
   DateTimeUtil,
 } from './date-util';
 import { watch } from '../common/decorators';
@@ -193,8 +194,8 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     );
   }
 
-  private get targetDatePart(): DateParts {
-    let result = DateParts.Year;
+  private get targetDatePart(): DatePart {
+    let result = DatePart.Year;
 
     if (document.activeElement === this) {
       const partType = this._inputDateParts.find(
@@ -202,16 +203,16 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
           p.start <= this.inputSelection.start &&
           this.inputSelection.start <= p.end &&
           p.type !== DateParts.Literal
-      )?.type;
+      )?.type as string as DatePart;
 
       if (partType) {
         result = partType;
       }
     } else {
       if (this._inputDateParts.some((p) => p.type === DateParts.Date)) {
-        result = DateParts.Date;
+        result = DatePart.Date;
       } else if (this._inputDateParts.some((p) => p.type === DateParts.Hours)) {
-        result = DateParts.Hours;
+        result = DatePart.Hours;
       }
     }
 
@@ -234,7 +235,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     this.updateMask();
   }
 
-  public stepUp(datePart?: DateParts, delta?: number): void {
+  public stepUp(datePart?: DatePart, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
     if (!targetPart) {
@@ -246,7 +247,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     this.setFocus();
   }
 
-  public stepDown(datePart?: DateParts, delta?: number): void {
+  public stepDown(datePart?: DatePart, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
     if (!targetPart) {
@@ -344,7 +345,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
   }
 
   private trySpinValue(
-    datePart: DateParts,
+    datePart: DatePart,
     delta?: number,
     negative = false
   ): Date {
@@ -357,7 +358,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     return this.spinValue(datePart, spinValue);
   }
 
-  private spinValue(datePart: DateParts, delta: number): Date {
+  private spinValue(datePart: DatePart, delta: number): Date {
     if (!this._dateValue || !DateTimeUtil.isValidDate(this._dateValue)) {
       return new Date();
     }
@@ -365,25 +366,25 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     const newDate = new Date(this._dateValue.getTime());
     let formatPart, amPmFromMask;
     switch (datePart) {
-      case DateParts.Date:
+      case DatePart.Date:
         DateTimeUtil.spinDate(delta, newDate, this.spinLoop);
         break;
-      case DateParts.Month:
+      case DatePart.Month:
         DateTimeUtil.spinMonth(delta, newDate, this.spinLoop);
         break;
-      case DateParts.Year:
+      case DatePart.Year:
         DateTimeUtil.spinYear(delta, newDate);
         break;
-      case DateParts.Hours:
+      case DatePart.Hours:
         DateTimeUtil.spinHours(delta, newDate, this.spinLoop);
         break;
-      case DateParts.Minutes:
+      case DatePart.Minutes:
         DateTimeUtil.spinMinutes(delta, newDate, this.spinLoop);
         break;
-      case DateParts.Seconds:
+      case DatePart.Seconds:
         DateTimeUtil.spinSeconds(delta, newDate, this.spinLoop);
         break;
-      case DateParts.AmPm:
+      case DatePart.AmPm:
         formatPart = this._inputDateParts.find(
           (dp) => dp.type === DateParts.AmPm
         );

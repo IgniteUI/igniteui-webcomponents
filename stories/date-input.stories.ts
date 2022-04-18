@@ -3,7 +3,7 @@ import { Story, Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   DatePartDeltas,
-  DateParts,
+  DatePart,
 } from '../src/components/date-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { IgcDateInputComponent } from '../src/index.js';
@@ -159,7 +159,7 @@ const handleIncrement = () => {
   const input = document.querySelector(
     'igc-date-input'
   ) as IgcDateInputComponent;
-  input!.stepUp(DateParts.Date);
+  input!.stepUp(DatePart.Date);
 };
 
 const handleDecrement = () => {
