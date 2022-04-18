@@ -80,38 +80,41 @@ describe('Mask parser', () => {
   });
 
   it('validates mask pattern rules', () => {
+    const validate = (string: string) =>
+      parser.isValidString(parser.apply(string));
+
     parser.mask = '000 [000]';
 
     // Invalid: 121 [2__]
-    expect(parser.isValidString('1212')).to.be.false;
+    expect(validate('1212')).to.be.false;
 
-    // Invalid: 121 [233](3)
-    expect(parser.isValidString('1212333')).to.be.false;
+    // Valid: 121 [233] (3) dropped from `apply`
+    expect(validate('1212333')).to.be.true;
 
     // Valid: 121 [233]
-    expect(parser.isValidString('121233')).to.be.true;
+    expect(validate('121233')).to.be.true;
 
     parser.mask = '000 [999]';
 
     // Valid: 121 [___]
-    expect(parser.isValidString('121')).to.be.true;
+    expect(validate('121')).to.be.true;
 
     parser.mask = '00\\0 [999]';
 
     // Valid: 110 [___]
-    expect(parser.isValidString('11')).to.be.true;
+    expect(validate('11')).to.be.true;
 
     // Invalid: __0 [___]
-    expect(parser.isValidString('aa')).to.be.false;
+    expect(validate('aa')).to.be.false;
 
     // Invalid 1_0 [___]
-    expect(parser.isValidString('1')).to.be.false;
+    expect(validate('1')).to.be.false;
 
     parser.mask = '(99) (0)';
-    expect(parser.isValidString('')).to.be.false;
+    expect(validate('')).to.be.false;
 
     parser.mask = '(99) (9)';
-    expect(parser.isValidString('')).to.be.true;
+    expect(validate('')).to.be.true;
   });
 
   it('apply', () => {

@@ -168,38 +168,29 @@ describe('Masked input', () => {
       await elementUpdated(masked);
 
       masked.value = '111';
-      input().dispatchEvent(new Event('change'));
-
       await elementUpdated(masked);
-      expect(masked.invalid).to.be.true;
+      expect(masked.checkValidity()).to.be.false;
 
       masked.value = '2222';
       await elementUpdated(masked);
-      input().dispatchEvent(new Event('change'));
-
-      await elementUpdated(masked);
-      expect(masked.invalid).to.be.false;
+      expect(masked.checkValidity()).to.be.true;
 
       masked.mask = 'CCC';
       masked.value = '';
       await elementUpdated(masked);
-      input().dispatchEvent(new Event('change'));
-
-      await elementUpdated(masked);
-      expect(masked.invalid).to.be.false;
+      expect(masked.checkValidity()).to.be.true;
 
       masked.mask = 'CC &';
       await elementUpdated(masked);
-      input().dispatchEvent(new Event('change'));
-
-      await elementUpdated(masked);
-      expect(masked.invalid).to.be.true;
+      expect(masked.checkValidity()).to.be.false;
 
       masked.value = 'R';
-      input().dispatchEvent(new Event('change'));
-
       await elementUpdated(masked);
-      expect(masked.invalid).to.be.false;
+      expect(masked.checkValidity()).to.be.false;
+
+      masked.value = '  R';
+      await elementUpdated(masked);
+      expect(masked.checkValidity()).to.be.true;
     });
 
     it('setCustomValidity', async () => {

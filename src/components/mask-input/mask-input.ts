@@ -222,8 +222,8 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
   }
 
   protected handleDragEnter() {
-    if (!this.hasFocus) {
-      this.maskedValue = this.parser.apply(this._value);
+    if (!this.hasFocus && !this._value) {
+      this.maskedValue = this.parser.apply();
     }
   }
 
@@ -241,10 +241,9 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
       return;
     }
 
-    this.maskedValue = this.parser.apply(this._value);
-
-    // In case of empty value, select the whole mask
     if (!this._value) {
+      this.maskedValue = this.parser.apply();
+      // In case of empty value, select the whole mask
       this.updateComplete.then(() => this.select());
     }
   }
@@ -309,7 +308,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
   /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity() {
     const state = this._value
-      ? this.parser.isValidString(this._value)
+      ? this.parser.isValidString(this.input.value)
       : this.input.reportValidity();
     this.invalid = !state;
     return state;
@@ -330,13 +329,13 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
       return this.input.checkValidity();
     }
 
-    if (this.required && this.hasFocus && !this._value) {
+    if (!this._value && this.required) {
       return false;
-    } else {
-      return (
-        this.input.checkValidity() && this.parser.isValidString(this._value)
-      );
     }
+
+    return (
+      this.input.checkValidity() && this.parser.isValidString(this.input.value)
+    );
   }
 
   /** Selects all text within the input. */

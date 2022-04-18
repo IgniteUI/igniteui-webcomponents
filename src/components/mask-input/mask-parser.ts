@@ -48,11 +48,8 @@ export class MaskParser {
   protected literals = new Map<number, string>();
   protected _escapedMask!: string;
 
-  protected get literalValues() {
-    return Array.from(this.literals.values());
-  }
-
   protected get literalPositions() {
+    this.getMaskLiterals();
     return Array.from(this.literals.keys());
   }
 
@@ -67,6 +64,7 @@ export class MaskParser {
 
   public set mask(value: string) {
     this.options.format = value || this.options.format;
+    this.getMaskLiterals();
   }
 
   public get prompt() {
@@ -98,8 +96,12 @@ export class MaskParser {
     }
   }
 
+  protected isPromptChar(char: string) {
+    return char === this.prompt;
+  }
+
   protected replaceCharAt(string: string, pos: number, char: string) {
-    return string.substring(0, pos) + char + string.substring(pos + 1);
+    return `${string.substring(0, pos)}${char}${string.substring(pos + 1)}`;
   }
 
   protected validate(char: string, maskedChar: string) {
@@ -107,30 +109,20 @@ export class MaskParser {
     return regex ? regex.test(char) : false;
   }
 
-  protected getNonLiteralPositions(mask: string) {
+  protected getNonLiteralPositions(mask = '') {
     const positions = this.literalPositions;
-    const result: number[] = [];
-
-    for (let i = 0; i < mask.length; i++) {
-      if (!positions.includes(i)) {
-        result.push(i);
-      }
-    }
-
-    return result;
+    return Array.from(mask)
+      .map((_, pos) => (!positions.includes(pos) ? pos : -1))
+      .filter((pos) => pos > -1);
   }
 
   protected getRequiredNonLiteralPositions(mask: string) {
     const positions = this.literalPositions;
-    const result: number[] = [];
-
-    for (let i = 0; i < mask.length; i++) {
-      if (REQUIRED.has(mask.charAt(i)) && !positions.includes(i)) {
-        result.push(i);
-      }
-    }
-
-    return result;
+    return Array.from(mask)
+      .map((char, pos) =>
+        REQUIRED.has(char) && !positions.includes(pos) ? pos : -1
+      )
+      .filter((pos) => pos > -1);
   }
 
   public replace(masked = '', value: string, start: number, end: number) {
@@ -151,7 +143,7 @@ export class MaskParser {
       if (
         chars[0] &&
         !this.validate(chars[0], this._escapedMask[i]) &&
-        chars[0] !== this.prompt
+        !this.isPromptChar(chars[0])
       ) {
         break;
       }
@@ -168,39 +160,33 @@ export class MaskParser {
   }
 
   public parse(masked = '') {
-    let output = '';
-    this.getMaskLiterals();
-
-    Array.from(masked).forEach((char, pos) => {
-      if (!this.literalPositions.includes(pos) && char !== this.prompt) {
-        output += char;
-      }
-    });
-
-    return output;
+    return Array.from(masked).reduce((prev, char, pos) => {
+      return `${prev}${
+        !this.literalPositions.includes(pos) && !this.isPromptChar(char)
+          ? char
+          : ''
+      }`;
+    }, '');
   }
 
   public isValidString(input = '') {
-    this.getMaskLiterals();
-
     const required = this.getRequiredNonLiteralPositions(this._escapedMask);
 
-    if (input.length > this.getNonLiteralPositions(this._escapedMask).length) {
+    if (required.length > this.parse(input).length) {
       return false;
     }
-
-    return required.every((pos, index) => {
-      const char = input.charAt(index);
+    return required.every((pos) => {
+      const char = input.charAt(pos);
       return (
-        char !== undefined && this.validate(char, this._escapedMask.charAt(pos))
+        char !== undefined &&
+        this.validate(char, this._escapedMask.charAt(pos)) &&
+        !this.isPromptChar(char)
       );
     });
   }
 
   public apply(input = '') {
-    this.getMaskLiterals();
-
-    const nonLiteralPositions = this.getNonLiteralPositions(this.mask);
+    const nonLiteralPositions = this.getNonLiteralPositions(this._escapedMask);
     let output = new Array(this._escapedMask.length).fill(this.prompt).join('');
 
     this.literals.forEach((char, pos) => {
@@ -211,27 +197,20 @@ export class MaskParser {
       return output;
     }
 
-    const nonLiteralValues = Array.from(input);
+    const values = nonLiteralPositions.map((pos, index) => {
+      const char = input.charAt(index);
+      return !this.validate(char, this._escapedMask.charAt(pos)) &&
+        !this.isPromptChar(char)
+        ? this.prompt
+        : char;
+    });
 
-    for (let i = 0; i < nonLiteralValues.length; i++) {
-      const char = nonLiteralValues[i];
-      if (
-        !this.validate(
-          char,
-          this._escapedMask.charAt(nonLiteralPositions[i])
-        ) &&
-        char !== this.prompt
-      ) {
-        nonLiteralValues[i] = this.prompt;
-      }
-    }
-
-    if (nonLiteralValues.length > nonLiteralPositions.length) {
-      nonLiteralValues.splice(nonLiteralPositions.length);
+    if (values.length > nonLiteralPositions.length) {
+      values.splice(nonLiteralPositions.length);
     }
 
     let pos = 0;
-    for (const each of nonLiteralValues) {
+    for (const each of values) {
       output = this.replaceCharAt(output, nonLiteralPositions[pos++], each);
     }
 
