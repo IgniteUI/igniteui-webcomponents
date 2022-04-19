@@ -1,32 +1,30 @@
 import { html } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import { themes } from '../../../theming';
-import {
-  blazorIndirectRender,
-  blazorSuppressComponent,
-  watch,
-} from '../../common/decorators';
+import { themes } from '../../../theming/theming-decorator.js';
+import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
+import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
+import { watch } from '../../common/decorators/watch.js';
 import {
   IgcCalendarResourceStringEN,
   IgcCalendarResourceStrings,
-} from '../../common/i18n/calendar.resources';
-import { Constructor } from '../../common/mixins/constructor';
-import { EventEmitterMixin } from '../../common/mixins/event-emitter';
-import { partNameMap } from '../../common/util';
+} from '../../common/i18n/calendar.resources.js';
+import { Constructor } from '../../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
+import { partNameMap } from '../../common/util.js';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
-} from '../common/calendar-base';
+} from '../common/calendar-base.js';
 import {
   DateRangeType,
   ICalendarDate,
   isDateInRanges,
   TimeDeltaInterval,
-} from '../common/calendar.model';
-import { areEqualDates, getDateOnly, isEqual } from '../common/utils';
-import { styles as bootstrap } from '../themes/bootstrap/days-view.bootstrap.css';
-import { styles } from '../themes/days-view.base.css';
-import { styles as fluent } from '../themes/fluent/days-view.fluent.css';
+} from '../common/calendar.model.js';
+import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
+import { styles as bootstrap } from '../themes/bootstrap/days-view.bootstrap.css.js';
+import { styles } from '../themes/days-view.base.css.js';
+import { styles as fluent } from '../themes/fluent/days-view.fluent.css.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
