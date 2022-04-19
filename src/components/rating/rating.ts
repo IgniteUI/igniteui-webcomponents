@@ -286,7 +286,7 @@ export default class IgcRatingComponent extends SizableMixin(
       <slot @slotchange=${this.handleSlotChange}></slot>
 
       <div style=${styleMap(styles)} part="fraction ${this.size}">
-        <div part="symbols-wrapper">
+        <div part="symbols-wrapper selected">
           ${this.hasProjectedSymbols
             ? this.renderProjected()
             : this.renderSymbols()}
