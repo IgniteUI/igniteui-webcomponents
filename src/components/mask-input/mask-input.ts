@@ -329,8 +329,8 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
       return this.input.checkValidity();
     }
 
-    if (!this._value && this.required) {
-      return false;
+    if (!this._value) {
+      return !this.required;
     }
 
     return (

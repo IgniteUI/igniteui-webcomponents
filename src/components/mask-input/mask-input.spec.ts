@@ -182,7 +182,7 @@ describe('Masked input', () => {
 
       masked.mask = 'CC &';
       await elementUpdated(masked);
-      expect(masked.checkValidity()).to.be.false;
+      expect(masked.checkValidity()).to.be.true;
 
       masked.value = 'R';
       await elementUpdated(masked);
