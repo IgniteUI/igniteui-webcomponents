@@ -483,6 +483,7 @@ describe('Date Input component', () => {
       input.dispatchEvent(
         new InputEvent('input', { inputType: 'insertFromDrop' })
       );
+      el.focus();
       await elementUpdated(el);
 
       expect(input.value).to.equal('10/10/____');
