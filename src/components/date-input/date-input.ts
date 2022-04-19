@@ -238,9 +238,10 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
   public stepUp(datePart?: DatePart, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
-    if (!targetPart) {
-      return;
-    }
+    // TODO discuss if targetDatePart can be null
+    // if (!targetPart) {
+    //   return;
+    // }
 
     const newValue = this.trySpinValue(targetPart, delta);
     this.value = newValue;
@@ -250,9 +251,9 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
   public stepDown(datePart?: DatePart, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
-    if (!targetPart) {
-      return;
-    }
+    // if (!targetPart) {
+    //   return;
+    // }
 
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue;
@@ -502,9 +503,13 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
         this.value = parsedDate;
       } else {
         this.value = null;
+        this._dataValue = '';
       }
-    } else {
-      this.value = null;
+    } else if (
+      !this.parseDate(this.maskedValue) ||
+      this.maskedValue === this.emptyMask
+    ) {
+      this._dataValue = '';
     }
   }
 
@@ -544,6 +549,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
 
       if (parse) {
         this.value = parse;
+        this._dataValue = this.maskedValue;
       } else {
         this.value = null;
         this.maskedValue = '';

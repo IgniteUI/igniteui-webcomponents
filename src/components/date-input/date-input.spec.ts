@@ -8,7 +8,7 @@ import {
 import { defineComponents } from '../common/definitions/defineComponents';
 import { MaskParser } from '../masked-input/mask-parser';
 import IgcDateInputComponent from './date-input';
-import { DatePart, DatePartDeltas } from './date-util';
+import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util';
 
 //TODO Add all tests.
 describe('Date Input component', () => {
@@ -25,7 +25,10 @@ describe('Date Input component', () => {
   describe('', async () => {
     beforeEach(async () => {
       el = await createDateInputComponent();
-      input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+      input = el.shadowRoot!.querySelector('input') as HTMLInputElement;
+
+      parser.prompt = defaultPrompt;
+      parser.mask = '__/__/____';
     });
 
     it('should set default values correctly', async () => {
@@ -36,6 +39,10 @@ describe('Date Input component', () => {
     });
 
     it('prompt character change (no value)', async () => {
+      el.prompt = '';
+      await elementUpdated(el);
+      expect(el.prompt).to.equal(parser.prompt);
+
       el.prompt = '*';
       parser.prompt = el.prompt;
       parser.mask = el.mask;
@@ -57,7 +64,7 @@ describe('Date Input component', () => {
       expect(el.mask).to.equal('00-00-0000 00:00:00');
     });
 
-    it('should update mask according to locale', async () => {
+    it('should update mask with no value according to locale', async () => {
       expect(el.placeholder).to.equal('MM/dd/yyyy');
       expect(el.mask).to.equal(defaultMask);
 
@@ -65,6 +72,21 @@ describe('Date Input component', () => {
       await elementUpdated(el);
       expect(el.placeholder).to.equal('dd.MM.yyyy');
       expect(el.mask).to.equal('00.00.0000');
+    });
+
+    it('should update mask with value according to locale', async () => {
+      expect(el.placeholder).to.equal('MM/dd/yyyy');
+      expect(el.mask).to.equal(defaultMask);
+
+      el.value = new Date(2020, 2, 3);
+      await elementUpdated(el);
+      expect(input.value).to.equal('03/03/2020');
+
+      el.locale = 'no';
+      await elementUpdated(el);
+      expect(el.placeholder).to.equal('dd.MM.yyyy');
+      expect(el.mask).to.equal('00.00.0000');
+      expect(input.value).to.equal('03.03.2020');
     });
 
     it('should use displayFormat when defined', async () => {
@@ -320,6 +342,73 @@ describe('Date Input component', () => {
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
     });
 
+    it('ArrowLeft/Right should navigate to the beginning/end of date section', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value;
+      el.focus();
+      await elementUpdated(el);
+
+      //Move selection to the beginning of 'year' part.
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowLeft',
+          ctrlKey: true,
+          bubbles: true,
+        })
+      );
+
+      await elementUpdated(el);
+
+      expect(input.selectionStart).to.equal(6);
+      expect(input.selectionEnd).to.equal(6);
+
+      //Move selection to the end of 'year' part.
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowRight',
+          ctrlKey: true,
+          bubbles: true,
+        })
+      );
+
+      await elementUpdated(el);
+
+      expect(input.selectionStart).to.equal(10);
+      expect(input.selectionEnd).to.equal(10);
+    });
+
+    it('non filled parts have default value set on blur', async () => {
+      el.inputFormat = 'dd.MM.yyyy';
+      const parts = DateTimeUtil.parseDateTimeFormat(el.inputFormat);
+
+      el.focus();
+      await elementUpdated(el);
+
+      const val = '1010';
+      input.value = val;
+      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      await elementUpdated(el);
+
+      //10.10.____
+      const parse = parser.replace(input.value, val, 0, 3);
+      expect(input.value).to.equal(parse.value);
+
+      expect(el.value).to.be.undefined;
+
+      el.blur();
+      await elementUpdated(el);
+      const parse2 = DateTimeUtil.parseValueFromMask(
+        input.value,
+        parts,
+        el.prompt
+      );
+
+      //10.10.2000
+      expect(el.value!.setHours(0, 0, 0, 0)).to.equal(
+        parse2!.setHours(0, 0, 0, 0)
+      );
+    });
+
     it('ctrl + ; should set date correctly', async () => {
       const today = new Date().setHours(0, 0, 0, 0);
 
@@ -359,6 +448,62 @@ describe('Date Input component', () => {
       await elementUpdated(el);
 
       expect(el.value!.getDate()).to.equal(1);
+    });
+
+    //check if needed
+    it('dragEnter', async () => {
+      input.dispatchEvent(new DragEvent('dragenter', { bubbles: true }));
+      await elementUpdated(el);
+
+      expect(input.value).to.equal(parser.apply());
+    });
+
+    //check if needed
+    it('dragLeave without focus', async () => {
+      input.dispatchEvent(new DragEvent('dragleave', { bubbles: true }));
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('');
+    });
+
+    //check if needed
+    it('dragLeave with focus', async () => {
+      el.focus();
+      input.dispatchEvent(new DragEvent('dragleave', { bubbles: true }));
+      await elementUpdated(el);
+
+      expect(input.value).to.equal(parser.apply());
+    });
+
+    it('Drop behavior', async () => {
+      input.value = '1010';
+      input.setSelectionRange(0, 3);
+      await elementUpdated(el);
+
+      input.dispatchEvent(
+        new InputEvent('input', { inputType: 'insertFromDrop' })
+      );
+      await elementUpdated(el);
+
+      expect(input.value).to.equal('10/10/____');
+    });
+
+    it('should respect minValue', async () => {
+      el.minValue = new Date(2020, 2, 3);
+      el.value = new Date(2020, 1, 3);
+      await elementUpdated(el);
+
+      expect(input.reportValidity()).to.be.false;
+      expect(el.invalid).to.be.true;
+    });
+
+    it('should respect maxValue', async () => {
+      el.maxValue = new Date(2020, 2, 3);
+      el.value = new Date(2020, 3, 3);
+      await elementUpdated(el);
+
+      expect(input.reportValidity()).to.be.false;
+      expect(el.invalid).to.be.true;
     });
   });
 
