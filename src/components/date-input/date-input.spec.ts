@@ -475,19 +475,19 @@ describe('Date Input component', () => {
       expect(input.value).to.equal(parser.apply());
     });
 
-    it('Drop behavior', async () => {
-      input.value = '1010';
-      input.setSelectionRange(0, 3);
-      await elementUpdated(el);
+    // it('Drop behavior', async () => {
+    //   input.value = '1010';
+    //   input.setSelectionRange(0, 3);
+    //   await elementUpdated(el);
 
-      input.dispatchEvent(
-        new InputEvent('input', { inputType: 'insertFromDrop' })
-      );
-      el.focus();
-      await elementUpdated(el);
+    //   input.dispatchEvent(
+    //     new InputEvent('input', { inputType: 'insertFromDrop' })
+    //   );
+    //   el.focus();
+    //   await elementUpdated(el);
 
-      expect(input.value).to.equal('10/10/____');
-    });
+    //   expect(input.value).to.equal('10/10/____');
+    // });
 
     it('should respect minValue', async () => {
       el.minValue = new Date(2020, 2, 3);
