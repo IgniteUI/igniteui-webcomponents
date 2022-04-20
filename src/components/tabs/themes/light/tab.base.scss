@@ -1,0 +1,22 @@
+:host {
+    display: flex;
+    flex-direction: row;
+    min-width: 90px;
+    text-align: center;
+    cursor: pointer;
+    justify-content: center;
+}
+
+:host([disabled]) {
+    pointer-events: none;
+    cursor: initial;
+    color: grey;
+}
+
+.tabs-header-item-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}

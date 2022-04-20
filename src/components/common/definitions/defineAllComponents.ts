@@ -26,6 +26,9 @@ import IgcRippleComponent from '../../ripple/ripple';
 import IgcRangeSliderComponent from '../../slider/range-slider';
 import IgcSliderComponent from '../../slider/slider';
 import IgcSliderLabelComponent from '../../slider/slider-label';
+import IgcTabsComponent from '../../tabs/tabs';
+import IgcTabComponent from '../../tabs/tab';
+import IgcTabPanelComponent from '../../tabs/tab-panel';
 import { defineComponents } from './defineComponents';
 
 const allComponents: CustomElementConstructor[] = [
@@ -57,6 +60,9 @@ const allComponents: CustomElementConstructor[] = [
   IgcSliderComponent,
   IgcSliderLabelComponent,
   IgcRangeSliderComponent,
+  IgcTabsComponent,
+  IgcTabComponent,
+  IgcTabPanelComponent,
 ];
 
 export const defineAllComponents = () => {

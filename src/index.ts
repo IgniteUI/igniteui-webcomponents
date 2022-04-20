@@ -49,4 +49,7 @@ export {
 export { default as IgcSliderComponent } from './components/slider/slider';
 export { IgcSliderBaseComponent } from './components/slider/slider-base';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label';
+export { default as IgcTabsComponent } from './components/tabs/tabs';
+export { default as IgcTabComponent } from './components/tabs/tab';
+export { default as IgcTabPanelComponent } from './components/tabs/tab-panel';
 export { configureTheme } from './theming/config';
