@@ -493,9 +493,12 @@ describe('Date Input component', () => {
       el.minValue = new Date(2020, 2, 3);
       el.value = new Date(2020, 1, 3);
       await elementUpdated(el);
-
-      expect(input.reportValidity()).to.be.false;
+      expect(input.checkValidity()).to.be.false;
       expect(el.invalid).to.be.true;
+
+      el.value = new Date(2021, 2, 3);
+      await elementUpdated(el);
+      expect(el.invalid).to.be.false;
     });
 
     it('should respect maxValue', async () => {
@@ -505,6 +508,9 @@ describe('Date Input component', () => {
 
       expect(input.reportValidity()).to.be.false;
       expect(el.invalid).to.be.true;
+
+      el.value = new Date(2020, 1, 3);
+      expect(el.invalid).to.be.false;
     });
   });
 
