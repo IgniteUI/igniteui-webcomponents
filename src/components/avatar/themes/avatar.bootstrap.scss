@@ -1,0 +1,6 @@
+@use '../../../styles/utilities' as *;
+
+:host([shape='square']) [part='base'],
+:host([shape='rounded']) [part='base'] {
+    border-radius: rem(4px);
+}

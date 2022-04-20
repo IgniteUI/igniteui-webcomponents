@@ -4,22 +4,24 @@ $ripple-size: rem(40px);
 $ripple-radius: calc(#{$ripple-size} / 2);
 
 [part~='control'] {
+    @include border-radius(rem(7px));
+
     width: var(--size);
     height: rem(14px);
-    border-radius: rem(7px);
-    background: color(gray, 600);
+    background: color(gray, 500);
 }
 
 [part~='thumb'] {
     width: var(--thumb-size);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
-    background: color(gray, 200);
-    border-radius: rem(10px);
+    background: color(gray, 50);
     box-shadow: var(--igc-elevation-2);
     margin-inline-start: var(--thumb-offset);
 
     &::after {
+        @include border-radius($ripple-radius);
+
         position: absolute;
         content: '';
         top: calc(50% - #{$ripple-radius});
@@ -27,7 +29,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
         width: $ripple-size;
         height: $ripple-size;
         overflow: hidden;
-        border-radius: $ripple-radius;
     }
 
     &:hover {
@@ -64,7 +65,7 @@ label {
 }
 
 [part~='control'][part~='checked'] {
-    background: color(secondary, 500, .5);
+    background: color(secondary, 200);
 }
 
 [part~='thumb'][part~='checked'] {
@@ -78,10 +79,19 @@ label {
 :host([disabled]) {
     [part~='thumb'] {
         box-shadow: var(--igc-elevation-1);
+        background: color(gray, 200);
     }
 
     [part~='control'] {
         background: color(gray, 300);
+    }
+
+    [part~='thumb'][part~='checked'] {
+        background: color(secondary, 100);
+    }
+
+    [part~='control'][part~='checked'] {
+        background: color(secondary, 50);
     }
 }
 

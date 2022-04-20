@@ -2,15 +2,15 @@
 
 export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   files: ['dist/**/*.spec.js'],
-  nodeResolve: true,
+  // nodeResolve: true,
 
   /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
   // esbuildTarget: 'auto',
 
   /** Configure bare import resolve plugin */
-  // nodeResolve: {
-  //   exportConditions: ['browser', 'development']
-  // },
+  nodeResolve: {
+    exportConditions: ['browser', 'production'],
+  },
 
   /** Amount of browsers to run concurrently */
   // concurrentBrowsers: 2,

@@ -4,9 +4,10 @@ $text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
 $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
 
 button {
+    @include utils.border-radius(utils.rem(2px));
+
     background: transparent;
-    color: utils.color(gray, 900);
-    border-radius: utils.rem(1px);
+    color: utils.color(primary, 500);
     transition: color .15s ease-out, background .15s ease-out;
     box-shadow: none;
 
@@ -22,14 +23,36 @@ button {
 
     &:hover {
         color: utils.color(primary, 500);
+        background: utils.color(gray, 200);
     }
 
-    &:focus-visible {
-        color: utils.color(gray, 900);
+    &:active {
+        color: utils.color(primary, 500);
+        background: utils.color(gray, 300);
     }
 
     &:focus-visible::after {
-        box-shadow: 0 0 0 utils.rem(1px) utils.color(gray, 900);
+        box-shadow: 0 0 0 utils.rem(1px) utils.color(gray, 500);
+    }
+}
+
+:host([size='medium']) {
+    igc-icon {
+        --size: #{utils.rem(20px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-medium) * 1.5);
+    }
+}
+
+:host([size='large']) {
+    igc-icon {
+        --size: #{utils.rem(24px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-large) * .875);
     }
 }
 
@@ -40,6 +63,11 @@ button {
 
         &:hover {
             background: $hover-background;
+        }
+
+        &:active {
+            color: utils.contrast-color(primary, 800);
+            background: utils.color(primary, 800);
         }
 
         &:focus-visible::after {
@@ -71,7 +99,7 @@ button {
 :host([disabled]) {
     button {
         color: utils.color(gray, 400);
-        background: transparent;
+        background: utils.color(gray, 100);
     }
 }
 
@@ -79,6 +107,5 @@ button {
 :host([disabled][variant='outlined']) {
     button {
         color: utils.color(gray, 500);
-        background: utils.color(gray, 100);
     }
 }

@@ -1,7 +1,8 @@
 @use '../../../../../styles/utilities' as utils;
 
 button {
-    border-radius: utils.rem(4px);
+    @include utils.border-radius(utils.rem(4px));
+
     transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
     color: #{utils.color(primary, 500)};
 
@@ -14,6 +15,36 @@ button {
         color: #{utils.color(primary, 600)};
         background: #{utils.color(gray, 100)};
         box-shadow: none;
+    }
+}
+
+:host([size='small']) {
+    igc-icon {
+        --size: #{utils.rem(16px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-small) * 3.75);
+    }
+}
+
+:host([size='medium']) {
+    igc-icon {
+        --size: #{utils.rem(20px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-medium) * 2.25);
+    }
+}
+
+:host([size='large']) {
+    igc-icon {
+        --size: #{utils.rem(24px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-large) * 1.5);
     }
 }
 

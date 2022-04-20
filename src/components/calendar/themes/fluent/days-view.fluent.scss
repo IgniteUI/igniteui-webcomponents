@@ -30,6 +30,8 @@
     color: $current-color;
 
     &::after {
+        @include border-radius(rem(16px));
+
         content: '';
         position: absolute;
         top: rem(1px);
@@ -37,7 +39,6 @@
         width: calc(100% - #{rem(2px)});
         height: calc(100% - #{rem(2px)});
         background: $current-background;
-        border-radius: rem(16px);
         z-index: -1;
     }
 

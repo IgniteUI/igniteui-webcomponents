@@ -1,0 +1,174 @@
+@use '../../../styles/common/component';
+@use '../../../styles/utilities' as *;
+
+:host {
+    display: inline-flex;
+    vertical-align: top;
+}
+
+:host button {
+    @include border-radius(rem(16px));
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: var(--igc-font-family);
+    border-style: none;
+    box-shadow: none;
+    cursor: pointer;
+
+    &[disabled] {
+        pointer-events: none;
+        color: color(gray, 500);
+    }
+}
+
+:host([size='small']) {
+    button {
+        height: rem(20px);
+        padding: rem(2px);
+    }
+
+    [part='prefix'] {
+        margin-inline-end: rem(3px);
+    }
+
+    [part='suffix'] {
+        margin-inline-start: rem(3px);
+    }
+}
+
+:host([size='medium']) {
+    button {
+        height: rem(24px);
+        padding: rem(6px);
+    }
+
+    [part='prefix'] {
+        margin-inline-end: rem(6px);
+    }
+
+    [part='suffix'] {
+        margin-inline-start: rem(6px);
+    }
+}
+
+:host([size='large']) {
+    button {
+        height: rem(32px);
+        padding: rem(12px);
+    }
+
+    [part='prefix'] {
+        margin-inline-end: rem(8px);
+    }
+
+    [part='suffix'] {
+        margin-inline-start: rem(8px);
+    }
+
+    igc-icon[size='large'] {
+        --size: #{rem(20px)};
+    }
+}
+
+:host([variant='primary']) button,
+:host([selected][variant='primary']) button:not([disabled]) {
+    background: color(primary, 500);
+    color: contrast-color(primary, 500);
+
+    &:hover {
+        background: color(primary, 600);
+        color: contrast-color(primary, 600);
+    }
+
+    &:focus {
+        background: color(primary, 800);
+        color: contrast-color(primary, 800);
+    }
+}
+
+:host([variant='info']) button,
+:host([selected][variant='info']) button:not([disabled]) {
+    background: color(info, 500);
+    color: contrast-color(info, 500);
+
+    &:hover {
+        background: color(info, 600);
+        color: contrast-color(info, 600);
+    }
+
+    &:focus {
+        background: color(info, 800);
+        color: contrast-color(info, 800);
+    }
+}
+
+:host([variant='success']) button,
+:host([selected][variant='success']) button:not([disabled]) {
+    background: color(success, 500);
+    color: contrast-color(success, 500);
+
+    &:hover {
+        background: color(success, 600);
+        color: contrast-color(success, 600);
+    }
+
+    &:focus {
+        background: color(success, 800);
+        color: contrast-color(success, 800);
+    }
+}
+
+:host([variant='warning']) button,
+:host([selected][variant='warning']) button:not([disabled]) {
+    background: color(warn, 500);
+    color: contrast-color(warn, 500);
+
+    &:hover {
+        background: color(warn, 600);
+        color: contrast-color(warn, 600);
+    }
+
+    &:focus {
+        background: color(warn, 800);
+        color: contrast-color(warn, 800);
+    }
+}
+
+:host([variant='danger']) button,
+:host([selected][variant='danger']) button:not([disabled]) {
+    background: color(error, 500);
+    color: contrast-color(error, 500);
+
+    &:hover {
+        background: color(error, 600);
+        color: contrast-color(error, 600);
+    }
+
+    &:focus {
+        background: color(error, 800);
+        color: contrast-color(error, 800);
+    }
+}
+
+[part='prefix'],
+[part='suffix'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+::slotted(*) {
+    display: flex;
+}
+
+:host([variant='primary']),
+:host([variant='info']),
+:host([variant='success']),
+:host([variant='warning']),
+:host([variant='danger']) {
+    button[disabled] {
+        color: color(gray, 500);
+    }
+}

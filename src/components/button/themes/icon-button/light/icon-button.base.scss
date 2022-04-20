@@ -6,6 +6,8 @@
 }
 
 button {
+    @include border-radius(50%);
+
     display: flex;
     align-items: center;
     justify-content: center;
@@ -17,7 +19,6 @@ button {
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     cursor: pointer;
-    border-radius: 50%;
     transition: box-shadow .2s ease-in, background .15s ease-out;
     transition-delay: .05s;
 }
@@ -38,7 +39,7 @@ button {
     }
 
     button {
-        padding: calc(var(--igc-spacing-medium) * 1.5);
+        padding: calc(var(--igc-spacing-medium) * 1.25);
     }
 }
 
@@ -48,7 +49,7 @@ button {
     }
 
     button {
-        padding: var(--igc-spacing-large);
+        padding: calc(var(--igc-spacing-large) * .75);
     }
 }
 

@@ -1,8 +1,8 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming';
-import { styles as bootstrap } from './themes/light/card.header.bootstrap.css';
-import { styles as indigo } from './themes/light/card.header.indigo.css';
-import { styles } from './themes/light/card.header.material.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles as bootstrap } from './themes/light/card.header.bootstrap.css.js';
+import { styles as indigo } from './themes/light/card.header.indigo.css.js';
+import { styles } from './themes/light/card.header.material.css.js';
 
 /** A container for card's header
  * @element igc-card-header

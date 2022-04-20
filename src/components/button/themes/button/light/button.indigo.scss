@@ -1,43 +1,32 @@
 @use '../../../../../styles/utilities' as utils;
 
-$l-size: utils.rem(36px);
-$m-size: utils.rem(32px);
-$s-size: utils.rem(24px);
-
-:host([size='large']) [part='base'] {
-    --size: #{$l-size};
-    --igc-border-radius: calc(var(--size) / 2);
-
-    border-radius: var(--igc-border-radius);
+[part='base'] {
+    @include utils.border-radius(calc(var(--size) / 2));
 
     &::before,
     &::after {
-        border-radius: var(--igc-border-radius);
+        @include utils.border-radius(calc(var(--size) / 2));
     }
+}
+
+:host([size='large']) [part='base'] {
+    --size: #{utils.rem(36px)};
 }
 
 :host([size='medium']) [part='base'] {
-    --size: #{$m-size};
-    --igc-border-radius: calc(var(--size) / 2);
-
-    border-radius: var(--igc-border-radius);
-
-    &::before,
-    &::after {
-        border-radius: var(--igc-border-radius);
-    }
+    --size: #{utils.rem(32px)};
 }
 
 :host([size='small']) [part='base'] {
-    --size: #{$s-size};
-    --igc-border-radius: calc(var(--size) / 2);
+    --size: #{utils.rem(28px)};
+}
 
-    border-radius: var(--igc-border-radius);
+:host([variant='fab'][size='medium']) [part='base'] {
+    --size: #{utils.rem(42px)};
+}
 
-    &::before,
-    &::after {
-        border-radius: var(--igc-border-radius);
-    }
+:host([variant='fab'][size='small']) [part='base'] {
+    --size: #{utils.rem(36px)};
 }
 
 :host(:not([disabled])[variant='flat']) [part='base'] {
@@ -111,11 +100,6 @@ $s-size: utils.rem(24px);
             box-shadow: var(--igc-elevation-0);
         }
     }
-}
-
-:host([disabled][variant='fab']) [part='base'],
-:host(:not([disabled])[variant='fab']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 100);
 }
 
 :host(:not([disabled])[variant='fab']) [part='base'],

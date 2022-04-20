@@ -39,7 +39,7 @@ function fixControlProp(propType, options) {
   if (propType.startsWith('Date')) {
     return 'date';
   }
-  if(propType.startsWith('number')) {
+  if (propType.startsWith('number')) {
     return 'number';
   }
 
@@ -74,12 +74,18 @@ function extractTags(meta) {
       .filter(
         (prop) =>
           prop.type &&
-          (SUPPORTED_TYPES.some(type => prop.type === type || prop.type.startsWith(`${type} `)) ||
-          UNION_TYPE_REGEX.test(prop.type))
+          (SUPPORTED_TYPES.some(
+            (type) => prop.type === type || prop.type.startsWith(`${type} `)
+          ) ||
+            UNION_TYPE_REGEX.test(prop.type))
       )
       .map((prop) => {
         const options =
-          UNION_TYPE_REGEX.test(prop.type) && !SUPPORTED_TYPES.some(type => prop.type === type || prop.type.startsWith(`${type} `))
+          UNION_TYPE_REGEX.test(prop.type) &&
+
+          !SUPPORTED_TYPES.some(
+            (type) => prop.type === type || prop.type.startsWith(`${type} `)
+          )
             ? prop.type.split('|').map((part) => part.trim().replace(/"/g, ''))
             : undefined;
         return [
@@ -93,8 +99,8 @@ function extractTags(meta) {
               ? prop.type === 'boolean'
                 ? prop.default === 'true'
                 : prop.type === 'Date'
-                ? undefined
-                : prop.default.replace(/"/g, '')
+                  ? undefined
+                  : prop.default.replace(/"/g, '')
               : undefined,
           },
         ];
@@ -113,7 +119,7 @@ const buildArgTypes = (meta, indent = '  ') => {
     ...meta.args.map(([name, obj]) => `${indent}${name}: ${obj.type};`),
     '}',
   ].join('\n');
-}
+};
 
 /**
  *
@@ -135,7 +141,9 @@ function buildStoryMeta(story, meta) {
     2
   )}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`;
 
-  payload = prettier.format(payload, { singleQuote: true, parser: 'babel' }).trim();
+  payload = prettier
+    .format(payload, { singleQuote: true, parser: 'babel' })
+    .trim();
 
   return story.toString().replace(REPLACE_REGEX, payload);
 }
@@ -154,7 +162,9 @@ async function buildStories() {
       await writeFile(outFile, buildStoryMeta(story, meta), 'utf8');
     } catch (e) {
       if (e.code === 'ENOENT') {
-        report.warn(`!!! No such file '${e.path} !!! Does it need a story file?'`);
+        report.warn(
+          `!!! No such file '${e.path} !!! Does it need a story file?'`
+        );
       } else {
         report.error(e);
         process.exit(-1);

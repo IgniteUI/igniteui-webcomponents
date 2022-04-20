@@ -1,0 +1,8 @@
+@use '../../../../styles/utilities' as *;
+
+$border-color: var(--border-color, color(gray, 300)) !default;
+
+[part='base'] {
+    box-shadow: none;
+    border: 1px solid $border-color;
+}

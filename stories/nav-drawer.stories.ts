@@ -13,11 +13,11 @@ const metadata = {
   component: 'igc-nav-drawer',
   argTypes: {
     position: {
-      type: '"start" | "end" | "top" | "bottom"',
+      type: '"start" | "end" | "top" | "bottom" | "relative"',
       description: 'The position of the drawer.',
-      options: ['start', 'end', 'top', 'bottom'],
+      options: ['start', 'end', 'top', 'bottom', 'relative'],
       control: {
-        type: 'inline-radio',
+        type: 'select',
       },
       defaultValue: 'start',
     },
@@ -31,7 +31,7 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  position: 'start' | 'end' | 'top' | 'bottom';
+  position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
   open: boolean;
 }
 // endregion
@@ -176,7 +176,10 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
-    <div class="igc-scrollbar" style="display: flex;">
+    <div
+      class="igc-scrollbar"
+      style="display: flex; margin-top: -8px; margin-left: -8px; height: 100vh;"
+    >
       <igc-nav-drawer
         dir=${ifDefined(direction)}
         .open=${open}
@@ -205,7 +208,7 @@ const Template: Story<ArgTypes, Context> = (
         </div>
       </igc-nav-drawer>
 
-      <div>
+      <div style="padding-left: 20px;">
         <p>Sample page content</p>
         <igc-button @click="${handleOpen}">Open</igc-button>
         <igc-button @click="${handleClose}">Close</igc-button>
