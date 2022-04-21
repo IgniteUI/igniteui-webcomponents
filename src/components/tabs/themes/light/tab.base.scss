@@ -1,10 +1,33 @@
 :host {
-    display: flex;
-    flex-direction: row;
-    min-width: 90px;
-    text-align: center;
-    cursor: pointer;
+    // display: flex;
+    // flex-direction: row;
+    // min-width: 90px;
+    // text-align: center;
+    // cursor: pointer;
+    // justify-content: center;
+
+    display: inline-flex;
     justify-content: center;
+    align-items: center;
+    min-width: 90px;
+    max-width: 360px;
+    word-wrap: break-word;
+    flex-basis: auto;
+    flex-shrink: 0;
+    padding: rem(11px) rem(16px);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all .3s cubic-bezier(.35, 0, .25, 1);
+    user-select: none;
+    background: aliceblue;
+    color: black;
+    outline: 0;
+    border-bottom: 1px solid gray;
+    border: 1px solid gray;
+    border-top: transparent;
+    border-left: transparent;
+    border-right: transparent;
 }
 
 :host([disabled]) {

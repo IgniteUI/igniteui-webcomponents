@@ -2,51 +2,75 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
-    display: flex;
-    flex-direction: column;
-    min-height: 100px;
+    display: block;
 }
 
-:host([alignment='start']) [part="headers-container"] {
+:host([alignment='start']) [part='headers-scroll'] {
     justify-content: flex-start;
 }
 
-:host([alignment='end']) [part="headers-container"] {
+:host([alignment='end']) [part='headers-scroll'] {
     justify-content: flex-end;
 }
 
-:host([alignment='center']) [part="headers-container"] {
+:host([alignment='center']) [part='headers-scroll'] {
     justify-content: center;
 }
 
-:host([alignment='justify']) [part="headers-container"] {
+:host([alignment='justify']) [part='headers-scroll'] {
     ::slotted(*) {
         flex-basis: 0;
         flex-grow: 1;
         max-width: 100%;
     }
 }
-[part="header-wrapper"] {
+
+[part='headers'] {
     display: flex;
-    flex-grow: 1;
-    position: relative;
-    flex-grow: 1;
+    overflow: hidden;
+    min-height: rem(42px);
+}
+
+[part='headers-content'] {
+    display: flex;
+    flex: 1 1 auto;
     overflow: hidden;
 }
 
-[part="headers-container"] {
-    display: flex;
-    border-style: solid;
-    border-width: 2px;
-    border-color: gray;
+[part='headers-wrapper'] {
+    // display: block;
+    // height: 100%;
+    position: relative;
+    flex-grow: 1;
 }
 
-[part="selected-indicator"] {
+[part='headers-scroll'] {
+    display: flex;
+    height: 100%;
+}
+
+[part='selected-indicator'] {
     position: absolute;
-    top: 20px;
     left: 0;
     transform: translateX(0);
     height: 2px;
     min-width: 90px;
-    background: aliceblue;
+    background: blueviolet;
+}
+
+[part='start-scroll-button'],
+[part='end-scroll-button'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    border: none;
+    padding: 0;
+    min-width: 3rem;
+    width: 3rem;
+    cursor: pointer;
+    position: relative;
+    background: var(--button-background);
+    color: var(--button-color);
+    outline: 0;
 }

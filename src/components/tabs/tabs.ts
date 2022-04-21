@@ -22,14 +22,22 @@ export default class IgcTabsComponent extends LitElement {
   @queryAssignedElements({ slot: 'panel' })
   private panels!: Array<IgcTabPanelComponent>;
 
-  @query('[part="headers-container"]')
-  private headersContainer!: HTMLLIElement;
+  @query('[part="headers-wrapper"]')
+  private headersWrapper!: HTMLLIElement;
+
+  @query('[part="headers-content"]')
+  private headersContent!: HTMLLIElement; // == viewport
+
+  @query('[part="headers-scroll"]')
+  private headersScrollContainer!: HTMLLIElement; // == itemsContainer
 
   @query('[part="selected-indicator"]', true)
   private selectedIndicator!: HTMLElement;
 
-  @state() private hasLeftScrollButton = false;
-  @state() private hasRightScrollButton = false;
+  @state() private showStartScrollButton = false;
+  @state() private showEndScrollButton = false;
+
+  private offset = 0;
 
   @property({ type: String })
   public selected = '';
@@ -76,13 +84,61 @@ export default class IgcTabsComponent extends LitElement {
     this.alignSelectedIndicator(selectedHeader as HTMLElement);
   }
 
-  private updateScrollButtons() {
-    if (this.headersContainer.scrollWidth > this.headersContainer.offsetWidth) {
-      this.hasLeftScrollButton = this.hasRightScrollButton = true;
+  private handleStartButtonClick() {
+    this.updateScrollPosition(false);
+  }
+
+  private handleEndButtonClick() {
+    this.updateScrollPosition(true);
+  }
+
+  private updateScrollPosition(scrollToEnd: boolean) {
+    for (const tab of this.tabs) {
+      if (scrollToEnd) {
+        if (
+          tab.offsetWidth + tab.offsetLeft >
+          this.headersContent.offsetWidth + this.offset
+        ) {
+          this.scrollElement(tab, scrollToEnd);
+          break;
+        }
+      } else {
+        if (tab.offsetWidth + tab.offsetLeft >= this.offset) {
+          this.scrollElement(tab, scrollToEnd);
+          break;
+        }
+      }
     }
   }
 
-  private alignSelectedIndicator(element: HTMLElement, duration = 0.3): void {
+  private scrollElement(element: any, scrollToEnd: boolean) {
+    const headersContentWidth = this.headersContent.offsetWidth;
+
+    this.offset = scrollToEnd
+      ? element.offsetWidth + element.offsetLeft - headersContentWidth
+      : element.offsetLeft;
+    this.headersWrapper.style.transform = `translate(${-this.offset}px)`;
+    this.updateScrollButtons();
+  }
+
+  private updateScrollButtons() {
+    const headersScrollContainerWidth = this.headersScrollContainer.offsetWidth; //itemsContainerWidth
+    const headersContentWidth = this.headersContent.offsetWidth; //viewportwidth
+
+    if (headersScrollContainerWidth > this.offset + headersContentWidth) {
+      this.showEndScrollButton = true;
+    } else {
+      this.showEndScrollButton = false;
+    }
+
+    if (this.offset !== 0) {
+      this.showStartScrollButton = true;
+    } else {
+      this.showStartScrollButton = false;
+    }
+  }
+
+  private alignSelectedIndicator(element: HTMLElement, duration = 0.3) {
     if (this.selectedIndicator) {
       this.selectedIndicator.style.visibility = 'visible';
       this.selectedIndicator.style.transitionDuration =
@@ -92,7 +148,7 @@ export default class IgcTabsComponent extends LitElement {
     }
   }
 
-  private hideSelectedIndicator(): void {
+  private hideSelectedIndicator() {
     if (this.selectedIndicator) {
       this.selectedIndicator.style.visibility = 'hidden';
     }
@@ -112,16 +168,32 @@ export default class IgcTabsComponent extends LitElement {
   protected override render() {
     return html`
       <div part="base" @click=${this.handleClick}>
-        <div part="header-wrapper">
-          ${this.hasLeftScrollButton
-            ? html` <igc-icon-button></igc-icon-button> `
+        <div part="headers">
+          ${this.showStartScrollButton
+            ? html`
+                <igc-icon-button
+                  part="start-scroll-button"
+                  size="medium"
+                  @click=${this.handleStartButtonClick}
+                ></igc-icon-button>
+              `
             : ''}
-          <div part="headers-container" role="tablist">
-            <slot></slot>
-            <div part="selected-indicator"></div>
+          <div part="headers-content">
+            <div part="headers-wrapper">
+              <div part="headers-scroll" role="tablist">
+                <slot></slot>
+              </div>
+              <div part="selected-indicator"></div>
+            </div>
           </div>
-          ${this.hasRightScrollButton
-            ? html` <igc-icon-button></igc-icon-button> `
+          ${this.showEndScrollButton
+            ? html`
+                <igc-icon-button
+                  part="end-scroll-button"
+                  size="medium"
+                  @click=${this.handleEndButtonClick}
+                ></igc-icon-button>
+              `
             : ''}
         </div>
         <div part="content">
