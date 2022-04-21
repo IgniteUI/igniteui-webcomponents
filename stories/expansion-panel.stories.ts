@@ -94,7 +94,9 @@ const Template: Story<ArgTypes, Context> = (
     <igc-expansion-panel indicator-alignment="${indicatorAlignment}"
     .open="${open}"
     .disabled="${disabled}">
-    <div slot="title"><p>Title</p></div>
+    <div slot="title">Title</div>
+    <div slot="subTitle">SubTitle</div>
+    <div slot="content"><p>Content Text</p></div>
     </igc-expansion-panel>
     <p style="visibility: collapse">"${direction}"</p>
   `;

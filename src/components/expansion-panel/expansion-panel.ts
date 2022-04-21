@@ -75,9 +75,11 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     //event.preventDefault();
     console.log(event);
     if (this.disabled) {
-      event.preventDefault();
+      //event.preventDefault();
       return;
     }
+    const el = event.target as HTMLElement;
+
     switch (event.key.toLowerCase()) {
       case 'arrowdown':
       case 'down':
@@ -93,6 +95,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         break;
       case 'enter':
       case ' ':
+        if (el !== this.panelHeader) {
+          return;
+        }
         this.open ? this.closeWithEvent() : this.openWithEvent();
         break;
     }
@@ -179,6 +184,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     return html`
       <div
         part="header"
+        class="igx-expansion-panel__header-inner"
         role="heading"
         aria-level="3"
         tabindex=${this.disabled ? '-1' : '0'}
@@ -192,7 +198,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
           class="expansionPanel"
         >
           ${this.indicatorTemplate()}
-          <div part="headerText">
+          <div part="headerText" class="igx-expansion-panel__title-wrapper">
             <slot name="title"></slot>
             <slot name="subTitle"></slot>
           </div>
