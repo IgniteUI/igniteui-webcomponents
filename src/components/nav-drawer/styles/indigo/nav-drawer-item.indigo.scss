@@ -2,8 +2,9 @@
 
 :host {
     [part~='base'] {
+        @include border-radius(rem(24px));
+
         color: color(gray, 300, .8);
-        border-radius: rem(24px);
         padding: rem(4px);
         margin: rem(15px) rem(8px) !important;
 

@@ -109,6 +109,7 @@ The cat was playing<br> in the garden.</textarea
       </div>
       <label for="email">Email:</label>
       <input type="email" id="email" name="email" /><br /><br />
+      <igc-rating name="rating" label="Rating"></igc-rating>
       <igc-input
         name="email-confirm"
         type="email"

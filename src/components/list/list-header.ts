@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming';
-import { styles } from './themes/light/list-header.base.css';
-import { styles as indigo } from './themes/light/list-header.indigo.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './themes/light/list-header.base.css.js';
+import { styles as indigo } from './themes/light/list-header.indigo.css.js';
 
 /**
  * Header list item.

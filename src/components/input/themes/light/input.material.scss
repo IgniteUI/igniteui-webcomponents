@@ -31,25 +31,29 @@ $fs: rem(16px) !default;
 }
 
 :host {
-    input:not(:placeholder-shown) + [part='notch'] {
+    input:placeholder-shown + [part='notch'],
+    [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
     }
 }
 
 :host([size='large']) {
-    input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+    input:placeholder-shown + [part='notch'] [part='label'],
+    [part~='filled'] + [part='notch'] [part='label'] {
         @extend %large-label;
     }
 }
 
 :host([size='medium']) {
-    input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+    input:placeholder-shown + [part='notch'] [part='label'],
+    [part~='filled'] + [part='notch'] [part='label'] {
         @extend %medium-label;
     }
 }
 
 :host([size='small']) {
-    input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+    input:placeholder-shown + [part='notch'] [part='label'],
+    [part~='filled'] + [part='notch'] [part='label'] {
         @extend %small-label;
     }
 }
@@ -67,30 +71,6 @@ $fs: rem(16px) !default;
 }
 
 :host([size='small']:focus-within) {
-    [part='label'] {
-        @extend %small-label;
-    }
-}
-
-:host([placeholder][size='large']) [part='notch'] {
-    @extend %floated-styles;
-
-    [part='label'] {
-        @extend %large-label;
-    }
-}
-
-:host([placeholder][size='medium']) [part='notch'] {
-    @extend %floated-styles;
-
-    [part='label'] {
-        @extend %medium-label;
-    }
-}
-
-:host([placeholder][size='small']) [part='notch'] {
-    @extend %floated-styles;
-
     [part='label'] {
         @extend %small-label;
     }
@@ -291,7 +271,7 @@ $fs: rem(16px) !default;
         color: $error-color;
     }
 
-    input:not(:placeholder-shown) + [part='notch'] {
+    [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
     }
 }
@@ -325,7 +305,7 @@ $fs: rem(16px) !default;
         color: color(gray, 300);
     }
 
-    input:not(:placeholder-shown) + [part='notch'] {
+    [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
     }
 }
@@ -381,7 +361,8 @@ $fs: rem(16px) !default;
         padding-bottom: rem(6px);
     }
 
-    input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+    input:placeholder-shown + [part='notch'] [part='label'],
+    [part~='filled'] + [part='notch'] [part='label'] {
         transform: translateY(-106%);
     }
 }
@@ -403,10 +384,7 @@ $fs: rem(16px) !default;
             opacity: 1;
         }
     }
-}
 
-:host(:not([outlined]):focus-within),
-:host(:not([outlined])[placeholder]) {
     [part='notch'] [part='label'] {
         transform: translateY(-106%);
     }

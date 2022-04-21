@@ -1,0 +1,9 @@
+@use '../../../styles/utilities' as *;
+
+:host {
+    @include border-radius(rem(6px));
+
+    color: contrast-color(gray, 700);
+    background: color(gray, 700);
+    padding: rem(10px) rem(16px);
+}

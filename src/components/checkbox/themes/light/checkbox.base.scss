@@ -20,6 +20,8 @@ $mark-length: 24;
     user-select: none;
 
     &::after {
+        @include border-radius(rem(2px));
+
         position: absolute;
         content: '';
         left: 50%;
@@ -28,7 +30,6 @@ $mark-length: 24;
         width: $size;
         height: $size;
         border: rem(2px) solid color(gray, 600);
-        border-radius: rem(2px);
         transition: all .15s ease-in;
     }
 }
@@ -139,22 +140,6 @@ label {
     user-select: none;
     cursor: initial;
     pointer-events: none;
-
-    [part~='control'] {
-        &::after {
-            border-color: color(gray, 300);
-        }
-    }
-
-    [part='control checked'] {
-        &::after {
-            background: color(gray, 300);
-        }
-    }
-
-    [part~='label'] {
-        color: color(gray, 400);
-    }
 }
 
 :host([disabled][indeterminate]) {

@@ -3,7 +3,7 @@ import { property, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
-import { alternateName } from '../common/decorators';
+import { alternateName } from '../common/decorators/alternateName.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 
@@ -119,8 +119,8 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         aria-disabled=${this.disabled ? 'true' : 'false'}
         aria-label=${ifDefined(this.ariaLabel)}
         class=${classMap(this.classes)}
-        @focus=${this.handleFocus}
-        @blur=${this.handleBlur}
+        @focus=${!this.disabled && this.handleFocus}
+        @blur=${!this.disabled && this.handleBlur}
       >
         ${this.renderContent()}
       </a>

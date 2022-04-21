@@ -4,25 +4,23 @@ $text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
 $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
 $active-background: var(--active-background, #{utils.color(primary, 700)}) !default;
 
-:host([size='small']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 1);
+[part='base'] {
+    @include utils.border-radius(utils.rem(2px));
+}
 
+:host([size='small']) [part='base'] {
     --size: #{utils.rem(24px)};
 
     padding: 0 utils.rem(8px);
 }
 
 :host([size='medium']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 1);
-
     --size: #{utils.rem(32px)};
 
     padding: 0 utils.rem(16px);
 }
 
 :host([size='large']) [part='base'] {
-    border-radius: calc(var(--igc-border-radius) * 1);
-
     --size: #{utils.rem(38px)};
 
     padding: 0 utils.rem(16px);
@@ -179,10 +177,10 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
 }
 
 :host([variant='fab']) [part='base'] {
-    border-radius: calc(#{var(--igc-border-radius)} * 7);
+    @include utils.border-radius(utils.rem(14px));
 
     &::after {
-        border-radius: calc(#{var(--igc-border-radius)} * 6);
+        @include utils.border-radius(utils.rem(12px));
     }
 }
 

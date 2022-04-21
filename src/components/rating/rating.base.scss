@@ -1,0 +1,174 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+$size-small: rem(16px);
+$size-medium: rem(20px);
+$size-large: rem(24px);
+$spacing: rem(2px);
+$color-label: color(gray, 700) !default;
+$color-symbols: color(gray, 900) !default;
+$selected-color: color(primary) !default;
+$disabled-color: color(gray, 400) !default;
+$disabled-selected-color: color(gray, 600) !default;
+
+:host {
+    display: inline-flex;
+    font-family: var(--igc-font-family);
+    align-items: flex-start;
+    flex-direction: column;
+    gap: $spacing * 2;
+}
+
+%fraction {
+    position: absolute !important;
+    overflow: hidden;
+    inset-inline-start: 0 !important;
+    min-width: 0 !important;
+    z-index: 1;
+}
+
+slot {
+    display: none;
+}
+
+[part='base'] {
+    position: relative;
+    display: inline-flex;
+    user-select: none;
+}
+
+[part~='label'] {
+    @include type-category('caption');
+
+    color: $color-label;
+    padding-inline-start: $spacing;
+}
+
+[part~='symbol'] {
+    color: inherit;
+    font-size: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: grayscale(100%);
+    cursor: pointer;
+
+    igc-icon {
+        color: inherit;
+    }
+
+    &:empty {
+        &::before {
+            content: counter(symbols);
+            counter-increment: symbols;
+        }
+    }
+}
+
+[part~='symbols-wrapper'] {
+    color: $color-symbols;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: $spacing;
+    gap: $spacing;
+    counter-reset: symbols;
+    inset-inline-start: 0;
+}
+
+[part='symbols-wrapper selected'] {
+    color: $selected-color;
+
+    [part~='symbol'] {
+        filter: grayscale(0);
+    }
+}
+
+[part='symbols-wrapper selected'],
+[part~='fraction'] {
+    @extend %fraction;
+}
+
+:host([disabled]) {
+    pointer-events: none;
+
+    [part~='label'] {
+        color: $disabled-color !important;
+    }
+
+    [part~='symbols-wrapper'] {
+        color: $disabled-color;
+    }
+
+    [part='symbols-wrapper selected'] {
+        color: $disabled-selected-color;
+        filter: grayscale(50%);
+    }
+}
+
+[part~='large'] {
+    min-width: $size-large;
+    min-height: $size-large;
+    line-height: $size-large;
+    width: $size-large;
+    height: $size-large;
+
+    igc-icon {
+        width: $size-large;
+        height: $size-large;
+        font-size: $size-large;
+    }
+}
+
+[part~='medium'] {
+    min-width: $size-medium;
+    min-height: $size-medium;
+    line-height: $size-medium;
+    width: $size-medium;
+    height: $size-medium;
+
+    igc-icon {
+        width: $size-medium;
+        height: $size-medium;
+        font-size: $size-medium;
+    }
+}
+
+[part~='small'] {
+    min-width: $size-small;
+    min-height: $size-small;
+    line-height: $size-small;
+    width: $size-small;
+    height: $size-small;
+
+    igc-icon {
+        width: $size-small;
+        height: $size-small;
+        font-size: $size-small;
+    }
+}
+
+[part='label large'],
+[part='label medium'],
+[part='label small'] {
+    height: auto;
+    width: auto;
+    min-height: 0;
+    min-width: 0;
+}
+
+[part='fraction large'] {
+    min-height: calc(#{$size-large} + (#{$spacing} * 2));
+    height: calc(#{$size-large} + (#{$spacing} * 2));
+}
+
+[part='fraction medium'] {
+    min-height: calc(#{$size-medium} + (#{$spacing} * 2));
+    height: calc(#{$size-medium} + (#{$spacing} * 2));
+}
+
+[part='fraction small'] {
+    min-height: calc(#{$size-small} + (#{$spacing} * 2));
+    height: calc(#{$size-small} + (#{$spacing} * 2));
+}

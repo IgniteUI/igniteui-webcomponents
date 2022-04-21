@@ -27,7 +27,7 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
     }
 
     &::after {
-        border: calc(var(--size, 20px) / 20) solid utils.color(gray, 700);
+        border: calc(var(--size, 20px) / 20) solid utils.color(gray, 900);
     }
 }
 
@@ -112,5 +112,22 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
         &::before {
             background: $disabled-color;
         }
+    }
+}
+
+[part~='focused'] {
+    position: relative;
+
+    $focus-outline-offset-top: utils.rem(2px);
+    $focus-outline-offset-left: utils.rem(2px);
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: -$focus-outline-offset-top;
+        left: -$focus-outline-offset-left;
+        box-shadow: 0 0 0 1px utils.color(gray, 700);
+        width: calc(100% + (#{$focus-outline-offset-left} * 2));
+        height: calc(100% + (#{$focus-outline-offset-top} * 2));
     }
 }
