@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { DateParts, DateTimeUtil } from './date-util';
 
-describe('Date Input parser', () => {
+describe('Date Util', () => {
   const DEFAULT_LOCALE = 'en';
   const DEFAULT_FORMAT = 'MM/dd/yyyy';
   const DEFAULT_TIME_FORMAT = 'MM/dd/yyyy hh:mm tt';
@@ -422,5 +422,190 @@ describe('Date Input parser', () => {
         true
       )
     ).to.be.false;
+  });
+
+  it('should spin date portions correctly', () => {
+    let date = new Date(2015, 4, 20);
+    DateTimeUtil.spinDate(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 21).getTime());
+    DateTimeUtil.spinDate(-1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20).getTime());
+
+    // delta !== 1
+    DateTimeUtil.spinDate(5, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 25).getTime());
+    DateTimeUtil.spinDate(-6, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 19).getTime());
+
+    // spinLoop = false
+    date = new Date(2015, 4, 31);
+    DateTimeUtil.spinDate(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 31).getTime());
+    DateTimeUtil.spinDate(-50, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 1).getTime());
+
+    // spinLoop = true
+    DateTimeUtil.spinDate(31, date, true);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 1).getTime());
+    DateTimeUtil.spinDate(-5, date, true);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 27).getTime());
+  });
+
+  it('should spin month portions correctly', () => {
+    let date = new Date(2015, 4, 20);
+    DateTimeUtil.spinMonth(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 5, 20).getTime());
+    DateTimeUtil.spinMonth(-1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20).getTime());
+
+    // delta !== 1
+    DateTimeUtil.spinMonth(5, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 9, 20).getTime());
+    DateTimeUtil.spinMonth(-6, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 3, 20).getTime());
+
+    // spinLoop = false
+    date = new Date(2015, 11, 31);
+    DateTimeUtil.spinMonth(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 11, 31).getTime());
+    DateTimeUtil.spinMonth(-50, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 0, 31).getTime());
+
+    // spinLoop = true
+    date = new Date(2015, 11, 1);
+    DateTimeUtil.spinMonth(2, date, true);
+    expect(date.getTime()).to.equal(new Date(2015, 1, 1).getTime());
+    date = new Date(2015, 0, 1);
+    DateTimeUtil.spinMonth(-1, date, true);
+    expect(date.getTime()).to.equal(new Date(2015, 11, 1).getTime());
+
+    // coerces date portion to be no greater than max date of current month
+    date = new Date(2020, 2, 31);
+    DateTimeUtil.spinMonth(-1, date, false);
+    expect(date.getTime()).to.equal(new Date(2020, 1, 29).getTime());
+    DateTimeUtil.spinMonth(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2020, 2, 29).getTime());
+    date = new Date(2020, 4, 31);
+    DateTimeUtil.spinMonth(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2020, 5, 30).getTime());
+  });
+
+  it('should spin year portions correctly', () => {
+    let date = new Date(2015, 4, 20);
+    DateTimeUtil.spinYear(1, date);
+    expect(date.getTime()).to.equal(new Date(2016, 4, 20).getTime());
+    DateTimeUtil.spinYear(-1, date);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20).getTime());
+
+    // delta !== 1
+    DateTimeUtil.spinYear(5, date);
+    expect(date.getTime()).to.equal(new Date(2020, 4, 20).getTime());
+    DateTimeUtil.spinYear(-6, date);
+    expect(date.getTime()).to.equal(new Date(2014, 4, 20).getTime());
+
+    // coerces February to be 29 days on a leap year and 28 on a non leap year
+    date = new Date(2020, 1, 29);
+    DateTimeUtil.spinYear(1, date);
+    expect(date.getTime()).to.equal(new Date(2021, 1, 28).getTime());
+    DateTimeUtil.spinYear(-1, date);
+    expect(date.getTime()).to.equal(new Date(2020, 1, 28).getTime());
+  });
+
+  it('should spin hours portion correctly', () => {
+    let date = new Date(2015, 4, 20, 6);
+    DateTimeUtil.spinHours(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 7).getTime());
+    DateTimeUtil.spinHours(-1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 6).getTime());
+
+    // delta !== 1
+    DateTimeUtil.spinHours(5, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 11).getTime());
+    DateTimeUtil.spinHours(-6, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 5).getTime());
+
+    // spinLoop = false
+    date = new Date(2015, 4, 20, 23);
+    DateTimeUtil.spinHours(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 23).getTime());
+    DateTimeUtil.spinHours(-30, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 0).getTime());
+
+    // spinLoop = true (date is not affected)
+    DateTimeUtil.spinHours(25, date, true);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 1).getTime());
+    DateTimeUtil.spinHours(-2, date, true);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 23).getTime());
+  });
+
+  it('should spin minutes portion correctly', () => {
+    let date = new Date(2015, 4, 20, 6, 10);
+    DateTimeUtil.spinMinutes(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 6, 11).getTime());
+    DateTimeUtil.spinMinutes(-1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 6, 10).getTime());
+
+    // delta !== 1
+    DateTimeUtil.spinMinutes(5, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 6, 15).getTime());
+    DateTimeUtil.spinMinutes(-6, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 6, 9).getTime());
+
+    // spinLoop = false
+    date = new Date(2015, 4, 20, 12, 59);
+    DateTimeUtil.spinMinutes(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 12, 59).getTime());
+    DateTimeUtil.spinMinutes(-70, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 12, 0).getTime());
+
+    // spinLoop = true (hours are not affected)
+    DateTimeUtil.spinMinutes(61, date, true);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 12, 1).getTime());
+    DateTimeUtil.spinMinutes(-5, date, true);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 12, 56).getTime());
+  });
+
+  it('should spin seconds portion correctly', () => {
+    // base
+    let date = new Date(2015, 4, 20, 6, 10, 5);
+    DateTimeUtil.spinSeconds(1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 6, 10, 6).getTime());
+    DateTimeUtil.spinSeconds(-1, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 6, 10, 5).getTime());
+
+    // delta !== 1
+    DateTimeUtil.spinSeconds(5, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 6, 10, 10).getTime());
+    DateTimeUtil.spinSeconds(-6, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 6, 10, 4).getTime());
+
+    // spinLoop = false
+    date = new Date(2015, 4, 20, 12, 59, 59);
+    DateTimeUtil.spinSeconds(1, date, false);
+    expect(date.getTime()).to.equal(
+      new Date(2015, 4, 20, 12, 59, 59).getTime()
+    );
+    DateTimeUtil.spinSeconds(-70, date, false);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 12, 59, 0).getTime());
+
+    // spinLoop = true (minutes are not affected)
+    DateTimeUtil.spinSeconds(62, date, true);
+    expect(date.getTime()).to.equal(new Date(2015, 4, 20, 12, 59, 2).getTime());
+    DateTimeUtil.spinSeconds(-5, date, true);
+    expect(date.getTime()).to.equal(
+      new Date(2015, 4, 20, 12, 59, 57).getTime()
+    );
+  });
+
+  it('should spin AM/PM portion correctly', () => {
+    const currentDate = new Date(2015, 4, 31, 4, 59, 59);
+    const newDate = new Date(2015, 4, 31, 4, 59, 59);
+    // spin from AM to PM
+    DateTimeUtil.spinAmPm(currentDate, newDate, 'PM');
+    expect(currentDate.getHours()).to.equal(16);
+
+    // spin from PM to AM
+    DateTimeUtil.spinAmPm(currentDate, newDate, 'AM');
+    expect(currentDate.getHours()).to.equal(4);
   });
 });

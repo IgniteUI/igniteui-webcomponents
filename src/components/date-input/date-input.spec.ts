@@ -309,6 +309,20 @@ describe('Date Input component', () => {
       expect(el.value.getMonth()).to.equal(value.getMonth() - 1);
     });
 
+    it('mouse wheel no focus', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value;
+      await elementUpdated(el);
+
+      el.dispatchEvent(
+        new WheelEvent('wheel', { deltaY: -125, bubbles: true })
+      );
+
+      await elementUpdated(el);
+
+      expect(el.value.getFullYear()).to.equal(value.getFullYear());
+    });
+
     it('ArrowUp should stepUp correctly', async () => {
       const value = new Date(2020, 2, 3);
       el.value = value;
@@ -406,6 +420,84 @@ describe('Date Input component', () => {
       expect(el.value!.setHours(0, 0, 0, 0)).to.equal(
         parse2!.setHours(0, 0, 0, 0)
       );
+    });
+
+    it('invalid date sets null value on blur', async () => {
+      el.inputFormat = 'dd.MM.yyyy';
+      el.focus();
+      await elementUpdated(el);
+
+      const val = '1099';
+      input.value = val;
+      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      await elementUpdated(el);
+
+      //10.99.____
+      const parse = parser.replace(input.value, val, 0, 3);
+      expect(input.value).to.equal(parse.value);
+      expect(el.value).to.be.undefined;
+
+      el.blur();
+      await elementUpdated(el);
+
+      expect(el.value).to.be.null;
+      expect(input.value).to.equal('');
+    });
+
+    it('set value when input is complete', async () => {
+      el.inputFormat = 'dd.MM.yyyy';
+      const parts = DateTimeUtil.parseDateTimeFormat(el.inputFormat);
+
+      el.focus();
+      await elementUpdated(el);
+
+      const val = '10102020';
+      input.value = val;
+      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      await elementUpdated(el);
+
+      //10.10.2020
+      const parse = parser.replace(input.value, val, 0, 3);
+      expect(input.value).to.equal(parse.value);
+
+      const parse2 = DateTimeUtil.parseValueFromMask(
+        input.value,
+        parts,
+        el.prompt
+      );
+
+      expect(DateTimeUtil.isValidDate(parse2)).to.be.true;
+
+      //10.10.2000
+      expect(el.value!.setHours(0, 0, 0, 0)).to.equal(
+        parse2!.setHours(0, 0, 0, 0)
+      );
+    });
+
+    it('set value to null when input is complete and invalid', async () => {
+      el.inputFormat = 'dd.MM.yyyy';
+      const parts = DateTimeUtil.parseDateTimeFormat(el.inputFormat);
+
+      el.focus();
+      await elementUpdated(el);
+
+      const val = '10992020';
+      input.value = val;
+      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      await elementUpdated(el);
+
+      //10.99.2020
+      const parse = parser.replace(input.value, val, 0, 3);
+      expect(input.value).to.equal(parse.value);
+
+      const parse2 = DateTimeUtil.parseValueFromMask(
+        input.value,
+        parts,
+        el.prompt
+      );
+
+      expect(DateTimeUtil.isValidDate(parse2)).to.be.false;
+      expect(el.value).to.be.null;
     });
 
     it('ctrl + ; should set date correctly', async () => {
