@@ -6,11 +6,10 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import { defineComponents } from '../common/definitions/defineComponents';
-import { MaskParser } from '../masked-input/mask-parser';
+import { MaskParser } from '../mask-input/mask-parser';
 import IgcDateInputComponent from './date-input';
 import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util';
 
-//TODO Add all tests.
 describe('Date Input component', () => {
   before(() => defineComponents(IgcDateInputComponent));
 

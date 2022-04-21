@@ -1,47 +1,27 @@
 import { html } from 'lit';
 import { Story, Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import {
-  DatePartDeltas,
-  DatePart,
-} from '../src/components/date-input/date-util.js';
-import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { IgcDateInputComponent } from '../src/index.js';
 
 // region default
 const metadata = {
-  title: 'Date Input',
-  component: 'igc-date-input',
+  title: 'Mask Input',
+  component: 'igc-mask-input',
   argTypes: {
-    inputFormat: {
-      type: 'string',
-      control: 'text',
+    valueMode: {
+      type: '"raw" | "withFormatting"',
+      description:
+        'Dictates the behavior when retrieving the value of the control:\n\n- `raw` will return the clean user input.\n- `withFormatting` will return the value with all literals and prompts.',
+      options: ['raw', 'withFormatting'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'raw',
     },
     value: {
-      type: 'Date | null',
-      control: 'date',
-    },
-    minValue: {
-      type: 'string | Date',
-      control: 'text',
-    },
-    maxValue: {
-      type: 'string | Date',
-      control: 'text',
-    },
-    displayFormat: {
       type: 'string',
+      description:
+        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
       control: 'text',
-    },
-    spinLoop: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: true,
-    },
-    locale: {
-      type: 'string',
-      control: 'text',
-      defaultValue: 'e',
     },
     mask: {
       type: 'string',
@@ -119,13 +99,8 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  inputFormat: string;
-  value: Date | null;
-  minValue: string | Date;
-  maxValue: string | Date;
-  displayFormat: string;
-  spinLoop: boolean;
-  locale: string;
+  valueMode: 'raw' | 'withFormatting';
+  value: string;
   mask: string;
   prompt: string;
   dir: 'ltr' | 'rtl' | 'auto';
@@ -141,42 +116,6 @@ interface ArgTypes {
 }
 // endregion
 
-registerIcon(
-  'clear',
-  'https://unpkg.com/material-design-icons@3.0.1/content/svg/production/ic_clear_24px.svg'
-);
-
-registerIcon(
-  'up',
-  'https://unpkg.com/material-design-icons@3.0.1/navigation/svg/production/ic_arrow_drop_up_24px.svg'
-);
-
-registerIcon(
-  'down',
-  'https://unpkg.com/material-design-icons@3.0.1/navigation/svg/production/ic_arrow_drop_down_24px.svg'
-);
-
-const handleIncrement = () => {
-  const input = document.querySelector(
-    'igc-date-input'
-  ) as IgcDateInputComponent;
-  input!.stepUp(DatePart.Date);
-};
-
-const handleDecrement = () => {
-  const input = document.querySelector(
-    'igc-date-input'
-  ) as IgcDateInputComponent;
-  input?.stepDown();
-};
-
-const handleClear = () => {
-  const input = document.querySelector(
-    'igc-date-input'
-  ) as IgcDateInputComponent;
-  input?.clear();
-};
-
 (metadata as any).parameters = {
   actions: {
     handles: ['igcChange', 'igcInput'],
@@ -185,51 +124,40 @@ const handleClear = () => {
 
 const Template: Story<ArgTypes, Context> = (
   {
-    inputFormat,
-    prompt,
+    name,
     readonly,
     disabled,
     required,
     outlined,
-    placeholder,
-    displayFormat,
-    minValue,
-    maxValue,
-    size,
-    locale,
-    spinLoop,
+    valueMode,
+    label,
     value,
+    placeholder,
+    mask,
+    prompt,
+    size,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  const spinDelta: DatePartDeltas = {
-    date: 2,
-    year: 10,
-  };
-
-  return html`<igc-date-input
+  return html`<igc-mask-input
     dir=${direction}
-    size=${size}
-    .value=${value ? new Date(value as Date) : null}
-    min-value=${ifDefined(minValue)}
-    max-value=${ifDefined(maxValue)}
-    locale=${ifDefined(locale)}
-    inputFormat=${ifDefined(inputFormat)}
-    displayFormat=${ifDefined(displayFormat)}
-    prompt=${ifDefined(prompt)}
+    name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
-    ?spin-loop=${spinLoop}
-    .readonly=${readonly}
-    .outlined=${outlined}
-    .required=${required}
-    .disabled=${disabled}
-    .spinDelta=${spinDelta}
+    value=${ifDefined(value)}
+    mask=${ifDefined(mask)}
+    prompt=${ifDefined(prompt)}
+    label=${ifDefined(label)}
+    size=${ifDefined(size)}
+    value-mode=${ifDefined(valueMode)}
+    ?readonly=${ifDefined(readonly)}
+    ?outlined=${ifDefined(outlined)}
+    ?required=${ifDefined(required)}
+    ?disabled=${ifDefined(disabled)}
   >
-    <igc-icon name="clear" slot="prefix" @click=${handleClear}></igc-icon>
-    <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
-    <igc-icon name="down" slot="suffix" @click=${handleDecrement}></igc-icon>
+    <igc-icon name="github" slot="prefix"></igc-icon>
+    <igc-icon name="github" slot="suffix"></igc-icon>
     <span slot="helper-text">This is some helper text</span>
-  </igc-date-input>`;
+  </igc-mask-input>`;
 };
 
 export const Basic = Template.bind({});

@@ -40,6 +40,7 @@ import IgcSliderLabelComponent from '../../slider/slider-label.js';
 import { defineComponents } from './defineComponents.js';
 import IgcCircularGradientComponent from '../../progress/circular-gradient.js';
 import IgcDateInputComponent from '../../date-input/date-input';
+import IgcMaskInputComponent from '../../mask-input/mask-input.js';
 
 const allComponents: CustomElementConstructor[] = [
   IgcAvatarComponent,
@@ -65,6 +66,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcListHeaderComponent,
   IgcListItemComponent,
   IgcListComponent,
+  IgcMaskInputComponent,
   IgcNavDrawerHeaderItemComponent,
   IgcNavDrawerItemComponent,
   IgcNavDrawerComponent,

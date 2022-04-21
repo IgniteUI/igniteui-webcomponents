@@ -1,13 +1,13 @@
 import { property, state } from 'lit/decorators.js';
 import { IgcInputBaseComponent } from '../input/input-base';
-import { MaskParser } from '../masked-input/mask-parser';
+import { MaskParser } from '../mask-input/mask-parser';
 interface MaskSelection {
   start: number;
   end: number;
 }
 
 export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent {
-  protected parser = new MaskParser(); //dateinnputparser
+  protected parser = new MaskParser();
   protected selection: MaskSelection = { start: 0, end: 0 };
   protected droppedText = '';
   protected compositionStart = 0;
@@ -25,6 +25,10 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
   /** The prompt symbol to use for unfilled parts of the mask. */
   @property()
   public prompt!: string;
+
+  /** The direction attribute of the control. */
+  @property({ reflect: true })
+  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
   /** Controls the validity of the control. */
   @property({ reflect: true, type: Boolean })
@@ -67,29 +71,6 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
     this.input.select();
   }
 
-  protected handleKeydown(e: KeyboardEvent) {
-    if (!e.key) {
-      return;
-    }
-    this.selection = this.inputSelection;
-  }
-
-  protected handleCut() {
-    this.selection = this.inputSelection;
-  }
-
-  protected handleDragStart() {
-    this.selection = this.inputSelection;
-  }
-
-  protected handleCompositionStart() {
-    this.compositionStart = this.inputSelection.start;
-  }
-
-  protected handleDrop(e: DragEvent) {
-    this.droppedText = e.dataTransfer?.getData('text') ?? '';
-  }
-
   protected handleInput({ inputType, isComposing }: InputEvent) {
     const value = this.input.value;
     const start = this.selection.start;
@@ -124,13 +105,46 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
         );
 
       case 'insertFromDrop':
-        return this.updateInput(
-          value.substring(this.inputSelection.start, this.inputSelection.end),
-          this.inputSelection.start,
-          this.inputSelection.end
-        );
-      //return this.insertFromDrop(this.input.value);
+        // return this.updateInput(
+        //   value.substring(this.inputSelection.start, this.inputSelection.end),
+        //   this.inputSelection.start,
+        //   this.inputSelection.end
+        // );
+        return this.insertFromDrop(this.input.value);
     }
+  }
+
+  protected handleKeydown(e: KeyboardEvent) {
+    if (!e.key) {
+      return;
+    }
+    this.selection = this.inputSelection;
+  }
+
+  protected handleCut() {
+    this.selection = this.inputSelection;
+  }
+
+  protected handleDragStart() {
+    this.selection = this.inputSelection;
+  }
+
+  protected handleCompositionStart() {
+    this.compositionStart = this.inputSelection.start;
+  }
+
+  protected handleCompositionEnd({ data }: CompositionEvent) {
+    const start = this.compositionStart,
+      end = this.inputSelection.end;
+    this.updateInput(data, start, end);
+  }
+
+  protected handleDrop(e: DragEvent) {
+    this.droppedText = e.dataTransfer?.getData('text') ?? '';
+  }
+
+  protected handleInvalid() {
+    this.invalid = true;
   }
 
   public override setSelectionRange(
@@ -140,16 +154,6 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
   ): void {
     super.setSelectionRange(start, end, direction);
     this.selection = { start, end };
-  }
-
-  protected handleCompositionEnd({ data }: CompositionEvent) {
-    const start = this.compositionStart,
-      end = this.inputSelection.end;
-    this.updateInput(data, start, end);
-  }
-
-  protected handleInvalid() {
-    this.invalid = true;
   }
 
   protected abstract updateInput(

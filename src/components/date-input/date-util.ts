@@ -1,5 +1,5 @@
 import { isDate } from '../calendar/common/utils';
-import { MaskParser } from '../masked-input/mask-parser';
+import { MaskParser } from '../mask-input/mask-parser';
 
 export const enum FormatDesc {
   Numeric = 'numeric',
