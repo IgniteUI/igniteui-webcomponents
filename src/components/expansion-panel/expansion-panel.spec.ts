@@ -9,10 +9,10 @@ import sinon from 'sinon';
 import { defineComponents, IgcExpansionPanelComponent } from '../../index';
 
 const SLOTS = {
-  indicator: 'slot[name="indicator"',
-  title: 'slot[name="title"',
-  subTitle: 'slot[name="subTitle"',
-  content: 'slot[name="content"',
+  indicator: 'slot[name="indicator"]',
+  title: 'slot[name="title"]',
+  subTitle: 'slot[name="subTitle"]',
+  content: 'slot[name="content"]',
 };
 
 const PARTS = {
@@ -33,6 +33,31 @@ describe('Expansion Panel', () => {
     beforeEach(async () => {
       panel = await createExpansionPanelComponent(testTemplate);
       eventSpy = sinon.spy(panel, 'emitEvent');
+    });
+
+    it('Passes the a11y audit', async () => {
+      await expect(panel).shadowDom.to.be.accessible();
+    });
+
+    it('Should render proper role and attributes for the expansion panel header and content', async () => {
+      const header = panel.shadowRoot?.querySelector(PARTS.header);
+      const content = panel.shadowRoot?.querySelector(PARTS.content);
+      const headerId = header?.getAttribute('id');
+      const contentId = content?.getAttribute('id');
+
+      expect(header).not.to.be.null;
+      expect(content).not.to.be.null;
+
+      expect(header).to.have.attribute('role', 'button');
+      expect(header).to.have.attribute('aria-disabled', 'false');
+      expect(header).to.have.attribute('aria-expanded', 'false');
+      expect(header).to.have.attribute('aria-controls', contentId?.toString());
+
+      expect(content).to.have.attribute('role', 'region');
+      expect(content).to.have.attribute(
+        'aria-labelledby',
+        headerId?.toString()
+      );
     });
 
     it('Verify panel slots are rendered successfully', async () => {
@@ -113,6 +138,27 @@ describe('Expansion Panel', () => {
       );
     });
 
+    it('Should render default indicator for expansion properly depending on panel state', async () => {
+      panel = await createExpansionPanelComponent();
+      const indSlot = panel.shadowRoot!.querySelector(
+        SLOTS.indicator
+      ) as HTMLSlotElement;
+      expect(indSlot).not.to.be.null;
+
+      let elements = indSlot.assignedElements({ flatten: true });
+      expect(elements[0].tagName).to.equal('IGC-ICON');
+      expect(panel.open).to.be.false;
+      expect(elements[0]).to.have.attribute('name', 'keyboard_arrow_down');
+
+      panel.show();
+      await elementUpdated(panel);
+
+      elements = indSlot.assignedElements({ flatten: true });
+      expect(elements[0].tagName).to.equal('IGC-ICON');
+      expect(panel.open).to.be.true;
+      expect(elements[0]).to.have.attribute('name', 'keyboard_arrow_up');
+    });
+
     it('Should get expanded/collapsed on using the API toggle() method', async () => {
       expect(panel.open).to.be.false;
 
@@ -134,7 +180,7 @@ describe('Expansion Panel', () => {
       expect(eventSpy).not.to.have.been.called;
     });
 
-    it('Should get expanded/collapsed on using the API show()/hide() methods', async () => {
+    it('Should get expanded/collapsed on using the API show/hide methods', async () => {
       expect(panel.open).to.be.false;
 
       panel.show();
@@ -192,7 +238,6 @@ describe('Expansion Panel', () => {
 
     it('Should get expanded/collapsed on header clicking', async () => {
       const header = panel.shadowRoot?.querySelector(PARTS.header);
-      expect(header).not.to.be.null;
 
       expect(panel.open).to.be.false;
 
@@ -213,12 +258,12 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy.firstCall).calledWith('igcContentOpening', openingArgs);
+      expect(eventSpy.firstCall).calledWith('igcOpening', openingArgs);
 
       const openedArgs = {
         detail: panel,
       };
-      expect(eventSpy.secondCall).calledWith('igcContentOpened', openedArgs);
+      expect(eventSpy.secondCall).calledWith('igcOpened', openedArgs);
 
       eventSpy.resetHistory();
 
@@ -238,21 +283,21 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy.firstCall).calledWith('igcContentClosing', closingArgs);
+      expect(eventSpy.firstCall).calledWith('igcClosing', closingArgs);
 
       const closedArgs = {
         detail: panel,
       };
-      expect(eventSpy.secondCall).calledWith('igcContentClosed', closedArgs);
+      expect(eventSpy.secondCall).calledWith('igcClosed', closedArgs);
     });
 
     it('Should get expanded/collapsed on expand/collapse indicator clicking', async () => {
-      const header = panel.shadowRoot?.querySelector(PARTS.indicator);
-      expect(header).not.to.be.null;
+      const indicator = panel.shadowRoot?.querySelector(PARTS.indicator);
+      expect(indicator).not.to.be.null;
 
       expect(panel.open).to.be.false;
 
-      header?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      indicator?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await elementUpdated(panel);
 
       expect(panel.open).to.be.true;
@@ -269,16 +314,16 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy.firstCall).calledWith('igcContentOpening', openingArgs);
+      expect(eventSpy.firstCall).calledWith('igcOpening', openingArgs);
 
       const openedArgs = {
         detail: panel,
       };
-      expect(eventSpy.secondCall).calledWith('igcContentOpened', openedArgs);
+      expect(eventSpy.secondCall).calledWith('igcOpened', openedArgs);
 
       eventSpy.resetHistory();
 
-      header?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      indicator?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
@@ -294,16 +339,17 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy.firstCall).calledWith('igcContentClosing', closingArgs);
+      expect(eventSpy.firstCall).calledWith('igcClosing', closingArgs);
 
       const closedArgs = {
         detail: panel,
       };
-      expect(eventSpy.secondCall).calledWith('igcContentClosed', closedArgs);
+      expect(eventSpy.secondCall).calledWith('igcClosed', closedArgs);
     });
 
     it('Should get expanded/collapsed on arrowdown/arrowup', async () => {
-      setFocusAndTriggerKeydown(panel, 'arrowdown');
+      const header = panel.shadowRoot?.querySelector(PARTS.header);
+      triggerKeydown(header as HTMLElement, 'arrowdown');
       await elementUpdated(panel);
 
       expect(panel.open).to.be.true;
@@ -320,16 +366,16 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy.firstCall).calledWith('igcContentOpening', openingArgs);
+      expect(eventSpy.firstCall).calledWith('igcOpening', openingArgs);
 
       const openedArgs = {
         detail: panel,
       };
-      expect(eventSpy.secondCall).calledWith('igcContentOpened', openedArgs);
+      expect(eventSpy.secondCall).calledWith('igcOpened', openedArgs);
 
       eventSpy.resetHistory();
 
-      setFocusAndTriggerKeydown(panel, 'arrowup');
+      triggerKeydown(header as HTMLElement, 'arrowup');
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
@@ -345,16 +391,17 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy.firstCall).calledWith('igcContentClosing', closingArgs);
+      expect(eventSpy.firstCall).calledWith('igcClosing', closingArgs);
 
       const closedArgs = {
         detail: panel,
       };
-      expect(eventSpy.secondCall).calledWith('igcContentClosed', closedArgs);
+      expect(eventSpy.secondCall).calledWith('igcClosed', closedArgs);
     });
 
     it('Should get expanded/collapsed on space/enter', async () => {
-      setFocusAndTriggerKeydown(panel, ' ', false);
+      const header = panel.shadowRoot?.querySelector(PARTS.header);
+      triggerKeydown(header as HTMLElement, ' ', false);
       await elementUpdated(panel);
 
       expect(panel.open).to.be.true;
@@ -371,16 +418,16 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy.firstCall).calledWith('igcContentOpening', openingArgs);
+      expect(eventSpy.firstCall).calledWith('igcOpening', openingArgs);
 
       const openedArgs = {
         detail: panel,
       };
-      expect(eventSpy.secondCall).calledWith('igcContentOpened', openedArgs);
+      expect(eventSpy.secondCall).calledWith('igcOpened', openedArgs);
 
       eventSpy.resetHistory();
 
-      setFocusAndTriggerKeydown(panel, 'enter', false);
+      triggerKeydown(header as HTMLElement, 'enter', false);
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
@@ -396,18 +443,17 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy.firstCall).calledWith('igcContentClosing', closingArgs);
+      expect(eventSpy.firstCall).calledWith('igcClosing', closingArgs);
 
       const closedArgs = {
         detail: panel,
       };
-      expect(eventSpy.secondCall).calledWith('igcContentClosed', closedArgs);
+      expect(eventSpy.secondCall).calledWith('igcClosed', closedArgs);
     });
 
     it('Should not get expanded/collapsed when disabled', async () => {
       //click on header
       let header = panel.shadowRoot?.querySelector(PARTS.header);
-      expect(header).not.to.be.null;
 
       panel.disabled = true;
       await elementUpdated(panel);
@@ -423,7 +469,6 @@ describe('Expansion Panel', () => {
 
       //click on indicator
       header = panel.shadowRoot?.querySelector(PARTS.indicator);
-      expect(header).not.to.be.null;
 
       expect(panel.open).to.be.false;
 
@@ -436,7 +481,7 @@ describe('Expansion Panel', () => {
       expect(eventSpy.callCount).to.equal(0);
 
       //arrodown keypress
-      setFocusAndTriggerKeydown(panel, 'arrowdown');
+      triggerKeydown(header as HTMLElement, 'arrowdown');
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
@@ -445,7 +490,7 @@ describe('Expansion Panel', () => {
       expect(eventSpy.callCount).to.equal(0);
 
       //enter keypress
-      setFocusAndTriggerKeydown(panel, 'enter');
+      triggerKeydown(header as HTMLElement, 'enter');
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
@@ -457,11 +502,10 @@ describe('Expansion Panel', () => {
     it('Should not get expanded/collapsed when ing events are canceled', async () => {
       //cancel opening event
       const header = panel.shadowRoot?.querySelector(PARTS.header);
-      expect(header).not.to.be.null;
 
       expect(panel.open).to.be.false;
 
-      panel.addEventListener('igcContentOpening', (event) => {
+      panel.addEventListener('igcOpening', (event) => {
         event.preventDefault();
       });
 
@@ -475,7 +519,7 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy).calledOnceWith('igcContentOpening', openingArgs);
+      expect(eventSpy).calledOnceWith('igcOpening', openingArgs);
 
       eventSpy.resetHistory();
 
@@ -483,7 +527,7 @@ describe('Expansion Panel', () => {
       panel.show();
       await elementUpdated(panel);
 
-      panel.addEventListener('igcContentClosing', (event) => {
+      panel.addEventListener('igcClosing', (event) => {
         event.preventDefault();
       });
 
@@ -497,7 +541,7 @@ describe('Expansion Panel', () => {
         cancelable: true,
         detail: panel,
       };
-      expect(eventSpy).calledOnceWith('igcContentClosing', closingArgs);
+      expect(eventSpy).calledOnceWith('igcClosing', closingArgs);
     });
 
     const createExpansionPanelComponent = (
@@ -510,14 +554,12 @@ describe('Expansion Panel', () => {
   });
 });
 
-const setFocusAndTriggerKeydown = (
-  expansionPanel: IgcExpansionPanelComponent,
+const triggerKeydown = (
+  header: HTMLElement,
   eventKey: string,
   altKeyFlag = true
 ): void => {
-  //expansionPanel.dispatchEvent(new Event('focus'));
-  //expect(tree.navService.focusedItem).to.equal(item);
-  expansionPanel.dispatchEvent(
+  header.dispatchEvent(
     new KeyboardEvent('keydown', {
       key: eventKey,
       bubbles: true,

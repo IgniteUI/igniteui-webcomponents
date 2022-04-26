@@ -6,13 +6,22 @@ const metadata = {
   title: 'Expansion Panel',
   component: 'igc-expansion-panel',
   argTypes: {
+    tagName: {
+      type: 'string',
+      control: 'text',
+      defaultValue: 'igc-expansion-panel',
+    },
     open: {
       type: 'boolean',
+      description:
+        'Indicates whether the contents of the control should be visible.',
       control: 'boolean',
       defaultValue: false,
     },
     disabled: {
       type: 'boolean',
+      description:
+        'Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -29,6 +38,7 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
+  tagName: string;
   open: boolean;
   disabled: boolean;
   indicatorAlignment: 'start' | 'end';
@@ -62,10 +72,10 @@ const Template: Story<ArgTypes, Context> = (
       indicator-alignment="${indicatorAlignment}"
       .open="${open}"
       .disabled="${disabled}"
-      @igcContentOpening=${handleOpening}
-      @igcContentOpened=${handleOpened}
-      @igcContentClosing=${handleClosing}
-      @igcContentClosed=${handleClosed}
+      @igcOpening=${handleOpening}
+      @igcOpened=${handleOpened}
+      @igcClosing=${handleClosing}
+      @igcClosed=${handleClosed}
     >
       <span slot="title">
         <span style="margin: 0; padding: 0;"
@@ -79,14 +89,8 @@ const Template: Story<ArgTypes, Context> = (
           slot="indicator"
           name='select'>
       </igc-icon> 
-      
-      <div slot="indicator">
-        <button
-        >Button
-        </button> 
-      </div> 
       -->
-
+    
       <p slot="content">content <input/></p>
       <p slot="content">content 2 <button>Button in content</button></p>
     </igc-expansion-panel>

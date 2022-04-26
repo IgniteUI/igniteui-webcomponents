@@ -4,28 +4,47 @@ import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { expansionPanelStyles } from './expansion-panel.styles';
 
+let NEXT_ID = 0;
 export interface IgcExpansionPanelComponentEventMap {
-  igcContentOpening: CustomEvent<any>;
-  igcContentOpened: CustomEvent<any>;
-  igcContentClosing: CustomEvent<any>;
-  igcContentClosed: CustomEvent<any>;
+  igcOpening: CustomEvent<any>;
+  igcOpened: CustomEvent<any>;
+  igcClosing: CustomEvent<any>;
+  igcClosed: CustomEvent<any>;
 }
 
 const TABBABLE_SELECTORS =
   'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 
+/**
+ * The Expansion Panel Component provides a way to display information in a toggleable way -
+ * compact summary view containing title and description and expanded detail view containing
+ * additional content to the summary header.
+ *
+ * @element igc-expansion-panel
+ *
+ * @slot title - renders the title of the panel's header
+ * @slot subTitle - renders the subtitle of the panel's header
+ * @slot indicator - renders the expand/collapsed indicator
+ * @slot content - renders the content area of the panel
+ *
+ * @csspart header
+ * @csspart headerText
+ * @csspart indicator
+ * @csspart content
+ */
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
   public static tagName = 'igc-expansion-panel';
 
   public static styles = [expansionPanelStyles];
 
+  /** Indicates whether the contents of the control should be visible. */
   @property({ reflect: true, type: Boolean })
   public open = false;
 
+  /** Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions. */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
@@ -36,12 +55,16 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   @query('[part~="header"]', true)
   protected panelHeader!: HTMLElement;
 
+  private panelId!: string;
+
   constructor() {
     super();
   }
 
   public override connectedCallback() {
     super.connectedCallback();
+    const id = this.getAttribute('id');
+    this.panelId! = id ? id : 'igc-expansion-panel-' + ++NEXT_ID;
   }
 
   private handleClicked(event: Event) {
@@ -54,14 +77,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
     if (!el.matches(TABBABLE_SELECTORS)) {
       this.panelHeader!.focus();
-    } else {
-      const closestSlot = el.closest('[slot]');
-      if (closestSlot) {
-        const slot = closestSlot.getAttribute('slot');
-        if (slot !== 'indicator') {
-          return;
-        }
-      }
     }
 
     if (this.open) {
@@ -71,14 +86,10 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
   }
 
-  public handleKeydown(event: KeyboardEvent) {
-    //event.preventDefault();
-    console.log(event);
+  private handleKeydown(event: KeyboardEvent) {
     if (this.disabled) {
-      //event.preventDefault();
       return;
     }
-    const el = event.target as HTMLElement;
 
     switch (event.key.toLowerCase()) {
       case 'arrowdown':
@@ -95,9 +106,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         break;
       case 'enter':
       case ' ':
-        if (el !== this.panelHeader) {
-          return;
-        }
         this.open ? this.closeWithEvent() : this.openWithEvent();
         break;
     }
@@ -117,19 +125,19 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       detail: this,
     };
 
-    const allowed = this.emitEvent('igcContentOpening', args);
+    const allowed = this.emitEvent('igcOpening', args);
 
     if (!allowed) {
       return;
     }
 
     this.open = true;
-    this.emitEvent('igcContentOpened', { detail: this });
+    this.emitEvent('igcOpened', { detail: this });
   }
 
   /**
    * @private
-   * Close the panel.
+   * Closes the panel.
    */
   private closeWithEvent() {
     if (!this.open) {
@@ -141,14 +149,14 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       detail: this,
     };
 
-    const allowed = this.emitEvent('igcContentClosing', args);
+    const allowed = this.emitEvent('igcClosing', args);
 
     if (!allowed) {
       return;
     }
 
     this.open = false;
-    this.emitEvent('igcContentClosed', { detail: this });
+    this.emitEvent('igcClosed', { detail: this });
   }
 
   /** Toggles panel open state. */
@@ -156,19 +164,19 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this.open = !this.open;
   }
 
-  /** Closes/Hides the panel. TODO: discuss naming */
+  /** Hides the panel content. */
   public hide(): void {
     this.open = false;
   }
 
-  /** Opens/Shows the panel. TODO: discuss naming */
+  /** Shows the panel content. */
   public show(): void {
     this.open = true;
   }
 
   private indicatorTemplate() {
     return html`
-      <div part="indicator">
+      <div part="indicator" aria-hidden="true">
         <slot name="indicator">
           <igc-icon
             name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
@@ -184,24 +192,20 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     return html`
       <div
         part="header"
-        class="igx-expansion-panel__header-inner"
-        role="heading"
-        aria-level="3"
+        id="${this.panelId!}-header"
+        class="igx-expansion-panel__header-inner expansionPanel"
+        role="button"
+        aria-expanded="${this.open}"
+        aria-disabled="${this.disabled}"
+        aria-controls="${this.panelId!}-content"
         tabindex=${this.disabled ? '-1' : '0'}
         @click=${this.handleClicked}
         @keydown=${this.handleKeydown}
       >
-        <div
-          role="button"
-          aria-expanded="${this.open}"
-          aria-disabled="${this.disabled}"
-          class="expansionPanel"
-        >
-          ${this.indicatorTemplate()}
-          <div part="headerText" class="igx-expansion-panel__title-wrapper">
-            <slot name="title"></slot>
-            <slot name="subTitle"></slot>
-          </div>
+        ${this.indicatorTemplate()}
+        <div part="headerText" class="igx-expansion-panel__title-wrapper">
+          <slot name="title"></slot>
+          <slot name="subTitle"></slot>
         </div>
       </div>
     `;
@@ -209,7 +213,12 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private contentTemplate() {
     return html`
-      <div part="content" role="region">
+      <div
+        part="content"
+        role="region"
+        id="${this.panelId!}-content"
+        aria-labelledby="${this.panelId!}-header"
+      >
         <slot name="content" ?hidden=${!this.open}></slot>
       </div>
     `;
