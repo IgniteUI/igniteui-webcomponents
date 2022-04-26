@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { igcToggle } from './toggle.directive';
-import { IgcToggleOptions } from './utilities';
+import { IgcToggleOptions } from './types';
 
 export default class PopperTestComponent extends LitElement {
   private toggleDirective: any;

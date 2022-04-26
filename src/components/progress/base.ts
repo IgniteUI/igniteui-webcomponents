@@ -6,8 +6,8 @@ import {
   state,
 } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
-import { watch } from '../common/decorators';
-import { asPercent, clamp } from '../common/util';
+import { watch } from '../common/decorators/watch.js';
+import { asPercent, clamp } from '../common/util.js';
 
 export abstract class IgcProgressBaseComponent extends LitElement {
   private initialMax!: number;

@@ -18,6 +18,36 @@ button {
     }
 }
 
+:host([size='small']) {
+    igc-icon {
+        --size: #{utils.rem(16px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-small) * 3.75);
+    }
+}
+
+:host([size='medium']) {
+    igc-icon {
+        --size: #{utils.rem(20px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-medium) * 2.25);
+    }
+}
+
+:host([size='large']) {
+    igc-icon {
+        --size: #{utils.rem(24px)};
+    }
+
+    button {
+        padding: calc(var(--igc-spacing-large) * 1.5);
+    }
+}
+
 :host([variant='contained']) {
     button {
         color: #{utils.contrast-color(primary, 600)};

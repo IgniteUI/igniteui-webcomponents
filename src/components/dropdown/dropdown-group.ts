@@ -1,10 +1,10 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { themes } from '../../theming';
-import { styles } from './themes/light/dropdown-group.base.css';
-import { styles as fluent } from './themes/light/dropdown-group.fluent.css';
-import IgcDropDownItemComponent from './dropdown-item';
-import IgcDropDownComponent from './dropdown';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './themes/light/dropdown-group.base.css.js';
+import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
+import type IgcDropdownItemComponent from './dropdown-item';
+import type IgcDropdownComponent from './dropdown';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
@@ -15,14 +15,14 @@ import IgcDropDownComponent from './dropdown';
  * @csspart label - The native label element.
  */
 @themes({ fluent })
-export default class IgcDropDownGroupComponent extends LitElement {
+export default class IgcDropdownGroupComponent extends LitElement {
   public static readonly tagName = 'igc-dropdown-group';
 
   public static override styles = styles;
 
   /** All child `igc-dropdown-item`s. */
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
-  public items!: Array<IgcDropDownItemComponent>;
+  public items!: Array<IgcDropdownItemComponent>;
 
   /** @private */
   @property({ reflect: true })
@@ -32,7 +32,7 @@ export default class IgcDropDownGroupComponent extends LitElement {
     super.connectedCallback();
 
     this.setAttribute('role', 'group');
-    const dropdown = this.closest('igc-dropdown') as IgcDropDownComponent;
+    const dropdown = this.closest('igc-dropdown') as IgcDropdownComponent;
     this.size = dropdown.size;
   }
 
@@ -46,6 +46,6 @@ export default class IgcDropDownGroupComponent extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-dropdown-group': IgcDropDownGroupComponent;
+    'igc-dropdown-group': IgcDropdownGroupComponent;
   }
 }

@@ -1,8 +1,9 @@
 import { css, html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { alternateName, blazorSuppress } from '../common/decorators';
-import { Constructor } from '../common/mixins/constructor';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 export interface IgcFormEventMap {
   igcSubmit: CustomEvent<FormData>;
@@ -39,7 +40,13 @@ export default class IgcFormComponent extends EventEmitterMixin<
     'igc-switch',
     'igc-checkbox',
   ];
-  private _controlsWithValue = ['input', 'igc-input', 'textarea', 'igc-rating'];
+  private _controlsWithValue = [
+    'input',
+    'igc-input',
+    'igc-mask-input',
+    'textarea',
+    'igc-rating',
+  ];
   private _controlsThatSubmit = [
     'input',
     'button',
@@ -85,7 +92,11 @@ export default class IgcFormComponent extends EventEmitterMixin<
         (tagName !== 'input' && this._controlsWithChecked.includes(tagName))
       ) {
         element.checked = element.hasAttribute('checked');
-      } else if (tagName === 'igc-input' || tagName === 'igc-rating') {
+      } else if (
+        tagName === 'igc-input' ||
+        tagName === 'igc-rating' ||
+        tagName === 'igc-mask-input'
+      ) {
         element.value = element.getAttribute('value');
       } else if (this._controlsWithValue.includes(tagName)) {
         element.value = element.defaultValue;

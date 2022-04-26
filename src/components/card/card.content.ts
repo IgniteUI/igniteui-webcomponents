@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming';
-import { styles as bootstrap } from './themes/light/card.content.bootstrap.css';
-import { styles } from './themes/light/card.content.material.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles as bootstrap } from './themes/light/card.content.bootstrap.css.js';
+import { styles } from './themes/light/card.content.material.css.js';
 
 /** A container for card's text content
  * @element igc-card-content
