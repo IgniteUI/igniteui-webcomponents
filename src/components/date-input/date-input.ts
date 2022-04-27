@@ -17,8 +17,6 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
   public static readonly tagName = 'igc-date-input';
 
   protected _defaultMask!: string;
-  protected _minValue!: string | Date;
-  protected _maxValue!: string | Date;
   protected _value!: Date | null;
   private _dataValue = '';
 
@@ -61,7 +59,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     this._dateValue = DateTimeUtil.isValidDate(val) ? val : null;
 
     this.updateMask();
-    this.updateValidity();
+    this.validate();
   }
 
   @property({ attribute: 'min-value' })
@@ -139,7 +137,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
 
   @watch('maxValue')
   @watch('minValue')
-  protected updateValidity() {
+  protected validate() {
     if (!this.value) {
       return null;
     }
@@ -165,9 +163,6 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
 
       if (Object.keys(errors).length > 0) {
         this.invalid = true;
-        this.setCustomValidity(
-          'Date doesnt fullfil ' + Object.keys(errors).join(', ')
-        );
       } else {
         this.invalid = false;
       }
@@ -235,6 +230,31 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     this.updateMask();
   }
 
+  /** Checks for validity of the control and shows the browser message if it's invalid. */
+  public reportValidity() {
+    const state = this._value
+      ? Object.keys(this.validate()!).length === 0
+      : this.input.reportValidity();
+
+    this.invalid = !state;
+    return state;
+  }
+
+  /** Check for validity of the control */
+  public checkValidity() {
+    if (this.disabled) {
+      return this.input.checkValidity();
+    }
+
+    if (!this._value) {
+      return !this.required;
+    }
+
+    return (
+      this.input.checkValidity() && Object.keys(this.validate()!).length === 0
+    );
+  }
+
   public stepUp(datePart?: DatePart, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
@@ -295,6 +315,7 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
 
   protected handleChange() {
     this.emitEvent('igcChange', { detail: this.value?.toString() });
+    this.invalid = !this.checkValidity();
   }
 
   protected handleDragLeave() {
@@ -315,7 +336,6 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
     this._dataValue = this.parser.parse(value);
 
     this.updateValue();
-    this.droppedText = '';
     this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
@@ -611,7 +631,6 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
         @change=${this.handleChange}
         @input=${this.handleInput}
         @keydown=${this.handleKeydown}
-        @drop=${this.handleDrop}
         @cut=${this.handleCut}
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}

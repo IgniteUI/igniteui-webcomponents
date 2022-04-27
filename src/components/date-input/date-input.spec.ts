@@ -584,11 +584,12 @@ describe('Date Input component', () => {
       el.minValue = new Date(2020, 2, 3);
       el.value = new Date(2020, 1, 3);
       await elementUpdated(el);
-      expect(input.checkValidity()).to.be.false;
+      expect(el.checkValidity()).to.be.false;
       expect(el.invalid).to.be.true;
 
       el.value = new Date(2021, 2, 3);
       await elementUpdated(el);
+      expect(el.checkValidity()).to.be.true;
       expect(el.invalid).to.be.false;
     });
 
@@ -597,11 +598,29 @@ describe('Date Input component', () => {
       el.value = new Date(2020, 3, 3);
       await elementUpdated(el);
 
-      expect(input.reportValidity()).to.be.false;
+      expect(el.checkValidity()).to.be.false;
       expect(el.invalid).to.be.true;
 
       el.value = new Date(2020, 1, 3);
+      expect(el.checkValidity()).to.be.true;
       expect(el.invalid).to.be.false;
+    });
+
+    it('valid/invalid state with required', async () => {
+      expect(el.reportValidity()).to.be.true;
+
+      el.required = true;
+      el.disabled = true;
+      await elementUpdated(el);
+      expect(el.reportValidity()).to.be.true;
+
+      el.disabled = false;
+      await elementUpdated(el);
+      expect(el.reportValidity()).to.be.false;
+
+      el.value = new Date(2020, 2, 3);
+      await elementUpdated(el);
+      expect(el.reportValidity()).to.be.true;
     });
   });
 

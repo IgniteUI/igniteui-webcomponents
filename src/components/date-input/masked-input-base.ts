@@ -9,7 +9,6 @@ interface MaskSelection {
 export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent {
   protected parser = new MaskParser();
   protected selection: MaskSelection = { start: 0, end: 0 };
-  protected droppedText = '';
   protected compositionStart = 0;
 
   @state()
@@ -50,11 +49,6 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
 
     this.mask = this.mask || this.parser.mask;
     this.prompt = this.prompt || this.parser.prompt;
-  }
-
-  /** Checks for validity of the control and shows the browser message if it's invalid. */
-  public reportValidity() {
-    return this.input.reportValidity();
   }
 
   /**
@@ -137,10 +131,6 @@ export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent 
     const start = this.compositionStart,
       end = this.inputSelection.end;
     this.updateInput(data, start, end);
-  }
-
-  protected handleDrop(e: DragEvent) {
-    this.droppedText = e.dataTransfer?.getData('text') ?? '';
   }
 
   protected handleInvalid() {

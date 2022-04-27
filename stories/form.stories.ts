@@ -1,4 +1,6 @@
 import { html } from 'lit';
+import { DatePart } from '../src/components/date-input/date-util.js';
+import { IgcDateInputComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
 
 // region default
@@ -20,6 +22,27 @@ interface ArgTypes {
   novalidate: boolean;
 }
 // endregion
+
+const handleIncrement = () => {
+  const input = document.querySelector(
+    'igc-date-input'
+  ) as IgcDateInputComponent;
+  input?.stepUp(DatePart.Date);
+};
+
+const handleDecrement = () => {
+  const input = document.querySelector(
+    'igc-date-input'
+  ) as IgcDateInputComponent;
+  input?.stepDown();
+};
+
+const handleClear = () => {
+  const input = document.querySelector(
+    'igc-date-input'
+  ) as IgcDateInputComponent;
+  input?.clear();
+};
 
 (metadata as any).parameters = {
   actions: {
@@ -123,6 +146,15 @@ The cat was playing<br> in the garden.</textarea
         mask="\\C\\C (CC) - #### - [###CC]"
         label="Part number"
       ></igc-mask-input>
+      <igc-date-input name="date-input" min-value="1.1.2010" required>
+        <igc-icon name="clear" slot="prefix" @click=${handleClear}></igc-icon>
+        <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
+        <igc-icon
+          name="down"
+          slot="suffix"
+          @click=${handleDecrement}
+        ></igc-icon>
+      </igc-date-input>
       <igc-checkbox name="checkbox-longform"
         >Check if you think this is a long form</igc-checkbox
       >
