@@ -11,6 +11,7 @@ import {
   IgcFormComponent,
   IgcRadioComponent,
   IgcRatingComponent,
+  IgcMaskInputComponent,
 } from '../../index.js';
 
 describe('Form', () => {
@@ -89,6 +90,7 @@ describe('Form', () => {
     expectedValues.set('textarea', 'textareaValue');
     expectedValues.set('inputText', 'inputTextValue');
     expectedValues.set('igcRating', '3');
+    expectedValues.set('igcMasked', 'abcd');
     let formData = el.getFormData();
     verifyFormDataValues(formData, expectedValues);
 
@@ -124,6 +126,8 @@ describe('Form', () => {
     igcRadio.checked = true;
     const rating = el.querySelector('igc-rating') as IgcRatingComponent;
     rating.value = 5;
+    const masked = el.querySelector('igc-mask-input') as IgcMaskInputComponent;
+    masked.value = 'wxyz';
     await elementUpdated(el);
     el.reset();
     await elementUpdated(el);
@@ -132,6 +136,7 @@ describe('Form', () => {
     expectedValues.set('textarea', 'textareaValue');
     expectedValues.set('inputText', 'inputTextValue');
     expectedValues.set('igcRating', '3');
+    expectedValues.set('igcMasked', 'abcd');
     const formData = el.getFormData();
     verifyFormDataValues(formData, expectedValues);
   });
@@ -176,6 +181,7 @@ describe('Form', () => {
         <igc-radio name="igcRadio" value="igcRadioValue"></igc-radio>
         <igc-button type="submit">Submit</igc-button>
         <igc-rating name="igcRating" value="3"></igc-rating>
+        <igc-mask-input name="igcMasked" value="abcd"></igc-mask-input>
       </igc-form>
     `
   ) => {

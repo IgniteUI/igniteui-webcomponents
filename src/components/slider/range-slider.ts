@@ -1,8 +1,8 @@
 import { html } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { IgcSliderBaseComponent } from './slider-base';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { IgcSliderBaseComponent } from './slider-base.js';
 
 export interface IgcRangeSliderValue {
   lower: number;

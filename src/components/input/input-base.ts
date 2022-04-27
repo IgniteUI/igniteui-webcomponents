@@ -1,16 +1,18 @@
 import { html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { ReactiveTheme, ThemeController, themes } from '../../theming';
+import { themes } from '../../theming/theming-decorator.js';
+import type { ReactiveTheme, ThemeController } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
-import { styles } from './themes/light/input.base.css';
-import { styles as bootstrap } from './themes/light/input.bootstrap.css';
-import { styles as fluent } from './themes/light/input.fluent.css';
-import { styles as indigo } from './themes/light/input.indigo.css';
-import { styles as material } from './themes/light/input.material.css';
+import { styles } from './themes/light/input.base.css.js';
+import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
+import { styles as fluent } from './themes/light/input.fluent.css.js';
+import { styles as indigo } from './themes/light/input.indigo.css.js';
+import { styles as material } from './themes/light/input.material.css.js';
 
 let nextId = 0;
 
@@ -39,6 +41,7 @@ export abstract class IgcInputBaseComponent
   protected inputId = `input-${nextId++}`;
 
   /** The value attribute of the control. */
+  @blazorSuppress()
   public abstract value: string;
 
   @query('input', true)

@@ -7,17 +7,17 @@ import {
 } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { watch } from '../common/decorators/watch';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { SizableMixin } from '../common/mixins/sizable';
-import { styles } from './rating.base.css';
-import { styles as bootstrap } from './rating.bootstrap.css';
-import { styles as fluent } from './rating.fluent.css';
-import { styles as indigo } from './rating.indigo.css';
-import { clamp } from '../common/util';
+import { watch } from '../common/decorators/watch.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { styles } from './rating.base.css.js';
+import { styles as bootstrap } from './rating.bootstrap.css.js';
+import { styles as fluent } from './rating.fluent.css.js';
+import { styles as indigo } from './rating.indigo.css.js';
+import { clamp } from '../common/util.js';
 import type IgcRatingSymbolComponent from './rating-symbol';
-import { themes } from '../../theming';
+import { themes } from '../../theming/theming-decorator.js';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -286,7 +286,7 @@ export default class IgcRatingComponent extends SizableMixin(
       <slot @slotchange=${this.handleSlotChange}></slot>
 
       <div style=${styleMap(styles)} part="fraction ${this.size}">
-        <div part="symbols-wrapper">
+        <div part="symbols-wrapper selected">
           ${this.hasProjectedSymbols
             ? this.renderProjected()
             : this.renderSymbols()}

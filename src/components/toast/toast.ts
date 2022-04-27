@@ -1,10 +1,10 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming';
-import { styles } from './themes/toast.base.css';
-import { styles as bootstrap } from './themes/toast.bootstrap.css';
-import { styles as fluent } from './themes/toast.fluent.css';
-import { styles as indigo } from './themes/toast.indigo.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './themes/toast.base.css.js';
+import { styles as bootstrap } from './themes/toast.bootstrap.css.js';
+import { styles as fluent } from './themes/toast.fluent.css.js';
+import { styles as indigo } from './themes/toast.indigo.css.js';
 
 /**
  * A toast component is used to show a notification

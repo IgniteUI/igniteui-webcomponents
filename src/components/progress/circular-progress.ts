@@ -2,13 +2,13 @@ import { html, nothing, svg } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { asPercent, partNameMap } from '../common/util';
-import { IgcProgressBaseComponent } from './base';
-import { styles } from './themes/circular/circular.progress.base.css';
-import { styles as bootstrap } from './themes/circular/circular.progress.bootstrap.css';
-import { styles as fluent } from './themes/circular/circular.progress.fluent.css';
-import IgcCircularGradientComponent from './circular-gradient';
-import { themes } from '../../theming';
+import { asPercent, partNameMap } from '../common/util.js';
+import { IgcProgressBaseComponent } from './base.js';
+import { styles } from './themes/circular/circular.progress.base.css.js';
+import { styles as bootstrap } from './themes/circular/circular.progress.bootstrap.css.js';
+import { styles as fluent } from './themes/circular/circular.progress.fluent.css.js';
+import type IgcCircularGradientComponent from './circular-gradient';
+import { themes } from '../../theming/theming-decorator.js';
 
 /**
  * A circular progress indicator used to express unspecified wait time or display

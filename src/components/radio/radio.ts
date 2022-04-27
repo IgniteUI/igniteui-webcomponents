@@ -2,16 +2,18 @@ import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { themes } from '../../theming';
-import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
+import { themes } from '../../theming/theming-decorator.js';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
+import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
-import { styles } from './themes/light/radio.base.css';
-import { styles as bootstrap } from './themes/light/radio.bootstrap.css';
-import { styles as fluent } from './themes/light/radio.fluent.css';
-import { styles as indigo } from './themes/light/radio.indigo.css';
-import { styles as material } from './themes/light/radio.material.css';
+import { styles } from './themes/light/radio.base.css.js';
+import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
+import { styles as fluent } from './themes/light/radio.fluent.css.js';
+import { styles as indigo } from './themes/light/radio.indigo.css.js';
+import { styles as material } from './themes/light/radio.material.css.js';
 
 let nextId = 0;
 
@@ -193,7 +195,6 @@ export default class IgcRadioComponent extends EventEmitterMixin<
         })}"
         for="${this.inputId}"
         @pointerdown="${this.handleMouseDown}"
-        .focused="${this.focused}"
       >
         <input
           id="${this.inputId}"
@@ -202,7 +203,6 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           value="${ifDefined(this.value)}"
           .required="${this.required}"
           .disabled="${this.disabled}"
-          .invalid="${this.invalid}"
           .checked="${live(this.checked)}"
           tabindex=${this._tabIndex}
           aria-checked="${this.checked ? 'true' : 'false'}"
