@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { expansionPanelStyles } from './expansion-panel.styles';
+import { styles } from './themes/light/expansion-panel.base.css.js';
 
 let NEXT_ID = 0;
 export interface IgcExpansionPanelComponentEventMap {
@@ -37,8 +37,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static tagName = 'igc-expansion-panel';
-
-  public static styles = [expansionPanelStyles];
+  public static styles = styles;
 
   /** Indicates whether the contents of the control should be visible. */
   @property({ reflect: true, type: Boolean })
