@@ -77,30 +77,9 @@ const Template: Story<ArgTypes, Context> = (
       @igcClosing=${handleClosing}
       @igcClosed=${handleClosed}
     >
-      <span slot="title">
-        <span style="margin: 0; padding: 0;"
-          >Sample header text</span
-        > <input></input>
-      </span>
-      <div slot="subTitle">Sample subtitle <input></input> <a href="https://google.com" target="_blank">Link</a></div>
-
-      <!--
-      <igc-icon
-          slot="indicator"
-          name='select'>
-      </igc-icon> 
-      -->
-    
-      <p slot="content">content <input/></p>
-      <p slot="content">content 2 <button>Button in content</button></p>
-    </igc-expansion-panel>
-
-    <igc-expansion-panel indicator-alignment="${indicatorAlignment}"
-    .open="${open}"
-    .disabled="${disabled}">
-    <div slot="title">Title</div>
-    <div slot="subTitle">SubTitle</div>
-    <div slot="content"><p>Content Text</p></div>
+      <div slot="title">Title</div>
+      <div slot="subTitle">SubTitle</div>
+      <div slot="content"><p>Content Text</p></div>
     </igc-expansion-panel>
     <p style="visibility: collapse">"${direction}"</p>
   `;
