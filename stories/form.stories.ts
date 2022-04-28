@@ -54,6 +54,8 @@ const Template: Story<ArgTypes, Context> = ({
   novalidate = false,
 }: ArgTypes) => {
   const radios = ['Male', 'Female'];
+  const minDate = new Date(2020, 2, 3);
+
   return html`
     <igc-form id="form" ?novalidate=${novalidate}>
       <textarea name="textarea" rows="5" cols="30">
@@ -146,7 +148,12 @@ The cat was playing<br> in the garden.</textarea
         mask="\\C\\C (CC) - #### - [###CC]"
         label="Part number"
       ></igc-mask-input>
-      <igc-date-input name="date-input" min-value="1.1.2010" required>
+      <igc-date-input
+        name="date-input"
+        .minValue="${minDate}"
+        max-value="2020-04-02T21:00:00.000Z"
+        required
+      >
         <igc-icon name="clear" slot="prefix" @click=${handleClear}></igc-icon>
         <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
         <igc-icon

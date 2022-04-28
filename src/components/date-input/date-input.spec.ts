@@ -208,12 +208,12 @@ describe('Date Input component', () => {
       el.inputFormat = 'MM.yy';
       el.stepUp();
       await elementUpdated(el);
-      expect(el.value!.getFullYear()).to.equal(value.getFullYear() + 1);
+      expect(el.value!.getMonth()).to.equal(value.getMonth() + 1);
 
       el.inputFormat = 'dd.MM.yy hh:mm:ss tt';
-      el.stepUp(DatePart.Month);
+      el.stepUp(DatePart.Year);
       await elementUpdated(el);
-      expect(el.value!.getMonth()).to.equal(value.getMonth() + 1);
+      expect(el.value!.getFullYear()).to.equal(value.getFullYear() + 1);
 
       el.stepUp(DatePart.Minutes);
       await elementUpdated(el);
@@ -249,11 +249,11 @@ describe('Date Input component', () => {
       el.inputFormat = 'MM.yy';
       el.stepDown();
       await elementUpdated(el);
-      expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
-
-      el.stepDown(DatePart.Month);
-      await elementUpdated(el);
       expect(el.value!.getMonth()).to.equal(value.getMonth() - 1);
+
+      el.stepDown(DatePart.Year);
+      await elementUpdated(el);
+      expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
 
       el.stepDown(DatePart.Minutes);
       await elementUpdated(el);
@@ -602,6 +602,29 @@ describe('Date Input component', () => {
       expect(el.invalid).to.be.true;
 
       el.value = new Date(2020, 1, 3);
+      expect(el.checkValidity()).to.be.true;
+      expect(el.invalid).to.be.false;
+    });
+
+    it('should correctly set min/maxValue with ISO string', async () => {
+      const minValue = new Date(2020, 2, 3).toISOString();
+      const maxValue = new Date(2020, 3, 3).toISOString();
+
+      el.minValue = minValue;
+      el.maxValue = maxValue;
+
+      el.value = new Date(2019, 3, 3);
+      await elementUpdated(el);
+      expect(el.checkValidity()).to.be.false;
+      expect(el.invalid).to.be.true;
+
+      el.value = new Date(2021, 3, 3);
+      await elementUpdated(el);
+      expect(el.checkValidity()).to.be.false;
+      expect(el.invalid).to.be.true;
+
+      el.value = new Date(2020, 2, 14);
+      await elementUpdated(el);
       expect(el.checkValidity()).to.be.true;
       expect(el.invalid).to.be.false;
     });
