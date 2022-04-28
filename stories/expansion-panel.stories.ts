@@ -79,7 +79,7 @@ const Template: Story<ArgTypes, Context> = (
     >
       <div slot="title">Title</div>
       <div slot="subTitle">SubTitle</div>
-      <div slot="content"><p>Content Text</p></div>
+      <div><p>Content Text</p></div>
     </igc-expansion-panel>
     <p style="visibility: collapse">"${direction}"</p>
   `;

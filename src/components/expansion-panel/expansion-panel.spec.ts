@@ -12,7 +12,6 @@ const SLOTS = {
   indicator: 'slot[name="indicator"]',
   title: 'slot[name="title"]',
   subTitle: 'slot[name="subTitle"]',
-  content: 'slot[name="content"]',
 };
 
 const PARTS = {
@@ -112,9 +111,8 @@ describe('Expansion Panel', () => {
     });
 
     it('Should accept custom slot for the panel content', async () => {
-      const contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      // the default slot contains the panel content
+      const contentSlot = getDefaultSlot(panel);
       expect(contentSlot).not.to.be.null;
 
       const elements = contentSlot.assignedElements();
@@ -162,9 +160,7 @@ describe('Expansion Panel', () => {
     it('Should get expanded/collapsed on using the API toggle() method', async () => {
       expect(panel.open).to.be.false;
 
-      let contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      let contentSlot = getDefaultSlot(panel);
       expect(contentSlot).to.have.attribute('hidden');
 
       panel.toggle();
@@ -172,9 +168,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.true;
 
-      contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      contentSlot = getDefaultSlot(panel);
       expect(contentSlot).not.to.have.attribute('hidden');
 
       expect(eventSpy).not.to.have.been.called;
@@ -188,9 +182,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.true;
 
-      let contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      let contentSlot = getDefaultSlot(panel);
       expect(contentSlot).not.to.have.attribute('hidden');
 
       expect(eventSpy).not.to.have.been.called;
@@ -200,9 +192,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
 
-      contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      contentSlot = getDefaultSlot(panel);
       expect(contentSlot).to.have.attribute('hidden');
 
       expect(eventSpy).not.to.have.been.called;
@@ -216,9 +206,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.true;
 
-      let contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      let contentSlot = getDefaultSlot(panel);
       expect(contentSlot).not.to.have.attribute('hidden');
 
       expect(eventSpy).not.to.have.been.called;
@@ -228,9 +216,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
 
-      contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      contentSlot = getDefaultSlot(panel);
       expect(contentSlot).to.have.attribute('hidden');
 
       expect(eventSpy).not.to.have.been.called;
@@ -246,9 +232,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.true;
 
-      let contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      let contentSlot = getDefaultSlot(panel);
       expect(contentSlot).not.to.have.attribute('hidden');
 
       // Verify events are called
@@ -272,9 +256,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
 
-      contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      contentSlot = getDefaultSlot(panel);
       expect(contentSlot).to.have.attribute('hidden');
 
       expect(eventSpy.callCount).to.equal(2);
@@ -302,9 +284,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.true;
 
-      let contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      let contentSlot = getDefaultSlot(panel);
       expect(contentSlot).not.to.have.attribute('hidden');
 
       // Verify events are called
@@ -328,11 +308,8 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
 
-      contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      contentSlot = getDefaultSlot(panel);
       expect(contentSlot).to.have.attribute('hidden');
-
       expect(eventSpy.callCount).to.equal(2);
 
       const closingArgs = {
@@ -354,9 +331,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.true;
 
-      let contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      let contentSlot = getDefaultSlot(panel);
       expect(contentSlot).not.to.have.attribute('hidden');
 
       // Verify events are called
@@ -380,9 +355,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
 
-      contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      contentSlot = getDefaultSlot(panel);
       expect(contentSlot).to.have.attribute('hidden');
 
       expect(eventSpy.callCount).to.equal(2);
@@ -406,9 +379,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.true;
 
-      let contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      let contentSlot = getDefaultSlot(panel);
       expect(contentSlot).not.to.have.attribute('hidden');
 
       // Verify events are called
@@ -432,9 +403,7 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
 
-      contentSlot = panel.shadowRoot!.querySelector(
-        SLOTS.content
-      ) as HTMLSlotElement;
+      contentSlot = getDefaultSlot(panel);
       expect(contentSlot).to.have.attribute('hidden');
 
       expect(eventSpy.callCount).to.equal(2);
@@ -569,11 +538,19 @@ const triggerKeydown = (
   );
 };
 
+const getDefaultSlot = (panel: IgcExpansionPanelComponent): HTMLSlotElement => {
+  const slots = panel.shadowRoot!.querySelectorAll('slot');
+  const defaultSlot = Array.from(slots).filter(
+    (s) => s.name === ''
+  )[0] as HTMLSlotElement;
+  return defaultSlot;
+};
+
 const testTemplate = `<igc-expansion-panel>
     <span slot="title">
       <span>Sample header text</span> 
     </span>
     <div slot="subTitle">Sample subtitle</div>
     <igc-icon slot="indicator" name='select'></igc-icon>
-    <p slot="content">Sample content</p> 
+    <p>Sample content</p> 
 </igc-expansion-panel>`;
