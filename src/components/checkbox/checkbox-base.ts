@@ -1,8 +1,9 @@
 import { LitElement } from 'lit';
-import { property, query } from 'lit/decorators.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { property, query, state } from 'lit/decorators.js';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { alternateName, blazorTwoWayBind } from '../common/decorators';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;
@@ -16,6 +17,9 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 >(LitElement) {
   @query('input[type="checkbox"]', true)
   protected input!: HTMLInputElement;
+
+  @state()
+  protected focused = false;
 
   /** The name attribute of the control. */
   @property()
@@ -83,14 +87,31 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
+    this.focused = false;
   }
 
   protected handleFocus() {
     this.emitEvent('igcFocus');
   }
 
-  protected handleMouseDown(event: MouseEvent) {
+  protected handleMouseDown(event: PointerEvent) {
     event.preventDefault();
     this.input.focus();
+    this.focused = false;
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('keyup', this.handleKeyUp);
+  }
+
+  public override disconnectedCallback() {
+    this.removeEventListener('keyup', this.handleKeyUp);
+  }
+
+  protected handleKeyUp() {
+    if (!this.focused) {
+      this.focused = true;
+    }
   }
 }

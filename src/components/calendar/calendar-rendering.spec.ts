@@ -388,6 +388,33 @@ describe('Calendar Rendering', () => {
         { ignoreAttributes: ['header-orientation', 'size'] }
       );
     });
+
+    it('successfully changes active date through attribute', async () => {
+      el.setAttribute('active-date', '2022-02-02');
+      await elementUpdated(el);
+
+      const activeDateElement = () =>
+        el
+          .shadowRoot!.querySelector('igc-days-view')
+          ?.shadowRoot!.querySelector('[tabindex="0"]');
+
+      expect(el.activeDate.getFullYear()).to.equal(2022);
+      expect(el.activeDate.getMonth()).to.equal(1);
+      expect(el.activeDate.getDate()).to.equal(2);
+      expect(activeDateElement()?.textContent?.trim()).to.equal('2');
+
+      const today = new Date();
+
+      el.setAttribute('active-date', '');
+      await elementUpdated(el);
+
+      expect(el.activeDate.getFullYear()).to.equal(today.getFullYear());
+      expect(el.activeDate.getMonth()).to.equal(today.getMonth());
+      expect(el.activeDate.getDate()).to.equal(today.getDate());
+      expect(activeDateElement()?.textContent?.trim()).to.equal(
+        `${today.getDate()}`
+      );
+    });
   });
 });
 

@@ -15,7 +15,6 @@ describe('Avatar', () => {
   });
 
   it('should initialize avatar component with default values', async () => {
-    console.log(window.customElements.get('igc-avatar'));
     const el = await fixture<IgcAvatarComponent>(
       html`<igc-avatar></igc-avatar>`
     );

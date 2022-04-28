@@ -39,7 +39,7 @@ button {
     }
 
     button {
-        padding: calc(var(--igc-spacing-medium) * 1.5);
+        padding: calc(var(--igc-spacing-medium) * 1.25);
     }
 }
 
@@ -49,7 +49,7 @@ button {
     }
 
     button {
-        padding: var(--igc-spacing-large);
+        padding: calc(var(--igc-spacing-large) * .75);
     }
 }
 

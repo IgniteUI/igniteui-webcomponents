@@ -1,9 +1,9 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements, state } from 'lit/decorators.js';
-import { themes } from '../../theming';
-import { partNameMap } from '../common/util';
-import { styles as indigo } from './styles/indigo/nav-drawer-item.indigo.css';
-import { styles } from './styles/nav-drawer-item.base.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { partNameMap } from '../common/util.js';
+import { styles as indigo } from './styles/indigo/nav-drawer-item.indigo.css.js';
+import { styles } from './styles/nav-drawer-item.base.css.js';
 
 /**
  * Represents a navigation drawer item.

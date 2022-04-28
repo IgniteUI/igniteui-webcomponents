@@ -1,41 +1,46 @@
-import IgcAvatarComponent from '../../avatar/avatar';
-import IgcBadgeComponent from '../../badge/badge';
-import IgcButtonComponent from '../../button/button';
-import IgcIconButtonComponent from '../../button/icon-button';
-import IgcCalendarComponent from '../../calendar/calendar';
-import IgcCardComponent from '../../card/card';
-import IgcCardActionsComponent from '../../card/card.actions';
-import IgcCardContentComponent from '../../card/card.content';
-import IgcCardHeaderComponent from '../../card/card.header';
-import IgcCardMediaComponent from '../../card/card.media';
-import IgcCheckboxComponent from '../../checkbox/checkbox';
-import IgcChipComponent from '../../chip/chip';
-import IgcCircularProgressComponent from '../../progress/circular-progress';
-import IgcSwitchComponent from '../../checkbox/switch';
-import IgcFormComponent from '../../form/form';
-import IgcIconComponent from '../../icon/icon';
-import IgcInputComponent from '../../input/input';
-import IgcLinearProgressComponent from '../../progress/linear-progress';
-import IgcListComponent from '../../list/list';
-import IgcListHeaderComponent from '../../list/list-header';
-import IgcListItemComponent from '../../list/list-item';
-import IgcNavDrawerComponent from '../../nav-drawer/nav-drawer';
-import IgcNavDrawerHeaderItemComponent from '../../nav-drawer/nav-drawer-header-item';
-import IgcNavDrawerItemComponent from '../../nav-drawer/nav-drawer-item';
-import IgcNavbarComponent from '../../navbar/navbar';
-import IgcRadioGroupComponent from '../../radio-group/radio-group';
-import IgcRadioComponent from '../../radio/radio';
-import IgcRatingComponent from '../../rating/rating';
-import IgcRatingSymbolComponent from '../../rating/rating-symbol';
-import IgcRippleComponent from '../../ripple/ripple';
-import IgcRangeSliderComponent from '../../slider/range-slider';
-import IgcSliderComponent from '../../slider/slider';
-import IgcSnackbarComponent from '../../snackbar/snackbar';
-import IgcToastComponent from '../../toast/toast';
-import IgcSliderLabelComponent from '../../slider/slider-label';
-import { defineComponents } from './defineComponents';
-import IgcCircularGradientComponent from '../../progress/circular-gradient';
-import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel';
+import IgcAvatarComponent from '../../avatar/avatar.js';
+import IgcBadgeComponent from '../../badge/badge.js';
+import IgcButtonComponent from '../../button/button.js';
+import IgcIconButtonComponent from '../../button/icon-button.js';
+import IgcCalendarComponent from '../../calendar/calendar.js';
+import IgcCardComponent from '../../card/card.js';
+import IgcCardActionsComponent from '../../card/card.actions.js';
+import IgcCardContentComponent from '../../card/card.content.js';
+import IgcCardHeaderComponent from '../../card/card.header.js';
+import IgcCardMediaComponent from '../../card/card.media.js';
+import IgcCheckboxComponent from '../../checkbox/checkbox.js';
+import IgcChipComponent from '../../chip/chip.js';
+import IgcCircularProgressComponent from '../../progress/circular-progress.js';
+import IgcDropdownComponent from '../../dropdown/dropdown.js';
+import IgcDropdownGroupComponent from '../../dropdown/dropdown-group.js';
+import IgcDropdownHeaderComponent from '../../dropdown/dropdown-header.js';
+import IgcDropdownItemComponent from '../../dropdown/dropdown-item.js';
+import IgcSwitchComponent from '../../checkbox/switch.js';
+import IgcFormComponent from '../../form/form.js';
+import IgcIconComponent from '../../icon/icon.js';
+import IgcInputComponent from '../../input/input.js';
+import IgcLinearProgressComponent from '../../progress/linear-progress.js';
+import IgcListComponent from '../../list/list.js';
+import IgcListHeaderComponent from '../../list/list-header.js';
+import IgcListItemComponent from '../../list/list-item.js';
+import IgcNavDrawerComponent from '../../nav-drawer/nav-drawer.js';
+import IgcNavDrawerHeaderItemComponent from '../../nav-drawer/nav-drawer-header-item.js';
+import IgcNavDrawerItemComponent from '../../nav-drawer/nav-drawer-item.js';
+import IgcNavbarComponent from '../../navbar/navbar.js';
+import IgcRadioGroupComponent from '../../radio-group/radio-group.js';
+import IgcRadioComponent from '../../radio/radio.js';
+import IgcRatingComponent from '../../rating/rating.js';
+import IgcRatingSymbolComponent from '../../rating/rating-symbol.js';
+import IgcRippleComponent from '../../ripple/ripple.js';
+import IgcRangeSliderComponent from '../../slider/range-slider.js';
+import IgcSliderComponent from '../../slider/slider.js';
+import IgcSnackbarComponent from '../../snackbar/snackbar.js';
+import IgcToastComponent from '../../toast/toast.js';
+import IgcSliderLabelComponent from '../../slider/slider-label.js';
+import { defineComponents } from './defineComponents.js';
+import IgcCircularGradientComponent from '../../progress/circular-gradient.js';
+import IgcMaskInputComponent from '../../mask-input/mask-input.js';
+import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel.js';
 
 const allComponents: CustomElementConstructor[] = [
   IgcAvatarComponent,
@@ -50,6 +55,10 @@ const allComponents: CustomElementConstructor[] = [
   IgcCardComponent,
   IgcCheckboxComponent,
   IgcChipComponent,
+  IgcDropdownComponent,
+  IgcDropdownGroupComponent,
+  IgcDropdownHeaderComponent,
+  IgcDropdownItemComponent,
   IgcSwitchComponent,
   IgcExpansionPanelComponent,
   IgcFormComponent,
@@ -58,6 +67,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcListHeaderComponent,
   IgcListItemComponent,
   IgcListComponent,
+  IgcMaskInputComponent,
   IgcNavDrawerHeaderItemComponent,
   IgcNavDrawerItemComponent,
   IgcNavDrawerComponent,

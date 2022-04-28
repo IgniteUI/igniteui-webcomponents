@@ -2,16 +2,18 @@ import { html, LitElement } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { themes } from '../../theming';
-import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
+import { themes } from '../../theming/theming-decorator.js';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
+import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
-import { styles } from './themes/light/radio.base.css';
-import { styles as bootstrap } from './themes/light/radio.bootstrap.css';
-import { styles as fluent } from './themes/light/radio.fluent.css';
-import { styles as indigo } from './themes/light/radio.indigo.css';
-import { styles as material } from './themes/light/radio.material.css';
+import { styles } from './themes/light/radio.base.css.js';
+import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
+import { styles as fluent } from './themes/light/radio.fluent.css.js';
+import { styles as indigo } from './themes/light/radio.indigo.css.js';
+import { styles as material } from './themes/light/radio.material.css.js';
 
 let nextId = 0;
 
@@ -51,6 +53,9 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   @state()
   private _tabIndex = 0;
 
+  @state()
+  private focused = false;
+
   /** The name attribute of the control. */
   @property()
   public name!: string;
@@ -89,6 +94,21 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     this.input.click();
   }
 
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('keyup', this.handleKeyUp);
+  }
+
+  public override disconnectedCallback() {
+    this.removeEventListener('keyup', this.handleKeyUp);
+  }
+
+  protected handleKeyUp() {
+    if (!this.focused) {
+      this.focused = true;
+    }
+  }
+
   /** Sets focus on the radio control. */
   @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
@@ -115,9 +135,10 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     this.invalid = !this.input.checkValidity();
   }
 
-  protected handleMouseDown(event: MouseEvent) {
+  protected handleMouseDown(event: PointerEvent) {
     event.preventDefault();
     this.input.focus();
+    this.focused = false;
   }
 
   protected handleClick() {
@@ -126,6 +147,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
+    this.focused = false;
   }
 
   protected handleFocus() {
@@ -166,9 +188,13 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <label
-        part="${partNameMap({ base: true, checked: this.checked })}"
+        part="${partNameMap({
+          base: true,
+          checked: this.checked,
+          focused: this.focused,
+        })}"
         for="${this.inputId}"
-        @mousedown="${this.handleMouseDown}"
+        @pointerdown="${this.handleMouseDown}"
       >
         <input
           id="${this.inputId}"
@@ -177,7 +203,6 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           value="${ifDefined(this.value)}"
           .required="${this.required}"
           .disabled="${this.disabled}"
-          .invalid="${this.invalid}"
           .checked="${live(this.checked)}"
           tabindex=${this._tabIndex}
           aria-checked="${this.checked ? 'true' : 'false'}"

@@ -2,9 +2,11 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
-import { partNameMap } from '../common/util';
-import { IgcInputBaseComponent } from './input-base';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
+import { watch } from '../common/decorators/watch.js';
+import { partNameMap } from '../common/util.js';
+import { IgcInputBaseComponent } from './input-base.js';
 
 type Direction = 'ltr' | 'rtl' | 'auto';
 
@@ -164,7 +166,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         name="${ifDefined(this.name)}"
         type="${ifDefined(this.type)}"
         pattern="${ifDefined(this.pattern)}"
-        placeholder="${this.placeholder ?? ' '}"
+        placeholder="${ifDefined(this.placeholder)}"
         .value="${live(this.value)}"
         ?readonly="${this.readonly}"
         ?disabled="${this.disabled}"

@@ -3,6 +3,7 @@
 @use '../../../components/button/themes/button/dark/button.fluent' as button;
 @use '../../../components/button/themes/icon-button/dark/icon-button.fluent' as icon-button;
 @use '../../../components/checkbox/themes/dark/checkbox.fluent' as checkbox;
+@use '../../../components/dropdown/themes/dark/dropdown.fluent' as dropdown;
 @use '../../../components/checkbox/themes/dark/switch.fluent' as switch;
 @use '../../../components/input/themes/dark/input.dark.fluent' as input;
 @use '../../../components/radio/themes/dark/radio.fluent' as radio;
@@ -10,19 +11,21 @@
 @use '../../../components/list/themes/dark/list.fluent' as list;
 
 $palette: utils.palette(
-    $primary: #217346,
-    $secondary: #217346,
+    $primary: #0078d4,
+    $secondary: #0078d4,
     $gray: #fff,
     $surface: #222,
     $success: #107c10,
     $warn: #797673,
     $error: #a80000,
+    $variant: 'fluent'
 ) !default;
 
 @include base.root-styles($palette);
 @include button.theme();
 @include icon-button.theme();
 @include checkbox.theme();
+@include dropdown.theme();
 @include switch.theme();
 @include input.theme();
 @include radio.theme();

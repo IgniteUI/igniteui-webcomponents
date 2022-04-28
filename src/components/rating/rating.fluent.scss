@@ -21,9 +21,7 @@ $disabled-label-color: color(gray, 400) !default;
         color: $disabled-label-color;
     }
 
-    [part~='fraction'] {
-        [part~='symbols-wrapper'] {
-            color: $disabled-selected-color;
-        }
+    [part='symbols-wrapper selected'] {
+        color: $disabled-selected-color;
     }
 }

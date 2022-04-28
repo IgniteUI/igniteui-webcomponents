@@ -5,12 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Mask input [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
+
+
+## [3.1.0] - 2022-04-15
+### Added
+- Chip: Added `prefix` and `suffix` slots [#334](https://github.com/IgniteUI/igniteui-webcomponents/pull/334)
+- Snackbar: Added `toggle` method [#326](https://github.com/IgniteUI/igniteui-webcomponents/issues/326)
+
+### Deprecated
+- Chip: Previously exposed `start` and `end` slots are replaced by prefix and suffix. They remain active, but are now deprecated and will be removed in a future version.
+
+### Fixed
+- Chip: Auto load internal icons [#327](https://github.com/IgniteUI/igniteui-webcomponents/issues/327)
+- Chip: Selected chip is misaligned [#328](https://github.com/IgniteUI/igniteui-webcomponents/issues/328)
+- Package: ESM internal import paths
+
+## [3.0.0] - 2022-04-12
+
+### Changed
+- **Breaking Change**: All dropdown related classes renamed from `IgcDropDown*` to `IgcDropdown*`
+
+## [2.2.0] - 2022-04-01
+
+### Added
+
+- Drop Down component
+- Calendar: Active date can be set via an attribute
+
 ## [2.1.1] - 2022-03-15
 
 ### Added
+
 - Control border radius and elevation from `--igc-radius-factor` and `--igc-elevation-factor`:
 
   Example:
+
   ```css
   /* Make all components square and remove all shadows */
   :root {
@@ -75,6 +108,9 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[3.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.0.0...3.1.0
+[3.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.2.0...3.0.0
+[2.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.1...2.2.0
 [2.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/1.0.0...2.0.0

@@ -6,9 +6,9 @@ import {
   ReactiveControllerHost,
   ReactiveElement,
 } from 'lit';
-import { getTheme } from './config';
-import { CHANGE_THEME_EVENT } from './theming-event';
-import { Theme, ThemeController, Themes } from './types';
+import { getTheme } from './config.js';
+import { CHANGE_THEME_EVENT } from './theming-event.js';
+import type { Theme, ThemeController, Themes } from './types';
 
 class ThemingController implements ReactiveController, ThemeController {
   private themes: Themes;

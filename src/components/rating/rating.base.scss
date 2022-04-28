@@ -20,9 +20,9 @@ $disabled-selected-color: color(gray, 600) !default;
 }
 
 %fraction {
-    position: absolute;
+    position: absolute !important;
     overflow: hidden;
-    inset-inline-start: 0;
+    inset-inline-start: 0 !important;
     min-width: 0 !important;
     z-index: 1;
 }
@@ -42,32 +42,6 @@ slot {
 
     color: $color-label;
     padding-inline-start: $spacing;
-}
-
-[part~='symbols-wrapper'] {
-    color: $color-symbols;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: $spacing;
-    gap: $spacing;
-    counter-reset: symbols;
-    inset-inline-start: 0;
-}
-
-[part~='fraction'] {
-    @extend %fraction;
-
-    [part='symbols-wrapper'] {
-        @extend %fraction;
-
-        color: $selected-color;
-
-        [part~='symbol'] {
-            filter: grayscale(0);
-        }
-    }
 }
 
 [part~='symbol'] {
@@ -91,6 +65,31 @@ slot {
     }
 }
 
+[part~='symbols-wrapper'] {
+    color: $color-symbols;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: $spacing;
+    gap: $spacing;
+    counter-reset: symbols;
+    inset-inline-start: 0;
+}
+
+[part='symbols-wrapper selected'] {
+    color: $selected-color;
+
+    [part~='symbol'] {
+        filter: grayscale(0);
+    }
+}
+
+[part='symbols-wrapper selected'],
+[part~='fraction'] {
+    @extend %fraction;
+}
+
 :host([disabled]) {
     pointer-events: none;
 
@@ -102,11 +101,9 @@ slot {
         color: $disabled-color;
     }
 
-    [part~='fraction'] {
-        [part='symbols-wrapper'] {
-            color: $disabled-selected-color;
-            filter: grayscale(50%);
-        }
+    [part='symbols-wrapper selected'] {
+        color: $disabled-selected-color;
+        filter: grayscale(50%);
     }
 }
 
