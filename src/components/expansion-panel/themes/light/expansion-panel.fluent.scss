@@ -1,0 +1,11 @@
+@use '../../../../styles/utilities/index' as *;
+
+:host([open]) [part~='content'] {
+    color: color(gray, 700);
+}
+
+:host([disabled]) {
+    [part='header'] * {
+        color: color(gray, 400);
+    }
+}

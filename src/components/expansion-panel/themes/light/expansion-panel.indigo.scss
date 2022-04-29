@@ -1,0 +1,5 @@
+@use '../../../../styles/utilities/index' as *;
+
+[part~='indicator'] {
+    color: color(gray, 600);
+}

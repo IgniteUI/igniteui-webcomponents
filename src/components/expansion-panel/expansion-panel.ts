@@ -2,7 +2,11 @@ import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/expansion-panel.base.css.js';
+import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
+import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
+import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
 
 let NEXT_ID = 0;
 export interface IgcExpansionPanelComponentEventMap {
@@ -32,6 +36,7 @@ const TABBABLE_SELECTORS =
  * @csspart indicator
  * @csspart content
  */
+@themes({ bootstrap, fluent, indigo })
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>

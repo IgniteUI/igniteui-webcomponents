@@ -1,10 +1,12 @@
 @use '../../../../styles/utilities/index' as *;
 
+$subtitle-color: var(--subtitle-color, color(gray, 700)) !default;
+$disabled-color: var(--disabled-color, color(gray, 500)) !default;
+
 :host {
     color: color(gray, 900);
     padding: rem(16px);
     width: 100%;
-    max-width: 400px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -14,10 +16,12 @@
     display: flex;
     align-items: center;
     cursor: pointer;
+    padding: rem(4px);
 
     &:focus,
     &:active {
         outline: transparent;
+        background: color(gray, 100);
     }
 }
 
@@ -36,7 +40,7 @@ slot[name='title'] {
 slot[name='subTitle'] {
     @include type-category('subtitle-2');
 
-    color: color(gray, 700);
+    color: $subtitle-color;
 }
 
 :host([open]) [part~='content'] {
@@ -61,10 +65,6 @@ slot[name='subTitle'] {
 
 :host([disabled]) {
     [part='header'] * {
-        color: color(gray, 500);
-    }
-
-    [part~='content'] {
-        color: color(gray, 900);
+        color: $disabled-color;
     }
 }

@@ -1,0 +1,8 @@
+@use '../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-expansion-panel {
+        --subtitle-color: #{color(gray, 500)};
+        --disabled-color: #{color(gray, 300)};
+    }
+}
