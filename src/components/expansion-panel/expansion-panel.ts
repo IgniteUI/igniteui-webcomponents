@@ -29,7 +29,6 @@ const TABBABLE_SELECTORS =
  * @slot title - renders the title of the panel's header
  * @slot subTitle - renders the subtitle of the panel's header
  * @slot indicator - renders the expand/collapsed indicator
- * @slot content - renders the content area of the panel
  *
  * @csspart header
  * @csspart headerText
@@ -223,7 +222,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         id="${this.panelId!}-content"
         aria-labelledby="${this.panelId!}-header"
       >
-        <slot name="content" ?hidden=${!this.open}></slot>
+        <slot ?hidden=${!this.open}></slot>
       </div>
     `;
   }
