@@ -5,7 +5,7 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 
 :host {
     color: color(gray, 900);
-    padding: rem(16px);
+    padding: calc(var(--igc-spacing-large) * 2);
     width: 100%;
     overflow: hidden;
     display: flex;
@@ -16,7 +16,7 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding: rem(4px);
+    padding-block: var(--igc-spacing-small);
 
     &:focus,
     &:active {
@@ -47,7 +47,7 @@ slot[name='subTitle'] {
     @include type-category('body-2');
 
     overflow: hidden;
-    padding-top: rem(32px);
+    padding: calc(var(--igc-spacing-large) * 2);
 }
 
 [part~='indicator'] {
@@ -55,12 +55,12 @@ slot[name='subTitle'] {
 }
 
 :host([indicator-alignment='start']) [part~='indicator'] {
-    margin-inline-end: rem(22px);
+    margin-inline-end: calc(var(--igc-spacing-large) * 2);
 }
 
 :host([indicator-alignment='end']) [part~='indicator'] {
     order: 2;
-    margin-inline-start: rem(22px);
+    margin-inline-start: calc(var(--igc-spacing-large) * 2);
 }
 
 :host([disabled]) {
