@@ -1,45 +1,70 @@
-:host {
-    // display: flex;
-    // flex-direction: row;
-    // min-width: 90px;
-    // text-align: center;
-    // cursor: pointer;
-    // justify-content: center;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
 
+:host {
+    @include type-category('subtitle-2');
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    min-width: 90px;
-    max-width: 360px;
+    min-width: rem(90px);
+    max-width: rem(360px);
     word-wrap: break-word;
-    flex-basis: auto;
-    flex-shrink: 0;
-    padding: rem(11px) rem(16px);
+    padding: rem(12px) rem(16px);
     overflow: hidden;
     cursor: pointer;
     position: relative;
     transition: all .3s cubic-bezier(.35, 0, .25, 1);
     user-select: none;
-    background: aliceblue;
-    color: black;
-    outline: 0;
-    border-bottom: 1px solid gray;
-    border: 1px solid gray;
-    border-top: transparent;
-    border-left: transparent;
-    border-right: transparent;
+    background: color(surface, 500);
+    color: color(gray, 700);
+
+    > * {
+        margin-inline-start: rem(12px);
+
+        &:first-child {
+            margin-inline-start: 0;
+        }
+    }
+
+    &::-moz-focus-inner {
+        border: 0;
+    }
+}
+
+:host(:hover),
+:host(:focus-within) {
+    background: color(gray, 200);
+    color: color(gray, 700);
+}
+
+:host([selected]) {
+    color: color(primary, 500);
+
+    igx-icon {
+        color: color(primary, 500);
+    }
+}
+
+:host([selected]:hover),
+:host([selected]:focus-within) {
+    color: color(primary, 500);
 }
 
 :host([disabled]) {
     pointer-events: none;
     cursor: initial;
-    color: grey;
+    opacity: .5;
 }
 
-.tabs-header-item-inner {
+[part='base'] {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     text-align: center;
+}
+
+::slotted(igc-icon) {
+    width: rem(24px);
+    height: rem(24px);
 }

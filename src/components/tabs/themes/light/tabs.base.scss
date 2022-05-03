@@ -29,6 +29,7 @@
     display: flex;
     overflow: hidden;
     min-height: rem(42px);
+    background: color(surface, 500);
 }
 
 [part='headers-content'] {
@@ -38,8 +39,6 @@
 }
 
 [part='headers-wrapper'] {
-    // display: block;
-    // height: 100%;
     position: relative;
     flex-grow: 1;
 }
@@ -54,9 +53,9 @@
     left: 0;
     bottom: 0;
     transform: translateX(0);
-    height: 2px;
-    min-width: 90px;
-    background: blueviolet;
+    height: rem(2px);
+    min-width: rem(90px);
+    background: color(primary, 500);
 }
 
 [part='start-scroll-button'],
@@ -67,11 +66,37 @@
     z-index: 1;
     border: none;
     padding: 0;
-    min-width: 3rem;
-    width: 3rem;
+    min-width: rem(48px);
+    width: rem(48px);
     cursor: pointer;
     position: relative;
-    background: var(--button-background);
-    color: var(--button-color);
+    background: color(surface, 500);
+    color: color(gray, 500);
     outline: 0;
+
+    &:hover {
+        background: color(gray, 100);
+        color: color(gray, 600);
+    }
+
+    &:focus {
+        outline: 0;
+        background: color(gray, 100);
+    }
+
+    &::-moz-focus-inner {
+        // remove focus dotted border in firefox
+        border: 0;
+    }
+
+    ::slotted(*) {
+        box-shadow: none;
+    }
+}
+
+:host([dir='rtl']) {
+    [part='start-scroll-button'],
+    [part='end-scroll-button'] {
+        transform: scaleX(-1);
+    }
 }

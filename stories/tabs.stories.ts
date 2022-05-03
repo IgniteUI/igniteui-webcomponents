@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { Context, Story } from './story.js';
 
 // region default
@@ -37,12 +38,16 @@ interface ArgTypes {
 }
 // endregion
 
-const Template: Story<ArgTypes, Context> = ({
-  selected = 'second',
-  alignment = 'end',
-}: ArgTypes) => html`
-  <igc-tabs style="width: 300px" selected=${selected} alignment=${alignment}>
-    <igc-tab panel="first">Item 1</igc-tab>
+const Template: Story<ArgTypes, Context> = (
+  { alignment, selected }: ArgTypes,
+  { globals: { direction } }: Context
+) => html`
+  <igc-tabs
+    dir="${ifDefined(direction)}"
+    selected=${selected}
+    alignment="${ifDefined(alignment)}"
+  >
+    <igc-tab panel="first"> Item 1 </igc-tab>
     <igc-tab panel="second">Item 2</igc-tab>
     <igc-tab panel="third" disabled>Item 3</igc-tab>
     <igc-tab panel="forth">Item 4</igc-tab>
@@ -60,6 +65,37 @@ const Template: Story<ArgTypes, Context> = ({
     <igc-tab-panel slot="panel" name="seventh">Content 7</igc-tab-panel>
     <igc-tab-panel slot="panel" name="eighth">Content 8</igc-tab-panel>
     <igc-tab-panel slot="panel" name="ninth">Content 9</igc-tab-panel>
+  </igc-tabs>
+
+  <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
+    <igc-tab panel="first" selected>
+      <igc-icon name="home"></igc-icon>
+    </igc-tab>
+    <igc-tab panel="second">
+      <igc-icon name="search"></igc-icon>
+    </igc-tab>
+    <igc-tab panel="third" disabled>
+      <igc-icon name="favorite"></igc-icon>
+    </igc-tab>
+    <igc-tab-panel slot="panel" name="first">Content 1</igc-tab-panel>
+    <igc-tab-panel slot="panel" name="second">Content 2</igc-tab-panel>
+  </igc-tabs>
+
+  <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
+    <igc-tab panel="first" selected>
+      <igc-icon name="home"></igc-icon>
+      Item 1
+    </igc-tab>
+    <igc-tab panel="second">
+      <igc-icon name="search"></igc-icon>
+      Item 2
+    </igc-tab>
+    <igc-tab panel="third" disabled>
+      <igc-icon name="favorite"></igc-icon>
+      Item 3
+    </igc-tab>
+    <igc-tab-panel slot="panel" name="first">Content 1</igc-tab-panel>
+    <igc-tab-panel slot="panel" name="second">Content 2</igc-tab-panel>
   </igc-tabs>
 `;
 

@@ -174,6 +174,9 @@ export default class IgcTabsComponent extends LitElement {
                 <igc-icon-button
                   part="start-scroll-button"
                   size="medium"
+                  variant="flat"
+                  name="navigate_before"
+                  collection="internal"
                   @click=${this.handleStartButtonClick}
                 ></igc-icon-button>
               `
@@ -191,6 +194,9 @@ export default class IgcTabsComponent extends LitElement {
                 <igc-icon-button
                   part="end-scroll-button"
                   size="medium"
+                  variant="flat"
+                  name="navigate_next"
+                  collection="internal"
                   @click=${this.handleEndButtonClick}
                 ></igc-icon-button>
               `
