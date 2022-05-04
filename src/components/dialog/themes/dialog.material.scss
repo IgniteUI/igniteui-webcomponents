@@ -1,0 +1,26 @@
+@use '../../../styles/utilities' as *;
+
+:host {
+    border-radius: border-radius(4px);
+}
+
+[part='base'] {
+    box-shadow: var(--igc-elevation-24);
+}
+
+[part='title'] {
+    padding: rem(24px);
+    padding-block-end: rem(12px);
+}
+
+[part='content'] {
+    padding: rem(12px) rem(24px);
+}
+
+[part='footer'] {
+    padding: rem(8px);
+}
+
+dialog::backdrop {
+    background: hsla(0deg 0% 62% / 54%);
+}

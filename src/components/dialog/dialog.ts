@@ -1,7 +1,13 @@
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { themes } from '../../theming';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { styles } from './themes/dialog.base.css';
+import { styles as bootstrap } from './themes/dialog.bootstrap.css';
+import { styles as fluent } from './themes/dialog.fluent.css';
+import { styles as indigo } from './themes/dialog.indigo.css';
+import { styles as material } from './themes/dialog.material.css';
 
 export interface IgcDialogEventMap {
   igcOpening: CustomEvent<void>;
@@ -29,11 +35,13 @@ export interface IgcDialogEventMap {
  * @csspart footer - The footer container.
  * @csspart overlay - The overlay.
  */
+@themes({ bootstrap, material, fluent, indigo })
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-dialog';
+  public static styles = [styles];
 
   private _open = false;
 
@@ -110,13 +118,15 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <dialog part="base">
-        <span part="title">
+        <header part="title">
           <slot name="title"></slot>
-        </span>
-        <slot></slot>
-        <span part="footer">
+        </header>
+        <section part="content">
+          <slot></slot>
+        </section>
+        <footer part="footer">
           <slot name="footer"></slot>
-        </span>
+        </footer>
       </dialog>
     `;
   }

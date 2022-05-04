@@ -1,0 +1,59 @@
+@use '../../../styles/common/component';
+@use '../../../styles/utilities' as *;
+
+:host {
+    background: color(surface, 500);
+    color: contrast-color(surface, 500);
+    border-style: none;
+    padding: unset;
+}
+
+[part='base'] {
+    background: inherit;
+    color: inherit;
+    border-style: inherit;
+    padding: inherit;
+    border: inherit;
+    border-radius: inherit;
+    min-width: inherit;
+}
+
+[part='content'] {
+    max-width: 40ch;
+    color: color(gray, 600);
+
+    @include type-category('body-1') {
+        margin: 0;
+    }
+}
+
+[part='title'],
+[part='footer'] {
+    display: flex;
+    align-items: center;
+    color: color(gray, 900);
+
+    @include type-category('h6') {
+        margin: 0;
+    }
+}
+
+[part='footer'] {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+}
+
+::slotted(*) {
+    font: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+    text-transform: inherit;
+    margin: 0;
+}
+
+slot[name='title'],
+slot[name='footer'] {
+    &::slotted(:not(:last-child)) {
+        margin-inline-end: rem(8px);
+    }
+}

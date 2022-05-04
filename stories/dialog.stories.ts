@@ -1,7 +1,7 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
-import { defineComponents, IgcDialogComponent } from '../src/index.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { defineComponents, IgcDialogComponent } from '../src/index.js';
+import { Context, Story } from './story.js';
 
 defineComponents(IgcDialogComponent);
 
@@ -68,7 +68,6 @@ const Template: Story<ArgTypes, Context> = ({
   title,
   returnValue,
 }: ArgTypes) =>
-  // { globals: { } }: Context
   html`
     <div
       style="display: flex; align-items: flex-start; position: relative; height: 400px"
@@ -80,12 +79,18 @@ const Template: Story<ArgTypes, Context> = ({
         title=${ifDefined(title)}
         return-value=${ifDefined(returnValue)}
       >
-        <div slot="title">Title Content</div>
-        <div slot="footer">Footer Content</div>
-        Dialog Content
+        <h1 slot="title">Title Content</h1>
+        Your Inbox has changed. No longer does it include favorites, it is a
+        singular destination for your emails.
+        <igc-button slot="footer" @click=${handleToggle}>Save</igc-button>
+        <igc-button slot="footer" @click=${handleToggle} variant="outlined"
+          >Close</igc-button
+        >
       </igc-dialog>
     </div>
   `;
+
+// { globals: { } }: Context
 
 export const Basic = Template.bind({});
 
