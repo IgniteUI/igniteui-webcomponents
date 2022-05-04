@@ -10,11 +10,11 @@ import {
 } from './date-util';
 import { watch } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { IgcMaskedInputBaseComponent } from './masked-input-base';
+import { IgcMaskInputBaseComponent } from '../mask-input/mask-input-base';
 import { partNameMap } from '../common/util';
 
-export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
-  public static readonly tagName = 'igc-date-input';
+export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent {
+  public static readonly tagName = 'igc-date-time-input';
 
   protected _defaultMask!: string;
   protected _value!: Date | null;
@@ -645,6 +645,6 @@ export default class IgcDateInputComponent extends IgcMaskedInputBaseComponent {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-date-input': IgcDateInputComponent;
+    'igc-date-time-input': IgcDateTimeInputComponent;
   }
 }

@@ -4,14 +4,14 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   DatePartDeltas,
   DatePart,
-} from '../src/components/date-input/date-util.js';
+} from '../src/components/date-time-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { IgcDateInputComponent } from '../src/index.js';
+import { IgcDateTimeInputComponent } from '../src/index.js';
 
 // region default
 const metadata = {
-  title: 'Date Input',
-  component: 'igc-date-input',
+  title: 'Date Time Input',
+  component: 'igc-date-time-input',
   argTypes: {
     inputFormat: {
       type: 'string',
@@ -158,22 +158,22 @@ registerIcon(
 
 const handleIncrement = () => {
   const input = document.querySelector(
-    'igc-date-input'
-  ) as IgcDateInputComponent;
+    'igc-date-time-input'
+  ) as IgcDateTimeInputComponent;
   input!.stepUp(DatePart.Date);
 };
 
 const handleDecrement = () => {
   const input = document.querySelector(
-    'igc-date-input'
-  ) as IgcDateInputComponent;
+    'igc-date-time-input'
+  ) as IgcDateTimeInputComponent;
   input?.stepDown();
 };
 
 const handleClear = () => {
   const input = document.querySelector(
-    'igc-date-input'
-  ) as IgcDateInputComponent;
+    'igc-date-time-input'
+  ) as IgcDateTimeInputComponent;
   input?.clear();
 };
 
@@ -207,7 +207,7 @@ const Template: Story<ArgTypes, Context> = (
     year: 10,
   };
 
-  return html`<igc-date-input
+  return html`<igc-date-time-input
     dir=${direction}
     size=${size}
     .value=${value ? new Date(value as Date) : null}
@@ -229,7 +229,7 @@ const Template: Story<ArgTypes, Context> = (
     <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
     <igc-icon name="down" slot="suffix" @click=${handleDecrement}></igc-icon>
     <span slot="helper-text">This is some helper text</span>
-  </igc-date-input>`;
+  </igc-date-time-input>`;
 };
 
 export const Basic = Template.bind({});

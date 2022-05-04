@@ -5,7 +5,7 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { partNameMap } from '../common/util.js';
-import { IgcMaskedInputBaseComponent } from '../date-input/masked-input-base.js';
+import { IgcMaskInputBaseComponent } from './mask-input-base.js';
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -29,7 +29,7 @@ import { IgcMaskedInputBaseComponent } from '../date-input/masked-input-base.js'
  * @csspart suffix - The suffix wrapper
  * @csspart helper-text - The helper text wrapper
  */
-export default class IgcMaskInputComponent extends IgcMaskedInputBaseComponent {
+export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
 
   protected _value = '';

@@ -7,23 +7,23 @@ import {
 } from '@open-wc/testing';
 import { defineComponents } from '../common/definitions/defineComponents';
 import { MaskParser } from '../mask-input/mask-parser';
-import IgcDateInputComponent from './date-input';
+import IgcDateTimeInputComponent from './date-time-input';
 import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util';
 
-describe('Date Input component', () => {
-  before(() => defineComponents(IgcDateInputComponent));
+describe('Date Time Input component', () => {
+  before(() => defineComponents(IgcDateTimeInputComponent));
 
   const parser = new MaskParser();
   const defaultPrompt = '_';
   const defaultMask = '00/00/0000';
   const defaultPlaceholder = 'MM/dd/yyyy';
 
-  let el: IgcDateInputComponent;
+  let el: IgcDateTimeInputComponent;
   let input: HTMLInputElement;
 
   describe('', async () => {
     beforeEach(async () => {
-      el = await createDateInputComponent();
+      el = await createDateTimeInputComponent();
       input = el.shadowRoot!.querySelector('input') as HTMLInputElement;
 
       parser.prompt = defaultPrompt;
@@ -660,9 +660,9 @@ describe('Date Input component', () => {
     return formatter.format(date);
   };
 
-  const createDateInputComponent = (
-    template = '<igc-date-input></igc-date-input>'
+  const createDateTimeInputComponent = (
+    template = '<igc-date-time-input></igc-date-time-input>'
   ) => {
-    return fixture<IgcDateInputComponent>(html`${unsafeStatic(template)}`);
+    return fixture<IgcDateTimeInputComponent>(html`${unsafeStatic(template)}`);
   };
 });

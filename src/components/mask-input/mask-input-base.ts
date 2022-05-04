@@ -1,12 +1,12 @@
 import { property, state } from 'lit/decorators.js';
 import { IgcInputBaseComponent } from '../input/input-base';
-import { MaskParser } from '../mask-input/mask-parser';
+import { MaskParser } from './mask-parser';
 interface MaskSelection {
   start: number;
   end: number;
 }
 
-export abstract class IgcMaskedInputBaseComponent extends IgcInputBaseComponent {
+export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   protected parser = new MaskParser();
   protected selection: MaskSelection = { start: 0, end: 0 };
   protected compositionStart = 0;

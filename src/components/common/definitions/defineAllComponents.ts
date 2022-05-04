@@ -39,7 +39,7 @@ import IgcToastComponent from '../../toast/toast.js';
 import IgcSliderLabelComponent from '../../slider/slider-label.js';
 import { defineComponents } from './defineComponents.js';
 import IgcCircularGradientComponent from '../../progress/circular-gradient.js';
-import IgcDateInputComponent from '../../date-input/date-input';
+import IgcDateTimeInputComponent from '../../date-time-input/date-time-input';
 import IgcMaskInputComponent from '../../mask-input/mask-input.js';
 
 const allComponents: CustomElementConstructor[] = [
@@ -84,7 +84,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcLinearProgressComponent,
   IgcCircularGradientComponent,
   IgcSnackbarComponent,
-  IgcDateInputComponent,
+  IgcDateTimeInputComponent,
 ];
 
 export const defineAllComponents = () => {

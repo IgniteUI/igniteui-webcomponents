@@ -40,7 +40,7 @@ export { default as IgcSliderComponent } from './components/slider/slider.js';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label.js';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
-export { default as IgcDateInputComponent } from './components/date-input/date-input.js';
+export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -73,4 +73,4 @@ export { IgcInputBaseComponent } from './components/input/input-base.js';
 export { IgcSliderBaseComponent } from './components/slider/slider-base.js';
 export { IgcButtonBaseComponent } from './components/button/button-base.js';
 export { IgcCalendarBaseComponent } from './components/calendar/common/calendar-base.js';
-export { IgcMaskedInputBaseComponent } from './components/date-input/masked-input-base.js';
+export { IgcMaskInputBaseComponent } from './components/mask-input/mask-input-base.js';

@@ -1,6 +1,6 @@
 import { html } from 'lit';
-import { DatePart } from '../src/components/date-input/date-util.js';
-import { IgcDateInputComponent } from '../src/index.js';
+import { DatePart } from '../src/components/date-time-input/date-util.js';
+import { IgcDateTimeInputComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
 
 // region default
@@ -25,22 +25,22 @@ interface ArgTypes {
 
 const handleIncrement = () => {
   const input = document.querySelector(
-    'igc-date-input'
-  ) as IgcDateInputComponent;
+    'igc-date-time-input'
+  ) as IgcDateTimeInputComponent;
   input?.stepUp(DatePart.Date);
 };
 
 const handleDecrement = () => {
   const input = document.querySelector(
-    'igc-date-input'
-  ) as IgcDateInputComponent;
+    'igc-date-time-input'
+  ) as IgcDateTimeInputComponent;
   input?.stepDown();
 };
 
 const handleClear = () => {
   const input = document.querySelector(
-    'igc-date-input'
-  ) as IgcDateInputComponent;
+    'igc-date-time-input'
+  ) as IgcDateTimeInputComponent;
   input?.clear();
 };
 
@@ -148,8 +148,8 @@ The cat was playing<br> in the garden.</textarea
         mask="\\C\\C (CC) - #### - [###CC]"
         label="Part number"
       ></igc-mask-input>
-      <igc-date-input
-        name="date-input"
+      <igc-date-time-input
+        name="date-time-input"
         .minValue="${minDate}"
         max-value="2020-04-02T21:00:00.000Z"
         required
@@ -161,7 +161,7 @@ The cat was playing<br> in the garden.</textarea
           slot="suffix"
           @click=${handleDecrement}
         ></igc-icon>
-      </igc-date-input>
+      </igc-date-time-input>
       <igc-checkbox name="checkbox-longform"
         >Check if you think this is a long form</igc-checkbox
       >
