@@ -136,14 +136,26 @@ $toggle-icon-size: rem(24px);
 }
 
 [part~='large'] {
+    igc-circular-progress {
+        --diameter: #{rem(24px)};
+    }
+
     height: map.get($node-height, 'large');
 }
 
 [part~='medium'] {
+    igc-circular-progress {
+        --diameter: #{rem(20px)};
+    }
+
     height: map.get($node-height, 'medium');
 }
 
 [part~='small'] {
+    igc-circular-progress {
+        --diameter: #{rem(18px)};
+    }
+
     height: map.get($node-height, 'small');
 }
 
