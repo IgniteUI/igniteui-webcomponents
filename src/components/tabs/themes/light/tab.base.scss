@@ -1,6 +1,8 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
+$hover-background: color(gray, 200) !default;
+
 :host {
     @include type-category('subtitle-2');
 
@@ -34,14 +36,14 @@
 
 :host(:hover),
 :host(:focus-within) {
-    background: color(gray, 200);
+    background: $hover-background;
     color: color(gray, 700);
 }
 
 :host([selected]) {
     color: color(primary, 500);
 
-    igx-icon {
+    ::slotted(igc-icon) {
         color: color(primary, 500);
     }
 }

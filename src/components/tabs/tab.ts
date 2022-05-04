@@ -1,7 +1,11 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/tab.base.css';
+import { styles as bootstrap } from './themes/light/tab.bootstrap.css.js';
+import { styles as indigo } from './themes/light/tab.indigo.css.js';
 
+@themes({ bootstrap, indigo })
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
 

@@ -1,0 +1,29 @@
+@use '../../../../styles/utilities' as *;
+
+[part='headers'],
+[part='start-scroll-button'],
+[part='end-scroll-button'] {
+    background: transparent;
+
+    &:hover,
+    &:focus {
+        background: transparent;
+    }
+}
+
+[part='headers-wrapper'] {
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        inset-inline-start: 0;
+        width: 100%;
+        height: rem(1px);
+        background: color(gray, 300);
+        z-index: 0;
+    }
+}
+
+[part='selected-indicator'] {
+    display: none;
+}

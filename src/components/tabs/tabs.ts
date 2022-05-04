@@ -7,10 +7,14 @@ import {
   state,
 } from 'lit/decorators.js';
 import { watch } from '../common/decorators';
+import { themes } from '../../theming/theming-decorator.js';
 import IgcTabComponent from './tab';
 import IgcTabPanelComponent from './tab-panel';
 import { styles } from './themes/light/tabs.base.css';
+import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
+import { styles as indigo } from './themes/light/tabs.indigo.css.js';
 
+@themes({ bootstrap, indigo })
 export default class IgcTabsComponent extends LitElement {
   public static readonly tagName = 'igc-tabs';
 
