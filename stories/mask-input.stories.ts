@@ -17,12 +17,6 @@ const metadata = {
       },
       defaultValue: 'raw',
     },
-    value: {
-      type: 'string',
-      description:
-        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
-      control: 'text',
-    },
     mask: {
       type: 'string',
       description: 'The mask pattern to apply on the input.',
@@ -47,6 +41,12 @@ const metadata = {
       description: 'Controls the validity of the control.',
       control: 'boolean',
       defaultValue: false,
+    },
+    value: {
+      type: 'string',
+      description:
+        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
+      control: 'text',
     },
     name: {
       type: 'string',
@@ -100,11 +100,11 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   valueMode: 'raw' | 'withFormatting';
-  value: string;
   mask: string;
   prompt: string;
   dir: 'ltr' | 'rtl' | 'auto';
   invalid: boolean;
+  value: string;
   name: string;
   outlined: boolean;
   required: boolean;

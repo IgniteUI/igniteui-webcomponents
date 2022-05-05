@@ -7,11 +7,6 @@ const metadata = {
   title: 'Input',
   component: 'igc-input',
   argTypes: {
-    value: {
-      type: 'string',
-      control: 'text',
-      defaultValue: '',
-    },
     type: {
       type: '"number" | "email" | "password" | "search" | "tel" | "text" | "url"',
       description: 'The type attribute of the control.',
@@ -84,6 +79,12 @@ const metadata = {
       description: 'The autocomplete attribute of the control.',
       control: 'text',
     },
+    value: {
+      type: 'string',
+      description: 'The value attribute of the control.',
+      control: 'text',
+      defaultValue: '',
+    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -135,7 +136,6 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  value: string;
   type: 'number' | 'email' | 'password' | 'search' | 'tel' | 'text' | 'url';
   inputmode:
     | 'numeric'
@@ -155,6 +155,7 @@ interface ArgTypes {
   step: number;
   autofocus: boolean;
   autocomplete: string;
+  value: string;
   name: string;
   outlined: boolean;
   required: boolean;

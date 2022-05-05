@@ -40,7 +40,7 @@ export abstract class IgcInputBaseComponent
   protected inputId = `input-${nextId++}`;
 
   /** The value attribute of the control. */
-  //public abstract value: string;
+  public abstract value: string | Date | null;
 
   @query('input', true)
   protected input!: HTMLInputElement;
@@ -114,7 +114,7 @@ export abstract class IgcInputBaseComponent
       [base]: true,
       prefixed: this.prefixes.length > 0,
       suffixed: this.suffixes.length > 0,
-      //filled: !!this.value,
+      filled: !!this.value,
     };
   }
 
