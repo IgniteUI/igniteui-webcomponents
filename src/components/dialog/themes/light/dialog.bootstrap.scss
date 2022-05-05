@@ -1,8 +1,10 @@
-@use '../../../styles/utilities' as *;
+@use '../../../../styles/utilities' as *;
+
+$border-color: var(--border-color, color(gray, 300));
 
 :host {
     border-radius: border-radius(4px);
-    border: 1px solid color(gray, 300);
+    border: 1px solid $border-color;
 }
 
 [part='base'] {
@@ -23,13 +25,13 @@
 }
 
 [part='title'] {
-    border-block-end: 1px solid color(gray, 300);
+    border-block-end: 1px solid $border-color;
 }
 
 [part='footer'] {
-    border-block-start: 1px solid color(gray, 300);
+    border-block-start: 1px solid $border-color;
 }
 
-dialog::backdrop {
+[part='base']::backdrop {
     background: hsla(210deg 11% 71% / 54%);
 }

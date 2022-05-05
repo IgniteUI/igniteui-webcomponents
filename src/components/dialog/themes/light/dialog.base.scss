@@ -1,5 +1,7 @@
-@use '../../../styles/common/component';
-@use '../../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+$content-color: var(--content-color, color(gray, 600));
 
 :host {
     background: color(surface, 500);
@@ -20,7 +22,7 @@
 
 [part='content'] {
     max-width: 40ch;
-    color: color(gray, 600);
+    color: $content-color;
 
     @include type-category('body-1') {
         margin: 0;

@@ -2,6 +2,7 @@
 @use '../base/indigo' as base;
 @use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
+@use '../../../components/dialog/themes/dark/dialog.base' as dialog;
 @use '../../../components/input/themes/dark/input.dark.indigo' as input;
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
 @use '../../../components/slider/themes/dark/slider.indigo' as slider;
@@ -21,6 +22,7 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
+@include dialog.theme();
 @include checkbox.theme();
 @include switch.theme();
 @include input.theme();

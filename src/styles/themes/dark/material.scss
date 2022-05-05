@@ -1,5 +1,6 @@
 @use '../../utilities' as utils;
 @use '../base/material' as base;
+@use '../../../components/dialog/themes/dark/dialog.base' as dialog;
 @use '../../../components/input/themes/dark/input.dark.material' as input;
 
 $palette: utils.palette(
@@ -10,4 +11,5 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
+@include dialog.theme();
 @include input.theme();

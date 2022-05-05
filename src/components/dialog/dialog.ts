@@ -3,11 +3,11 @@ import { property, query } from 'lit/decorators.js';
 import { themes } from '../../theming';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { styles } from './themes/dialog.base.css';
-import { styles as bootstrap } from './themes/dialog.bootstrap.css';
-import { styles as fluent } from './themes/dialog.fluent.css';
-import { styles as indigo } from './themes/dialog.indigo.css';
-import { styles as material } from './themes/dialog.material.css';
+import { styles } from './themes/light/dialog.base.css';
+import { styles as bootstrap } from './themes/light/dialog.bootstrap.css';
+import { styles as fluent } from './themes/light/dialog.fluent.css';
+import { styles as indigo } from './themes/light/dialog.indigo.css';
+import { styles as material } from './themes/light/dialog.material.css';
 
 export interface IgcDialogEventMap {
   igcOpening: CustomEvent<void>;
