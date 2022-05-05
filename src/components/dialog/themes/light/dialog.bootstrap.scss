@@ -4,11 +4,11 @@ $border-color: var(--border-color, color(gray, 300));
 
 :host {
     border-radius: border-radius(4px);
-    border: 1px solid $border-color;
 }
 
 [part='base'] {
     min-width: rem(288px);
+    border: 1px solid $border-color;
 }
 
 [part='title'],
