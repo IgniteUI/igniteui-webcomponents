@@ -13,12 +13,21 @@ import IgcTabPanelComponent from './tab-panel';
 import { styles } from './themes/light/tabs.base.css';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
 import { styles as indigo } from './themes/light/tabs.indigo.css.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { Constructor } from '../common/mixins/constructor';
+
+export interface IgcTabsEventMap {
+  igcChange: CustomEvent<string>;
+}
 
 @themes({ bootstrap, indigo })
-export default class IgcTabsComponent extends LitElement {
+export default class IgcTabsComponent extends EventEmitterMixin<
+  IgcTabsEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-tabs';
 
-  public static override styles = styles;
+  public static styles = styles;
 
   @queryAssignedElements({ selector: 'igc-tab' })
   private tabs!: Array<IgcTabComponent>;
@@ -44,6 +53,7 @@ export default class IgcTabsComponent extends LitElement {
   private offset = 0;
   private resizeObserver: ResizeObserver | undefined;
 
+  //TODO: May be mark this one as @state as there is also select method
   @property({ type: String })
   public selected = '';
 
@@ -60,7 +70,7 @@ export default class IgcTabsComponent extends LitElement {
     this.addEventListener('keydown', this.handleKeyDown);
   }
 
-  protected override firstUpdated() {
+  public override firstUpdated() {
     this.resizeObserver = new ResizeObserver(() => {
       this.updateScrollButtons();
       this.realignSelectedIndicator();
@@ -82,6 +92,17 @@ export default class IgcTabsComponent extends LitElement {
     this.resizeObserver?.disconnect();
   }
 
+  public select(selectedTab: string | HTMLElement) {
+    const tab = this.tabs.find(
+      (el) => el.panel === selectedTab || el === selectedTab
+    );
+
+    if (tab) {
+      this.setSelectedTab(tab.panel);
+      this.scrollTabIntoView(tab);
+    }
+  }
+
   private setSelectedTab(tab?: string) {
     if (!tab) {
       this.hideSelectedIndicator();
@@ -95,6 +116,7 @@ export default class IgcTabsComponent extends LitElement {
       this.panels.forEach((el) => (el.selected = el.name === this.selected));
 
       this.realignSelectedIndicator();
+      this.emitEvent('igcChange', { detail: this.selected });
     }
   }
 
@@ -108,11 +130,12 @@ export default class IgcTabsComponent extends LitElement {
 
   private scrollElement(element: any, scrollToEnd: boolean) {
     const headersContentWidth = this.headersContent.offsetWidth;
-    this.updateScrollButtons();
+
     this.offset = scrollToEnd
       ? element.offsetWidth + element.offsetLeft - headersContentWidth
       : element.offsetLeft;
     this.headersWrapper.style.transform = `translate(${-this.offset}px)`;
+    this.updateScrollButtons();
   }
 
   private updateScrollPosition(scrollToEnd: boolean) {

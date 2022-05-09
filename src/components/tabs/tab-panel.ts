@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { styles } from './themes/light/tab-panel.base.css';
 
@@ -11,10 +11,10 @@ export default class IgcTabPanelComponent extends LitElement {
   @property({ type: String })
   public name = '';
 
-  @property({ type: Boolean })
+  @state()
   public selected = false;
 
-  @property({ type: Boolean, reflect: true })
+  @state()
   public disabled = false;
 
   protected override render() {
@@ -25,6 +25,7 @@ export default class IgcTabPanelComponent extends LitElement {
         style=${styleMap({
           display: this.selected ? 'block' : 'none',
         })}
+        tabindex=${this.selected ? 0 : -1}
       >
         <slot></slot>
       </div>
