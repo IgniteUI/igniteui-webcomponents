@@ -6,11 +6,6 @@ const metadata = {
   title: 'Expansion Panel',
   component: 'igc-expansion-panel',
   argTypes: {
-    tagName: {
-      type: 'string',
-      control: 'text',
-      defaultValue: 'igc-expansion-panel',
-    },
     open: {
       type: 'boolean',
       description:
@@ -38,7 +33,6 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  tagName: string;
   open: boolean;
   disabled: boolean;
   indicatorAlignment: 'start' | 'end';

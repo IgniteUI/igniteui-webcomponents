@@ -31,7 +31,8 @@ const TABBABLE_SELECTORS =
  * @slot indicator - renders the expand/collapsed indicator
  *
  * @csspart header
- * @csspart headerText
+ * @csspart title
+ * @csspart subTitle
  * @csspart indicator
  * @csspart content
  */
@@ -40,7 +41,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  public static tagName = 'igc-expansion-panel';
+  public static readonly tagName = 'igc-expansion-panel';
   public static styles = styles;
 
   /** Indicates whether the contents of the control should be visible. */
@@ -196,7 +197,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       <div
         part="header"
         id="${this.panelId!}-header"
-        class="igx-expansion-panel__header-inner expansionPanel"
         role="button"
         aria-expanded="${this.open}"
         aria-disabled="${this.disabled}"
@@ -206,9 +206,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         @keydown=${this.handleKeydown}
       >
         ${this.indicatorTemplate()}
-        <div part="headerText" class="igx-expansion-panel__title-wrapper">
-          <slot name="title"></slot>
-          <slot name="subTitle"></slot>
+        <div>
+          <slot name="title" part="title"></slot>
+          <slot name="subTitle" part="subTitle"></slot>
         </div>
       </div>
     `;

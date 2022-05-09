@@ -16,6 +16,8 @@ const SLOTS = {
 
 const PARTS = {
   header: 'div[part="header"]',
+  title: 'div[part="title"]',
+  subTitle: 'div[part="subTitle"]',
   content: 'div[part="content"]',
   indicator: 'div[part="indicator"]',
 };
