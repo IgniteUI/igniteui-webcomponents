@@ -1,6 +1,5 @@
 @use '../../../../styles/utilities/index' as *;
 
-$subtitle-color: var(--subtitle-color, color(gray, 700)) !default;
 $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 
 :host {
@@ -40,7 +39,7 @@ slot[name='title'] {
 slot[name='subTitle'] {
     @include type-category('subtitle-2');
 
-    color: $subtitle-color;
+    color: color(gray, 700);
 }
 
 :host([open]) [part~='content'] {

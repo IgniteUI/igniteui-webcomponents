@@ -3,3 +3,13 @@
 [part~='indicator'] {
     color: color(gray, 600);
 }
+
+slot[name='subTitle'] {
+    color: color(gray, 500);
+}
+
+:host([disabled]) {
+    [part='header'] * {
+        color: color(gray, 300);
+    }
+}

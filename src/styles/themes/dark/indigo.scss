@@ -7,7 +7,6 @@
 @use '../../../components/slider/themes/dark/slider.indigo' as slider;
 @use '../../../components/list/themes/dark/list.indigo' as list;
 @use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
-@use '../../../components/expansion-panel/themes/dark/expansion-panel.indigo.scss' as expansion-panel;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -29,4 +28,3 @@ $palette: utils.palette(
 @include slider.theme();
 @include list.theme();
 @include dropdown.theme();
-@include expansion-panel.theme();
