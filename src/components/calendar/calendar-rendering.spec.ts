@@ -70,6 +70,7 @@ describe('Calendar Rendering', () => {
     });
 
     it('successfully enable hideOutsideDays', async () => {
+      el.activeDate = new Date(2022, 3, 10);
       el.hideOutsideDays = true;
       expect(el.hideOutsideDays).to.equal(true);
       await elementUpdated(el);
