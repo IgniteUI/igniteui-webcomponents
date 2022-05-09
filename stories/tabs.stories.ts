@@ -39,13 +39,14 @@ interface ArgTypes {
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { alignment, selected }: ArgTypes,
+  { activation, alignment, selected }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-tabs
     dir="${ifDefined(direction)}"
     selected=${selected}
     alignment="${ifDefined(alignment)}"
+    activation="${ifDefined(activation)}"
   >
     <igc-tab panel="first" selected> Item 1 </igc-tab>
     <igc-tab panel="second">Item 2</igc-tab>
