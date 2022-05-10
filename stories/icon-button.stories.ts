@@ -1,8 +1,8 @@
+import { all } from '@igniteui/material-icons-extended';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
-import { all } from '@igniteui/material-icons-extended';
+import { Context, Story } from './story';
 
 const icons = all.map((icon) => icon.name);
 
@@ -153,8 +153,7 @@ const Template: Story<ArgTypes, Context> = (
       variant=${ifDefined(variant)}
       .size=${size}
       .disabled=${ifDefined(disabled)}
-    >
-    </igc-icon-button>
+    ></igc-icon-button>
   `;
 };
 

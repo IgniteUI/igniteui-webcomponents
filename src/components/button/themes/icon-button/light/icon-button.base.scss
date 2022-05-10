@@ -5,6 +5,12 @@
     display: inline-flex;
 }
 
+::slotted(*) {
+    font-size: var(--size) !important;
+    line-height: 1;
+    vertical-align: middle;
+}
+
 button {
     @include border-radius(50%);
 
@@ -21,9 +27,13 @@ button {
     cursor: pointer;
     transition: box-shadow .2s ease-in, background .15s ease-out;
     transition-delay: .05s;
+    font-size: var(--size);
+    line-height: 1;
 }
 
 :host([size='small']) {
+    --size: #{rem(16px)};
+
     igc-icon {
         --size: #{rem(16px)};
     }
@@ -34,6 +44,8 @@ button {
 }
 
 :host([size='medium']) {
+    --size: #{rem(20px)};
+
     igc-icon {
         --size: #{rem(20px)};
     }
@@ -44,6 +56,8 @@ button {
 }
 
 :host([size='large']) {
+    --size: #{rem(24px)};
+
     igc-icon {
         --size: #{rem(24px)};
     }

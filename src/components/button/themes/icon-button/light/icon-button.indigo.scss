@@ -18,20 +18,12 @@ button {
 }
 
 :host([size='small']) {
-    igc-icon {
-        --size: #{utils.rem(16px)};
-    }
-
     button {
         padding: calc(var(--igc-spacing-small) * 3);
     }
 }
 
 :host([size='medium']) {
-    igc-icon {
-        --size: #{utils.rem(20px)};
-    }
-
     button {
         padding: calc(var(--igc-spacing-medium) * 1.5);
     }
