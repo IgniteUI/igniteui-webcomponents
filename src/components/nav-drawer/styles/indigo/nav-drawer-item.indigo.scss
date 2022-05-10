@@ -13,11 +13,20 @@
             background: transparent;
             color: color(gray, 100);
         }
+
+        ::slotted(igc-icon) {
+            margin-inline-end: rem(24px);
+        }
     }
 
     [part='content'] {
-        margin-inline-start: rem(24px);
         padding-inline-start: rem(8px);
+    }
+
+    [part='base mini'] {
+        ::slotted(igc-icon) {
+            margin-inline-end: 0;
+        }
     }
 }
 
