@@ -57,7 +57,6 @@ $input-background: var(--input-background, #fff) !default;
         color: utils.color(gray, 800);
         background: utils.color(gray, 300);
         transition: box-shadow .15s ease-out, border .15s ease-out;
-        overflow: hidden;
 
         &:focus-within {
             box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 300, .38);
