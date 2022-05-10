@@ -28,6 +28,7 @@ $item-margin: rem(8px);
     ::slotted(igc-icon) {
         display: flex;
         font: inherit;
+        margin-inline-end: rem(32px);
     }
 
     &:hover {
@@ -40,8 +41,6 @@ $item-margin: rem(8px);
 }
 
 [part='content'] {
-    margin-inline-start: rem(32px);
-
     @include ellipsis();
 }
 
@@ -54,6 +53,7 @@ $item-margin: rem(8px);
 
     ::slotted(igc-icon) {
         width: 100%;
+        margin-inline-end: 0;
     }
 }
 
