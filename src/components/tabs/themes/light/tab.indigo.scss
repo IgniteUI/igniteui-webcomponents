@@ -2,7 +2,6 @@
 
 :host {
     background: transparent;
-    border-bottom: 1px solid color(gray, 300);
 }
 
 :host(:hover),
@@ -22,8 +21,4 @@
 :host([selected]:hover),
 :host([selected]:focus-within) {
     color: color(gray, 900);
-}
-
-:host([disabled]) {
-    opacity: .4;
 }

@@ -48,7 +48,7 @@ const Template: Story<ArgTypes, Context> = (
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >
-    <igc-tab panel="first" selected> Item 1 </igc-tab>
+    <igc-tab panel="first"> Item 1 </igc-tab>
     <igc-tab panel="second">Item 2</igc-tab>
     <igc-tab panel="third" disabled>Item 3</igc-tab>
     <igc-tab panel="forth">Item 4</igc-tab>
@@ -87,7 +87,7 @@ const Template: Story<ArgTypes, Context> = (
   </igc-tabs>
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
-    <igc-tab panel="first" selected>
+    <igc-tab panel="first">
       <igc-icon name="home"></igc-icon>
     </igc-tab>
     <igc-tab panel="second">
@@ -101,7 +101,7 @@ const Template: Story<ArgTypes, Context> = (
   </igc-tabs>
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
-    <igc-tab panel="first" selected>
+    <igc-tab panel="first">
       <igc-icon name="home"></igc-icon>
       Item 1
     </igc-tab>

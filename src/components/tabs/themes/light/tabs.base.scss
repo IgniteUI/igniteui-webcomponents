@@ -75,21 +75,11 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     position: relative;
     background: color(surface, 500);
     color: color(gray, 500);
-    outline: 0;
 
-    &:hover {
+    &:hover,
+    &:focus {
         background: color(gray, 100);
         color: color(gray, 600);
-    }
-
-    &:focus {
-        outline: 0;
-        background: color(gray, 100);
-    }
-
-    &::-moz-focus-inner {
-        // remove focus dotted border in firefox
-        border: 0;
     }
 
     ::slotted(*) {

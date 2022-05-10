@@ -4,6 +4,7 @@
 @use '../../../components/input/themes/dark/input.dark.bootstrap' as input;
 @use '../../../components/slider/themes/dark/slider.bootstrap' as slider;
 @use '../../../components/list/themes/dark/list.bootstrap' as list;
+@use '../../../components/tabs/themes/dark/tab.dark.bootstrap' as tab;
 
 $palette: utils.palette(
     $primary: #0d6efd,
@@ -22,3 +23,4 @@ $palette: utils.palette(
 @include input.theme();
 @include slider.theme();
 @include list.theme();
+@include tab.theme();

@@ -1,6 +1,7 @@
 @use '../../utilities' as utils;
 @use '../base/material' as base;
 @use '../../../components/input/themes/dark/input.dark.material' as input;
+@use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
 
 $palette: utils.palette(
     $primary: #09f,
@@ -11,3 +12,4 @@ $palette: utils.palette(
 
 @include base.root-styles($palette);
 @include input.theme();
+@include tab.theme();

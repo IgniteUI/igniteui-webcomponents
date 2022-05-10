@@ -4,32 +4,15 @@
     background: transparent;
 }
 
-[part='headers-wrapper'] {
-    &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        inset-inline-start: 0;
-        width: 100%;
-        height: rem(1px);
-        background: color(gray, 300);
-        z-index: 0;
-    }
-}
-
 [part='start-scroll-button'],
 [part='end-scroll-button'] {
     background: transparent;
     color: color(gray, 700);
 
-    &:hover {
+    &:hover,
+    &:focus {
         background: transparent;
         color: color(gray, 900);
-    }
-
-    &:focus {
-        outline: 0;
-        background: transparent;
     }
 }
 
