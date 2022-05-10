@@ -106,6 +106,7 @@
         position: relative;
         width: fit-content;
         box-shadow: none;
+        z-index: initial;
     }
 
     [part='overlay'] {
