@@ -107,6 +107,7 @@
         width: fit-content;
         box-shadow: none;
         z-index: initial;
+        border-inline-end: 1px solid color(gray, 300);
     }
 
     [part='overlay'] {
