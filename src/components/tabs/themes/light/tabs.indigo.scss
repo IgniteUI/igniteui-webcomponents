@@ -7,11 +7,18 @@
 [part='start-scroll-button'],
 [part='end-scroll-button'] {
     background: transparent;
-    color: color(gray, 700);
 
     &:hover,
     &:focus {
         background: transparent;
+    }
+}
+
+igc-icon-button::part(base) {
+    color: color(gray, 700);
+
+    &:hover,
+    &:focus {
         color: color(gray, 900);
     }
 }

@@ -1,0 +1,17 @@
+@use '../../../../styles/utilities' as *;
+
+:host {
+    color: color(gray, 900);
+
+    ::slotted(igc-icon) {
+        color: color(gray, 700);
+    }
+}
+
+:host([disabled]) {
+    color: color(gray, 400);
+
+    ::slotted(igc-icon) {
+        color: color(gray, 400);
+    }
+}

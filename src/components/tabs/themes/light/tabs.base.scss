@@ -74,7 +74,6 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     cursor: pointer;
     position: relative;
     background: color(surface, 500);
-    color: color(gray, 500);
 
     &:hover,
     &:focus {
@@ -85,6 +84,10 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     ::slotted(*) {
         box-shadow: none;
     }
+}
+
+igc-icon-button::part(base) {
+    color: color(gray, 500);
 }
 
 :host([dir='rtl']) {

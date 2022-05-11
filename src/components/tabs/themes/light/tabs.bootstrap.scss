@@ -11,6 +11,10 @@
     }
 }
 
+igc-icon-button::part(base) {
+    color: color(primary, 500);
+}
+
 [part='headers-wrapper'] {
     &::after {
         content: '';
