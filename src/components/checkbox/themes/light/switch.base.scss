@@ -35,6 +35,7 @@ label {
 
 [part~='control'] {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     user-select: none;
     transition: all .2s ease-in-out;
