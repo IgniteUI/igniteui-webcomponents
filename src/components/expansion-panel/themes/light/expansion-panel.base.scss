@@ -15,28 +15,29 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding-block: var(--igc-spacing-small);
+    padding: var(--igc-spacing-medium);
 
     &:focus,
     &:active {
         outline: transparent;
         background: color(gray, 100);
     }
+
+    div:not([part='indicator']) {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1 0 0%;
+        overflow: hidden;
+        user-select: none;
+    }
 }
 
-[part='headerText'] {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    flex: 1 0 0%;
-    overflow: hidden;
-}
-
-slot[name='title'] {
+[part='title'] {
     @include type-category('h5');
 }
 
-slot[name='subTitle'] {
+[part='subTitle'] {
     @include type-category('subtitle-2');
 
     color: color(gray, 700);
@@ -46,7 +47,8 @@ slot[name='subTitle'] {
     @include type-category('body-2');
 
     overflow: hidden;
-    padding: calc(var(--igc-spacing-large) * 2);
+    padding: var(--igc-spacing-large);
+    padding-top: calc(var(--igc-spacing-large) * 4);
 }
 
 [part~='indicator'] {

@@ -1,10 +1,10 @@
 @use '../../../../styles/utilities/index' as *;
 
-slot[name='title'],
+[part='title'],
 [part~='indicator'] {
     color: color(gray, 800);
 }
 
-slot[name='subTitle'] {
+[part='subTitle'] {
     color: color(gray, 600);
 }
