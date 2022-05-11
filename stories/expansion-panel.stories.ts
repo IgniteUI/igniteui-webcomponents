@@ -66,6 +66,7 @@ const Template: Story<ArgTypes, Context> = (
       indicator-alignment="${indicatorAlignment}"
       .open="${open}"
       .disabled="${disabled}"
+      .dir="${direction}"
       @igcOpening=${handleOpening}
       @igcOpened=${handleOpened}
       @igcClosing=${handleClosing}
@@ -80,7 +81,6 @@ const Template: Story<ArgTypes, Context> = (
         Toll Road and loose-cannon sniper Gunner Jensen.
       </div>
     </igc-expansion-panel>
-    <p style="visibility: collapse">"${direction}"</p>
   `;
 };
 
