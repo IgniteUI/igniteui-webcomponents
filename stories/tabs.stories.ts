@@ -103,15 +103,24 @@ const Template: Story<ArgTypes, Context> = (
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
     <igc-tab panel="first">
       <igc-icon name="home"></igc-icon>
-      Item 1
+      <span
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua.</span
+      >
     </igc-tab>
     <igc-tab panel="second">
       <igc-icon name="search"></igc-icon>
-      Item 2
+      <span
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua.</span
+      >
     </igc-tab>
     <igc-tab panel="third" disabled>
       <igc-icon name="favorite"></igc-icon>
-      Item 3
+      <span
+        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+        tempor incididunt ut labore et dolore magna aliqua.</span
+      >
     </igc-tab>
     <igc-tab-panel slot="panel" name="first">Content 1</igc-tab-panel>
     <igc-tab-panel slot="panel" name="second">Content 2</igc-tab-panel>

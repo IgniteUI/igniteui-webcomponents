@@ -62,6 +62,10 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     flex-direction: column;
     text-align: center;
     outline-style: none;
+
+    ::slotted(*) {
+        @include line-clamp(2, true, true);
+    }
 }
 
 ::slotted(igc-icon) {

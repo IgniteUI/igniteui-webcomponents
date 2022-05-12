@@ -15,19 +15,6 @@ igc-icon-button::part(base) {
     color: color(primary, 500);
 }
 
-[part='headers-wrapper'] {
-    &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        inset-inline-start: 0;
-        width: 100%;
-        height: rem(1px);
-        background: color(gray, 300);
-        z-index: 0;
-    }
-}
-
 [part='selected-indicator'] {
     display: none;
 }
