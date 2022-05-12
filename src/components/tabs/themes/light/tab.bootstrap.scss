@@ -10,19 +10,6 @@ $hover-color: var(--hover-color, color(primary, 700)) !default;
     color: color(primary, 500);
 }
 
-:host(:not([selected])) {
-    &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        inset-inline-start: 0;
-        width: 100%;
-        height: rem(1px);
-        background: color(gray, 200);
-        z-index: 0;
-    }
-}
-
 :host(:hover) {
     background: transparent;
     color: $hover-color;
@@ -46,6 +33,7 @@ $hover-color: var(--hover-color, color(primary, 700)) !default;
         width: 100%;
         height: rem(1px);
         background: color(surface, 500);
+        z-index: 1;
     }
 }
 
@@ -62,6 +50,7 @@ $hover-color: var(--hover-color, color(primary, 700)) !default;
     background: transparent;
     box-shadow: inset 0 0 0 rem(2px) color(primary, 700);
     border-radius: rem(4px);
+    z-index: 1;
 
     &::after {
         display: none;
