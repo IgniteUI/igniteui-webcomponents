@@ -65,7 +65,11 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 }
 
 :host([disabled]) {
-    [part='header'] * {
-        color: $disabled-color;
+    [part='header'] {
+        pointer-events: none;
+
+        * {
+            color: $disabled-color;
+        }
     }
 }

@@ -423,33 +423,16 @@ describe('Expansion Panel', () => {
     });
 
     it('Should not get expanded/collapsed when disabled', async () => {
-      //click on header
-      let header = panel.shadowRoot?.querySelector(PARTS.header);
+      const header = panel.shadowRoot?.querySelector(
+        PARTS.header
+      ) as HTMLElement;
 
       panel.disabled = true;
       await elementUpdated(panel);
       expect(panel.open).to.be.false;
 
-      header?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(panel);
-
-      expect(panel.open).to.be.false;
-
-      // Verify events are not called
-      expect(eventSpy.callCount).to.equal(0);
-
-      //click on indicator
-      header = panel.shadowRoot?.querySelector(PARTS.indicator);
-
-      expect(panel.open).to.be.false;
-
-      header?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(panel);
-
-      expect(panel.open).to.be.false;
-
-      // Verify events are not called
-      expect(eventSpy.callCount).to.equal(0);
+      const style = getComputedStyle(header);
+      expect(style.pointerEvents).to.equal('none');
 
       //arrodown keypress
       triggerKeydown(header as HTMLElement, 'arrowdown');

@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/expansion-panel.base.css.js';
 import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
@@ -30,11 +30,16 @@ const TABBABLE_SELECTORS =
  * @slot subTitle - renders the subtitle of the panel's header
  * @slot indicator - renders the expand/collapsed indicator
  *
- * @csspart header
- * @csspart title
- * @csspart subTitle
- * @csspart indicator
- * @csspart content
+ * @fires igcOpening - Emitted before opening the expansion panel.
+ * @fires igcOpened - Emitted after the expansion panel is opened.
+ * @fires igcClosing - Emitted before closing the expansion panel.
+ * @fires igcClosed - Emitted after the expansion panel is closed.
+ *
+ * @csspart header - The container of the expansion indicator, title and subTitle.
+ * @csspart title -  The title container.
+ * @csspart subTitle - The subTitle container.
+ * @csspart indicator - The indicator container.
+ * @csspart content - The expansion panel's content wrapper.
  */
 @themes({ bootstrap, fluent, indigo })
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
@@ -61,10 +66,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private panelId!: string;
 
-  constructor() {
-    super();
-  }
-
   public override connectedCallback() {
     super.connectedCallback();
     const id = this.getAttribute('id');
@@ -72,11 +73,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   }
 
   private handleClicked(event: Event) {
-    if (this.disabled) {
-      event.preventDefault();
-      return;
-    }
-
     const el = event.target as HTMLElement;
 
     if (!el.matches(TABBABLE_SELECTORS)) {
