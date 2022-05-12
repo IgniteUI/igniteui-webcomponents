@@ -52,16 +52,18 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   private offset = 0;
   private resizeObserver: ResizeObserver | undefined;
+  private _selected = '';
 
-  //TODO: May be mark this one as @state as there is also select method
   @property({ type: String })
-  public selected = '';
+  public get selected(): string {
+    return this._selected;
+  }
 
   @property({ reflect: true })
   public alignment: 'start' | 'end' | 'center' | 'justify' = 'start';
 
   @property()
-  public activation: 'focus' | 'select' = 'select';
+  public activation: 'auto' | 'manual' = 'auto';
 
   constructor() {
     super();
@@ -79,12 +81,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.resizeObserver.observe(this.headersContent);
     this.resizeObserver.observe(this.headersWrapper);
 
-    if (!this.selected) {
+    if (!this._selected) {
       const firstTab = this.tabs.find((el) => !el.disabled);
 
       this.setSelectedTab(firstTab?.panel);
     } else {
-      this.setSelectedTab(this.selected);
+      this.setSelectedTab(this._selected);
     }
   }
 
@@ -109,21 +111,21 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       return;
     }
 
-    if (tab !== this.selected) {
-      this.selected = tab;
+    if (tab !== this._selected) {
+      this._selected = tab;
 
-      this.tabs.forEach((el) => (el.selected = el.panel === this.selected));
-      this.panels.forEach((el) => (el.selected = el.name === this.selected));
+      this.tabs.forEach((el) => (el.selected = el.panel === this._selected));
+      this.panels.forEach((el) => (el.selected = el.name === this._selected));
 
       this.realignSelectedIndicator();
-      this.emitEvent('igcChange', { detail: this.selected });
+      this.emitEvent('igcChange', { detail: this._selected });
     }
   }
 
   @watch('alignment', { waitUntilFirstUpdate: true })
   private realignSelectedIndicator() {
     const selectedHeader = this.tabs.find(
-      (element) => element.panel === this.selected
+      (element) => element.panel === this._selected
     );
     this.alignSelectedIndicator(selectedHeader as HTMLElement);
   }
@@ -199,7 +201,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private scrollTabIntoView(tab: IgcTabComponent) {
-    if (this.selected) {
+    if (this._selected) {
       // Scroll left if there is need
       if (tab.offsetLeft < this.offset) {
         this.scrollElement(tab, false);
@@ -254,7 +256,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
         index = 0;
         break;
       case 'End':
-        index = this.tabs.length - 1;
+        index = enabledTabs.length - 1;
         break;
       case 'Enter':
       case ' ':
@@ -266,7 +268,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     enabledTabs[index].focus({ preventScroll: true });
 
-    if (this.activation === 'select') {
+    if (this.activation === 'auto') {
       this.setSelectedTab(enabledTabs[index].panel);
     }
 
@@ -277,44 +279,42 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div part="base">
-        <div part="headers">
-          ${this.showStartScrollButton
-            ? html`
-                <igc-icon-button
-                  part="start-scroll-button"
-                  size="medium"
-                  variant="flat"
-                  name="navigate_before"
-                  collection="internal"
-                  @click=${this.handleStartButtonClick}
-                ></igc-icon-button>
-              `
-            : ''}
-          <div part="headers-content">
-            <div part="headers-wrapper">
-              <div part="headers-scroll" role="tablist">
-                <slot></slot>
-              </div>
-              <div part="selected-indicator"></div>
+      <div part="headers">
+        ${this.showStartScrollButton
+          ? html`
+              <igc-icon-button
+                part="start-scroll-button"
+                size="medium"
+                variant="flat"
+                name="navigate_before"
+                collection="internal"
+                @click=${this.handleStartButtonClick}
+              ></igc-icon-button>
+            `
+          : ''}
+        <div part="headers-content">
+          <div part="headers-wrapper">
+            <div part="headers-scroll" role="tablist">
+              <slot></slot>
             </div>
+            <div part="selected-indicator"></div>
           </div>
-          ${this.showEndScrollButton
-            ? html`
-                <igc-icon-button
-                  part="end-scroll-button"
-                  size="medium"
-                  variant="flat"
-                  name="navigate_next"
-                  collection="internal"
-                  @click=${this.handleEndButtonClick}
-                ></igc-icon-button>
-              `
-            : ''}
         </div>
-        <div part="content">
-          <slot name="panel"></slot>
-        </div>
+        ${this.showEndScrollButton
+          ? html`
+              <igc-icon-button
+                part="end-scroll-button"
+                size="medium"
+                variant="flat"
+                name="navigate_next"
+                collection="internal"
+                @click=${this.handleEndButtonClick}
+              ></igc-icon-button>
+            `
+          : ''}
+      </div>
+      <div part="content">
+        <slot name="panel"></slot>
       </div>
     `;
   }

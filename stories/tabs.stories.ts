@@ -9,11 +9,12 @@ const metadata = {
   argTypes: {
     selected: {
       type: 'string',
+      description: 'Returns the panel of the selected tab.',
       control: 'text',
-      defaultValue: '',
     },
     alignment: {
       type: '"start" | "end" | "center" | "justify"',
+      description: 'Specifies the alignment of the tabs.',
       options: ['start', 'end', 'center', 'justify'],
       control: {
         type: 'inline-radio',
@@ -21,12 +22,14 @@ const metadata = {
       defaultValue: 'start',
     },
     activation: {
-      type: '"focus" | "select"',
-      options: ['focus', 'select'],
+      type: '"auto" | "manual"',
+      description:
+        'Specifies if the tab is automatically selected when navigating with Left/Right Arrow, Home or End key.',
+      options: ['auto', 'manual'],
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'select',
+      defaultValue: 'auto',
     },
   },
 };
@@ -34,21 +37,20 @@ export default metadata;
 interface ArgTypes {
   selected: string;
   alignment: 'start' | 'end' | 'center' | 'justify';
-  activation: 'focus' | 'select';
+  activation: 'auto' | 'manual';
 }
 // endregion
 
 const Template: Story<ArgTypes, Context> = (
-  { activation, alignment, selected }: ArgTypes,
+  { activation, alignment }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-tabs
     dir="${ifDefined(direction)}"
-    selected=${selected}
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >
-    <igc-tab panel="first"> Item 1 </igc-tab>
+    <igc-tab panel="first">Item 1</igc-tab>
     <igc-tab panel="second">Item 2</igc-tab>
     <igc-tab panel="third" disabled>Item 3</igc-tab>
     <igc-tab panel="forth">Item 4</igc-tab>
@@ -57,7 +59,7 @@ const Template: Story<ArgTypes, Context> = (
     <igc-tab panel="seventh">Item 7</igc-tab>
     <igc-tab panel="eighth">Item 8</igc-tab>
     <igc-tab panel="ninth">Item 9</igc-tab>
-    <igc-tab panel="10"> Item 10 </igc-tab>
+    <igc-tab panel="10">Item 10</igc-tab>
     <igc-tab panel="11">Item 11</igc-tab>
     <igc-tab panel="12">Item 12</igc-tab>
     <igc-tab panel="13">Item 13</igc-tab>
