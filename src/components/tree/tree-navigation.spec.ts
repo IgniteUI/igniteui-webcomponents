@@ -1,11 +1,11 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents } from '../..';
-import IgcTreeComponent from './tree';
-import IgcTreeItemComponent from './tree-item';
-import { navigationTree, SLOTS, TreeTestFunctions } from './tree-utils.spec';
-import { IgcSelectionEventArgs, IgcTreeSelectionType } from './tree.common';
-import { IgcTreeNavigationService } from './tree.navigation';
+import { defineComponents } from '../../index.js';
+import IgcTreeComponent from './tree.js';
+import IgcTreeItemComponent from './tree-item.js';
+import { navigationTree, SLOTS, TreeTestFunctions } from './tree-utils.spec.js';
+import { IgcSelectionEventArgs } from './tree.common.js';
+import { IgcTreeNavigationService } from './tree.navigation.js';
 
 describe('Tree Navigation', () => {
   before(() => {
@@ -124,9 +124,7 @@ describe('Tree Navigation', () => {
     expect(item2.expanded).to.be.false;
 
     const collapsingArgs = {
-      detail: {
-        node: item2,
-      },
+      detail: item2,
       cancelable: true,
     };
     expect(eventSpy.callCount).to.equal(2);
@@ -208,9 +206,7 @@ describe('Tree Navigation', () => {
     expect(item1.expanded).to.be.true;
 
     const expandingArgs = {
-      detail: {
-        node: item1,
-      },
+      detail: item1,
       cancelable: true,
     };
     expect(eventSpy.callCount).to.equal(2);
@@ -380,16 +376,12 @@ describe('Tree Navigation', () => {
     });
 
     const expandingArgs1 = {
-      detail: {
-        node: topLevelItems[0],
-      },
+      detail: topLevelItems[0],
       cancelable: true,
     };
 
     const expandingArgs2 = {
-      detail: {
-        node: item3,
-      },
+      detail: item3,
       cancelable: true,
     };
     // Item2 is already expanded, and Item4 has no children => no expanding events emitted for them
@@ -429,7 +421,7 @@ describe('Tree Navigation', () => {
   });
 
   it('Should toggle item selection on Space key press', async () => {
-    tree.selection = IgcTreeSelectionType.Multiple;
+    tree.selection = 'multiple';
     await elementUpdated(tree);
 
     topLevelItems[0].dispatchEvent(
@@ -484,7 +476,7 @@ describe('Tree Navigation', () => {
   });
 
   it("Should only activate the tree item when tree.selection === 'None' on Space key press and also select it when tree.selection !== 'None'", async () => {
-    expect(tree.selection).to.equal(IgcTreeSelectionType.None);
+    expect(tree.selection).to.equal('none');
     expect(treeNavService.focusedItem).to.equal(topLevelItems[0]);
 
     topLevelItems[0].dispatchEvent(
@@ -507,7 +499,7 @@ describe('Tree Navigation', () => {
 
     eventSpy.resetHistory();
 
-    tree.selection = IgcTreeSelectionType.Multiple;
+    tree.selection = 'multiple';
     await elementUpdated(tree);
 
     TreeTestFunctions.setFocusAndTriggerKeydown(topLevelItems[1], tree, ' ');
@@ -533,7 +525,7 @@ describe('Tree Navigation', () => {
   it("Should select item range when tree.selection !== 'None' on Space + Shift keys press, moving active", async () => {
     expect(treeNavService.focusedItem).to.equal(topLevelItems[0]);
 
-    tree.selection = IgcTreeSelectionType.Multiple;
+    tree.selection = 'multiple';
     await elementUpdated(tree);
 
     topLevelItems[0].dispatchEvent(

@@ -1,17 +1,17 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcCheckboxComponent } from '../..';
-import IgcTreeComponent from './tree';
-import IgcTreeItemComponent from './tree-item';
+import { defineComponents, IgcCheckboxComponent } from '../../index.js';
+import IgcTreeComponent from './tree.js';
+import IgcTreeItemComponent from './tree-item.js';
 import {
   cascadeSelectionTree,
   PARTS,
   selectedItemsTree,
   simpleTree,
   TreeTestFunctions,
-} from './tree-utils.spec';
-import { IgcSelectionEventArgs, IgcTreeSelectionType } from './tree.common';
-import { IgcTreeSelectionService } from './tree.selection';
+} from './tree-utils.spec.js';
+import { IgcSelectionEventArgs } from './tree.common.js';
+import { IgcTreeSelectionService } from './tree.selection.js';
 
 describe('Tree Selection', () => {
   before(() => {
@@ -33,7 +33,7 @@ describe('Tree Selection', () => {
       tree = await TreeTestFunctions.createTreeElement(simpleTree);
       treeSelectionService = tree.selectionService;
       // Verify that default selection type is 'None'
-      expect(tree.selection).to.equal(IgcTreeSelectionType.None);
+      expect(tree.selection).to.equal('none');
 
       // Should allow setting items as selected through API when tree.selection === 'None'
       const topLevelItems = tree.items.filter((i) => i.level === 0);
@@ -47,13 +47,13 @@ describe('Tree Selection', () => {
 
       TreeTestFunctions.verifyItemSelection(topLevelItems[1], true);
 
-      tree.selection = IgcTreeSelectionType.Multiple;
+      tree.selection = 'multiple';
       await elementUpdated(tree);
-      expect(tree.selection).to.equal(IgcTreeSelectionType.Multiple);
+      expect(tree.selection).to.equal('multiple');
 
-      tree.selection = IgcTreeSelectionType.Cascade;
+      tree.selection = 'cascade';
       await elementUpdated(tree);
-      expect(tree.selection).to.equal(IgcTreeSelectionType.Cascade);
+      expect(tree.selection).to.equal('cascade');
     });
 
     it('Should deselect all selected items w/ tree.deselect())', async () => {

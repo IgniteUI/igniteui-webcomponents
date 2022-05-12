@@ -1,7 +1,6 @@
-import IgcTreeComponent from './tree';
-import IgcTreeItemComponent from './tree-item';
-import { IgcTreeSelectionType } from './tree.common';
-import { IgcTreeSelectionService } from './tree.selection';
+import IgcTreeComponent from './tree.js';
+import IgcTreeItemComponent from './tree-item.js';
+import { IgcTreeSelectionService } from './tree.selection.js';
 
 export const NAVIGATION_KEYS = new Set([
   'down',
@@ -90,7 +89,7 @@ export class IgcTreeNavigationService {
     if (this._activeItem) {
       this._activeItem.active = true;
     }
-    if (shouldEmit) {
+    if (shouldEmit && this._activeItem) {
       this.tree.emitEvent('igcActiveItem', { detail: this._activeItem });
     }
   }
@@ -290,7 +289,7 @@ export class IgcTreeNavigationService {
   }
 
   private handleSpace(shiftKey = false): void {
-    if (this.tree.selection === IgcTreeSelectionType.None) {
+    if (this.tree.selection === 'none') {
       this.setActiveItem(this.focusedItem);
       return;
     }

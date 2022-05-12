@@ -6,16 +6,15 @@ import {
 } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
 import { partNameMap } from '../common/util.js';
-import { styles } from './themes/light/tree-item.base.css';
-import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css';
-import { styles as fluent } from './themes/light/tree-item.fluent.css';
-import { styles as indigo } from './themes/light/tree-item.indigo.css';
-import IgcTreeComponent from './tree';
-import { IgcTreeSelectionType } from './tree.common.js';
-import { watch } from '../common/decorators';
+import { styles } from './themes/light/tree-item.base.css.js';
+import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
+import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
+import { styles as indigo } from './themes/light/tree-item.indigo.css.js';
+import type IgcTreeComponent from './tree.js';
+import { watch } from '../common/decorators/watch.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
-import { themes } from '../../theming';
+import { themes } from '../../theming/theming-decorator.js';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -27,11 +26,20 @@ import { themes } from '../../theming';
  * @slot indicator - Renders the expand indicator container.
  * @slot loading - Renders the tree item loading indicator container.
  * @slot indentation - Renders the container (by default the space) before the tree item.
+ *
+ * @csspart wrapper - The wrapper for the tree item.
+ * @csspart selected - Indicates selected state. Applies to `wrapper`.
+ * @csspart focused - Indicates focused state. Applies to `wrapper`.
+ * @csspart active - Indicates an active state. Applies to `wrapper`.
+ * @csspart indicator - The expand indicator of the tree item.
+ * @csspart label - The tree item content.
+ * @csspart text - The tree item displayed text.
+ * @csspart select - The checkbox of the tree item when selection is enabled.
  */
 @themes({ bootstrap, fluent, indigo })
 export default class IgcTreeItemComponent extends LitElement {
   /** @private */
-  public static tagName = 'igc-tree-item';
+  public static readonly tagName = 'igc-tree-item';
   /** @private */
   public static override styles = styles;
 
@@ -60,25 +68,13 @@ export default class IgcTreeItemComponent extends LitElement {
   @state()
   public hasChildren = false;
 
-  /** @private */
-  @state()
-  public size = 'large';
-
-  /** @private */
-  @state()
-  public override dir = 'ltr';
-
-  /** The depth of the node, relative to the root. */
+  /** The depth of the item, relative to the root. */
   @state()
   public level = 0;
 
   /** @private */
   @state()
   public indeterminate = false;
-
-  /** @private */
-  @state()
-  public selection: IgcTreeSelectionType = IgcTreeSelectionType.None;
 
   /** The tree item label. */
   @property()
@@ -110,18 +106,6 @@ export default class IgcTreeItemComponent extends LitElement {
    */
   @property({ attribute: true })
   public value: any = undefined;
-
-  @watch('size')
-  public sizeMultiplier(): number {
-    switch (this.size) {
-      case 'medium':
-        return 2 / 3;
-      case 'small':
-        return 1 / 2;
-      default:
-        return 1;
-    }
-  }
 
   @watch('expanded', { waitUntilFirstUpdate: true })
   @watch('hasChildren', { waitUntilFirstUpdate: true })
@@ -189,21 +173,14 @@ export default class IgcTreeItemComponent extends LitElement {
     }
   }
 
-  constructor() {
-    super();
-  }
-
   public override connectedCallback(): void {
     super.connectedCallback();
     this.tree = this.closest('igc-tree') as IgcTreeComponent;
-    this.size = this.tree?.size;
     this.parent =
       this.parentElement?.tagName.toLowerCase() === 'igc-tree-item'
         ? (this.parentElement as IgcTreeItemComponent)
         : null;
     this.level = this.parent ? this.parent.level + 1 : 0;
-    this.selection = this.tree?.selection;
-    this.dir = this.tree?.dir;
     // this.navService?.update_visible_cache(this, this.expanded);
     this.setAttribute('role', 'treeitem');
     this.addEventListener('blur', this.onBlur);
@@ -402,9 +379,7 @@ export default class IgcTreeItemComponent extends LitElement {
       return;
     }
     const args = {
-      detail: {
-        node: this,
-      },
+      detail: this,
       cancelable: true,
     };
 
@@ -436,9 +411,7 @@ export default class IgcTreeItemComponent extends LitElement {
       return;
     }
     const args = {
-      detail: {
-        node: this,
-      },
+      detail: this,
       cancelable: true,
     };
 
@@ -468,10 +441,13 @@ export default class IgcTreeItemComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div id="wrapper" part="wrapper ${this.size} ${partNameMap(this.parts)}">
+      <div
+        id="wrapper"
+        part="wrapper ${this.tree?.size} ${partNameMap(this.parts)}"
+      >
         <div
           style="width: calc(${this
-            .level} * var(--igc-tree-indentation-size) * ${this.sizeMultiplier()})"
+            .level} * var(--igc-tree-indentation-size) * ${this.tree?.sizeMultiplier()})"
           part="indentation"
           aria-hidden="true"
         >
@@ -491,7 +467,7 @@ export default class IgcTreeItemComponent extends LitElement {
                         <igc-icon
                           name=${this.expanded
                             ? 'keyboard_arrow_down'
-                            : this.dir === 'rtl'
+                            : this.tree?.dir === 'rtl'
                             ? 'navigate_before'
                             : 'keyboard_arrow_right'}
                           collection="internal"
@@ -502,7 +478,7 @@ export default class IgcTreeItemComponent extends LitElement {
                 </slot>
               `}
         </div>
-        ${this.selection !== IgcTreeSelectionType.None
+        ${this.tree?.selection !== 'none'
           ? html`
               <div part="select" aria-hidden="true">
                 <igc-checkbox

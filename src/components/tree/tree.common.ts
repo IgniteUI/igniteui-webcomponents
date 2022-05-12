@@ -1,20 +1,12 @@
-import IgcTreeItemComponent from './tree-item';
-
-export const IgcTreeSelectionType = {
-  None: 'none',
-  Multiple: 'multiple',
-  Cascade: 'cascade',
-} as const;
-export type IgcTreeSelectionType =
-  typeof IgcTreeSelectionType[keyof typeof IgcTreeSelectionType];
+import type IgcTreeItemComponent from './tree-item.js';
 
 export interface IgcTreeEventMap {
-  igcSelection: CustomEvent<any>;
-  igcItemExpanding: CustomEvent<any>;
-  igcItemExpanded: CustomEvent<any>;
-  igcItemCollapsing: CustomEvent<any>;
-  igcItemCollapsed: CustomEvent<any>;
-  igcActiveItem: CustomEvent<any>;
+  igcSelection: CustomEvent<{ newSelection: IgcTreeItemComponent[] }>;
+  igcItemExpanding: CustomEvent<IgcTreeItemComponent>;
+  igcItemExpanded: CustomEvent<IgcTreeItemComponent>;
+  igcItemCollapsing: CustomEvent<IgcTreeItemComponent>;
+  igcItemCollapsed: CustomEvent<IgcTreeItemComponent>;
+  igcActiveItem: CustomEvent<IgcTreeItemComponent>;
 }
 export interface IgcSelectionEventArgs {
   detail: { readonly newSelection: IgcTreeItemComponent[] };

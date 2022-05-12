@@ -1,6 +1,6 @@
-import IgcTreeComponent from './tree';
-import IgcTreeItemComponent from './tree-item';
-import { IgcSelectionEventArgs, IgcTreeSelectionType } from './tree.common';
+import IgcTreeComponent from './tree.js';
+import IgcTreeItemComponent from './tree-item.js';
+import { IgcSelectionEventArgs } from './tree.common.js';
 
 export class IgcTreeSelectionService {
   private tree!: IgcTreeComponent;
@@ -39,7 +39,7 @@ export class IgcTreeSelectionService {
 
   /** Select the specified item and emit event. */
   public selectItem(item: IgcTreeItemComponent): void {
-    if (this.tree.selection === IgcTreeSelectionType.None) {
+    if (this.tree.selection === 'none') {
       return;
     }
     this.emitItemSelectionEvent([...this.getSelectedItems(), item], [item], []);
@@ -75,7 +75,7 @@ export class IgcTreeSelectionService {
 
   /** Called on item`s disconnectedCallback */
   public ensureStateOnItemDelete(item: IgcTreeItemComponent): void {
-    if (this.tree?.selection === IgcTreeSelectionType.None) {
+    if (this.tree?.selection === 'none') {
       return;
     }
 
@@ -108,7 +108,7 @@ export class IgcTreeSelectionService {
       return;
     }
 
-    if (this.tree.selection === IgcTreeSelectionType.Cascade) {
+    if (this.tree.selection === 'cascade') {
       this.emitCascadeItemSelectionEvent(currSelection, added, removed);
       return;
     }
@@ -136,7 +136,7 @@ export class IgcTreeSelectionService {
   public selectItemsWithNoEvent(items: IgcTreeItemComponent[]): void {
     const oldSelection = this.getSelectedItems();
 
-    if (this.tree && this.tree.selection === IgcTreeSelectionType.Cascade) {
+    if (this.tree && this.tree.selection === 'cascade') {
       this.cascadeSelectItemsWithNoEvent(items, oldSelection);
       return;
     }
@@ -151,7 +151,7 @@ export class IgcTreeSelectionService {
     items?: IgcTreeItemComponent[],
     onDelete = false
   ): void {
-    if (this.tree && this.tree.selection === IgcTreeSelectionType.Cascade) {
+    if (this.tree && this.tree.selection === 'cascade') {
       this.cascadeDeselectItemsWithNoEvent(items, onDelete);
       return;
     }
@@ -383,7 +383,7 @@ export class IgcTreeSelectionService {
       }
     });
 
-    if (this.tree.selection === IgcTreeSelectionType.Cascade) {
+    if (this.tree.selection === 'cascade') {
       this.indeterminateItems.forEach((i: IgcTreeItemComponent) => {
         if (!indeterminated.has(i)) {
           i.indeterminate = true;

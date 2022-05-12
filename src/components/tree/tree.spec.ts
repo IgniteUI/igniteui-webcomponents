@@ -1,9 +1,9 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import { _$LE } from 'lit';
 import sinon from 'sinon';
-import { defineComponents, IgcCheckboxComponent } from '../..';
-import IgcTreeComponent from './tree';
-import IgcTreeItemComponent from './tree-item';
+import { defineComponents, IgcCheckboxComponent } from '../../index.js';
+import IgcTreeComponent from './tree.js';
+import IgcTreeItemComponent from './tree-item.js';
 import {
   activeItemsTree,
   DIFF_OPTIONS,
@@ -15,7 +15,7 @@ import {
   simpleTree,
   SLOTS,
   TreeTestFunctions,
-} from './tree-utils.spec';
+} from './tree-utils.spec.js';
 
 describe('Tree', () => {
   before(() => {
@@ -77,12 +77,20 @@ describe('Tree', () => {
 
     it('Should render items correctly depending on size settings', async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleTree);
+      const indentationSize = parseFloat(
+        getComputedStyle(tree.firstElementChild as Element).getPropertyValue(
+          '--igc-tree-indentation-size'
+        )
+      );
 
       expect(tree.size).to.equal('large');
       tree.items.forEach((item) => {
-        expect(item.size).to.equal('large');
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
         expect(wrapperDiv).to.have.attribute('part').match(/large/);
+        const indentationDiv = wrapperDiv?.firstElementChild;
+        expect(getComputedStyle(indentationDiv as Element).width).to.equal(
+          item.level * indentationSize * 1 + 'px'
+        );
       });
 
       tree.size = 'medium';
@@ -90,11 +98,14 @@ describe('Tree', () => {
 
       expect(tree.size).to.equal('medium');
       tree.items.forEach((item) => {
-        expect(item.size).to.equal('medium');
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
         expect(wrapperDiv)
           .to.have.attribute('part')
           .match(/medium/);
+        const indentationDiv = wrapperDiv?.firstElementChild;
+        expect(getComputedStyle(indentationDiv as Element).width).to.equal(
+          (item.level * indentationSize * 2) / 3 + 'px'
+        );
       });
 
       tree.size = 'small';
@@ -102,9 +113,12 @@ describe('Tree', () => {
 
       expect(tree.size).to.equal('small');
       tree.items.forEach((item) => {
-        expect(item.size).to.equal('small');
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
         expect(wrapperDiv).to.have.attribute('part').match(/small/);
+        const indentationDiv = wrapperDiv?.firstElementChild;
+        expect(getComputedStyle(indentationDiv as Element).width).to.equal(
+          (item.level * indentationSize * 1) / 2 + 'px'
+        );
       });
     });
 
@@ -606,9 +620,7 @@ describe('Tree', () => {
 
       // Should emit ing and ed events when item state is toggled through UI
       const collapsingArgs = {
-        detail: {
-          node: topLevelItems[1],
-        },
+        detail: topLevelItems[1],
         cancelable: true,
       };
       expect(eventSpy.callCount).to.equal(2);
@@ -653,9 +665,7 @@ describe('Tree', () => {
 
       // Should emit ing and ed events when item state is toggled through UI
       const expandingArgs = {
-        detail: {
-          node: topLevelItems[0],
-        },
+        detail: topLevelItems[0],
         cancelable: true,
       };
       expect(eventSpy.callCount).to.equal(2);
@@ -764,9 +774,7 @@ describe('Tree', () => {
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
 
       const expandingArgs = {
-        detail: {
-          node: topLevelItems[0],
-        },
+        detail: topLevelItems[0],
         cancelable: true,
       };
       expect(eventSpy.callCount).to.equal(1);
@@ -788,9 +796,7 @@ describe('Tree', () => {
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], true);
 
       const collapsingArgs = {
-        detail: {
-          node: topLevelItems[1],
-        },
+        detail: topLevelItems[1],
         cancelable: true,
       };
       expect(eventSpy.callCount).to.equal(1);
@@ -1256,9 +1262,7 @@ describe('Tree', () => {
       expect(item2.expanded).to.be.false;
 
       const collapsingArgs = {
-        detail: {
-          node: item2,
-        },
+        detail: item2,
         cancelable: true,
       };
       expect(eventSpy.callCount).to.equal(2);
@@ -1286,9 +1290,7 @@ describe('Tree', () => {
       expect(item1.expanded).to.be.true;
 
       const expandingArgs = {
-        detail: {
-          node: item1,
-        },
+        detail: item1,
         cancelable: true,
       };
       expect(eventSpy.callCount).to.equal(2);

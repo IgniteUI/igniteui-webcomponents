@@ -1,14 +1,14 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { watch } from '../common/decorators';
-import { styles } from './themes/light/tree.base.css';
+import { watch } from '../common/decorators/watch.js';
+import { styles } from './themes/light/tree.base.css.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import IgcTreeItemComponent from './tree-item';
-import { IgcTreeEventMap, IgcTreeSelectionType } from './tree.common';
-import { IgcTreeNavigationService } from './tree.navigation';
-import { IgcTreeSelectionService } from './tree.selection';
+import IgcTreeItemComponent from './tree-item.js';
+import { IgcTreeEventMap } from './tree.common.js';
+import { IgcTreeNavigationService } from './tree.navigation.js';
+import { IgcTreeSelectionService } from './tree.selection.js';
 
 type Direction = 'ltr' | 'rtl' | 'auto';
 
@@ -20,17 +20,18 @@ type Direction = 'ltr' | 'rtl' | 'auto';
  *
  * @slot - Renders the tree items inside default slot.
  *
- * @fires igcTreeItemSelectionEvent - Emitted when item selection is changing, before the selection completes.
- * @fires igcItemExpanding - Emitted when tree item is about to expand.
- * @fires igcItemExpanded - Emitted when tree item is expanded.
- * @fires igcItemCollapsing - Emitted when tree item is about to collapse.
+ * @fires igcSelection - Emitted when item selection is changing, before the selection completes.
  * @fires igcItemCollapsed - Emitted when tree item is collapsed.
+ * @fires igcItemCollapsing - Emitted when tree item is about to collapse.
+ * @fires igcItemExpanded - Emitted when tree item is expanded.
+ * @fires igcItemExpanding - Emitted when tree item is about to expand.
+ * @fires igcItemActivated - Emitted when the tree's `active` item changes.
  */
 export default class IgcTreeComponent extends SizableMixin(
   EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
 ) {
   /** @private */
-  public static tagName = 'igc-tree';
+  public static readonly tagName = 'igc-tree';
   /** @private */
   public static styles = styles;
 
@@ -54,14 +55,14 @@ export default class IgcTreeComponent extends SizableMixin(
   @watch('dir')
   public onDirChange(): void {
     this.items?.forEach((item: IgcTreeItemComponent) => {
-      item.dir = this.dir;
+      item.requestUpdate();
     });
   }
 
   @watch('size', { waitUntilFirstUpdate: true })
   public onSizeChange(): void {
     this.items?.forEach((item: IgcTreeItemComponent) => {
-      item.size = this.size;
+      item.requestUpdate();
     });
     this.navService.activeItem?.wrapper?.scrollIntoView({
       behavior: 'smooth',
@@ -74,7 +75,7 @@ export default class IgcTreeComponent extends SizableMixin(
   public selectionModeChange(): void {
     this.selectionService.clearItemsSelection();
     this.items?.forEach((item: IgcTreeItemComponent) => {
-      item.selection = this.selection;
+      item.requestUpdate();
     });
   }
 
@@ -105,7 +106,6 @@ export default class IgcTreeComponent extends SizableMixin(
   public override connectedCallback(): void {
     super.connectedCallback();
     this.setAttribute('role', 'tree');
-    this.classList.add('igc-tree');
     this.addEventListener('keydown', this.handleKeydown);
     // set init to true for all items which are rendered along with the tree
     this.items.forEach((i: IgcTreeItemComponent) => {
@@ -130,6 +130,18 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   /** @private */
+  public sizeMultiplier(): number {
+    switch (this.size) {
+      case 'medium':
+        return 2 / 3;
+      case 'small':
+        return 1 / 2;
+      default:
+        return 1;
+    }
+  }
+
+  /** @private */
   public expandToItem(item: IgcTreeItemComponent): void {
     if (item && item.parent) {
       item.path.forEach((i) => {
@@ -144,7 +156,7 @@ export default class IgcTreeComponent extends SizableMixin(
   public select(items?: IgcTreeItemComponent[]): void {
     if (!items) {
       items =
-        this.selection === IgcTreeSelectionType.Cascade
+        this.selection === 'cascade'
           ? this.items.filter((item: IgcTreeItemComponent) => item.level === 0)
           : this.items;
     }
