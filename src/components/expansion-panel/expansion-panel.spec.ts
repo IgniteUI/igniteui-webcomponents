@@ -125,13 +125,13 @@ describe('Expansion Panel', () => {
 
     it('Should set indicator alignment properly', async () => {
       panel = await createExpansionPanelComponent();
-      panel.indicatorAlignment = 'start';
+      panel.indicatorPosition = 'start';
       await elementUpdated(panel);
       expect(panel).dom.to.equal(
         `<igc-expansion-panel indicator-alignment="start"></igc-expansion-panel>`
       );
 
-      panel.indicatorAlignment = 'end';
+      panel.indicatorPosition = 'end';
       await elementUpdated(panel);
       expect(panel).dom.to.equal(
         `<igc-expansion-panel indicator-alignment="end"></igc-expansion-panel>`

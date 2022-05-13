@@ -16,7 +16,7 @@ export { default as IgcDropdownComponent } from './components/dropdown/dropdown.
 export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group.js';
 export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header.js';
 export { default as IgcDropdownItemComponent } from './components/dropdown/dropdown-item.js';
-export { default as IgcExpansionPanelComponent } from './components/expansion-panel/expansion-panel';
+export { default as IgcExpansionPanelComponent } from './components/expansion-panel/expansion-panel.js';
 export { default as IgcIconComponent } from './components/icon/icon.js';
 export { default as IgcIconButtonComponent } from './components/button/icon-button.js';
 export { default as IgcInputComponent } from './components/input/input.js';

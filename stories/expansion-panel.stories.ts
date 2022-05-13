@@ -20,7 +20,7 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    indicatorAlignment: {
+    indicatorPosition: {
       type: '"start" | "end"',
       description: 'The indicator alignment of the expansion panel.',
       options: ['start', 'end'],
@@ -35,7 +35,7 @@ export default metadata;
 interface ArgTypes {
   open: boolean;
   disabled: boolean;
-  indicatorAlignment: 'start' | 'end';
+  indicatorPosition: 'start' | 'end';
 }
 // endregion
 interface Context {
@@ -58,12 +58,12 @@ const handleClosed = (ev: any) => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { open = false, disabled = false, indicatorAlignment = 'start' }: ArgTypes,
+  { open = false, disabled = false, indicatorPosition = 'start' }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
     <igc-expansion-panel
-      indicator-alignment="${indicatorAlignment}"
+      indicator-alignment="${indicatorPosition}"
       .open="${open}"
       .disabled="${disabled}"
       .dir="${direction}"
