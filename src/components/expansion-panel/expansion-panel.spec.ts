@@ -123,18 +123,18 @@ describe('Expansion Panel', () => {
       expect((elements[0] as HTMLElement).innerText).to.equal('Sample content');
     });
 
-    it('Should set indicator alignment properly', async () => {
+    it('Should set indicator position properly', async () => {
       panel = await createExpansionPanelComponent();
       panel.indicatorPosition = 'start';
       await elementUpdated(panel);
       expect(panel).dom.to.equal(
-        `<igc-expansion-panel indicator-alignment="start"></igc-expansion-panel>`
+        `<igc-expansion-panel indicator-position="start"></igc-expansion-panel>`
       );
 
       panel.indicatorPosition = 'end';
       await elementUpdated(panel);
       expect(panel).dom.to.equal(
-        `<igc-expansion-panel indicator-alignment="end"></igc-expansion-panel>`
+        `<igc-expansion-panel indicator-position="end"></igc-expansion-panel>`
       );
     });
 

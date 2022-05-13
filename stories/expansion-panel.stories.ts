@@ -22,7 +22,7 @@ const metadata = {
     },
     indicatorPosition: {
       type: '"start" | "end"',
-      description: 'The indicator alignment of the expansion panel.',
+      description: 'The indicator position of the expansion panel.',
       options: ['start', 'end'],
       control: {
         type: 'inline-radio',
@@ -63,7 +63,7 @@ const Template: Story<ArgTypes, Context> = (
 ) => {
   return html`
     <igc-expansion-panel
-      indicator-alignment="${indicatorPosition}"
+      indicator-position="${indicatorPosition}"
       .open="${open}"
       .disabled="${disabled}"
       .dir="${direction}"

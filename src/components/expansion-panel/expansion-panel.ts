@@ -57,8 +57,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
-  /** The indicator alignment of the expansion panel. */
-  @property({ reflect: true, attribute: 'indicator-alignment' })
+  /** The indicator position of the expansion panel. */
+  @property({ reflect: true, attribute: 'indicator-position' })
   public indicatorPosition: 'start' | 'end' = 'start';
 
   @query('[part~="header"]', true)

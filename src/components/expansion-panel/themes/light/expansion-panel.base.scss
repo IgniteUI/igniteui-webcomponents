@@ -55,11 +55,11 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
     color: color(gray, 800);
 }
 
-:host([indicator-alignment='start']) [part~='indicator'] {
+:host([indicator-position='start']) [part~='indicator'] {
     margin-inline-end: calc(var(--igc-spacing-large) * 2);
 }
 
-:host([indicator-alignment='end']) [part~='indicator'] {
+:host([indicator-position='end']) [part~='indicator'] {
     order: 2;
     margin-inline-start: calc(var(--igc-spacing-large) * 2);
 }
