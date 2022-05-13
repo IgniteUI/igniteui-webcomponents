@@ -11,6 +11,7 @@
     color: contrast-color(primary, 600);
     box-shadow: var(--igc-elevation-4);
     font-family: var(--igc-font-family);
+    z-index: 4;
 }
 
 [part='base'] {
@@ -20,7 +21,6 @@
     flex-grow: 1;
     align-items: center;
     overflow: hidden;
-    z-index: 4;
 }
 
 [part='middle'] {

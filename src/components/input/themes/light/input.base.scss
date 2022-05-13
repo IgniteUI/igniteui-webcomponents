@@ -45,6 +45,7 @@ $input-height: (
 [part='prefix'],
 [part='suffix'] {
     display: none;
+    overflow: hidden;
 }
 
 [part~='prefixed'] {
