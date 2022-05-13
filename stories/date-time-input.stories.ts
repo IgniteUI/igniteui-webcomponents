@@ -17,10 +17,6 @@ const metadata = {
       type: 'string',
       control: 'text',
     },
-    value: {
-      type: 'Date | null',
-      control: 'date',
-    },
     minValue: {
       type: 'string | Date',
       control: 'text',
@@ -67,6 +63,11 @@ const metadata = {
       description: 'Controls the validity of the control.',
       control: 'boolean',
       defaultValue: false,
+    },
+    value: {
+      type: 'Date | null',
+      description: 'The value attribute of the control.',
+      control: 'date',
     },
     name: {
       type: 'string',
@@ -120,7 +121,6 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   inputFormat: string;
-  value: Date | null;
   minValue: string | Date;
   maxValue: string | Date;
   displayFormat: string;
@@ -130,6 +130,7 @@ interface ArgTypes {
   prompt: string;
   dir: 'ltr' | 'rtl' | 'auto';
   invalid: boolean;
+  value: Date | null;
   name: string;
   outlined: boolean;
   required: boolean;

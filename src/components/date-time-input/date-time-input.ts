@@ -32,7 +32,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
     seconds: 1,
   };
 
-  @property()
+  @property({ attribute: 'input-format' })
   public get inputFormat(): string {
     return this._inputFormat || this._defaultMask;
   }
@@ -68,7 +68,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   @property({ attribute: 'max-value' })
   public maxValue!: Date | string;
 
-  @property()
+  @property({ attribute: 'display-format' })
   public displayFormat!: string;
 
   @property({ attribute: false })
@@ -144,6 +144,10 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
     let errors = {};
 
+    const value = DateTimeUtil.isValidDate(this.value)
+      ? this.value
+      : DateTimeUtil.parseIsoDate(this.value);
+
     const minValueDate = DateTimeUtil.isValidDate(this.minValue)
       ? this.minValue
       : DateTimeUtil.parseIsoDate(this.minValue);
@@ -154,7 +158,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
     if (minValueDate || maxValueDate) {
       errors = DateTimeUtil.validateMinMax(
-        this.value!,
+        value!,
         minValueDate!,
         maxValueDate!,
         this.hasTimeParts,
@@ -172,7 +176,11 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   }
 
   private get hasDateParts(): boolean {
-    return this._inputDateParts.some(
+    const parts =
+      this._inputDateParts ||
+      DateTimeUtil.parseDateTimeFormat(this.inputFormat);
+
+    return parts.some(
       (p) =>
         p.type === DateParts.Date ||
         p.type === DateParts.Month ||
@@ -181,7 +189,10 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   }
 
   private get hasTimeParts(): boolean {
-    return this._inputDateParts.some(
+    const parts =
+      this._inputDateParts ||
+      DateTimeUtil.parseDateTimeFormat(this.inputFormat);
+    return parts.some(
       (p) =>
         p.type === DateParts.Hours ||
         p.type === DateParts.Minutes ||

@@ -102,7 +102,7 @@ describe('Date Time Input component', () => {
       expect(input.value).to.equal('03.03/2020');
     });
 
-    it('should correctly swtich between different pre-defined date formats', async () => {
+    it('should correctly switch between different pre-defined date formats', async () => {
       const targetDate = new Date(2020, 2, 3, 0, 0, 0, 0);
 
       const shortDate = setDateFormat('short', targetDate);
