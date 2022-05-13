@@ -98,8 +98,6 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   @watch('displayFormat', { waitUntilFirstUpdate: true })
   protected setDisplayFormat(): void {
     if (this.displayFormat) {
-      this.placeholder = this.displayFormat;
-
       if (this.value) {
         this.maskedValue = DateTimeUtil.formatDate(
           this._dateValue!, //TODO check if we can remove _dateValue and use value

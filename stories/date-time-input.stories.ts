@@ -200,6 +200,7 @@ const Template: Story<ArgTypes, Context> = (
     locale,
     spinLoop,
     value,
+    label,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -211,12 +212,13 @@ const Template: Story<ArgTypes, Context> = (
   return html`<igc-date-time-input
     dir=${direction}
     size=${size}
+    label=${label}
     .value=${value ? new Date(value as Date) : null}
+    .inputFormat=${inputFormat}
+    .displayFormat=${displayFormat}
     min-value=${ifDefined(minValue)}
     max-value=${ifDefined(maxValue)}
     locale=${ifDefined(locale)}
-    inputFormat=${ifDefined(inputFormat)}
-    displayFormat=${ifDefined(displayFormat)}
     prompt=${ifDefined(prompt)}
     placeholder=${ifDefined(placeholder)}
     ?spin-loop=${spinLoop}
