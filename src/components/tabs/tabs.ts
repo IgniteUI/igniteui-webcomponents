@@ -39,10 +39,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private headersWrapper!: HTMLLIElement;
 
   @query('[part="headers-content"]')
-  private headersContent!: HTMLLIElement; // == viewport
+  private headersContent!: HTMLLIElement;
 
   @query('[part="headers-scroll"]')
-  private headersScrollContainer!: HTMLLIElement; // == itemsContainer
+  private headersScrollContainer!: HTMLLIElement;
 
   @query('[part="selected-indicator"]', true)
   private selectedIndicator!: HTMLElement;
@@ -53,6 +53,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private offset = 0;
   private resizeObserver: ResizeObserver | undefined;
   private _selected = '';
+
+  private get isLTR() {
+    return (
+      window.getComputedStyle(this).getPropertyValue('direction') === 'ltr'
+    );
+  }
 
   @property({ type: String })
   public get selected(): string {
@@ -133,27 +139,61 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   private scrollElement(element: any, scrollToEnd: boolean) {
     const headersContentWidth = this.headersContent.offsetWidth;
 
-    this.offset = scrollToEnd
-      ? element.offsetWidth + element.offsetLeft - headersContentWidth
-      : element.offsetLeft;
-    this.headersWrapper.style.transform = `translate(${-this.offset}px)`;
+    this.offset = this.isLTR
+      ? scrollToEnd
+        ? element.offsetWidth + element.offsetLeft - headersContentWidth
+        : element.offsetLeft
+      : scrollToEnd
+      ? this.headersWrapper.offsetWidth -
+        this.headersContent.offsetWidth -
+        element.offsetLeft
+      : this.headersWrapper.offsetWidth -
+        element.offsetLeft -
+        element.offsetWidth;
+
+    this.headersWrapper.style.transform = this.isLTR
+      ? `translate(${-this.offset}px)`
+      : `translate(${this.offset}px)`;
     this.updateScrollButtons();
   }
 
   private updateScrollPosition(scrollToEnd: boolean) {
     for (const tab of this.tabs) {
       if (scrollToEnd) {
-        if (
-          tab.offsetWidth + tab.offsetLeft >
-          this.headersContent.offsetWidth + this.offset
-        ) {
-          this.scrollElement(tab, scrollToEnd);
-          break;
+        if (this.isLTR) {
+          if (
+            tab.offsetWidth + tab.offsetLeft >
+            this.headersContent.offsetWidth + this.offset
+          ) {
+            this.scrollElement(tab, scrollToEnd);
+            break;
+          }
+        } else {
+          if (
+            tab.offsetLeft <
+            this.headersWrapper.offsetWidth -
+              this.headersContent.offsetWidth -
+              this.offset
+          ) {
+            this.scrollElement(tab, scrollToEnd);
+            break;
+          }
         }
       } else {
-        if (tab.offsetWidth + tab.offsetLeft >= this.offset) {
-          this.scrollElement(tab, scrollToEnd);
-          break;
+        if (this.isLTR) {
+          if (tab.offsetWidth + tab.offsetLeft >= this.offset) {
+            this.scrollElement(tab, scrollToEnd);
+            break;
+          }
+        } else {
+          if (
+            tab.offsetLeft <= this.headersWrapper.offsetWidth - this.offset &&
+            tab.offsetLeft + tab.offsetWidth >=
+              this.headersWrapper.offsetWidth - this.offset
+          ) {
+            this.scrollElement(tab, scrollToEnd);
+            break;
+          }
         }
       }
     }
@@ -190,7 +230,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.selectedIndicator.style.transitionDuration =
         duration > 0 ? `${duration}s` : 'initial';
       this.selectedIndicator.style.width = `${element.offsetWidth}px`;
-      this.selectedIndicator.style.transform = `translate(${element.offsetLeft}px)`;
+      if (this.isLTR) {
+        this.selectedIndicator.style.transform = `translate(${element.offsetLeft}px)`;
+      } else {
+        const position =
+          this.headersWrapper.offsetWidth -
+          element.offsetLeft -
+          element.offsetWidth;
+        this.selectedIndicator.style.transform = `translate(${-position}px)`;
+      }
     }
   }
 
@@ -202,24 +250,36 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   private scrollTabIntoView(tab: IgcTabComponent) {
     if (this._selected) {
-      // Scroll left if there is need
-      if (tab.offsetLeft < this.offset) {
-        this.scrollElement(tab, false);
-      }
+      if (this.isLTR) {
+        if (tab.offsetLeft < this.offset) {
+          this.scrollElement(tab, false);
+        }
 
-      // Scroll right if there is need
-      const headersContentOffsetWidth = this.headersContent.offsetWidth;
-      const delta =
-        tab.offsetLeft +
-        tab.offsetWidth -
-        (headersContentOffsetWidth + this.offset);
+        const headersContentOffsetWidth = this.headersContent.offsetWidth;
+        const delta =
+          tab.offsetLeft +
+          tab.offsetWidth -
+          (headersContentOffsetWidth + this.offset);
 
-      if (delta > 0) {
-        this.scrollElement(tab, true);
-      }
+        if (delta > 0) {
+          this.scrollElement(tab, true);
+        }
+      } else {
+        if (
+          tab.offsetLeft <
+          this.headersWrapper.offsetWidth -
+            this.headersContent.offsetWidth -
+            this.offset
+        ) {
+          this.scrollElement(tab, true);
+        }
 
-      if (tab.selected) {
-        this.alignSelectedIndicator(tab);
+        if (
+          tab.offsetLeft + tab.offsetWidth >
+          this.headersWrapper.offsetWidth - this.offset
+        ) {
+          this.scrollElement(tab, false);
+        }
       }
     } else {
       this.hideSelectedIndicator();
@@ -247,10 +307,14 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     switch (key) {
       case 'ArrowLeft':
-        index = (enabledTabs.length + index - 1) % enabledTabs.length;
+        index = this.isLTR
+          ? (enabledTabs.length + index - 1) % enabledTabs.length
+          : (index + 1) % enabledTabs.length;
         break;
       case 'ArrowRight':
-        index = (index + 1) % enabledTabs.length;
+        index = this.isLTR
+          ? (index + 1) % enabledTabs.length
+          : (enabledTabs.length + index - 1) % enabledTabs.length;
         break;
       case 'Home':
         index = 0;
