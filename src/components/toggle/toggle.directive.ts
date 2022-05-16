@@ -45,8 +45,9 @@ export class IgcToggleDirective extends Directive {
       middleware: this.createMiddleware(options),
     }).then(({ x, y }) => {
       Object.assign(this.floatingElement.style, {
-        left: `${x}px`,
-        top: `${y}px`,
+        left: 0,
+        top: 0,
+        transform: `translate(${x}px,${y}px)`,
       });
     });
 
@@ -90,9 +91,9 @@ export class IgcToggleDirective extends Directive {
       const floatingElement = this.floatingElement;
       middleware.push(
         size({
-          apply({ reference }) {
+          apply({ rects }) {
             Object.assign(floatingElement.style, {
-              width: `${reference.width}px`,
+              width: `${rects.reference.width}px`,
             });
           },
         })
