@@ -42,6 +42,7 @@ import IgcTabComponent from '../../tabs/tab';
 import IgcTabPanelComponent from '../../tabs/tab-panel';
 import { defineComponents } from './defineComponents.js';
 import IgcCircularGradientComponent from '../../progress/circular-gradient.js';
+import IgcMaskInputComponent from '../../mask-input/mask-input.js';
 
 const allComponents: CustomElementConstructor[] = [
   IgcAvatarComponent,
@@ -67,6 +68,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcListHeaderComponent,
   IgcListItemComponent,
   IgcListComponent,
+  IgcMaskInputComponent,
   IgcNavDrawerHeaderItemComponent,
   IgcNavDrawerItemComponent,
   IgcNavDrawerComponent,

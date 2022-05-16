@@ -38,7 +38,7 @@
   "typedocOptions": {
     "out": "dist/docs/typescript",
     "exclude": "**/*.spec.ts",
-    "theme": "node_modules/igniteui-typedoc-theme/dist",
+    "theme": "igtheme",
     "excludePrivate": true,
     "excludeProtected": true,
     "excludeExternals": true,
