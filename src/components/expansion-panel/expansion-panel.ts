@@ -10,10 +10,10 @@ import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
 
 let NEXT_ID = 0;
 export interface IgcExpansionPanelComponentEventMap {
-  igcOpening: CustomEvent<any>;
-  igcOpened: CustomEvent<any>;
-  igcClosing: CustomEvent<any>;
-  igcClosed: CustomEvent<any>;
+  igcOpening: CustomEvent<IgcExpansionPanelComponent>;
+  igcOpened: CustomEvent<IgcExpansionPanelComponent>;
+  igcClosing: CustomEvent<IgcExpansionPanelComponent>;
+  igcClosed: CustomEvent<IgcExpansionPanelComponent>;
 }
 
 const TABBABLE_SELECTORS =
