@@ -24,6 +24,7 @@ export { default as IgcLinearProgressComponent } from './components/progress/lin
 export { default as IgcListComponent } from './components/list/list.js';
 export { default as IgcListHeaderComponent } from './components/list/list-header.js';
 export { default as IgcListItemComponent } from './components/list/list-item.js';
+export { default as IgcMaskInputComponent } from './components/mask-input/mask-input.js';
 export { default as IgcNavDrawerComponent } from './components/nav-drawer/nav-drawer.js';
 export { default as IgcNavDrawerHeaderItemComponent } from './components/nav-drawer/nav-drawer-header-item.js';
 export { default as IgcNavDrawerItemComponent } from './components/nav-drawer/nav-drawer-item.js';
