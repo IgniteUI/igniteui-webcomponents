@@ -4,6 +4,7 @@
     [part~='base'] {
         @include border-radius(rem(24px));
 
+        gap: rem(24px);
         color: color(gray, 300, .8);
         padding: rem(4px);
         margin: rem(15px) rem(8px) !important;
@@ -13,20 +14,10 @@
             background: transparent;
             color: color(gray, 100);
         }
-
-        ::slotted(igc-icon) {
-            margin-inline-end: rem(24px);
-        }
     }
 
     [part='content'] {
         padding-inline-start: rem(8px);
-    }
-
-    [part='base mini'] {
-        ::slotted(igc-icon) {
-            margin-inline-end: 0;
-        }
     }
 }
 
