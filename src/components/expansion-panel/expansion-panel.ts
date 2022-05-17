@@ -27,7 +27,7 @@ const TABBABLE_SELECTORS =
  * @element igc-expansion-panel
  *
  * @slot title - renders the title of the panel's header
- * @slot subTitle - renders the subtitle of the panel's header
+ * @slot subtitle - renders the subtitle of the panel's header
  * @slot indicator - renders the expand/collapsed indicator
  *
  * @fires igcOpening - Emitted before opening the expansion panel.
@@ -35,9 +35,9 @@ const TABBABLE_SELECTORS =
  * @fires igcClosing - Emitted before closing the expansion panel.
  * @fires igcClosed - Emitted after the expansion panel is closed.
  *
- * @csspart header - The container of the expansion indicator, title and subTitle.
+ * @csspart header - The container of the expansion indicator, title and subtitle.
  * @csspart title -  The title container.
- * @csspart subTitle - The subTitle container.
+ * @csspart subtitle - The subtitle container.
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
  */
@@ -204,7 +204,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         ${this.indicatorTemplate()}
         <div>
           <slot name="title" part="title"></slot>
-          <slot name="subTitle" part="subTitle"></slot>
+          <slot name="subtitle" part="subtitle"></slot>
         </div>
       </div>
     `;

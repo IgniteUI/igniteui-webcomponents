@@ -73,7 +73,7 @@ const Template: Story<ArgTypes, Context> = (
       @igcClosed=${handleClosed}
     >
       <div slot="title">The Expendables</div>
-      <div slot="subTitle">Action, Adventure, Thriller</div>
+      <div slot="subtitle">Action, Adventure, Thriller</div>
       <div>
         Barney Ross leads the "Expendables", a band of highly skilled
         mercenaries including knife enthusiast Lee Christmas, martial arts

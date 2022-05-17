@@ -11,13 +11,13 @@ import { defineComponents, IgcExpansionPanelComponent } from '../../index';
 const SLOTS = {
   indicator: 'slot[name="indicator"]',
   title: 'slot[name="title"]',
-  subTitle: 'slot[name="subTitle"]',
+  subtitle: 'slot[name="subtitle"]',
 };
 
 const PARTS = {
   header: 'div[part="header"]',
   title: 'div[part="title"]',
-  subTitle: 'div[part="subTitle"]',
+  subtitle: 'div[part="subtitle"]',
   content: 'div[part="content"]',
   indicator: 'div[part="indicator"]',
 };
@@ -99,12 +99,12 @@ describe('Expansion Panel', () => {
     });
 
     it('Should accept custom slot for the panel sub-title', async () => {
-      const subTitleSlot = panel.shadowRoot!.querySelector(
-        SLOTS.subTitle
+      const subtitleSlot = panel.shadowRoot!.querySelector(
+        SLOTS.subtitle
       ) as HTMLSlotElement;
-      expect(subTitleSlot).not.to.be.null;
+      expect(subtitleSlot).not.to.be.null;
 
-      const elements = subTitleSlot.assignedElements();
+      const elements = subtitleSlot.assignedElements();
       expect(elements.length).to.equal(1);
       expect(elements[0].tagName).to.equal('DIV');
       expect((elements[0] as HTMLElement).innerText).to.equal(
@@ -535,7 +535,7 @@ const testTemplate = `<igc-expansion-panel>
     <span slot="title">
       <span>Sample header text</span> 
     </span>
-    <div slot="subTitle">Sample subtitle</div>
+    <div slot="subtitle">Sample subtitle</div>
     <igc-icon slot="indicator" name='select'></igc-icon>
     <p>Sample content</p> 
 </igc-expansion-panel>`;

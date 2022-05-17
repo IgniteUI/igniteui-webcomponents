@@ -40,7 +40,7 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
     margin: 0;
 }
 
-[part='subTitle']::slotted(*) {
+[part='subtitle']::slotted(*) {
     @include type-category('subtitle-2');
     @include ellipsis();
 
