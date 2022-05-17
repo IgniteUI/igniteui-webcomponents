@@ -16,9 +16,6 @@ export interface IgcExpansionPanelComponentEventMap {
   igcClosed: CustomEvent<IgcExpansionPanelComponent>;
 }
 
-const TABBABLE_SELECTORS =
-  'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
-
 /**
  * The Expansion Panel Component provides a way to display information in a toggleable way -
  * compact summary view containing title and description and expanded detail view containing
@@ -72,12 +69,8 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this.panelId! = id ? id : 'igc-expansion-panel-' + ++NEXT_ID;
   }
 
-  private handleClicked(event: Event) {
-    const el = event.target as HTMLElement;
-
-    if (!el.matches(TABBABLE_SELECTORS)) {
-      this.panelHeader!.focus();
-    }
+  private handleClicked() {
+    this.panelHeader!.focus();
 
     if (this.open) {
       this.closeWithEvent();
