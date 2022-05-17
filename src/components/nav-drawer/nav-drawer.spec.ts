@@ -53,7 +53,8 @@ describe('Navigation Drawer', () => {
     });
 
     it('render nav drawer item slots successfully', async () => {
-      expect(el.children[0]).shadowDom.equal(`
+      expect(el.children[0]).shadowDom.equal(
+        `
         <div part="base">
           <span part="icon">
             <slot name="icon"></slot>
@@ -62,7 +63,11 @@ describe('Navigation Drawer', () => {
             <slot name="content"></slot>
           </span>
         </div>
-      `);
+      `,
+        {
+          ignoreAttributes: ['hidden'],
+        }
+      );
     });
 
     it('render nav drawer slots successfully', async () => {
