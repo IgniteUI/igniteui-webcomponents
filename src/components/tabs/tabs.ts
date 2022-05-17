@@ -6,20 +6,39 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { watch } from '../common/decorators';
+import { watch } from '../common/decorators/watch.js';
 import { themes } from '../../theming/theming-decorator.js';
-import IgcTabComponent from './tab';
-import IgcTabPanelComponent from './tab-panel';
-import { styles } from './themes/light/tabs.base.css';
+import type IgcTabComponent from './tab.js';
+import type IgcTabPanelComponent from './tab-panel.js';
+import { styles } from './themes/light/tabs.base.css.js';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
 import { styles as indigo } from './themes/light/tabs.indigo.css.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { Constructor } from '../common/mixins/constructor';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { Constructor } from '../common/mixins/constructor.js';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<string>;
 }
 
+/**
+ * Represents tabs component
+ *
+ * @element igc-tabs
+ *
+ * @fires igcChange - Emitted when the selected tab changes.
+ *
+ * @slot - Renders the tab header.
+ * @slot panel - Renders the tab content.
+ *
+ * @csspart headers - The wrapper of the tabs including the headers content and the scroll buttons.
+ * @csspart headers-content - The container for the tab headers.
+ * @csspart headers-wrapper - The wrapper for the tab headers and the selected indicator.
+ * @csspart headers-scroll - The container for the headers.
+ * @csspart selected-indicator - The selected indicator.
+ * @csspart start-scroll-button - The start scroll button displayed when the tabs overflow.
+ * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
+ * @csspart content - The container for the tabs content.
+ */
 @themes({ bootstrap, indigo })
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,
@@ -35,13 +54,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   @queryAssignedElements({ slot: 'panel' })
   private panels!: Array<IgcTabPanelComponent>;
 
-  @query('[part="headers-wrapper"]')
+  @query('[part="headers-wrapper"]', true)
   private headersWrapper!: HTMLLIElement;
 
-  @query('[part="headers-content"]')
+  @query('[part="headers-content"]', true)
   private headersContent!: HTMLLIElement;
 
-  @query('[part="headers-scroll"]')
+  @query('[part="headers-scroll"]', true)
   private headersScrollContainer!: HTMLLIElement;
 
   @query('[part="selected-indicator"]', true)
@@ -60,14 +79,22 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     );
   }
 
+  /** Returns the currently selected tab. */
   @property({ type: String })
   public get selected(): string {
     return this._selected;
   }
 
+  /** Sets the alignment for the tab headers */
   @property({ reflect: true })
   public alignment: 'start' | 'end' | 'center' | 'justify' = 'start';
 
+  /**
+   * Determines the tab activation. When set to auto,
+   * the tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys
+   * and the corresponding panel is displayed.
+   * When set to manual, the tab is only focused. The selection happens after pressing Space or Enter.
+   */
   @property()
   public activation: 'auto' | 'manual' = 'auto';
 
@@ -100,6 +127,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.resizeObserver?.disconnect();
   }
 
+  /** Selects the specified tab and displays the corresponding panel.  */
   public select(selectedTab: string | HTMLElement) {
     const tab = this.tabs.find(
       (el) => el.panel === selectedTab || el === selectedTab

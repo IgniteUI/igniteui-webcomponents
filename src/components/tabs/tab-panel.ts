@@ -1,8 +1,15 @@
 import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { watch } from '../common/decorators';
-import { styles } from './themes/light/tab-panel.base.css';
+import { watch } from '../common/decorators/watch.js';
+import { styles } from './themes/light/tab-panel.base.css.js';
 
+/**
+ * Represents the content of a tab
+ *
+ * @element igc-tab-panel
+ *
+ * @slot - Renders the content.
+ */
 export default class IgcTabPanelComponent extends LitElement {
   public static readonly tagName = 'igc-tab-panel';
 
@@ -14,6 +21,7 @@ export default class IgcTabPanelComponent extends LitElement {
   @state()
   public disabled = false;
 
+  /** The tab panel's name. */
   @property({ type: String })
   public name = '';
 
