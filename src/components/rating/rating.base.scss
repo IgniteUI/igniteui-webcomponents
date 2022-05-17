@@ -1,10 +1,9 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-$size-small: rem(16px);
-$size-medium: rem(20px);
-$size-large: rem(24px);
-$spacing: rem(2px);
+$size-small: var(--igc-rating-symbol-size, #{rem(18px)});
+$size-medium: var(--igc-rating-symbol-size, #{rem(24px)});
+$size-large: var(--igc-rating-symbol-size, #{rem(36px)});
 $color-label: color(gray, 700) !default;
 $color-symbols: color(gray, 900) !default;
 $selected-color: color(primary) !default;
@@ -12,11 +11,13 @@ $disabled-color: color(gray, 400) !default;
 $disabled-selected-color: color(gray, 600) !default;
 
 :host {
+    --igc-rating-spacing: #{rem(2px)};
+
     display: inline-flex;
     font-family: var(--igc-font-family);
     align-items: flex-start;
     flex-direction: column;
-    gap: $spacing * 2;
+    gap: rem(4px);
 }
 
 %fraction {
@@ -41,7 +42,7 @@ slot {
     @include type-category('caption');
 
     color: $color-label;
-    padding-inline-start: $spacing;
+    padding-inline-start: rem(2px);
 }
 
 [part~='symbol'] {
@@ -65,14 +66,26 @@ slot {
     }
 }
 
+[part='symbol small'] {
+    font-size: $size-small;
+}
+
+[part='symbol medium'] {
+    font-size: $size-medium;
+}
+
+[part='symbol large'] {
+    font-size: $size-large;
+}
+
 [part~='symbols-wrapper'] {
     color: $color-symbols;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: $spacing;
-    gap: $spacing;
+    padding: rem(2px);
+    gap: var(--igc-rating-spacing);
     counter-reset: symbols;
     inset-inline-start: 0;
 }
@@ -159,16 +172,16 @@ slot {
 }
 
 [part='fraction large'] {
-    min-height: calc(#{$size-large} + (#{$spacing} * 2));
-    height: calc(#{$size-large} + (#{$spacing} * 2));
+    min-height: calc(#{$size-large} + (var(--igc-rating-spacing) * 2));
+    height: calc(#{$size-large} + (var(--igc-rating-spacing) * 2));
 }
 
 [part='fraction medium'] {
-    min-height: calc(#{$size-medium} + (#{$spacing} * 2));
-    height: calc(#{$size-medium} + (#{$spacing} * 2));
+    min-height: calc(#{$size-medium} + (var(--igc-rating-spacing) * 2));
+    height: calc(#{$size-medium} + (var(--igc-rating-spacing) * 2));
 }
 
 [part='fraction small'] {
-    min-height: calc(#{$size-small} + (#{$spacing} * 2));
-    height: calc(#{$size-small} + (#{$spacing} * 2));
+    min-height: calc(#{$size-small} + (var(--igc-rating-spacing) * 2));
+    height: calc(#{$size-small} + (var(--igc-rating-spacing) * 2));
 }
