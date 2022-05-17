@@ -75,10 +75,6 @@ export class IgcTreeSelectionService {
 
   /** Called on item`s disconnectedCallback */
   public ensureStateOnItemDelete(item: IgcTreeItemComponent): void {
-    if (this.tree?.selection === 'none') {
-      return;
-    }
-
     // Don't update the internal state of the deleted items because when moving they should keep it
     // However update the state of their parents
     this.deselectItemsWithNoEvent(
