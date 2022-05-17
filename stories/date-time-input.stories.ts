@@ -211,7 +211,7 @@ const Template: Story<ArgTypes, Context> = (
 
   return html`<igc-date-time-input
     dir=${direction}
-    size=${size}
+    size=${ifDefined(size)}
     label=${label}
     .value=${value ? new Date(value as Date) : null}
     .inputFormat=${inputFormat}

@@ -98,43 +98,121 @@ describe('Date Time Input component', () => {
 
       el.displayFormat = 'dd.MM/yyyy';
       await elementUpdated(el);
-
       expect(input.value).to.equal('03.03/2020');
+
+      el.displayFormat = 'd.M';
+      await elementUpdated(el);
+      expect(input.value).to.equal('3.3');
+
+      el.value = new Date(2020, 9, 12, 15, 5, 5);
+      await elementUpdated(el);
+      expect(input.value).to.equal('12.10');
+
+      el.displayFormat = 'd MMM';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12 Oct');
+
+      el.displayFormat = 'd MMMM';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12 October');
+
+      el.displayFormat = 'd MMMMM';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12 O');
+
+      el.displayFormat = 'd.MM.y';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12.10.2020');
+
+      el.displayFormat = 'd.MM.yyy';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12.10.2020');
+
+      //12H format
+      el.displayFormat = 'd.MM hh:mm tt';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12.10 03:05 PM');
+
+      el.displayFormat = 'd.MM H:mm';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12.10 15:05');
+
+      el.value = new Date(2020, 9, 12, 12);
+      el.displayFormat = 'd.MM hh:mm ttt';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12.10 12:00 noon');
+
+      el.displayFormat = 'd.MM hh:mm ttttt';
+      await elementUpdated(el);
+      expect(input.value).to.equal('12.10 12:00 n');
     });
 
     it('should correctly switch between different pre-defined date formats', async () => {
       const targetDate = new Date(2020, 2, 3, 0, 0, 0, 0);
 
-      const shortDate = setDateFormat('short', targetDate);
+      let formattedDate = setDateFormat('short', targetDate);
 
       expect(el.displayFormat).to.be.undefined;
 
       el.value = new Date(2020, 2, 3);
       el.displayFormat = 'short';
       await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
 
-      expect(input.value).to.equal(shortDate);
-
-      const mediumDate = setDateFormat('medium', targetDate);
-
+      formattedDate = setDateFormat('medium', targetDate);
       el.displayFormat = 'medium';
       await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
 
-      expect(input.value).to.equal(mediumDate);
-
-      const longDate = setDateFormat('long', targetDate);
-
+      formattedDate = setDateFormat('long', targetDate);
       el.displayFormat = 'long';
       await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
 
-      expect(input.value).to.equal(longDate);
-
-      const fullDate = setDateFormat('full', targetDate);
-
+      formattedDate = setDateFormat('full', targetDate);
       el.displayFormat = 'full';
       await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
 
-      expect(input.value).to.equal(fullDate);
+      formattedDate = setDateFormat('short', targetDate, true, false);
+      el.displayFormat = 'shortDate';
+      await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
+
+      formattedDate = setDateFormat('medium', targetDate, true, false);
+      el.displayFormat = 'mediumDate';
+      await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
+
+      formattedDate = setDateFormat('long', targetDate, true, false);
+      el.displayFormat = 'longDate';
+      await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
+
+      formattedDate = setDateFormat('full', targetDate, true, false);
+      el.displayFormat = 'fullDate';
+      await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
+
+      formattedDate = setDateFormat('short', targetDate, false, true);
+      el.displayFormat = 'shortTime';
+      await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
+
+      formattedDate = setDateFormat('medium', targetDate, false, true);
+      el.displayFormat = 'mediumTime';
+      await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
+
+      formattedDate = setDateFormat('long', targetDate, false, true);
+      el.displayFormat = 'longTime';
+      await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
+
+      formattedDate = setDateFormat('full', targetDate, false, true);
+      el.displayFormat = 'fullTime';
+      await elementUpdated(el);
+      expect(input.value).to.equal(formattedDate);
     });
 
     it('should clear input date on clear', async () => {
@@ -405,8 +483,7 @@ describe('Date Time Input component', () => {
       //10.10.____
       const parse = parser.replace(input.value, val, 0, 3);
       expect(input.value).to.equal(parse.value);
-
-      expect(el.value).to.be.undefined;
+      expect(el.value).to.be.null;
 
       el.blur();
       await elementUpdated(el);
@@ -435,7 +512,7 @@ describe('Date Time Input component', () => {
       //10.99.____
       const parse = parser.replace(input.value, val, 0, 3);
       expect(input.value).to.equal(parse.value);
-      expect(el.value).to.be.undefined;
+      expect(el.value).to.be.null;
 
       el.blur();
       await elementUpdated(el);
@@ -649,12 +726,20 @@ describe('Date Time Input component', () => {
 
   const setDateFormat = (
     format: 'medium' | 'full' | 'long' | 'short' | undefined,
-    date: Date
+    date: Date,
+    includeDate = true,
+    includeTime = true
   ) => {
-    const options: Intl.DateTimeFormatOptions = {
-      dateStyle: format,
-      timeStyle: format,
-    };
+    const options: Intl.DateTimeFormatOptions = {};
+
+    if (includeDate) {
+      options['dateStyle'] = format;
+    }
+
+    if (includeTime) {
+      options['timeStyle'] = format;
+    }
+
     const formatter = new Intl.DateTimeFormat('en', options);
 
     return formatter.format(date);

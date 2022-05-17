@@ -18,7 +18,6 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
   protected _defaultMask!: string;
   protected _value!: Date | null;
-  private _dataValue = '';
 
   private _dateValue!: Date | null;
   private _inputDateParts!: DatePartInfo[];
@@ -102,7 +101,8 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
         this.maskedValue = DateTimeUtil.formatDate(
           this._dateValue!, //TODO check if we can remove _dateValue and use value
           this.locale,
-          this.displayFormat
+          this.displayFormat,
+          true
         );
       }
     }
@@ -291,7 +291,6 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   }
 
   public clear(): void {
-    this._dataValue = '';
     this.maskedValue = '';
     this.value = null;
     this.setSelectionRange(0, this.input.value.length);
@@ -311,7 +310,14 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
       const format = this.displayFormat || this.inputFormat;
 
-      if (format) {
+      if (this.displayFormat) {
+        this.maskedValue = DateTimeUtil.formatDate(
+          this._dateValue,
+          this.locale,
+          format,
+          true
+        );
+      } else if (this.inputFormat) {
         this.maskedValue = DateTimeUtil.formatDate(
           this._dateValue,
           this.locale,
@@ -336,14 +342,13 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
   protected handleDragEnter() {
     if (!this.hasFocus) {
-      this.maskedValue = this.parser.apply(this._dataValue);
+      this.maskedValue = this.maskedValue || this.emptyMask;
     }
   }
 
   protected insertFromDrop(value: string) {
     const { start, end } = this.inputSelection;
     this.maskedValue = this.parser.apply(value);
-    this._dataValue = this.parser.parse(value);
 
     this.updateValue();
     this.updateComplete.then(() => this.input.setSelectionRange(start, end));
@@ -358,7 +363,6 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
     );
 
     this.maskedValue = value;
-    this._dataValue = this.parser.parse(value);
 
     this.updateValue();
     this.requestUpdate();
@@ -524,13 +528,9 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
         this.value = parsedDate;
       } else {
         this.value = null;
-        this._dataValue = '';
       }
-    } else if (
-      !this.parseDate(this.maskedValue) ||
-      this.maskedValue === this.emptyMask
-    ) {
-      this._dataValue = '';
+    } else {
+      this.value = null;
     }
   }
 
@@ -570,7 +570,6 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
       if (parse) {
         this.value = parse;
-        this._dataValue = this.maskedValue;
       } else {
         this.value = null;
         this.maskedValue = '';
