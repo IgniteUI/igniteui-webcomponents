@@ -20,14 +20,6 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     user-select: none;
     background: color(surface, 500);
     color: color(gray, 700);
-
-    > * {
-        margin-inline-start: rem(12px);
-
-        &:first-child {
-            margin-inline-start: 0;
-        }
-    }
 }
 
 :host(:hover),
@@ -69,6 +61,5 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
 }
 
 ::slotted(igc-icon) {
-    width: rem(24px);
-    height: rem(24px);
+    --size: #{rem(24px)};
 }

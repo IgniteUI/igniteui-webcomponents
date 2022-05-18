@@ -32,7 +32,7 @@ $hover-color: var(--hover-color, color(primary, 700)) !default;
         inset-inline-start: 0;
         width: 100%;
         height: rem(1px);
-        background: color(surface, 500);
+        background: contrast-color(gray, 900);
         z-index: 1;
     }
 }
