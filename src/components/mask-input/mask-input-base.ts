@@ -99,11 +99,6 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
         );
 
       case 'insertFromDrop':
-        // return this.updateInput(
-        //   value.substring(this.inputSelection.start, this.inputSelection.end),
-        //   this.inputSelection.start,
-        //   this.inputSelection.end
-        // );
         return this.insertFromDrop(this.input.value);
     }
   }

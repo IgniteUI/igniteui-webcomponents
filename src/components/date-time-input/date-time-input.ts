@@ -342,16 +342,22 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
   protected handleDragEnter() {
     if (!this.hasFocus) {
-      this.maskedValue = this.maskedValue || this.emptyMask;
+      this.maskedValue = this.getMaskedValue();
     }
   }
 
-  protected insertFromDrop(value: string) {
-    const { start, end } = this.inputSelection;
-    this.maskedValue = this.parser.apply(value);
+  protected insertFromDrop(val: string) {
+    const { value, end } = this.parser.replace(
+      this.maskedValue,
+      val.substring(this.inputSelection.start, this.inputSelection.end),
+      this.inputSelection.start,
+      this.inputSelection.end
+    );
+
+    this.maskedValue = value;
 
     this.updateValue();
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
+    this.updateComplete.then(() => this.input.setSelectionRange(end, end));
   }
 
   protected updateInput(part: string, start: number, finish: number) {
