@@ -21,9 +21,9 @@ const metadata = {
       defaultValue: false,
     },
     indicatorPosition: {
-      type: '"start" | "end"',
+      type: '"start" | "end" | "none"',
       description: 'The indicator position of the expansion panel.',
-      options: ['start', 'end'],
+      options: ['start', 'end', 'none'],
       control: {
         type: 'inline-radio',
       },
@@ -35,7 +35,7 @@ export default metadata;
 interface ArgTypes {
   open: boolean;
   disabled: boolean;
-  indicatorPosition: 'start' | 'end';
+  indicatorPosition: 'start' | 'end' | 'none';
 }
 // endregion
 interface Context {

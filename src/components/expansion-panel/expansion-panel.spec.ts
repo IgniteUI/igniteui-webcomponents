@@ -136,6 +136,12 @@ describe('Expansion Panel', () => {
       expect(panel).dom.to.equal(
         `<igc-expansion-panel indicator-position="end"></igc-expansion-panel>`
       );
+
+      panel.indicatorPosition = 'none';
+      await elementUpdated(panel);
+      expect(panel).dom.to.equal(
+        `<igc-expansion-panel indicator-position="none"></igc-expansion-panel>`
+      );
     });
 
     it('Should render default indicator for expansion properly depending on panel state', async () => {
