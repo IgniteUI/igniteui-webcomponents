@@ -4,7 +4,6 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 
 :host {
     color: color(gray, 900);
-    padding: calc(var(--igc-spacing-large) * 2);
     width: auto;
     overflow: hidden;
     display: flex;
@@ -51,8 +50,6 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
     @include type-category('body-2');
 
     overflow: hidden;
-    padding: var(--igc-spacing-large);
-    padding-top: calc(var(--igc-spacing-large) * 4);
 }
 
 [part~='indicator'] {
@@ -70,6 +67,10 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 :host([indicator-position='end']) [part~='indicator'] {
     order: 2;
     margin-inline-start: calc(var(--igc-spacing-large) * 2);
+}
+
+:host([indicator-position='none']) [part~='indicator'] {
+    display: none;
 }
 
 :host([disabled]) {
