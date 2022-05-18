@@ -161,7 +161,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const selectedHeader = this.tabs.find(
       (element) => element.panel === this._selected
     );
-    this.alignSelectedIndicator(selectedHeader as HTMLElement);
+
+    selectedHeader
+      ? this.alignSelectedIndicator(selectedHeader as HTMLElement)
+      : this.hideSelectedIndicator();
   }
 
   private scrollElement(element: any, scrollToEnd: boolean) {
