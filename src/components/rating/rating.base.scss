@@ -1,9 +1,9 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-$size-small: rem(16px);
-$size-medium: rem(20px);
-$size-large: rem(24px);
+$size-small: var(--symbol-size, #{rem(18px)});
+$size-medium: var(--symbol-size, #{rem(24px)});
+$size-large: var(--symbol-size, #{rem(36px)});
 $spacing: rem(2px);
 $color-label: color(gray, 700) !default;
 $color-symbols: color(gray, 900) !default;
@@ -63,6 +63,18 @@ slot {
             counter-increment: symbols;
         }
     }
+}
+
+[part='symbol small'] {
+    font-size: $size-small;
+}
+
+[part='symbol medium'] {
+    font-size: $size-medium;
+}
+
+[part='symbol large'] {
+    font-size: $size-large;
 }
 
 [part~='symbols-wrapper'] {
