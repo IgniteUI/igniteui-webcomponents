@@ -38,17 +38,17 @@ $fluent_h4: utils.type-style(
     $margin-bottom: 0
 );
 $fluent_h5: utils.type-style(
-    $font-size: utils.rem(20px),
+    $font-size: utils.rem(24px),
     $font-weight: 400,
-    $line-height: utils.rem(28px),
+    $line-height: utils.rem(32px),
     $text-transform: none,
     $margin-top: 0,
     $margin-bottom: 0
 );
 $fluent_h6: utils.type-style(
-    $font-size: utils.rem(18px),
+    $font-size: utils.rem(20px),
     $font-weight: 400,
-    $line-height: utils.rem(22px),
+    $line-height: utils.rem(28px),
     $text-transform: none,
     $margin-top: 0,
     $margin-bottom: 0
@@ -70,29 +70,36 @@ $fluent_body-2: utils.type-style(
     $margin-bottom: 0
 );
 $fluent_subtitle-1: utils.type-style(
-    $font-size: utils.rem(12px),
+    $font-size: utils.rem(18px),
     $font-weight: 400,
-    $line-height: utils.rem(16px),
+    $line-height: utils.rem(24px),
     $text-transform: none,
     $margin-top: 0,
     $margin-bottom: 0
 );
 $fluent_subtitle-2: utils.type-style(
     $font-size: utils.rem(14px),
-    $font-weight: 400,
-    $line-height: utils.rem(16px),
+    $font-weight: 600,
+    $line-height: utils.rem(20px),
     $text-transform: none,
     $margin-top: 0,
     $margin-bottom: 0
 );
 $fluent_button: utils.type-style(
     $font-size: utils.rem(14px),
-    $font-weight: 600,
-    $line-height: normal,
+    $font-weight: 400,
+    $line-height: utils.rem(14px),
     $text-transform: capitalize,
     $margin-top: 0,
     $margin-bottom: 0,
     $letter-spacing: 0,
+);
+$fluent_overline: utils.type-style(
+    $font-size: utils.rem(10px),
+    $font-weight: 400,
+    $line-height: utils.rem(14px),
+    $margin-top: 0,
+    $margin-bottom: 0
 );
 $fluent-type-scale: utils.type-scale(
     $_meta: (variant: 'fluent'),
@@ -106,7 +113,8 @@ $fluent-type-scale: utils.type-scale(
     $subtitle-2: $fluent_subtitle-2,
     $body-1: $fluent_body-1,
     $body-2: $fluent_body-2,
-    $button: $fluent_button
+    $button: $fluent_button,
+    $overline: $fluent_overline
 );
 $type-scale: utils.extend($fluent-type-scale);
 
