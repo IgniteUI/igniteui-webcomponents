@@ -865,7 +865,7 @@ describe('Tree', () => {
         TreeTestFunctions.verifyExpansionState(item2Children[1], true);
       });
 
-      it('If singleBranchExpand === true and item.active is set to true, should expand all item to the active one and collapse the other branches.', async () => {
+      it('If singleBranchExpand === true and item.active is set to true, should expand all item to the active one and preserve the state of the other branches.', async () => {
         tree.expand();
         await elementUpdated(tree);
 
@@ -878,6 +878,7 @@ describe('Tree', () => {
           expect(item.active).to.be.false;
         });
 
+        topLevelItems[1].expand();
         const item11 = topLevelItems[0].getChildren()[0];
 
         item11.active = true;
@@ -886,7 +887,11 @@ describe('Tree', () => {
         expect(topLevelItems[0].expanded).to.be.true;
         expect(item11.expanded).to.be.false;
         tree.items.forEach((item) => {
-          if (item !== item11 && item !== topLevelItems[0]) {
+          if (
+            item !== item11 &&
+            item !== topLevelItems[0] &&
+            item !== topLevelItems[1]
+          ) {
             expect(item.expanded, item.label).to.be.false;
           }
         });

@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import IgcTreeItemComponent from '../src/components/tree/tree-item.js';
-import { IgcSelectionEventArgs } from '../src/components/tree/tree.common.js';
 import IgcTreeComponent from '../src/components/tree/tree.js';
 import { Context, Story } from './story.js';
 
@@ -44,7 +43,7 @@ interface ArgTypes {
 }
 // endregion
 
-const handleEvent = (ev: IgcSelectionEventArgs) => {
+const handleEvent = (ev: any) => {
   // const treeItem = document.getElementById('asd1') as IgcTreeItemComponent;
   // const treeItem1 = document.getElementById('parent') as IgcTreeItemComponent;
   // if (ev.detail.newSelection.indexOf(treeItem1) >= 0) {
