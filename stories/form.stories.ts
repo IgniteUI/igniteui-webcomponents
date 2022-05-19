@@ -150,6 +150,7 @@ The cat was playing<br> in the garden.</textarea
       ></igc-mask-input>
       <igc-date-time-input
         name="date-time-input"
+        value="2020-03-10"
         .minValue="${minDate}"
         max-value="2020-04-02T21:00:00.000Z"
         required

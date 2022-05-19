@@ -19,7 +19,6 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   protected _defaultMask!: string;
   protected _value!: Date | null;
 
-  private _dateValue!: Date | null;
   private _inputDateParts!: DatePartInfo[];
   private _inputFormat!: string;
   private _datePartDeltas: DatePartDeltas = {
@@ -45,7 +44,10 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
   @property({
     converter: (value) => {
-      return value ? new Date(value) : null;
+      if (!value) {
+        return null;
+      }
+      return DateTimeUtil.parseIsoDate(value);
     },
   })
   public get value(): Date | null {
@@ -53,19 +55,37 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   }
 
   public set value(val: Date | null) {
-    this._value = val;
-
-    this._dateValue = DateTimeUtil.isValidDate(val) ? val : null;
+    this._value = val
+      ? DateTimeUtil.isValidDate(val)
+        ? val
+        : DateTimeUtil.parseIsoDate(val)
+      : null;
 
     this.updateMask();
     this.validate();
   }
 
-  @property({ attribute: 'min-value' })
-  public minValue!: Date | string;
+  @property({
+    attribute: 'min-value',
+    converter: (value) => {
+      if (!value) {
+        return null;
+      }
+      return DateTimeUtil.parseIsoDate(value);
+    },
+  })
+  public minValue!: Date | null;
 
-  @property({ attribute: 'max-value' })
-  public maxValue!: Date | string;
+  @property({
+    attribute: 'max-value',
+    converter: (value) => {
+      if (!value) {
+        return null;
+      }
+      return DateTimeUtil.parseIsoDate(value);
+    },
+  })
+  public maxValue!: Date | null;
 
   @property({ attribute: 'display-format' })
   public displayFormat!: string;
@@ -89,7 +109,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
       this.setMask(this._defaultMask);
     }
 
-    if (this._dateValue) {
+    if (this.value) {
       this.updateMask();
     }
   }
@@ -99,7 +119,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
     if (this.displayFormat) {
       if (this.value) {
         this.maskedValue = DateTimeUtil.formatDate(
-          this._dateValue!, //TODO check if we can remove _dateValue and use value
+          this.value!,
           this.locale,
           this.displayFormat,
           true
@@ -142,23 +162,11 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
     let errors = {};
 
-    const value = DateTimeUtil.isValidDate(this.value)
-      ? this.value
-      : DateTimeUtil.parseIsoDate(this.value);
-
-    const minValueDate = DateTimeUtil.isValidDate(this.minValue)
-      ? this.minValue
-      : DateTimeUtil.parseIsoDate(this.minValue);
-
-    const maxValueDate = DateTimeUtil.isValidDate(this.maxValue)
-      ? this.maxValue
-      : DateTimeUtil.parseIsoDate(this.maxValue);
-
-    if (minValueDate || maxValueDate) {
+    if (this.minValue || this.maxValue) {
       errors = DateTimeUtil.validateMinMax(
-        value!,
-        minValueDate!,
-        maxValueDate!,
+        this.value,
+        this.minValue!,
+        this.maxValue!,
         this.hasTimeParts,
         this.hasDateParts
       );
@@ -238,7 +246,9 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
     super.connectedCallback();
     this.updateDefaultMask();
     this.setMask(this.inputFormat);
-    this.updateMask();
+    if (this.value) {
+      this.updateMask();
+    }
   }
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
@@ -303,7 +313,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
       this.maskedValue = this.getMaskedValue();
       this.setSelectionRange(cursor!, cursor!);
     } else {
-      if (!this._dateValue || !DateTimeUtil.isValidDate(this._dateValue)) {
+      if (!this.value || !DateTimeUtil.isValidDate(this.value)) {
         this.maskedValue = '';
         return;
       }
@@ -312,19 +322,19 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
       if (this.displayFormat) {
         this.maskedValue = DateTimeUtil.formatDate(
-          this._dateValue,
+          this.value,
           this.locale,
           format,
           true
         );
       } else if (this.inputFormat) {
         this.maskedValue = DateTimeUtil.formatDate(
-          this._dateValue,
+          this.value,
           this.locale,
           format
         );
       } else {
-        this.maskedValue = this._dateValue.toLocaleString();
+        this.maskedValue = this.value.toLocaleString();
       }
     }
   }
@@ -391,11 +401,11 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   }
 
   private spinValue(datePart: DatePart, delta: number): Date {
-    if (!this._dateValue || !DateTimeUtil.isValidDate(this._dateValue)) {
+    if (!this.value || !DateTimeUtil.isValidDate(this.value)) {
       return new Date();
     }
 
-    const newDate = new Date(this._dateValue.getTime());
+    const newDate = new Date(this.value.getTime());
     let formatPart, amPmFromMask;
     switch (datePart) {
       case DatePart.Date:
@@ -425,7 +435,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
             formatPart!.start,
             formatPart!.end
           );
-          return DateTimeUtil.spinAmPm(newDate, this._dateValue, amPmFromMask);
+          return DateTimeUtil.spinAmPm(newDate, this.value, amPmFromMask);
         }
         break;
     }
@@ -507,7 +517,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
         const targetValue = DateTimeUtil.getPartValue(
           part,
           part.format.length,
-          this._dateValue
+          this.value
         );
 
         mask = this.parser.replace(

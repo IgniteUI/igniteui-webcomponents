@@ -146,7 +146,10 @@ describe('Form', () => {
     expectedValues.set('inputText', 'inputTextValue');
     expectedValues.set('igcRating', '3');
     expectedValues.set('igcMasked', 'abcd');
-    expectedValues.set('igcDateTimeInput', '2020-10-11T22:00:00.000Z');
+    expectedValues.set(
+      'igcDateTimeInput',
+      new Date('2020-10-11T22:00:00.000Z').toString()
+    );
     const formData = el.getFormData();
     verifyFormDataValues(formData, expectedValues);
   });

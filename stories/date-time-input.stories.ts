@@ -18,12 +18,12 @@ const metadata = {
       control: 'text',
     },
     minValue: {
-      type: 'string | Date',
-      control: 'text',
+      type: 'Date | null',
+      control: 'date',
     },
     maxValue: {
-      type: 'string | Date',
-      control: 'text',
+      type: 'Date | null',
+      control: 'date',
     },
     displayFormat: {
       type: 'string',
@@ -121,8 +121,8 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   inputFormat: string;
-  minValue: string | Date;
-  maxValue: string | Date;
+  minValue: Date | null;
+  maxValue: Date | null;
   displayFormat: string;
   spinLoop: boolean;
   locale: string;
@@ -216,8 +216,8 @@ const Template: Story<ArgTypes, Context> = (
     .value=${value ? new Date(value as Date) : null}
     .inputFormat=${inputFormat}
     .displayFormat=${displayFormat}
-    min-value=${ifDefined(minValue)}
-    max-value=${ifDefined(maxValue)}
+    .minValue=${minValue ? new Date(minValue as Date) : null}
+    .maxValue=${maxValue ? new Date(maxValue as Date) : null}
     locale=${ifDefined(locale)}
     prompt=${ifDefined(prompt)}
     placeholder=${ifDefined(placeholder)}

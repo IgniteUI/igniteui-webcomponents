@@ -689,8 +689,8 @@ describe('Date Time Input component', () => {
       const minValue = new Date(2020, 2, 3).toISOString();
       const maxValue = new Date(2020, 3, 3).toISOString();
 
-      el.minValue = minValue;
-      el.maxValue = maxValue;
+      el.setAttribute('min-value', minValue);
+      el.setAttribute('max-value', maxValue);
 
       el.value = new Date(2019, 3, 3);
       await elementUpdated(el);
