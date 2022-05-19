@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Mask input [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
+- Tree [#188](https://github.com/IgniteUI/igniteui-webcomponents/issues/188)
 
 
 ## [3.1.0] - 2022-04-15
