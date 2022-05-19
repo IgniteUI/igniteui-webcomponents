@@ -53,14 +53,14 @@ export default class IgcTreeComponent extends SizableMixin(
   public override dir: Direction = 'auto';
 
   @watch('dir')
-  public onDirChange(): void {
+  protected onDirChange(): void {
     this.items?.forEach((item: IgcTreeItemComponent) => {
       item.requestUpdate();
     });
   }
 
   @watch('size', { waitUntilFirstUpdate: true })
-  public onSizeChange(): void {
+  protected onSizeChange(): void {
     this.items?.forEach((item: IgcTreeItemComponent) => {
       item.requestUpdate();
     });
@@ -72,7 +72,7 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   @watch('selection', { waitUntilFirstUpdate: true })
-  public selectionModeChange(): void {
+  protected selectionModeChange(): void {
     this.selectionService.clearItemsSelection();
     this.items?.forEach((item: IgcTreeItemComponent) => {
       item.requestUpdate();
@@ -80,7 +80,7 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   @watch('singleBranchExpand')
-  public singleBranchExpandChange(): void {
+  protected singleBranchExpandChange(): void {
     if (this.singleBranchExpand) {
       // if activeItem -> do not collapse its branch
       if (this.navService.activeItem) {
@@ -127,18 +127,6 @@ export default class IgcTreeComponent extends SizableMixin(
 
   private handleKeydown(event: KeyboardEvent) {
     this.navService.handleKeydown(event);
-  }
-
-  /** @private */
-  public sizeMultiplier(): number {
-    switch (this.size) {
-      case 'medium':
-        return 2 / 3;
-      case 'small':
-        return 1 / 2;
-      default:
-        return 1;
-    }
   }
 
   /** @private */

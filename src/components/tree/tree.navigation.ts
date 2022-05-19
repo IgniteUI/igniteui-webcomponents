@@ -228,7 +228,6 @@ export class IgcTreeNavigationService {
   }
 
   private handleArrowLeft(): void {
-    // if (this.focusedItem.expanded && !this.treeService.collapsingItems.has(this.focusedItem) && this.focusedItem._children?.length) {
     if (this.focusedItem?.expanded && this.focusedItem.getChildren()?.length) {
       this.setActiveItem(this.focusedItem);
       this.focusedItem.collapseWithEvent();
@@ -246,11 +245,6 @@ export class IgcTreeNavigationService {
         this.setActiveItem(this.focusedItem);
         this.focusedItem!.expandWithEvent();
       } else {
-        // collapsing items will be used when the tree has animations
-        // if (this.treeService.collapsingItems.has(this.focusedItem)) {
-        //     this.focusedItem.expand();
-        //     return;
-        // }
         const firstChild = this.focusedItem
           .getChildren()
           .find((item: IgcTreeItemComponent) => !item.disabled);
@@ -281,7 +275,6 @@ export class IgcTreeNavigationService {
           (item: IgcTreeItemComponent) => item.level === 0
         );
     items?.forEach((item: IgcTreeItemComponent) => {
-      // if (!item.disabled && (!item.expanded || this.treeService.collapsingItems.has(item))) {
       if (!item.disabled && !item.expanded && item.hasChildren) {
         item.expandWithEvent();
       }

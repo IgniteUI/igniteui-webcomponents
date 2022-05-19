@@ -16,6 +16,12 @@ import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { themes } from '../../theming/theming-decorator.js';
 
+const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
+  small: 1 / 2,
+  medium: 2 / 3,
+  large: 1,
+};
+
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
  *
@@ -114,13 +120,11 @@ export default class IgcTreeItemComponent extends LitElement {
       this.setAttribute('aria-expanded', this.expanded.toString());
     } else {
       this.removeAttribute('aria-expanded');
-
-      // this.expanded = false; and check for loadOnDemand
     }
   }
 
   @watch('expanded')
-  public expandedChange(oldValue: boolean): void {
+  protected expandedChange(oldValue: boolean): void {
     // always update the visible cache
     this.navService?.update_visible_cache(this, this.expanded);
     if (!oldValue) {
@@ -139,7 +143,7 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   @watch('active', { waitUntilFirstUpdate: true })
-  public activeChange(): void {
+  protected activeChange(): void {
     if ((this.active && this.navService?.activeItem === this) || !this.active) {
       return;
     }
@@ -159,12 +163,12 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   @watch('disabled')
-  public disabledChange(): void {
+  protected disabledChange(): void {
     this.navService?.update_disabled_cache(this);
   }
 
   @watch('selected', { waitUntilFirstUpdate: true })
-  public selectedChange(): void {
+  protected selectedChange(): void {
     if (this.selected && !this.selectionService?.isItemSelected(this)) {
       this.selectionService?.selectItemsWithNoEvent([this]);
     }
@@ -181,7 +185,6 @@ export default class IgcTreeItemComponent extends LitElement {
         ? (this.parentElement as IgcTreeItemComponent)
         : null;
     this.level = this.parent ? this.parent.level + 1 : 0;
-    // this.navService?.update_visible_cache(this, this.expanded);
     this.setAttribute('role', 'treeitem');
     this.addEventListener('blur', this.onBlur);
     this.addEventListener('focus', this.onFocus);
@@ -440,14 +443,15 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   protected override render() {
+    const size = this.level * (this.tree ? sizeMultiplier[this.tree!.size] : 1);
+
     return html`
       <div
         id="wrapper"
         part="wrapper ${this.tree?.size} ${partNameMap(this.parts)}"
       >
         <div
-          style="width: calc(${this
-            .level} * var(--igc-tree-indentation-size) * ${this.tree?.sizeMultiplier()})"
+          style="width: calc(${size} * var(--igc-tree-indentation-size))"
           part="indentation"
           aria-hidden="true"
         >
