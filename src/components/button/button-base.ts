@@ -15,6 +15,11 @@ export interface IgcButtonEventMap {
 export abstract class IgcButtonBaseComponent extends SizableMixin(
   EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  protected static shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   @query('[part="base"]', true)
   private nativeElement!: HTMLElement;
 
