@@ -40,6 +40,8 @@ export { default as IgcSliderComponent } from './components/slider/slider.js';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label.js';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
+export { default as IgcTreeComponent } from './components/tree/tree.js';
+export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
