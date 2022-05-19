@@ -32,7 +32,7 @@ $hover-color: var(--hover-color, color(primary, 700)) !default;
         inset-inline-start: 0;
         width: 100%;
         height: rem(1px);
-        background: contrast-color(gray, 900);
+        background: color(surface, 500);
         z-index: 1;
     }
 }
@@ -59,4 +59,8 @@ $hover-color: var(--hover-color, color(primary, 700)) !default;
 
 :host([selected]:focus-within) {
     color: color(gray, 800);
+}
+
+:host([disabled]) {
+    color: color(primary, 500, .5);
 }

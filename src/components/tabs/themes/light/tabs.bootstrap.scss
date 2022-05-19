@@ -1,14 +1,7 @@
 @use '../../../../styles/utilities' as *;
 
-[part='headers'],
-[part='start-scroll-button'],
-[part='end-scroll-button'] {
-    background: transparent;
-
-    &:hover,
-    &:focus {
-        background: transparent;
-    }
+[part='headers'] {
+    background: color(surface, 500);
 }
 
 [part='headers-wrapper'] {
@@ -25,7 +18,7 @@
 }
 
 igc-icon-button::part(base) {
-    color: color(primary, 500);
+    color: color(gray, 500);
 }
 
 [part='selected-indicator'] {

@@ -8,6 +8,11 @@
     }
 }
 
+:host(:hover),
+:host(:focus-within) {
+    color: color(gray, 900);
+}
+
 :host([disabled]) {
     color: color(gray, 400);
 
