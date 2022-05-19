@@ -88,6 +88,12 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
 igc-icon-button::part(base) {
     color: color(gray, 500);
+
+    &:hover,
+    &:focus-within {
+        background: transparent;
+        box-shadow: none;
+    }
 }
 
 :host([dir='rtl']) {
