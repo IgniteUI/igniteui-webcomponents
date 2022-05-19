@@ -65,7 +65,7 @@
 }
 
 ::slotted(*) {
-    @include type-category('h5') {
+    @include type-category('h6') {
         line-height: normal;
         margin: 0;
     }
