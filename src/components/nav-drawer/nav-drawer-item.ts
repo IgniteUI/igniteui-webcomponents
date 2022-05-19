@@ -1,5 +1,10 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedElements, state } from 'lit/decorators.js';
+import {
+  property,
+  queryAssignedElements,
+  queryAssignedNodes,
+  state,
+} from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { partNameMap } from '../common/util.js';
 import { styles as indigo } from './styles/indigo/nav-drawer-item.indigo.css.js';
@@ -36,6 +41,9 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   @queryAssignedElements({ slot: 'content' })
   private _text!: Array<HTMLElement>;
 
+  @queryAssignedNodes({ slot: 'icon', flatten: true })
+  protected navdrawerIcon!: Array<Node>;
+
   public override connectedCallback() {
     super.connectedCallback();
     this.shadowRoot?.addEventListener('slotchange', (_) => {
@@ -53,7 +61,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   protected override render() {
     return html`
       <div part="${partNameMap(this.resolvePartNames('base'))}">
-        <span part="icon">
+        <span part="icon" .hidden="${this.navdrawerIcon.length == 0}">
           <slot name="icon"></slot>
         </span>
         <span part="content">
