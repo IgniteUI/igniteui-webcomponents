@@ -52,6 +52,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 
     overflow: hidden;
     padding: $padding;
+    padding-top: 0;
 }
 
 [part~='indicator'] {
