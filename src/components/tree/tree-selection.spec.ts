@@ -290,7 +290,7 @@ describe('Tree Selection', () => {
       tree.deselect();
       await elementUpdated(tree);
 
-      // Select items from "Tree Node 1" to "Tree Node 2.2"
+      // Select items from "Tree Item 1" to "Tree Item 2.2"
       const expectedSelection = [
         topLevelItems[0],
         ...topLevelItems[0].getChildren({ flatten: true }),
@@ -336,7 +336,7 @@ describe('Tree Selection', () => {
 
       tree.items.forEach((item) => {
         if (expectedSelection.indexOf(item) === -1) {
-          // All items out of the selected range are deselected, including the last child of "Tree Node 2" - "Tree Node 2.3"
+          // All items out of the selected range are deselected, including the last child of "Tree Item 2" - "Tree Item 2.3"
           TreeTestFunctions.verifyItemSelection(item, false);
         } else {
           TreeTestFunctions.verifyItemSelection(item, true);
@@ -625,7 +625,7 @@ describe('Tree Selection', () => {
 
       // Adding a deselected child
       const deselectedChild = tree.ownerDocument.createElement('igc-tree-item');
-      deselectedChild.label = 'Tree Node 2.1.3';
+      deselectedChild.label = 'Tree Item 2.1.3';
       deselectedChild.selected = false;
 
       item21.appendChild(deselectedChild);
@@ -638,7 +638,7 @@ describe('Tree Selection', () => {
 
       // Adding selected child
       const selectedChild = tree.ownerDocument.createElement('igc-tree-item');
-      selectedChild.label = 'Tree Node 2.1.4';
+      selectedChild.label = 'Tree Item 2.1.4';
       selectedChild.selected = true;
 
       item21.appendChild(selectedChild);
@@ -661,7 +661,7 @@ describe('Tree Selection', () => {
 
       // Adding a selected child to selected parent should not affect the parent selection state
       const selectedChild = tree.ownerDocument.createElement('igc-tree-item');
-      selectedChild.label = 'Tree Node 1.1.3';
+      selectedChild.label = 'Tree Item 1.1.3';
       selectedChild.selected = true;
 
       item11.appendChild(selectedChild);
@@ -676,7 +676,7 @@ describe('Tree Selection', () => {
 
       // Adding a deselected child
       const deselectedChild = tree.ownerDocument.createElement('igc-tree-item');
-      deselectedChild.label = 'Tree Node 1.1.4';
+      deselectedChild.label = 'Tree Item 1.1.4';
       deselectedChild.selected = false;
 
       item11.appendChild(deselectedChild);
@@ -732,7 +732,7 @@ describe('Tree Selection', () => {
       const item2Children = topLevelItems[1].getChildren();
       const item211 = item2Children[0].getChildren()[0];
 
-      // Select items from "Tree Node 1" to "Tree Node 2.2"
+      // Select items from "Tree Item 1" to "Tree Item 2.2"
       const expectedSelection = [
         topLevelItems[0],
         ...topLevelItems[0].getChildren({ flatten: true }),
@@ -763,7 +763,7 @@ describe('Tree Selection', () => {
         TreeTestFunctions.verifyItemSelection(item, true);
       });
 
-      // "Tree Node 2.1.2", "Tree Node 2.2" and "Tree Node 2.3" should also be selected
+      // "Tree Item 2.1.2", "Tree Item 2.2" and "Tree Item 2.3" should also be selected
       const item212 = item2Children[0].getChildren()[1];
       TreeTestFunctions.verifyItemSelection(item212, true);
       TreeTestFunctions.verifyItemSelection(item2Children[1], true);

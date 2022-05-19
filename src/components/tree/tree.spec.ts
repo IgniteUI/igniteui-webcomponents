@@ -1,5 +1,4 @@
-import { elementUpdated, expect } from '@open-wc/testing';
-import { _$LE } from 'lit';
+import { aTimeout, elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcCheckboxComponent } from '../../index.js';
 import IgcTreeComponent from './tree.js';
@@ -11,6 +10,7 @@ import {
   expandCollapseTree,
   navigationTree,
   PARTS,
+  selectedItemsTree,
   simpleHierarchyTree,
   simpleTree,
   SLOTS,
@@ -196,12 +196,12 @@ describe('Tree', () => {
     it("Should be able to set tree item's value and label properties successfully", async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleTree);
 
-      expect(tree.items[0].label).to.equal('Tree Node 1');
+      expect(tree.items[0].label).to.equal('Tree Item 1');
       expect(tree.items[0].value).to.equal('val1');
       expect(tree.items[1].value).to.be.undefined;
-      tree.items[0].label = 'Tree Node 1 new';
+      tree.items[0].label = 'Tree Item 1 new';
       await elementUpdated(tree);
-      expect(tree.items[0].label).to.equal('Tree Node 1 new');
+      expect(tree.items[0].label).to.equal('Tree Item 1 new');
       tree.items[1].value = 'val2';
       await elementUpdated(tree);
       expect(tree.items[1].value).to.equal('val2');
@@ -466,7 +466,7 @@ describe('Tree', () => {
       tree = await TreeTestFunctions.createTreeElement(activeItemsTree);
 
       tree.items.forEach(async (item) => {
-        if (item.label === 'Tree Node 2.1') {
+        if (item.label === 'Tree Item 2.1') {
           await expect(item.active).to.be.true;
           await expect(tree.navService.activeItem).to.equal(item);
         } else {
@@ -476,7 +476,48 @@ describe('Tree', () => {
       });
     });
 
-    it('Should scroll to active item (when set through API) if the tree has scrollbar and item is out of view', async () => {
+    it('Initially active item should be in view if the tree has scrollbar', async () => {
+      tree = await TreeTestFunctions.createTreeElement(selectedItemsTree);
+      expect(tree.items[13].active).to.be.true;
+
+      aTimeout(1000).then(async () => {
+        const treeRect = tree.getBoundingClientRect();
+        const itemRect = tree.items[13].getBoundingClientRect();
+        const item1Rect = tree.items[0].getBoundingClientRect();
+
+        expect(
+          treeRect.top <= item1Rect.top && treeRect.bottom >= item1Rect.bottom
+        ).to.be.false;
+        expect(
+          treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom
+        ).to.be.true;
+      });
+    });
+
+    it('Should scroll bottom to top to active item (when set through API) if the tree has scrollbar and item is out of view', async () => {
+      tree = await TreeTestFunctions.createTreeElement(selectedItemsTree);
+      await aTimeout(1000);
+
+      let treeRect = tree.getBoundingClientRect();
+      let itemRect = tree.items[0].getBoundingClientRect();
+
+      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
+        .to.be.false;
+
+      tree.items[0].active = true;
+      await elementUpdated(tree);
+
+      aTimeout(1000).then(() => {
+        treeRect = tree.getBoundingClientRect();
+        itemRect = tree.items[0].getBoundingClientRect();
+
+        expect(
+          treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom
+        ).to.be.true;
+      });
+    });
+
+    it('Should scroll top to bottom to active item (when set through API) if the tree has scrollbar and item is out of view', async () => {
       tree = await TreeTestFunctions.createTreeElement(navigationTree);
       const topLevelItems = tree.items.filter((i) => i.level === 0);
 
@@ -485,34 +526,23 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       // Expect that the last top item is initially out of view
-      let targetNode = topLevelItems[3];
+      const targetItem = topLevelItems[3];
       let treeRect = tree.getBoundingClientRect();
-      let nodeRect = targetNode.getBoundingClientRect();
+      let itemRect = targetItem.getBoundingClientRect();
 
-      expect(treeRect.top <= nodeRect.top && treeRect.bottom >= nodeRect.bottom)
+      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
         .to.be.false;
 
-      targetNode.active = true;
+      targetItem.active = true;
       await elementUpdated(tree);
 
-      treeRect = tree.getBoundingClientRect();
-      nodeRect = targetNode.getBoundingClientRect();
-
-      expect(treeRect.top <= nodeRect.top && treeRect.bottom >= nodeRect.bottom)
-        .to.be.true;
-
-      targetNode = tree.items[0];
-      nodeRect = targetNode.getBoundingClientRect();
-
-      expect(treeRect.top <= nodeRect.top && treeRect.bottom >= nodeRect.bottom)
-        .to.be.false;
-
-      targetNode.active = true;
-      await elementUpdated(tree);
-
-      nodeRect = targetNode.getBoundingClientRect();
-      expect(treeRect.top <= nodeRect.top && treeRect.bottom >= nodeRect.bottom)
-        .to.be.true;
+      aTimeout(1000).then(async () => {
+        treeRect = tree.getBoundingClientRect();
+        itemRect = targetItem.getBoundingClientRect();
+        expect(
+          treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom
+        ).to.be.true;
+      });
     });
 
     it('When an item is added/deleted the visible tree items collection should be calculated properly', async () => {
