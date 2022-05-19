@@ -130,7 +130,7 @@ export default class IgcTreeItemComponent extends LitElement {
     Promise.resolve().then(() => {
       if (this.navService?.focusedItem !== this && !this.isFocused) {
         this.navService?.focusedItem?.wrapper?.scrollIntoView({
-          behavior: 'auto',
+          behavior: 'smooth',
           block: 'nearest',
           inline: 'nearest',
         });
@@ -151,7 +151,7 @@ export default class IgcTreeItemComponent extends LitElement {
     // Await for expanding
     Promise.resolve().then(() => {
       this.wrapper?.scrollIntoView({
-        behavior: 'auto',
+        behavior: 'smooth',
         block: 'nearest',
         inline: 'nearest',
       });
@@ -275,7 +275,7 @@ export default class IgcTreeItemComponent extends LitElement {
     if (this.navService?.focusedItem !== this) {
       this.navService?.focusItem(this, false);
       this.wrapper?.scrollIntoView({
-        behavior: 'auto',
+        behavior: 'smooth',
         block: 'nearest',
         inline: 'nearest',
       });
