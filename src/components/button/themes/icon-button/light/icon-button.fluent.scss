@@ -37,8 +37,10 @@ $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !defaul
 }
 
 :host([size='small']) {
-    width: #{utils.rem(24px)};
-    height: #{utils.rem(24px)};
+    [part='base'] {
+        width: #{utils.rem(24px)};
+        height: #{utils.rem(24px)};
+    }
 }
 
 :host([size='medium']) {

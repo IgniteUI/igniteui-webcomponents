@@ -6,6 +6,15 @@
     vertical-align: middle;
 }
 
+::slotted(*) {
+    font-size: var(--size) !important;
+    vertical-align: middle;
+}
+
+slot {
+    pointer-events: none;
+}
+
 [part='base'] {
     @include border-radius(50%);
 
