@@ -1,0 +1,7 @@
+@use '../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-tree-item {
+        --hover-color: #{color(gray, 500, .3)};
+    }
+}

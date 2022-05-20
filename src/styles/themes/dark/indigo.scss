@@ -6,6 +6,7 @@
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
 @use '../../../components/slider/themes/dark/slider.indigo' as slider;
 @use '../../../components/list/themes/dark/list.indigo' as list;
+@use '../../../components/tree/themes/dark/tree-item.indigo' as tree-item;
 @use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
 
 $palette: utils.palette(
@@ -27,4 +28,5 @@ $palette: utils.palette(
 @include radio.theme();
 @include slider.theme();
 @include list.theme();
+@include tree-item.theme();
 @include dropdown.theme();
