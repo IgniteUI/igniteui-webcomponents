@@ -1,0 +1,172 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
+
+$node-height: (
+    large: rem(50px),
+    medium: rem(40px),
+    small: rem(32px)
+);
+$node-padding: (
+    large: 0 rem(24px),
+    medium: 0 rem(16px),
+    small: 0 rem(12px)
+);
+$disabled-color: color(gray, 500);
+$disabled-background: color(surface);
+$background: color(surface);
+$color: contrast-color(surface);
+$hover-color: var(--hover-color, color(gray, 900, .1)) !default;
+$selected-background: color(secondary, 200);
+$selected-color: contrast-color(secondary, 200);
+$active-background: color(gray, 200);
+$active-color: contrast-color(gray, 200);
+$active-selected-background: color(secondary, 300);
+$active-selected-color: contrast-color(secondary, 300);
+$focused-border-color: color(secondary, 500);
+$toggle-icon-size: rem(24px);
+
+:host {
+    display: flex;
+    flex-direction: column;
+    font-family: inherit;
+
+    --igc-tree-indentation-size: 24px;
+}
+
+:host(:focus-within) {
+    outline: none;
+}
+
+:host([disabled]) {
+    color: $disabled-color;
+    background: $disabled-background;
+}
+
+[part~='wrapper'] {
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: $background;
+    color: $color;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        background: transparent;
+    }
+
+    &:hover {
+        &::after {
+            background: $hover-color;
+        }
+    }
+}
+
+[part~='active'] {
+    background: $active-background;
+    color: $active-color;
+}
+
+[part~='selected'] {
+    background: $selected-background;
+    color: $selected-color;
+}
+
+[part~='selected'][part~='focused'][part~='active'],
+[part~='selected'][part~='focused'],
+[part~='selected'][part~='active'] {
+    background: $active-selected-background;
+    color: $active-selected-color;
+}
+
+[part~='focused'] {
+    box-shadow: inset 0 0 0 1px $focused-border-color;
+}
+
+[part~='indicator'] {
+    display: flex;
+    align-items: center;
+    z-index: 1;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    margin-inline-end: rem(4px);
+    min-width: $toggle-icon-size;
+
+    igc-icon {
+        width: $toggle-icon-size;
+        height: $toggle-icon-size;
+        font-size: $toggle-icon-size;
+    }
+}
+
+[part~='label'] {
+    display: block;
+
+    @include type-category('body-2');
+
+    margin: 0;
+}
+
+[part~='label'],
+[part~='text'] {
+    z-index: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+[part~='select'] {
+    display: flex;
+    align-items: center;
+    z-index: 1;
+    margin-inline-end: rem(4px);
+
+    igc-checkbox {
+        &::part(label) {
+            display: none;
+        }
+    }
+}
+
+[part~='large'] {
+    igc-circular-progress {
+        --diameter: #{rem(24px)};
+    }
+
+    height: map.get($node-height, 'large');
+}
+
+[part~='medium'] {
+    igc-circular-progress {
+        --diameter: #{rem(20px)};
+    }
+
+    height: map.get($node-height, 'medium');
+}
+
+[part~='small'] {
+    igc-circular-progress {
+        --diameter: #{rem(18px)};
+    }
+
+    height: map.get($node-height, 'small');
+}
+
+[part~='wrapper'][part~='large'] {
+    padding: map.get($node-padding, 'large');
+}
+
+[part~='wrapper'][part~='medium'] {
+    padding: map.get($node-padding, 'medium');
+}
+
+[part~='wrapper'][part~='small'] {
+    padding: map.get($node-padding, 'small');
+}
