@@ -4,6 +4,7 @@
     [part~='base'] {
         @include border-radius(rem(24px));
 
+        gap: rem(24px);
         color: color(gray, 300, .8);
         padding: rem(4px);
         margin: rem(15px) rem(8px) !important;
@@ -16,7 +17,6 @@
     }
 
     [part='content'] {
-        margin-inline-start: rem(24px);
         padding-inline-start: rem(8px);
     }
 }

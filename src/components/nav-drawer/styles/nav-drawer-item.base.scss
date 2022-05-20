@@ -5,6 +5,7 @@ $item-margin: rem(8px);
 
 [part~='base'] {
     display: flex;
+    gap: rem(32px);
     align-items: center;
     flex-flow: row nowrap;
     position: relative;
@@ -40,8 +41,6 @@ $item-margin: rem(8px);
 }
 
 [part='content'] {
-    margin-inline-start: rem(32px);
-
     @include ellipsis();
 }
 

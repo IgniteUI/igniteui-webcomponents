@@ -1,0 +1,9 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+
+:host {
+    display: block;
+    height: 100%;
+    overflow: auto;
+    font-family: var(--igc-font-family);
+}

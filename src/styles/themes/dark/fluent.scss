@@ -10,6 +10,7 @@
 @use '../../../components/radio/themes/dark/radio.fluent' as radio;
 @use '../../../components/slider/themes/dark/slider.fluent.scss' as slider;
 @use '../../../components/list/themes/dark/list.fluent' as list;
+@use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 
 $palette: utils.palette(
     $primary: #0078d4,
@@ -33,3 +34,4 @@ $palette: utils.palette(
 @include radio.theme();
 @include slider.theme();
 @include list.theme();
+@include tree-item.theme();
