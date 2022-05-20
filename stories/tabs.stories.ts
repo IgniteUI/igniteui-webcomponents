@@ -9,12 +9,12 @@ const metadata = {
   argTypes: {
     selected: {
       type: 'string',
-      description: 'Returns the panel of the selected tab.',
+      description: 'Returns the currently selected tab.',
       control: 'text',
     },
     alignment: {
       type: '"start" | "end" | "center" | "justify"',
-      description: 'Specifies the alignment of the tabs.',
+      description: 'Sets the alignment for the tab headers',
       options: ['start', 'end', 'center', 'justify'],
       control: {
         type: 'inline-radio',
@@ -24,7 +24,7 @@ const metadata = {
     activation: {
       type: '"auto" | "manual"',
       description:
-        'Specifies if the tab is automatically selected when navigating with Left/Right Arrow, Home or End key.',
+        'Determines the tab activation. When set to auto,\nthe tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys\nand the corresponding panel is displayed.\nWhen set to manual, the tab is only focused. The selection happens after pressing Space or Enter.',
       options: ['auto', 'manual'],
       control: {
         type: 'inline-radio',

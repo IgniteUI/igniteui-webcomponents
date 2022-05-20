@@ -63,14 +63,20 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   @query('[part="headers-scroll"]', true)
   private headersScrollContainer!: HTMLLIElement;
 
+  @query('[part="start-scroll-button"]', true)
+  private startScrollButton!: HTMLLIElement;
+
+  @query('[part="end-scroll-button"]', true)
+  private endScrollButton!: HTMLLIElement;
+
   @query('[part="selected-indicator"]', true)
   private selectedIndicator!: HTMLElement;
 
   @state() private showStartScrollButton = false;
   @state() private showEndScrollButton = false;
+  @state() private offset = 0;
 
-  private offset = 0;
-  private resizeObserver: ResizeObserver | undefined;
+  private resizeObserver!: ResizeObserver;
   private _selected = '';
 
   private get isLTR() {
@@ -98,29 +104,22 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   @property()
   public activation: 'auto' | 'manual' = 'auto';
 
-  constructor() {
-    super();
-
-    this.addEventListener('click', this.handleClick);
-    this.addEventListener('keydown', this.handleKeyDown);
-  }
-
   public override firstUpdated() {
+    const selectedTab = this.tabs.filter((el) => el.selected).at(-1);
+
+    selectedTab
+      ? this.setSelectedTab(selectedTab.panel)
+      : this.setSelectedTab(this.tabs.find((el) => !el.disabled)?.panel);
+
     this.resizeObserver = new ResizeObserver(() => {
       this.updateScrollButtons();
       this.realignSelectedIndicator();
     });
 
-    this.resizeObserver.observe(this.headersContent);
-    this.resizeObserver.observe(this.headersWrapper);
-
-    if (!this._selected) {
-      const firstTab = this.tabs.find((el) => !el.disabled);
-
-      this.setSelectedTab(firstTab?.panel);
-    } else {
-      this.setSelectedTab(this._selected);
-    }
+    this.updateComplete.then(() => {
+      this.resizeObserver.observe(this.headersContent);
+      this.resizeObserver.observe(this.headersWrapper);
+    });
   }
 
   public override disconnectedCallback() {
@@ -135,7 +134,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     if (tab) {
       this.setSelectedTab(tab.panel);
-      this.scrollTabIntoView(tab);
+      this.scrollToTab(tab);
     }
   }
 
@@ -152,7 +151,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.panels.forEach((el) => (el.selected = el.name === this._selected));
 
       this.realignSelectedIndicator();
-      this.emitEvent('igcChange', { detail: this._selected });
     }
   }
 
@@ -167,7 +165,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       : this.hideSelectedIndicator();
   }
 
-  private scrollElement(element: any, scrollToEnd: boolean) {
+  private calculateOffset(element: any, scrollToEnd: boolean) {
     const headersContentWidth = this.headersContent.offsetWidth;
 
     this.offset = this.isLTR
@@ -181,140 +179,74 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       : this.headersWrapper.offsetWidth -
         element.offsetLeft -
         element.offsetWidth;
-
-    this.headersWrapper.style.transform = this.isLTR
-      ? `translate(${-this.offset}px)`
-      : `translate(${this.offset}px)`;
-    this.updateScrollButtons();
-  }
-
-  private updateScrollPosition(scrollToEnd: boolean) {
-    for (const tab of this.tabs) {
-      if (scrollToEnd) {
-        if (this.isLTR) {
-          if (
-            tab.offsetWidth + tab.offsetLeft >
-            this.headersContent.offsetWidth + this.offset
-          ) {
-            this.scrollElement(tab, scrollToEnd);
-            break;
-          }
-        } else {
-          if (
-            tab.offsetLeft <
-            this.headersWrapper.offsetWidth -
-              this.headersContent.offsetWidth -
-              this.offset
-          ) {
-            this.scrollElement(tab, scrollToEnd);
-            break;
-          }
-        }
-      } else {
-        if (this.isLTR) {
-          if (tab.offsetWidth + tab.offsetLeft >= this.offset) {
-            this.scrollElement(tab, scrollToEnd);
-            break;
-          }
-        } else {
-          if (
-            tab.offsetLeft <= this.headersWrapper.offsetWidth - this.offset &&
-            tab.offsetLeft + tab.offsetWidth >=
-              this.headersWrapper.offsetWidth - this.offset
-          ) {
-            this.scrollElement(tab, scrollToEnd);
-            break;
-          }
-        }
-      }
-    }
   }
 
   private handleStartButtonClick() {
-    this.updateScrollPosition(false);
+    const { x, y, width } = this.startScrollButton.getBoundingClientRect();
+    const nearestTab = this.shadowRoot!.elementFromPoint(
+      this.isLTR ? x + width : x - width,
+      y
+    );
+
+    const index = this.tabs.findIndex((tab) => tab.isSameNode(nearestTab!)) - 1;
+    const scrolledTab = this.tabs[index < 0 ? this.tabs.length - 1 : index];
+    this.scrollToTab(scrolledTab);
+    this.calculateOffset(scrolledTab, false);
+  }
+
+  protected scrollToTab(target: IgcTabComponent) {
+    target.scrollIntoView({ behavior: 'smooth' });
   }
 
   private handleEndButtonClick() {
-    this.updateScrollPosition(true);
+    const { x, y, width } = this.endScrollButton.getBoundingClientRect();
+    const nearestTab = this.shadowRoot!.elementFromPoint(
+      this.isLTR ? x - width : x + width,
+      y
+    );
+    // Get the next tab (wrap around if last) and scroll to it
+    const index = this.tabs.findIndex((tab) => tab.isSameNode(nearestTab)) + 1;
+    const scrolledTab = this.tabs[index >= this.tabs.length ? 0 : index];
+    this.scrollToTab(scrolledTab);
+    this.calculateOffset(scrolledTab, true);
   }
 
+  @watch('offset', { waitUntilFirstUpdate: true })
   private updateScrollButtons() {
     const headersScrollContainerWidth = this.headersScrollContainer.offsetWidth;
     const headersContentWidth = this.headersContent.offsetWidth;
 
-    if (headersScrollContainerWidth > this.offset + headersContentWidth) {
-      this.showEndScrollButton = true;
-    } else {
-      this.showEndScrollButton = false;
-    }
-
-    if (this.offset !== 0) {
-      this.showStartScrollButton = true;
-    } else {
-      this.showStartScrollButton = false;
-    }
+    this.showEndScrollButton =
+      headersScrollContainerWidth > this.offset + headersContentWidth;
+    this.showStartScrollButton = this.offset !== 0;
   }
 
   private alignSelectedIndicator(element: HTMLElement, duration = 0.3) {
-    if (this.selectedIndicator) {
-      this.selectedIndicator.style.visibility = 'visible';
-      this.selectedIndicator.style.transitionDuration =
-        duration > 0 ? `${duration}s` : 'initial';
-      this.selectedIndicator.style.width = `${element.offsetWidth}px`;
-      if (this.isLTR) {
-        this.selectedIndicator.style.transform = `translate(${element.offsetLeft}px)`;
-      } else {
-        const position =
-          this.headersWrapper.offsetWidth -
-          element.offsetLeft -
-          element.offsetWidth;
-        this.selectedIndicator.style.transform = `translate(${-position}px)`;
-      }
-    }
+    const position =
+      this.headersWrapper.offsetWidth -
+      element.offsetLeft -
+      element.offsetWidth;
+    const transformation = this.isLTR
+      ? `translate(${element.offsetLeft}px)`
+      : `translate(${-position}px)`;
+    const transitionDuration = duration > 0 ? `${duration}s` : 'initial';
+
+    const indicatorStyles: Partial<CSSStyleDeclaration> = {
+      visibility: 'visible',
+      transitionDuration: `${transitionDuration}s`,
+      width: `${element.offsetWidth}px`,
+      transform: `${transformation}`,
+    };
+
+    Object.assign(this.selectedIndicator.style, indicatorStyles);
   }
 
   private hideSelectedIndicator() {
-    if (this.selectedIndicator) {
-      this.selectedIndicator.style.visibility = 'hidden';
-    }
-  }
+    const indicatorStyles: Partial<CSSStyleDeclaration> = {
+      visibility: 'hidden',
+    };
 
-  private scrollTabIntoView(tab: IgcTabComponent) {
-    if (this._selected) {
-      if (this.isLTR) {
-        if (tab.offsetLeft < this.offset) {
-          this.scrollElement(tab, false);
-        }
-
-        const headersContentOffsetWidth = this.headersContent.offsetWidth;
-        const delta =
-          tab.offsetLeft +
-          tab.offsetWidth -
-          (headersContentOffsetWidth + this.offset);
-
-        if (delta > 0) {
-          this.scrollElement(tab, true);
-        }
-      } else {
-        if (
-          tab.offsetLeft <
-          this.headersWrapper.offsetWidth -
-            this.headersContent.offsetWidth -
-            this.offset
-        ) {
-          this.scrollElement(tab, true);
-        }
-
-        if (
-          tab.offsetLeft + tab.offsetWidth >
-          this.headersWrapper.offsetWidth - this.offset
-        ) {
-          this.scrollElement(tab, false);
-        }
-      }
-    } else {
-      this.hideSelectedIndicator();
-    }
+    Object.assign(this.selectedIndicator.style, indicatorStyles);
   }
 
   private handleClick(event: MouseEvent) {
@@ -327,6 +259,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     tab.focus();
     this.setSelectedTab(tab.panel);
+
+    this.emitEvent('igcChange', { detail: this._selected });
   }
 
   private handleKeyDown = (event: KeyboardEvent) => {
@@ -365,9 +299,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     if (this.activation === 'auto') {
       this.setSelectedTab(enabledTabs[index].panel);
+
+      this.emitEvent('igcChange', { detail: this._selected });
     }
 
-    this.scrollTabIntoView(enabledTabs[index]);
+    this.scrollToTab(enabledTabs[index]);
 
     event.preventDefault();
   };
@@ -389,7 +325,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
           : ''}
         <div part="headers-content">
           <div part="headers-wrapper">
-            <div part="headers-scroll" role="tablist">
+            <div
+              part="headers-scroll"
+              role="tablist"
+              @click=${this.handleClick}
+              @keydown=${this.handleKeyDown}
+            >
               <slot></slot>
             </div>
             <div part="selected-indicator"></div>
