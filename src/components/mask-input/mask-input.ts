@@ -184,16 +184,12 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
         );
 
       case 'insertFromDrop':
-        return this.insertFromDrop(this.input.value);
+        return this.updateInput(
+          value.substring(this.inputSelection.start, this.inputSelection.end),
+          this.inputSelection.start,
+          this.inputSelection.end
+        );
     }
-  }
-
-  protected insertFromDrop(value: string) {
-    const { start, end } = this.inputSelection;
-    this.maskedValue = this.parser.apply(value);
-    this._value = this.parser.parse(this.maskedValue);
-    this.requestUpdate();
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
   protected updateInput(part: string, start: number, finish: number) {
