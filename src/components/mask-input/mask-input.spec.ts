@@ -484,6 +484,21 @@ describe('Masked input', () => {
       await elementUpdated(masked);
 
       expect(input().value).to.equal(parser.apply(masked.value));
+
+      // https://github.com/IgniteUI/igniteui-webcomponents/issues/383
+      masked.mask = 'CC-CC';
+      masked.value = 'xxyy';
+
+      await elementUpdated(masked);
+      syncParser();
+
+      input().value = 'xx-basic-yy';
+      input().setSelectionRange(3, 3 + `basic`.length);
+      fireInputEvent(input(), 'insertFromDrop');
+      await elementUpdated(masked);
+
+      expect(masked.value).to.equal('xxba');
+      expect(input().value).to.equal(parser.apply(masked.value));
     });
   });
 
