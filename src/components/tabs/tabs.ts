@@ -165,33 +165,35 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       : this.hideSelectedIndicator();
   }
 
-  private calculateOffset(element: any, scrollToEnd: boolean) {
-    const headersContentWidth = this.headersContent.offsetWidth;
+  // private calculateOffset(element: any, scrollToEnd: boolean) {
+  //   const headersContentWidth = this.headersContent.offsetWidth;
 
-    this.offset = this.isLTR
-      ? scrollToEnd
-        ? element.offsetWidth + element.offsetLeft - headersContentWidth
-        : element.offsetLeft
-      : scrollToEnd
-      ? this.headersWrapper.offsetWidth -
-        this.headersContent.offsetWidth -
-        element.offsetLeft
-      : this.headersWrapper.offsetWidth -
-        element.offsetLeft -
-        element.offsetWidth;
-  }
+  //   this.offset = this.isLTR
+  //     ? scrollToEnd
+  //       ? element.offsetWidth + element.offsetLeft - headersContentWidth
+  //       : element.offsetLeft
+  //     : scrollToEnd
+  //     ? this.headersWrapper.offsetWidth -
+  //       this.headersContent.offsetWidth -
+  //       element.offsetLeft
+  //     : this.headersWrapper.offsetWidth -
+  //       element.offsetLeft -
+  //       element.offsetWidth;
+  // }
 
   private handleStartButtonClick() {
-    const { x, y, width } = this.startScrollButton.getBoundingClientRect();
+    const { right, x, y, width } =
+      this.startScrollButton.getBoundingClientRect();
     const nearestTab = this.shadowRoot!.elementFromPoint(
-      this.isLTR ? x + width : x - width,
+      this.isLTR ? right + width : x - width,
       y
     );
 
     const index = this.tabs.findIndex((tab) => tab.isSameNode(nearestTab!)) - 1;
     const scrolledTab = this.tabs[index < 0 ? this.tabs.length - 1 : index];
     this.scrollToTab(scrolledTab);
-    this.calculateOffset(scrolledTab, false);
+
+    //this.calculateOffset(scrolledTab, false);
   }
 
   protected scrollToTab(target: IgcTabComponent) {
@@ -199,20 +201,21 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private handleEndButtonClick() {
-    const { x, y, width } = this.endScrollButton.getBoundingClientRect();
+    const { right, x, y, width } = this.endScrollButton.getBoundingClientRect();
     const nearestTab = this.shadowRoot!.elementFromPoint(
-      this.isLTR ? x - width : x + width,
+      this.isLTR ? x - width : right + width,
       y
     );
     // Get the next tab (wrap around if last) and scroll to it
     const index = this.tabs.findIndex((tab) => tab.isSameNode(nearestTab)) + 1;
     const scrolledTab = this.tabs[index >= this.tabs.length ? 0 : index];
     this.scrollToTab(scrolledTab);
-    this.calculateOffset(scrolledTab, true);
+
+    //this.calculateOffset(scrolledTab, false);
   }
 
   @watch('offset', { waitUntilFirstUpdate: true })
-  private updateScrollButtons() {
+  protected updateScrollButtons() {
     const headersScrollContainerWidth = this.headersScrollContainer.offsetWidth;
     const headersContentWidth = this.headersContent.offsetWidth;
 
@@ -308,21 +311,29 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     event.preventDefault();
   };
 
+  private renderScrollButton(visible: boolean, { ...details }) {
+    return visible
+      ? html`
+          <igc-icon-button
+            part=${details.part}
+            size="medium"
+            variant="flat"
+            name=${details.name}
+            collection="internal"
+            @click=${details.click}
+          ></igc-icon-button>
+        `
+      : '';
+  }
+
   protected override render() {
     return html`
       <div part="headers">
-        ${this.showStartScrollButton
-          ? html`
-              <igc-icon-button
-                part="start-scroll-button"
-                size="medium"
-                variant="flat"
-                name="navigate_before"
-                collection="internal"
-                @click=${this.handleStartButtonClick}
-              ></igc-icon-button>
-            `
-          : ''}
+        ${this.renderScrollButton(this.showStartScrollButton, {
+          part: 'start-scroll-button',
+          name: 'navigate_before',
+          click: this.handleStartButtonClick,
+        })}
         <div part="headers-content">
           <div part="headers-wrapper">
             <div
@@ -336,18 +347,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
             <div part="selected-indicator"></div>
           </div>
         </div>
-        ${this.showEndScrollButton
-          ? html`
-              <igc-icon-button
-                part="end-scroll-button"
-                size="medium"
-                variant="flat"
-                name="navigate_next"
-                collection="internal"
-                @click=${this.handleEndButtonClick}
-              ></igc-icon-button>
-            `
-          : ''}
+        ${this.renderScrollButton(this.showEndScrollButton, {
+          part: 'end-scroll-button',
+          name: 'navigate_next',
+          click: this.handleEndButtonClick,
+        })}
       </div>
       <div part="content">
         <slot name="panel"></slot>
