@@ -12,6 +12,7 @@ export { default as IgcCheckboxComponent } from './components/checkbox/checkbox.
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress.js';
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
 export { default as IgcChipComponent } from './components/chip/chip.js';
+export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
 export { default as IgcDropdownComponent } from './components/dropdown/dropdown.js';
 export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group.js';
 export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header.js';
@@ -40,7 +41,8 @@ export { default as IgcSliderComponent } from './components/slider/slider.js';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label.js';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
-export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
+export { default as IgcTreeComponent } from './components/tree/tree.js';
+export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
