@@ -95,14 +95,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.prompt = this.prompt || this.parser.prompt;
   }
 
-  protected insertFromDrop(value: string) {
-    const { start, end } = this.inputSelection;
-    this.maskedValue = this.parser.apply(value);
-    this._value = this.parser.parse(this.maskedValue);
-    this.requestUpdate();
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
-  }
-
   protected updateInput(part: string, start: number, finish: number) {
     const { value, end } = this.parser.replace(
       this.maskedValue,

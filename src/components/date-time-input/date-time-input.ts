@@ -356,20 +356,6 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
     }
   }
 
-  protected insertFromDrop(val: string) {
-    const { value, end } = this.parser.replace(
-      this.maskedValue,
-      val.substring(this.inputSelection.start, this.inputSelection.end),
-      this.inputSelection.start,
-      this.inputSelection.end
-    );
-
-    this.maskedValue = value;
-
-    this.updateValue();
-    this.updateComplete.then(() => this.input.setSelectionRange(end, end));
-  }
-
   protected updateInput(part: string, start: number, finish: number) {
     const { value, end } = this.parser.replace(
       this.maskedValue,
@@ -382,7 +368,10 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
 
     this.updateValue();
     this.requestUpdate();
-    this.emitEvent('igcInput', { detail: this.value?.toString() });
+
+    if (start !== this.inputFormat.length) {
+      this.emitEvent('igcInput', { detail: this.value?.toString() });
+    }
     this.updateComplete.then(() => this.input.setSelectionRange(end, end));
   }
 
