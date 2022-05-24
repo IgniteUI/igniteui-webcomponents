@@ -105,6 +105,42 @@ describe('Date Util', () => {
     expect(parsedDate).to.be.null;
   });
 
+  it('getPartValue should properly return part values', () => {
+    const currentDate = new Date(2020, 6, 17, 16, 15, 59);
+    const parts = DateTimeUtil.parseDateTimeFormat('dd/MM/yy hh:mm:ss tt');
+
+    const partsMap = new Map<DateParts, number>([
+      [DateParts.Date, currentDate.getDate()],
+      [DateParts.Month, currentDate.getMonth() + 1],
+      [DateParts.Hours, 4], // we use 12h format; getHours will return 16
+      [DateParts.Minutes, currentDate.getMinutes()],
+      [DateParts.Seconds, currentDate.getSeconds()],
+      [
+        DateParts.Year,
+        parseInt(currentDate.getFullYear().toString().slice(-2)),
+      ],
+    ]);
+
+    for (const part of parts) {
+      if (part.type === DateParts.Literal) {
+        continue;
+      }
+
+      const targetValue = DateTimeUtil.getPartValue(
+        part,
+        part.format.length,
+        currentDate
+      );
+
+      if (part.type === DateParts.AmPm) {
+        const amPm = currentDate.getHours() >= 12 ? 'PM' : 'AM';
+        expect(amPm).to.equal(targetValue);
+      } else {
+        expect(partsMap.get(part.type)).to.equal(parseInt(targetValue));
+      }
+    }
+  });
+
   it('parseIsoDate should parse dates correctly', () => {
     const updateDate = (dateValue: Date, stringValue: string): Date => {
       const [datePart] = dateValue.toISOString().split('T');
