@@ -23,8 +23,9 @@ export class IgcCalendarBaseComponent extends LitElement {
    */
   @blazorSuppress()
   @property({
-    converter: (value) => {
-      return value ? new Date(value) : undefined;
+    converter: {
+      fromAttribute: (value: string) => (value ? new Date(value) : undefined),
+      toAttribute: (value: Date) => value.toISOString(),
     },
   })
   public value?: Date;
@@ -36,15 +37,17 @@ export class IgcCalendarBaseComponent extends LitElement {
    */
   @blazorSuppress()
   @property({
-    converter: (value) => {
-      if (!value) {
-        return undefined;
-      }
-      return value
-        .split(',')
-        .map((v) => v.trim())
-        .filter((v) => v)
-        .map((v) => new Date(v));
+    converter: {
+      fromAttribute: (value: string) =>
+        !value
+          ? undefined
+          : value
+              .split(',')
+              .map((v) => v.trim())
+              .filter((v) => v)
+              .map((v) => new Date(v)),
+      toAttribute: (value: Date[]) =>
+        value.map((v) => v.toISOString()).join(','),
     },
   })
   public values?: Date[];
@@ -72,7 +75,10 @@ export class IgcCalendarBaseComponent extends LitElement {
   @blazorSuppress()
   @property({
     attribute: 'active-date',
-    converter: (value) => (value ? new Date(value) : new Date()),
+    converter: {
+      fromAttribute: (value: string) => (value ? new Date(value) : new Date()),
+      toAttribute: (value: Date) => value.toISOString(),
+    },
   })
   public activeDate = new Date();
 
