@@ -42,6 +42,252 @@ const employeeData = [
     avatar:
       'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
   },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
+  {
+    name: 'Jonathan Deberkow',
+    position: 'UX Designer',
+    avatar:
+      'https://www.infragistics.com/angular-demos/assets/images/men/3.jpg',
+  },
 ];
 
 const BasicTemplate: Story<ArgTypes, Context> = (
