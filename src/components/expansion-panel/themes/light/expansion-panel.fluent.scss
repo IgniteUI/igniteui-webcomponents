@@ -1,0 +1,21 @@
+@use '../../../../styles/utilities/index' as *;
+
+[part='title'] {
+    @include type-category('subtitle-1');
+}
+
+[part='subtitle'] {
+    @include type-category('body-2');
+}
+
+:host([open]) [part~='content'] {
+    @include type-category('caption');
+
+    color: color(gray, 700);
+}
+
+:host([disabled]) {
+    [part='header'] * {
+        color: color(gray, 400);
+    }
+}

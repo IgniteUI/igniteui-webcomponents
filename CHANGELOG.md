@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.2.0] - 2022-05-23
 ### Added
 - Mask input [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
+- Expansion Panel [#177](https://github.com/IgniteUI/igniteui-webcomponents/issues/177)
 - Tree [#188](https://github.com/IgniteUI/igniteui-webcomponents/issues/188)
 - Rating - Added `selected` CSS part and exposed CSS variable to control symbol sizes [#340](https://github.com/IgniteUI/igniteui-webcomponents/pull/340) [#371](https://github.com/IgniteUI/igniteui-webcomponents/pull/371)
 - Icon Button - Allow slotted content [#355](https://github.com/IgniteUI/igniteui-webcomponents/pull/355)
