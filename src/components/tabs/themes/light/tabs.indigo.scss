@@ -14,15 +14,6 @@
     }
 }
 
-igc-icon-button::part(base) {
-    color: color(gray, 700);
-
-    &:hover,
-    &:focus {
-        color: color(gray, 900);
-    }
-}
-
 [part='selected-indicator'] {
     background: color(primary, 400);
 }

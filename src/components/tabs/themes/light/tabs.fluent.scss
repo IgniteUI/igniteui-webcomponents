@@ -1,0 +1,10 @@
+@use '../../../../styles/utilities' as *;
+
+igc-icon-button::part(base) {
+    color: color(gray, 500);
+
+    &:hover,
+    &:focus-within {
+        color: color(gray, 600);
+    }
+}

@@ -12,6 +12,7 @@ import type IgcTabComponent from './tab.js';
 import type IgcTabPanelComponent from './tab-panel.js';
 import { styles } from './themes/light/tabs.base.css.js';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
+import { styles as fluent } from './themes/light/tabs.fluent.css.js';
 import { styles as indigo } from './themes/light/tabs.indigo.css.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
@@ -39,7 +40,7 @@ export interface IgcTabsEventMap {
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart content - The container for the tabs content.
  */
-@themes({ bootstrap, indigo })
+@themes({ bootstrap, fluent, indigo })
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,
   Constructor<LitElement>
