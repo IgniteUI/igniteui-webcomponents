@@ -13,3 +13,7 @@
         color: color(gray, 300);
     }
 }
+
+:host([open]) [part~='content'] {
+    @include type-category('body-1');
+}

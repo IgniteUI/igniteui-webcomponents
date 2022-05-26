@@ -6,5 +6,11 @@
 }
 
 [part='subtitle'] {
+    @include type-category('body-2');
+
     color: color(gray, 600);
+}
+
+:host([open]) [part~='content'] {
+    @include type-category('body-1');
 }
