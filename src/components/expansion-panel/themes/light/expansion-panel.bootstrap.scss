@@ -1,7 +1,7 @@
 @use '../../../../styles/utilities/index' as *;
 
 [part='title']::slotted(*),
-slot[name='indicator'] {
+[part~='indicator'] {
     color: color(gray, 800);
 }
 

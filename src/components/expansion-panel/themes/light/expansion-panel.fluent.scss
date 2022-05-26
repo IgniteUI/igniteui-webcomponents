@@ -15,7 +15,7 @@
 }
 
 :host([disabled]) [part='header'] {
-    slot[name='indicator'],
+    [part~='indicator'],
     ::slotted(*) {
         color: color(gray, 400);
     }

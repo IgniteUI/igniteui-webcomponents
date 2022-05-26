@@ -23,7 +23,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
         background: color(gray, 100);
     }
 
-    *:not([part='indicator']) {
+    *:not([part~='indicator']) {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -54,11 +54,11 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
     padding: $padding;
 }
 
-slot[name='indicator'] {
+[part~='indicator'] {
     color: color(gray, 800);
 }
 
-slot[name='indicator'] igc-icon {
+[part~='indicator'] igc-icon {
     --size: #{rem(24px)};
 }
 
@@ -78,7 +78,7 @@ slot[name='indicator'] igc-icon {
 :host([disabled]) [part='header'] {
     pointer-events: none;
 
-    slot[name='indicator'],
+    [part~='indicator'],
     ::slotted(*) {
         color: $disabled-color;
     }
