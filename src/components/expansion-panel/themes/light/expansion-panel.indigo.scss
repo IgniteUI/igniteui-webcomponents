@@ -1,0 +1,19 @@
+@use '../../../../styles/utilities/index' as *;
+
+[part~='indicator'] {
+    color: color(gray, 600);
+}
+
+[part='subtitle'] {
+    color: color(gray, 500);
+}
+
+:host([disabled]) {
+    [part='header'] * {
+        color: color(gray, 300);
+    }
+}
+
+:host([open]) [part~='content'] {
+    @include type-category('body-1');
+}
