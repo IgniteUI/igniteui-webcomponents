@@ -1,12 +1,14 @@
 @use '../../../../styles/utilities/index' as *;
 
-[part='title']::slotted(*),
+[part='title'],
 [part~='indicator'] {
     color: color(gray, 800);
 }
 
-[part='subtitle']::slotted(*) {
-    @include type-category('body-2');
+[part='subtitle'] {
+    &::slotted(*) {
+        @include type-category('body-2');
+    }
 
     color: color(gray, 600);
 }

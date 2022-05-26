@@ -40,9 +40,11 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
     margin: 0;
 }
 
-[part='subtitle']::slotted(*) {
-    @include type-category('subtitle-2');
-    @include ellipsis();
+[part='subtitle'] {
+    &::slotted(*) {
+        @include type-category('subtitle-2');
+        @include ellipsis();
+    }
 
     color: color(gray, 700);
 }
@@ -75,11 +77,12 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
     display: none;
 }
 
-:host([disabled]) [part='header'] {
+:host([disabled]) {
     pointer-events: none;
 
-    [part~='indicator'],
-    ::slotted(*) {
+    [part='title'],
+    [part='subtitle'],
+    [part~='indicator'] {
         color: $disabled-color;
     }
 }

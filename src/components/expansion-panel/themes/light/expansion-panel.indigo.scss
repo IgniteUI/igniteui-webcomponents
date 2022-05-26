@@ -4,7 +4,7 @@
     color: color(gray, 600);
 }
 
-[part='subtitle']::slotted(*) {
+[part='subtitle'] {
     color: color(gray, 500);
 }
 
@@ -12,9 +12,10 @@
     @include type-category('body-1');
 }
 
-:host([disabled]) [part='header'] {
+:host([disabled]) {
     [part~='indicator'],
-    ::slotted(*) {
+    [part='title'],
+    [part='subtitle'] {
         color: color(gray, 300);
     }
 }

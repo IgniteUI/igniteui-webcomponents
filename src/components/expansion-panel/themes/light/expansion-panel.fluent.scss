@@ -14,9 +14,10 @@
     color: color(gray, 700);
 }
 
-:host([disabled]) [part='header'] {
+:host([disabled]) {
     [part~='indicator'],
-    ::slotted(*) {
+    [part='title'],
+    [part='subtitle'] {
         color: color(gray, 400);
     }
 }
