@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.2.0] - 2022-05-23
+## [3.2.0] - 2022-05-26
 ### Added
 - Mask input [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
 - Expansion Panel [#177](https://github.com/IgniteUI/igniteui-webcomponents/issues/177)
