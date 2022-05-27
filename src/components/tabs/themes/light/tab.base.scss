@@ -4,9 +4,8 @@
 $hover-background: var(--hover-background, color(gray, 200)) !default;
 
 :host {
-    @include type-category('subtitle-2');
-
     display: inline-flex;
+    flex-shrink: 0;
     justify-content: center;
     align-items: center;
     min-width: rem(90px);
@@ -48,6 +47,8 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
 }
 
 [part='base'] {
+    @include type-category('button');
+
     display: flex;
     align-items: center;
     justify-content: center;
@@ -62,4 +63,8 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
 
 ::slotted(igc-icon) {
     --size: #{rem(24px)};
+}
+
+::slotted(igc-icon:not(:only-child)) {
+    margin-bottom: rem(8px);
 }
