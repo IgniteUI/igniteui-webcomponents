@@ -48,24 +48,30 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { size }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
+  const employees = new Array(48);
+
   return html`
     <igc-list .size="${size}" dir=${direction}>
       <igc-list-header>
         <h1>Job Positions</h1>
       </igc-list-header>
-      ${employeeData.map((employee) => {
-        return html`
-          <igc-list-item>
-            <igc-avatar slot="start" src=${employee.avatar} shape="circle"
-              >AA</igc-avatar
-            >
-            <h2 slot="title">${employee.name}</h2>
-            <span slot="subtitle">${employee.position}</span>
-            <igc-button slot="end">Text</igc-button>
-            <igc-button slot="end">Call</igc-button>
-          </igc-list-item>
-        `;
-      })}
+      ${employees
+        .fill(employeeData[0], 0, 15)
+        .fill(employeeData[1], 16, 31)
+        .fill(employeeData[2], 31)
+        .map((employee) => {
+          return html`
+            <igc-list-item>
+              <igc-avatar slot="start" src=${employee.avatar} shape="circle"
+                >AA</igc-avatar
+              >
+              <h2 slot="title">${employee.name}</h2>
+              <span slot="subtitle">${employee.position}</span>
+              <igc-button slot="end">Text</igc-button>
+              <igc-button slot="end">Call</igc-button>
+            </igc-list-item>
+          `;
+        })}
     </igc-list>
   `;
 };
