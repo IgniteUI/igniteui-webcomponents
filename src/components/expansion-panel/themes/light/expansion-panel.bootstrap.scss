@@ -6,7 +6,9 @@
 }
 
 [part='subtitle'] {
-    @include type-category('body-2');
+    &::slotted(*) {
+        @include type-category('body-2');
+    }
 
     color: color(gray, 600);
 }
