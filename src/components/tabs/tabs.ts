@@ -154,8 +154,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.tabs.forEach((el) => (el.selected = el.panel === this._selected));
       this.panels.forEach((el) => (el.selected = el.name === this._selected));
 
-      this.realignSelectedIndicator();
       this.scrollToTab(tab);
+      this.realignSelectedIndicator();
     }
   }
 
