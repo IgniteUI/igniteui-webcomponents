@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.2.0] - 2022-05-26
+## [3.2.0] - 2022-05-30
 ### Added
 - Mask input [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
 - Expansion Panel [#177](https://github.com/IgniteUI/igniteui-webcomponents/issues/177)
@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Buttons - Vertical align [#357](https://github.com/IgniteUI/igniteui-webcomponents/pull/357) and focus management [#380](https://github.com/IgniteUI/igniteui-webcomponents/pull/380)
 - Input - Overflow for suffix/prefix [#359](https://github.com/IgniteUI/igniteui-webcomponents/pull/359)
 - Switch - Collapse with small sizes [#362](https://github.com/IgniteUI/igniteui-webcomponents/pull/362)
+- List - Overflow behaviour [#391](https://github.com/IgniteUI/igniteui-webcomponents/pull/391)
 
 ## [3.1.0] - 2022-04-15
 ### Added
