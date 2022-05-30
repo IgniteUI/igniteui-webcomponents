@@ -23,7 +23,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
         background: color(gray, 100);
     }
 
-    div:not([part='indicator']) {
+    *:not([part~='indicator']) {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -33,7 +33,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
     }
 }
 
-[part='title'] {
+[part='title']::slotted(*) {
     @include type-category('h5');
     @include ellipsis();
 
@@ -41,8 +41,10 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 }
 
 [part='subtitle'] {
-    @include type-category('subtitle-2');
-    @include ellipsis();
+    &::slotted(*) {
+        @include type-category('subtitle-2');
+        @include ellipsis();
+    }
 
     color: color(gray, 700);
 }
@@ -58,7 +60,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
     color: color(gray, 800);
 }
 
-[name='indicator'] igc-icon {
+[part~='indicator'] igc-icon {
     --size: #{rem(24px)};
 }
 
@@ -76,11 +78,11 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 }
 
 :host([disabled]) {
-    [part='header'] {
-        pointer-events: none;
+    pointer-events: none;
 
-        * {
-            color: $disabled-color;
-        }
+    [part='title'],
+    [part='subtitle'],
+    [part~='indicator'] {
+        color: $disabled-color;
     }
 }

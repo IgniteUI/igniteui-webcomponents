@@ -72,14 +72,14 @@ const Template: Story<ArgTypes, Context> = (
       @igcClosing=${handleClosing}
       @igcClosed=${handleClosed}
     >
-      <div slot="title">The Expendables</div>
-      <div slot="subtitle">Action, Adventure, Thriller</div>
-      <div>
-        Barney Ross leads the "Expendables", a band of highly skilled
+      <h1 slot="title">The Expendables</h1>
+      <h3 slot="subtitle">Action, Adventure, Thriller</h3>
+      <span
+        >Barney Ross leads the "Expendables", a band of highly skilled
         mercenaries including knife enthusiast Lee Christmas, martial arts
         expert Yin Yang, heavy weapons specialist Hale Caesar, demolitionist
-        Toll Road and loose-cannon sniper Gunner Jensen.
-      </div>
+        Toll Road and loose-cannon sniper Gunner Jensen.</span
+      >
     </igc-expansion-panel>
   `;
 };
