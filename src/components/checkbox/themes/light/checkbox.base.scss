@@ -59,6 +59,11 @@ $mark-length: 24;
     z-index: 1;
     transform: scale(.45);
     transform-origin: center;
+
+    svg {
+        width: 100%;
+        height: 100%;
+    }
 }
 
 label {
