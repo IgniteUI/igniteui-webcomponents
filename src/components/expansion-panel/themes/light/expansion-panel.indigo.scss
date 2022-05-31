@@ -8,12 +8,14 @@
     color: color(gray, 500);
 }
 
-:host([disabled]) {
-    [part='header'] * {
-        color: color(gray, 300);
-    }
-}
-
 :host([open]) [part~='content'] {
     @include type-category('body-1');
+}
+
+:host([disabled]) {
+    [part~='indicator'],
+    [part='title'],
+    [part='subtitle'] {
+        color: color(gray, 300);
+    }
 }
