@@ -53,6 +53,9 @@ export abstract class IgcInputBaseComponent
   @queryAssignedElements({ slot: 'suffix' })
   protected suffixes!: Array<HTMLElement>;
 
+  @queryAssignedElements({ slot: 'helper-text' })
+  protected helperText!: Array<HTMLElement>;
+
   protected themeController!: ThemeController;
 
   /** The name attribute of the control. */
@@ -183,7 +186,7 @@ export abstract class IgcInputBaseComponent
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
-      <div part="helper-text">
+      <div part="helper-text" .hidden="${this.helperText.length == 0}">
         <slot name="helper-text"></slot>
       </div>
     `;
@@ -194,7 +197,7 @@ export abstract class IgcInputBaseComponent
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
-      <div part="helper-text">
+      <div part="helper-text" .hidden="${this.helperText.length == 0}">
         <slot name="helper-text"></slot>
       </div>`;
   }
