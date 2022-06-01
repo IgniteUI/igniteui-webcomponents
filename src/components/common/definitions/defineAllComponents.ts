@@ -41,6 +41,7 @@ import { defineComponents } from './defineComponents.js';
 import IgcCircularGradientComponent from '../../progress/circular-gradient.js';
 import IgcDateTimeInputComponent from '../../date-time-input/date-time-input';
 import IgcMaskInputComponent from '../../mask-input/mask-input.js';
+import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel.js';
 import IgcTreeComponent from '../../tree/tree.js';
 import IgcTreeItemComponent from '../../tree/tree-item.js';
 
@@ -62,6 +63,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcDropdownHeaderComponent,
   IgcDropdownItemComponent,
   IgcSwitchComponent,
+  IgcExpansionPanelComponent,
   IgcFormComponent,
   IgcIconComponent,
   IgcInputComponent,

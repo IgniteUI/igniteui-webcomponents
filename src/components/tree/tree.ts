@@ -9,6 +9,7 @@ import IgcTreeItemComponent from './tree-item.js';
 import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 type Direction = 'ltr' | 'rtl' | 'auto';
 
@@ -36,8 +37,10 @@ export default class IgcTreeComponent extends SizableMixin(
   public static styles = styles;
 
   /** @private */
+  @blazorSuppress()
   public selectionService!: IgcTreeSelectionService;
   /** @private */
+  @blazorSuppress()
   public navService!: IgcTreeNavigationService;
 
   /** Whether a single or multiple of a parent's child items can be expanded. */
