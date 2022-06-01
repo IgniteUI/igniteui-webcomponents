@@ -65,6 +65,16 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.maskedValue = this.parser.apply(this._value);
   }
 
+  /** The mask pattern to apply on the input. */
+  @property()
+  public get mask() {
+    return this._mask;
+  }
+
+  public set mask(val: string) {
+    this._mask = val;
+  }
+
   @watch('prompt')
   protected promptChange() {
     this.parser.prompt = this.prompt;
@@ -73,7 +83,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  @watch('mask')
+  @watch('_mask')
   protected maskChange() {
     this.parser.mask = this.mask;
     if (this.value) {

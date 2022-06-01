@@ -8,12 +8,23 @@ import {
   DatePart,
   DateTimeUtil,
 } from './date-util';
-import { watch } from '../common/decorators';
+import { blazorTwoWayBind, watch } from '../common/decorators';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcMaskInputBaseComponent } from '../mask-input/mask-input-base';
 import { partNameMap } from '../common/util';
+import { IgcInputEventMap } from '../input/input-base';
+import { EventEmitterMixin } from '../common/mixins/event-emitter';
+import { AbstractConstructor } from '../common/mixins/constructor';
 
-export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent {
+export interface IgcDateTimeInputEventMap
+  extends Omit<IgcInputEventMap, 'igcChange'> {
+  igcChange: CustomEvent<Date | null>;
+}
+
+export default class IgcDateTimeInputComponent extends EventEmitterMixin<
+  IgcDateTimeInputEventMap,
+  AbstractConstructor<IgcMaskInputBaseComponent>
+>(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
 
   protected _defaultMask!: string;
@@ -50,6 +61,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
       return DateTimeUtil.parseIsoDate(value);
     },
   })
+  @blazorTwoWayBind('igcChange', 'detail')
   public get value(): Date | null {
     return this._value;
   }
@@ -96,11 +108,8 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   @property({ type: Boolean, attribute: 'spin-loop' })
   public spinLoop = true;
 
-  @property({ reflect: true })
-  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
-
   @property()
-  public locale = 'e';
+  public locale = 'en';
 
   @watch('locale', { waitUntilFirstUpdate: true })
   protected setDefaultMask(): void {
@@ -125,13 +134,6 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
           true
         );
       }
-    }
-  }
-
-  @watch('mask', { waitUntilFirstUpdate: true })
-  protected maskChange(): void {
-    if (this.value) {
-      this.updateMask();
     }
   }
 
@@ -279,7 +281,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   public stepUp(datePart?: DatePart, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
-    if (!targetPart) {
+    if (!targetPart || this.readonly) {
       return;
     }
 
@@ -291,7 +293,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   public stepDown(datePart?: DatePart, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
-    if (!targetPart) {
+    if (!targetPart || this.readonly) {
       return;
     }
 
@@ -301,9 +303,11 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   }
 
   public clear(): void {
-    this.maskedValue = '';
-    this.value = null;
-    this.setSelectionRange(0, this.input.value.length);
+    if (!this.readonly) {
+      this.maskedValue = '';
+      this.value = null;
+      this.setSelectionRange(0, this.input.value.length);
+    }
   }
 
   protected updateMask() {
@@ -340,7 +344,7 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
   }
 
   protected handleChange() {
-    this.emitEvent('igcChange', { detail: this.value?.toString() });
+    this.emitEvent('igcChange', { detail: this.value });
     this.invalid = !this.checkValidity();
   }
 
@@ -469,12 +473,12 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
       '0'
     );
 
-    this.mask =
+    this._mask =
       newMask.indexOf('tt') !== -1
         ? newMask.replace(new RegExp('tt', 'g'), 'LL')
         : newMask;
 
-    this.parser.mask = this.mask;
+    this.parser.mask = this._mask;
     this.parser.prompt = this.prompt;
 
     if (!this.placeholder || oldFormat === this.placeholder) {
@@ -604,12 +608,9 @@ export default class IgcDateTimeInputComponent extends IgcMaskInputBaseComponent
         }
         break;
       case 'ArrowUp':
-        e.preventDefault();
-        this.stepUp();
-        break;
       case 'ArrowDown':
         e.preventDefault();
-        this.stepDown();
+        key === 'ArrowUp' ? this.stepUp() : this.stepDown();
         break;
       case ';':
         if (e.ctrlKey) {

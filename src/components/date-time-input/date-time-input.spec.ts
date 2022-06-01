@@ -15,8 +15,7 @@ describe('Date Time Input component', () => {
 
   const parser = new MaskParser();
   const defaultPrompt = '_';
-  const defaultMask = '00/00/0000';
-  const defaultPlaceholder = 'MM/dd/yyyy';
+  const defaultFormat = 'MM/dd/yyyy';
 
   let el: IgcDateTimeInputComponent;
   let input: HTMLInputElement;
@@ -31,52 +30,20 @@ describe('Date Time Input component', () => {
     });
 
     it('should set default values correctly', async () => {
-      expect(el.prompt).to.equal(defaultPrompt);
-      expect(el.mask).to.equal(defaultMask);
       expect(el.value).to.be.undefined;
-      expect(input.placeholder).to.equal(defaultPlaceholder);
+      expect(el.prompt).to.equal(defaultPrompt);
+      expect(el.inputFormat).to.equal(defaultFormat);
+      expect(input.placeholder).to.equal(defaultFormat);
     });
 
-    it('prompt character change (no value)', async () => {
-      el.prompt = '';
-      await elementUpdated(el);
-      expect(el.prompt).to.equal(parser.prompt);
-
-      el.prompt = '*';
-      parser.prompt = el.prompt;
-      parser.mask = el.mask;
-      await elementUpdated(el);
-
-      el.focus();
-      await elementUpdated(el);
-
-      expect(input.value).to.equal(parser.apply());
-    });
-
-    it('should update mask according to the input format', async () => {
-      el.inputFormat = 'd/M/yy';
-      await elementUpdated(el);
-      expect(el.mask).to.equal('00/00/00');
-
-      el.inputFormat = 'dd-MM-yyyy HH:mm:ss';
-      await elementUpdated(el);
-      expect(el.mask).to.equal('00-00-0000 00:00:00');
-    });
-
-    it('should update mask with no value according to locale', async () => {
-      expect(el.placeholder).to.equal('MM/dd/yyyy');
-      expect(el.mask).to.equal(defaultMask);
-
+    it('should update inputFormat with no value according to locale', async () => {
       el.locale = 'no';
       await elementUpdated(el);
       expect(el.placeholder).to.equal('dd.MM.yyyy');
-      expect(el.mask).to.equal('00.00.0000');
+      expect(el.inputFormat).to.equal('dd.MM.yyyy');
     });
 
-    it('should update mask with value according to locale', async () => {
-      expect(el.placeholder).to.equal('MM/dd/yyyy');
-      expect(el.mask).to.equal(defaultMask);
-
+    it('should update inputFormat with value according to locale', async () => {
       el.value = new Date(2020, 2, 3);
       await elementUpdated(el);
       expect(input.value).to.equal('03/03/2020');
@@ -84,7 +51,7 @@ describe('Date Time Input component', () => {
       el.locale = 'no';
       await elementUpdated(el);
       expect(el.placeholder).to.equal('dd.MM.yyyy');
-      expect(el.mask).to.equal('00.00.0000');
+      expect(el.inputFormat).to.equal('dd.MM.yyyy');
       expect(input.value).to.equal('03.03.2020');
     });
 

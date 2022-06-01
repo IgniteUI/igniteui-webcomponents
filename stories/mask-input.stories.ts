@@ -27,15 +27,6 @@ const metadata = {
       description: 'The prompt symbol to use for unfilled parts of the mask.',
       control: 'text',
     },
-    dir: {
-      type: '"ltr" | "rtl" | "auto"',
-      description: 'The direction attribute of the control.',
-      options: ['ltr', 'rtl', 'auto'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'auto',
-    },
     invalid: {
       type: 'boolean',
       description: 'Controls the validity of the control.',
@@ -47,6 +38,15 @@ const metadata = {
       description:
         'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
       control: 'text',
+    },
+    dir: {
+      type: '"ltr" | "rtl" | "auto"',
+      description: 'The direction attribute of the control.',
+      options: ['ltr', 'rtl', 'auto'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'auto',
     },
     name: {
       type: 'string',
@@ -102,9 +102,9 @@ interface ArgTypes {
   valueMode: 'raw' | 'withFormatting';
   mask: string;
   prompt: string;
-  dir: 'ltr' | 'rtl' | 'auto';
   invalid: boolean;
   value: string;
+  dir: 'ltr' | 'rtl' | 'auto';
   name: string;
   outlined: boolean;
   required: boolean;

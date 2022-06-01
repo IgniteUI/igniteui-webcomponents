@@ -37,26 +37,12 @@ const metadata = {
     locale: {
       type: 'string',
       control: 'text',
-      defaultValue: 'e',
-    },
-    mask: {
-      type: 'string',
-      description: 'The mask pattern to apply on the input.',
-      control: 'text',
+      defaultValue: 'en',
     },
     prompt: {
       type: 'string',
       description: 'The prompt symbol to use for unfilled parts of the mask.',
       control: 'text',
-    },
-    dir: {
-      type: '"ltr" | "rtl" | "auto"',
-      description: 'The direction attribute of the control.',
-      options: ['ltr', 'rtl', 'auto'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'auto',
     },
     invalid: {
       type: 'boolean',
@@ -68,6 +54,15 @@ const metadata = {
       type: 'Date | null',
       description: 'The value attribute of the control.',
       control: 'date',
+    },
+    dir: {
+      type: '"ltr" | "rtl" | "auto"',
+      description: 'The direction attribute of the control.',
+      options: ['ltr', 'rtl', 'auto'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'auto',
     },
     name: {
       type: 'string',
@@ -126,11 +121,10 @@ interface ArgTypes {
   displayFormat: string;
   spinLoop: boolean;
   locale: string;
-  mask: string;
   prompt: string;
-  dir: 'ltr' | 'rtl' | 'auto';
   invalid: boolean;
   value: Date | null;
+  dir: 'ltr' | 'rtl' | 'auto';
   name: string;
   outlined: boolean;
   required: boolean;

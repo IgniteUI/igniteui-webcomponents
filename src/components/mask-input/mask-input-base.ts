@@ -17,17 +17,12 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   @state()
   protected maskedValue = '';
 
-  /** The mask pattern to apply on the input. */
-  @property()
-  public mask!: string;
+  @state()
+  protected _mask = '';
 
   /** The prompt symbol to use for unfilled parts of the mask. */
   @property()
   public prompt!: string;
-
-  /** The direction attribute of the control. */
-  @property({ reflect: true })
-  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
   /** Controls the validity of the control. */
   @property({ reflect: true, type: Boolean })
@@ -47,7 +42,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   public override connectedCallback() {
     super.connectedCallback();
 
-    this.mask = this.mask || this.parser.mask;
+    this._mask = this._mask || this.parser.mask;
     this.prompt = this.prompt || this.parser.prompt;
   }
 

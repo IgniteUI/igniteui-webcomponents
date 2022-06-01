@@ -53,6 +53,10 @@ export abstract class IgcInputBaseComponent
 
   protected themeController!: ThemeController;
 
+  /** The direction attribute of the control. */
+  @property({ reflect: true })
+  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
+
   /** The name attribute of the control. */
   @property()
   public name!: string;
@@ -108,7 +112,6 @@ export abstract class IgcInputBaseComponent
 
   protected abstract renderInput(): TemplateResult;
 
-  //Remove from here since we wont have value prop in input-base
   protected resolvePartNames(base: string) {
     return {
       [base]: true,
