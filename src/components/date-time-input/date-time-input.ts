@@ -54,11 +54,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   @property({
-    converter: (value) => {
-      if (!value) {
-        return null;
-      }
-      return DateTimeUtil.parseIsoDate(value);
+    converter: {
+      fromAttribute: (value: string) =>
+        !value ? null : DateTimeUtil.parseIsoDate(value),
+      toAttribute: (value: Date) => value.toISOString(),
     },
   })
   @blazorTwoWayBind('igcChange', 'detail')
@@ -79,22 +78,20 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   @property({
     attribute: 'min-value',
-    converter: (value) => {
-      if (!value) {
-        return null;
-      }
-      return DateTimeUtil.parseIsoDate(value);
+    converter: {
+      fromAttribute: (value: string) =>
+        !value ? null : DateTimeUtil.parseIsoDate(value),
+      toAttribute: (value: Date) => value.toISOString(),
     },
   })
-  public minValue!: Date | null;
+  public minValue!: Date;
 
   @property({
     attribute: 'max-value',
-    converter: (value) => {
-      if (!value) {
-        return null;
-      }
-      return DateTimeUtil.parseIsoDate(value);
+    converter: {
+      fromAttribute: (value: string) =>
+        !value ? null : DateTimeUtil.parseIsoDate(value),
+      toAttribute: (value: Date) => value.toISOString(),
     },
   })
   public maxValue!: Date | null;
