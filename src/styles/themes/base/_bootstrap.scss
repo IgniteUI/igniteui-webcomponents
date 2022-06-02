@@ -145,7 +145,7 @@ $type-scale: utils.extend(
 }
 
 @mixin root-styles($palette) {
-    :root {
+    * {
         --igc-theme: bootstrap;
         --igc-radius-factor: 1;
         --igc-spacing-small: #{utils.rem(2px)};

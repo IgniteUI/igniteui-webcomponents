@@ -14,7 +14,7 @@ $type-scale: utils.type-scale();
 }
 
 @mixin root-styles($palette) {
-    :root {
+    * {
         --igc-theme: material;
         --igc-radius-factor: 1;
         --igc-spacing-small: #{utils.rem(2px)};
