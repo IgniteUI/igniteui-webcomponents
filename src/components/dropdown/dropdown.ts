@@ -1,24 +1,24 @@
 import { html, LitElement } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { styles } from './themes/light/dropdown.base.css.js';
-import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
-import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
-import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { IgcToggleController } from '../toggle/toggle.controller.js';
 import type {
   IgcPlacement,
   IgcToggleComponent,
   IgcToggleEventMap,
 } from '../toggle/types';
-import IgcDropdownItemComponent from './dropdown-item.js';
-import { IgcToggleController } from '../toggle/toggle.controller.js';
 import type IgcDropdownGroupComponent from './dropdown-group';
-import { styleMap } from 'lit/directives/style-map.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import IgcDropdownItemComponent from './dropdown-item.js';
+import { styles } from './themes/light/dropdown.base.css.js';
+import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
+import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
+import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
 
 export enum DropdownActionKey {
   ESCAPE = 'escape',
@@ -57,10 +57,10 @@ export default class IgcDropdownComponent
 
   public static styles = styles;
 
-  private toggleController!: IgcToggleController;
+  protected toggleController!: IgcToggleController;
   private selectedItem!: IgcDropdownItemComponent | null;
   private activeItem!: IgcDropdownItemComponent;
-  private target!: HTMLElement;
+  protected target!: HTMLElement;
 
   private get allItems(): IgcDropdownItemComponent[] {
     const groupItems: IgcDropdownItemComponent[] = this.groups.flatMap(
@@ -237,7 +237,7 @@ export default class IgcDropdownComponent
     if (!this.keepOpenOnSelect) this._hide();
   }
 
-  private handleClick(event: MouseEvent) {
+  protected handleClick(event: MouseEvent) {
     const newSelectedItem = event
       .composedPath()
       .find(
@@ -251,7 +251,7 @@ export default class IgcDropdownComponent
     if (!this.keepOpenOnSelect) this._hide();
   }
 
-  private handleTargetClick = () => {
+  protected handleTargetClick = () => {
     if (!this.open) {
       if (!this.handleOpening()) return;
       this.show();
