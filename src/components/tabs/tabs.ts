@@ -64,8 +64,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   @query('[part="selected-indicator"]', true)
   private selectedIndicator!: HTMLElement;
 
-  @state() private showStartScrollButton = false;
-  @state() private showEndScrollButton = false;
+  @state() private showScrollButtons = false;
+  @state() private disableStartScrollButton = true;
+  @state() private disableEndScrollButton = false;
 
   private resizeObserver!: ResizeObserver;
   private _selected = '';
@@ -107,6 +108,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   public override firstUpdated() {
+    this.showScrollButtons =
+      this.headersContent.scrollWidth > this.headersContent.clientWidth;
     const selectedTab = this.tabs.filter((el) => el.selected).at(-1);
 
     selectedTab
@@ -114,6 +117,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       : this.setSelectedTab(this.tabs.find((el) => !el.disabled));
 
     this.resizeObserver = new ResizeObserver(() => {
+      this.showScrollButtons =
+        this.headersContent.scrollWidth > this.headersContent.clientWidth;
       this.updateScrollButtons();
       this.realignSelectedIndicator();
     });
@@ -191,44 +196,41 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   private handleStartButtonClick() {
     const nearestTab = this.getTabAtBoundary('start');
-    nearestTab
-      ? this.scrollToTab(nearestTab)
-      : this.scrollToTab(this.tabs[this.tabs.length - 1]);
+    this.scrollToTab(nearestTab);
   }
 
   private handleEndButtonClick() {
     const nearestTab = this.getTabAtBoundary('end');
-    nearestTab ? this.scrollToTab(nearestTab) : this.scrollToTab(this.tabs[0]);
+    this.scrollToTab(nearestTab);
   }
 
   protected scrollToTab(target: IgcTabComponent) {
-    target.scrollIntoView({ behavior: 'auto' });
-
+    if (target) {
+      target.scrollIntoView({ behavior: 'auto' });
+    }
     this.updateScrollButtons();
   }
 
   protected updateScrollButtons() {
-    this.showEndScrollButton = false;
-    this.showStartScrollButton = false;
-    this.performUpdate();
-
-    this.showEndScrollButton =
-      Math.round(this.headersWrapper.offsetWidth) >
+    this.disableEndScrollButton =
+      Math.round(this.headersWrapper.offsetWidth) <=
       Math.round(
         Math.abs(this.headersContent.scrollLeft) +
           this.headersContent.offsetWidth
       );
-    this.showStartScrollButton = this.headersContent.scrollLeft !== 0;
+    this.disableStartScrollButton = this.headersContent.scrollLeft === 0;
   }
 
   private alignSelectedIndicator(element: HTMLElement, duration = 0.3) {
+    const x = this.headersContent.offsetLeft;
     const position =
-      this.headersWrapper.offsetWidth -
-      element.offsetLeft -
-      element.offsetWidth;
+      element.offsetLeft +
+      element.offsetWidth -
+      this.headersContent.offsetWidth -
+      x;
     const transformation = this.isLTR
-      ? `translate(${element.offsetLeft}px)`
-      : `translate(${-position}px)`;
+      ? `translate(${element.offsetLeft - x}px)`
+      : `translate(${position}px)`;
     const transitionDuration = duration > 0 ? `${duration}s` : 'initial';
 
     const indicatorStyles: Partial<CSSStyleDeclaration> = {
@@ -315,6 +317,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
             variant="flat"
             name=${details.name}
             collection="internal"
+            .disabled=${details.disabled}
             @click=${details.click}
           ></igc-icon-button>
         `
@@ -324,9 +327,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <div part="headers">
-        ${this.renderScrollButton(this.showStartScrollButton, {
+        ${this.renderScrollButton(this.showScrollButtons, {
           part: 'start-scroll-button',
           name: 'navigate_before',
+          disabled: this.disableStartScrollButton,
           click: this.handleStartButtonClick,
         })}
         <div part="headers-content">
@@ -342,9 +346,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
             <div part="selected-indicator"></div>
           </div>
         </div>
-        ${this.renderScrollButton(this.showEndScrollButton, {
+        ${this.renderScrollButton(this.showScrollButtons, {
           part: 'end-scroll-button',
           name: 'navigate_next',
+          disabled: this.disableEndScrollButton,
           click: this.handleEndButtonClick,
         })}
       </div>

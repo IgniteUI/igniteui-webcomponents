@@ -5,6 +5,7 @@ import {
   IgcTabsComponent,
   IgcTabComponent,
   IgcTabPanelComponent,
+  IgcIconButtonComponent,
 } from '../../index.js';
 
 describe('Tabs component', () => {
@@ -403,14 +404,14 @@ describe('Tabs component', () => {
       ) as HTMLElement;
 
     it('displays scroll buttons', async () => {
-      expect(startScrollButton(element)).to.be.null;
+      expect(startScrollButton(element)).to.not.be.null;
       expect(endScrollButton(element)).to.not.be.null;
 
       element.select('18');
       await elementUpdated(element);
 
       expect(startScrollButton(element)).to.not.be.null;
-      expect(endScrollButton(element)).to.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
 
       element.select('9');
       await elementUpdated(element);
@@ -421,23 +422,31 @@ describe('Tabs component', () => {
     it('scrolls to start when start scroll button is clicked', async () => {
       element.select('18');
       await elementUpdated(element);
-      expect(endScrollButton(element)).to.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
+      expect((endScrollButton(element) as IgcIconButtonComponent).disabled).to
+        .be.true;
 
       startScrollButton(element).click();
       await elementUpdated(element);
 
       expect(endScrollButton(element)).to.not.be.null;
+      expect((endScrollButton(element) as IgcIconButtonComponent).disabled).to
+        .be.false;
     });
 
     it('scrolls to end when end scroll button is clicked', async () => {
       element.select('1');
       await elementUpdated(element);
-      expect(startScrollButton(element)).to.be.null;
+      expect(startScrollButton(element)).to.not.be.null;
+      expect((startScrollButton(element) as IgcIconButtonComponent).disabled).to
+        .be.true;
 
       endScrollButton(element).click();
       await elementUpdated(element);
 
       expect(startScrollButton(element)).to.not.be.null;
+      expect((startScrollButton(element) as IgcIconButtonComponent).disabled).to
+        .be.false;
     });
   });
 });
