@@ -8,8 +8,6 @@ import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
 import { IgcInputBaseComponent } from './input-base.js';
 
-type Direction = 'ltr' | 'rtl' | 'auto';
-
 /**
  * @element igc-input
  *
@@ -35,10 +33,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
   public value = '';
-
-  /** The direction attribute of the control. */
-  @property({ reflect: true })
-  public override dir: Direction = 'auto';
 
   /** The type attribute of the control. */
   @alternateName('displayType')

@@ -24,6 +24,8 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
+type Direction = 'ltr' | 'rtl' | 'auto';
+
 @themes({ bootstrap, material, fluent, indigo })
 export abstract class IgcInputBaseComponent
   extends SizableMixin(
@@ -58,7 +60,7 @@ export abstract class IgcInputBaseComponent
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
-  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
+  public override dir: Direction = 'auto';
 
   /** The name attribute of the control. */
   @property()

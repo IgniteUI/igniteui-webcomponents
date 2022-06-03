@@ -55,15 +55,6 @@ const metadata = {
       description: 'The value attribute of the control.',
       control: 'date',
     },
-    dir: {
-      type: '"ltr" | "rtl" | "auto"',
-      description: 'The direction attribute of the control.',
-      options: ['ltr', 'rtl', 'auto'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'auto',
-    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -124,7 +115,6 @@ interface ArgTypes {
   prompt: string;
   invalid: boolean;
   value: Date | null;
-  dir: 'ltr' | 'rtl' | 'auto';
   name: string;
   outlined: boolean;
   required: boolean;

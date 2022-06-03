@@ -84,7 +84,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       toAttribute: (value: Date) => value.toISOString(),
     },
   })
-  public minValue!: Date;
+  public minValue!: Date | null;
 
   @property({
     attribute: 'max-value',
