@@ -8,3 +8,8 @@ igc-icon-button::part(base) {
         color: color(gray, 600);
     }
 }
+
+igc-icon-button[disabled]::part(base) {
+    color: color(gray, 400);
+    background: inherit;
+}

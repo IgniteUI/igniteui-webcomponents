@@ -96,6 +96,10 @@ igc-icon-button::part(base) {
     }
 }
 
+igc-icon-button[disabled]::part(base) {
+    color: color(gray, 500);
+}
+
 :host([dir='rtl']) {
     [part='start-scroll-button'],
     [part='end-scroll-button'] {

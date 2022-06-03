@@ -26,6 +26,10 @@ igc-icon-button::part(base) {
     }
 }
 
+igc-icon-button[disabled]::part(base) {
+    color: color(primary, 500, .5);
+}
+
 [part='selected-indicator'] {
     display: none;
 }
