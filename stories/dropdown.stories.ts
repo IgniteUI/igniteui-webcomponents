@@ -240,7 +240,7 @@ const Template: Story<ArgTypes, Context> = (
           slot="suffix"
         ></igc-icon
       ></igc-select-item>`}
-      ${html`<igc-dropdown-item disabled
+      ${html`<igc-select-item disabled
         ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<igc-icon
           name="github"
           slot="suffix"

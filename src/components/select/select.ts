@@ -1,14 +1,18 @@
 import { html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { blazorTwoWayBind } from '../common/decorators';
 import IgcDropdownComponent from '../dropdown/dropdown';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
+import IgcSelectItemComponent from './select-item';
 
 export default class IgcSelectComponent extends IgcDropdownComponent {
-  public static override readonly tagName = 'igc-select' as any;
+  public static override readonly tagName = 'igc-select' as 'igc-dropdown';
   protected override toggleController!: IgcToggleController;
+
+  @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
+  protected override items!: Array<IgcSelectItemComponent>;
 
   @query('#igcDDLTarget')
   private tc!: HTMLElement;
