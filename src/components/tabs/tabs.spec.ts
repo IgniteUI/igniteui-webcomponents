@@ -1,4 +1,11 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  waitUntil,
+} from '@open-wc/testing';
+import { TemplateResult } from 'lit';
 import sinon from 'sinon';
 import {
   defineComponents,
@@ -61,6 +68,10 @@ describe('Tabs component', () => {
       new KeyboardEvent('keydown', { key, bubbles: true, composed: true });
     const headersScrollContainer = (el: IgcTabsComponent) =>
       el.shadowRoot!.querySelector('[part="headers-scroll"]') as HTMLElement;
+
+    it('is accessible', async () => {
+      await expect(element).to.be.accessible();
+    });
 
     it('selects the first enabled tab when nothing else is specified', async () => {
       expect(element.selected).to.eq('second');
@@ -353,55 +364,32 @@ describe('Tabs component', () => {
 
   describe('Scrolling', () => {
     beforeEach(async () => {
-      element = await fixture<IgcTabsComponent>(html`<igc-tabs>
-        <igc-tab panel="1">Item 1</igc-tab>
-        <igc-tab panel="2">Item 2</igc-tab>
-        <igc-tab panel="3" disabled>Item 3</igc-tab>
-        <igc-tab panel="4">Item 4</igc-tab>
-        <igc-tab panel="5">Item 5</igc-tab>
-        <igc-tab panel="6">Item 6</igc-tab>
-        <igc-tab panel="7">Item 7</igc-tab>
-        <igc-tab panel="8">Item 8</igc-tab>
-        <igc-tab panel="9">Item 9</igc-tab>
-        <igc-tab panel="10">Item 10</igc-tab>
-        <igc-tab panel="11">Item 11</igc-tab>
-        <igc-tab panel="12">Item 12</igc-tab>
-        <igc-tab panel="13">Item 13</igc-tab>
-        <igc-tab panel="14">Item 14</igc-tab>
-        <igc-tab panel="15">Item 15</igc-tab>
-        <igc-tab panel="16">Item 16</igc-tab>
-        <igc-tab panel="17">Item 17</igc-tab>
-        <igc-tab panel="18">Item 18</igc-tab>
-        <igc-tab-panel slot="panel" name="1">Content 1</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="2">Content 2</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="3">Content 3</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="4">Content 4</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="5">Content 5</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="6">Content 6</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="7">Content 7</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="8">Content 8</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="9">Content 9</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="10">Content 10</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="11">Content 11</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="12">Content 12</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="13">Content 13</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="14">Content 14</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="15">Content 15</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="16">Content 16</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="17">Content 17</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="18">Content 18</igc-tab-panel>
-      </igc-tabs>`);
+      const headers: TemplateResult[] = [];
+      const panels: TemplateResult[] = [];
+      for (let i = 1; i <= 18; i++) {
+        headers.push(
+          html`<igc-tab panel=${i} .disabled=${i === 3}>Item ${i}{</igc-tab>`
+        );
+        panels.push(
+          html`<igc-tab-panel slot="panel" name=${i}
+            >Content ${i}</igc-tab-panel
+          >`
+        );
+      }
+      element = await fixture<IgcTabsComponent>(
+        html`<igc-tabs>${headers}${panels}</igc-tabs>`
+      );
     });
 
     const startScrollButton = (el: IgcTabsComponent) =>
       el.shadowRoot?.querySelector(
         'igc-icon-button[part="start-scroll-button"]'
-      ) as HTMLElement;
+      ) as IgcIconButtonComponent;
 
     const endScrollButton = (el: IgcTabsComponent) =>
       el.shadowRoot?.querySelector(
         'igc-icon-button[part="end-scroll-button"]'
-      ) as HTMLElement;
+      ) as IgcIconButtonComponent;
 
     it('displays scroll buttons', async () => {
       expect(startScrollButton(element)).to.not.be.null;
@@ -421,32 +409,38 @@ describe('Tabs component', () => {
 
     it('scrolls to start when start scroll button is clicked', async () => {
       element.select('18');
+
       await elementUpdated(element);
-      expect(endScrollButton(element)).to.not.be.null;
-      expect((endScrollButton(element) as IgcIconButtonComponent).disabled).to
-        .be.true;
+      await waitUntil(
+        () => endScrollButton(element).disabled,
+        'End scroll button is not disabled at end of scroll'
+      );
 
       startScrollButton(element).click();
-      await elementUpdated(element);
 
-      expect(endScrollButton(element)).to.not.be.null;
-      expect((endScrollButton(element) as IgcIconButtonComponent).disabled).to
-        .be.false;
+      await elementUpdated(element);
+      await waitUntil(
+        () => !endScrollButton(element).disabled,
+        'End scroll button is disabled on opposite scroll'
+      );
     });
 
     it('scrolls to end when end scroll button is clicked', async () => {
       element.select('1');
+
       await elementUpdated(element);
-      expect(startScrollButton(element)).to.not.be.null;
-      expect((startScrollButton(element) as IgcIconButtonComponent).disabled).to
-        .be.true;
+      await waitUntil(
+        () => startScrollButton(element).disabled,
+        'Start scroll button is not disabled at end of scroll'
+      );
 
       endScrollButton(element).click();
-      await elementUpdated(element);
 
-      expect(startScrollButton(element)).to.not.be.null;
-      expect((startScrollButton(element) as IgcIconButtonComponent).disabled).to
-        .be.false;
+      await elementUpdated(element);
+      await waitUntil(
+        () => !startScrollButton(element).disabled,
+        'Start scroll button is disabled on opposite scroll'
+      );
     });
   });
 });
