@@ -442,5 +442,66 @@ describe('Tabs component', () => {
         'Start scroll button is disabled on opposite scroll'
       );
     });
+
+    it('displays scroll buttons (RTL)', async () => {
+      element.setAttribute('dir', 'rtl');
+      await elementUpdated(element);
+
+      expect(startScrollButton(element)).to.not.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
+
+      element.select('18');
+      await elementUpdated(element);
+
+      expect(startScrollButton(element)).to.not.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
+
+      element.select('9');
+      await elementUpdated(element);
+      expect(startScrollButton(element)).to.not.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
+    });
+
+    it('scrolls to start when start scroll button is clicked (RTL)', async () => {
+      element.setAttribute('dir', 'rtl');
+      await elementUpdated(element);
+
+      element.select('18');
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => endScrollButton(element).disabled,
+        'End scroll button is not disabled at end of scroll'
+      );
+
+      startScrollButton(element).click();
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => !endScrollButton(element).disabled,
+        'End scroll button is disabled on opposite scroll'
+      );
+    });
+
+    it('scrolls to end when end scroll button is clicked (RTL)', async () => {
+      element.setAttribute('dir', 'rtl');
+      await elementUpdated(element);
+
+      element.select('1');
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => startScrollButton(element).disabled,
+        'Start scroll button is not disabled at end of scroll'
+      );
+
+      endScrollButton(element).click();
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => !startScrollButton(element).disabled,
+        'Start scroll button is disabled on opposite scroll'
+      );
+    });
   });
 });
