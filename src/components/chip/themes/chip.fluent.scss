@@ -2,6 +2,8 @@
 @use '../../../styles/utilities' as *;
 
 :host button {
+    @include type-category('subtitle-2');
+
     background: color(gray, 200);
     color: color(gray, 700);
 

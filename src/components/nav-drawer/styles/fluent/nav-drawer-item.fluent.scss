@@ -1,0 +1,5 @@
+@use '../../../../styles/utilities/index' as *;
+
+[part='base'] {
+    @include type-category('body-2');
+}
