@@ -19,3 +19,11 @@ $item-hover-bg: color(gray, 100) !default;
 :host(:last-of-type) {
     border-bottom: none;
 }
+
+[part='title'] {
+    @include type-category('body-1');
+}
+
+[part='subtitle'] {
+    @include type-category('subtitle-1');
+}
