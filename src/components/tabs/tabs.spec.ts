@@ -161,6 +161,36 @@ describe('Tabs component', () => {
       expect(getSelectedTabs()[0].panel).to.eq('forth');
     });
 
+    it('selects next/previous tab when pressing right/left arrow (RTL)', async () => {
+      element.dir = 'rtl';
+      tabsHeaders(element)[1].focus();
+      headersScrollContainer(element).dispatchEvent(
+        fireKeyboardEvent('ArrowRight')
+      );
+      await elementUpdated(element);
+      expect(element.selected).to.eq('forth');
+      expect(getSelectedTabs().length).to.eq(1);
+      expect(getSelectedTabs()[0].panel).to.eq('forth');
+
+      headersScrollContainer(element).dispatchEvent(
+        fireKeyboardEvent('ArrowRight')
+      );
+      await elementUpdated(element);
+
+      expect(element.selected).to.eq('third');
+      expect(getSelectedTabs().length).to.eq(1);
+      expect(getSelectedTabs()[0].panel).to.eq('third');
+
+      headersScrollContainer(element).dispatchEvent(
+        fireKeyboardEvent('ArrowLeft')
+      );
+      await elementUpdated(element);
+
+      expect(element.selected).to.eq('forth');
+      expect(getSelectedTabs().length).to.eq(1);
+      expect(getSelectedTabs()[0].panel).to.eq('forth');
+    });
+
     it('selects first/last enabled tab when pressing home/end keys', async () => {
       headersScrollContainer(element).dispatchEvent(fireKeyboardEvent('End'));
       await elementUpdated(element);
@@ -232,6 +262,36 @@ describe('Tabs component', () => {
       await elementUpdated(element);
 
       const offsetLeft = getSelectedTabs()[0].offsetLeft + 'px';
+      expect(indicator.style.transform).to.eq(`translate(${offsetLeft})`);
+      expect(indicator.style.width).to.eq(
+        getSelectedTabs()[0].offsetWidth + 'px'
+      );
+    });
+
+    it('selected indicator align with the selected tab (RTL)', async () => {
+      element.dir = 'rtl';
+      await elementUpdated(element);
+
+      const indicator = element.shadowRoot?.querySelector(
+        '[part = "selected-indicator"]'
+      ) as HTMLElement;
+
+      expect(indicator.style.transform).to.eq('translate(90px)');
+      expect(indicator.style.width).to.eq(
+        getSelectedTabs()[0].offsetWidth + 'px'
+      );
+
+      element.alignment = 'justify';
+      await elementUpdated(element);
+
+      element.select('forth');
+      await elementUpdated(element);
+
+      const offsetLeft =
+        getSelectedTabs()[0].offsetLeft +
+        getSelectedTabs()[0].offsetWidth -
+        element.clientWidth +
+        'px';
       expect(indicator.style.transform).to.eq(`translate(${offsetLeft})`);
       expect(indicator.style.width).to.eq(
         getSelectedTabs()[0].offsetWidth + 'px'
