@@ -7,3 +7,7 @@
     min-width: rem(352px);
     padding: rem(9px) rem(12px);
 }
+
+[part~='message'] {
+    @include type-category('caption');
+}

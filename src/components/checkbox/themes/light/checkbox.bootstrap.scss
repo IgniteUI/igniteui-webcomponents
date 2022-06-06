@@ -29,6 +29,8 @@
 }
 
 [part~='label'] {
+    @include type-category('body-2');
+
     transition: none;
 }
 
