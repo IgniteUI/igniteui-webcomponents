@@ -1,20 +1,13 @@
 import { html } from 'lit';
+import { Context, Story } from './story.js';
 import {
   defineComponents,
   IgcDropdownComponent,
   IgcDropdownItemComponent,
   IgcInputComponent,
-  IgcSelectComponent,
-  IgcSelectItemComponent,
 } from '../src/index.js';
-import { Context, Story } from './story.js';
 
-defineComponents(
-  IgcDropdownComponent,
-  IgcInputComponent,
-  IgcSelectComponent,
-  IgcSelectItemComponent
-);
+defineComponents(IgcDropdownComponent, IgcInputComponent);
 
 // region default
 const metadata = {
@@ -153,7 +146,7 @@ interface ArgTypes {
 };
 
 const toggleDDL = (ev: Event, ddlId: string) => {
-  const ddl = document.getElementById(ddlId) as IgcSelectComponent;
+  const ddl = document.getElementById(ddlId) as IgcDropdownComponent;
   if (ddlId === 'ddl2') {
     const target = ev.target as HTMLElement;
     ddl.placement = target.id === 'ddlButton2' ? 'top-end' : 'bottom-start';
@@ -190,7 +183,7 @@ const Template: Story<ArgTypes, Context> = (
   <div
     style="display: flex; align-items: flex-start; position: relative; height: 400px"
   >
-    <igc-select
+    <igc-dropdown
       id="ddl1"
       size=${size}
       ?open=${open}
@@ -204,49 +197,47 @@ const Template: Story<ArgTypes, Context> = (
       .positionStrategy=${positionStrategy}
       .keepOpenOnSelect=${keepOpenOnSelect}
     >
-      <header slot="header">Sample Header</header>
-      <span slot="prefix">home</span>
-      <header slot="footer">Sample Footer</header>
+      <igc-button slot="target">Dropdown 1</igc-button>
       <igc-dropdown-header>Tasks</igc-dropdown-header>
       <!-- ${items.map(
-        (item) => html`<igc-select-item>${item}</igc-select-item>`
+        (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
       )} -->
       ${items
         .slice(0, 2)
         .map(
           (item) =>
-            html`<igc-select-item
+            html`<igc-dropdown-item
               ><igc-icon slot="prefix" name="home"></igc-icon>${item}<igc-icon
                 name="github"
                 slot="suffix"
               ></igc-icon
-            ></igc-select-item>`
+            ></igc-dropdown-item>`
         )}
-      ${html`<igc-select-item disabled
+      ${html`<igc-dropdown-item disabled
         ><igc-icon slot="prefix" name="home"></igc-icon>${items[2]}<igc-icon
           name="github"
           slot="suffix"
         ></igc-icon
-      ></igc-select-item>`}
-      ${html`<igc-select-item
+      ></igc-dropdown-item>`}
+      ${html`<igc-dropdown-item
         ><igc-icon slot="prefix" name="home"></igc-icon>${items[3]}<igc-icon
           name="github"
           slot="suffix"
         ></igc-icon
-      ></igc-select-item>`}
-      ${html`<igc-select-item
+      ></igc-dropdown-item>`}
+      ${html`<igc-dropdown-item
         ><igc-icon slot="prefix" name="home"></igc-icon>${items[4]}<igc-icon
           name="github"
           slot="suffix"
         ></igc-icon
-      ></igc-select-item>`}
-      ${html`<igc-select-item disabled
+      ></igc-dropdown-item>`}
+      ${html`<igc-dropdown-item disabled
         ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<igc-icon
           name="github"
           slot="suffix"
         ></igc-icon
-      ></igc-select-item>`}
-    </igc-select>
+      ></igc-dropdown-item>`}
+    </igc-dropdown>
 
     <div class="igc-scrollbar" style="display: flex;">
       <div style="position: absolute; right: 0px; top: 50px">
@@ -387,7 +378,7 @@ const checkoutForm = html`
   <!-- <div> -->
   <igc-form>
     <div>
-      <igc-select
+      <igc-dropdown
         id="ddlCountry"
         @igcChange=${(_ev: CustomEvent) => {
           (document.getElementById('txtCountry') as IgcInputComponent).value = (
@@ -428,7 +419,7 @@ const checkoutForm = html`
               (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
             )}
         </igc-dropdown-group>
-      </igc-select>
+      </igc-dropdown>
     </div>
   </igc-form>
   <!-- </div> -->
