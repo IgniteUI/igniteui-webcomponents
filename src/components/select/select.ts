@@ -1,5 +1,7 @@
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
+// import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { blazorTwoWayBind } from '../common/decorators';
 import IgcDropdownComponent from '../dropdown/dropdown';
@@ -14,22 +16,56 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
   protected override items!: Array<IgcSelectItemComponent>;
 
-  @query('#igcDDLTarget')
-  private tc!: HTMLElement;
+  @query('igc-input')
+  private input!: HTMLElement;
 
+  /** The value attribute of the control. */
   @property({ reflect: true })
   @blazorTwoWayBind('igcChange', 'detail')
   public value = '';
 
+  /** The name attribute of the control. */
+  @property()
+  public name!: String;
+
+  /** The disabled attribute of the control. */
+  @property({ reflect: true, type: Boolean })
+  public disabled = false;
+
+  /** The required attribute of the control. */
+  @property({ reflect: true, type: Boolean })
+  public required = false;
+
+  /** The invalid attribute of the control. */
+  @property({ reflect: true, type: Boolean })
+  public invalid = false;
+
+  /** The outlined attribute of the control. */
+  @property({ reflect: true, type: Boolean })
+  public outlined = false;
+
+  /** The autofocus attribute of the control. */
+  @property({ type: Boolean })
+  public override autofocus!: boolean;
+
+  /** The label attribute of the control. */
+  @property({ type: String })
+  public label!: String;
+
+  /** The placeholder attribute of the control. */
+  @property({ type: String })
+  public placeholder!: String;
+
   constructor() {
     super();
-    this.toggleController = new IgcToggleController(this, this.tc);
+    this.toggleController = new IgcToggleController(this, this.input);
+    this.size = 'medium';
 
     this.addEventListener('igcChange', this.handleDDValueChange);
   }
 
   public override firstUpdated() {
-    super.target = this.tc;
+    super.target = this.input;
   }
 
   protected handleDDValueChange(event: CustomEvent) {
@@ -40,10 +76,16 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   protected override render() {
     return html`
       <igc-input
-        id="igcDDLTarget"
-        readonly
         @click=${this.handleTargetClick}
         value=${this.value}
+        placeholder=${ifDefined(this.placeholder)}
+        label=${this.label}
+        size=${this.size}
+        .disabled="${this.disabled}"
+        .required=${this.required}
+        .invalid=${this.invalid}
+        .outlined=${this.outlined}
+        ?autofocus=${this.autofocus}
       >
         <span slot="suffix">home</span>
       </igc-input>

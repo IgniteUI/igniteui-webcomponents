@@ -2,12 +2,15 @@ import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents';
+import IgcInputComponent from '../input/input';
 import IgcSelectComponent from './select';
 import IgcSelectGroupComponent from './select-group';
 import IgcSelectItemComponent from './select-item';
 
 describe('Select component', () => {
   let select: IgcSelectComponent;
+  let input: IgcInputComponent;
+
   const items = [
     {
       value: 'spec',
@@ -34,20 +37,16 @@ describe('Select component', () => {
       text: 'Documentation',
     },
   ];
+
   const selectOpts = (el: IgcSelectComponent) =>
-    [...el.querySelectorAll('igc-dropdown-item')] as HTMLElement[];
-
-  const ddListWrapper = (el: IgcSelectComponent) =>
-    el.shadowRoot!.querySelector('[part="base"]') as HTMLElement;
-
-  const ddList = (el: IgcSelectComponent) =>
-    ddListWrapper(el).querySelector('[part="list"]') as HTMLElement;
+    [...el.querySelectorAll('igc-select-item')] as HTMLElement[];
 
   before(() => {
     defineComponents(
       IgcSelectComponent,
       IgcSelectGroupComponent,
-      IgcSelectItemComponent
+      IgcSelectItemComponent,
+      IgcInputComponent
     );
   });
 
@@ -61,10 +60,15 @@ describe('Select component', () => {
             >`
         )}
       </igc-select>`);
+
+      input = select.shadowRoot!.querySelector(
+        'igc-input'
+      ) as IgcInputComponent;
     });
 
     it('is accessible.', async () => {
       select.open = true;
+      select.label = 'Simple Select';
       await elementUpdated(select);
       await expect(select).to.be.accessible();
     });
@@ -73,15 +77,38 @@ describe('Select component', () => {
       expect(document.querySelector('igc-select')).to.exist;
       expect(select.open).to.be.false;
       expect(select.name).to.be.undefined;
-      expect(select.value).to.be.undefined;
+      expect(select.value).to.equal('');
       expect(select.disabled).to.be.false;
       expect(select.required).to.be.false;
       expect(select.invalid).to.be.false;
-      expect(select.autofocus).to.be.false;
+      expect(select.autofocus).to.be.undefined;
       expect(select.label).to.be.undefined;
       expect(select.placeholder).to.be.undefined;
       expect(select.outlined).to.be.false;
       expect(select.size).to.equal('medium');
+    });
+
+    it('correctly applies input related properties to encapsulated input', async () => {
+      select.value = items[0].value;
+      select.disabled = true;
+      select.required = true;
+      select.invalid = false;
+      select.autofocus = true;
+      select.label = 'Select Label';
+      select.placeholder = 'Select Placeholder';
+      select.outlined = true;
+      select.size = 'large';
+      await elementUpdated(select);
+
+      expect(input.value).to.equal(select.value);
+      expect(input.disabled).to.equal(select.disabled);
+      expect(input.required).to.equal(select.required);
+      expect(input.invalid).to.equal(select.invalid);
+      expect(input.autofocus).to.equal(select.autofocus);
+      expect(input.label).to.equal(select.label);
+      expect(input.placeholder).to.equal(select.placeholder);
+      expect(input.outlined).to.equal(select.outlined);
+      expect(input.size).to.equal(select.size);
     });
 
     it('initializes items with default properties', () => {
@@ -91,6 +118,20 @@ describe('Select component', () => {
       expect(options[0].disabled).to.be.false;
       expect(options[0].value).to.equal(items[0].value);
       expect(options[0].selected).to.be.false;
+    });
+
+    it('navigates to the item with the specified value on `navigateTo` method calls.', async () => {
+      select.navigateTo('implementation');
+      await elementUpdated(select);
+
+      expect(selectOpts(select)[1].hasAttribute('active')).to.be.true;
+    });
+
+    it('navigates to the item at the specified index on `navigateTo` method calls.', async () => {
+      select.navigateTo(1);
+      await elementUpdated(select);
+
+      expect(selectOpts(select)[1].hasAttribute('active')).to.be.true;
     });
 
     it('should focus when the focus method is called', async () => {
@@ -195,46 +236,60 @@ describe('Select component', () => {
       ] as IgcSelectItemComponent[];
       const eventSpy = sinon.spy(select, 'emitEvent');
 
+      select.click();
+      await elementUpdated(select);
+
       selectOpts(select)[2].click();
       await elementUpdated(select);
 
-      const args = { detail: options[2] };
+      const args = { detail: options[2].value };
       expect(eventSpy).calledWithExactly('igcChange', args);
       expect(eventSpy).calledWith('igcClosing');
       expect(eventSpy).calledWith('igcClosed');
     });
 
-    it('emits `igcChange`, `igcClosing` and `igcClosed` events on selecting an item via `Enter` key.', async () => {
-      const options = [
-        ...select.querySelectorAll('igc-select-item'),
-      ] as IgcSelectItemComponent[];
+    it('emits `igcChange` events on selecting an item via `Arrow` keys.', async () => {
       const eventSpy = sinon.spy(select, 'emitEvent');
-
-      pressKey('ArrowDown');
-      pressKey('Enter');
+      pressKey('ArrowDown', 2);
       await elementUpdated(select);
 
-      const args = { detail: options[0] };
+      let args = { detail: items[1].value };
       expect(eventSpy).calledWithExactly('igcChange', args);
-      expect(eventSpy).calledWith('igcClosing');
-      expect(eventSpy).calledWith('igcClosed');
+
+      pressKey('ArrowRight');
+      await elementUpdated(select);
+
+      args = { detail: items[2].value };
+      expect(eventSpy).calledWithExactly('igcChange', args);
+
+      pressKey('ArrowLeft');
+      await elementUpdated(select);
+
+      args = { detail: items[1].value };
+      expect(eventSpy).calledWithExactly('igcChange', args);
+
+      pressKey('ArrowUp');
+      await elementUpdated(select);
+
+      args = { detail: items[0].value };
+      expect(eventSpy).calledWithExactly('igcChange', args);
     });
 
     it('selects an item but does not close the select on `Enter` key when `igcClosing` event is canceled.', async () => {
-      const options = [
-        ...select.querySelectorAll('igc-select-item'),
-      ] as IgcSelectItemComponent[];
       select.addEventListener('igcClosing', (event: CustomEvent) =>
         event.preventDefault()
       );
       await elementUpdated(select);
       const eventSpy = sinon.spy(select, 'emitEvent');
 
+      select.click();
+      await elementUpdated(select);
+
       pressKey('ArrowDown');
       pressKey('Enter');
       await elementUpdated(select);
 
-      const args = { detail: options[0] };
+      const args = { detail: items[0].value };
       expect(eventSpy).calledWithExactly('igcChange', args);
       expect(eventSpy).calledWith('igcClosing');
       expect(select.open).to.be.true;
@@ -285,14 +340,118 @@ describe('Select component', () => {
     });
 
     it('is successfully created with default properties.', () => {
-      expect(document.querySelector('igc-select')).to.exist;
+      expect(document.querySelector('igc-select-group')).to.exist;
       expect(groups[0].disabled).to.be.false;
+    });
+
+    it('displays grouped items properly.', () => {
+      expect(groups.length).to.eq(3);
+
+      expect(groups[0].querySelectorAll('igc-select-item').length).to.eq(3);
+      expect(groups[1].querySelectorAll('igc-select-item').length).to.eq(2);
+      expect(groups[2].querySelectorAll('igc-select-item').length).to.eq(1);
+    });
+
+    it('displays group headers properly.', () => {
+      expect(groups[0].querySelector('h3')!.textContent).to.eq(
+        'Research & Development'
+      );
+      expect(groups[1].querySelector('h3')!.textContent).to.eq(
+        'Product Guidance'
+      );
+      expect(groups[2].querySelector('h3')!.textContent).to.eq(
+        'Release Engineering'
+      );
+    });
+
+    it('navigates properly through grouped items with the list of options closed.', async () => {
+      await elementUpdated(select);
+
+      pressKey('ArrowDown', 2);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal(items[1].value);
+
+      pressKey('ArrowUp');
+      await elementUpdated(select);
+
+      expect(select.value).to.equal(items[0].value);
+    });
+
+    it('navigates properly through grouped items with the list of options opened.', async () => {
+      select.click();
+      await elementUpdated(select);
+
+      pressKey('ArrowDown', 2);
+      await elementUpdated(select);
+
+      const groupItems = [...groups[0].querySelectorAll('igc-select-item')];
+
+      expect(groupItems[1]?.hasAttribute('active')).to.be.true;
+      expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
+        1
+      );
+
+      pressKey('ArrowUp');
+      await elementUpdated(select);
+
+      expect(groupItems[0]?.hasAttribute('active')).to.be.true;
+      expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
+        1
+      );
+    });
+
+    it('skips disabled items when navigating through grouped items with the list closed.', async () => {
+      await elementUpdated(select);
+
+      pressKey('ArrowDown', 4);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal(items[3].value);
+
+      pressKey('ArrowUp');
+      await elementUpdated(select);
+
+      expect(select.value).to.equal(items[2].value);
+    });
+
+    it('skips disabled items when navigating through grouped items with the list opened.', async () => {
+      select.click();
+      await elementUpdated(select);
+
+      pressKey('ArrowDown', 4);
+      await elementUpdated(select);
+
+      let groupItems = [...groups[2].querySelectorAll('igc-select-item')];
+
+      expect(groupItems[0]?.hasAttribute('active')).to.be.true;
+      expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
+        1
+      );
+
+      pressKey('ArrowUp');
+      await elementUpdated(select);
+
+      groupItems = [...groups[1].querySelectorAll('igc-select-item')];
+      expect(groupItems.pop()?.hasAttribute('active')).to.be.false;
+      expect(
+        [...groups[0].querySelectorAll('igc-select-item')]
+          .pop()
+          ?.hasAttribute('active')
+      ).to.be.true;
+    });
+
+    it('does nothing on clicking group labels.', async () => {
+      groups[0].querySelector('h3')?.click();
+      await elementUpdated(select);
+
+      expect(select.open).to.be.true;
     });
   });
 
   const pressKey = (key: string, times = 1) => {
     for (let i = 0; i < times; i++) {
-      ddList(select).dispatchEvent(
+      select.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: key,
           bubbles: true,
