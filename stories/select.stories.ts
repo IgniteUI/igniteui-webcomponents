@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   defineComponents,
   IgcSelectComponent,
@@ -19,12 +18,6 @@ const metadata = {
   title: 'Select',
   component: 'igc-select',
   argTypes: {
-    value: {
-      type: 'string',
-      description: 'The value attribute of the control.',
-      control: 'text',
-      defaultValue: '',
-    },
     disabled: {
       type: 'boolean',
       description: 'The disabled attribute of the control.',
@@ -133,7 +126,7 @@ const metadata = {
       description:
         "Whether the dropdown's width should be the same as the target's one.",
       control: 'boolean',
-      defaultValue: false,
+      defaultValue: true,
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -148,7 +141,6 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  value: string;
   disabled: boolean;
   required: boolean;
   invalid: boolean;
@@ -201,7 +193,6 @@ const items = [
 ];
 const Template: Story<ArgTypes, Context> = (
   {
-    value,
     size = 'medium',
     open = false,
     disabled = false,
@@ -216,7 +207,6 @@ const Template: Story<ArgTypes, Context> = (
     style="display: flex; align-items: flex-start; position: relative; height: 400px"
   >
     <igc-select
-      value=${ifDefined(value)}
       size=${size}
       ?open=${open}
       ?autofocus=${autofocus}
