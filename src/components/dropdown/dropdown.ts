@@ -178,7 +178,7 @@ export default class IgcDropdownComponent
     return result;
   }
 
-  private handleKeyDown = (event: KeyboardEvent) => {
+  protected handleKeyDown = (event: KeyboardEvent) => {
     if (
       this.open &&
       event &&
@@ -194,6 +194,9 @@ export default class IgcDropdownComponent
         'up',
         'arrowdown',
         'down',
+        ' ',
+        'space',
+        'spacebar',
       ];
       if (navKeys.indexOf(key) === -1) {
         return;
@@ -208,6 +211,9 @@ export default class IgcDropdownComponent
           this.handleItemActionKey(DropdownActionKey.ESCAPE);
           break;
         case 'enter':
+        case ' ':
+        case 'space':
+        case 'spacebar':
           this.handleItemActionKey(DropdownActionKey.ENTER);
           break;
         case 'arrowup':
@@ -309,7 +315,7 @@ export default class IgcDropdownComponent
     this.activeItem.active = true;
   }
 
-  private selectItem(
+  protected selectItem(
     item: IgcDropdownItemComponent,
     emit = true
   ): IgcDropdownItemComponent | null {
@@ -372,7 +378,7 @@ export default class IgcDropdownComponent
     }
   }
 
-  private getNearestSiblingFocusableItemIndex(
+  protected getNearestSiblingFocusableItemIndex(
     startIndex: number,
     direction: -1 | 1
   ): number {

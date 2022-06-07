@@ -9,6 +9,23 @@ import IgcDropdownItemComponent from '../dropdown/dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import IgcSelectItemComponent from './select-item';
 
+/**
+ * @element igc-select
+ *
+ * @slot prefix - Renders content before the input.
+ * @slot suffix - Renders content after input.
+ * @slot helper-text - Renders content below the input.
+ *
+ * @fires igcInput - Emitted when the control input receives user input.
+ * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcFocus - Emitted when the control gains focus.
+ * @fires igcBlur - Emitted when the control loses focus.
+ *
+ * @csspart container - The main wrapper that holds all main input elements.
+ * @csspart prefix - The prefix wrapper.
+ * @csspart suffix - The suffix wrapper.
+ * @csspart helper-text - The helper text wrapper.
+ */
 export default class IgcSelectComponent extends IgcDropdownComponent {
   public static override readonly tagName = 'igc-select' as 'igc-dropdown';
   protected override toggleController!: IgcToggleController;
@@ -20,9 +37,9 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   private input!: HTMLElement;
 
   /** The value attribute of the control. */
-  @property({ reflect: true })
+  @property({ reflect: true, type: String })
   @blazorTwoWayBind('igcChange', 'detail')
-  public value = '';
+  public value!: String;
 
   /** The name attribute of the control. */
   @property()
@@ -56,6 +73,10 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   @property({ type: String })
   public placeholder!: String;
 
+  /** Whether the dropdown's width should be the same as the target's one. */
+  @property({ type: Boolean, attribute: 'same-width' })
+  public override sameWidth = true;
+
   constructor() {
     super();
     this.toggleController = new IgcToggleController(this, this.input);
@@ -70,22 +91,50 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
   protected handleDDValueChange(event: CustomEvent) {
     const item = event.detail as IgcDropdownItemComponent;
-    this.value = item.value;
+
+    if (item) {
+      this.value = item.value;
+    }
+  }
+
+  protected handleInputKeyboardEvents(event: KeyboardEvent) {
+    const key = event.key.toLowerCase();
+
+    if (!this.open) {
+      switch (key) {
+        case 'space':
+        case 'spacebar':
+        case ' ':
+        case 'enter':
+          event.stopPropagation();
+          event.preventDefault();
+          this.show();
+          return;
+        default:
+          break;
+      }
+    }
+
+    if (key == ' ') return;
+    this.handleKeyDown(event);
   }
 
   protected override render() {
     return html`
       <igc-input
+        id="igcDDLTarget"
+        readonly
         @click=${this.handleTargetClick}
-        value=${this.value}
+        value=${ifDefined(this.value)}
         placeholder=${ifDefined(this.placeholder)}
-        label=${this.label}
+        label=${ifDefined(this.label)}
         size=${this.size}
         .disabled="${this.disabled}"
         .required=${this.required}
         .invalid=${this.invalid}
         .outlined=${this.outlined}
         ?autofocus=${this.autofocus}
+        @keydown=${this.handleInputKeyboardEvents}
       >
         <span slot="suffix">home</span>
       </igc-input>
