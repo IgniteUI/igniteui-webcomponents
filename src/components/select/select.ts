@@ -108,14 +108,13 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         case 'enter':
           event.stopPropagation();
           event.preventDefault();
-          this.show();
+          this.target.click();
           return;
         default:
           break;
       }
     }
 
-    if (key == ' ') return;
     this.handleKeyDown(event);
   }
 
