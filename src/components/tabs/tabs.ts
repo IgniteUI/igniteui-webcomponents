@@ -213,7 +213,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected scrollToTab(
     target?: IgcTabComponent,
-    alignment: 'start' | 'end' = 'start'
+    alignment: 'start' | 'end' | 'nearest' = 'nearest'
   ) {
     target?.scrollIntoView({ behavior: 'smooth', inline: alignment });
   }
