@@ -420,6 +420,30 @@ describe('Tabs component', () => {
       expect(Math.abs(90 - widths[2])).to.eq(0);
       expect(Math.abs(90 - widths[3])).to.eq(0);
     });
+
+    it('updates selection state when removing selected tab', async () => {
+      element.select('third');
+      await elementUpdated(element);
+
+      getSelectedTabs()[0].remove();
+      await elementUpdated(element);
+
+      expect(element.selected).to.equal('');
+      expect(getSelectedTabs().length).to.equal(0);
+    });
+
+    it('keeps current selection when removing other tabs', async () => {
+      element.select('third');
+      await elementUpdated(element);
+
+      tabsHeaders(element)
+        .slice(0, 2)
+        .forEach((el) => el.remove());
+      await elementUpdated(element);
+
+      expect(element.selected).to.equal('third');
+      expect(getSelectedTabs()[0].panel).to.equal(element.selected);
+    });
   });
 
   describe('Scrolling', () => {
