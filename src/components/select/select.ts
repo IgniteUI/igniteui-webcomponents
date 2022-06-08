@@ -97,7 +97,30 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     }
   }
 
+  protected selectNext() {
+    const activeItemIndex = [...this.items].indexOf(
+      this.selectedItem ?? this.activeItem
+    );
+    const next = this.getNearestSiblingFocusableItemIndex(
+      activeItemIndex ?? -1,
+      1
+    );
+    this.selectItem(this.items[next], true);
+  }
+
+  protected selectPrev() {
+    const activeItemIndex = [...this.items].indexOf(
+      this.selectedItem ?? this.activeItem
+    );
+    const prev = this.getNearestSiblingFocusableItemIndex(
+      activeItemIndex ?? -1,
+      -1
+    );
+    this.selectItem(this.items[prev], true);
+  }
+
   protected handleInputKeyboardEvents(event: KeyboardEvent) {
+    event.stopPropagation();
     const key = event.key.toLowerCase();
 
     if (!this.open) {
@@ -106,9 +129,18 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         case 'spacebar':
         case ' ':
         case 'enter':
-          event.stopPropagation();
           event.preventDefault();
           this.target.click();
+          return;
+        case 'arrowdown':
+        case 'arrowright':
+          event.preventDefault();
+          this.selectNext();
+          return;
+        case 'arrowup':
+        case 'arrowleft':
+          event.preventDefault();
+          this.selectPrev();
           return;
         default:
           break;

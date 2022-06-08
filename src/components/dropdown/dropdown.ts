@@ -58,8 +58,8 @@ export default class IgcDropdownComponent
   public static styles = styles;
 
   protected toggleController!: IgcToggleController;
-  private selectedItem!: IgcDropdownItemComponent | null;
-  private activeItem!: IgcDropdownItemComponent;
+  protected selectedItem!: IgcDropdownItemComponent | null;
+  protected activeItem!: IgcDropdownItemComponent;
   protected target!: HTMLElement;
 
   private get allItems(): IgcDropdownItemComponent[] {

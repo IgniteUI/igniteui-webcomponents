@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-//import sinon from 'sinon';
+import sinon from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents';
 import IgcInputComponent from '../input/input';
 import IgcSelectComponent from './select';
@@ -142,6 +142,142 @@ describe('Select component', () => {
         expect(select.open).to.be.true;
         select.hide();
       });
+    });
+
+    it('should select the next selectable item using ArrowDown or ArrowRight when the list of options is closed', async () => {
+      select.hide();
+      await elementUpdated(select);
+
+      pressKey(input, 'ArrowDown');
+      await elementUpdated(select);
+
+      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
+      expect(selectOpts(select)[0].hasAttribute('active')).to.be.true;
+      expect(select.value).to.equal(items[0].value);
+
+      pressKey(input, 'ArrowRight');
+      await elementUpdated(select);
+
+      expect(selectOpts(select)[1].hasAttribute('selected')).to.be.true;
+      expect(selectOpts(select)[1].hasAttribute('active')).to.be.true;
+      expect(select.value).to.equal(items[1].value);
+    });
+
+    it('should select the previous selectable item using ArrowUp or ArrowLeft when the list of options is closed', async () => {
+      select.hide();
+      select.select(items.length - 1);
+      await elementUpdated(select);
+
+      pressKey(input, 'ArrowUp');
+      await elementUpdated(select);
+
+      expect(selectOpts(select)[items.length - 2].hasAttribute('selected')).to
+        .be.true;
+      expect(selectOpts(select)[items.length - 2].hasAttribute('active')).to.be
+        .true;
+      expect(select.value).to.equal(items[items.length - 2].value);
+
+      pressKey(input, 'ArrowLeft');
+      await elementUpdated(select);
+
+      expect(selectOpts(select)[items.length - 3].hasAttribute('selected')).to
+        .be.true;
+      expect(selectOpts(select)[items.length - 3].hasAttribute('active')).to.be
+        .true;
+      expect(select.value).to.equal(items[items.length - 3].value);
+    });
+
+    it('should fire the igcChange event when using ArrowUp, ArrowDown, ArrowLeft, or ArrowRight and a new item is selected', async () => {
+      const eventSpy = sinon.spy(select, 'emitEvent');
+      select.hide();
+      select.select(0);
+      await elementUpdated(select);
+
+      pressKey(input, 'ArrowRight');
+      await elementUpdated(select);
+      expect(eventSpy).calledWith('igcChange');
+
+      pressKey(input, 'ArrowDown');
+      await elementUpdated(select);
+      expect(eventSpy).calledWith('igcChange');
+
+      pressKey(input, 'ArrowUp');
+      await elementUpdated(select);
+      expect(eventSpy).calledWith('igcChange');
+
+      pressKey(input, 'ArrowLeft');
+      await elementUpdated(select);
+      expect(eventSpy).calledWith('igcChange');
+    });
+
+    it('should not fire the igcChange event when using ArrowUp or ArrowLeft and the first item is already selected', async () => {
+      const eventSpy = sinon.spy(select, 'emitEvent');
+      select.hide();
+      select.select(0);
+      await elementUpdated(select);
+
+      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
+      expect(selectOpts(select)[0].hasAttribute('active')).to.be.true;
+
+      pressKey(input, 'ArrowLeft');
+      await elementUpdated(select);
+      expect(eventSpy).not.be.calledWith('igcChange');
+
+      pressKey(input, 'ArrowUp');
+      await elementUpdated(select);
+      expect(eventSpy).not.be.calledWith('igcChange');
+    });
+
+    it('should not fire the igcChange event when using ArrowDown or ArrowRight and the last item is already selected', async () => {
+      const itemIndex = items.length - 1;
+      const eventSpy = sinon.spy(select, 'emitEvent');
+      select.hide();
+
+      select.select(itemIndex);
+      await elementUpdated(select);
+
+      expect(selectOpts(select)[itemIndex].hasAttribute('selected')).to.be.true;
+      expect(selectOpts(select)[itemIndex].hasAttribute('active')).to.be.true;
+
+      pressKey(input, 'ArrowDown');
+      await elementUpdated(select);
+      expect(eventSpy).not.be.calledWith('igcChange');
+
+      pressKey(input, 'ArrowRight');
+      await elementUpdated(select);
+      expect(eventSpy).not.be.calledWith('igcChange');
+    });
+
+    it('input should not capture the keydown event when the list of options is opened', async () => {
+      select.select(0);
+      await elementUpdated(select);
+
+      pressKey(select, 'ArrowDown', 2);
+      await elementUpdated(select);
+
+      console.log(selectOpts(select));
+      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
+      expect(selectOpts(select)[2].hasAttribute('selected')).to.be.false;
+      expect(selectOpts(select)[2].hasAttribute('active')).to.be.true;
+
+      pressKey(select, 'ArrowRight');
+      await elementUpdated(select);
+      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
+      expect(selectOpts(select)[2].hasAttribute('active')).to.be.true;
+      expect(selectOpts(select)[3].hasAttribute('selected')).to.be.false;
+      expect(selectOpts(select)[3].hasAttribute('active')).to.be.false;
+
+      pressKey(select, 'ArrowUp');
+      await elementUpdated(select);
+      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
+      expect(selectOpts(select)[1].hasAttribute('selected')).to.be.false;
+      expect(selectOpts(select)[1].hasAttribute('active')).to.be.true;
+
+      pressKey(select, 'ArrowLeft');
+      await elementUpdated(select);
+      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
+      expect(selectOpts(select)[0].hasAttribute('active')).to.be.false;
+      expect(selectOpts(select)[1].hasAttribute('active')).to.be.true;
     });
 
     //   it('should focus when the focus method is called', async () => {
