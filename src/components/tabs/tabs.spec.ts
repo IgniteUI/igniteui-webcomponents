@@ -452,7 +452,7 @@ describe('Tabs component', () => {
       const panels: TemplateResult[] = [];
       for (let i = 1; i <= 18; i++) {
         headers.push(
-          html`<igc-tab panel=${i} .disabled=${i === 3}>Item ${i}{</igc-tab>`
+          html`<igc-tab panel=${i} .disabled=${i === 3}>Item ${i}</igc-tab>`
         );
         panels.push(
           html`<igc-tab-panel slot="panel" name=${i}
@@ -520,6 +520,21 @@ describe('Tabs component', () => {
 
       endScrollButton(element).click();
 
+      await elementUpdated(element);
+      await waitUntil(
+        () => !startScrollButton(element).disabled,
+        'Start scroll button is disabled on opposite scroll'
+      );
+    });
+
+    it('scrolls when tab is partially visible', async () => {
+      const header = element.querySelector('igc-tab')!;
+      header.textContent =
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+      element.style.width = '300px';
+      await elementUpdated(element);
+
+      endScrollButton(element).click();
       await elementUpdated(element);
       await waitUntil(
         () => !startScrollButton(element).disabled,

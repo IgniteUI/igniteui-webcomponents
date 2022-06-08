@@ -211,8 +211,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     }
   }
 
-  protected scrollToTab(target?: IgcTabComponent) {
-    target?.scrollIntoView({ behavior: 'smooth' });
+  protected scrollToTab(
+    target?: IgcTabComponent,
+    alignment: 'start' | 'end' = 'start'
+  ) {
+    target?.scrollIntoView({ behavior: 'smooth', inline: alignment });
   }
 
   protected getTabAtBoundary(boundary: 'start' | 'end' = 'end') {
@@ -257,11 +260,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected handleStartButtonClick() {
-    this.scrollToTab(this.getTabAtBoundary('start'));
+    this.scrollToTab(this.getTabAtBoundary('start'), 'start');
   }
 
   protected handleEndButtonClick() {
-    this.scrollToTab(this.getTabAtBoundary('end'));
+    this.scrollToTab(this.getTabAtBoundary('end'), 'end');
   }
 
   protected handleClick(event: MouseEvent) {
