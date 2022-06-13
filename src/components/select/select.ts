@@ -1,9 +1,14 @@
 import { html } from 'lit';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
 // import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { blazorTwoWayBind } from '../common/decorators';
+import { blazorTwoWayBind, watch } from '../common/decorators';
 import IgcDropdownComponent from '../dropdown/dropdown';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
@@ -29,6 +34,9 @@ import IgcSelectItemComponent from './select-item';
 export default class IgcSelectComponent extends IgcDropdownComponent {
   public static override readonly tagName = 'igc-select' as 'igc-dropdown';
   protected override toggleController!: IgcToggleController;
+
+  @state()
+  protected override selectedItem!: IgcDropdownItemComponent | null;
 
   @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
   protected override items!: Array<IgcSelectItemComponent>;
@@ -81,19 +89,31 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     super();
     this.toggleController = new IgcToggleController(this, this.input);
     this.size = 'medium';
-
-    this.addEventListener('igcChange', this.handleDDValueChange);
   }
 
   public override firstUpdated() {
     super.target = this.input;
+    if (!this.selectedItem) {
+      this.selectedItem = this.items.find((i) => i.selected) ?? null;
+    }
+
+    this.updateValue();
   }
 
-  protected handleDDValueChange(event: CustomEvent) {
-    const item = event.detail as IgcDropdownItemComponent;
+  @watch('selectedItem')
+  protected selectedItemChanged() {
+    if (this.selectedItem) {
+      if (!this.activeItem) this.activeItem = this.selectedItem;
+      this.value = this.selectedItem.value;
+    }
+  }
 
-    if (item) {
-      this.value = item.value;
+  @watch('value')
+  protected updateValue() {
+    if (!this.selectedItem) {
+      const matches = this.items.filter((item) => item.value === this.value);
+      const index = this.items.indexOf(matches[matches.length - 1]);
+      this.select(index);
     }
   }
 
@@ -119,9 +139,40 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     this.selectItem(this.items[prev], true);
   }
 
+  protected selectFirstActiveItem() {
+    const items = this.items.filter((i) => !i.disabled);
+    const index = this.items.indexOf(items[0]);
+    const item = this.items[index];
+
+    if (item.value !== this.value) {
+      this.selectItem(item, true);
+    }
+  }
+
+  protected selectLastActiveItem() {
+    const items = this.items.filter((i) => !i.disabled);
+    const index = this.items.indexOf(items[items.length - 1]);
+    const item = this.items[index];
+
+    if (item.value !== this.value) {
+      this.selectItem(item, true);
+    }
+  }
+
   protected handleInputKeyboardEvents(event: KeyboardEvent) {
     event.stopPropagation();
     const key = event.key.toLowerCase();
+
+    if (
+      event.altKey &&
+      (key === 'arrowup' ||
+        key === 'arrowdown' ||
+        key === 'down' ||
+        key === 'up')
+    ) {
+      this.toggle();
+      return;
+    }
 
     if (!this.open) {
       switch (key) {
@@ -133,14 +184,26 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
           this.target.click();
           return;
         case 'arrowdown':
+        case 'down':
         case 'arrowright':
+        case 'right':
           event.preventDefault();
           this.selectNext();
           return;
         case 'arrowup':
+        case 'up':
         case 'arrowleft':
+        case 'left':
           event.preventDefault();
           this.selectPrev();
+          return;
+        case 'home':
+          event.preventDefault();
+          this.selectFirstActiveItem();
+          return;
+        case 'end':
+          event.preventDefault();
+          this.selectLastActiveItem();
           return;
         default:
           break;

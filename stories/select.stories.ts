@@ -2,8 +2,8 @@ import { html } from 'lit';
 import {
   defineComponents,
   IgcSelectComponent,
-  IgcSelectItemComponent,
   IgcSelectGroupComponent,
+  IgcSelectItemComponent,
 } from '../src/index.js';
 import { Context, Story } from './story.js';
 

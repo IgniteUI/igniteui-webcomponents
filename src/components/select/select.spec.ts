@@ -15,26 +15,32 @@ describe('Select component', () => {
     {
       value: 'spec',
       text: 'Specification',
+      disabled: false,
     },
     {
       value: 'implementation',
       text: 'Implementation',
+      disabled: false,
     },
     {
       value: 'testing',
       text: 'Testing',
+      disabled: true,
     },
     {
       value: 'samples',
       text: 'Samples',
-    },
-    {
-      value: 'builds',
-      text: 'Builds',
+      disabled: false,
     },
     {
       value: 'documentation',
       text: 'Documentation',
+      disabled: false,
+    },
+    {
+      value: 'builds',
+      text: 'Builds',
+      disabled: true,
     },
   ];
 
@@ -55,7 +61,7 @@ describe('Select component', () => {
       select = await fixture<IgcSelectComponent>(html`<igc-select>
         ${items.map(
           (item) =>
-            html`<igc-select-item value=${item.value}
+            html`<igc-select-item value=${item.value} ?disabled=${item.disabled}
               >${item.text}</igc-select-item
             >`
         )}
@@ -142,6 +148,112 @@ describe('Select component', () => {
         expect(select.open).to.be.true;
         select.hide();
       });
+    });
+
+    it("assings the value of the selected item as it's own", async () => {
+      const selected = select.select(0);
+      await elementUpdated(select);
+
+      expect(select.value).to.equal(selected?.value);
+    });
+
+    it('toggles the list of options when Alt+Up or Alt+Down keys are pressed', async () => {
+      input.click();
+      select.value = '';
+      await elementUpdated(select);
+
+      expect(select.open).to.be.true;
+
+      pressKey(input, 'arrowup', 1, { altKey: true });
+      expect(select.open).to.be.false;
+      expect(select.value).to.equal('');
+
+      pressKey(input, 'arrowup', 1, { altKey: true });
+      expect(select.open).to.be.true;
+      expect(select.value).to.equal('');
+
+      pressKey(input, 'arrowdown', 1, { altKey: true });
+      expect(select.open).to.be.false;
+      expect(select.value).to.equal('');
+
+      pressKey(input, 'arrowdown', 1, { altKey: true });
+      expect(select.open).to.be.true;
+      expect(select.value).to.equal('');
+
+      pressKey(input, 'up', 1, { altKey: true });
+      expect(select.open).to.be.false;
+      expect(select.value).to.equal('');
+
+      pressKey(input, 'up', 1, { altKey: true });
+      expect(select.open).to.be.true;
+      expect(select.value).to.equal('');
+
+      pressKey(input, 'down', 1, { altKey: true });
+      expect(select.open).to.be.false;
+      expect(select.value).to.equal('');
+
+      pressKey(input, 'down', 1, { altKey: true });
+      expect(select.open).to.be.true;
+      expect(select.value).to.equal('');
+    });
+
+    it('select the first enabled item when the Home button is pressed', async () => {
+      const options = selectOpts(select);
+      options[0].setAttribute('disabled', '');
+      const activeItems = selectOpts(select).filter(
+        (item) => !item.hasAttribute('disabled')
+      );
+      const index = selectOpts(select).indexOf(activeItems[0]);
+      select.open = false;
+      await elementUpdated(select);
+
+      pressKey(input, 'home');
+      await elementUpdated(select);
+      expect(select.value).to.equal(items[index].value);
+      expect(selectOpts(select)[index].hasAttribute('selected')).to.be.true;
+    });
+
+    it('select the last enabled item when the End button is pressed', async () => {
+      const activeItems = selectOpts(select).filter(
+        (item) => !item.hasAttribute('disabled')
+      );
+      const index = selectOpts(select).indexOf(
+        activeItems[activeItems.length - 1]
+      );
+      select.open = false;
+      await elementUpdated(select);
+
+      pressKey(input, 'end');
+      await elementUpdated(select);
+      expect(select.value).to.equal(items[index].value);
+      expect(selectOpts(select)[index].hasAttribute('selected')).to.be.true;
+    });
+
+    it('should not fire the igcChange event when the Home button is pressed and the first item is already selected', async () => {
+      const eventSpy = sinon.spy(select, 'emitEvent');
+      select.select(0);
+      await elementUpdated(select);
+
+      pressKey(input, 'home');
+      await elementUpdated(select);
+      expect(eventSpy).not.be.calledWith('igcChange');
+    });
+
+    it('should not fire the igcChange event when the End button is pressed and the last item is already selected', async () => {
+      const activeItems = selectOpts(select).filter(
+        (item) => !item.hasAttribute('disabled')
+      );
+      const index = selectOpts(select).indexOf(
+        activeItems[activeItems.length - 1]
+      );
+      select.open = false;
+      select.select(index);
+
+      await elementUpdated(select);
+      const eventSpy = sinon.spy(select, 'emitEvent');
+
+      pressKey(input, 'end');
+      expect(eventSpy).not.be.calledWith('igcChange');
     });
 
     it('should select the next selectable item using ArrowDown or ArrowRight when the list of options is closed', async () => {
@@ -246,38 +358,6 @@ describe('Select component', () => {
       pressKey(input, 'ArrowRight');
       await elementUpdated(select);
       expect(eventSpy).not.be.calledWith('igcChange');
-    });
-
-    it('input should not capture the keydown event when the list of options is opened', async () => {
-      select.select(0);
-      await elementUpdated(select);
-
-      pressKey(select, 'ArrowDown', 2);
-      await elementUpdated(select);
-
-      console.log(selectOpts(select));
-      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
-      expect(selectOpts(select)[2].hasAttribute('selected')).to.be.false;
-      expect(selectOpts(select)[2].hasAttribute('active')).to.be.true;
-
-      pressKey(select, 'ArrowRight');
-      await elementUpdated(select);
-      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
-      expect(selectOpts(select)[2].hasAttribute('active')).to.be.true;
-      expect(selectOpts(select)[3].hasAttribute('selected')).to.be.false;
-      expect(selectOpts(select)[3].hasAttribute('active')).to.be.false;
-
-      pressKey(select, 'ArrowUp');
-      await elementUpdated(select);
-      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
-      expect(selectOpts(select)[1].hasAttribute('selected')).to.be.false;
-      expect(selectOpts(select)[1].hasAttribute('active')).to.be.true;
-
-      pressKey(select, 'ArrowLeft');
-      await elementUpdated(select);
-      expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
-      expect(selectOpts(select)[0].hasAttribute('active')).to.be.false;
-      expect(selectOpts(select)[1].hasAttribute('active')).to.be.true;
     });
 
     //   it('should focus when the focus method is called', async () => {
@@ -594,13 +674,19 @@ describe('Select component', () => {
     //     expect(select.open).to.be.true;
     //   });
   });
-  const pressKey = (target: HTMLElement, key: string, times = 1) => {
+  const pressKey = (
+    target: HTMLElement,
+    key: string,
+    times = 1,
+    options?: Object
+  ) => {
     for (let i = 0; i < times; i++) {
       target.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: key,
           bubbles: true,
           composed: true,
+          ...options,
         })
       );
     }
