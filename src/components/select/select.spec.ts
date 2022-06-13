@@ -166,35 +166,35 @@ describe('Select component', () => {
 
       pressKey(input, 'arrowup', 1, { altKey: true });
       expect(select.open).to.be.false;
-      expect(select.value).to.equal('');
+      expect(select.value).to.be.undefined;
 
       pressKey(input, 'arrowup', 1, { altKey: true });
       expect(select.open).to.be.true;
-      expect(select.value).to.equal('');
+      expect(select.value).to.be.undefined;
 
       pressKey(input, 'arrowdown', 1, { altKey: true });
       expect(select.open).to.be.false;
-      expect(select.value).to.equal('');
+      expect(select.value).to.be.undefined;
 
       pressKey(input, 'arrowdown', 1, { altKey: true });
       expect(select.open).to.be.true;
-      expect(select.value).to.equal('');
+      expect(select.value).to.be.undefined;
 
       pressKey(input, 'up', 1, { altKey: true });
       expect(select.open).to.be.false;
-      expect(select.value).to.equal('');
+      expect(select.value).to.be.undefined;
 
       pressKey(input, 'up', 1, { altKey: true });
       expect(select.open).to.be.true;
-      expect(select.value).to.equal('');
+      expect(select.value).to.be.undefined;
 
       pressKey(input, 'down', 1, { altKey: true });
       expect(select.open).to.be.false;
-      expect(select.value).to.equal('');
+      expect(select.value).to.be.undefined;
 
       pressKey(input, 'down', 1, { altKey: true });
       expect(select.open).to.be.true;
-      expect(select.value).to.equal('');
+      expect(select.value).to.be.undefined;
     });
 
     it('select the first enabled item when the Home button is pressed', async () => {

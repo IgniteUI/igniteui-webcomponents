@@ -45,9 +45,9 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   private input!: HTMLElement;
 
   /** The value attribute of the control. */
-  @property({ reflect: true, type: String })
+  @property({ reflect: false, type: String })
   @blazorTwoWayBind('igcChange', 'detail')
-  public value!: String;
+  public value!: String | undefined;
 
   /** The name attribute of the control. */
   @property()
@@ -93,25 +93,21 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
   public override firstUpdated() {
     super.target = this.input;
-    if (!this.selectedItem) {
-      this.selectedItem = this.items.find((i) => i.selected) ?? null;
-    }
+    const selectedItem = this.items.find((i) => i.selected) ?? null;
 
-    this.updateValue();
+    if (selectedItem) this.value = selectedItem.value;
+    else this.updateSelected();
   }
 
   @watch('selectedItem')
-  protected selectedItemChanged() {
-    if (this.selectedItem) {
-      if (!this.activeItem) this.activeItem = this.selectedItem;
-      this.value = this.selectedItem.value;
-    }
+  protected updateValue() {
+    this.value = this.selectedItem?.value;
   }
 
   @watch('value')
-  protected updateValue() {
-    if (!this.selectedItem) {
-      const matches = this.items.filter((item) => item.value === this.value);
+  protected updateSelected() {
+    if (this.selectedItem?.value !== this.value) {
+      const matches = this.items.filter((i) => i.value === this.value);
       const index = this.items.indexOf(matches[matches.length - 1]);
       this.select(index);
     }

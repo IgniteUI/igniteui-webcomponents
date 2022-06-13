@@ -207,6 +207,7 @@ const Template: Story<ArgTypes, Context> = (
     style="display: flex; align-items: flex-start; position: relative; height: 400px"
   >
     <igc-select
+      value="Documentation"
       size=${size}
       ?open=${open}
       ?autofocus=${autofocus}
@@ -240,7 +241,7 @@ const Template: Story<ArgTypes, Context> = (
           slot="suffix"
         ></igc-icon
       ></igc-select-item>`}
-      ${html`<igc-select-item
+      ${html`<igc-select-item selected
         ><igc-icon slot="prefix" name="home"></igc-icon>${items[3]}<igc-icon
           name="github"
           slot="suffix"
