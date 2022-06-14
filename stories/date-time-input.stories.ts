@@ -15,27 +15,33 @@ const metadata = {
   argTypes: {
     inputFormat: {
       type: 'string',
+      description: 'The mask pattern to apply on the input.',
       control: 'text',
     },
     minValue: {
       type: 'Date | null',
+      description: 'The minimum value required for the input to remain valid.',
       control: 'date',
     },
     maxValue: {
       type: 'Date | null',
+      description: 'The maximum value required for the input to remain valid.',
       control: 'date',
     },
     displayFormat: {
       type: 'string',
+      description: 'The display value of the editor.',
       control: 'text',
     },
     spinLoop: {
       type: 'boolean',
+      description: 'Sets whether to loop over the currently spun segment.',
       control: 'boolean',
       defaultValue: true,
     },
     locale: {
       type: 'string',
+      description: 'The locale settings used to display the value.',
       control: 'text',
       defaultValue: 'en',
     },
@@ -52,7 +58,7 @@ const metadata = {
     },
     value: {
       type: 'Date | null',
-      description: 'The value attribute of the control.',
+      description: 'The value of the input.',
       control: 'date',
     },
     name: {
@@ -152,14 +158,14 @@ const handleDecrement = () => {
   const input = document.querySelector(
     'igc-date-time-input'
   ) as IgcDateTimeInputComponent;
-  input?.stepDown();
+  input!.stepDown();
 };
 
 const handleClear = () => {
   const input = document.querySelector(
     'igc-date-time-input'
   ) as IgcDateTimeInputComponent;
-  input?.clear();
+  input!.clear();
 };
 
 (metadata as any).parameters = {

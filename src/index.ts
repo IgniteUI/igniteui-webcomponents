@@ -76,4 +76,3 @@ export { IgcInputBaseComponent } from './components/input/input-base.js';
 export { IgcSliderBaseComponent } from './components/slider/slider-base.js';
 export { IgcButtonBaseComponent } from './components/button/button-base.js';
 export { IgcCalendarBaseComponent } from './components/calendar/common/calendar-base.js';
-export { IgcMaskInputBaseComponent } from './components/mask-input/mask-input-base.js';

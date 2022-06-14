@@ -1,5 +1,5 @@
-import { isDate } from '../calendar/common/utils';
-import { MaskParser } from '../mask-input/mask-parser';
+import { isDate } from '../calendar/common/utils.js';
+import { MaskParser } from '../mask-input/mask-parser.js';
 
 export const enum FormatDesc {
   Numeric = 'numeric',
@@ -119,14 +119,6 @@ export abstract class DateTimeUtil {
 
   public static getDefaultMask(locale: string): string {
     locale = locale || DateTimeUtil.DEFAULT_LOCALE;
-    if (
-      !Intl ||
-      !Intl.DateTimeFormat ||
-      !Intl.DateTimeFormat.prototype.formatToParts
-    ) {
-      // TODO: fallback with Intl.format for IE?
-      return DateTimeUtil.DEFAULT_INPUT_FORMAT;
-    }
     const parts = DateTimeUtil.getDefaultLocaleMask(locale);
 
     if (parts !== undefined) {

@@ -7,20 +7,43 @@ import {
   DateParts,
   DatePart,
   DateTimeUtil,
-} from './date-util';
-import { blazorTwoWayBind, watch } from '../common/decorators';
+} from './date-util.js';
+import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
+import { watch } from '../common/decorators/watch.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { IgcMaskInputBaseComponent } from '../mask-input/mask-input-base';
-import { partNameMap } from '../common/util';
-import { IgcInputEventMap } from '../input/input-base';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { AbstractConstructor } from '../common/mixins/constructor';
+import { IgcMaskInputBaseComponent } from '../mask-input/mask-input-base.js';
+import { partNameMap } from '../common/util.js';
+import { IgcInputEventMap } from '../input/input-base.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { AbstractConstructor } from '../common/mixins/constructor.js';
 
 export interface IgcDateTimeInputEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {
   igcChange: CustomEvent<Date | null>;
 }
 
+/**
+ * A date time input is an input field that lets you set and edit the date and time in a chosen input element
+ * using customizable display and input formats.
+ *
+ * @element igc-date-time-input
+ *
+ * @slot prefix - Renders content before the input.
+ * @slot suffix - Renders content after input.
+ * @slot helper-text - Renders content below the input.
+ *
+ * @fires igcInput - Emitted when the control input receives user input.
+ * @fires igcChange - Emitted when the control's checked state changes.
+ * @fires igcFocus - Emitted when the control gains focus.
+ * @fires igcBlur - Emitted when the control loses focus.
+ *
+ * @csspart container - The main wrapper that holds all main input elements.
+ * @csspart input - The native input element.
+ * @csspart label - The native label element.
+ * @csspart prefix - The prefix wrapper.
+ * @csspart suffix - The suffix wrapper.
+ * @csspart helper-text - The helper text wrapper.
+ */
 export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   IgcDateTimeInputEventMap,
   AbstractConstructor<IgcMaskInputBaseComponent>
@@ -41,6 +64,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     seconds: 1,
   };
 
+  /** The mask pattern to apply on the input. */
   @property({ attribute: 'input-format' })
   public get inputFormat(): string {
     return this._inputFormat || this._defaultMask;
@@ -53,6 +77,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
+  /** The value of the input. */
   @property({
     converter: {
       fromAttribute: (value: string) =>
@@ -76,6 +101,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.validate();
   }
 
+  /** The minimum value required for the input to remain valid. */
   @property({
     attribute: 'min-value',
     converter: {
@@ -86,6 +112,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   })
   public minValue!: Date | null;
 
+  /** The maximum value required for the input to remain valid. */
   @property({
     attribute: 'max-value',
     converter: {
@@ -96,15 +123,22 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   })
   public maxValue!: Date | null;
 
+  /** The display value of the editor. */
   @property({ attribute: 'display-format' })
   public displayFormat!: string;
 
+  /**
+   * Delta values used to increment or decrement each date part on step actions.
+   * All values default to `1`.
+   */
   @property({ attribute: false })
   public spinDelta!: DatePartDeltas;
 
+  /** Sets whether to loop over the currently spun segment. */
   @property({ type: Boolean, attribute: 'spin-loop' })
   public spinLoop = true;
 
+  /** The locale settings used to display the value. */
   @property()
   public locale = 'en';
 
@@ -275,44 +309,39 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     );
   }
 
+  /** Increments a date/time portion. */
   public stepUp(datePart?: DatePart, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
-    if (!targetPart || this.readonly) {
+    if (!targetPart) {
       return;
     }
 
     const newValue = this.trySpinValue(targetPart, delta);
     this.value = newValue;
-    this.setFocus();
   }
 
+  /** Decrements a date/time portion. */
   public stepDown(datePart?: DatePart, delta?: number): void {
     const targetPart = datePart || this.targetDatePart;
 
-    if (!targetPart || this.readonly) {
+    if (!targetPart) {
       return;
     }
 
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue;
-    this.setFocus();
   }
 
+  /** Clears the input element of user input. */
   public clear(): void {
-    if (!this.readonly) {
-      this.maskedValue = '';
-      this.value = null;
-      this.setSelectionRange(0, this.input.value.length);
-    }
+    this.maskedValue = '';
+    this.value = null;
   }
 
   protected updateMask() {
     if (this.hasFocus) {
-      // store the cursor position as it will be moved during masking
-      const cursor = this.input.selectionEnd;
       this.maskedValue = this.getMaskedValue();
-      this.setSelectionRange(cursor!, cursor!);
     } else {
       if (!this.value || !DateTimeUtil.isValidDate(this.value)) {
         this.maskedValue = '';
@@ -373,6 +402,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     if (start !== this.inputFormat.length) {
       this.emitEvent('igcInput', { detail: this.value?.toString() });
     }
+
     this.updateComplete.then(() => this.input.setSelectionRange(end, end));
   }
 
@@ -438,6 +468,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       return;
     }
 
+    this.selection = this.inputSelection;
+
     event.preventDefault();
     event.stopPropagation();
 
@@ -446,12 +478,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     } else {
       this.stepUp();
     }
-  }
 
-  private async setFocus() {
-    await this.updateComplete;
-
-    this.setSelectionRange(this.selection.start, this.selection.end);
+    this.updateComplete.then(() =>
+      this.setSelectionRange(this.selection.start, this.selection.end)
+    );
   }
 
   private updateDefaultMask(): void {
@@ -608,6 +638,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       case 'ArrowDown':
         e.preventDefault();
         key === 'ArrowUp' ? this.stepUp() : this.stepDown();
+
+        this.updateComplete.then(() =>
+          this.setSelectionRange(this.selection.start, this.selection.end)
+        );
         break;
       case ';':
         if (e.ctrlKey) {

@@ -1,6 +1,6 @@
 import { property, state } from 'lit/decorators.js';
-import { IgcInputBaseComponent } from '../input/input-base';
-import { MaskParser } from './mask-parser';
+import { IgcInputBaseComponent } from '../input/input-base.js';
+import { MaskParser } from './mask-parser.js';
 interface MaskSelection {
   start: number;
   end: number;
