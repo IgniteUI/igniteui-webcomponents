@@ -1,3 +1,4 @@
+![Logo Ignite UI Web Components)](https://user-images.githubusercontent.com/52001020/173785249-7ec6ad64-ebfe-402b-9a32-d40e50182b13.png)
 
 
 <h1 align="center">
