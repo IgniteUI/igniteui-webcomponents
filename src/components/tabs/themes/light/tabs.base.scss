@@ -8,19 +8,29 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 }
 
 :host([alignment='start']) [part='headers-scroll'] {
-    justify-content: flex-start;
+    ::slotted(igc-tab:last-of-type) {
+        margin-inline-end: auto;
+    }
 }
 
 :host([alignment='end']) [part='headers-scroll'] {
-    justify-content: flex-end;
+    ::slotted(igc-tab:first-of-type) {
+        margin-inline-start: auto;
+    }
 }
 
 :host([alignment='center']) [part='headers-scroll'] {
-    justify-content: center;
+    ::slotted(igc-tab:first-of-type) {
+        margin-inline-start: auto;
+    }
+
+    ::slotted(igc-tab:last-of-type) {
+        margin-inline-end: auto;
+    }
 }
 
 :host([alignment='justify']) [part='headers-scroll'] {
-    ::slotted(*) {
+    ::slotted(igc-tab) {
         flex-basis: 100px;
         flex-grow: 1;
         max-width: 100%;
