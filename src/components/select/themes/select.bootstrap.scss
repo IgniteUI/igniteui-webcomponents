@@ -27,8 +27,6 @@ igc-input[readonly]:focus-within::part(input), {
 
 :host {
     ::slotted([slot='helper-text']) {
-        @include utils.type-category('caption');
-
         color: utils.color(gray, 700);
     }
 }

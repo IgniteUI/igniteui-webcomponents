@@ -1,5 +1,12 @@
 @use '../../dropdown/themes/light/dropdown.base' as *;
+@use '../../../styles/utilities' as utils;
 
 :host {
     flex-direction: column;
+
+    ::slotted([slot='helper-text']) {
+        @include utils.type-category('caption');
+
+        color: utils.color(gray, 700);
+    }
 }
