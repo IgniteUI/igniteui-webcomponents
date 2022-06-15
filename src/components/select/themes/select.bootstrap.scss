@@ -2,24 +2,24 @@
 
 $input-background: var(--input-background, #fff) !default;
 
-igc-input[readonly]::part(prefix),
-igc-input[readonly]::part(suffix) {
+igc-input[readonly]:not([disabled])::part(prefix),
+igc-input[readonly]:not([disabled])::part(suffix) {
     color: utils.color(gray, 800);
     background: utils.color(gray, 300);
 }
 
-igc-input[readonly]::part(prefix),
-igc-input[readonly]::part(suffix),
-igc-input[readonly]::part(input) {
+igc-input[readonly]:not([disabled])::part(prefix),
+igc-input[readonly]:not([disabled])::part(suffix),
+igc-input[readonly]:not([disabled])::part(input) {
     color: utils.color(gray, 800);
     border-color: utils.color(gray, 400);
 }
 
-igc-input[readonly]::part(input) {
+igc-input[readonly]:not([disabled])::part(input) {
     background: $input-background;
 }
 
-igc-input[readonly]:focus-within::part(input), {
+igc-input[readonly]:not([disabled]):focus-within::part(input), {
     user-select: none;
     box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 500, .38);
     border-color: utils.color(primary, 500);
@@ -29,4 +29,12 @@ igc-input[readonly]:focus-within::part(input), {
     ::slotted([slot='helper-text']) {
         color: utils.color(gray, 700);
     }
+}
+
+igc-input[disabled]::part(prefix),
+igc-input[disabled]::part(suffix),
+igc-input[disabled]::part(input) {
+    background: utils.color(gray, 100);
+    border-color: utils.color(gray, 300);
+    color: utils.color(gray, 400);
 }

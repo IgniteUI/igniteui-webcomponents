@@ -256,15 +256,6 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
             ></igc-icon>
           </slot>
         </span>
-        <span slot="prefix" part="toggle-icon" style="display: flex">
-          <slot name="toggle-icon">
-            <igc-icon
-              size="medium"
-              name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-              collection="internal"
-            ></igc-icon>
-          </slot>
-        </span>
       </igc-input>
       <div part="helper-text" .hidden="${this.helperText.length == 0}">
         <slot name="helper-text"></slot>
