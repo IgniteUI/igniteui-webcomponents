@@ -13,7 +13,10 @@ import IgcDropdownItemComponent from '../dropdown/dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import IgcSelectItemComponent from './select-item';
 import { styles } from './themes/select.base.css';
+import { styles as bootstrap } from './themes/select.bootstrap.css';
+import { themes } from '../../theming';
 
+@themes({ bootstrap })
 /**
  * @element igc-select
  *
@@ -245,6 +248,15 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         ${this.inputPrefix.map((el) => this.renderInnerSlots(el, 'prefix'))}
         ${this.inputSuffix.map((el) => this.renderInnerSlots(el, 'suffix'))}
         <span slot="suffix" part="toggle-icon" style="display: flex">
+          <slot name="toggle-icon">
+            <igc-icon
+              size="medium"
+              name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+              collection="internal"
+            ></igc-icon>
+          </slot>
+        </span>
+        <span slot="prefix" part="toggle-icon" style="display: flex">
           <slot name="toggle-icon">
             <igc-icon
               size="medium"
