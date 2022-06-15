@@ -218,8 +218,8 @@ const Template: Story<ArgTypes, Context> = (
       .dir=${direction}
     >
       <header slot="header">Sample Header</header>
-      <span slot="prefix">home</span>
       <header slot="footer">Sample Footer</header>
+      <span slot="helper-text">Sample helper text.</span>
       <igc-dropdown-header>Tasks</igc-dropdown-header>
       <!-- ${items.map(
         (item) => html`<igc-select-item>${item}</igc-select-item>`

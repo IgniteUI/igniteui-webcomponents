@@ -6,13 +6,13 @@ import {
   state,
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-// import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { blazorTwoWayBind, watch } from '../common/decorators';
 import IgcDropdownComponent from '../dropdown/dropdown';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import IgcSelectItemComponent from './select-item';
+import { styles } from './themes/select.base.css';
 
 /**
  * @element igc-select
@@ -33,13 +33,23 @@ import IgcSelectItemComponent from './select-item';
  */
 export default class IgcSelectComponent extends IgcDropdownComponent {
   public static override readonly tagName = 'igc-select' as 'igc-dropdown';
+  public static override styles = styles;
   protected override toggleController!: IgcToggleController;
-
-  @state()
-  protected override selectedItem!: IgcDropdownItemComponent | null;
 
   @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
   protected override items!: Array<IgcSelectItemComponent>;
+
+  @queryAssignedElements({ slot: 'helper-text' })
+  protected helperText!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'suffix' })
+  protected inputSuffix!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'prefix' })
+  protected inputPrefix!: Array<HTMLElement>;
+
+  @state()
+  protected override selectedItem!: IgcDropdownItemComponent | null;
 
   @query('igc-input')
   private input!: HTMLElement;
@@ -209,6 +219,11 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     this.handleKeyDown(event);
   }
 
+  protected renderInnerSlots(el: HTMLElement, slot: string) {
+    el.setAttribute('slot', slot);
+    return html`${el.cloneNode(true)}`;
+  }
+
   protected override render() {
     return html`
       <igc-input
@@ -225,9 +240,23 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         .outlined=${this.outlined}
         ?autofocus=${this.autofocus}
         @keydown=${this.handleInputKeyboardEvents}
+        exportparts="prefix, suffix"
       >
-        <span slot="suffix">home</span>
+        ${this.inputPrefix.map((el) => this.renderInnerSlots(el, 'prefix'))}
+        ${this.inputSuffix.map((el) => this.renderInnerSlots(el, 'suffix'))}
+        <span slot="suffix" part="toggle-icon" style="display: flex">
+          <slot name="toggle-icon">
+            <igc-icon
+              size="medium"
+              name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+              collection="internal"
+            ></igc-icon>
+          </slot>
+        </span>
       </igc-input>
+      <div part="helper-text" .hidden="${this.helperText.length == 0}">
+        <slot name="helper-text"></slot>
+      </div>
       <div
         part="base"
         style=${styleMap({ position: super.positionStrategy })}
@@ -240,6 +269,8 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
           <slot name="footer"></slot>
         </div>
       </div>
+      <slot name="prefix" hidden></slot>
+      <slot name="suffix" hidden></slot>
     `;
   }
 }

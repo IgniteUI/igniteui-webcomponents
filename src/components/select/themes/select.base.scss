@@ -1,0 +1,5 @@
+@use '../../dropdown/themes/light/dropdown.base' as *;
+
+:host {
+    flex-direction: column;
+}
