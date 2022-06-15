@@ -1,4 +1,10 @@
-# Ignite UI Web Components - from Infragistics
+
+
+<h1 align="center">
+  Ignite UI for Angular - from Infragistics 
+</h1>
+
+
 
 [![Node.js CI](https://github.com/IgniteUI/igniteui-webcomponents/workflows/Node.js%20CI/badge.svg)](https://github.com/IgniteUI/igniteui-webcomponents/actions/workflows/node.js.yml)
 [![Coverage Status](https://coveralls.io/repos/github/IgniteUI/igniteui-webcomponents/badge.svg)](https://coveralls.io/github/IgniteUI/igniteui-webcomponents)
@@ -12,7 +18,49 @@
 ![chrome_48x48](https://user-images.githubusercontent.com/2188411/168109445-fbd7b217-35f9-44d1-8002-1eb97e39cdc6.png) | ![firefox_48x48](https://user-images.githubusercontent.com/2188411/168109465-e46305ee-f69f-4fa5-8f4a-14876f7fd3ca.png) | ![edge_48x48](https://user-images.githubusercontent.com/2188411/168109472-a730f8c0-3822-4ae6-9f54-785a66695245.png) | ![opera_48x48](https://user-images.githubusercontent.com/2188411/168109520-b6865a6c-b69f-44a4-9948-748d8afd687c.png) | ![safari_48x48](https://user-images.githubusercontent.com/2188411/168109527-6c58f2cf-7386-4b97-98b1-cfe0ab4e8626.png)
 --- | --- | --- | --- | --- |
 Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ |
+
+## Overview
+
+|Components|Status|Documentation|Released Version|
+|:--|:--:|:--:|:--:|
+|Avatar|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/avatar)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Badge|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/badge)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Button|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/button)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Calendar|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/scheduling/calendar)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Card|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/card)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Checkbox|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/checkbox)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Form|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/form)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Icon|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/icon)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Icon Button|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/icon-button)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Input|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|List|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/list)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Navigation Bar (Navbar)|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/menus/navbar)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Navigation Drawer|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/menus/navigation-drawer)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Radio|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/radio)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Radio Group|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/radio)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Ripple|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/ripple)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Switch|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/switch)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+|Slider|:white_check_mark:|[Docs]()|[2.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0)|
+|Range Slider|:white_check_mark:|[Docs]()|[2.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.0.0)| 
+|Linear Progress|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/linear-progress)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
+|Circular Progress|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/circular-progress)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
+|Chip|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/chip)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|    
+|Snackbar|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/snackbar)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
+|Toast|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/toast)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
+|Drop Down|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/toast)|[2.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.2.0)|
+|Mask Input|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input)|[3.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.2.0)|
+|Expansion Panel|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/expansion-panel)|[3.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.2.0)|
+|Tree|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree)|[3.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.2.0)|
+
 ## Usage
+
+### The Lightweight Web Components Data Grid and Data Table
+
+The Ignite UI for Web Components Data Grid and Table are both lightweight and developed to handle high data volumes. The Web Components Grid offers powerful data visualization capabilities and superior performance on any device. With interactive features that users expect. Fast rendering. Unbeatable interactions. And the best possible user experience that you wouldn’t otherwise be able to achieve with so little code on your own.
+
+### Dock Manager - EXCLUSIVE FEATURE
+
+Provide a complete windowing experience, splitting complex layouts into smaller, easier-to-manage panes. 
 
 In order to use the Ignite UI Web Components in your application you should install the `igniteui-webcomponents` package:
 
@@ -60,6 +108,7 @@ Add the following line to your user or workspace settings:
     ]
 }
 ```
+
 
 ## Setup
 
