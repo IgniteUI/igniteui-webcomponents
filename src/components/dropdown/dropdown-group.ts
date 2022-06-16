@@ -1,10 +1,10 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import type IgcDropdownComponent from './dropdown';
+import type IgcDropdownItemComponent from './dropdown-item';
 import { styles } from './themes/light/dropdown-group.base.css.js';
 import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
-import type IgcDropdownItemComponent from './dropdown-item';
-import type IgcDropdownComponent from './dropdown';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
@@ -33,7 +33,7 @@ export default class IgcDropdownGroupComponent extends LitElement {
 
     this.setAttribute('role', 'group');
     const dropdown = this.closest('igc-dropdown') as IgcDropdownComponent;
-    this.size = dropdown.size;
+    this.size = dropdown?.size;
   }
 
   protected override render() {

@@ -62,7 +62,7 @@ export default class IgcDropdownComponent
   protected activeItem!: IgcDropdownItemComponent;
   protected target!: HTMLElement;
 
-  private get allItems(): IgcDropdownItemComponent[] {
+  protected get allItems(): IgcDropdownItemComponent[] {
     const groupItems: IgcDropdownItemComponent[] = this.groups.flatMap(
       (group) => group.items
     );
