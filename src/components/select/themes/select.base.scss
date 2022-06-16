@@ -2,7 +2,7 @@
 @use '../../../styles/utilities' as utils;
 
 :host {
-    flex-direction: column;
+    display: block;
 
     ::slotted([slot='helper-text']) {
         @include utils.type-category('caption');

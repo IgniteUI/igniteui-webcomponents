@@ -19,7 +19,7 @@ igc-input[readonly]:not([disabled])::part(input) {
     background: $input-background;
 }
 
-igc-input[readonly]:not([disabled]):focus-within::part(input), {
+igc-input[readonly]:not([disabled]):focus-within::part(input) {
     user-select: none;
     box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 500, .38);
     border-color: utils.color(primary, 500);
