@@ -7,9 +7,9 @@ import {
 } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { partNameMap } from '../common/util.js';
-import { styles as fluent } from './styles/fluent/nav-drawer-item.fluent.css.js';
-import { styles as indigo } from './styles/indigo/nav-drawer-item.indigo.css.js';
-import { styles } from './styles/nav-drawer-item.base.css.js';
+import { styles as fluent } from './themes/light/fluent/nav-drawer-item.fluent.css.js';
+import { styles as indigo } from './themes/light/indigo/nav-drawer-item.indigo.css.js';
+import { styles } from './themes/light/nav-drawer-item.base.css.js';
 
 /**
  * Represents a navigation drawer item.
