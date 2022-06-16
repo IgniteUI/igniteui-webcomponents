@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles as bootstrap } from './themes/light/card.header.bootstrap.css.js';
+import { styles as fluent } from './themes/light/card.header.fluent.css.js';
 import { styles as indigo } from './themes/light/card.header.indigo.css.js';
 import { styles } from './themes/light/card.header.material.css.js';
 
@@ -16,6 +17,7 @@ import { styles } from './themes/light/card.header.material.css.js';
  */
 @themes({
   bootstrap,
+  fluent,
   indigo,
 })
 export default class IgcCardHeaderComponent extends LitElement {

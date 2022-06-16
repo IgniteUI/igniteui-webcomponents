@@ -31,6 +31,10 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
     }
 }
 
+:host [part~='label'] {
+    @include utils.type-category('body-2');
+}
+
 :host(:hover),
 :host(:focus-within) {
     [part='control'] {
