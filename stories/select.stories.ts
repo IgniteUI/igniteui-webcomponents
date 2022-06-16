@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   defineComponents,
   IgcSelectComponent,
@@ -18,6 +19,16 @@ const metadata = {
   title: 'Select',
   component: 'igc-select',
   argTypes: {
+    value: {
+      type: 'string | undefined',
+      description: 'The value attribute of the control.',
+      control: 'text',
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
     disabled: {
       type: 'boolean',
       description: 'The disabled attribute of the control.',
@@ -46,6 +57,16 @@ const metadata = {
       type: 'boolean',
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
+    },
+    label: {
+      type: 'string',
+      description: 'The label attribute of the control.',
+      control: 'text',
+    },
+    placeholder: {
+      type: 'string',
+      description: 'The placeholder attribute of the control.',
+      control: 'text',
     },
     keepOpenOnSelect: {
       type: 'boolean',
@@ -141,11 +162,15 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
+  value: string | undefined;
+  name: string;
   disabled: boolean;
   required: boolean;
   invalid: boolean;
   outlined: boolean;
   autofocus: boolean;
+  label: string;
+  placeholder: string;
   keepOpenOnSelect: boolean;
   scrollStrategy: 'scroll' | 'block' | 'close';
   keepOpenOnOutsideClick: boolean;
@@ -184,15 +209,48 @@ interface ArgTypes {
 };
 
 const items = [
-  'Specification',
-  'Implementation',
-  'Testing',
-  'Samples',
-  'Documentation',
-  'Builds',
+  {
+    text: 'Specification',
+    value: 'spec',
+    disabled: false,
+    selected: false,
+  },
+  {
+    text: 'Implementation',
+    value: 'implementation',
+    disabled: false,
+    selected: false,
+  },
+  {
+    text: 'Testing',
+    value: 'testing',
+    disabled: true,
+    selected: false,
+  },
+  {
+    text: 'Samples',
+    value: 'samples',
+    disabled: false,
+    selected: false,
+  },
+  {
+    text: 'Documentation',
+    value: 'docs',
+    disabled: false,
+    selected: false,
+  },
+  {
+    text: 'Builds',
+    value: 'builds',
+    disabled: true,
+    selected: false,
+  },
 ];
 const Template: Story<ArgTypes, Context> = (
   {
+    label,
+    placeholder,
+    value = 'docs',
     size = 'medium',
     open = false,
     disabled = false,
@@ -203,96 +261,115 @@ const Template: Story<ArgTypes, Context> = (
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
-  <div
-    style="display: flex; align-items: flex-start; position: relative; height: 400px"
+  <igc-select
+    value=${ifDefined(value)}
+    label=${ifDefined(label)}
+    placeholder=${ifDefined(placeholder)}
+    size=${size}
+    ?open=${open}
+    ?autofocus=${autofocus}
+    ?outlined=${outlined}
+    ?required=${required}
+    ?disabled=${disabled}
+    ?invalid=${invalid}
+    .dir=${direction}
   >
-    <igc-select
-      value="Documentation"
-      size=${size}
-      ?open=${open}
-      ?autofocus=${autofocus}
-      ?outlined=${outlined}
-      ?required=${required}
-      ?disabled=${disabled}
-      ?invalid=${invalid}
-      .dir=${direction}
-    >
-      <header slot="header">Sample Header</header>
-      <header slot="footer">Sample Footer</header>
-      <span slot="helper-text">Sample helper text.</span>
-      <igc-dropdown-header>Tasks</igc-dropdown-header>
-      <!-- ${items.map(
-        (item) => html`<igc-select-item>${item}</igc-select-item>`
-      )} -->
-      ${items
-        .slice(0, 2)
-        .map(
-          (item) =>
-            html`<igc-select-item
-              ><igc-icon slot="prefix" name="home"></igc-icon>${item}<igc-icon
-                name="github"
-                slot="suffix"
-              ></igc-icon
-            ></igc-select-item>`
-        )}
-      ${html`<igc-select-item disabled
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[2]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
-      ></igc-select-item>`}
-      ${html`<igc-select-item selected
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[3]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
-      ></igc-select-item>`}
-      ${html`<igc-select-item
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[4]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
-      ></igc-select-item>`}
-      ${html`<igc-select-item disabled
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
-      ></igc-select-item>`}
-    </igc-select>
-  </div>
+    <header slot="header">Sample Header</header>
+    <footer slot="footer">Sample Footer</footer>
+    <span slot="helper-text">Sample helper text.</span>
+    <igc-dropdown-header>Tasks</igc-dropdown-header>
+    ${items.map(
+      (item) => html` <igc-select-item
+        value=${item.value}
+        ?disabled=${item.disabled}
+        ?selected=${item.selected}
+      >
+        <igc-icon slot="prefix" name="home"></igc-icon>
+        ${item.text}
+        <igc-icon slot="suffix" name="github"></igc-icon>
+      </igc-select-item>`
+    )}
+  </igc-select>
 `;
 
 const FormTemplate: Story<null, null> = () => checkoutForm;
 const countries = [
-  'Bulgaria',
-  'United Kingdom',
-  'USA',
-  'Canada',
-  'Japan',
-  'India',
+  {
+    continent: 'Europe',
+    country: 'Bulgaria',
+    value: 'bg',
+    selected: true,
+    disabled: false,
+  },
+  {
+    continent: 'Europe',
+    country: 'United Kingdom',
+    value: 'uk',
+    selected: false,
+    disabled: true,
+  },
+  {
+    continent: 'North America',
+    country: 'United States of America',
+    value: 'us',
+    selected: false,
+    disabled: false,
+  },
+  {
+    continent: 'North America',
+    country: 'Canada',
+    value: 'ca',
+    selected: false,
+    disabled: false,
+  },
+  {
+    continent: 'Asia',
+    country: 'Japan',
+    value: 'ja',
+    selected: false,
+    disabled: false,
+  },
+  {
+    continent: 'Asia',
+    country: 'India',
+    value: 'in',
+    selected: false,
+    disabled: true,
+  },
 ];
+
+function groupBy(objectArray: any, property: string) {
+  return objectArray.reduce(function (acc: any, obj: any) {
+    const key = obj[property];
+
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(obj);
+    return acc;
+  }, {});
+}
+
 const checkoutForm = html`
   <igc-form>
     <igc-select>
-      <igc-select-group>
-        <igc-dropdown-header slot="label">Europe</igc-dropdown-header>
-        ${countries
-          .slice(0, 2)
-          .map((item) => html`<igc-select-item>${item}</igc-select-item>`)}
-      </igc-select-group>
-      <igc-select-group>
-        <igc-dropdown-header slot="label">North America</igc-dropdown-header>
-        ${countries
-          .slice(2, 4)
-          .map((item) => html`<igc-select-item>${item}</igc-select-item>`)}
-      </igc-select-group>
-      <igc-select-group>
-        <igc-dropdown-header slot="label">Asia</igc-dropdown-header>
-        ${countries
-          .slice(4)
-          .map((item) => html`<igc-select-item>${item}</igc-select-item>`)}
-      </igc-select-group>
+      ${Object.entries(groupBy(countries, 'continent')).map(
+        ([continent, countries]) => html`
+          <igc-select-group>
+            <igc-dropdown-header slot="label">${continent}</igc-dropdown-header>
+            ${(countries as any).map(
+              (item: any) => html`
+                <igc-select-item
+                  value=${item.value}
+                  ?disabled=${item.disabled}
+                  ?selected=${item.selected}
+                  >${item.country}</igc-select-item
+                >
+              `
+            )}
+          </igc-select-group>
+        `
+      )}
     </igc-select>
   </igc-form>
 `;
