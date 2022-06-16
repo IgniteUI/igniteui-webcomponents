@@ -3,6 +3,7 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import type { ReactiveTheme, ThemeController } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
@@ -42,6 +43,7 @@ export abstract class IgcInputBaseComponent
   protected inputId = `input-${nextId++}`;
 
   /** The value attribute of the control. */
+  @blazorSuppress()
   public abstract value: string | Date | null;
 
   @query('input', true)
