@@ -7,14 +7,14 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { blazorTwoWayBind, watch } from '../common/decorators';
+import { themes } from '../../theming';
+import { watch } from '../common/decorators';
 import IgcDropdownComponent from '../dropdown/dropdown';
-import IgcDropdownItemComponent from '../dropdown/dropdown-item';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
+import IgcSelectGroupComponent from './select-group';
 import IgcSelectItemComponent from './select-item';
 import { styles } from './themes/select.base.css';
 import { styles as bootstrap } from './themes/select.bootstrap.css';
-import { themes } from '../../theming';
 
 @themes({ bootstrap })
 /**
@@ -42,6 +42,9 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
   protected override items!: Array<IgcSelectItemComponent>;
 
+  @queryAssignedElements({ flatten: true, selector: 'igc-select-group' })
+  protected override groups!: Array<IgcSelectGroupComponent>;
+
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
 
@@ -52,19 +55,18 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   protected inputPrefix!: Array<HTMLElement>;
 
   @state()
-  protected override selectedItem!: IgcDropdownItemComponent | null;
+  protected override selectedItem!: IgcSelectItemComponent | null;
 
   @query('igc-input')
   private input!: HTMLElement;
 
   /** The value attribute of the control. */
   @property({ reflect: false, type: String })
-  @blazorTwoWayBind('igcChange', 'detail')
-  public value!: String | undefined;
+  public value!: string | undefined;
 
   /** The name attribute of the control. */
   @property()
-  public name!: String;
+  public name!: string;
 
   /** The disabled attribute of the control. */
   @property({ reflect: true, type: Boolean })
@@ -88,11 +90,11 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
   /** The label attribute of the control. */
   @property({ type: String })
-  public label!: String;
+  public label!: string;
 
   /** The placeholder attribute of the control. */
   @property({ type: String })
-  public placeholder!: String;
+  public placeholder!: string;
 
   /** Whether the dropdown's width should be the same as the target's one. */
   @property({ type: Boolean, attribute: 'same-width' })
@@ -106,8 +108,10 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
   public override firstUpdated() {
     super.target = this.input;
-    const selectedItem = this.items.find((i) => i.selected) ?? null;
+  }
 
+  protected handleDDSlotChange() {
+    const selectedItem = this.allItems.find((i) => i.selected) ?? null;
     if (selectedItem) this.value = selectedItem.value;
     else this.updateSelected();
   }
@@ -119,39 +123,47 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
   @watch('value')
   protected updateSelected() {
-    if (this.selectedItem?.value !== this.value) {
-      const matches = this.items.filter((i) => i.value === this.value);
-      const index = this.items.indexOf(matches[matches.length - 1]);
+    if (this.allItems.length > 0 && this.selectedItem?.value !== this.value) {
+      const matches = this.allItems.filter((i) => i.value === this.value);
+      const index = this.allItems.indexOf(matches[matches.length - 1]);
+
+      if (index === -1) {
+        this.value = undefined;
+        this.clearSelection();
+        return;
+      }
+
       this.select(index);
     }
   }
 
   protected selectNext() {
-    const activeItemIndex = [...this.items].indexOf(
+    const activeItemIndex = [...this.allItems].indexOf(
       this.selectedItem ?? this.activeItem
     );
+
     const next = this.getNearestSiblingFocusableItemIndex(
       activeItemIndex ?? -1,
       1
     );
-    this.selectItem(this.items[next], true);
+    this.selectItem(this.allItems[next], true);
   }
 
   protected selectPrev() {
-    const activeItemIndex = [...this.items].indexOf(
+    const activeItemIndex = [...this.allItems].indexOf(
       this.selectedItem ?? this.activeItem
     );
     const prev = this.getNearestSiblingFocusableItemIndex(
       activeItemIndex ?? -1,
       -1
     );
-    this.selectItem(this.items[prev], true);
+    this.selectItem(this.allItems[prev], true);
   }
 
   protected selectFirstActiveItem() {
-    const items = this.items.filter((i) => !i.disabled);
-    const index = this.items.indexOf(items[0]);
-    const item = this.items[index];
+    const items = this.allItems.filter((i) => !i.disabled);
+    const index = this.allItems.indexOf(items[0]);
+    const item = this.allItems[index];
 
     if (item.value !== this.value) {
       this.selectItem(item, true);
@@ -159,9 +171,9 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   }
 
   protected selectLastActiveItem() {
-    const items = this.items.filter((i) => !i.disabled);
-    const index = this.items.indexOf(items[items.length - 1]);
-    const item = this.items[index];
+    const items = this.allItems.filter((i) => !i.disabled);
+    const index = this.allItems.indexOf(items[items.length - 1]);
+    const item = this.allItems[index];
 
     if (item.value !== this.value) {
       this.selectItem(item, true);
@@ -233,7 +245,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         id="igcDDLTarget"
         readonly
         @click=${this.handleTargetClick}
-        value=${ifDefined(this.value)}
+        value=${ifDefined(this.selectedItem?.textContent?.trim())}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}
         size=${this.size}
@@ -250,7 +262,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         <span slot="suffix" part="toggle-icon" style="display: flex">
           <slot name="toggle-icon">
             <igc-icon
-              size="medium"
+              size=${this.size}
               name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
               collection="internal"
             ></igc-icon>
@@ -268,7 +280,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
       >
         <div role="listbox" part="list" aria-labelledby="igcDDLTarget">
           <slot name="header"></slot>
-          <slot></slot>
+          <slot @slotchange=${this.handleDDSlotChange}></slot>
           <slot name="footer"></slot>
         </div>
       </div>
