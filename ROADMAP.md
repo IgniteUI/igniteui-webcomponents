@@ -18,9 +18,8 @@
 1. Combobox component [#172](https://github.com/IgniteUI/igniteui-webcomponents/issues/172)
 2. Bottom navigation component [#169](https://github.com/IgniteUI/igniteui-webcomponents/issues/169)
 3. Carousel component [#170](https://github.com/IgniteUI/igniteui-webcomponents/issues/170)
-4. Rating component [#189](https://github.com/IgniteUI/igniteui-webcomponents/issues/189)
-5. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
-6. Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
+4. Splitter component [#184](https://github.com/IgniteUI/igniteui-webcomponents/issues/184)
+5. Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
 
 # Previous Milestone
 
