@@ -68,24 +68,24 @@ const Template: Story<ArgTypes, Context> = (
     <igc-tab panel="16">Item 16</igc-tab>
     <igc-tab panel="17">Item 17</igc-tab>
     <igc-tab panel="18">Item 18</igc-tab>
-    <igc-tab-panel slot="panel" name="first">Content 1</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="second">Content 2</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="third">Content 3</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="forth">Content 4</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="fifth">Content 5</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="sixth">Content 6</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="seventh">Content 7</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="eighth">Content 8</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="ninth">Content 9</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="10">Content 10</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="11">Content 11</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="12">Content 12</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="13">Content 13</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="14">Content 14</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="15">Content 15</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="16">Content 16</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="17">Content 17</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="18">Content 18</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="first">Content 1</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="second">Content 2</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="third">Content 3</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="forth">Content 4</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="fifth">Content 5</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="sixth">Content 6</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="seventh">Content 7</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="eighth">Content 8</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="ninth">Content 9</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="10">Content 10</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="11">Content 11</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="12">Content 12</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="13">Content 13</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="14">Content 14</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="15">Content 15</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="16">Content 16</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="17">Content 17</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="18">Content 18</igc-tab-panel>
   </igc-tabs>
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
@@ -98,34 +98,34 @@ const Template: Story<ArgTypes, Context> = (
     <igc-tab panel="third" disabled>
       <igc-icon name="favorite"></igc-icon>
     </igc-tab>
-    <igc-tab-panel slot="panel" name="first">Content 1</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="second">Content 2</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="first">Content 1</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="second">Content 2</igc-tab-panel>
   </igc-tabs>
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
     <igc-tab panel="first">
-      <igc-icon name="home"></igc-icon>
+      <igc-icon id="home"></igc-icon>
       <span
         >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua.</span
       >
     </igc-tab>
     <igc-tab panel="second">
-      <igc-icon name="search"></igc-icon>
+      <igc-icon id="search"></igc-icon>
       <span
         >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua.</span
       >
     </igc-tab>
     <igc-tab panel="third" disabled>
-      <igc-icon name="favorite"></igc-icon>
+      <igc-icon id="favorite"></igc-icon>
       <span
         >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua.</span
       >
     </igc-tab>
-    <igc-tab-panel slot="panel" name="first">Content 1</igc-tab-panel>
-    <igc-tab-panel slot="panel" name="second">Content 2</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="first">Content 1</igc-tab-panel>
+    <igc-tab-panel slot="panel" id="second">Content 2</igc-tab-panel>
   </igc-tabs>
 `;
 

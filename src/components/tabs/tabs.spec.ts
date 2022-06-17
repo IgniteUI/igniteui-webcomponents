@@ -42,9 +42,9 @@ describe('Tabs component', () => {
         <igc-tab panel="second">Tab 2</igc-tab>
         <igc-tab panel="third">Tab 3</igc-tab>
         <igc-tab panel="forth">Tab 4</igc-tab>
-        <igc-tab-panel slot="panel" name="first">Content 1</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="second">Content 2</igc-tab-panel>
-        <igc-tab-panel slot="panel" name="third">Content 2</igc-tab-panel>
+        <igc-tab-panel slot="panel" id="first">Content 1</igc-tab-panel>
+        <igc-tab-panel slot="panel" id="second">Content 2</igc-tab-panel>
+        <igc-tab-panel slot="panel" id="third">Content 2</igc-tab-panel>
       </igc-tabs>`);
     });
 
@@ -78,7 +78,7 @@ describe('Tabs component', () => {
       expect(getSelectedTabs().length).to.eq(1);
       expect(getSelectedTabs()[0].panel).to.eq('second');
       expect(getSelectedPanels().length).to.eq(1);
-      expect(getSelectedPanels()[0].name).to.eq('second');
+      expect(getSelectedPanels()[0].id).to.eq('second');
     });
 
     it('selects a tab on mouse click if it is not disabled', async () => {
@@ -89,7 +89,7 @@ describe('Tabs component', () => {
       expect(getSelectedTabs().length).to.eq(1);
       expect(getSelectedTabs()[0].panel).to.eq('second');
       expect(getSelectedPanels().length).to.eq(1);
-      expect(getSelectedPanels()[0].name).to.eq('second');
+      expect(getSelectedPanels()[0].id).to.eq('second');
 
       tabsHeaders(element)[2].click();
       await elementUpdated(element);
@@ -98,7 +98,7 @@ describe('Tabs component', () => {
       expect(getSelectedTabs().length).to.eq(1);
       expect(getSelectedTabs()[0].panel).to.eq('third');
       expect(getSelectedPanels().length).to.eq(1);
-      expect(getSelectedPanels()[0].name).to.eq('third');
+      expect(getSelectedPanels()[0].id).to.eq('third');
     });
 
     it('`select` method selects the specified tab', async () => {
@@ -109,7 +109,7 @@ describe('Tabs component', () => {
       expect(getSelectedTabs().length).to.eq(1);
       expect(getSelectedTabs()[0].panel).to.eq('third');
       expect(getSelectedPanels().length).to.eq(1);
-      expect(getSelectedPanels()[0].name).to.eq('third');
+      expect(getSelectedPanels()[0].id).to.eq('third');
 
       element.select(tabsHeaders(element)[1]);
       await elementUpdated(element);
@@ -118,7 +118,7 @@ describe('Tabs component', () => {
       expect(getSelectedTabs().length).to.eq(1);
       expect(getSelectedTabs()[0].panel).to.eq('second');
       expect(getSelectedPanels().length).to.eq(1);
-      expect(getSelectedPanels()[0].name).to.eq('second');
+      expect(getSelectedPanels()[0].id).to.eq('second');
     });
 
     it('`select` method does not change currently selected tab if the specified value does not exist.', async () => {
@@ -129,7 +129,7 @@ describe('Tabs component', () => {
       expect(getSelectedTabs().length).to.eq(1);
       expect(getSelectedTabs()[0].panel).to.eq('second');
       expect(getSelectedPanels().length).to.eq(1);
-      expect(getSelectedPanels()[0].name).to.eq('second');
+      expect(getSelectedPanels()[0].id).to.eq('second');
     });
 
     it('selects next/previous tab when pressing right/left arrow', async () => {
@@ -455,9 +455,7 @@ describe('Tabs component', () => {
           html`<igc-tab panel=${i} .disabled=${i === 3}>Item ${i}</igc-tab>`
         );
         panels.push(
-          html`<igc-tab-panel slot="panel" name=${i}
-            >Content ${i}</igc-tab-panel
-          >`
+          html`<igc-tab-panel slot="panel" id=${i}>Content ${i}</igc-tab-panel>`
         );
       }
       element = await fixture<IgcTabsComponent>(

@@ -6,14 +6,16 @@ import { styles as bootstrap } from './themes/light/tab.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tab.fluent.css.js';
 import { styles as indigo } from './themes/light/tab.indigo.css.js';
 
+let nextId = 0;
+
 /**
  * Represents the tab header.
  *
  * @element igc-tab
  *
- * @slot prefix - Renders content before the default tab header.
- * @slot - Renders the tab header.
- * @slot suffix - Renders content after the default tab header.
+ * @slot prefix - Renders before the tab header content.
+ * @slot - Renders the tab header content.
+ * @slot suffix - Renders after the tab header content.
  *
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
@@ -24,10 +26,12 @@ export default class IgcTabComponent extends LitElement {
 
   public static override styles = styles;
 
+  private readonly componentId = `igc-tab-${nextId++}`;
+
   @query('[part="base"]', true)
   private tab!: HTMLElement;
 
-  /** The name of the tab panel which will be controlled by the tab. */
+  /** The id of the tab panel which will be controlled by the tab. */
   @property({ type: String })
   public panel = '';
 
@@ -50,6 +54,8 @@ export default class IgcTabComponent extends LitElement {
   }
 
   protected override render() {
+    this.id = this.id.length > 0 ? this.id : this.componentId;
+
     return html`
       <div
         part="base"

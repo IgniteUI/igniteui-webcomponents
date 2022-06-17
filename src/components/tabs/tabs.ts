@@ -154,7 +154,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     );
 
     this.setupObserver();
+    this.setAriaAttributes();
     this.defaultSlot.addEventListener('slotchange', this.handleSlotChange);
+    this.shadowRoot?.addEventListener('slotchange', () => {
+      this.setAriaAttributes();
+    });
   }
 
   public override disconnectedCallback() {
@@ -204,8 +208,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this._selected = tab.panel;
 
       this.tabs.forEach((el) => (el.selected = el.panel === this._selected));
-      this.panels.forEach((el) => (el.selected = el.name === this._selected));
-
+      this.panels.forEach(
+        (el) => (el.style.display = el.id === this._selected ? 'block' : 'none')
+      );
       this.scrollToTab(tab);
       this.alignIndicator();
     }
@@ -323,6 +328,16 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     event.preventDefault();
   };
 
+  private setAriaAttributes() {
+    this.tabs.forEach((tab) => {
+      const panel = this.panels.find((el) => el.id === tab.panel);
+      if (panel) {
+        tab.setAttribute('aria-controls', panel.id);
+        panel.setAttribute('aria-labelledby', tab.getAttribute('id')!);
+      }
+    });
+  }
+
   @eventOptions({ passive: true })
   protected handleScroll() {
     this.updateScrollButtons();
@@ -333,7 +348,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     if (!this.selectedTab) {
       this.tabs.forEach((tab) => (tab.selected = false));
-      this.panels.forEach((panel) => (panel.selected = false));
+      this.panels.forEach((panel) => (panel.style.display = 'none'));
       this._selected = '';
     }
 

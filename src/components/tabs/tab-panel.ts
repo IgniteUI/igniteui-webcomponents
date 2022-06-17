@@ -1,6 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, state } from 'lit/decorators.js';
-import { watch } from '../common/decorators/watch.js';
+import { property } from 'lit/decorators.js';
 import { styles } from './themes/light/tab-panel.base.css.js';
 
 /**
@@ -15,29 +14,15 @@ export default class IgcTabPanelComponent extends LitElement {
 
   public static override styles = styles;
 
-  @state()
-  public selected = false;
-
-  @state()
-  public disabled = false;
-
-  /** The tab panel's name. */
+  /** The tab panel's id. */
   @property({ type: String })
-  public name = '';
+  public override id = '';
 
   public override connectedCallback() {
     super.connectedCallback();
 
     this.setAttribute('role', 'tabpanel');
     this.setAttribute('tabindex', '0');
-  }
-
-  @watch('selected')
-  protected selectedChange() {
-    const styles: Partial<CSSStyleDeclaration> = {
-      display: `${this.selected ? 'block' : 'none'}`,
-    };
-    Object.assign(this.style, styles);
   }
 
   protected override render() {
