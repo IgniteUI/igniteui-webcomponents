@@ -15,6 +15,7 @@ import { watch } from '../common/decorators/watch.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
   small: 1 / 2,
@@ -53,11 +54,13 @@ export default class IgcTreeItemComponent extends LitElement {
   private focusedProgrammatically = false;
 
   /** A reference to the tree the item is a part of. */
+  @blazorSuppress()
   public tree?: IgcTreeComponent;
   /** The parent item of the current tree item (if any) */
   public parent: IgcTreeItemComponent | null = null;
 
   /** @private */
+  @blazorSuppress()
   public init = false;
 
   @queryAssignedElements({ slot: 'label', flatten: true })
@@ -65,6 +68,7 @@ export default class IgcTreeItemComponent extends LitElement {
 
   /** @private */
   @query('#wrapper')
+  @blazorSuppress()
   public wrapper!: HTMLElement;
 
   @state()
@@ -72,6 +76,7 @@ export default class IgcTreeItemComponent extends LitElement {
 
   /** @private */
   @state()
+  @blazorSuppress()
   public hasChildren = false;
 
   /** The depth of the item, relative to the root. */
@@ -80,6 +85,7 @@ export default class IgcTreeItemComponent extends LitElement {
 
   /** @private */
   @state()
+  @blazorSuppress()
   public indeterminate = false;
 
   /** The tree item label. */
