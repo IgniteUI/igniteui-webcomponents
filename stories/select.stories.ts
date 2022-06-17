@@ -262,7 +262,7 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => html`
   <igc-select
-    value=${ifDefined(value)}
+    value=${value}
     label=${ifDefined(label)}
     placeholder=${ifDefined(placeholder)}
     size=${size}

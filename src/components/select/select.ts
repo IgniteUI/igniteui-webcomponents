@@ -107,6 +107,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   }
 
   public override firstUpdated() {
+    super.firstUpdated();
     super.target = this.input;
   }
 
@@ -118,12 +119,14 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
   @watch('selectedItem')
   protected updateValue() {
-    this.value = this.selectedItem?.value;
+    this.value = this.selectedItem?.value ?? this.value;
   }
 
   @watch('value')
   protected updateSelected() {
-    if (this.allItems.length > 0 && this.selectedItem?.value !== this.value) {
+    if (this.allItems.length === 0) return;
+
+    if (this.selectedItem?.value !== this.value) {
       const matches = this.allItems.filter((i) => i.value === this.value);
       const index = this.allItems.indexOf(matches[matches.length - 1]);
 

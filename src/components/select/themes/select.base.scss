@@ -10,3 +10,7 @@
         color: utils.color(gray, 700);
     }
 }
+
+igc-input::part(input)::selection {
+    background: transparent;
+}
