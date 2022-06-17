@@ -45,7 +45,7 @@ describe('Select component', () => {
   ];
 
   const selectOpts = (el: IgcSelectComponent) =>
-    [...el.querySelectorAll('igc-select-item')] as HTMLElement[];
+    [...el.querySelectorAll('igc-select-item')] as IgcSelectItemComponent[];
 
   before(() => {
     defineComponents(
@@ -106,7 +106,9 @@ describe('Select component', () => {
       select.size = 'large';
       await elementUpdated(select);
 
-      expect(input.value).to.equal(select.value);
+      const selectedItem = selectOpts(select).find((i) => i.selected);
+
+      expect(input.value).to.equal(selectedItem?.textContent);
       expect(input.disabled).to.equal(select.disabled);
       expect(input.required).to.equal(select.required);
       expect(input.invalid).to.equal(select.invalid);
@@ -358,6 +360,95 @@ describe('Select component', () => {
       pressKey(input, 'ArrowRight');
       await elementUpdated(select);
       expect(eventSpy).not.be.calledWith('igcChange');
+    });
+
+    it('should select an item upon typing a valid term while the select is on focus', async () => {
+      const term = items[0].text;
+
+      Array.from(term).forEach((char) => {
+        pressKey(input, char);
+      });
+
+      await elementUpdated(select);
+      const item = selectOpts(select).find((i) => i.value === items[0].value);
+
+      expect(item?.selected).to.be.true;
+    });
+
+    it('should not change selection upon typing an invalid term while the select is on focus', async () => {
+      const itemIndex = 1;
+      const term = 'infra';
+      select.select(itemIndex);
+      await elementUpdated(select);
+
+      Array.from(term).forEach((char) => {
+        pressKey(input, char);
+      });
+
+      await elementUpdated(select);
+      expect(selectOpts(select)[itemIndex]?.selected).to.be.true;
+    });
+
+    it('should select the first item that matches the term', async () => {
+      const term = 's';
+      await elementUpdated(select);
+
+      Array.from(term).forEach((char) => {
+        pressKey(input, char);
+      });
+
+      await elementUpdated(select);
+      const item = selectOpts(select).find((i) =>
+        i.textContent?.toLocaleLowerCase()?.startsWith(term)
+      );
+      expect(item?.selected).to.be.true;
+    });
+
+    it('should select another valid item if the user starts typing after pausing', async () => {
+      let term = 'sp';
+
+      Array.from(term).forEach((char) => {
+        pressKey(input, char);
+      });
+
+      await elementUpdated(select);
+      let item = selectOpts(select).find((i) =>
+        i.textContent?.toLocaleLowerCase()?.startsWith(term)
+      );
+
+      expect(item?.selected).to.be.true;
+
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+
+      term = 'sa';
+      Array.from(term).forEach((char) => {
+        pressKey(input, char);
+      });
+
+      await elementUpdated(select);
+      item = selectOpts(select).find((i) =>
+        i.textContent?.toLocaleLowerCase()?.startsWith(term)
+      );
+
+      expect(item?.selected).to.be.true;
+    });
+
+    it('should not select an item upon typing a valid term while the select is on focus and the item is disabled', async () => {
+      const disabledItem = items.find((i) => i.disabled);
+      const term = disabledItem?.text;
+
+      Array.from(term!).forEach((char) => {
+        pressKey(input, char);
+      });
+
+      await elementUpdated(select);
+      const item = selectOpts(select).find(
+        (i) => i.value === disabledItem?.value
+      );
+
+      expect(item?.selected).to.be.false;
     });
 
     //   it('should focus when the focus method is called', async () => {

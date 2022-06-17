@@ -38,6 +38,8 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   public static override readonly tagName = 'igc-select' as 'igc-dropdown';
   public static override styles = styles;
   protected override toggleController!: IgcToggleController;
+  private searchTerm = '';
+  private lastKeyTime = Date.now();
 
   @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
   protected override items!: Array<IgcSelectItemComponent>;
@@ -183,6 +185,38 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     }
   }
 
+  protected selectItemByKey(event: KeyboardEvent): void {
+    if (
+      !event ||
+      !event.key ||
+      event.key.length > 1 ||
+      event.key === ' ' ||
+      event.key === 'spacebar'
+    ) {
+      // ignore longer keys ('Alt', 'ArrowDown', etc) AND spacebar (used of open/close)
+      return;
+    }
+
+    const currentTime = Date.now();
+
+    if (currentTime - this.lastKeyTime > 500) {
+      this.searchTerm = '';
+    }
+
+    this.searchTerm += event.key;
+    this.lastKeyTime = currentTime;
+
+    const item = this.allItems
+      .filter((i) => !i.disabled)
+      .find((i) =>
+        i.textContent
+          ?.trim()
+          .toLowerCase()
+          .startsWith(this.searchTerm.toLowerCase())
+      );
+    if (item) this.selectItem(item);
+  }
+
   protected handleInputKeyboardEvents(event: KeyboardEvent) {
     event.stopPropagation();
     const key = event.key.toLowerCase();
@@ -235,6 +269,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     }
 
     this.handleKeyDown(event);
+    this.selectItemByKey(event);
   }
 
   protected renderInnerSlots(el: HTMLElement, slot: string) {
