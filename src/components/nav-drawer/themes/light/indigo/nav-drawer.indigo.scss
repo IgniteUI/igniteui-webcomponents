@@ -1,0 +1,16 @@
+@use '../../../../../styles/utilities/index' as *;
+
+$background: var(--background, color(gray, 700)) !default;
+
+:host {
+    [part='base'] {
+        background: $background;
+        border: none;
+        box-shadow: none;
+    }
+}
+
+:host([position='start']) [part='mini'],
+:host([position='end']) [part='mini'] {
+    background: $background;
+}

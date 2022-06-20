@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
@@ -100,6 +101,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   /** Replaces the selected text in the input. */
+  @blazorSuppress()
   public override setRangeText(
     replacement: string,
     start: number,
