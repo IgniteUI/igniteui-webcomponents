@@ -66,6 +66,10 @@ export {
   DateRangeDescriptor,
   DateRangeType,
 } from './components/calendar/common/calendar.model.js';
+export {
+  DatePart,
+  DatePartDeltas,
+} from './components/date-time-input/date-util.js';
 export { IgcRangeSliderValue } from './components/slider/range-slider.js';
 
 // Base classes

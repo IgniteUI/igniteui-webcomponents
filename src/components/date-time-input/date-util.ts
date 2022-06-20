@@ -262,102 +262,6 @@ export abstract class DateTimeUtil {
     return formattedDate;
   }
 
-  private static setDisplayFormatOptions(
-    value: Date,
-    format: string,
-    locale: string,
-    noLeadingZero = false
-  ) {
-    const options: any = {};
-    const parts = this.parseDateTimeFormat(format, locale, noLeadingZero);
-
-    const datePartFormatOptionMap = new Map([
-      [DateParts.Date, 'day'],
-      [DateParts.Month, 'month'],
-      [DateParts.Year, 'year'],
-      [DateParts.Hours, 'hour'],
-      [DateParts.Minutes, 'minute'],
-      [DateParts.Seconds, 'second'],
-      [DateParts.AmPm, 'dayPeriod'],
-    ]);
-
-    const dateFormatMap = new Map([
-      ['d', 'numeric'],
-      ['dd', '2-digit'],
-      ['M', 'numeric'],
-      ['MM', '2-digit'],
-      ['MMM', 'short'],
-      ['MMMM', 'long'],
-      ['MMMMM', 'narrow'],
-      ['y', 'numeric'],
-      ['yy', '2-digit'],
-      ['yyy', 'numeric'],
-      ['yyyy', 'numeric'],
-      ['h', 'numeric'],
-      ['hh', '2-digit'],
-      ['H', 'numeric'],
-      ['HH', '2-digit'],
-      ['m', 'numeric'],
-      ['mm', '2-digit'],
-      ['s', 'numeric'],
-      ['ss', '2-digit'],
-      ['ttt', 'short'],
-      ['tttt', 'long'],
-      ['ttttt', 'narrow'],
-    ]);
-
-    for (const part of parts) {
-      if (part.type !== DateParts.Literal) {
-        const option = datePartFormatOptionMap.get(part.type);
-        const format =
-          dateFormatMap.get(part.format) ||
-          dateFormatMap.get(part.format.substring(0, 2));
-
-        if (option && format) {
-          options[option] = format;
-
-          if (part.type === DateParts.Hours) {
-            part.format.charAt(0) === 'h'
-              ? (options['hour12'] = true)
-              : (options['hour12'] = false);
-          }
-        }
-
-        // Need to be set if we have 't' or 'tt'.
-        if (part.type === DateParts.AmPm && part.format.length <= 2) {
-          options['hour'] = '2-digit';
-          options['hour12'] = true;
-        }
-      }
-    }
-
-    let formatter;
-    try {
-      formatter = new Intl.DateTimeFormat(
-        locale,
-        options as Intl.DateTimeFormatOptions
-      );
-    } catch {
-      formatter = new Intl.DateTimeFormat(this.DEFAULT_LOCALE, options);
-    }
-
-    const formattedParts = formatter.formatToParts(value);
-
-    let result = '';
-
-    for (const part of parts) {
-      if (part.type === DateParts.Literal) {
-        result += part.format;
-        continue;
-      }
-
-      const option = datePartFormatOptionMap.get(part.type)!;
-      result += formattedParts.filter((p) => p.type === option)[0]?.value || '';
-    }
-
-    return result;
-  }
-
   public static getPartValue(
     datePartInfo: DatePartInfo,
     partLength: number,
@@ -638,6 +542,102 @@ export abstract class DateTimeUtil {
     }
 
     return errors;
+  }
+
+  private static setDisplayFormatOptions(
+    value: Date,
+    format: string,
+    locale: string,
+    noLeadingZero = false
+  ) {
+    const options: any = {};
+    const parts = this.parseDateTimeFormat(format, locale, noLeadingZero);
+
+    const datePartFormatOptionMap = new Map([
+      [DateParts.Date, 'day'],
+      [DateParts.Month, 'month'],
+      [DateParts.Year, 'year'],
+      [DateParts.Hours, 'hour'],
+      [DateParts.Minutes, 'minute'],
+      [DateParts.Seconds, 'second'],
+      [DateParts.AmPm, 'dayPeriod'],
+    ]);
+
+    const dateFormatMap = new Map([
+      ['d', 'numeric'],
+      ['dd', '2-digit'],
+      ['M', 'numeric'],
+      ['MM', '2-digit'],
+      ['MMM', 'short'],
+      ['MMMM', 'long'],
+      ['MMMMM', 'narrow'],
+      ['y', 'numeric'],
+      ['yy', '2-digit'],
+      ['yyy', 'numeric'],
+      ['yyyy', 'numeric'],
+      ['h', 'numeric'],
+      ['hh', '2-digit'],
+      ['H', 'numeric'],
+      ['HH', '2-digit'],
+      ['m', 'numeric'],
+      ['mm', '2-digit'],
+      ['s', 'numeric'],
+      ['ss', '2-digit'],
+      ['ttt', 'short'],
+      ['tttt', 'long'],
+      ['ttttt', 'narrow'],
+    ]);
+
+    for (const part of parts) {
+      if (part.type !== DateParts.Literal) {
+        const option = datePartFormatOptionMap.get(part.type);
+        const format =
+          dateFormatMap.get(part.format) ||
+          dateFormatMap.get(part.format.substring(0, 2));
+
+        if (option && format) {
+          options[option] = format;
+
+          if (part.type === DateParts.Hours) {
+            part.format.charAt(0) === 'h'
+              ? (options['hour12'] = true)
+              : (options['hour12'] = false);
+          }
+        }
+
+        // Need to be set if we have 't' or 'tt'.
+        if (part.type === DateParts.AmPm && part.format.length <= 2) {
+          options['hour'] = '2-digit';
+          options['hour12'] = true;
+        }
+      }
+    }
+
+    let formatter;
+    try {
+      formatter = new Intl.DateTimeFormat(
+        locale,
+        options as Intl.DateTimeFormatOptions
+      );
+    } catch {
+      formatter = new Intl.DateTimeFormat(this.DEFAULT_LOCALE, options);
+    }
+
+    const formattedParts = formatter.formatToParts(value);
+
+    let result = '';
+
+    for (const part of parts) {
+      if (part.type === DateParts.Literal) {
+        result += part.format;
+        continue;
+      }
+
+      const option = datePartFormatOptionMap.get(part.type)!;
+      result += formattedParts.filter((p) => p.type === option)[0]?.value || '';
+    }
+
+    return result;
   }
 
   private static getMask(dateStruct: any[]): string {
