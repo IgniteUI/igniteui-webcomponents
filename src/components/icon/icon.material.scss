@@ -3,6 +3,11 @@
 
 $size: rem(20px);
 
+svg {
+    height: 100%;
+    width: 100%;
+}
+
 :host {
     display: inline-flex;
     align-items: center;

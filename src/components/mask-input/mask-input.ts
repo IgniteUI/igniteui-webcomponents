@@ -7,6 +7,7 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { partNameMap } from '../common/util.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { MaskParser } from './mask-parser.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 interface MaskSelection {
   start: number;
@@ -184,16 +185,12 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
         );
 
       case 'insertFromDrop':
-        return this.insertFromDrop(this.input.value);
+        return this.updateInput(
+          value.substring(this.inputSelection.start, this.inputSelection.end),
+          this.inputSelection.start,
+          this.inputSelection.end
+        );
     }
-  }
-
-  protected insertFromDrop(value: string) {
-    const { start, end } = this.inputSelection;
-    this.maskedValue = this.parser.apply(value);
-    this._value = this.parser.parse(this.maskedValue);
-    this.requestUpdate();
-    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
   protected updateInput(part: string, start: number, finish: number) {
@@ -296,6 +293,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
     this._value = this.parser.parse(this.maskedValue);
   }
 
+  @blazorSuppress()
   public override setSelectionRange(
     start: number,
     end: number,

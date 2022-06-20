@@ -9,6 +9,8 @@
 }
 
 ::slotted([slot='subtitle']) {
+    @include type-category('body-1');
+
     color: color(gray, 800);
     opacity: 1;
 }

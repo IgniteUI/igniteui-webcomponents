@@ -109,6 +109,8 @@ $input-background: var(--input-background, #fff) !default;
     }
 
     [part='helper-text'] {
+        @include utils.type-category('body-2');
+
         margin-top: rem(4px);
         color: utils.color(gray, 700);
     }

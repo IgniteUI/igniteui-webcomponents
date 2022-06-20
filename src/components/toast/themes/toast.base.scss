@@ -1,6 +1,7 @@
 @use '../../../styles/utilities' as *;
 
 :host {
+    @include type-category('body-2');
     @include border-radius(rem(26px));
 
     display: inline-flex;

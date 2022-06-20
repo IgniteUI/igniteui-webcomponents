@@ -31,3 +31,7 @@
     background: $header-background;
     color: $header-color;
 }
+
+[part='header-title'] {
+    @include type-category('subtitle-1');
+}
