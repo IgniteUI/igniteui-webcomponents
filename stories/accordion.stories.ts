@@ -27,7 +27,10 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
-    <igc-accordion .singleBranchExpand="${singleBranchExpand} .dir="${direction}"">
+    <igc-accordion
+      .singleBranchExpand="${singleBranchExpand}"
+      .dir="${direction}"
+    >
       <igc-expansion-panel>
         <div slot="title">Expansion panel 1 title</div>
         <div slot="subtitle">Expansion panel 1 subtitle</div>

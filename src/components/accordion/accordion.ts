@@ -16,9 +16,34 @@ export default class IgcAccordionComponent extends LitElement {
     );
   }
 
-  public hideAll() {}
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.panels.forEach((p) => {
+      p.addEventListener('igcOpening', this.handlePanelOpening.bind(this));
+    });
+  }
 
-  public showAll() {}
+  private handlePanelOpening(event: CustomEvent<IgcExpansionPanelComponent>) {
+    if (!this.singleBranchExpand) {
+      return;
+    }
+    this.panels.forEach((p) => {
+      if (p.open && p !== event.detail) {
+        p.hide();
+      }
+    });
+    event.detail.show();
+  }
+
+  /** Hides all of the child expansion panels' contents. */
+  public hideAll() {
+    this.panels.forEach((p) => (p.open = false));
+  }
+
+  /** Shows all of the child expansion panels' contents. */
+  public showAll() {
+    this.panels.forEach((p) => (p.open = true));
+  }
 
   protected override render() {
     return html`<slot></slot>`;
