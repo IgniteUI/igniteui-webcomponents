@@ -9,6 +9,7 @@ import IgcTreeItemComponent from './tree-item.js';
 import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 type Direction = 'ltr' | 'rtl' | 'auto';
 
@@ -36,8 +37,10 @@ export default class IgcTreeComponent extends SizableMixin(
   public static styles = styles;
 
   /** @private */
+  @blazorSuppress()
   public selectionService!: IgcTreeSelectionService;
   /** @private */
+  @blazorSuppress()
   public navService!: IgcTreeNavigationService;
 
   /** Whether a single or multiple of a parent's child items can be expanded. */
@@ -121,6 +124,7 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   /** Returns all of the tree's items. */
+  @blazorSuppress()
   public get items(): Array<IgcTreeItemComponent> {
     return Array.from(this.querySelectorAll(`igc-tree-item`));
   }
@@ -141,7 +145,10 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   /** Select all items if the items collection is empty. Otherwise, select the items in the items collection. */
-  public select(items?: IgcTreeItemComponent[]): void {
+  public select(
+    /* alternateType: TreeItemCollection */
+    items?: IgcTreeItemComponent[]
+  ): void {
     if (!items) {
       items =
         this.selection === 'cascade'
@@ -152,7 +159,10 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   /** Deselect all items if the items collection is empty. Otherwise, deselect the items in the items collection. */
-  public deselect(items?: IgcTreeItemComponent[]): void {
+  public deselect(
+    /* alternateType: TreeItemCollection */
+    items?: IgcTreeItemComponent[]
+  ): void {
     this.selectionService.deselectItemsWithNoEvent(items);
   }
 
@@ -160,7 +170,10 @@ export default class IgcTreeComponent extends SizableMixin(
    * Expands all of the passed items.
    * If no items are passed, expands ALL items.
    */
-  public expand(items?: IgcTreeItemComponent[]): void {
+  public expand(
+    /* alternateType: TreeItemCollection */
+    items?: IgcTreeItemComponent[]
+  ): void {
     items = items || this.items;
     items.forEach((item) => (item.expanded = true));
   }
@@ -169,7 +182,10 @@ export default class IgcTreeComponent extends SizableMixin(
    * Collapses all of the passed items.
    * If no items are passed, collapses ALL items.
    */
-  public collapse(items?: IgcTreeItemComponent[]): void {
+  public collapse(
+    /* alternateType: TreeItemCollection */
+    items?: IgcTreeItemComponent[]
+  ): void {
     items = items || this.items;
     items.forEach((item) => (item.expanded = false));
   }

@@ -23,6 +23,10 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
     background: transparent;
 }
 
+[part~='label'] {
+    @include type-category('body-2');
+}
+
 :host(:hover) [part~='control'] {
     box-shadow: inset 0 0 0 1px $hover-color;
 }
