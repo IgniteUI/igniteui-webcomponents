@@ -14,7 +14,7 @@ export enum DateParts {
   Hours = 'hours',
   Minutes = 'minutes',
   Seconds = 'seconds',
-  AmPm = 'ampm',
+  AmPm = 'amPm',
   Literal = 'literal',
 }
 
@@ -25,9 +25,10 @@ export enum DatePart {
   Hours = 'hours',
   Minutes = 'minutes',
   Seconds = 'seconds',
-  AmPm = 'ampm',
+  AmPm = 'amPm',
 }
 
+/** @ignore */
 export interface DatePartInfo {
   type: DateParts;
   start: number;

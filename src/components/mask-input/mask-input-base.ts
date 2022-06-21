@@ -1,4 +1,5 @@
 import { property, state } from 'lit/decorators.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { MaskParser } from './mask-parser.js';
 interface MaskSelection {
@@ -131,6 +132,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
     this.invalid = true;
   }
 
+  @blazorSuppress()
   public override setSelectionRange(
     start: number,
     end: number,

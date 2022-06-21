@@ -6,7 +6,6 @@ import { watch } from '../common/decorators/watch.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { partNameMap } from '../common/util.js';
 import { IgcMaskInputBaseComponent } from './mask-input-base.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -72,6 +71,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     return this._mask;
   }
 
+  /** The mask pattern to apply on the input. */
   public set mask(val: string) {
     this._mask = val;
   }
@@ -192,16 +192,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     ).value;
     this.maskedValue = this.parser.apply(this.parser.parse(this.input.value));
     this._value = this.parser.parse(this.maskedValue);
-  }
-
-  @blazorSuppress()
-  public override setSelectionRange(
-    start: number,
-    end: number,
-    direction?: 'backward' | 'forward' | 'none'
-  ): void {
-    super.setSelectionRange(start, end, direction);
-    this.selection = { start, end };
   }
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */

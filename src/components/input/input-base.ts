@@ -62,6 +62,7 @@ export abstract class IgcInputBaseComponent
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
+  @blazorSuppress()
   public override dir: Direction = 'auto';
 
   /** The name attribute of the control. */
