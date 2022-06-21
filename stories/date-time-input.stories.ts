@@ -191,6 +191,7 @@ const Template: Story<ArgTypes, Context> = (
     spinLoop,
     value,
     label,
+    invalid,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -217,6 +218,7 @@ const Template: Story<ArgTypes, Context> = (
     .required=${required}
     .disabled=${disabled}
     .spinDelta=${spinDelta}
+    .invalid=${invalid}
   >
     <igc-icon name="clear" slot="prefix" @click=${handleClear}></igc-icon>
     <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
