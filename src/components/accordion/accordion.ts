@@ -9,9 +9,11 @@ export default class IgcAccordionComponent extends LitElement {
   @property({ reflect: true, type: Boolean })
   public singleBranchExpand = false;
 
-  /** Returns all of the accordions's expansion panels. */
+  /** Returns all of the accordions's direct igc-expansion-panel children. */
   public get panels(): Array<IgcExpansionPanelComponent> {
-    return Array.from(this.querySelectorAll(`igc-expansion-panel`));
+    return Array.from(this.querySelectorAll(`igc-expansion-panel`)).filter(
+      (p) => p.parentNode === this
+    );
   }
 
   protected override render() {
