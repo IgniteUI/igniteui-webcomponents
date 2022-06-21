@@ -16,6 +16,10 @@ export default class IgcAccordionComponent extends LitElement {
     );
   }
 
+  public hideAll() {}
+
+  public showAll() {}
+
   protected override render() {
     return html`<slot></slot>`;
   }
