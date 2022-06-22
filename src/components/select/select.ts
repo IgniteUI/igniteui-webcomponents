@@ -106,14 +106,14 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     super();
     this.toggleController = new IgcToggleController(this, this.input);
     this.size = 'medium';
+    this.addEventListener('igcOpened', this.onOpened);
   }
 
-  public override firstUpdated() {
+  public override async firstUpdated() {
     super.firstUpdated();
     super.target = this.input;
-  }
+    await this.updateComplete;
 
-  protected handleDDSlotChange() {
     const selectedItem = this.allItems.find((i) => i.selected) ?? null;
     if (selectedItem) this.value = selectedItem.value;
     else this.updateSelected();
@@ -217,6 +217,10 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     if (item) this.selectItem(item);
   }
 
+  protected onOpened() {
+    // console.log(this.allItems);
+  }
+
   protected handleInputKeyboardEvents(event: KeyboardEvent) {
     event.stopPropagation();
     const key = event.key.toLowerCase();
@@ -318,7 +322,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
       >
         <div role="listbox" part="list" aria-labelledby="igcDDLTarget">
           <slot name="header"></slot>
-          <slot @slotchange=${this.handleDDSlotChange}></slot>
+          <slot></slot>
           <slot name="footer"></slot>
         </div>
       </div>
