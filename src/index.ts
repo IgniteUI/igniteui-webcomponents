@@ -61,6 +61,7 @@ export { default as IgcRippleComponent } from './components/ripple/ripple.js';
 export { default as IgcSelectGroupComponent } from './components/select/select-group.js';
 export { default as IgcSelectItemComponent } from './components/select/select-item.js';
 export { default as IgcSelectComponent } from './components/select/select.js';
+export { default as IgcSelectHeaderComponent } from './components/select/select-header.js';
 export {
   default as IgcRangeSliderComponent,
   IgcRangeSliderValue,

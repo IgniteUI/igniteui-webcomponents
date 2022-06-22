@@ -5,13 +5,15 @@ import {
   IgcSelectComponent,
   IgcSelectGroupComponent,
   IgcSelectItemComponent,
+  IgcSelectHeaderComponent,
 } from '../src/index.js';
 import { Context, Story } from './story.js';
 
 defineComponents(
   IgcSelectComponent,
   IgcSelectItemComponent,
-  IgcSelectGroupComponent
+  IgcSelectGroupComponent,
+  IgcSelectHeaderComponent
 );
 
 // region default
@@ -277,7 +279,7 @@ const Template: Story<ArgTypes, Context> = (
     <header slot="header">Sample Header</header>
     <footer slot="footer">Sample Footer</footer>
     <span slot="helper-text">Sample helper text.</span>
-    <igc-dropdown-header>Tasks</igc-dropdown-header>
+    <igc-select-header>Tasks</igc-select-header>
     ${items.map(
       (item) => html` <igc-select-item
         value=${item.value}
@@ -356,7 +358,7 @@ const checkoutForm = html`
       ${Object.entries(groupBy(countries, 'continent')).map(
         ([continent, countries]) => html`
           <igc-select-group>
-            <igc-dropdown-header slot="label">${continent}</igc-dropdown-header>
+            <igc-select-header slot="label">${continent}</igc-select-header>
             ${(countries as any).map(
               (item: any) => html`
                 <igc-select-item

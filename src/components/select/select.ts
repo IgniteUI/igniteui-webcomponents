@@ -307,7 +307,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
       </div>
       <div
         part="base"
-        style=${styleMap({ position: super.positionStrategy })}
+        style=${styleMap({ position: this.positionStrategy })}
         @click=${this.handleClick}
         ${this.toggleController.toggleDirective}
       >
