@@ -1,0 +1,10 @@
+@use '../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-nav-drawer-item {
+        --hover-background: #{color(gray, 100, .5)};
+        --active-background: #{color(primary, 400, .12)};
+        --active-icon-color: #{color(primary, 100)};
+        --active-text-color: #{color(primary, 200)};
+    }
+}
