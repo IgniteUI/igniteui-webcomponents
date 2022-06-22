@@ -10,7 +10,6 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming';
 import { watch } from '../common/decorators';
 import IgcDropdownComponent from '../dropdown/dropdown';
-import { IgcToggleController } from '../toggle/toggle.controller.js';
 import IgcSelectGroupComponent from './select-group';
 import IgcSelectItemComponent from './select-item';
 import { styles } from './themes/select.base.css';
@@ -37,7 +36,6 @@ import { styles as bootstrap } from './themes/select.bootstrap.css';
 export default class IgcSelectComponent extends IgcDropdownComponent {
   public static override readonly tagName = 'igc-select' as 'igc-dropdown';
   public static override styles = styles;
-  protected override toggleController!: IgcToggleController;
   private searchTerm = '';
   private lastKeyTime = Date.now();
 
@@ -60,7 +58,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   protected override selectedItem!: IgcSelectItemComponent | null;
 
   @query('igc-input')
-  private input!: HTMLElement;
+  protected override target!: HTMLElement;
 
   /** The value attribute of the control. */
   @property({ reflect: false, type: String })
@@ -104,14 +102,11 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
   constructor() {
     super();
-    this.toggleController = new IgcToggleController(this, this.input);
     this.size = 'medium';
-    this.addEventListener('igcOpened', this.onOpened);
   }
 
   public override async firstUpdated() {
     super.firstUpdated();
-    super.target = this.input;
     await this.updateComplete;
 
     const selectedItem = this.allItems.find((i) => i.selected) ?? null;
@@ -215,10 +210,6 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
           .startsWith(this.searchTerm.toLowerCase())
       );
     if (item) this.selectItem(item);
-  }
-
-  protected onOpened() {
-    // console.log(this.allItems);
   }
 
   protected handleInputKeyboardEvents(event: KeyboardEvent) {
