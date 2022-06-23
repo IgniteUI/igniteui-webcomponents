@@ -413,7 +413,19 @@ export default class IgcDropdownComponent
     this.navigatePrev();
   }
 
-  private _hide(emit = true) {
+  protected _show(emit = true) {
+    if (emit && !this.handleOpening()) return;
+
+    if (this.open) return;
+
+    this.open = true;
+
+    if (emit) {
+      this.emitEvent('igcOpened');
+    }
+  }
+
+  protected _hide(emit = true) {
     if (emit && !this.handleClosing()) return;
 
     if (!this.open) return;
