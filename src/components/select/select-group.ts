@@ -37,6 +37,10 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
     this.size = select?.size;
   }
 
+  public override disconnectedCallback() {
+    this.observer.disconnect();
+  }
+
   protected override async firstUpdated() {
     await this.updateComplete;
     this.controlledItems = this.activeItems;
