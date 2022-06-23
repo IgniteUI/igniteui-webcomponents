@@ -199,7 +199,7 @@ describe('Select component', () => {
       expect(select.value).to.be.undefined;
     });
 
-    it('select the first enabled item when the Home button is pressed', async () => {
+    it('select the first non-disabled item when the Home button is pressed', async () => {
       const options = selectOpts(select);
       options[0].setAttribute('disabled', '');
       const activeItems = selectOpts(select).filter(
@@ -215,7 +215,7 @@ describe('Select component', () => {
       expect(selectOpts(select)[index].hasAttribute('selected')).to.be.true;
     });
 
-    it('select the last enabled item when the End button is pressed', async () => {
+    it('select the last non-disabled item when the End button is pressed', async () => {
       const activeItems = selectOpts(select).filter(
         (item) => !item.hasAttribute('disabled')
       );
@@ -449,6 +449,18 @@ describe('Select component', () => {
       );
 
       expect(item?.selected).to.be.false;
+    });
+
+    it('should close the list of options when Tab or Shift + Tab are pressed', () => {
+      select.show();
+
+      pressKey(input, 'Tab');
+      expect(select.open).to.be.false;
+
+      select.show();
+
+      pressKey(input, 'Tab', 1, { shiftKey: true });
+      expect(select.open).to.be.false;
     });
 
     //   it('should focus when the focus method is called', async () => {
