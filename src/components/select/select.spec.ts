@@ -626,157 +626,204 @@ describe('Select component', () => {
     //   });
     // });
 
-    // describe('', () => {
-    //   const selectGroup = (el: IgcSelectComponent) =>
-    //     [...el.querySelectorAll('igc-select-group')] as IgcSelectGroupComponent[];
+    describe('', () => {
+      const selectGroup = (el: IgcSelectComponent) =>
+        [
+          ...el.querySelectorAll('igc-select-group'),
+        ] as IgcSelectGroupComponent[];
 
-    //   let groups: IgcSelectGroupComponent[];
+      let groups: IgcSelectGroupComponent[];
 
-    //   beforeEach(async () => {
-    //     select = await fixture<IgcSelectComponent>(html`<igc-select>
-    //       <igc-select-group>
-    //         <h3 slot="label">Research & Development</h3>
-    //         ${items
-    //           .slice(0, 3)
-    //           .map(
-    //             (item) =>
-    //               html`<igc-select-item value=${item.value}
-    //                 >${item.text}</igc-select-item
-    //               >`
-    //           )}
-    //       </igc-select-group>
-    //       <igc-select-group>
-    //         <h3 slot="label">Product Guidance</h3>
-    //         ${items
-    //           .slice(3, 5)
-    //           .map(
-    //             (item) =>
-    //               html`<igc-select-item value=${item.value} .disabled=${true}
-    //                 >${item.text}</igc-select-item
-    //               >`
-    //           )}
-    //       </igc-select-group>
-    //       <igc-select-group>
-    //         <h3 slot="label">Release Engineering</h3>
-    //         <igc-select-item value=${items[5].value}
-    //           >${items[5].text}</igc-select-item
-    //         >
-    //       </igc-select-group>
-    //     </igc-select>`);
+      beforeEach(async () => {
+        select = await fixture<IgcSelectComponent>(html`<igc-select>
+          <igc-select-group>
+            <igc-select-header slot="label"
+              >Research & Development</igc-select-header
+            >
+            ${items
+              .slice(0, 3)
+              .map(
+                (item) =>
+                  html`<igc-select-item
+                    value=${item.value}
+                    .disabled=${item.disabled}
+                    >${item.text}</igc-select-item
+                  >`
+              )}
+          </igc-select-group>
+          <igc-select-group>
+            <igc-select-header slot="label">Product Guidance</igc-select-header>
+            ${items
+              .slice(3, 5)
+              .map(
+                (item) =>
+                  html`<igc-select-item
+                    value=${item.value}
+                    .disabled=${item.disabled}
+                    >${item.text}</igc-select-item
+                  >`
+              )}
+          </igc-select-group>
+          <igc-select-group>
+            <igc-select-header slot="label"
+              >Release Engineering</igc-select-header
+            >
+            <igc-select-item
+              value=${items[5].value}
+              .disabled=${items[5].disabled}
+              >${items[5].text}</igc-select-item
+            >
+          </igc-select-group>
+        </igc-select>`);
 
-    //     select.open = true;
-    //     await elementUpdated(select);
-    //     groups = selectGroup(select);
-    //   });
+        select.open = true;
+        await elementUpdated(select);
+        groups = selectGroup(select);
+      });
 
-    //   it('is successfully created with default properties.', () => {
-    //     expect(document.querySelector('igc-select-group')).to.exist;
-    //     expect(groups[0].disabled).to.be.false;
-    //   });
+      it('is successfully created with default properties.', () => {
+        expect(document.querySelector('igc-select-group')).to.exist;
+        expect(groups[0].disabled).to.be.false;
+      });
 
-    //   it('displays grouped items properly.', () => {
-    //     expect(groups.length).to.eq(3);
+      it('displays grouped items properly.', () => {
+        expect(groups.length).to.eq(3);
 
-    //     expect(groups[0].querySelectorAll('igc-select-item').length).to.eq(3);
-    //     expect(groups[1].querySelectorAll('igc-select-item').length).to.eq(2);
-    //     expect(groups[2].querySelectorAll('igc-select-item').length).to.eq(1);
-    //   });
+        expect(groups[0].querySelectorAll('igc-select-item').length).to.eq(3);
+        expect(groups[1].querySelectorAll('igc-select-item').length).to.eq(2);
+        expect(groups[2].querySelectorAll('igc-select-item').length).to.eq(1);
+      });
 
-    //   it('displays group headers properly.', () => {
-    //     expect(groups[0].querySelector('h3')!.textContent).to.eq(
-    //       'Research & Development'
-    //     );
-    //     expect(groups[1].querySelector('h3')!.textContent).to.eq(
-    //       'Product Guidance'
-    //     );
-    //     expect(groups[2].querySelector('h3')!.textContent).to.eq(
-    //       'Release Engineering'
-    //     );
-    //   });
+      it('displays group headers properly.', () => {
+        expect(groups[0].querySelector('igc-select-header')!.textContent).to.eq(
+          'Research & Development'
+        );
+        expect(groups[1].querySelector('igc-select-header')!.textContent).to.eq(
+          'Product Guidance'
+        );
+        expect(groups[2].querySelector('igc-select-header')!.textContent).to.eq(
+          'Release Engineering'
+        );
+      });
 
-    //   it('navigates properly through grouped items with the list of options closed.', async () => {
-    //     await elementUpdated(select);
+      it('should disable all group items when the group is disabled', async () => {
+        groups[0].disabled = true;
+        await elementUpdated(select);
 
-    //     pressKey('ArrowDown', 2);
-    //     await elementUpdated(select);
+        groups[0].items.forEach((i) => expect(i.disabled).to.be.true);
+      });
 
-    //     expect(select.value).to.equal(items[1].value);
+      it('should restore disabled items to inital disabled state when group is no longer disabled', async () => {
+        const item = groups[0].items[0];
+        item.disabled = true;
+        await elementUpdated(select);
 
-    //     pressKey('ArrowUp');
-    //     await elementUpdated(select);
+        groups[0].disabled = true;
+        await elementUpdated(select);
 
-    //     expect(select.value).to.equal(items[0].value);
-    //   });
+        groups[0].items.forEach((i) => expect(i.disabled).to.be.true);
 
-    //   it('navigates properly through grouped items with the list of options opened.', async () => {
-    //     select.click();
-    //     await elementUpdated(select);
+        groups[0].disabled = false;
+        await elementUpdated(select);
 
-    //     pressKey('ArrowDown', 2);
-    //     await elementUpdated(select);
+        expect(item.disabled).to.be.true;
+      });
 
-    //     const groupItems = [...groups[0].querySelectorAll('igc-select-item')];
+      it('should not let items to be programatically enabled in a disabled group', async () => {
+        groups[0].disabled = true;
+        await elementUpdated(select);
 
-    //     expect(groupItems[1]?.hasAttribute('active')).to.be.true;
-    //     expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
-    //       1
-    //     );
+        groups[0].items.forEach((i) => expect(i.disabled).to.be.true);
 
-    //     pressKey('ArrowUp');
-    //     await elementUpdated(select);
+        groups[0].items[0].disabled = false;
+        await elementUpdated(select);
 
-    //     expect(groupItems[0]?.hasAttribute('active')).to.be.true;
-    //     expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
-    //       1
-    //     );
-    //   });
+        groups[0].items.forEach((i) => expect(i.disabled).to.be.true);
+      });
 
-    //   it('skips disabled items when navigating through grouped items with the list closed.', async () => {
-    //     await elementUpdated(select);
+      // it('navigates properly through grouped items with the list of options closed.', async () => {
+      //   await elementUpdated(select);
 
-    //     pressKey('ArrowDown', 4);
-    //     await elementUpdated(select);
+      //   pressKey('ArrowDown', 2);
+      //   await elementUpdated(select);
 
-    //     expect(select.value).to.equal(items[3].value);
+      //   expect(select.value).to.equal(items[1].value);
 
-    //     pressKey('ArrowUp');
-    //     await elementUpdated(select);
+      //   pressKey('ArrowUp');
+      //   await elementUpdated(select);
 
-    //     expect(select.value).to.equal(items[2].value);
-    //   });
+      //   expect(select.value).to.equal(items[0].value);
+      // });
 
-    //   it('skips disabled items when navigating through grouped items with the list opened.', async () => {
-    //     select.click();
-    //     await elementUpdated(select);
+      // it('navigates properly through grouped items with the list of options opened.', async () => {
+      //   select.click();
+      //   await elementUpdated(select);
 
-    //     pressKey('ArrowDown', 4);
-    //     await elementUpdated(select);
+      //   pressKey('ArrowDown', 2);
+      //   await elementUpdated(select);
 
-    //     let groupItems = [...groups[2].querySelectorAll('igc-select-item')];
+      //   const groupItems = [...groups[0].querySelectorAll('igc-select-item')];
 
-    //     expect(groupItems[0]?.hasAttribute('active')).to.be.true;
-    //     expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
-    //       1
-    //     );
+      //   expect(groupItems[1]?.hasAttribute('active')).to.be.true;
+      //   expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
+      //     1
+      //   );
 
-    //     pressKey('ArrowUp');
-    //     await elementUpdated(select);
+      //   pressKey('ArrowUp');
+      //   await elementUpdated(select);
 
-    //     groupItems = [...groups[1].querySelectorAll('igc-select-item')];
-    //     expect(groupItems.pop()?.hasAttribute('active')).to.be.false;
-    //     expect(
-    //       [...groups[0].querySelectorAll('igc-select-item')]
-    //         .pop()
-    //         ?.hasAttribute('active')
-    //     ).to.be.true;
-    //   });
+      //   expect(groupItems[0]?.hasAttribute('active')).to.be.true;
+      //   expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
+      //     1
+      //   );
+      // });
 
-    //   it('does nothing on clicking group labels.', async () => {
-    //     groups[0].querySelector('h3')?.click();
-    //     await elementUpdated(select);
+      // it('skips disabled items when navigating through grouped items with the list closed.', async () => {
+      //   await elementUpdated(select);
 
-    //     expect(select.open).to.be.true;
-    //   });
+      //   pressKey('ArrowDown', 4);
+      //   await elementUpdated(select);
+
+      //   expect(select.value).to.equal(items[3].value);
+
+      //   pressKey('ArrowUp');
+      //   await elementUpdated(select);
+
+      //   expect(select.value).to.equal(items[2].value);
+      // });
+
+      // it('skips disabled items when navigating through grouped items with the list opened.', async () => {
+      //   select.click();
+      //   await elementUpdated(select);
+
+      //   pressKey('ArrowDown', 4);
+      //   await elementUpdated(select);
+
+      //   let groupItems = [...groups[2].querySelectorAll('igc-select-item')];
+
+      //   expect(groupItems[0]?.hasAttribute('active')).to.be.true;
+      //   expect(groupItems.filter((i) => i.hasAttribute('active')).length).to.eq(
+      //     1
+      //   );
+
+      //   pressKey('ArrowUp');
+      //   await elementUpdated(select);
+
+      //   groupItems = [...groups[1].querySelectorAll('igc-select-item')];
+      //   expect(groupItems.pop()?.hasAttribute('active')).to.be.false;
+      //   expect(
+      //     [...groups[0].querySelectorAll('igc-select-item')]
+      //       .pop()
+      //       ?.hasAttribute('active')
+      //   ).to.be.true;
+      // });
+
+      // it('does nothing on clicking group labels.', async () => {
+      //   groups[0].querySelector('h3')?.click();
+      //   await elementUpdated(select);
+
+      //   expect(select.open).to.be.true;
+    });
   });
   const pressKey = (
     target: HTMLElement,
