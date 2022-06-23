@@ -5,6 +5,7 @@
 @use '../../../components/slider/themes/dark/slider.bootstrap' as slider;
 @use '../../../components/list/themes/dark/list.bootstrap' as list;
 @use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
+@use '../../../components/select/themes/select.dark.base' as select;
 
 $palette: utils.palette(
     $primary: #0d6efd,
