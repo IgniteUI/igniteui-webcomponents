@@ -17,7 +17,7 @@ import { styles as fluent } from './themes/light/tabs.fluent.css.js';
 import { styles as indigo } from './themes/light/tabs.indigo.css.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { findLastIndex } from '../common/util.js';
+import { findLastIndex, isSafari } from '../common/util.js';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<string>;
@@ -220,7 +220,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     target?: IgcTabComponent,
     alignment: 'start' | 'end' | 'nearest' = 'nearest'
   ) {
-    target?.scrollIntoView({ behavior: 'smooth', inline: alignment });
+    target?.scrollIntoView({
+      behavior: isSafari ? 'auto' : 'smooth',
+      inline: alignment,
+    });
   }
 
   protected getTabAtBoundary(boundary: 'start' | 'end' = 'end') {

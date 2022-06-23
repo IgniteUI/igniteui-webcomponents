@@ -25,3 +25,5 @@ export function findLastIndex<T>(
   }
   return -1;
 }
+
+export const isSafari = new RegExp('apple', 'i').test(navigator.vendor);
