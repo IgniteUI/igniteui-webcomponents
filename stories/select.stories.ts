@@ -70,6 +70,14 @@ const metadata = {
       description: 'The placeholder attribute of the control.',
       control: 'text',
     },
+    dir: {
+      type: '"ltr" | "rtl" | "auto"',
+      options: ['ltr', 'rtl', 'auto'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'auto',
+    },
     keepOpenOnSelect: {
       type: 'boolean',
       description: 'Whether the dropdown should be kept open on selection.',
@@ -173,6 +181,7 @@ interface ArgTypes {
   autofocus: boolean;
   label: string;
   placeholder: string;
+  dir: 'ltr' | 'rtl' | 'auto';
   keepOpenOnSelect: boolean;
   scrollStrategy: 'scroll' | 'block' | 'close';
   keepOpenOnOutsideClick: boolean;

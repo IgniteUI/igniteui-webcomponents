@@ -100,6 +100,9 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   @property({ type: Boolean, attribute: 'same-width' })
   public override sameWidth = true;
 
+  @property({ reflect: true })
+  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
+
   constructor() {
     super();
     this.size = 'medium';
@@ -289,6 +292,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         .invalid=${this.invalid}
         .outlined=${this.outlined}
         ?autofocus=${this.autofocus}
+        dir=${this.dir}
         @keydown=${this.handleInputKeyboardEvents}
         exportparts="prefix, suffix"
       >

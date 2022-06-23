@@ -117,6 +117,7 @@ describe('Select component', () => {
       expect(input.placeholder).to.equal(select.placeholder);
       expect(input.outlined).to.equal(select.outlined);
       expect(input.size).to.equal(select.size);
+      expect(input.dir).to.equal(select.dir);
     });
 
     it('initializes items with default properties', () => {
