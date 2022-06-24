@@ -34,6 +34,10 @@ igc-input[readonly]:not([disabled]):focus-within::part(input) {
     border-color: utils.color(primary, 500);
 }
 
+igc-input[disabled] {
+    pointer-events: none;
+}
+
 igc-input[disabled]::part(prefix),
 igc-input[disabled]::part(suffix),
 igc-input[disabled]::part(container) {
@@ -41,6 +45,8 @@ igc-input[disabled]::part(container) {
     color: utils.color(gray, 400);
 }
 
+igc-input[disabled]::part(prefix),
+igc-input[disabled]::part(suffix),
 igc-input[disabled]::part(input) {
     border-color: utils.color(gray, 300);
 }
