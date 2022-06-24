@@ -298,7 +298,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
       <igc-input
         readonly
         id="igcDDLTarget"
-        exportparts="prefix, suffix"
+        exportparts="container: input, input: native-input, label, prefix, suffix"
         value=${ifDefined(this.selectedItem?.textContent?.trim())}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}
