@@ -143,10 +143,32 @@ describe('Accordion', () => {
       await elementUpdated(accordion);
 
       expect(accordion.panels[1]).to.equal(document.activeElement);
+
+      // Should not navigate to a disabled panel
+      accordion.panels[2].disabled = true;
+      await elementUpdated(accordion);
+
+      accordion.panels[1].dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown' })
+      );
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[1]).to.equal(document.activeElement);
     });
 
     it('Should navigate to the panel above on Arrow Up key press', async () => {
       accordion.panels[2].dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowUp' })
+      );
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[1]).to.equal(document.activeElement);
+
+      // Should not navigate to a disabled panel
+      accordion.panels[0].disabled = true;
+      await elementUpdated(accordion);
+
+      accordion.panels[1].dispatchEvent(
         new KeyboardEvent('keydown', { key: 'ArrowUp' })
       );
       await elementUpdated(accordion);
@@ -238,6 +260,24 @@ describe('Accordion', () => {
       await elementUpdated(accordion);
 
       accordion.panels.forEach((p) => expect(p.open).to.be.true);
+
+      // Should not expand disabled panels on Shift + Alt + Arrow Down
+      accordion.panels[1].hide();
+      accordion.panels[1].disabled = true;
+      await elementUpdated(accordion);
+
+      accordion.panels[2].dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          shiftKey: true,
+          altKey: true,
+        })
+      );
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[0].open).to.be.true;
+      expect(accordion.panels[1].open).to.be.false;
+      expect(accordion.panels[2].open).to.be.true;
     });
 
     it('Should expand only the focused panel when singleBranchExpand is true on Shift + Alt + Arrow Down key press', async () => {
@@ -298,6 +338,24 @@ describe('Accordion', () => {
       await elementUpdated(accordion);
 
       accordion.panels.forEach((p) => expect(p.open).to.be.false);
+
+      // Should not collapse disabled panels on Shift + Alt + Arrow Up
+      accordion.panels[1].show();
+      accordion.panels[1].disabled = true;
+      await elementUpdated(accordion);
+
+      accordion.panels[2].dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowUp',
+          shiftKey: true,
+          altKey: true,
+        })
+      );
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[0].open).to.be.false;
+      expect(accordion.panels[1].open).to.be.true;
+      expect(accordion.panels[2].open).to.be.false;
     });
 
     it('Should navigate to the first panel on Home key press', async () => {
@@ -307,6 +365,17 @@ describe('Accordion', () => {
       await elementUpdated(accordion);
 
       expect(accordion.panels[0]).to.equal(document.activeElement);
+
+      // Should navigate to the first enabled panel in case there are disabled ones
+      accordion.panels[0].disabled = true;
+      await elementUpdated(accordion);
+
+      accordion.panels[2].dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Home' })
+      );
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[1]).to.equal(document.activeElement);
     });
 
     it('Should navigate to the last panel on End key press', async () => {
@@ -316,6 +385,17 @@ describe('Accordion', () => {
       await elementUpdated(accordion);
 
       expect(accordion.panels[2]).to.equal(document.activeElement);
+
+      // Should navigate to the last enabled panel in case there are disabled ones
+      accordion.panels[2].disabled = true;
+      await elementUpdated(accordion);
+
+      accordion.panels[0].dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'End' })
+      );
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[1]).to.equal(document.activeElement);
     });
   });
 
