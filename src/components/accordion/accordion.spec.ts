@@ -131,6 +131,134 @@ describe('Accordion', () => {
     });
   });
 
+  describe('Keyboard navigation', () => {
+    it('Should expand the focused panel on ALT + Arrow Down key press', async () => {
+      const header1 = accordion.panels[0].shadowRoot?.querySelector(
+        'div[part="header"]'
+      ) as HTMLElement;
+      header1?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[0]).to.equal(document.activeElement);
+      expect(accordion.panels[0].open).to.be.false;
+
+      accordion.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true })
+      );
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[0].open).to.be.true;
+    });
+
+    it('Should collapse the focused panel on ALT + Arrow Up key press', async () => {
+      const header3 = accordion.panels[2].shadowRoot?.querySelector(
+        'div[part="header"]'
+      ) as HTMLElement;
+      header3?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[2]).to.equal(document.activeElement);
+      expect(accordion.panels[2].open).to.be.true;
+
+      accordion.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowUp', altKey: true })
+      );
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[2].open).to.be.false;
+    });
+
+    it('Should expand all panels when singleBranchExpand is false on Shift + Alt + Arrow Down key press', async () => {
+      expect(accordion.singleBranchExpand).to.be.false;
+      expect(accordion.panels[2].open).to.be.false;
+
+      accordion.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowUp',
+          shiftKey: true,
+          altKey: true,
+        })
+      );
+      await elementUpdated(accordion);
+
+      accordion.panels.forEach((p) => expect(p.open).to.be.true);
+    });
+
+    it('Should expand only the focused panel when singleBranchExpand is true on Shift + Alt + Arrow Down key press', async () => {
+      accordion.singleBranchExpand = true;
+
+      const header1 = accordion.panels[0].shadowRoot?.querySelector(
+        'div[part="header"]'
+      ) as HTMLElement;
+      header1?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await elementUpdated(accordion);
+
+      accordion.hideAll();
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[0]).to.equal(document.activeElement);
+      expect(accordion.panels[0].open).to.be.false;
+
+      accordion.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowDown',
+          shiftKey: true,
+          altKey: true,
+        })
+      );
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[0].open).to.be.true;
+      expect(accordion.panels[1].open).to.be.false;
+      expect(accordion.panels[2].open).to.be.false;
+    });
+
+    it('Should collapse all panels on Shift + Alt + Arrow Up key press', async () => {
+      expect(accordion.panels[0].open).to.be.true;
+      expect(accordion.panels[1].open).to.be.true;
+
+      accordion.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowUp',
+          shiftKey: true,
+          altKey: true,
+        })
+      );
+      await elementUpdated(accordion);
+
+      accordion.panels.forEach((p) => expect(p.open).to.be.false);
+
+      accordion.singleBranchExpand = true;
+      accordion.panels[0].show();
+      await elementUpdated(accordion);
+
+      accordion.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowUp',
+          shiftKey: true,
+          altKey: true,
+        })
+      );
+      await elementUpdated(accordion);
+
+      accordion.panels.forEach((p) => expect(p.open).to.be.false);
+    });
+
+    it('Should navigate to the last panel on End key press', async () => {
+      accordion.dispatchEvent(new KeyboardEvent('keydown', { key: 'End' }));
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[2]).to.equal(document.activeElement);
+    });
+
+    it('Should navigate to the first panel on Home key press', async () => {
+      accordion.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home' }));
+      await elementUpdated(accordion);
+
+      expect(accordion.panels[0]).to.equal(document.activeElement);
+    });
+  });
+
   const createAccordionComponent = (
     template = `<igc-accordion></igc-accordion>`
   ) => {
