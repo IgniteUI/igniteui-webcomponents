@@ -4,8 +4,8 @@ import {
   defineComponents,
   IgcSelectComponent,
   IgcSelectGroupComponent,
-  IgcSelectItemComponent,
   IgcSelectHeaderComponent,
+  IgcSelectItemComponent,
 } from '../src/index.js';
 import { Context, Story } from './story.js';
 
@@ -210,6 +210,8 @@ interface ArgTypes {
 (metadata as any).parameters = {
   actions: {
     handles: [
+      'igcFocus',
+      'igcBlur',
       'igcChange',
       'igcOpening',
       'igcOpened',

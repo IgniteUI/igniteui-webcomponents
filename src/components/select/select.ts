@@ -9,12 +9,18 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming';
 import { watch } from '../common/decorators';
-import IgcDropdownComponent from '../dropdown/dropdown';
+import IgcDropdownComponent, {
+  IgcDropdownEventMap,
+} from '../dropdown/dropdown';
 import IgcSelectGroupComponent from './select-group';
 import IgcSelectItemComponent from './select-item';
 import { styles } from './themes/select.base.css';
 import { styles as bootstrap } from './themes/select.bootstrap.css';
 
+export interface IgcSelectEventMap extends IgcDropdownEventMap {
+  igcFocus: CustomEvent<void>;
+  igcBlur: CustomEvent<void>;
+}
 @themes({ bootstrap })
 /**
  * @element igc-select
@@ -23,12 +29,14 @@ import { styles as bootstrap } from './themes/select.bootstrap.css';
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
  *
- * @fires igcInput - Emitted when the control input receives user input.
+ * @fires igcFocus - Emitted when the select gains focus.
+ * @fires igcBlur - Emitted when the select loses focus.
  * @fires igcChange - Emitted when the control's checked state changes.
- * @fires igcFocus - Emitted when the control gains focus.
- * @fires igcBlur - Emitted when the control loses focus.
+ * @fires igcOpening - Emitted just before the list of options is opened.
+ * @fires igcOpened - Emitted after the list of options is opened.
+ * @fires igcClosing - Emitter just before the list of options is closed.
+ * @fires igcClosed - Emitted after the list of options is closed.
  *
- * @csspart container - The main wrapper that holds all main input elements.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
@@ -106,6 +114,14 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   constructor() {
     super();
     this.size = 'medium';
+  }
+
+  public override focus(options?: FocusOptions) {
+    this.target.focus(options);
+  }
+
+  public override blur() {
+    this.target.blur();
   }
 
   public override async firstUpdated() {
@@ -280,21 +296,21 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   protected override render() {
     return html`
       <igc-input
-        id="igcDDLTarget"
         readonly
-        @click=${this.handleTargetClick}
+        id="igcDDLTarget"
+        exportparts="prefix, suffix"
         value=${ifDefined(this.selectedItem?.textContent?.trim())}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}
         size=${this.size}
+        dir=${this.dir}
         .disabled="${this.disabled}"
         .required=${this.required}
         .invalid=${this.invalid}
         .outlined=${this.outlined}
         ?autofocus=${this.autofocus}
-        dir=${this.dir}
+        @click=${this.handleTargetClick}
         @keydown=${this.handleInputKeyboardEvents}
-        exportparts="prefix, suffix"
       >
         ${this.inputPrefix.map((el) => this.renderInnerSlots(el, 'prefix'))}
         ${this.inputSuffix.map((el) => this.renderInnerSlots(el, 'suffix'))}
