@@ -12,10 +12,6 @@ export default class IgcSelectItemComponent extends IgcDropdownItemComponent {
     super();
   }
 
-  protected override firstUpdated() {
-    console.log(this.content);
-  }
-
   public override get textContent() {
     return this.content
       .map((t) => t.textContent?.trim())
