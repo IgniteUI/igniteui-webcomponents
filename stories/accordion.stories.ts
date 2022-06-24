@@ -22,6 +22,22 @@ interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
 
+const handleOpening = (ev: any) => {
+  console.log(ev);
+};
+
+const handleOpened = (ev: any) => {
+  console.log(ev);
+};
+
+const handleClosing = (ev: any) => {
+  console.log(ev);
+};
+
+const handleClosed = (ev: any) => {
+  console.log(ev);
+};
+
 const Template: Story<ArgTypes, Context> = (
   { singleBranchExpand = false }: ArgTypes,
   { globals: { direction } }: Context
@@ -31,17 +47,32 @@ const Template: Story<ArgTypes, Context> = (
       .singleBranchExpand="${singleBranchExpand}"
       .dir="${direction}"
     >
-      <igc-expansion-panel>
+      <igc-expansion-panel
+        @igcOpening=${handleOpening}
+        @igcOpened=${handleOpened}
+        @igcClosing=${handleClosing}
+        @igcClosed=${handleClosed}
+      >
         <div slot="title">Expansion panel 1 title</div>
         <div slot="subtitle">Expansion panel 1 subtitle</div>
         <p>Sample content 1</p>
       </igc-expansion-panel>
-      <igc-expansion-panel>
+      <igc-expansion-panel
+        @igcOpening=${handleOpening}
+        @igcOpened=${handleOpened}
+        @igcClosing=${handleClosing}
+        @igcClosed=${handleClosed}
+      >
         <div slot="title">Expansion panel 2 title</div>
         <div slot="subtitle">Expansion panel 2 subtitle</div>
         <p>Sample content 2</p>
       </igc-expansion-panel>
-      <igc-expansion-panel>
+      <igc-expansion-panel
+        @igcOpening=${handleOpening}
+        @igcOpened=${handleOpened}
+        @igcClosing=${handleClosing}
+        @igcClosed=${handleClosed}
+      >
         <div slot="title">Expansion panel 3 title</div>
         <div slot="subtitle">Expansion panel 3 subtitle</div>
         <p>Sample content 3</p>
