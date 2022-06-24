@@ -1,0 +1,65 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    font-family: var(--igc-font-family);
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+[part~='base'] {
+    @include border-radius(rem(4px));
+
+    display: flex;
+    flex-wrap: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+    min-height: rem(48px);
+    padding: rem(7px) rem(24px);
+    margin: rem(8px);
+    color: contrast-color(gray, 900);
+    background: color(gray, 900, .9);
+    box-shadow: var(--igc-elevation-4);
+    backface-visibility: hidden;
+    backdrop-filter: blur(8px);
+}
+
+[part~='message'] {
+    @include type-category('body-2');
+    @include line-clamp(2, true, true);
+
+    flex: 1 1 50%;
+}
+
+:host([action-text]) {
+    [part='action'] {
+        margin-inline-start: rem(24px);
+    }
+
+    igc-button::part(base) {
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    igc-button::part(base):hover::before {
+        background: transparent;
+    }
+
+    igc-button::part(base):focus {
+        background: transparent;
+        outline: none;
+        box-shadow: none;
+        
+        &::before {
+            background: transparent;
+        }
+    }
+}
+
+:host(:not([open])) {
+    [part='base'] {
+        display: none;
+    }
+}
