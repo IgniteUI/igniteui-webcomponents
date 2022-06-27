@@ -111,7 +111,7 @@ describe('Tabs component', () => {
       expect(getSelectedPanels().length).to.eq(1);
       expect(getSelectedPanels()[0].id).to.eq('third');
 
-      element.select(tabsHeaders(element)[1]);
+      element.select(tabsHeaders(element)[1].panel);
       await elementUpdated(element);
 
       expect(element.selected).to.eq('second');

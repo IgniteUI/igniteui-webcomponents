@@ -47,6 +47,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 [part='headers-content'] {
     display: flex;
     flex: 1 1 auto;
+    scroll-behavior: smooth;
     overflow: hidden;
 }
 

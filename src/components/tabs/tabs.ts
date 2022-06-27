@@ -17,7 +17,7 @@ import { styles as fluent } from './themes/light/tabs.fluent.css.js';
 import { styles as indigo } from './themes/light/tabs.indigo.css.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { findLastIndex, isSafari } from '../common/util.js';
+import { getOffset } from '../common/util.js';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<string>;
@@ -61,10 +61,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   protected defaultSlot!: HTMLSlotElement;
 
   @query('[part="headers-wrapper"]', true)
-  protected headersWrapper!: HTMLElement;
+  protected wrapper!: HTMLElement;
 
   @query('[part="headers-content"]', true)
-  protected headersContent!: HTMLElement;
+  protected container!: HTMLElement;
 
   @query('[part="selected-indicator"]', true)
   protected selectedIndicator!: HTMLElement;
@@ -123,19 +123,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     };
 
     if (this.selected) {
-      const { offsetLeft, offsetWidth } = this.selectedTab as IgcTabComponent;
-      const [containerOffset, containerWidth] = [
-        this.headersContent.offsetLeft,
-        this.headersContent.offsetWidth,
-      ];
-
-      const position =
-        offsetLeft + offsetWidth - containerWidth - containerOffset;
-
       Object.assign(styles, {
-        width: `${offsetWidth}px`,
+        width: `${this.selectedTab!.offsetWidth}px`,
         transform: `translate(${
-          this.isLTR ? offsetLeft - containerOffset : position
+          this.isLTR
+            ? getOffset(this.selectedTab!, this.wrapper).left
+            : getOffset(this.selectedTab!, this.wrapper).right
         }px)`,
       });
     }
@@ -145,7 +138,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected override async firstUpdated() {
     this.showScrollButtons =
-      this.headersContent.scrollWidth > this.headersContent.clientWidth;
+      this.container.scrollWidth > this.container.clientWidth;
 
     await this.updateComplete;
 
@@ -156,9 +149,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.setupObserver();
     this.setAriaAttributes();
     this.defaultSlot.addEventListener('slotchange', this.handleSlotChange);
-    this.shadowRoot?.addEventListener('slotchange', () => {
-      this.setAriaAttributes();
-    });
   }
 
   public override disconnectedCallback() {
@@ -174,14 +164,14 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.performUpdate();
 
     this.showScrollButtons =
-      this.headersContent.scrollWidth > this.headersContent.clientWidth;
+      this.container.scrollWidth > this.container.clientWidth;
 
     this.updateScrollButtons();
   }
 
   protected updateScrollButtons() {
-    const { scrollLeft, offsetWidth } = this.headersContent,
-      { scrollWidth } = this.headersWrapper;
+    const { scrollLeft, offsetWidth } = this.container,
+      { scrollWidth } = this.wrapper;
 
     this.disableEndScrollButton =
       scrollWidth <= Math.abs(scrollLeft) + offsetWidth;
@@ -194,8 +184,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.alignIndicator();
     });
 
-    [this.headersContent, this.headersWrapper, ...this.tabs].forEach(
-      (element) => this.resizeObserver.observe(element)
+    [this.container, this.wrapper, ...this.tabs].forEach((element) =>
+      this.resizeObserver.observe(element)
     );
   }
 
@@ -211,68 +201,32 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.panels.forEach(
         (el) => (el.style.display = el.id === this._selected ? 'block' : 'none')
       );
-      this.scrollToTab(tab);
+      tab.scrollIntoView();
       this.alignIndicator();
     }
   }
 
-  protected scrollToTab(
-    target?: IgcTabComponent,
-    alignment: 'start' | 'end' | 'nearest' = 'nearest'
-  ) {
-    target?.scrollIntoView({
-      behavior: isSafari ? 'auto' : 'smooth',
-      inline: alignment,
-    });
-  }
+  protected scrollByTabOffset(direction: 'start' | 'end') {
+    const { scrollLeft, offsetWidth } = this.container;
+    const LTR = this.isLTR,
+      next = direction === 'end';
 
-  protected getTabAtBoundary(boundary: 'start' | 'end' = 'end') {
-    const { right } = this.headersContent.getBoundingClientRect();
+    const pivot = Math.abs(next ? offsetWidth + scrollLeft : scrollLeft);
 
-    const [forward, backward] = [
-      right + this.headersContent.scrollLeft,
-      this.headersContent.scrollLeft,
-    ];
+    let amount = this.tabs
+      .map((tab) => ({
+        start: LTR
+          ? getOffset(tab, this.wrapper).left
+          : Math.abs(getOffset(tab, this.wrapper).right),
+        width: tab.offsetWidth,
+      }))
+      .filter((offset) =>
+        next ? offset.start + offset.width > pivot : offset.start < pivot
+      )
+      .at(next ? 0 : -1)!.width;
 
-    const dimensions = this.tabs.map(({ offsetLeft, offsetWidth }) => ({
-      start: offsetLeft,
-      end: offsetLeft + offsetWidth,
-    }));
-
-    const isNext = boundary === 'end';
-
-    const point = this.isLTR
-      ? isNext
-        ? forward
-        : backward
-      : isNext
-      ? backward
-      : forward;
-
-    let target = 0;
-
-    if (this.isLTR) {
-      target = isNext
-        ? dimensions.findIndex(
-            ({ start, end }) => start <= point && end >= point
-          )
-        : findLastIndex(dimensions, ({ start }) => start <= point);
-    } else {
-      target = isNext
-        ? dimensions.findIndex(
-            ({ start, end }) => start <= point && end >= point
-          )
-        : findLastIndex(dimensions, ({ end }) => end >= point);
-    }
-    return this.tabs[target];
-  }
-
-  protected handleStartButtonClick() {
-    this.scrollToTab(this.getTabAtBoundary('start'), 'start');
-  }
-
-  protected handleEndButtonClick() {
-    this.scrollToTab(this.getTabAtBoundary('end'), 'end');
+    amount *= next ? 1 : -1;
+    this.container.scrollBy({ left: this.isLTR ? amount : -amount });
   }
 
   protected handleClick(event: MouseEvent) {
@@ -325,7 +279,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.setSelectedTab(enabledTabs[index]);
       this.emitEvent('igcChange', { detail: this._selected });
     } else {
-      this.scrollToTab(enabledTabs[index]);
+      enabledTabs[index].scrollIntoView();
     }
 
     event.preventDefault();
@@ -354,33 +308,29 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.panels.forEach((panel) => (panel.style.display = 'none'));
       this._selected = '';
     }
-
+    this.setAriaAttributes();
     this.setupObserver();
   };
 
   /** Selects the specified tab and displays the corresponding panel.  */
-  public select(selectedTab: string | HTMLElement) {
-    this.setSelectedTab(
-      this.tabs.find((el) => el.panel === selectedTab || el === selectedTab)
-    );
+  public select(name: string) {
+    this.setSelectedTab(this.tabs.find((el) => el.panel === name));
   }
 
-  protected renderScrollButton(position: 'start' | 'end') {
-    const start = position === 'start';
+  protected renderScrollButton(direction: 'start' | 'end') {
+    const start = direction === 'start';
 
     return this.showScrollButtons
       ? html`<igc-icon-button
           size="large"
           variant="flat"
           collection="internal"
-          part="${position}-scroll-button"
+          part="${direction}-scroll-button"
           name="navigate_${start ? 'before' : 'next'}"
           .disabled=${start
             ? this.disableStartScrollButton
             : this.disableEndScrollButton}
-          @click=${start
-            ? this.handleStartButtonClick
-            : this.handleEndButtonClick}
+          @click=${() => this.scrollByTabOffset(direction)}
         ></igc-icon-button>`
       : nothing;
   }
