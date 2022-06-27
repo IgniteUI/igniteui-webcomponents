@@ -22,6 +22,10 @@ input[type='radio'] {
     }
 }
 
+[part~='label'] {
+    @include type-category('subtitle-1');
+}
+
 [part~='control'] {
     @include border-radius(var(--size));
 

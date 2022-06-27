@@ -7,6 +7,7 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { partNameMap } from '../common/util.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { MaskParser } from './mask-parser.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 interface MaskSelection {
   start: number;
@@ -292,6 +293,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
     this._value = this.parser.parse(this.maskedValue);
   }
 
+  @blazorSuppress()
   public override setSelectionRange(
     start: number,
     end: number,

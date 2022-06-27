@@ -1,10 +1,11 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
-import type IgcDropdownComponent from './dropdown';
-import type IgcDropdownItemComponent from './dropdown-item';
 import { styles } from './themes/light/dropdown-group.base.css.js';
 import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
+import type IgcDropdownItemComponent from './dropdown-item';
+import type IgcDropdownComponent from './dropdown';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
@@ -21,6 +22,7 @@ export default class IgcDropdownGroupComponent extends LitElement {
   public static override styles = styles;
 
   /** All child `igc-dropdown-item`s. */
+  @blazorSuppress()
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
   public items!: Array<IgcDropdownItemComponent>;
 

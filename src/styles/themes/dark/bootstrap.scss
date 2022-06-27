@@ -6,6 +6,7 @@
 @use '../../../components/list/themes/dark/list.bootstrap' as list;
 @use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
 @use '../../../components/select/themes/select.dark.base' as select;
+@use '../../../components/nav-drawer/themes/dark/nav-drawer-item.bootstrap' as nav-drawer-item;
 
 $palette: utils.palette(
     $primary: #0d6efd,
@@ -25,3 +26,5 @@ $palette: utils.palette(
 @include slider.theme();
 @include list.theme();
 @include tree-item.theme();
+@include nav-drawer-item.theme();
+@include select.theme();

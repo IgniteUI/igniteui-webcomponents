@@ -7,6 +7,7 @@
 }
 
 :host button {
+    @include type-category('body-2');
     @include border-radius(rem(16px));
 
     display: flex;
