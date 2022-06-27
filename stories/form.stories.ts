@@ -69,6 +69,23 @@ The cat was playing<br> in the garden.</textarea
           <option value="audi">Audi</option>
         </optgroup>
       </select>
+      <igc-select
+        name="cars-custom"
+        label="Favorite car"
+        placeholder="Choose a car"
+        required
+      >
+        <igc-select-group>
+          <igc-select-header slot="label">Swedish Cars</igc-select-header>
+          <igc-select-item value="volvo">Volvo</igc-select-item>
+          <igc-select-item value="saab">Saab</igc-select-item>
+        </igc-select-group>
+        <igc-select-group>
+          <igc-select-header slot="label">German Cars</igc-select-header>
+          <igc-select-item value="mercedes">Mercedes</igc-select-item>
+          <igc-select-item value="audi">Audi</igc-select-item>
+        </igc-select-group>
+      </igc-select>
       <br /><br />
       <label for="browser">Choose your browser from the list:</label>
       <input list="browsers" name="browser" id="browser" />
