@@ -622,6 +622,44 @@ describe('Select component', () => {
       expect(eventSpy).not.be.calledWith('igcClosed');
       expect(select.open).to.be.true;
     });
+
+    it('reports validity when required', async () => {
+      const validity = sinon.spy(select, 'reportValidity');
+
+      select.value = undefined;
+      select.required = true;
+      await elementUpdated(select);
+
+      select.reportValidity();
+      expect(validity).to.have.returned(false);
+      expect(select.invalid).to.be.true;
+
+      select.value = items[0].value;
+      await elementUpdated(select);
+      select.reportValidity();
+
+      expect(validity).to.have.returned(true);
+      expect(select.invalid).to.be.false;
+    });
+
+    it('reports validity when not required', async () => {
+      const validity = sinon.spy(select, 'reportValidity');
+
+      select.value = undefined;
+      select.required = false;
+      await elementUpdated(select);
+
+      select.reportValidity();
+      expect(validity).to.have.returned(true);
+      expect(select.invalid).to.be.false;
+
+      select.value = items[0].value;
+      await elementUpdated(select);
+      select.reportValidity();
+
+      expect(validity).to.have.returned(true);
+      expect(select.invalid).to.be.false;
+    });
   });
 
   describe('', () => {

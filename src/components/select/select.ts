@@ -12,6 +12,7 @@ import { watch } from '../common/decorators';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
 } from '../dropdown/dropdown';
+import IgcInputComponent from '../input/input';
 import IgcSelectGroupComponent from './select-group';
 import IgcSelectItemComponent from './select-item';
 import { styles } from './themes/select.base.css';
@@ -66,7 +67,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   protected override selectedItem!: IgcSelectItemComponent | null;
 
   @query('igc-input')
-  protected override target!: HTMLElement;
+  protected override target!: IgcInputComponent;
 
   /** The value attribute of the control. */
   @property({ reflect: false, type: String })
@@ -124,6 +125,13 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     this.target.blur();
   }
 
+  /** Checks the validity of the control. */
+  public reportValidity() {
+    this.invalid = this.required && !this.value;
+    if (this.invalid) this.focus();
+    return !this.invalid;
+  }
+
   public override async firstUpdated() {
     super.firstUpdated();
     await this.updateComplete;
@@ -154,6 +162,11 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
       this.select(index);
     }
+  }
+
+  @watch('value')
+  protected validate() {
+    this.updateComplete.then(() => this.reportValidity());
   }
 
   protected selectNext() {

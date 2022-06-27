@@ -29,9 +29,13 @@ igc-input[readonly]:not([disabled])::part(input) {
 }
 
 igc-input[readonly]:not([disabled]):focus-within::part(input) {
-    user-select: none;
     box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 500, .38);
     border-color: utils.color(primary, 500);
+}
+
+igc-input[readonly][invalid]:not([disabled]):focus-within::part(input) {
+    box-shadow: 0 0 0 utils.rem(4px) utils.color(error, 500, .38);
+    border-color: utils.color(error, 500);
 }
 
 igc-input[disabled] {
