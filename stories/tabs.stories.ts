@@ -104,21 +104,21 @@ const Template: Story<ArgTypes, Context> = (
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
     <igc-tab panel="first">
-      <igc-icon id="home"></igc-icon>
+      <igc-icon name="home"></igc-icon>
       <span
         >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua.</span
       >
     </igc-tab>
     <igc-tab panel="second">
-      <igc-icon id="search"></igc-icon>
+      <igc-icon name="search"></igc-icon>
       <span
         >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua.</span
       >
     </igc-tab>
     <igc-tab panel="third" disabled>
-      <igc-icon id="favorite"></igc-icon>
+      <igc-icon name="favorite"></igc-icon>
       <span
         >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua.</span
