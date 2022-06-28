@@ -61,9 +61,14 @@ describe('Select component', () => {
       select = await fixture<IgcSelectComponent>(html`<igc-select>
         ${items.map(
           (item) =>
-            html`<igc-select-item value=${item.value} ?disabled=${item.disabled}
-              >${item.text}</igc-select-item
-            >`
+            html`<igc-select-item
+              value=${item.value}
+              ?disabled=${item.disabled}
+            >
+              <span slot="prefix">FR</span>
+              ${item.text}
+              <span slot="suffix">FR</span>
+            </igc-select-item>`
         )}
       </igc-select>`);
 
@@ -153,11 +158,28 @@ describe('Select component', () => {
       });
     });
 
-    it("assings the value of the selected item as it's own", async () => {
+    it('assings the value of the selected item as its own', async () => {
       const selected = select.select(0);
       await elementUpdated(select);
 
       expect(select.value).to.equal(selected?.value);
+    });
+
+    it('should retrieve and replace only the text content of the content part in an item', () => {
+      const replaceWith = 'Some other display text';
+      const item = selectOpts(select)[0];
+      const prefix = item.querySelector('[slot="prefix"]');
+      const suffix = item.querySelector('[slot="suffix"]');
+
+      expect(item.textContent).to.equal(items[0].text);
+      expect(prefix?.textContent).to.equal('FR');
+      expect(suffix?.textContent).to.equal('FR');
+
+      item.textContent = replaceWith;
+
+      expect(item.textContent).to.equal(replaceWith);
+      expect(prefix?.textContent).to.equal('FR');
+      expect(suffix?.textContent).to.equal('FR');
     });
 
     it('toggles the list of options when Alt+Up or Alt+Down keys are pressed', async () => {
