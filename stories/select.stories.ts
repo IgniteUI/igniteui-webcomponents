@@ -72,6 +72,7 @@ const metadata = {
     },
     dir: {
       type: '"ltr" | "rtl" | "auto"',
+      description: 'The direction attribute of the control.',
       options: ['ltr', 'rtl', 'auto'],
       control: {
         type: 'inline-radio',

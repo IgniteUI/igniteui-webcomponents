@@ -4,6 +4,14 @@ import IgcDropdownGroupComponent from '../dropdown/dropdown-group';
 import IgcSelectComponent from './select';
 import IgcSelectItemComponent from './select-item';
 
+/**
+ * @element igc-select-group - A container for a group of `igc-select-item` components.
+ *
+ * @slot label - Contains the group's label.
+ * @slot - Intended to contain the items belonging to this group.
+ *
+ * @csspart label - The native label element.
+ */
 export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
   public static override readonly tagName =
     'igc-select-group' as 'igc-dropdown-group';

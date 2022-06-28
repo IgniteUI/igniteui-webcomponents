@@ -26,9 +26,13 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
 /**
  * @element igc-select
  *
+ * @slot - Renders the list of select items.
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after input.
+ * @slot header - Renders a container before the list of options.
+ * @slot footer - Renders a container after the list of options.
  * @slot helper-text - Renders content below the input.
+ * @slot toggle-icon - Renders content below the input.
  *
  * @fires igcFocus - Emitted when the select gains focus.
  * @fires igcBlur - Emitted when the select loses focus.
@@ -38,8 +42,12 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @fires igcClosing - Emitter just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
+ * @csspart list - The list of options wrapper.
+ * @csspart input - The encapsulated igc-input.
+ * @csspart label - The encapsulated text label.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
+ * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
 export default class IgcSelectComponent extends IgcDropdownComponent {
@@ -109,6 +117,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   @property({ type: Boolean, attribute: 'same-width' })
   public override sameWidth = true;
 
+  /** The direction attribute of the control. */
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
@@ -117,10 +126,12 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     this.size = 'medium';
   }
 
+  /** Sets focus on the component. */
   public override focus(options?: FocusOptions) {
     this.target.focus(options);
   }
 
+  /** Removes focus from the component. */
   public override blur() {
     this.target.blur();
   }

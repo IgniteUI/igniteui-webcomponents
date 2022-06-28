@@ -1,7 +1,7 @@
 import IgcDropdownHeaderComponent from '../dropdown/dropdown-header';
 
 /**
- * @element igc-select-header - Represents a header item in a select.
+ * @element igc-select-header - Represents a header item in a select component.
  *
  * @slot - Renders the header.
  */
