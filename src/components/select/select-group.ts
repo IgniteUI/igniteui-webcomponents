@@ -34,6 +34,7 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
 
   constructor() {
     super();
+
     this.observer = new MutationObserver(this.updateControlledItems.bind(this));
   }
 
@@ -52,25 +53,27 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
   protected override async firstUpdated() {
     await this.updateComplete;
     this.controlledItems = this.activeItems;
-    this.updateDisabled();
 
     this.items.forEach((i) => {
-      this.observer.observe(i, { attributes: true });
+      this.observer.observe(i, {
+        attributes: true,
+        attributeFilter: ['disabled'],
+      });
     });
+
+    this.updateDisabled();
   }
 
   protected updateControlledItems(mutations: MutationRecord[]) {
     mutations.forEach((mutation) => {
-      if (mutation.attributeName === 'disabled') {
-        const item = mutation.target as IgcSelectItemComponent;
+      const item = mutation.target as IgcSelectItemComponent;
 
-        if (!this.disabled) {
-          this.controlledItems = this.activeItems;
-        }
+      if (!this.disabled) {
+        this.controlledItems = this.activeItems;
+      }
 
-        if (this.disabled && !item.disabled) {
-          item.disabled = true;
-        }
+      if (this.disabled && !item.disabled) {
+        item.disabled = true;
       }
     });
   }
