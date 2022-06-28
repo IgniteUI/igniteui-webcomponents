@@ -52,6 +52,7 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
   protected override async firstUpdated() {
     await this.updateComplete;
     this.controlledItems = this.activeItems;
+    this.updateDisabled();
 
     this.items.forEach((i) => {
       this.observer.observe(i, { attributes: true });
@@ -75,12 +76,12 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
   }
 
   @watch('disabled', { waitUntilFirstUpdate: true })
-  protected disabledChange() {
+  protected updateDisabled() {
     this.disabled
       ? this.setAttribute('aria-disabled', 'true')
       : this.removeAttribute('aria-disabled');
 
-    this.controlledItems.forEach((i) => (i.disabled = this.disabled));
+    this.controlledItems?.forEach((i) => (i.disabled = this.disabled));
   }
 }
 
