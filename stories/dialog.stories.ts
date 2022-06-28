@@ -24,15 +24,16 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    title: {
-      type: 'string',
-      description: 'Sets the title of the dialog.',
-      control: 'text',
-    },
     open: {
       type: 'boolean',
       description: 'Whether the dialog is opened.',
       control: 'boolean',
+      defaultValue: false,
+    },
+    title: {
+      type: 'string',
+      description: 'Sets the title of the dialog.',
+      control: 'text',
     },
     returnValue: {
       type: 'string',
@@ -45,8 +46,8 @@ export default metadata;
 interface ArgTypes {
   closeOnEscape: boolean;
   closeOnOutsideClick: boolean;
-  title: string;
   open: boolean;
+  title: string;
   returnValue: string;
 }
 // endregion
@@ -62,13 +63,11 @@ const handleToggle = () => {
   dialog?.toggle();
 };
 
-const Template: Story<ArgTypes, Context> = ({
-  closeOnEscape,
-  closeOnOutsideClick,
-  title,
-  returnValue,
-}: ArgTypes) =>
-  html`
+const Template: Story<ArgTypes, Context> = (
+  { closeOnEscape, closeOnOutsideClick, title, returnValue, open }: ArgTypes,
+  { globals: { direction } }: Context
+) => {
+  return html`
     <div
       style="display: flex; align-items: flex-start; position: relative; height: 400px"
     >
@@ -76,12 +75,16 @@ const Template: Story<ArgTypes, Context> = ({
       <igc-dialog
         ?close-on-escape=${closeOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
-        title=${ifDefined(title)}
+        .open=${open}
         return-value=${ifDefined(returnValue)}
+        title=${ifDefined(title)}
+        dir=${ifDefined(direction)}
       >
         <h1 slot="title">Title Content</h1>
+
         Your Inbox has changed. No longer does it include favorites, it is a
         singular destination for your emails.
+
         <igc-button slot="footer" @click=${handleToggle}>Save</igc-button>
         <igc-button slot="footer" @click=${handleToggle} variant="outlined"
           >Close</igc-button
@@ -89,6 +92,7 @@ const Template: Story<ArgTypes, Context> = ({
       </igc-dialog>
     </div>
   `;
+};
 
 // { globals: { } }: Context
 

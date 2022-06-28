@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
@@ -43,7 +43,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-dialog';
   public static styles = [styles];
 
-  private _open = false;
+  @queryAssignedElements({ slot: 'title' })
+  private _titleElements!: Array<HTMLElement>;
 
   @query('[part="base"]', true)
   private nativeElement!: any;
@@ -56,15 +57,13 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @property({ type: Boolean, attribute: 'close-on-outside-click' })
   public closeOnOutsideClick = false;
 
+  /** Whether the dialog is opened. */
+  @property({ type: Boolean, reflect: true })
+  public open = false;
+
   /** Sets the title of the dialog.  */
   @property({ type: String })
   public override title!: string;
-
-  /** Whether the dialog is opened. */
-  @property({ type: Boolean })
-  public get open() {
-    return this._open;
-  }
 
   /** Sets the return value for the dialog. */
   @property({ type: String, attribute: 'return-value' })
@@ -72,33 +71,37 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   /** Opens the dialog. */
   public show() {
-    if (!this._open) {
-      if (!this.handleOpening()) {
-        return;
-      }
-
-      this.nativeElement.showModal();
-      this._open = true;
-      this.emitEvent('igcOpened');
+    if (this.open) {
+      return;
     }
+
+    if (!this.handleOpening()) {
+      return;
+    }
+
+    this.nativeElement.showModal();
+    this.open = true;
+    this.emitEvent('igcOpened');
   }
 
   /** Closes the dialog. */
   public hide() {
-    if (this._open) {
-      if (!this.handleClosing()) {
-        return;
-      }
-
-      this.nativeElement.close();
-      this._open = false;
-      this.emitEvent('igcClosed');
+    if (!this.open) {
+      return;
     }
+
+    if (!this.handleClosing()) {
+      return;
+    }
+
+    this.nativeElement.close();
+    this.open = false;
+    this.emitEvent('igcClosed');
   }
 
   /** Toggles the open state of the dialog. */
   public toggle() {
-    if (this._open) {
+    if (this.open) {
       this.hide();
     } else {
       this.show();
@@ -115,11 +118,43 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return this.emitEvent('igcClosing', args);
   }
 
+  private handleCancel(event: Event) {
+    event.preventDefault();
+
+    if (this.closeOnEscape) {
+      this.hide();
+    }
+  }
+
+  private handleClick(ev: MouseEvent) {
+    const el = ev.target as HTMLElement;
+    const targetElement =
+      el.tagName === 'SLOT' ? (el.parentElement as HTMLElement) : el;
+    const rect = targetElement.getBoundingClientRect();
+
+    const clickedInside =
+      rect.top <= ev.clientY &&
+      ev.clientY <= rect.top + rect.height &&
+      rect.left <= ev.clientX &&
+      ev.clientX <= rect.left + rect.width;
+
+    if (!clickedInside && this.closeOnOutsideClick) {
+      this.hide();
+    }
+  }
+
   protected override render() {
     return html`
-      <dialog part="base">
+      <dialog
+        part="base"
+        @click=${this.handleClick}
+        @cancel=${this.handleCancel}
+      >
         <header part="title">
           <slot name="title"></slot>
+          ${this._titleElements.length === 0
+            ? html`<span>${this.title}</span>`
+            : ''}
         </header>
         <section part="content">
           <slot></slot>
