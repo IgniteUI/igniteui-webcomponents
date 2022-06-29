@@ -1,5 +1,7 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { range } from 'lit/directives/range.js';
+import { map } from 'lit/directives/map.js';
 import { Context, Story } from './story.js';
 
 // region default
@@ -41,6 +43,15 @@ interface ArgTypes {
 }
 // endregion
 
+const tabs = Array.from(
+  map(
+    range(18),
+    (i) =>
+      html`<igc-tab panel=${i} ?disabled=${i === 2}> Item ${i + 1}</igc-tab>
+        <igc-tab-panel id=${i}> Content ${i + 1} </igc-tab-panel>`
+  )
+);
+
 const Template: Story<ArgTypes, Context> = (
   { activation, alignment }: ArgTypes,
   { globals: { direction } }: Context
@@ -50,42 +61,7 @@ const Template: Story<ArgTypes, Context> = (
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >
-    <igc-tab panel="first">Item 1</igc-tab>
-    <igc-tab panel="second">Item 2</igc-tab>
-    <igc-tab panel="third" disabled>Item 3</igc-tab>
-    <igc-tab panel="forth">Item 4</igc-tab>
-    <igc-tab panel="fifth">Item 5</igc-tab>
-    <igc-tab panel="sixth">Item 6</igc-tab>
-    <igc-tab panel="seventh">Item 7</igc-tab>
-    <igc-tab panel="eighth">Item 8</igc-tab>
-    <igc-tab panel="ninth">Item 9</igc-tab>
-    <igc-tab panel="10">Item 10</igc-tab>
-    <igc-tab panel="11">Item 11</igc-tab>
-    <igc-tab panel="12">Item 12</igc-tab>
-    <igc-tab panel="13">Item 13</igc-tab>
-    <igc-tab panel="14">Item 14</igc-tab>
-    <igc-tab panel="15">Item 15</igc-tab>
-    <igc-tab panel="16">Item 16</igc-tab>
-    <igc-tab panel="17">Item 17</igc-tab>
-    <igc-tab panel="18">Item 18</igc-tab>
-    <igc-tab-panel slot="panel" id="first">Content 1</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="second">Content 2</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="third">Content 3</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="forth">Content 4</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="fifth">Content 5</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="sixth">Content 6</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="seventh">Content 7</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="eighth">Content 8</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="ninth">Content 9</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="10">Content 10</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="11">Content 11</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="12">Content 12</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="13">Content 13</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="14">Content 14</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="15">Content 15</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="16">Content 16</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="17">Content 17</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="18">Content 18</igc-tab-panel>
+    ${tabs}
   </igc-tabs>
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
@@ -98,8 +74,8 @@ const Template: Story<ArgTypes, Context> = (
     <igc-tab panel="third" disabled>
       <igc-icon name="favorite"></igc-icon>
     </igc-tab>
-    <igc-tab-panel slot="panel" id="first">Content 1</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="second">Content 2</igc-tab-panel>
+    <igc-tab-panel id="first">Content 1</igc-tab-panel>
+    <igc-tab-panel id="second">Content 2</igc-tab-panel>
   </igc-tabs>
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
@@ -124,8 +100,8 @@ const Template: Story<ArgTypes, Context> = (
         tempor incididunt ut labore et dolore magna aliqua.</span
       >
     </igc-tab>
-    <igc-tab-panel slot="panel" id="first">Content 1</igc-tab-panel>
-    <igc-tab-panel slot="panel" id="second">Content 2</igc-tab-panel>
+    <igc-tab-panel id="first">Content 1</igc-tab-panel>
+    <igc-tab-panel id="second">Content 2</igc-tab-panel>
   </igc-tabs>
 `;
 

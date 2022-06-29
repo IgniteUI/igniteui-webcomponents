@@ -18,15 +18,15 @@ export default class IgcTabPanelComponent extends LitElement {
   @property({ type: String })
   public override id = '';
 
-  public override connectedCallback() {
-    super.connectedCallback();
-
+  constructor() {
+    super();
     this.setAttribute('role', 'tabpanel');
-    this.setAttribute('tabindex', '0');
+    this.tabIndex = this.hasAttribute('tabindex') ? this.tabIndex : 0;
+    this.slot = this.hasAttribute('slot') ? this.slot : 'panel';
   }
 
   protected override render() {
-    return html` <slot></slot> `;
+    return html`<slot></slot>`;
   }
 }
 
