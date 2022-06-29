@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming';
+import { watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
 import { EventEmitterMixin } from '../common/mixins/event-emitter';
 import { styles } from './themes/light/dialog.base.css';
@@ -43,11 +44,11 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-dialog';
   public static styles = [styles];
 
+  @query('[part="base"]')
+  private nativeElement!: any;
+
   @queryAssignedElements({ slot: 'title' })
   private _titleElements!: Array<HTMLElement>;
-
-  @query('[part="base"]', true)
-  private nativeElement!: any;
 
   /** Whether the dialog should be closed when pressing 'ESC' button.  */
   @property({ type: Boolean, attribute: 'close-on-escape' })
@@ -68,6 +69,56 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   /** Sets the return value for the dialog. */
   @property({ type: String, attribute: 'return-value' })
   public returnValue!: string;
+
+  @watch('open')
+  protected async handleOpenState() {
+    await this.updateComplete;
+
+    if (this.nativeElement) {
+      const hasOpenAttr = this.nativeElement.hasAttribute('open');
+
+      if (this.open && !hasOpenAttr) {
+        this.nativeElement.showModal();
+      } else if (!this.open && hasOpenAttr) {
+        this.nativeElement.close();
+      }
+    }
+  }
+
+  private handleCancel(event: Event) {
+    event.preventDefault();
+
+    if (this.closeOnEscape) {
+      this.hide();
+    }
+  }
+
+  private handleClick(ev: MouseEvent) {
+    const el = ev.target as HTMLElement;
+    const targetElement =
+      el.tagName === 'SLOT' ? (el.parentElement as HTMLElement) : el;
+    const rect = targetElement.getBoundingClientRect();
+
+    const clickedInside =
+      rect.top <= ev.clientY &&
+      ev.clientY <= rect.top + rect.height &&
+      rect.left <= ev.clientX &&
+      ev.clientX <= rect.left + rect.width;
+
+    if (!clickedInside && this.closeOnOutsideClick) {
+      this.hide();
+    }
+  }
+
+  private handleOpening() {
+    const args = { cancelable: true };
+    return this.emitEvent('igcOpening', args);
+  }
+
+  private handleClosing(): boolean {
+    const args = { cancelable: true };
+    return this.emitEvent('igcClosing', args);
+  }
 
   /** Opens the dialog. */
   public show() {
@@ -105,41 +156,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       this.hide();
     } else {
       this.show();
-    }
-  }
-
-  private handleOpening() {
-    const args = { cancelable: true };
-    return this.emitEvent('igcOpening', args);
-  }
-
-  private handleClosing(): boolean {
-    const args = { cancelable: true };
-    return this.emitEvent('igcClosing', args);
-  }
-
-  private handleCancel(event: Event) {
-    event.preventDefault();
-
-    if (this.closeOnEscape) {
-      this.hide();
-    }
-  }
-
-  private handleClick(ev: MouseEvent) {
-    const el = ev.target as HTMLElement;
-    const targetElement =
-      el.tagName === 'SLOT' ? (el.parentElement as HTMLElement) : el;
-    const rect = targetElement.getBoundingClientRect();
-
-    const clickedInside =
-      rect.top <= ev.clientY &&
-      ev.clientY <= rect.top + rect.height &&
-      rect.left <= ev.clientX &&
-      ev.clientX <= rect.left + rect.width;
-
-    if (!clickedInside && this.closeOnOutsideClick) {
-      this.hide();
     }
   }
 
