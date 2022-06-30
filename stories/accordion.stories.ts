@@ -46,44 +46,28 @@ const Template: Story<ArgTypes, Context> = (
     <igc-accordion
       .singleBranchExpand="${singleBranchExpand}"
       .dir="${direction}"
+      @igcOpening=${handleOpening}
+      @igcOpened=${handleOpened}
+      @igcClosing=${handleClosing}
+      @igcClosed=${handleClosed}
     >
-      <igc-expansion-panel
-        @igcOpening=${handleOpening}
-        @igcOpened=${handleOpened}
-        @igcClosing=${handleClosing}
-        @igcClosed=${handleClosed}
-      >
+      <igc-expansion-panel>
         <div slot="title">Expansion panel 1 title</div>
         <div slot="subtitle">Expansion panel 1 subtitle</div>
         <p>Sample content 1</p>
       </igc-expansion-panel>
-      <igc-expansion-panel
-        @igcOpening=${handleOpening}
-        @igcOpened=${handleOpened}
-        @igcClosing=${handleClosing}
-        @igcClosed=${handleClosed}
-      >
+      <igc-expansion-panel>
         <div slot="title">Expansion panel 2 title</div>
         <div slot="subtitle">Expansion panel 2 subtitle</div>
         <p>Sample content 2</p>
       </igc-expansion-panel>
-      <igc-expansion-panel
-        @igcOpening=${handleOpening}
-        @igcOpened=${handleOpened}
-        @igcClosing=${handleClosing}
-        @igcClosed=${handleClosed}
-      >
+      <igc-expansion-panel>
         <div slot="title">Expansion panel 3 title</div>
         <div slot="subtitle">Expansion panel 3 subtitle</div>
         <p>Sample content 3</p>
         <input />
       </igc-expansion-panel>
-      <igc-expansion-panel
-        @igcOpening=${handleOpening}
-        @igcOpened=${handleOpened}
-        @igcClosing=${handleClosing}
-        @igcClosed=${handleClosed}
-      >
+      <igc-expansion-panel>
         <div slot="title">Expansion panel 4 title (nested accordion)</div>
         <div slot="subtitle">Expansion panel 4 subtitle</div>
         <igc-accordion .dir="${direction}">

@@ -31,8 +31,7 @@ export default class IgcAccordionComponent extends LitElement {
   private handlePanelOpening = (
     event: CustomEvent<IgcExpansionPanelComponent>
   ) => {
-    event.stopPropagation();
-    if (!this.singleBranchExpand) {
+    if (!this.singleBranchExpand || !this.panels.includes(event.detail)) {
       return;
     }
     this._enabledPanels.forEach((p) => {
