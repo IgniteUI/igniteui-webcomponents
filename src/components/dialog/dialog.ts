@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming';
 import { watch } from '../common/decorators';
 import { Constructor } from '../common/mixins/constructor';
@@ -65,6 +66,22 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   /** Sets the title of the dialog.  */
   @property({ type: String })
   public override title!: string;
+
+  /** Sets the role attribute for the control. */
+  @property({ reflect: true })
+  public role: 'dialog' | 'alertdialog' = 'dialog';
+
+  /** Sets the aria-label attribute for the control. */
+  @property({ attribute: 'aria-label' })
+  public override ariaLabel!: string;
+
+  /** Sets the aria-labelledby attribute for the control. */
+  @property({ reflect: true, attribute: 'aria-labelledby' })
+  public ariaLabelledby!: string;
+
+  /** Sets the aria-describedby attribute for the control. */
+  @property({ reflect: true, attribute: 'aria-describedby' })
+  public ariaDescribedby!: string;
 
   /** Sets the return value for the dialog. */
   @property({ type: String, attribute: 'return-value' })
@@ -165,6 +182,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         part="base"
         @click=${this.handleClick}
         @cancel=${this.handleCancel}
+        role=${this.role}
+        aria-label=${ifDefined(this.ariaLabel)}
+        aria-labelledby=${ifDefined(this.ariaLabelledby)}
+        aria-describedby=${ifDefined(this.ariaDescribedby)}
       >
         <header part="title">
           <slot name="title"></slot>

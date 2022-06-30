@@ -35,6 +35,30 @@ const metadata = {
       description: 'Sets the title of the dialog.',
       control: 'text',
     },
+    role: {
+      type: '"dialog" | "alertdialog"',
+      description: 'Sets the role attribute for the control.',
+      options: ['dialog', 'alertdialog'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'dialog',
+    },
+    ariaLabel: {
+      type: 'string',
+      description: 'Sets the aria-label attribute for the control.',
+      control: 'text',
+    },
+    ariaLabelledby: {
+      type: 'string',
+      description: 'Sets the aria-labelledby attribute for the control.',
+      control: 'text',
+    },
+    ariaDescribedby: {
+      type: 'string',
+      description: 'Sets the aria-describedby attribute for the control.',
+      control: 'text',
+    },
     returnValue: {
       type: 'string',
       description: 'Sets the return value for the dialog.',
@@ -48,6 +72,10 @@ interface ArgTypes {
   closeOnOutsideClick: boolean;
   open: boolean;
   title: string;
+  role: 'dialog' | 'alertdialog';
+  ariaLabel: string;
+  ariaLabelledby: string;
+  ariaDescribedby: string;
   returnValue: string;
 }
 // endregion
