@@ -76,6 +76,29 @@ const Template: Story<ArgTypes, Context> = (
         <div slot="title">Expansion panel 3 title</div>
         <div slot="subtitle">Expansion panel 3 subtitle</div>
         <p>Sample content 3</p>
+        <input />
+      </igc-expansion-panel>
+      <igc-expansion-panel
+        @igcOpening=${handleOpening}
+        @igcOpened=${handleOpened}
+        @igcClosing=${handleClosing}
+        @igcClosed=${handleClosed}
+      >
+        <div slot="title">Expansion panel 4 title (nested accordion)</div>
+        <div slot="subtitle">Expansion panel 4 subtitle</div>
+        <igc-accordion .dir="${direction}">
+          <igc-expansion-panel>
+            <h1 slot="title">Expansion panel 4.1 title</h1>
+            <h2 slot="subtitle">Expansion panel 4.1 subtitle</h2>
+            <p>Sample content 4.1</p>
+          </igc-expansion-panel>
+          <igc-expansion-panel>
+            <h1 slot="title">Expansion panel 4.2 title</h1>
+            <h2 slot="subtitle">Expansion panel 4.2 subtitle</h2>
+            <p>Sample content 4.2</p>
+            <input />
+          </igc-expansion-panel>
+        </igc-accordion>
       </igc-expansion-panel>
     </igc-accordion>
   `;

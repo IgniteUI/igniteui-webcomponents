@@ -31,6 +31,7 @@ export default class IgcAccordionComponent extends LitElement {
   private handlePanelOpening = (
     event: CustomEvent<IgcExpansionPanelComponent>
   ) => {
+    event.stopPropagation();
     if (!this.singleBranchExpand) {
       return;
     }
@@ -42,6 +43,13 @@ export default class IgcAccordionComponent extends LitElement {
   };
 
   private handleKeydown = (event: KeyboardEvent) => {
+    if (
+      (event.target as HTMLElement).tagName.toLowerCase() !==
+        'igc-expansion-panel' ||
+      !this._enabledPanels.includes(event.target as IgcExpansionPanelComponent)
+    ) {
+      return;
+    }
     switch (event.key.toLowerCase()) {
       case 'home':
         this.getPanelHeader(this._enabledPanels[0]).focus();
