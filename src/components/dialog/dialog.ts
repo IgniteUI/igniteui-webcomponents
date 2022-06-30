@@ -11,6 +11,8 @@ import { styles as fluent } from './themes/light/dialog.fluent.css';
 import { styles as indigo } from './themes/light/dialog.indigo.css';
 import { styles as material } from './themes/light/dialog.material.css';
 
+let nextId = 0;
+
 export interface IgcDialogEventMap {
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
@@ -44,6 +46,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-dialog';
   public static styles = [styles];
+
+  private titleId = `title-${nextId++}`;
 
   @query('[part="base"]')
   private nativeElement!: any;
@@ -184,10 +188,12 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         @cancel=${this.handleCancel}
         role=${this.role}
         aria-label=${ifDefined(this.ariaLabel)}
-        aria-labelledby=${ifDefined(this.ariaLabelledby)}
+        aria-labelledby=${this.ariaLabelledby
+          ? this.ariaLabelledby
+          : this.titleId}
         aria-describedby=${ifDefined(this.ariaDescribedby)}
       >
-        <header part="title">
+        <header part="title" id=${this.titleId}>
           <slot name="title"></slot>
           ${this._titleElements.length === 0
             ? html`<span>${this.title}</span>`
