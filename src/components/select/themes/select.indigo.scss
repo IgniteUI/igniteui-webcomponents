@@ -1,0 +1,13 @@
+@use '../../../styles/utilities' as utils;
+
+:host {
+    ::slotted([slot='helper-text']) {
+        color: utils.color(gray, 600);
+    }
+}
+
+:host([disabled]) {
+    ::slotted([slot='helper-text']) {
+        color: utils.color(gray, 300);
+    }
+}

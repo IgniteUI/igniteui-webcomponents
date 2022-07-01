@@ -17,12 +17,13 @@ import IgcSelectGroupComponent from './select-group';
 import IgcSelectItemComponent from './select-item';
 import { styles } from './themes/select.base.css';
 import { styles as bootstrap } from './themes/select.bootstrap.css';
+import { styles as indigo } from './themes/select.indigo.css';
 
 export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
-@themes({ bootstrap })
+@themes({ bootstrap, indigo })
 /**
  * @element igc-select
  *

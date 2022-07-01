@@ -7,7 +7,13 @@
     ::slotted([slot='helper-text']) {
         @include utils.type-category('caption');
 
-        color: utils.color(gray, 700);
+        color: utils.color(gray, 600);
+    }
+}
+
+:host([disabled]) {
+    ::slotted([slot='helper-text']) {
+        color: utils.color(gray, 400);
     }
 }
 
