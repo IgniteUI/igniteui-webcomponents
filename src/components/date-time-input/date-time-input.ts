@@ -64,7 +64,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     seconds: 1,
   };
 
-  /** The mask pattern to apply on the input. */
+  /** The date format to apply on the input. */
   @property({ attribute: 'input-format' })
   public get inputFormat(): string {
     return this._inputFormat || this._defaultMask;
@@ -123,7 +123,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   })
   public maxValue!: Date | null;
 
-  /** The display value of the editor. */
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the input format if not set.
+   */
   @property({ attribute: 'display-format' })
   public displayFormat!: string;
 
