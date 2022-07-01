@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
 import { property, query } from 'lit/decorators.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/tab.base.css.js';
 import { styles as bootstrap } from './themes/light/tab.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tab.fluent.css.js';
@@ -17,6 +17,7 @@ let nextId = 0;
  * @slot - Renders the tab header content.
  * @slot suffix - Renders after the tab header content.
  *
+ * @csspart content - The content wrapper.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  */
@@ -65,7 +66,9 @@ export default class IgcTabComponent extends LitElement {
         tabindex=${this.disabled || !this.selected ? -1 : 0}
       >
         <slot name="prefix" part="prefix"></slot>
-        <slot></slot>
+        <div part="content">
+          <slot></slot>
+        </div>
         <slot name="suffix" part="suffix"></slot>
       </div>
     `;

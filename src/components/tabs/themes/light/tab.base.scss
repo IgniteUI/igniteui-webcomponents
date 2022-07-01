@@ -47,6 +47,14 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
 }
 
 [part='base'] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    outline-style: none;
+    gap: rem(8px);
+}
+
+[part='content'] {
     @include type-category('button');
 
     display: flex;

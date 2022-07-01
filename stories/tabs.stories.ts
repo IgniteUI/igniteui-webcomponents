@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { range } from 'lit/directives/range.js';
 import { map } from 'lit/directives/map.js';
+import { range } from 'lit/directives/range.js';
 import { Context, Story } from './story.js';
 
 // region default
@@ -59,10 +59,15 @@ const removableTabs = Array.from(
     (i) =>
       html`<igc-tab panel=${i}>
           Item ${i + 1}
-          <igc-icon-button @click=${remove} size="small" slot="suffix"
-            >x</igc-icon-button
-          > </igc-tab
-        ><igc-tab-panel id=${i}><h1>Content for ${i + 1}</h1></igc-tab-panel>`
+          <igc-icon-button
+            @click=${remove}
+            size="small"
+            slot="suffix"
+            collection="internal"
+            name="chip_cancel"
+          ></igc-icon-button>
+        </igc-tab>
+        <igc-tab-panel id=${i}><h1>Content for ${i + 1}</h1></igc-tab-panel>`
   )
 );
 
