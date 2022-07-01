@@ -33,7 +33,7 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @slot header - Renders a container before the list of options.
  * @slot footer - Renders a container after the list of options.
  * @slot helper-text - Renders content below the input.
- * @slot toggle-icon - Renders content below the input.
+ * @slot toggle-icon - Renders content inside the suffix container.
  *
  * @fires igcFocus - Emitted when the select gains focus.
  * @fires igcBlur - Emitted when the select loses focus.
