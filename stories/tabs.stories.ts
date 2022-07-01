@@ -43,12 +43,35 @@ interface ArgTypes {
 }
 // endregion
 
+(metadata as any).parameters = {
+  actions: {
+    handles: ['igcChange'],
+  },
+};
+
+const remove = (e: MouseEvent) => {
+  (e.target as HTMLElement).closest('igc-tab')?.remove();
+};
+
+const removableTabs = Array.from(
+  map(
+    range(10),
+    (i) =>
+      html`<igc-tab panel=${i}>
+          Item ${i + 1}
+          <igc-icon-button @click=${remove} size="small" slot="suffix"
+            >x</igc-icon-button
+          > </igc-tab
+        ><igc-tab-panel id=${i}><h1>Content for ${i + 1}</h1></igc-tab-panel>`
+  )
+);
+
 const tabs = Array.from(
   map(
     range(18),
     (i) =>
-      html`<igc-tab panel=${i} ?disabled=${i === 2}> Item ${i + 1}</igc-tab>
-        <igc-tab-panel id=${i}> Content ${i + 1} </igc-tab-panel>`
+      html`<igc-tab panel=${i} ?disabled=${i === 2}> Item ${i + 1} </igc-tab>
+        <igc-tab-panel id=${i}> Content ${i + 1}</igc-tab-panel>`
   )
 );
 
@@ -105,4 +128,32 @@ const Template: Story<ArgTypes, Context> = (
   </igc-tabs>
 `;
 
+const TabStrip: Story<ArgTypes, Context> = (
+  { activation, alignment }: ArgTypes,
+  { globals: { direction } }: Context
+) => html`
+  <igc-tabs
+    dir="${ifDefined(direction)}"
+    alignment="${ifDefined(alignment)}"
+    activation="${ifDefined(activation)}"
+  >
+    ${Array.from(range(1, 11)).map((i) => html` <igc-tab>${i}</igc-tab> `)}
+  </igc-tabs>
+`;
+
+const RemovableTabs: Story<ArgTypes, Context> = (
+  { activation, alignment }: ArgTypes,
+  { globals: { direction } }: Context
+) => html`
+  <igc-tabs
+    dir="${ifDefined(direction)}"
+    alignment="${ifDefined(alignment)}"
+    activation="${ifDefined(activation)}"
+  >
+    ${removableTabs}
+  </igc-tabs>
+`;
+
 export const Basic = Template.bind({});
+export const Removable = RemovableTabs.bind({});
+export const Strip = TabStrip.bind({});

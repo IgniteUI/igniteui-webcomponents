@@ -9,7 +9,7 @@ import {
 } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import { themes } from '../../theming/theming-decorator.js';
-import type IgcTabComponent from './tab.js';
+import IgcTabComponent from './tab';
 import type IgcTabPanelComponent from './tab-panel.js';
 import { styles } from './themes/light/tabs.base.css.js';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
@@ -18,6 +18,11 @@ import { styles as indigo } from './themes/light/tabs.indigo.css.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { getOffset } from '../common/util.js';
+import {
+  getAttributesForTags,
+  getNodesForTags,
+  observerConfig,
+} from './utils.js';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<string>;
@@ -57,9 +62,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   @queryAssignedElements({ slot: 'panel' })
   protected panels!: Array<IgcTabPanelComponent>;
 
-  @query('slot', true)
-  protected defaultSlot!: HTMLSlotElement;
-
   @query('[part="headers-wrapper"]', true)
   protected wrapper!: HTMLElement;
 
@@ -79,13 +81,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   protected disableEndScrollButton = false;
 
   @state()
-  protected _selected = '';
+  protected activeTab?: IgcTabComponent;
 
   protected resizeObserver!: ResizeObserver;
-
-  protected get selectedTab() {
-    return this.tabs.find((tab) => tab.panel === this._selected);
-  }
+  protected mutationObserver!: MutationObserver;
 
   protected get enabledTabs() {
     return this.tabs.filter((tab) => !tab.disabled);
@@ -99,7 +98,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   /** Returns the currently selected tab. */
   public get selected(): string {
-    return this._selected;
+    return this.activeTab?.panel ?? '';
   }
 
   /** Sets the alignment for the tab headers */
@@ -118,17 +117,17 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   @watch('alignment', { waitUntilFirstUpdate: true })
   protected alignIndicator() {
     const styles: Partial<CSSStyleDeclaration> = {
-      visibility: this.selected ? 'visible' : 'hidden',
+      visibility: this.activeTab ? 'visible' : 'hidden',
       transitionDuration: '0.3s',
     };
 
-    if (this.selected) {
+    if (this.activeTab) {
       Object.assign(styles, {
-        width: `${this.selectedTab!.offsetWidth}px`,
+        width: `${this.activeTab!.offsetWidth}px`,
         transform: `translate(${
           this.isLTR
-            ? getOffset(this.selectedTab!, this.wrapper).left
-            : getOffset(this.selectedTab!, this.wrapper).right
+            ? getOffset(this.activeTab!, this.wrapper).left
+            : getOffset(this.activeTab!, this.wrapper).right
         }px)`,
       });
     }
@@ -142,18 +141,16 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     await this.updateComplete;
 
+    this.setAriaAttributes();
+    this.setupObserver();
     this.setSelectedTab(
       this.tabs.filter((tab) => tab.selected).at(-1) ?? this.enabledTabs.at(0)
     );
-
-    this.setupObserver();
-    this.setAriaAttributes();
-    this.defaultSlot.addEventListener('slotchange', this.handleSlotChange);
   }
 
   public override disconnectedCallback() {
     this.resizeObserver?.disconnect();
-    this.defaultSlot.removeEventListener('slotchange', this.handleSlotChange);
+    this.mutationObserver?.disconnect();
     super.disconnectedCallback();
   }
 
@@ -187,23 +184,74 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     [this.container, this.wrapper, ...this.tabs].forEach((element) =>
       this.resizeObserver.observe(element)
     );
+
+    this.mutationObserver = new MutationObserver(async (records, observer) => {
+      // Stop observing while handling changes
+      observer.disconnect();
+
+      const attributes = getAttributesForTags<IgcTabComponent>(
+        records,
+        'igc-tab'
+      );
+      const changed = getNodesForTags<IgcTabComponent>(
+        records,
+        this,
+        'igc-tab'
+      );
+
+      if (attributes.length > 0) {
+        this.activeTab = attributes.find((tab) => tab.selected);
+      }
+
+      if (changed) {
+        changed.addedNodes.forEach((tab) => {
+          this.resizeObserver.observe(tab);
+          if (tab.selected) {
+            this.activeTab = tab;
+          }
+        });
+        changed.removedNodes.forEach((tab) => {
+          this.resizeObserver.unobserve(tab);
+          if (tab.selected || this.activeTab === tab) {
+            this.activeTab = undefined;
+          }
+        });
+
+        this.setAriaAttributes();
+      }
+
+      this.updateTabsAndPanels();
+      this.activeTab?.scrollIntoView();
+      this.alignIndicator();
+
+      // Watch for changes again
+      await this.updateComplete;
+      observer.observe(this, observerConfig);
+    });
+
+    this.mutationObserver.observe(this, observerConfig);
+  }
+
+  protected updateTabsAndPanels() {
+    this.tabs.forEach((tab) => (tab.selected = tab === this.activeTab));
+    this.panels.forEach((panel) =>
+      Object.assign(panel.style, {
+        display: panel.id === this.activeTab?.panel ? 'block' : 'none',
+      })
+    );
   }
 
   private setSelectedTab(tab?: IgcTabComponent) {
-    if (!tab) {
+    if (!tab || tab === this.activeTab) {
       return;
     }
 
-    if (tab.panel !== this._selected) {
-      this._selected = tab.panel;
-
-      this.tabs.forEach((el) => (el.selected = el.panel === this._selected));
-      this.panels.forEach(
-        (el) => (el.style.display = el.id === this._selected ? 'block' : 'none')
-      );
-      tab.scrollIntoView();
-      this.alignIndicator();
+    if (this.activeTab) {
+      this.activeTab.selected = false;
     }
+
+    this.activeTab = tab;
+    this.activeTab.selected = true;
   }
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
@@ -233,20 +281,22 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const target = event.target as HTMLElement;
     const tab = target.closest('igc-tab');
 
-    if (!tab || tab.disabled) {
+    if (!(tab && this.contains(tab)) || tab.disabled) {
       return;
     }
 
     tab.focus();
     this.setSelectedTab(tab);
-    this.emitEvent('igcChange', { detail: this._selected });
+    this.emitEvent('igcChange', { detail: this.selected });
   }
 
   protected handleKeyDown = (event: KeyboardEvent) => {
     const { key } = event;
     const enabledTabs = this.enabledTabs;
 
-    let index = enabledTabs.indexOf(document.activeElement as IgcTabComponent);
+    let index = enabledTabs.indexOf(
+      document.activeElement?.closest('igc-tab') as IgcTabComponent
+    );
 
     switch (key) {
       case 'ArrowLeft':
@@ -277,7 +327,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     if (this.activation === 'auto') {
       this.setSelectedTab(enabledTabs[index]);
-      this.emitEvent('igcChange', { detail: this._selected });
+      this.emitEvent('igcChange', { detail: this.selected });
     } else {
       enabledTabs[index].scrollIntoView();
     }
@@ -299,18 +349,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   protected handleScroll() {
     this.updateScrollButtons();
   }
-
-  protected handleSlotChange = () => {
-    this.resizeObserver?.disconnect();
-
-    if (!this.selectedTab) {
-      this.tabs.forEach((tab) => (tab.selected = false));
-      this.panels.forEach((panel) => (panel.style.display = 'none'));
-      this._selected = '';
-    }
-    this.setAriaAttributes();
-    this.setupObserver();
-  };
 
   /** Selects the specified tab and displays the corresponding panel.  */
   public select(name: string) {

@@ -42,9 +42,9 @@ describe('Tabs component', () => {
         <igc-tab panel="second">Tab 2</igc-tab>
         <igc-tab panel="third">Tab 3</igc-tab>
         <igc-tab panel="forth">Tab 4</igc-tab>
-        <igc-tab-panel slot="panel" id="first">Content 1</igc-tab-panel>
-        <igc-tab-panel slot="panel" id="second">Content 2</igc-tab-panel>
-        <igc-tab-panel slot="panel" id="third">Content 2</igc-tab-panel>
+        <igc-tab-panel id="first">Content 1</igc-tab-panel>
+        <igc-tab-panel id="second">Content 2</igc-tab-panel>
+        <igc-tab-panel id="third">Content 2</igc-tab-panel>
       </igc-tabs>`);
     });
 
@@ -421,6 +421,13 @@ describe('Tabs component', () => {
       expect(Math.abs(90 - widths[3])).to.eq(0);
     });
 
+    it('updates selection through tab element `selected` attribute', async () => {
+      tabsHeaders(element).at(2)!.selected = true;
+      await elementUpdated(element);
+
+      expect(element.selected).to.eq(tabsHeaders(element)[2].panel);
+    });
+
     it('updates selection state when removing selected tab', async () => {
       element.select('third');
       await elementUpdated(element);
@@ -430,6 +437,25 @@ describe('Tabs component', () => {
 
       expect(element.selected).to.equal('');
       expect(getSelectedTabs().length).to.equal(0);
+    });
+
+    it('updates selected state when adding tabs at runtime', async () => {
+      let tab = document.createElement('igc-tab');
+      tab.panel = 'new-selection';
+      tab.selected = true;
+
+      element.appendChild(tab);
+      await elementUpdated(element);
+
+      expect(element.selected).to.eq(tab.panel);
+
+      tab = document.createElement('igc-tab');
+      tab.panel = 'new-selection-2';
+
+      element.appendChild(tab);
+      await elementUpdated(element);
+
+      expect(element.selected).not.to.eq(tab.panel);
     });
 
     it('keeps current selection when removing other tabs', async () => {
@@ -454,9 +480,7 @@ describe('Tabs component', () => {
         headers.push(
           html`<igc-tab panel=${i} .disabled=${i === 3}>Item ${i}</igc-tab>`
         );
-        panels.push(
-          html`<igc-tab-panel slot="panel" id=${i}>Content ${i}</igc-tab-panel>`
-        );
+        panels.push(html`<igc-tab-panel id=${i}>Content ${i}</igc-tab-panel>`);
       }
       element = await fixture<IgcTabsComponent>(
         html`<igc-tabs>${headers}${panels}</igc-tabs>`
