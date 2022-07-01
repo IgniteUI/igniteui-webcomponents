@@ -103,6 +103,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
               <igc-button
                 variant="flat"
                 part="action"
+                size="small"
                 @click=${this.handleClick}
               >
                 ${ifDefined(this.actionText)}
