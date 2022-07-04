@@ -1,22 +1,9 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import {
-  defineComponents,
-  IgcCardActionsComponent,
-  IgcCardContentComponent,
-  IgcCardHeaderComponent,
-  IgcCardMediaComponent,
-  IgcCardComponent,
-} from '../../index.js';
+import { defineComponents, IgcCardComponent } from '../../index.js';
 
 describe('Card Component', () => {
   before(() => {
-    defineComponents(
-      IgcCardComponent,
-      IgcCardActionsComponent,
-      IgcCardContentComponent,
-      IgcCardHeaderComponent,
-      IgcCardMediaComponent
-    );
+    defineComponents(IgcCardComponent);
   });
 
   let el: IgcCardComponent;
