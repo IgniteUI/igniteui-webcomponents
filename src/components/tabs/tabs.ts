@@ -221,7 +221,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       }
 
       this.updateTabsAndPanels();
-      this.activeTab?.scrollIntoView();
+      this.activeTab?.scrollIntoView({ block: 'nearest' });
       this.alignIndicator();
 
       // Watch for changes again
@@ -329,7 +329,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.setSelectedTab(enabledTabs[index]);
       this.emitEvent('igcChange', { detail: this.selected });
     } else {
-      enabledTabs[index].scrollIntoView();
+      enabledTabs[index].scrollIntoView({ block: 'nearest' });
     }
 
     event.preventDefault();
