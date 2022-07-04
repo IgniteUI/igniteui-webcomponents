@@ -62,21 +62,12 @@ export { configureTheme } from './theming/config.js';
 export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources.js';
 
 // Types
-export {
+export type {
   DateRangeDescriptor,
   DateRangeType,
 } from './components/calendar/common/calendar.model.js';
-export {
+export type {
   DatePart,
   DatePartDeltas,
 } from './components/date-time-input/date-util.js';
-export { IgcRangeSliderValue } from './components/slider/range-slider.js';
-
-// Base classes
-// TODO(rkaraivanov): Revise these exports
-export { SizableMixin } from './components/common/mixins/sizable.js';
-export { IgcCheckboxBaseComponent } from './components/checkbox/checkbox-base.js';
-export { IgcInputBaseComponent } from './components/input/input-base.js';
-export { IgcSliderBaseComponent } from './components/slider/slider-base.js';
-export { IgcButtonBaseComponent } from './components/button/button-base.js';
-export { IgcCalendarBaseComponent } from './components/calendar/common/calendar-base.js';
+export type { IgcRangeSliderValue } from './components/slider/range-slider.js';

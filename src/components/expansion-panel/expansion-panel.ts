@@ -7,7 +7,11 @@ import { styles } from './themes/light/expansion-panel.base.css.js';
 import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
 import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
 import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
-import '../icon/icon.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcIconComponent from '../icon/icon.js';
+
+defineComponents(IgcIconComponent);
 
 let NEXT_ID = 0;
 export interface IgcExpansionPanelComponentEventMap {

@@ -16,8 +16,12 @@ import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
 import { styles as indigo } from './rating.indigo.css.js';
 import { clamp } from '../common/util.js';
-import type IgcRatingSymbolComponent from './rating-symbol';
 import { themes } from '../../theming/theming-decorator.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
+
+defineComponents(IgcRatingSymbolComponent);
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
