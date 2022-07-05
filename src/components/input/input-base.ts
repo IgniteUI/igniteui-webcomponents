@@ -25,6 +25,8 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
+type Direction = 'ltr' | 'rtl' | 'auto';
+
 @themes({ bootstrap, material, fluent, indigo })
 export abstract class IgcInputBaseComponent
   extends SizableMixin(
@@ -42,7 +44,7 @@ export abstract class IgcInputBaseComponent
 
   /** The value attribute of the control. */
   @blazorSuppress()
-  public abstract value: string;
+  public abstract value: string | Date | null;
 
   @query('input', true)
   protected input!: HTMLInputElement;
@@ -57,6 +59,11 @@ export abstract class IgcInputBaseComponent
   protected helperText!: Array<HTMLElement>;
 
   protected themeController!: ThemeController;
+
+  /** The direction attribute of the control. */
+  @property({ reflect: true })
+  @blazorSuppress()
+  public override dir: Direction = 'auto';
 
   /** The name attribute of the control. */
   @property()
@@ -130,10 +137,10 @@ export abstract class IgcInputBaseComponent
     this.emitEvent('igcBlur');
   }
 
-  protected handleChange() {
-    this.value = this.input.value;
-    this.emitEvent('igcChange', { detail: this.value });
-  }
+  // protected handleChange() {
+  //   this.value = this.input.value;
+  //   this.emitEvent('igcChange', { detail: this.value });
+  // }
 
   /** Sets the text selection range of the control */
   public setSelectionRange(

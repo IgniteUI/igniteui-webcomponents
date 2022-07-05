@@ -12,6 +12,7 @@ export { default as IgcCheckboxComponent } from './components/checkbox/checkbox.
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress.js';
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
 export { default as IgcChipComponent } from './components/chip/chip.js';
+export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
 export { default as IgcDropdownComponent } from './components/dropdown/dropdown.js';
 export { default as IgcDropdownGroupComponent } from './components/dropdown/dropdown-group.js';
 export { default as IgcDropdownHeaderComponent } from './components/dropdown/dropdown-header.js';
@@ -68,6 +69,10 @@ export {
   DateRangeDescriptor,
   DateRangeType,
 } from './components/calendar/common/calendar.model.js';
+export {
+  DatePart,
+  DatePartDeltas,
+} from './components/date-time-input/date-util.js';
 export { IgcRangeSliderValue } from './components/slider/range-slider.js';
 
 // Base classes
