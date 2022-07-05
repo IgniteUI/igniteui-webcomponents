@@ -16,6 +16,7 @@ import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import '../icon/icon.js';
 
 const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
   small: 1 / 2,
