@@ -7,21 +7,6 @@ const metadata = {
   title: 'Mask Input',
   component: 'igc-mask-input',
   argTypes: {
-    dir: {
-      type: '"ltr" | "rtl" | "auto"',
-      description: 'The direction attribute of the control.',
-      options: ['ltr', 'rtl', 'auto'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'auto',
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     valueMode: {
       type: '"raw" | "withFormatting"',
       description:
@@ -41,6 +26,12 @@ const metadata = {
       type: 'string',
       description: 'The prompt symbol to use for unfilled parts of the mask.',
       control: 'text',
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Controls the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
     },
     value: {
       type: 'string',
@@ -99,11 +90,10 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  dir: 'ltr' | 'rtl' | 'auto';
-  invalid: boolean;
   valueMode: 'raw' | 'withFormatting';
   mask: string;
   prompt: string;
+  invalid: boolean;
   value: string;
   name: string;
   outlined: boolean;

@@ -46,6 +46,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
     'igc-mask-input',
     'textarea',
     'igc-rating',
+    'igc-date-time-input',
   ];
   private _controlsThatSubmit = [
     'input',
@@ -95,7 +96,8 @@ export default class IgcFormComponent extends EventEmitterMixin<
       } else if (
         tagName === 'igc-input' ||
         tagName === 'igc-rating' ||
-        tagName === 'igc-mask-input'
+        tagName === 'igc-mask-input' ||
+        tagName === 'igc-date-time-input'
       ) {
         element.value = element.getAttribute('value');
       } else if (this._controlsWithValue.includes(tagName)) {
