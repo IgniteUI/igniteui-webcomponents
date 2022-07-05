@@ -4,10 +4,10 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { styles } from './themes/snackbar.base.css.js';
-import { styles as bootstrap } from './themes/snackbar.bootstrap.css.js';
-import { styles as fluent } from './themes/snackbar.fluent.css.js';
-import { styles as indigo } from './themes/snackbar.indigo.css.js';
+import { styles } from './themes/light/snackbar.base.css.js';
+import { styles as bootstrap } from './themes/light/snackbar.bootstrap.css.js';
+import { styles as fluent } from './themes/light/snackbar.fluent.css.js';
+import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
@@ -103,6 +103,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
               <igc-button
                 variant="flat"
                 part="action"
+                size="small"
                 @click=${this.handleClick}
               >
                 ${ifDefined(this.actionText)}
