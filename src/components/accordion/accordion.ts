@@ -1,7 +1,18 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 
+defineComponents(IgcExpansionPanelComponent);
+
+/**
+ * The Accordion is a container-based component that can house multiple expansion panels
+ * and offers keyboard navigation.
+ *
+ * @element igc-accordion
+ *
+ * @slot - Renders the expansion panels inside default slot.
+ */
 export default class IgcAccordionComponent extends LitElement {
   public static readonly tagName = 'igc-accordion';
   //public static styles = styles;

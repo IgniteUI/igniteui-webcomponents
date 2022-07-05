@@ -7,11 +7,10 @@ import {
 } from '@open-wc/testing';
 import { defineComponents } from '../../index.js';
 import IgcAccordionComponent from './accordion.js';
-import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 
 describe('Accordion', () => {
   before(() => {
-    defineComponents(IgcExpansionPanelComponent, IgcAccordionComponent);
+    defineComponents(IgcAccordionComponent);
   });
 
   let accordion: IgcAccordionComponent;
