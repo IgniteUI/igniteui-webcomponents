@@ -42,7 +42,6 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'dialog',
     },
     ariaLabel: {
       type: 'string',
@@ -92,7 +91,16 @@ const handleToggle = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { closeOnEscape, closeOnOutsideClick, title, returnValue, open }: ArgTypes,
+  {
+    closeOnEscape,
+    closeOnOutsideClick,
+    title,
+    returnValue,
+    open,
+    ariaLabel,
+    ariaLabelledby,
+    ariaDescribedby,
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -107,6 +115,9 @@ const Template: Story<ArgTypes, Context> = (
         return-value=${ifDefined(returnValue)}
         title=${ifDefined(title)}
         dir=${ifDefined(direction)}
+        aria-label=${ifDefined(ariaLabel)}
+        aria-labelledby=${ifDefined(ariaLabelledby)}
+        aria-describedby=${ifDefined(ariaDescribedby)}
       >
         <h1 slot="title">Title Content</h1>
 

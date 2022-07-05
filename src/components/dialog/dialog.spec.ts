@@ -5,6 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
+import sinon from 'sinon';
 import { defineComponents, IgcDialogComponent } from '../../index.js';
 
 describe('Dialog component', () => {
@@ -13,10 +14,14 @@ describe('Dialog component', () => {
   });
 
   let dialog: IgcDialogComponent;
+  let dialogEl: HTMLDialogElement;
 
   describe('', () => {
     beforeEach(async () => {
       dialog = await createDialogComponent();
+      dialogEl = dialog.shadowRoot!.querySelector(
+        'dialog'
+      ) as HTMLDialogElement;
     });
 
     it('passes the a11y audit', async () => {
@@ -71,17 +76,34 @@ describe('Dialog component', () => {
 
     it('renders a dialog element internally', async () => {
       await expect(dialog).shadowDom.to.be.accessible();
-      expect(dialog).shadowDom.to.equal(`<dialog></dialog>`, {
-        ignoreAttributes: [
-          'variant',
-          'aria-label',
-          'aria-disabled',
-          'aria-hidden',
-          'part',
-          'role',
-          'size',
-        ],
-      });
+      expect(dialog).shadowDom.to.equal(
+        `
+        <dialog>
+          <header>
+            <slot name="title"></slot>
+            <span></span>
+          </header>
+          <section>
+            <slot></slot>
+          </section>
+          <footer>
+            <slot name="footer"></slot>
+          </footer>
+        </dialog>`,
+        {
+          ignoreAttributes: [
+            'variant',
+            'aria-label',
+            'aria-disabled',
+            'aria-hidden',
+            'aria-labelledby',
+            'part',
+            'role',
+            'size',
+            'id',
+          ],
+        }
+      );
     });
 
     it('is created with the proper default values', async () => {
@@ -90,10 +112,51 @@ describe('Dialog component', () => {
       expect(dialog.title).to.be.undefined;
       expect(dialog.open).to.equal(false);
       expect(dialog.returnValue).to.be.undefined;
-      // expect(dialog.role).to.be.undefined;
-      // expect(dialog.ariaDescribedBy).to.be.undefined;
-      // expect(dialog.ariaLabel).to.be.undefined;
-      // expect(dialog.ariaLabelledBy).to.be.undefined;
+      expect(dialog.role).to.be.undefined;
+      expect(dialog.ariaDescribedby).to.be.undefined;
+      expect(dialog.ariaLabel).to.be.undefined;
+      expect(dialog.ariaLabelledby).to.be.undefined;
+      expect(dialogEl.getAttribute('role')).to.equal('dialog');
+    });
+
+    it('set aria properties and role', async () => {
+      dialog.role = 'alertdialog';
+      dialog.ariaLabel = 'ariaLabel';
+      dialog.ariaLabelledby = 'ariaLabelledby';
+      dialog.ariaDescribedby = 'ariaDescribedby';
+      await elementUpdated(dialog);
+
+      expect(dialogEl.getAttribute('role')).to.equal('alertdialog');
+      expect(dialogEl.getAttribute('aria-label')).to.equal('ariaLabel');
+      expect(dialogEl.getAttribute('aria-labelledby')).to.equal(
+        'ariaLabelledby'
+      );
+      expect(dialogEl.getAttribute('aria-describedby')).to.equal(
+        'ariaDescribedby'
+      );
+      expect(dialog).dom.to.equal(
+        '<igc-dialog role="alertdialog"></igc-dialog>'
+      ); //to be fixed
+    });
+
+    it('emits events correctly', async () => {
+      const eventSpy = sinon.spy(dialog, 'emitEvent');
+      dialog.toggle();
+      await elementUpdated(dialog);
+
+      expect(dialog.open).to.be.true;
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith('igcOpening');
+      expect(eventSpy.secondCall).calledWith('igcOpened');
+
+      eventSpy.resetHistory();
+      dialog.toggle();
+      await elementUpdated(dialog);
+
+      expect(dialog.open).to.be.false;
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.secondCall).calledWith('igcClosed');
     });
 
     const createDialogComponent = (template = `<igc-dialog></igc-dialog>`) => {

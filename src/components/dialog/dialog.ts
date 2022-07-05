@@ -48,6 +48,9 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public static styles = [styles];
 
   private titleId = `title-${nextId++}`;
+  private _ariaLabel!: string;
+  private _ariaLabelledby!: string;
+  private _ariaDescribedby!: string;
 
   @query('[part="base"]')
   private nativeElement!: any;
@@ -73,19 +76,55 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   /** Sets the role attribute for the control. */
   @property({ reflect: true })
-  public role: 'dialog' | 'alertdialog' = 'dialog';
+  public role!: 'dialog' | 'alertdialog';
 
   /** Sets the aria-label attribute for the control. */
   @property({ attribute: 'aria-label' })
-  public override ariaLabel!: string;
+  public override get ariaLabel() {
+    return this._ariaLabel;
+  }
+
+  public override set ariaLabel(value: string) {
+    const oldVal = this._ariaLabel;
+    this._ariaLabel = value;
+
+    if (this.hasAttribute('aria-label')) {
+      this.removeAttribute('aria-label');
+    }
+    this.requestUpdate('ariaLabel', oldVal);
+  }
 
   /** Sets the aria-labelledby attribute for the control. */
-  @property({ reflect: true, attribute: 'aria-labelledby' })
-  public ariaLabelledby!: string;
+  @property({ attribute: 'aria-labelledby' })
+  public get ariaLabelledby() {
+    return this._ariaLabelledby;
+  }
+
+  public set ariaLabelledby(value: string) {
+    const oldVal = this._ariaLabelledby;
+    this._ariaLabelledby = value;
+
+    if (this.hasAttribute('aria-labelledby')) {
+      this.removeAttribute('aria-labelledby');
+    }
+    this.requestUpdate('ariaLabelledby', oldVal);
+  }
 
   /** Sets the aria-describedby attribute for the control. */
-  @property({ reflect: true, attribute: 'aria-describedby' })
-  public ariaDescribedby!: string;
+  @property({ attribute: 'aria-describedby' })
+  public get ariaDescribedby() {
+    return this._ariaDescribedby;
+  }
+
+  public set ariaDescribedby(value: string) {
+    const oldVal = this._ariaDescribedby;
+    this._ariaDescribedby = value;
+
+    if (this.hasAttribute('aria-describedby')) {
+      this.removeAttribute('aria-describedby');
+    }
+    this.requestUpdate('ariaDescribedby', oldVal);
+  }
 
   /** Sets the return value for the dialog. */
   @property({ type: String, attribute: 'return-value' })
@@ -186,7 +225,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         part="base"
         @click=${this.handleClick}
         @cancel=${this.handleCancel}
-        role=${this.role}
+        role=${this.role ? this.role : 'dialog'}
         aria-label=${ifDefined(this.ariaLabel)}
         aria-labelledby=${this.ariaLabelledby
           ? this.ariaLabelledby
