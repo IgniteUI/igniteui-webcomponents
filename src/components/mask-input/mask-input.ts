@@ -1,18 +1,11 @@
 import { html } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { partNameMap } from '../common/util.js';
-import { IgcInputBaseComponent } from '../input/input-base.js';
-import { MaskParser } from './mask-parser.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-
-interface MaskSelection {
-  start: number;
-  end: number;
-}
+import { IgcMaskInputBaseComponent } from './mask-input-base.js';
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -36,34 +29,10 @@ interface MaskSelection {
  * @csspart suffix - The suffix wrapper
  * @csspart helper-text - The helper text wrapper
  */
-export default class IgcMaskInputComponent extends IgcInputBaseComponent {
+export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
 
-  protected parser = new MaskParser();
   protected _value = '';
-  protected selection: MaskSelection = { start: 0, end: 0 };
-  protected compositionStart = 0;
-
-  @state()
-  protected hasFocus = false;
-
-  @state()
-  protected maskedValue = '';
-
-  protected get inputSelection(): MaskSelection {
-    return {
-      start: this.input.selectionStart || 0,
-      end: this.input.selectionEnd || 0,
-    };
-  }
-
-  /** The direction attribute of the control. */
-  @property({ reflect: true })
-  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
-
-  /** Controls the validity of the control. */
-  @property({ reflect: true, type: Boolean })
-  public invalid = false;
 
   /**
    * Dictates the behavior when retrieving the value of the control:
@@ -98,11 +67,14 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
 
   /** The mask pattern to apply on the input. */
   @property()
-  public mask!: string;
+  public get mask() {
+    return this._mask;
+  }
 
-  /** The prompt symbol to use for unfilled parts of the mask. */
-  @property()
-  public prompt!: string;
+  /** The mask pattern to apply on the input. */
+  public set mask(val: string) {
+    this._mask = val;
+  }
 
   @watch('prompt')
   protected promptChange() {
@@ -112,7 +84,7 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
     }
   }
 
-  @watch('mask')
+  @watch('_mask')
   protected maskChange() {
     this.parser.mask = this.mask;
     if (this.value) {
@@ -134,65 +106,6 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
     this.prompt = this.prompt || this.parser.prompt;
   }
 
-  protected handleKeydown(e: KeyboardEvent) {
-    if (!e.key) {
-      return;
-    }
-    this.selection = this.inputSelection;
-  }
-
-  protected handleCompositionStart() {
-    this.compositionStart = this.inputSelection.start;
-  }
-
-  protected handleCompositionEnd({ data }: CompositionEvent) {
-    const start = this.compositionStart,
-      end = this.inputSelection.end;
-    this.updateInput(data, start, end);
-  }
-
-  protected handleInput({ inputType, isComposing }: InputEvent) {
-    const value = this.input.value;
-    const start = this.selection.start;
-    let end = this.selection.end;
-
-    switch (inputType) {
-      case 'deleteContentForward':
-        this.updateInput('', start, (end = start === end ? ++end : end));
-        return this.updateComplete.then(() =>
-          this.input.setSelectionRange(end, end)
-        );
-
-      case 'deleteContentBackward':
-        if (isComposing) return;
-        return this.updateInput('', this.inputSelection.start, end);
-
-      case 'deleteByCut':
-        return this.updateInput('', start, end);
-
-      case 'insertText':
-        return this.updateInput(
-          value.substring(start, this.inputSelection.end),
-          start,
-          end
-        );
-
-      case 'insertFromPaste':
-        return this.updateInput(
-          value.substring(start, this.inputSelection.end),
-          start,
-          this.inputSelection.start
-        );
-
-      case 'insertFromDrop':
-        return this.updateInput(
-          value.substring(this.inputSelection.start, this.inputSelection.end),
-          this.inputSelection.start,
-          this.inputSelection.end
-        );
-    }
-  }
-
   protected updateInput(part: string, start: number, finish: number) {
     const { value, end } = this.parser.replace(
       this.maskedValue,
@@ -208,14 +121,6 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
       this.emitEvent('igcInput', { detail: this.value });
     }
     this.updateComplete.then(() => this.input.setSelectionRange(end, end));
-  }
-
-  protected handleCut() {
-    this.selection = this.inputSelection;
-  }
-
-  protected handleDragStart() {
-    this.selection = this.inputSelection;
   }
 
   protected handleDragEnter() {
@@ -251,13 +156,9 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
     super.handleBlur();
   }
 
-  protected override handleChange() {
+  protected handleChange() {
     this.emitEvent('igcChange', { detail: this.value });
     this.invalid = !this.checkValidity();
-  }
-
-  protected handleInvalid() {
-    this.invalid = true;
   }
 
   protected handleClick() {
@@ -293,16 +194,6 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
     this._value = this.parser.parse(this.maskedValue);
   }
 
-  @blazorSuppress()
-  public override setSelectionRange(
-    start: number,
-    end: number,
-    direction?: 'backward' | 'forward' | 'none'
-  ): void {
-    super.setSelectionRange(start, end, direction);
-    this.selection = { start, end };
-  }
-
   /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity() {
     const state = this._value
@@ -310,15 +201,6 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
       : this.input.reportValidity();
     this.invalid = !state;
     return state;
-  }
-
-  /**
-   * Sets a custom validation message for the control.
-   * As long as `message` is not empty, the control is considered invalid.
-   */
-  public setCustomValidity(message: string) {
-    this.input.setCustomValidity(message);
-    this.invalid = !this.input.checkValidity();
   }
 
   /** Check for validity of the control */
@@ -334,11 +216,6 @@ export default class IgcMaskInputComponent extends IgcInputBaseComponent {
     return (
       this.input.checkValidity() && this.parser.isValidString(this.input.value)
     );
-  }
-
-  /** Selects all text within the input. */
-  public select() {
-    this.input.select();
   }
 
   protected override renderInput() {
