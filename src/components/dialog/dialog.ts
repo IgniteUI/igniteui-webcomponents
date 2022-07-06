@@ -48,6 +48,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public static styles = [styles];
 
   private titleId = `title-${nextId++}`;
+  private _role!: string;
   private _ariaLabel!: string;
   private _ariaLabelledby!: string;
   private _ariaDescribedby!: string;
@@ -76,7 +77,22 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   /** Sets the role attribute for the control. */
   @property({ reflect: true })
-  public role!: 'dialog' | 'alertdialog';
+  public get role() {
+    return this._role;
+  }
+
+  public set role(value: string) {
+    if (value === 'dialog' || value === 'alertdialog') {
+      const oldVal = this._role;
+      this._role = value;
+
+      this.requestUpdate('role', oldVal);
+    }
+
+    if (this.hasAttribute('role')) {
+      this.removeAttribute('role');
+    }
+  }
 
   /** Sets the aria-label attribute for the control. */
   @property({ attribute: 'aria-label' })

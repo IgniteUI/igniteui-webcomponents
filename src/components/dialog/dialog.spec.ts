@@ -117,6 +117,11 @@ describe('Dialog component', () => {
       expect(dialog.ariaLabel).to.be.undefined;
       expect(dialog.ariaLabelledby).to.be.undefined;
       expect(dialogEl.getAttribute('role')).to.equal('dialog');
+
+      const header = dialog.shadowRoot?.querySelector('header') as HTMLElement;
+      expect(dialogEl.getAttribute('aria-labelledby')).to.equal(
+        header.getAttribute('id')
+      );
     });
 
     it('set aria properties and role', async () => {
@@ -134,9 +139,7 @@ describe('Dialog component', () => {
       expect(dialogEl.getAttribute('aria-describedby')).to.equal(
         'ariaDescribedby'
       );
-      expect(dialog).dom.to.equal(
-        '<igc-dialog role="alertdialog"></igc-dialog>'
-      ); //to be fixed
+      expect(dialog).dom.to.equal('<igc-dialog></igc-dialog>');
     });
 
     it('emits events correctly', async () => {
@@ -157,6 +160,38 @@ describe('Dialog component', () => {
       expect(eventSpy.callCount).to.equal(2);
       expect(eventSpy.firstCall).calledWith('igcClosing');
       expect(eventSpy.secondCall).calledWith('igcClosed');
+    });
+
+    it('cancels igcOpened correctly', async () => {
+      const eventSpy = sinon.spy(dialog, 'emitEvent');
+
+      expect(dialog.open).to.be.false;
+
+      dialog.addEventListener('igcOpening', (ev) => {
+        ev.preventDefault();
+      });
+
+      dialog.toggle();
+      await elementUpdated(dialog);
+
+      expect(dialog.open).to.be.false;
+      expect(eventSpy).calledOnceWith('igcOpening');
+    });
+
+    it('cancels igcClosed correctly', async () => {
+      dialog.toggle();
+      await elementUpdated(dialog);
+      expect(dialog.open).to.be.true;
+
+      const eventSpy = sinon.spy(dialog, 'emitEvent');
+
+      dialog.addEventListener('igcClosing', (ev) => {
+        ev.preventDefault();
+      });
+
+      dialog.toggle();
+      await elementUpdated(dialog);
+      expect(eventSpy).calledOnceWith('igcClosing');
     });
 
     const createDialogComponent = (template = `<igc-dialog></igc-dialog>`) => {

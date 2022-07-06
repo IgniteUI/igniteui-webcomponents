@@ -36,12 +36,9 @@ const metadata = {
       control: 'text',
     },
     role: {
-      type: '"dialog" | "alertdialog"',
+      type: 'string',
       description: 'Sets the role attribute for the control.',
-      options: ['dialog', 'alertdialog'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: 'text',
     },
     ariaLabel: {
       type: 'string',
@@ -71,7 +68,7 @@ interface ArgTypes {
   closeOnOutsideClick: boolean;
   open: boolean;
   title: string;
-  role: 'dialog' | 'alertdialog';
+  role: string;
   ariaLabel: string;
   ariaLabelledby: string;
   ariaDescribedby: string;
@@ -100,6 +97,7 @@ const Template: Story<ArgTypes, Context> = (
     ariaLabel,
     ariaLabelledby,
     ariaDescribedby,
+    role,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -115,6 +113,7 @@ const Template: Story<ArgTypes, Context> = (
         return-value=${ifDefined(returnValue)}
         title=${ifDefined(title)}
         dir=${ifDefined(direction)}
+        role=${ifDefined(role)}
         aria-label=${ifDefined(ariaLabel)}
         aria-labelledby=${ifDefined(ariaLabelledby)}
         aria-describedby=${ifDefined(ariaDescribedby)}
