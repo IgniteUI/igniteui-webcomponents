@@ -19,14 +19,6 @@ $disabled-selected-color: color(gray, 600) !default;
     gap: $spacing * 2;
 }
 
-%fraction {
-    position: absolute !important;
-    overflow: hidden;
-    inset-inline-start: 0 !important;
-    min-width: 0 !important;
-    z-index: 1;
-}
-
 slot {
     display: none;
 }
@@ -56,21 +48,26 @@ slot {
     igc-icon {
         color: inherit;
     }
+}
 
-    &:empty {
-        &::before {
-            content: counter(symbols);
-            counter-increment: symbols;
-        }
-    }
+igc-icon[size='small'] {
+    --size: #{$size-small};
 }
 
 [part='symbol small'] {
     font-size: $size-small;
 }
 
+igc-icon[size='medium'] {
+    --size: #{$size-medium};
+}
+
 [part='symbol medium'] {
     font-size: $size-medium;
+}
+
+igc-icon[size='large'] {
+    --size: #{$size-large};
 }
 
 [part='symbol large'] {
@@ -85,21 +82,17 @@ slot {
     align-items: center;
     padding: $spacing;
     gap: $spacing;
-    counter-reset: symbols;
     inset-inline-start: 0;
 }
 
 [part='symbols-wrapper selected'] {
+    position: absolute;
     color: $selected-color;
+    z-index: 1;
 
     [part~='symbol'] {
         filter: grayscale(0);
     }
-}
-
-[part='symbols-wrapper selected'],
-[part~='fraction'] {
-    @extend %fraction;
 }
 
 :host([disabled]) {
@@ -127,9 +120,7 @@ slot {
     height: $size-large;
 
     igc-icon {
-        width: $size-large;
-        height: $size-large;
-        font-size: $size-large;
+        --size: #{$size-large};
     }
 }
 
@@ -141,9 +132,7 @@ slot {
     height: $size-medium;
 
     igc-icon {
-        width: $size-medium;
-        height: $size-medium;
-        font-size: $size-medium;
+        --size: #{$size-medium};
     }
 }
 
@@ -155,9 +144,7 @@ slot {
     height: $size-small;
 
     igc-icon {
-        width: $size-small;
-        height: $size-small;
-        font-size: $size-small;
+        --size: #{$size-small};
     }
 }
 

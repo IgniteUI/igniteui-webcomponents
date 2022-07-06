@@ -1,7 +1,7 @@
 import { html, svg } from 'lit';
-import { Context, Story } from './story.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { range } from 'lit-html/directives/range.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { Context, Story } from './story.js';
 
 // region default
 const metadata = {
@@ -219,8 +219,11 @@ const Template: Story<ArgTypes, Context> = (
       >
         ${Array.from(range(5)).map(
           () => html`<igc-rating-symbol>
-            <igc-icon name="diamond-circled"></igc-icon>
-          </igc-rating-symbol>`
+              <igc-icon collection="default" name="dollar-circled"></igc-icon>
+            </igc-rating-symbol>
+            <igc-rating-symbol empty>
+              <igc-icon collection="default" name="bitcoin"></igc-icon>
+            </igc-rating-symbol>`
         )}
       </igc-rating>
     </div>

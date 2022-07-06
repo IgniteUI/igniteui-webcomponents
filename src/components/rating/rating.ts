@@ -5,19 +5,19 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { styleMap } from 'lit/directives/style-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { styleMap } from 'lit/directives/style-map.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
+import { clamp } from '../common/util.js';
+import type IgcRatingSymbolComponent from './rating-symbol';
 import { styles } from './rating.base.css.js';
 import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
 import { styles as indigo } from './rating.indigo.css.js';
-import { clamp } from '../common/util.js';
-import type IgcRatingSymbolComponent from './rating-symbol';
-import { themes } from '../../theming/theming-decorator.js';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -53,8 +53,11 @@ export default class IgcRatingComponent extends SizableMixin(
   @query('[part="base"]', true)
   protected container!: HTMLElement;
 
-  @queryAssignedElements({ selector: 'igc-rating-symbol' })
+  @queryAssignedElements({ selector: 'igc-rating-symbol:not([empty])' })
   protected ratingSymbols!: Array<IgcRatingSymbolComponent>;
+
+  @queryAssignedElements({ selector: 'igc-rating-symbol[empty]' })
+  protected ratingEmptySymbols!: Array<IgcRatingSymbolComponent>;
 
   @state()
   protected hoverValue = -1;
@@ -68,6 +71,10 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected get hasProjectedSymbols() {
     return this.ratingSymbols.length > 0;
+  }
+
+  protected get hasProjectedEmptySymbols() {
+    return this.ratingEmptySymbols.length > 0;
   }
 
   protected get isLTR() {
@@ -264,7 +271,23 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected *renderSymbols() {
     for (let i = 0; i < this.max; i++) {
-      yield html`<span part="symbol ${this.size}">${this.symbol}</span>`;
+      yield html`<igc-icon
+        part="symbol"
+        .size="${this.size}"
+        collection="internal"
+        name="star"
+      ></igc-icon>`;
+    }
+  }
+
+  protected *renderEmptySymbols() {
+    for (let i = 0; i < this.max; i++) {
+      yield html`<igc-icon
+        part="symbol empty"
+        .size="${this.size}"
+        collection="internal"
+        name="star_border"
+      ></igc-icon>`;
     }
   }
 
@@ -276,7 +299,15 @@ export default class IgcRatingComponent extends SizableMixin(
     })}`;
   }
 
-  protected renderFractionWrapper(styles: { width: string }) {
+  protected renderEmptyProjected() {
+    return html`${this.ratingEmptySymbols.map((each) => {
+      const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
+      clone.setAttribute('part', `symbol empty ${this.size}`);
+      return clone;
+    })}`;
+  }
+
+  protected renderFractionWrapper(value: number) {
     return html`<div
       @click=${this.handleClick}
       @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
@@ -285,24 +316,37 @@ export default class IgcRatingComponent extends SizableMixin(
     >
       <slot @slotchange=${this.handleSlotChange}></slot>
 
-      <div style=${styleMap(styles)} part="fraction ${this.size}">
-        <div part="symbols-wrapper selected">
-          ${this.hasProjectedSymbols
-            ? this.renderProjected()
-            : this.renderSymbols()}
-        </div>
-      </div>
-      <div part="symbols-wrapper">
+      <div
+        part="symbols-wrapper selected"
+        style=${styleMap({
+          clipPath: `inset(0px ${
+            100 - Math.round((value / this.max) * 100)
+          }% 0px 0px)`,
+        })}
+      >
         ${this.hasProjectedSymbols
           ? this.renderProjected()
           : this.renderSymbols()}
+      </div>
+      <div
+        part="symbols-wrapper empty"
+        style=${styleMap({
+          clipPath: `inset(0px 0px 0px ${Math.round(
+            (value / this.max) * 100
+          )}%)`,
+        })}
+      >
+        ${this.hasProjectedEmptySymbols
+          ? this.renderEmptyProjected()
+          : this.hasProjectedSymbols
+          ? this.renderProjected()
+          : this.renderEmptySymbols()}
       </div>
     </div>`;
   }
 
   protected override render() {
     const value = this.hoverState ? this.hoverValue : this.value;
-    const styles = { width: `${Math.round((value / this.max) * 100)}%` };
 
     return html`
       <label part="label ${this.size}">${this.label}</label>
@@ -316,7 +360,7 @@ export default class IgcRatingComponent extends SizableMixin(
         aria-valuemax=${this.max}
         aria-valuetext=${this.valueText}
       >
-        ${this.renderFractionWrapper(styles)}
+        ${this.renderFractionWrapper(value)}
       </div>
     `;
   }
