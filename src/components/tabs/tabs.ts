@@ -25,8 +25,10 @@ import {
 } from './utils.js';
 
 export interface IgcTabsEventMap {
-  igcChange: CustomEvent<string>;
+  igcChange: CustomEvent<IgcTabComponent>;
 }
+
+let next = 0;
 
 /**
  * Represents tabs component
@@ -142,6 +144,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     await this.updateComplete;
 
     this.setAriaAttributes();
+    this.setTabPanels();
     this.setupObserver();
     this.setSelectedTab(
       this.tabs.filter((tab) => tab.selected).at(-1) ?? this.enabledTabs.at(0)
@@ -218,9 +221,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
         });
 
         this.setAriaAttributes();
+        this.setTabPanels();
       }
 
-      this.updateTabsAndPanels();
+      this.updateSelectedTab();
       this.activeTab?.scrollIntoView({ block: 'nearest' });
       this.alignIndicator();
 
@@ -232,13 +236,22 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.mutationObserver.observe(this, observerConfig);
   }
 
-  protected updateTabsAndPanels() {
+  protected updateSelectedTab() {
     this.tabs.forEach((tab) => (tab.selected = tab === this.activeTab));
     this.panels.forEach((panel) =>
       Object.assign(panel.style, {
         display: panel.id === this.activeTab?.panel ? 'block' : 'none',
       })
     );
+  }
+
+  protected setTabPanels() {
+    const prefix = this.id ? `${this.id}-` : '';
+    this.tabs.forEach((tab, index) => {
+      if (!tab.panel) {
+        tab.panel = this.panels.at(index)?.id ?? `${prefix}tab-${++next}`;
+      }
+    });
   }
 
   private setSelectedTab(tab?: IgcTabComponent) {
@@ -287,7 +300,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     tab.focus();
     this.setSelectedTab(tab);
-    this.emitEvent('igcChange', { detail: this.selected });
+    this.emitEvent('igcChange', { detail: this.activeTab });
   }
 
   protected handleKeyDown = (event: KeyboardEvent) => {
@@ -327,7 +340,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     if (this.activation === 'auto') {
       this.setSelectedTab(enabledTabs[index]);
-      this.emitEvent('igcChange', { detail: this.selected });
+      this.emitEvent('igcChange', { detail: this.activeTab });
     } else {
       enabledTabs[index].scrollIntoView({ block: 'nearest' });
     }
