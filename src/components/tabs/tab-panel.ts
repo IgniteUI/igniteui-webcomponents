@@ -1,8 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { createCounter } from '../common/util.js';
 import { styles } from './themes/light/tab-panel.base.css.js';
-
-let next = 0;
 
 /**
  * Represents the content of a tab
@@ -16,14 +15,20 @@ export default class IgcTabPanelComponent extends LitElement {
 
   public static override styles = styles;
 
+  private static readonly increment = createCounter();
+
   /** The tab panel's id. */
   @property({ type: String })
-  public override id = `tab-panel-${++next}`;
+  public override id = '';
 
   public override connectedCallback() {
     this.setAttribute('role', 'tabpanel');
     this.tabIndex = this.hasAttribute('tabindex') ? this.tabIndex : 0;
-    this.slot = this.hasAttribute('slot') ? this.slot : 'panel';
+    this.slot = this.slot.length > 0 ? this.slot : 'panel';
+    this.id =
+      this.id.length > 0
+        ? this.id
+        : `igc-tab-panel-${IgcTabPanelComponent.increment()}`;
   }
 
   protected override render() {

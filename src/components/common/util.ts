@@ -40,3 +40,11 @@ export function getOffset(element: HTMLElement, parent: HTMLElement) {
     bottom: Math.round(bottom - pBottom),
   };
 }
+
+export function createCounter(start = 0) {
+  let i = start;
+  return function () {
+    i++;
+    return i;
+  };
+}

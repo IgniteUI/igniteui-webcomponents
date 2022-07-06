@@ -1,12 +1,11 @@
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { createCounter } from '../common/util.js';
 import { styles } from './themes/light/tab.base.css.js';
 import { styles as bootstrap } from './themes/light/tab.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tab.fluent.css.js';
 import { styles as indigo } from './themes/light/tab.indigo.css.js';
-
-let nextId = 0;
 
 /**
  * Represents the tab header.
@@ -27,7 +26,7 @@ export default class IgcTabComponent extends LitElement {
 
   public static override styles = styles;
 
-  private readonly componentId = `igc-tab-${nextId++}`;
+  private static readonly increment = createCounter();
 
   @query('[part="base"]', true)
   private tab!: HTMLElement;
@@ -44,6 +43,12 @@ export default class IgcTabComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    this.id =
+      this.id.length > 0 ? this.id : `igc-tab-${IgcTabComponent.increment()}`;
+  }
+
   /** Sets focus to the tab. */
   public override focus(options?: FocusOptions) {
     this.tab.focus(options);
@@ -55,8 +60,6 @@ export default class IgcTabComponent extends LitElement {
   }
 
   protected override render() {
-    this.id = this.id.length > 0 ? this.id : this.componentId;
-
     return html`
       <div
         part="base"

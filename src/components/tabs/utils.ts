@@ -39,7 +39,7 @@ export function getNodesForTags<T extends Element>(
     removedNodes: T[];
   } = { addedNodes: [], removedNodes: [] };
 
-  return records
+  records
     .filter(
       ({ type, target }) =>
         type === 'childList' && (root ? target.isSameNode(root) : true)
@@ -57,4 +57,8 @@ export function getNodesForTags<T extends Element>(
       );
       return prev;
     }, collected);
+
+  return collected.addedNodes.length || collected.removedNodes.length
+    ? collected
+    : null;
 }

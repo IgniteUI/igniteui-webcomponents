@@ -17,7 +17,7 @@ import { styles as fluent } from './themes/light/tabs.fluent.css.js';
 import { styles as indigo } from './themes/light/tabs.indigo.css.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { getOffset } from '../common/util.js';
+import { createCounter, getOffset } from '../common/util.js';
 import {
   getAttributesForTags,
   getNodesForTags,
@@ -27,8 +27,6 @@ import {
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
 }
-
-let next = 0;
 
 /**
  * Represents tabs component
@@ -57,6 +55,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-tabs';
 
   public static styles = styles;
+  private static readonly increment = createCounter();
 
   @queryAssignedElements({ selector: 'igc-tab' })
   protected tabs!: Array<IgcTabComponent>;
@@ -249,7 +248,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const prefix = this.id ? `${this.id}-` : '';
     this.tabs.forEach((tab, index) => {
       if (!tab.panel) {
-        tab.panel = this.panels.at(index)?.id ?? `${prefix}tab-${++next}`;
+        tab.panel =
+          this.panels.at(index)?.id ??
+          `${prefix}tab-${IgcTabsComponent.increment()}`;
       }
     });
   }
