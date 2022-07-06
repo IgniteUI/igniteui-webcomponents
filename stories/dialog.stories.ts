@@ -36,9 +36,12 @@ const metadata = {
       control: 'text',
     },
     role: {
-      type: 'string',
+      type: '"dialog" | "alertdialog"',
       description: 'Sets the role attribute for the control.',
-      control: 'text',
+      options: ['dialog', 'alertdialog'],
+      control: {
+        type: 'inline-radio',
+      },
     },
     ariaLabel: {
       type: 'string',
@@ -68,7 +71,7 @@ interface ArgTypes {
   closeOnOutsideClick: boolean;
   open: boolean;
   title: string;
-  role: string;
+  role: 'dialog' | 'alertdialog';
   ariaLabel: string;
   ariaLabelledby: string;
   ariaDescribedby: string;

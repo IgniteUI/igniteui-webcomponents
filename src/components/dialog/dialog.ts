@@ -48,10 +48,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public static styles = [styles];
 
   private titleId = `title-${nextId++}`;
-  private _role!: string;
   private _ariaLabel!: string;
   private _ariaLabelledby!: string;
   private _ariaDescribedby!: string;
+  private _role!: 'dialog' | 'alertdialog';
 
   @query('[part="base"]')
   private nativeElement!: any;
@@ -81,17 +81,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     return this._role;
   }
 
-  public set role(value: string) {
-    if (value === 'dialog' || value === 'alertdialog') {
-      const oldVal = this._role;
-      this._role = value;
-
-      this.requestUpdate('role', oldVal);
-    }
-
-    if (this.hasAttribute('role')) {
-      this.removeAttribute('role');
-    }
+  public set role(value: 'dialog' | 'alertdialog') {
+    const oldVal = this._role;
+    this._role = value;
+    this.removeAttributeAndUpdate('role', 'role', oldVal);
   }
 
   /** Sets the aria-label attribute for the control. */
@@ -103,11 +96,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public override set ariaLabel(value: string) {
     const oldVal = this._ariaLabel;
     this._ariaLabel = value;
-
-    if (this.hasAttribute('aria-label')) {
-      this.removeAttribute('aria-label');
-    }
-    this.requestUpdate('ariaLabel', oldVal);
+    this.removeAttributeAndUpdate('aria-label', 'ariaLabel', oldVal);
   }
 
   /** Sets the aria-labelledby attribute for the control. */
@@ -119,11 +108,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public set ariaLabelledby(value: string) {
     const oldVal = this._ariaLabelledby;
     this._ariaLabelledby = value;
-
-    if (this.hasAttribute('aria-labelledby')) {
-      this.removeAttribute('aria-labelledby');
-    }
-    this.requestUpdate('ariaLabelledby', oldVal);
+    this.removeAttributeAndUpdate('aria-labelledby', 'ariaLabelledby', oldVal);
   }
 
   /** Sets the aria-describedby attribute for the control. */
@@ -135,11 +120,11 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public set ariaDescribedby(value: string) {
     const oldVal = this._ariaDescribedby;
     this._ariaDescribedby = value;
-
-    if (this.hasAttribute('aria-describedby')) {
-      this.removeAttribute('aria-describedby');
-    }
-    this.requestUpdate('ariaDescribedby', oldVal);
+    this.removeAttributeAndUpdate(
+      'aria-describedby',
+      'ariaDescribedby',
+      oldVal
+    );
   }
 
   /** Sets the return value for the dialog. */
@@ -159,6 +144,18 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         this.nativeElement.close();
       }
     }
+  }
+
+  private removeAttributeAndUpdate(
+    attribute: string,
+    name: string,
+    oldVal: string
+  ) {
+    if (this.hasAttribute(attribute)) {
+      this.removeAttribute(attribute);
+    }
+
+    this.requestUpdate(name, oldVal);
   }
 
   private handleCancel(event: Event) {
