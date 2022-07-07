@@ -1,5 +1,4 @@
 import { html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
 import { createCounter } from '../common/util.js';
 import { styles } from './themes/light/tab-panel.base.css.js';
 
@@ -16,10 +15,6 @@ export default class IgcTabPanelComponent extends LitElement {
   public static override styles = styles;
 
   private static readonly increment = createCounter();
-
-  /** The tab panel's id. */
-  @property({ type: String })
-  public override id = '';
 
   public override connectedCallback() {
     this.setAttribute('role', 'tabpanel');

@@ -9,8 +9,8 @@ import {
 } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import { themes } from '../../theming/theming-decorator.js';
-import IgcTabComponent from './tab';
-import type IgcTabPanelComponent from './tab-panel.js';
+import type IgcTabComponent from './tab';
+import type IgcTabPanelComponent from './tab-panel';
 import { styles } from './themes/light/tabs.base.css.js';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tabs.fluent.css.js';
@@ -142,8 +142,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     await this.updateComplete;
 
-    this.setAriaAttributes();
-    this.setTabPanels();
+    this.syncAttributes();
     this.setupObserver();
     this.setSelectedTab(
       this.tabs.filter((tab) => tab.selected).at(-1) ?? this.enabledTabs.at(0)
@@ -219,8 +218,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
           }
         });
 
-        this.setAriaAttributes();
-        this.setTabPanels();
+        this.syncAttributes();
       }
 
       this.updateSelectedTab();
@@ -244,7 +242,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     );
   }
 
-  protected setTabPanels() {
+  protected syncAttributes() {
     const prefix = this.id ? `${this.id}-` : '';
     this.tabs.forEach((tab, index) => {
       if (!tab.panel) {
@@ -252,6 +250,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
           this.panels.at(index)?.id ??
           `${prefix}tab-${IgcTabsComponent.increment()}`;
       }
+      this.panels
+        .find((panel) => panel.id === tab.panel)
+        ?.setAttribute('aria-labelledby', tab.id);
     });
   }
 
@@ -348,16 +349,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     event.preventDefault();
   };
-
-  private setAriaAttributes() {
-    this.tabs.forEach((tab) => {
-      const panel = this.panels.find((el) => el.id === tab.panel);
-      if (panel) {
-        tab.setAttribute('aria-controls', panel.id);
-        panel.setAttribute('aria-labelledby', tab.getAttribute('id')!);
-      }
-    });
-  }
 
   @eventOptions({ passive: true })
   protected handleScroll() {
