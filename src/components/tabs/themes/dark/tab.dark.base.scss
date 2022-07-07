@@ -1,0 +1,7 @@
+@use '../../../../styles/utilities' as utils;
+
+@mixin theme() {
+    igc-tab {
+        --hover-background: #{utils.color(gray, 100, .5)};
+    }
+}
