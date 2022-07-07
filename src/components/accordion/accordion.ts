@@ -1,9 +1,6 @@
 import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
-
-defineComponents(IgcExpansionPanelComponent);
 
 /**
  * The Accordion is a container-based component that can house multiple expansion panels
@@ -17,22 +14,18 @@ export default class IgcAccordionComponent extends LitElement {
   public static readonly tagName = 'igc-accordion';
   //public static styles = styles;
 
-  @property({ reflect: true, type: Boolean })
-  public singleBranchExpand = false;
-
   private get _enabledPanels(): Array<IgcExpansionPanelComponent> {
     return this.panels.filter((p) => !p.disabled);
   }
 
-  /** Returns all of the accordions's direct igc-expansion-panel children. */
-  public get panels(): Array<IgcExpansionPanelComponent> {
-    return Array.from(this.querySelectorAll(`igc-expansion-panel`)).filter(
-      (p) => p.parentNode === this
-    );
-  }
+  @property({ attribute: 'single-expand', reflect: true, type: Boolean })
+  public singleExpand = false;
 
-  public override connectedCallback() {
-    super.connectedCallback();
+  /** Returns all of the accordions's direct igc-expansion-panel children. */
+  @queryAssignedElements({ selector: 'igc-expansion-panel' })
+  public panels!: Array<IgcExpansionPanelComponent>;
+
+  protected override firstUpdated() {
     this.panels.forEach((p) => {
       p.addEventListener('igcOpening', this.handlePanelOpening);
       p.addEventListener('keydown', this.handleKeydown, { capture: true });
@@ -42,7 +35,7 @@ export default class IgcAccordionComponent extends LitElement {
   private handlePanelOpening = (
     event: CustomEvent<IgcExpansionPanelComponent>
   ) => {
-    if (!this.singleBranchExpand || !this.panels.includes(event.detail)) {
+    if (!this.singleExpand || !this.panels.includes(event.detail)) {
       return;
     }
     this._enabledPanels.forEach((p) => {
@@ -88,7 +81,7 @@ export default class IgcAccordionComponent extends LitElement {
       this.getPanelHeader(next).focus();
     }
     if (event.shiftKey && event.altKey) {
-      if (this.singleBranchExpand && !isUp) {
+      if (this.singleExpand && !isUp) {
         this._enabledPanels.forEach((p) =>
           p !== focusedPanel ? p.closeWithEvent() : p.openWithEvent()
         );

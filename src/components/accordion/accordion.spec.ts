@@ -5,12 +5,12 @@ import {
   unsafeStatic,
   elementUpdated,
 } from '@open-wc/testing';
-import { defineComponents } from '../../index.js';
+import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
 import IgcAccordionComponent from './accordion.js';
 
 describe('Accordion', () => {
   before(() => {
-    defineComponents(IgcAccordionComponent);
+    defineComponents(IgcAccordionComponent, IgcExpansionPanelComponent);
   });
 
   let accordion: IgcAccordionComponent;
@@ -65,8 +65,8 @@ describe('Accordion', () => {
       accordion.panels.forEach((p) => expect(p.open).to.be.true);
     });
 
-    it('Should be able to expand only one panel when singleBranchExpand is set to true', async () => {
-      accordion.singleBranchExpand = true;
+    it('Should be able to expand only one panel when singleExpand is set to true', async () => {
+      accordion.singleExpand = true;
       await elementUpdated(accordion);
 
       const header3 =
@@ -88,8 +88,8 @@ describe('Accordion', () => {
       expect(accordion.panels[2].open).to.be.false;
     });
 
-    it('Should be able to expand multiple panels when singleBranchExpand is set to false', async () => {
-      expect(accordion.singleBranchExpand).to.be.false;
+    it('Should be able to expand multiple panels when singleExpand is set to false', async () => {
+      expect(accordion.singleExpand).to.be.false;
       expect(accordion.panels[2].open).to.be.false;
 
       const header3 =
@@ -102,9 +102,9 @@ describe('Accordion', () => {
       expect(accordion.panels[2].open).to.be.true;
     });
 
-    it('Should preserve expanded panel when singleBranchExpand is changed from false to true', async () => {
-      expect(accordion.singleBranchExpand).to.be.false;
-      accordion.singleBranchExpand = true;
+    it('Should preserve expanded panel when singleExpand is changed from false to true', async () => {
+      expect(accordion.singleExpand).to.be.false;
+      accordion.singleExpand = true;
       await elementUpdated(accordion);
 
       expect(accordion.panels[0].open).to.be.true;
@@ -112,8 +112,8 @@ describe('Accordion', () => {
       expect(accordion.panels[2].open).to.be.false;
     });
 
-    it('Should preserve expanded panel when singleBranchExpand is changed from true to false', async () => {
-      accordion.singleBranchExpand = true;
+    it('Should preserve expanded panel when singleExpand is changed from true to false', async () => {
+      accordion.singleExpand = true;
       await elementUpdated(accordion);
 
       const header3 =
@@ -125,7 +125,7 @@ describe('Accordion', () => {
       expect(accordion.panels[1].open).to.be.false;
       expect(accordion.panels[2].open).to.be.true;
 
-      accordion.singleBranchExpand = false;
+      accordion.singleExpand = false;
       await elementUpdated(accordion);
 
       expect(accordion.panels[0].open).to.be.false;
@@ -245,8 +245,8 @@ describe('Accordion', () => {
       expect(accordion.panels[2].open).to.be.false;
     });
 
-    it('Should expand all panels when singleBranchExpand is false on Shift + Alt + Arrow Down key press', async () => {
-      expect(accordion.singleBranchExpand).to.be.false;
+    it('Should expand all panels when singleExpand is false on Shift + Alt + Arrow Down key press', async () => {
+      expect(accordion.singleExpand).to.be.false;
       expect(accordion.panels[2].open).to.be.false;
 
       accordion.panels[2].dispatchEvent(
@@ -279,8 +279,8 @@ describe('Accordion', () => {
       expect(accordion.panels[2].open).to.be.true;
     });
 
-    it('Should expand only the focused panel when singleBranchExpand is true on Shift + Alt + Arrow Down key press', async () => {
-      accordion.singleBranchExpand = true;
+    it('Should expand only the focused panel when singleExpand is true on Shift + Alt + Arrow Down key press', async () => {
+      accordion.singleExpand = true;
 
       const header1 = accordion.panels[0].shadowRoot?.querySelector(
         'div[part="header"]'
@@ -323,7 +323,7 @@ describe('Accordion', () => {
 
       accordion.panels.forEach((p) => expect(p.open).to.be.false);
 
-      accordion.singleBranchExpand = true;
+      accordion.singleExpand = true;
       accordion.panels[0].show();
       await elementUpdated(accordion);
 

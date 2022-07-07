@@ -6,7 +6,7 @@ const metadata = {
   title: 'Accordion',
   component: 'igc-accordion',
   argTypes: {
-    singleBranchExpand: {
+    singleExpand: {
       type: 'boolean',
       control: 'boolean',
       defaultValue: false,
@@ -15,7 +15,7 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  singleBranchExpand: boolean;
+  singleExpand: boolean;
 }
 // endregion
 interface Context {
@@ -39,12 +39,12 @@ const handleClosed = (ev: any) => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { singleBranchExpand = false }: ArgTypes,
+  { singleExpand = false }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
     <igc-accordion
-      .singleBranchExpand="${singleBranchExpand}"
+      single-expand="${singleExpand}"
       .dir="${direction}"
       @igcOpening=${handleOpening}
       @igcOpened=${handleOpened}
