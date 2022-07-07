@@ -307,7 +307,7 @@ export default class IgcRatingComponent extends SizableMixin(
   protected renderProjectedEmpty() {
     return html`${this.ratingEmptySymbols.map((each) => {
       const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
-      clone.setAttribute('part', `symbol empty ${this.size}`);
+      clone.setAttribute('part', `symbol ${this.size} empty`);
       return clone;
     })}`;
   }
@@ -351,7 +351,7 @@ export default class IgcRatingComponent extends SizableMixin(
     const value = this.hoverState ? this.hoverValue : this.value;
 
     return html`
-      <label part="label ${this.size}">${this.label}</label>
+      <label part="label">${this.label}</label>
       <div
         part="base"
         role="slider"

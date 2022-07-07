@@ -1,15 +1,26 @@
+@use 'sass:map';
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-$size-small: var(--symbol-size, #{rem(18px)});
-$size-medium: var(--symbol-size, #{rem(24px)});
-$size-large: var(--symbol-size, #{rem(36px)});
 $spacing: rem(2px);
-$color-label: color(gray, 700) !default;
-$color-symbols: color(gray, 900) !default;
-$selected-color: color(primary) !default;
-$disabled-color: color(gray, 400) !default;
-$disabled-selected-color: color(gray, 600) !default;
+$label-color: color(gray, 700) !default;
+$empty-color: color(gray, 600) !default;
+$selected-color: color(warn) !default;
+$disabled-empty-color: color(gray, 400) !default;
+$disabled-selected-color: color(warn, 500) !default;
+
+@mixin symbol-size($size) {
+    width: $size;
+    height: $size;
+    min-width: $size;
+    min-height: $size;
+    line-height: $size;
+    font-size: $size;
+
+    igc-icon {
+        --size: #{$size};
+    }
+}
 
 :host {
     display: inline-flex;
@@ -26,56 +37,50 @@ slot {
 [part='base'] {
     position: relative;
     display: inline-flex;
+    align-items: center;
     user-select: none;
 }
 
 [part~='label'] {
     @include type-category('caption');
 
-    color: $color-label;
+    color: $label-color;
     padding-inline-start: $spacing;
+    height: auto;
+    width: auto;
+    min-height: 0;
+    min-width: 0;
 }
 
 [part~='symbol'] {
+    display: flex;
     color: inherit;
     font-size: 100%;
-    display: flex;
     align-items: center;
     justify-content: center;
-    filter: grayscale(100%);
     cursor: pointer;
+}
 
-    igc-icon {
-        color: inherit;
+@each $s in 'small', 'medium', 'large' {
+    $size: map.get(
+        (
+            small: var(--symbol-size, #{rem(18px)}),
+            medium: var(--symbol-size, #{rem(24px)}),
+            large: var(--symbol-size, #{rem(36px)})),
+            $s
+        );
+
+    igc-icon[size='#{$s}'] {
+        --size: #{$size};
+    }
+
+    [part^='symbol #{$s}'] {
+        @include symbol-size($size);
     }
 }
 
-igc-icon[size='small'] {
-    --size: #{$size-small};
-}
-
-[part='symbol small'] {
-    font-size: $size-small;
-}
-
-igc-icon[size='medium'] {
-    --size: #{$size-medium};
-}
-
-[part='symbol medium'] {
-    font-size: $size-medium;
-}
-
-igc-icon[size='large'] {
-    --size: #{$size-large};
-}
-
-[part='symbol large'] {
-    font-size: $size-large;
-}
-
 [part~='symbols-wrapper'] {
-    color: $color-symbols;
+    color: $empty-color;
     position: relative;
     display: flex;
     justify-content: center;
@@ -90,8 +95,14 @@ igc-icon[size='large'] {
     color: $selected-color;
     z-index: 1;
 
-    [part~='symbol'] {
+    [part~='symbol']:not(igc-icon) {
         filter: grayscale(0);
+    }
+}
+
+[part='symbols-wrapper empty'] {
+    [part~='symbol']:not(igc-icon) {
+        filter: grayscale(100%);
     }
 }
 
@@ -99,75 +110,22 @@ igc-icon[size='large'] {
     pointer-events: none;
 
     [part~='label'] {
-        color: $disabled-color !important;
+        color: $disabled-empty-color;
     }
 
-    [part~='symbols-wrapper'] {
-        color: $disabled-color;
+    [part='symbols-wrapper empty'] {
+        color: $disabled-empty-color;
     }
 
     [part='symbols-wrapper selected'] {
         color: $disabled-selected-color;
-        filter: grayscale(50%);
+
+        [part~='symbol']:not(igc-icon) {
+            filter: grayscale(50%);
+        }
+
+        [part~='symbol']:has(igc-icon) {
+            filter: initial;
+        }
     }
-}
-
-[part~='large'] {
-    min-width: $size-large;
-    min-height: $size-large;
-    line-height: $size-large;
-    width: $size-large;
-    height: $size-large;
-
-    igc-icon {
-        --size: #{$size-large};
-    }
-}
-
-[part~='medium'] {
-    min-width: $size-medium;
-    min-height: $size-medium;
-    line-height: $size-medium;
-    width: $size-medium;
-    height: $size-medium;
-
-    igc-icon {
-        --size: #{$size-medium};
-    }
-}
-
-[part~='small'] {
-    min-width: $size-small;
-    min-height: $size-small;
-    line-height: $size-small;
-    width: $size-small;
-    height: $size-small;
-
-    igc-icon {
-        --size: #{$size-small};
-    }
-}
-
-[part='label large'],
-[part='label medium'],
-[part='label small'] {
-    height: auto;
-    width: auto;
-    min-height: 0;
-    min-width: 0;
-}
-
-[part='fraction large'] {
-    min-height: calc(#{$size-large} + (#{$spacing} * 2));
-    height: calc(#{$size-large} + (#{$spacing} * 2));
-}
-
-[part='fraction medium'] {
-    min-height: calc(#{$size-medium} + (#{$spacing} * 2));
-    height: calc(#{$size-medium} + (#{$spacing} * 2));
-}
-
-[part='fraction small'] {
-    min-height: calc(#{$size-small} + (#{$spacing} * 2));
-    height: calc(#{$size-small} + (#{$spacing} * 2));
 }
