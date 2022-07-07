@@ -10,8 +10,7 @@ import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-
-type Direction = 'ltr' | 'rtl' | 'auto';
+import { Direction } from '../common/types.js';
 
 /**
  * The tree allows users to represent hierarchical data in a tree-view structure,
