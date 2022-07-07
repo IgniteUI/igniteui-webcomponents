@@ -386,7 +386,7 @@ export default class IgcRatingComponent extends SizableMixin(
         part="symbols-wrapper empty"
         style=${!this.single
           ? styleMap({ clipPath: rtl ? multicl : multicr })
-          : ''}
+          : nothing}
       >
         ${this.hasProjectedEmptySymbols
           ? this.renderProjectedEmpty()
