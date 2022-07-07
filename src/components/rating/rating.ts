@@ -51,7 +51,7 @@ export default class IgcRatingComponent extends SizableMixin(
 
   public static styles = [styles];
 
-  @query('[part="base"]', true)
+  @query('[part="symbols"]', true)
   protected container!: HTMLElement;
 
   @queryAssignedElements({ selector: 'igc-rating-symbol:not([empty])' })
@@ -319,12 +319,13 @@ export default class IgcRatingComponent extends SizableMixin(
     const cr = `inset(0px 0px 0px ${rtl ? 100 - p : p}%)`;
 
     return html`<div
+      part="symbols"
       @click=${this.handleClick}
       @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
       @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
       @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
     >
-      <slot @slotchange=${this.handleSlotChange}></slot>
+      <slot hidden @slotchange=${this.handleSlotChange}></slot>
 
       <div
         part="symbols-wrapper selected"
@@ -363,6 +364,7 @@ export default class IgcRatingComponent extends SizableMixin(
         aria-valuetext=${this.valueText}
       >
         ${this.renderFractionWrapper(value)}
+        <slot name="value-label"></slot>
       </div>
     `;
   }
