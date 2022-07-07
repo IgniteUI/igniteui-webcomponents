@@ -1,15 +1,17 @@
 @use '../../styles/utilities' as *;
 
-$spacing: rem(6px);
 $disabled-color: color(gray, 200) !default;
 $disabled-selected-color: color(gray, 500) !default;
 $disabled-label-color: color(gray, 400) !default;
+
+:host {
+    gap: rem(6px);
+}
 
 [part~='label'] {
     @include type-category('subtitle-2');
 
     color: color(gray, 900);
-    padding-inline-start: $spacing;
 }
 
 :host([disabled]) {

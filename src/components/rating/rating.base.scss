@@ -2,12 +2,11 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-$spacing: rem(2px);
 $label-color: color(gray, 700) !default;
 $empty-color: color(gray, 600) !default;
 $selected-color: color(warn) !default;
 $disabled-empty-color: color(gray, 400) !default;
-$disabled-selected-color: color(warn, 500) !default;
+$disabled-selected-color: color(warn, 200) !default;
 
 @mixin symbol-size($size) {
     width: $size;
@@ -27,29 +26,27 @@ $disabled-selected-color: color(warn, 500) !default;
     font-family: var(--igc-font-family);
     align-items: flex-start;
     flex-direction: column;
-    gap: $spacing * 2;
-}
-
-slot {
-    display: none;
+    gap: rem(4px);
 }
 
 [part='base'] {
     position: relative;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     user-select: none;
+    flex-wrap: wrap;
 }
 
 [part~='label'] {
     @include type-category('caption');
 
     color: $label-color;
-    padding-inline-start: $spacing;
+    padding-inline-start: rem(4px);
     height: auto;
     width: auto;
     min-height: 0;
     min-width: 0;
+    margin: 0;
 }
 
 [part~='symbol'] {
@@ -85,8 +82,8 @@ slot {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: $spacing;
-    gap: $spacing;
+    padding: rem(2px);
+    gap: rem(2px);
     inset-inline-start: 0;
 }
 
