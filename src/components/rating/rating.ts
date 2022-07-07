@@ -36,8 +36,11 @@ export interface IgcRatingEventMap {
  *
  * @csspart base - The main wrapper which holds all of the rating elements.
  * @csspart label - The label part.
+ * @csspart value-label - The value label part.
+ * @csspart symbols - A wrapper for all rating symbols.
  * @csspart symbol - The part for a single symbol.
- * @csspart fraction -The part for the selected symbols.
+ * @csspart selected -The part for the selected symbols.
+ * @csspart empty - The part for the empty  symbols.
  * @csspart symbols-wrapper - The wrapper that holds all symbols.
  * @csspart large - A part responsible for the symbols size.
  * @csspart medium - A part responsible for the symbols size.
@@ -97,10 +100,6 @@ export default class IgcRatingComponent extends SizableMixin(
   /** The minimum value change allowed. */
   @property({ type: Number })
   public step = 1;
-
-  /** The symbol which the rating will display. */
-  @property()
-  public symbol = '⭐';
 
   /** The name attribute of the control */
   @property()
@@ -299,7 +298,7 @@ export default class IgcRatingComponent extends SizableMixin(
         style=${styleMap({
           visibility: this.symbolVisibility(i),
         })}
-        part="symbol empty"
+        part="symbol"
         collection="internal"
         name="star_border"
         .size="${this.size}"
@@ -318,20 +317,45 @@ export default class IgcRatingComponent extends SizableMixin(
   protected renderProjectedEmpty() {
     return html`${this.ratingEmptySymbols.map((each, i) => {
       const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
-      clone.setAttribute('part', `symbol ${this.size} empty`);
+      clone.setAttribute('part', `symbol ${this.size}`);
       clone.style.visibility = this.symbolVisibility(i);
       return clone;
     })}`;
   }
 
-  protected renderFractionWrapper(value: number) {
-    const p = Math.round((value / this.max) * 100);
-    const w = Math.round(100 / this.max);
+  protected renderSymbolsWrapper(value: number) {
     const rtl = this.dir === 'rtl';
-    const singlecl = `inset(0px ${rtl ? p : 100 - p}% 0px ${p - w}%)`;
-    const singlecr = `inset(0px ${p - w}% 0px ${rtl ? 100 - p : p}%)`;
-    const multicl = `inset(0px ${rtl ? p : 100 - p}% 0px 0px)`;
-    const multicr = `inset(0px 0px 0px ${rtl ? 100 - p : p}%)`;
+
+    // Stores the width of the selected area
+    const p = Math.round((value / this.max) * 100);
+
+    // Stores the width of the remaining selectable area
+    const r = 100 - p;
+
+    // Stores the width of a single item
+    const w = Math.round(100 / this.max);
+
+    // Stores the selected area minus the width of a single item
+    const sr = p - w;
+
+    // Transforms the selected area into a CSS clip-path readable value
+    // for use with single selection
+    const singlecl = `inset(0px ${rtl ? p : r}% 0px ${sr}%)`;
+
+    // Transforms the remaining selectable area into a CSS clip-path readable value
+    // for use with single selection
+    const singlecr = `inset(0px ${sr}% 0px ${rtl ? r : p}%)`;
+
+    // Transforms the selected area into a CSS clip-path readable value
+    // for use with continuous selection
+    const multicl = `inset(0px ${rtl ? p : r}% 0px 0px)`;
+
+    // Transforms the remaining selectable area into a CSS clip-path readable value
+    // for use with continuous selection
+    const multicr = `inset(0px 0px 0px ${rtl ? r : p}%)`;
+
+    // Conditionally use either single or continuous clip path values
+    // based on whether single selection is enabled
     const cl = this.single ? singlecl : multicl;
     const cr = this.single ? singlecr : multicr;
 
@@ -388,8 +412,10 @@ export default class IgcRatingComponent extends SizableMixin(
         aria-valuemax=${this.max}
         aria-valuetext=${this.valueText}
       >
-        ${this.renderFractionWrapper(value)}
-        <slot name="value-label"></slot>
+        ${this.renderSymbolsWrapper(value)}
+        <label part="value-label">
+          <slot name="value-label"></slot>
+        </label>
       </div>
     `;
   }

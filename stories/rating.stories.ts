@@ -20,12 +20,6 @@ const metadata = {
       control: 'number',
       defaultValue: '1',
     },
-    symbol: {
-      type: 'string',
-      description: 'The symbol which the rating will display.',
-      control: 'text',
-      defaultValue: '⭐',
-    },
     name: {
       type: 'string',
       description: 'The name attribute of the control',
@@ -87,7 +81,6 @@ export default metadata;
 interface ArgTypes {
   max: number;
   step: number;
-  symbol: string;
   name: string;
   label: string;
   valueFormat: string;
@@ -110,7 +103,6 @@ const Template: Story<ArgTypes, Context> = (
   {
     size,
     hoverPreview,
-    symbol,
     step,
     max,
     disabled,
@@ -184,7 +176,6 @@ const Template: Story<ArgTypes, Context> = (
         ?readonly=${readonly}
         ?single=${single}
         .step=${Number(step)}
-        .symbol=${symbol}
         .value=${value}
         .max=${max}
         .valueFormat=${valueFormat}
