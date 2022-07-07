@@ -138,6 +138,10 @@ export default class IgcRatingComponent extends SizableMixin(
   @property({ reflect: true })
   public override dir: Direction = 'auto';
 
+  /** Toggles single selection visual mode. */
+  @property({ type: Boolean })
+  public single = false;
+
   @watch('max')
   protected handleMaxChange() {
     this.hasProjectedSymbols
@@ -155,7 +159,7 @@ export default class IgcRatingComponent extends SizableMixin(
 
   @watch('step')
   protected handlePrecisionChange() {
-    this.step = clamp(this.step, 0.001, 1);
+    this.step = !this.single ? clamp(this.step, 0.001, 1) : 1;
   }
 
   constructor() {
@@ -258,6 +262,10 @@ export default class IgcRatingComponent extends SizableMixin(
     return Number(value.toFixed(this.getPrecision(this.step)));
   }
 
+  protected symbolVisibility(index: number) {
+    return this.single && this.value - 1 === index ? 'hidden' : 'visible';
+  }
+
   /**
    * Increments the value of the control by `n` steps multiplied by the
    * step factor.
@@ -288,6 +296,9 @@ export default class IgcRatingComponent extends SizableMixin(
   protected *renderEmptySymbols() {
     for (let i = 0; i < this.max; i++) {
       yield html`<igc-icon
+        style=${styleMap({
+          visibility: this.symbolVisibility(i),
+        })}
         part="symbol empty"
         collection="internal"
         name="star_border"
@@ -305,25 +316,37 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected renderProjectedEmpty() {
-    return html`${this.ratingEmptySymbols.map((each) => {
+    return html`${this.ratingEmptySymbols.map((each, i) => {
       const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
       clone.setAttribute('part', `symbol ${this.size} empty`);
+      clone.style.visibility = this.symbolVisibility(i);
       return clone;
     })}`;
   }
 
   protected renderFractionWrapper(value: number) {
     const p = Math.round((value / this.max) * 100);
+    const w = Math.round(100 / this.max);
     const rtl = this.dir === 'rtl';
-    const cl = `inset(0px ${rtl ? p : 100 - p}% 0px 0px)`;
-    const cr = `inset(0px 0px 0px ${rtl ? 100 - p : p}%)`;
+    const singlecl = `inset(0px ${rtl ? p : 100 - p}% 0px ${p - w}%)`;
+    const singlecr = `inset(0px ${p - w}% 0px ${rtl ? 100 - p : p}%)`;
+    const multicl = `inset(0px ${rtl ? p : 100 - p}% 0px 0px)`;
+    const multicr = `inset(0px 0px 0px ${rtl ? 100 - p : p}%)`;
+    const cl = this.single ? singlecl : multicl;
+    const cr = this.single ? singlecr : multicr;
 
     return html`<div
       part="symbols"
       @click=${this.handleClick}
-      @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
-      @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
-      @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
+      @mouseenter=${this.hoverPreview && !this.single
+        ? this.handleMouseEnter
+        : nothing}
+      @mouseleave=${this.hoverPreview && !this.single
+        ? this.handleMouseLeave
+        : nothing}
+      @mousemove=${this.hoverPreview && !this.single
+        ? this.handleMouseMove
+        : nothing}
     >
       <slot hidden @slotchange=${this.handleSlotChange}></slot>
 
@@ -337,7 +360,9 @@ export default class IgcRatingComponent extends SizableMixin(
       </div>
       <div
         part="symbols-wrapper empty"
-        style=${styleMap({ clipPath: rtl ? cl : cr })}
+        style=${!this.single
+          ? styleMap({ clipPath: rtl ? multicl : multicr })
+          : ''}
       >
         ${this.hasProjectedEmptySymbols
           ? this.renderProjectedEmpty()

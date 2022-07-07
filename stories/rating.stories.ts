@@ -66,6 +66,12 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    single: {
+      type: 'boolean',
+      description: 'Toggles single selection visual mode.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -89,6 +95,7 @@ interface ArgTypes {
   disabled: boolean;
   hoverPreview: boolean;
   readonly: boolean;
+  single: boolean;
   size: 'small' | 'medium' | 'large';
 }
 // endregion
@@ -111,6 +118,7 @@ const Template: Story<ArgTypes, Context> = (
     label = 'Default',
     value,
     valueFormat,
+    single,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
@@ -174,6 +182,7 @@ const Template: Story<ArgTypes, Context> = (
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
+        ?single=${single}
         .step=${Number(step)}
         .symbol=${symbol}
         .value=${value}
@@ -186,7 +195,7 @@ const Template: Story<ArgTypes, Context> = (
       style="display: inline-flex; align-items: flex-end; gap: 8px; margin: 24px 0;"
     >
       <igc-rating
-        label="Custom symbols with a really really long label"
+        label="Custom symbols with single selection enabled"
         @igcChange=${hoverHandler}
         @igcHover=${hoverHandler}
         dir=${ifDefined(direction)}
@@ -197,6 +206,7 @@ const Template: Story<ArgTypes, Context> = (
         .step=${Number(step)}
         .valueFormat=${valueFormat}
         max="5"
+        single
       >
         ${emoji.map(
           (each) => html`<igc-rating-symbol>${each}</igc-rating-symbol>`
@@ -206,12 +216,13 @@ const Template: Story<ArgTypes, Context> = (
     </div>
     <div>
       <igc-rating
-        label="With igc-icon"
+        label="With custom igc-icon(s)"
         dir=${ifDefined(direction)}
         size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
+        ?single=${single}
         .step=${Number(step)}
         .value=${value}
         .max=${max}
@@ -219,7 +230,7 @@ const Template: Story<ArgTypes, Context> = (
       >
         ${Array.from(range(5)).map(
           () => html`<igc-rating-symbol>
-              <igc-icon collection="default" name="dollar-circled"></igc-icon>
+              <igc-icon collection="default" name="atm"></igc-icon>
             </igc-rating-symbol>
             <igc-rating-symbol empty>
               <igc-icon collection="default" name="bitcoin"></igc-icon>
@@ -235,6 +246,7 @@ const Template: Story<ArgTypes, Context> = (
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
+        ?single=${single}
         .step=${Number(step)}
         .value=${value}
         .max=${max}
