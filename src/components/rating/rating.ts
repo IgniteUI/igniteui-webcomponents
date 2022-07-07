@@ -12,6 +12,7 @@ import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
+import { Direction } from '../common/types.js';
 import { clamp } from '../common/util.js';
 import type IgcRatingSymbolComponent from './rating-symbol';
 import { styles } from './rating.base.css.js';
@@ -132,6 +133,10 @@ export default class IgcRatingComponent extends SizableMixin(
   /** Sets the readonly state of the component */
   @property({ type: Boolean, reflect: true })
   public readonly = false;
+
+  /** The direction attribute of the control. */
+  @property({ reflect: true })
+  public override dir: Direction = 'auto';
 
   @watch('max')
   protected handleMaxChange() {
@@ -273,9 +278,9 @@ export default class IgcRatingComponent extends SizableMixin(
     for (let i = 0; i < this.max; i++) {
       yield html`<igc-icon
         part="symbol"
-        .size="${this.size}"
         collection="internal"
         name="star"
+        .size="${this.size}"
       ></igc-icon>`;
     }
   }
@@ -284,9 +289,9 @@ export default class IgcRatingComponent extends SizableMixin(
     for (let i = 0; i < this.max; i++) {
       yield html`<igc-icon
         part="symbol empty"
-        .size="${this.size}"
         collection="internal"
         name="star_border"
+        .size="${this.size}"
       ></igc-icon>`;
     }
   }
@@ -299,7 +304,7 @@ export default class IgcRatingComponent extends SizableMixin(
     })}`;
   }
 
-  protected renderEmptyProjected() {
+  protected renderProjectedEmpty() {
     return html`${this.ratingEmptySymbols.map((each) => {
       const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
       clone.setAttribute('part', `symbol empty ${this.size}`);
@@ -308,6 +313,11 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected renderFractionWrapper(value: number) {
+    const p = Math.round((value / this.max) * 100);
+    const rtl = this.dir === 'rtl';
+    const cl = `inset(0px ${rtl ? p : 100 - p}% 0px 0px)`;
+    const cr = `inset(0px 0px 0px ${rtl ? 100 - p : p}%)`;
+
     return html`<div
       @click=${this.handleClick}
       @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
@@ -318,11 +328,7 @@ export default class IgcRatingComponent extends SizableMixin(
 
       <div
         part="symbols-wrapper selected"
-        style=${styleMap({
-          clipPath: `inset(0px ${
-            100 - Math.round((value / this.max) * 100)
-          }% 0px 0px)`,
-        })}
+        style=${styleMap({ clipPath: rtl ? cr : cl })}
       >
         ${this.hasProjectedSymbols
           ? this.renderProjected()
@@ -330,14 +336,10 @@ export default class IgcRatingComponent extends SizableMixin(
       </div>
       <div
         part="symbols-wrapper empty"
-        style=${styleMap({
-          clipPath: `inset(0px 0px 0px ${Math.round(
-            (value / this.max) * 100
-          )}%)`,
-        })}
+        style=${styleMap({ clipPath: rtl ? cl : cr })}
       >
         ${this.hasProjectedEmptySymbols
-          ? this.renderEmptyProjected()
+          ? this.renderProjectedEmpty()
           : this.hasProjectedSymbols
           ? this.renderProjected()
           : this.renderEmptySymbols()}
