@@ -64,7 +64,6 @@ $disabled-selected-color: color(warn, 200) !default;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: visibility .15s ease-out;
 }
 
 @each $s in 'small', 'medium', 'large' {
@@ -95,6 +94,10 @@ $disabled-selected-color: color(warn, 200) !default;
     gap: rem(2px);
     inset-inline-start: 0;
     transition: clip-path .15s ease-out;
+
+    [empty] {
+        transition: visibility .15s ease-out;
+    }
 }
 
 [part='symbols-wrapper selected'] {
@@ -105,11 +108,24 @@ $disabled-selected-color: color(warn, 200) !default;
     [part~='symbol']:not(igc-icon) {
         filter: grayscale(0);
     }
+
+    [empty]:not(:only-child) {
+        display: none;
+    }
 }
 
 [part='symbols-wrapper empty'] {
     [part~='symbol']:not(igc-icon) {
         filter: grayscale(100%);
+    }
+
+    igc-rating-symbol > *:not([empty]),
+    [part='symbol']:not([empty]) {
+        display: none;
+    }
+
+    igc-rating-symbol > *:only-child {
+        display: block;
     }
 }
 

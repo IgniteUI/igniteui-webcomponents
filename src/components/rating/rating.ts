@@ -3,6 +3,7 @@ import {
   property,
   query,
   queryAssignedElements,
+  queryAssignedNodes,
   state,
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -57,11 +58,11 @@ export default class IgcRatingComponent extends SizableMixin(
   @query('[part="symbols"]', true)
   protected container!: HTMLElement;
 
+  @queryAssignedNodes({ slot: 'value-label', flatten: true })
+  protected valueLabel!: Array<Node>;
+
   @queryAssignedElements({ selector: 'igc-rating-symbol:not([empty])' })
   protected ratingSymbols!: Array<IgcRatingSymbolComponent>;
-
-  @queryAssignedElements({ selector: 'igc-rating-symbol[empty]' })
-  protected ratingEmptySymbols!: Array<IgcRatingSymbolComponent>;
 
   @state()
   protected hoverValue = -1;
@@ -75,10 +76,6 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected get hasProjectedSymbols() {
     return this.ratingSymbols.length > 0;
-  }
-
-  protected get hasProjectedEmptySymbols() {
-    return this.ratingEmptySymbols.length > 0;
   }
 
   protected get isLTR() {
@@ -284,41 +281,33 @@ export default class IgcRatingComponent extends SizableMixin(
   protected *renderSymbols() {
     for (let i = 0; i < this.max; i++) {
       yield html`<igc-icon
-        part="symbol"
-        collection="internal"
-        name="star"
-        .size="${this.size}"
-      ></igc-icon>`;
-    }
-  }
-
-  protected *renderEmptySymbols() {
-    for (let i = 0; i < this.max; i++) {
-      yield html`<igc-icon
-        style=${styleMap({
-          visibility: this.symbolVisibility(i),
-        })}
-        part="symbol"
-        collection="internal"
-        name="star_border"
-        .size="${this.size}"
-      ></igc-icon>`;
+          part="symbol"
+          collection="internal"
+          name="star"
+          .size="${this.size}"
+        ></igc-icon>
+        <igc-icon
+          style=${styleMap({ visibility: this.symbolVisibility(i) })}
+          part="symbol"
+          collection="internal"
+          name="star_border"
+          .size="${this.size}"
+          empty
+        ></igc-icon>`;
     }
   }
 
   protected renderProjected() {
-    return html`${this.ratingSymbols.map((each) => {
+    return html`${this.ratingSymbols.map((each, i) => {
       const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
       clone.setAttribute('part', `symbol ${this.size}`);
-      return clone;
-    })}`;
-  }
 
-  protected renderProjectedEmpty() {
-    return html`${this.ratingEmptySymbols.map((each, i) => {
-      const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
-      clone.setAttribute('part', `symbol ${this.size}`);
-      clone.style.visibility = this.symbolVisibility(i);
+      Array.from(clone.children).forEach((symbol) => {
+        if (symbol instanceof HTMLElement && symbol.hasAttribute('empty')) {
+          symbol.style.visibility = this.symbolVisibility(i);
+        }
+      });
+
       return clone;
     })}`;
   }
@@ -389,11 +378,9 @@ export default class IgcRatingComponent extends SizableMixin(
           ? styleMap({ clipPath: rtl ? multicl : multicr })
           : nothing}
       >
-        ${this.hasProjectedEmptySymbols
-          ? this.renderProjectedEmpty()
-          : this.hasProjectedSymbols
+        ${this.hasProjectedSymbols
           ? this.renderProjected()
-          : this.renderEmptySymbols()}
+          : this.renderSymbols()}
       </div>
     </div>`;
   }
@@ -402,7 +389,7 @@ export default class IgcRatingComponent extends SizableMixin(
     const value = this.hoverState ? this.hoverValue : this.value;
 
     return html`
-      <label part="label">${this.label}</label>
+      <label part="label" ?hidden=${!this.label}>${this.label}</label>
       <div
         part="base"
         role="slider"
@@ -414,7 +401,7 @@ export default class IgcRatingComponent extends SizableMixin(
         aria-valuetext=${this.valueText}
       >
         ${this.renderSymbolsWrapper(value)}
-        <label part="value-label">
+        <label part="value-label" ?hidden=${this.valueLabel.length === 0}>
           <slot name="value-label"></slot>
         </label>
       </div>

@@ -221,11 +221,9 @@ const Template: Story<ArgTypes, Context> = (
       >
         ${Array.from(range(5)).map(
           () => html`<igc-rating-symbol>
-              <igc-icon collection="default" name="atm"></igc-icon>
-            </igc-rating-symbol>
-            <igc-rating-symbol empty>
-              <igc-icon collection="default" name="bitcoin"></igc-icon>
-            </igc-rating-symbol>`
+            <igc-icon collection="default" name="bandage"></igc-icon>
+            <igc-icon collection="default" name="bacteria" empty></igc-icon>
+          </igc-rating-symbol>`
         )}
       </igc-rating>
     </div>
