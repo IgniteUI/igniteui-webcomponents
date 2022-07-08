@@ -4,6 +4,7 @@ $disabled-color: color(gray, 200) !default;
 $disabled-selected-color: color(gray, 500) !default;
 $disabled-label-color: color(gray, 400) !default;
 
+[part='base'],
 :host {
     gap: rem(6px);
 }
@@ -14,11 +15,18 @@ $disabled-label-color: color(gray, 400) !default;
     color: color(gray, 900);
 }
 
+[part~='value-label'] {
+    @include type-category('body-2');
+
+    color: color(gray, 900);
+}
+
 :host([disabled]) {
     [part~='symbols-wrapper'] {
         color: $disabled-color;
     }
 
+    [part~='value-label'],
     [part~='label'] {
         color: $disabled-label-color;
     }
