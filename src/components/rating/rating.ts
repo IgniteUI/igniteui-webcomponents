@@ -302,11 +302,13 @@ export default class IgcRatingComponent extends SizableMixin(
       const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
       clone.setAttribute('part', `symbol ${this.size}`);
 
-      Array.from(clone.children).forEach((symbol) => {
-        if (symbol instanceof HTMLElement && symbol.hasAttribute('empty')) {
-          symbol.style.visibility = this.symbolVisibility(i);
-        }
-      });
+      if (clone.children.length > 1) {
+        Array.from(clone.children).forEach((symbol) => {
+          if (symbol instanceof HTMLElement && symbol.hasAttribute('empty')) {
+            symbol.style.visibility = this.symbolVisibility(i);
+          }
+        });
+      }
 
       return clone;
     })}`;
