@@ -288,7 +288,6 @@ export default class IgcRatingComponent extends SizableMixin(
         collection="internal"
         name="star"
         .size="${this.size}"
-        aria-label=${i + 1}
       ></igc-icon>`;
     }
   }
@@ -303,7 +302,6 @@ export default class IgcRatingComponent extends SizableMixin(
         collection="internal"
         name="star_border"
         .size="${this.size}"
-        aria-label=${i + 1}
       ></igc-icon>`;
     }
   }
@@ -362,6 +360,7 @@ export default class IgcRatingComponent extends SizableMixin(
     const cr = this.single ? singlecr : multicr;
 
     return html`<div
+      aria-hidden="true"
       part="symbols"
       @click=${this.handleClick}
       @mouseenter=${this.hoverPreview && !this.single
