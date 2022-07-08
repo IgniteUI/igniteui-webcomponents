@@ -1,11 +1,17 @@
 @use '../../styles/utilities' as *;
 
-:host {
-    gap: rem(5px);
+[part='base'] {
+    gap: rem(7px);
 }
 
 [part~='label'] {
     @include type-category('body-1');
+
+    color: color(gray, 900);
+}
+
+[part~='value-label'] {
+    @include type-category('body-2');
 
     color: color(gray, 900);
 }
