@@ -13,7 +13,7 @@ describe('Rating component', () => {
 
   const getRatingSymbols = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelectorAll(
-      `[part~='symbol']`
+      `[part~='symbol']:not([empty])`
     ) as NodeListOf<HTMLSpanElement>;
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
