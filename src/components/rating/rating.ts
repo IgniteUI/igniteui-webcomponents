@@ -288,6 +288,7 @@ export default class IgcRatingComponent extends SizableMixin(
         collection="internal"
         name="star"
         .size="${this.size}"
+        aria-label=${i + 1}
       ></igc-icon>`;
     }
   }
@@ -302,6 +303,7 @@ export default class IgcRatingComponent extends SizableMixin(
         collection="internal"
         name="star_border"
         .size="${this.size}"
+        aria-label=${i + 1}
       ></igc-icon>`;
     }
   }
