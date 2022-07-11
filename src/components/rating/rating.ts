@@ -258,8 +258,27 @@ export default class IgcRatingComponent extends SizableMixin(
     return Number(value.toFixed(this.getPrecision(this.step)));
   }
 
-  protected symbolVisibility(index: number) {
-    return this.single && this.value - 1 === index ? 'hidden' : 'visible';
+  protected clipSymbol(index: number, direction: 'forward' | 'backward') {
+    const value = this.hoverState ? this.hoverValue : this.value;
+    const progress = index + 1 - value;
+    const exclusive = progress === 0 || this.value === index + 1 ? 0 : 1;
+    const selection = this.single ? exclusive : progress;
+    const activate = (p: number) => clamp(p * 100, 0, 100);
+
+    const forward = `inset(0 ${activate(
+      this.dir === 'ltr' ? selection : 1 - selection
+    )}% 0 0)`;
+    const backward = `inset(0 0 0 ${activate(
+      this.dir === 'ltr' ? 1 - selection : selection
+    )}%)`;
+
+    switch (direction) {
+      case 'backward':
+        return this.dir === 'ltr' ? backward : forward;
+      case 'forward':
+      default:
+        return this.dir === 'ltr' ? forward : backward;
+    }
   }
 
   /**
@@ -279,95 +298,39 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected *renderSymbols() {
-    const value = this.hoverState ? this.hoverValue : this.value;
-    // const rtl = this.dir === 'rtl';
-
-    // Stores the width of the selected area
-    // const p = Math.round((value / this.max) * 100);
-
-    // Stores the width of the remaining selectable area
-    // const r = 100 - p;
-
-    // Stores the width of a single item
-    // const w = Math.round(100 / this.max);
-
-    // Stores the selected area minus the width of a single item
-    // const sr = p - w;
-
-    // // Transforms the selected area into a CSS clip-path readable value
-    // // for use with single selection
-    // const singlecl = `inset(0px ${rtl ? p : r}% 0px ${sr}%)`;
-
-    // // Transforms the remaining selectable area into a CSS clip-path readable value
-    // // for use with single selection
-    // const singlecr = `inset(0px ${sr}% 0px ${rtl ? r : p}%)`;
-
-    // // Transforms the selected area into a CSS clip-path readable value
-    // // for use with continuous selection
-    // const multicl = `inset(0px ${rtl ? p : r}% 0px 0px)`;
-
-    // // Transforms the remaining selectable area into a CSS clip-path readable value
-    // // for use with continuous selection
-    // const multicr = `inset(0px 0px 0px ${rtl ? r : p}%)`;
     for (let i = 0; i < this.max; i++) {
-      const progress = i + 1 - value;
-      // const multiFull = `inset(0 ${clamp(progress * 100, 0, 100)}% 0 0)`;
-      // const multiEmpty = `inset(0 0 0 ${clamp((1 - progress) * 100, 0, 100)}%)`;
-      const singleFull = `inset(0 ${
-        progress === 0 || this.value === i + 1 ? 0 : 100
-      }% 0 0)`;
-      const singleEmpty = `inset(0 0 0 ${
-        progress === 0 || this.value === i + 1 ? 100 : 0
-      }%)`;
-
-      yield html`<igc-icon
-          part="symbol"
+      yield html`<igc-rating-symbol part="symbol ${this.size}">
+        <igc-icon
           collection="internal"
           name="star"
-          ?selected=${this.value === i + 1 && 'selected'}
-          style=${styleMap({
-            clipPath: singleFull,
-          })}
+          style=${styleMap({ clipPath: this.clipSymbol(i, 'forward') })}
           .size="${this.size}"
         ></igc-icon>
         <igc-icon
-          style=${styleMap({
-            clipPath: singleEmpty,
-          })}
+          style=${styleMap({ clipPath: this.clipSymbol(i, 'backward') })}
           part="symbol"
           collection="internal"
           name="star_border"
-          ?selected=${this.value === i + 1 && 'selected'}
           .size="${this.size}"
           empty
-        ></igc-icon>`;
+        ></igc-icon>
+      </igc-rating-symbol>`;
     }
   }
 
   protected renderProjected() {
-    const value = this.hoverState ? this.hoverValue : this.value;
-
     return html`${this.ratingSymbols.map((each, i) => {
-      const progress = i + 1 - value;
       const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
       const symbols = Array.from(clone.children);
       clone.setAttribute('part', `symbol ${this.size}`);
 
       if (symbols.length > 1) {
-        Array.from(clone.children).forEach((symbol) => {
+        symbols?.forEach((symbol) => {
           if (symbol instanceof HTMLElement) {
             if (symbol.hasAttribute('empty')) {
-              symbol.style.clipPath = `inset(0 0 0 ${clamp(
-                1 - (i - value) * 100,
-                0,
-                100
-              )}%)`;
+              symbol.style.clipPath = this.clipSymbol(i, 'backward');
             } else {
-              symbol.style.clipPath = `inset(0 ${clamp(
-                progress * 100,
-                0,
-                100
-              )}% 0 0)`;
+              symbol.style.clipPath = this.clipSymbol(i, 'forward');
             }
           }
         });
@@ -378,41 +341,6 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected renderSymbolsWrapper() {
-    // const rtl = this.dir === 'rtl';
-
-    // // Stores the width of the selected area
-    // const p = Math.round((value / this.max) * 100);
-
-    // // Stores the width of the remaining selectable area
-    // const r = 100 - p;
-
-    // // Stores the width of a single item
-    // const w = Math.round(100 / this.max);
-
-    // // Stores the selected area minus the width of a single item
-    // const sr = p - w;
-
-    // // Transforms the selected area into a CSS clip-path readable value
-    // // for use with single selection
-    // const singlecl = `inset(0px ${rtl ? p : r}% 0px ${sr}%)`;
-
-    // // Transforms the remaining selectable area into a CSS clip-path readable value
-    // // for use with single selection
-    // const singlecr = `inset(0px ${sr}% 0px ${rtl ? r : p}%)`;
-
-    // // Transforms the selected area into a CSS clip-path readable value
-    // // for use with continuous selection
-    // const multicl = `inset(0px ${rtl ? p : r}% 0px 0px)`;
-
-    // // Transforms the remaining selectable area into a CSS clip-path readable value
-    // // for use with continuous selection
-    // const multicr = `inset(0px 0px 0px ${rtl ? r : p}%)`;
-
-    // // Conditionally use either single or continuous clip path values
-    // // based on whether single selection is enabled
-    // const cl = this.single ? singlecl : multicl;
-    // const cr = this.single ? singlecr : multicr;
-
     return html`<div
       aria-hidden="true"
       part="symbols"
@@ -422,23 +350,13 @@ export default class IgcRatingComponent extends SizableMixin(
       @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
     >
       <slot hidden @slotchange=${this.handleSlotChange}></slot>
-
-      <div part="symbols-wrapper selected">
-        ${this.hasProjectedSymbols
-          ? this.renderProjected()
-          : this.renderSymbols()}
-      </div>
-      <div part="symbols-wrapper empty">
-        ${this.hasProjectedSymbols
-          ? this.renderProjected()
-          : this.renderSymbols()}
-      </div>
+      ${this.hasProjectedSymbols
+        ? this.renderProjected()
+        : this.renderSymbols()}
     </div>`;
   }
 
   protected override render() {
-    // const value = this.hoverState ? this.hoverValue : this.value;
-
     return html`
       <label part="label" ?hidden=${!this.label}>${this.label}</label>
       <div

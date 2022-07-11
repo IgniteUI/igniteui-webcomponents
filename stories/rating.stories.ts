@@ -197,6 +197,7 @@ const Template: Story<ArgTypes, Context> = (
         .step=${Number(step)}
         .valueFormat=${valueFormat}
         max="5"
+        single
       >
         ${emoji.map(
           (each) =>
@@ -246,12 +247,10 @@ const Template: Story<ArgTypes, Context> = (
       >
         ${Array.from(range(5)).map(
           () =>
-            html`<igc-rating-symbol
-              ><div style="width: 100%">${heartSVG}</div>
-              <div style="width: 100%" empty>
-                ${heartSVG}
-              </div></igc-rating-symbol
-            >`
+            html`<igc-rating-symbol>
+              <div>${heartSVG}</div>
+              <div empty>${heartSVG}</div>
+            </igc-rating-symbol>`
         )}
       </igc-rating>
     </div>
