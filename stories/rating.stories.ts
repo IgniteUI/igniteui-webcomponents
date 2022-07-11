@@ -200,7 +200,11 @@ const Template: Story<ArgTypes, Context> = (
         single
       >
         ${emoji.map(
-          (each) => html`<igc-rating-symbol>${each}</igc-rating-symbol>`
+          (each) =>
+            html`<igc-rating-symbol
+              ><div>${each}</div>
+              <div empty>${each}</div></igc-rating-symbol
+            >`
         )}
         <span slot="value-label" id="selection">Select a value</span>
       </igc-rating>
@@ -242,7 +246,11 @@ const Template: Story<ArgTypes, Context> = (
         .valueFormat=${valueFormat}
       >
         ${Array.from(range(5)).map(
-          () => html`<igc-rating-symbol>${heartSVG}</igc-rating-symbol>`
+          () =>
+            html`<igc-rating-symbol>
+              <div>${heartSVG}</div>
+              <div empty>${heartSVG}</div>
+            </igc-rating-symbol>`
         )}
       </igc-rating>
     </div>

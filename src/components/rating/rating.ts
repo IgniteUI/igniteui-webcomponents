@@ -258,8 +258,27 @@ export default class IgcRatingComponent extends SizableMixin(
     return Number(value.toFixed(this.getPrecision(this.step)));
   }
 
-  protected symbolVisibility(index: number) {
-    return this.single && this.value - 1 === index ? 'hidden' : 'visible';
+  protected clipSymbol(index: number, direction: 'forward' | 'backward') {
+    const value = this.hoverState ? this.hoverValue : this.value;
+    const progress = index + 1 - value;
+    const exclusive = progress === 0 || this.value === index + 1 ? 0 : 1;
+    const selection = this.single ? exclusive : progress;
+    const activate = (p: number) => clamp(p * 100, 0, 100);
+
+    const forward = `inset(0 ${activate(
+      this.dir === 'ltr' ? selection : 1 - selection
+    )}% 0 0)`;
+    const backward = `inset(0 0 0 ${activate(
+      this.dir === 'ltr' ? 1 - selection : selection
+    )}%)`;
+
+    switch (direction) {
+      case 'backward':
+        return this.dir === 'ltr' ? backward : forward;
+      case 'forward':
+      default:
+        return this.dir === 'ltr' ? forward : backward;
+    }
   }
 
   /**
@@ -280,32 +299,39 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected *renderSymbols() {
     for (let i = 0; i < this.max; i++) {
-      yield html`<igc-icon
-          part="symbol"
+      yield html`<igc-rating-symbol part="symbol ${this.size}">
+        <igc-icon
           collection="internal"
           name="star"
+          style=${styleMap({ clipPath: this.clipSymbol(i, 'forward') })}
           .size="${this.size}"
         ></igc-icon>
         <igc-icon
-          style=${styleMap({ visibility: this.symbolVisibility(i) })}
+          style=${styleMap({ clipPath: this.clipSymbol(i, 'backward') })}
           part="symbol"
           collection="internal"
           name="star_border"
           .size="${this.size}"
           empty
-        ></igc-icon>`;
+        ></igc-icon>
+      </igc-rating-symbol>`;
     }
   }
 
   protected renderProjected() {
     return html`${this.ratingSymbols.map((each, i) => {
       const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
+      const symbols = Array.from(clone.children);
       clone.setAttribute('part', `symbol ${this.size}`);
 
-      if (clone.children.length > 1) {
-        Array.from(clone.children).forEach((symbol) => {
-          if (symbol instanceof HTMLElement && symbol.hasAttribute('empty')) {
-            symbol.style.visibility = this.symbolVisibility(i);
+      if (symbols.length > 1) {
+        symbols?.forEach((symbol) => {
+          if (symbol instanceof HTMLElement) {
+            if (symbol.hasAttribute('empty')) {
+              symbol.style.clipPath = this.clipSymbol(i, 'backward');
+            } else {
+              symbol.style.clipPath = this.clipSymbol(i, 'forward');
+            }
           }
         });
       }
@@ -314,82 +340,23 @@ export default class IgcRatingComponent extends SizableMixin(
     })}`;
   }
 
-  protected renderSymbolsWrapper(value: number) {
-    const rtl = this.dir === 'rtl';
-
-    // Stores the width of the selected area
-    const p = Math.round((value / this.max) * 100);
-
-    // Stores the width of the remaining selectable area
-    const r = 100 - p;
-
-    // Stores the width of a single item
-    const w = Math.round(100 / this.max);
-
-    // Stores the selected area minus the width of a single item
-    const sr = p - w;
-
-    // Transforms the selected area into a CSS clip-path readable value
-    // for use with single selection
-    const singlecl = `inset(0px ${rtl ? p : r}% 0px ${sr}%)`;
-
-    // Transforms the remaining selectable area into a CSS clip-path readable value
-    // for use with single selection
-    const singlecr = `inset(0px ${sr}% 0px ${rtl ? r : p}%)`;
-
-    // Transforms the selected area into a CSS clip-path readable value
-    // for use with continuous selection
-    const multicl = `inset(0px ${rtl ? p : r}% 0px 0px)`;
-
-    // Transforms the remaining selectable area into a CSS clip-path readable value
-    // for use with continuous selection
-    const multicr = `inset(0px 0px 0px ${rtl ? r : p}%)`;
-
-    // Conditionally use either single or continuous clip path values
-    // based on whether single selection is enabled
-    const cl = this.single ? singlecl : multicl;
-    const cr = this.single ? singlecr : multicr;
-
+  protected renderSymbolsWrapper() {
     return html`<div
       aria-hidden="true"
       part="symbols"
       @click=${this.handleClick}
-      @mouseenter=${this.hoverPreview && !this.single
-        ? this.handleMouseEnter
-        : nothing}
-      @mouseleave=${this.hoverPreview && !this.single
-        ? this.handleMouseLeave
-        : nothing}
-      @mousemove=${this.hoverPreview && !this.single
-        ? this.handleMouseMove
-        : nothing}
+      @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
+      @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
+      @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
     >
       <slot hidden @slotchange=${this.handleSlotChange}></slot>
-
-      <div
-        part="symbols-wrapper selected"
-        style=${styleMap({ clipPath: rtl ? cr : cl })}
-      >
-        ${this.hasProjectedSymbols
-          ? this.renderProjected()
-          : this.renderSymbols()}
-      </div>
-      <div
-        part="symbols-wrapper empty"
-        style=${!this.single
-          ? styleMap({ clipPath: rtl ? multicl : multicr })
-          : nothing}
-      >
-        ${this.hasProjectedSymbols
-          ? this.renderProjected()
-          : this.renderSymbols()}
-      </div>
+      ${this.hasProjectedSymbols
+        ? this.renderProjected()
+        : this.renderSymbols()}
     </div>`;
   }
 
   protected override render() {
-    const value = this.hoverState ? this.hoverValue : this.value;
-
     return html`
       <label part="label" ?hidden=${!this.label}>${this.label}</label>
       <div
@@ -402,7 +369,7 @@ export default class IgcRatingComponent extends SizableMixin(
         aria-valuemax=${this.max}
         aria-valuetext=${this.valueText}
       >
-        ${this.renderSymbolsWrapper(value)}
+        ${this.renderSymbolsWrapper()}
         <label part="value-label" ?hidden=${this.valueLabel.length === 0}>
           <slot name="value-label"></slot>
         </label>
