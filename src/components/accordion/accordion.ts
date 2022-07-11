@@ -25,22 +25,20 @@ export default class IgcAccordionComponent extends LitElement {
   @queryAssignedElements({ selector: 'igc-expansion-panel' })
   public panels!: Array<IgcExpansionPanelComponent>;
 
-  protected override firstUpdated() {
-    this.panels.forEach((p) => {
-      p.addEventListener('igcOpening', this.handlePanelOpening);
-      p.addEventListener('keydown', this.handleKeydown, { capture: true });
-    });
+  constructor() {
+    super();
+    this.addEventListener('keydown', this.handleKeydown, { capture: true });
+    this.addEventListener('igcOpening', this.handlePanelOpening);
   }
 
-  private handlePanelOpening = (
-    event: CustomEvent<IgcExpansionPanelComponent>
-  ) => {
-    if (!this.singleExpand || !this.panels.includes(event.detail)) {
+  private handlePanelOpening = (event: Event) => {
+    const panel = event.target as IgcExpansionPanelComponent;
+    if (!this.singleExpand || !this.panels.includes(panel)) {
       return;
     }
     this._enabledPanels.forEach((p) => {
-      if (p.open && p !== event.detail) {
-        p.closeWithEvent();
+      if (p.open && p !== panel) {
+        this.closePanel(p);
       }
     });
   };
@@ -83,15 +81,15 @@ export default class IgcAccordionComponent extends LitElement {
     if (event.shiftKey && event.altKey) {
       if (this.singleExpand && !isUp) {
         this._enabledPanels.forEach((p) =>
-          p !== focusedPanel ? p.closeWithEvent() : p.openWithEvent()
+          p !== focusedPanel ? this.closePanel(p) : this.openPanel(p)
         );
         return;
       }
 
       if (isUp) {
-        this._enabledPanels.forEach((p) => p.closeWithEvent());
+        this._enabledPanels.forEach((p) => this.closePanel(p));
       } else {
-        this._enabledPanels.forEach((p) => p.openWithEvent());
+        this._enabledPanels.forEach((p) => this.openPanel(p));
       }
     }
   }
@@ -103,6 +101,38 @@ export default class IgcAccordionComponent extends LitElement {
 
   private getPanelHeader(panel: IgcExpansionPanelComponent) {
     return panel.shadowRoot?.querySelector('div[part="header"]') as HTMLElement;
+  }
+
+  private closePanel(panel: IgcExpansionPanelComponent) {
+    if (!panel.open) {
+      return;
+    }
+    const allowed = this.dispatchEvent(
+      new CustomEvent('igcClosing', { cancelable: true, detail: panel })
+    );
+
+    if (!allowed) {
+      return;
+    }
+    panel.open = false;
+
+    this.dispatchEvent(new CustomEvent('igcClosed', { detail: panel }));
+  }
+
+  private openPanel(panel: IgcExpansionPanelComponent) {
+    if (panel.open) {
+      return;
+    }
+    const allowed = this.dispatchEvent(
+      new CustomEvent('igcOpening', { cancelable: true, detail: panel })
+    );
+
+    if (!allowed) {
+      return;
+    }
+    panel.open = true;
+
+    this.dispatchEvent(new CustomEvent('igcOpened', { detail: panel }));
   }
 
   /** Hides all of the child expansion panels' contents. */

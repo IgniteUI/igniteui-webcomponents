@@ -44,7 +44,7 @@ const Template: Story<ArgTypes, Context> = (
 ) => {
   return html`
     <igc-accordion
-      single-expand="${singleExpand}"
+      .singleExpand="${singleExpand}"
       .dir="${direction}"
       @igcOpening=${handleOpening}
       @igcOpened=${handleOpened}

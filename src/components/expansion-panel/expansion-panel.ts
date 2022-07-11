@@ -109,7 +109,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
    * @private
    * Opens the panel.
    */
-  public openWithEvent() {
+  private openWithEvent() {
     if (this.open) {
       return;
     }
@@ -133,7 +133,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
    * @private
    * Closes the panel.
    */
-  public closeWithEvent() {
+  private closeWithEvent() {
     if (!this.open) {
       return;
     }
