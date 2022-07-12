@@ -38,6 +38,9 @@ import IgcSliderComponent from '../../slider/slider.js';
 import IgcSnackbarComponent from '../../snackbar/snackbar.js';
 import IgcToastComponent from '../../toast/toast.js';
 import IgcSliderLabelComponent from '../../slider/slider-label.js';
+import IgcTabsComponent from '../../tabs/tabs.js';
+import IgcTabComponent from '../../tabs/tab.js';
+import IgcTabPanelComponent from '../../tabs/tab-panel.js';
 import { defineComponents } from './defineComponents.js';
 import IgcCircularGradientComponent from '../../progress/circular-gradient.js';
 import IgcDateTimeInputComponent from '../../date-time-input/date-time-input.js';
@@ -88,6 +91,9 @@ const allComponents: CustomElementConstructor[] = [
   IgcToastComponent,
   IgcSliderLabelComponent,
   IgcRangeSliderComponent,
+  IgcTabsComponent,
+  IgcTabComponent,
+  IgcTabPanelComponent,
   IgcCircularProgressComponent,
   IgcLinearProgressComponent,
   IgcCircularGradientComponent,
