@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Added
+- DateTime input [#314](https://github.com/IgniteUI/igniteui-webcomponents/pull/314)
+- Tabs [#341](https://github.com/IgniteUI/igniteui-webcomponents/pull/341)
+- Typography styles in themes [#392](https://github.com/IgniteUI/igniteui-webcomponents/pull/392)
+
+
+### Fixed
+- Remove input helper text container when it is empty [#395](https://github.com/IgniteUI/igniteui-webcomponents/pull/395)
+- Icon not showing in Safari [#393](https://github.com/IgniteUI/igniteui-webcomponents/pull/393)
+- Checkbox not showing in Safari [#398](https://github.com/IgniteUI/igniteui-webcomponents/pull/398)
+- Button stretches correctly in flex containers [#407](https://github.com/IgniteUI/igniteui-webcomponents/pull/407)
+
+- Various theming issues [#402](https://github.com/IgniteUI/igniteui-webcomponents/pull/402) [#409](https://github.com/IgniteUI/igniteui-webcomponents/pull/409) [#424](https://github.com/IgniteUI/igniteui-webcomponents/pull/424)
+
 ## [3.2.0] - 2022-05-30
 ### Added
 - Mask input [#173](https://github.com/IgniteUI/igniteui-webcomponents/issues/173)
