@@ -41,7 +41,7 @@ export default class IgcAccordionComponent extends LitElement {
         this.closePanel(p);
       }
     });
-  };
+  }
 
   private handleKeydown = (event: KeyboardEvent) => {
     if (
@@ -116,20 +116,18 @@ export default class IgcAccordionComponent extends LitElement {
     panel.emitEvent('igcClosed', { detail: panel });
   }
 
-  private openPanel(panel: IgcExpansionPanelComponent) {
+  private async openPanel(panel: IgcExpansionPanelComponent) {
     if (panel.open) {
       return;
     }
-    const allowed = this.dispatchEvent(
-      new CustomEvent('igcOpening', { cancelable: true, detail: panel })
-    );
-
-    if (!allowed) {
+    if (!panel.emitEvent('igcOpening', { cancelable: true, detail: panel })) {
       return;
     }
-    panel.open = true;
 
-    this.dispatchEvent(new CustomEvent('igcOpened', { detail: panel }));
+    panel.open = true;
+    await panel.updateComplete;
+
+    panel.emitEvent('igcOpened', { detail: panel });
   }
 
   /** Hides all of the child expansion panels' contents. */
