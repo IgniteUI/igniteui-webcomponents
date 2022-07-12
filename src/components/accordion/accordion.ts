@@ -31,7 +31,7 @@ export default class IgcAccordionComponent extends LitElement {
     this.addEventListener('igcOpening', this.handlePanelOpening);
   }
 
-  private handlePanelOpening = (event: Event) => {
+  private handlePanelOpening(event: Event) {
     const panel = event.target as IgcExpansionPanelComponent;
     if (!this.singleExpand || !this.panels.includes(panel)) {
       return;
@@ -53,10 +53,10 @@ export default class IgcAccordionComponent extends LitElement {
     }
     switch (event.key.toLowerCase()) {
       case 'home':
-        this.getPanelHeader(this._enabledPanels[0]).focus();
+        this.getPanelHeader(this._enabledPanels.at(0)!).focus();
         break;
       case 'end':
-        this.getPanelHeader(this._enabledPanels.slice(-1)[0]).focus();
+        this.getPanelHeader(this._enabledPanels.at(-1)!).focus();
         break;
       case 'arrowup':
       case 'up':
@@ -103,20 +103,17 @@ export default class IgcAccordionComponent extends LitElement {
     return panel.shadowRoot?.querySelector('div[part="header"]') as HTMLElement;
   }
 
-  private closePanel(panel: IgcExpansionPanelComponent) {
+  private async closePanel(panel: IgcExpansionPanelComponent) {
     if (!panel.open) {
       return;
     }
-    const allowed = this.dispatchEvent(
-      new CustomEvent('igcClosing', { cancelable: true, detail: panel })
-    );
-
-    if (!allowed) {
+    if (!panel.emitEvent('igcClosing', { cancelable: true, detail: panel })) {
       return;
     }
     panel.open = false;
+    await panel.updateComplete;
 
-    this.dispatchEvent(new CustomEvent('igcClosed', { detail: panel }));
+    panel.emitEvent('igcClosed', { detail: panel });
   }
 
   private openPanel(panel: IgcExpansionPanelComponent) {
