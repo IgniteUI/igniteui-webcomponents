@@ -75,6 +75,7 @@ $disabled-selected-color: color(warn, 200) !default;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    font-family: sans-serif;
 
     svg {
         width: 100%;
@@ -85,6 +86,7 @@ $disabled-selected-color: color(warn, 200) !default;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        will-change: clip-path;
     }
 
     > :not([empty]) {

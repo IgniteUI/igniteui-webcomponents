@@ -6,10 +6,11 @@ import {
   queryAssignedNodes,
   state,
 } from 'lit/decorators.js';
+import { directive } from 'lit/directive.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
+import ClipDirective from '../common/directives/clip.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
@@ -20,6 +21,8 @@ import { styles } from './rating.base.css.js';
 import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
 import { styles as indigo } from './rating.indigo.css.js';
+
+const clip = directive(ClipDirective);
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -298,16 +301,32 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected *renderSymbols() {
+    const value = this.hoverState ? this.hoverValue : this.value;
+    const rtl = this.dir === 'rtl';
+
     for (let i = 0; i < this.max; i++) {
       yield html`<igc-rating-symbol part="symbol ${this.size}">
         <igc-icon
           collection="internal"
           name="star"
-          style=${styleMap({ clipPath: this.clipSymbol(i, 'forward') })}
+          ${clip({
+            width: i + 1,
+            clip: value,
+            exact: this.single,
+            matcher: this.value,
+            rtl,
+          })}
           .size="${this.size}"
         ></igc-icon>
         <igc-icon
-          style=${styleMap({ clipPath: this.clipSymbol(i, 'backward') })}
+          ${clip({
+            width: i + 1,
+            clip: value,
+            direction: 'backward',
+            exact: this.single,
+            matcher: this.value,
+            rtl,
+          })}
           part="symbol"
           collection="internal"
           name="star_border"
