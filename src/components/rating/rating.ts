@@ -6,23 +6,20 @@ import {
   queryAssignedNodes,
   state,
 } from 'lit/decorators.js';
-import { directive } from 'lit/directive.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
-import ClipDirective from '../common/directives/clip.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { Direction } from '../common/types.js';
 import { clamp } from '../common/util.js';
-import type IgcRatingSymbolComponent from './rating-symbol';
+import IgcRatingSymbolComponent from './rating-symbol';
 import { styles } from './rating.base.css.js';
 import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
 import { styles as indigo } from './rating.indigo.css.js';
-
-const clip = directive(ClipDirective);
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -301,64 +298,44 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected *renderSymbols() {
-    const value = this.hoverState ? this.hoverValue : this.value;
-    const rtl = this.dir === 'rtl';
-
     for (let i = 0; i < this.max; i++) {
-      yield html`<igc-rating-symbol part="symbol ${this.size}">
+      yield html`<igc-rating-symbol>
         <igc-icon
           collection="internal"
           name="star"
-          ${clip({
-            width: i + 1,
-            clip: value,
-            exact: this.single,
-            matcher: this.value,
-            rtl,
-          })}
-          .size="${this.size}"
+          style=${styleMap({ clipPath: this.clipSymbol(i, 'forward') })}
         ></igc-icon>
         <igc-icon
-          ${clip({
-            width: i + 1,
-            clip: value,
-            direction: 'backward',
-            exact: this.single,
-            matcher: this.value,
-            rtl,
-          })}
-          part="symbol"
           collection="internal"
           name="star_border"
-          .size="${this.size}"
-          empty
+          style=${styleMap({ clipPath: this.clipSymbol(i, 'backward') })}
+          slot="empty"
         ></igc-icon>
       </igc-rating-symbol>`;
     }
   }
 
-  protected renderProjected() {
-    return html`${this.ratingSymbols.map((each, i) => {
-      const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
-      const symbols = Array.from(clone.children);
-      clone.setAttribute('part', `symbol ${this.size}`);
+  protected clipProjected() {
+    if (this.hasProjectedSymbols) {
+      this.ratingSymbols.forEach((symbol: IgcRatingSymbolComponent, i) => {
+        const full = symbol.shadowRoot?.querySelector(
+          '[part="symbol full"]'
+        ) as HTMLElement;
 
-      if (symbols.length > 1) {
-        symbols?.forEach((symbol) => {
-          if (symbol instanceof HTMLElement) {
-            if (symbol.hasAttribute('empty')) {
-              symbol.style.clipPath = this.clipSymbol(i, 'backward');
-            } else {
-              symbol.style.clipPath = this.clipSymbol(i, 'forward');
-            }
-          }
-        });
-      }
+        const empty = symbol.shadowRoot?.querySelector(
+          '[part="symbol empty"]'
+        ) as HTMLElement;
 
-      return clone;
-    })}`;
+        if (full) {
+          full.style.clipPath = this.clipSymbol(i, 'forward');
+        }
+
+        if (empty) {
+          empty.style.clipPath = this.clipSymbol(i, 'backward');
+        }
+      });
+    }
   }
-
   protected renderSymbolsWrapper() {
     return html`<div
       aria-hidden="true"
@@ -368,14 +345,15 @@ export default class IgcRatingComponent extends SizableMixin(
       @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
       @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
     >
-      <slot hidden @slotchange=${this.handleSlotChange}></slot>
-      ${this.hasProjectedSymbols
-        ? this.renderProjected()
-        : this.renderSymbols()}
+      <slot @slotchange=${this.handleSlotChange}>
+        ${this.renderSymbols()}
+      </slot>
     </div>`;
   }
 
   protected override render() {
+    this.clipProjected();
+
     return html`
       <label part="label" ?hidden=${!this.label}>${this.label}</label>
       <div

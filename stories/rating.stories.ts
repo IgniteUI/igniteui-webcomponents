@@ -117,6 +117,8 @@ const Template: Story<ArgTypes, Context> = (
   const heartSVG = svg`<?xml version="1.0" ?><svg
   viewBox="0 0 24 24"
   xmlns="http://www.w3.org/2000/svg"
+  width="100%"
+  height="100%"
 >
   <defs>
     <style>
@@ -179,8 +181,7 @@ const Template: Story<ArgTypes, Context> = (
         .value=${value}
         .max=${max}
         .valueFormat=${valueFormat}
-      >
-      </igc-rating>
+      ></igc-rating>
     </div>
     <div
       style="display: inline-flex; align-items: flex-end; gap: 8px; margin: 24px 0;"
@@ -203,7 +204,7 @@ const Template: Story<ArgTypes, Context> = (
           (each) =>
             html`<igc-rating-symbol
               ><div>${each}</div>
-              <div empty>${each}</div></igc-rating-symbol
+              <div slot="empty">${each}</div></igc-rating-symbol
             >`
         )}
         <span slot="value-label" id="selection">Select a value</span>
@@ -226,7 +227,11 @@ const Template: Story<ArgTypes, Context> = (
         ${Array.from(range(5)).map(
           () => html`<igc-rating-symbol>
             <igc-icon collection="default" name="bandage"></igc-icon>
-            <igc-icon collection="default" name="bacteria" empty></igc-icon>
+            <igc-icon
+              collection="default"
+              name="bacteria"
+              slot="empty"
+            ></igc-icon>
           </igc-rating-symbol>`
         )}
       </igc-rating>
@@ -249,7 +254,7 @@ const Template: Story<ArgTypes, Context> = (
           () =>
             html`<igc-rating-symbol>
               <div>${heartSVG}</div>
-              <div empty>${heartSVG}</div>
+              <div slot="empty">${heartSVG}</div>
             </igc-rating-symbol>`
         )}
       </igc-rating>
