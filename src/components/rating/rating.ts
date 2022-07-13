@@ -13,7 +13,6 @@ import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { Direction } from '../common/types.js';
 import { clamp } from '../common/util.js';
 import IgcRatingSymbolComponent from './rating-symbol';
 import { styles } from './rating.base.css.js';
@@ -61,7 +60,7 @@ export default class IgcRatingComponent extends SizableMixin(
   @queryAssignedNodes({ slot: 'value-label', flatten: true })
   protected valueLabel!: Array<Node>;
 
-  @queryAssignedElements({ selector: 'igc-rating-symbol:not([empty])' })
+  @queryAssignedElements({ selector: 'igc-rating-symbol' })
   protected ratingSymbols!: Array<IgcRatingSymbolComponent>;
 
   @state()
@@ -130,10 +129,6 @@ export default class IgcRatingComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public readonly = false;
 
-  /** The direction attribute of the control. */
-  @property({ reflect: true })
-  public override dir: Direction = 'auto';
-
   /** Toggles single selection visual mode. */
   @property({ type: Boolean })
   public single = false;
@@ -156,6 +151,11 @@ export default class IgcRatingComponent extends SizableMixin(
   @watch('step')
   protected handlePrecisionChange() {
     this.step = !this.single ? clamp(this.step, 0.001, 1) : 1;
+  }
+
+  @watch('single')
+  protected handleSelectionChange() {
+    this.step = 1;
   }
 
   constructor() {
@@ -266,18 +266,18 @@ export default class IgcRatingComponent extends SizableMixin(
     const activate = (p: number) => clamp(p * 100, 0, 100);
 
     const forward = `inset(0 ${activate(
-      this.dir === 'ltr' ? selection : 1 - selection
+      this.isLTR ? selection : 1 - selection
     )}% 0 0)`;
     const backward = `inset(0 0 0 ${activate(
-      this.dir === 'ltr' ? 1 - selection : selection
+      this.isLTR ? 1 - selection : selection
     )}%)`;
 
     switch (direction) {
       case 'backward':
-        return this.dir === 'ltr' ? backward : forward;
+        return this.isLTR ? backward : forward;
       case 'forward':
       default:
-        return this.dir === 'ltr' ? forward : backward;
+        return this.isLTR ? forward : backward;
     }
   }
 
@@ -336,20 +336,6 @@ export default class IgcRatingComponent extends SizableMixin(
       });
     }
   }
-  protected renderSymbolsWrapper() {
-    return html`<div
-      aria-hidden="true"
-      part="symbols"
-      @click=${this.handleClick}
-      @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
-      @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
-      @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
-    >
-      <slot @slotchange=${this.handleSlotChange}>
-        ${this.renderSymbols()}
-      </slot>
-    </div>`;
-  }
 
   protected override render() {
     this.clipProjected();
@@ -366,7 +352,18 @@ export default class IgcRatingComponent extends SizableMixin(
         aria-valuemax=${this.max}
         aria-valuetext=${this.valueText}
       >
-        ${this.renderSymbolsWrapper()}
+        <div
+          aria-hidden="true"
+          part="symbols"
+          @click=${this.handleClick}
+          @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
+          @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
+          @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
+        >
+          <slot @slotchange=${this.handleSlotChange}>
+            ${this.renderSymbols()}
+          </slot>
+        </div>
         <label part="value-label" ?hidden=${this.valueLabel.length === 0}>
           <slot name="value-label"></slot>
         </label>
