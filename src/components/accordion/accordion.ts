@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
+import { styles } from './themes/accordion.base.css.js';
 
 /**
  * The Accordion is a container-based component that can house multiple expansion panels
@@ -12,7 +13,7 @@ import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
  */
 export default class IgcAccordionComponent extends LitElement {
   public static readonly tagName = 'igc-accordion';
-  //public static styles = styles;
+  public static override styles = styles;
 
   private get _enabledPanels(): Array<IgcExpansionPanelComponent> {
     return this.panels.filter((p) => !p.disabled);

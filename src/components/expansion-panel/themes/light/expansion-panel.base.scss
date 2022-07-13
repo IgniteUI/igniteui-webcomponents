@@ -5,6 +5,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 
 :host {
     color: color(gray, 900);
+    background: color(surface, 500);
     width: auto;
     overflow: hidden;
     display: flex;
