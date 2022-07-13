@@ -9,25 +9,30 @@ $selected-color: color(warn) !default;
 $disabled-empty-color: color(gray, 400) !default;
 $disabled-selected-color: color(warn, 200) !default;
 
-@mixin symbol-size($size) {
-    width: $size;
-    height: $size;
-    min-width: $size;
-    min-height: $size;
-    line-height: $size;
-    font-size: $size;
-
-    igc-icon {
-        --size: #{$size};
-    }
-}
-
 :host {
+    --symbol-full-color: #{color(warn)};
+    --symbol-empty-color: #{color(gray, 600)};
+
     display: inline-flex;
     font-family: var(--igc-font-family);
     align-items: flex-start;
     flex-direction: column;
     gap: rem(4px);
+}
+
+@each $s in 'small', 'medium', 'large' {
+    $size: map.get(
+        (
+            small: rem(18px),
+            medium: rem(24px),
+            large: rem(36px)
+        ),
+        $s
+    );
+
+    :host([size='#{$s}']) {
+        --symbol-size: #{$size};
+    }
 }
 
 [part='base'] {
@@ -37,6 +42,16 @@ $disabled-selected-color: color(warn, 200) !default;
     user-select: none;
     flex-wrap: wrap;
     gap: rem(4px);
+}
+
+[part~='symbols'] {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: rem(2px);
+    gap: rem(2px);
+    inset-inline-start: 0;
 }
 
 [part~='value-label'] {
@@ -57,93 +72,19 @@ $disabled-selected-color: color(warn, 200) !default;
     margin: 0;
 }
 
-[part~='symbols'] {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: rem(2px);
-    gap: rem(2px);
-    inset-inline-start: 0;
-}
-
-[part~='symbol'] {
-    position: relative;
-    display: flex;
-    color: inherit;
-    font-size: 100%;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-family: sans-serif;
-
-    svg {
-        width: 100%;
-        height: 100%;
-    }
-
-    > * {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        will-change: clip-path;
-    }
-
-    > :not([empty]) {
-        color: $selected-color;
-    }
-
-    > [empty] {
-        position: absolute;
-        color: $empty-color;
-    }
-
-    > :not([empty]):not(igc-icon) {
-        filter: grayscale(0%);
-    }
-
-    > [empty]:not(igc-icon) {
-        filter: grayscale(100%);
-    }
-}
-
-@each $s in 'small', 'medium', 'large' {
-    $size: map.get(
-        (
-            small: var(--symbol-size, #{rem(18px)}),
-            medium: var(--symbol-size, #{rem(24px)}),
-            large: var(--symbol-size, #{rem(36px)})),
-            $s
-        );
-
-    igc-icon[size='#{$s}'] {
-        --size: #{$size};
-    }
-
-    [part^='symbol #{$s}'] {
-        @include symbol-size($size);
+:host(:not([disabled]):not([readonly])) {
+    [part~='symbols'] {
+        cursor: pointer;
     }
 }
 
 :host([disabled]) {
-    pointer-events: none;
+    --symbol-full-color: #{color(warn, 200)};
+    --symbol-empty-color: #{color(gray, 400)};
+    --symbol-full-filter: grayscale(.5);
+    --symbol-empty-filter: grayscale(1) opacity(.5);
 
-    [part~='value-label'],
-    [part~='label'] {
-        color: $disabled-empty-color;
-    }
-
-    [part~='symbol'] {
-        > :not([empty]) {
-            color: $disabled-selected-color;
-        }
-
-        > [empty] {
-            color: $disabled-empty-color;
-        }
-
-        > :not([empty]):not(igc-icon) {
-            filter: grayscale(50%);
-        }
+    [part~='symbols'] {
+        cursor: initial;
     }
 }
