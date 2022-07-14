@@ -3,6 +3,8 @@ import { igcToggle, IgcToggleDirective } from './toggle.directive.js';
 import type { DirectiveResult } from 'lit/directive';
 import type { IgcToggleComponent } from './types';
 
+type ToggleHost = ReactiveControllerHost & IgcToggleComponent & HTMLElement;
+
 /**
  * Controller, bundling the creation of a toggle directive and handling global events,
  * related to the configuration of togglable components.
@@ -20,7 +22,7 @@ export class IgcToggleController implements ReactiveController {
 
   public set target(value: HTMLElement) {
     this._target = value;
-    this.updateToggleDir();
+    this.update();
   }
 
   /** The element, relative to which, the toggle will be positioned. */
@@ -28,10 +30,9 @@ export class IgcToggleController implements ReactiveController {
     return this._target;
   }
 
-  constructor(
-    host: ReactiveControllerHost & IgcToggleComponent & HTMLElement,
-    target?: HTMLElement
-  ) {
+  public closeCallback!: Function;
+
+  constructor(host: ToggleHost, target?: HTMLElement) {
     host.addController(this);
 
     this.host = host;
@@ -40,7 +41,7 @@ export class IgcToggleController implements ReactiveController {
       this._target = target;
     }
 
-    this.updateToggleDir();
+    this.update();
   }
 
   public hostConnected() {
@@ -51,7 +52,7 @@ export class IgcToggleController implements ReactiveController {
     this.removeEventListeners();
   }
 
-  public updateToggleDir() {
+  public update() {
     this.toggleDirective = igcToggle(this._target, this.host, this);
     this.addEventListeners();
   }
@@ -100,7 +101,7 @@ export class IgcToggleController implements ReactiveController {
       if (isInsideClick) {
         return;
       } else {
-        this.host.hide();
+        this.closeCallback ? this.closeCallback() : this.host.hide();
       }
     }
   };
@@ -114,7 +115,7 @@ export class IgcToggleController implements ReactiveController {
         this.blockScroll(event);
         break;
       case 'close':
-        this.host.hide();
+        this.closeCallback ? this.closeCallback() : this.host.hide();
         break;
     }
   };

@@ -26,7 +26,6 @@ export default class IgcDropdownGroupComponent extends LitElement {
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
   public items!: Array<IgcDropdownItemComponent>;
 
-  /** @private */
   @property({ reflect: true })
   public size: 'small' | 'medium' | 'large' = 'large';
 
