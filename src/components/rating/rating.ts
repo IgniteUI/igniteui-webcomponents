@@ -14,8 +14,6 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { clamp } from '../common/util.js';
-import IgcRatingSymbolComponent from './rating-symbol.js';
-// OR
 import type { IgcRatingSymbolComponent  } from './rating-symbol';
 import { styles } from './rating.base.css.js';
 import { styles as bootstrap } from './rating.bootstrap.css.js';
