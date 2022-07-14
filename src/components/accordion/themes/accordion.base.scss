@@ -2,8 +2,6 @@
 
 :host {
     ::slotted(igc-expansion-panel) {
-        --display: -webkit-inline-box;
-        --white-space: initial;
         --lines-clamped: 4;
     }
 
