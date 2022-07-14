@@ -38,13 +38,15 @@ export interface IgcRatingEventMap {
  * @csspart label - The label part.
  * @csspart value-label - The value label part.
  * @csspart symbols - A wrapper for all rating symbols.
- * @csspart symbol - The part for a single symbol.
- * @csspart selected -The part for the selected symbols.
- * @csspart empty - The part for the empty  symbols.
- * @csspart symbols-wrapper - The wrapper that holds all symbols.
- * @csspart large - A part responsible for the symbols size.
- * @csspart medium - A part responsible for the symbols size.
- * @csspart small- A part responsible for the symbols size.
+ * @csspart symbol - The part of the encapsulated default symbol.
+ * @csspart full - The part of the encapsulated full symbols.
+ * @csspart empty - The part of the encapsulated empty symbols.
+ *
+ * @cssproperty --symbol-size - The size of the symbols.
+ * @cssproperty --symbol-full-color - The color of the filled symbol.
+ * @cssproperty --symbol-empty-color - The color of the empty symbol.
+ * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
+ * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
 @themes({ fluent, bootstrap, indigo })
 export default class IgcRatingComponent extends SizableMixin(
@@ -299,7 +301,7 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected *renderSymbols() {
     for (let i = 0; i < this.max; i++) {
-      yield html`<igc-rating-symbol>
+      yield html`<igc-rating-symbol exportparts="symbol, full, empty">
         <igc-icon
           collection="internal"
           name="star"
