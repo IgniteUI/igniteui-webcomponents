@@ -202,10 +202,10 @@ const Template: Story<ArgTypes, Context> = (
       >
         ${emoji.map(
           (each) =>
-            html`<igc-rating-symbol
-              ><div>${each}</div>
-              <div slot="empty">${each}</div></igc-rating-symbol
-            >`
+            html`<igc-rating-symbol>
+              <div>${each}</div>
+              <div slot="empty">${each}</div>
+            </igc-rating-symbol>`
         )}
         <span slot="value-label" id="selection">Select a value</span>
       </igc-rating>
