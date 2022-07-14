@@ -13,8 +13,16 @@ describe('Rating component', () => {
 
   const getRatingSymbols = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelectorAll(
-      `[part~='symbol']:not([empty])`
-    ) as NodeListOf<HTMLSpanElement>;
+      'igc-rating-symbol'
+    ) as NodeListOf<IgcRatingSymbolComponent>;
+  const getProjectedSymbols = (el: IgcRatingComponent) => {
+    const slot = el.shadowRoot!.querySelector(
+      'slot:not([name])'
+    ) as HTMLSlotElement;
+    return slot
+      .assignedElements()
+      .filter((el) => el.matches('igc-rating-symbol'));
+  };
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
   const fireKeyboardEvent = (key: string) =>
@@ -150,7 +158,7 @@ describe('Rating component', () => {
 
       expect(projected.max).to.equal(3);
 
-      getRatingSymbols(projected).forEach((symbol) =>
+      getProjectedSymbols(projected).forEach((symbol) =>
         expect(symbol.textContent).to.eq('🐝')
       );
     });
