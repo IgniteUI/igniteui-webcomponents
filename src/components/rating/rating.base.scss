@@ -2,13 +2,6 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-$label-color: color(gray, 700) !default;
-$value-label-color: color(gray, 900) !default;
-$empty-color: color(gray, 600) !default;
-$selected-color: color(warn) !default;
-$disabled-empty-color: color(gray, 400) !default;
-$disabled-selected-color: color(warn, 200) !default;
-
 :host {
     --symbol-full-color: #{color(warn)};
     --symbol-empty-color: #{color(gray, 600)};
@@ -57,13 +50,13 @@ $disabled-selected-color: color(warn, 200) !default;
 [part~='value-label'] {
     @include type-category('subtitle');
 
-    color: $value-label-color;
+    color: color(gray, 900);
 }
 
 [part~='label'] {
     @include type-category('caption');
 
-    color: $label-color;
+    color: color(gray, 700);
     padding-inline-start: rem(4px);
     height: auto;
     width: auto;
@@ -79,10 +72,15 @@ $disabled-selected-color: color(warn, 200) !default;
 }
 
 :host([disabled]) {
+    [part~='value-label'],
+    [part~='label'] {
+        color: color(gray, 400);
+    }
+
     --symbol-full-color: #{color(warn, 200)};
     --symbol-empty-color: #{color(gray, 400)};
-    --symbol-full-filter: grayscale(.5);
-    --symbol-empty-filter: grayscale(1) opacity(.5);
+    --symbol-full-filter: grayscale(50%);
+    --symbol-empty-filter: grayscale(100%) opacity(50%);
 
     [part~='symbols'] {
         cursor: initial;
