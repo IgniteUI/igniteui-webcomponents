@@ -338,5 +338,13 @@ describe('Rating component', () => {
       getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
       expect(eventSpy).to.not.be.calledOnce;
     });
+
+    it('sets step to 1 if in single selection mode', async () => {
+      el.step = 0.1;
+      el.single = true;
+
+      await elementUpdated(el);
+      expect(el.step).to.equal(1);
+    });
   });
 });
