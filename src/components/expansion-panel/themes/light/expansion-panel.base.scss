@@ -4,6 +4,9 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 
 :host {
+    --display: block;
+    --white-space: nowrap;
+    --lines-clamped: 1;
     color: color(gray, 900);
     background: color(surface, 500);
     width: auto;
@@ -39,6 +42,10 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
     @include ellipsis();
 
     margin: 0;
+    display: var(--display);
+    white-space: var(--white-space);
+    -webkit-line-clamp: var(--lines-clamped);
+    -webkit-box-orient: vertical;
 }
 
 [part='subtitle'] {

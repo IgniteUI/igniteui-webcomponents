@@ -1,6 +1,12 @@
 @use '../../../styles/utilities/index' as *;
 
 :host {
+    ::slotted(igc-expansion-panel) {
+        --display: -webkit-inline-box;
+        --white-space: initial;
+        --lines-clamped: 4;
+    }
+
     ::slotted(igc-expansion-panel[open]) {
         margin: rem(8px) 0;
     }
