@@ -7,6 +7,7 @@ import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
+import { Direction } from '../common/types.js';
 import { partNameMap } from '../common/util.js';
 import { styles } from './themes/light/input.base.css.js';
 import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
@@ -24,8 +25,6 @@ export interface IgcInputEventMap {
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
-
-type Direction = 'ltr' | 'rtl' | 'auto';
 
 @themes({ bootstrap, material, fluent, indigo })
 export abstract class IgcInputBaseComponent
