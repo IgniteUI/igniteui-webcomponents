@@ -7,9 +7,9 @@ import { styles } from './themes/light/expansion-panel.base.css.js';
 import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
 import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
 import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
+import { createCounter } from '../common/util.js';
 import '../icon/icon.js';
 
-let NEXT_ID = 0;
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;
   igcOpened: CustomEvent<IgcExpansionPanelComponent>;
@@ -46,6 +46,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-expansion-panel';
   public static styles = styles;
+  private static readonly increment = createCounter();
 
   /** Indicates whether the contents of the control should be visible. */
   @property({ reflect: true, type: Boolean })
@@ -67,7 +68,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   public override connectedCallback() {
     super.connectedCallback();
     const id = this.getAttribute('id');
-    this.panelId! = id ? id : 'igc-expansion-panel-' + ++NEXT_ID;
+    this.panelId! = id
+      ? id
+      : `igc-expansion-panel-${IgcExpansionPanelComponent.increment()}`;
   }
 
   private handleClicked() {
