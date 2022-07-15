@@ -1,10 +1,21 @@
 @use '../../styles/utilities' as *;
 
-$spacing: rem(5px);
+:host {
+    gap: rem(5px);
+}
+
+[part='base'] {
+    gap: rem(8px);
+}
 
 [part~='label'] {
     @include type-category('body-1');
 
     color: color(gray, 900);
-    padding-inline-start: $spacing;
+}
+
+[part~='value-label'] {
+    @include type-category('body-1');
+
+    color: color(gray, 900);
 }
