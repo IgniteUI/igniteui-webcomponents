@@ -1,4 +1,5 @@
 import IgcAvatarComponent from '../../avatar/avatar.js';
+import IgcAccordionComponent from '../../accordion/accordion.js';
 import IgcBadgeComponent from '../../badge/badge.js';
 import IgcButtonComponent from '../../button/button.js';
 import IgcIconButtonComponent from '../../button/icon-button.js';
@@ -50,6 +51,7 @@ import IgcTreeItemComponent from '../../tree/tree-item.js';
 
 const allComponents: CustomElementConstructor[] = [
   IgcAvatarComponent,
+  IgcAccordionComponent,
   IgcBadgeComponent,
   IgcButtonComponent,
   IgcIconButtonComponent,

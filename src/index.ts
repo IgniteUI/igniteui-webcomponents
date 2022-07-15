@@ -1,5 +1,6 @@
 // Components
 export { default as IgcAvatarComponent } from './components/avatar/avatar.js';
+export { default as IgcAccordionComponent } from './components/accordion/accordion.js';
 export { default as IgcBadgeComponent } from './components/badge/badge.js';
 export { default as IgcButtonComponent } from './components/button/button.js';
 export { default as IgcCalendarComponent } from './components/calendar/calendar.js';
