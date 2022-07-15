@@ -47,6 +47,8 @@ import IgcMaskInputComponent from '../../mask-input/mask-input.js';
 import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel.js';
 import IgcTreeComponent from '../../tree/tree.js';
 import IgcTreeItemComponent from '../../tree/tree-item.js';
+import IgcStepperComponent from '../../stepper/stepper.js';
+import IgcStepComponent from '../../stepper/step.js';
 
 const allComponents: CustomElementConstructor[] = [
   IgcAvatarComponent,
@@ -97,6 +99,8 @@ const allComponents: CustomElementConstructor[] = [
   IgcCircularGradientComponent,
   IgcSnackbarComponent,
   IgcDateTimeInputComponent,
+  IgcStepperComponent,
+  IgcStepComponent,
 ];
 
 export const defineAllComponents = () => {
