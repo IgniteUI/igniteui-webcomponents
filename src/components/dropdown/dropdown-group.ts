@@ -7,6 +7,21 @@ import type IgcDropdownItemComponent from './dropdown-item';
 import type IgcDropdownComponent from './dropdown';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
+export abstract class BaseDropdownGroupComponent<Parent> extends LitElement {
+  /** The parent dropdown/element that owns this component */
+  protected abstract parent: Parent;
+
+  /** Implement this to return the parent element owning this component */
+  protected abstract getParent(): Parent;
+
+  public override connectedCallback() {
+    super.connectedCallback();
+
+    this.setAttribute('role', 'group');
+    this.parent = this.getParent();
+  }
+}
+
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
  *
@@ -16,27 +31,23 @@ import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
  * @csspart label - The native label element.
  */
 @themes({ fluent })
-export default class IgcDropdownGroupComponent extends LitElement {
+export default class IgcDropdownGroupComponent extends BaseDropdownGroupComponent<IgcDropdownComponent> {
   public static readonly tagName = 'igc-dropdown-group';
 
   public static override styles = styles;
-
-  protected dropdown?: IgcDropdownComponent;
+  protected parent!: IgcDropdownComponent;
 
   /** All child `igc-dropdown-item`s. */
   @blazorSuppress()
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
   public items!: Array<IgcDropdownItemComponent>;
 
-  public override connectedCallback() {
-    super.connectedCallback();
-
-    this.setAttribute('role', 'group');
-    this.dropdown = this.closest('igc-dropdown') as IgcDropdownComponent;
+  protected getParent() {
+    return this.closest('igc-dropdown')!;
   }
 
   protected override render() {
-    this.setAttribute('size', this.dropdown?.size ?? 'large');
+    this.setAttribute('size', this.parent?.size ?? 'large');
 
     return html`
       <label part="label"><slot name="label"></slot></label>
