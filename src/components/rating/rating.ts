@@ -21,8 +21,9 @@ import { styles as indigo } from './rating.indigo.css.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
+import IgcIconComponent from '../icon/icon.js';
 
-defineComponents(IgcRatingSymbolComponent);
+defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;

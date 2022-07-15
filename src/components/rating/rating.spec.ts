@@ -1,6 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcRatingComponent } from '../../index.js';
+import {
+  defineComponents,
+  IgcRatingComponent,
+  IgcRatingSymbolComponent,
+} from '../../index.js';
 
 describe('Rating component', () => {
   before(() => {
