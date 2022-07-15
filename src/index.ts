@@ -1,5 +1,6 @@
 // Components
 export { default as IgcAvatarComponent } from './components/avatar/avatar.js';
+export { default as IgcAccordionComponent } from './components/accordion/accordion.js';
 export { default as IgcBadgeComponent } from './components/badge/badge.js';
 export { default as IgcButtonComponent } from './components/button/button.js';
 export { default as IgcCalendarComponent } from './components/calendar/calendar.js';
@@ -40,6 +41,9 @@ export { default as IgcRangeSliderComponent } from './components/slider/range-sl
 export { default as IgcSnackbarComponent } from './components/snackbar/snackbar.js';
 export { default as IgcSliderComponent } from './components/slider/slider.js';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label.js';
+export { default as IgcTabsComponent } from './components/tabs/tabs';
+export { default as IgcTabComponent } from './components/tabs/tab';
+export { default as IgcTabPanelComponent } from './components/tabs/tab-panel';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';

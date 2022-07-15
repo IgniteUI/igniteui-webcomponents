@@ -48,7 +48,7 @@
     "toast"
   ],
   "dependencies": {
-    "@floating-ui/dom": "^0.5.0",
-    "lit": "^2.2.0"
+    "@floating-ui/dom": "^0.5.4",
+    "lit": "^2.2.7"
   }
 }

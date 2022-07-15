@@ -1,0 +1,19 @@
+@use '../../../styles/utilities/index' as *;
+
+:host {
+    ::slotted(igc-expansion-panel) {
+        --lines-clamped: 4;
+    }
+
+    ::slotted(igc-expansion-panel[open]) {
+        margin: rem(8px) 0;
+    }
+
+    ::slotted(igc-expansion-panel:first-of-type) {
+        margin-top: 0;
+    }
+
+    ::slotted(igc-expansion-panel:last-of-type) {
+        margin-bottom: 0;
+    }
+}

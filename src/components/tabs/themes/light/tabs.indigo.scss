@@ -1,0 +1,19 @@
+@use '../../../../styles/utilities' as *;
+
+[part='headers'] {
+    background: transparent;
+}
+
+[part='start-scroll-button'],
+[part='end-scroll-button'] {
+    background: transparent;
+
+    &:hover,
+    &:focus {
+        background: transparent;
+    }
+}
+
+[part='selected-indicator'] {
+    background: color(primary, 400);
+}

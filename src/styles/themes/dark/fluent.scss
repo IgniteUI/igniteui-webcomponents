@@ -9,6 +9,7 @@
 @use '../../../components/radio/themes/dark/radio.fluent' as radio;
 @use '../../../components/slider/themes/dark/slider.fluent.scss' as slider;
 @use '../../../components/list/themes/dark/list.fluent' as list;
+@use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.fluent' as nav-drawer-item;
 
@@ -33,5 +34,6 @@ $palette: utils.palette(
 @include radio.theme();
 @include slider.theme();
 @include list.theme();
+@include tab.theme();
 @include tree-item.theme();
 @include nav-drawer-item.theme();

@@ -9,8 +9,16 @@ describe('Rating component', () => {
 
   const getRatingSymbols = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelectorAll(
-      `[part~='symbol']`
-    ) as NodeListOf<HTMLSpanElement>;
+      'igc-rating-symbol'
+    ) as NodeListOf<IgcRatingSymbolComponent>;
+  const getProjectedSymbols = (el: IgcRatingComponent) => {
+    const slot = el.shadowRoot!.querySelector(
+      'slot:not([name])'
+    ) as HTMLSlotElement;
+    return slot
+      .assignedElements()
+      .filter((el) => el.matches('igc-rating-symbol'));
+  };
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
   const fireKeyboardEvent = (key: string) =>
@@ -146,7 +154,7 @@ describe('Rating component', () => {
 
       expect(projected.max).to.equal(3);
 
-      getRatingSymbols(projected).forEach((symbol) =>
+      getProjectedSymbols(projected).forEach((symbol) =>
         expect(symbol.textContent).to.eq('🐝')
       );
     });
@@ -325,6 +333,14 @@ describe('Rating component', () => {
 
       getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
       expect(eventSpy).to.not.be.calledOnce;
+    });
+
+    it('sets step to 1 if in single selection mode', async () => {
+      el.step = 0.1;
+      el.single = true;
+
+      await elementUpdated(el);
+      expect(el.step).to.equal(1);
     });
   });
 });
