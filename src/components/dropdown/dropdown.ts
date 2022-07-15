@@ -52,7 +52,7 @@ export default class IgcDropdownComponent
 
   public static styles = styles;
 
-  private toggleController = new IgcToggleController(this);
+  private toggleController!: IgcToggleController;
   private selectedItem!: IgcDropdownItemComponent | null;
   private activeItem!: IgcDropdownItemComponent;
   private target!: HTMLElement;
@@ -159,12 +159,15 @@ export default class IgcDropdownComponent
 
   @watch('size')
   protected sizeChange() {
-    this.groups.forEach((g) => (g.size = this.size));
+    this.groups.forEach((g) => g.requestUpdate());
   }
 
   constructor() {
     super();
-    this.toggleController.closeCallback = this._hide.bind(this);
+    this.toggleController = new IgcToggleController(this, {
+      target: this.target,
+      closeCallback: () => this._hide(),
+    });
   }
 
   public override async firstUpdated() {

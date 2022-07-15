@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
+import { queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/dropdown-group.base.css.js';
 import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
@@ -21,23 +21,23 @@ export default class IgcDropdownGroupComponent extends LitElement {
 
   public static override styles = styles;
 
+  protected dropdown?: IgcDropdownComponent;
+
   /** All child `igc-dropdown-item`s. */
   @blazorSuppress()
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
   public items!: Array<IgcDropdownItemComponent>;
 
-  @property({ reflect: true })
-  public size: 'small' | 'medium' | 'large' = 'large';
-
   public override connectedCallback() {
     super.connectedCallback();
 
     this.setAttribute('role', 'group');
-    const dropdown = this.closest('igc-dropdown') as IgcDropdownComponent;
-    this.size = dropdown.size;
+    this.dropdown = this.closest('igc-dropdown') as IgcDropdownComponent;
   }
 
   protected override render() {
+    this.setAttribute('size', this.dropdown?.size ?? 'large');
+
     return html`
       <label part="label"><slot name="label"></slot></label>
       <slot></slot>
