@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators';
+import { styleMap } from 'lit/directives/style-map.js';
 
 export default class IgcTabsComponent extends LitElement {
   public static readonly tagName = 'igc-stepper';
@@ -10,6 +11,15 @@ export default class IgcTabsComponent extends LitElement {
 
   public override firstUpdated(): void {
     this.onVerticalChange();
+  }
+
+  protected get verticalStyles() {
+    return !this.vertical
+      ? {
+          display: 'flex',
+          flexDirection: 'row',
+        }
+      : { display: 'block' };
   }
 
   @watch('vertical', { waitUntilFirstUpdate: true })
@@ -31,7 +41,7 @@ export default class IgcTabsComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div part="headers">
+      <div part="headers" style="${styleMap(this.verticalStyles)}">
         <slot></slot>
       </div>
       <div part="content-wrapper"><slot name="content"></slot></div>

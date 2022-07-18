@@ -27,6 +27,7 @@ const Template: Story<ArgTypes, Context> = ({
   <igc-stepper .vertical=${vertical}>
     <igc-step panel="first"></igc-step>
     <span slot="content">step 1</span>
+
     <igc-step panel="second"></igc-step>
     <span slot="content">step 2</span>
   </igc-stepper>
