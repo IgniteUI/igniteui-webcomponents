@@ -162,7 +162,10 @@ export default class IgcRatingComponent extends SizableMixin(
 
   @watch('single')
   protected handleSelectionChange() {
-    this.step = 1;
+    if (this.single) {
+      this.step = 1;
+      this.value = Math.ceil(this.value);
+    }
   }
 
   constructor() {
