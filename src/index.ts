@@ -41,9 +41,9 @@ export { default as IgcRangeSliderComponent } from './components/slider/range-sl
 export { default as IgcSnackbarComponent } from './components/snackbar/snackbar.js';
 export { default as IgcSliderComponent } from './components/slider/slider.js';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label.js';
-export { default as IgcTabsComponent } from './components/tabs/tabs';
-export { default as IgcTabComponent } from './components/tabs/tab';
-export { default as IgcTabPanelComponent } from './components/tabs/tab-panel';
+export { default as IgcTabsComponent } from './components/tabs/tabs.js';
+export { default as IgcTabComponent } from './components/tabs/tab.js';
+export { default as IgcTabPanelComponent } from './components/tabs/tab-panel.js';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';

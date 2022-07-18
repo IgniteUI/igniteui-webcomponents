@@ -24,9 +24,9 @@ import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcYearsViewComponent from './years-view/years-view';
-import IgcDaysViewComponent from './days-view/days-view';
-import IgcMonthsViewComponent from './months-view/months-view';
+import IgcYearsViewComponent from './years-view/years-view.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import IgcMonthsViewComponent from './months-view/months-view.js';
 import IgcIconComponent from '../icon/icon.js';
 
 defineComponents(
