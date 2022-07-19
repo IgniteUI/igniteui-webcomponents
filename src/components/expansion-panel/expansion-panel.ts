@@ -8,7 +8,11 @@ import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.cs
 import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
 import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
 import { createCounter } from '../common/util.js';
-import '../icon/icon.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcIconComponent from '../icon/icon.js';
+
+defineComponents(IgcIconComponent);
 
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;

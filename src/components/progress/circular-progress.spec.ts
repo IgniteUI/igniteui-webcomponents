@@ -6,12 +6,10 @@ import {
   html,
 } from '@open-wc/testing';
 import { defineComponents, IgcCircularProgressComponent } from '../../index.js';
-import IgcCircularGradientComponent from './circular-gradient.js';
+import type IgcCircularGradientComponent from './circular-gradient.js';
 
 describe('Circular progress component', () => {
-  before(() =>
-    defineComponents(IgcCircularProgressComponent, IgcCircularGradientComponent)
-  );
+  before(() => defineComponents(IgcCircularProgressComponent));
 
   let progress: IgcCircularProgressComponent;
 

@@ -1,11 +1,11 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
+import { queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/dropdown-group.base.css.js';
 import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
 import type IgcDropdownItemComponent from './dropdown-item';
-import type IgcDropdownComponent from './dropdown';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { SizableInterface } from '../common/mixins/sizable.js';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
@@ -20,25 +20,27 @@ export default class IgcDropdownGroupComponent extends LitElement {
   public static readonly tagName = 'igc-dropdown-group';
 
   public static override styles = styles;
+  protected parent!: SizableInterface;
 
   /** All child `igc-dropdown-item`s. */
   @blazorSuppress()
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
   public items!: Array<IgcDropdownItemComponent>;
 
-  /** @private */
-  @property({ reflect: true })
-  public size: 'small' | 'medium' | 'large' = 'large';
-
   public override connectedCallback() {
     super.connectedCallback();
 
     this.setAttribute('role', 'group');
-    const dropdown = this.closest('igc-dropdown') as IgcDropdownComponent;
-    this.size = dropdown.size;
+    this.parent = this.getParent();
+  }
+
+  protected getParent() {
+    return this.closest('igc-dropdown')!;
   }
 
   protected override render() {
+    this.setAttribute('size', this.parent?.size ?? 'large');
+
     return html`
       <label part="label"><slot name="label"></slot></label>
       <slot></slot>

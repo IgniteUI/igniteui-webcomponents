@@ -14,11 +14,16 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { clamp } from '../common/util.js';
-import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './rating.base.css.js';
 import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
 import { styles as indigo } from './rating.indigo.css.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
+import IgcIconComponent from '../icon/icon.js';
+
+defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -157,7 +162,10 @@ export default class IgcRatingComponent extends SizableMixin(
 
   @watch('single')
   protected handleSelectionChange() {
-    this.step = 1;
+    if (this.single) {
+      this.step = 1;
+      this.value = Math.ceil(this.value);
+    }
   }
 
   constructor() {

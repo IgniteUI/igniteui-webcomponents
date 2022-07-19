@@ -5,12 +5,16 @@ import { styles } from './themes/light/tree.base.css.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import IgcTreeItemComponent from './tree-item.js';
 import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Direction } from '../common/types.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcTreeItemComponent from './tree-item.js';
+
+defineComponents(IgcTreeItemComponent);
 
 /**
  * The tree allows users to represent hierarchical data in a tree-view structure,

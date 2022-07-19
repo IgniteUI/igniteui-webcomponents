@@ -5,6 +5,12 @@ import { partNameMap } from '../common/util.js';
 import { styles as indigo } from './themes/light/indigo/nav-drawer.indigo.css.js';
 import { styles } from './themes/light/nav-drawer.base.css.js';
 
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
+import IgcNavDrawerItemComponent from './nav-drawer-item.js';
+
+defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
+
 /**
  * Represents a side navigation container that provides
  * quick access between views.
