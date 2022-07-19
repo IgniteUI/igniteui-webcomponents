@@ -87,6 +87,9 @@ export class IgcToggleDirective extends Directive {
       middleware.push(shift(this.shiftOptions));
     }
 
+    // Toggling `sameWidth` does not reset the applied style on the floater element
+    Object.assign(this.floatingElement.style, { width: '' });
+
     if (options.sameWidth) {
       const floatingElement = this.floatingElement;
       middleware.push(
