@@ -365,6 +365,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     return this.showScrollButtons
       ? html`<igc-icon-button
+          tabindex="-1"
+          aria-hidden="true"
           size="large"
           variant="flat"
           collection="internal"
