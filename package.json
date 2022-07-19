@@ -29,7 +29,7 @@
     "watch-meta": "node scripts/stories-watcher.js ",
     "watch-scss": "node scripts/styles-watcher.js",
     "watch-ts": "tsc --watch --preserveWatchOutput",
-    "check": "madge --circular --warning --no-spinner dist/index.js",
+    "check": "madge --circular --warning --no-spinner dist/src/index.js",
     "clean": "npm run clean:dist && npm run clean:styles && npm run clean:docs",
     "clean:dist": "rimraf ./dist",
     "clean:styles": "rimraf \"src/**/*.css.ts\"",
