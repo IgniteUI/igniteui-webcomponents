@@ -5,20 +5,12 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import {
-  defineComponents,
-  IgcNavDrawerComponent,
-  IgcNavDrawerItemComponent,
-  IgcNavDrawerHeaderItemComponent,
-} from '../../index.js';
+import { defineComponents, IgcNavDrawerComponent } from '../../index.js';
+import type { IgcNavDrawerItemComponent } from '../../index.js';
 
 describe('Navigation Drawer', () => {
   before(() => {
-    defineComponents(
-      IgcNavDrawerComponent,
-      IgcNavDrawerItemComponent,
-      IgcNavDrawerHeaderItemComponent
-    );
+    defineComponents(IgcNavDrawerComponent);
   });
 
   let el: IgcNavDrawerComponent;

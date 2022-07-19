@@ -11,14 +11,23 @@ import type {
   IgcToggleComponent,
   IgcToggleEventMap,
 } from '../toggle/types';
-import IgcDropdownItemComponent from './dropdown-item.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
-import type IgcDropdownGroupComponent from './dropdown-group';
 import { styleMap } from 'lit/directives/style-map.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcDropdownGroupComponent from './dropdown-group.js';
+import IgcDropdownHeaderComponent from './dropdown-header.js';
+import IgcDropdownItemComponent from './dropdown-item.js';
+
+defineComponents(
+  IgcDropdownGroupComponent,
+  IgcDropdownHeaderComponent,
+  IgcDropdownItemComponent
+);
 
 export interface IgcDropdownEventMap extends IgcToggleEventMap {
   igcChange: CustomEvent<IgcDropdownItemComponent>;

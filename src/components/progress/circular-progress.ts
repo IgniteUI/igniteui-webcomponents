@@ -7,8 +7,12 @@ import { IgcProgressBaseComponent } from './base.js';
 import { styles } from './themes/circular/circular.progress.base.css.js';
 import { styles as bootstrap } from './themes/circular/circular.progress.bootstrap.css.js';
 import { styles as fluent } from './themes/circular/circular.progress.fluent.css.js';
-import type IgcCircularGradientComponent from './circular-gradient';
 import { themes } from '../../theming/theming-decorator.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcCircularGradientComponent from './circular-gradient.js';
+
+defineComponents(IgcCircularGradientComponent);
 
 /**
  * A circular progress indicator used to express unspecified wait time or display
