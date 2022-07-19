@@ -22,6 +22,8 @@
     min-height: var(--symbol-size);
     font-size: var(--symbol-size);
     font-family: sans-serif;
+    line-height: 100%;
+    letter-spacing: 0;
 
     igc-icon {
         --size: var(--symbol-size);
