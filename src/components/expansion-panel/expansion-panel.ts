@@ -71,10 +71,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   public override connectedCallback() {
     super.connectedCallback();
-    const id = this.getAttribute('id');
-    this.panelId! = id
-      ? id
-      : `igc-expansion-panel-${IgcExpansionPanelComponent.increment()}`;
+    this.panelId = this.getAttribute('id') || `igc-expansion-panel-${IgcExpansionPanelComponent.increment()}`;
   }
 
   private handleClicked() {
