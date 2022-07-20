@@ -36,7 +36,7 @@ describe('Checkbox', () => {
     });
 
     it('should initialize checkbox component with default values', async () => {
-      expect(input.id).to.equal('checkbox-0');
+      expect(input.id).to.equal('checkbox-1');
       expect(el.name).to.be.undefined;
       expect(input.name).to.equal('');
       expect(el.value).to.be.undefined;

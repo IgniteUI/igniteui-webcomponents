@@ -36,7 +36,7 @@ describe('Radio Component', () => {
     });
 
     it('is initialized with the proper default values', async () => {
-      expect(input.id).to.equal('radio-0');
+      expect(input.id).to.equal('radio-1');
       expect(radio.name).to.be.undefined;
       expect(input.name).to.equal('');
       expect(radio.value).to.be.undefined;
