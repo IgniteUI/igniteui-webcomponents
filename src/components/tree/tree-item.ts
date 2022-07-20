@@ -370,6 +370,7 @@ export default class IgcTreeItemComponent extends LitElement {
    * If the parameter value is true returns all tree item's direct children,
    * otherwise - only the direct children.
    */
+  @blazorSuppress()
   public getChildren(
     options: { flatten: boolean } = { flatten: false }
   ): IgcTreeItemComponent[] {

@@ -23,6 +23,7 @@ import {
   getNodesForTags,
   observerConfig,
 } from './utils.js';
+import { blazorAdditionalDependencies } from '../common/decorators';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -48,6 +49,7 @@ export interface IgcTabsEventMap {
  * @csspart content - The container for the tabs content.
  */
 @themes({ bootstrap, fluent, indigo })
+@blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,
   Constructor<LitElement>

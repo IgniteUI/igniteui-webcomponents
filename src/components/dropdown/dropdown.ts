@@ -19,6 +19,7 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 
 export enum DropdownActionKey {
   ESCAPE = 'escape',
@@ -47,6 +48,9 @@ export interface IgcDropdownEventMap extends IgcToggleEventMap {
  * @csspart list - The dropdown list.
  */
 @themes({ bootstrap, fluent, indigo })
+@blazorAdditionalDependencies(
+  'IgcDropdownItemComponent, IgcDropdownGroupComponent'
+)
 export default class IgcDropdownComponent
   extends SizableMixin(
     EventEmitterMixin<IgcDropdownEventMap, Constructor<LitElement>>(LitElement)
