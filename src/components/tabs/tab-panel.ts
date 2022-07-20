@@ -21,9 +21,8 @@ export default class IgcTabPanelComponent extends LitElement {
     this.tabIndex = this.hasAttribute('tabindex') ? this.tabIndex : 0;
     this.slot = this.slot.length > 0 ? this.slot : 'panel';
     this.id =
-      this.id.length > 0
-        ? this.id
-        : `igc-tab-panel-${IgcTabPanelComponent.increment()}`;
+      this.getAttribute('id') ||
+      `igc-tab-panel-${IgcTabPanelComponent.increment()}`;
   }
 
   protected override render() {
