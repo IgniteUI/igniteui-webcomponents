@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { createCounter } from '../common/util.js';
 import { styles } from './themes/light/tab-panel.base.css.js';
 
