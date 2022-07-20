@@ -13,9 +13,9 @@ import {
   ElementPart,
   PartType,
 } from 'lit/directive.js';
-import type { IgcToggleOptions } from './types';
 import { noChange } from 'lit';
-import { IgcToggleController } from './toggle.controller.js';
+import type { IgcToggleOptions } from './types';
+import type { IgcToggleController } from './toggle.controller.js';
 
 export class IgcToggleDirective extends Directive {
   private part: PartInfo;
