@@ -67,12 +67,12 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     ::slotted(*) {
         @include line-clamp(2, true, true);
     }
+
+    ::slotted(igc-icon:not(:only-child)) {
+        margin-bottom: rem(8px);
+    }
 }
 
 ::slotted(igc-icon) {
     --size: #{rem(24px)};
-}
-
-::slotted(igc-icon:not(:only-child)) {
-    margin-bottom: rem(8px);
 }
