@@ -5,6 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
+import sinon from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents';
 import { MaskParser } from '../mask-input/mask-parser';
 import IgcDateTimeInputComponent from './date-time-input';
@@ -384,7 +385,7 @@ describe('Date Time Input component', () => {
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() + 1);
     });
 
-    it('ArrowDown should stepUp correctly', async () => {
+    it('ArrowDown should stepDown correctly', async () => {
       const value = new Date(2020, 2, 3);
       el.value = value;
 
@@ -398,6 +399,9 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
 
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
+
+      el.focus();
+      await elementUpdated(el);
     });
 
     it('ArrowLeft/Right should navigate to the beginning/end of date section', async () => {
@@ -690,6 +694,55 @@ describe('Date Time Input component', () => {
       el.value = new Date(2020, 2, 3);
       await elementUpdated(el);
       expect(el.reportValidity()).to.be.true;
+    });
+
+    it('valid/invalid state with required', async () => {
+      const eventSpy = sinon.spy(el, 'emitEvent');
+
+      el.focus();
+      await elementUpdated(el);
+      expect(eventSpy).calledOnceWithExactly('igcFocus');
+      eventSpy.resetHistory();
+
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
+      );
+      await elementUpdated(el);
+      expect(eventSpy).calledWith('igcInput');
+      eventSpy.resetHistory();
+
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+      );
+      await elementUpdated(el);
+      expect(eventSpy).calledWith('igcInput');
+      eventSpy.resetHistory();
+
+      el.dispatchEvent(
+        new WheelEvent('wheel', { deltaY: -125, bubbles: true })
+      );
+      await elementUpdated(el);
+      expect(eventSpy).calledWith('igcInput');
+      eventSpy.resetHistory();
+
+      el.blur();
+      await elementUpdated(el);
+      expect(eventSpy).calledWith('igcChange');
+      expect(eventSpy).calledWith('igcBlur');
+
+      el.clear();
+      await elementUpdated(el);
+
+      //10.10.____
+      const val = '1010';
+      input.value = val;
+      input.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+      await elementUpdated(el);
+
+      el.blur();
+      await elementUpdated(el);
+      expect(eventSpy).calledWith('igcChange');
+      expect(eventSpy).calledWith('igcBlur');
     });
   });
 
