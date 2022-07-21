@@ -1,13 +1,13 @@
-import path from 'path';
+import autoprefixer from 'autoprefixer';
+import { exec as _exec } from 'child_process';
 import { mkdirSync as makeDir } from 'fs';
 import { copyFile, writeFile } from 'fs/promises';
-import { exec as _exec } from 'child_process';
-import { promisify } from 'util';
-import { fileURLToPath } from 'url';
 import { globby } from 'globby';
-import sass from 'sass';
+import path from 'path';
 import postcss from 'postcss';
-import autoprefixer from 'autoprefixer';
+import sass from 'sass';
+import { fileURLToPath } from 'url';
+import { promisify } from 'util';
 
 const exec = promisify(_exec);
 const renderSass = promisify(sass.render);
@@ -17,7 +17,7 @@ const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
 const THEMES_PATH = `src/styles/themes`;
 
 async function buildThemes() {
-  const paths = await globby(`${THEMES_PATH}/{light,dark}/*.scss`);
+  const paths = await globby(`${THEMES_PATH}/{light,dark,extra}/*.scss`);
 
   for (const sassFile of paths) {
     const result = await renderSass({

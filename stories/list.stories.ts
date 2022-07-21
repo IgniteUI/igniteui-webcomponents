@@ -53,7 +53,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   return html`
     <igc-list .size="${size}" dir=${direction}>
       <igc-list-header>
-        <h1>Job Positions</h1>
+        <h1 slotted-styles>Job Positions</h1>
       </igc-list-header>
       ${employees
         .fill(employeeData[0], 0, 15)
