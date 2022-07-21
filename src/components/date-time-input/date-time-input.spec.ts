@@ -399,9 +399,6 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
 
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
-
-      el.focus();
-      await elementUpdated(el);
     });
 
     it('ArrowLeft/Right should navigate to the beginning/end of date section', async () => {
@@ -696,7 +693,7 @@ describe('Date Time Input component', () => {
       expect(el.reportValidity()).to.be.true;
     });
 
-    it('valid/invalid state with required', async () => {
+    it('should emit events correctly', async () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
 
       el.focus();
