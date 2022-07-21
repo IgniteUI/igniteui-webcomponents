@@ -278,7 +278,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         case ' ':
         case 'enter':
           event.preventDefault();
-          this._show();
+          this.show();
           return;
         case 'arrowdown':
         case 'down':
@@ -306,7 +306,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
           break;
       }
     } else if (key === 'tab' || (event.shiftKey && key === 'tab')) {
-      this._hide();
+      this.hide();
     }
 
     this.handleKeyDown(event);

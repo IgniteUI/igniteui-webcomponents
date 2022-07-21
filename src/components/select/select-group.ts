@@ -1,7 +1,6 @@
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { watch } from '../common/decorators';
 import IgcDropdownGroupComponent from '../dropdown/dropdown-group';
-import IgcSelectComponent from './select';
 import IgcSelectItemComponent from './select-item';
 
 /**
@@ -38,16 +37,12 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
     this.observer = new MutationObserver(this.updateControlledItems.bind(this));
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-
-    this.setAttribute('role', 'group');
-    const select = this.closest('igc-select') as IgcSelectComponent;
-    this.size = select?.size;
-  }
-
   public override disconnectedCallback() {
     this.observer.disconnect();
+  }
+
+  protected override getParent() {
+    return this.closest('igc-select')!;
   }
 
   protected override async firstUpdated() {
