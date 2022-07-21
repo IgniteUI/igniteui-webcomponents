@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
@@ -45,7 +45,6 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
  * @csspart week-number - The week number container.
  * @csspart week-number-inner - The inner week number container.
  */
-@customElement('igc-days-view')
 @blazorSuppressComponent
 @blazorIndirectRender
 @themes({
@@ -56,6 +55,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
+  public static readonly tagName = 'igc-days-view';
   public static styles = styles;
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];

@@ -9,13 +9,7 @@
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
-  "sideEffects": [
-    "components/calendar/days-view/days-view.js",
-    "components/calendar/months-view/months-view.js",
-    "components/calendar/years-view/years-view.js",
-    "components/icon/icon.js",
-    "*.css"
-  ],
+  "sideEffects": ["*.css"],
   "repository": {
     "type": "git",
     "url": "https://github.com/IgniteUI/igniteui-webcomponents"
@@ -54,7 +48,7 @@
     "toast"
   ],
   "dependencies": {
-    "@floating-ui/dom": "^0.5.4",
+    "@floating-ui/dom": "^1.0.0",
     "lit": "^2.2.7"
   }
 }

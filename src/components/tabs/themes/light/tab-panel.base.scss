@@ -1,0 +1,8 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+:host {
+    position: relative;
+    overflow: hidden;
+    flex-grow: 1;
+}

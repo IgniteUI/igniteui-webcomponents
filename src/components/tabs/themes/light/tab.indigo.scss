@@ -1,0 +1,24 @@
+@use '../../../../styles/utilities' as *;
+
+:host {
+    background: transparent;
+}
+
+:host(:hover),
+:host(:focus-within) {
+    background: transparent;
+    color: color(gray, 900);
+}
+
+:host([selected]) {
+    color: color(gray, 900);
+
+    ::slotted(igc-icon) {
+        color: color(primary, 400);
+    }
+}
+
+:host([selected]:hover),
+:host([selected]:focus-within) {
+    color: color(gray, 900);
+}

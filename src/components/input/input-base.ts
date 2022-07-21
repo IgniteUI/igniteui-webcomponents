@@ -7,14 +7,13 @@ import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { partNameMap } from '../common/util.js';
+import { Direction } from '../common/types.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/input.base.css.js';
 import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
 import { styles as fluent } from './themes/light/input.fluent.css.js';
 import { styles as indigo } from './themes/light/input.indigo.css.js';
 import { styles as material } from './themes/light/input.material.css.js';
-
-let nextId = 0;
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
@@ -24,8 +23,6 @@ export interface IgcInputEventMap {
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
-
-type Direction = 'ltr' | 'rtl' | 'auto';
 
 @themes({ bootstrap, material, fluent, indigo })
 export abstract class IgcInputBaseComponent
@@ -39,8 +36,9 @@ export abstract class IgcInputBaseComponent
     delegatesFocus: true,
   };
   public static styles = styles;
+  private static readonly increment = createCounter();
 
-  protected inputId = `input-${nextId++}`;
+  protected inputId = `input-${IgcInputBaseComponent.increment()}`;
 
   /** The value attribute of the control. */
   @blazorSuppress()

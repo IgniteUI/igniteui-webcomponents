@@ -1,5 +1,6 @@
 // Components
 export { default as IgcAvatarComponent } from './components/avatar/avatar.js';
+export { default as IgcAccordionComponent } from './components/accordion/accordion.js';
 export { default as IgcBadgeComponent } from './components/badge/badge.js';
 export { default as IgcButtonComponent } from './components/button/button.js';
 export { default as IgcCalendarComponent } from './components/calendar/calendar.js';
@@ -44,6 +45,9 @@ export { default as IgcRangeSliderComponent } from './components/slider/range-sl
 export { default as IgcSnackbarComponent } from './components/snackbar/snackbar.js';
 export { default as IgcSliderComponent } from './components/slider/slider.js';
 export { default as IgcSliderLabelComponent } from './components/slider/slider-label.js';
+export { default as IgcTabsComponent } from './components/tabs/tabs.js';
+export { default as IgcTabComponent } from './components/tabs/tab.js';
+export { default as IgcTabPanelComponent } from './components/tabs/tab-panel.js';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';
@@ -66,21 +70,12 @@ export { configureTheme } from './theming/config.js';
 export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources.js';
 
 // Types
-export {
+export type {
   DateRangeDescriptor,
   DateRangeType,
 } from './components/calendar/common/calendar.model.js';
-export {
+export type {
   DatePart,
   DatePartDeltas,
 } from './components/date-time-input/date-util.js';
-export { IgcRangeSliderValue } from './components/slider/range-slider.js';
-
-// Base classes
-// TODO(rkaraivanov): Revise these exports
-export { SizableMixin } from './components/common/mixins/sizable.js';
-export { IgcCheckboxBaseComponent } from './components/checkbox/checkbox-base.js';
-export { IgcInputBaseComponent } from './components/input/input-base.js';
-export { IgcSliderBaseComponent } from './components/slider/slider-base.js';
-export { IgcButtonBaseComponent } from './components/button/button-base.js';
-export { IgcCalendarBaseComponent } from './components/calendar/common/calendar-base.js';
+export type { IgcRangeSliderValue } from './components/slider/range-slider.js';

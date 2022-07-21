@@ -8,7 +8,7 @@ import {
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcSnackbarComponent } from '../../index.js';
-import IgcButtonComponent from '../button/button.js';
+import type IgcButtonComponent from '../button/button.js';
 
 describe('Snackbar', () => {
   before(() => {

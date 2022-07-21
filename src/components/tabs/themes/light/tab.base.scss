@@ -1,0 +1,78 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+$hover-background: var(--hover-background, color(gray, 200)) !default;
+
+:host {
+    display: inline-flex;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    min-width: rem(90px);
+    max-width: rem(360px);
+    word-wrap: break-word;
+    padding: rem(12px) rem(16px);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all .3s cubic-bezier(.35, 0, .25, 1);
+    user-select: none;
+    background: color(surface, 500);
+    color: color(gray, 700);
+}
+
+:host(:hover),
+:host(:focus-within) {
+    background: $hover-background;
+    color: color(gray, 700);
+}
+
+:host([selected]) {
+    color: color(primary, 500);
+
+    ::slotted(igc-icon) {
+        color: color(primary, 500);
+    }
+}
+
+:host([selected]:hover),
+:host([selected]:focus-within) {
+    color: color(primary, 500);
+}
+
+:host([disabled]) {
+    pointer-events: none;
+    cursor: initial;
+    color: color(gray, 500);
+}
+
+[part='base'] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    outline-style: none;
+    gap: rem(8px);
+}
+
+[part='content'] {
+    @include type-category('button');
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    outline-style: none;
+
+    ::slotted(*) {
+        @include line-clamp(2, true, true);
+    }
+
+    ::slotted(igc-icon:not(:only-child)) {
+        margin-bottom: rem(8px);
+    }
+}
+
+::slotted(igc-icon) {
+    --size: #{rem(24px)};
+}

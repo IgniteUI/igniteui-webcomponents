@@ -3,6 +3,20 @@ import { igcToggle, IgcToggleDirective } from './toggle.directive.js';
 import type { DirectiveResult } from 'lit/directive';
 import type { IgcToggleComponent } from './types';
 
+type ToggleHost = ReactiveControllerHost & IgcToggleComponent & HTMLElement;
+
+/**
+ * Toggle controller configuration
+ */
+interface ToggleControllerConfig {
+  /** The element, relative to which, the toggle will be positioned. */
+  target?: HTMLElement;
+  /**
+   * The function to call when closing the toggle element from an user interaction (scroll, click).
+   */
+  closeCallback?: Function;
+}
+
 /**
  * Controller, bundling the creation of a toggle directive and handling global events,
  * related to the configuration of togglable components.
@@ -13,6 +27,7 @@ export class IgcToggleController implements ReactiveController {
   private initialScrollTop = 0;
   private initialScrollLeft = 0;
   private _target!: HTMLElement;
+  private _hide?: Function;
 
   /** The directive that marks the toggle. */
   public toggleDirective!: DirectiveResult<typeof IgcToggleDirective>;
@@ -20,7 +35,7 @@ export class IgcToggleController implements ReactiveController {
 
   public set target(value: HTMLElement) {
     this._target = value;
-    this.updateToggleDir();
+    this.update();
   }
 
   /** The element, relative to which, the toggle will be positioned. */
@@ -28,19 +43,18 @@ export class IgcToggleController implements ReactiveController {
     return this._target;
   }
 
-  constructor(
-    host: ReactiveControllerHost & IgcToggleComponent & HTMLElement,
-    target?: HTMLElement
-  ) {
-    host.addController(this);
+  constructor(host: ToggleHost, config?: ToggleControllerConfig) {
+    (this.host = host).addController(this);
 
-    this.host = host;
-
-    if (target) {
-      this._target = target;
+    if (config?.target) {
+      this._target = config.target;
     }
 
-    this.updateToggleDir();
+    if (config?.closeCallback) {
+      this._hide = config.closeCallback;
+    }
+
+    this.update();
   }
 
   public hostConnected() {
@@ -51,9 +65,13 @@ export class IgcToggleController implements ReactiveController {
     this.removeEventListeners();
   }
 
-  public updateToggleDir() {
-    this.toggleDirective = igcToggle(this._target, this.host, this);
+  public update() {
+    this.toggleDirective = igcToggle(this.target, this.host, this);
     this.addEventListeners();
+  }
+
+  protected hide() {
+    this._hide ? this._hide() : this.host.hide();
   }
 
   private addEventListeners() {
@@ -100,7 +118,7 @@ export class IgcToggleController implements ReactiveController {
       if (isInsideClick) {
         return;
       } else {
-        this.host.hide();
+        this.hide();
       }
     }
   };
@@ -114,7 +132,7 @@ export class IgcToggleController implements ReactiveController {
         this.blockScroll(event);
         break;
       case 'close':
-        this.host.hide();
+        this.hide();
         break;
     }
   };

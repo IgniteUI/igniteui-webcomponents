@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
@@ -26,7 +26,6 @@ import { styles } from '../themes/year-month-view.base.css.js';
  * @csspart month - The month container.
  * @csspart month-inner - The inner month container.
  */
-@customElement('igc-months-view')
 @blazorIndirectRender
 @blazorSuppressComponent
 @themes({
@@ -37,6 +36,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  public static readonly tagName = 'igc-months-view';
   public static styles = styles;
   private calendarModel = new Calendar();
   private monthFormatter: any;

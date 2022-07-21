@@ -9,7 +9,6 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
-import '../icon/icon.js';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
@@ -18,17 +17,24 @@ import {
 } from './common/calendar-base.js';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
-import './days-view/days-view.js';
-import type IgcDaysViewComponent from './days-view/days-view';
-import './months-view/months-view.js';
-import type IgcMonthsViewComponent from './months-view/months-view';
 import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css.js';
 import { styles } from './themes/calendar.base.css.js';
 import { styles as fluent } from './themes/fluent/calendar.fluent.css.js';
-import './years-view/years-view.js';
-import type IgcYearsViewComponent from './years-view/years-view';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcYearsViewComponent from './years-view/years-view.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import IgcMonthsViewComponent from './months-view/months-view.js';
+import IgcIconComponent from '../icon/icon.js';
+
+defineComponents(
+  IgcIconComponent,
+  IgcDaysViewComponent,
+  IgcMonthsViewComponent,
+  IgcYearsViewComponent
+);
 
 /**
  * Represents a calendar that lets users

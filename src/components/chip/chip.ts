@@ -10,7 +10,11 @@ import { styles as bootstrap } from './themes/chip.bootstrap.css.js';
 import { styles as fluent } from './themes/chip.fluent.css.js';
 import { styles as indigo } from './themes/chip.indigo.css.js';
 import { styles as material } from './themes/chip.material.css.js';
-import '../icon/icon.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcIconComponent from '../icon/icon.js';
+
+defineComponents(IgcIconComponent);
 
 export interface IgcChipEventMap {
   igcRemove: CustomEvent<boolean>;
