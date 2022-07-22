@@ -607,7 +607,7 @@ export class IgcSliderBaseComponent extends LitElement {
             x2="100%"
             y2="1"
             stroke="currentColor"
-            stroke-dasharray="1.5px, calc(${interval * Math.sqrt(2)}% - 1.5px)"
+            stroke-dasharray="0, calc(${interval * Math.sqrt(2)}%)"
             stroke-linecap="round"
             stroke-width="2px"
           ></line>

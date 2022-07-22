@@ -41,10 +41,6 @@ $thumb-radius: math.div($thumb-size, 2);
     background: $fill-background;
 }
 
-[part='steps'] {
-    top: rem(1px);
-}
-
 [part='thumb'] {
     background: color(surface, 500);
     border: rem(2px) solid $thumb-border;
