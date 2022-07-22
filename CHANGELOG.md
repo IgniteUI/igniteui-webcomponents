@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.3.0-beta.0] - 2022-07-12
 ### Added
+- Accordion [#418](https://github.com/IgniteUI/igniteui-webcomponents/pull/418)
 - DateTime input [#314](https://github.com/IgniteUI/igniteui-webcomponents/pull/314)
 - Tabs [#341](https://github.com/IgniteUI/igniteui-webcomponents/pull/341)
 - Typography styles in themes [#392](https://github.com/IgniteUI/igniteui-webcomponents/pull/392)
