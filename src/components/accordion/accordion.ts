@@ -1,7 +1,11 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { styles } from './themes/accordion.base.css.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
+
+defineComponents(IgcExpansionPanelComponent);
 
 /**
  * The Accordion is a container-based component that can house multiple expansion panels

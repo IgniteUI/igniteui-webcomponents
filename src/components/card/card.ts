@@ -5,6 +5,19 @@ import { styles as bootstrap } from './themes/light/card.bootstrap.css.js';
 import { styles as fluent } from './themes/light/card.fluent.css.js';
 import { styles } from './themes/light/card.material.css.js';
 
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcCardActionsComponent from './card.actions.js';
+import IgcCardContentComponent from './card.content.js';
+import IgcCardHeaderComponent from './card.header.js';
+import IgcCardMediaComponent from './card.media.js';
+
+defineComponents(
+  IgcCardActionsComponent,
+  IgcCardContentComponent,
+  IgcCardHeaderComponent,
+  IgcCardMediaComponent
+);
+
 /** A container which wraps different elements related to a single subject
  * @element igc-card
  *

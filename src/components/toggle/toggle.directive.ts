@@ -13,9 +13,9 @@ import {
   ElementPart,
   PartType,
 } from 'lit/directive.js';
-import type { IgcToggleOptions } from './types';
 import { noChange } from 'lit';
-import { IgcToggleController } from './toggle.controller.js';
+import type { IgcToggleOptions } from './types';
+import type { IgcToggleController } from './toggle.controller.js';
 
 export class IgcToggleDirective extends Directive {
   private part: PartInfo;
@@ -86,6 +86,9 @@ export class IgcToggleDirective extends Directive {
     if (this.shiftOptions) {
       middleware.push(shift(this.shiftOptions));
     }
+
+    // Toggling `sameWidth` does not reset the applied style on the floater element
+    Object.assign(this.floatingElement.style, { width: '' });
 
     if (options.sameWidth) {
       const floatingElement = this.floatingElement;

@@ -1,8 +1,8 @@
 import { aTimeout, elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcCheckboxComponent } from '../../index.js';
+import { defineComponents } from '../../index.js';
+import type { IgcCheckboxComponent, IgcTreeItemComponent } from '../../index';
 import IgcTreeComponent from './tree.js';
-import IgcTreeItemComponent from './tree-item.js';
 import {
   activeItemsTree,
   DIFF_OPTIONS,
@@ -19,7 +19,7 @@ import {
 
 describe('Tree', () => {
   before(() => {
-    defineComponents(IgcTreeItemComponent, IgcTreeComponent);
+    defineComponents(IgcTreeComponent);
   });
 
   let tree: IgcTreeComponent;
@@ -249,7 +249,7 @@ describe('Tree', () => {
         const selectionPart = item.shadowRoot!.querySelector(PARTS.select);
         expect(selectionPart).dom.to.equal(
           `<div part="select" aria-hidden="true">
-              <igc-checkbox></igc-checkbox>
+              <igc-checkbox label-position="after"></igc-checkbox>
           </div>`,
           DIFF_OPTIONS
         );
@@ -292,7 +292,7 @@ describe('Tree', () => {
       expect(tree.items[0].selected).to.be.false;
       let selectionPart = tree.items[0].shadowRoot!.querySelector(PARTS.select);
       expect(selectionPart).lightDom.to.equal(
-        `<igc-checkbox></igc-checkbox>`,
+        `<igc-checkbox label-position="after"></igc-checkbox>`,
         DIFF_OPTIONS
       );
 

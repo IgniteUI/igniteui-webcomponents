@@ -16,7 +16,17 @@ import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import '../icon/icon.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcIconComponent from '../icon/icon.js';
+import IgcCheckboxComponent from '../checkbox/checkbox.js';
+import IgcCircularProgressComponent from '../progress/circular-progress.js';
+
+defineComponents(
+  IgcIconComponent,
+  IgcCheckboxComponent,
+  IgcCircularProgressComponent
+);
 
 const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
   small: 1 / 2,

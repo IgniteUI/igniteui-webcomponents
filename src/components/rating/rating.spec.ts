@@ -8,7 +8,7 @@ import {
 
 describe('Rating component', () => {
   before(() => {
-    defineComponents(IgcRatingComponent, IgcRatingSymbolComponent);
+    defineComponents(IgcRatingComponent);
   });
 
   const getRatingSymbols = (el: IgcRatingComponent) =>
