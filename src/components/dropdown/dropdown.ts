@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
@@ -51,6 +52,9 @@ export interface IgcDropdownEventMap extends IgcToggleEventMap {
  * @csspart list - The dropdown list.
  */
 @themes({ bootstrap, fluent, indigo })
+@blazorAdditionalDependencies(
+  'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
+)
 export default class IgcDropdownComponent
   extends SizableMixin(
     EventEmitterMixin<IgcDropdownEventMap, Constructor<LitElement>>(LitElement)

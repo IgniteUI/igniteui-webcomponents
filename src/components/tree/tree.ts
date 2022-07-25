@@ -9,6 +9,7 @@ import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { Direction } from '../common/types.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
@@ -31,6 +32,7 @@ defineComponents(IgcTreeItemComponent);
  * @fires igcItemExpanding - Emitted when tree item is about to expand.
  * @fires igcItemActivated - Emitted when the tree's `active` item changes.
  */
+@blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends SizableMixin(
   EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
 ) {
@@ -148,6 +150,7 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   /** Select all items if the items collection is empty. Otherwise, select the items in the items collection. */
+  @blazorSuppress()
   public select(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
@@ -162,6 +165,7 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   /** Deselect all items if the items collection is empty. Otherwise, deselect the items in the items collection. */
+  @blazorSuppress()
   public deselect(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
@@ -173,6 +177,7 @@ export default class IgcTreeComponent extends SizableMixin(
    * Expands all of the passed items.
    * If no items are passed, expands ALL items.
    */
+  @blazorSuppress()
   public expand(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]
@@ -185,6 +190,7 @@ export default class IgcTreeComponent extends SizableMixin(
    * Collapses all of the passed items.
    * If no items are passed, collapses ALL items.
    */
+  @blazorSuppress()
   public collapse(
     /* alternateType: TreeItemCollection */
     items?: IgcTreeItemComponent[]

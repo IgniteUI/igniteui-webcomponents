@@ -1,3 +1,4 @@
+/* blazorSuppress */
 export interface IgcCalendarResourceStrings {
   selectMonth: string;
   selectYear: string;

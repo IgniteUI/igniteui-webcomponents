@@ -7,6 +7,7 @@ import {
   state,
 } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/tabs.base.css.js';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
@@ -52,6 +53,7 @@ export interface IgcTabsEventMap {
  * @csspart content - The container for the tabs content.
  */
 @themes({ bootstrap, fluent, indigo })
+@blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,
   Constructor<LitElement>
