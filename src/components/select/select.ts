@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import {
   property,
   query,
@@ -8,10 +8,11 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming';
-import { watch } from '../common/decorators';
+import { watch } from '../common/decorators/watch.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
 } from '../dropdown/dropdown';
+import IgcDropdownItemComponent from '../dropdown/dropdown-item';
 import IgcInputComponent from '../input/input';
 import IgcSelectGroupComponent from './select-group';
 import IgcSelectItemComponent from './select-item';
@@ -80,7 +81,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
   /** The value attribute of the control. */
   @property({ reflect: false, type: String })
-  public value!: string | undefined;
+  public value?: string | undefined;
 
   /** The name attribute of the control. */
   @property()
@@ -148,14 +149,14 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     super.firstUpdated();
     await this.updateComplete;
 
-    const selectedItem = this.allItems.find((i) => i.selected) ?? null;
-    if (selectedItem) this.value = selectedItem.value;
-    else this.updateSelected();
+    if (!this.selectedItem && this.value) {
+      this.updateSelected();
+    }
   }
 
   @watch('selectedItem')
   protected updateValue() {
-    this.value = this.selectedItem?.value ?? this.value;
+    this.value = this.selectedItem?.value;
   }
 
   @watch('value')
@@ -164,7 +165,9 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
     if (this.selectedItem?.value !== this.value) {
       const matches = this.allItems.filter((i) => i.value === this.value);
-      const index = this.allItems.indexOf(matches[matches.length - 1]);
+      const index = this.allItems.indexOf(
+        matches.at(-1) as IgcSelectItemComponent
+      );
 
       if (index === -1) {
         this.value = undefined;
@@ -204,20 +207,10 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     this.selectItem(this.allItems[prev], true);
   }
 
-  protected selectFirstActiveItem() {
-    const items = this.allItems.filter((i) => !i.disabled);
-    const index = this.allItems.indexOf(items[0]);
-    const item = this.allItems[index];
-
-    if (item.value !== this.value) {
-      this.selectItem(item, true);
-    }
-  }
-
-  protected selectLastActiveItem() {
-    const items = this.allItems.filter((i) => !i.disabled);
-    const index = this.allItems.indexOf(items[items.length - 1]);
-    const item = this.allItems[index];
+  protected selectActiveItem(index: number) {
+    const item = this.allItems
+      .filter((i) => !i.disabled)
+      .at(index) as IgcDropdownItemComponent;
 
     if (item.value !== this.value) {
       this.selectItem(item, true);
@@ -296,11 +289,11 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
           return;
         case 'home':
           event.preventDefault();
-          this.selectFirstActiveItem();
+          this.selectActiveItem(0);
           return;
         case 'end':
           event.preventDefault();
-          this.selectLastActiveItem();
+          this.selectActiveItem(-1);
           return;
         default:
           break;
@@ -313,9 +306,12 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     this.selectItemByKey(event);
   }
 
-  protected renderInnerSlots(el: HTMLElement, slot: string) {
-    el.setAttribute('slot', slot);
-    return html`${el.cloneNode(true)}`;
+  protected get hasPrefixes() {
+    return this.inputPrefix.length > 0;
+  }
+
+  protected get hasSuffixes() {
+    return this.inputSuffix.length > 0;
   }
 
   protected override render() {
@@ -337,8 +333,12 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         @click=${this.handleTargetClick}
         @keydown=${this.handleInputKeyboardEvents}
       >
-        ${this.inputPrefix.map((el) => this.renderInnerSlots(el, 'prefix'))}
-        ${this.inputSuffix.map((el) => this.renderInnerSlots(el, 'suffix'))}
+        <span slot=${this.hasPrefixes ? 'prefix' : nothing}>
+          <slot name="prefix"></slot>
+        </span>
+        <span slot=${this.hasSuffixes ? 'suffix' : nothing}>
+          <slot name="suffix"></slot>
+        </span>
         <span slot="suffix" part="toggle-icon" style="display: flex">
           <slot name="toggle-icon">
             <igc-icon
@@ -364,8 +364,6 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
           <slot name="footer"></slot>
         </div>
       </div>
-      <slot name="prefix" hidden></slot>
-      <slot name="suffix" hidden></slot>
     `;
   }
 }

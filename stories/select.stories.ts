@@ -264,6 +264,7 @@ const Template: Story<ArgTypes, Context> = (
   {
     label,
     placeholder,
+    name,
     value = 'docs',
     size = 'medium',
     open = false,
@@ -278,6 +279,7 @@ const Template: Story<ArgTypes, Context> = (
   <igc-select
     value=${value}
     label=${ifDefined(label)}
+    name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
     size=${size}
     ?open=${open}
