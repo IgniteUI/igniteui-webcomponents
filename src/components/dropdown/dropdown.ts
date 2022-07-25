@@ -53,7 +53,7 @@ export interface IgcDropdownEventMap extends IgcToggleEventMap {
  */
 @themes({ bootstrap, fluent, indigo })
 @blazorAdditionalDependencies(
-  'IgcDropdownItemComponent, IgcDropdownGroupComponent'
+  'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )
 export default class IgcDropdownComponent
   extends SizableMixin(
