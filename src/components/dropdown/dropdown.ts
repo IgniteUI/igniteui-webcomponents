@@ -17,6 +17,7 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
@@ -51,6 +52,9 @@ export interface IgcDropdownEventMap extends IgcToggleEventMap {
  * @csspart list - The dropdown list.
  */
 @themes({ bootstrap, fluent, indigo })
+@blazorAdditionalDependencies(
+  'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
+)
 export default class IgcDropdownComponent
   extends SizableMixin(
     EventEmitterMixin<IgcDropdownEventMap, Constructor<LitElement>>(LitElement)
