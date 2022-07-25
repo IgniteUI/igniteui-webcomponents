@@ -46,7 +46,7 @@ export default class IgcTabComponent extends LitElement {
   public override connectedCallback(): void {
     super.connectedCallback();
     this.id =
-      this.id.length > 0 ? this.id : `igc-tab-${IgcTabComponent.increment()}`;
+      this.getAttribute('id') || `igc-tab-${IgcTabComponent.increment()}`;
   }
 
   /** Sets focus to the tab. */

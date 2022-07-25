@@ -16,6 +16,11 @@ import { styles as fluent } from './themes/light/slider.fluent.css.js';
 import { styles as indigo } from './themes/light/slider.indigo.css.js';
 import { styles as material } from './themes/light/slider.material.css.js';
 
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcSliderLabelComponent from './slider-label.js';
+
+defineComponents(IgcSliderLabelComponent);
+
 @themes({ material, bootstrap, fluent, indigo })
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;

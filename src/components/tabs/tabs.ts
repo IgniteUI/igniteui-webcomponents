@@ -1,4 +1,3 @@
-import '../button/icon-button';
 import { html, LitElement, nothing } from 'lit';
 import {
   eventOptions,
@@ -8,9 +7,8 @@ import {
   state,
 } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { themes } from '../../theming/theming-decorator.js';
-import type IgcTabComponent from './tab';
-import type IgcTabPanelComponent from './tab-panel';
 import { styles } from './themes/light/tabs.base.css.js';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tabs.fluent.css.js';
@@ -23,6 +21,13 @@ import {
   getNodesForTags,
   observerConfig,
 } from './utils.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcTabComponent from './tab.js';
+import IgcTabPanelComponent from './tab-panel.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
+
+defineComponents(IgcTabComponent, IgcTabPanelComponent, IgcIconButtonComponent);
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -48,6 +53,7 @@ export interface IgcTabsEventMap {
  * @csspart content - The container for the tabs content.
  */
 @themes({ bootstrap, fluent, indigo })
+@blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,
   Constructor<LitElement>
@@ -365,6 +371,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     return this.showScrollButtons
       ? html`<igc-icon-button
+          tabindex="-1"
+          aria-hidden="true"
           size="large"
           variant="flat"
           collection="internal"

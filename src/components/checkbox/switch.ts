@@ -3,15 +3,13 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
-import { partNameMap } from '../common/util.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/light/switch.base.css.js';
 import { styles as bootstrap } from './themes/light/switch.bootstrap.css.js';
 import { styles as fluent } from './themes/light/switch.fluent.css.js';
 import { styles as indigo } from './themes/light/switch.indigo.css.js';
 import { styles as material } from './themes/light/switch.material.css.js';
-
-let nextId = 0;
 
 /**
  * Similar to a checkbox, a switch controls the state of a single setting on or off.
@@ -33,8 +31,9 @@ let nextId = 0;
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
   public static styles = styles;
+  private static readonly increment = createCounter();
 
-  private inputId = `switch-${nextId++}`;
+  private inputId = `switch-${IgcSwitchComponent.increment()}`;
   private labelId = `switch-label-${this.inputId}`;
 
   private handleClick() {

@@ -10,7 +10,6 @@ import {
   defineComponents,
   IgcRangeSliderComponent,
   IgcSliderComponent,
-  IgcSliderLabelComponent,
 } from '../../index.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 
@@ -55,7 +54,7 @@ describe('Slider component', () => {
     let slider: IgcSliderComponent;
 
     before(() => {
-      defineComponents(IgcSliderComponent, IgcSliderLabelComponent);
+      defineComponents(IgcSliderComponent);
     });
 
     beforeEach(async () => {

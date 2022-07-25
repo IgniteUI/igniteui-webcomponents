@@ -4,6 +4,12 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './themes/light/list.base.css.js';
 import { styles as bootstrap } from './themes/light/list.bootstrap.css.js';
 
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcListHeaderComponent from './list-header.js';
+import IgcListItemComponent from './list-item.js';
+
+defineComponents(IgcListItemComponent, IgcListHeaderComponent);
+
 /**
  * Displays a collection of data items in a templatable list format.
  *

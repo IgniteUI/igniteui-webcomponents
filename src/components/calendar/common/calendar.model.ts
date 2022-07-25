@@ -146,6 +146,7 @@ export const isDateInRanges = (
   return false;
 };
 
+/* blazorSuppress */
 export interface ICalendarDate {
   date: Date;
   isCurrentMonth: boolean;

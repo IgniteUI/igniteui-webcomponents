@@ -8,14 +8,12 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partNameMap } from '../common/util.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/radio.base.css.js';
 import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
 import { styles as fluent } from './themes/light/radio.fluent.css.js';
 import { styles as indigo } from './themes/light/radio.indigo.css.js';
 import { styles as material } from './themes/light/radio.material.css.js';
-
-let nextId = 0;
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<boolean>;
@@ -43,8 +41,9 @@ export default class IgcRadioComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-radio';
   protected static styles = styles;
+  private static readonly increment = createCounter();
 
-  private inputId = `radio-${nextId++}`;
+  private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
 
   @query('input[type="radio"]', true)

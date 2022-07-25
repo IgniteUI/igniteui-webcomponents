@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
@@ -18,7 +18,6 @@ import {
  *
  *
  */
-@customElement('igc-icon')
 export default class IgcIconComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-icon';
 
