@@ -9,8 +9,8 @@ import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { Direction } from '../common/types.js';
-import { blazorAdditionalDependencies } from '../common/decorators';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcTreeItemComponent from './tree-item.js';

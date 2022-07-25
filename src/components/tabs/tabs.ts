@@ -7,6 +7,7 @@ import {
   state,
 } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/tabs.base.css.js';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
@@ -20,7 +21,6 @@ import {
   getNodesForTags,
   observerConfig,
 } from './utils.js';
-import { blazorAdditionalDependencies } from '../common/decorators';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcTabComponent from './tab.js';
