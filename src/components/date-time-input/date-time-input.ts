@@ -53,6 +53,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected _defaultMask!: string;
   protected _value!: Date | null;
 
+  private _oldValue: Date | null = null;
   private _inputDateParts!: DatePartInfo[];
   private _inputFormat!: string;
   private _datePartDeltas: DatePartDeltas = {
@@ -322,6 +323,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
     const newValue = this.trySpinValue(targetPart, delta);
     this.value = newValue;
+    this.handleInput();
   }
 
   /** Decrements a date/time portion. */
@@ -334,6 +336,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue;
+    this.handleInput();
   }
 
   /** Clears the input element of user input. */
@@ -375,6 +378,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   protected handleChange() {
     this.emitEvent('igcChange', { detail: this.value });
     this.invalid = !this.checkValidity();
+  }
+
+  protected override handleInput() {
+    this.emitEvent('igcInput', { detail: this.value?.toString() });
   }
 
   protected handleDragLeave() {
@@ -597,6 +604,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   protected override handleFocus() {
     this.hasFocus = true;
+    this._oldValue = this.value;
     this.updateMask();
     this.emitEvent('igcFocus');
   }
@@ -615,6 +623,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       }
     } else {
       this.updateMask();
+    }
+
+    if (this._oldValue !== this.value) {
+      this.handleChange();
     }
 
     this.emitEvent('igcBlur');
@@ -668,8 +680,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         @invalid="${this.handleInvalid}"
         @blur=${this.handleBlur}
         @focus=${this.handleFocus}
-        @change=${this.handleChange}
-        @input=${this.handleInput}
+        @input=${super.handleInput}
         @keydown=${this.handleKeydown}
         @cut=${this.handleCut}
         @compositionstart=${this.handleCompositionStart}

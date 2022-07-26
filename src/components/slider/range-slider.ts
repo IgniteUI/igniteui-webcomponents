@@ -4,6 +4,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 
+/* blazorSuppress */
 export interface IgcRangeSliderValue {
   lower: number;
   upper: number;

@@ -15,7 +15,7 @@ const metadata = {
   argTypes: {
     inputFormat: {
       type: 'string',
-      description: 'The mask pattern to apply on the input.',
+      description: 'The date format to apply on the input.',
       control: 'text',
     },
     minValue: {
@@ -30,7 +30,8 @@ const metadata = {
     },
     displayFormat: {
       type: 'string',
-      description: 'The display value of the editor.',
+      description:
+        'Format to display the value in when not editing.\nDefaults to the input format if not set.',
       control: 'text',
     },
     spinLoop: {
