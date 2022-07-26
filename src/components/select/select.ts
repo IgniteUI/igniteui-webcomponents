@@ -350,6 +350,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
               size=${this.size}
               name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
               collection="internal"
+              aria-hidden="true"
             ></igc-icon>
           </slot>
         </span>
