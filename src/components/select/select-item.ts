@@ -18,8 +18,8 @@ export default class IgcSelectItemComponent extends IgcDropdownItemComponent {
   @queryAssignedNodes({ flatten: true })
   private content!: Array<Element>;
 
-  public static override readonly tagName =
-    'igc-select-item' as 'igc-dropdown-item';
+  /** @private */
+  public static override readonly tagName = 'igc-select-item';
 
   constructor() {
     super();

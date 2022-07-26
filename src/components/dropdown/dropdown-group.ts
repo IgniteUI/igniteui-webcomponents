@@ -17,7 +17,7 @@ import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
  */
 @themes({ fluent })
 export default class IgcDropdownGroupComponent extends LitElement {
-  public static readonly tagName = 'igc-dropdown-group';
+  public static readonly tagName: string = 'igc-dropdown-group';
 
   public static override styles = styles;
   protected parent!: SizableInterface;

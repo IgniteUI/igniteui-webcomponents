@@ -61,7 +61,8 @@ export default class IgcDropdownComponent
   )
   implements IgcToggleComponent
 {
-  public static readonly tagName = 'igc-dropdown';
+  /** @private */
+  public static readonly tagName: string = 'igc-dropdown';
 
   public static styles = styles;
 

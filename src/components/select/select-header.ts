@@ -6,8 +6,8 @@ import IgcDropdownHeaderComponent from '../dropdown/dropdown-header';
  * @slot - Renders the header.
  */
 export default class IgcSelectHeaderComponent extends IgcDropdownHeaderComponent {
-  public static override readonly tagName =
-    'igc-select-header' as 'igc-dropdown-header';
+  /** @private */
+  public static override readonly tagName = 'igc-select-header';
 }
 
 declare global {

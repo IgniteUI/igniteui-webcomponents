@@ -53,7 +53,8 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @csspart helper-text - The helper text wrapper.
  */
 export default class IgcSelectComponent extends IgcDropdownComponent {
-  public static override readonly tagName = 'igc-select' as 'igc-dropdown';
+  /** @private */
+  public static override readonly tagName = 'igc-select';
   public static override styles = styles;
   private searchTerm = '';
   private lastKeyTime = Date.now();

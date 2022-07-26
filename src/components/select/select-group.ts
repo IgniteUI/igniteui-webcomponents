@@ -12,8 +12,8 @@ import IgcSelectItemComponent from './select-item';
  * @csspart label - The native label element.
  */
 export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
-  public static override readonly tagName =
-    'igc-select-group' as 'igc-dropdown-group';
+  /** @private */
+  public static override readonly tagName = 'igc-select-group';
 
   private observer!: MutationObserver;
   private controlledItems!: Array<IgcSelectItemComponent>;
