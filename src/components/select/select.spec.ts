@@ -5,6 +5,7 @@ import { defineComponents } from '../common/definitions/defineComponents';
 import IgcInputComponent from '../input/input';
 import IgcSelectComponent from './select';
 import IgcSelectGroupComponent from './select-group';
+import IgcSelectHeaderComponent from './select-header';
 import IgcSelectItemComponent from './select-item';
 
 describe('Select component', () => {
@@ -52,6 +53,7 @@ describe('Select component', () => {
       IgcSelectComponent,
       IgcSelectGroupComponent,
       IgcSelectItemComponent,
+      IgcSelectHeaderComponent,
       IgcInputComponent
     );
   });

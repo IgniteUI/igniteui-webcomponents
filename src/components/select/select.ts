@@ -1,4 +1,4 @@
-import { html, nothing } from 'lit';
+import { html } from 'lit';
 import {
   property,
   query,
@@ -9,16 +9,20 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming';
 import { watch } from '../common/decorators/watch.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
 } from '../dropdown/dropdown';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item';
+import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input';
 import IgcSelectGroupComponent from './select-group';
 import IgcSelectItemComponent from './select-item';
 import { styles } from './themes/select.base.css';
 import { styles as bootstrap } from './themes/select.bootstrap.css';
 import { styles as indigo } from './themes/select.indigo.css';
+
+defineComponents(IgcIconComponent);
 
 export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
@@ -334,10 +338,10 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         @click=${this.handleTargetClick}
         @keydown=${this.handleInputKeyboardEvents}
       >
-        <span slot=${this.hasPrefixes ? 'prefix' : nothing}>
+        <span slot=${this.hasPrefixes ? 'prefix' : ''}>
           <slot name="prefix"></slot>
         </span>
-        <span slot=${this.hasSuffixes ? 'suffix' : nothing}>
+        <span slot=${this.hasSuffixes ? 'suffix' : ''}>
           <slot name="suffix"></slot>
         </span>
         <span slot="suffix" part="toggle-icon" style="display: flex">
