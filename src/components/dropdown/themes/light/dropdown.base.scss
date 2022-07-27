@@ -3,7 +3,7 @@
 
 :host {
     display: flex;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
 }
 
 [part='base'] {
@@ -12,7 +12,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     background: color(surface, 500);
-    box-shadow: var(--igc-elevation-8);
+    box-shadow: var(--ig-elevation-8);
     min-width: rem(112px);
     padding: rem(8px) 0;
     z-index: 10005;

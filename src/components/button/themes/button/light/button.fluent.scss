@@ -126,7 +126,7 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
 :host(:not([disabled])[variant='contained']) [part='base'],
 :host(:not([disabled])[variant='fab']) [part='base'] {
     color: $text-color;
-    box-shadow: var(--igc-elevation-0);
+    box-shadow: var(--ig-elevation-0);
 
     &:hover,
     &:focus-visible:hover {

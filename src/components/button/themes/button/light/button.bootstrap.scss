@@ -69,7 +69,7 @@
 
 :host(:not([disabled])[variant='contained']) [part='base'] {
     color: #{utils.contrast-color(primary, 600)};
-    box-shadow: var(--igc-elevation-0);
+    box-shadow: var(--ig-elevation-0);
 
     &:hover {
         color: #{utils.contrast-color(primary, 600)};
@@ -144,7 +144,7 @@
 
 :host(:not([disabled])[variant='fab']) [part='base'] {
     color: #{utils.contrast-color(primary, 600)};
-    box-shadow: var(--igc-elevation-0);
+    box-shadow: var(--ig-elevation-0);
 
     &:hover {
         color: #{utils.contrast-color(primary, 600)};
