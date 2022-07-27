@@ -53,11 +53,23 @@ slot {
 [part='steps'] {
     position: absolute;
     width: 100%;
-    height: rem(2px);
-    color: white;
+    height: rem(4px);
     opacity: .85;
     transition: opacity .2s ease-out;
-    top: rem(2px);
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+
+    svg {
+        clip-path: inset(0 rem(3px) 0 rem(3px));
+    }
+
+    line {
+        transform: translateY(25%);
+        stroke: currentcolor;
+        stroke-width: rem(3px);
+        stroke-linecap: round;
+    }
 }
 
 [part='ticks'] {

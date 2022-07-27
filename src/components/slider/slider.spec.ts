@@ -503,7 +503,7 @@ describe('Slider component', () => {
 
       const line = steps.querySelector('line');
       expect(line!.getAttribute('stroke-dasharray')).to.eq(
-        '1.5px, calc(14.142135623730951% - 1.5px)'
+        '0, calc(14.142135623730951%)'
       );
     });
 
