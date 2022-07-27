@@ -1,20 +1,17 @@
-import path from 'path';
-import { promisify } from 'util';
+import autoprefixer from 'autoprefixer';
 import { readFile, writeFile } from 'fs/promises';
 import { globby } from 'globby';
-import sass from 'sass';
-import autoprefixer from 'autoprefixer';
+import path from 'path';
 import postcss from 'postcss';
+import sass from 'sass';
 import report from './report.js';
 
-const renderSass = promisify(sass.render);
+const renderSass = sass.compile;
 
 async function sassToCss(sassFile) {
-  const result = await renderSass({
-    file: sassFile,
-    outputStyle: 'compressed',
+  const result = renderSass(sassFile, {
+    outputStyle: 'compressed'
   });
-
   let cssStr = result.css.toString();
 
   cssStr = await postcss([autoprefixer]).process(cssStr).css;
@@ -31,6 +28,7 @@ async function sassRender(sourceFile, templateFile, outputFile) {
   const template = await readFile(templateFile, 'utf-8');
   const replacement = await sassToCss(sourceFile);
   const newContent = template.replace(regex, replacement);
+  console.info('Compiling styles', sourceFile);
 
   return writeFile(outputFile, newContent, 'utf-8');
 }
