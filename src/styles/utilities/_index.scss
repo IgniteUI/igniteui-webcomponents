@@ -1,7 +1,3 @@
-// @forward './functions';
 @forward './mixins';
-
-// @forward './elevations';
-// @forward './typography';
-@forward '../../../node_modules/igniteui-theming/index' hide color, contrast-color;
+@forward '../../../node_modules/igniteui-theming/index' hide color, contrast-color, border-radius;
 @forward './overwrites';
