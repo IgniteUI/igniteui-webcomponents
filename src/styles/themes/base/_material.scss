@@ -1,31 +1,24 @@
-@use '../../utilities' as utils;
-
-$elevations: utils.elevations(
-    rgb(0 0 0 / 26%),
-    rgb(0 0 0 / 12%),
-    rgb(0 0 0 / 8%)
-) !default;
-$type-scale: utils.type-scale();
+@use '../../../../node_modules/igniteui-theming' as *;
 
 .igc-scrollbar {
-    --scrolbar-size: #{utils.rem(16px)};
-    --igc-scrollbar-track-color: #{utils.color(gray, 100)};
-    --igc-scrollbar-thumb-color: #{utils.color(gray, 400)};
+    --scrolbar-size: #{rem(16px)};
+    --igc-scrollbar-track-color: #{color(null, gray, 100)};
+    --igc-scrollbar-thumb-color: #{color(null, gray, 400)};
 }
 
 @mixin root-styles($palette) {
     :root {
         --igc-theme: material;
-        --igc-radius-factor: 1;
-        --igc-spacing-small: #{utils.rem(2px)};
-        --igc-spacing-medium: #{utils.rem(4px)};
-        --igc-spacing-large: #{utils.rem(8px)};
-
-        @include utils.palette($palette);
-        @include utils.elevations($elevations);
-        @include utils.typography(
-            $font-family: 'Roboto, sans-serif',
-            $type-scale: $type-scale
-        );
+        --ig-radius-factor: 1;
+        --igc-spacing-small: #{rem(2px)};
+        --igc-spacing-medium: #{rem(4px)};
+        --igc-spacing-large: #{rem(8px)};
     }
+
+    @include palette($palette);
+    @include elevations($material-elevations);
+    @include typography(
+        $font-family: $material-typeface,
+        $type-scale: $material-type-scale
+    );
 }

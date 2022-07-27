@@ -1,17 +1,9 @@
-@use '../../utilities' as utils;
+@use '../../../../node_modules/igniteui-theming' as theming;
 @use '../base/material' as base;
 @use '../../../components/input/themes/dark/input.dark.material' as input;
 @use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.base.scss' as nav-drawer-item;
-
-$palette: utils.palette(
-    $primary: #09f,
-    $secondary: #e41c77,
-    $gray: #fff,
-    $surface: #222,
-) !default;
-
-@include base.root-styles($palette);
+@include base.root-styles(theming.$dark-material-palette);
 @include input.theme();
 @include tab.theme();
 @include nav-drawer-item.theme();

@@ -1,4 +1,4 @@
-@use '../../utilities' as utils;
+@use '../../../../node_modules/igniteui-theming' as theming;
 @use '../base/indigo' as base;
 @use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
@@ -11,20 +11,7 @@
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.indigo' as nav-drawer;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.indigo' as nav-drawer-item;
 @use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
-
-$palette: utils.palette(
-    $primary: #3f51b5,
-    $secondary: #3f51b5,
-    $gray: hsl(262deg 8% 98%),
-    $surface: #2a2b2f,
-    $info: #9208bc,
-    $success: #689f38,
-    $warn: #ff9800,
-    $error: #cf1a2b,
-    $variant: 'indigo'
-) !default;
-
-@include base.root-styles($palette);
+@include base.root-styles(theming.$dark-indigo-palette);
 @include checkbox.theme();
 @include switch.theme();
 @include input.theme();

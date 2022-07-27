@@ -1,16 +1,3 @@
-@use '../../utilities' as utils;
+@use '../../../../node_modules/igniteui-theming' as theming;
 @use '../base/bootstrap' as base;
-
-$palette: utils.palette(
-    $primary: #0d6efd,
-    $secondary: #6c757d,
-    $gray: #adb5bd,
-    $surface: #f8f9fa,
-    $info: #0dcaf0,
-    $success: #198754,
-    $warn: #ffc107,
-    $error: #dc3545,
-    $variant: 'bootstrap'
-) !default;
-
-@include base.root-styles($palette);
+@include base.root-styles(theming.$light-bootstrap-palette);
