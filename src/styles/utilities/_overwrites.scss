@@ -19,8 +19,3 @@
         $variant: $variant
     );
 }
-
-@mixin type-style($category) {
-    @include theming.type-style($category);
-    @content;
-}

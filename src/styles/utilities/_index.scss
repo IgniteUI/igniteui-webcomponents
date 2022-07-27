@@ -3,6 +3,5 @@
 
 // @forward './elevations';
 // @forward './typography';
-@forward '../../../node_modules/igniteui-theming/index';
-
-// @forward './overwrites';
+@forward '../../../node_modules/igniteui-theming/index' hide color, contrast-color;
+@forward './overwrites';
