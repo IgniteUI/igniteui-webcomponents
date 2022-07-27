@@ -27,7 +27,7 @@
     "build:docs:vscode-schema": "web-component-analyzer src --format vscode --outFile vscode-html-custom-data.json",
     "build:meta": "node scripts/build-stories.js",
     "watch-meta": "node scripts/stories-watcher.js ",
-    "watch-scss": "node scripts/styles-watcher.js",
+    "watch-scss": "node scripts/styles-watcher.mjs",
     "watch-ts": "tsc --watch --preserveWatchOutput",
     "check": "madge --circular --warning --no-spinner dist/src/index.js",
     "clean": "npm run clean:dist && npm run clean:styles && npm run clean:docs",
