@@ -37,7 +37,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 }
 
 [part='title']::slotted(*) {
-    @include type-category('h5');
+    @include type-style('h5');
     @include line-clamp(var(--lines-clamped), true, true);
 
     margin: 0;
@@ -45,7 +45,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 
 [part='subtitle'] {
     &::slotted(*) {
-        @include type-category('subtitle-2');
+        @include type-style('subtitle-2');
         @include ellipsis();
     }
 
@@ -53,7 +53,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 }
 
 :host([open]) [part~='content'] {
-    @include type-category('body-2');
+    @include type-style('body-2');
 
     overflow: hidden;
     padding: $padding;

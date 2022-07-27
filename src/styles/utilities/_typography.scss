@@ -303,9 +303,9 @@
 /// @param {String} $category - The name of the typography category.
 /// @example scss Assign the `h1` styles to custom CSS property using the CSS font shorthand syntax.
 ///   .text {
-///     @include type-category('overline');
+///     @include type-style('overline');
 ///   }
-@mixin type-category($category) {
+@mixin type-style($category) {
     @each $key in type-style() {
         #{$key}: var(--igc-#{$category}-#{$key});
     }

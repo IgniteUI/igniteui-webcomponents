@@ -7,12 +7,12 @@
 
 [part='subtitle'] {
     &::slotted(*) {
-        @include type-category('body-2');
+        @include type-style('body-2');
     }
 
     color: color(gray, 600);
 }
 
 :host([open]) [part~='content'] {
-    @include type-category('body-1');
+    @include type-style('body-1');
 }

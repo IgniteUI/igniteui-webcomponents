@@ -22,7 +22,7 @@ $disabled-color: var(--disabled-color, color(gray, 300)) !default;
 }
 
 [part~='label'] {
-    @include type-category('body-1');
+    @include type-style('body-1');
 }
 
 [part~='indicator'] {

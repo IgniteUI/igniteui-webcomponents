@@ -12,8 +12,8 @@
 
     @include igc-scrollbar(
         var(--scrolbar-size, rem(14px)),
-        var(--igc-scrollbar-track-color, color(gray, 200)),
-        var(--igc-scrollbar-thumb-color, color(gray, 400))
+        var(--igc-scrollbar-track-color, color(null, gray, 200)),
+        var(--igc-scrollbar-thumb-color, color(null, gray, 400))
     );
 }
 

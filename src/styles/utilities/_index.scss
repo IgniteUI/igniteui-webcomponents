@@ -1,4 +1,8 @@
-@forward './functions';
+// @forward './functions';
 @forward './mixins';
-@forward './elevations';
-@forward './typography';
+
+// @forward './elevations';
+// @forward './typography';
+@forward '../../../node_modules/igniteui-theming/index';
+
+// @forward './overwrites';

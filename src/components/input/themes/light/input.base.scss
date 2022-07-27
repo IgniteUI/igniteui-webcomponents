@@ -67,7 +67,7 @@ $input-height: (
 }
 
 [part='helper-text'] {
-    @include type-category('caption');
+    @include type-style('caption');
 }
 
 :host([size='large']) {

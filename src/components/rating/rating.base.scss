@@ -3,8 +3,8 @@
 @use '../../styles/utilities' as *;
 
 :host {
-    --symbol-full-color: #{color(warn)};
-    --symbol-empty-color: #{color(gray, 600)};
+    --symbol-full-color: #{color(null, warn)};
+    --symbol-empty-color: #{color(null, gray, 600)};
 
     display: inline-flex;
     font-family: var(--igc-font-family);
@@ -48,15 +48,15 @@
 }
 
 [part~='value-label'] {
-    @include type-category('subtitle');
+    @include type-style('subtitle-1');
 
-    color: color(gray, 900);
+    color: color(null, gray, 900);
 }
 
 [part~='label'] {
-    @include type-category('caption');
+    @include type-style('caption');
 
-    color: color(gray, 700);
+    color: color(null, gray, 700);
     padding-inline-start: rem(4px);
     height: auto;
     width: auto;
@@ -74,11 +74,11 @@
 :host([disabled]) {
     [part~='value-label'],
     [part~='label'] {
-        color: color(gray, 400);
+        color: color(null, gray, 400);
     }
 
-    --symbol-full-color: #{color(warn, 200)};
-    --symbol-empty-color: #{color(gray, 400)};
+    --symbol-full-color: #{color(null, warn, 200)};
+    --symbol-empty-color: #{color(null, gray, 400)};
     --symbol-full-filter: grayscale(50%);
     --symbol-empty-filter: grayscale(100%) opacity(50%);
 

@@ -8,7 +8,7 @@ $subtitle-color: color(gray, 800) !default;
     color: $item-color;
 
     [part='subtitle'] {
-        @include type-category('body-2');
+        @include type-style('body-2');
 
         color: $subtitle-color;
     }

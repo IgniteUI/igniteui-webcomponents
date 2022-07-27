@@ -228,14 +228,14 @@
 }
 
 [part='header-date'] {
-    @include type-category('h4');
+    @include type-style('h4');
 
     display: flex;
     white-space: pre-wrap;
 }
 
 [part='header-title'] {
-    @include type-category('overline');
+    @include type-style('overline');
 }
 
 .aria-off-screen {

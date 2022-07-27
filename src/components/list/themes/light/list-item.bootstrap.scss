@@ -21,9 +21,9 @@ $item-hover-bg: color(gray, 100) !default;
 }
 
 [part='title'] {
-    @include type-category('body-1');
+    @include type-style('body-1');
 }
 
 [part='subtitle'] {
-    @include type-category('subtitle-1');
+    @include type-style('subtitle-1');
 }

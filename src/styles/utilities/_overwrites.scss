@@ -1,0 +1,26 @@
+@use '../../../node_modules/igniteui-theming' as theming;
+
+@function color(
+    $color: primary,
+    $variant: 500,
+    $opacity: #{var(--ig-#{$color}-a)}) {
+    @return theming.color(
+        $palette: null,
+        $color: $color,
+        $variant: $variant,
+        $opacity: $opacity
+    );
+}
+
+@function contrast-color($color: primary, $variant: 500) {
+    @return theming.contrast-color(
+        $palette: null,
+        $color: $color,
+        $variant: $variant
+    );
+}
+
+@mixin type-style($category) {
+    @include theming.type-style($category);
+    @content;
+}
