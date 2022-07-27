@@ -22,6 +22,19 @@ $thumb-radius: math.div($thumb-size, 2);
     }
 }
 
+[part~='focused'] {
+    &::after {
+        position: absolute;
+        content: '';
+        pointer-events: none;
+        top: - rem(28px);
+        left: - rem(4px);
+        width: calc(100% + 8px);
+        height: calc(100% + 56px);
+        box-shadow: 0 0 0 rem(1px) color(gray, 700);
+    }
+}
+
 [part='track'],
 [part='fill'],
 [part='inactive'] {
