@@ -6,12 +6,12 @@
 :host(igc-calendar) {
     display: flex;
     flex-direction: column;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
     background: $calendar-background;
     color: $calendar-foreground;
 
     > * {
-        font-family: var(--igc-font-family);
+        font-family: var(--ig-font-family);
     }
 }
 

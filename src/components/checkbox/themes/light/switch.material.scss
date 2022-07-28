@@ -16,7 +16,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
     background: color(gray, 50);
-    box-shadow: var(--igc-elevation-2);
+    box-shadow: var(--ig-elevation-2);
     margin-inline-start: var(--thumb-offset);
 
     &::after {
@@ -32,7 +32,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     }
 
     &:hover {
-        box-shadow: var(--igc-elevation-3);
+        box-shadow: var(--ig-elevation-3);
     }
 }
 
@@ -78,7 +78,7 @@ label {
 
 :host([disabled]) {
     [part~='thumb'] {
-        box-shadow: var(--igc-elevation-1);
+        box-shadow: var(--ig-elevation-1);
         background: color(gray, 200);
     }
 

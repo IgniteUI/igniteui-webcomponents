@@ -94,10 +94,10 @@
 :host([disabled][variant='contained']),
 :host(:not([disabled])[variant='contained']) {
     [part='base'] {
-        box-shadow: var(--igc-elevation-0);
+        box-shadow: var(--ig-elevation-0);
 
         &:hover {
-            box-shadow: var(--igc-elevation-0);
+            box-shadow: var(--ig-elevation-0);
         }
     }
 }
