@@ -1,4 +1,4 @@
-@use '../../../../node_modules/igniteui-theming' as theming;
+@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/indigo' as base;
 @use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
@@ -11,7 +11,7 @@
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.indigo' as nav-drawer;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.indigo' as nav-drawer-item;
 @use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
-@include base.root-styles(theming.$dark-indigo-palette);
+@include base.root-styles($dark-indigo-palette);
 @include checkbox.theme();
 @include switch.theme();
 @include input.theme();

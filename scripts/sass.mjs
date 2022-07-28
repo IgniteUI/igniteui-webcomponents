@@ -27,7 +27,6 @@ export async function sassRender(sourceFile, templateFile, outputFile) {
   const template = await readFile(templateFile, 'utf-8');
   const replacement = await sassToCss(sourceFile);
   const newContent = template.replace(regex, replacement);
-  console.info('Compiling styles', sourceFile);
 
   return writeFile(outputFile, newContent, 'utf-8');
 }

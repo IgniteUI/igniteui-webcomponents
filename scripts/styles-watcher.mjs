@@ -20,14 +20,14 @@ async function addToQueue(fileName) {
   if (updating) {
     return;
   }
-  console.log(`Change detected: ${fileName}`);
+  report.warn(`Change detected: ${fileName}`);
   updating = true;
   console.log('Rebuilding styles...');
 
   await sassRender(fileName, template, output).catch((err) => {
     report.error(err);
   });
-  console.log('Styles build completed.');
+  report.success('Styles rebuilt 🎨');
   updating = false;
 }
 

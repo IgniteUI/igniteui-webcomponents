@@ -1,4 +1,4 @@
-@use '../../../../node_modules/igniteui-theming' as theming;
+@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/fluent' as base;
 @use '../../../components/button/themes/button/dark/button.fluent' as button;
 @use '../../../components/button/themes/icon-button/dark/icon-button.fluent' as icon-button;
@@ -12,7 +12,7 @@
 @use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.fluent' as nav-drawer-item;
-@include base.root-styles(theming.$dark-fluent-palette);
+@include base.root-styles($dark-fluent-palette);
 @include button.theme();
 @include icon-button.theme();
 @include checkbox.theme();
