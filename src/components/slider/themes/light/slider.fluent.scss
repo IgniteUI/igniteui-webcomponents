@@ -59,6 +59,14 @@ $thumb-radius: math.div($thumb-size, 2);
     margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
 }
 
+[part='thumb-label-inner'] {
+    background: $fill-hover-background;
+
+    &::after {
+        border-top: rem(10px) solid $fill-hover-background;
+    }
+}
+
 :host([disabled]) {
     [part='inactive'] {
         background: $inactive-disabled-background;

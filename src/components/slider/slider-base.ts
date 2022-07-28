@@ -525,6 +525,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   private handleThumbPointerEnter = () => {
     this.showThumbLabels();
+    this.focused = false;
   };
 
   private handleThumbPointerLeave = () => {
