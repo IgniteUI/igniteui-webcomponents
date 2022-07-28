@@ -8,7 +8,7 @@
     color: color(secondary, 500);
     background: inherit;
 
-    @include type-category('overline');
+    @include type-style('overline');
 }
 
 ::slotted(*) {

@@ -2,9 +2,9 @@
 @use '../../../../styles/utilities' as *;
 
 ::slotted([slot='title']) {
-    @include type-category('subtitle-1');
+    @include type-style('subtitle-1');
 }
 
 ::slotted([slot='subtitle']) {
-    @include type-category('body-2');
+    @include type-style('body-2');
 }

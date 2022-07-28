@@ -9,17 +9,17 @@
     border: rem(1px) solid color(gray, 400);
     overflow: hidden;
     background: color(surface, 500);
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
 }
 
 :host([elevated]) {
     border: none;
-    box-shadow: var(--igc-elevation-4);
+    box-shadow: var(--ig-elevation-4);
     backface-visibility: hidden;
     transition: box-shadow .1s ease-out;
 }
 
 :host([elevated]:hover),
 :host([elevated]:focus-within) {
-    box-shadow: var(--igc-elevation-6);
+    box-shadow: var(--ig-elevation-6);
 }

@@ -1,5 +1,5 @@
 @use '../../../../../styles/utilities/index' as *;
 
 :host {
-    @include type-category('caption');
+    @include type-style('caption');
 }

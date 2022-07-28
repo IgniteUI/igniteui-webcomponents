@@ -1,14 +1,3 @@
-@use '../../utilities' as utils;
+@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/fluent' as base;
-
-$palette: utils.palette(
-    $primary: #0078d4,
-    $secondary: #0078d4,
-    $info: #1377d5,
-    $success: #107c10,
-    $warn: #797673,
-    $error: #a80000,
-    $variant: 'fluent'
-) !default;
-
-@include base.root-styles($palette);
+@include base.root-styles($light-fluent-palette);

@@ -3,7 +3,7 @@
 $active-icon-color: var(--active-icon-color, color(primary, 500)) !default;
 
 [part='base'] {
-    @include type-category('body-2');
+    @include type-style('body-2');
 }
 
 :host([active]) {

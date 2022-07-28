@@ -1,11 +1,3 @@
-@use '../../utilities' as utils;
+@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/material' as base;
-
-$palette: utils.palette(
-    $primary: #09f,
-    $secondary: #e41c77,
-    $gray: #000,
-    $surface: white,
-) !default;
-
-@include base.root-styles($palette);
+@include base.root-styles($light-material-palette);

@@ -5,7 +5,7 @@ const exec = promisify(require('child_process').exec);
 const watchOptions = {
   recursive: true,
   filter: (path) => {
-    return /^((?!\.spec\.).)*\.ts$/.test(path);
+    return /^((?!\.spec|.css\.).)*\.ts$/.test(path);
   },
 };
 

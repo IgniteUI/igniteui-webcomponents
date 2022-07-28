@@ -10,6 +10,7 @@ $slot-spacing: var(--igc-spacing-large);
 
 [part='base'] {
     @include border-radius(rem(4px));
+    @include type-style(button);
 
     position: relative;
     display: inline-flex;
@@ -24,13 +25,6 @@ $slot-spacing: var(--igc-spacing-large);
     white-space: nowrap;
     text-decoration: none;
     z-index: 0;
-    font-family: var(--igc-button-font-family);
-    font-weight: var(--igc-button-font-weight);
-    font-size: var(--igc-button-font-size);
-    font-style: var(--igc-button-font-style);
-    letter-spacing: var(--igc-button-letter-spacing);
-    line-height: var(--igc-button-line-height);
-    text-transform: var(--igc-button-text-transform);
 
     &::before {
         position: absolute;

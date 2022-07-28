@@ -1,11 +1,11 @@
 @use '../../../styles/utilities' as *;
 
 :host {
-    @include type-category('body-2');
+    @include type-style('body-2');
     @include border-radius(rem(26px));
 
     display: inline-flex;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
     text-align: center;
     position: fixed;
     bottom: 0;

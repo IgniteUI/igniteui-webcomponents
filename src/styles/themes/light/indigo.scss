@@ -1,16 +1,3 @@
-@use '../../utilities' as utils;
+@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/indigo' as base;
-
-$palette: utils.palette(
-    $primary: #3f51b5,
-    $secondary: #3f51b5,
-    $gray: hsl(236deg 8% 5%),
-    $surface: #fff,
-    $info: #9208bc,
-    $success: #689f38,
-    $warn: #ff9800,
-    $error: #cf1a2b,
-    $variant: 'indigo'
-) !default;
-
-@include base.root-styles($palette);
+@include base.root-styles($light-indigo-palette);

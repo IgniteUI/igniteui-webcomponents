@@ -41,11 +41,11 @@
 }
 
 [part='title'] {
-    @include type-category('subtitle-1');
+    @include type-style('subtitle-1');
 }
 
 [part='subtitle'] {
-    @include type-category('caption');
+    @include type-style('caption');
 
     opacity: .74;
 }

@@ -1,15 +1,15 @@
 @use '../../../../styles/utilities/index' as *;
 
 [part='title']::slotted(*) {
-    @include type-category('subtitle-1');
+    @include type-style('subtitle-1');
 }
 
 [part='subtitle']::slotted(*) {
-    @include type-category('body-2');
+    @include type-style('body-2');
 }
 
 :host([open]) [part~='content'] {
-    @include type-category('caption');
+    @include type-style('caption');
 
     color: color(gray, 700);
 }

@@ -8,7 +8,7 @@
     }
 
     &:hover {
-        box-shadow: var(--igc-elevation-4);
+        box-shadow: var(--ig-elevation-4);
     }
 
     &:hover::before {
@@ -18,7 +18,7 @@
 
     &:focus,
     &:active {
-        box-shadow: var(--igc-elevation-8);
+        box-shadow: var(--ig-elevation-8);
     }
 
     &:focus::before,
@@ -31,26 +31,26 @@
 :host(:not([disabled])[variant='contained']) [part='base'] {
     @extend %contained;
 
-    box-shadow: var(--igc-elevation-2);
+    box-shadow: var(--ig-elevation-2);
 
     &:hover {
-        box-shadow: var(--igc-elevation-4);
+        box-shadow: var(--ig-elevation-4);
     }
 
     &:focus,
     &:active {
-        box-shadow: var(--igc-elevation-8);
+        box-shadow: var(--ig-elevation-8);
     }
 }
 
 :host(:not([disabled])[variant='fab']) [part='base'] {
     @extend %contained;
 
-    box-shadow: var(--igc-elevation-6);
+    box-shadow: var(--ig-elevation-6);
 
     &:hover,
     &:focus,
     &:active {
-        box-shadow: var(--igc-elevation-12);
+        box-shadow: var(--ig-elevation-12);
     }
 }

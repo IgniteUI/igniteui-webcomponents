@@ -7,7 +7,7 @@
     --symbol-empty-color: #{color(gray, 600)};
 
     display: inline-flex;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
     align-items: flex-start;
     flex-direction: column;
     gap: rem(4px);
@@ -48,13 +48,13 @@
 }
 
 [part~='value-label'] {
-    @include type-category('subtitle');
+    @include type-style('subtitle-1');
 
     color: color(gray, 900);
 }
 
 [part~='label'] {
-    @include type-category('caption');
+    @include type-style('caption');
 
     color: color(gray, 700);
     padding-inline-start: rem(4px);

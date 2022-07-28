@@ -5,7 +5,7 @@
     pointer-events: auto;
 
     ::slotted([slot='label']) {
-        @include type-category('overline');
+        @include type-style('overline');
         @include ellipsis();
 
         display: block;

@@ -9,7 +9,7 @@
 }
 
 :host([open]) [part~='content'] {
-    @include type-category('body-1');
+    @include type-style('body-1');
 }
 
 :host([disabled]) {

@@ -24,7 +24,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
 }
 
 [part~='label'] {
-    @include type-category('body-2');
+    @include type-style('body-2');
 }
 
 :host(:hover) [part~='control'] {

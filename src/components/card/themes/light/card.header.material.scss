@@ -27,13 +27,13 @@ header {
 }
 
 ::slotted([slot='title']) {
-    @include type-category('h6');
+    @include type-style('h6');
 
     opacity: .87;
 }
 
 ::slotted([slot='subtitle']) {
-    @include type-category('subtitle-2');
+    @include type-style('subtitle-2');
 
     opacity: .6;
 }

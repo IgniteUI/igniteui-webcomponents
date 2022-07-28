@@ -7,13 +7,13 @@
 }
 
 :host button {
-    @include type-category('body-2');
+    @include type-style('body-2');
     @include border-radius(rem(16px));
 
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
     border-style: none;
     box-shadow: none;
     cursor: pointer;
