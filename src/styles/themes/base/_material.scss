@@ -1,4 +1,6 @@
 @use '../../../../node_modules/igniteui-theming' as *;
+@use '../../../../node_modules/igniteui-theming/sass/typography/presets' as *;
+@use '../../../../node_modules/igniteui-theming/sass/elevations/presets' as *;
 
 .igc-scrollbar {
     --scrolbar-size: #{rem(16px)};

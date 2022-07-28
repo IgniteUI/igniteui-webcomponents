@@ -1,3 +1,7 @@
 @forward './mixins';
-@forward '../../../node_modules/igniteui-theming/index' hide color, contrast-color, border-radius;
+@forward '../../../node_modules/igniteui-theming/sass/typography/mixins';
+@forward '../../../node_modules/igniteui-theming/sass/typography/functions';
+@forward '../../../node_modules/igniteui-theming/sass/elevations/functions';
+@forward '../../../node_modules/igniteui-theming/sass/elevations/mixins';
+@forward '../../../node_modules/igniteui-theming/sass/themes/mixins';
 @forward './overwrites';

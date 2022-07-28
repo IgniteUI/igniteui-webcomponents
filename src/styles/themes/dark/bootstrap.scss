@@ -1,4 +1,4 @@
-@use '../../../../node_modules/igniteui-theming' as theming;
+@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/bootstrap' as base;
 @use '../../../components/dropdown/themes/dark/dropdown.bootstrap' as dropdown;
 @use '../../../components/input/themes/dark/input.dark.bootstrap' as input;
@@ -7,7 +7,7 @@
 @use '../../../components/tabs/themes/dark/tab.dark.bootstrap' as tab;
 @use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.bootstrap' as nav-drawer-item;
-@include base.root-styles(theming.$dark-bootstrap-palette);
+@include base.root-styles($dark-bootstrap-palette);
 @include dropdown.theme();
 @include input.theme();
 @include slider.theme();
