@@ -65,7 +65,7 @@
     margin: 0;
 }
 
-:host(:not([disabled]):not([readonly])) {
+:host(:not([disabled], [readonly])) {
     [part~='symbols'] {
         cursor: pointer;
     }
