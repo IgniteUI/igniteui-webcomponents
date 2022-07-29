@@ -227,7 +227,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     this.selectItem(this.allItems[prev], true);
   }
 
-  protected selectActiveItem(index: number) {
+  protected selectInteractiveItem(index: number) {
     const item = this.allItems
       .filter((i) => !i.disabled)
       .at(index) as IgcDropdownItemComponent;
@@ -297,11 +297,11 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   }
 
   protected onInputHomeKey() {
-    !this.open ? this.selectActiveItem(0) : this.onHomeKey();
+    !this.open ? this.selectInteractiveItem(0) : this.onHomeKey();
   }
 
   protected onInputEndKey() {
-    !this.open ? this.selectActiveItem(-1) : this.onEndKey();
+    !this.open ? this.selectInteractiveItem(-1) : this.onEndKey();
   }
 
   protected handleInputKeyDown(event: KeyboardEvent) {
