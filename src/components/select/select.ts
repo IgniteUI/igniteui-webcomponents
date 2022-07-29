@@ -63,6 +63,21 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   private searchTerm = '';
   private lastKeyTime = Date.now();
 
+  private readonly inputKeyHandlers: Map<string, Function> = new Map(
+    Object.entries({
+      ' ': this.onInputEnterKey,
+      Tab: this.onInputTabKey,
+      Escape: this.onEscapeKey,
+      Enter: this.onInputEnterKey,
+      ArrowLeft: this.onInputArrowUpKeyDown,
+      ArrowRight: this.onInputArrowDownKeyDown,
+      ArrowUp: this.onInputArrowUpKeyDown,
+      ArrowDown: this.onInputArrowDownKeyDown,
+      Home: this.onInputHomeKey,
+      End: this.onInputEndKey,
+    })
+  );
+
   @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
   protected override items!: Array<IgcSelectItemComponent>;
 
@@ -251,64 +266,53 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
           .toLowerCase()
           .startsWith(this.searchTerm.toLowerCase())
       );
-    if (item) this.selectItem(item);
+
+    if (item) {
+      this.open ? this.activateItem(item) : this.selectItem(item);
+    }
   }
 
-  protected handleInputKeyboardEvents(event: KeyboardEvent) {
-    event.stopPropagation();
-    const key = event.key.toLowerCase();
+  protected onInputTabKey() {
+    if (this.open) this.hide();
+  }
 
-    if (
-      event.altKey &&
-      (key === 'arrowup' ||
-        key === 'arrowdown' ||
-        key === 'down' ||
-        key === 'up')
-    ) {
+  protected onInputEnterKey() {
+    !this.open ? this.show() : this.onEnterKey();
+  }
+
+  protected onInputArrowUpKeyDown(event: KeyboardEvent) {
+    if (event.altKey) {
       this.toggle();
-      return;
+    } else {
+      !this.open ? this.selectPrev() : this.onArrowUpKeyDown();
     }
+  }
 
-    if (!this.open) {
-      switch (key) {
-        case 'space':
-        case 'spacebar':
-        case ' ':
-        case 'enter':
-          event.preventDefault();
-          this.show();
-          return;
-        case 'arrowdown':
-        case 'down':
-        case 'arrowright':
-        case 'right':
-          event.preventDefault();
-          this.selectNext();
-          return;
-        case 'arrowup':
-        case 'up':
-        case 'arrowleft':
-        case 'left':
-          event.preventDefault();
-          this.selectPrev();
-          return;
-        case 'home':
-          event.preventDefault();
-          this.selectActiveItem(0);
-          return;
-        case 'end':
-          event.preventDefault();
-          this.selectActiveItem(-1);
-          return;
-        default:
-          break;
-      }
-    } else if (key === 'tab' || (event.shiftKey && key === 'tab')) {
-      this.hide();
+  protected onInputArrowDownKeyDown(event: KeyboardEvent) {
+    if (event.altKey) {
+      this.toggle();
+    } else {
+      !this.open ? this.selectNext() : this.onArrowDownKeyDown();
     }
+  }
 
-    this.handleKeyDown(event);
-    this.selectItemByKey(event);
+  protected onInputHomeKey() {
+    !this.open ? this.selectActiveItem(0) : this.onHomeKey();
+  }
+
+  protected onInputEndKey() {
+    !this.open ? this.selectActiveItem(-1) : this.onEndKey();
+  }
+
+  protected handleInputKeyDown(event: KeyboardEvent) {
+    event.stopPropagation();
+
+    if (this.inputKeyHandlers.has(event.key)) {
+      event.preventDefault();
+      this.inputKeyHandlers.get(event.key)?.call(this, event);
+    } else {
+      this.selectItemByKey(event);
+    }
   }
 
   protected get hasPrefixes() {
@@ -336,7 +340,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         .outlined=${this.outlined}
         ?autofocus=${this.autofocus}
         @click=${this.handleTargetClick}
-        @keydown=${this.handleInputKeyboardEvents}
+        @keydown=${this.handleInputKeyDown}
       >
         <span slot=${this.hasPrefixes ? 'prefix' : ''}>
           <slot name="prefix"></slot>

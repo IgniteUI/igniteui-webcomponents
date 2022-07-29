@@ -151,7 +151,7 @@ describe('Select component', () => {
     });
 
     it('opens the list of options when Enter or Spacebar keys are pressed', () => {
-      const allowedKeys = [' ', 'space', 'spacebar', 'enter'];
+      const allowedKeys = [' ', 'Enter'];
 
       allowedKeys.forEach((key) => {
         pressKey(input, key);
@@ -191,35 +191,19 @@ describe('Select component', () => {
 
       expect(select.open).to.be.true;
 
-      pressKey(input, 'arrowup', 1, { altKey: true });
+      pressKey(input, 'ArrowUp', 1, { altKey: true });
       expect(select.open).to.be.false;
       expect(select.value).to.be.undefined;
 
-      pressKey(input, 'arrowup', 1, { altKey: true });
+      pressKey(input, 'ArrowUp', 1, { altKey: true });
       expect(select.open).to.be.true;
       expect(select.value).to.be.undefined;
 
-      pressKey(input, 'arrowdown', 1, { altKey: true });
+      pressKey(input, 'ArrowDown', 1, { altKey: true });
       expect(select.open).to.be.false;
       expect(select.value).to.be.undefined;
 
-      pressKey(input, 'arrowdown', 1, { altKey: true });
-      expect(select.open).to.be.true;
-      expect(select.value).to.be.undefined;
-
-      pressKey(input, 'up', 1, { altKey: true });
-      expect(select.open).to.be.false;
-      expect(select.value).to.be.undefined;
-
-      pressKey(input, 'up', 1, { altKey: true });
-      expect(select.open).to.be.true;
-      expect(select.value).to.be.undefined;
-
-      pressKey(input, 'down', 1, { altKey: true });
-      expect(select.open).to.be.false;
-      expect(select.value).to.be.undefined;
-
-      pressKey(input, 'down', 1, { altKey: true });
+      pressKey(input, 'ArrowDown', 1, { altKey: true });
       expect(select.open).to.be.true;
       expect(select.value).to.be.undefined;
     });
@@ -234,7 +218,7 @@ describe('Select component', () => {
       select.open = false;
       await elementUpdated(select);
 
-      pressKey(input, 'home');
+      pressKey(input, 'Home');
       await elementUpdated(select);
       expect(select.value).to.equal(items[index].value);
       expect(selectOpts(select)[index].hasAttribute('selected')).to.be.true;
@@ -250,7 +234,7 @@ describe('Select component', () => {
       select.open = false;
       await elementUpdated(select);
 
-      pressKey(input, 'end');
+      pressKey(input, 'End');
       await elementUpdated(select);
       expect(select.value).to.equal(items[index].value);
       expect(selectOpts(select)[index].hasAttribute('selected')).to.be.true;
@@ -261,7 +245,7 @@ describe('Select component', () => {
       select.select(0);
       await elementUpdated(select);
 
-      pressKey(input, 'home');
+      pressKey(input, 'Home');
       await elementUpdated(select);
       expect(eventSpy).not.be.calledWith('igcChange');
     });
@@ -279,7 +263,7 @@ describe('Select component', () => {
       await elementUpdated(select);
       const eventSpy = sinon.spy(select, 'emitEvent');
 
-      pressKey(input, 'end');
+      pressKey(input, 'End');
       expect(eventSpy).not.be.calledWith('igcChange');
     });
 

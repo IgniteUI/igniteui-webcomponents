@@ -397,11 +397,11 @@ export default class IgcDropdownComponent
     this.navigate(-1);
   }
 
-  private onArrowDownKeyDown() {
+  protected onArrowDownKeyDown() {
     this.navigateNext();
   }
 
-  private onArrowUpKeyDown() {
+  protected onArrowUpKeyDown() {
     this.navigatePrev();
   }
 
