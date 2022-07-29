@@ -21,6 +21,7 @@
     "webcomponents",
     "web components",
     "UI components",
+    "accordion",
     "avatar",
     "badge",
     "button",
@@ -29,13 +30,16 @@
     "circular progress",
     "checkbox",
     "chip",
+    "date input",
     "dropdown",
+    "expansion panel",
     "form",
     "icon",
     "input",
     "linear progress",
     "list",
     "mask",
+    "mask input",
     "navbar",
     "navdrawer",
     "progress",
@@ -45,10 +49,12 @@
     "snackbar",
     "switch",
     "slider",
-    "toast"
+    "tabs",
+    "toast",
+    "tree"
   ],
   "dependencies": {
     "@floating-ui/dom": "^1.0.0",
-    "lit": "^2.2.7"
+    "lit": "^2.2.8"
   }
 }
