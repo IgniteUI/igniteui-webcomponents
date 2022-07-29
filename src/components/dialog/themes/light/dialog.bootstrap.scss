@@ -1,0 +1,37 @@
+@use '../../../../styles/utilities' as *;
+
+$border-color: var(--border-color, color(gray, 300));
+
+:host {
+    border-radius: border-radius(4px);
+}
+
+[part='base'] {
+    min-width: rem(288px);
+    border: 1px solid $border-color;
+}
+
+[part='title'],
+[part='footer'] {
+    @include type-category('h5') {
+        margin: 0;
+    }
+
+    padding: rem(16px);
+}
+
+[part='content'] {
+    padding: rem(16px);
+}
+
+[part='title'] {
+    border-block-end: 1px solid $border-color;
+}
+
+[part='footer'] {
+    border-block-start: 1px solid $border-color;
+}
+
+[part='base']::backdrop {
+    background: hsla(210deg 11% 71% / 54%);
+}

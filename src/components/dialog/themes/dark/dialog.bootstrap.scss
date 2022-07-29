@@ -1,0 +1,8 @@
+@use '../../../../styles/utilities' as *;
+@use './dialog.base' as dialog;
+
+@mixin theme() {
+    @include dialog.theme() {
+        --border-color: #{color(gray, 100)};
+    }
+}
