@@ -103,12 +103,12 @@ $label-focus-color: var(--label-focus-color, utils.color(primary, 500)) !default
 
     [part^='container'] {
         border-color: utils.color(gray, 300);
+        color: utils.color(gray, 300);
     }
 
     [part='prefix'],
     [part='suffix'],
     [part='label'],
-    [part~='input'],
     [part='helper-text'] {
         color: utils.color(gray, 300);
     }

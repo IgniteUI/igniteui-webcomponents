@@ -1,11 +1,11 @@
 import { html, LitElement } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/dropdown-group.base.css.js';
-import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
-import type IgcDropdownItemComponent from './dropdown-item';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { SizableInterface } from '../common/mixins/sizable.js';
+import type IgcDropdownItemComponent from './dropdown-item';
+import { styles } from './themes/light/dropdown-group.base.css.js';
+import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
@@ -17,7 +17,7 @@ import { SizableInterface } from '../common/mixins/sizable.js';
  */
 @themes({ fluent })
 export default class IgcDropdownGroupComponent extends LitElement {
-  public static readonly tagName = 'igc-dropdown-group';
+  public static readonly tagName: string = 'igc-dropdown-group';
 
   public static override styles = styles;
   protected parent!: SizableInterface;

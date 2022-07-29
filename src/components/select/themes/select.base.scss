@@ -1,0 +1,22 @@
+@use '../../dropdown/themes/light/dropdown.base' as *;
+@use '../../../styles/utilities' as utils;
+
+:host {
+    display: block;
+
+    ::slotted([slot='helper-text']) {
+        @include utils.type-category('caption');
+
+        color: utils.color(gray, 600);
+    }
+}
+
+:host([disabled]) {
+    ::slotted([slot='helper-text']) {
+        color: utils.color(gray, 400);
+    }
+}
+
+igc-input::part(input)::selection {
+    background: transparent;
+}
