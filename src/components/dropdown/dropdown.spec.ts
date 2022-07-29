@@ -741,6 +741,27 @@ describe('Dropdown component', () => {
         expect(eventSpy).calledWith('igcClosed');
       });
 
+      it('cleans up document event listeners', async () => {
+        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+
+        dropdown.open = true;
+        await elementUpdated(dropdown);
+
+        document.dispatchEvent(new MouseEvent('click'));
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.false;
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).calledWith('igcClosed');
+        expect(eventSpy).callCount(2);
+
+        document.dispatchEvent(new MouseEvent('click'));
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.false;
+        expect(eventSpy).callCount(2);
+      });
+
       it('can cancel `igcClosing` event when clicking outside', async () => {
         const eventSpy = sinon.spy(dropdown, 'emitEvent');
 
