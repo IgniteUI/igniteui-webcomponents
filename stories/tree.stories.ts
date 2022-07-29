@@ -171,8 +171,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
-    <div style="height: 250px;">
-      <igc-tree
+      <igc-tree style="height: 250px"
         id="tree"
         .size=${size}
         .selection=${selection}
