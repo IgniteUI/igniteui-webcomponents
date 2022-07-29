@@ -7,17 +7,17 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming';
+import { themes } from '../../theming/index.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
-} from '../dropdown/dropdown';
-import IgcDropdownItemComponent from '../dropdown/dropdown-item';
+} from '../dropdown/dropdown.js';
 import IgcIconComponent from '../icon/icon.js';
-import IgcInputComponent from '../input/input';
-import IgcSelectGroupComponent from './select-group';
-import IgcSelectItemComponent from './select-item';
+import IgcInputComponent from '../input/input.js';
+import IgcSelectGroupComponent from './select-group.js';
+import IgcSelectItemComponent from './select-item.js';
 import { styles } from './themes/select.base.css';
 import { styles as bootstrap } from './themes/select.bootstrap.css';
 import { styles as indigo } from './themes/select.indigo.css';

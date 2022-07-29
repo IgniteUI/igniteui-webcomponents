@@ -1,7 +1,7 @@
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { watch } from '../common/decorators';
-import IgcDropdownGroupComponent from '../dropdown/dropdown-group';
-import IgcSelectItemComponent from './select-item';
+import { watch } from '../common/decorators/watch.js';
+import IgcDropdownGroupComponent from '../dropdown/dropdown-group.js';
+import IgcSelectItemComponent from './select-item.js';
 
 /**
  * @element igc-select-group - A container for a group of `igc-select-item` components.

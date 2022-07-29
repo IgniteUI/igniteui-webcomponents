@@ -1,4 +1,4 @@
-import IgcDropdownHeaderComponent from '../dropdown/dropdown-header';
+import IgcDropdownHeaderComponent from '../dropdown/dropdown-header.js';
 
 /**
  * @element igc-select-header - Represents a header item in a select component.

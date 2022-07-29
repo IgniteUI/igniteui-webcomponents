@@ -1,5 +1,5 @@
 import { queryAssignedNodes } from 'lit/decorators.js';
-import IgcDropdownItemComponent from '../dropdown/dropdown-item';
+import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 
 /**
  * Represents an item in a select list.
