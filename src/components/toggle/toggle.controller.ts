@@ -75,14 +75,14 @@ export class IgcToggleController implements ReactiveController {
 
   public update() {
     this.toggleDirective = igcToggle(this.target, this.host, this);
-    this.addListeners();
+    this.configureListeners();
   }
 
   protected hide() {
     this._hide ? this._hide() : this.host.hide();
   }
 
-  private setupDocumentListeners() {
+  private addEventListeners() {
     const options: AddEventListenerOptions = {
       capture: true,
       signal: this.abortController.signal,
@@ -95,10 +95,8 @@ export class IgcToggleController implements ReactiveController {
     document.addEventListener('scroll', this.handleScroll, options);
   }
 
-  private addListeners() {
-    this.host.open
-      ? this.setupDocumentListeners()
-      : this.abortController.abort();
+  private configureListeners() {
+    this.host.open ? this.addEventListeners() : this.abortController.abort();
   }
 
   private blockScroll = (event: Event) => {
