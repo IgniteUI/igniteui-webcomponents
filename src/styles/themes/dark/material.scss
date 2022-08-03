@@ -1,6 +1,5 @@
 @use '../../utilities' as utils;
 @use '../base/material' as base;
-@use '../../../components/dialog/themes/dark/dialog.base' as dialog;
 @use '../../../components/input/themes/dark/input.dark.material' as input;
 @use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.base.scss' as nav-drawer-item;
@@ -13,7 +12,6 @@ $palette: utils.palette(
 ) !default;
 
 @include base.root-styles($palette);
-@include dialog.theme();
 @include input.theme();
 @include tab.theme();
 @include nav-drawer-item.theme();
