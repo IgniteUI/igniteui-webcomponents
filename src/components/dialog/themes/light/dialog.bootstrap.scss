@@ -9,6 +9,7 @@ $border-color: var(--border-color, color(gray, 300));
 [part='base'] {
     min-width: rem(288px);
     border: 1px solid $border-color;
+    box-shadow: none;
 }
 
 [part='title'],

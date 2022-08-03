@@ -1,13 +1,5 @@
 @use '../../../../styles/utilities' as *;
 
-:host {
-    border-radius: border-radius(2px);
-}
-
-[part='base'] {
-    box-shadow: var(--igc-elevation-24);
-}
-
 [part='title'] {
     padding: rem(16px) rem(24px);
 }
@@ -15,7 +7,7 @@
 [part='content'] {
     padding-inline: rem(24px);
     padding-block-end: rem(8px);
-    color: color(gray, 700);
+    color: color(gray, 500);
 }
 
 [part='footer'] {

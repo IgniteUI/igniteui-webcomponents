@@ -126,9 +126,11 @@ const Template: Story<ArgTypes, Context> = (
         Your Inbox has changed. No longer does it include favorites, it is a
         singular destination for your emails.
 
-        <igc-button slot="footer" @click=${handleToggle}>Save</igc-button>
-        <igc-button slot="footer" @click=${handleToggle} variant="outlined"
-          >Close</igc-button
+        <igc-button slot="footer" @click=${handleToggle} variant="flat"
+          >Cancel</igc-button
+        >
+        <igc-button slot="footer" @click=${handleToggle} variant="flat"
+          >OK</igc-button
         >
       </igc-dialog>
     </div>

@@ -1,9 +1,10 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
-$content-color: var(--content-color, color(gray, 600));
+$content-color: var(--content-color, color(gray, 700));
 
 :host {
+    border-radius: border-radius(2px);
     background: color(surface, 500);
     color: contrast-color(surface, 500);
     border-style: none;
@@ -18,6 +19,7 @@ $content-color: var(--content-color, color(gray, 600));
     border: inherit;
     border-radius: inherit;
     min-width: inherit;
+    box-shadow: var(--igc-elevation-24);
 }
 
 [part='content'] {

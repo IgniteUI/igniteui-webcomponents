@@ -1,13 +1,5 @@
 @use '../../../../styles/utilities' as *;
 
-:host {
-    border-radius: border-radius(2px);
-}
-
-[part='base'] {
-    box-shadow: var(--igc-elevation-24);
-}
-
 [part='title'] {
     padding: rem(24px);
     padding-block-start: rem(16px);

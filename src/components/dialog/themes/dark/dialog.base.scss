@@ -1,8 +1,0 @@
-@use '../../../../styles/utilities' as *;
-
-@mixin theme() {
-    igc-dialog {
-        --content-color: #{color(gray, 500)};
-        @content;
-    }
-}
