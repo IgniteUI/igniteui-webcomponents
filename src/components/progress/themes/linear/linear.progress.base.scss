@@ -16,6 +16,12 @@
     --linear-animation-duration: 2000ms;
 }
 
+:host([dir='rtl'][indeterminate]) {
+    [part~='track'] {
+        transform: rotateY(180deg);
+    }
+}
+
 [part~='label'] {
     @extend %label !optional;
 }
