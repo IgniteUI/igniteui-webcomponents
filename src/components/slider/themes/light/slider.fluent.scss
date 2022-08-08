@@ -23,15 +23,17 @@ $thumb-radius: math.div($thumb-size, 2);
 }
 
 [part~='focused'] {
-    &::after {
+    [part='thumb']::after {
+        $focus-outline-offset: rem(2px);
+
         position: absolute;
         content: '';
-        pointer-events: none;
-        top: - rem(28px);
-        left: - rem(4px);
-        width: calc(100% + 8px);
-        height: calc(100% + 56px);
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
         box-shadow: 0 0 0 rem(1px) color(gray, 700);
+        width: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
+        height: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
     }
 }
 
