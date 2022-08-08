@@ -3,6 +3,7 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import type { ReactiveTheme, ThemeController } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -25,6 +26,7 @@ export interface IgcInputEventMap {
 }
 
 @themes({ bootstrap, material, fluent, indigo })
+@blazorDeepImport
 export abstract class IgcInputBaseComponent
   extends SizableMixin(
     EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
