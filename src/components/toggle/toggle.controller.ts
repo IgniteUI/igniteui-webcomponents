@@ -28,6 +28,18 @@ export class IgcToggleController implements ReactiveController {
   private initialScrollLeft = 0;
   private _target!: HTMLElement;
   private _hide?: Function;
+  private _abortController = new AbortController();
+
+  /**
+   *  Abort controller used to clean up document level event listeners
+   *  See https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#add_an_abortable_listener
+   */
+  protected get abortController() {
+    if (this._abortController.signal.aborted) {
+      this._abortController = new AbortController();
+    }
+    return this._abortController;
+  }
 
   /** The directive that marks the toggle. */
   public toggleDirective!: DirectiveResult<typeof IgcToggleDirective>;
@@ -57,17 +69,13 @@ export class IgcToggleController implements ReactiveController {
     this.update();
   }
 
-  public hostConnected() {
-    this.addEventListeners();
-  }
-
   public hostDisconnected() {
-    this.removeEventListeners();
+    this.abortController.abort();
   }
 
   public update() {
     this.toggleDirective = igcToggle(this.target, this.host, this);
-    this.addEventListeners();
+    this.configureListeners();
   }
 
   protected hide() {
@@ -75,17 +83,20 @@ export class IgcToggleController implements ReactiveController {
   }
 
   private addEventListeners() {
-    if (this.host.open) {
-      document.addEventListener('scroll', this.handleScroll, true);
-      if (!this.host.keepOpenOnOutsideClick) {
-        document.addEventListener('click', this.documentClicked, true);
-      }
+    const options: AddEventListenerOptions = {
+      capture: true,
+      signal: this.abortController.signal,
+    };
+
+    if (!this.host.keepOpenOnOutsideClick) {
+      document.addEventListener('click', this.documentClicked, options);
     }
+
+    document.addEventListener('scroll', this.handleScroll, options);
   }
 
-  private removeEventListeners() {
-    document.removeEventListener('click', this.documentClicked, true);
-    document.removeEventListener('scroll', this.handleScroll, true);
+  private configureListeners() {
+    this.host.open ? this.addEventListeners() : this.abortController.abort();
   }
 
   private blockScroll = (event: Event) => {
@@ -111,15 +122,13 @@ export class IgcToggleController implements ReactiveController {
   /** The document's click event handler to override in the host component if necessary. */
   private documentClicked = (event: MouseEvent) => {
     if (!this.host.keepOpenOnOutsideClick) {
-      const target = event.composed ? event.composedPath() : [event.target];
-      const isInsideClick: boolean =
-        target.includes(this.host) ||
-        (this.target !== undefined && target.includes(this.target));
-      if (isInsideClick) {
+      const tree = event.composed ? event.composedPath() : [event.target];
+
+      if (tree.includes(this.host) || tree.includes(this.target)) {
         return;
-      } else {
-        this.hide();
       }
+
+      this.hide();
     }
   };
 
