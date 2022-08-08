@@ -61,3 +61,13 @@ slot[name='footer'] {
         margin-inline-end: rem(8px);
     }
 }
+
+dialog::backdrop {
+    background: none;
+}
+
+[part='backdrop'] {
+    position: fixed;
+    inset: 0;
+    background: color(gray, 500, .54);
+}

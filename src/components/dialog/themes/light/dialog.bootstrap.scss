@@ -32,7 +32,3 @@ $border-color: var(--border-color, color(gray, 300));
 [part='footer'] {
     border-block-start: 1px solid $border-color;
 }
-
-[part='base']::backdrop {
-    background: hsla(210deg 11% 71% / 54%);
-}

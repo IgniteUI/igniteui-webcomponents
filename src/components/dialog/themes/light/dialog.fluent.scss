@@ -15,6 +15,6 @@
     padding-block-start: 0;
 }
 
-dialog::backdrop {
-    background: hsla(0deg 0% 100% / 40%);
+[part='backdrop'] {
+    background: rgb(255 255 255 / 40%);
 }
