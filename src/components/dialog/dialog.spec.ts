@@ -78,6 +78,7 @@ describe('Dialog component', () => {
       await expect(dialog).shadowDom.to.be.accessible();
       expect(dialog).shadowDom.to.equal(
         `
+        <div></div>
         <dialog>
           <header>
             <slot name="title"></slot>
@@ -101,6 +102,7 @@ describe('Dialog component', () => {
             'role',
             'size',
             'id',
+            'style',
           ],
         }
       );
