@@ -5,6 +5,7 @@ $track-color: color(gray, 200);
 
 :host {
     --track-size: #{rem(2px)};
+    --linear-animation-duration: 3000ms;
 }
 
 [part~='track'] {
@@ -17,17 +18,22 @@ $track-color: color(gray, 200);
     font-weight: 400;
 }
 
-[part~='indeterminate'] {
+[part~='indeterminate']:not([part~='secondary']) {
     width: 33% !important;
     min-width: 33%;
     animation-name: indeterminate-bar-fluent;
-    animation-duration: 3s;
+    animation-duration: var(--linear-animation-duration);
     animation-timing-function: ease;
     animation-iteration-count: infinite;
+    left: auto;
 
-    &::before {
+    &::after {
         display: none;
     }
+}
+
+[part~='secondary'] {
+    display: none;
 }
 
 :host([dir='rtl']) {
@@ -36,7 +42,7 @@ $track-color: color(gray, 200);
     }
 }
 
-[part='fill indeterminate primary'] {
+[part~='primary'][part~='indeterminate'] {
     background: linear-gradient(90deg, transparent 0%, $primary-color 50%, transparent 100%);
 }
 

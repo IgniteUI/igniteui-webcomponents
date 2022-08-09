@@ -10,8 +10,16 @@
     position: relative;
     width: 100%;
     flex-direction: column;
+    flex: 1 1 100%;
 
     --track-size: #{rem(4px)};
+    --linear-animation-duration: 2000ms;
+}
+
+:host([dir='rtl'][indeterminate]) {
+    [part~='track'] {
+        transform: rotateY(180deg);
+    }
 }
 
 [part~='label'] {
@@ -34,26 +42,42 @@
     height: inherit;
 }
 
-[part~='indeterminate'] {
-    animation: indeterminate-bar 2s cubic-bezier(0, .085, .68, .53) $animation-direction infinite;
+[part~='indeterminate'],
+[part~='indeterminate secondary'] {
     width: 100% !important;
+    height: inherit;
+    position: absolute;
+    background: transparent;
 
-    &::before {
-        position: absolute;
+    &::after {
         content: '';
+        position: absolute;
         top: 0;
-        left: -200%;
-        width: 100%;
+        inset-inline-start: 0;
+        width: inherit;
         height: inherit;
-        background-color: inherit;
-        background-image: inherit;
-        transform-origin: top right;
+        backface-visibility: hidden;
     }
 }
 
-:host([dir='rtl']) {
-    [part~='indeterminate'] {
-        animation-direction: $animation-direction-rtl;
+[part~='indeterminate']:not([part~='secondary']) {
+    transform: scale3d(0, 1, 1);
+    animation: indeterminate-primary var(--linear-animation-duration) infinite linear;
+    left: -145.1666%;
+
+    &::after {
+        animation: indeterminate-primary-scale var(--linear-animation-duration) infinite linear;
+    }
+}
+
+[part~='secondary'] {
+    animation: indeterminate-secondary var(--linear-animation-duration) infinite linear;
+    left: -54.8888%;
+
+    &::after {
+        animation: indeterminate-secondary-scale var(--linear-animation-duration) infinite linear;
+        width: 100%;
+        height: inherit;
     }
 }
 
@@ -65,47 +89,107 @@
 }
 
 // Colors
-[part~='primary'] {
+[part~='primary']:not([part~='indeterminate']) {
     background-color: $primary-color;
 }
 
-[part~='striped'][part~='primary'] {
+[part~='primary'] {
+    &::after {
+        background-color: $primary-color;
+    }
+}
+
+[part~='striped'][part~='primary']:not([part~='indeterminate']) {
     width: 100%;
     height: 100%;
 
     @include stripe-colors($primary-color, $stripe-grays, $stripe-size, -45deg);
 }
 
-[part~='danger'] {
+[part~='striped'][part~='primary'] {
+    &::after {
+        @include stripe-colors($primary-color, $stripe-grays, $stripe-size, -45deg);
+    }
+}
+
+[part~='danger']:not([part~='indeterminate']) {
     background-color: $danger-color;
 }
 
-[part~='striped'][part~='danger'] {
+[part~='danger'] {
+    &::after {
+        background-color: $danger-color;
+    }
+}
+
+[part~='striped'][part~='danger']:not([part~='indeterminate']) {
     @include stripe-colors($danger-color, $stripe-grays, $stripe-size, -45deg);
 }
 
-[part~='warning'] {
+[part~='striped'][part~='danger'] {
+    &::after {
+        @include stripe-colors($danger-color, $stripe-grays, $stripe-size, -45deg);
+    }
+}
+
+[part~='warning']:not([part~='indeterminate']) {
     background-color: $warning-color;
 }
 
-[part~='striped'][part~='warning'] {
+[part~='warning'] {
+    &::after {
+        background-color: $warning-color;
+    }
+}
+
+[part~='striped'][part~='warning']:not([part~='indeterminate']) {
     @include stripe-colors($warning-color, $stripe-grays, $stripe-size, -45deg);
 }
 
-[part~='info'] {
+[part~='striped'][part~='warning'] {
+    &::after {
+        @include stripe-colors($warning-color, $stripe-grays, $stripe-size, -45deg);
+    }
+}
+
+[part~='info']:not([part~='indeterminate']) {
     background-color: $info-color;
 }
 
-[part~='striped'][part~='info'] {
+[part~='info'] {
+    &::after {
+        background-color: $info-color;
+    }
+}
+
+[part~='striped'][part~='info']:not([part~='indeterminate']) {
     @include stripe-colors($info-color, $stripe-grays, $stripe-size, -45deg);
 }
 
-[part~='success'] {
+[part~='striped'][part~='info'] {
+    &::after {
+        @include stripe-colors($info-color, $stripe-grays, $stripe-size, -45deg);
+    }
+}
+
+[part~='success']:not([part~='indeterminate']) {
     background-color: $success-color;
 }
 
-[part~='striped'][part~='success'] {
+[part~='success'] {
+    &::after {
+        background-color: $success-color;
+    }
+}
+
+[part~='striped'][part~='success']:not([part~='indeterminate']) {
     @include stripe-colors($success-color, $stripe-grays, $stripe-size, -45deg);
+}
+
+[part~='striped'][part~='success'] {
+    &::after {
+        @include stripe-colors($success-color, $stripe-grays, $stripe-size, -45deg);
+    }
 }
 
 // Label Positions
