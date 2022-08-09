@@ -234,11 +234,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div
-        part="backdrop"
-        aria-hidden="true"
-        style=${this.open ? 'display: block;' : 'display: none;'}
-      ></div>
+      <div part="backdrop" aria-hidden="true" ?hidden=${!this.open}></div>
       <dialog
         part="base"
         @click=${this.handleClick}
