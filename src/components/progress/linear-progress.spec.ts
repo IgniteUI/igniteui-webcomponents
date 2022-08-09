@@ -185,7 +185,7 @@ describe('Linear progress component', () => {
       expect((progress as any).percentage).to.equal(80);
     });
 
-    it('handles animations correctly when toggling indeterminate and rtl mode', async () => {
+    it('handles animations correctly when toggling indeterminate', async () => {
       progress.indeterminate = true;
       await elementUpdated(progress);
 
@@ -196,7 +196,7 @@ describe('Linear progress component', () => {
       expect(animations.length).to.equal(1);
       expect(animations[0]).to.be.instanceOf(CSSAnimation);
       expect((animations[0] as CSSAnimation).animationName).to.equal(
-        'indeterminate-bar'
+        'indeterminate-primary'
       );
       expect(progress.shadowRoot!.querySelector('[part~="indeterminate"]')).not
         .to.be.null;
@@ -220,24 +220,15 @@ describe('Linear progress component', () => {
       await elementUpdated(progress);
 
       animations = progress
-        .shadowRoot!.querySelector('[part~="fill"]')
+        .shadowRoot!.querySelector(
+          '[part~="indeterminate"]:not([part~="secondary"])'
+        )
         ?.getAnimations() as Animation[];
 
       expect(animations.length).to.equal(1);
       expect(animations[0]).to.be.instanceOf(CSSAnimation);
       expect((animations[0] as CSSAnimation).animationName).to.equal(
-        'indeterminate-bar'
-      );
-
-      progress.dir = 'rtl';
-      await elementUpdated(progress);
-
-      const fillElement = progress.shadowRoot!.querySelector(
-        '[part~="fill"]'
-      ) as Element;
-
-      expect(getComputedStyle(fillElement).animationDirection).to.equal(
-        'reverse'
+        'indeterminate-primary'
       );
     });
 
