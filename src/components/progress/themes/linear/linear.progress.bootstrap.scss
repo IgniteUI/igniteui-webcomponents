@@ -14,22 +14,52 @@ $stripe-size: rem(5px);
     @include border-radius(rem(4px));
 }
 
-[part~='striped'][part~='primary'] {
+[part~='striped'][part~='primary']:not([part~='indeterminate']) {
     @include stripe-colors($primary-color, $stripe-grays, $stripe-size, 45deg);
 }
 
-[part~='striped'][part~='danger'] {
+[part~='striped'][part~='primary'] {
+    &::after {
+        @include stripe-colors($primary-color, $stripe-grays, $stripe-size, 45deg);
+    }
+}
+
+[part~='striped'][part~='danger']:not([part~='indeterminate']) {
     @include stripe-colors($danger-color, $stripe-grays, $stripe-size, 45deg);
 }
 
-[part~='striped'][part~='warning'] {
+[part~='striped'][part~='danger'] {
+    &::after {
+        @include stripe-colors($danger-color, $stripe-grays, $stripe-size, 45deg);
+    }
+}
+
+[part~='striped'][part~='warning']:not([part~='indeterminate']) {
     @include stripe-colors($warning-color, $stripe-grays, $stripe-size, 45deg);
 }
 
-[part~='striped'][part~='info'] {
+[part~='striped'][part~='warning'] {
+    &::after {
+        @include stripe-colors($warning-color, $stripe-grays, $stripe-size, 45deg);
+    }
+}
+
+[part~='striped'][part~='info']:not([part~='indeterminate']) {
     @include stripe-colors($info-color, $stripe-grays, $stripe-size, 45deg);
 }
 
-[part~='striped'][part~='success'] {
+[part~='striped'][part~='info'] {
+    &::after {
+        @include stripe-colors($info-color, $stripe-grays, $stripe-size, 45deg);
+    }
+}
+
+[part~='striped'][part~='success']:not([part~='indeterminate']) {
     @include stripe-colors($success-color, $stripe-grays, $stripe-size, 45deg);
+}
+
+[part~='striped'][part~='success'] {
+    &::after {
+        @include stripe-colors($success-color, $stripe-grays, $stripe-size, 45deg);
+    }
 }
