@@ -102,7 +102,7 @@ describe('Dialog component', () => {
             'role',
             'size',
             'id',
-            'style',
+            'hidden',
           ],
         }
       );
