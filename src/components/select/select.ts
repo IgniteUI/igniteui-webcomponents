@@ -22,7 +22,7 @@ import { styles } from './themes/select.base.css';
 import { styles as bootstrap } from './themes/select.bootstrap.css';
 import { styles as indigo } from './themes/select.indigo.css';
 
-defineComponents(IgcIconComponent);
+defineComponents(IgcIconComponent, IgcSelectItemComponent);
 
 export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
@@ -96,7 +96,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   @state()
   protected override selectedItem!: IgcSelectItemComponent | null;
 
-  @query('igc-input')
+  @query('div[role="combobox"]')
   protected override target!: IgcInputComponent;
 
   /** The value attribute of the control. */
@@ -325,41 +325,55 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
   protected override render() {
     return html`
-      <igc-input
-        readonly
-        id="igcDDLTarget"
-        exportparts="container: input, input: native-input, label, prefix, suffix"
-        value=${ifDefined(this.selectedItem?.textContent?.trim())}
-        placeholder=${ifDefined(this.placeholder)}
-        label=${ifDefined(this.label)}
-        size=${this.size}
-        dir=${this.dir}
-        .disabled="${this.disabled}"
-        .required=${this.required}
-        .invalid=${this.invalid}
-        .outlined=${this.outlined}
-        ?autofocus=${this.autofocus}
-        @click=${this.handleTargetClick}
+      <div
+        role="combobox"
+        tabindex="1"
+        aria-controls="dropdown"
+        aria-describedby="helper-text"
+        aria-disabled=${this.disabled}
+        aria-activedescendant=${this.activeItem?.id}
         @keydown=${this.handleInputKeyDown}
+        @click=${this.handleTargetClick}
       >
-        <span slot=${this.hasPrefixes ? 'prefix' : ''}>
-          <slot name="prefix"></slot>
-        </span>
-        <span slot=${this.hasSuffixes ? 'suffix' : ''}>
-          <slot name="suffix"></slot>
-        </span>
-        <span slot="suffix" part="toggle-icon" style="display: flex">
-          <slot name="toggle-icon">
-            <igc-icon
-              size=${this.size}
-              name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-              collection="internal"
-              aria-hidden="true"
-            ></igc-icon>
-          </slot>
-        </span>
-      </igc-input>
-      <div part="helper-text" .hidden="${this.helperText.length == 0}">
+        <igc-input
+          readonly
+          id="igcDDLTarget"
+          exportparts="container: input, input: native-input, label, prefix, suffix"
+          value=${ifDefined(this.selectedItem?.textContent?.trim())}
+          placeholder=${ifDefined(this.placeholder)}
+          label=${ifDefined(this.label)}
+          size=${this.size}
+          dir=${this.dir}
+          .disabled="${this.disabled}"
+          .required=${this.required}
+          .invalid=${this.invalid}
+          .outlined=${this.outlined}
+          ?autofocus=${this.autofocus}
+          tabindex="-1"
+        >
+          <span slot=${this.hasPrefixes ? 'prefix' : ''}>
+            <slot name="prefix"></slot>
+          </span>
+          <span slot=${this.hasSuffixes ? 'suffix' : ''}>
+            <slot name="suffix"></slot>
+          </span>
+          <span slot="suffix" part="toggle-icon" style="display: flex">
+            <slot name="toggle-icon">
+              <igc-icon
+                size=${this.size}
+                name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                collection="internal"
+                aria-hidden="true"
+              ></igc-icon>
+            </slot>
+          </span>
+        </igc-input>
+      </div>
+      <div
+        id="helper-text"
+        part="helper-text"
+        .hidden="${this.helperText.length == 0}"
+      >
         <slot name="helper-text"></slot>
       </div>
       <div
@@ -368,7 +382,12 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         @click=${this.handleClick}
         ${this.toggleController.toggleDirective}
       >
-        <div role="listbox" part="list" aria-labelledby="igcDDLTarget">
+        <div
+          id="dropdown"
+          role="listbox"
+          part="list"
+          aria-labelledby="igcDDLTarget"
+        >
           <slot name="header"></slot>
           <slot></slot>
           <slot name="footer"></slot>

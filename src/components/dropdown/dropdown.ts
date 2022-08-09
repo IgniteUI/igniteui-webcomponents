@@ -1,5 +1,10 @@
 import { html, LitElement } from 'lit';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
@@ -68,7 +73,10 @@ export default class IgcDropdownComponent
 
   protected toggleController!: IgcToggleController;
   protected selectedItem!: IgcDropdownItemComponent | null;
+
+  @state()
   protected activeItem!: IgcDropdownItemComponent;
+
   protected target!: HTMLElement;
 
   private readonly keyDownHandlers: Map<string, Function> = new Map(
