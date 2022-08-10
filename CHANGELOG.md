@@ -8,9 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.3.1] - 2022-08-10
 ### Changed
 - Tree - Removed theme-specified height [#460](https://github.com/IgniteUI/igniteui-webcomponents/pull/460)
+
 ### Fixed
 - Dropdown - Dispose of top-level event listeners [#462](https://github.com/IgniteUI/igniteui-webcomponents/issues/462)
-- Linear Progress - indeterminate animation in Safari [#378](https://github.com/IgniteUI/igniteui-webcomponents/issues/378) 
+- Linear Progress - indeterminate animation in Safari [#378](https://github.com/IgniteUI/igniteui-webcomponents/issues/378)
 - Radio Group - Child radio components uto-registration [#464](https://github.com/IgniteUI/igniteui-webcomponents/pull/464)
 
 ## [3.3.0] - 2022-07-26
@@ -141,6 +142,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[3.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.3.0...3.3.1
 [3.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.2.0...3.3.0
 [3.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.1.0...3.2.0
 [3.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.0.0...3.1.0
