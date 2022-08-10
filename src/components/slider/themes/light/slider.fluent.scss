@@ -17,24 +17,21 @@ $thumb-radius: math.div($thumb-size, 2);
         background: $fill-hover-background;
     }
 
-    [part='thumb'] {
+    [part~='thumb'] {
         border-color: $thumb-hover-border;
     }
 }
 
-[part~='focused'] {
-    [part='thumb']::after {
-        $focus-outline-offset: rem(2px);
-
-        position: absolute;
-        content: '';
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        box-shadow: 0 0 0 rem(1px) color(gray, 700);
-        width: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
-        height: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
-    }
+[part~='focused']::after {
+    $focus-outline-offset: rem(2px);
+    position: absolute;
+    content: '';
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 rem(1px) color(gray, 700);
+    width: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
+    height: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
 }
 
 [part='track'],
@@ -52,7 +49,7 @@ $thumb-radius: math.div($thumb-size, 2);
     background: $fill-background;
 }
 
-[part='thumb'] {
+[part~='thumb'] {
     background: color(surface, 500);
     border: rem(2px) solid $thumb-border;
     width: $thumb-size;
@@ -78,7 +75,7 @@ $thumb-radius: math.div($thumb-size, 2);
         background: $fill-disabled-background;
     }
 
-    [part='thumb'] {
+    [part~='thumb'] {
         background: color(surface, 500);
         border-color: $thumb-disabled-border;
     }

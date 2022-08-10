@@ -134,7 +134,7 @@ slot {
     inset-inline-start: 0;
 }
 
-[part='thumb'] {
+[part~='thumb'] {
     @include border-radius($thumb-radius);
 
     position: absolute;
@@ -211,7 +211,7 @@ slot {
         color: color(gray, 400);
     }
 
-    [part='thumb'] {
+    [part~='thumb'] {
         background: color(gray, 400);
 
         &:focus::after {
@@ -224,7 +224,7 @@ slot {
             background: color(gray, 400);
         }
 
-        [part='thumb'] {
+        [part~='thumb'] {
             border-color: color(gray, 400);
         }
     }

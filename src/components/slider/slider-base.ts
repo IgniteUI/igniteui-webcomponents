@@ -18,7 +18,6 @@ import { styles as material } from './themes/light/slider.material.css.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcSliderLabelComponent from './slider-label.js';
-import { partNameMap } from '../common/util.js';
 
 defineComponents(IgcSliderLabelComponent);
 
@@ -26,7 +25,7 @@ defineComponents(IgcSliderLabelComponent);
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;
 
-  @query(`[part='thumb']`)
+  @query(`[part~='thumb']`)
   protected thumb!: HTMLElement;
 
   @queryAssignedElements({ selector: 'igc-slider-label' })
@@ -44,9 +43,6 @@ export class IgcSliderBaseComponent extends LitElement {
 
   @state()
   private thumbLabelsVisible = false;
-
-  @state()
-  protected focused = false;
 
   @state()
   private labels?: string[];
@@ -255,9 +251,7 @@ export class IgcSliderBaseComponent extends LitElement {
   }
 
   protected handleKeyUp() {
-    if (!this.focused) {
-      this.focused = true;
-    }
+    this.activeThumb?.part.add('focused');
   }
 
   protected handleSlotChange() {
@@ -454,6 +448,7 @@ export class IgcSliderBaseComponent extends LitElement {
     this.pointerCaptured = true;
     this.showThumbLabels();
     event.preventDefault();
+    this.activeThumb?.part.remove('focused');
   };
 
   private pointerMove = (event: PointerEvent) => {
@@ -525,7 +520,6 @@ export class IgcSliderBaseComponent extends LitElement {
 
   private handleThumbPointerEnter = () => {
     this.showThumbLabels();
-    this.focused = false;
   };
 
   private handleThumbPointerLeave = () => {
@@ -586,7 +580,10 @@ export class IgcSliderBaseComponent extends LitElement {
         @pointerenter=${this.handleThumbPointerEnter}
         @pointerleave=${this.handleThumbPointerLeave}
         @focus=${(ev: Event) => (this.activeThumb = ev.target as HTMLElement)}
-        @blur=${() => ((this.activeThumb = undefined), (this.focused = false))}
+        @blur=${() => (
+          this.activeThumb?.part.remove('focused'),
+          (this.activeThumb = undefined)
+        )}
       ></div>
       ${this.hideTooltip
         ? html``
@@ -634,12 +631,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div
-        part=${partNameMap({
-          base: true,
-          focused: this.focused,
-        })}
-      >
+      <div part="base">
         ${this.tickOrientation === 'mirror' || this.tickOrientation === 'start'
           ? html`<div part="ticks">${this.renderTicks()}</div>`
           : html``}
