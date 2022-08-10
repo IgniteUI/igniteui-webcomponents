@@ -24,6 +24,7 @@ $thumb-radius: math.div($thumb-size, 2);
 
 [part~='focused']::after {
     $focus-outline-offset: rem(2px);
+
     position: absolute;
     content: '';
     left: 50%;
