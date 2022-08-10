@@ -5,10 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [3.3.1] - 2022-08-10
+### Changed
+- Tree - Removed theme-specified height [#460](https://github.com/IgniteUI/igniteui-webcomponents/pull/460)
 ### Fixed
 - Dropdown - Dispose of top-level event listeners [#462](https://github.com/IgniteUI/igniteui-webcomponents/issues/462)
-
+- Linear Progress - indeterminate animation in Safari [#378](https://github.com/IgniteUI/igniteui-webcomponents/issues/378) 
+- Radio Group - Child radio components uto-registration [#464](https://github.com/IgniteUI/igniteui-webcomponents/pull/464)
 
 ## [3.3.0] - 2022-07-26
 ### Added
