@@ -11,6 +11,7 @@ import IgcSelectItemComponent from './select-item';
 describe('Select component', () => {
   let select: IgcSelectComponent;
   let input: IgcInputComponent;
+  let target: HTMLElement;
 
   const items = [
     {
@@ -77,6 +78,9 @@ describe('Select component', () => {
       input = select.shadowRoot!.querySelector(
         'igc-input'
       ) as IgcInputComponent;
+      target = select.shadowRoot!.querySelector(
+        'div[role="combobox"]'
+      ) as HTMLElement;
     });
 
     it('is accessible.', async () => {
@@ -106,7 +110,6 @@ describe('Select component', () => {
       select.disabled = true;
       select.required = true;
       select.invalid = false;
-      select.autofocus = true;
       select.label = 'Select Label';
       select.placeholder = 'Select Placeholder';
       select.outlined = true;
@@ -119,7 +122,6 @@ describe('Select component', () => {
       expect(input.disabled).to.equal(select.disabled);
       expect(input.required).to.equal(select.required);
       expect(input.invalid).to.equal(select.invalid);
-      expect(input.autofocus).to.equal(select.autofocus);
       expect(input.label).to.equal(select.label);
       expect(input.placeholder).to.equal(select.placeholder);
       expect(input.outlined).to.equal(select.outlined);
@@ -154,7 +156,7 @@ describe('Select component', () => {
       const allowedKeys = [' ', 'Enter'];
 
       allowedKeys.forEach((key) => {
-        pressKey(input, key);
+        pressKey(target, key);
         expect(select.open).to.be.true;
         select.hide();
       });
@@ -185,25 +187,25 @@ describe('Select component', () => {
     });
 
     it('toggles the list of options when Alt+Up or Alt+Down keys are pressed', async () => {
-      input.click();
+      select.show();
       select.value = '';
       await elementUpdated(select);
 
       expect(select.open).to.be.true;
 
-      pressKey(input, 'ArrowUp', 1, { altKey: true });
+      pressKey(target, 'ArrowUp', 1, { altKey: true });
       expect(select.open).to.be.false;
       expect(select.value).to.be.undefined;
 
-      pressKey(input, 'ArrowUp', 1, { altKey: true });
+      pressKey(target, 'ArrowUp', 1, { altKey: true });
       expect(select.open).to.be.true;
       expect(select.value).to.be.undefined;
 
-      pressKey(input, 'ArrowDown', 1, { altKey: true });
+      pressKey(target, 'ArrowDown', 1, { altKey: true });
       expect(select.open).to.be.false;
       expect(select.value).to.be.undefined;
 
-      pressKey(input, 'ArrowDown', 1, { altKey: true });
+      pressKey(target, 'ArrowDown', 1, { altKey: true });
       expect(select.open).to.be.true;
       expect(select.value).to.be.undefined;
     });
@@ -218,7 +220,7 @@ describe('Select component', () => {
       select.open = false;
       await elementUpdated(select);
 
-      pressKey(input, 'Home');
+      pressKey(target, 'Home');
       await elementUpdated(select);
       expect(select.value).to.equal(items[index].value);
       expect(selectOpts(select)[index].hasAttribute('selected')).to.be.true;
@@ -234,7 +236,7 @@ describe('Select component', () => {
       select.open = false;
       await elementUpdated(select);
 
-      pressKey(input, 'End');
+      pressKey(target, 'End');
       await elementUpdated(select);
       expect(select.value).to.equal(items[index].value);
       expect(selectOpts(select)[index].hasAttribute('selected')).to.be.true;
@@ -245,7 +247,7 @@ describe('Select component', () => {
       select.select(0);
       await elementUpdated(select);
 
-      pressKey(input, 'Home');
+      pressKey(target, 'Home');
       await elementUpdated(select);
       expect(eventSpy).not.be.calledWith('igcChange');
     });
@@ -263,7 +265,7 @@ describe('Select component', () => {
       await elementUpdated(select);
       const eventSpy = sinon.spy(select, 'emitEvent');
 
-      pressKey(input, 'End');
+      pressKey(target, 'End');
       expect(eventSpy).not.be.calledWith('igcChange');
     });
 
@@ -271,14 +273,14 @@ describe('Select component', () => {
       select.hide();
       await elementUpdated(select);
 
-      pressKey(input, 'ArrowDown');
+      pressKey(target, 'ArrowDown');
       await elementUpdated(select);
 
       expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
       expect(selectOpts(select)[0].hasAttribute('active')).to.be.true;
       expect(select.value).to.equal(items[0].value);
 
-      pressKey(input, 'ArrowRight');
+      pressKey(target, 'ArrowRight');
       await elementUpdated(select);
 
       expect(selectOpts(select)[1].hasAttribute('selected')).to.be.true;
@@ -291,7 +293,7 @@ describe('Select component', () => {
       select.select(items.length - 1);
       await elementUpdated(select);
 
-      pressKey(input, 'ArrowUp');
+      pressKey(target, 'ArrowUp');
       await elementUpdated(select);
 
       expect(selectOpts(select)[items.length - 2].hasAttribute('selected')).to
@@ -300,7 +302,7 @@ describe('Select component', () => {
         .true;
       expect(select.value).to.equal(items[items.length - 2].value);
 
-      pressKey(input, 'ArrowLeft');
+      pressKey(target, 'ArrowLeft');
       await elementUpdated(select);
 
       expect(selectOpts(select)[items.length - 3].hasAttribute('selected')).to
@@ -316,19 +318,19 @@ describe('Select component', () => {
       select.select(0);
       await elementUpdated(select);
 
-      pressKey(input, 'ArrowRight');
+      pressKey(target, 'ArrowRight');
       await elementUpdated(select);
       expect(eventSpy).calledWith('igcChange');
 
-      pressKey(input, 'ArrowDown');
+      pressKey(target, 'ArrowDown');
       await elementUpdated(select);
       expect(eventSpy).calledWith('igcChange');
 
-      pressKey(input, 'ArrowUp');
+      pressKey(target, 'ArrowUp');
       await elementUpdated(select);
       expect(eventSpy).calledWith('igcChange');
 
-      pressKey(input, 'ArrowLeft');
+      pressKey(target, 'ArrowLeft');
       await elementUpdated(select);
       expect(eventSpy).calledWith('igcChange');
     });
@@ -342,11 +344,11 @@ describe('Select component', () => {
       expect(selectOpts(select)[0].hasAttribute('selected')).to.be.true;
       expect(selectOpts(select)[0].hasAttribute('active')).to.be.true;
 
-      pressKey(input, 'ArrowLeft');
+      pressKey(target, 'ArrowLeft');
       await elementUpdated(select);
       expect(eventSpy).not.be.calledWith('igcChange');
 
-      pressKey(input, 'ArrowUp');
+      pressKey(target, 'ArrowUp');
       await elementUpdated(select);
       expect(eventSpy).not.be.calledWith('igcChange');
     });
@@ -362,11 +364,11 @@ describe('Select component', () => {
       expect(selectOpts(select)[itemIndex].hasAttribute('selected')).to.be.true;
       expect(selectOpts(select)[itemIndex].hasAttribute('active')).to.be.true;
 
-      pressKey(input, 'ArrowDown');
+      pressKey(target, 'ArrowDown');
       await elementUpdated(select);
       expect(eventSpy).not.be.calledWith('igcChange');
 
-      pressKey(input, 'ArrowRight');
+      pressKey(target, 'ArrowRight');
       await elementUpdated(select);
       expect(eventSpy).not.be.calledWith('igcChange');
     });
@@ -375,7 +377,7 @@ describe('Select component', () => {
       const term = items[0].text;
 
       Array.from(term).forEach((char) => {
-        pressKey(input, char);
+        pressKey(target, char);
       });
 
       await elementUpdated(select);
@@ -391,7 +393,7 @@ describe('Select component', () => {
       await elementUpdated(select);
 
       Array.from(term).forEach((char) => {
-        pressKey(input, char);
+        pressKey(target, char);
       });
 
       await elementUpdated(select);
@@ -403,7 +405,7 @@ describe('Select component', () => {
       await elementUpdated(select);
 
       Array.from(term).forEach((char) => {
-        pressKey(input, char);
+        pressKey(target, char);
       });
 
       await elementUpdated(select);
@@ -417,7 +419,7 @@ describe('Select component', () => {
       let term = 'sp';
 
       Array.from(term).forEach((char) => {
-        pressKey(input, char);
+        pressKey(target, char);
       });
 
       await elementUpdated(select);
@@ -433,7 +435,7 @@ describe('Select component', () => {
 
       term = 'sa';
       Array.from(term).forEach((char) => {
-        pressKey(input, char);
+        pressKey(target, char);
       });
 
       await elementUpdated(select);
@@ -449,7 +451,7 @@ describe('Select component', () => {
       const term = disabledItem?.text;
 
       Array.from(term!).forEach((char) => {
-        pressKey(input, char);
+        pressKey(target, char);
       });
 
       await elementUpdated(select);
@@ -463,22 +465,19 @@ describe('Select component', () => {
     it('should close the list of options when Tab or Shift + Tab are pressed', () => {
       select.show();
 
-      pressKey(input, 'Tab');
+      pressKey(target, 'Tab');
       expect(select.open).to.be.false;
 
       select.show();
 
-      pressKey(input, 'Tab', 1, { shiftKey: true });
+      pressKey(target, 'Tab', 1, { shiftKey: true });
       expect(select.open).to.be.false;
     });
 
     it('should focus when the focus method is called', async () => {
-      const eventSpy = sinon.spy(input, 'emitEvent');
-
       select.focus();
       await elementUpdated(select);
 
-      expect(eventSpy).calledWith('igcFocus');
       expect(document.activeElement).to.equal(select);
     });
 
@@ -486,12 +485,9 @@ describe('Select component', () => {
       select.focus();
       await elementUpdated(select);
 
-      const eventSpy = sinon.spy(input, 'emitEvent');
-
       select.blur();
       await elementUpdated(select);
 
-      expect(eventSpy).calledWith('igcBlur');
       expect(document.activeElement).to.not.equal(select);
     });
 
@@ -512,7 +508,7 @@ describe('Select component', () => {
       await elementUpdated(select);
 
       const eventSpy = sinon.spy(select, 'emitEvent');
-      input.click();
+      target.click();
       await elementUpdated(select);
 
       expect(select.open).to.be.true;
@@ -528,7 +524,7 @@ describe('Select component', () => {
       const eventSpy = sinon.spy(select, 'emitEvent');
       await elementUpdated(select);
 
-      input.click();
+      target.click();
       await elementUpdated(select);
 
       expect(select.open).to.be.false;
@@ -550,7 +546,7 @@ describe('Select component', () => {
       await elementUpdated(select);
 
       const eventSpy = sinon.spy(select, 'emitEvent');
-      input.click();
+      target.click();
       await elementUpdated(select);
 
       expect(eventSpy).calledWith('igcClosing');
@@ -590,22 +586,22 @@ describe('Select component', () => {
 
     it('emits `igcChange` events on selecting an item via `Arrow` keys.', async () => {
       const eventSpy = sinon.spy(select, 'emitEvent');
-      pressKey(input, 'ArrowDown', 2);
+      pressKey(target, 'ArrowDown', 2);
       await elementUpdated(select);
 
       expect(eventSpy).calledWith('igcChange');
 
-      pressKey(input, 'ArrowRight');
+      pressKey(target, 'ArrowRight');
       await elementUpdated(select);
 
       expect(eventSpy).calledWith('igcChange');
 
-      pressKey(input, 'ArrowLeft');
+      pressKey(target, 'ArrowLeft');
       await elementUpdated(select);
 
       expect(eventSpy).calledWith('igcChange');
 
-      pressKey(input, 'ArrowUp');
+      pressKey(target, 'ArrowUp');
       await elementUpdated(select);
 
       expect(eventSpy).calledWith('igcChange');
@@ -621,8 +617,8 @@ describe('Select component', () => {
       await elementUpdated(select);
       const eventSpy = sinon.spy(select, 'emitEvent');
 
-      pressKey(input, 'ArrowDown');
-      pressKey(input, 'Enter');
+      pressKey(target, 'ArrowDown', 2);
+      pressKey(target, 'Enter');
       await elementUpdated(select);
 
       expect(eventSpy).calledWith('igcChange');

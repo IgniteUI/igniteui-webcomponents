@@ -48,6 +48,7 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
   protected override async firstUpdated() {
     await this.updateComplete;
     this.controlledItems = this.activeItems;
+    this.setAttribute('role', 'presentation');
 
     this.items.forEach((i) => {
       this.observer.observe(i, {

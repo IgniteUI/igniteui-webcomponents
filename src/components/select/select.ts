@@ -68,18 +68,18 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   private searchTerm = '';
   private lastKeyTime = Date.now();
 
-  private readonly inputKeyHandlers: Map<string, Function> = new Map(
+  private readonly targetKeyHandlers: Map<string, Function> = new Map(
     Object.entries({
-      ' ': this.onInputEnterKey,
-      Tab: this.onInputTabKey,
+      ' ': this.onTargetEnterKey,
+      Tab: this.onTargetTabKey,
       Escape: this.onEscapeKey,
-      Enter: this.onInputEnterKey,
-      ArrowLeft: this.onInputArrowUpKeyDown,
-      ArrowRight: this.onInputArrowDownKeyDown,
-      ArrowUp: this.onInputArrowUpKeyDown,
-      ArrowDown: this.onInputArrowDownKeyDown,
-      Home: this.onInputHomeKey,
-      End: this.onInputEndKey,
+      Enter: this.onTargetEnterKey,
+      ArrowLeft: this.onTargetArrowUpKeyDown,
+      ArrowRight: this.onTargetArrowDownKeyDown,
+      ArrowUp: this.onTargetArrowUpKeyDown,
+      ArrowDown: this.onTargetArrowDownKeyDown,
+      Home: this.onTargetHomeKey,
+      End: this.onTargetEndKey,
     })
   );
 
@@ -298,16 +298,16 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     this.emitEvent('igcBlur');
   }
 
-  protected onInputTabKey() {
+  protected onTargetTabKey() {
     this.target.blur();
     if (this.open) this.hide();
   }
 
-  protected onInputEnterKey() {
-    this.target.click();
+  protected onTargetEnterKey() {
+    !this.open ? this.target.click() : this.onEnterKey();
   }
 
-  protected onInputArrowUpKeyDown(event: KeyboardEvent) {
+  protected onTargetArrowUpKeyDown(event: KeyboardEvent) {
     if (event.altKey) {
       this.toggle();
     } else {
@@ -315,7 +315,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     }
   }
 
-  protected onInputArrowDownKeyDown(event: KeyboardEvent) {
+  protected onTargetArrowDownKeyDown(event: KeyboardEvent) {
     if (event.altKey) {
       this.toggle();
     } else {
@@ -323,20 +323,20 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     }
   }
 
-  protected onInputHomeKey() {
+  protected onTargetHomeKey() {
     !this.open ? this.selectInteractiveItem(0) : this.onHomeKey();
   }
 
-  protected onInputEndKey() {
+  protected onTargetEndKey() {
     !this.open ? this.selectInteractiveItem(-1) : this.onEndKey();
   }
 
-  protected handleInputKeyDown(event: KeyboardEvent) {
+  protected handleTargetKeyDown(event: KeyboardEvent) {
     event.stopPropagation();
 
-    if (this.inputKeyHandlers.has(event.key)) {
+    if (this.targetKeyHandlers.has(event.key)) {
       event.preventDefault();
-      this.inputKeyHandlers.get(event.key)?.call(this, event);
+      this.targetKeyHandlers.get(event.key)?.call(this, event);
     } else {
       this.selectItemByKey(event);
     }
@@ -358,14 +358,14 @@ export default class IgcSelectComponent extends EventEmitterMixin<
         aria-owns="dropdown"
         aria-describedby="helper-text"
         aria-disabled=${this.disabled}
-        @focus=${this.handleFocus}
-        @blur=${this.handleBlur}
-        @keydown=${this.handleInputKeyDown}
+        @focusin=${this.handleFocus}
+        @focusout=${this.handleBlur}
+        @keydown=${this.handleTargetKeyDown}
         @click=${this.handleTargetClick}
       >
         <igc-input
+          id="input"
           readonly
-          id="igcDDLTarget"
           exportparts="container: input, input: native-input, label, prefix, suffix"
           value=${ifDefined(this.selectedItem?.textContent?.trim())}
           placeholder=${ifDefined(this.placeholder)}
@@ -376,9 +376,6 @@ export default class IgcSelectComponent extends EventEmitterMixin<
           .required=${this.required}
           .invalid=${this.invalid}
           .outlined=${this.outlined}
-          tabindex="-1"
-          @focus=${this.handleFocus}
-          @blur=${this.handleBlur}
           @igcBlur=${(e: Event) => e.stopPropagation()}
           @igcFocus=${(e: Event) => e.stopPropagation()}
         >
@@ -413,7 +410,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
         @click=${this.handleClick}
         ${this.toggleController.toggleDirective}
       >
-        <div id="dropdown" role="listbox" part="list">
+        <div id="dropdown" role="listbox" part="list" aria-labelledby="input">
           <slot name="header"></slot>
           <slot></slot>
           <slot name="footer"></slot>
