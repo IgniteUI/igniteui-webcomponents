@@ -2,7 +2,6 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
-import { createCounter } from '../common/util.js';
 import { styles } from './themes/light/dropdown-item.base.css.js';
 import { styles as bootstrap } from './themes/light/dropdown-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/dropdown-item.fluent.css.js';
@@ -24,7 +23,6 @@ import { styles as indigo } from './themes/light/dropdown-item.indigo.css.js';
 @themes({ bootstrap, fluent, indigo })
 export default class IgcDropdownItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-item';
-  private static readonly increment = createCounter();
 
   public static override styles = styles;
 
@@ -81,9 +79,6 @@ export default class IgcDropdownItemComponent extends LitElement {
   public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'option');
-    this.id =
-      this.getAttribute('id') ||
-      `igc-dropdown-item-${IgcDropdownItemComponent.increment()}`;
   }
 
   protected override render() {

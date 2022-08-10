@@ -1,4 +1,5 @@
 import { queryAssignedNodes } from 'lit/decorators.js';
+import { watch } from '../common/decorators/watch.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 
 /**
@@ -23,6 +24,15 @@ export default class IgcSelectItemComponent extends IgcDropdownItemComponent {
 
   constructor() {
     super();
+  }
+
+  @watch('active')
+  protected activeChange() {
+    this.tabIndex = this.active ? 0 : -1;
+
+    if (this.active) {
+      this.focus();
+    }
   }
 
   /** Returns the text of the item without the prefix and suffix content. */

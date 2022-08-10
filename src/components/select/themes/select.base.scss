@@ -11,12 +11,24 @@
     }
 }
 
+[role='combobox'] {
+    outline-style: none;
+}
+
 :host([disabled]) {
     ::slotted([slot='helper-text']) {
         color: utils.color(gray, 400);
     }
 }
 
-igc-input::part(input)::selection {
-    background: transparent;
+igc-input {
+    cursor: pointer;
+}
+
+igc-input::part(input) {
+    cursor: pointer;
+
+    &::selection {
+        background: transparent;
+    }
 }

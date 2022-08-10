@@ -414,9 +414,8 @@ export default class IgcDropdownComponent
   }
 
   private async _hide(emit = true) {
-    if (emit && !this.handleClosing()) return;
-
     if (!this.open) return;
+    if (emit && !this.handleClosing()) return;
 
     this.open = false;
 

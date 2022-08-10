@@ -10,6 +10,8 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/index.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
@@ -56,10 +58,13 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcSelectComponent extends IgcDropdownComponent {
+export default class IgcSelectComponent extends EventEmitterMixin<
+  IgcSelectEventMap,
+  Constructor<IgcDropdownComponent>
+>(IgcDropdownComponent) {
   /** @private */
-  public static override readonly tagName = 'igc-select';
-  public static override styles = styles;
+  public static readonly tagName = 'igc-select';
+  public static styles = styles;
   private searchTerm = '';
   private lastKeyTime = Date.now();
 
@@ -146,7 +151,14 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   constructor() {
     super();
     this.size = 'medium';
+
+    /** Return the focus to the target element when closing the list of options. */
+    this.addEventListener('igcClosing', () => this.target.focus());
   }
+
+  /** Override the dropdown target focusout behavior to prevent the focus from
+   * being returned to the target element when the select loses focus. */
+  protected override handleFocusout() {}
 
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions) {
@@ -161,7 +173,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
   /** Checks the validity of the control. */
   public reportValidity() {
     this.invalid = this.required && !this.value;
-    if (this.invalid) this.focus();
+    if (this.invalid) this.target.focus();
     return !this.invalid;
   }
 
@@ -171,6 +183,10 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
 
     if (!this.selectedItem && this.value) {
       this.updateSelected();
+    }
+
+    if (this.autofocus) {
+      this.target.focus();
     }
   }
 
@@ -272,12 +288,23 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     }
   }
 
+  protected handleFocus() {
+    if (this.open) return;
+    this.emitEvent('igcFocus');
+  }
+
+  protected handleBlur() {
+    if (this.open) return;
+    this.emitEvent('igcBlur');
+  }
+
   protected onInputTabKey() {
+    this.target.blur();
     if (this.open) this.hide();
   }
 
   protected onInputEnterKey() {
-    !this.open ? this.show() : this.onEnterKey();
+    this.target.click();
   }
 
   protected onInputArrowUpKeyDown(event: KeyboardEvent) {
@@ -327,11 +354,12 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
     return html`
       <div
         role="combobox"
-        tabindex="1"
-        aria-controls="dropdown"
+        tabindex=${this.disabled ? -1 : 0}
+        aria-owns="dropdown"
         aria-describedby="helper-text"
         aria-disabled=${this.disabled}
-        aria-activedescendant=${this.activeItem?.id}
+        @focus=${this.handleFocus}
+        @blur=${this.handleBlur}
         @keydown=${this.handleInputKeyDown}
         @click=${this.handleTargetClick}
       >
@@ -348,8 +376,11 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
           .required=${this.required}
           .invalid=${this.invalid}
           .outlined=${this.outlined}
-          ?autofocus=${this.autofocus}
           tabindex="-1"
+          @focus=${this.handleFocus}
+          @blur=${this.handleBlur}
+          @igcBlur=${(e: Event) => e.stopPropagation()}
+          @igcFocus=${(e: Event) => e.stopPropagation()}
         >
           <span slot=${this.hasPrefixes ? 'prefix' : ''}>
             <slot name="prefix"></slot>
@@ -372,7 +403,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
       <div
         id="helper-text"
         part="helper-text"
-        .hidden="${this.helperText.length == 0}"
+        ?hidden="${this.helperText.length === 0}"
       >
         <slot name="helper-text"></slot>
       </div>
@@ -382,12 +413,7 @@ export default class IgcSelectComponent extends IgcDropdownComponent {
         @click=${this.handleClick}
         ${this.toggleController.toggleDirective}
       >
-        <div
-          id="dropdown"
-          role="listbox"
-          part="list"
-          aria-labelledby="igcDDLTarget"
-        >
+        <div id="dropdown" role="listbox" part="list">
           <slot name="header"></slot>
           <slot></slot>
           <slot name="footer"></slot>

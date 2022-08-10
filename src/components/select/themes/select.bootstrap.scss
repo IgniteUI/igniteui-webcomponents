@@ -16,6 +16,21 @@ $input-background: var(--input-background, #fff) !default;
     }
 }
 
+:host(:focus-within) {
+    igc-input[readonly]:not([disabled])::part(input) {
+        box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 500, .38);
+        border-color: utils.color(primary, 500);
+    }
+}
+
+:host([invalid]),
+:host([invalid]:focus-within) {
+    igc-input[readonly]:not([disabled])::part(input) {
+        box-shadow: 0 0 0 utils.rem(4px) utils.color(error, 500, .38);
+        border-color: utils.color(error, 500);
+    }
+}
+
 igc-input[readonly]:not([disabled])::part(prefix),
 igc-input[readonly]:not([disabled])::part(suffix) {
     color: utils.color(gray, 800);
@@ -34,16 +49,6 @@ igc-input[readonly]:not([disabled])::part(container) {
 
 igc-input[readonly]:not([disabled])::part(input) {
     border-color: utils.color(gray, 400);
-}
-
-igc-input[readonly]:not([disabled]):focus-within::part(input) {
-    box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 500, .38);
-    border-color: utils.color(primary, 500);
-}
-
-igc-input[readonly][invalid]:not([disabled]):focus-within::part(input) {
-    box-shadow: 0 0 0 utils.rem(4px) utils.color(error, 500, .38);
-    border-color: utils.color(error, 500);
 }
 
 igc-input[disabled] {
