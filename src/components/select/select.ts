@@ -253,14 +253,8 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     }
   }
 
-  protected selectItemByKey(event: KeyboardEvent): void {
-    if (
-      !event ||
-      !event.key ||
-      event.key.length > 1 ||
-      event.key === ' ' ||
-      event.key === 'spacebar'
-    ) {
+  protected searchItem(event: KeyboardEvent): void {
+    if (!event || !event.key || event.key.length > 1 || event.key === ' ') {
       // ignore longer keys ('Alt', 'ArrowDown', etc) AND spacebar (used of open/close)
       return;
     }
@@ -283,7 +277,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
           .startsWith(this.searchTerm.toLowerCase())
       );
 
-    if (item) {
+    if (item && this.value !== item.value) {
       this.open ? this.activateItem(item) : this.selectItem(item);
     }
   }
@@ -338,7 +332,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
       event.preventDefault();
       this.targetKeyHandlers.get(event.key)?.call(this, event);
     } else {
-      this.selectItemByKey(event);
+      this.searchItem(event);
     }
   }
 
