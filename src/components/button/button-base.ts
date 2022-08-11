@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 
@@ -12,6 +13,7 @@ export interface IgcButtonEventMap {
   igcBlur: CustomEvent<void>;
 }
 
+@blazorDeepImport
 export abstract class IgcButtonBaseComponent extends SizableMixin(
   EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
 ) {

@@ -1,4 +1,5 @@
 import { property, state } from 'lit/decorators.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { MaskParser } from './mask-parser.js';
@@ -7,6 +8,7 @@ interface MaskSelection {
   end: number;
 }
 
+@blazorDeepImport
 export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   protected parser = new MaskParser();
   protected selection: MaskSelection = { start: 0, end: 0 };

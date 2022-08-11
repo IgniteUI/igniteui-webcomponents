@@ -1,5 +1,6 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { blazorDeepImport } from '../../common/decorators/blazorDeepImport.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppress } from '../../common/decorators/blazorSuppress.js';
 import { watch } from '../../common/decorators/watch.js';
@@ -14,6 +15,7 @@ export interface IgcCalendarBaseEventMap {
 }
 
 @blazorIndirectRender
+@blazorDeepImport
 export class IgcCalendarBaseComponent extends LitElement {
   protected calendarModel = new Calendar();
 
