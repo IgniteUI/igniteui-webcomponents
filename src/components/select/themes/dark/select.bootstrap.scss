@@ -1,5 +1,5 @@
 @mixin theme() {
-    igc-input {
+    igc-select::part(input) {
         --input-background: transparent;
     }
 }

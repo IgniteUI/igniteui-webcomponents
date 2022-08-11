@@ -10,6 +10,7 @@
 @use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.indigo' as nav-drawer;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.indigo' as nav-drawer-item;
+@use '../../../components/select/themes/dark/select.indigo' as select;
 @use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
 
 $palette: utils.palette(
@@ -35,4 +36,5 @@ $palette: utils.palette(
 @include dropdown.theme();
 @include nav-drawer.theme();
 @include nav-drawer-item.theme();
+@include select.theme();
 @include snackbar.theme();

@@ -1,5 +1,5 @@
-@use '../../dropdown/themes/light/dropdown.base' as *;
-@use '../../../styles/utilities' as utils;
+@use '../../../dropdown/themes/light/dropdown.base' as *;
+@use '../../../../styles/utilities' as utils;
 
 :host {
     display: block;
