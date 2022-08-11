@@ -53,6 +53,10 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ |
 |Mask Input|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input)|[3.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.2.0)|
 |Expansion Panel|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/expansion-panel)|[3.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.2.0)|
 |Tree|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree)|[3.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.2.0)|
+|Rating|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/rating)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
+|Date Time Input|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/date-time-input)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
+|Tabs|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/tabs)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
+|Accordion|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/accordion)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
 
 ## Usage
 
