@@ -22,7 +22,9 @@ import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectItemComponent from './select-item.js';
 import { styles } from './themes/select.base.css';
 import { styles as bootstrap } from './themes/select.bootstrap.css';
+import { styles as fluent } from './themes/select.fluent.css';
 import { styles as indigo } from './themes/select.indigo.css';
+import { styles as material } from './themes/select.material.css';
 
 defineComponents(IgcIconComponent, IgcSelectItemComponent);
 
@@ -30,7 +32,8 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
-@themes({ bootstrap, indigo })
+
+@themes({ bootstrap, material, fluent, indigo })
 /**
  * @element igc-select
  *
@@ -366,6 +369,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
           label=${ifDefined(this.label)}
           size=${this.size}
           dir=${this.dir}
+          tabindex="-1"
           .disabled="${this.disabled}"
           .required=${this.required}
           .invalid=${this.invalid}

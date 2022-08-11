@@ -19,6 +19,10 @@
     ::slotted([slot='helper-text']) {
         color: utils.color(gray, 400);
     }
+
+    [role='combobox'] {
+        pointer-events: none;
+    }
 }
 
 igc-input {

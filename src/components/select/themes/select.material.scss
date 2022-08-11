@@ -1,0 +1,116 @@
+@use '../../../styles/utilities' as utils;
+
+$idle-color: utils.color(gray, 600) !default;
+$idle-hover-color: utils.color(gray, 800) !default;
+$hover-background: utils.color(gray, 200) !default;
+$focus-background: var(--focus-background, color(gray, 300)) !default;
+$active-color: utils.color(primary, 500) !default;
+$error-color: utils.color(error, 500) !default;
+$idle-border-width: utils.rem(1px) !default;
+$active-border-width: utils.rem(2px) !default;
+
+:host([outlined]:focus-within) {
+    igc-input[readonly]:not([disabled])::part(start) {
+        border: {
+            color: $active-color;
+            inline: {
+                start-width: $active-border-width;
+            };
+            block: {
+                start-width: $active-border-width;
+                end-width: $active-border-width;
+            }
+        }
+    }
+
+    igc-input[readonly]:not([disabled])::part(notch) {
+        border: {
+            width: $active-border-width;
+            color: $active-color;
+            top: $idle-border-width solid transparent;
+        }
+    }
+
+    igc-input[readonly]:not([disabled])::part(filler) {
+        border: {
+            width: $active-border-width;
+            color: $active-color;
+        }
+    }
+
+    igc-input[readonly]:not([disabled])::part(end) {
+        border: {
+            color: $active-color;
+            inline: {
+                end-width: $active-border-width;
+            };
+            block: {
+                start-width: $active-border-width;
+                end-width: $active-border-width;
+            };
+        }
+    }
+
+    igc-input[readonly]:not([disabled])::part(label) {
+        color: $active-color;
+    }
+}
+
+:host([outlined][invalid]:focus-within) {
+    igc-input[readonly]:not([disabled])::part(start) {
+        border: {
+            color: $error-color;
+            inline: {
+                start-width: $active-border-width;
+            };
+            block: {
+                start-width: $active-border-width;
+                end-width: $active-border-width;
+            }
+        }
+    }
+
+    igc-input[readonly]:not([disabled])::part(notch) {
+        border: {
+            width: $active-border-width;
+            color: $error-color;
+            top: $idle-border-width solid transparent;
+        }
+    }
+
+    igc-input[readonly]:not([disabled])::part(filler) {
+        border: {
+            width: $active-border-width;
+            color: $error-color;
+        }
+    }
+
+    igc-input[readonly]:not([disabled])::part(end) {
+        border: {
+            color: $error-color;
+            inline: {
+                end-width: $active-border-width;
+            };
+            block: {
+                start-width: $active-border-width;
+                end-width: $active-border-width;
+            };
+        }
+    }
+
+    igc-input[readonly]:not([disabled])::part(label) {
+        color: $error-color;
+    }
+}
+
+:host(:not([outlined]):focus-within) {
+    igc-input[readonly]:not([disabled])::part(container) {
+        background: var(--focus-background, utils.color(gray, 300));
+        border-bottom: utils.color(primary, 500);
+
+        &::after {
+            transform: scaleX(1);
+            opacity: 1;
+        }
+    }
+}
