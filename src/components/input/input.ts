@@ -95,7 +95,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   public autocomplete!: string;
 
-  @property()
+  @property({ type: Number })
   public override tabIndex = 0;
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
