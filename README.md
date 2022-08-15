@@ -2,7 +2,7 @@
 
 
 <h1 align="center">
-  Ignite UI for Angular - from Infragistics 
+  Ignite UI for Web Components - from Infragistics 
 </h1>
 
 
@@ -49,11 +49,11 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ |
 |Chip|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/chip)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|    
 |Snackbar|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/snackbar)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
 |Toast|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/toast)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
+|Rating|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/rating)|[2.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.1.0)|
 |Drop Down|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/toast)|[2.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/2.2.0)|
 |Mask Input|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/input)|[3.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.2.0)|
 |Expansion Panel|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/expansion-panel)|[3.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.2.0)|
 |Tree|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree)|[3.2.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.2.0)|
-|Rating|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/rating)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
 |Date Time Input|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/date-time-input)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
 |Tabs|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/tabs)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
 |Accordion|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/accordion)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
