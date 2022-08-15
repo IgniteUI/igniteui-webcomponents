@@ -6,7 +6,7 @@ $stripe-primary: color(secondary, 500);
 $stripe-size: rem(6px);
 $stripe-space: rem(14px);
 
-[part~='striped'] {
+[part~='striped']:not([part~='indeterminate']) {
     /* stylelint-disable */
     background: $stripe-primary repeating-linear-gradient(
         45deg,
