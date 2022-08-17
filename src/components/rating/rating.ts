@@ -266,28 +266,24 @@ export default class IgcRatingComponent extends SizableMixin(
     return Number(value.toFixed(this.getPrecision(this.step)));
   }
 
-  protected clipSymbol(index: number, direction: 'forward' | 'backward') {
+  protected clipSymbol(index: number, isLTR = true) {
     const value = this.hoverState ? this.hoverValue : this.value;
     const progress = index + 1 - value;
     const exclusive = progress === 0 || this.value === index + 1 ? 0 : 1;
     const selection = this.single ? exclusive : progress;
     const activate = (p: number) => clamp(p * 100, 0, 100);
-    const ltr = isLTR(this);
 
     const forward = `inset(0 ${activate(
-      ltr ? selection : 1 - selection
+      isLTR ? selection : 1 - selection
     )}% 0 0)`;
     const backward = `inset(0 0 0 ${activate(
-      ltr ? 1 - selection : selection
+      isLTR ? 1 - selection : selection
     )}%)`;
 
-    switch (direction) {
-      case 'backward':
-        return ltr ? backward : forward;
-      case 'forward':
-      default:
-        return ltr ? forward : backward;
-    }
+    return {
+      backward: isLTR ? backward : forward,
+      forward: isLTR ? forward : backward,
+    };
   }
 
   /**
@@ -307,17 +303,19 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected *renderSymbols() {
+    const ltr = isLTR(this);
     for (let i = 0; i < this.max; i++) {
+      const { forward, backward } = this.clipSymbol(i, ltr);
       yield html`<igc-rating-symbol exportparts="symbol, full, empty">
         <igc-icon
           collection="internal"
           name="star"
-          style=${styleMap({ clipPath: this.clipSymbol(i, 'forward') })}
+          style=${styleMap({ clipPath: forward })}
         ></igc-icon>
         <igc-icon
           collection="internal"
           name="star_border"
-          style=${styleMap({ clipPath: this.clipSymbol(i, 'backward') })}
+          style=${styleMap({ clipPath: backward })}
           slot="empty"
         ></igc-icon>
       </igc-rating-symbol>`;
@@ -326,6 +324,7 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected clipProjected() {
     if (this.hasProjectedSymbols) {
+      const ltr = isLTR(this);
       this.ratingSymbols.forEach((symbol: IgcRatingSymbolComponent, i) => {
         const full = symbol.shadowRoot?.querySelector(
           '[part="symbol full"]'
@@ -334,13 +333,14 @@ export default class IgcRatingComponent extends SizableMixin(
         const empty = symbol.shadowRoot?.querySelector(
           '[part="symbol empty"]'
         ) as HTMLElement;
+        const { forward, backward } = this.clipSymbol(i, ltr);
 
         if (full) {
-          full.style.clipPath = this.clipSymbol(i, 'forward');
+          full.style.clipPath = forward;
         }
 
         if (empty) {
-          empty.style.clipPath = this.clipSymbol(i, 'backward');
+          empty.style.clipPath = backward;
         }
       });
     }
