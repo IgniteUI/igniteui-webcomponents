@@ -348,7 +348,8 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected override render() {
     const props = [
-      this.hoverState ? this.hoverValue : this.value,
+      this.value,
+      this.hoverValue,
       this.max,
       this.step,
       this.single,
