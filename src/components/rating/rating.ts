@@ -353,6 +353,7 @@ export default class IgcRatingComponent extends SizableMixin(
       this.max,
       this.step,
       this.single,
+      this.hoverState,
       this.ratingSymbols,
     ];
 
