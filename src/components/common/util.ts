@@ -48,3 +48,7 @@ export function createCounter() {
     return i;
   };
 }
+
+export function isLTR(element: HTMLElement) {
+  return getComputedStyle(element).getPropertyValue('direction') === 'ltr';
+}
