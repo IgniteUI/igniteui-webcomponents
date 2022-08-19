@@ -173,7 +173,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
     const targetElement: any = event.target as HTMLElement;
     if (
       this._controlsThatSubmit.includes(targetElement.tagName.toLowerCase()) &&
-      targetElement.type.toLowerCase() === 'submit'
+      targetElement.type?.toLowerCase() === 'submit'
     ) {
       this.submit();
     } else if (targetElement.type?.toLowerCase() === 'reset') {

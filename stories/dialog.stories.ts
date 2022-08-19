@@ -35,27 +35,9 @@ const metadata = {
       description: 'Sets the title of the dialog.',
       control: 'text',
     },
-    role: {
-      type: '"dialog" | "alertdialog"',
-      description: 'Sets the role attribute for the control.',
-      options: ['dialog', 'alertdialog'],
-      control: {
-        type: 'inline-radio',
-      },
-    },
     ariaLabel: {
       type: 'string',
       description: 'Sets the aria-label attribute for the control.',
-      control: 'text',
-    },
-    ariaLabelledby: {
-      type: 'string',
-      description: 'Sets the aria-labelledby attribute for the control.',
-      control: 'text',
-    },
-    ariaDescribedby: {
-      type: 'string',
-      description: 'Sets the aria-describedby attribute for the control.',
       control: 'text',
     },
     returnValue: {
@@ -71,10 +53,7 @@ interface ArgTypes {
   closeOnOutsideClick: boolean;
   open: boolean;
   title: string;
-  role: 'dialog' | 'alertdialog';
   ariaLabel: string;
-  ariaLabelledby: string;
-  ariaDescribedby: string;
   returnValue: string;
 }
 // endregion
@@ -91,17 +70,7 @@ const handleToggle = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  {
-    closeOnEscape,
-    closeOnOutsideClick,
-    title,
-    returnValue,
-    open,
-    ariaLabel,
-    ariaLabelledby,
-    ariaDescribedby,
-    role,
-  }: ArgTypes,
+  { closeOnEscape, closeOnOutsideClick, title, open, ariaLabel }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -113,15 +82,11 @@ const Template: Story<ArgTypes, Context> = (
         ?close-on-escape=${closeOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
         .open=${open}
-        return-value=${ifDefined(returnValue)}
         title=${ifDefined(title)}
         dir=${ifDefined(direction)}
-        role=${ifDefined(role)}
         aria-label=${ifDefined(ariaLabel)}
-        aria-labelledby=${ifDefined(ariaLabelledby)}
-        aria-describedby=${ifDefined(ariaDescribedby)}
       >
-        <h1 slot="title">Title Content</h1>
+        <!-- <h1 slot="title">Title Content</h1>
 
         Your Inbox has changed. No longer does it include favorites, it is a
         singular destination for your emails.
@@ -131,8 +96,29 @@ const Template: Story<ArgTypes, Context> = (
         >
         <igc-button slot="footer" @click=${handleToggle} variant="flat"
           >OK</igc-button
-        >
+        > -->
+
+        <span slot="title">Your credentials:</span>
+        <igc-form method="dialog">
+          <igc-input style="margin: 5px">
+            <span slot="prefix">username:</span>
+          </igc-input>
+          <igc-input style="margin: 5px">
+            <span slot="prefix">password:</span>
+          </igc-input>
+          <div style="margin: 10px 5px 0px 5px">
+            <igc-button type="reset">Reset</igc-button>
+            <igc-button type="submit">Confirm</igc-button>
+          </div>
+        </igc-form>
       </igc-dialog>
+
+      <!-- <dialog open>
+        <p>Greetings, one and all!</p>
+        <form method="dialog">
+          <button>asdasdas</button>
+        </form>
+      </dialog> -->
     </div>
   `;
 };
@@ -141,12 +127,12 @@ const Template: Story<ArgTypes, Context> = (
 
 export const Basic = Template.bind({});
 
-document.addEventListener('igcOpening', function (event) {
-  console.log(event);
-  console.log('Dialog is opening');
-});
+// document.addEventListener('igcOpening', function (event) {
+//   console.log(event);
+//   console.log('Dialog is opening');
+// });
 
-document.addEventListener('igcOpened', function (event) {
-  console.log(event);
-  console.log('Dialog is opened');
-});
+// document.addEventListener('igcOpened', function (event) {
+//   console.log(event);
+//   console.log('Dialog is opened');
+// });

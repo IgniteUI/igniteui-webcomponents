@@ -114,10 +114,7 @@ describe('Dialog component', () => {
       expect(dialog.title).to.be.undefined;
       expect(dialog.open).to.equal(false);
       expect(dialog.returnValue).to.be.undefined;
-      expect(dialog.role).to.be.undefined;
-      expect(dialog.ariaDescribedby).to.be.undefined;
       expect(dialog.ariaLabel).to.be.undefined;
-      expect(dialog.ariaLabelledby).to.be.undefined;
       expect(dialogEl.getAttribute('role')).to.equal('dialog');
 
       const header = dialog.shadowRoot?.querySelector('header') as HTMLElement;
@@ -127,20 +124,11 @@ describe('Dialog component', () => {
     });
 
     it('set aria properties and role', async () => {
-      dialog.role = 'alertdialog';
       dialog.ariaLabel = 'ariaLabel';
-      dialog.ariaLabelledby = 'ariaLabelledby';
-      dialog.ariaDescribedby = 'ariaDescribedby';
       await elementUpdated(dialog);
 
-      expect(dialogEl.getAttribute('role')).to.equal('alertdialog');
+      expect(dialogEl.getAttribute('role')).to.equal('dialog');
       expect(dialogEl.getAttribute('aria-label')).to.equal('ariaLabel');
-      expect(dialogEl.getAttribute('aria-labelledby')).to.equal(
-        'ariaLabelledby'
-      );
-      expect(dialogEl.getAttribute('aria-describedby')).to.equal(
-        'ariaDescribedby'
-      );
       expect(dialog).dom.to.equal('<igc-dialog></igc-dialog>');
     });
 

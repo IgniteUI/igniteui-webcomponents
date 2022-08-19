@@ -1,17 +1,16 @@
 import { html, LitElement } from 'lit';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { themes } from '../../theming';
-import { watch } from '../common/decorators';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { styles } from './themes/light/dialog.base.css';
-import { styles as bootstrap } from './themes/light/dialog.bootstrap.css';
-import { styles as fluent } from './themes/light/dialog.fluent.css';
-import { styles as indigo } from './themes/light/dialog.indigo.css';
-import { styles as material } from './themes/light/dialog.material.css';
-
-let nextId = 0;
+import { watch } from '../common/decorators/watch.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { createCounter } from '../common/util.js';
+import { styles } from './themes/light/dialog.base.css.js';
+import { styles as bootstrap } from './themes/light/dialog.bootstrap.css.js';
+import { styles as fluent } from './themes/light/dialog.fluent.css.js';
+import { styles as indigo } from './themes/light/dialog.indigo.css.js';
+import { styles as material } from './themes/light/dialog.material.css.js';
+import { themes } from '../../theming/theming-decorator.js';
 
 export interface IgcDialogEventMap {
   igcOpening: CustomEvent<void>;
@@ -47,17 +46,13 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-dialog';
   public static styles = [styles];
 
-  private titleId = `title-${nextId++}`;
+  private static readonly increment = createCounter();
+
+  private titleId = `title-${IgcDialogComponent.increment()}`;
   private _ariaLabel!: string;
-  private _ariaLabelledby!: string;
-  private _ariaDescribedby!: string;
-  private _role!: 'dialog' | 'alertdialog';
 
-  @query('[part="base"]')
-  private nativeElement!: any;
-
-  @queryAssignedElements({ slot: 'title' })
-  private _titleElements!: Array<HTMLElement>;
+  @query('dialog', true)
+  private nativeElement!: HTMLDialogElement;
 
   /** Whether the dialog should be closed when pressing 'ESC' button.  */
   @property({ type: Boolean, attribute: 'close-on-escape' })
@@ -75,18 +70,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @property({ type: String })
   public override title!: string;
 
-  /** Sets the role attribute for the control. */
-  @property({ reflect: true })
-  public get role() {
-    return this._role;
-  }
-
-  public set role(value: 'dialog' | 'alertdialog') {
-    const oldVal = this._role;
-    this._role = value;
-    this.removeAttributeAndUpdate('role', 'role', oldVal);
-  }
-
   /** Sets the aria-label attribute for the control. */
   @property({ attribute: 'aria-label' })
   public override get ariaLabel() {
@@ -99,36 +82,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     this.removeAttributeAndUpdate('aria-label', 'ariaLabel', oldVal);
   }
 
-  /** Sets the aria-labelledby attribute for the control. */
-  @property({ attribute: 'aria-labelledby' })
-  public get ariaLabelledby() {
-    return this._ariaLabelledby;
-  }
-
-  public set ariaLabelledby(value: string) {
-    const oldVal = this._ariaLabelledby;
-    this._ariaLabelledby = value;
-    this.removeAttributeAndUpdate('aria-labelledby', 'ariaLabelledby', oldVal);
-  }
-
-  /** Sets the aria-describedby attribute for the control. */
-  @property({ attribute: 'aria-describedby' })
-  public get ariaDescribedby() {
-    return this._ariaDescribedby;
-  }
-
-  public set ariaDescribedby(value: string) {
-    const oldVal = this._ariaDescribedby;
-    this._ariaDescribedby = value;
-    this.removeAttributeAndUpdate(
-      'aria-describedby',
-      'ariaDescribedby',
-      oldVal
-    );
-  }
-
   /** Sets the return value for the dialog. */
-  @property({ type: String, attribute: 'return-value' })
+  @property({ type: String, attribute: false })
   public returnValue!: string;
 
   @watch('open')
@@ -140,57 +95,19 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
       if (this.open && !hasOpenAttr) {
         this.nativeElement.showModal();
+        this.emitEvent('igcOpened');
       } else if (!this.open && hasOpenAttr) {
         this.nativeElement.close();
       }
     }
   }
 
-  private removeAttributeAndUpdate(
-    attribute: string,
-    name: string,
-    oldVal: string
-  ) {
-    if (this.hasAttribute(attribute)) {
-      this.removeAttribute(attribute);
+  public override connectedCallback() {
+    super.connectedCallback();
+
+    if (!this.getAttribute('role')) {
+      this.setAttribute('role', 'dialog');
     }
-
-    this.requestUpdate(name, oldVal);
-  }
-
-  private handleCancel(event: Event) {
-    event.preventDefault();
-
-    if (this.closeOnEscape) {
-      this.hide();
-    }
-  }
-
-  private handleClick(ev: MouseEvent) {
-    const el = ev.target as HTMLElement;
-    const targetElement =
-      el.tagName === 'SLOT' ? (el.parentElement as HTMLElement) : el;
-    const rect = targetElement.getBoundingClientRect();
-
-    const clickedInside =
-      rect.top <= ev.clientY &&
-      ev.clientY <= rect.top + rect.height &&
-      rect.left <= ev.clientX &&
-      ev.clientX <= rect.left + rect.width;
-
-    if (!clickedInside && this.closeOnOutsideClick) {
-      this.hide();
-    }
-  }
-
-  private handleOpening() {
-    const args = { cancelable: true };
-    return this.emitEvent('igcOpening', args);
-  }
-
-  private handleClosing(): boolean {
-    const args = { cancelable: true };
-    return this.emitEvent('igcClosing', args);
   }
 
   /** Opens the dialog. */
@@ -232,6 +149,87 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     }
   }
 
+  private removeAttributeAndUpdate(
+    attribute: string,
+    name: string,
+    oldVal: string
+  ) {
+    if (this.hasAttribute(attribute)) {
+      this.removeAttribute(attribute);
+    }
+
+    this.requestUpdate(name, oldVal);
+  }
+
+  private handleCancel(event: Event) {
+    event.preventDefault();
+
+    if (this.closeOnEscape) {
+      this.hide();
+    }
+  }
+
+  private handleClick(ev: MouseEvent) {
+    const elements = ev
+      .composedPath()
+      .filter((e) => e instanceof HTMLElement)
+      .map((e) => e as HTMLElement);
+    const firstElement = elements[0];
+    const firstElementRect = firstElement.getBoundingClientRect();
+    const dialogElement = elements.filter(
+      (e) => e.tagName.toLowerCase() === 'dialog'
+    )[0];
+    const dialogElementRect = dialogElement.getBoundingClientRect();
+
+    let clientX = ev.clientX;
+    let clientY = ev.clientY;
+    if (firstElement !== dialogElement) {
+      clientX = Math.max(ev.clientX, firstElementRect.left);
+      clientY = Math.max(ev.clientY, firstElementRect.top);
+    }
+
+    const clickedInside =
+      dialogElementRect.top <= clientY &&
+      clientY <= dialogElementRect.bottom &&
+      dialogElementRect.left <= clientX &&
+      clientX <= dialogElementRect.right;
+
+    if (!clickedInside && this.closeOnOutsideClick) {
+      this.hide();
+    }
+  }
+
+  private handleOpening() {
+    const args = { cancelable: true };
+    return this.emitEvent('igcOpening', args);
+  }
+
+  private handleClosing(): boolean {
+    const args = { cancelable: true };
+    return this.emitEvent('igcClosing', args);
+  }
+
+  private handleSlotChange(event: any) {
+    const elements = event.target.assignedNodes({ flatten: true });
+    elements.forEach((element: any) => {
+      if (element.querySelector) {
+        const form =
+          element.querySelector('form') || element.querySelector('igc-form');
+        if (form && form.getAttribute('method') === 'dialog') {
+          const submitEvent =
+            form.tagName.toLowerCase() === 'form' ? 'submit' : 'igcSubmit';
+          form.addEventListener(submitEvent, (ev: any) => {
+            const submitter = submitEvent === 'submit' ? ev.submitter : null;
+            this.returnValue = submitter ? submitter.value : '';
+            this.hide();
+          });
+
+          return;
+        }
+      }
+    });
+  }
+
   protected override render() {
     return html`
       <div part="backdrop" aria-hidden="true" ?hidden=${!this.open}></div>
@@ -239,21 +237,13 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         part="base"
         @click=${this.handleClick}
         @cancel=${this.handleCancel}
-        role=${this.role ? this.role : 'dialog'}
         aria-label=${ifDefined(this.ariaLabel)}
-        aria-labelledby=${this.ariaLabelledby
-          ? this.ariaLabelledby
-          : this.titleId}
-        aria-describedby=${ifDefined(this.ariaDescribedby)}
       >
         <header part="title" id=${this.titleId}>
-          <slot name="title"></slot>
-          ${this._titleElements.length === 0
-            ? html`<span>${this.title}</span>`
-            : ''}
+          <slot name="title"><span>${this.title}</span></slot>
         </header>
         <section part="content">
-          <slot></slot>
+          <slot @slotchange=${this.handleSlotChange}></slot>
         </section>
         <footer part="footer">
           <slot name="footer"></slot>
