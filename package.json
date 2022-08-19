@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@floating-ui/dom": "^1.0.1",
+    "igniteui-theming": "^1.0.0-beta.11",
     "lit": "^2.3.0"
   },
   "devDependencies": {
