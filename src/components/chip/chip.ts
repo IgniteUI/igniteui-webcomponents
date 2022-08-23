@@ -118,6 +118,9 @@ export default class IgcChipComponent extends SizableMixin(
                   size=${this.size}
                   name="chip_cancel"
                   collection="internal"
+                  tabindex="0"
+                  role="button"
+                  aria-label="remove"
                 ></igc-icon>
               </slot>`
             : nothing}
