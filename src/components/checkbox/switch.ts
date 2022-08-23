@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import { query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -29,6 +30,9 @@ import { styles as material } from './themes/light/switch.material.css.js';
  */
 @themes({ material, bootstrap, fluent, indigo })
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
+  @query('input[type="button"]', true)
+  protected override input!: HTMLInputElement;
+
   public static readonly tagName = 'igc-switch';
   public static styles = styles;
   private static readonly increment = createCounter();
@@ -55,7 +59,8 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
       >
         <input
           id=${this.inputId}
-          type="checkbox"
+          type="button"
+          role="switch"
           name=${ifDefined(this.name)}
           value=${ifDefined(this.value)}
           .required=${this.required}
