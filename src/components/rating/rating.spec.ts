@@ -126,9 +126,12 @@ describe('Rating component', () => {
       el.max = 10;
       await elementUpdated(el);
 
-      expect(getRatingWrapper(el).getAttribute('aria-label')).to.equal(label);
       expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal('0');
       expect(getRatingWrapper(el).getAttribute('aria-valuemax')).to.equal('10');
+
+      expect(el.shadowRoot!.querySelector('[part="label"]')?.textContent).to.eq(
+        label
+      );
 
       el.value = 7;
       await elementUpdated(el);
@@ -136,6 +139,13 @@ describe('Rating component', () => {
     });
 
     it('correctly reflects value-format', async () => {
+      el.value = 3;
+      await elementUpdated(el);
+
+      expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
+        '3 of 5'
+      );
+
       el.valueFormat = 'You have selected {0}';
       el.max = 9;
       el.value = 6;
@@ -144,6 +154,15 @@ describe('Rating component', () => {
 
       expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
         'You have selected 6'
+      );
+
+      el.valueFormat = 'Selected {0} of {1}';
+      el.step = 0.1;
+      el.value = 5.2;
+      await elementUpdated(el);
+
+      expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
+        'Selected 5.2 of 9'
       );
     });
 
