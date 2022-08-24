@@ -71,15 +71,6 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
   @property({ type: Boolean, reflect: true })
   public mirrored = false;
 
-  /**
-   * The role of icon element.
-   * Defaults to `img`.
-   *
-   * @attr [role="img"]
-   */
-  @property({ reflect: true })
-  public role = 'img';
-
   constructor() {
     super();
     this.size = 'medium';
@@ -87,6 +78,9 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   public override connectedCallback() {
     super.connectedCallback();
+    if (!this.getAttribute('role')) {
+      this.setAttribute('role', 'img');
+    }
     IconsRegistry.instance().subscribe(this.iconLoaded);
   }
 

@@ -78,6 +78,12 @@ export default class IgcChipComponent extends SizableMixin(
   }
 
   protected handleRemove(e: Event) {
+    if (
+      e.type === 'keyup' &&
+      ![' ', 'enter'].includes((e as KeyboardEvent).key.toLowerCase())
+    ) {
+      return;
+    }
     this.emitEvent('igcRemove');
     e.stopPropagation();
   }
@@ -112,6 +118,7 @@ export default class IgcChipComponent extends SizableMixin(
             ? html`<slot
                 @slotchange=${this.slotChanges}
                 @click=${this.handleRemove}
+                @keyup=${this.handleRemove}
                 name="remove"
               >
                 <igc-icon

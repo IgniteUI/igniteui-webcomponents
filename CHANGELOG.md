@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
-### Added
-- Icon - `role` property which defaults to 'img' [#480](https://github.com/IgniteUI/igniteui-webcomponents/issues/480)
+### Fixed
+- Chip - made remove button accessible with the keyboard [#480](https://github.com/IgniteUI/igniteui-webcomponents/issues/480)
 
 ## [3.3.1] - 2022-08-10
 ### Changed
