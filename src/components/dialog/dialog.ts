@@ -49,7 +49,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   private static readonly increment = createCounter();
 
   private titleId = `title-${IgcDialogComponent.increment()}`;
-  private _ariaLabel!: string;
 
   @query('dialog', true)
   private nativeElement!: HTMLDialogElement;
@@ -70,18 +69,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @property({ type: String })
   public override title!: string;
 
-  /** Sets the aria-label attribute for the control. */
-  @property({ attribute: 'aria-label' })
-  public override get ariaLabel() {
-    return this._ariaLabel;
-  }
-
-  public override set ariaLabel(value: string) {
-    const oldVal = this._ariaLabel;
-    this._ariaLabel = value;
-    this.removeAttributeAndUpdate('aria-label', 'ariaLabel', oldVal);
-  }
-
   /** Sets the return value for the dialog. */
   @property({ type: String, attribute: false })
   public returnValue!: string;
@@ -98,15 +85,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         this.emitEvent('igcOpened');
       } else if (!this.open && hasOpenAttr) {
         this.nativeElement.close();
+        this.emitEvent('igcClosed');
       }
-    }
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-
-    if (!this.getAttribute('role')) {
-      this.setAttribute('role', 'dialog');
     }
   }
 
@@ -147,18 +127,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     } else {
       this.show();
     }
-  }
-
-  private removeAttributeAndUpdate(
-    attribute: string,
-    name: string,
-    oldVal: string
-  ) {
-    if (this.hasAttribute(attribute)) {
-      this.removeAttribute(attribute);
-    }
-
-    this.requestUpdate(name, oldVal);
   }
 
   private handleCancel(event: Event) {
@@ -231,13 +199,18 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const label = this.ariaLabel ? this.ariaLabel : undefined;
+    const labelledby = label ? undefined : this.titleId;
+
     return html`
       <div part="backdrop" aria-hidden="true" ?hidden=${!this.open}></div>
       <dialog
         part="base"
+        role="dialog"
         @click=${this.handleClick}
         @cancel=${this.handleCancel}
-        aria-label=${ifDefined(this.ariaLabel)}
+        aria-label=${ifDefined(label)}
+        aria-labelledby=${ifDefined(labelledby)}
       >
         <header part="title" id=${this.titleId}>
           <slot name="title"><span>${this.title}</span></slot>

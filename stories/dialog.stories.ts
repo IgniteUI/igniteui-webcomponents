@@ -35,11 +35,6 @@ const metadata = {
       description: 'Sets the title of the dialog.',
       control: 'text',
     },
-    ariaLabel: {
-      type: 'string',
-      description: 'Sets the aria-label attribute for the control.',
-      control: 'text',
-    },
     returnValue: {
       type: 'string',
       description: 'Sets the return value for the dialog.',
@@ -53,7 +48,6 @@ interface ArgTypes {
   closeOnOutsideClick: boolean;
   open: boolean;
   title: string;
-  ariaLabel: string;
   returnValue: string;
 }
 // endregion
@@ -70,7 +64,7 @@ const handleToggle = () => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { closeOnEscape, closeOnOutsideClick, title, open, ariaLabel }: ArgTypes,
+  { closeOnEscape, closeOnOutsideClick, title, open }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -84,7 +78,6 @@ const Template: Story<ArgTypes, Context> = (
         .open=${open}
         title=${ifDefined(title)}
         dir=${ifDefined(direction)}
-        aria-label=${ifDefined(ariaLabel)}
       >
         <!-- <h1 slot="title">Title Content</h1>
 

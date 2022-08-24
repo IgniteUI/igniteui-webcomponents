@@ -42,7 +42,6 @@
     "format": "eslint --ext .ts . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
     "release": "changelog",
     "test": "npm run build && wtr --coverage",
-    "test:component": "npm run build && wtr \"dist/src/components/dialog/*.spec.js\" --coverage",
     "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
     "storybook": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"npm:watch-meta\" \"wds -c .storybook/server.mjs\"",
     "storybook:build": "npm run build && build-storybook -o ./storybook-static",

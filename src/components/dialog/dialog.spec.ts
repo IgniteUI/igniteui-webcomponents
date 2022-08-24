@@ -81,8 +81,7 @@ describe('Dialog component', () => {
         <div></div>
         <dialog>
           <header>
-            <slot name="title"></slot>
-            <span></span>
+            <slot name="title"><span></span></slot>
           </header>
           <section>
             <slot></slot>
@@ -114,8 +113,6 @@ describe('Dialog component', () => {
       expect(dialog.title).to.be.undefined;
       expect(dialog.open).to.equal(false);
       expect(dialog.returnValue).to.be.undefined;
-      expect(dialog.ariaLabel).to.be.undefined;
-      expect(dialogEl.getAttribute('role')).to.equal('dialog');
 
       const header = dialog.shadowRoot?.querySelector('header') as HTMLElement;
       expect(dialogEl.getAttribute('aria-labelledby')).to.equal(
@@ -123,13 +120,13 @@ describe('Dialog component', () => {
       );
     });
 
-    it('set aria properties and role', async () => {
+    it('has correct aria label and role', async () => {
       dialog.ariaLabel = 'ariaLabel';
+      dialog.open = true;
       await elementUpdated(dialog);
 
-      expect(dialogEl.getAttribute('role')).to.equal('dialog');
       expect(dialogEl.getAttribute('aria-label')).to.equal('ariaLabel');
-      expect(dialog).dom.to.equal('<igc-dialog></igc-dialog>');
+      expect(dialogEl.getAttribute('role')).to.equal('dialog');
     });
 
     it('emits events correctly', async () => {
