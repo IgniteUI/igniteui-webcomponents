@@ -54,7 +54,6 @@
   },
   "dependencies": {
     "@floating-ui/dom": "^1.0.1",
-    "igniteui-theming": "^1.0.0-beta.11",
     "lit": "^2.3.0"
   },
   "devDependencies": {
@@ -75,6 +74,7 @@
     "eslint-config-prettier": "^8.5.0",
     "globby": "^13.1.2",
     "husky": "^8.0.1",
+    "igniteui-theming": "^1.0.0-beta.12",
     "igniteui-typedoc-theme": "^3.1.0",
     "keep-a-changelog": "^2.1.0",
     "lint-staged": "^13.0.3",
