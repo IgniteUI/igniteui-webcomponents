@@ -37,6 +37,7 @@ export default class IgcListItemComponent extends LitElement {
   public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'listitem');
+    this.setAttribute('aria-label', 'listitem');
   }
 
   protected override render() {
