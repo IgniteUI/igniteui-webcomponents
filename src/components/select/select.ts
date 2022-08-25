@@ -8,6 +8,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/index.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
@@ -19,6 +20,7 @@ import IgcDropdownComponent, {
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
+import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
 import { styles } from './themes/light/select.base.css';
 import { styles as bootstrap } from './themes/light/select.bootstrap.css';
@@ -26,7 +28,13 @@ import { styles as fluent } from './themes/light/select.fluent.css';
 import { styles as indigo } from './themes/light/select.indigo.css';
 import { styles as material } from './themes/light/select.material.css';
 
-defineComponents(IgcIconComponent, IgcSelectItemComponent);
+defineComponents(
+  IgcIconComponent,
+  IgcInputComponent,
+  IgcSelectGroupComponent,
+  IgcSelectHeaderComponent,
+  IgcSelectItemComponent
+);
 
 export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
@@ -34,6 +42,9 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
 }
 
 @themes({ bootstrap, material, fluent, indigo })
+@blazorAdditionalDependencies(
+  'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
+)
 /**
  * @element igc-select
  *
@@ -257,8 +268,8 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   }
 
   protected searchItem(event: KeyboardEvent): void {
-    if (!event || !event.key || event.key.length > 1 || event.key === ' ') {
-      // ignore longer keys ('Alt', 'ArrowDown', etc) AND spacebar (used of open/close)
+    // ignore longer keys ('Alt', 'ArrowDown', etc)
+    if (!/^.$/u.test(event.key)) {
       return;
     }
 
