@@ -49,6 +49,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   private static readonly increment = createCounter();
 
   private titleId = `title-${IgcDialogComponent.increment()}`;
+  private hasContent = false;
 
   @query('dialog', true)
   private nativeElement!: HTMLDialogElement;
@@ -179,6 +180,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   private handleSlotChange(event: any) {
     const elements = event.target.assignedNodes({ flatten: true });
+    this.hasContent =
+      event.target.assignedElements({ flatten: true }).length > 0
+        ? true
+        : false;
     elements.forEach((element: any) => {
       if (element.querySelector) {
         const form =
@@ -196,6 +201,14 @@ export default class IgcDialogComponent extends EventEmitterMixin<
         }
       }
     });
+  }
+
+  private renderOkButton() {
+    if (!this.hasContent) {
+      return html` <igc-button @click="${this.hide}">OK</igc-button> `;
+    } else {
+      return html``;
+    }
   }
 
   protected override render() {
@@ -219,7 +232,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
           <slot @slotchange=${this.handleSlotChange}></slot>
         </section>
         <footer part="footer">
-          <slot name="footer"></slot>
+          <slot name="footer"> ${this.renderOkButton()} </slot>
         </footer>
       </dialog>
     `;

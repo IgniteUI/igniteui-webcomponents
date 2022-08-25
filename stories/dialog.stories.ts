@@ -91,7 +91,9 @@ const Template: Story<ArgTypes, Context> = (
           >OK</igc-button
         > -->
 
-        <span slot="title">Your credentials:</span>
+        Dialog content
+
+        <!-- <span slot="title">Your credentials:</span>
         <igc-form method="dialog">
           <igc-input style="margin: 5px">
             <span slot="prefix">username:</span>
@@ -103,7 +105,7 @@ const Template: Story<ArgTypes, Context> = (
             <igc-button type="reset">Reset</igc-button>
             <igc-button type="submit">Confirm</igc-button>
           </div>
-        </igc-form>
+        </igc-form> -->
       </igc-dialog>
 
       <!-- <dialog open>
