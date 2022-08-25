@@ -33,12 +33,6 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    role: {
-      type: 'string',
-      description: 'The role of icon element.\nDefaults to `img`.',
-      control: 'text',
-      defaultValue: 'img',
-    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -55,7 +49,6 @@ interface ArgTypes {
   name: string;
   collection: string;
   mirrored: boolean;
-  role: string;
   size: 'small' | 'medium' | 'large';
 }
 // endregion
