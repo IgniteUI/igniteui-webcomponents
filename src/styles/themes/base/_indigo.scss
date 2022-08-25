@@ -15,6 +15,9 @@
         --igc-spacing-small: #{rem(2px)};
         --igc-spacing-medium: #{rem(4px)};
         --igc-spacing-large: #{rem(8px)};
+        --ig-size-small: 1;
+        --ig-size-medium: 2;
+        --ig-size-large: 3;
 
         @include palette($palette);
         @include elevations($material-elevations);
