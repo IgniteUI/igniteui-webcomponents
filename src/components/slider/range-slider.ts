@@ -200,12 +200,20 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   }
 
   protected override renderThumbs() {
+    const ariaValueText = `min ${this.lower} max ${this.upper}`;
+
     return html`${this.renderThumb(
       this.lower,
       this.ariaLabelLower,
-      'thumbFrom'
+      'thumbFrom',
+      ariaValueText
     )}
-    ${this.renderThumb(this.upper, this.ariaLabelUpper, 'thumbTo')}`;
+    ${this.renderThumb(
+      this.upper,
+      this.ariaLabelUpper,
+      'thumbTo',
+      ariaValueText
+    )}`;
   }
 }
 
