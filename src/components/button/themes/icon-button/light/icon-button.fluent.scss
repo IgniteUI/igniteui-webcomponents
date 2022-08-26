@@ -2,6 +2,14 @@
 
 $text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
 $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
+$padding-sm: calc(var(--igc-spacing-small) * 2);
+$padding-md: calc(var(--igc-spacing-medium) * 1.5);
+$padding-lg: calc(var(--igc-spacing-large) * .875);
+
+:host {
+    --size: #{utils.sizable(utils.rem(24px), utils.rem(32px), utils.rem(38px))};
+    --spacing: #{utils.sizable($padding-sm, $padding-md, $padding-lg)};
+}
 
 [part='base'] {
     @include utils.border-radius(utils.rem(2px));
@@ -10,6 +18,8 @@ $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !defaul
     color: utils.color(primary, 500);
     transition: color .15s ease-out, background .15s ease-out;
     box-shadow: none;
+    width: var(--size);
+    height: var(--size);
 
     &::after {
         position: absolute;
@@ -33,29 +43,6 @@ $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !defaul
 
     &:focus-visible::after {
         box-shadow: 0 0 0 utils.rem(1px) utils.color(gray, 500);
-    }
-}
-
-:host([size='small']) {
-    [part='base'] {
-        width: #{utils.rem(24px)};
-        height: #{utils.rem(24px)};
-    }
-}
-
-:host([size='medium']) {
-    [part='base'] {
-        width: #{utils.rem(32px)};
-        height: #{utils.rem(32px)};
-        padding: calc(var(--igc-spacing-medium) * 1.5);
-    }
-}
-
-:host([size='large']) {
-    [part='base'] {
-        width: #{utils.rem(38px)};
-        height: #{utils.rem(38px)};
-        padding: calc(var(--igc-spacing-large) * .875);
     }
 }
 

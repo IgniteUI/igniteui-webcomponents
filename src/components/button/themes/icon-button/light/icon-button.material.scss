@@ -1,26 +1,16 @@
 @use '../../../../../styles/utilities' as *;
 
-:host([size='small']) {
-    [part='base'] {
-        width: #{rem(24px)};
-        height: #{rem(24px)};
-        padding: calc(var(--igc-spacing-small) * 3);
-    }
+$padding-sm: calc(var(--igc-spacing-small) * 3);
+$padding-md: calc(var(--igc-spacing-medium) * 1.5);
+
+:host {
+    --size: #{sizable(rem(24px), rem(30px), rem(36px))};
+    --spacing: #{sizable($padding-sm, $padding-md)};
 }
 
-:host([size='medium']) {
-    [part='base'] {
-        width: #{rem(30px)};
-        height: #{rem(30px)};
-        padding: calc(var(--igc-spacing-medium) * 1.5);
-    }
-}
-
-:host([size='large']) {
-    [part='base'] {
-        width: #{rem(36px)};
-        height: #{rem(36px)};
-    }
+[part='base'] {
+    width: var(--size);
+    height: var(--size);
 }
 
 :host([variant='contained']) {
