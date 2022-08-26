@@ -158,7 +158,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   @property({ type: Boolean, attribute: 'same-width' })
   public override sameWidth = true;
 
-  /** The direction attribute of the centrol. */
+  /** The direction attribute of the control. */
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
