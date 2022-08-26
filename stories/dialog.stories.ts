@@ -58,9 +58,16 @@ interface ArgTypes {
   },
 };
 
-const handleToggle = () => {
-  const dialog = document.querySelector('igc-dialog') as IgcDialogComponent;
-  dialog?.toggle();
+const openDialog = (id: string) =>
+  (document.getElementById(id) as IgcDialogComponent).show();
+
+const closeDialog = (id: string) =>
+  (document.getElementById(id) as IgcDialogComponent).hide();
+
+const authMethods = ['Basic', 'Bearer', 'Digest', 'OAuth'];
+const authSelected = (ev: CustomEvent) => {
+  (ev.target as HTMLElement).querySelector('igc-input')!.value =
+    ev.detail.value;
 };
 
 const Template: Story<ArgTypes, Context> = (
@@ -69,65 +76,80 @@ const Template: Story<ArgTypes, Context> = (
 ) => {
   return html`
     <div
-      style="display: flex; align-items: flex-start; position: relative; height: 400px"
+      style="display: flex; align-items: flex-start; position: relative; height: 400px; gap: 1rem"
     >
-      <igc-button @click=${handleToggle}>Toggle Show/Hide</igc-button>
+      <igc-button @click=${() => openDialog('default')}
+        >Default dialog</igc-button
+      >
+      <igc-button @click=${() => openDialog('projected')}
+        >Projected content</igc-button
+      >
+
+      <igc-button @click=${() => openDialog('with-form')}>With Form</igc-button>
+
       <igc-dialog
+        id="default"
         ?close-on-escape=${closeOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
         .open=${open}
         title=${ifDefined(title)}
         dir=${ifDefined(direction)}
+      ></igc-dialog>
+
+      <igc-dialog
+        id="projected"
+        dir=${ifDefined(direction)}
+        ?close-on-escape=${closeOnEscape}
+        ?close-on-outside-click=${closeOnOutsideClick}
       >
-        <!-- <h1 slot="title">Title Content</h1>
-
-        Your Inbox has changed. No longer does it include favorites, it is a
-        singular destination for your emails.
-
-        <igc-button slot="footer" @click=${handleToggle} variant="flat"
-          >Cancel</igc-button
-        >
-        <igc-button slot="footer" @click=${handleToggle} variant="flat"
-          >OK</igc-button
-        > -->
-
-        Dialog content
-
-        <!-- <span slot="title">Your credentials:</span>
-        <igc-form method="dialog">
-          <igc-input style="margin: 5px">
-            <span slot="prefix">username:</span>
-          </igc-input>
-          <igc-input style="margin: 5px">
-            <span slot="prefix">password:</span>
-          </igc-input>
-          <div style="margin: 10px 5px 0px 5px">
-            <igc-button type="reset">Reset</igc-button>
-            <igc-button type="submit">Confirm</igc-button>
-          </div>
-        </igc-form> -->
+        <h4 slot="title">Danger</h4>
+        <p>Doing this action is irrevocable?</p>
+        <div slot="footer">
+          <igc-button @click=${() => closeDialog('projected')}>OK</igc-button>
+          <igc-button @click=${() => closeDialog('projected')}
+            >Cancel</igc-button
+          >
+        </div>
       </igc-dialog>
 
-      <!-- <dialog open>
-        <p>Greetings, one and all!</p>
-        <form method="dialog">
-          <button>asdasdas</button>
-        </form>
-      </dialog> -->
+      <igc-dialog
+        id="with-form"
+        dir=${ifDefined(direction)}
+        ?close-on-escape=${closeOnEscape}
+        ?close-on-outside-click=${closeOnOutsideClick}
+      >
+        <h3 slot="title">Your credentials</h3>
+        <div>
+          <igc-form method="dialog">
+            <div style="display: flex; flex-flow: column; gap: 1rem">
+              <igc-input outlined label="Username"></igc-input>
+              <igc-input outlined label="Password" type="password"></igc-input>
+              <igc-dropdown
+                flip
+                same-width
+                position-strategy="fixed"
+                @igcChange=${authSelected}
+              >
+                <igc-input
+                  style="width: 100%"
+                  outlined
+                  label="Method"
+                  slot="target"
+                ></igc-input>
+                ${authMethods.map(
+                  (each) => html`<igc-dropdown-item>${each}</igc-dropdown-item>`
+                )}
+              </igc-dropdown>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem">
+              <igc-button type="submit">Confirm</igc-button>
+              <igc-button type="reset">Reset</igc-button>
+            </div>
+          </igc-form>
+        </div>
+      </igc-dialog>
     </div>
   `;
 };
 
-// { globals: { } }: Context
-
 export const Basic = Template.bind({});
-
-// document.addEventListener('igcOpening', function (event) {
-//   console.log(event);
-//   console.log('Dialog is opening');
-// });
-
-// document.addEventListener('igcOpened', function (event) {
-//   console.log(event);
-//   console.log('Dialog is opened');
-// });

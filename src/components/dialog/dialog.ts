@@ -3,6 +3,7 @@ import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter } from '../common/util.js';
 import { styles } from './themes/light/dialog.base.css.js';
@@ -11,6 +12,10 @@ import { styles as fluent } from './themes/light/dialog.fluent.css.js';
 import { styles as indigo } from './themes/light/dialog.indigo.css.js';
 import { styles as material } from './themes/light/dialog.material.css.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcButtonComponent from '../button/button.js';
+
+defineComponents(IgcButtonComponent);
 
 export interface IgcDialogEventMap {
   igcOpening: CustomEvent<void>;
@@ -39,6 +44,7 @@ export interface IgcDialogEventMap {
  * @csspart overlay - The overlay.
  */
 @themes({ bootstrap, material, fluent, indigo })
+@blazorAdditionalDependencies('IgcButtonComponent')
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogEventMap,
   Constructor<LitElement>
@@ -47,9 +53,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public static styles = [styles];
 
   private static readonly increment = createCounter();
-
   private titleId = `title-${IgcDialogComponent.increment()}`;
-  private hasContent = false;
 
   @query('dialog', true)
   private nativeElement!: HTMLDialogElement;
@@ -67,11 +71,11 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public open = false;
 
   /** Sets the title of the dialog.  */
-  @property({ type: String })
+  @property()
   public override title!: string;
 
   /** Sets the return value for the dialog. */
-  @property({ type: String, attribute: false })
+  @property({ attribute: false })
   public returnValue!: string;
 
   @watch('open')
@@ -123,11 +127,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   /** Toggles the open state of the dialog. */
   public toggle() {
-    if (this.open) {
-      this.hide();
-    } else {
-      this.show();
-    }
+    this.open ? this.hide() : this.show();
   }
 
   private handleCancel(event: Event) {
@@ -138,77 +138,45 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     }
   }
 
-  private handleClick(ev: MouseEvent) {
-    const elements = ev
-      .composedPath()
-      .filter((e) => e instanceof HTMLElement)
-      .map((e) => e as HTMLElement);
-    const firstElement = elements[0];
-    const firstElementRect = firstElement.getBoundingClientRect();
-    const dialogElement = elements.filter(
-      (e) => e.tagName.toLowerCase() === 'dialog'
-    )[0];
-    const dialogElementRect = dialogElement.getBoundingClientRect();
-
-    let clientX = ev.clientX;
-    let clientY = ev.clientY;
-    if (firstElement !== dialogElement) {
-      clientX = Math.max(ev.clientX, firstElementRect.left);
-      clientY = Math.max(ev.clientY, firstElementRect.top);
-    }
-
-    const clickedInside =
-      dialogElementRect.top <= clientY &&
-      clientY <= dialogElementRect.bottom &&
-      dialogElementRect.left <= clientX &&
-      clientX <= dialogElementRect.right;
-
-    if (!clickedInside && this.closeOnOutsideClick) {
-      this.hide();
+  private handleClick({ clientX, clientY, target }: MouseEvent) {
+    if (
+      this.closeOnOutsideClick &&
+      this.nativeElement.isSameNode(target as Node)
+    ) {
+      const { left, top, right, bottom } =
+        this.nativeElement.getBoundingClientRect();
+      const between = (x: number, low: number, high: number) =>
+        x >= low && x <= high;
+      if (!(between(clientX, left, right) && between(clientY, top, bottom))) {
+        this.hide();
+      }
     }
   }
 
   private handleOpening() {
-    const args = { cancelable: true };
-    return this.emitEvent('igcOpening', args);
+    return this.emitEvent('igcOpening', { cancelable: true });
   }
 
   private handleClosing(): boolean {
-    const args = { cancelable: true };
-    return this.emitEvent('igcClosing', args);
+    return this.emitEvent('igcClosing', { cancelable: true });
   }
 
-  private handleSlotChange(event: any) {
-    const elements = event.target.assignedNodes({ flatten: true });
-    this.hasContent =
-      event.target.assignedElements({ flatten: true }).length > 0
-        ? true
-        : false;
-    elements.forEach((element: any) => {
-      if (element.querySelector) {
-        const form =
-          element.querySelector('form') || element.querySelector('igc-form');
-        if (form && form.getAttribute('method') === 'dialog') {
-          const submitEvent =
-            form.tagName.toLowerCase() === 'form' ? 'submit' : 'igcSubmit';
-          form.addEventListener(submitEvent, (ev: any) => {
-            const submitter = submitEvent === 'submit' ? ev.submitter : null;
-            this.returnValue = submitter ? submitter.value : '';
-            this.hide();
-          });
-
-          return;
-        }
-      }
-    });
-  }
-
-  private renderOkButton() {
-    if (!this.hasContent) {
-      return html` <igc-button @click="${this.hide}">OK</igc-button> `;
-    } else {
-      return html``;
+  protected formSubmitHandler = (e: Event) => {
+    if (e instanceof SubmitEvent && e.submitter) {
+      this.returnValue = (e.submitter as any)?.value || '';
     }
+    this.hide();
+  };
+
+  private handleSlotChange() {
+    // Setup submit handling for supported forms
+    Array.from(this.querySelectorAll('igc-form, form'))
+      .filter((each) => each.getAttribute('method') === 'dialog')
+      .forEach((form) => {
+        const event = /igc-form/i.test(form.tagName) ? 'igcSubmit' : 'submit';
+        form.removeEventListener(event, this.formSubmitHandler);
+        form.addEventListener(event, this.formSubmitHandler);
+      });
   }
 
   protected override render() {
@@ -229,10 +197,12 @@ export default class IgcDialogComponent extends EventEmitterMixin<
           <slot name="title"><span>${this.title}</span></slot>
         </header>
         <section part="content">
-          <slot @slotchange=${this.handleSlotChange}></slot>
+          <slot @slotchange=${this.handleSlotChange}>
+            <igc-button @click=${this.hide}>Close</igc-button>
+          </slot>
         </section>
         <footer part="footer">
-          <slot name="footer"> ${this.renderOkButton()} </slot>
+          <slot name="footer"></slot>
         </footer>
       </dialog>
     `;
