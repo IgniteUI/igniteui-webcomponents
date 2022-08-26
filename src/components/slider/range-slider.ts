@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
@@ -99,12 +98,6 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
    */
   @property({ attribute: 'aria-label-upper' })
   public ariaLabelUpper!: string;
-
-  @watch('lower')
-  @watch('upper')
-  protected handleErrorState() {
-    this.setAttribute('aria-valuetext', `${this.lower} - ${this.upper}`);
-  }
 
   protected override get activeValue(): number {
     return this.activeThumb === this.thumbFrom ? this.lower : this.upper;

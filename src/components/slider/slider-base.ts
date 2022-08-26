@@ -544,6 +544,25 @@ export class IgcSliderBaseComponent extends LitElement {
     return groups;
   }
 
+  private handleFocus(ev: Event) {
+    this.activeThumb = ev.target as HTMLElement;
+    const thumbId = this.activeThumb?.id;
+    const thumbVal = this.activeThumb?.ariaValueNow;
+
+    const thumbs = this.shadowRoot?.querySelectorAll('div[part="thumb"]');
+    thumbs?.forEach((t) => {
+      if (t.id !== thumbId) {
+        this.activeThumb?.setAttribute(
+          'aria-valuetext',
+          `${Math.min(
+            parseInt(thumbVal!),
+            parseInt(t.ariaValueNow!)
+          )} - ${Math.max(parseInt(thumbVal!), parseInt(t.ariaValueNow!))}`
+        );
+      }
+    });
+  }
+
   protected renderThumb(
     value: number,
     ariaLabel?: string,
@@ -572,7 +591,7 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-disabled=${this.disabled ? 'true' : 'false'}
         @pointerenter=${this.handleThumbPointerEnter}
         @pointerleave=${this.handleThumbPointerLeave}
-        @focus=${(ev: Event) => (this.activeThumb = ev.target as HTMLElement)}
+        @focus=${(ev: Event) => this.handleFocus(ev)}
         @blur=${() => (this.activeThumb = undefined)}
       ></div>
       ${this.hideTooltip
