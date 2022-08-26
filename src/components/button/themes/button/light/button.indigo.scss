@@ -1,5 +1,9 @@
 @use '../../../../../styles/utilities' as utils;
 
+:host {
+    --size: #{utils.sizable(utils.rem(28px), utils.rem(32px), utils.rem(36px))};
+}
+
 [part='base'] {
     @include utils.border-radius(calc(var(--size) / 2));
 
@@ -9,24 +13,8 @@
     }
 }
 
-:host([size='large']) [part='base'] {
-    --size: #{utils.rem(36px)};
-}
-
-:host([size='medium']) [part='base'] {
-    --size: #{utils.rem(32px)};
-}
-
-:host([size='small']) [part='base'] {
-    --size: #{utils.rem(28px)};
-}
-
-:host([variant='fab'][size='medium']) [part='base'] {
-    --size: #{utils.rem(42px)};
-}
-
-:host([variant='fab'][size='small']) [part='base'] {
-    --size: #{utils.rem(36px)};
+:host([variant='fab']) {
+    --size: #{utils.sizable(utils.rem(36px), utils.rem(42px), utils.rem(48px))};
 }
 
 :host(:not([disabled])[variant='flat']) [part='base'] {
