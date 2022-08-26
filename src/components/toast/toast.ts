@@ -36,6 +36,13 @@ export default class IgcToastComponent extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
   public keepOpen = false;
 
+  constructor() {
+    super();
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'alert');
+    }
+  }
+
   /** Closes the toast. */
   public hide() {
     if (this.open) {
