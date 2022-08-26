@@ -62,6 +62,10 @@ interface ArgTypes {
 }
 // endregion
 
+const handleRemove = (e: Event) => {
+  console.log(e);
+};
+
 const ChipTemplate: Story<ArgTypes, Context> = (
   {
     disabled,
@@ -81,6 +85,7 @@ const ChipTemplate: Story<ArgTypes, Context> = (
     .size=${size}
     dir=${direction}
     variant=${ifDefined(variant)}
+    @igcRemove=${handleRemove}
   >
     <span slot="prefix">😱</span>
     Chip
