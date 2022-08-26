@@ -6,3 +6,4 @@ export * from './blazorTwoWayBind';
 export * from './blazorIndirectRender';
 export * from './blazorSuppressComponent';
 export * from './blazorTypeOverride';
+export * from './blazorAdditionalDependencies';

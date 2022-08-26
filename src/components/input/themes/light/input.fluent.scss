@@ -166,6 +166,7 @@ $focused-border-width: utils.rem(2px);
 
     [part^='container'] {
         border-color: utils.color(gray, 100);
+        color: utils.color(gray, 400);
     }
 
     [part^='container'],
@@ -177,7 +178,6 @@ $focused-border-width: utils.rem(2px);
     [part='prefix'],
     [part='suffix'],
     [part='label'],
-    [part~='input'],
     [part='helper-text'] {
         color: utils.color(gray, 400);
     }

@@ -10,7 +10,11 @@ import { styles as bootstrap } from './themes/chip.bootstrap.css.js';
 import { styles as fluent } from './themes/chip.fluent.css.js';
 import { styles as indigo } from './themes/chip.indigo.css.js';
 import { styles as material } from './themes/chip.material.css.js';
-import '../icon/icon.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcIconComponent from '../icon/icon.js';
+
+defineComponents(IgcIconComponent);
 
 export interface IgcChipEventMap {
   igcRemove: CustomEvent<boolean>;
@@ -78,6 +82,12 @@ export default class IgcChipComponent extends SizableMixin(
     e.stopPropagation();
   }
 
+  protected handleKeyup(e: KeyboardEvent) {
+    if (/\s|enter/i.test(e.key)) {
+      this.handleRemove(e);
+    }
+  }
+
   protected override render() {
     return html`
       <button
@@ -108,12 +118,16 @@ export default class IgcChipComponent extends SizableMixin(
             ? html`<slot
                 @slotchange=${this.slotChanges}
                 @click=${this.handleRemove}
+                @keyup=${this.handleKeyup}
                 name="remove"
               >
                 <igc-icon
                   size=${this.size}
                   name="chip_cancel"
                   collection="internal"
+                  tabindex="0"
+                  role="button"
+                  aria-label="remove"
                 ></igc-icon>
               </slot>`
             : nothing}

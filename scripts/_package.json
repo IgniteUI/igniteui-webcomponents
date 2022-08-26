@@ -9,13 +9,7 @@
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
-  "sideEffects": [
-    "components/calendar/days-view/days-view.js",
-    "components/calendar/months-view/months-view.js",
-    "components/calendar/years-view/years-view.js",
-    "components/icon/icon.js",
-    "*.css"
-  ],
+  "sideEffects": ["*.css"],
   "repository": {
     "type": "git",
     "url": "https://github.com/IgniteUI/igniteui-webcomponents"
@@ -27,6 +21,7 @@
     "webcomponents",
     "web components",
     "UI components",
+    "accordion",
     "avatar",
     "badge",
     "button",
@@ -35,13 +30,16 @@
     "circular progress",
     "checkbox",
     "chip",
+    "date input",
     "dropdown",
+    "expansion panel",
     "form",
     "icon",
     "input",
     "linear progress",
     "list",
     "mask",
+    "mask input",
     "navbar",
     "navdrawer",
     "progress",
@@ -51,10 +49,12 @@
     "snackbar",
     "switch",
     "slider",
-    "toast"
+    "tabs",
+    "toast",
+    "tree"
   ],
   "dependencies": {
-    "@floating-ui/dom": "^0.5.4",
-    "lit": "^2.2.7"
+    "@floating-ui/dom": "^1.0.1",
+    "lit": "^2.3.0"
   }
 }

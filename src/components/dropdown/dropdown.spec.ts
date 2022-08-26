@@ -56,10 +56,33 @@ describe('Dropdown component', () => {
       </igc-dropdown>`);
     });
 
+    it('handles initial selection', async () => {
+      dropdown = await fixture<IgcDropdownComponent>(html`
+        <igc-dropdown>
+          <input
+            type="button"
+            slot="target"
+            value="Dropdown"
+            aria-label="dropdownButton"
+          />
+          <igc-dropdown-header>Languages</igc-dropdown-header>
+          <igc-dropdown-item selected>JavaScript</igc-dropdown-item>
+          <igc-dropdown-item selected>TypeScript</igc-dropdown-item>
+          <igc-dropdown-item>SCSS</igc-dropdown-item>
+        </igc-dropdown>
+      `);
+
+      expect(dropdown.querySelectorAll('[selected]').length).to.equal(1);
+      expect(dropdown.querySelector('[selected]')?.textContent).to.equal(
+        'TypeScript'
+      );
+    });
+
     it('is accessible.', async () => {
       dropdown.open = true;
       await elementUpdated(dropdown);
       await expect(dropdown).to.be.accessible();
+      await expect(dropdown).shadowDom.to.be.accessible();
     });
 
     it('is successfully created with default properties.', () => {
@@ -314,6 +337,24 @@ describe('Dropdown component', () => {
         expect(
           ddItems(dropdown).filter((i) => i.hasAttribute('active')).length
         ).to.eq(1);
+      });
+
+      it('activates the last item on pressing `End` key', async () => {
+        pressKey('End');
+        await elementUpdated(dropdown);
+
+        const item = ddItems(dropdown).at(-1)!;
+        expect(item.hasAttribute('active')).to.be.true;
+        expect(dropdown.querySelectorAll('[active]').length).to.equal(1);
+      });
+
+      it('activates the first item on pressing `Home` key', async () => {
+        pressKey('Home');
+        await elementUpdated(dropdown);
+
+        const item = ddItems(dropdown).at(0)!;
+        expect(item.hasAttribute('active')).to.be.true;
+        expect(dropdown.querySelectorAll('[active]').length).to.equal(1);
       });
 
       it('activates the next item on pressing `arrowdown` key.', async () => {
@@ -687,6 +728,51 @@ describe('Dropdown component', () => {
         await elementUpdated(dropdown);
 
         expect(dropdown.open).to.be.false;
+      });
+
+      it('emits closing events when clicking outside', async () => {
+        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+
+        document.dispatchEvent(new MouseEvent('click'));
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.false;
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).calledWith('igcClosed');
+      });
+
+      it('cleans up document event listeners', async () => {
+        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+
+        dropdown.open = true;
+        await elementUpdated(dropdown);
+
+        document.dispatchEvent(new MouseEvent('click'));
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.false;
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).calledWith('igcClosed');
+        expect(eventSpy).callCount(2);
+
+        document.dispatchEvent(new MouseEvent('click'));
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.false;
+        expect(eventSpy).callCount(2);
+      });
+
+      it('can cancel `igcClosing` event when clicking outside', async () => {
+        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+
+        dropdown.addEventListener('igcClosing', (e) => e.preventDefault());
+
+        document.dispatchEvent(new MouseEvent('click'));
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.true;
+        expect(eventSpy).calledWith('igcClosing');
+        expect(eventSpy).not.calledWith('igcClosed');
       });
 
       it('does not close the list on clicking outside when `closeOnOutsideClick` is false.', async () => {

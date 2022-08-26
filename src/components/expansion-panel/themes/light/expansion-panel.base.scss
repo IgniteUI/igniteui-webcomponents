@@ -4,7 +4,10 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 
 :host {
+    --lines-clamped: 1;
+
     color: color(gray, 900);
+    background: color(surface, 500);
     width: auto;
     overflow: hidden;
     display: flex;
@@ -35,7 +38,7 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 
 [part='title']::slotted(*) {
     @include type-category('h5');
-    @include ellipsis();
+    @include line-clamp(var(--lines-clamped), true, true);
 
     margin: 0;
 }

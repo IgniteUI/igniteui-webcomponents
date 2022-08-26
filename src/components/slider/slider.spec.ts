@@ -10,7 +10,6 @@ import {
   defineComponents,
   IgcRangeSliderComponent,
   IgcSliderComponent,
-  IgcSliderLabelComponent,
 } from '../../index.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 
@@ -55,7 +54,7 @@ describe('Slider component', () => {
     let slider: IgcSliderComponent;
 
     before(() => {
-      defineComponents(IgcSliderComponent, IgcSliderLabelComponent);
+      defineComponents(IgcSliderComponent);
     });
 
     beforeEach(async () => {
@@ -504,7 +503,7 @@ describe('Slider component', () => {
 
       const line = steps.querySelector('line');
       expect(line!.getAttribute('stroke-dasharray')).to.eq(
-        '1.5px, calc(14.142135623730951% - 1.5px)'
+        '0, calc(14.142135623730951%)'
       );
     });
 

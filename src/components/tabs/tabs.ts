@@ -1,4 +1,3 @@
-import '../button/icon-button';
 import { html, LitElement, nothing } from 'lit';
 import {
   eventOptions,
@@ -8,21 +7,27 @@ import {
   state,
 } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { themes } from '../../theming/theming-decorator.js';
-import type IgcTabComponent from './tab';
-import type IgcTabPanelComponent from './tab-panel';
 import { styles } from './themes/light/tabs.base.css.js';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tabs.fluent.css.js';
 import { styles as indigo } from './themes/light/tabs.indigo.css.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { createCounter, getOffset } from '../common/util.js';
+import { createCounter, getOffset, isLTR } from '../common/util.js';
 import {
   getAttributesForTags,
   getNodesForTags,
   observerConfig,
 } from './utils.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcTabComponent from './tab.js';
+import IgcTabPanelComponent from './tab-panel.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
+
+defineComponents(IgcTabComponent, IgcTabPanelComponent, IgcIconButtonComponent);
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -48,6 +53,7 @@ export interface IgcTabsEventMap {
  * @csspart content - The container for the tabs content.
  */
 @themes({ bootstrap, fluent, indigo })
+@blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,
   Constructor<LitElement>
@@ -91,12 +97,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     return this.tabs.filter((tab) => !tab.disabled);
   }
 
-  protected get isLTR() {
-    return (
-      window.getComputedStyle(this).getPropertyValue('direction') === 'ltr'
-    );
-  }
-
   /** Returns the currently selected tab. */
   public get selected(): string {
     return this.activeTab?.panel ?? '';
@@ -126,7 +126,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       Object.assign(styles, {
         width: `${this.activeTab!.offsetWidth}px`,
         transform: `translate(${
-          this.isLTR
+          isLTR(this)
             ? getOffset(this.activeTab!, this.wrapper).left
             : getOffset(this.activeTab!, this.wrapper).right
         }px)`,
@@ -271,7 +271,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
     const { scrollLeft, offsetWidth } = this.container;
-    const LTR = this.isLTR,
+    const LTR = isLTR(this),
       next = direction === 'end';
 
     const pivot = Math.abs(next ? offsetWidth + scrollLeft : scrollLeft);
@@ -289,7 +289,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       .at(next ? 0 : -1)!.width;
 
     amount *= next ? 1 : -1;
-    this.container.scrollBy({ left: this.isLTR ? amount : -amount });
+    this.container.scrollBy({ left: LTR ? amount : -amount });
   }
 
   protected handleClick(event: MouseEvent) {
@@ -308,6 +308,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   protected handleKeyDown = (event: KeyboardEvent) => {
     const { key } = event;
     const enabledTabs = this.enabledTabs;
+    const ltr = isLTR(this);
 
     let index = enabledTabs.indexOf(
       document.activeElement?.closest('igc-tab') as IgcTabComponent
@@ -315,12 +316,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     switch (key) {
       case 'ArrowLeft':
-        index = this.isLTR
+        index = ltr
           ? (enabledTabs.length + index - 1) % enabledTabs.length
           : (index + 1) % enabledTabs.length;
         break;
       case 'ArrowRight':
-        index = this.isLTR
+        index = ltr
           ? (index + 1) % enabledTabs.length
           : (enabledTabs.length + index - 1) % enabledTabs.length;
         break;
@@ -365,6 +366,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     return this.showScrollButtons
       ? html`<igc-icon-button
+          tabindex="-1"
+          aria-hidden="true"
           size="large"
           variant="flat"
           collection="internal"

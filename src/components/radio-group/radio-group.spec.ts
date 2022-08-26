@@ -8,7 +8,7 @@ import {
 
 describe('Radio Group Component', () => {
   before(() => {
-    defineComponents(IgcRadioComponent, IgcRadioGroupComponent);
+    defineComponents(IgcRadioGroupComponent);
   });
 
   let group: IgcRadioGroupComponent;

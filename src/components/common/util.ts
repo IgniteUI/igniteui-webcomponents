@@ -41,10 +41,14 @@ export function getOffset(element: HTMLElement, parent: HTMLElement) {
   };
 }
 
-export function createCounter(start = 0) {
-  let i = start;
+export function createCounter() {
+  let i = 0;
   return function () {
     i++;
     return i;
   };
+}
+
+export function isLTR(element: HTMLElement) {
+  return getComputedStyle(element).getPropertyValue('direction') === 'ltr';
 }

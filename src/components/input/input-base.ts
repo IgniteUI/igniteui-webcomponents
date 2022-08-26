@@ -3,19 +3,18 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import type { ReactiveTheme, ThemeController } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { Direction } from '../common/types.js';
-import { partNameMap } from '../common/util.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/input.base.css.js';
 import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
 import { styles as fluent } from './themes/light/input.fluent.css.js';
 import { styles as indigo } from './themes/light/input.indigo.css.js';
 import { styles as material } from './themes/light/input.material.css.js';
-
-let nextId = 0;
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
@@ -27,6 +26,7 @@ export interface IgcInputEventMap {
 }
 
 @themes({ bootstrap, material, fluent, indigo })
+@blazorDeepImport
 export abstract class IgcInputBaseComponent
   extends SizableMixin(
     EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
@@ -38,8 +38,9 @@ export abstract class IgcInputBaseComponent
     delegatesFocus: true,
   };
   public static styles = styles;
+  private static readonly increment = createCounter();
 
-  protected inputId = `input-${nextId++}`;
+  protected inputId = `input-${IgcInputBaseComponent.increment()}`;
 
   /** The value attribute of the control. */
   @blazorSuppress()

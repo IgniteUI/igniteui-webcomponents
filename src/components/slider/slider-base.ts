@@ -16,7 +16,15 @@ import { styles as fluent } from './themes/light/slider.fluent.css.js';
 import { styles as indigo } from './themes/light/slider.indigo.css.js';
 import { styles as material } from './themes/light/slider.material.css.js';
 
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcSliderLabelComponent from './slider-label.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import { isLTR } from '../common/util.js';
+
+defineComponents(IgcSliderLabelComponent);
+
 @themes({ material, bootstrap, fluent, indigo })
+@blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;
 
@@ -288,11 +296,6 @@ export class IgcSliderBaseComponent extends LitElement {
       : this.max;
   }
 
-  private get isLTR(): boolean {
-    const styles = window.getComputedStyle(this);
-    return styles.getPropertyValue('direction') === 'ltr';
-  }
-
   protected validateValue(value: number) {
     value = this.valueInRange(value, this.actualMin, this.actualMax);
     value = this.normalizeByStep(value);
@@ -391,7 +394,7 @@ export class IgcSliderBaseComponent extends LitElement {
     const thumbPositionX = thumbBoundaries.left + thumbCenter;
 
     const scale = this.getBoundingClientRect().width / (this.max - this.min);
-    const change = this.isLTR
+    const change = isLTR(this)
       ? mouseX - thumbPositionX
       : thumbPositionX - mouseX;
 
@@ -462,13 +465,14 @@ export class IgcSliderBaseComponent extends LitElement {
     let increment = 0;
     const value = this.activeValue;
     const step = this.step ? this.step : 1;
+    const ltr = isLTR(this);
 
     switch (key) {
       case 'ArrowLeft':
-        increment += this.isLTR ? -step : step;
+        increment += ltr ? -step : step;
         break;
       case 'ArrowRight':
-        increment += this.isLTR ? step : -step;
+        increment += ltr ? step : -step;
         break;
       case 'ArrowUp':
         increment = step;
@@ -602,7 +606,7 @@ export class IgcSliderBaseComponent extends LitElement {
             x2="100%"
             y2="1"
             stroke="currentColor"
-            stroke-dasharray="1.5px, calc(${interval * Math.sqrt(2)}% - 1.5px)"
+            stroke-dasharray="0, calc(${interval * Math.sqrt(2)}%)"
             stroke-linecap="round"
             stroke-width="2px"
           ></line>
