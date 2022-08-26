@@ -1,0 +1,69 @@
+@use '../../../../styles/utilities' as utils;
+
+$input-background: var(--input-background, #fff) !default;
+
+:host {
+    ::slotted([slot='helper-text']) {
+        @include utils.type-category('body-2');
+
+        color: utils.color(gray, 700);
+    }
+}
+
+:host([disabled]) {
+    ::slotted([slot='helper-text']) {
+        color: utils.color(gray, 700);
+    }
+}
+
+:host(:focus-within) {
+    igc-input[readonly]:not([disabled])::part(input) {
+        box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 500, .38);
+        border-color: utils.color(primary, 500);
+    }
+}
+
+:host([invalid]),
+:host([invalid]:focus-within) {
+    igc-input[readonly]:not([disabled])::part(input) {
+        box-shadow: 0 0 0 utils.rem(4px) utils.color(error, 500, .38);
+        border-color: utils.color(error, 500);
+    }
+}
+
+igc-input[readonly]:not([disabled])::part(prefix),
+igc-input[readonly]:not([disabled])::part(suffix) {
+    color: utils.color(gray, 800);
+    background: utils.color(gray, 300);
+}
+
+igc-input[readonly]:not([disabled])::part(prefix),
+igc-input[readonly]:not([disabled])::part(suffix),
+igc-input[readonly]:not([disabled])::part(container) {
+    color: utils.color(gray, 800);
+}
+
+igc-input[readonly]:not([disabled])::part(container) {
+    background: $input-background;
+}
+
+igc-input[readonly]:not([disabled])::part(input) {
+    border-color: utils.color(gray, 400);
+}
+
+igc-input[disabled] {
+    pointer-events: none;
+}
+
+igc-input[disabled]::part(prefix),
+igc-input[disabled]::part(suffix),
+igc-input[disabled]::part(container) {
+    background: utils.color(gray, 100);
+    color: utils.color(gray, 400);
+}
+
+igc-input[disabled]::part(prefix),
+igc-input[disabled]::part(suffix),
+igc-input[disabled]::part(input) {
+    border-color: utils.color(gray, 300);
+}

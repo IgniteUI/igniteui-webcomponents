@@ -46,6 +46,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
     'igc-mask-input',
     'textarea',
     'igc-rating',
+    'igc-select',
     'igc-date-time-input',
   ];
   private _controlsThatSubmit = [
