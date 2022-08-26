@@ -544,8 +544,19 @@ export class IgcSliderBaseComponent extends LitElement {
     return groups;
   }
 
-  protected renderThumb(value: number, ariaLabel?: string, thumbId?: string) {
+  protected renderThumb(
+    value: number,
+    ariaLabel?: string,
+    thumbId?: string,
+    ariaValueText?: string
+  ) {
     const percent = `${this.valueToFraction(value) * 100}%`;
+
+    const textValue = this.labels
+      ? this.labels[value]
+      : this.valueFormat || this.valueFormatOptions
+      ? this.formatValue(value)
+      : ariaValueText;
 
     return html`
       <div
@@ -557,13 +568,7 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-valuemin=${this.actualMin}
         aria-valuemax=${this.actualMax}
         aria-valuenow=${value}
-        aria-valuetext=${ifDefined(
-          this.labels
-            ? this.labels[value]
-            : this.valueFormat || this.valueFormatOptions
-            ? this.formatValue(value)
-            : undefined
-        )}
+        aria-valuetext=${ifDefined(textValue)}
         aria-label=${ifDefined(ariaLabel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
         @pointerenter=${this.handleThumbPointerEnter}
