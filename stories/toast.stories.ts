@@ -66,7 +66,7 @@ const Template: Story<ArgTypes, Context> = ({
     display-time=${ifDefined(displayTime)}
     ?keep-open=${keepOpen}
   >
-    I am a showable message
+    Toast Message
   </igc-toast>
 `;
 
