@@ -94,7 +94,12 @@ const Template: Story<ArgTypes, Context> = (
         .open=${open}
         title=${ifDefined(title)}
         dir=${ifDefined(direction)}
-      ></igc-dialog>
+      >
+        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus rerum
+        enim, incidunt magni ea asperiores laudantium, ducimus itaque quisquam
+        dolore hic labore facere qui unde aliquam, dignissimos perspiciatis?
+        Iusto, iure.
+      </igc-dialog>
 
       <igc-dialog
         id="projected"

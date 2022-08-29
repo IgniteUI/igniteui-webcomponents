@@ -165,7 +165,9 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     if (e instanceof SubmitEvent && e.submitter) {
       this.returnValue = (e.submitter as any)?.value || '';
     }
-    this.hide();
+    if (!e.defaultPrevented) {
+      this.hide();
+    }
   };
 
   private handleSlotChange() {
@@ -197,12 +199,14 @@ export default class IgcDialogComponent extends EventEmitterMixin<
           <slot name="title"><span>${this.title}</span></slot>
         </header>
         <section part="content">
-          <slot @slotchange=${this.handleSlotChange}>
-            <igc-button @click=${this.hide}>Close</igc-button>
-          </slot>
+          <slot @slotchange=${this.handleSlotChange}></slot>
         </section>
         <footer part="footer">
-          <slot name="footer"></slot>
+          <slot name="footer"
+            ><igc-button variant="flat" @click=${this.hide}
+              >OK</igc-button
+            ></slot
+          >
         </footer>
       </dialog>
     `;
