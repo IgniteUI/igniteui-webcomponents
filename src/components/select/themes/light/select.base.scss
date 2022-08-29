@@ -1,0 +1,38 @@
+@use '../../../dropdown/themes/light/dropdown.base' as *;
+@use '../../../../styles/utilities' as utils;
+
+:host {
+    display: block;
+
+    ::slotted([slot='helper-text']) {
+        @include utils.type-category('caption');
+
+        color: utils.color(gray, 600);
+    }
+}
+
+[role='combobox'] {
+    outline-style: none;
+}
+
+:host([disabled]) {
+    ::slotted([slot='helper-text']) {
+        color: utils.color(gray, 400);
+    }
+
+    [role='combobox'] {
+        pointer-events: none;
+    }
+}
+
+igc-input {
+    cursor: pointer;
+}
+
+igc-input::part(input) {
+    cursor: pointer;
+
+    &::selection {
+        background: transparent;
+    }
+}

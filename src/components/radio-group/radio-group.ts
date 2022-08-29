@@ -1,7 +1,11 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import type { default as IgcRadioComponent } from '../radio/radio';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { isLTR } from '../common/util.js';
+import IgcRadioComponent from '../radio/radio.js';
 import { styles } from './radio-group.base.css.js';
+
+defineComponents(IgcRadioComponent);
 
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
@@ -13,11 +17,6 @@ export default class IgcRadioGroupComponent extends LitElement {
     selector: 'igc-radio:not([disabled])',
   })
   private radios!: Array<IgcRadioComponent>;
-
-  private get isLTR(): boolean {
-    const styles = window.getComputedStyle(this);
-    return styles.getPropertyValue('direction') === 'ltr';
-  }
 
   constructor() {
     super();
@@ -50,16 +49,17 @@ export default class IgcRadioGroupComponent extends LitElement {
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
       const checked = this.radios.find((radio) => radio.checked);
       let index = this.radios.indexOf(checked!);
+      const ltr = isLTR(this);
 
       switch (key) {
         case 'ArrowUp':
           index += -1;
           break;
         case 'ArrowLeft':
-          index += this.isLTR ? -1 : 1;
+          index += ltr ? -1 : 1;
           break;
         case 'ArrowRight':
-          index += this.isLTR ? 1 : -1;
+          index += ltr ? 1 : -1;
           break;
         default:
           index += 1;

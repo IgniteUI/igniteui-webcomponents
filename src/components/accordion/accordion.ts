@@ -4,6 +4,7 @@ import { styles } from './themes/accordion.base.css.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
 defineComponents(IgcExpansionPanelComponent);
 
@@ -28,6 +29,7 @@ export default class IgcAccordionComponent extends LitElement {
 
   /** Returns all of the accordions's direct igc-expansion-panel children. */
   @queryAssignedElements({ selector: 'igc-expansion-panel' })
+  @blazorSuppress()
   public panels!: Array<IgcExpansionPanelComponent>;
 
   constructor() {
