@@ -12,6 +12,7 @@
     position: relative;
     cursor: pointer;
     color: color(gray, 800);
+    outline-style: none;
 }
 
 :host(:hover),

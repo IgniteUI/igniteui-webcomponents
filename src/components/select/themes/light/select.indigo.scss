@@ -1,0 +1,33 @@
+@use '../../../../styles/utilities' as utils;
+
+$label-focus-color: var(--label-focus-color, utils.color(primary, 500)) !default;
+
+:host {
+    ::slotted([slot='helper-text']) {
+        color: utils.color(gray, 600);
+    }
+}
+
+:host([disabled]) {
+    ::slotted([slot='helper-text']) {
+        color: utils.color(gray, 300);
+    }
+}
+
+:host(:focus-within) {
+    igc-input[readonly]:not([disabled])::part(container) {
+        &::after {
+            transform: scaleY(1);
+        }
+    }
+}
+
+:host(:not([invalid]):focus-within) {
+    igc-input[readonly]:not([disabled])::part(container) {
+        background: utils.color(gray, 100);
+    }
+
+    igc-input[readonly]:not([disabled])::part(label) {
+        color: $label-focus-color;
+    }
+}
