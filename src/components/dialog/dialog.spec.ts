@@ -9,6 +9,10 @@ import sinon from 'sinon';
 import { defineComponents, IgcDialogComponent } from '../../index.js';
 
 describe('Dialog component', () => {
+  const fireMouseEvent = (type: string, opts: MouseEventInit) =>
+    new MouseEvent(type, opts);
+  const getBoundingRect = (el: Element) => el.getBoundingClientRect();
+
   before(() => {
     defineComponents(IgcDialogComponent);
   });
@@ -34,10 +38,74 @@ describe('Dialog component', () => {
 
     it('should render content inside the dialog', async () => {
       const content = 'Dialog content';
-      const dialog = await fixture<IgcDialogComponent>(
-        html`<igc-dialog>${content}</igc-dialog>`
+      dialog = await createDialogComponent(
+        `<igc-dialog><span>${content}</span></igc-dialog>`
       );
+
+      dialog.show();
+      await elementUpdated(dialog);
+
       expect(dialog).dom.to.have.text(content);
+      expect(dialog).dom.to.equal(
+        `
+        <igc-dialog>
+          <span>
+            Dialog content
+          </span>
+        </igc-dialog>`,
+        {
+          ignoreAttributes: [
+            'variant',
+            'aria-label',
+            'aria-disabled',
+            'aria-hidden',
+            'aria-labelledby',
+            'part',
+            'role',
+            'size',
+            'id',
+            'hidden',
+            'open',
+          ],
+        }
+      );
+    });
+
+    it('renders a dialog element internally with default button if no content is provided', async () => {
+      await expect(dialog).shadowDom.to.be.accessible();
+      expect(dialog).shadowDom.to.equal(
+        `
+        <div></div>
+        <dialog>
+          <header>
+            <slot name="title"><span></span></slot>
+          </header>
+          <section>
+            <slot></slot>
+          </section>
+          <footer>
+            <slot name="footer">
+              <igc-button>
+                OK
+              </igc-button>
+            </slot>
+          </footer>
+        </dialog>`,
+        {
+          ignoreAttributes: [
+            'variant',
+            'aria-label',
+            'aria-disabled',
+            'aria-hidden',
+            'aria-labelledby',
+            'part',
+            'role',
+            'size',
+            'id',
+            'hidden',
+          ],
+        }
+      );
     });
 
     it('show method should open the dialog', async () => {
@@ -72,39 +140,6 @@ describe('Dialog component', () => {
       dialog.toggle();
       await elementUpdated(dialog);
       expect(dialog.open).to.eq(true);
-    });
-
-    it('renders a dialog element internally', async () => {
-      await expect(dialog).shadowDom.to.be.accessible();
-      expect(dialog).shadowDom.to.equal(
-        `
-        <div></div>
-        <dialog>
-          <header>
-            <slot name="title"><span></span></slot>
-          </header>
-          <section>
-            <slot></slot>
-          </section>
-          <footer>
-            <slot name="footer"></slot>
-          </footer>
-        </dialog>`,
-        {
-          ignoreAttributes: [
-            'variant',
-            'aria-label',
-            'aria-disabled',
-            'aria-hidden',
-            'aria-labelledby',
-            'part',
-            'role',
-            'size',
-            'id',
-            'hidden',
-          ],
-        }
-      );
     });
 
     it('is created with the proper default values', async () => {
@@ -179,6 +214,93 @@ describe('Dialog component', () => {
       dialog.toggle();
       await elementUpdated(dialog);
       expect(eventSpy).calledOnceWith('igcClosing');
+    });
+
+    it('can cancel `igcClosing` event when clicking outside', async () => {
+      dialog.show();
+      await elementUpdated(dialog);
+
+      dialog.closeOnOutsideClick = true;
+      await elementUpdated(dialog);
+
+      const eventSpy = sinon.spy(dialog, 'emitEvent');
+      dialog.addEventListener('igcClosing', (e) => e.preventDefault());
+
+      const { x, y } = getBoundingRect(dialog);
+      dialogEl.dispatchEvent(
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x - 1,
+          clientY: y - 1,
+        })
+      );
+      await elementUpdated(dialog);
+
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).not.calledWith('igcClosed');
+    });
+
+    it('does not close the dialog on clicking outside when `closeOnOutsideClick` is false.', async () => {
+      dialog.show();
+      await elementUpdated(dialog);
+
+      dialog.closeOnOutsideClick = false;
+      await elementUpdated(dialog);
+
+      const { x, y } = getBoundingRect(dialog);
+      dialogEl.dispatchEvent(
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x - 1,
+          clientY: y - 1,
+        })
+      );
+      await elementUpdated(dialog);
+
+      expect(dialog.open).to.be.true;
+    });
+
+    it('closes the dialog on clicking outside when `closeOnOutsideClick` is true.', async () => {
+      dialog.show();
+      await elementUpdated(dialog);
+
+      dialog.closeOnOutsideClick = true;
+      await elementUpdated(dialog);
+
+      const { x, y } = getBoundingRect(dialog);
+      dialogEl.dispatchEvent(
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x - 1,
+          clientY: y - 1,
+        })
+      );
+      await elementUpdated(dialog);
+
+      expect(dialog.open).to.be.false;
+    });
+
+    it('closes the dialog when form with method=dialog is submitted', async () => {
+      dialog = await createDialogComponent(`
+        <igc-dialog>
+          <igc-form id="form" method="dialog">
+            <igc-button type="submit">Confirm</igc-button>
+          </igc-form>
+        </igc-dialog>
+        `);
+      await elementUpdated(dialog);
+
+      dialog.show();
+      await elementUpdated(dialog);
+
+      const form = document.getElementById('form');
+      form?.dispatchEvent(new Event('igcSubmit'));
+      await elementUpdated(dialog);
+
+      expect(dialog.open).to.eq(false);
     });
 
     const createDialogComponent = (template = `<igc-dialog></igc-dialog>`) => {

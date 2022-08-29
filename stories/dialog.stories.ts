@@ -110,9 +110,11 @@ const Template: Story<ArgTypes, Context> = (
         <h4 slot="title">Danger</h4>
         <p>Doing this action is irrevocable?</p>
         <div slot="footer">
-          <igc-button @click=${() => closeDialog('projected')}>OK</igc-button>
-          <igc-button @click=${() => closeDialog('projected')}
+          <igc-button @click=${() => closeDialog('projected')} variant="flat"
             >Cancel</igc-button
+          >
+          <igc-button @click=${() => closeDialog('projected')} variant="flat"
+            >OK</igc-button
           >
         </div>
       </igc-dialog>
@@ -147,8 +149,8 @@ const Template: Story<ArgTypes, Context> = (
               </igc-dropdown>
             </div>
             <div style="display: flex; gap: 1rem; margin-top: 1rem">
-              <igc-button type="submit">Confirm</igc-button>
-              <igc-button type="reset">Reset</igc-button>
+              <igc-button type="reset" variant="flat">Reset</igc-button>
+              <igc-button type="submit" variant="flat">Confirm</igc-button>
             </div>
           </igc-form>
         </div>
