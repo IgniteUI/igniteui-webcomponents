@@ -36,13 +36,6 @@ export default class IgcToastComponent extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
   public keepOpen = false;
 
-  constructor() {
-    super();
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'alert');
-    }
-  }
-
   /** Closes the toast. */
   public hide() {
     if (this.open) {
@@ -71,6 +64,16 @@ export default class IgcToastComponent extends LitElement {
       this.hide();
     } else {
       this.show();
+    }
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'alert');
+    }
+    if (!this.hasAttribute('aria-live')) {
+      this.setAttribute('aria-live', 'polite');
     }
   }
 
