@@ -34,6 +34,7 @@ const Template: Story<ArgTypes, Context> = (
           <igc-card-media style="max-height: 194px">
             <img
               src="https://images.unsplash.com/photo-1518235506717-e1ed3306a89b?ixlib=rb-1.2.1&auto=format&fit=crop&w=320&q=180"
+              alt="View of New York City"
             />
           </igc-card-media>
           <igc-card-header>
@@ -78,6 +79,7 @@ const Template: Story<ArgTypes, Context> = (
           <igc-card-media style="max-height: 194px">
             <img
               src="https://images.unsplash.com/photo-1518235506717-e1ed3306a89b?ixlib=rb-1.2.1&auto=format&fit=crop&w=320&q=180"
+              alt="View of New York City"
             />
           </igc-card-media>
           <igc-card-content>
@@ -153,6 +155,7 @@ const Template: Story<ArgTypes, Context> = (
             <igc-card-media style="max-width: 96px">
               <img
                 src="https://www.infragistics.com/angular-demos/assets/images/card/media/here_media.jpg"
+                alt="Album cover"
               />
             </igc-card-media>
           </div>
