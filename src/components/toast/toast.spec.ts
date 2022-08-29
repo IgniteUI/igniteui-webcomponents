@@ -39,21 +39,19 @@ describe('Toast', () => {
       toast.setAttribute('display-time', `10000`);
       await elementUpdated(toast);
       expect(toast.displayTime).to.eq(10000);
-      expect(toast).dom.to.equal(
-        `<igc-toast display-time='10000'></igc-toast>`
-      );
+      expect(toast).dom.to.have.attribute('display-time', '10000');
     });
 
     it('should change the toast keepOpen option correctly.', async () => {
       toast.keepOpen = true;
       expect(toast.keepOpen).to.be.true;
       await elementUpdated(toast);
-      expect(toast).dom.to.equal(`<igc-toast keep-open></igc-toast>`);
+      expect(toast).dom.to.have.attribute('keep-open');
 
       toast.keepOpen = false;
       expect(toast.keepOpen).to.be.false;
       await elementUpdated(toast);
-      expect(toast).dom.to.equal(`<igc-toast></igc-toast>`);
+      expect(toast).dom.to.not.have.attribute('keep-open');
     });
 
     it('show method should open the toast', async () => {
