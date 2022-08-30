@@ -1,0 +1,14 @@
+@use '../../../styles/common/component';
+@use '../../../styles/utilities' as *;
+
+:host([orientation='horizontal']) {
+    display: flex;
+}
+
+:host([orientation='vertical']) {
+    flex-direction: column;
+}
+
+igc-step {
+    background: red;
+}

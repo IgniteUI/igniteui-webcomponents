@@ -8,12 +8,21 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { IgcStepperEventMap } from './stepper.common';
 import IgcStepComponent from './step';
 import { Direction } from '../common/types.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from '../stepper/themes/stepper.base.css.js';
+import { styles as bootstrap } from '../stepper/themes/light/stepper.bootstrap.css.js';
+import { styles as indigo } from '../stepper/themes/light/stepper.indigo.css.js';
+import { styles as fluent } from '../stepper/themes/light/stepper.fluent.css.js';
+import { styles as material } from '../stepper/themes/light/stepper.material.css.js';
 
 defineComponents(IgcStepComponent);
 
+@themes({ bootstrap, indigo, fluent, material })
 export default class IgcStepperComponent extends SizableMixin(
   EventEmitterMixin<IgcStepperEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  protected static styles = styles;
+
   /** @private */
   public static readonly tagName = 'igc-stepper';
   // /** @private */

@@ -1,12 +1,16 @@
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcStepperComponent from './stepper';
+import { styles } from '../stepper/themes/step.base.css.js';
+import { themes } from '../../theming';
 
+@themes({})
 export default class IgcStepComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-step';
-  // /** @private */
-  // public static styles = styles;
+
+  /** @private */
+  public static override styles = styles;
 
   /** A reference to the stepper the step is a part of. */
   public stepper?: IgcStepperComponent;
@@ -62,10 +66,10 @@ export default class IgcStepComponent extends LitElement {
   protected renderIndicator() {
     if (this.stepper?.stepType !== 'title') {
       return html`
-        <div>
-          <slot name="indicator">
-            <span>${this.index + 1}</span>
-          </slot>
+        <div part="indicator">
+          <span>
+            <slot name="indicator"> ${this.index + 1} </slot>
+          </span>
         </div>
       `;
     } else {
@@ -77,10 +81,12 @@ export default class IgcStepComponent extends LitElement {
     if (this.stepper?.stepType !== 'indicator') {
       return html`
         <div>
-          <slot name="title"></slot>
-        </div>
-        <div>
-          <slot name="sub-title"></slot>
+          <div part="title">
+            <slot name="title"></slot>
+          </div>
+          <div part="subtitle">
+            <slot name="sub-title"></slot>
+          </div>
         </div>
       `;
     } else {
@@ -89,14 +95,16 @@ export default class IgcStepComponent extends LitElement {
   }
 
   protected renderContent() {
-    return html`<div>
+    return html`<div part="body">
       <slot></slot>
     </div>`;
   }
 
   protected override render() {
     return html`
-      ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+      <div part="header">
+        ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+      </div>
       ${this.renderContent()}
     `;
   }
