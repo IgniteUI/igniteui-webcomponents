@@ -51,17 +51,40 @@ export default class IgcStepComponent extends LitElement {
     this.stepper = this.closest('igc-stepper') as IgcStepperComponent;
   }
 
-  private get parts() {
-    return {
-      header: true,
-      first: this.index === 0,
-      last: this.index === this.stepper!.steps.length - 1,
-    };
-  }
-
   /** Gets the step index inside of the stepper. */
   public get index(): number {
     return this.stepper ? this.stepper.steps.indexOf(this) : -1;
+  }
+
+  private get headerParts() {
+    return {
+      header: true,
+      top: this.stepper?.titlePosition === 'top',
+      bottom: this.stepper?.titlePosition === 'bottom',
+      start: this.stepper?.titlePosition === 'start',
+      end: this.stepper?.titlePosition === 'end',
+    };
+  }
+
+  private get headerContainerParts() {
+    return {
+      'header-container': true,
+      disabled: this.disabled,
+      optional: this.optional,
+      'active-header': this.active,
+      invalid: !this.valid && !this.active,
+    };
+  }
+
+  private get bodyParts() {
+    return {
+      body: true,
+      'active-body': this.active,
+      'content-top':
+        (this.stepper?.orientation === 'horizontal' &&
+          this.stepper?.contentTop) ||
+        false,
+    };
   }
 
   protected renderIndicator() {
@@ -69,7 +92,7 @@ export default class IgcStepComponent extends LitElement {
       return html`
         <div part="indicator">
           <slot name="indicator">
-            <span part="inner"> ${this.index + 1} </span>
+            <span part="inner">${this.index + 1}</span>
           </slot>
         </div>
       `;
@@ -96,7 +119,7 @@ export default class IgcStepComponent extends LitElement {
   }
 
   protected renderContent() {
-    return html`<div part="body">
+    return html`<div part="${partNameMap(this.bodyParts)}">
       <div part="content">
         <slot></slot>
       </div>
@@ -105,8 +128,8 @@ export default class IgcStepComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div part="header-container">
-        <div part="${partNameMap(this.parts)}">
+      <div part="${partNameMap(this.headerContainerParts)}">
+        <div part="${partNameMap(this.headerParts)}">
           ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
         </div>
       </div>

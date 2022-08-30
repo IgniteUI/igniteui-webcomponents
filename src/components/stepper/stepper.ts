@@ -1,6 +1,5 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { watch } from '../common/decorators';
 import { defineComponents } from '../common/definitions/defineComponents';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -21,10 +20,11 @@ defineComponents(IgcStepComponent);
 export default class IgcStepperComponent extends SizableMixin(
   EventEmitterMixin<IgcStepperEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  protected static styles = styles;
-
   /** @private */
   public static readonly tagName = 'igc-stepper';
+
+  /** @private */
+  protected static styles = styles;
 
   @queryAssignedElements({ selector: 'igc-step' })
   public steps!: Array<IgcStepComponent>;
@@ -76,13 +76,6 @@ export default class IgcStepperComponent extends SizableMixin(
   /** The direction attribute of the control. */
   @property({ reflect: true })
   public override dir: Direction = 'auto';
-
-  @watch('stepType', { waitUntilFirstUpdate: true })
-  protected selectionModeChange(): void {
-    this.steps?.forEach((step: IgcStepComponent) => {
-      step.requestUpdate();
-    });
-  }
 
   private stepsChange(): void {
     this.steps?.forEach((step: IgcStepComponent) => {
