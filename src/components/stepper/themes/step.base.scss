@@ -6,7 +6,7 @@
     position: initial;
 
     &:last-of-type {
-        [part='header'] {
+        [part~='header'] {
             &::after {
                 display: none;
             }
@@ -22,7 +22,7 @@
         width: 100%;
     }
 
-    [part='header'] {
+    [part~='header'] {
         &::after {
             content: '';
             flex: 1;
@@ -33,8 +33,14 @@
     }
 }
 
+[part~='last'] {
+    &::after {
+        display: none;
+    }
+}
+
 :host([orientation='vertical']) {
-    [part='header'] {
+    [part~='header'] {
         margin-block-end: rem(8px);
     }
 
@@ -67,7 +73,7 @@
     }
 }
 
-[part='header'] {
+[part~='header'] {
     padding: rem(8px);
     display: flex;
     align-items: center;

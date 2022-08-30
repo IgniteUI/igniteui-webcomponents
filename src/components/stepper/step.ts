@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import IgcStepperComponent from './stepper';
 import { styles } from '../stepper/themes/step.base.css.js';
 import { themes } from '../../theming';
+import { partNameMap } from '../common/util.js';
 
 @themes({})
 export default class IgcStepComponent extends LitElement {
@@ -50,13 +51,13 @@ export default class IgcStepComponent extends LitElement {
     this.stepper = this.closest('igc-stepper') as IgcStepperComponent;
   }
 
-  // private get parts() {
-  //   return {
-  //     // selected: this.selected,
-  //     // focused: this.isFocused,
-  //     // active: this.active,
-  //   };
-  // }
+  private get parts() {
+    return {
+      header: true,
+      first: this.index === 0,
+      last: this.index === this.stepper!.steps.length - 1,
+    };
+  }
 
   /** Gets the step index inside of the stepper. */
   public get index(): number {
@@ -67,9 +68,9 @@ export default class IgcStepComponent extends LitElement {
     if (this.stepper?.stepType !== 'title') {
       return html`
         <div part="indicator">
-          <span>
-            <slot name="indicator"> ${this.index + 1} </slot>
-          </span>
+          <slot name="indicator">
+            <span> ${this.index + 1} </span>
+          </slot>
         </div>
       `;
     } else {
@@ -102,7 +103,7 @@ export default class IgcStepComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div part="header">
+      <div part="${partNameMap(this.parts)}">
         ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
       </div>
       ${this.renderContent()}
