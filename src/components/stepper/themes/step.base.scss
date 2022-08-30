@@ -4,6 +4,9 @@
 :host {
     flex: 1;
     position: initial;
+    align-content: center;
+    justify-content: center;
+    min-width: 6.25rem;
 
     &:last-of-type {
         [part~='header'] {
@@ -15,8 +18,13 @@
 }
 
 :host([orientation='horizontal']) {
+    overflow: hidden;
+    flex-direction: row;
+    flex-grow: 1;
+
     [part~='body'] {
         position: absolute;
+        top: 100%;
         left: 0;
         right: 0;
         width: 100%;
@@ -37,6 +45,7 @@
             content: '';
             flex: 1;
             width: 100%;
+            min-width: rem(20px);
             height: 1px;
             background: red;
         }
@@ -77,13 +86,25 @@
     }
 }
 
+[part~='text'],
+[part~='subtitle'],
+[part~='title'] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 [part~='header'] {
+    position: relative;
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     padding: rem(8px);
     gap: rem(8px);
+    overflow: hidden;
 
     &:hover {
+        cursor: pointer;
         background: #ccc;
     }
 }

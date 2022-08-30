@@ -81,7 +81,7 @@ export default class IgcStepComponent extends LitElement {
   protected renderTitleAndSubtitle() {
     if (this.stepper?.stepType !== 'indicator') {
       return html`
-        <div>
+        <div part="text">
           <div part="title">
             <slot name="title"></slot>
           </div>
