@@ -49,6 +49,9 @@ export default class IgcStepComponent extends LitElement {
   public override connectedCallback(): void {
     super.connectedCallback();
     this.stepper = this.closest('igc-stepper') as IgcStepperComponent;
+    this.part.add(
+      this.stepper.orientation === 'horizontal' ? 'horizontal' : 'vertical'
+    );
   }
 
   /** Gets the step index inside of the stepper. */

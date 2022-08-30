@@ -13,6 +13,7 @@ import { styles as bootstrap } from '../stepper/themes/light/stepper.bootstrap.c
 import { styles as indigo } from '../stepper/themes/light/stepper.indigo.css.js';
 import { styles as fluent } from '../stepper/themes/light/stepper.fluent.css.js';
 import { styles as material } from '../stepper/themes/light/stepper.material.css.js';
+import { watch } from '../common/decorators/watch.js';
 
 defineComponents(IgcStepComponent);
 
@@ -77,6 +78,21 @@ export default class IgcStepperComponent extends SizableMixin(
   /** The direction attribute of the control. */
   @property({ reflect: true })
   public override dir: Direction = 'auto';
+
+  @watch('orientation', { waitUntilFirstUpdate: true })
+  protected orientationChange(): void {
+    if (this.orientation === 'vertical') {
+      this.steps.forEach((step: IgcStepComponent) => {
+        step.part.remove('horizontal');
+        step.part.add('vertical');
+      });
+    } else {
+      this.steps.forEach((step: IgcStepComponent) => {
+        step.part.remove('vertical');
+        step.part.add('horizontal');
+      });
+    }
+  }
 
   private stepsChange(): void {
     this.steps?.forEach((step: IgcStepComponent) => {

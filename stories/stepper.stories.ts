@@ -80,7 +80,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       .size=${size}
       .dir=${direction}
     >
-      <igc-step orientation=${orientation}>
+      <igc-step>
         <span slot="indicator">1</span>
         <span slot="title"
           >Step1 Step1asdasd Step1asdasada asd asd asd asd Step1</span
@@ -90,13 +90,13 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         >
         <span>STEP 1 CONTENT</span>
       </igc-step>
-      <igc-step orientation=${orientation}>
+      <igc-step active>
         <span slot="indicator">2</span>
         <span slot="title">Step2</span>
         <span slot="sub-title">Step subtitle 2</span>
         <span>STEP 2 CONTENT</span>
       </igc-step>
-      <igc-step orientation=${orientation}>
+      <igc-step>
         <span slot="indicator">3</span>
         <span slot="title">Step3</span>
         <span slot="sub-title">Step subtitle 3</span>
