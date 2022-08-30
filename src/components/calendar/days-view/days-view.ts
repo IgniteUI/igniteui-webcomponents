@@ -57,6 +57,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-days-view';
   public static styles = styles;
+  private labelFormatter!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];
 
@@ -113,6 +114,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   private initFormatters() {
     this.formatterWeekday = new Intl.DateTimeFormat(this.locale, {
       weekday: this.weekDayFormat,
+    });
+    this.labelFormatter = new Intl.DateTimeFormat(this.locale, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   }
 
@@ -538,6 +545,16 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     });
   }
 
+  protected dayLabelFormatter(value: ICalendarDate) {
+    if (this.isFirstInRange(value) || this.isLastInRange(value)) {
+      return (this.labelFormatter as any).formatRange(
+        this.values!.at(0),
+        this.values!.at(-1)
+      );
+    }
+    return this.labelFormatter.format(value.date);
+  }
+
   private renderDateItem(day: ICalendarDate) {
     const datePartName = partNameMap(this.resolveDayItemPartName(day));
     const dateInnerPartName = datePartName.replace('date', 'date-inner');
@@ -546,11 +563,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       <span
         part=${dateInnerPartName}
         role="gridcell"
-        aria-label=${day.date.toLocaleString(this.locale, {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
+        aria-label=${this.dayLabelFormatter(day)}
         aria-selected=${this.isSelected(day)}
         aria-disabled=${this.isDisabled(day.date)}
         tabindex=${this.active && areEqualDates(this.activeDate, day.date)
