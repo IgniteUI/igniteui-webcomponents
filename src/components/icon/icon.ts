@@ -78,7 +78,9 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   public override connectedCallback() {
     super.connectedCallback();
-    this.setAttribute('role', 'img');
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'img');
+    }
     IconsRegistry.instance().subscribe(this.iconLoaded);
   }
 

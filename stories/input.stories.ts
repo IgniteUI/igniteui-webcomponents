@@ -79,6 +79,11 @@ const metadata = {
       description: 'The autocomplete attribute of the control.',
       control: 'text',
     },
+    tabIndex: {
+      type: 'number',
+      control: 'number',
+      defaultValue: '0',
+    },
     value: {
       type: 'string',
       description: 'The value attribute of the control.',
@@ -155,6 +160,7 @@ interface ArgTypes {
   step: number;
   autofocus: boolean;
   autocomplete: string;
+  tabIndex: number;
   value: string;
   name: string;
   outlined: boolean;

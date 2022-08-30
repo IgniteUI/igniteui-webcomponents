@@ -10,13 +10,15 @@ const metadata = {
   argTypes: {
     max: {
       type: 'number',
-      description: 'The maximum value for the rating',
+      description:
+        'The maximum value for the rating.\n\nIf there are projected symbols, the maximum value will be resolved\nbased on the number of symbols.',
       control: 'number',
       defaultValue: '5',
     },
     step: {
       type: 'number',
-      description: 'The minimum value change allowed.',
+      description:
+        'The minimum value change allowed.\n\nValid values are in the interval between 0 and 1 inclusive.',
       control: 'number',
       defaultValue: '1',
     },
@@ -33,7 +35,7 @@ const metadata = {
     valueFormat: {
       type: 'string',
       description:
-        "A format string which sets aria-valuetext. All instances of '{0}' will be replaced\nwith the current value of the control.\nImportant for screen-readers and useful for localization.",
+        "A format string which sets aria-valuetext. Instances of '{0}' will be replaced\nwith the current value of the control and instances of '{1}' with the maximum value for the control.\n\nImportant for screen-readers and useful for localization.",
       control: 'text',
     },
     value: {
