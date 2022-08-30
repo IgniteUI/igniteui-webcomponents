@@ -1,0 +1,16 @@
+@use '../../../styles/common/component';
+@use '../../../styles/utilities' as *;
+
+:host([orientation='horizontal']) {
+    display: flex;
+}
+
+:host([orientation='vertical']) {
+    flex-direction: column;
+}
+
+::slotted(igc-step:last-of-type) {
+    --dispaly: none;
+
+    flex: 0;
+}

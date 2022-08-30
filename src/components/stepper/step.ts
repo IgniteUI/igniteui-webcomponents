@@ -1,12 +1,17 @@
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import IgcStepperComponent from './stepper';
+import { styles } from '../stepper/themes/step.base.css.js';
+import { themes } from '../../theming';
+import { partNameMap } from '../common/util.js';
 
+@themes({})
 export default class IgcStepComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-step';
-  // /** @private */
-  // public static styles = styles;
+
+  /** @private */
+  public static override styles = styles;
 
   /** A reference to the stepper the step is a part of. */
   public stepper?: IgcStepperComponent;
@@ -46,25 +51,48 @@ export default class IgcStepComponent extends LitElement {
     this.stepper = this.closest('igc-stepper') as IgcStepperComponent;
   }
 
-  // private get parts() {
-  //   return {
-  //     // selected: this.selected,
-  //     // focused: this.isFocused,
-  //     // active: this.active,
-  //   };
-  // }
-
   /** Gets the step index inside of the stepper. */
   public get index(): number {
     return this.stepper ? this.stepper.steps.indexOf(this) : -1;
   }
 
+  private get headerParts() {
+    return {
+      header: true,
+      top: this.stepper?.titlePosition === 'top',
+      bottom: this.stepper?.titlePosition === 'bottom',
+      start: this.stepper?.titlePosition === 'start',
+      end: this.stepper?.titlePosition === 'end',
+    };
+  }
+
+  private get headerContainerParts() {
+    return {
+      'header-container': true,
+      disabled: this.disabled,
+      optional: this.optional,
+      'active-header': this.active,
+      invalid: !this.valid && !this.active,
+    };
+  }
+
+  private get bodyParts() {
+    return {
+      body: true,
+      'active-body': this.active,
+      'content-top':
+        (this.stepper?.orientation === 'horizontal' &&
+          this.stepper?.contentTop) ||
+        false,
+    };
+  }
+
   protected renderIndicator() {
     if (this.stepper?.stepType !== 'title') {
       return html`
-        <div>
+        <div part="indicator">
           <slot name="indicator">
-            <span>${this.index + 1}</span>
+            <span part="inner">${this.index + 1}</span>
           </slot>
         </div>
       `;
@@ -76,11 +104,13 @@ export default class IgcStepComponent extends LitElement {
   protected renderTitleAndSubtitle() {
     if (this.stepper?.stepType !== 'indicator') {
       return html`
-        <div>
-          <slot name="title"></slot>
-        </div>
-        <div>
-          <slot name="sub-title"></slot>
+        <div part="text">
+          <div part="title">
+            <slot name="title"></slot>
+          </div>
+          <div part="subtitle">
+            <slot name="sub-title"></slot>
+          </div>
         </div>
       `;
     } else {
@@ -89,14 +119,20 @@ export default class IgcStepComponent extends LitElement {
   }
 
   protected renderContent() {
-    return html`<div>
-      <slot></slot>
+    return html`<div part="${partNameMap(this.bodyParts)}">
+      <div part="content">
+        <slot></slot>
+      </div>
     </div>`;
   }
 
   protected override render() {
     return html`
-      ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+      <div part="${partNameMap(this.headerContainerParts)}">
+        <div part="${partNameMap(this.headerParts)}">
+          ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+        </div>
+      </div>
       ${this.renderContent()}
     `;
   }

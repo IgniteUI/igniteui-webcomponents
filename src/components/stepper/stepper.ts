@@ -1,6 +1,5 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { watch } from '../common/decorators';
 import { defineComponents } from '../common/definitions/defineComponents';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -8,17 +7,26 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { IgcStepperEventMap } from './stepper.common';
 import IgcStepComponent from './step';
 import { Direction } from '../common/types.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from '../stepper/themes/stepper.base.css.js';
+import { styles as bootstrap } from '../stepper/themes/light/stepper.bootstrap.css.js';
+import { styles as indigo } from '../stepper/themes/light/stepper.indigo.css.js';
+import { styles as fluent } from '../stepper/themes/light/stepper.fluent.css.js';
+import { styles as material } from '../stepper/themes/light/stepper.material.css.js';
 
 defineComponents(IgcStepComponent);
 
+@themes({ bootstrap, indigo, fluent, material })
 export default class IgcStepperComponent extends SizableMixin(
   EventEmitterMixin<IgcStepperEventMap, Constructor<LitElement>>(LitElement)
 ) {
   /** @private */
   public static readonly tagName = 'igc-stepper';
-  // /** @private */
-  // public static styles = styles;
 
+  /** @private */
+  protected static styles = styles;
+
+  /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
   public steps!: Array<IgcStepComponent>;
 
@@ -69,13 +77,6 @@ export default class IgcStepperComponent extends SizableMixin(
   /** The direction attribute of the control. */
   @property({ reflect: true })
   public override dir: Direction = 'auto';
-
-  @watch('stepType', { waitUntilFirstUpdate: true })
-  protected selectionModeChange(): void {
-    this.steps?.forEach((step: IgcStepComponent) => {
-      step.requestUpdate();
-    });
-  }
 
   private stepsChange(): void {
     this.steps?.forEach((step: IgcStepComponent) => {
