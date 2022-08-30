@@ -69,7 +69,7 @@ export default class IgcStepComponent extends LitElement {
       return html`
         <div part="indicator">
           <slot name="indicator">
-            <span> ${this.index + 1} </span>
+            <span part="inner"> ${this.index + 1} </span>
           </slot>
         </div>
       `;
@@ -97,14 +97,18 @@ export default class IgcStepComponent extends LitElement {
 
   protected renderContent() {
     return html`<div part="body">
-      <slot></slot>
+      <div part="content">
+        <slot></slot>
+      </div>
     </div>`;
   }
 
   protected override render() {
     return html`
-      <div part="${partNameMap(this.parts)}">
-        ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+      <div part="header-container">
+        <div part="${partNameMap(this.parts)}">
+          ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+        </div>
       </div>
       ${this.renderContent()}
     `;

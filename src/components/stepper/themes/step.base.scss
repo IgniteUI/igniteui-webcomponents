@@ -15,15 +15,25 @@
 }
 
 :host([orientation='horizontal']) {
-    [part='body'] {
+    [part~='body'] {
         position: absolute;
         left: 0;
         right: 0;
         width: 100%;
     }
 
-    [part~='header'] {
+    [part~='content'] {
+        overflow: hidden;
+        position: relative;
+    }
+
+    [part~='header-container'] {
+        display: flex;
+        align-items: center;
+        position: relative;
+
         &::after {
+            display: var(--dispaly);
             content: '';
             flex: 1;
             width: 100%;
@@ -33,18 +43,12 @@
     }
 }
 
-[part~='last'] {
-    &::after {
-        display: none;
-    }
-}
-
-:host([orientation='vertical']) {
+:host([orientation~='vertical']) {
     [part~='header'] {
         margin-block-end: rem(8px);
     }
 
-    [part='body'] {
+    [part~='body'] {
         margin-inline-start: rem(28px);
         padding-block-start: rem(8px);
         padding-block-end: rem(8px);
@@ -54,7 +58,7 @@
     }
 }
 
-[part='indicator'] {
+[part~='indicator'] {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -62,7 +66,7 @@
     height: rem(40px);
     padding: rem(8px);
 
-    span {
+    [name~='indicator']::slotted(span) {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -74,14 +78,16 @@
 }
 
 [part~='header'] {
-    padding: rem(8px);
     display: flex;
     align-items: center;
-    border-radius: 50%;
+    padding: rem(8px);
     gap: rem(8px);
-    position: revert;
+
+    &:hover {
+        background: #ccc;
+    }
 }
 
-[part='body'] {
+[part~='body'] {
     background: #fff;
 }

@@ -25,8 +25,6 @@ export default class IgcStepperComponent extends SizableMixin(
 
   /** @private */
   public static readonly tagName = 'igc-stepper';
-  // /** @private */
-  // public static styles = styles;
 
   @queryAssignedElements({ selector: 'igc-step' })
   public steps!: Array<IgcStepComponent>;

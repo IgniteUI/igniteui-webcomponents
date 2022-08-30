@@ -9,6 +9,8 @@
     flex-direction: column;
 }
 
-igc-step {
-    background: red;
+::slotted(igc-step:last-of-type) {
+    --dispaly: none;
+
+    flex: 0;
 }
