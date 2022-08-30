@@ -79,16 +79,30 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected get valueText() {
+    // Skip IEEE 754 representation for screen readers
+    const value = this.round(this.value);
+
     return this.valueFormat
-      ? this.valueFormat.replace(/\{0\}/gm, `${this.value}`)
-      : this.value;
+      ? this.valueFormat
+          .replace(/\{0\}/gm, `${value}`)
+          .replace(/\{1\}/gm, `${this.max}`)
+      : `${value} of ${this.max}`;
   }
 
-  /** The maximum value for the rating */
+  /**
+   * The maximum value for the rating.
+   *
+   * If there are projected symbols, the maximum value will be resolved
+   * based on the number of symbols.
+   */
   @property({ type: Number })
   public max = 5;
 
-  /** The minimum value change allowed. */
+  /**
+   * The minimum value change allowed.
+   *
+   * Valid values are in the interval between 0 and 1 inclusive.
+   */
   @property({ type: Number })
   public step = 1;
 
@@ -101,8 +115,9 @@ export default class IgcRatingComponent extends SizableMixin(
   public label!: string;
 
   /**
-   * A format string which sets aria-valuetext. All instances of '{0}' will be replaced
-   * with the current value of the control.
+   * A format string which sets aria-valuetext. Instances of '{0}' will be replaced
+   * with the current value of the control and instances of '{1}' with the maximum value for the control.
+   *
    * Important for screen-readers and useful for localization.
    */
   @property({ attribute: 'value-format' })
@@ -358,12 +373,14 @@ export default class IgcRatingComponent extends SizableMixin(
     ];
 
     return html`
-      <label part="label" ?hidden=${!this.label}>${this.label}</label>
+      <label part="label" id="rating-label" ?hidden=${!this.label}
+        >${this.label}</label
+      >
       <div
         part="base"
         role="slider"
         tabindex=${ifDefined(this.disabled ? undefined : 0)}
-        aria-label=${this.label ?? nothing}
+        aria-labelledby="rating-label"
         aria-valuemin="0"
         aria-valuenow=${this.value}
         aria-valuemax=${this.max}

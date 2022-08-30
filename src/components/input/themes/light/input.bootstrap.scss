@@ -7,11 +7,23 @@ $input-background: var(--input-background, #fff) !default;
         background: none;
     }
 
+    [part~='container'] {
+        @include utils.border-radius(utils.rem(4px));
+
+        border-style: none;
+        grid-template-columns: auto 1fr auto;
+        background: $input-background;
+
+        &::after {
+            display: none;
+        }
+    }
+
     [part~='input'] {
         @include utils.border-radius(utils.rem(4px));
 
         padding: initial;
-        background: $input-background;
+        background: inherit;
         box-shadow: 0 0 0 0 transparent;
         z-index: 1;
         border: 1px solid utils.color(gray, 400);
@@ -19,14 +31,18 @@ $input-background: var(--input-background, #fff) !default;
         grid-area: 1 / 2;
     }
 
-    [part~='prefixed'] {
+    [part*='input prefixed'] {
         border-start-start-radius: 0;
         border-end-start-radius: 0;
     }
 
-    [part~='suffixed'] {
+    [part*='input suffixed'] {
         border-start-end-radius: 0;
         border-end-end-radius: 0;
+    }
+
+    [part*='input prefixed suffixed'] {
+        border-radius: 0;
     }
 
     label {
@@ -35,15 +51,6 @@ $input-background: var(--input-background, #fff) !default;
         color: utils.color(gray, 700);
 
         &:empty {
-            display: none;
-        }
-    }
-
-    [part~='container'] {
-        border: none;
-        grid-template-columns: auto 1fr auto;
-
-        &::after {
             display: none;
         }
     }
@@ -188,17 +195,20 @@ $input-background: var(--input-background, #fff) !default;
 :host([readonly]) {
     [part='prefix'],
     [part='suffix'],
-    [part~='input'] {
+    [part~='container'] {
         background: utils.color(gray, 100);
-        border-color: utils.color(gray, 300);
         color: utils.color(gray, 400);
+    }
+
+    [part~='input'] {
+        border-color: utils.color(gray, 300);
     }
 }
 
 :host([readonly]) {
     [part='prefix'],
     [part='suffix'],
-    [part~='input'] {
+    [part~='container'] {
         color: utils.color(gray, 800);
     }
 }

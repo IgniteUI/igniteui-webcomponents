@@ -6,6 +6,7 @@
 @use '../../../components/list/themes/dark/list.bootstrap' as list;
 @use '../../../components/tabs/themes/dark/tab.dark.bootstrap' as tab;
 @use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
+@use '../../../components/select/themes/dark/select.bootstrap' as select;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.bootstrap' as nav-drawer-item;
 @include base.root-styles($dark-bootstrap-palette);
 @include dropdown.theme();
@@ -15,3 +16,4 @@
 @include tab.theme();
 @include tree-item.theme();
 @include nav-drawer-item.theme();
+@include select.theme();
