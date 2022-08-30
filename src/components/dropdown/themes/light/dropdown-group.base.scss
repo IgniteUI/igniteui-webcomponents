@@ -17,7 +17,8 @@
 }
 
 :host([size='small']) {
-    ::slotted(igc-dropdown-item) {
+    ::slotted(igc-dropdown-item),
+    ::slotted(igc-select-item) {
         padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 3);
     }
 
@@ -27,7 +28,8 @@
 }
 
 :host([size='medium']) {
-    ::slotted(igc-dropdown-item) {
+    ::slotted(igc-dropdown-item),
+    ::slotted(igc-select-item) {
         padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 3);
     }
 
@@ -37,7 +39,8 @@
 }
 
 :host([size='large']) {
-    ::slotted(igc-dropdown-item) {
+    ::slotted(igc-dropdown-item),
+    ::slotted(igc-select-item) {
         padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 3);
     }
 

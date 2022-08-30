@@ -95,6 +95,9 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   public autocomplete!: string;
 
+  @property({ type: Number })
+  public override tabIndex = 0;
+
   /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity() {
     return this.input.reportValidity();
@@ -173,6 +176,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         ?disabled="${this.disabled}"
         ?required="${this.required}"
         ?autofocus="${this.autofocus}"
+        tabindex=${this.tabIndex}
         autocomplete="${ifDefined(this.autocomplete as any)}"
         inputmode="${ifDefined(this.inputmode)}"
         min="${ifDefined(this.min)}"
