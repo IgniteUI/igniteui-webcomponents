@@ -22,7 +22,7 @@ import { styles as indigo } from './themes/light/dropdown-item.indigo.css.js';
  */
 @themes({ bootstrap, fluent, indigo })
 export default class IgcDropdownItemComponent extends LitElement {
-  public static readonly tagName = 'igc-dropdown-item';
+  public static readonly tagName: string = 'igc-dropdown-item';
 
   public static override styles = styles;
 
