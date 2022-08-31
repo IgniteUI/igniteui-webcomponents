@@ -547,17 +547,18 @@ export class IgcSliderBaseComponent extends LitElement {
   private handleFocus(ev: Event) {
     this.activeThumb = ev.target as HTMLElement;
     const thumbId = this.activeThumb?.id;
-    const thumbVal = this.activeThumb?.ariaValueNow;
-
     const thumbs = this.shadowRoot?.querySelectorAll('div[part="thumb"]');
+
     thumbs?.forEach((t) => {
       if (t.id !== thumbId) {
+        const activeThumbVal = parseFloat(this.activeThumb!.ariaValueNow!);
+        const thumbVal = parseFloat(t.ariaValueNow!);
+        const rangeFrom = Math.min(activeThumbVal, thumbVal);
+        const rangeTo = Math.max(activeThumbVal, thumbVal);
+
         this.activeThumb?.setAttribute(
           'aria-valuetext',
-          `${Math.min(
-            parseInt(thumbVal!),
-            parseInt(t.ariaValueNow!)
-          )} - ${Math.max(parseInt(thumbVal!), parseInt(t.ariaValueNow!))}`
+          `${this.formatValue(rangeFrom)} - ${this.formatValue(rangeTo)}`
         );
       }
     });
