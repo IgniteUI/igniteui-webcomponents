@@ -546,12 +546,26 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   protected dayLabelFormatter(value: ICalendarDate) {
+    // Range selection in progress
+    if (
+      this.rangePreviewDate &&
+      areEqualDates(this.rangePreviewDate, value.date)
+    ) {
+      return (this.labelFormatter as any).formatRange(
+        this.values!.at(0),
+        this.rangePreviewDate
+      );
+    }
+
+    // Range selection finished
     if (this.isFirstInRange(value) || this.isLastInRange(value)) {
       return (this.labelFormatter as any).formatRange(
         this.values!.at(0),
         this.values!.at(-1)
       );
     }
+
+    // Default
     return this.labelFormatter.format(value.date);
   }
 
