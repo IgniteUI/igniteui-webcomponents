@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { watch } from '../common/decorators/watch.js';
@@ -18,8 +18,6 @@ import IgcButtonComponent from '../button/button.js';
 defineComponents(IgcButtonComponent);
 
 export interface IgcDialogEventMap {
-  igcOpening: CustomEvent<void>;
-  igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
 }
@@ -29,8 +27,6 @@ export interface IgcDialogEventMap {
  *
  * @element igc-dialog
  *
- * @fires igcOpening - Emitted just before the dialog is open.
- * @fires igcOpened - Emitted after the dialog is open.
  * @fires igcClosing - Emitter just before the dialog is closed.
  * @fires igcClosed - Emitted after closing the dialog.
  *
@@ -56,15 +52,24 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   private titleId = `title-${IgcDialogComponent.increment()}`;
 
   @query('dialog', true)
-  private nativeElement!: HTMLDialogElement;
+  private dialog!: HTMLDialogElement;
 
-  /** Whether the dialog should be closed when pressing 'ESC' button.  */
+  /** Whether the dialog should be closed when pressing the 'ESCAPE' button.  */
   @property({ type: Boolean, attribute: 'close-on-escape' })
   public closeOnEscape = true;
 
   /** Whether the dialog should be closed when clicking outside of it.  */
   @property({ type: Boolean, attribute: 'close-on-outside-click' })
   public closeOnOutsideClick = false;
+
+  /**
+   * Whether to hide the default action button for the dialog.
+   *
+   * When there is projected content in the `footer` slot this property
+   * has no effect.
+   */
+  @property({ type: Boolean, attribute: 'hide-default-action' })
+  public hideDefaultAction = false;
 
   /** Whether the dialog is opened. */
   @property({ type: Boolean, reflect: true })
@@ -78,20 +83,15 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public returnValue!: string;
 
-  @watch('open')
-  protected async handleOpenState() {
+  @watch('open', { waitUntilFirstUpdate: true })
+  protected handleOpenState() {
+    this.open ? this.dialog.showModal() : this.dialog.close();
+  }
+
+  protected override async firstUpdated() {
     await this.updateComplete;
-
-    if (this.nativeElement) {
-      const hasOpenAttr = this.nativeElement.hasAttribute('open');
-
-      if (this.open && !hasOpenAttr) {
-        this.nativeElement.showModal();
-        this.emitEvent('igcOpened');
-      } else if (!this.open && hasOpenAttr) {
-        this.nativeElement.close();
-        this.emitEvent('igcClosed');
-      }
+    if (this.open) {
+      this.dialog.showModal();
     }
   }
 
@@ -101,13 +101,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       return;
     }
 
-    if (!this.handleOpening()) {
-      return;
-    }
-
-    this.nativeElement.showModal();
     this.open = true;
-    this.emitEvent('igcOpened');
   }
 
   /** Closes the dialog. */
@@ -116,13 +110,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       return;
     }
 
-    if (!this.handleClosing()) {
-      return;
-    }
-
-    this.nativeElement.close();
     this.open = false;
-    this.emitEvent('igcClosed');
   }
 
   /** Toggles the open state of the dialog. */
@@ -130,31 +118,37 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     this.open ? this.hide() : this.show();
   }
 
+  protected async hideWithEvent() {
+    if (!this.open) {
+      return;
+    }
+
+    if (!this.handleClosing()) {
+      return;
+    }
+
+    this.open = false;
+    await this.updateComplete;
+    this.emitEvent('igcClosed');
+  }
+
   private handleCancel(event: Event) {
     event.preventDefault();
 
     if (this.closeOnEscape) {
-      this.hide();
+      this.hideWithEvent();
     }
   }
 
   private handleClick({ clientX, clientY, target }: MouseEvent) {
-    if (
-      this.closeOnOutsideClick &&
-      this.nativeElement.isSameNode(target as Node)
-    ) {
-      const { left, top, right, bottom } =
-        this.nativeElement.getBoundingClientRect();
+    if (this.closeOnOutsideClick && this.dialog.isSameNode(target as Node)) {
+      const { left, top, right, bottom } = this.dialog.getBoundingClientRect();
       const between = (x: number, low: number, high: number) =>
         x >= low && x <= high;
       if (!(between(clientX, left, right) && between(clientY, top, bottom))) {
-        this.hide();
+        this.hideWithEvent();
       }
     }
-  }
-
-  private handleOpening() {
-    return this.emitEvent('igcOpening', { cancelable: true });
   }
 
   private handleClosing(): boolean {
@@ -166,7 +160,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       this.returnValue = (e.submitter as any)?.value || '';
     }
     if (!e.defaultPrevented) {
-      this.hide();
+      this.hideWithEvent();
     }
   };
 
@@ -202,11 +196,13 @@ export default class IgcDialogComponent extends EventEmitterMixin<
           <slot @slotchange=${this.handleSlotChange}></slot>
         </section>
         <footer part="footer">
-          <slot name="footer"
-            ><igc-button variant="flat" @click=${this.hide}
-              >OK</igc-button
-            ></slot
-          >
+          <slot name="footer">
+            ${this.hideDefaultAction
+              ? nothing
+              : html`<igc-button variant="flat" @click=${this.hideWithEvent}
+                  >OK</igc-button
+                >`}
+          </slot>
         </footer>
       </dialog>
     `;

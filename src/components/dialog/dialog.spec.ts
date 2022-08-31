@@ -71,6 +71,38 @@ describe('Dialog component', () => {
       );
     });
 
+    it('`hide-default-action` correctly toggles DOM structure', async () => {
+      dialog = await fixture<IgcDialogComponent>(
+        html`<igc-dialog>Message</igc-dialog>`
+      );
+
+      const footer = dialog.shadowRoot!.querySelector('footer');
+
+      expect(footer).dom.to.equal(
+        `<footer>
+          <slot name="footer">
+            <igc-button>OK</igc-button>
+          </slot>
+        </footer>`,
+        {
+          ignoreAttributes: ['part', 'variant', 'size'],
+        }
+      );
+
+      dialog.hideDefaultAction = true;
+      await elementUpdated(dialog);
+
+      expect(footer).dom.to.equal(
+        `<footer>
+          <slot name="footer">
+          </slot>
+        </footer>`,
+        {
+          ignoreAttributes: ['part'],
+        }
+      );
+    });
+
     it('renders a dialog element internally with default button if no content is provided', async () => {
       await expect(dialog).shadowDom.to.be.accessible();
       expect(dialog).shadowDom.to.equal(
@@ -164,43 +196,47 @@ describe('Dialog component', () => {
       expect(dialogEl.getAttribute('role')).to.equal('dialog');
     });
 
-    it('emits events correctly', async () => {
-      const eventSpy = sinon.spy(dialog, 'emitEvent');
-      dialog.toggle();
+    it('does not emit events through API calls', async () => {
+      const spy = sinon.spy(dialog, 'emitEvent');
+      dialog.show();
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.true;
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith('igcOpening');
-      expect(eventSpy.secondCall).calledWith('igcOpened');
+      expect(spy.callCount).to.equal(0);
 
-      eventSpy.resetHistory();
-      dialog.toggle();
+      dialog.hide();
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.false;
-      expect(eventSpy.callCount).to.equal(2);
-      expect(eventSpy.firstCall).calledWith('igcClosing');
-      expect(eventSpy.secondCall).calledWith('igcClosed');
-    });
+      expect(spy.callCount).to.equal(0);
 
-    it('cancels igcOpened correctly', async () => {
-      const eventSpy = sinon.spy(dialog, 'emitEvent');
+      dialog.open = true;
+      await elementUpdated(dialog);
 
-      expect(dialog.open).to.be.false;
+      expect(dialog.open).to.be.true;
+      expect(spy.callCount).to.equal(0);
 
-      dialog.addEventListener('igcOpening', (ev) => {
-        ev.preventDefault();
-      });
-
-      dialog.toggle();
+      dialog.open = false;
       await elementUpdated(dialog);
 
       expect(dialog.open).to.be.false;
-      expect(eventSpy).calledOnceWith('igcOpening');
+      expect(spy.callCount).to.equal(0);
     });
 
-    it('cancels igcClosed correctly', async () => {
+    it('default action button emits closing events', async () => {
+      const spy = sinon.spy(dialog, 'emitEvent');
+      dialog.show();
+      await elementUpdated(dialog);
+
+      dialog.shadowRoot!.querySelector('igc-button')!.click();
+      await elementUpdated(dialog);
+
+      expect(spy.callCount).to.equal(2);
+      expect(spy.firstCall).calledWith('igcClosing');
+      expect(spy.secondCall).calledWith('igcClosed');
+    });
+
+    it('cancels closing event correctly', async () => {
       dialog.toggle();
       await elementUpdated(dialog);
       expect(dialog.open).to.be.true;
@@ -211,7 +247,7 @@ describe('Dialog component', () => {
         ev.preventDefault();
       });
 
-      dialog.toggle();
+      dialog.shadowRoot!.querySelector('igc-button')!.click();
       await elementUpdated(dialog);
       expect(eventSpy).calledOnceWith('igcClosing');
     });

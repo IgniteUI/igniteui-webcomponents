@@ -13,7 +13,7 @@ const metadata = {
     closeOnEscape: {
       type: 'boolean',
       description:
-        "Whether the dialog should be closed when pressing 'ESC' button.",
+        "Whether the dialog should be closed when pressing the 'ESCAPE' button.",
       control: 'boolean',
       defaultValue: true,
     },
@@ -21,6 +21,13 @@ const metadata = {
       type: 'boolean',
       description:
         'Whether the dialog should be closed when clicking outside of it.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    hideDefaultAction: {
+      type: 'boolean',
+      description:
+        'Whether to hide the default action button for the dialog.\n\nWhen there is projected content in the `footer` slot this property\nhas no effect.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -46,6 +53,7 @@ export default metadata;
 interface ArgTypes {
   closeOnEscape: boolean;
   closeOnOutsideClick: boolean;
+  hideDefaultAction: boolean;
   open: boolean;
   title: string;
   returnValue: string;
@@ -54,7 +62,7 @@ interface ArgTypes {
 
 (metadata as any).parameters = {
   actions: {
-    handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
+    handles: ['igcClosing', 'igcClosed'],
   },
 };
 
@@ -71,7 +79,13 @@ const authSelected = (ev: CustomEvent) => {
 };
 
 const Template: Story<ArgTypes, Context> = (
-  { closeOnEscape, closeOnOutsideClick, title, open }: ArgTypes,
+  {
+    closeOnEscape,
+    closeOnOutsideClick,
+    title,
+    open,
+    hideDefaultAction,
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -91,6 +105,7 @@ const Template: Story<ArgTypes, Context> = (
         id="default"
         ?close-on-escape=${closeOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
+        ?hide-default-action=${hideDefaultAction}
         .open=${open}
         title=${ifDefined(title)}
         dir=${ifDefined(direction)}
@@ -122,6 +137,7 @@ const Template: Story<ArgTypes, Context> = (
       <igc-dialog
         id="with-form"
         dir=${ifDefined(direction)}
+        hide-default-action
         ?close-on-escape=${closeOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
       >
