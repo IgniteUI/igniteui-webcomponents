@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedElements, state } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import { defineComponents } from '../common/definitions/defineComponents';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -27,12 +27,14 @@ export default class IgcStepperComponent extends SizableMixin(
   /** @private */
   protected static styles = styles;
 
+  // Map containing the currennt steps and their event listener functions
+  private _stepsAndListeners: Map<IgcStepComponent, any> = new Map();
+  private activeStep!: IgcStepComponent;
+  private _init = true;
+
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
   public steps!: Array<IgcStepComponent>;
-
-  @state()
-  protected activeStep?: IgcStepComponent;
 
   /** Gets/Sets the orientation of the stepper.
    *
@@ -113,26 +115,96 @@ export default class IgcStepperComponent extends SizableMixin(
   protected override async firstUpdated() {
     await this.updateComplete;
 
-    this.syncProperties();
+    this.steps.forEach((step: IgcStepComponent) => {
+      if (step.active) {
+        this.activeStep = step;
+      }
+      this._stepsAndListeners.set(step, null);
+    });
+    if (!this.activeStep) {
+      this.activateFirstStep();
+    }
+    this.syncProperties(this.steps);
+    this._init = false;
   }
 
-  private syncProperties(): void {
-    this.steps.forEach((step: IgcStepComponent, index: number) => {
+  public navigateTo(index: number) {
+    const step = this.steps[index];
+    if (!step) {
+      return;
+    }
+    this.activateStep(step);
+  }
+
+  private syncProperties(steps: IgcStepComponent[]): void {
+    steps.forEach((step: IgcStepComponent, index: number) => {
       step.orientation = this.orientation;
       step.stepType = this.stepType;
       step.titlePosition = this.titlePosition;
       step.contentTop = this.contentTop;
       step.index = index;
       step.active = this.activeStep === step;
+      const eventHandler = (event: any) => {
+        event.stopPropagation();
+        this.activateStep(step);
+      };
+      step.addEventListener('activeStepChanged', eventHandler);
+      this._stepsAndListeners.set(step, eventHandler);
     });
   }
 
-  private stepsChange(): void {
-    this.syncProperties();
+  private activateStep(step: IgcStepComponent) {
+    if (step === this.activeStep) {
+      return;
+    }
+
+    if (this.activeStep) {
+      this.activeStep.active = false;
+    }
+
+    step.active = true;
+    this.activeStep = step;
+  }
+
+  private activateFirstStep() {
+    const firstEnabledStep = this.steps.find(
+      (s: IgcStepComponent) => !s.disabled
+    );
+    if (firstEnabledStep) {
+      this.activateStep(firstEnabledStep);
+    }
+  }
+
+  private stepsChanged(): void {
+    if (!this._init) {
+      // update step indexes
+      // and set up properties and event listener for newly added steps
+      this.steps.forEach((step: IgcStepComponent, index: number) => {
+        step.index = index;
+        if (!this._stepsAndListeners.has(step)) {
+          this._stepsAndListeners.set(step, null);
+          this.syncProperties([step]);
+        }
+      });
+
+      // remove the event listener from the deleted steps
+      const currentSteps = new Set(this.steps);
+      Array.from(this._stepsAndListeners.keys()).forEach(
+        (step: IgcStepComponent) => {
+          if (!currentSteps.has(step)) {
+            step.removeEventListener(
+              'activeStepChanged',
+              this._stepsAndListeners.get(step)
+            );
+            this._stepsAndListeners.delete(step);
+          }
+        }
+      );
+    }
   }
 
   protected override render() {
-    return html`<slot @slotchange=${this.stepsChange}></slot>`;
+    return html`<slot @slotchange=${this.stepsChanged}></slot>`;
   }
 }
 

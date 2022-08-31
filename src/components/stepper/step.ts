@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { styles } from '../stepper/themes/step/step.base.css.js';
 import { themes } from '../../theming';
 import { partNameMap } from '../common/util.js';
+import { watch } from '../common/decorators';
 
 @themes({})
 export default class IgcStepComponent extends LitElement {
@@ -12,9 +13,9 @@ export default class IgcStepComponent extends LitElement {
   /** @private */
   public static override styles = styles;
 
-  /** Gets/sets whether the step is valid. */
+  /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
-  public valid = true;
+  public invalid = false;
 
   /** Gets/sets whether the step is activе. */
   @property({ reflect: true, type: Boolean })
@@ -62,9 +63,18 @@ export default class IgcStepComponent extends LitElement {
   @property({ attribute: false })
   public contentTop = false;
 
+  @watch('active')
+  public activeChange() {
+    if (this.active) {
+      this.dispatchEvent(new CustomEvent('activeStepChanged'));
+    }
+  }
+
   protected handleClick(event: MouseEvent): void {
     event.stopPropagation();
-    // this.stepper?.activateStep(this);
+    if (!this.disabled) {
+      this.active = true;
+    }
   }
 
   private get stepParts() {
@@ -81,7 +91,7 @@ export default class IgcStepComponent extends LitElement {
       disabled: this.disabled,
       optional: this.optional,
       'active-header': this.active,
-      invalid: !this.valid && !this.active,
+      invalid: this.invalid && !this.active,
       top: this.titlePosition === 'top',
       bottom: this.titlePosition === 'bottom',
       start: this.titlePosition === 'start',
