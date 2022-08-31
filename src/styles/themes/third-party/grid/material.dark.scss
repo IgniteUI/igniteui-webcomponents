@@ -1,0 +1,19 @@
+@use '../../../../../node_modules/igniteui-theming/sass/color/functions' as *;
+
+@mixin theme() {
+    igc-grid {
+        // Grid body
+        --dg-content-text-color: #{color(null, gray, 800)};
+
+        // Header row
+        --dg-header-border-color: #{color(null, gray, 200, .24)};
+
+        // Header cell
+        --dg-sorted-header-icon-color: #{color(null, secondary, 500)};
+
+        // Body row
+        --dg-row-hover-background: #{color(null, gray, 100)};
+        --dg-row-hover-text-color: #{contrast-color(null, gray, 100)};
+        --dg-row-border-color: #{color(null, gray, 200, .24)};
+    }
+}

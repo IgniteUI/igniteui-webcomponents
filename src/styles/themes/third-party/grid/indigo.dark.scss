@@ -1,0 +1,28 @@
+@use '../../../../../node_modules/igniteui-theming/sass/color/functions' as *;
+
+@mixin theme() {
+    igc-grid {
+        // Grid body
+        --dg-content-background: #{color(null, gray, 50)};
+        --dg-content-text-color: #{contrast-color(null, gray, 50)};
+
+        // Header row
+        --dg-header-background: #{color(null, surface, 500)};
+        --dg-header-text-color: #{contrast-color(null, surface, 500)};
+        --dg-header-border-color: #{color(null, gray, 100, .24)};
+
+        // Header cell
+        --dg-sorted-header-icon-color: #{contrast-color(null, surface, 500)};
+
+        // Body row
+        --dg-row-hover-background: #{color(null, gray, 200)};
+        --dg-row-even-background: #{color(null, gray, 100)};
+        --dg-row-even-text-color: #{contrast-color(null, gray, 100)};
+        --dg-row-odd-background: #{color(null, gray, 100)};
+        --dg-row-odd-text-color: #{contrast-color(null, gray, 100)};
+        --dg-row-border-color: #{color(null, gray, 50, .24)};
+
+        // Body cell
+        --dg-cell-active-border-color: #{contrast-color(null, surface, 500)};
+    }
+}

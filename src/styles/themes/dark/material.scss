@@ -1,5 +1,6 @@
 @use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/material' as base;
+@use '../third-party/grid/material.dark' as grid;
 @use '../../../components/input/themes/dark/input.dark.material' as input;
 @use '../../../components/select/themes/dark/select.material' as select;
 @use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
@@ -9,3 +10,4 @@
 @include select.theme();
 @include tab.theme();
 @include nav-drawer-item.theme();
+@include grid.theme();

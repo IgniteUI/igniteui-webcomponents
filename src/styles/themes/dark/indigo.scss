@@ -1,5 +1,6 @@
 @use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/indigo' as base;
+@use '../third-party/grid/indigo.dark' as grid;
 @use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
 @use '../../../components/input/themes/dark/input.dark.indigo' as input;
@@ -25,3 +26,4 @@
 @include nav-drawer-item.theme();
 @include select.theme();
 @include snackbar.theme();
+@include grid.theme();
