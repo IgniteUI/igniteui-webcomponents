@@ -2,10 +2,28 @@
 @use '../../../../../styles/utilities' as *;
 
 $slot-spacing: var(--igc-spacing-large);
+$padding-sm: calc(var(--igc-spacing-small) * 4);
+$padding-md: calc(var(--igc-spacing-medium) * 3);
+$padding-lg: calc(var(--igc-spacing-large) * 2);
 
 :host {
+    --size: #{sizable(rem(24px), rem(30px), rem(36px))};
+    --spacing: #{sizable($padding-sm, $padding-md, $padding-lg)};
+
     display: inline-flex;
     vertical-align: middle;
+}
+
+:host([size='small']) {
+    --component-size: var(--ig-size, var(--ig-size-small));
+}
+
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+}
+
+:host([size='large']) {
+    --component-size: var(--ig-size, var(--ig-size-large));
 }
 
 [part='base'] {
@@ -25,6 +43,8 @@ $slot-spacing: var(--igc-spacing-large);
     white-space: nowrap;
     text-decoration: none;
     z-index: 0;
+    height: var(--size);
+    padding: 0 var(--spacing);
 
     &::before {
         position: absolute;
@@ -49,21 +69,6 @@ $slot-spacing: var(--igc-spacing-large);
         color: color(gray, 500);
         box-shadow: none;
     }
-}
-
-:host([size='large']) [part='base'] {
-    height: var(--size, 36px);
-    padding: 0 calc(var(--igc-spacing-large) * 2);
-}
-
-:host([size='medium']) [part='base'] {
-    height: var(--size, 30px);
-    padding: 0 calc(var(--igc-spacing-medium) * 3);
-}
-
-:host([size='small']) [part='base'] {
-    height: var(--size, 24px);
-    padding: 0 calc(var(--igc-spacing-small) * 4);
 }
 
 [name='prefix']::slotted(*) {
@@ -132,21 +137,13 @@ span[part='suffix'] {
     @extend %contained;
 }
 
+:host([variant='fab']) {
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+}
+
 :host([variant='fab']) [part='base'] {
     @include border-radius(calc(var(--size) / 2));
 
     min-width: var(--size);
     min-height: var(--size);
-}
-
-:host([variant='fab'][size='large']) [part='base'] {
-    --size: #{rem(48px)};
-}
-
-:host([variant='fab'][size='medium']) [part='base'] {
-    --size: #{rem(40px)};
-}
-
-:host([variant='fab'][size='small']) [part='base'] {
-    --size: #{rem(32px)};
 }

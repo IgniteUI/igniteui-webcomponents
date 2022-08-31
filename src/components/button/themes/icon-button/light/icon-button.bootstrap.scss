@@ -1,8 +1,19 @@
 @use '../../../../../styles/utilities' as utils;
 
+$padding-sm: calc(var(--igc-spacing-small) * 3.75);
+$padding-md: calc(var(--igc-spacing-medium) * 2.25);
+$padding-lg: calc(var(--igc-spacing-large) * 1.5);
+
+:host {
+    --size: #{utils.sizable(utils.rem(31px), utils.rem(38px), utils.rem(48px))};
+    --spacing: #{utils.sizable($padding-sm, $padding-md, $padding-lg)};
+}
+
 [part='base'] {
     @include utils.border-radius(utils.rem(4px));
 
+    width: var(--size);
+    height: var(--size);
     transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
     color: #{utils.color(primary, 500)};
 
@@ -15,30 +26,6 @@
         color: #{utils.color(primary, 600)};
         background: #{utils.color(gray, 100)};
         box-shadow: none;
-    }
-}
-
-:host([size='small']) {
-    [part='base'] {
-        width: #{utils.rem(31px)};
-        height: #{utils.rem(31px)};
-        padding: calc(var(--igc-spacing-small) * 3.75);
-    }
-}
-
-:host([size='medium']) {
-    [part='base'] {
-        width: #{utils.rem(38px)};
-        height: #{utils.rem(38px)};
-        padding: calc(var(--igc-spacing-medium) * 2.25);
-    }
-}
-
-:host([size='large']) {
-    [part='base'] {
-        width: #{utils.rem(48px)};
-        height: #{utils.rem(48px)};
-        padding: calc(var(--igc-spacing-large) * 1.5);
     }
 }
 

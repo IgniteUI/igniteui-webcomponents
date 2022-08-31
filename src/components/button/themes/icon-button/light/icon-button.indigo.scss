@@ -1,8 +1,18 @@
 @use '../../../../../styles/utilities' as utils;
 
+$padding-sm: calc(var(--igc-spacing-small) * 3);
+$padding-md: calc(var(--igc-spacing-medium) * 1.5);
+
+:host {
+    --size: #{utils.sizable(utils.rem(28px), utils.rem(32px), utils.rem(36px))};
+    --spacing: #{utils.sizable($padding-sm, $padding-md)};
+}
+
 [part='base'] {
     transition: color .15s ease-in-out, box-shadow .15s ease-in-out, background .15s ease-in-out;
     color: utils.color(gray, 700);
+    width: var(--size);
+    height: var(--size);
 
     &:hover {
         color: utils.color(gray, 900);
@@ -14,29 +24,6 @@
         color: utils.color(gray, 900);
         background: transparent;
         box-shadow: 0 0 0 utils.rem(3px) utils.color(gray, 300);
-    }
-}
-
-:host([size='small']) {
-    [part='base'] {
-        width: #{utils.rem(28px)};
-        height: #{utils.rem(28px)};
-        padding: calc(var(--igc-spacing-small) * 3);
-    }
-}
-
-:host([size='medium']) {
-    [part='base'] {
-        width: #{utils.rem(32px)};
-        height: #{utils.rem(32px)};
-        padding: calc(var(--igc-spacing-medium) * 1.5);
-    }
-}
-
-:host([size='large']) {
-    [part='base'] {
-        width: #{utils.rem(36px)};
-        height: #{utils.rem(36px)};
     }
 }
 
