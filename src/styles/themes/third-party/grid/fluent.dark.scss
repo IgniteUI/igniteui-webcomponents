@@ -3,16 +3,16 @@
 @mixin theme() {
     igc-grid {
         // Header row/cell
-        --dg-header-background: #{color(null, gray, 100)};
-        --dg-header-text-color: #{contrast-color(null, gray, 100)};
-        --dg-header-border-color: #{color(null, gray, 200, .24)};
+        --header-background: #{color(null, gray, 100)};
+        --header-text-color: #{contrast-color(null, gray, 100)};
+        --header-border-color: #{color(null, gray, 200, .24)};
 
         // Body Row/cell
-        --dg-row-hover-background: #{color(null, gray, 100)};
-        --dg-row-hover-text-color: #{contrast-color(null, gray, 100)};
-        --dg-row-border-color: #{color(null, gray, 200, .24)};
+        --row-hover-background: #{color(null, gray, 100)};
+        --row-hover-text-color: #{contrast-color(null, gray, 100)};
+        --row-border-color: #{color(null, gray, 200, .24)};
 
         // Body cell
-        --dg-cell-active-border-color: #{color(null, primary, 100)};
+        --cell-active-border-color: #{color(null, primary, 100)};
     }
 }

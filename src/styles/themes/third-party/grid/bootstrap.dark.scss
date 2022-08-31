@@ -3,14 +3,14 @@
 @mixin theme() {
     igc-grid {
         // Header row
-        --dg-header-border-color: #{color(null, gray, 200, .28)};
+        --header-border-color: #{color(null, gray, 200, .28)};
 
         // Body row
-        --dg-row-hover-background: #{color(null, gray, 100)};
-        --dg-row-hover-text-color: #{contrast-color(null, gray, 100)};
-        --dg-row-border-color: #{color(null, gray, 200, .24)};
+        --row-hover-background: #{color(null, gray, 100)};
+        --row-hover-text-color: #{contrast-color(null, gray, 100)};
+        --row-border-color: #{color(null, gray, 200, .24)};
 
         // Body cell
-        --dg-cell-active-border-color: #{color(null, primary, 500)};
+        --cell-active-border-color: #{color(null, primary, 500)};
     }
 }

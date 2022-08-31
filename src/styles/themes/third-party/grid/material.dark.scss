@@ -3,17 +3,17 @@
 @mixin theme() {
     igc-grid {
         // Grid body
-        --dg-content-text-color: #{color(null, gray, 800)};
+        --content-text-color: #{color(null, gray, 800)};
 
         // Header row
-        --dg-header-border-color: #{color(null, gray, 200, .24)};
+        --header-border-color: #{color(null, gray, 200, .24)};
 
         // Header cell
-        --dg-sorted-header-icon-color: #{color(null, secondary, 500)};
+        --sorted-header-icon-color: #{color(null, secondary, 500)};
 
         // Body row
-        --dg-row-hover-background: #{color(null, gray, 100)};
-        --dg-row-hover-text-color: #{contrast-color(null, gray, 100)};
-        --dg-row-border-color: #{color(null, gray, 200, .24)};
+        --row-hover-background: #{color(null, gray, 100)};
+        --row-hover-text-color: #{contrast-color(null, gray, 100)};
+        --row-border-color: #{color(null, gray, 200, .24)};
     }
 }
