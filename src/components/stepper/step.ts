@@ -1,6 +1,6 @@
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { styles } from '../stepper/themes/step.base.css.js';
+import { styles } from '../stepper/themes/step/step.base.css.js';
 import { themes } from '../../theming';
 import { partNameMap } from '../common/util.js';
 
@@ -139,7 +139,7 @@ export default class IgcStepComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div ${partNameMap(this.stepParts)}>
+      <div part="${partNameMap(this.stepParts)}">
         <div part="${partNameMap(this.headerContainerParts)}">
           <div part="header" @click=${this.handleClick}>
             ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}

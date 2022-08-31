@@ -1,5 +1,5 @@
-@use '../../../styles/common/component';
-@use '../../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
 
 :host {
     flex: 1;
@@ -7,17 +7,9 @@
     align-content: center;
     justify-content: center;
     min-width: 6.25rem;
-
-    &:last-of-type {
-        [part~='header'] {
-            &::after {
-                display: none;
-            }
-        }
-    }
 }
 
-:host([part~='horizontal']) {
+[part='step horizontal'] {
     overflow: hidden;
     flex-direction: row;
     flex-grow: 1;
@@ -36,7 +28,6 @@
     }
 
     [part~='header-container'] {
-        display: flex;
         align-items: center;
         position: relative;
 
@@ -48,22 +39,31 @@
             min-width: rem(20px);
             height: 1px;
             background: red;
+            position: relative;
+            top: rem(-22px);
         }
     }
 }
 
-:host([part~='vertical']) {
-    [part~='header'] {
-        margin-block-end: rem(8px);
-    }
+[part~='header-container'] {
+    display: flex;
+}
 
-    [part~='body'] {
-        margin-inline-start: rem(28px);
-        padding-block-start: rem(8px);
-        padding-block-end: rem(8px);
-        padding-inline-end: rem(8px);
-        padding-inline-start: rem(20px);
-        border-left: rem(1px) solid red;
+[part~='start'] {
+    [part='header'] {
+        flex-direction: row-reverse;
+    }
+}
+
+[part~='top'] {
+    [part='header'] {
+        flex-direction: column-reverse;
+    }
+}
+
+[part~='bottom'] {
+    [part='header'] {
+        flex-direction: column;
     }
 }
 
@@ -111,4 +111,22 @@
 
 [part~='body'] {
     background: #fff;
+}
+
+// Vertical stepper (Default)
+[part='step vertical'],
+[part='step'] {
+    [part~='header'] {
+        margin-block-end: rem(8px);
+        align-items: flex-start;
+    }
+
+    [part~='body'] {
+        margin-inline-start: rem(28px);
+        padding-block-start: rem(8px);
+        padding-block-end: rem(8px);
+        padding-inline-end: rem(8px);
+        padding-inline-start: rem(20px);
+        border-left: rem(1px) solid red;
+    }
 }
