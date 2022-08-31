@@ -1,6 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import IgcStepperComponent from './stepper';
 import { styles } from '../stepper/themes/step.base.css.js';
 import { themes } from '../../theming';
 import { partNameMap } from '../common/util.js';
@@ -12,9 +11,6 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   public static override styles = styles;
-
-  /** A reference to the stepper the step is a part of. */
-  public stepper?: IgcStepperComponent;
 
   /** Gets/sets whether the step is valid. */
   @property({ reflect: true, type: Boolean })
@@ -46,26 +42,36 @@ export default class IgcStepComponent extends LitElement {
   @property({ reflect: true, type: Boolean })
   public complete = false;
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.stepper = this.closest('igc-stepper') as IgcStepperComponent;
-    this.part.add(
-      this.stepper.orientation === 'horizontal' ? 'horizontal' : 'vertical'
-    );
+  /** @private */
+  @property({ attribute: false })
+  public stepType: 'indicator' | 'title' | 'full' = 'full';
+
+  /** @private */
+  @property({ attribute: false })
+  public titlePosition: 'bottom' | 'top' | 'end' | 'start' = 'end';
+
+  /** @private */
+  @property({ attribute: false })
+  public orientation: 'horizontal' | 'vertical' = 'horizontal';
+
+  /** @private */
+  @property({ attribute: false })
+  public index = -1;
+
+  /** @private */
+  @property({ attribute: false })
+  public contentTop = false;
+
+  protected handleClick(event: MouseEvent): void {
+    event.stopPropagation();
+    // this.stepper?.activateStep(this);
   }
 
-  /** Gets the step index inside of the stepper. */
-  public get index(): number {
-    return this.stepper ? this.stepper.steps.indexOf(this) : -1;
-  }
-
-  private get headerParts() {
+  private get stepParts() {
     return {
-      header: true,
-      top: this.stepper?.titlePosition === 'top',
-      bottom: this.stepper?.titlePosition === 'bottom',
-      start: this.stepper?.titlePosition === 'start',
-      end: this.stepper?.titlePosition === 'end',
+      step: true,
+      vertical: this.orientation === 'vertical',
+      horizontal: this.orientation === 'horizontal',
     };
   }
 
@@ -76,6 +82,10 @@ export default class IgcStepComponent extends LitElement {
       optional: this.optional,
       'active-header': this.active,
       invalid: !this.valid && !this.active,
+      top: this.titlePosition === 'top',
+      bottom: this.titlePosition === 'bottom',
+      start: this.titlePosition === 'start',
+      end: this.titlePosition === 'end',
     };
   }
 
@@ -84,14 +94,12 @@ export default class IgcStepComponent extends LitElement {
       body: true,
       'active-body': this.active,
       'content-top':
-        (this.stepper?.orientation === 'horizontal' &&
-          this.stepper?.contentTop) ||
-        false,
+        (this.orientation === 'horizontal' && this.contentTop) || false,
     };
   }
 
   protected renderIndicator() {
-    if (this.stepper?.stepType !== 'title') {
+    if (this.stepType !== 'title') {
       return html`
         <div part="indicator">
           <slot name="indicator">
@@ -105,7 +113,7 @@ export default class IgcStepComponent extends LitElement {
   }
 
   protected renderTitleAndSubtitle() {
-    if (this.stepper?.stepType !== 'indicator') {
+    if (this.stepType !== 'indicator') {
       return html`
         <div part="text">
           <div part="title">
@@ -131,12 +139,14 @@ export default class IgcStepComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div part="${partNameMap(this.headerContainerParts)}">
-        <div part="${partNameMap(this.headerParts)}">
-          ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+      <div ${partNameMap(this.stepParts)}>
+        <div part="${partNameMap(this.headerContainerParts)}">
+          <div part="header" @click=${this.handleClick}>
+            ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+          </div>
         </div>
+        ${this.renderContent()}
       </div>
-      ${this.renderContent()}
     `;
   }
 }

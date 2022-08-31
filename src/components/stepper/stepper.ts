@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
+import { property, queryAssignedElements, state } from 'lit/decorators.js';
 import { defineComponents } from '../common/definitions/defineComponents';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -30,6 +30,9 @@ export default class IgcStepperComponent extends SizableMixin(
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
   public steps!: Array<IgcStepComponent>;
+
+  @state()
+  protected activeStep?: IgcStepComponent;
 
   /** Gets/Sets the orientation of the stepper.
    *
@@ -81,23 +84,51 @@ export default class IgcStepperComponent extends SizableMixin(
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {
-    if (this.orientation === 'vertical') {
-      this.steps.forEach((step: IgcStepComponent) => {
-        step.part.remove('horizontal');
-        step.part.add('vertical');
-      });
-    } else {
-      this.steps.forEach((step: IgcStepComponent) => {
-        step.part.remove('vertical');
-        step.part.add('horizontal');
-      });
-    }
+    this.steps.forEach(
+      (step: IgcStepComponent) => (step.orientation = this.orientation)
+    );
+  }
+
+  @watch('stepType', { waitUntilFirstUpdate: true })
+  protected stepTypeChange(): void {
+    this.steps.forEach(
+      (step: IgcStepComponent) => (step.stepType = this.stepType)
+    );
+  }
+
+  @watch('titlePosition', { waitUntilFirstUpdate: true })
+  protected titlePositionChange(): void {
+    this.steps.forEach(
+      (step: IgcStepComponent) => (step.titlePosition = this.titlePosition)
+    );
+  }
+
+  @watch('contentTop', { waitUntilFirstUpdate: true })
+  protected contentTopChange(): void {
+    this.steps.forEach(
+      (step: IgcStepComponent) => (step.contentTop = this.contentTop)
+    );
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+
+    this.syncProperties();
+  }
+
+  private syncProperties(): void {
+    this.steps.forEach((step: IgcStepComponent, index: number) => {
+      step.orientation = this.orientation;
+      step.stepType = this.stepType;
+      step.titlePosition = this.titlePosition;
+      step.contentTop = this.contentTop;
+      step.index = index;
+      step.active = this.activeStep === step;
+    });
   }
 
   private stepsChange(): void {
-    this.steps?.forEach((step: IgcStepComponent) => {
-      step.requestUpdate();
-    });
+    this.syncProperties();
   }
 
   protected override render() {
