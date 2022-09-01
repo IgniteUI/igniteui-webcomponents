@@ -27,10 +27,7 @@ export default class IgcStepperComponent extends SizableMixin(
   /** @private */
   protected static styles = styles;
 
-  // // Set containing the currennt steps collection
-  // private _steps: Set<IgcStepComponent> = new Set();
   private activeStep!: IgcStepComponent;
-  // private _init = true;
 
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
@@ -103,6 +100,9 @@ export default class IgcStepperComponent extends SizableMixin(
     this.steps.forEach(
       (step: IgcStepComponent) => (step.titlePosition = this.titlePosition)
     );
+    Promise.resolve().then(() => {
+      this.updateCssVars();
+    });
   }
 
   @watch('contentTop', { waitUntilFirstUpdate: true })
@@ -115,7 +115,6 @@ export default class IgcStepperComponent extends SizableMixin(
   @watch('linear', { waitUntilFirstUpdate: true })
   protected linearChange(): void {
     this.steps.forEach((step: IgcStepComponent) => {
-      step.linear = this.linear;
       step.linearDisabled = this.linear;
     });
     if (this.linear) {
@@ -127,7 +126,7 @@ export default class IgcStepperComponent extends SizableMixin(
     super();
     this.addEventListener('activeStepChanged', (event: any) => {
       event.stopPropagation();
-      this.activateStep(event.target);
+      this.activateStep(event.target, event.detail);
     });
     this.addEventListener('stepInvalidStateChanged', (event: any) => {
       event.stopPropagation();
@@ -140,17 +139,12 @@ export default class IgcStepperComponent extends SizableMixin(
   protected override async firstUpdated() {
     await this.updateComplete;
 
-    // this.steps.forEach((step: IgcStepComponent) => {
-    //   if (step.active) {
-    //     this.activeStep = step;
-    //   }
-    // });
     if (!this.activeStep) {
       this.activateFirstStep();
     }
-    // this.syncProperties(this.steps);
   }
 
+  /** Activates the step at a given index. */
   public navigateTo(index: number) {
     const step = this.steps[index];
     if (!step) {
@@ -169,6 +163,71 @@ export default class IgcStepperComponent extends SizableMixin(
     this.moveToNextStep(false);
   }
 
+  private syncProperties(): void {
+    this.steps.forEach((step: IgcStepComponent, index: number) => {
+      step.orientation = this.orientation;
+      step.stepType = this.stepType;
+      step.titlePosition = this.titlePosition;
+      step.contentTop = this.contentTop;
+      step.index = index;
+      step.active = this.activeStep === step;
+      if (this.linear) {
+        this.calculateLinearDisabledSteps();
+      }
+    });
+  }
+
+  private activateStep(step: IgcStepComponent, shouldEmit = false) {
+    if (step === this.activeStep) {
+      return;
+    }
+
+    console.log('activate step after check for current');
+
+    if (shouldEmit) {
+      console.log('emitted!!!!!!!!!!!!');
+      const args = {
+        detail: {
+          owner: this,
+          oldIndex: this.activeStep.index,
+          newIndex: step.index,
+        },
+        cancelable: true,
+      };
+
+      const allowed = this.emitEvent('igcActiveStepChanging', args);
+
+      if (!allowed) {
+        return;
+      }
+      this.changeActiveStep(step);
+      this.emitEvent('igcActiveStepChanged', {
+        detail: { owner: this, index: step.index },
+      });
+    } else {
+      this.changeActiveStep(step);
+    }
+  }
+
+  private changeActiveStep(step: IgcStepComponent) {
+    if (this.activeStep) {
+      this.activeStep.active = false;
+    }
+
+    step.active = true;
+    this.activeStep = step;
+    this.updateCssVars();
+  }
+
+  private activateFirstStep() {
+    const firstEnabledStep = this.steps.find(
+      (s: IgcStepComponent) => !s.disabled
+    );
+    if (firstEnabledStep) {
+      this.activateStep(firstEnabledStep);
+    }
+  }
+
   private moveToNextStep(next = true) {
     let steps = this.steps;
     let activeStepIndex = this.activeStep.index;
@@ -185,43 +244,6 @@ export default class IgcStepperComponent extends SizableMixin(
     );
     if (nextStep) {
       this.activateStep(nextStep);
-    }
-  }
-
-  private syncProperties(steps: IgcStepComponent[]): void {
-    steps.forEach((step: IgcStepComponent, index: number) => {
-      step.orientation = this.orientation;
-      step.stepType = this.stepType;
-      step.titlePosition = this.titlePosition;
-      step.contentTop = this.contentTop;
-      step.linear = this.linear;
-      step.index = index;
-      step.active = this.activeStep === step;
-      if (this.linear) {
-        this.calculateLinearDisabledSteps();
-      }
-    });
-  }
-
-  private activateStep(step: IgcStepComponent) {
-    if (step === this.activeStep) {
-      return;
-    }
-
-    if (this.activeStep) {
-      this.activeStep.active = false;
-    }
-
-    step.active = true;
-    this.activeStep = step;
-  }
-
-  private activateFirstStep() {
-    const firstEnabledStep = this.steps.find(
-      (s: IgcStepComponent) => !s.disabled
-    );
-    if (firstEnabledStep) {
-      this.activateStep(firstEnabledStep);
     }
   }
 
@@ -273,29 +295,20 @@ export default class IgcStepperComponent extends SizableMixin(
     );
   }
 
-  private stepsChanged(): void {
-    this.syncProperties(this.steps);
-    // if (!this._init) {
-    //   // update step indexes
-    //   // and set up properties and event listener for newly added steps
-    //   this.steps.forEach((step: IgcStepComponent, index: number) => {
-    //     step.index = index;
-    //     if (!this._steps.has(step)) {
-    //       this._steps.add(step);
-    //       this.syncProperties([step]);
-    //     }
-    //   });
+  protected stepsChanged(): void {
+    this.syncProperties();
+  }
 
-    //   // remove the event listener from the deleted steps
-    //   const currentSteps = new Set(this.steps);
-    //   Array.from(this._steps.keys()).forEach(
-    //     (step: IgcStepComponent) => {
-    //       if (!currentSteps.has(step)) {
-    //         this._steps.delete(step);
-    //       }
-    //     }
-    //   );
-    // }
+  private updateCssVars() {
+    console.log('updateCss');
+    this.style.setProperty(
+      '--step-body-height',
+      this.activeStep.body[0].clientHeight + 'px'
+    );
+    this.style.setProperty(
+      '--step-header-height',
+      this.activeStep.header.clientHeight + 'px'
+    );
   }
 
   protected override render() {

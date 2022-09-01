@@ -87,6 +87,7 @@ describe('Tree', () => {
       stepper.next();
       const nextStep = stepper.steps[1];
       expect(nextStep.active).to.be.false;
+      expect(step.active).to.be.true;
     });
 
     //   it('Should support multiple levels of nesting', async () => {

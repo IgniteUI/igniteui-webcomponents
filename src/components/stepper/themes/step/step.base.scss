@@ -21,18 +21,22 @@
 
     [part~='body'] {
         position: absolute;
-        top: 100%;
+        top: var(--step-header-height);
         inset-inline-start: 0;
         width: 100%;
         overflow: hidden;
-        height: 100%;
+        height: var(--step-body-height);
 
-        [part='content'] {
+        [part~='content'] {
             position: absolute;
             z-index: 1;
             inset-inline-start: 100%;
             top: 0;
             width: 100%;
+
+            ::slotted(*) {
+                display: block;
+            }
         }
     }
 

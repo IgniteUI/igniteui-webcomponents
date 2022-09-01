@@ -1,5 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { styles } from '../stepper/themes/step/step.base.css.js';
 import { themes } from '../../theming';
 import { partNameMap } from '../common/util.js';
@@ -12,6 +12,13 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   public static override styles = styles;
+
+  /** Returns all of the stepper's steps. */
+  @queryAssignedElements()
+  public body!: Array<any>;
+
+  @query('[part~="header-container"]')
+  public header!: HTMLElement;
 
   /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
@@ -69,30 +76,40 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   @property({ attribute: false })
-  public linear = false;
-
-  /** @private */
-  @property({ attribute: false })
   public visited = false;
+
+  @watch('titlePosition')
+  public titlePositionChange() {
+    this.style.height =
+      this.header.clientHeight + this.body[0].clientHeight + 'px';
+  }
 
   @watch('active')
   public activeChange() {
     if (this.active) {
-      this.dispatchEvent(new CustomEvent('activeStepChanged'));
+      this.dispatchEvent(
+        new CustomEvent('activeStepChanged', { bubbles: true, detail: false })
+      );
     }
   }
 
   @watch('invalid')
   public invalidStateChanged() {
-    if (this.linear && this.invalid) {
-      this.dispatchEvent(new CustomEvent('stepInvalidStateChanged'));
+    if (this.invalid) {
+      this.dispatchEvent(
+        new CustomEvent('stepInvalidStateChanged', {
+          bubbles: true,
+        })
+      );
     }
   }
 
   protected handleClick(event: MouseEvent): void {
     event.stopPropagation();
     if (!this.disabled) {
-      this.active = true;
+      this.dispatchEvent(
+        new CustomEvent('activeStepChanged', { bubbles: true, detail: true })
+      );
     }
   }
 

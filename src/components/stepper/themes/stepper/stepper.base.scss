@@ -1,6 +1,11 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
 
+:host {
+    --stepper-height: calc(#{var(--step-header-height)} + #{var(--step-body-height)});
+    height: #{var(--stepper-height)};
+}
+
 :host([orientation='horizontal']) {
     display: flex;
 }

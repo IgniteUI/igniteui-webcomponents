@@ -110,6 +110,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <span>STEP 3 CONTENT</span>
       </igc-step>
     </igc-stepper>
+    <span>EBASI SHITAAAAAAAAAA</span>
   `;
 };
 
