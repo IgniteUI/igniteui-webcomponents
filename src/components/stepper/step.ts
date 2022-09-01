@@ -65,7 +65,15 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   @property({ attribute: false })
-  public isAccessible = true;
+  public linearDisabled = false;
+
+  /** @private */
+  @property({ attribute: false })
+  public linear = false;
+
+  /** @private */
+  @property({ attribute: false })
+  public visited = false;
 
   @watch('active')
   public activeChange() {
@@ -76,7 +84,7 @@ export default class IgcStepComponent extends LitElement {
 
   @watch('invalid')
   public invalidStateChanged() {
-    if (this.invalid) {
+    if (this.linear && this.invalid) {
       this.dispatchEvent(new CustomEvent('stepInvalidStateChanged'));
     }
   }
@@ -86,6 +94,10 @@ export default class IgcStepComponent extends LitElement {
     if (!this.disabled) {
       this.active = true;
     }
+  }
+
+  private get isAccessible(): boolean {
+    return !this.disabled && !this.linearDisabled;
   }
 
   private get stepParts() {
@@ -99,7 +111,7 @@ export default class IgcStepComponent extends LitElement {
   private get headerContainerParts() {
     return {
       'header-container': true,
-      disabled: this.disabled,
+      disabled: this.isAccessible,
       optional: this.optional,
       'active-header': this.active,
       invalid: this.invalid && !this.active,

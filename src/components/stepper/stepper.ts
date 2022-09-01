@@ -27,10 +27,10 @@ export default class IgcStepperComponent extends SizableMixin(
   /** @private */
   protected static styles = styles;
 
-  // Map containing the currennt steps and their event listener functions
-  private _stepsAndListeners: Map<IgcStepComponent, any> = new Map();
+  // // Set containing the currennt steps collection
+  // private _steps: Set<IgcStepComponent> = new Set();
   private activeStep!: IgcStepComponent;
-  private _init = true;
+  // private _init = true;
 
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
@@ -114,30 +114,41 @@ export default class IgcStepperComponent extends SizableMixin(
 
   @watch('linear', { waitUntilFirstUpdate: true })
   protected linearChange(): void {
+    this.steps.forEach((step: IgcStepComponent) => {
+      step.linear = this.linear;
+      step.linearDisabled = this.linear;
+    });
     if (this.linear) {
       this.calculateLinearDisabledSteps();
     }
   }
 
+  constructor() {
+    super();
+    this.addEventListener('activeStepChanged', (event: any) => {
+      event.stopPropagation();
+      this.activateStep(event.target);
+    });
+    this.addEventListener('stepInvalidStateChanged', (event: any) => {
+      event.stopPropagation();
+      if (this.linear) {
+        this.calculateLinearDisabledSteps();
+      }
+    });
+  }
+
   protected override async firstUpdated() {
     await this.updateComplete;
 
-    this.steps.forEach((step: IgcStepComponent) => {
-      if (step.active) {
-        this.activeStep = step;
-      }
-      this._stepsAndListeners.set(step, null);
-    });
+    // this.steps.forEach((step: IgcStepComponent) => {
+    //   if (step.active) {
+    //     this.activeStep = step;
+    //   }
+    // });
     if (!this.activeStep) {
       this.activateFirstStep();
     }
-    this.syncProperties(this.steps);
-    this._init = false;
-  }
-
-  public override disconnectedCallback() {
-    this._stepsAndListeners.forEach(this.removeStepsEventListeners);
-    this._stepsAndListeners.clear();
+    // this.syncProperties(this.steps);
   }
 
   public navigateTo(index: number) {
@@ -158,38 +169,37 @@ export default class IgcStepperComponent extends SizableMixin(
     this.moveToNextStep(false);
   }
 
+  private moveToNextStep(next = true) {
+    let steps = this.steps;
+    let activeStepIndex = this.activeStep.index;
+    if (!next) {
+      steps = this.steps.reverse();
+      activeStepIndex = steps.findIndex(
+        (step: IgcStepComponent) => step === this.activeStep
+      );
+    }
+
+    const nextStep = steps.find(
+      (step: IgcStepComponent, i: number) =>
+        i > activeStepIndex && !step.disabled && !step.linearDisabled
+    );
+    if (nextStep) {
+      this.activateStep(nextStep);
+    }
+  }
+
   private syncProperties(steps: IgcStepComponent[]): void {
     steps.forEach((step: IgcStepComponent, index: number) => {
       step.orientation = this.orientation;
       step.stepType = this.stepType;
       step.titlePosition = this.titlePosition;
       step.contentTop = this.contentTop;
+      step.linear = this.linear;
       step.index = index;
       step.active = this.activeStep === step;
       if (this.linear) {
-        step.isAccessible =
-          step.index > this.activeStep.index && this.activeStep.invalid;
+        this.calculateLinearDisabledSteps();
       }
-      const activeStepChangedHandler = (event: any) => {
-        event.stopPropagation();
-        this.activateStep(step);
-      };
-      const invalidStateChangedHandler = (event: any) => {
-        event.stopPropagation();
-        if (this.linear) {
-          console.log('linear');
-          this.calculateLinearDisabledSteps();
-        }
-      };
-      step.addEventListener('activeStepChanged', activeStepChangedHandler);
-      step.addEventListener(
-        'stepInvalidStateChanged',
-        invalidStateChangedHandler
-      );
-      this._stepsAndListeners.set(step, {
-        activeStepChangedHandler,
-        invalidStateChangedHandler,
-      });
     });
   }
 
@@ -215,73 +225,77 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
-  private moveToNextStep(next = true) {
-    let steps: IgcStepComponent[] = this.steps;
-    let activeStepIndex = this.activeStep.index;
-    if (!next) {
-      steps = this.steps.reverse();
-      activeStepIndex = steps.findIndex((s) => s === this.activeStep);
+  public calculateLinearDisabledSteps(): void {
+    if (!this.activeStep) {
+      return;
     }
 
-    const nextStep = steps.find(
-      (s, i) => i > activeStepIndex && s.isAccessible
-    );
-    if (nextStep) {
-      this.activateStep(nextStep);
+    if (!this.activeStep.invalid) {
+      const firstRequiredIndex = this.getNextRequiredStep();
+      if (firstRequiredIndex !== -1) {
+        this.updateLinearDisabledSteps(firstRequiredIndex);
+      } else {
+        this.steps.forEach(
+          (step: IgcStepComponent) => (step.linearDisabled = false)
+        );
+      }
+    } else {
+      this.steps.forEach((step: IgcStepComponent) => {
+        if (step.index > this.activeStep.index) {
+          step.linearDisabled = true;
+        }
+      });
     }
   }
 
-  private calculateLinearDisabledSteps(): void {
-    this.steps.forEach((step) => {
-      if (
-        step.disabled ||
-        (step.index > this.activeStep.index && this.activeStep.invalid)
-      ) {
-        step.isAccessible = false;
-      } else {
-        step.isAccessible = true;
+  private updateLinearDisabledSteps(toIndex: number): void {
+    this.steps.forEach((step: IgcStepComponent) => {
+      if (step.index > this.activeStep.index) {
+        if (step.index <= toIndex) {
+          step.linearDisabled = false;
+        } else {
+          step.linearDisabled = true;
+        }
       }
     });
   }
 
-  private stepsChanged(): void {
-    if (!this._init) {
-      // update step indexes
-      // and set up properties and event listener for newly added steps
-      this.steps.forEach((step: IgcStepComponent, index: number) => {
-        step.index = index;
-        if (!this._stepsAndListeners.has(step)) {
-          this._stepsAndListeners.set(step, null);
-          this.syncProperties([step]);
-        }
-      });
-
-      // remove the event listener from the deleted steps
-      const currentSteps = new Set(this.steps);
-      Array.from(this._stepsAndListeners.keys()).forEach(
-        (step: IgcStepComponent) => {
-          if (!currentSteps.has(step)) {
-            const eventHandlers = this._stepsAndListeners.get(step);
-            this.removeStepsEventListeners(eventHandlers, step);
-            this._stepsAndListeners.delete(step);
-          }
-        }
-      );
+  private getNextRequiredStep(): number {
+    if (!this.activeStep) {
+      return -1;
     }
+    return this.steps.findIndex(
+      (step: IgcStepComponent) =>
+        step.index > this.activeStep.index &&
+        !step.optional &&
+        !step.disabled &&
+        step.invalid
+    );
   }
 
-  private removeStepsEventListeners(
-    eventHandlers: any,
-    step: IgcStepComponent
-  ): void {
-    step.removeEventListener(
-      'activeStepChanged',
-      eventHandlers.activeStepChangedHandler
-    );
-    step.removeEventListener(
-      'stepInvalidStateChanged',
-      eventHandlers.invalidStateChangedHandler
-    );
+  private stepsChanged(): void {
+    this.syncProperties(this.steps);
+    // if (!this._init) {
+    //   // update step indexes
+    //   // and set up properties and event listener for newly added steps
+    //   this.steps.forEach((step: IgcStepComponent, index: number) => {
+    //     step.index = index;
+    //     if (!this._steps.has(step)) {
+    //       this._steps.add(step);
+    //       this.syncProperties([step]);
+    //     }
+    //   });
+
+    //   // remove the event listener from the deleted steps
+    //   const currentSteps = new Set(this.steps);
+    //   Array.from(this._steps.keys()).forEach(
+    //     (step: IgcStepComponent) => {
+    //       if (!currentSteps.has(step)) {
+    //         this._steps.delete(step);
+    //       }
+    //     }
+    //   );
+    // }
   }
 
   protected override render() {
