@@ -82,24 +82,33 @@ const BasicTemplate: Story<ArgTypes, Context> = (
     >
       <igc-step>
         <span slot="indicator">1</span>
-        <span slot="title"
-          >Step1 Step1asdasd Step1asdasada asd asd asd asd Step1</span
-        >
-        <span slot="sub-title"
-          >Step subtitle 1Step subtitle 1Step subtitle 1</span
-        >
-        <span>STEP 1 CONTENT</span>
+        <span slot="title">Title</span>
+        <span slot="sub-title">subtitle</span>
+        <span>
+          Ut fermentum convallis odio nec suscipit. Quisque tempor, odio euismod
+          aliquam dapibus, mi risus facilisis arcu, vitae dapibus massa orci non
+          nisl. Quisque neque dolor, egestas vitae lectus non, eleifend gravida
+          erat. Curabitur gravida malesuada arcu, non fermentum tortor porta
+          luctus. Nulla sagittis massa sit amet ipsum sagittis efficitur. In
+          volutpat cursus sapien et scelerisque. Praesent egestas velit vel
+          pharetra suscipit. Maecenas bibendum magna nunc, auctor luctus justo
+          sagittis in. Proin et arcu sed turpis tempus varius vel in neque.
+          Nulla pulvinar, odio sit amet vestibulum congue, est enim scelerisque
+          diam, placerat luctus nisl erat sit amet augue. Integer pulvinar
+          fringilla ultrices. Maecenas scelerisque odio nibh, sit amet euismod
+          leo lobortis quis. Vestibulum pharetra nisi urna.
+        </span>
       </igc-step>
       <igc-step active>
         <span slot="indicator">2</span>
-        <span slot="title">Step2</span>
-        <span slot="sub-title">Step subtitle 2</span>
+        <span slot="title">Title</span>
+        <span slot="sub-title">subtitle</span>
         <span>STEP 2 CONTENT</span>
       </igc-step>
       <igc-step>
         <span slot="indicator">3</span>
-        <span slot="title">Step3</span>
-        <span slot="sub-title">Step subtitle 3</span>
+        <span slot="title">Title</span>
+        <span slot="sub-title">subtitle</span>
         <span>STEP 3 CONTENT</span>
       </igc-step>
     </igc-stepper>
