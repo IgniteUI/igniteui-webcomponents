@@ -6,6 +6,10 @@ $slot-spacing: var(--igc-spacing-large);
 :host {
     display: inline-flex;
     vertical-align: middle;
+
+    ::slotted(span) {
+        display: inline-flex;
+    }
 }
 
 [part='base'] {
