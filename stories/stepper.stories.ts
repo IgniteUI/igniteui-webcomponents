@@ -81,7 +81,6 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       .dir=${direction}
     >
       <igc-step>
-        <span slot="indicator">1</span>
         <span slot="title">Title</span>
         <span slot="sub-title">subtitle</span>
         <span>
@@ -100,7 +99,6 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         </span>
       </igc-step>
       <igc-step active>
-        <span slot="indicator">2</span>
         <span slot="title">Title</span>
         <span slot="sub-title">subtitle</span>
         <span>STEP 2 CONTENT</span>
