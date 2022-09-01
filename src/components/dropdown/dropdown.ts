@@ -1,23 +1,28 @@
 import { html, LitElement } from 'lit';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { styles } from './themes/light/dropdown.base.css.js';
-import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
-import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
-import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { IgcToggleController } from '../toggle/toggle.controller.js';
 import type {
   IgcPlacement,
   IgcToggleComponent,
   IgcToggleEventMap,
 } from '../toggle/types';
-import { IgcToggleController } from '../toggle/toggle.controller.js';
-import { styleMap } from 'lit/directives/style-map.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { styles } from './themes/light/dropdown.base.css.js';
+import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
+import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
+import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
@@ -61,14 +66,18 @@ export default class IgcDropdownComponent
   )
   implements IgcToggleComponent
 {
-  public static readonly tagName = 'igc-dropdown';
+  /** @private */
+  public static readonly tagName: string = 'igc-dropdown';
 
   public static styles = styles;
 
-  private toggleController!: IgcToggleController;
-  private selectedItem!: IgcDropdownItemComponent | null;
-  private activeItem!: IgcDropdownItemComponent;
-  private target!: HTMLElement;
+  protected toggleController!: IgcToggleController;
+  protected selectedItem!: IgcDropdownItemComponent | null;
+
+  @state()
+  protected activeItem!: IgcDropdownItemComponent;
+
+  protected target!: HTMLElement;
 
   private readonly keyDownHandlers: Map<string, Function> = new Map(
     Object.entries({
@@ -76,6 +85,8 @@ export default class IgcDropdownComponent
       Enter: this.onEnterKey,
       ArrowUp: this.onArrowUpKeyDown,
       ArrowDown: this.onArrowDownKeyDown,
+      ArrowLeft: this.onArrowUpKeyDown,
+      ArrowRight: this.onArrowDownKeyDown,
       Home: this.onHomeKey,
       End: this.onEndKey,
     })
@@ -369,7 +380,7 @@ export default class IgcDropdownComponent
     }
   }
 
-  private getNearestSiblingFocusableItemIndex(
+  protected getNearestSiblingFocusableItemIndex(
     startIndex: number,
     direction: -1 | 1
   ): number {
@@ -396,18 +407,17 @@ export default class IgcDropdownComponent
     this.navigate(-1);
   }
 
-  private onArrowDownKeyDown() {
+  protected onArrowDownKeyDown() {
     this.navigateNext();
   }
 
-  private onArrowUpKeyDown() {
+  protected onArrowUpKeyDown() {
     this.navigatePrev();
   }
 
   private async _hide(emit = true) {
-    if (emit && !this.handleClosing()) return;
-
     if (!this.open) return;
+    if (emit && !this.handleClosing()) return;
 
     this.open = false;
 

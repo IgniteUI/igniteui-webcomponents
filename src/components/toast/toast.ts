@@ -67,6 +67,16 @@ export default class IgcToastComponent extends LitElement {
     }
   }
 
+  public override connectedCallback() {
+    super.connectedCallback();
+    if (!this.hasAttribute('role')) {
+      this.setAttribute('role', 'alert');
+    }
+    if (!this.hasAttribute('aria-live')) {
+      this.setAttribute('aria-live', 'polite');
+    }
+  }
+
   protected override render() {
     return html`<slot></slot>`;
   }

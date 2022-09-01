@@ -10,7 +10,7 @@ import { styles as bootstrap } from './themes/light/dropdown-header.bootstrap.cs
  */
 @themes({ bootstrap })
 export default class IgcDropdownHeaderComponent extends LitElement {
-  public static readonly tagName = 'igc-dropdown-header';
+  public static readonly tagName: string = 'igc-dropdown-header';
 
   public static override styles = styles;
 
