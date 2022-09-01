@@ -112,6 +112,13 @@ export default class IgcStepperComponent extends SizableMixin(
     );
   }
 
+  @watch('linear', { waitUntilFirstUpdate: true })
+  protected linearChange(): void {
+    if (this.linear) {
+      this.calculateLinearDisabledSteps();
+    }
+  }
+
   protected override async firstUpdated() {
     await this.updateComplete;
 
@@ -128,12 +135,27 @@ export default class IgcStepperComponent extends SizableMixin(
     this._init = false;
   }
 
+  public override disconnectedCallback() {
+    this._stepsAndListeners.forEach(this.removeStepsEventListeners);
+    this._stepsAndListeners.clear();
+  }
+
   public navigateTo(index: number) {
     const step = this.steps[index];
     if (!step) {
       return;
     }
     this.activateStep(step);
+  }
+
+  /** Activates the next enabled step. */
+  public next(): void {
+    this.moveToNextStep();
+  }
+
+  /** Activates the previous enabled step. */
+  public prev(): void {
+    this.moveToNextStep(false);
   }
 
   private syncProperties(steps: IgcStepComponent[]): void {
@@ -144,12 +166,30 @@ export default class IgcStepperComponent extends SizableMixin(
       step.contentTop = this.contentTop;
       step.index = index;
       step.active = this.activeStep === step;
-      const eventHandler = (event: any) => {
+      if (this.linear) {
+        step.isAccessible =
+          step.index > this.activeStep.index && this.activeStep.invalid;
+      }
+      const activeStepChangedHandler = (event: any) => {
         event.stopPropagation();
         this.activateStep(step);
       };
-      step.addEventListener('activeStepChanged', eventHandler);
-      this._stepsAndListeners.set(step, eventHandler);
+      const invalidStateChangedHandler = (event: any) => {
+        event.stopPropagation();
+        if (this.linear) {
+          console.log('linear');
+          this.calculateLinearDisabledSteps();
+        }
+      };
+      step.addEventListener('activeStepChanged', activeStepChangedHandler);
+      step.addEventListener(
+        'stepInvalidStateChanged',
+        invalidStateChangedHandler
+      );
+      this._stepsAndListeners.set(step, {
+        activeStepChangedHandler,
+        invalidStateChangedHandler,
+      });
     });
   }
 
@@ -175,6 +215,35 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
+  private moveToNextStep(next = true) {
+    let steps: IgcStepComponent[] = this.steps;
+    let activeStepIndex = this.activeStep.index;
+    if (!next) {
+      steps = this.steps.reverse();
+      activeStepIndex = steps.findIndex((s) => s === this.activeStep);
+    }
+
+    const nextStep = steps.find(
+      (s, i) => i > activeStepIndex && s.isAccessible
+    );
+    if (nextStep) {
+      this.activateStep(nextStep);
+    }
+  }
+
+  private calculateLinearDisabledSteps(): void {
+    this.steps.forEach((step) => {
+      if (
+        step.disabled ||
+        (step.index > this.activeStep.index && this.activeStep.invalid)
+      ) {
+        step.isAccessible = false;
+      } else {
+        step.isAccessible = true;
+      }
+    });
+  }
+
   private stepsChanged(): void {
     if (!this._init) {
       // update step indexes
@@ -192,15 +261,27 @@ export default class IgcStepperComponent extends SizableMixin(
       Array.from(this._stepsAndListeners.keys()).forEach(
         (step: IgcStepComponent) => {
           if (!currentSteps.has(step)) {
-            step.removeEventListener(
-              'activeStepChanged',
-              this._stepsAndListeners.get(step)
-            );
+            const eventHandlers = this._stepsAndListeners.get(step);
+            this.removeStepsEventListeners(eventHandlers, step);
             this._stepsAndListeners.delete(step);
           }
         }
       );
     }
+  }
+
+  private removeStepsEventListeners(
+    eventHandlers: any,
+    step: IgcStepComponent
+  ): void {
+    step.removeEventListener(
+      'activeStepChanged',
+      eventHandlers.activeStepChangedHandler
+    );
+    step.removeEventListener(
+      'stepInvalidStateChanged',
+      eventHandlers.invalidStateChangedHandler
+    );
   }
 
   protected override render() {

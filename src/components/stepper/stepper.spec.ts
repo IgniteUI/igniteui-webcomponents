@@ -6,7 +6,7 @@ import {
   SLOTS,
   StepperTestFunctions,
 } from './stepper-utils.spec.js';
-import { expect } from '@open-wc/testing';
+import { elementUpdated, expect } from '@open-wc/testing';
 
 describe('Tree', () => {
   before(() => {
@@ -59,6 +59,34 @@ describe('Tree', () => {
           `STEP ${index + 1} CONTENT`
         );
       });
+    });
+
+    it('Should not allow activating a step with the next/prev methods when disabled is set to true', () => {
+      // the step with index 0 is activated by default
+      const disabledStep = stepper.steps[1];
+      disabledStep.disabled = true;
+
+      stepper.next();
+      expect(disabledStep.active).to.be.false;
+      expect(stepper.steps[2].active).to.be.true;
+
+      stepper.prev();
+      expect(disabledStep.active).to.be.false;
+      expect(stepper.steps[0].active).to.be.true;
+    });
+
+    it('Should not allow moving forward to the next step in linear mode if the previous step is invalid', async () => {
+      stepper.linear = true;
+
+      // the step with index 0 is activated by default
+      const step = stepper.steps[0];
+      step.invalid = true;
+      expect(step.active).to.be.true;
+      await elementUpdated(stepper);
+
+      stepper.next();
+      const nextStep = stepper.steps[1];
+      expect(nextStep.active).to.be.false;
     });
 
     //   it('Should support multiple levels of nesting', async () => {

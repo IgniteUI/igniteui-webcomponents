@@ -63,10 +63,21 @@ export default class IgcStepComponent extends LitElement {
   @property({ attribute: false })
   public contentTop = false;
 
+  /** @private */
+  @property({ attribute: false })
+  public isAccessible = true;
+
   @watch('active')
   public activeChange() {
     if (this.active) {
       this.dispatchEvent(new CustomEvent('activeStepChanged'));
+    }
+  }
+
+  @watch('invalid')
+  public invalidStateChanged() {
+    if (this.invalid) {
+      this.dispatchEvent(new CustomEvent('stepInvalidStateChanged'));
     }
   }
 
