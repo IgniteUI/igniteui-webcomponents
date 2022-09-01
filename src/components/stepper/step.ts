@@ -124,7 +124,7 @@ export default class IgcStepComponent extends LitElement {
       return html`
         <div part="indicator">
           <slot name="indicator">
-            <span part="inner">${this.index + 1}</span>
+            <span>${this.index + 1}</span>
           </slot>
         </div>
       `;

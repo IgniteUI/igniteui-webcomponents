@@ -17,9 +17,14 @@
     [part~='body'] {
         position: absolute;
         top: 100%;
-        left: 0;
-        right: 0;
+        inset-inline-start: 100%;
         width: 100%;
+        overflow: hidden;
+    }
+
+    [part~='active-body'] {
+        inset-inline-start: 0;
+        transition: all 250ms ease-in-out;
     }
 
     [part~='content'] {
@@ -40,7 +45,15 @@
             height: 1px;
             background: red;
             position: relative;
-            top: rem(-22px);
+        }
+    }
+}
+
+[part~='active-header'] {
+    [part~='indicator'] {
+        [name~='indicator']::slotted(span) {
+            background: #09f;
+            color: #fff;
         }
     }
 }
@@ -103,9 +116,10 @@
     gap: rem(8px);
     overflow: hidden;
 
+    &:focus,
     &:hover {
         cursor: pointer;
-        background: #ccc;
+        background: rgb(0 0 0 / 10%);
     }
 }
 
@@ -128,5 +142,20 @@
         padding-inline-end: rem(8px);
         padding-inline-start: rem(20px);
         border-left: rem(1px) solid red;
+    }
+
+    [part~='content'] {
+        overflow: hidden;
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 250ms ease-in-out;
+        max-height: 0;
+    }
+
+    [part~='active-body'] {
+        [part~='content'] {
+            max-height: 100%;
+            transform: scaleY(1);
+        }
     }
 }
