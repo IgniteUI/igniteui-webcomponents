@@ -88,8 +88,8 @@ export default class IgcSelectComponent extends EventEmitterMixin<
       Tab: this.onTargetTabKey,
       Escape: this.onEscapeKey,
       Enter: this.onTargetEnterKey,
-      ArrowLeft: this.onTargetArrowUpKeyDown,
-      ArrowRight: this.onTargetArrowDownKeyDown,
+      ArrowLeft: this.onTargetArrowLeftKeyDown,
+      ArrowRight: this.onTargetArrowRightKeyDown,
       ArrowUp: this.onTargetArrowUpKeyDown,
       ArrowDown: this.onTargetArrowDownKeyDown,
       Home: this.onTargetHomeKey,
@@ -313,6 +313,14 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
   protected onTargetEnterKey() {
     !this.open ? this.target.click() : this.onEnterKey();
+  }
+
+  protected onTargetArrowLeftKeyDown() {
+    !this.open ? this.selectPrev() : this.onArrowUpKeyDown();
+  }
+
+  protected onTargetArrowRightKeyDown() {
+    !this.open ? this.selectNext() : this.onArrowDownKeyDown();
   }
 
   protected onTargetArrowUpKeyDown(event: KeyboardEvent) {
