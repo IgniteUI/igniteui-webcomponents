@@ -74,7 +74,7 @@ export default class IgcStepperComponent extends SizableMixin(
    * @remarks
    * Default value is `false` and the content is below the steps.
    */
-  @property({ type: Boolean })
+  @property({ reflect: true, type: Boolean, attribute: 'content-top' })
   public contentTop = false;
 
   /** The direction attribute of the control. */
@@ -312,7 +312,9 @@ export default class IgcStepperComponent extends SizableMixin(
   }
 
   protected override render() {
-    return html`<slot @slotchange=${this.stepsChanged}></slot>`;
+    return html`<div part="stepper">
+      <slot @slotchange=${this.stepsChanged}></slot>
+    </div>`;
   }
 }
 

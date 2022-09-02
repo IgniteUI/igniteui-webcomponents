@@ -71,6 +71,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
+    <span>EBASI SHITAAAAAAAAAA TOP</span>
     <igc-stepper
       .orientation=${orientation}
       .stepType=${stepType}
@@ -110,7 +111,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <span>STEP 3 CONTENT</span>
       </igc-step>
     </igc-stepper>
-    <span>EBASI SHITAAAAAAAAAA</span>
+    <span>EBASI SHITAAAAAAAAAA BOTTOM</span>
   `;
 };
 

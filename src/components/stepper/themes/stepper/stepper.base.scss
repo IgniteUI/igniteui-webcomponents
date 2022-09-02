@@ -3,15 +3,30 @@
 
 :host {
     --stepper-height: calc(#{var(--step-header-height)} + #{var(--step-body-height)});
-    height: #{var(--stepper-height)};
+
+    display: flex;
+    flex-direction: column;
+}
+
+:host([orientation='horizontal'][content-top]) {
+    &::before {
+        content: '';
+        height: var(--step-body-height);
+    }
 }
 
 :host([orientation='horizontal']) {
-    display: flex;
+    height: var(--stepper-height);
+
+    [part='stepper'] {
+        display: flex;
+    }
 }
 
 :host([orientation='vertical']) {
-    flex-direction: column;
+    [part='stepper'] {
+        flex-direction: column;
+    }
 }
 
 ::slotted(igc-step:last-of-type) {
