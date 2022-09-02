@@ -2,9 +2,7 @@
 @use '../../../../styles/utilities/index' as *;
 
 :host {
-    --step-count: 3;
-
-    counter-reset: step-count;
+    --steps-count: 3;
 }
 
 :host([orientation='horizontal']) {

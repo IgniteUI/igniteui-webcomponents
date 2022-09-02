@@ -1,5 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
-import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { styles } from '../stepper/themes/step/step.base.css.js';
 import { themes } from '../../theming';
 import { partNameMap } from '../common/util.js';
@@ -12,13 +12,6 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   public static override styles = styles;
-
-  /** Returns all of the stepper's steps. */
-  @queryAssignedElements()
-  public body!: Array<any>;
-
-  @query('[part~="header-container"]')
-  public header!: HTMLElement;
 
   /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
@@ -116,14 +109,6 @@ export default class IgcStepComponent extends LitElement {
     return !this.disabled && !this.linearDisabled;
   }
 
-  private get stepParts() {
-    return {
-      step: true,
-      vertical: this.orientation === 'vertical',
-      horizontal: this.orientation === 'horizontal',
-    };
-  }
-
   private get headerContainerParts() {
     return {
       'header-container': true,
@@ -142,8 +127,6 @@ export default class IgcStepComponent extends LitElement {
     return {
       body: true,
       'active-body': this.active,
-      'content-top':
-        (this.orientation === 'horizontal' && this.contentTop) || false,
     };
   }
 

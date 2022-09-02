@@ -28,7 +28,7 @@ export default class IgcStepperComponent extends SizableMixin(
   protected static styles = styles;
 
   private activeStep!: IgcStepComponent;
-  private _init = true;
+  // private _init = true;
 
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
@@ -47,7 +47,7 @@ export default class IgcStepperComponent extends SizableMixin(
    * @remarks
    * Default value is `full`.
    */
-  @property({ reflect: true })
+  @property({ reflect: true, attribute: 'step-type' })
   public stepType: 'indicator' | 'title' | 'full' = 'full';
 
   /**
@@ -57,7 +57,7 @@ export default class IgcStepperComponent extends SizableMixin(
    * The default value when the stepper is horizontally orientated is `bottom`.
    * In vertical layout the default title position is `end`.
    */
-  @property({ reflect: true })
+  @property({ reflect: true, attribute: 'title-position' })
   public titlePosition: 'bottom' | 'top' | 'end' | 'start' = 'end';
 
   /**
@@ -87,9 +87,6 @@ export default class IgcStepperComponent extends SizableMixin(
     this.steps.forEach(
       (step: IgcStepComponent) => (step.orientation = this.orientation)
     );
-    Promise.resolve().then(() => {
-      this.updateCssVars();
-    });
   }
 
   @watch('stepType', { waitUntilFirstUpdate: true })
@@ -97,9 +94,6 @@ export default class IgcStepperComponent extends SizableMixin(
     this.steps.forEach(
       (step: IgcStepComponent) => (step.stepType = this.stepType)
     );
-    Promise.resolve().then(() => {
-      this.updateCssVars();
-    });
   }
 
   @watch('titlePosition', { waitUntilFirstUpdate: true })
@@ -107,9 +101,6 @@ export default class IgcStepperComponent extends SizableMixin(
     this.steps.forEach(
       (step: IgcStepComponent) => (step.titlePosition = this.titlePosition)
     );
-    Promise.resolve().then(() => {
-      this.updateCssVars();
-    });
   }
 
   @watch('contentTop', { waitUntilFirstUpdate: true })
@@ -117,9 +108,6 @@ export default class IgcStepperComponent extends SizableMixin(
     this.steps.forEach(
       (step: IgcStepComponent) => (step.contentTop = this.contentTop)
     );
-    Promise.resolve().then(() => {
-      this.updateCssVars();
-    });
   }
 
   @watch('linear', { waitUntilFirstUpdate: true })
@@ -152,12 +140,6 @@ export default class IgcStepperComponent extends SizableMixin(
     if (!this.activeStep) {
       this.activateFirstStep();
     }
-
-    if (this._init) {
-      this.syncProperties();
-      this.updateCssVars();
-      this._init = false;
-    }
   }
 
   /** Activates the step at a given index. */
@@ -186,6 +168,8 @@ export default class IgcStepperComponent extends SizableMixin(
       step.titlePosition = this.titlePosition;
       step.contentTop = this.contentTop;
       step.index = index;
+      step.style.cssText = `--step-index: ${index}`;
+      // step.style.setProperty('--step-index', index.toString());
       step.active = this.activeStep === step;
       if (this.linear) {
         this.calculateLinearDisabledSteps();
@@ -232,7 +216,6 @@ export default class IgcStepperComponent extends SizableMixin(
 
     step.active = true;
     this.activeStep = step;
-    this.updateCssVars();
   }
 
   private activateFirstStep() {
@@ -312,23 +295,8 @@ export default class IgcStepperComponent extends SizableMixin(
   }
 
   protected stepsChanged(): void {
-    if (!this._init) {
-      this.syncProperties();
-    }
-  }
-
-  private updateCssVars() {
-    console.log('updateCss');
-    const activeStepBody = this.activeStep.body[0];
-    const activeStepHeader = this.activeStep.header;
-    this.style.setProperty(
-      '--step-body-height',
-      activeStepBody ? activeStepBody.clientHeight + 'px' : '0px'
-    );
-    this.style.setProperty(
-      '--step-header-height',
-      activeStepHeader ? activeStepHeader.clientHeight + 'px' : '0px'
-    );
+    this.style.setProperty('--steps-count', this.steps.length.toString());
+    this.syncProperties();
   }
 
   protected override render() {

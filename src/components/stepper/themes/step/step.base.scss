@@ -15,7 +15,7 @@
 
 :host {
     display: grid;
-    grid-template-columns: repeat(var(--step-count), 1fr);
+    grid-template-columns: repeat(var(--steps-count), 1fr);
     grid-row-start: 1;
     grid-column: 1 / -1;
     pointer-events: none;
