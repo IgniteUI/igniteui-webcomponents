@@ -1,0 +1,15 @@
+@use '../../../../styles/utilities' as *;
+
+[part='title'] {
+    padding-inline: rem(24px);
+    padding-block-start: rem(16px);
+}
+
+[part='content'] {
+    padding: rem(14px) rem(24px);
+}
+
+[part='footer'] {
+    padding: rem(8px);
+    padding-block-start: 0;
+}
