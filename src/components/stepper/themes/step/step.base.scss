@@ -1,21 +1,26 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
 
-:host {
-    flex: 1;
-    position: initial;
-    align-content: center;
-    justify-content: center;
-    min-width: 6.25rem;
+:host([content-top]) {
+    align-items: flex-end;
+
+    [part~='header-container'] {
+        grid-row-start: 2;
+    }
+
+    [part~='body'] {
+        grid-row: 1 / 2;
+    }
 }
 
-// Horizontal
-
-[part='step horizontal content-top'],
-[part='step horizontal'] {
+:host {
+    display: grid;
+    grid-template-columns: repeat(var(--step-count), 1fr);
+    grid-row-start: 1;
+    grid-column: 1 / -1;
+    pointer-events: none;
     overflow: hidden;
-    flex-direction: row;
-    flex-grow: 1;
+    align-items: flex-start;
 
     [part='header'] {
         display: flex;
@@ -50,46 +55,22 @@
     }
 
     [part~='body'] {
+        pointer-events: all;
+        grid-row-start: 2;
+        grid-column: 1 / -1;
+        transform: translateX(-100%);
+        transition: all 250ms ease-in-out;
         position: absolute;
-        inset-inline-start: 0;
-        width: 100%;
-        overflow: hidden;
-        height: var(--step-body-height);
-
-        [part~='content'] {
-            position: absolute;
-            z-index: 1;
-            inset-inline-start: 100%;
-            top: 0;
-            width: 100%;
-
-            ::slotted(*) {
-                display: block;
-            }
-        }
-    }
-
-    [part~='body']:not([part~='content-top']) {
-        top: var(--step-header-height);
-    }
-
-    [part~='content-top'] {
-        bottom: var(--step-header-height);
     }
 
     [part~='active-body'] {
-        [part='content'] {
-            inset-inline-start: 0;
-            transition: all 250ms ease-in-out;
-        }
-    }
-
-    [part~='content'] {
-        overflow: hidden;
-        position: relative;
+        transform: translateX(0%);
+        position: static;
     }
 
     [part~='header-container'] {
+        pointer-events: all;
+        grid-column: calc(#{var(--step-index)} + 1) / calc(#{var(--step-index)} + 2);
         min-width: rem(140px);
         align-items: center;
         position: relative;

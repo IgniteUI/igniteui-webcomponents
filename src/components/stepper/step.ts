@@ -67,7 +67,7 @@ export default class IgcStepComponent extends LitElement {
   public index = -1;
 
   /** @private */
-  @property({ attribute: false })
+  @property({ reflect: true, type: Boolean, attribute: 'content-top' })
   public contentTop = false;
 
   /** @private */
@@ -85,6 +85,11 @@ export default class IgcStepComponent extends LitElement {
         new CustomEvent('activeStepChanged', { bubbles: true, detail: false })
       );
     }
+  }
+
+  @watch('index')
+  public indexChange() {
+    this.style.setProperty('--step-index', this.index.toString());
   }
 
   @watch('invalid')
@@ -183,16 +188,14 @@ export default class IgcStepComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div part="${partNameMap(this.stepParts)}">
-        <div part="${partNameMap(this.headerContainerParts)}">
-          <div part="header" @click=${this.handleClick}>
-            <div part="header-inner">
-              ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
-            </div>
+      <div part="${partNameMap(this.headerContainerParts)}">
+        <div part="header" @click=${this.handleClick}>
+          <div part="header-inner">
+            ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
           </div>
         </div>
-        ${this.renderContent()}
       </div>
+      ${this.renderContent()}
     `;
   }
 }

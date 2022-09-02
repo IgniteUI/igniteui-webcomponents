@@ -2,31 +2,18 @@
 @use '../../../../styles/utilities/index' as *;
 
 :host {
-    --stepper-height: calc(#{var(--step-header-height)} + #{var(--step-body-height)});
+    --step-count: 3;
 
-    display: flex;
-    flex-direction: column;
-}
-
-:host([orientation='horizontal'][content-top]) {
-    &::before {
-        content: '';
-        height: var(--stepper-height);
-    }
+    counter-reset: step-count;
 }
 
 :host([orientation='horizontal']) {
-    height: var(--stepper-height);
-
-    [part='stepper'] {
-        display: flex;
-    }
+    display: grid;
 }
 
 :host([orientation='vertical']) {
-    [part='stepper'] {
-        flex-direction: column;
-    }
+    display: flex;
+    flex-direction: column;
 }
 
 ::slotted(igc-step:last-of-type) {
