@@ -192,7 +192,9 @@ export default class IgcStepComponent extends LitElement {
       <div part="${partNameMap(this.stepParts)}">
         <div part="${partNameMap(this.headerContainerParts)}">
           <div part="header" @click=${this.handleClick}>
-            ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+            <div part="header-inner">
+              ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
+            </div>
           </div>
         </div>
         ${this.renderContent()}

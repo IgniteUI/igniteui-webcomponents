@@ -11,7 +11,7 @@
 :host([orientation='horizontal'][content-top]) {
     &::before {
         content: '';
-        height: var(--step-body-height);
+        height: var(--stepper-height);
     }
 }
 
@@ -30,8 +30,12 @@
 }
 
 ::slotted(igc-step:last-of-type) {
-    --dispaly: none;
+    --step-hide-last-of-type: none;
     --border: 0;
 
     flex: 0;
+}
+
+::slotted(igc-step:first-of-type) {
+    --step-hide-first-of-type: none;
 }

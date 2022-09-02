@@ -17,21 +17,36 @@
     flex-direction: row;
     flex-grow: 1;
 
-    [part~='header'] {
-        width: auto;
+    [part='header'] {
+        display: flex;
+        align-items: center;
+        position: relative;
+
+        &::before {
+            inset-inline-start: 0;
+            display: var(--step-hide-first-of-type);
+        }
+
+        &::after {
+            inset-inline-end: 0;
+            display: var(--step-hide-last-of-type);
+        }
 
         &::before,
         &::after {
-            display: var(--dispaly);
             content: '';
-            flex: 1;
-            width: 100%;
-            min-width: rem(20px);
+            position: absolute;
+            z-index: -1;
             height: 1px;
-            background: red;
-            position: relative;
-            bottom: rem(20px);
+            width: calc(50% - #{rem(40px)});
+            min-width: rem(8px);
+            flex: 1;
+            border-top: rem(1px) solid greenyellow;
         }
+    }
+
+    [part~='header-inner'] {
+        width: auto;
     }
 
     [part~='body'] {
@@ -75,11 +90,12 @@
     }
 
     [part~='header-container'] {
+        min-width: rem(140px);
         align-items: center;
         position: relative;
 
         &::after {
-            display: var(--dispaly);
+            display: var(--step-hide-last-of-type);
             content: '';
             flex: 1;
             width: 100%;
@@ -106,7 +122,7 @@
 }
 
 [part~='start'] {
-    [part='header'] {
+    [part='header-inner'] {
         flex-direction: row-reverse;
     }
 }
@@ -118,7 +134,7 @@
         }
     }
 
-    [part='header'] {
+    [part='header-inner'] {
         flex-direction: column-reverse;
 
         &::after {
@@ -128,7 +144,7 @@
 }
 
 [part~='bottom'] {
-    [part='header'] {
+    [part='header-inner'] {
         flex-direction: column;
     }
 }
@@ -160,7 +176,7 @@
     white-space: nowrap;
 }
 
-[part~='header'] {
+[part~='header-inner'] {
     width: 100%;
     position: relative;
     display: flex;
@@ -183,7 +199,7 @@
 
 [part='step vertical'],
 [part='step'] {
-    [part~='header'] {
+    [part~='header-inner'] {
         margin-block-end: rem(8px);
         align-items: flex-start;
     }
