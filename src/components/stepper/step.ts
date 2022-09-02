@@ -78,12 +78,6 @@ export default class IgcStepComponent extends LitElement {
   @property({ attribute: false })
   public visited = false;
 
-  @watch('titlePosition')
-  public titlePositionChange() {
-    this.style.height =
-      this.header.clientHeight + this.body[0].clientHeight + 'px';
-  }
-
   @watch('active')
   public activeChange() {
     if (this.active) {

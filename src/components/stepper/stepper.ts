@@ -28,6 +28,7 @@ export default class IgcStepperComponent extends SizableMixin(
   protected static styles = styles;
 
   private activeStep!: IgcStepComponent;
+  private _init = true;
 
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
@@ -86,6 +87,9 @@ export default class IgcStepperComponent extends SizableMixin(
     this.steps.forEach(
       (step: IgcStepComponent) => (step.orientation = this.orientation)
     );
+    Promise.resolve().then(() => {
+      this.updateCssVars();
+    });
   }
 
   @watch('stepType', { waitUntilFirstUpdate: true })
@@ -93,6 +97,9 @@ export default class IgcStepperComponent extends SizableMixin(
     this.steps.forEach(
       (step: IgcStepComponent) => (step.stepType = this.stepType)
     );
+    Promise.resolve().then(() => {
+      this.updateCssVars();
+    });
   }
 
   @watch('titlePosition', { waitUntilFirstUpdate: true })
@@ -110,6 +117,9 @@ export default class IgcStepperComponent extends SizableMixin(
     this.steps.forEach(
       (step: IgcStepComponent) => (step.contentTop = this.contentTop)
     );
+    Promise.resolve().then(() => {
+      this.updateCssVars();
+    });
   }
 
   @watch('linear', { waitUntilFirstUpdate: true })
@@ -141,6 +151,12 @@ export default class IgcStepperComponent extends SizableMixin(
 
     if (!this.activeStep) {
       this.activateFirstStep();
+    }
+
+    if (this._init) {
+      this.syncProperties();
+      this.updateCssVars();
+      this._init = false;
     }
   }
 
@@ -296,18 +312,22 @@ export default class IgcStepperComponent extends SizableMixin(
   }
 
   protected stepsChanged(): void {
-    this.syncProperties();
+    if (!this._init) {
+      this.syncProperties();
+    }
   }
 
   private updateCssVars() {
     console.log('updateCss');
+    const activeStepBody = this.activeStep.body[0];
+    const activeStepHeader = this.activeStep.header;
     this.style.setProperty(
       '--step-body-height',
-      this.activeStep.body[0].clientHeight + 'px'
+      activeStepBody ? activeStepBody.clientHeight + 'px' : '0px'
     );
     this.style.setProperty(
       '--step-header-height',
-      this.activeStep.header.clientHeight + 'px'
+      activeStepHeader ? activeStepHeader.clientHeight + 'px' : '0px'
     );
   }
 
