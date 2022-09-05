@@ -1,5 +1,5 @@
 @use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use '../vars' as *;
 
 :host([content-top]) {
     align-items: flex-end;
@@ -26,27 +26,26 @@
         display: flex;
         align-items: center;
         position: relative;
-
-        &::before {
-            inset-inline-start: 0;
-            display: var(--step-hide-first-of-type);
-        }
-
-        &::after {
-            inset-inline-end: 0;
-            display: var(--step-hide-last-of-type);
-        }
+        overflow: hidden;
 
         &::before,
         &::after {
             content: '';
-            position: absolute;
-            z-index: -1;
-            height: 1px;
-            width: calc(50% - #{rem(40px)});
+            height: rem(1px);
             min-width: rem(8px);
             flex: 1;
-            border-top: rem(1px) solid greenyellow;
+            border-top: rem(1px) red;
+            position: relative;
+        }
+
+        &::before {
+            inset-inline-start: 0;
+            display: var(--step-hide-first-of-type, var(--step-hide-full-before-after));
+        }
+
+        &::after {
+            inset-inline-end: 0;
+            display: var(--step-hide-last-of-type, var(--step-hide-full-before-after));
         }
     }
 
@@ -75,15 +74,51 @@
         align-items: center;
         position: relative;
 
+        &::before,
         &::after {
-            display: var(--step-hide-last-of-type);
             content: '';
             flex: 1;
             width: 100%;
             min-width: rem(20px);
-            height: 1px;
+            height: rem(1px);
             background: red;
             position: relative;
+        }
+
+        &::before {
+            display: var(--step-hide-first-of-type);
+        }
+
+        &::after {
+            display: var(--step-hide-last-of-type);
+        }
+    }
+
+    [part~='top'] {
+        &::before,
+        &::after {
+            inset-block-start: #{var(--step-separator-position)};
+        }
+
+        [part='header'] {
+            &::before,
+            &::after {
+                inset-block-start: #{var(--step-separator-position)};
+            }
+        }
+    }
+
+    [part~='bottom'] {
+        &::before,
+        &::after {
+            inset-block-end: #{var(--step-separator-position)};
+        }
+
+        [part='header'] {
+            &::before,
+            &::after {
+                inset-block-end: #{var(--step-separator-position)};
+            }
         }
     }
 }
@@ -163,8 +198,8 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding: rem(8px);
-    gap: rem(8px);
+    padding: $header-padding;
+    gap: $header-gap;
     overflow: hidden;
 
     &:focus,

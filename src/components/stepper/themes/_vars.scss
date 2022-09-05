@@ -1,0 +1,7 @@
+@use '../../../styles/utilities/index' as *;
+@forward '../../../styles/utilities/index';
+
+$header-padding: #{rem(8px)};
+$header-gap: $header-padding;
+$indicator-padding: $header-padding;
+$separator-position: #{calc(#{$header-padding} + #{$header-gap} + #{$indicator-padding})};
