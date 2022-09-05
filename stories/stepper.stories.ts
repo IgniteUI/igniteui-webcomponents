@@ -31,7 +31,7 @@ const metadata = {
       control: {
         type: 'inline-radio',
       },
-      defaultValue: 'end',
+      defaultValue: 'bottom',
     },
     linear: {
       type: 'boolean',
@@ -83,10 +83,10 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       .size=${size}
       .dir=${direction}
     >
-      <igc-step>
+      <igc-step id="asd">
         <span slot="title">Title</span>
         <span slot="sub-title">subtitle</span>
-        <span>
+        <span tabindex="0">
           Ut fermentum convallis odio nec suscipit. Quisque tempor, odio euismod
           aliquam dapibus, mi risus facilisis arcu, vitae dapibus massa orci non
           nisl. Quisque neque dolor, egestas vitae lectus non, eleifend gravida
@@ -100,17 +100,21 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           fringilla ultrices. Maecenas scelerisque odio nibh, sit amet euismod
           leo lobortis quis. Vestibulum pharetra nisi urna.
         </span>
+        <input />
+        <button>Asd</button>
       </igc-step>
       <igc-step active>
         <span slot="title">Title</span>
         <span slot="sub-title">subtitle</span>
         <span>STEP 2 CONTENT</span>
+        <input />
       </igc-step>
       <igc-step>
-        <span slot="indicator">3</span>
+        <span slot="indicator"><input /></span>
         <span slot="title">Title</span>
         <span slot="sub-title">subtitle</span>
         <span>STEP 3 CONTENT</span>
+        <input />
       </igc-step>
     </igc-stepper>
     <span style="background: #f9f9f9; display: block; margin-top: 20px;"

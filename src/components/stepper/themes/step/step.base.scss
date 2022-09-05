@@ -54,7 +54,6 @@
     }
 
     [part~='body'] {
-        pointer-events: all;
         grid-row-start: 2;
         grid-column: 1 / -1;
         transform: translateX(-100%);
@@ -65,14 +64,31 @@
     [part~='active-body'] {
         transform: translateX(0%);
         position: static;
+
+        [part='content'] {
+            pointer-events: all;
+        }
     }
 
     [part~='header-container'] {
-        pointer-events: all;
+        pointer-events: none;
         grid-column: calc(#{var(--step-index)} + 1) / calc(#{var(--step-index)} + 2);
         min-width: rem(140px);
         align-items: center;
         position: relative;
+
+        [part='header'] {
+            pointer-events: all;
+
+            &:focus,
+            &:active {
+                background-color: red;
+            }
+        }
+
+        [part='indicator'], [part='title'], [part='subtitle'] {
+            pointer-events: none;
+        }
 
         &::before,
         &::after {

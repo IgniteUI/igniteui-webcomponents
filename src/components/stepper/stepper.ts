@@ -15,6 +15,23 @@ import { styles as fluent } from '../stepper/themes/stepper/light/stepper.fluent
 import { styles as material } from '../stepper/themes/stepper/light/stepper.material.css.js';
 import { watch } from '../common/decorators/watch.js';
 
+export const NAVIGATION_KEYS = new Set([
+  'down',
+  'up',
+  'left',
+  'right',
+  'arrowdown',
+  'arrowup',
+  'arrowleft',
+  'arrowright',
+  'home',
+  'end',
+  'enter',
+  'space',
+  'spacebar',
+  ' ',
+]);
+
 defineComponents(IgcStepComponent);
 
 @themes({ bootstrap, indigo, fluent, material })
@@ -28,7 +45,7 @@ export default class IgcStepperComponent extends SizableMixin(
   protected static styles = styles;
 
   private activeStep!: IgcStepComponent;
-  // private _init = true;
+  private focusedStep!: IgcStepComponent;
 
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
@@ -58,7 +75,7 @@ export default class IgcStepperComponent extends SizableMixin(
    * In vertical layout the default title position is `end`.
    */
   @property({ reflect: true, attribute: 'title-position' })
-  public titlePosition: 'bottom' | 'top' | 'end' | 'start' = 'end';
+  public titlePosition: 'bottom' | 'top' | 'end' | 'start' = 'bottom';
 
   /**
    * Get/Set whether the stepper is linear.
@@ -84,6 +101,8 @@ export default class IgcStepperComponent extends SizableMixin(
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {
+    this.setAttribute('aria-orientation', this.orientation);
+    // TODO: set correct titlePosition
     this.steps.forEach(
       (step: IgcStepComponent) => (step.orientation = this.orientation)
     );
@@ -114,6 +133,11 @@ export default class IgcStepperComponent extends SizableMixin(
   protected linearChange(): void {
     this.steps.forEach((step: IgcStepComponent) => {
       step.linearDisabled = this.linear;
+      if (step.index <= this.activeStep.index) {
+        step.visited = true;
+      } else {
+        step.visited = false;
+      }
     });
     if (this.linear) {
       this.calculateLinearDisabledSteps();
@@ -132,6 +156,29 @@ export default class IgcStepperComponent extends SizableMixin(
         this.calculateLinearDisabledSteps();
       }
     });
+    this.addEventListener('focusHeader', (event: any) => {
+      event.stopPropagation();
+
+      this.focusedStep = event.detail;
+      if (this.activeStep !== event.detail) {
+        // this.activeStep.setAttribute('tabindex', '-1');
+      }
+    });
+    this.addEventListener('blurHeader', (event: any) => {
+      event.stopPropagation();
+      // this.activeStep.setAttribute('tabindex', '0');
+    });
+    this.addEventListener('keydown', (event: KeyboardEvent) => {
+      if (event.target instanceof IgcStepComponent) {
+        this.handleKeydown(event);
+      }
+    });
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    this.setAttribute('role', 'tablist');
+    this.setAttribute('aria-orientation', this.orientation);
   }
 
   protected override async firstUpdated() {
@@ -139,6 +186,80 @@ export default class IgcStepperComponent extends SizableMixin(
 
     if (!this.activeStep) {
       this.activateFirstStep();
+    }
+  }
+
+  public handleKeydown(event: KeyboardEvent) {
+    const key = event.key.toLowerCase();
+    if (!NAVIGATION_KEYS.has(key)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (!this.focusedStep) {
+      return;
+    }
+
+    if (this.orientation === 'horizontal') {
+      if (
+        key === 'up' ||
+        key === 'arrowup' ||
+        key === 'down' ||
+        key === 'arrowdown'
+      ) {
+        return;
+      }
+    }
+
+    this.handleNavigation(key);
+  }
+
+  public handleNavigation(key: string): void {
+    switch (key) {
+      case 'home':
+        this.steps
+          .filter((step: IgcStepComponent) => step.isAccessible)[0]
+          ?.header.focus();
+        break;
+      case 'end':
+        this.steps
+          .filter((step: IgcStepComponent) => step.isAccessible)
+          .pop()
+          ?.header.focus();
+        break;
+      case 'arrowup':
+      case 'up':
+        this.previousStep?.header.focus();
+        break;
+      case 'arrowleft':
+      case 'left':
+        if (this.dir === 'rtl' && this.orientation === 'horizontal') {
+          this.nextStep?.header.focus();
+        } else {
+          this.previousStep?.header.focus();
+        }
+        break;
+      case 'arrowdown':
+      case 'down':
+        this.nextStep?.header.focus();
+        break;
+      case 'arrowright':
+      case 'right':
+        if (this.dir === 'rtl' && this.orientation === 'horizontal') {
+          this.previousStep?.header.focus();
+        } else {
+          console.log('asd');
+          this.nextStep?.header.focus();
+        }
+        break;
+      case ' ':
+      case 'spacebar':
+      case 'space':
+      case 'enter':
+        this.activateStep(this.focusedStep, true);
+        break;
+      default:
+        return;
     }
   }
 
@@ -171,6 +292,10 @@ export default class IgcStepperComponent extends SizableMixin(
       step.style.cssText = `--step-index: ${index}`;
       // step.style.setProperty('--step-index', index.toString());
       step.active = this.activeStep === step;
+      step.setAttribute('aria-setsize', this.steps.length.toString());
+      step.setAttribute('posinset', (index + 1).toString());
+      step.setAttribute('id', `igc-step-${index}`);
+      step.setAttribute('aria-controls', `igc-content-${index}`);
       if (this.linear) {
         this.calculateLinearDisabledSteps();
       }
@@ -215,6 +340,7 @@ export default class IgcStepperComponent extends SizableMixin(
     }
 
     step.active = true;
+    step.visited = true;
     this.activeStep = step;
   }
 
@@ -225,6 +351,53 @@ export default class IgcStepperComponent extends SizableMixin(
     if (firstEnabledStep) {
       this.activateStep(firstEnabledStep);
     }
+  }
+
+  private get nextStep(): IgcStepComponent | undefined {
+    const focusedStep = this.focusedStep;
+    if (focusedStep) {
+      if (focusedStep.index === this.steps.length - 1) {
+        return this.steps.find((step: IgcStepComponent) => step.isAccessible);
+      }
+
+      const nextAccessible = this.steps.find(
+        (step: IgcStepComponent, i: number) =>
+          i > focusedStep.index && step.isAccessible
+      );
+      return nextAccessible
+        ? nextAccessible
+        : this.steps.find((step: IgcStepComponent) => step.isAccessible);
+    }
+
+    return undefined;
+  }
+
+  private get previousStep(): IgcStepComponent | undefined {
+    const focusedStep = this.focusedStep;
+    if (focusedStep) {
+      if (focusedStep.index === 0) {
+        return this.steps
+          .filter((step: IgcStepComponent) => step.isAccessible)
+          .pop();
+      }
+
+      let prevStep;
+      for (let i = focusedStep.index - 1; i >= 0; i--) {
+        const step = this.steps[i];
+        if (step.isAccessible) {
+          prevStep = step;
+          break;
+        }
+      }
+
+      return prevStep
+        ? prevStep
+        : this.steps
+            .filter((step: IgcStepComponent) => step.isAccessible)
+            .pop();
+    }
+
+    return undefined;
   }
 
   private moveToNextStep(next = true) {
