@@ -7,7 +7,5 @@ $padding-lg: var(--igc-spacing-large);
 :host {
     --spacing: #{sizable($padding-sm, $padding-md, $padding-lg)};
 
-    ::slotted([slot='label']) {
-        padding: var(--spacing);
-    }
+    padding: var(--spacing);
 }

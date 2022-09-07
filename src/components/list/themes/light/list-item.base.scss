@@ -1,13 +1,25 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
+$padding-sm-inline: calc(var(--igc-spacing-small) * 2);
+$padding-md-inline: calc(var(--igc-spacing-medium) * 2);
+$padding-lg-inline: calc(var(--igc-spacing-large) * 2);
+$padding-sm-block: var(--igc-spacing-small);
+$padding-md-block: var(--igc-spacing-medium);
+$padding-lg-block: var(--igc-spacing-large);
+
 :host {
+    --spacing-inline: #{sizable($padding-sm-inline, $padding-md-inline, $padding-lg-inline)};
+    --spacing-block: #{sizable($padding-sm-block, $padding-md-block, $padding-lg-block)};
+
     display: flex;
     align-items: center;
     position: relative;
     color: color(gray, 800);
     background: color(surface, 500);
     transition: background .15s ease-out;
+    padding-inline: var(--spacing-inline);
+    padding-block: var(--spacing-block);
 }
 
 :host(:hover),

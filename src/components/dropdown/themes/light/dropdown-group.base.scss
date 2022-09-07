@@ -1,8 +1,18 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
+$padding-sm-inline: calc(var(--igc-spacing-small) * 2);
+$padding-md-inline: calc(var(--igc-spacing-medium) * 2);
+$padding-lg-inline: calc(var(--igc-spacing-large) * 2);
+$padding-sm-block: var(--igc-spacing-small);
+$padding-md-block: var(--igc-spacing-medium);
+$padding-lg-block: var(--igc-spacing-large);
+
 :host {
     pointer-events: auto;
+
+    --spacing-inline: #{sizable($padding-sm-inline, $padding-md-inline, $padding-lg-inline)};
+    --spacing-block: #{sizable($padding-sm-block, $padding-md-block, $padding-lg-block)};
 
     ::slotted([slot='label']) {
         @include type-style('overline');
@@ -13,38 +23,7 @@
         position: relative;
         color: color(secondary, 500);
         pointer-events: none;
-    }
-}
-
-:host([size='small']) {
-    ::slotted(igc-dropdown-item),
-    ::slotted(igc-select-item) {
-        padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 3);
-    }
-
-    ::slotted([slot='label']) {
-        padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
-    }
-}
-
-:host([size='medium']) {
-    ::slotted(igc-dropdown-item),
-    ::slotted(igc-select-item) {
-        padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 3);
-    }
-
-    ::slotted([slot='label']) {
-        padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
-    }
-}
-
-:host([size='large']) {
-    ::slotted(igc-dropdown-item),
-    ::slotted(igc-select-item) {
-        padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 3);
-    }
-
-    ::slotted([slot='label']) {
-        padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
+        padding-inline: var(--spacing-inline);
+        padding-block: var(--spacing-block);
     }
 }

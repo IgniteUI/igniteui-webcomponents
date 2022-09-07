@@ -2,16 +2,27 @@
 @use '../../../../styles/utilities' as *;
 
 $header-color: var(--header-color, color(secondary, 500)) !default;
+$padding-sm-inline: calc(var(--igc-spacing-small) * 2);
+$padding-md-inline: calc(var(--igc-spacing-medium) * 2);
+$padding-lg-inline: calc(var(--igc-spacing-large) * 2);
+$padding-sm-block: var(--igc-spacing-small);
+$padding-md-block: var(--igc-spacing-medium);
+$padding-lg-block: var(--igc-spacing-large);
 
 :host {
     @include type-style('overline');
     @include ellipsis();
+
+    --spacing-inline: #{sizable($padding-sm-inline, $padding-md-inline, $padding-lg-inline)};
+    --spacing-block: #{sizable($padding-sm-block, $padding-md-block, $padding-lg-block)};
 
     display: block;
     white-space: nowrap;
     position: relative;
     color: $header-color;
     pointer-events: none;
+    padding-inline: var(--spacing-inline);
+    padding-block: var(--spacing-block);
 }
 
 ::slotted(*) {

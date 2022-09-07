@@ -1,23 +1,5 @@
 @use '../../../../styles/utilities' as *;
 
-:host([size='small']) ::slotted(igc-dropdown-item),
-:host([size='small']) ::slotted(igc-select-item),
-:host([size='small']) ::slotted(igc-dropdown-header) {
-    padding: var(--igc-spacing-small);
-}
-
-:host([size='medium']) ::slotted(igc-dropdown-item),
-:host([size='medium']) ::slotted(igc-select-item),
-:host([size='medium']) ::slotted(igc-dropdown-header) {
-    padding: var(--igc-spacing-medium);
-}
-
-:host([size='large']) ::slotted(igc-dropdown-item),
-:host([size='large']) ::slotted(igc-select-item),
-:host([size='large']) ::slotted(igc-dropdown-header) {
-    padding: var(--igc-spacing-large);
-}
-
 [part='base'] {
     @include border-radius(rem(2px));
 

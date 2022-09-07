@@ -2,8 +2,51 @@
 @use '../../../styles/utilities' as *;
 
 :host {
+    --size: #{sizable(rem(20px), rem(24px), rem(32px))};
+    --spacing: #{sizable(rem(2px), rem(6px), rem(12px))};
+
     display: inline-flex;
     vertical-align: top;
+}
+
+:host([size='small']) {
+    --component-size: var(--ig-size, var(--ig-size-small));
+
+    [part='prefix'] {
+        margin-inline-end: rem(3px);
+    }
+
+    [part='suffix'] {
+        margin-inline-start: rem(3px);
+    }
+}
+
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+
+    [part='prefix'] {
+        margin-inline-end: rem(6px);
+    }
+
+    [part='suffix'] {
+        margin-inline-start: rem(6px);
+    }
+}
+
+:host([size='large']) {
+    --component-size: var(--ig-size, var(--ig-size-large));
+
+    [part='prefix'] {
+        margin-inline-end: rem(8px);
+    }
+
+    [part='suffix'] {
+        margin-inline-start: rem(8px);
+    }
+
+    igc-icon[size='large'] {
+        --size: #{rem(20px)};
+    }
 }
 
 :host button {
@@ -17,59 +60,12 @@
     border-style: none;
     box-shadow: none;
     cursor: pointer;
+    height: var(--size);
+    padding: var(--spacing);
 
     &[disabled] {
         pointer-events: none;
         color: color(gray, 500);
-    }
-}
-
-:host([size='small']) {
-    button {
-        height: rem(20px);
-        padding: rem(2px);
-    }
-
-    [part='prefix'] {
-        margin-inline-end: rem(3px);
-    }
-
-    [part='suffix'] {
-        margin-inline-start: rem(3px);
-    }
-}
-
-:host([size='medium']) {
-    button {
-        height: rem(24px);
-        padding: rem(6px);
-    }
-
-    [part='prefix'] {
-        margin-inline-end: rem(6px);
-    }
-
-    [part='suffix'] {
-        margin-inline-start: rem(6px);
-    }
-}
-
-:host([size='large']) {
-    button {
-        height: rem(32px);
-        padding: rem(12px);
-    }
-
-    [part='prefix'] {
-        margin-inline-end: rem(8px);
-    }
-
-    [part='suffix'] {
-        margin-inline-start: rem(8px);
-    }
-
-    igc-icon[size='large'] {
-        --size: #{rem(20px)};
     }
 }
 

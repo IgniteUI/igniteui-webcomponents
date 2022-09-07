@@ -1,17 +1,6 @@
 @use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
-@use 'sass:map';
+@use '../../../../styles/utilities' as *;
 
-$node-height: (
-    large: rem(50px),
-    medium: rem(40px),
-    small: rem(32px)
-);
-$node-padding: (
-    large: 0 rem(24px),
-    medium: 0 rem(16px),
-    small: 0 rem(12px)
-);
 $disabled-color: color(gray, 500);
 $disabled-background: color(surface);
 $background: color(surface);
@@ -27,11 +16,13 @@ $focused-border-color: color(secondary, 500);
 $toggle-icon-size: rem(24px);
 
 :host {
+    --size: #{sizable(rem(32px), rem(40px), rem(50px))};
+    --spacing: #{sizable(rem(12px), rem(16px), rem(24px))};
+    --igc-tree-indentation-size: 24px;
+
     display: flex;
     flex-direction: column;
     font-family: inherit;
-
-    --igc-tree-indentation-size: 24px;
 }
 
 :host(:focus-within) {
@@ -49,6 +40,8 @@ $toggle-icon-size: rem(24px);
     position: relative;
     background: $background;
     color: $color;
+    height: var(--size);
+    padding: 0 var(--spacing);
 
     &::after {
         content: '';
@@ -139,34 +132,16 @@ $toggle-icon-size: rem(24px);
     igc-circular-progress {
         --diameter: #{rem(24px)};
     }
-
-    height: map.get($node-height, 'large');
 }
 
 [part~='medium'] {
     igc-circular-progress {
         --diameter: #{rem(20px)};
     }
-
-    height: map.get($node-height, 'medium');
 }
 
 [part~='small'] {
     igc-circular-progress {
         --diameter: #{rem(18px)};
     }
-
-    height: map.get($node-height, 'small');
-}
-
-[part~='wrapper'][part~='large'] {
-    padding: map.get($node-padding, 'large');
-}
-
-[part~='wrapper'][part~='medium'] {
-    padding: map.get($node-padding, 'medium');
-}
-
-[part~='wrapper'][part~='small'] {
-    padding: map.get($node-padding, 'small');
 }

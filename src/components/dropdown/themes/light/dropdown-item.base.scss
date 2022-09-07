@@ -1,8 +1,18 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
+$padding-sm-inline: calc(var(--igc-spacing-small) * 3);
+$padding-md-inline: calc(var(--igc-spacing-medium) * 3);
+$padding-lg-inline: calc(var(--igc-spacing-large) * 3);
+$padding-sm-block: var(--igc-spacing-small);
+$padding-md-block: var(--igc-spacing-medium);
+$padding-lg-block: var(--igc-spacing-large);
+
 :host {
     @include type-style('body-2');
+
+    --spacing-inline: #{sizable($padding-sm-inline, $padding-md-inline, $padding-lg-inline)};
+    --spacing-block: #{sizable($padding-sm-block, $padding-md-block, $padding-lg-block)};
 
     display: flex;
     justify-content: flex-start;
@@ -13,6 +23,8 @@
     cursor: pointer;
     color: color(gray, 800);
     outline-style: none;
+    padding-inline: var(--spacing-inline);
+    padding-block: var(--spacing-block);
 }
 
 :host(:hover),
