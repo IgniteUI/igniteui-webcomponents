@@ -45,10 +45,10 @@ export class IgcSliderBaseComponent extends LitElement {
   protected activeThumb?: HTMLElement;
 
   @state()
-  private thumbLabelsVisible = false;
+  protected thumbLabelsVisible = false;
 
   @state()
-  private labels?: string[];
+  protected labels?: string[];
 
   public set min(value: number) {
     if (value < this.max) {
@@ -284,13 +284,13 @@ export class IgcSliderBaseComponent extends LitElement {
   /* c8 ignore next */
   protected emitChangeEvent() {}
 
-  private get actualMin(): number {
+  protected get actualMin(): number {
     return typeof this.lowerBound === 'number'
       ? (this.lowerBound as number)
       : this.min;
   }
 
-  private get actualMax(): number {
+  protected get actualMax(): number {
     return typeof this.upperBound === 'number'
       ? (this.upperBound as number)
       : this.max;
@@ -303,7 +303,7 @@ export class IgcSliderBaseComponent extends LitElement {
     return value;
   }
 
-  private formatValue(value: number) {
+  protected formatValue(value: number) {
     return this.valueFormat
       ? this.valueFormat.replace(
           '{0}',
@@ -507,11 +507,11 @@ export class IgcSliderBaseComponent extends LitElement {
     }
   };
 
-  private handleThumbPointerEnter = () => {
+  protected handleThumbPointerEnter = () => {
     this.showThumbLabels();
   };
 
-  private handleThumbPointerLeave = () => {
+  protected handleThumbPointerLeave = () => {
     this.hideThumbLabels();
   };
 
@@ -544,38 +544,8 @@ export class IgcSliderBaseComponent extends LitElement {
     return groups;
   }
 
-  private handleFocus(ev: Event) {
-    this.activeThumb = ev.target as HTMLElement;
-    const thumbId = this.activeThumb?.id;
-    const thumbs = this.shadowRoot?.querySelectorAll('div[part="thumb"]');
-
-    thumbs?.forEach((t) => {
-      if (t.id !== thumbId) {
-        const activeThumbVal = parseFloat(this.activeThumb!.ariaValueNow!);
-        const thumbVal = parseFloat(t.ariaValueNow!);
-        const rangeFrom = Math.min(activeThumbVal, thumbVal);
-        const rangeTo = Math.max(activeThumbVal, thumbVal);
-
-        this.activeThumb?.setAttribute(
-          'aria-valuetext',
-          `${this.formatValue(rangeFrom)} - ${this.formatValue(rangeTo)}`
-        );
-      }
-    });
-  }
-
-  protected renderThumb(
-    value: number,
-    ariaLabel?: string,
-    thumbId?: string,
-    ariaValueText?: string
-  ) {
+  protected renderThumb(value: number, ariaLabel?: string, thumbId?: string) {
     const percent = `${this.valueToFraction(value) * 100}%`;
-    const textValue = this.labels
-      ? this.labels[value]
-      : this.valueFormat || this.valueFormatOptions
-      ? this.formatValue(value)
-      : ariaValueText;
 
     return html`
       <div
@@ -587,12 +557,18 @@ export class IgcSliderBaseComponent extends LitElement {
         aria-valuemin=${this.actualMin}
         aria-valuemax=${this.actualMax}
         aria-valuenow=${value}
-        aria-valuetext=${ifDefined(textValue)}
+        aria-valuetext=${ifDefined(
+          this.labels
+            ? this.labels[value]
+            : this.valueFormat || this.valueFormatOptions
+            ? this.formatValue(value)
+            : undefined
+        )}
         aria-label=${ifDefined(ariaLabel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
         @pointerenter=${this.handleThumbPointerEnter}
         @pointerleave=${this.handleThumbPointerLeave}
-        @focus=${(ev: Event) => this.handleFocus(ev)}
+        @focus=${(ev: Event) => (this.activeThumb = ev.target as HTMLElement)}
         @blur=${() => (this.activeThumb = undefined)}
       ></div>
       ${this.hideTooltip

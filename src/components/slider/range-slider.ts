@@ -1,5 +1,7 @@
 import { html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
@@ -199,19 +201,84 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     thumb.focus();
   }
 
+  private handleFocus(ev: Event) {
+    this.activeThumb = ev.target as HTMLElement;
+    const thumbId = this.activeThumb?.id;
+    const thumbs = this.shadowRoot?.querySelectorAll('div[part="thumb"]');
+
+    thumbs?.forEach((t) => {
+      if (t.id !== thumbId) {
+        const activeThumbVal = parseFloat(this.activeThumb!.ariaValueNow!);
+        const thumbVal = parseFloat(t.ariaValueNow!);
+        const rangeFrom = Math.min(activeThumbVal, thumbVal);
+        const rangeTo = Math.max(activeThumbVal, thumbVal);
+
+        this.activeThumb?.setAttribute(
+          'aria-valuetext',
+          `${this.formatValue(rangeFrom)} - ${this.formatValue(rangeTo)}`
+        );
+      }
+    });
+  }
+
+  protected override renderThumb(
+    value: number,
+    ariaLabel?: string,
+    thumbId?: string
+  ) {
+    const percent = `${this.valueToFraction(value) * 100}%`;
+    const ariaValueText =
+      thumbId === 'thumbFrom' ? `min ${this.lower}` : `max ${this.upper}`;
+
+    const textValue = this.labels
+      ? this.labels[value]
+      : this.valueFormat || this.valueFormatOptions
+      ? this.formatValue(value)
+      : ariaValueText;
+
+    return html`
+      <div
+        part="thumb"
+        id=${ifDefined(thumbId)}
+        tabindex=${this.disabled ? -1 : 0}
+        style=${styleMap({ insetInlineStart: percent })}
+        role="slider"
+        aria-valuemin=${this.actualMin}
+        aria-valuemax=${this.actualMax}
+        aria-valuenow=${value}
+        aria-valuetext=${ifDefined(textValue)}
+        aria-label=${ifDefined(ariaLabel)}
+        aria-disabled=${this.disabled ? 'true' : 'false'}
+        @pointerenter=${this.handleThumbPointerEnter}
+        @pointerleave=${this.handleThumbPointerLeave}
+        @focus=${(ev: Event) => this.handleFocus(ev)}
+        @blur=${() => (this.activeThumb = undefined)}
+      ></div>
+      ${this.hideTooltip
+        ? html``
+        : html`
+            <div
+              part="thumb-label"
+              style=${styleMap({
+                opacity: this.thumbLabelsVisible ? '1' : '0',
+                insetInlineStart: percent,
+              })}
+            >
+              <div part="thumb-label-inner">
+                ${this.labels ? this.labels[value] : this.formatValue(value)}
+              </div>
+            </div>
+          `}
+    `;
+  }
+
   protected override renderThumbs() {
     return html`${this.renderThumb(
       this.lower,
       this.ariaLabelLower,
-      'thumbFrom',
-      `min ${this.lower}`
+      'thumbFrom'
     )}
-    ${this.renderThumb(
-      this.upper,
-      this.ariaLabelUpper,
-      'thumbTo',
-      `max ${this.upper}`
-    )}`;
+    ${this.renderThumb(this.upper, this.ariaLabelUpper, 'thumbTo')}`;
   }
 }
 
