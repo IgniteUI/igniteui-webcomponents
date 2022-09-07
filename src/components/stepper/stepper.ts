@@ -45,7 +45,7 @@ export default class IgcStepperComponent extends SizableMixin(
   protected static styles = styles;
 
   private activeStep!: IgcStepComponent;
-  private focusedStep!: IgcStepComponent;
+  private focusedStep?: IgcStepComponent;
 
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
@@ -160,13 +160,12 @@ export default class IgcStepperComponent extends SizableMixin(
       event.stopPropagation();
 
       this.focusedStep = event.detail;
-      if (this.activeStep !== event.detail) {
-        // this.activeStep.setAttribute('tabindex', '-1');
-      }
+      this.activeStep.setAttribute('tabindex', '-1');
     });
     this.addEventListener('blurHeader', (event: any) => {
+      this.focusedStep = undefined;
       event.stopPropagation();
-      // this.activeStep.setAttribute('tabindex', '0');
+      this.activeStep.setAttribute('tabindex', '0');
     });
     this.addEventListener('keydown', (event: KeyboardEvent) => {
       if (event.target instanceof IgcStepComponent) {
@@ -192,8 +191,17 @@ export default class IgcStepperComponent extends SizableMixin(
   public handleKeydown(event: KeyboardEvent) {
     const key = event.key.toLowerCase();
     if (!NAVIGATION_KEYS.has(key)) {
-      return;
+      if (this.orientation === 'vertical' || key !== 'tab') {
+        return;
+      }
+      if (key === 'tab' && !this.focusedStep) {
+        return;
+      }
+      if (key === 'tab' && event.shiftKey) {
+        return;
+      }
     }
+
     event.preventDefault();
     event.stopPropagation();
     if (!this.focusedStep) {
@@ -248,7 +256,6 @@ export default class IgcStepperComponent extends SizableMixin(
         if (this.dir === 'rtl' && this.orientation === 'horizontal') {
           this.previousStep?.header.focus();
         } else {
-          console.log('asd');
           this.nextStep?.header.focus();
         }
         break;
@@ -256,7 +263,17 @@ export default class IgcStepperComponent extends SizableMixin(
       case 'spacebar':
       case 'space':
       case 'enter':
-        this.activateStep(this.focusedStep, true);
+        this.activateStep(this.focusedStep!, true);
+        break;
+      case 'tab':
+        if (
+          this.focusedStep &&
+          this.focusedStep.index < this.activeStep.index
+        ) {
+          this.activeStep.header.focus();
+        } else {
+          this.activeStep.content.focus();
+        }
         break;
       default:
         return;
@@ -289,8 +306,7 @@ export default class IgcStepperComponent extends SizableMixin(
       step.titlePosition = this.titlePosition;
       step.contentTop = this.contentTop;
       step.index = index;
-      step.style.cssText = `--step-index: ${index}`;
-      // step.style.setProperty('--step-index', index.toString());
+      step.style.setProperty('--step-index', index.toString());
       step.active = this.activeStep === step;
       step.setAttribute('aria-setsize', this.steps.length.toString());
       step.setAttribute('posinset', (index + 1).toString());
@@ -307,10 +323,7 @@ export default class IgcStepperComponent extends SizableMixin(
       return;
     }
 
-    console.log('activate step after check for current');
-
     if (shouldEmit) {
-      console.log('emitted!!!!!!!!!!!!');
       const args = {
         detail: {
           owner: this,

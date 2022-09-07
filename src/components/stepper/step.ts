@@ -16,6 +16,9 @@ export default class IgcStepComponent extends LitElement {
   @query('[part="header"]')
   public header!: HTMLElement;
 
+  @query('[part="content"]')
+  public content!: HTMLElement;
+
   /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
   public invalid = false;
@@ -81,9 +84,9 @@ export default class IgcStepComponent extends LitElement {
         new CustomEvent('activeStepChanged', { bubbles: true, detail: false })
       );
       this.setAttribute('aria-selected', 'true');
-      this.setAttribute('tabindex', '0');
+      // this.setAttribute('tabindex', '0');
     } else {
-      this.setAttribute('tabindex', '-1');
+      // this.setAttribute('tabindex', '-1');
     }
   }
 
@@ -98,15 +101,22 @@ export default class IgcStepComponent extends LitElement {
     }
   }
 
+  constructor() {
+    super();
+    this.addEventListener('focusin', () => {
+      this.header.focus();
+    });
+  }
+
   public override connectedCallback(): void {
     super.connectedCallback();
     this.setAttribute('role', 'tab');
     this.setAttribute('aria-selected', 'false');
+    this.setAttribute('tabindex', '-1');
   }
 
   protected override async firstUpdated() {
     await this.updateComplete;
-    console.log(this.header);
 
     this.header!.addEventListener('focusin', () => {
       this.dispatchEvent(
@@ -118,6 +128,10 @@ export default class IgcStepComponent extends LitElement {
       this.dispatchEvent(
         new CustomEvent('blurHeader', { bubbles: true, detail: this })
       );
+    });
+
+    this.content!.addEventListener('focusin', (event: FocusEvent) => {
+      event.stopPropagation();
     });
   }
 
