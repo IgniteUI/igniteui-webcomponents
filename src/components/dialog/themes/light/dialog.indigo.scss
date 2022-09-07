@@ -1,0 +1,15 @@
+@use '../../../../styles/utilities' as *;
+
+[part='title'] {
+    padding: rem(16px) rem(24px);
+}
+
+[part='content'] {
+    padding-inline: rem(24px);
+    padding-block-end: rem(8px);
+    color: color(gray, 500);
+}
+
+[part='footer'] {
+    padding: rem(8px);
+}
