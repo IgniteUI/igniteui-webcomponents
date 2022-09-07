@@ -13,8 +13,13 @@ export const SLOTS = {
 };
 
 export const PARTS = {
+  header: 'div[part="header"]',
+  headerContainer: 'div[part~="header-container"]',
+  body: 'div[part~="body"]',
   indentation: 'div[part="indentation"]',
   indicator: 'div[part="indicator"]',
+  title: 'div[part="title"]',
+  subtitle: 'div[part="subtitle"]',
   select: 'div[part="select"]',
   label: 'div[part="label"]',
 };
@@ -44,6 +49,13 @@ export class StepperTestFunctions {
     step: IgcStepComponent,
     selector: string
   ): HTMLSlotElement => {
+    return step.shadowRoot!.querySelector(selector) as HTMLSlotElement;
+  };
+
+  public static getElementByPart = (
+    step: IgcStepComponent,
+    selector: string
+  ): HTMLElement => {
     return step.shadowRoot!.querySelector(selector) as HTMLSlotElement;
   };
 
@@ -91,7 +103,8 @@ export class StepperTestFunctions {
 
 // Templates
 
-export const simpleStepper = `<igc-stepper>
+export const simpleStepper = `<input id="firstInput"/>
+                                      <igc-stepper>
                                         <igc-step>
                                           <span slot="title">Step 1</span>
                                           <span>STEP 1 CONTENT</span>
@@ -104,7 +117,8 @@ export const simpleStepper = `<igc-stepper>
                                           <span slot="title">Step 3</span>
                                           <span>STEP 3 CONTENT</span>
                                         </igc-step>
-                                      </igc-stepper>`;
+                                      </igc-stepper>
+                                      <input id="secondInput"/>`;
 
 // export const simpleHierarchyTree = `<igc-tree>
 //                                          <igc-tree-item label="Tree Item 1">
