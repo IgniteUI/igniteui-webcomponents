@@ -103,8 +103,7 @@ export class StepperTestFunctions {
 
 // Templates
 
-export const simpleStepper = `<input id="firstInput"/>
-                                      <igc-stepper>
+export const simpleStepper = `<igc-stepper>
                                         <igc-step>
                                           <span slot="title">Step 1</span>
                                           <span>STEP 1 CONTENT</span>
@@ -117,8 +116,7 @@ export const simpleStepper = `<input id="firstInput"/>
                                           <span slot="title">Step 3</span>
                                           <span>STEP 3 CONTENT</span>
                                         </igc-step>
-                                      </igc-stepper>
-                                      <input id="secondInput"/>`;
+                                      </igc-stepper>`;
 
 // export const simpleHierarchyTree = `<igc-tree>
 //                                          <igc-tree-item label="Tree Item 1">

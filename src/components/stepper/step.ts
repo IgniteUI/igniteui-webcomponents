@@ -92,13 +92,11 @@ export default class IgcStepComponent extends LitElement {
 
   @watch('invalid')
   public invalidStateChanged() {
-    if (this.invalid) {
-      this.dispatchEvent(
-        new CustomEvent('stepInvalidStateChanged', {
-          bubbles: true,
-        })
-      );
-    }
+    this.dispatchEvent(
+      new CustomEvent('stepInvalidStateChanged', {
+        bubbles: true,
+      })
+    );
   }
 
   constructor() {
