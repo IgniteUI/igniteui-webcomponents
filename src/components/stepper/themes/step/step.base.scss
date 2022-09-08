@@ -12,6 +12,8 @@
 }
 
 :host([content-top]) {
+    align-items: flex-end;
+
     [part~='header-container'] {
         grid-row-start: 2;
     }
