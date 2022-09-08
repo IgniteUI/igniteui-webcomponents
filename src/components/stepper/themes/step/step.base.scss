@@ -72,6 +72,8 @@
     position: relative;
     overflow: hidden;
     padding: $padding;
+    justify-content: flex-start;
+    gap: $header-gap;
 
     &::before,
     &::after {
@@ -88,6 +90,26 @@
     &::after {
         inset-inline-end: 0;
         display: var(--step-hide-last-of-type, var(--step-hide-full-before-after));
+    }
+
+    &:hover {
+        cursor: pointer;
+        background: rgb(0 0 0 / 10%);
+
+        &::before,
+        &::after {
+            display: none;
+        }
+    }
+
+    &:focus,
+    &:active {
+        background: red;
+
+        &::before,
+        &::after {
+            display: none;
+        }
     }
 }
 
@@ -185,33 +207,4 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-[part~='header'] {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: $header-gap;
-    overflow: hidden;
-
-    &:hover {
-        cursor: pointer;
-        background: rgb(0 0 0 / 10%);
-
-        &::before,
-        &::after {
-            display: none;
-        }
-    }
-
-    &:focus,
-    &:active {
-        background: red;
-
-        &::before,
-        &::after {
-            display: none;
-        }
-    }
 }
