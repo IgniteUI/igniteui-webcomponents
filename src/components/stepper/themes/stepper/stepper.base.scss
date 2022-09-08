@@ -1,6 +1,10 @@
 @use '../../../../styles/common/component';
 @use '../vars' as *;
 
+:host {
+    font-family: var(--igc-font-family);
+}
+
 :host([orientation='horizontal']) {
     display: grid;
 
@@ -10,6 +14,23 @@
         grid-row-start: 1;
         grid-column: 1 / -1;
         pointer-events: none;
+
+        --align-text: center;
+    }
+}
+
+:host([dir='rtl']) {
+    ::slotted(igc-step) {
+        --trnslate-rtl: translateX(100%);
+    }
+}
+
+:host([content-top]) {
+    ::slotted(igc-step) {
+        --header-position-in-grid: 2;
+        --body-position-in-grid: 1 / 2;
+
+        align-items: flex-end;
     }
 }
 
@@ -21,6 +42,7 @@
         --step-hide-full-before-after: none;
         --step-hide-last-of-type: none;
         --step-hide-first-of-type: none;
+        --step-width: 100%;
 
         display: flex;
         flex-direction: column;

@@ -2,8 +2,8 @@
 @forward '../../../styles/utilities/index';
 
 $indicator-size: #{rem(24px)};
-$padding: #{rem(8px)};
+$padding: #{rem(16px)};
 $header-gap: $padding;
 $indicator-padding: $padding;
-$separator-position: #{calc(#{$padding} + #{$header-gap} + #{$indicator-padding})};
+$separator-position: #{calc((#{$padding} / 2) + #{$header-gap} + (#{rem(1px)} / 2))};
 $separator-color: color(gray, 300);

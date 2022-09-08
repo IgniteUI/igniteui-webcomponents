@@ -93,28 +93,31 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           erat. Curabitur gravida malesuada arcu, non fermentum tortor porta
           luctus. Nulla sagittis massa sit amet ipsum sagittis efficitur. In
           volutpat cursus sapien et scelerisque. Praesent egestas velit vel
-          pharetra suscipit. Maecenas bibendum magna nunc, auctor luctus justo
-          sagittis in. Proin et arcu sed turpis tempus varius vel in neque.
-          Nulla pulvinar, odio sit amet vestibulum congue, est enim scelerisque
-          diam, placerat luctus nisl erat sit amet augue. Integer pulvinar
-          fringilla ultrices. Maecenas scelerisque odio nibh, sit amet euismod
-          leo lobortis quis. Vestibulum pharetra nisi urna.
         </span>
         <input />
         <button>Asd</button>
       </igc-step>
       <igc-step active>
-        <span slot="indicator"><igc-icon name="home"></igc-icon></span>
         <span slot="title">Long title Ut fermentum convallis</span>
         <span slot="sub-title">Long subtitle Ut fermentum</span>
-        <span>STEP 2 CONTENT</span>
+        <span
+          >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
+          Curabitur gravida malesuada arcu, non fermentum tortor porta luctus.
+          Nulla sagittis massa sit amet ipsum sagittis efficitur. In volutpat
+          cursus sapien et scelerisque. Praesent egestas velit vel</span
+        >
         <input />
       </igc-step>
       <igc-step>
-        <span slot="indicator"><input /></span>
-        <span slot="title">Title</span>
+        <span slot="indicator"><igc-icon name="home"></igc-icon></span>
+        <span slot="title"
+          ><input placeholder="placeholder" type="text"
+        /></span>
         <span slot="sub-title">subtitle</span>
-        <span>STEP 3 CONTENT</span>
+        <span
+          >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
+          Curabitur gravida malesuada arcu,
+        </span>
         <input />
       </igc-step>
     </igc-stepper>
