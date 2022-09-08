@@ -4,6 +4,8 @@
 @use 'sass:map';
 @use 'sass:math';
 
+$border-radius: calc(#{var(--size)} / 2);
+
 :host(igc-calendar) {
     --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
 
@@ -37,7 +39,7 @@
     }
 
     igc-days-view::part(date-inner) {
-        @include border-radius(math.div(#{var(--size)}, 2) + rem(2px));
+        @include border-radius(calc($border-radius + rem(2px)));
     }
 
     igc-months-view {
@@ -46,7 +48,7 @@
         &::part(month-inner) {
             height: var(--size);
 
-            @include border-radius(math.div(#{var(--size)}, 2) + rem(2px));
+            @include border-radius(calc($border-radius + rem(2px)));
         }
     }
 
@@ -56,7 +58,7 @@
         &::part(year-inner) {
             height: var(--size);
 
-            @include border-radius(math.div(var(--size), 2) + rem(2px));
+            @include border-radius(calc($border-radius + rem(2px)));
         }
     }
 }
