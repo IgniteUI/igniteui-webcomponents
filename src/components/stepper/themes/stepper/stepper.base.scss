@@ -3,11 +3,28 @@
 
 :host([orientation='horizontal']) {
     display: grid;
+
+    ::slotted(igc-step) {
+        display: grid;
+        grid-template-columns: repeat(var(--steps-count), 1fr);
+        grid-row-start: 1;
+        grid-column: 1 / -1;
+        pointer-events: none;
+    }
 }
 
-:host([orientation='vertical']) {
+:host(:not([orientation='horizontal'])) {
     display: flex;
     flex-direction: column;
+
+    ::slotted(igc-step) {
+        --step-hide-full-before-after: none;
+        --step-hide-last-of-type: none;
+        --step-hide-first-of-type: none;
+
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 ::slotted(igc-step:last-of-type) {

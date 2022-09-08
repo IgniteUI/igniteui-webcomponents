@@ -104,8 +104,9 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <button>Asd</button>
       </igc-step>
       <igc-step active>
-        <span slot="title">Title</span>
-        <span slot="sub-title">subtitle</span>
+        <span slot="indicator"><igc-icon name="home"></igc-icon></span>
+        <span slot="title">Long title Ut fermentum convallis</span>
+        <span slot="sub-title">Long subtitle Ut fermentum</span>
         <span>STEP 2 CONTENT</span>
         <input />
       </igc-step>

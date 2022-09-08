@@ -223,9 +223,7 @@ export default class IgcStepComponent extends LitElement {
           @click=${this.handleClick}
           tabindex="${this.active ? '0' : '-1'}"
         >
-          <div part="header-inner">
-            ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
-          </div>
+          ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
         </div>
       </div>
       ${this.renderContent()}
