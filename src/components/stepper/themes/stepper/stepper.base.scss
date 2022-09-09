@@ -15,13 +15,9 @@
         grid-column: 1 / -1;
         pointer-events: none;
 
+        --text-width: 100%;
         --align-text: center;
-    }
-}
-
-:host([dir='rtl']) {
-    ::slotted(igc-step) {
-        --trnslate-rtl: translateX(100%);
+        --align-items: center;
     }
 }
 
@@ -64,9 +60,4 @@
 :host([orientation='horizontal'][title-position='start']),
 :host([orientation='horizontal'][title-position='end']) {
     --step-hide-full-before-after: none;
-}
-
-:host([title-position='top'][step-type='full']),
-:host([title-position='bottom'][step-type='full']) {
-    --step-separator-position: #{$separator-position};
 }
