@@ -21,7 +21,7 @@
     align-items: center;
     position: relative;
 
-    [part='header'] {
+    [part~='header'] {
         pointer-events: all;
     }
 
@@ -47,7 +47,7 @@
 }
 
 [part~='header-container'],
-[part='header'] {
+[part~='header'] {
     &::before,
     &::after {
         content: '';
@@ -58,7 +58,7 @@
     }
 }
 
-[part='header'] {
+[part~='header'] {
     display: flex;
     align-items: var(--align-items, flex-start);
     position: relative;
@@ -96,8 +96,7 @@
         }
     }
 
-    &:focus,
-    &:active {
+    [part~='focused'] {
         background: color(gray, 100);
 
         &::before,
@@ -127,15 +126,15 @@
 [part~='top'] {
     &::before,
     &::after {
-        inset-block-start: $separator-position;
+        inset-block-start: #{var(--step-separator-position)};
     }
 
-    [part='header'] {
+    [part~='header'] {
         flex-direction: column-reverse;
 
         &::before,
         &::after {
-            inset-block-end: calc(#{$separator-position} + #{rem(14.5)});
+            inset-block-end: #{var(--step-separator-position-header)};
         }
     }
 }
@@ -143,15 +142,15 @@
 [part~='bottom'] {
     &::before,
     &::after {
-        inset-block-end: $separator-position;
+        inset-block-end: #{var(--step-separator-position)};
     }
 
-    [part='header'] {
+    [part~='header'] {
         flex-direction: column;
 
         &::before,
         &::after {
-            inset-block-start: calc(#{$separator-position} + #{rem(14.5)});
+            inset-block-start: #{var(--step-separator-position-header)};
         }
     }
 }
@@ -176,16 +175,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: rem(40px);
-    height: rem(40px);
+    width: $indicator-size;
+    height: $indicator-size;
     padding: rem(8px);
 
     span {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: $indicator-size;
-        height: $indicator-size;
+        width: $indicator-inner-size;
+        height: $indicator-inner-size;
         border-radius: 50%;
         background: color(gray, 300);
         box-shadow: 0 0 0 rem(1px) color(gray, 300);

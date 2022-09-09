@@ -61,3 +61,9 @@
 :host([orientation='horizontal'][title-position='end']) {
     --step-hide-full-before-after: none;
 }
+
+:host([title-position='top'][step-type='full']),
+:host([title-position='bottom'][step-type='full']) {
+    --step-separator-position: #{$separator-position};
+    --step-separator-position-header: #{$separator-position-header};
+}
