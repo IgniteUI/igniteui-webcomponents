@@ -96,7 +96,7 @@
         }
     }
 
-    [part~='focused'] {
+    &:focus, &:focus-within, &:active {
         background: color(gray, 100);
 
         &::before,

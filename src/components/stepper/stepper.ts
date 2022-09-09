@@ -45,7 +45,6 @@ export default class IgcStepperComponent extends SizableMixin(
   protected static styles = styles;
 
   private activeStep!: IgcStepComponent;
-  private focusedStep?: IgcStepComponent;
 
   /** Returns all of the stepper's steps. */
   @queryAssignedElements({ selector: 'igc-step' })
@@ -159,18 +158,16 @@ export default class IgcStepperComponent extends SizableMixin(
     this.addEventListener('focusHeader', (event: any) => {
       event.stopPropagation();
 
-      this.focusedStep = event.detail;
-      this.activeStep.setAttribute('tabindex', '-1');
+      // this.activeStep.setAttribute('tabindex', '-1');
     });
-    this.addEventListener('blurHeader', (event: any) => {
-      this.focusedStep = undefined;
-      event.stopPropagation();
-      this.activeStep.setAttribute('tabindex', '0');
-    });
-    this.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (event.target instanceof IgcStepComponent) {
-        this.handleKeydown(event);
-      }
+    // this.addEventListener('blurHeader', (event: any) => {
+    //   this.focusedStep = undefined;
+    //   event.stopPropagation();
+    //   this.activeStep.setAttribute('tabindex', '0');
+    // });
+    this.addEventListener('headerKeydown', (event: any) => {
+      console.log(event.detail);
+      this.handleKeydown(event.detail.event, event.detail.focusedStep);
     });
   }
 
@@ -188,13 +185,13 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
-  public handleKeydown(event: KeyboardEvent) {
+  public handleKeydown(event: KeyboardEvent, focusedStep: IgcStepComponent) {
     const key = event.key.toLowerCase();
+    if (key === 'tab') {
+      focusedStep.focused = false;
+    }
     if (!NAVIGATION_KEYS.has(key)) {
       if (this.orientation === 'vertical' || key !== 'tab') {
-        return;
-      }
-      if (key === 'tab' && !this.focusedStep) {
         return;
       }
       if (key === 'tab' && event.shiftKey) {
@@ -204,9 +201,6 @@ export default class IgcStepperComponent extends SizableMixin(
 
     event.preventDefault();
     event.stopPropagation();
-    if (!this.focusedStep) {
-      return;
-    }
 
     if (this.orientation === 'horizontal') {
       if (
@@ -219,57 +213,54 @@ export default class IgcStepperComponent extends SizableMixin(
       }
     }
 
-    this.handleNavigation(key);
+    this.handleNavigation(key, focusedStep);
   }
 
-  public handleNavigation(key: string): void {
+  public handleNavigation(key: string, focusedStep: IgcStepComponent): void {
+    let nextStep: IgcStepComponent | undefined;
     switch (key) {
       case 'home':
-        this.steps
-          .filter((step: IgcStepComponent) => step.isAccessible)[0]
-          ?.header.focus();
+        nextStep = this.steps.filter(
+          (step: IgcStepComponent) => step.isAccessible
+        )[0];
         break;
       case 'end':
-        this.steps
+        nextStep = this.steps
           .filter((step: IgcStepComponent) => step.isAccessible)
-          .pop()
-          ?.header.focus();
+          .pop();
         break;
       case 'arrowup':
       case 'up':
-        this.previousStep?.header.focus();
+        nextStep = this.getPreviousStep(focusedStep);
         break;
       case 'arrowleft':
       case 'left':
         if (this.dir === 'rtl' && this.orientation === 'horizontal') {
-          this.nextStep?.header.focus();
+          nextStep = this.getNextStep(focusedStep);
         } else {
-          this.previousStep?.header.focus();
+          nextStep = this.getPreviousStep(focusedStep);
         }
         break;
       case 'arrowdown':
       case 'down':
-        this.nextStep?.header.focus();
+        nextStep = this.getNextStep(focusedStep);
         break;
       case 'arrowright':
       case 'right':
         if (this.dir === 'rtl' && this.orientation === 'horizontal') {
-          this.previousStep?.header.focus();
+          nextStep = this.getPreviousStep(focusedStep);
         } else {
-          this.nextStep?.header.focus();
+          nextStep = this.getNextStep(focusedStep);
         }
         break;
       case ' ':
       case 'spacebar':
       case 'space':
       case 'enter':
-        this.activateStep(this.focusedStep!, true);
+        this.activateStep(focusedStep, true);
         break;
       case 'tab':
-        if (
-          this.focusedStep &&
-          this.focusedStep.index < this.activeStep.index
-        ) {
+        if (focusedStep && focusedStep.index < this.activeStep.index) {
           this.activeStep.header.focus();
         } else {
           this.activeStep.content.focus();
@@ -277,6 +268,12 @@ export default class IgcStepperComponent extends SizableMixin(
         break;
       default:
         return;
+    }
+    if (nextStep) {
+      console.log(nextStep, 'asdsds');
+      nextStep.header.focus();
+      focusedStep.focused = false;
+      nextStep.focused = true;
     }
   }
 
@@ -366,8 +363,9 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
-  private get nextStep(): IgcStepComponent | undefined {
-    const focusedStep = this.focusedStep;
+  private getNextStep(
+    focusedStep: IgcStepComponent
+  ): IgcStepComponent | undefined {
     if (focusedStep) {
       if (focusedStep.index === this.steps.length - 1) {
         return this.steps.find((step: IgcStepComponent) => step.isAccessible);
@@ -385,8 +383,9 @@ export default class IgcStepperComponent extends SizableMixin(
     return undefined;
   }
 
-  private get previousStep(): IgcStepComponent | undefined {
-    const focusedStep = this.focusedStep;
+  private getPreviousStep(
+    focusedStep: IgcStepComponent
+  ): IgcStepComponent | undefined {
     if (focusedStep) {
       if (focusedStep.index === 0) {
         return this.steps

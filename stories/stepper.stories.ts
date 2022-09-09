@@ -111,7 +111,10 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       <igc-step>
         <span slot="indicator"><igc-icon name="home"></igc-icon></span>
         <span slot="title"
-          ><input placeholder="placeholder" type="text"
+          ><input
+            placeholder="placeholder"
+            style="pointer-events: all"
+            type="text"
         /></span>
         <span slot="sub-title">subtitle</span>
         <span

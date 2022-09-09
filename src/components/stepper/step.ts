@@ -13,7 +13,7 @@ export default class IgcStepComponent extends LitElement {
   /** @private */
   public static override styles = styles;
 
-  @query('[part="header"]')
+  @query('[part~="header"]')
   public header!: HTMLElement;
 
   @query('[part="content"]')
@@ -77,6 +77,19 @@ export default class IgcStepComponent extends LitElement {
   @property({ attribute: false })
   public visited = false;
 
+  /** @private */
+  @property({ attribute: false })
+  public focused = false;
+
+  // @watch('focused', { waitUntilFirstUpdate: true })
+  // public focusedChange() {
+  //   if (this.focused) {
+  //     this.setAttribute('tabindex', '-1');
+  //   } else {
+  //     this.setAttribute('tabindex', '0');
+  //   }
+  // }
+
   @watch('active')
   public activeChange() {
     if (this.active) {
@@ -84,7 +97,7 @@ export default class IgcStepComponent extends LitElement {
         new CustomEvent('activeStepChanged', { bubbles: true, detail: false })
       );
       this.setAttribute('aria-selected', 'true');
-      // this.setAttribute('tabindex', '0');
+      this.removeAttribute('tabindex');
     } else {
       // this.setAttribute('tabindex', '-1');
     }
@@ -99,47 +112,35 @@ export default class IgcStepComponent extends LitElement {
     );
   }
 
-  constructor() {
-    super();
-    this.addEventListener('focusin', () => {
-      this.header.focus();
-    });
-  }
-
   public override connectedCallback(): void {
     super.connectedCallback();
     this.setAttribute('role', 'tab');
     this.setAttribute('aria-selected', 'false');
-    this.setAttribute('tabindex', '-1');
-  }
-
-  protected override async firstUpdated() {
-    await this.updateComplete;
-
-    this.header!.addEventListener('focusin', () => {
-      this.dispatchEvent(
-        new CustomEvent('focusHeader', { bubbles: true, detail: this })
-      );
-    });
-
-    this.header!.addEventListener('focusout', () => {
-      this.dispatchEvent(
-        new CustomEvent('blurHeader', { bubbles: true, detail: this })
-      );
-    });
-
-    this.content!.addEventListener('focusin', (event: FocusEvent) => {
-      event.stopPropagation();
-    });
+    // this.setAttribute('tabindex', '-1');
   }
 
   protected handleClick(event: MouseEvent): void {
     event.stopPropagation();
     if (!this.disabled) {
+      this.focused = true;
+      this.dispatchEvent(
+        new CustomEvent('focusHeader', { bubbles: true, detail: true })
+      );
       this.dispatchEvent(
         new CustomEvent('activeStepChanged', { bubbles: true, detail: true })
       );
     }
+  }
+
+  protected handleKeydown(event: KeyboardEvent): void {
+    console.log('asd');
+    event.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent('headerKeydown', {
+        bubbles: true,
+        detail: { event, focusedStep: this },
+      })
+    );
   }
 
   public get isAccessible(): boolean {
@@ -158,6 +159,13 @@ export default class IgcStepComponent extends LitElement {
       bottom: this.titlePosition === 'bottom',
       start: this.titlePosition === 'start',
       end: this.titlePosition === 'end',
+    };
+  }
+
+  private get headerParts() {
+    return {
+      header: true,
+      focused: this.focused,
     };
   }
 
@@ -217,8 +225,9 @@ export default class IgcStepComponent extends LitElement {
     return html`
       <div part="${partNameMap(this.headerContainerParts)}">
         <div
-          part="header"
+          part="${partNameMap(this.headerParts)}"
           @click=${this.handleClick}
+          @keydown=${this.handleKeydown}
           tabindex="${this.active ? '0' : '-1'}"
         >
           ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
