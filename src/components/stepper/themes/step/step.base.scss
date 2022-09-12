@@ -95,7 +95,9 @@
         background: color(gray, 200);
     }
 
-    &:focus {
+    &:focus,
+    &:focus-within,
+    &:active {
         background: color(gray, 100);
 
         &:hover {

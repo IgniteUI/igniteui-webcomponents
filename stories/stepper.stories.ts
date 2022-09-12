@@ -107,6 +107,10 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       </igc-step>
       <igc-step>
         <span slot="indicator"><igc-icon name="home"></igc-icon></span>
+        <<<<<<< HEAD =======
+        <span slot="title"> Title 3 </span>
+        <span slot="sub-title">subtitle</span>
+        >>>>>>> 791574b1278c7f416cd5240b371f04dd9456ea5c
         <span
           >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
           Curabitur gravida malesuada arcu,
