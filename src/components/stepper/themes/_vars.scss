@@ -1,11 +1,16 @@
 @use '../../../styles/utilities/index' as *;
 @forward '../../../styles/utilities/index';
 
-$indicator-inner-size: #{rem(24px)};
-$indicator-size: #{rem(40px)};
-$padding: #{rem(16px)};
+$padding: #{rem(8px)};
 $header-gap: $padding;
-$indicator-padding: $padding;
-$separator-position: calc((#{$padding} / 2) + (#{$indicator-size} / 2));
-$separator-position-header: calc((#{$padding} / 2) + (#{$indicator-size} / 2) + ($header-gap / 2));
+
+// Indicator
+$indicator-inner-size: #{rem(24px)};
+$indicator-padding: 0;
+$indicator-size: #{rem(40px)};
+$indicator-box-shadow-size: #{rem(1px)};
+
+// Separator
+$separator-size: #{rem(1px)};
+$separator-position: calc(($padding) + ($indicator-size / 2) - ($separator-size / 2));
 $separator-color: color(gray, 300);

@@ -7,10 +7,12 @@
 
 :host([orientation='horizontal']) {
     display: grid;
+    grid-template-columns: repeat(var(--steps-count), 1fr);
+    overflow: hidden;
 
     ::slotted(igc-step) {
-        display: grid;
-        grid-template-columns: repeat(var(--steps-count), 1fr);
+        // display: contents make all direct children of the step to behave like they are direct children of the stepper
+        display: contents;
         grid-row-start: 1;
         grid-column: 1 / -1;
         pointer-events: none;
@@ -65,5 +67,4 @@
 :host([title-position='top'][step-type='full']),
 :host([title-position='bottom'][step-type='full']) {
     --step-separator-position: #{$separator-position};
-    --step-separator-position-header: #{$separator-position-header};
 }

@@ -2,11 +2,6 @@
 @use '../vars' as *;
 
 :host {
-    display: grid;
-    grid-template-columns: repeat(var(--steps-count), 1fr);
-    grid-row-start: 1;
-    grid-column: 1 / -1;
-    pointer-events: none;
     overflow: hidden;
     align-items: flex-start;
 }
@@ -18,7 +13,6 @@
     grid-row-start: var(--header-position-in-grid, 1 / 2);
     min-width: rem(140px);
     width: var(--step-width, auto);
-    align-items: center;
     position: relative;
 
     [part~='header'] {
@@ -52,8 +46,8 @@
     &::after {
         content: '';
         flex: 1;
-        border-top: rem(1px) dashed $separator-color;
-        height: rem(1px);
+        border-top: $separator-size dashed $separator-color;
+        height: $separator-size;
         position: relative;
     }
 }
@@ -71,7 +65,7 @@
 
     &::before,
     &::after {
-        width: calc(50% - $indicator-size);
+        width: calc(50% - $indicator-inner-size);
         position: absolute;
         z-index: -1;
     }
@@ -86,9 +80,10 @@
         display: var(--step-hide-last-of-type, var(--step-hide-full-before-after));
     }
 
+    &:focus,
     &:hover {
         cursor: pointer;
-        background: color(gray, 200);
+        outline: none;
 
         &::before,
         &::after {
@@ -96,12 +91,15 @@
         }
     }
 
-    [part~='focused'] {
+    &:hover {
+        background: color(gray, 200);
+    }
+
+    &:focus {
         background: color(gray, 100);
 
-        &::before,
-        &::after {
-            display: none;
+        &:hover {
+            background: color(gray, 200);
         }
     }
 }
@@ -124,9 +122,11 @@
 }
 
 [part~='top'] {
+    align-items: flex-end;
+
     &::before,
     &::after {
-        inset-block-start: #{var(--step-separator-position)};
+        inset-block-end: #{var(--step-separator-position)};
     }
 
     [part~='header'] {
@@ -134,15 +134,17 @@
 
         &::before,
         &::after {
-            inset-block-end: #{var(--step-separator-position-header)};
+            inset-block-end: #{var(--step-separator-position)};
         }
     }
 }
 
 [part~='bottom'] {
+    align-items: start;
+
     &::before,
     &::after {
-        inset-block-end: #{var(--step-separator-position)};
+        inset-block-start: #{var(--step-separator-position)};
     }
 
     [part~='header'] {
@@ -150,7 +152,7 @@
 
         &::before,
         &::after {
-            inset-block-start: #{var(--step-separator-position-header)};
+            inset-block-start: #{var(--step-separator-position)};
         }
     }
 }
@@ -159,8 +161,8 @@
     [part~='indicator'] {
         span {
             background: color(primary, 500);
-            color: contrast-color(primary, 600);
-            box-shadow: 0 0 0 rem(1px) color(primary, 500);
+            color: contrast-color(primary, 800);
+            box-shadow: 0 0 0 $indicator-box-shadow-size color(primary, 500);
         }
     }
 }
@@ -177,7 +179,7 @@
     justify-content: center;
     width: $indicator-size;
     height: $indicator-size;
-    padding: rem(8px);
+    padding: $indicator-padding;
 
     span {
         display: flex;
@@ -185,9 +187,11 @@
         justify-content: center;
         width: $indicator-inner-size;
         height: $indicator-inner-size;
-        border-radius: 50%;
-        background: color(gray, 300);
-        box-shadow: 0 0 0 rem(1px) color(gray, 300);
+        border-radius: calc($indicator-inner-size / 2);
+        background: color(gray, 400);
+        box-shadow: 0 0 0 $indicator-box-shadow-size color(gray, 400);
+
+        @include type-category('caption');
     }
 }
 
@@ -206,8 +210,27 @@
 
 [part~='title'] {
     @include type-category('body-2');
+
+    color: contrast-color(gray, 50);
 }
 
 [part~='subtitle'] {
     @include type-category('caption');
+
+    color: color(gray, 700);
 }
+
+// [part~='disabled'] {
+//    background: transparent;
+//    [part~='indicator'] {
+//        span {
+//            color: color(gray, 500);
+//            background: color(gray, 100);
+//            box-shadow: 0 0 0 $indicator-box-shadow-size color(gray, 100);
+//        }
+//    }
+//    [part~='title'],
+//    [part~='subtitle'] {
+//        color: color(gray, 500);
+//    }
+// }

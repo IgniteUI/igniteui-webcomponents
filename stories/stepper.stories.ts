@@ -71,9 +71,6 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
-    <span style="background: #f9f9f9; display: block; margin-bottom: 20px;"
-      >EBASI TOP SHITAAAAAAAAAA</span
-    >
     <igc-stepper
       .orientation=${orientation}
       .stepType=${stepType}
@@ -110,10 +107,6 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       </igc-step>
       <igc-step>
         <span slot="indicator"><igc-icon name="home"></igc-icon></span>
-        <span slot="title"
-          ><input placeholder="placeholder" type="text"
-        /></span>
-        <span slot="sub-title">subtitle</span>
         <span
           >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
           Curabitur gravida malesuada arcu,
@@ -121,9 +114,6 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <input />
       </igc-step>
     </igc-stepper>
-    <span style="background: #f9f9f9; display: block; margin-top: 20px;"
-      >EBASI BOTTOM SHITAAAAAAAAAA</span
-    >
   `;
 };
 
