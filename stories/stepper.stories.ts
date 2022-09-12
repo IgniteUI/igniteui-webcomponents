@@ -24,15 +24,6 @@ const metadata = {
       },
       defaultValue: 'full',
     },
-    titlePosition: {
-      type: '"start" | "end" | "top" | "bottom"',
-      description: 'Get/Set the position of the steps title.',
-      options: ['start', 'end', 'top', 'bottom'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'bottom',
-    },
     linear: {
       type: 'boolean',
       description: 'Get/Set whether the stepper is linear.',
@@ -44,6 +35,14 @@ const metadata = {
       description: 'Get/Set whether the content is displayed above the steps.',
       control: 'boolean',
       defaultValue: false,
+    },
+    titlePosition: {
+      type: '"start" | "end" | "top" | "bottom" | undefined',
+      description: 'Get/Set the position of the steps title.',
+      options: ['start', 'end', 'top', 'bottom', 'undefined'],
+      control: {
+        type: 'select',
+      },
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -60,9 +59,9 @@ export default metadata;
 interface ArgTypes {
   orientation: 'vertical' | 'horizontal';
   stepType: 'indicator' | 'title' | 'full';
-  titlePosition: 'start' | 'end' | 'top' | 'bottom';
   linear: boolean;
   contentTop: boolean;
+  titlePosition: 'start' | 'end' | 'top' | 'bottom' | undefined;
   size: 'small' | 'medium' | 'large';
 }
 // endregion
@@ -71,6 +70,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
+    <p>Test Top Content</p>
     <igc-stepper
       .orientation=${orientation}
       .stepType=${stepType}
@@ -116,6 +116,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <input />
       </igc-step>
     </igc-stepper>
+    <p>Test Bottom Content</p>
   `;
 };
 

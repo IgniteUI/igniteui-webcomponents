@@ -55,7 +55,7 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   @property({ attribute: false })
-  public titlePosition: 'bottom' | 'top' | 'end' | 'start' = 'end';
+  public titlePosition!: 'bottom' | 'top' | 'end' | 'start' | undefined;
 
   /** @private */
   @property({ attribute: false })
@@ -66,7 +66,7 @@ export default class IgcStepComponent extends LitElement {
   public index = -1;
 
   /** @private */
-  @property({ reflect: true, type: Boolean, attribute: 'content-top' })
+  @property({ attribute: false })
   public contentTop = false;
 
   /** @private */
@@ -148,9 +148,13 @@ export default class IgcStepComponent extends LitElement {
       invalid:
         this.invalid && this.visited && !this.active && this.isAccessible,
       top: this.titlePosition === 'top',
-      bottom: this.titlePosition === 'bottom',
+      bottom:
+        this.titlePosition === 'bottom' ||
+        (this.orientation === 'horizontal' && !this.titlePosition),
       start: this.titlePosition === 'start',
-      end: this.titlePosition === 'end',
+      end:
+        this.titlePosition === 'end' ||
+        (this.orientation === 'vertical' && !this.titlePosition),
     };
   }
 
@@ -158,6 +162,7 @@ export default class IgcStepComponent extends LitElement {
     return {
       body: true,
       'active-body': this.active,
+      'body-top': this.contentTop,
     };
   }
 

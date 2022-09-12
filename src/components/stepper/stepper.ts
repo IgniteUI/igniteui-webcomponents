@@ -25,6 +25,8 @@ export default class IgcStepperComponent extends SizableMixin(
     Object.entries({
       Enter: this.activateStep,
       Space: this.activateStep,
+      SpaceBar: this.activateStep,
+      ' ': this.activateStep,
       ArrowUp: this.onArrowUpKeyDown,
       ArrowDown: this.onArrowDownKeyDown,
       ArrowLeft: this.onArrowLeftKeyDown,
@@ -64,16 +66,6 @@ export default class IgcStepperComponent extends SizableMixin(
   public stepType: 'indicator' | 'title' | 'full' = 'full';
 
   /**
-   * Get/Set the position of the steps title.
-   *
-   * @remarks
-   * The default value when the stepper is horizontally orientated is `bottom`.
-   * In vertical layout the default title position is `end`.
-   */
-  @property({ reflect: true, attribute: 'title-position' })
-  public titlePosition: 'bottom' | 'top' | 'end' | 'start' = 'bottom';
-
-  /**
    * Get/Set whether the stepper is linear.
    *
    * @remarks
@@ -94,6 +86,17 @@ export default class IgcStepperComponent extends SizableMixin(
   /** The direction attribute of the control. */
   @property({ reflect: true })
   public override dir: Direction = 'auto';
+
+  /**
+   * Get/Set the position of the steps title.
+   *
+   * @remarks
+   * The default value is undefined.
+   * When the stepper is horizontally orientated the title is positioned below the indicator.
+   * When the stepper is horizontally orientated the title is positioned on the right side of the indicator.
+   */
+  @property({ reflect: true, attribute: 'title-position' })
+  public titlePosition!: 'bottom' | 'top' | 'end' | 'start' | undefined;
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {
