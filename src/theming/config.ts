@@ -1,5 +1,5 @@
 import { ChangeThemeEventDetail, CHANGE_THEME_EVENT } from './theming-event.js';
-import type { Theme } from './types';
+import type { Theme } from './types.js';
 import { getAllCSSVariables } from './utils.js';
 
 let theme: Theme;
