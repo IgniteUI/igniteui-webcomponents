@@ -45,10 +45,10 @@ export class IgcSliderBaseComponent extends LitElement {
   protected activeThumb?: HTMLElement;
 
   @state()
-  private thumbLabelsVisible = false;
+  protected thumbLabelsVisible = false;
 
   @state()
-  private labels?: string[];
+  protected labels?: string[];
 
   public set min(value: number) {
     if (value < this.max) {
@@ -293,13 +293,13 @@ export class IgcSliderBaseComponent extends LitElement {
   /* c8 ignore next */
   protected emitChangeEvent() {}
 
-  private get actualMin(): number {
+  protected get actualMin(): number {
     return typeof this.lowerBound === 'number'
       ? (this.lowerBound as number)
       : this.min;
   }
 
-  private get actualMax(): number {
+  protected get actualMax(): number {
     return typeof this.upperBound === 'number'
       ? (this.upperBound as number)
       : this.max;
@@ -312,7 +312,7 @@ export class IgcSliderBaseComponent extends LitElement {
     return value;
   }
 
-  private formatValue(value: number) {
+  protected formatValue(value: number) {
     return this.valueFormat
       ? this.valueFormat.replace(
           '{0}',
@@ -517,11 +517,11 @@ export class IgcSliderBaseComponent extends LitElement {
     }
   };
 
-  private handleThumbPointerEnter = () => {
+  protected handleThumbPointerEnter = () => {
     this.showThumbLabels();
   };
 
-  private handleThumbPointerLeave = () => {
+  protected handleThumbPointerLeave = () => {
     this.hideThumbLabels();
   };
 
