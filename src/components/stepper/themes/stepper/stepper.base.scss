@@ -3,6 +3,11 @@
 
 :host {
     font-family: var(--igc-font-family);
+
+    ::slotted(igc-step) {
+        // display: contents make all direct children of the step to behave like they are direct children of the stepper
+        display: contents;
+    }
 }
 
 :host([orientation='horizontal']) {
@@ -10,9 +15,9 @@
     grid-template-columns: repeat(var(--steps-count), 1fr);
     overflow: hidden;
 
+    --step-separator-position: #{$separator-position};
+
     ::slotted(igc-step) {
-        // display: contents make all direct children of the step to behave like they are direct children of the stepper
-        display: contents;
         grid-row-start: 1;
         grid-column: 1 / -1;
         pointer-events: none;
@@ -41,9 +46,6 @@
         --step-hide-last-of-type: none;
         --step-hide-first-of-type: none;
         --step-width: 100%;
-
-        display: flex;
-        flex-direction: column;
     }
 }
 
@@ -56,15 +58,4 @@
 
 ::slotted(igc-step:first-of-type) {
     --step-hide-first-of-type: none;
-}
-
-:host([orientation='horizontal']:not([step-type='full'])),
-:host([orientation='horizontal'][title-position='start']),
-:host([orientation='horizontal'][title-position='end']) {
-    --step-hide-full-before-after: none;
-}
-
-:host([title-position='top'][step-type='full']),
-:host([title-position='bottom'][step-type='full']) {
-    --step-separator-position: #{$separator-position};
 }
