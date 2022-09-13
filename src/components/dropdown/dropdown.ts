@@ -85,6 +85,8 @@ export default class IgcDropdownComponent
       Enter: this.onEnterKey,
       ArrowUp: this.onArrowUpKeyDown,
       ArrowDown: this.onArrowDownKeyDown,
+      ArrowLeft: this.onArrowUpKeyDown,
+      ArrowRight: this.onArrowDownKeyDown,
       Home: this.onHomeKey,
       End: this.onEndKey,
     })
