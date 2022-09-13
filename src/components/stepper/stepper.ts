@@ -33,7 +33,6 @@ export default class IgcStepperComponent extends SizableMixin(
       ArrowRight: this.onArrowRightKeyDown,
       Home: this.onHomeKey,
       End: this.onEndKey,
-      Tab: () => this.activeStep?.contentBody?.focus(),
     })
   );
 
@@ -179,35 +178,11 @@ export default class IgcStepperComponent extends SizableMixin(
     const key = event.key.toLowerCase();
 
     if (this.keyDownHandlers.has(event.key)) {
-      if (
-        key === 'tab' &&
-        this.orientation === 'vertical' &&
-        this.activeStep.index < focusedStep.index
-      ) {
-        return;
-      }
-      if (
-        key === 'tab' &&
-        event.shiftKey &&
-        this.activeStep.index < focusedStep.index
-      ) {
-        // skip the active step in chrome
-        this.activeStep.setAttribute('inert', 'inert');
-        // skip the active step in firefox
-        this.activeStep.setAttribute('tabindex', '-1');
-
-        setTimeout(() => {
-          this.activeStep.removeAttribute('inert');
-          this.activeStep.removeAttribute('tabindex');
-        });
-        return;
-      }
-      if (key === 'tab' && event.shiftKey) {
-        return;
-      }
       event.preventDefault();
-      event.stopPropagation();
       this.keyDownHandlers.get(event.key)?.call(this, focusedStep);
+    }
+    if (key === 'tab' && this.activeStep.index !== focusedStep.index) {
+      this.activeStep.header.focus();
     }
   }
 
@@ -282,10 +257,10 @@ export default class IgcStepperComponent extends SizableMixin(
       step.index = index;
       step.style.setProperty('--step-index', index.toString());
       step.active = this.activeStep === step;
-      step.setAttribute('aria-setsize', this.steps.length.toString());
-      step.setAttribute('aria-posinset', (index + 1).toString());
       step.setAttribute('id', `igc-step-${index}`);
-      step.setAttribute('aria-controls', `igc-content-${index}`);
+      step.header?.setAttribute('aria-setsize', this.steps.length.toString());
+      step.header?.setAttribute('aria-posinset', (index + 1).toString());
+      step.header?.setAttribute('aria-controls', `igc-content-${index}`);
       if (this.linear) {
         this.calculateLinearDisabledSteps();
       }

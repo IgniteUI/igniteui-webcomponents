@@ -14,10 +14,10 @@ export default class IgcStepComponent extends LitElement {
   public static override styles = styles;
 
   @queryAssignedElements({ slot: 'title' })
-  private _title!: Array<HTMLElement>;
+  private _titleChildren!: Array<HTMLElement>;
 
   @queryAssignedElements({ slot: 'subtitle' })
-  private _subTitle!: Array<HTMLElement>;
+  private _subTitleChildren!: Array<HTMLElement>;
 
   @query('[part~="header"]')
   public header!: HTMLElement;
@@ -89,14 +89,6 @@ export default class IgcStepComponent extends LitElement {
       this.dispatchEvent(
         new CustomEvent('stepActiveChanged', { bubbles: true, detail: false })
       );
-      this.setAttribute('aria-selected', 'true');
-      if (this.contentBody) {
-        this.contentBody.style.display = 'block';
-      }
-    } else {
-      if (this.contentBody) {
-        this.contentBody.style.display = 'none';
-      }
     }
   }
 
@@ -107,20 +99,6 @@ export default class IgcStepComponent extends LitElement {
         bubbles: true,
       })
     );
-  }
-
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.setAttribute('role', 'tab');
-    this.setAttribute('aria-selected', 'false');
-  }
-
-  protected override async firstUpdated() {
-    await this.updateComplete;
-
-    if (!this.active) {
-      this.contentBody.style.display = 'none';
-    }
   }
 
   protected handleClick(event: MouseEvent): void {
@@ -168,7 +146,7 @@ export default class IgcStepComponent extends LitElement {
   private get textParts() {
     return {
       text: true,
-      empty: !this._title.length && !this._subTitle.length,
+      empty: !this._titleChildren.length && !this._subTitleChildren.length,
     };
   }
 
@@ -213,11 +191,11 @@ export default class IgcStepComponent extends LitElement {
 
   protected renderContent() {
     return html`<div
+      style="display: ${this.active ? 'block' : 'none'}"
       part="${partNameMap(this.bodyParts)}"
       role="tabpanel"
       id="igc-content-${this.index}"
       aria-labelledby="igc-step-${this.index}"
-      tabindex="${this.active ? '0' : '-1'}"
     >
       <div part="content">
         <slot></slot>
@@ -233,6 +211,8 @@ export default class IgcStepComponent extends LitElement {
           @click=${this.handleClick}
           @keydown=${this.handleKeydown}
           tabindex="${this.active ? '0' : '-1'}"
+          role="tab"
+          aria-selected="${this.active}"
         >
           ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
         </div>
