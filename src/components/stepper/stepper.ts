@@ -100,7 +100,6 @@ export default class IgcStepperComponent extends SizableMixin(
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {
     this.setAttribute('aria-orientation', this.orientation);
-    // TODO: set correct titlePosition
     this.steps.forEach(
       (step: IgcStepComponent) => (step.orientation = this.orientation)
     );
@@ -174,6 +173,111 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
+  /** Activates the step at a given index. */
+  public navigateTo(index: number) {
+    const step = this.steps[index];
+    if (!step) {
+      return;
+    }
+    this.activateStep(step, false);
+  }
+
+  /** Activates the next enabled step. */
+  public next(): void {
+    this.moveToNextStep();
+  }
+
+  /** Activates the previous enabled step. */
+  public prev(): void {
+    this.moveToNextStep(false);
+  }
+
+  private syncProperties(): void {
+    this.steps.forEach((step: IgcStepComponent, index: number) => {
+      step.orientation = this.orientation;
+      step.stepType = this.stepType;
+      step.titlePosition = this.titlePosition;
+      step.contentTop = this.contentTop;
+      step.index = index;
+      step.active = this.activeStep === step;
+      step.style.setProperty('--step-index', index.toString());
+      step.header?.setAttribute('aria-posinset', (index + 1).toString());
+      step.header?.setAttribute('aria-setsize', this.steps.length.toString());
+      step.header?.setAttribute('id', `igc-step-header-${index}`);
+      step.header?.setAttribute('aria-controls', `igc-step-content-${index}`);
+      if (this.linear) {
+        this.calculateLinearDisabledSteps();
+      }
+    });
+  }
+
+  private activateStep(step: IgcStepComponent, shouldEmit = true) {
+    if (step === this.activeStep) {
+      return;
+    }
+
+    if (shouldEmit) {
+      const args = {
+        detail: {
+          owner: this,
+          oldIndex: this.activeStep.index,
+          newIndex: step.index,
+        },
+        cancelable: true,
+      };
+
+      const allowed = this.emitEvent('igcActiveStepChanging', args);
+
+      if (!allowed) {
+        return;
+      }
+      this.changeActiveStep(step);
+      this.emitEvent('igcActiveStepChanged', {
+        detail: { owner: this, index: step.index },
+      });
+    } else {
+      this.changeActiveStep(step);
+    }
+  }
+
+  private moveToNextStep(next = true) {
+    let steps = this.steps;
+    let activeStepIndex = this.activeStep.index;
+    if (!next) {
+      steps = this.steps.reverse();
+      activeStepIndex = steps.findIndex(
+        (step: IgcStepComponent) => step === this.activeStep
+      );
+    }
+
+    const nextStep = steps.find(
+      (step: IgcStepComponent, i: number) =>
+        i > activeStepIndex && !step.disabled && !step.linearDisabled
+    );
+    if (nextStep) {
+      this.activateStep(nextStep, false);
+    }
+  }
+
+  private changeActiveStep(step: IgcStepComponent) {
+    if (this.activeStep) {
+      this.activeStep.active = false;
+    }
+
+    step.active = true;
+    step.visited = true;
+    this.activeStep = step;
+  }
+
+  private activateFirstStep() {
+    const firstEnabledStep = this.steps.find(
+      (s: IgcStepComponent) => !s.disabled
+    );
+    if (firstEnabledStep) {
+      this.activateStep(firstEnabledStep, false);
+    }
+  }
+
   public handleKeydown(event: KeyboardEvent, focusedStep: IgcStepComponent) {
     const key = event.key.toLowerCase();
 
@@ -229,92 +333,6 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
-  /** Activates the step at a given index. */
-  public navigateTo(index: number) {
-    const step = this.steps[index];
-    if (!step) {
-      return;
-    }
-    this.activateStep(step, false);
-  }
-
-  /** Activates the next enabled step. */
-  public next(): void {
-    this.moveToNextStep();
-  }
-
-  /** Activates the previous enabled step. */
-  public prev(): void {
-    this.moveToNextStep(false);
-  }
-
-  private syncProperties(): void {
-    this.steps.forEach((step: IgcStepComponent, index: number) => {
-      step.orientation = this.orientation;
-      step.stepType = this.stepType;
-      step.titlePosition = this.titlePosition;
-      step.contentTop = this.contentTop;
-      step.index = index;
-      step.style.setProperty('--step-index', index.toString());
-      step.active = this.activeStep === step;
-      step.setAttribute('id', `igc-step-${index}`);
-      step.header?.setAttribute('aria-setsize', this.steps.length.toString());
-      step.header?.setAttribute('aria-posinset', (index + 1).toString());
-      step.header?.setAttribute('aria-controls', `igc-content-${index}`);
-      if (this.linear) {
-        this.calculateLinearDisabledSteps();
-      }
-    });
-  }
-
-  private activateStep(step: IgcStepComponent, shouldEmit = true) {
-    if (step === this.activeStep) {
-      return;
-    }
-
-    if (shouldEmit) {
-      const args = {
-        detail: {
-          owner: this,
-          oldIndex: this.activeStep.index,
-          newIndex: step.index,
-        },
-        cancelable: true,
-      };
-
-      const allowed = this.emitEvent('igcActiveStepChanging', args);
-
-      if (!allowed) {
-        return;
-      }
-      this.changeActiveStep(step);
-      this.emitEvent('igcActiveStepChanged', {
-        detail: { owner: this, index: step.index },
-      });
-    } else {
-      this.changeActiveStep(step);
-    }
-  }
-
-  private changeActiveStep(step: IgcStepComponent) {
-    if (this.activeStep) {
-      this.activeStep.active = false;
-    }
-
-    step.active = true;
-    step.visited = true;
-    this.activeStep = step;
-  }
-
-  private activateFirstStep() {
-    const firstEnabledStep = this.steps.find(
-      (s: IgcStepComponent) => !s.disabled
-    );
-    if (firstEnabledStep) {
-      this.activateStep(firstEnabledStep, false);
-    }
-  }
-
   private getNextStep(
     focusedStep: IgcStepComponent
   ): IgcStepComponent | undefined {
@@ -362,25 +380,6 @@ export default class IgcStepperComponent extends SizableMixin(
     }
 
     return undefined;
-  }
-
-  private moveToNextStep(next = true) {
-    let steps = this.steps;
-    let activeStepIndex = this.activeStep.index;
-    if (!next) {
-      steps = this.steps.reverse();
-      activeStepIndex = steps.findIndex(
-        (step: IgcStepComponent) => step === this.activeStep
-      );
-    }
-
-    const nextStep = steps.find(
-      (step: IgcStepComponent, i: number) =>
-        i > activeStepIndex && !step.disabled && !step.linearDisabled
-    );
-    if (nextStep) {
-      this.activateStep(nextStep, false);
-    }
   }
 
   public calculateLinearDisabledSteps(): void {

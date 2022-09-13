@@ -191,11 +191,11 @@ export default class IgcStepComponent extends LitElement {
 
   protected renderContent() {
     return html`<div
+      id="igc-step-content-${this.index}"
       style="display: ${this.active ? 'block' : 'none'}"
       part="${partNameMap(this.bodyParts)}"
       role="tabpanel"
-      id="igc-content-${this.index}"
-      aria-labelledby="igc-step-${this.index}"
+      aria-labelledby="igc-step-header-${this.index}"
     >
       <div part="content">
         <slot></slot>
@@ -208,11 +208,11 @@ export default class IgcStepComponent extends LitElement {
       <div part="${partNameMap(this.headerContainerParts)}">
         <div
           part="header"
-          @click=${this.handleClick}
-          @keydown=${this.handleKeydown}
           tabindex="${this.active ? '0' : '-1'}"
           role="tab"
           aria-selected="${this.active}"
+          @click=${this.handleClick}
+          @keydown=${this.handleKeydown}
         >
           ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
         </div>

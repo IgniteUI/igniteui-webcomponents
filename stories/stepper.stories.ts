@@ -83,13 +83,14 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       <igc-step id="asd">
         <span slot="title">Title</span>
         <!-- <span slot="subtitle">subtitle</span> -->
-        <span tabindex="0">
-          Ut fermentum convallis odio nec suscipit. Quisque tempor, odio euismod
-          aliquam dapibus, mi risus facilisis arcu, vitae dapibus massa orci non
-          nisl. Quisque neque dolor, egestas vitae lectus non, eleifend gravida
-          erat. Curabitur gravida malesuada arcu, non fermentum tortor porta
-          luctus. Nulla sagittis massa sit amet ipsum sagittis efficitur. In
-          volutpat cursus sapien et scelerisque. Praesent egestas velit vel
+        <span>
+          NOT FOCUSABLE CONTENT Ut fermentum convallis odio nec suscipit.
+          Quisque tempor, odio euismod aliquam dapibus, mi risus facilisis arcu,
+          vitae dapibus massa orci non nisl. Quisque neque dolor, egestas vitae
+          lectus non, eleifend gravida erat. Curabitur gravida malesuada arcu,
+          non fermentum tortor porta luctus. Nulla sagittis massa sit amet ipsum
+          sagittis efficitur. In volutpat cursus sapien et scelerisque. Praesent
+          egestas velit vel
         </span>
         <input />
         <button>Asd</button>
@@ -97,33 +98,33 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       <igc-step active>
         <span slot="title">Long title Ut fermentum convallis</span>
         <span slot="subtitle">Long subtitle Ut fermentum</span>
-        <span
-          >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
-          Curabitur gravida malesuada arcu, non fermentum tortor porta luctus.
-          Nulla sagittis massa sit amet ipsum sagittis efficitur. In volutpat
-          cursus sapien et scelerisque. Praesent egestas velit vel</span
-        >
-        <input />
-      </igc-step>
-      <igc-step>
-        <span slot="indicator"><igc-icon name="home"></igc-icon></span>
-        <!-- <span slot="title"> Title 3 </span> -->
-        <span slot="subtitle">subtitle</span>
-        <span
-          >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
-          Curabitur gravida malesuada arcu,
-        </span>
-        <input />
+        <div tabindex="0">
+          FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
+          eleifend gravida erat. Curabitur gravida malesuada arcu, non fermentum
+          tortor porta luctus. Nulla sagittis massa sit amet ipsum sagittis
+          efficitur. In volutpat cursus sapien et scelerisque. Praesent egestas
+          velit vel
+          <input />
+        </div>
       </igc-step>
       <igc-step>
         <span slot="indicator"><igc-icon name="home"></igc-icon></span>
         <!-- <span slot="title"> Title 3 </span> -->
         <!-- <span slot="subtitle">subtitle</span> -->
         <span
-          >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
-          Curabitur gravida malesuada arcu,
+          >NOT FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
+          eleifend gravida erat. Curabitur gravida malesuada arcu,
         </span>
-        <input />
+      </igc-step>
+      <igc-step>
+        <span slot="indicator"><igc-icon name="home"></igc-icon></span>
+        <!-- <span slot="title"> Title 4 </span> -->
+        <span slot="subtitle">subtitle</span>
+        <div tabindex="0">
+          FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
+          eleifend gravida erat. Curabitur gravida malesuada arcu,
+          <input />
+        </div>
       </igc-step>
     </igc-stepper>
     <p>Test Bottom Content</p>
