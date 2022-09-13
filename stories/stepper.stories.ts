@@ -82,7 +82,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
     >
       <igc-step id="asd">
         <span slot="title">Title</span>
-        <span slot="sub-title">subtitle</span>
+        <!-- <span slot="subtitle">subtitle</span> -->
         <span tabindex="0">
           Ut fermentum convallis odio nec suscipit. Quisque tempor, odio euismod
           aliquam dapibus, mi risus facilisis arcu, vitae dapibus massa orci non
@@ -96,7 +96,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       </igc-step>
       <igc-step active>
         <span slot="title">Long title Ut fermentum convallis</span>
-        <span slot="sub-title">Long subtitle Ut fermentum</span>
+        <span slot="subtitle">Long subtitle Ut fermentum</span>
         <span
           >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
           Curabitur gravida malesuada arcu, non fermentum tortor porta luctus.
@@ -107,8 +107,18 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       </igc-step>
       <igc-step>
         <span slot="indicator"><igc-icon name="home"></igc-icon></span>
-        <span slot="title"> Title 3 </span>
-        <span slot="sub-title">subtitle</span>
+        <!-- <span slot="title"> Title 3 </span> -->
+        <span slot="subtitle">subtitle</span>
+        <span
+          >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
+          Curabitur gravida malesuada arcu,
+        </span>
+        <input />
+      </igc-step>
+      <igc-step>
+        <span slot="indicator"><igc-icon name="home"></igc-icon></span>
+        <!-- <span slot="title"> Title 3 </span> -->
+        <!-- <span slot="subtitle">subtitle</span> -->
         <span
           >Quisque neque dolor, egestas vitae lectus non, eleifend gravida erat.
           Curabitur gravida malesuada arcu,

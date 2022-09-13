@@ -186,6 +186,22 @@ export default class IgcStepperComponent extends SizableMixin(
       ) {
         return;
       }
+      if (
+        key === 'tab' &&
+        event.shiftKey &&
+        this.activeStep.index < focusedStep.index
+      ) {
+        // skip the active step in chrome
+        this.activeStep.setAttribute('inert', 'inert');
+        // skip the active step in firefox
+        this.activeStep.setAttribute('tabindex', '-1');
+
+        setTimeout(() => {
+          this.activeStep.removeAttribute('inert');
+          this.activeStep.removeAttribute('tabindex');
+        });
+        return;
+      }
       if (key === 'tab' && event.shiftKey) {
         return;
       }

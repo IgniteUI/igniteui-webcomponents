@@ -1,5 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { styles } from '../stepper/themes/step/step.base.css.js';
 import { themes } from '../../theming';
 import { partNameMap } from '../common/util.js';
@@ -12,6 +12,12 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   public static override styles = styles;
+
+  @queryAssignedElements({ slot: 'title' })
+  private _title!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'subtitle' })
+  private _subTitle!: Array<HTMLElement>;
 
   @query('[part~="header"]')
   public header!: HTMLElement;
@@ -142,7 +148,8 @@ export default class IgcStepComponent extends LitElement {
   private get headerContainerParts() {
     return {
       'header-container': true,
-      disabled: this.isAccessible,
+      disabled: !this.isAccessible,
+      completed: this.complete,
       optional: this.optional,
       'active-header': this.active,
       invalid:
@@ -155,6 +162,13 @@ export default class IgcStepComponent extends LitElement {
       end:
         this.titlePosition === 'end' ||
         (this.orientation === 'vertical' && !this.titlePosition),
+    };
+  }
+
+  private get textParts() {
+    return {
+      text: true,
+      empty: !this._title.length && !this._subTitle.length,
     };
   }
 
@@ -183,12 +197,12 @@ export default class IgcStepComponent extends LitElement {
   protected renderTitleAndSubtitle() {
     if (this.stepType !== 'indicator') {
       return html`
-        <div part="text">
+        <div part="${partNameMap(this.textParts)}">
           <div part="title">
             <slot name="title"></slot>
           </div>
           <div part="subtitle">
-            <slot name="sub-title"></slot>
+            <slot name="subtitle"></slot>
           </div>
         </div>
       `;
