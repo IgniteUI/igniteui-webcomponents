@@ -143,16 +143,31 @@ export default class IgcStepperComponent extends SizableMixin(
 
   constructor() {
     super();
+
     this.addEventListener('stepActiveChanged', (event: any) => {
       event.stopPropagation();
       this.activateStep(event.target, event.detail);
     });
+
     this.addEventListener('stepInvalidStateChanged', (event: any) => {
       event.stopPropagation();
       if (this.linear) {
         this.calculateLinearDisabledSteps();
       }
     });
+
+    this.addEventListener('stepCompleteChanged', (event: any) => {
+      event.stopPropagation();
+      const nextStep = this.steps[event.target.index + 1];
+      if (nextStep) {
+        if (event.target.complete) {
+          nextStep.header.parentElement?.part.add('complete-end');
+        } else {
+          nextStep.header.parentElement?.part.remove('complete-end');
+        }
+      }
+    });
+
     this.addEventListener('stepHeaderKeydown', (event: any) => {
       event.stopPropagation();
       this.handleKeydown(event.detail.event, event.detail.focusedStep);

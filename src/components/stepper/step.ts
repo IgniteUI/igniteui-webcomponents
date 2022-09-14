@@ -101,6 +101,23 @@ export default class IgcStepComponent extends LitElement {
     );
   }
 
+  @watch('complete', { waitUntilFirstUpdate: true })
+  public completeChange() {
+    this.dispatchEvent(
+      new CustomEvent('stepCompleteChanged', { bubbles: true })
+    );
+  }
+
+  protected override async firstUpdated() {
+    await this.updateComplete;
+
+    if (this.complete) {
+      this.dispatchEvent(
+        new CustomEvent('stepCompleteChanged', { bubbles: true })
+      );
+    }
+  }
+
   protected handleClick(event: MouseEvent): void {
     event.stopPropagation();
     if (!this.disabled) {
@@ -127,7 +144,7 @@ export default class IgcStepComponent extends LitElement {
     return {
       'header-container': true,
       disabled: !this.isAccessible,
-      completed: this.complete,
+      'complete-start': this.complete,
       optional: this.optional,
       'active-header': this.active,
       invalid:
@@ -146,7 +163,10 @@ export default class IgcStepComponent extends LitElement {
   private get textParts() {
     return {
       text: true,
-      empty: !this._titleChildren.length && !this._subTitleChildren.length,
+      empty:
+        this.stepType === 'full' &&
+        !this._titleChildren.length &&
+        !this._subTitleChildren.length,
     };
   }
 

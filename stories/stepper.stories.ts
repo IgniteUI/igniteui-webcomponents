@@ -80,7 +80,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       .size=${size}
       .dir=${direction}
     >
-      <igc-step id="asd">
+      <igc-step id="asd" complete>
         <span slot="title">Title</span>
         <!-- <span slot="subtitle">subtitle</span> -->
         <span>
