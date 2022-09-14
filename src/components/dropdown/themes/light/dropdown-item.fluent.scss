@@ -1,14 +1,9 @@
 @use '../../../../styles/utilities' as *;
 
 $selected-item-color: var(--selected-item-color, contrast-color(gray, 200)) !default;
-$padding-sm: var(--igc-spacing-small);
-$padding-md: var(--igc-spacing-medium);
-$padding-lg: var(--igc-spacing-large);
 
 :host {
-    --spacing: #{sizable($padding-sm, $padding-md, $padding-lg)};
-
-    padding: var(--spacing);
+    padding: pad(2px, 4px, 8px);
 }
 
 :host(:hover),

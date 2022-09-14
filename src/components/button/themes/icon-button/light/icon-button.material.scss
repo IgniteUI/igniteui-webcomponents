@@ -1,16 +1,13 @@
 @use '../../../../../styles/utilities' as *;
 
-$padding-sm: calc(var(--igc-spacing-small) * 3);
-$padding-md: calc(var(--igc-spacing-medium) * 1.5);
-
 :host {
     --size: #{sizable(rem(24px), rem(30px), rem(36px))};
-    --spacing: #{sizable($padding-sm, $padding-md)};
 }
 
 [part='base'] {
     width: var(--size);
     height: var(--size);
+    padding: pad(6px);
 }
 
 :host([variant='contained']) {

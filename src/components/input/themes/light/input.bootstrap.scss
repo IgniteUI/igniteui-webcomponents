@@ -16,8 +16,6 @@ $input-background: var(--input-background, #fff) !default;
 
 :host {
     --size: #{sizable(rem(31px), rem(38px), rem(48px))};
-    --spacing-inline: #{sizable(rem(8px), rem(12px), rem(16px))};
-    --spacing-block: #{sizable(rem(4px), rem(6px), rem(8px))};
     --font: #{sizable(rem(14px), rem(16px), rem(20px))};
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
 
@@ -43,8 +41,8 @@ $input-background: var(--input-background, #fff) !default;
 
         height: var(--size);
         font-size: var(--input-font);
-        padding-inline: var(--spacing-inline);
-        padding-block: var(--spacing-block);
+        padding-inline: pad-inline(8px, 12px, 16px);
+        padding-block: pad-block(4px, 6px, 8px);
         background: inherit;
         box-shadow: 0 0 0 0 transparent;
         z-index: 1;
@@ -86,8 +84,8 @@ $input-background: var(--input-background, #fff) !default;
         background: color(gray, 300);
         transition: box-shadow .15s ease-out, border .15s ease-out;
         font-size: var(--font);
-        padding-inline: var(--spacing-inline);
-        padding-block: var(--spacing-block);
+        padding-inline: pad-inline(8px, 12px, 16px);
+        padding-block: pad-block(4px, 6px, 8px);
 
         &:focus-within {
             box-shadow: 0 0 0 rem(4px) color(gray, 300, .38);

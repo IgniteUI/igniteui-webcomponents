@@ -1,13 +1,8 @@
 @use '../../../../../styles/common/component';
 @use '../../../../../styles/utilities' as *;
 
-$padding-sm: calc(var(--igc-spacing-small) * 4);
-$padding-md: calc(var(--igc-spacing-medium) * 1.25);
-$padding-lg: calc(var(--igc-spacing-large) * .75);
-
 :host {
     --icon-size: #{sizable(rem(16px), rem(20px), rem(24px))};
-    --spacing: #{sizable($padding-sm, $padding-md, $padding-lg)};
 
     display: inline-flex;
     vertical-align: middle;
@@ -33,7 +28,7 @@ slot {
     border: none;
     outline-style: none;
     background: transparent;
-    padding: var(--spacing);
+    padding: pad(4px, 5px, 6px);
     color: color(gray, 900);
     user-select: none;
     -webkit-tap-highlight-color: transparent;
