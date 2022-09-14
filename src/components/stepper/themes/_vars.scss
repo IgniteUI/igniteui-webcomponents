@@ -14,3 +14,4 @@ $indicator-box-shadow-size: #{rem(1px)};
 $separator-size: #{rem(1px)};
 $separator-position: calc(($padding) + ($indicator-size / 2) - ($separator-size / 2));
 $separator-color: color(gray, 300);
+$separator-color--solid: color(gray, 900);
