@@ -57,6 +57,10 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   @property({ attribute: false })
+  public previousComplete = false;
+
+  /** @private */
+  @property({ attribute: false })
   public stepType: 'indicator' | 'title' | 'full' = 'full';
 
   /** @private */
@@ -145,6 +149,7 @@ export default class IgcStepComponent extends LitElement {
       'header-container': true,
       disabled: !this.isAccessible,
       'complete-start': this.complete,
+      'complete-end': this.previousComplete,
       optional: this.optional,
       'active-header': this.active,
       invalid:

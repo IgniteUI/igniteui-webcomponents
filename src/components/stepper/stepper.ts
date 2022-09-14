@@ -160,11 +160,7 @@ export default class IgcStepperComponent extends SizableMixin(
       event.stopPropagation();
       const nextStep = this.steps[event.target.index + 1];
       if (nextStep) {
-        if (event.target.complete) {
-          nextStep.header.parentElement?.part.add('complete-end');
-        } else {
-          nextStep.header.parentElement?.part.remove('complete-end');
-        }
+        nextStep.previousComplete = event.target.complete;
       }
     });
 
