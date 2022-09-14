@@ -15,8 +15,6 @@
     grid-template-columns: repeat(var(--steps-count), 1fr);
     overflow: hidden;
 
-    --step-separator-position: #{$separator-position};
-
     ::slotted(igc-step) {
         grid-row-start: 1;
         grid-column: 1 / -1;
@@ -58,4 +56,17 @@
 
 ::slotted(igc-step:first-of-type) {
     --step-hide-first-of-type: none;
+}
+
+:host(:not([step-type='full'])) {
+    ::slotted(igc-step) {
+        --step-hide-full-before-after: none;
+        --step-not-full-header-aligmnet: center;
+    }
+}
+
+:host([step-type='full']) {
+    ::slotted(igc-step) {
+        --step-separator-position: #{$separator-position};
+    }
 }
