@@ -1,8 +1,6 @@
 @use '../../../../../styles/common/component';
 @use '../../../../../styles/utilities' as *;
 
-$slot-spacing: var(--igc-spacing-large);
-
 :host {
     --size: #{sizable(rem(24px), rem(30px), rem(36px))};
 
@@ -68,11 +66,11 @@ $slot-spacing: var(--igc-spacing-large);
 }
 
 [name='prefix']::slotted(*) {
-    margin-inline-end: $slot-spacing;
+    margin-inline-end: pad(8px);
 }
 
 [name='suffix']::slotted(*) {
-    margin-inline-start: $slot-spacing;
+    margin-inline-start: pad(8px);
 }
 
 span[part='prefix'],

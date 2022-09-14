@@ -35,11 +35,11 @@
 }
 
 [name='start']::slotted(*) {
-    margin-inline-end: calc(var(--igc-spacing-large) * 2);
+    margin-inline-end: pad(16px);
 }
 
 [name='end']::slotted(*) {
-    margin-inline-start: calc(var(--igc-spacing-large) * 2);
+    margin-inline-start: pad(16px);
 }
 
 [part='title'] {
