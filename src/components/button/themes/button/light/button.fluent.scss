@@ -3,17 +3,14 @@
 $text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
 $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
 $active-background: var(--active-background, #{utils.color(primary, 700)}) !default;
-$padding-sm: calc(var(--igc-spacing-small) * 4);
-$padding-md: calc(var(--igc-spacing-medium) * 4);
-$padding-lg: calc(var(--igc-spacing-large) * 2);
 
 :host {
     --size: #{utils.sizable(utils.rem(24px), utils.rem(32px), utils.rem(38px))};
-    --spacing: #{utils.sizable($padding-sm, $padding-md, $padding-lg)};
 }
 
 [part='base'] {
     @include utils.border-radius(utils.rem(2px));
+    padding: 0 utils.pad(8px, 16px, 16px);
 }
 
 // FLAT

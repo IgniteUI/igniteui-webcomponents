@@ -1,32 +1,32 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-$size: rem(20px);
-
 svg {
     height: 100%;
     width: 100%;
 }
 
 :host {
+    --size: #{sizable(rem(16px), rem(20px), rem(24px))};
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: var(--size, $size);
-    height: var(--size, $size);
+    width: var(--size);
+    height: var(--size);
     fill: currentcolor;
 }
 
 :host([size='small']) {
-    --size: #{rem(16px)};
+    --component-size: var(--ig-size, var(--ig-size-small));
 }
 
 :host([size='medium']) {
-    --size: #{$size};
+    --component-size: var(--ig-size, var(--ig-size-medium));
 }
 
 :host([size='large']) {
-    --size: #{rem(24px)};
+    --component-size: var(--ig-size, var(--ig-size-large));
 }
 
 :host([mirrored]) {

@@ -1,86 +1,82 @@
-@use '../../../../../styles/utilities' as utils;
-
-$padding-sm: calc(var(--igc-spacing-small) * 3.75);
-$padding-md: calc(var(--igc-spacing-medium) * 2.25);
-$padding-lg: calc(var(--igc-spacing-large) * 1.5);
+@use '../../../../../styles/utilities' as *;
 
 :host {
-    --size: #{utils.sizable(utils.rem(31px), utils.rem(38px), utils.rem(48px))};
-    --spacing: #{utils.sizable($padding-sm, $padding-md, $padding-lg)};
+    --size: #{sizable(rem(31px), rem(38px), rem(48px))};
 }
 
 [part='base'] {
-    @include utils.border-radius(utils.rem(4px));
+    @include border-radius(rem(4px));
 
     width: var(--size);
     height: var(--size);
     transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
-    color: #{utils.color(primary, 500)};
+    color: #{color(primary, 500)};
+    padding: pad(7.5px, 9px, 12px);
 
     &:hover {
-        color: #{utils.color(primary, 800)};
+        color: #{color(primary, 800)};
     }
 
     &:focus,
     &:active {
-        color: #{utils.color(primary, 600)};
-        background: #{utils.color(gray, 100)};
+        color: #{color(primary, 600)};
+        background: #{color(gray, 100)};
         box-shadow: none;
     }
 }
 
 :host([variant='contained']) {
     [part='base'] {
-        color: #{utils.contrast-color(primary, 600)};
-        background: #{utils.color(primary, 500)};
+        color: #{contrast-color(primary, 600)};
+        background: #{color(primary, 500)};
 
         &:hover {
-            background: #{utils.color(primary, 600)};
+            background: #{color(primary, 600)};
         }
 
         &:focus,
         &:active {
-            background: #{utils.color(primary, 600)};
-            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
+            background: #{color(primary, 600)};
+            box-shadow: 0 0 0 rem(4px) color(primary, 200, .5);
         }
     }
 }
 
 :host([variant='outlined']) {
     [part='base'] {
-        box-shadow: 0 0 0 utils.rem(1px) utils.color(primary, 500);
+        box-shadow: 0 0 0 rem(1px) color(primary, 500);
 
         &:hover {
-            color: #{utils.contrast-color(primary, 600)};
-            background: #{utils.color(primary, 600)};
+            color: #{contrast-color(primary, 600)};
+            background: #{color(primary, 600)};
         }
 
         &:focus,
         &:active {
-            color: #{utils.contrast-color(primary, 600)};
-            background: #{utils.color(primary, 600)};
-            box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 200, .5);
+            color: #{contrast-color(primary, 600)};
+            background: #{color(primary, 600)};
+            box-shadow: 0 0 0 rem(4px) color(primary, 200, .5);
         }
     }
 }
 
 :host([disabled]) {
     [part='base'] {
-        color: #{utils.color(primary, 100)};
+        color: #{color(primary, 100)};
         background: transparent;
     }
 }
 
 :host([disabled][variant='contained']) {
     [part='base'] {
-        background: #{utils.color(primary, 100)};
-        color: #{utils.color(primary, 300)};
+        background: #{color(primary, 100)};
+        color: #{color(primary, 300)};
     }
 }
 
 :host([disabled][variant='outlined']) {
     [part='base'] {
-        color: #{utils.color(primary, 100)};
-        box-shadow: 0 0 0 utils.rem(1px) utils.color(primary, 100);
+        color: #{color(primary, 100)};
+        box-shadow: 0 0 0 rem(1px) color(primary, 100);
     }
 }

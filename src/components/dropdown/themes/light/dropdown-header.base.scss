@@ -12,6 +12,8 @@ $header-color: var(--header-color, color(secondary, 500)) !default;
     position: relative;
     color: $header-color;
     pointer-events: none;
+    padding-inline: pad-inline(4px, 8px, 16px);
+    padding-block: pad-block(2px, 4px, 8px);
 }
 
 ::slotted(*) {
