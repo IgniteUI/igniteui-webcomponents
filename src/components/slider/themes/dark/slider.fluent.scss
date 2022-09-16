@@ -2,11 +2,11 @@
 
 @mixin theme() {
     igc-slider {
-        --inactive-background: #{color(gray, 100)};
-        --fill-background: #{color(gray, 400)};
+        --inactive-background: #{color(gray, 300)};
+        --fill-background: #{color(gray, 600)};
         --thumb-border: #{color(gray, 400)};
         --fill-hover-background: #{color(primary, 300)};
-        --thumb-hover-border: #{color(primary, 300)};
+        --thumb-hover-border: #{color(primary, 100)};
         --inactive-disabled-background: #{color(gray, 100)};
         --fill-disabled-background: #{color(gray, 300)};
         --thumb-disabled-border: #{color(gray, 200)};
