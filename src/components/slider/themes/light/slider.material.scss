@@ -23,7 +23,7 @@ $thumb-radius: math.div($thumb-size, 2);
     color: color(secondary, 200);
 }
 
-[part='thumb'] {
+[part~='thumb'] {
     width: $thumb-size;
     height: $thumb-size;
     top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);

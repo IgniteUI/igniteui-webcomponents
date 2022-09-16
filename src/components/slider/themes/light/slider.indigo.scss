@@ -36,7 +36,7 @@ $thumb-radius: math.div($thumb-size, 2);
     }
 }
 
-[part='thumb'] {
+[part~='thumb'] {
     width: $thumb-size;
     height: $thumb-size;
     top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
@@ -52,7 +52,7 @@ $thumb-radius: math.div($thumb-size, 2);
 }
 
 :host([disabled]) {
-    [part='thumb'],
+    [part~='thumb'],
     [part='fill'],
     [part='inactive'] {
         background: color(gray, 300);

@@ -28,7 +28,7 @@ defineComponents(IgcSliderLabelComponent);
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;
 
-  @query(`[part='thumb']`)
+  @query(`[part~='thumb']`)
   protected thumb!: HTMLElement;
 
   @queryAssignedElements({ selector: 'igc-slider-label' })
@@ -246,6 +246,15 @@ export class IgcSliderBaseComponent extends LitElement {
   public override connectedCallback() {
     super.connectedCallback();
     this.normalizeValue();
+    this.addEventListener('keyup', this.handleKeyUp);
+  }
+
+  public override disconnectedCallback() {
+    this.removeEventListener('keyup', this.handleKeyUp);
+  }
+
+  protected handleKeyUp() {
+    this.activeThumb?.part.add('focused');
   }
 
   protected handleSlotChange() {
@@ -437,6 +446,7 @@ export class IgcSliderBaseComponent extends LitElement {
     this.pointerCaptured = true;
     this.showThumbLabels();
     event.preventDefault();
+    this.activeThumb?.part.remove('focused');
   };
 
   private pointerMove = (event: PointerEvent) => {
@@ -569,7 +579,10 @@ export class IgcSliderBaseComponent extends LitElement {
         @pointerenter=${this.handleThumbPointerEnter}
         @pointerleave=${this.handleThumbPointerLeave}
         @focus=${(ev: Event) => (this.activeThumb = ev.target as HTMLElement)}
-        @blur=${() => (this.activeThumb = undefined)}
+        @blur=${() => (
+          this.activeThumb?.part.remove('focused'),
+          (this.activeThumb = undefined)
+        )}
       ></div>
       ${this.hideTooltip
         ? html``
