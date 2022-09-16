@@ -28,7 +28,7 @@ defineComponents(IgcSliderLabelComponent);
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;
 
-  @query(`[part='thumb']`)
+  @query(`[part~='thumb']`)
   protected thumb!: HTMLElement;
 
   @queryAssignedElements({ selector: 'igc-slider-label' })
@@ -45,10 +45,10 @@ export class IgcSliderBaseComponent extends LitElement {
   protected activeThumb?: HTMLElement;
 
   @state()
-  private thumbLabelsVisible = false;
+  protected thumbLabelsVisible = false;
 
   @state()
-  private labels?: string[];
+  protected labels?: string[];
 
   public set min(value: number) {
     if (value < this.max) {
@@ -246,6 +246,15 @@ export class IgcSliderBaseComponent extends LitElement {
   public override connectedCallback() {
     super.connectedCallback();
     this.normalizeValue();
+    this.addEventListener('keyup', this.handleKeyUp);
+  }
+
+  public override disconnectedCallback() {
+    this.removeEventListener('keyup', this.handleKeyUp);
+  }
+
+  protected handleKeyUp() {
+    this.activeThumb?.part.add('focused');
   }
 
   protected handleSlotChange() {
@@ -284,13 +293,13 @@ export class IgcSliderBaseComponent extends LitElement {
   /* c8 ignore next */
   protected emitChangeEvent() {}
 
-  private get actualMin(): number {
+  protected get actualMin(): number {
     return typeof this.lowerBound === 'number'
       ? (this.lowerBound as number)
       : this.min;
   }
 
-  private get actualMax(): number {
+  protected get actualMax(): number {
     return typeof this.upperBound === 'number'
       ? (this.upperBound as number)
       : this.max;
@@ -303,7 +312,7 @@ export class IgcSliderBaseComponent extends LitElement {
     return value;
   }
 
-  private formatValue(value: number) {
+  protected formatValue(value: number) {
     return this.valueFormat
       ? this.valueFormat.replace(
           '{0}',
@@ -437,6 +446,7 @@ export class IgcSliderBaseComponent extends LitElement {
     this.pointerCaptured = true;
     this.showThumbLabels();
     event.preventDefault();
+    this.activeThumb?.part.remove('focused');
   };
 
   private pointerMove = (event: PointerEvent) => {
@@ -507,11 +517,11 @@ export class IgcSliderBaseComponent extends LitElement {
     }
   };
 
-  private handleThumbPointerEnter = () => {
+  protected handleThumbPointerEnter = () => {
     this.showThumbLabels();
   };
 
-  private handleThumbPointerLeave = () => {
+  protected handleThumbPointerLeave = () => {
     this.hideThumbLabels();
   };
 
@@ -569,7 +579,10 @@ export class IgcSliderBaseComponent extends LitElement {
         @pointerenter=${this.handleThumbPointerEnter}
         @pointerleave=${this.handleThumbPointerLeave}
         @focus=${(ev: Event) => (this.activeThumb = ev.target as HTMLElement)}
-        @blur=${() => (this.activeThumb = undefined)}
+        @blur=${() => (
+          this.activeThumb?.part.remove('focused'),
+          (this.activeThumb = undefined)
+        )}
       ></div>
       ${this.hideTooltip
         ? html``

@@ -6,6 +6,10 @@
 
     display: inline-flex;
     vertical-align: middle;
+
+    ::slotted(span) {
+        display: inline-flex;
+    }
 }
 
 :host([size='small']) {

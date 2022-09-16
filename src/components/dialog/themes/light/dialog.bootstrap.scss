@@ -1,0 +1,34 @@
+@use '../../../../styles/utilities' as *;
+
+$border-color: var(--border-color, color(gray, 300));
+
+:host {
+    border-radius: border-radius(4px);
+}
+
+[part='base'] {
+    min-width: rem(288px);
+    border: 1px solid $border-color;
+    box-shadow: none;
+}
+
+[part='title'],
+[part='footer'] {
+    @include type-style('h5') {
+        margin: 0;
+    }
+
+    padding: rem(16px);
+}
+
+[part='content'] {
+    padding: rem(16px);
+}
+
+[part='title'] {
+    border-block-end: 1px solid $border-color;
+}
+
+[part='footer'] {
+    border-block-start: 1px solid $border-color;
+}

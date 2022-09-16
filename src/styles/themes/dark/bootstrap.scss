@@ -1,5 +1,6 @@
 @use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/bootstrap' as base;
+@use '../third-party/grid/bootstrap.dark' as grid;
 @use '../../../components/dropdown/themes/dark/dropdown.bootstrap' as dropdown;
 @use '../../../components/input/themes/dark/input.dark.bootstrap' as input;
 @use '../../../components/slider/themes/dark/slider.bootstrap' as slider;
@@ -17,3 +18,4 @@
 @include tree-item.theme();
 @include nav-drawer-item.theme();
 @include select.theme();
+@include grid.theme();
