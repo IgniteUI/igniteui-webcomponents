@@ -142,13 +142,12 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     await this.updateComplete;
 
-    this.activeTab = this.tabs.find((tab) => tab.selected);
-    this.updateSelectedTab();
     this.syncAttributes();
     this.setupObserver();
     this.setSelectedTab(
       this.tabs.filter((tab) => tab.selected).at(-1) ?? this.enabledTabs.at(0)
     );
+    this.updateSelectedTab();
   }
 
   public override disconnectedCallback() {
