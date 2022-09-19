@@ -282,7 +282,7 @@ export default class IgcStepperComponent extends SizableMixin(
 
   private activateFirstStep() {
     const firstEnabledStep = this.steps.find(
-      (s: IgcStepComponent) => !s.disabled
+      (s: IgcStepComponent) => s.isAccessible
     );
     if (firstEnabledStep) {
       this.activateStep(firstEnabledStep, false);
@@ -411,6 +411,8 @@ export default class IgcStepperComponent extends SizableMixin(
       this.steps.forEach((step: IgcStepComponent) => {
         if (step.index > this.activeStep.index) {
           step.linearDisabled = true;
+        } else {
+          step.linearDisabled = false;
         }
       });
     }
@@ -424,6 +426,8 @@ export default class IgcStepperComponent extends SizableMixin(
         } else {
           step.linearDisabled = true;
         }
+      } else {
+        step.linearDisabled = false;
       }
     });
   }
@@ -444,6 +448,12 @@ export default class IgcStepperComponent extends SizableMixin(
   protected stepsChanged(): void {
     this.style.setProperty('--steps-count', this.steps.length.toString());
     this.syncProperties();
+
+    // when the active step is removed
+    const hasActiveStep = this.steps.find((s) => s === this.activeStep);
+    if (!hasActiveStep) {
+      this.activateFirstStep();
+    }
   }
 
   protected override render() {

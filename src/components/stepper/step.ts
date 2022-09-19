@@ -124,7 +124,7 @@ export default class IgcStepComponent extends LitElement {
 
   protected handleClick(event: MouseEvent): void {
     event.stopPropagation();
-    if (!this.disabled) {
+    if (this.isAccessible) {
       this.dispatchEvent(
         new CustomEvent('stepActiveChanged', { bubbles: true, detail: true })
       );
