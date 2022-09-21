@@ -1,0 +1,36 @@
+@use '../../../../../styles/utilities/index' as *;
+
+:host {
+    --indicator-box-shadow-size: #{rem(2px)};
+    --separator-size: #{rem(2px)};
+
+    // separator
+    --separator-color: #{color(gray, 300)};
+    --separator-color--completed: #{color(primary, 500)};
+    --separator-type: solid;
+
+    // uncompleted
+    --indicator-color: #{color(primary, 500)};
+    --indicator-background: #{color(gray, 50, 0)};
+    --indicator-shadow: #{color(gray, 300)};
+
+    // optional
+    --optional-indicator-color: var(--indicator-color);
+    --optional-indicator-background: var(--indicator-background);
+    --optional-indicator-shadow: var(--indicator-shadow);
+
+    // completed
+    --completed-indicator-color: var(--indicator-color);
+    --completed-indicator-background: #{color(primary, 100)};
+    --completed-indicator-shadow: var(--completed-indicator-background);
+
+    // Current
+    --active-indicator-color: #{contrast-color(primary, 800)};
+    --active-indicator-background: #{color(primary, 500)};
+    --active-indicator-shadow: var(--active-indicator-background);
+
+    // disabled
+    --disabled-color: #{color(gray, 500)};
+    --disabled-background: #{color(gray, 50, 0)};
+    --disabled-shadow: #{color(gray, 200)};
+}

@@ -1,0 +1,43 @@
+@use '../../../../../styles/utilities/index' as *;
+
+:host {
+    --header-gap: #{rem(8px)};
+    --header-padding: #{rem(8px)};
+    --indicator-size: #{rem(40px)};
+    --indicator-roundness: #{rem(4px)};
+    --separator-size: #{rem(8px)};
+
+    // $separator-position: calc(($header-padding) + ($indicator-size / 2) - ($separator-size / 2));
+    --separator-color: #{color(gray, 300)};
+    --separator-color--completed: #{color(primary, 500)};
+    --separator-type: solid;
+    --indicator-box-shadow-size: #{rem(1px)};
+
+    // Header
+    --header-background--hover: #{color(gray, 300, .5)};
+    --header-background--focus: var(--header-background--hover);
+    --header-shadow: #{color(gray, 300)};
+
+    // uncompleted
+    --indicator-color: #{color(primary, 500)};
+    --indicator-background: #{color(gray, 50, 0)};
+    --indicator-shadow: #{color(gray, 400)};
+
+    // optional
+    --optional-indicator-color: var(--indicator-color);
+    --optional-indicator-background: var(--indicator-background);
+    --optional-indicator-shadow: var(--indicator-shadow);
+
+    // completed
+    --completed-indicator-color: #{contrast-color(gray, 50)};
+    --completed-indicator-background: #{color(gray, 400)};
+    --completed-indicator-shadow: #{color(gray, 400)};
+
+    // active
+    --active-title-color: #{color(primary, 500)};
+    --active-subtitle-color: var(--active-title-color);
+
+    // disabled
+    --disabled-background: #{color(gray, 50, 0)};
+    --disabled-shadow: #{color(gray, 300)};
+}

@@ -1,72 +1,114 @@
 @use '../../../../styles/common/component';
-@use '../vars' as *;
+@use '../step/base-vars' as *;
 
+// STEPPER
 :host {
     font-family: var(--igc-font-family);
+}
+
+// TITLE POSITION [START,END]
+:host([title-position='start']),
+:host([title-position='end']) {
+    --step-min-width: #{rem(80px)};
+}
+
+// STEPPER [HORIZONTAL]
+:host([orientation='horizontal']) {
+    --horizontal-content-disply: block;
+    --vertical-separator-visibility: none;
+    --horizontal-body-padding: #{rem(8px)};
+
+    display: grid;
+    grid-template-columns: repeat(var(--steps-count), minmax(var(--step-min-width), 1fr));
 
     ::slotted(igc-step) {
         // display: contents make all direct children of the step to behave like they are direct children of the stepper
         display: contents;
-    }
-}
-
-:host([orientation='horizontal']) {
-    display: grid;
-    grid-template-columns: repeat(var(--steps-count), 1fr);
-    overflow: hidden;
-
-    ::slotted(igc-step) {
-        grid-row-start: 1;
-        grid-column: 1 / -1;
         pointer-events: none;
 
-        --text-width: 100%;
         --align-text: center;
         --align-items: center;
     }
-}
 
-:host([content-top]) {
-    ::slotted(igc-step) {
-        --header-position-in-grid: 2;
-        --body-position-in-grid: 1 / 2;
+    // FIRST STEP
+    ::slotted(igc-step:first-of-type) {
+        --horizontal-separator-visibility--first-of-type: none;
+    }
 
-        align-items: flex-end;
+    // LAST STEP
+    ::slotted(igc-step:last-of-type) {
+        --horizontal-separator-visibility--last-of-type: none;
     }
 }
 
-:host(:not([orientation='horizontal'])) {
-    display: flex;
-    flex-direction: column;
-
-    ::slotted(igc-step) {
-        --step-hide-full-before-after: none;
-        --step-hide-last-of-type: none;
-        --step-hide-first-of-type: none;
-        --step-width: 100%;
-    }
-}
-
+// LAST STEP
 ::slotted(igc-step:last-of-type) {
-    --step-hide-last-of-type: none;
     --border: 0;
 
     flex: 0;
 }
 
-::slotted(igc-step:first-of-type) {
-    --step-hide-first-of-type: none;
-}
-
+// NOT FULL HEADER
 :host(:not([step-type='full'])) {
+    --separator-disply-full: none;
+
     ::slotted(igc-step) {
-        --step-hide-full-before-after: none;
+        --header-seaparator-visibility: none;
         --step-not-full-header-aligmnet: center;
     }
 }
 
+// FULL HEADER
 :host([step-type='full']) {
     ::slotted(igc-step) {
-        --step-separator-position: #{$separator-position};
+        --step-separator-position: var(--separator-position);
+    }
+}
+
+// CONTENT TOP
+:host([content-top]) {
+    ::slotted(igc-step) {
+        --header-bottom: 2;
+        --body-top: 1;
+    }
+}
+
+// ------------------------------------------
+// STEPPER [VERTICAL]
+:host(:not([orientation='horizontal'])) {
+    --vertical-header-z-index: 2;
+    --vertical-body-disply: block;
+    --header-width-vertical: 100%;
+
+    display: block;
+
+    ::slotted(igc-step) {
+        --horizontal-separator-display: none;
+        --step-hide-last-of-type: none;
+        --step-hide-first-of-type: none;
+        --step-width: 100%;
+        --body-indent--vertical: calc(var(--header-padding) + var(--indicator-size) + var(--header-gap));
+
+        display: flex;
+        flex-direction: column;
+    }
+
+    ::slotted(igc-step:last-of-type) {
+        --hide-last-separator: none;
+    }
+}
+
+// CONTENT TOP [VERTICAL]
+:host([content-top]:not([orientation='horizontal'])) {
+    ::slotted(igc-step) {
+        flex-direction: column-reverse;
+    }
+
+    ::slotted(igc-step:first-of-type) {
+        --hide-first-separator: none;
+    }
+
+    ::slotted(igc-step:last-of-type) {
+        --hide-last-separator: block;
     }
 }

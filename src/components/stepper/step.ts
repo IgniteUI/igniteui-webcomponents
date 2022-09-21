@@ -1,11 +1,15 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { styles } from '../stepper/themes/step/step.base.css.js';
 import { themes } from '../../theming';
+import { styles } from './themes/step/light/step.base.css';
+import { styles as bootstrap } from './themes/step/light/step.bootstrap.css';
+import { styles as indigo } from './themes/step/light/step.indigo.css.js';
+import { styles as fluent } from './themes/step/light/step.fluent.css.js';
+import { styles as material } from './themes/step/light/step.material.css.js';
 import { partNameMap } from '../common/util.js';
 import { watch } from '../common/decorators';
 
-@themes({})
+@themes({ bootstrap, indigo, fluent, material })
 export default class IgcStepComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-step';
@@ -180,6 +184,14 @@ export default class IgcStepComponent extends LitElement {
       body: true,
       'active-body': this.active,
       'body-top': this.contentTop,
+      top: this.titlePosition === 'top',
+      bottom:
+        this.titlePosition === 'bottom' ||
+        (this.orientation === 'horizontal' && !this.titlePosition),
+      start: this.titlePosition === 'start',
+      end:
+        this.titlePosition === 'end' ||
+        (this.orientation === 'vertical' && !this.titlePosition),
     };
   }
 
@@ -217,7 +229,6 @@ export default class IgcStepComponent extends LitElement {
   protected renderContent() {
     return html`<div
       id="igc-step-content-${this.index}"
-      style="display: ${this.active ? 'block' : 'none'}"
       part="${partNameMap(this.bodyParts)}"
       role="tabpanel"
       aria-labelledby="igc-step-header-${this.index}"

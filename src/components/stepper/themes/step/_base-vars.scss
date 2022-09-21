@@ -1,0 +1,74 @@
+@use '../../../../styles/utilities/index' as *;
+@forward '../../../../styles/utilities/index';
+
+:host {
+    --margin: #{rem(16px)};
+    --body-padding: #{rem(16px)};
+    --header-gap: #{rem(8px)};
+    --header-padding: #{rem(8px)};
+    --header-min-width: #{rem(40px)};
+    --vertical-body-padding: var(--body-padding);
+    --step-min-width: calc(var(--header-min-width) + var(--separator-min-width));
+
+    // Indicator
+    --indicator-size: #{rem(24px)};
+    --indicator-roundness: calc(var(--indicator-size) / 2);
+    --indicator-box-shadow-size: #{rem(1px)};
+
+    // Separator
+    --separator-size: #{rem(1px)};
+    --separator-type: dashed;
+    --separator-type--completed: solid;
+    --separator-position: calc(var(--header-padding) + (var(--indicator-size) / 2) - (var(--separator-size) / 2));
+    --separator-min-width: calc(var(--header-min-width) / 2);
+    --vertical-separator: var(--separator-size) var(--separator-type) var(--separator-color);
+
+    // ===========================================
+    // COLORS
+
+    // text
+    --title-color: #{contrast-color(gray, 50)};
+    --subtitle-color: #{color(gray, 700)};
+
+    // separator
+    --separator-color: #{color(gray, 300)};
+    --separator-color--completed: #{color(gray, 900)};
+
+    // header
+    --header-color: #{contrast-color(gray, 50)};
+    --header-background--hover: #{color(gray, 200)};
+    --header-background--focus: #{color(gray, 100)};
+    --header-shadow: #{color(gray, 50, 0)};
+
+    // uncompleted
+    --indicator-color: #{color(gray, 900)};
+    --indicator-background: #{color(gray, 400)};
+    --indicator-shadow: var(--indicator-background);
+
+    // optional
+    --optional-indicator-color: var(--indicator-color);
+    --optional-indicator-background: var(--indicator-background);
+    --optional-indicator-shadow: var(--indicator-shadow);
+
+    // completed
+    --completed-indicator-color: var(--indicator-color);
+    --completed-indicator-background: var(--indicator-background);
+    --completed-indicator-shadow: var(--indicator-shadow);
+
+    // active
+    --active-indicator-color: #{contrast-color(primary, 800)};
+    --active-indicator-background: #{color(primary, 500)};
+    --active-indicator-shadow: var(--active-indicator-background);
+    --active-title-color: var(--title-color);
+    --active-subtitle-color: var(--subtitle-color);
+
+    // error
+    --error-color: #{contrast-color(error, 800)};
+    --error-background: #{color(error, 500)};
+    --error-shadow: var(--error-background);
+
+    // disabled
+    --disabled-color: #{color(gray, 500)};
+    --disabled-background: #{color(gray, 100)};
+    --disabled-shadow: var(--disabled-background);
+}
