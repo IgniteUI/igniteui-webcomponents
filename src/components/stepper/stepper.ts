@@ -157,6 +157,13 @@ export default class IgcStepperComponent extends SizableMixin(
       }
     });
 
+    this.addEventListener('stepDisabledChanged', (event: any) => {
+      event.stopPropagation();
+      if (this.linear) {
+        this.calculateLinearDisabledSteps();
+      }
+    });
+
     this.addEventListener('stepHeaderKeydown', (event: any) => {
       event.stopPropagation();
       this.handleKeydown(event.detail.event, event.detail.focusedStep);
@@ -194,6 +201,17 @@ export default class IgcStepperComponent extends SizableMixin(
   /** Activates the previous enabled step. */
   public prev(): void {
     this.moveToNextStep(false);
+  }
+
+  /**
+   * Resets the stepper to its initial state i.e. activates the first step.
+   *
+   * @remarks
+   * The steps' content will not be automatically reset.
+   */
+  public reset(): void {
+    this.steps.forEach((step) => (step.visited = false));
+    this.activateFirstStep();
   }
 
   private syncProperties(): void {
@@ -275,7 +293,7 @@ export default class IgcStepperComponent extends SizableMixin(
 
   private activateFirstStep() {
     const firstEnabledStep = this.steps.find(
-      (s: IgcStepComponent) => s.isAccessible
+      (s: IgcStepComponent) => !s.disabled
     );
     if (firstEnabledStep) {
       this.activateStep(firstEnabledStep, false);

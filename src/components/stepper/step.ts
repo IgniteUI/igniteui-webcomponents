@@ -116,12 +116,25 @@ export default class IgcStepComponent extends LitElement {
     );
   }
 
+  @watch('disabled', { waitUntilFirstUpdate: true })
+  public disabledChange() {
+    this.dispatchEvent(
+      new CustomEvent('stepDisabledChanged', { bubbles: true })
+    );
+  }
+
   protected override async firstUpdated() {
     await this.updateComplete;
 
     if (this.complete) {
       this.dispatchEvent(
         new CustomEvent('stepCompleteChanged', { bubbles: true })
+      );
+    }
+
+    if (this.disabled) {
+      this.dispatchEvent(
+        new CustomEvent('stepDisabledChanged', { bubbles: true })
       );
     }
   }
@@ -173,9 +186,11 @@ export default class IgcStepComponent extends LitElement {
     return {
       text: true,
       empty:
-        this.stepType === 'full' &&
-        !this._titleChildren.length &&
-        !this._subTitleChildren.length,
+        this.stepType === 'indicator'
+          ? true
+          : this.stepType === 'full' &&
+            !this._titleChildren.length &&
+            !this._subTitleChildren.length,
     };
   }
 
@@ -210,20 +225,16 @@ export default class IgcStepComponent extends LitElement {
   }
 
   protected renderTitleAndSubtitle() {
-    if (this.stepType !== 'indicator') {
-      return html`
-        <div part="${partNameMap(this.textParts)}">
-          <div part="title">
-            <slot name="title"></slot>
-          </div>
-          <div part="subtitle">
-            <slot name="subtitle"></slot>
-          </div>
+    return html`
+      <div part="${partNameMap(this.textParts)}">
+        <div part="title">
+          <slot name="title"></slot>
         </div>
-      `;
-    } else {
-      return nothing;
-    }
+        <div part="subtitle">
+          <slot name="subtitle"></slot>
+        </div>
+      </div>
+    `;
   }
 
   protected renderContent() {

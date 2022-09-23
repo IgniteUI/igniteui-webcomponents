@@ -113,6 +113,7 @@ export const simpleStepper = `<igc-stepper>
                                           <span>STEP 2 CONTENT</span>
                                         </igc-step>
                                         <igc-step>
+                                          <igc-icon slot="indicator" name='home'></igc-icon>
                                           <span slot="title">Step 3</span>
                                           <span>STEP 3 CONTENT</span>
                                         </igc-step>
