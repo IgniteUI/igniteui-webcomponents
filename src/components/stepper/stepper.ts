@@ -35,6 +35,8 @@ export default class IgcStepperComponent extends SizableMixin(
   /** @private */
   protected static styles = styles;
 
+  protected resizeObserver!: ResizeObserver;
+
   private activeStep!: IgcStepComponent;
 
   /** Returns all of the stepper's steps. */
@@ -179,9 +181,15 @@ export default class IgcStepperComponent extends SizableMixin(
   protected override async firstUpdated() {
     await this.updateComplete;
 
+    this.setupObserver();
     if (!this.activeStep) {
       this.activateFirstStep();
     }
+  }
+
+  public override disconnectedCallback(): void {
+    this.resizeObserver?.disconnect();
+    super.disconnectedCallback();
   }
 
   /** Activates the step at a given index. */
@@ -212,6 +220,16 @@ export default class IgcStepperComponent extends SizableMixin(
   public reset(): void {
     this.steps.forEach((step) => (step.visited = false));
     this.activateFirstStep();
+  }
+
+  protected setupObserver() {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.style.setProperty(
+        '--stepper-width',
+        this.getBoundingClientRect().width.toString() + 'px'
+      );
+    });
+    this.resizeObserver.observe(this);
   }
 
   private syncProperties(): void {
