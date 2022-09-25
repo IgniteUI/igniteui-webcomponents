@@ -19,7 +19,7 @@
     --horizontal-body-padding: #{rem(8px)};
 
     display: grid;
-    grid-template-columns: repeat(var(--steps-count), minmax(var(--step-min-width), 1fr));
+    grid-template-columns: repeat(var(--steps-count), minmax(var(--step-min-width), auto));
 
     ::slotted(igc-step) {
         // display: contents make all direct children of the step to behave like they are direct children of the stepper
@@ -41,19 +41,21 @@
     }
 }
 
+// FIRST STEP
+::slotted(igc-step:first-of-type) {
+    --horizontal-separator-display--first-of-type: none;
+}
+
 // LAST STEP
 ::slotted(igc-step:last-of-type) {
-    --border: 0;
-
-    flex: 0;
+    --horizontal-separator-display--last-of-type: none;
 }
 
 // NOT FULL HEADER
 :host(:not([step-type='full'])) {
-    --separator-disply-full: none;
+    --separator-disply-not-full: none;
 
     ::slotted(igc-step) {
-        --header-seaparator-visibility: none;
         --step-not-full-header-aligmnet: center;
     }
 }
@@ -79,6 +81,7 @@
     --vertical-header-z-index: 2;
     --vertical-body-disply: block;
     --header-width-vertical: 100%;
+    --hide-horizontal-separator: none;
 
     display: block;
 

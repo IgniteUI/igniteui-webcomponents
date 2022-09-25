@@ -20,7 +20,7 @@
     --separator-type: dashed;
     --separator-type--completed: solid;
     --separator-position: calc(var(--header-padding) + (var(--indicator-size) / 2) - (var(--separator-size) / 2));
-    --separator-min-width: calc(var(--header-min-width) / 2);
+    --separator-min-width: #{rem(4px)};
     --vertical-separator: var(--separator-size) var(--separator-type) var(--separator-color);
 
     // ===========================================

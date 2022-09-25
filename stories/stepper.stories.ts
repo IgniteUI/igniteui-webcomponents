@@ -80,7 +80,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       .dir=${direction}
     >
       <igc-step id="asd" complete>
-        <span slot="title">Title</span>
+        <span slot="title">Title 1</span>
         <!-- <span slot="subtitle">subtitle</span> -->
         <span>
           NOT FOCUSABLE CONTENT Ut fermentum convallis odio nec suscipit.
@@ -115,9 +115,9 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         </span>
       </igc-step>
       <igc-step>
-        <span slot="indicator"><igc-icon name="home"></igc-icon></span>
-        <!-- <span slot="title"> Title 4 </span> -->
-        <span slot="subtitle">subtitle</span>
+        <!--        <span slot="indicator"><igc-icon name="home"></igc-icon></span>-->
+        <span slot="title"> Title 4 </span>
+        <!--        <span slot="subtitle">subtitle</span>-->
         <div tabindex="0">
           FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
           eleifend gravida erat. Curabitur gravida malesuada arcu,
