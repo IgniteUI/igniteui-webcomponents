@@ -150,7 +150,15 @@ export default class IgcStepComponent extends LitElement {
 
   protected setupObserver() {
     this.resizeObserver = new ResizeObserver(() => {
-      console.log(this.contentBody.getBoundingClientRect().height);
+      if (this.active) {
+        this.dispatchEvent(
+          new CustomEvent('stepActiveHeightChanged', {
+            bubbles: true,
+            detail:
+              this.contentBody.getBoundingClientRect().height.toString() + 'px',
+          })
+        );
+      }
       this.style.setProperty(
         '--body-height',
         this.contentBody.getBoundingClientRect().height.toString() + 'px'

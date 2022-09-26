@@ -3,13 +3,16 @@
 
 // STEPPER
 :host {
+    display: flex;
     font-family: var(--igc-font-family);
 }
 
 // TITLE POSITION [START,END]
 :host([title-position='start']),
 :host([title-position='end']) {
-    min-width: var(--step-not-top-bottom-min-width);
+    ::slotted(igc-step) {
+        min-width: var(--step-not-top-bottom-min-width);
+    }
 }
 
 // STEPPER [HORIZONTAL]
@@ -18,17 +21,20 @@
     --vertical-separator-visibility: none;
     --horizontal-body-padding: #{rem(8px)};
 
-    [part='stepper-inner'] {
-        display: flex;
-    }
-
     ::slotted(igc-step) {
+        min-width: var(--header-min-width);
         overflow: hidden;
         position: static;
         flex-grow: 1;
 
         --align-text: center;
         --align-items: center;
+
+        &::after {
+            content: '';
+            height: var(--stepper-body-height);
+            display: block;
+        }
     }
 
     // FIRST STEP
@@ -46,13 +52,16 @@
     }
 }
 
-// CONTENT TOP
 :host([orientation='horizontal'][content-top]) {
-    [part='stepper-inner'] {
+    ::slotted(igc-step) {
+        &::after {
+            display: none;
+        }
+
         &::before {
             content: '';
+            height: var(--stepper-body-height);
             display: block;
-            height: var(--body-height);
         }
     }
 }

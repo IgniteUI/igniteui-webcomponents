@@ -3,27 +3,6 @@
 
 :host {
     align-items: flex-start;
-    min-width: var(--header-min-width);
-}
-
-[part~='step-inner'] {
-    &::after {
-        content: '';
-        display: var(--hide-step-inner-before-after, block);
-        height: var(--body-height);
-    }
-}
-
-[part='step-inner body-top'] {
-    &::after {
-        display: none;
-    }
-
-    &::before {
-        content: '';
-        display: var(--hide-step-inner-before-after, block);
-        height: var(--body-height);
-    }
 }
 
 [part~='header-container'],

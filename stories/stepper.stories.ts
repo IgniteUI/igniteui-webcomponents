@@ -70,6 +70,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
+    <div>Some content around the stepper</div>
     <igc-stepper
       .orientation=${orientation}
       .stepType=${stepType}
@@ -91,7 +92,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           sagittis efficitur. In volutpat cursus sapien et scelerisque. Praesent
           egestas velit vel
         </span>
-        <input />
+        <textarea name="" id="" cols="30" rows="10"></textarea>
         <button>Asd</button>
       </igc-step>
       <igc-step active complete>
@@ -103,7 +104,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           tortor porta luctus. Nulla sagittis massa sit amet ipsum sagittis
           efficitur. In volutpat cursus sapien et scelerisque. Praesent egestas
           velit vel
-          <input />
+          <textarea name="" id="" cols="30" rows="10"></textarea>
         </div>
       </igc-step>
       <igc-step>
@@ -121,10 +122,11 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <div tabindex="0">
           FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
           eleifend gravida erat. Curabitur gravida malesuada arcu,
-          <input />
+          <textarea name="" id="" cols="30" rows="10"></textarea>
         </div>
       </igc-step>
     </igc-stepper>
+    <div>Some content around the stepper</div>
   `;
 };
 
