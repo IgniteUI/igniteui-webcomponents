@@ -486,7 +486,9 @@ export default class IgcStepperComponent extends SizableMixin(
   }
 
   protected override render() {
-    return html`<slot @slotchange=${this.stepsChanged}></slot>`;
+    return html`<div part="stepper-inner">
+      <slot @slotchange=${this.stepsChanged}></slot>
+    </div>`;
   }
 }
 

@@ -80,7 +80,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       .dir=${direction}
     >
       <igc-step id="asd" complete>
-        <span slot="title">Title 1</span>
+        <span slot="title">Card type</span>
         <!-- <span slot="subtitle">subtitle</span> -->
         <span>
           NOT FOCUSABLE CONTENT Ut fermentum convallis odio nec suscipit.
@@ -95,8 +95,8 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <button>Asd</button>
       </igc-step>
       <igc-step active complete>
-        <span slot="title">Long title Ut fermentum convallis</span>
-        <span slot="subtitle">Long subtitle Ut fermentum</span>
+        <span slot="title">Business</span>
+        <!--        <span slot="subtitle">Long subtitle Ut fermentum</span>-->
         <div tabindex="0">
           FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
           eleifend gravida erat. Curabitur gravida malesuada arcu, non fermentum
@@ -107,7 +107,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         </div>
       </igc-step>
       <igc-step>
-        <span slot="title"> Title 3 </span>
+        <span slot="title">Personal Information</span>
         <!-- <span slot="subtitle">subtitle</span> -->
         <span
           >NOT FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
@@ -116,7 +116,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       </igc-step>
       <igc-step>
         <!--        <span slot="indicator"><igc-icon name="home"></igc-icon></span>-->
-        <span slot="title"> Title 4 </span>
+        <span slot="title">Shipping Details</span>
         <!--        <span slot="subtitle">subtitle</span>-->
         <div tabindex="0">
           FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
