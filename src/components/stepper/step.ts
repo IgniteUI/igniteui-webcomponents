@@ -17,8 +17,6 @@ export default class IgcStepComponent extends LitElement {
   /** @private */
   public static override styles = styles;
 
-  protected resizeObserver!: ResizeObserver;
-
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;
 
@@ -71,7 +69,7 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   @property({ attribute: false })
-  public titlePosition!: 'bottom' | 'top' | 'end' | 'start' | undefined;
+  public titlePosition?: 'bottom' | 'top' | 'end' | 'start';
 
   /** @private */
   @property({ attribute: false })
@@ -128,8 +126,6 @@ export default class IgcStepComponent extends LitElement {
   protected override async firstUpdated() {
     await this.updateComplete;
 
-    this.setupObserver();
-
     if (this.complete) {
       this.dispatchEvent(
         new CustomEvent('stepCompleteChanged', { bubbles: true })
@@ -141,30 +137,6 @@ export default class IgcStepComponent extends LitElement {
         new CustomEvent('stepDisabledChanged', { bubbles: true })
       );
     }
-  }
-
-  public override disconnectedCallback(): void {
-    this.resizeObserver?.disconnect();
-    super.disconnectedCallback();
-  }
-
-  protected setupObserver() {
-    this.resizeObserver = new ResizeObserver(() => {
-      if (this.active) {
-        this.dispatchEvent(
-          new CustomEvent('stepActiveHeightChanged', {
-            bubbles: true,
-            detail:
-              this.contentBody.getBoundingClientRect().height.toString() + 'px',
-          })
-        );
-      }
-      this.style.setProperty(
-        '--body-height',
-        this.contentBody.getBoundingClientRect().height.toString() + 'px'
-      );
-    });
-    this.resizeObserver.observe(this.contentBody);
   }
 
   protected handleClick(event: MouseEvent): void {

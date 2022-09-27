@@ -90,7 +90,7 @@ export default class IgcStepperComponent extends SizableMixin(
    * When the stepper is horizontally orientated the title is positioned on the right side of the indicator.
    */
   @property({ reflect: true, attribute: 'title-position' })
-  public titlePosition!: 'bottom' | 'top' | 'end' | 'start' | undefined;
+  public titlePosition?: 'bottom' | 'top' | 'end' | 'start';
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {
@@ -141,12 +141,8 @@ export default class IgcStepperComponent extends SizableMixin(
 
     this.addEventListener('stepActiveChanged', (event: any) => {
       event.stopPropagation();
+      console.log('stepactivechange', event.target.index);
       this.activateStep(event.target, event.detail);
-    });
-
-    this.addEventListener('stepActiveHeightChanged', (event: any) => {
-      event.stopPropagation();
-      this.style.setProperty('--stepper-body-height', event.detail);
     });
 
     this.addEventListener('stepInvalidStateChanged', (event: any) => {
@@ -230,12 +226,15 @@ export default class IgcStepperComponent extends SizableMixin(
   protected setupObserver() {
     this.resizeObserver = new ResizeObserver(() => {
       this.style.setProperty(
-        '--stepper-height',
+        '--stepper-body-height',
         this.activeStep.contentBody.getBoundingClientRect().height.toString() +
           'px'
       );
     });
-    this.resizeObserver.observe(this.activeStep.contentBody);
+    if (this.activeStep.contentBody) {
+      this.resizeObserver.observe(this.activeStep.contentBody);
+      console.log('observe', this.activeStep.contentBody);
+    }
   }
 
   private syncProperties(): void {
@@ -308,12 +307,18 @@ export default class IgcStepperComponent extends SizableMixin(
   private changeActiveStep(step: IgcStepComponent) {
     if (this.activeStep) {
       this.activeStep.active = false;
-      this.resizeObserver.unobserve(this.activeStep.contentBody);
+      if (this.activeStep.contentBody) {
+        this.resizeObserver?.unobserve(this.activeStep.contentBody);
+        console.log('unobserve', this.activeStep.contentBody);
+      }
     }
     step.active = true;
     step.visited = true;
     this.activeStep = step;
-    this.resizeObserver.observe(this.activeStep.contentBody);
+    if (this.activeStep.contentBody) {
+      this.resizeObserver?.observe(this.activeStep.contentBody);
+      console.log('observe', this.activeStep.contentBody);
+    }
   }
 
   private activateFirstStep() {
