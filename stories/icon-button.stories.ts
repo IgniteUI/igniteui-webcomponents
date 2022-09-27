@@ -163,9 +163,6 @@ const Template: Story<ArgTypes, Context> = (
       rel="stylesheet"
     />
     <igc-icon-button
-      .name=${name}
-      .collection=${collection}
-      .mirrored=${mirrored}
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
@@ -177,9 +174,6 @@ const Template: Story<ArgTypes, Context> = (
       >💙</igc-icon-button
     >
     <igc-icon-button
-      .name=${name}
-      .collection=${collection}
-      .mirrored=${mirrored}
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
@@ -192,9 +186,6 @@ const Template: Story<ArgTypes, Context> = (
       <span class="material-icons">favorite</span>
     </igc-icon-button>
     <igc-icon-button
-      .name=${name}
-      .collection=${collection}
-      .mirrored=${mirrored}
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
