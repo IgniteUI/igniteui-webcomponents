@@ -144,6 +144,11 @@ export default class IgcStepperComponent extends SizableMixin(
       this.activateStep(event.target, event.detail);
     });
 
+    this.addEventListener('stepActiveHeightChanged', (event: any) => {
+      event.stopPropagation();
+      this.style.setProperty('--stepper-body-height', event.detail);
+    });
+
     this.addEventListener('stepInvalidStateChanged', (event: any) => {
       event.stopPropagation();
       if (this.linear) {
@@ -225,11 +230,12 @@ export default class IgcStepperComponent extends SizableMixin(
   protected setupObserver() {
     this.resizeObserver = new ResizeObserver(() => {
       this.style.setProperty(
-        '--stepper-width',
-        this.getBoundingClientRect().width.toString() + 'px'
+        '--stepper-height',
+        this.activeStep.contentBody.getBoundingClientRect().height.toString() +
+          'px'
       );
     });
-    this.resizeObserver.observe(this);
+    this.resizeObserver.observe(this.activeStep.contentBody);
   }
 
   private syncProperties(): void {
@@ -302,11 +308,12 @@ export default class IgcStepperComponent extends SizableMixin(
   private changeActiveStep(step: IgcStepComponent) {
     if (this.activeStep) {
       this.activeStep.active = false;
+      this.resizeObserver.unobserve(this.activeStep.contentBody);
     }
-
     step.active = true;
     step.visited = true;
     this.activeStep = step;
+    this.resizeObserver.observe(this.activeStep.contentBody);
   }
 
   private activateFirstStep() {

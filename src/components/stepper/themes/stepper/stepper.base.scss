@@ -3,13 +3,16 @@
 
 // STEPPER
 :host {
+    display: flex;
     font-family: var(--igc-font-family);
 }
 
 // TITLE POSITION [START,END]
 :host([title-position='start']),
 :host([title-position='end']) {
-    --step-min-width: #{rem(80px)};
+    ::slotted(igc-step) {
+        min-width: var(--step-not-top-bottom-min-width);
+    }
 }
 
 // STEPPER [HORIZONTAL]
@@ -18,37 +21,49 @@
     --vertical-separator-visibility: none;
     --horizontal-body-padding: #{rem(8px)};
 
-    display: grid;
-    grid-template-columns: repeat(var(--steps-count), minmax(var(--step-min-width), auto));
-
     ::slotted(igc-step) {
-        // display: contents make all direct children of the step to behave like they are direct children of the stepper
-        display: contents;
-        pointer-events: none;
+        min-width: var(--header-min-width);
+        overflow: hidden;
+        position: static;
+        flex-grow: 1;
 
         --align-text: center;
         --align-items: center;
+
+        &::after {
+            content: '';
+            height: var(--stepper-body-height);
+            display: block;
+        }
     }
 
     // FIRST STEP
     ::slotted(igc-step:first-of-type) {
-        --horizontal-separator-visibility--first-of-type: none;
+        flex-grow: 0;
+
+        --horizontal-separator-display--first-of-type: none;
+        --horizontal-separator-visibility--first-of-type: hidden;
     }
 
     // LAST STEP
     ::slotted(igc-step:last-of-type) {
-        --horizontal-separator-visibility--last-of-type: none;
+        --horizontal-separator-display--last-of-type: none;
+        --horizontal-separator-visibility--last-of-type: hidden;
     }
 }
 
-// FIRST STEP
-::slotted(igc-step:first-of-type) {
-    --horizontal-separator-display--first-of-type: none;
-}
+:host([orientation='horizontal'][content-top]) {
+    ::slotted(igc-step) {
+        &::after {
+            display: none;
+        }
 
-// LAST STEP
-::slotted(igc-step:last-of-type) {
-    --horizontal-separator-display--last-of-type: none;
+        &::before {
+            content: '';
+            height: var(--stepper-body-height);
+            display: block;
+        }
+    }
 }
 
 // NOT FULL HEADER
@@ -67,17 +82,11 @@
     }
 }
 
-// CONTENT TOP
-:host([content-top]) {
-    ::slotted(igc-step) {
-        --header-bottom: 2;
-        --body-top: 1;
-    }
-}
-
 // ------------------------------------------
 // STEPPER [VERTICAL]
 :host(:not([orientation='horizontal'])) {
+    --vertical-body-position: relative;
+    --hide-step-inner-before-after: none;
     --vertical-header-z-index: 2;
     --vertical-body-disply: block;
     --header-width-vertical: 100%;
@@ -97,7 +106,7 @@
     }
 
     ::slotted(igc-step:last-of-type) {
-        --hide-last-separator: none;
+        --hide-body-last-separator: none;
     }
 }
 
@@ -108,10 +117,10 @@
     }
 
     ::slotted(igc-step:first-of-type) {
-        --hide-first-separator: none;
+        --hide-body-first-separator: none;
     }
 
     ::slotted(igc-step:last-of-type) {
-        --hide-last-separator: block;
+        --hide-body-last-separator: block;
     }
 }

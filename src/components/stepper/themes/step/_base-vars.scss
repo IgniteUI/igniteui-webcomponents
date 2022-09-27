@@ -7,8 +7,8 @@
     --header-gap: #{rem(8px)};
     --header-padding: #{rem(8px)};
     --header-min-width: #{rem(40px)};
+    --step-not-top-bottom-min-width: #{rem(80px)};
     --vertical-body-padding: var(--body-padding);
-    --step-min-width: calc(var(--header-min-width) + var(--separator-min-width));
 
     // Indicator
     --indicator-size: #{rem(24px)};
