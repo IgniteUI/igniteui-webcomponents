@@ -4,6 +4,16 @@
     --indicator-box-shadow-size: #{rem(2px)};
     --separator-size: #{rem(2px)};
 
+    // header
+    --header-color: #{color(gray, 900)};
+    --header-background--hover: #{color(gray, 100)};
+    --header-background--focus: #{color(gray, 100)};
+    --header-shadow: #{color(gray, 50, 0)};
+
+    // text
+    --title-color: #{color(gray, 900)};
+    --subtitle-color: #{color(gray, 700)};
+
     // separator
     --separator-color: #{color(gray, 300)};
     --separator-color--completed: #{color(primary, 500)};

@@ -1,0 +1,8 @@
+@use '../../../../../styles/utilities/index' as *;
+
+:host {
+    // uncompleted
+    --indicator-color: #{color(gray, 900)};
+    --indicator-background: #{color(gray, 50, 0)};
+    --indicator-shadow: var(--indicator-background);
+}

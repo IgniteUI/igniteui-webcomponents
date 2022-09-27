@@ -19,14 +19,6 @@
         position: relative;
         min-width: var(--separator-min-width);
     }
-
-    &::before {
-        display: var(--hide-horizontal-separator, var(--horizontal-separator-display--first-of-type)) !important;
-    }
-
-    &::after {
-        display: var(--hide-horizontal-separator, var(--horizontal-separator-display--last-of-type)) !important;
-    }
 }
 
 [part~='header-container'] {
@@ -34,6 +26,9 @@
     pointer-events: none;
     position: relative;
     justify-content: center;
+
+    // Reset the context so that is possible to set background on the whole stepper
+    z-index: 0;
 
     [part~='header'] {
         pointer-events: all;
@@ -45,11 +40,20 @@
     [part='subtitle'] {
         pointer-events: none;
     }
+
+    &::before {
+        display: var(--hide-horizontal-separator, var(--horizontal-separator-display--first-of-type));
+    }
+
+    &::after {
+        display: var(--hide-horizontal-separator, var(--horizontal-separator-display--last-of-type));
+    }
 }
 
 [part~='header'] {
     display: flex;
     align-items: var(--align-items, flex-start);
+    grid-row: var(--header-bottom, 1);
     position: relative;
     overflow: hidden;
     padding: var(--header-padding);
@@ -67,10 +71,12 @@
 
     &::before {
         inset-inline-start: 0;
+        display: var(--hide-horizontal-separator, var(--separator-disply-not-full, var(--horizontal-separator-display--first-of-type)));
     }
 
     &::after {
         inset-inline-end: 0;
+        display: var(--hide-horizontal-separator, var(--separator-disply-not-full, var(--horizontal-separator-display--last-of-type)));
     }
 
     &:focus,
@@ -92,7 +98,6 @@
 }
 
 [part~='body'] {
-    width: var(--stepper-width);
     display: var(--vertical-body-disply, none);
     grid-row-start: var(--body-top, 2);
     grid-column: span #{var(--steps-count)};
@@ -103,6 +108,13 @@
     padding-block-end: var(--horizontal-body-padding, var(--vertical-body-padding));
     z-index: 1;
     position: relative;
+    color: color(gray, 900);
+
+    // Thous tow lines here are on purpose, they make sure that step body content
+    // does not get involved in grid width calculation. They fix a very weird bug.
+    // https://stackoverflow.com/questions/73856035/css-grid-columns-changing-size-with-long-content/73858982#73858982
+    width: 0;
+    min-width: 100%;
 
     &::before {
         display: var(--hide-last-separator, var(--hide-first-separator, var(--vertical-separator-visibility)));
@@ -179,12 +191,12 @@
         width: 100%;
     }
 
-    [part~='header'] {
-        &::before,
-        &::after {
-            display: var(--hide-horizontal-separator, var(--separator-disply-not-full));
-        }
-    }
+    // [part~='header'] {
+    //    &::before,
+    //    &::after {
+    //        display: var(--hide-horizontal-separator, var(--separator-disply-not-full));
+    //    }
+    // }
 }
 
 [part~='start'] {

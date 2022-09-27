@@ -4,6 +4,10 @@
 // STEPPER
 :host {
     font-family: var(--igc-font-family);
+
+    // TODO remove this before finalize the component styles
+    background: color(surface, 500);
+    padding: 16px;
 }
 
 // TITLE POSITION [START,END]
