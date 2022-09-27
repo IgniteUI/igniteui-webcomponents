@@ -50,7 +50,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
 
   protected renderContent() {
     return html`
-      ${this.name
+      ${this.name || this.mirrored
         ? html`<igc-icon
             part="icon"
             name=${ifDefined(this.name)}

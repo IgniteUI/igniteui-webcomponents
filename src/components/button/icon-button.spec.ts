@@ -25,20 +25,17 @@ describe('IconButton component', () => {
 
     it('renders a button element internally', async () => {
       await expect(el).shadowDom.to.be.accessible();
-      expect(el).shadowDom.to.equal(
-        `<button><slot><igc-icon></igc-icon></slot></button>`,
-        {
-          ignoreAttributes: [
-            'variant',
-            'aria-label',
-            'aria-disabled',
-            'aria-hidden',
-            'part',
-            'role',
-            'size',
-          ],
-        }
-      );
+      expect(el).shadowDom.to.equal(`<button><slot></slot></button>`, {
+        ignoreAttributes: [
+          'variant',
+          'aria-label',
+          'aria-disabled',
+          'aria-hidden',
+          'part',
+          'role',
+          'size',
+        ],
+      });
     });
 
     it('renders an anchor element internally', async () => {
@@ -46,21 +43,18 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       await expect(el).shadowDom.to.be.accessible();
-      expect(el).shadowDom.to.equal(
-        `<a><slot><igc-icon></igc-icon></slot></a>`,
-        {
-          ignoreAttributes: [
-            'variant',
-            'aria-label',
-            'aria-disabled',
-            'aria-hidden',
-            'part',
-            'role',
-            'size',
-            'href',
-          ],
-        }
-      );
+      expect(el).shadowDom.to.equal(`<a><slot></slot></a>`, {
+        ignoreAttributes: [
+          'variant',
+          'aria-label',
+          'aria-disabled',
+          'aria-hidden',
+          'part',
+          'role',
+          'size',
+          'href',
+        ],
+      });
     });
 
     it('is created with the proper default values', async () => {
@@ -82,9 +76,7 @@ describe('IconButton component', () => {
 
       expect(el).shadowDom.to.equal(
         `<button>
-          <slot>
-            <igc-icon name="${el.name}" collection="${el.collection}"></igc-icon>
-          </slot>
+          <igc-icon name="${el.name}" collection="${el.collection}"></igc-icon>
         </button>`,
         {
           ignoreAttributes: [
@@ -106,9 +98,7 @@ describe('IconButton component', () => {
 
       expect(el).shadowDom.to.equal(
         `<button>
-          <slot>
-            <igc-icon mirrored></igc-icon>
-          </slot>
+          <igc-icon mirrored></igc-icon>
         </button>`,
         {
           ignoreAttributes: [
@@ -171,7 +161,6 @@ describe('IconButton component', () => {
       expect(el).shadowDom.to.equal(
         `<button disabled>
           <slot>
-            <igc-icon></igc-icon>
           </slot>
         </button>`,
         {
@@ -204,9 +193,7 @@ describe('IconButton component', () => {
     );
     expect(el).shadowDom.to.equal(
       `<a href="https://test.com" target="_blank" download="test" rel="test">
-        <slot>
-          <igc-icon name="biking" collection="default"></igc-icon>
-        </slot>
+        <igc-icon name="biking" collection="default"></igc-icon>
       </a>`,
       DIFF_OPTIONS
     );
