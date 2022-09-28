@@ -77,6 +77,7 @@ describe('IconButton component', () => {
       expect(el).shadowDom.to.equal(
         `<button>
           <igc-icon name="${el.name}" collection="${el.collection}"></igc-icon>
+          <slot></slot>
         </button>`,
         {
           ignoreAttributes: [
@@ -99,6 +100,7 @@ describe('IconButton component', () => {
       expect(el).shadowDom.to.equal(
         `<button>
           <igc-icon mirrored></igc-icon>
+          <slot></slot>
         </button>`,
         {
           ignoreAttributes: [
