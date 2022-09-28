@@ -113,18 +113,3 @@
         --hide-last-separator: none;
     }
 }
-
-// CONTENT TOP [VERTICAL]
-:host([content-top]:not([orientation='horizontal'])) {
-    ::slotted(igc-step) {
-        flex-direction: column-reverse;
-    }
-
-    ::slotted(igc-step:first-of-type) {
-        --hide-first-separator: none;
-    }
-
-    ::slotted(igc-step:last-of-type) {
-        --hide-last-separator: block;
-    }
-}

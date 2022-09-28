@@ -1,13 +1,14 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { when } from 'lit/directives/when.js';
+import { watch } from '../common/decorators';
+import { partNameMap } from '../common/util.js';
 import { themes } from '../../theming';
 import { styles } from './themes/step/light/step.base.css';
 import { styles as bootstrap } from './themes/step/light/step.bootstrap.css';
 import { styles as indigo } from './themes/step/light/step.indigo.css.js';
 import { styles as fluent } from './themes/step/light/step.fluent.css.js';
 import { styles as material } from './themes/step/light/step.material.css.js';
-import { partNameMap } from '../common/util.js';
-import { watch } from '../common/decorators';
 
 @themes({ bootstrap, indigo, fluent, material })
 export default class IgcStepComponent extends LitElement {
@@ -193,13 +194,6 @@ export default class IgcStepComponent extends LitElement {
     };
   }
 
-  private get bodyParts() {
-    return {
-      body: true,
-      'body-top': this.contentTop,
-    };
-  }
-
   protected renderIndicator() {
     if (this.stepType !== 'title') {
       return html`
@@ -230,7 +224,7 @@ export default class IgcStepComponent extends LitElement {
   protected renderContent() {
     return html`<div
       id="igc-step-content-${this.index}"
-      part="${partNameMap(this.bodyParts)}"
+      part="body"
       role="tabpanel"
       aria-labelledby="igc-step-header-${this.index}"
     >
@@ -242,6 +236,11 @@ export default class IgcStepComponent extends LitElement {
 
   protected override render() {
     return html`
+      ${when(
+        this.contentTop && this.orientation === 'horizontal',
+        () => this.renderContent(),
+        () => nothing
+      )}
       <div part="${partNameMap(this.headerContainerParts)}">
         <div
           part="header"
@@ -254,7 +253,11 @@ export default class IgcStepComponent extends LitElement {
           ${this.renderIndicator()} ${this.renderTitleAndSubtitle()}
         </div>
       </div>
-      ${this.renderContent()}
+      ${when(
+        this.orientation === 'vertical' || !this.contentTop,
+        () => this.renderContent(),
+        () => nothing
+      )}
     `;
   }
 }
