@@ -132,15 +132,6 @@
     }
 }
 
-[part~='active-body'] {
-    display: var(--vertical-body-disply, block);
-
-    [part='content'] {
-        display: var(--horizontal-content-disply, block);
-        pointer-events: all;
-    }
-}
-
 [part='content'] {
     display: var(--horizontal-content-disply, none);
 }
@@ -180,13 +171,6 @@
         &::after {
             inset-block-start: #{var(--step-separator-position)};
         }
-    }
-}
-
-[part='body bottom'],
-[part='body active-body bottom'] {
-    &::before {
-        inset-block-start: 0;
     }
 }
 
@@ -326,7 +310,22 @@
     }
 }
 
-[part~='active-header'] {
+:host([active]) {
+    [part~='body'] {
+        display: var(--vertical-body-disply, block);
+    }
+
+    [part~='body bottom'] {
+        &::before {
+            inset-block-start: 0;
+        }
+    }
+
+    [part='content'] {
+        display: var(--horizontal-content-disply, block);
+        pointer-events: all;
+    }
+
     [part~='indicator'] {
         span {
             background: var(--active-indicator-background);

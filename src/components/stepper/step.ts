@@ -168,7 +168,6 @@ export default class IgcStepComponent extends LitElement {
       'complete-start': this.complete,
       'complete-end': this.previousComplete,
       optional: this.optional,
-      'active-header': this.active,
       invalid:
         this.invalid && this.visited && !this.active && this.isAccessible,
       top: this.titlePosition === 'top',
@@ -197,16 +196,7 @@ export default class IgcStepComponent extends LitElement {
   private get bodyParts() {
     return {
       body: true,
-      'active-body': this.active,
       'body-top': this.contentTop,
-      top: this.titlePosition === 'top',
-      bottom:
-        this.titlePosition === 'bottom' ||
-        (this.orientation === 'horizontal' && !this.titlePosition),
-      start: this.titlePosition === 'start',
-      end:
-        this.titlePosition === 'end' ||
-        (this.orientation === 'vertical' && !this.titlePosition),
     };
   }
 

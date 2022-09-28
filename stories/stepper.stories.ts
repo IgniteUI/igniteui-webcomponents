@@ -70,6 +70,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
+    <span> test content </span>
     <igc-stepper
       .orientation=${orientation}
       .stepType=${stepType}
@@ -105,12 +106,12 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           tortor porta luctus. Nulla sagittis massa sit amet ipsum sagittis
           efficitur. In volutpat cursus sapien et scelerisque. Praesent egestas
           velit vel
-          <input />
+          <textarea name="" id="" cols="30" rows="10"></textarea>
         </div>
       </igc-step>
       <igc-step>
-        <span slot="title">Personal information</span>
-        <!-- <span slot="subtitle">subtitle</span> -->
+        <!--        <span slot="title">Personal information</span>-->
+        <span slot="subtitle">subtitle</span>
         <span
           >NOT FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
           eleifend gravida erat. Curabitur gravida malesuada arcu,
@@ -118,7 +119,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       </igc-step>
       <igc-step>
         <!--        <span slot="indicator"><igc-icon name="home"></igc-icon></span>-->
-        <span slot="title">Shipping Details</span>
+        <!--        <span slot="title">Shipping Details</span>-->
         <!--        <span slot="subtitle">subtitle</span>-->
         <div tabindex="0">
           FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
@@ -127,6 +128,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         </div>
       </igc-step>
     </igc-stepper>
+    <span> test content </span>
   `;
 };
 
