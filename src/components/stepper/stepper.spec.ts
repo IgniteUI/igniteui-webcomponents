@@ -7,6 +7,7 @@ import {
   simpleStepper,
   SLOTS,
   StepperTestFunctions,
+  stepperWithActiveDisabledStep,
   stepperWithTwoActiveSteps,
 } from './stepper-utils.spec.js';
 import { elementUpdated, expect } from '@open-wc/testing';
@@ -125,6 +126,15 @@ describe('Stepper', () => {
           expect(stepper.steps[i].active).to.be.true;
         }
       }
+    });
+
+    it('Should activate a step when it is set to be active and disabled initially', async () => {
+      stepper = await StepperTestFunctions.createStepperElement(
+        stepperWithActiveDisabledStep
+      );
+
+      expect(stepper.steps[1].disabled).to.be.true;
+      expect(stepper.steps[1].active).to.be.true;
     });
 
     // it('Should not allow moving forward to the next step in linear mode if the previous step is invalid', async () => {
@@ -365,67 +375,247 @@ describe('Stepper', () => {
 
       expect(step2.isAccessible).to.be.true;
     });
-
-    it('Should render the visual step element according to the specified stepType', async () => {
-      stepper.stepType = 'full';
-      await elementUpdated(stepper);
-
-      for (let i = 0; i < stepper.steps.length; i++) {
-        const step = stepper.steps[i];
-        const indicator = StepperTestFunctions.getElementByPart(
-          step,
-          PARTS.indicator
-        ) as HTMLElement;
-        const textWrapper = StepperTestFunctions.getElementByPart(
-          step,
-          PARTS.text
-        ) as HTMLElement;
-
-        expect(indicator).not.to.be.null;
-        expect(textWrapper.part.contains('empty')).to.be.false;
-      }
-
-      stepper.stepType = 'indicator';
-      await elementUpdated(stepper);
-
-      for (let i = 0; i < stepper.steps.length; i++) {
-        const step = stepper.steps[i];
-        const indicator = StepperTestFunctions.getElementByPart(
-          step,
-          PARTS.indicator
-        ) as HTMLElement;
-        const textWrapper = StepperTestFunctions.getElementByPart(
-          step,
-          PARTS.text
-        ) as HTMLElement;
-
-        expect(indicator).not.to.be.null;
-        expect(textWrapper.part.contains('empty')).to.be.true;
-      }
-
-      stepper.stepType = 'title';
-      await elementUpdated(stepper);
-
-      for (let i = 0; i < stepper.steps.length; i++) {
-        const step = stepper.steps[i];
-        const indicator = StepperTestFunctions.getElementByPart(
-          step,
-          PARTS.indicator
-        ) as HTMLElement;
-        const textWrapper = StepperTestFunctions.getElementByPart(
-          step,
-          PARTS.text
-        ) as HTMLElement;
-
-        expect(indicator).to.be.null;
-        expect(textWrapper.part.contains('empty')).to.be.false;
-      }
-    });
   });
 
   describe('Appearance', async () => {
     beforeEach(async () => {
       stepper = await StepperTestFunctions.createStepperElement(simpleStepper);
+    });
+
+    it('Should apply the appropriate attribute to a stepper when it is in horizontal or vertical mode', async () => {
+      stepper.orientation = 'horizontal';
+      await elementUpdated(stepper);
+
+      expect(stepper.attributes.getNamedItem('orientation')?.value).to.equal(
+        'horizontal'
+      );
+
+      stepper.orientation = 'vertical';
+      await elementUpdated(stepper);
+
+      expect(stepper.attributes.getNamedItem('orientation')?.value).to.equal(
+        'vertical'
+      );
+    });
+
+    it('Should properly render the step layout', () => {
+      for (let i = 0; i < stepper.steps.length; i++) {
+        const step = stepper.steps[i];
+        const stepHeaderContainer = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.headerContainer
+        ) as HTMLElement;
+        const stepHeader = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.header
+        ) as HTMLElement;
+        const stepBody = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.body
+        ) as HTMLElement;
+
+        expect(stepHeaderContainer).not.to.be.null;
+        expect(stepHeader).not.to.be.null;
+        expect(stepBody).not.to.be.null;
+      }
+    });
+
+    it('Should properly render the step content in horizontal and vertical mode', async () => {
+      stepper.orientation = 'horizontal';
+      await elementUpdated(stepper);
+      stepper.contentTop = false;
+      await elementUpdated(stepper);
+
+      for (let i = 0; i < stepper.steps.length; i++) {
+        const step = stepper.steps[i];
+        const stepHeaderContainer = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.headerContainer
+        ) as HTMLElement;
+        const stepBody = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.body
+        ) as HTMLElement;
+
+        const stepHeaderContainerIndex = Array.from(
+          step.shadowRoot!.children
+        ).indexOf(stepHeaderContainer);
+        const stepBodyIndex = Array.from(step.shadowRoot!.children).indexOf(
+          stepBody
+        );
+
+        expect(stepHeaderContainerIndex).to.be.lessThan(stepBodyIndex);
+      }
+
+      stepper.contentTop = true;
+      await elementUpdated(stepper);
+
+      for (let i = 0; i < stepper.steps.length; i++) {
+        const step = stepper.steps[i];
+        const stepHeaderContainer = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.headerContainer
+        ) as HTMLElement;
+        const stepBody = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.body
+        ) as HTMLElement;
+
+        const stepHeaderContainerIndex = Array.from(
+          step.shadowRoot!.children
+        ).indexOf(stepHeaderContainer);
+        const stepBodyIndex = Array.from(step.shadowRoot!.children).indexOf(
+          stepBody
+        );
+
+        expect(stepHeaderContainerIndex).to.be.greaterThan(stepBodyIndex);
+      }
+
+      stepper.orientation = 'vertical';
+      await elementUpdated(stepper);
+
+      stepper.contentTop = true;
+      await elementUpdated(stepper);
+
+      for (let i = 0; i < stepper.steps.length; i++) {
+        const step = stepper.steps[i];
+        const stepHeaderContainer = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.headerContainer
+        ) as HTMLElement;
+        const stepBody = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.body
+        ) as HTMLElement;
+
+        const stepHeaderContainerIndex = Array.from(
+          step.shadowRoot!.children
+        ).indexOf(stepHeaderContainer);
+        const stepBodyIndex = Array.from(step.shadowRoot!.children).indexOf(
+          stepBody
+        );
+
+        expect(stepHeaderContainerIndex).to.be.lessThan(stepBodyIndex);
+      }
+    });
+
+    it("Should apply the appropriate part to the step's header container when step is disabled or linear disabled", async () => {
+      stepper.steps[0].disabled = true;
+      await elementUpdated(stepper);
+
+      const step0HeaderContainer = StepperTestFunctions.getElementByPart(
+        stepper.steps[0],
+        PARTS.headerContainer
+      ) as HTMLElement;
+
+      expect(step0HeaderContainer.part.contains('disabled')).to.be.true;
+
+      stepper.linear = true;
+      await elementUpdated(stepper);
+
+      stepper.steps[1].invalid = true;
+
+      const step2HeaderContainer = StepperTestFunctions.getElementByPart(
+        stepper.steps[0],
+        PARTS.headerContainer
+      ) as HTMLElement;
+
+      expect(step2HeaderContainer.part.contains('disabled')).to.be.true;
+    });
+
+    it('Should properly indicate where a completed step starts and ends', async () => {
+      stepper.steps[0].complete = true;
+      stepper.steps[1].complete = true;
+      await elementUpdated(stepper);
+
+      const step0HeaderContainer = StepperTestFunctions.getElementByPart(
+        stepper.steps[0],
+        PARTS.headerContainer
+      ) as HTMLElement;
+
+      const step1HeaderContainer = StepperTestFunctions.getElementByPart(
+        stepper.steps[1],
+        PARTS.headerContainer
+      ) as HTMLElement;
+
+      const step2HeaderContainer = StepperTestFunctions.getElementByPart(
+        stepper.steps[2],
+        PARTS.headerContainer
+      ) as HTMLElement;
+
+      expect(stepper.steps[0]).to.have.attribute('complete');
+      expect(step0HeaderContainer.part.contains('complete-start')).to.be.true;
+      expect(step1HeaderContainer.part.contains('complete-start')).to.be.true;
+      expect(step1HeaderContainer.part.contains('complete-end')).to.be.true;
+      expect(step2HeaderContainer.part.contains('complete-end')).to.be.true;
+    });
+
+    it('Should apply the appropriate part to the header container of an optional step', async () => {
+      stepper.steps[0].optional = true;
+      await elementUpdated(stepper);
+
+      const step0HeaderContainer = StepperTestFunctions.getElementByPart(
+        stepper.steps[0],
+        PARTS.headerContainer
+      ) as HTMLElement;
+
+      expect(step0HeaderContainer.part.contains('optional')).to.be.true;
+    });
+
+    it('Should apply the appropriate part to the header container of an invalid step', async () => {
+      stepper.linear = true;
+      await elementUpdated(stepper);
+
+      const step1 = stepper.steps[1];
+      const step1HeaderContainer = StepperTestFunctions.getElementByPart(
+        step1,
+        PARTS.headerContainer
+      ) as HTMLElement;
+
+      step1.invalid = true;
+      await elementUpdated(stepper);
+
+      expect(step1HeaderContainer.part.contains('invalid')).to.be.false;
+
+      step1.active = true;
+      await elementUpdated(stepper);
+
+      expect(step1HeaderContainer.part.contains('invalid')).to.be.false;
+
+      stepper.steps[2].active = true;
+      await elementUpdated(stepper);
+
+      expect(step1HeaderContainer.part.contains('invalid')).to.be.true;
+    });
+
+    it('Should set appropriate part to the header container of a step that has not title and subtitle', async () => {
+      stepper = await StepperTestFunctions.createStepperElement(
+        stepperWithTwoActiveSteps
+      );
+      stepper.stepType = 'indicator';
+      await elementUpdated(stepper);
+
+      for (let i = 0; i < stepper.steps.length; i++) {
+        const step = stepper.steps[i];
+        const stepHeaderTitleAndSubtitleWrapper =
+          StepperTestFunctions.getElementByPart(
+            step,
+            PARTS.text
+          ) as HTMLElement;
+
+        expect(stepHeaderTitleAndSubtitleWrapper.part.contains('empty')).to.be
+          .true;
+      }
+
+      stepper.stepType = 'full';
+      await elementUpdated(stepper);
+
+      const step2 = stepper.steps[2];
+      const step2HeaderTitleAndSubtitleWrapper =
+        StepperTestFunctions.getElementByPart(step2, PARTS.text) as HTMLElement;
+
+      expect(step2HeaderTitleAndSubtitleWrapper.part.contains('empty')).to.be
+        .true;
     });
 
     it('Should indicate the currently active step', async () => {
@@ -586,6 +776,62 @@ describe('Stepper', () => {
 
         expect(step.titlePosition).to.undefined;
         expect(stepHeaderContainer.part.contains('end')).to.be.true;
+      }
+    });
+
+    it('Should render the visual step element according to the specified stepType', async () => {
+      stepper.stepType = 'full';
+      await elementUpdated(stepper);
+
+      for (let i = 0; i < stepper.steps.length; i++) {
+        const step = stepper.steps[i];
+        const indicator = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.indicator
+        ) as HTMLElement;
+        const textWrapper = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.text
+        ) as HTMLElement;
+
+        expect(indicator).not.to.be.null;
+        expect(textWrapper.part.contains('empty')).to.be.false;
+      }
+
+      stepper.stepType = 'indicator';
+      await elementUpdated(stepper);
+
+      for (let i = 0; i < stepper.steps.length; i++) {
+        const step = stepper.steps[i];
+        const indicator = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.indicator
+        ) as HTMLElement;
+        const textWrapper = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.text
+        ) as HTMLElement;
+
+        expect(indicator).not.to.be.null;
+        expect(textWrapper.part.contains('empty')).to.be.true;
+      }
+
+      stepper.stepType = 'title';
+      await elementUpdated(stepper);
+
+      for (let i = 0; i < stepper.steps.length; i++) {
+        const step = stepper.steps[i];
+        const indicator = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.indicator
+        ) as HTMLElement;
+        const textWrapper = StepperTestFunctions.getElementByPart(
+          step,
+          PARTS.text
+        ) as HTMLElement;
+
+        expect(indicator).to.be.null;
+        expect(textWrapper.part.contains('empty')).to.be.false;
       }
     });
 
