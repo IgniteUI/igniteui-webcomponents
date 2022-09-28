@@ -70,7 +70,6 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
-    <div>Some content around the stepper</div>
     <igc-stepper
       .orientation=${orientation}
       .stepType=${stepType}
@@ -81,7 +80,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       .dir=${direction}
     >
       <igc-step id="asd" complete>
-        <span slot="title">Card type</span>
+        <span slot="title">Card Type</span>
         <!-- <span slot="subtitle">subtitle</span> -->
         <span>
           NOT FOCUSABLE CONTENT Ut fermentum convallis odio nec suscipit.
@@ -92,23 +91,25 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           sagittis efficitur. In volutpat cursus sapien et scelerisque. Praesent
           egestas velit vel
         </span>
-        <textarea name="" id="" cols="30" rows="10"></textarea>
+        <input />
         <button>Asd</button>
       </igc-step>
       <igc-step active complete>
-        <span slot="title">Business</span>
-        <!--        <span slot="subtitle">Long subtitle Ut fermentum</span>-->
+        <span slot="title"
+          >Business information (Lorem ipsum dolor sit amet.)</span
+        >
+        <span slot="subtitle">Lorem ipsum dolor sit.</span>
         <div tabindex="0">
           FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
           eleifend gravida erat. Curabitur gravida malesuada arcu, non fermentum
           tortor porta luctus. Nulla sagittis massa sit amet ipsum sagittis
           efficitur. In volutpat cursus sapien et scelerisque. Praesent egestas
           velit vel
-          <textarea name="" id="" cols="30" rows="10"></textarea>
+          <input />
         </div>
       </igc-step>
       <igc-step>
-        <span slot="title">Personal Information</span>
+        <span slot="title">Personal information</span>
         <!-- <span slot="subtitle">subtitle</span> -->
         <span
           >NOT FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
@@ -122,11 +123,10 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <div tabindex="0">
           FOCUSABLE CONTENT Quisque neque dolor, egestas vitae lectus non,
           eleifend gravida erat. Curabitur gravida malesuada arcu,
-          <textarea name="" id="" cols="30" rows="10"></textarea>
+          <input />
         </div>
       </igc-step>
     </igc-stepper>
-    <div>Some content around the stepper</div>
   `;
 };
 

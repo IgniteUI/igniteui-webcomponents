@@ -3,16 +3,17 @@
 
 // STEPPER
 :host {
-    display: flex;
     font-family: var(--igc-font-family);
+
+    // TODO remove this before finalize the component styles
+    background: color(surface, 500);
+    padding: 16px;
 }
 
 // TITLE POSITION [START,END]
 :host([title-position='start']),
 :host([title-position='end']) {
-    ::slotted(igc-step) {
-        min-width: var(--step-not-top-bottom-min-width);
-    }
+    --step-min-width: #{rem(80px)};
 }
 
 // STEPPER [HORIZONTAL]
@@ -21,49 +22,46 @@
     --vertical-separator-visibility: none;
     --horizontal-body-padding: #{rem(8px)};
 
+    display: grid;
+    /* stylelint-disable */
+    grid-template-columns: minmax(var(--step-min-width), max-content) repeat(calc(#{var(--steps-count)} - 1), minmax(var(--step-min-width), auto));
+    /* stylelint-enable */
+
     ::slotted(igc-step) {
-        min-width: var(--header-min-width);
-        overflow: hidden;
-        position: static;
-        flex-grow: 1;
+        // display: contents make all direct children of the step to behave like they are direct children of the stepper
+        display: contents;
+        pointer-events: none;
 
         --align-text: center;
         --align-items: center;
-
-        &::after {
-            content: '';
-            height: var(--stepper-body-height);
-            display: block;
-        }
     }
 
     // FIRST STEP
     ::slotted(igc-step:first-of-type) {
-        flex-grow: 0;
-
-        --horizontal-separator-display--first-of-type: none;
-        --horizontal-separator-visibility--first-of-type: hidden;
+        --horizontal-separator-visibility--first-of-type: none;
     }
 
     // LAST STEP
     ::slotted(igc-step:last-of-type) {
-        --horizontal-separator-display--last-of-type: none;
-        --horizontal-separator-visibility--last-of-type: hidden;
+        --horizontal-separator-visibility--last-of-type: none;
     }
 }
 
-:host([orientation='horizontal'][content-top]) {
-    ::slotted(igc-step) {
-        &::after {
-            display: none;
-        }
+:host([orientation='horizontal'][title-position='start']),
+:host([orientation='horizontal'][title-position='end']) {
+    /* stylelint-disable */
+    grid-template-columns: minmax(var(--step-min-width-side-text), max-content) repeat(calc(#{var(--steps-count)} - 1), minmax(var(--step-min-width-side-text), auto));
+    /* stylelint-enable */
+}
 
-        &::before {
-            content: '';
-            height: var(--stepper-body-height);
-            display: block;
-        }
-    }
+// FIRST STEP
+::slotted(igc-step:first-of-type) {
+    --horizontal-separator-display--first-of-type: none;
+}
+
+// LAST STEP
+::slotted(igc-step:last-of-type) {
+    --horizontal-separator-display--last-of-type: none;
 }
 
 // NOT FULL HEADER
@@ -82,11 +80,17 @@
     }
 }
 
+// CONTENT TOP
+:host([content-top]) {
+    ::slotted(igc-step) {
+        --header-bottom: 2;
+        --body-top: 1;
+    }
+}
+
 // ------------------------------------------
 // STEPPER [VERTICAL]
 :host(:not([orientation='horizontal'])) {
-    --vertical-body-position: relative;
-    --hide-step-inner-before-after: none;
     --vertical-header-z-index: 2;
     --vertical-body-disply: block;
     --header-width-vertical: 100%;
@@ -106,7 +110,7 @@
     }
 
     ::slotted(igc-step:last-of-type) {
-        --hide-body-last-separator: none;
+        --hide-last-separator: none;
     }
 }
 
@@ -117,10 +121,10 @@
     }
 
     ::slotted(igc-step:first-of-type) {
-        --hide-body-first-separator: none;
+        --hide-first-separator: none;
     }
 
     ::slotted(igc-step:last-of-type) {
-        --hide-body-last-separator: block;
+        --hide-last-separator: block;
     }
 }

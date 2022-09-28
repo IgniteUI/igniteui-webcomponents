@@ -35,8 +35,6 @@ export default class IgcStepperComponent extends SizableMixin(
   /** @private */
   protected static styles = styles;
 
-  protected resizeObserver!: ResizeObserver;
-
   private activeStep!: IgcStepComponent;
 
   /** Returns all of the stepper's steps. */
@@ -141,7 +139,6 @@ export default class IgcStepperComponent extends SizableMixin(
 
     this.addEventListener('stepActiveChanged', (event: any) => {
       event.stopPropagation();
-      console.log('stepactivechange', event.target.index);
       this.activateStep(event.target, event.detail);
     });
 
@@ -182,15 +179,9 @@ export default class IgcStepperComponent extends SizableMixin(
   protected override async firstUpdated() {
     await this.updateComplete;
 
-    this.setupObserver();
     if (!this.activeStep) {
       this.activateFirstStep();
     }
-  }
-
-  public override disconnectedCallback(): void {
-    this.resizeObserver?.disconnect();
-    super.disconnectedCallback();
   }
 
   /** Activates the step at a given index. */
@@ -221,20 +212,6 @@ export default class IgcStepperComponent extends SizableMixin(
   public reset(): void {
     this.steps.forEach((step) => (step.visited = false));
     this.activateFirstStep();
-  }
-
-  protected setupObserver() {
-    this.resizeObserver = new ResizeObserver(() => {
-      this.style.setProperty(
-        '--stepper-body-height',
-        this.activeStep.contentBody.getBoundingClientRect().height.toString() +
-          'px'
-      );
-    });
-    if (this.activeStep.contentBody) {
-      this.resizeObserver.observe(this.activeStep.contentBody);
-      console.log('observe', this.activeStep.contentBody);
-    }
   }
 
   private syncProperties(): void {
@@ -307,18 +284,10 @@ export default class IgcStepperComponent extends SizableMixin(
   private changeActiveStep(step: IgcStepComponent) {
     if (this.activeStep) {
       this.activeStep.active = false;
-      if (this.activeStep.contentBody) {
-        this.resizeObserver?.unobserve(this.activeStep.contentBody);
-        console.log('unobserve', this.activeStep.contentBody);
-      }
     }
     step.active = true;
     step.visited = true;
     this.activeStep = step;
-    if (this.activeStep.contentBody) {
-      this.resizeObserver?.observe(this.activeStep.contentBody);
-      console.log('observe', this.activeStep.contentBody);
-    }
   }
 
   private activateFirstStep() {

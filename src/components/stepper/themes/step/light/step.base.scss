@@ -8,6 +8,16 @@
 [part~='header-container'],
 [part~='header'] {
     width: var(--header-width-vertical, auto);
+
+    &::before {
+        content: '';
+        width: auto;
+        flex: 1;
+        border-block-start: var(--separator-size) var(--separator-type) var(--separator-color);
+        height: var(--separator-size);
+        position: relative;
+        min-width: var(--separator-min-width);
+    }
 }
 
 [part~='header-container'] {
@@ -15,7 +25,10 @@
     pointer-events: none;
     position: relative;
     justify-content: center;
-    order: var(--header-bottom, 1);
+    min-width: calc(var(--step-min-width) + (var(--header-padding) * 2));
+
+    // Reset the context so that is possible to set background on the whole stepper
+    z-index: 0;
 
     [part~='header'] {
         pointer-events: all;
@@ -29,19 +42,14 @@
     }
 
     &::before {
-        content: '';
         display: var(--hide-horizontal-separator, var(--horizontal-separator-display--first-of-type));
-        width: auto;
-        flex: 1;
-        border-block-start: var(--separator-size) var(--separator-type) var(--separator-color);
-        height: var(--separator-size);
-        position: relative;
     }
 }
 
 [part~='header'] {
     display: flex;
     align-items: var(--align-items, flex-start);
+    grid-row: var(--header-bottom, 1);
     position: relative;
     overflow: hidden;
     padding: var(--header-padding);
@@ -49,12 +57,10 @@
     gap: var(--header-gap);
     color: var(--header-color);
     z-index: var(--vertical-header-z-index);
-    min-width: calc(#{var(--separator-min-width)} + #{var(--indicator-size)});
 
     &::before,
     &::after {
         content: '';
-        display: var(--hide-horizontal-separator);
         flex: 1;
         border-block-start: var(--separator-size) var(--separator-type) var(--separator-color);
         height: var(--separator-size);
@@ -65,13 +71,17 @@
     }
 
     &::before {
-        visibility: var(--horizontal-separator-visibility--first-of-type);
         inset-inline-start: 0;
+        /* stylelint-disable */
+        display: var(--hide-horizontal-separator, var(--separator-disply-not-full, var(--horizontal-separator-display--first-of-type)));
+        /* stylelint-enable */
     }
 
     &::after {
-        visibility: var(--horizontal-separator-visibility--last-of-type);
         inset-inline-end: 0;
+        /* stylelint-disable */
+        display: var(--hide-horizontal-separator, var(--separator-disply-not-full, var(--horizontal-separator-display--last-of-type)));
+        /* stylelint-enable */
     }
 
     &:focus,
@@ -94,18 +104,25 @@
 
 [part~='body'] {
     display: var(--vertical-body-disply, none);
+    grid-row-start: var(--body-top, 2);
+    grid-column: span #{var(--steps-count)};
     margin-inline-start: calc(var(--body-indent--vertical) / 2);
     padding-inline-start: var(--horizontal-body-padding, #{calc(var(--body-indent--vertical) / 2)});
     padding-inline-end: var(--horizontal-body-padding, var(--vertical-body-padding));
     padding-block-start: var(--horizontal-body-padding, var(--vertical-body-padding));
     padding-block-end: var(--horizontal-body-padding, var(--vertical-body-padding));
     z-index: 1;
-    inset-inline-start: 0;
-    width: 100%;
-    position: var(--vertical-body-position, absolute);
+    position: relative;
+    color: color(gray, 900);
+
+    // Thous tow lines here are on purpose, they make sure that step body content
+    // does not get involved in grid width calculation. They fix a very weird bug.
+    // https://stackoverflow.com/questions/73856035/css-grid-columns-changing-size-with-long-content/73858982#73858982
+    width: 0;
+    min-width: 100%;
 
     &::before {
-        display: var(--hide-body-first-separator, var(--hide-body-last-separator, var(--vertical-separator-visibility)));
+        display: var(--hide-last-separator, var(--hide-first-separator, var(--vertical-separator-visibility)));
         content: '';
         position: absolute;
         inset-inline-start: calc((var(--separator-size) / 2) * -1);
@@ -113,10 +130,6 @@
         inset-block-start: 0 !important;
         border-inline-start: var(--vertical-separator);
     }
-}
-
-[part~='body-top'] {
-    inset-block-start: 0;
 }
 
 [part~='active-body'] {
@@ -182,13 +195,6 @@
     [part~='text'] {
         width: 100%;
     }
-
-    [part~='header'] {
-        &::before,
-        &::after {
-            display: var(--hide-horizontal-separator, var(--separator-disply-not-full));
-        }
-    }
 }
 
 [part~='start'] {
@@ -218,6 +224,7 @@
     align-items: center;
     justify-content: center;
     width: var(--indicator-size);
+    min-width: var(--indicator-size);
     height: var(--indicator-size);
     position: relative;
 
@@ -238,6 +245,7 @@
 
 [part~='text'] {
     text-align: var(--align-text, initial);
+    min-width: var(--indicator-size);
 }
 
 [part~='subtitle'],
@@ -264,7 +272,7 @@
 }
 
 [part~='complete-start'] {
-    &::before {
+    &::after {
         border-block-start-style: var(--separator-type--completed);
         border-block-start-color: var(--separator-color--completed);
     }

@@ -10,12 +10,16 @@
     --indicator-shadow: var(--indicator-background);
 
     // completed
-    --completed-indicator-color: #{color(gray, 900)};
-    --completed-indicator-background: #{color(gray, 300)};
-    --completed-indicator-shadow: #{color(gray, 300)};
+    --completed-indicator-color: #{contrast-color(gray, 900)};
+    --completed-indicator-background: #{color(gray, 900)};
+    --completed-indicator-shadow: #{color(gray, 900)};
 
     // optional
     --optional-indicator-color: var(--indicator-color);
     --optional-indicator-background: var(--indicator-background);
     --optional-indicator-shadow: var(--indicator-shadow);
+
+    // disabled
+    --disabled-background: #{color(gray, 200)};
+    --disabled-shadow: var(--disabled-background);
 }
