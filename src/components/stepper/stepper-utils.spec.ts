@@ -18,6 +18,7 @@ export const PARTS = {
   body: 'div[part~="body"]',
   indentation: 'div[part="indentation"]',
   indicator: 'div[part="indicator"]',
+  text: 'div[part~="text"]',
   title: 'div[part="title"]',
   subtitle: 'div[part="subtitle"]',
   select: 'div[part="select"]',
@@ -109,6 +110,22 @@ export const simpleStepper = `<igc-stepper>
                                           <span>STEP 1 CONTENT</span>
                                         </igc-step>
                                         <igc-step>
+                                          <span slot="title">Step 2</span>
+                                          <span>STEP 2 CONTENT</span>
+                                        </igc-step>
+                                        <igc-step>
+                                          <igc-icon slot="indicator" name='home'></igc-icon>
+                                          <span slot="title">Step 3</span>
+                                          <span>STEP 3 CONTENT</span>
+                                        </igc-step>
+                                      </igc-stepper>`;
+
+export const stepperWithTwoActiveSteps = `<igc-stepper>
+                                        <igc-step active>
+                                          <span slot="title">Step 1</span>
+                                          <span>STEP 1 CONTENT</span>
+                                        </igc-step>
+                                        <igc-step active>
                                           <span slot="title">Step 2</span>
                                           <span>STEP 2 CONTENT</span>
                                         </igc-step>
