@@ -88,7 +88,7 @@ export default class IgcStepperComponent extends SizableMixin(
    * When the stepper is horizontally orientated the title is positioned on the right side of the indicator.
    */
   @property({ reflect: true, attribute: 'title-position' })
-  public titlePosition!: 'bottom' | 'top' | 'end' | 'start' | undefined;
+  public titlePosition?: 'bottom' | 'top' | 'end' | 'start';
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {
@@ -182,10 +182,6 @@ export default class IgcStepperComponent extends SizableMixin(
     if (!this.activeStep) {
       this.activateFirstStep();
     }
-  }
-
-  public override disconnectedCallback(): void {
-    super.disconnectedCallback();
   }
 
   /** Activates the step at a given index. */
@@ -289,7 +285,6 @@ export default class IgcStepperComponent extends SizableMixin(
     if (this.activeStep) {
       this.activeStep.active = false;
     }
-
     step.active = true;
     step.visited = true;
     this.activeStep = step;

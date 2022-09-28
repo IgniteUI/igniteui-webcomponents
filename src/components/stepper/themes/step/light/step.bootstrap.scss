@@ -3,6 +3,8 @@
 :host {
     --header-gap: #{rem(8px)};
     --header-padding: #{rem(8px)};
+    --header-min-width: #{rem(56px)};
+    --step-not-top-bottom-min-width: #{rem(96px)};
     --indicator-size: #{rem(40px)};
     --indicator-roundness: #{rem(4px)};
     --separator-size: #{rem(8px)};

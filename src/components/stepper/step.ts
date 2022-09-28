@@ -69,7 +69,7 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   @property({ attribute: false })
-  public titlePosition!: 'bottom' | 'top' | 'end' | 'start' | undefined;
+  public titlePosition?: 'bottom' | 'top' | 'end' | 'start';
 
   /** @private */
   @property({ attribute: false })
@@ -137,10 +137,6 @@ export default class IgcStepComponent extends LitElement {
         new CustomEvent('stepDisabledChanged', { bubbles: true })
       );
     }
-  }
-
-  public override disconnectedCallback(): void {
-    super.disconnectedCallback();
   }
 
   protected handleClick(event: MouseEvent): void {
