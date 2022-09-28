@@ -9,8 +9,7 @@
 [part~='header'] {
     width: var(--header-width-vertical, auto);
 
-    &::before,
-    &::after {
+    &::before {
         content: '';
         width: auto;
         flex: 1;
@@ -26,6 +25,7 @@
     pointer-events: none;
     position: relative;
     justify-content: center;
+    min-width: calc(var(--step-min-width) + (var(--header-padding) * 2));
 
     // Reset the context so that is possible to set background on the whole stepper
     z-index: 0;
@@ -44,10 +44,6 @@
     &::before {
         display: var(--hide-horizontal-separator, var(--horizontal-separator-display--first-of-type));
     }
-
-    &::after {
-        display: var(--hide-horizontal-separator, var(--horizontal-separator-display--last-of-type));
-    }
 }
 
 [part~='header'] {
@@ -64,6 +60,11 @@
 
     &::before,
     &::after {
+        content: '';
+        flex: 1;
+        border-block-start: var(--separator-size) var(--separator-type) var(--separator-color);
+        height: var(--separator-size);
+        min-width: var(--separator-min-width);
         width: calc(50% - (var(--indicator-size) / 2) - var(--header-padding));
         position: absolute;
         z-index: -1;
@@ -71,12 +72,16 @@
 
     &::before {
         inset-inline-start: 0;
+        /* stylelint-disable */
         display: var(--hide-horizontal-separator, var(--separator-disply-not-full, var(--horizontal-separator-display--first-of-type)));
+        /* stylelint-enable */
     }
 
     &::after {
         inset-inline-end: 0;
+        /* stylelint-disable */
         display: var(--hide-horizontal-separator, var(--separator-disply-not-full, var(--horizontal-separator-display--last-of-type)));
+        /* stylelint-enable */
     }
 
     &:focus,
@@ -190,13 +195,6 @@
     [part~='text'] {
         width: 100%;
     }
-
-    // [part~='header'] {
-    //    &::before,
-    //    &::after {
-    //        display: var(--hide-horizontal-separator, var(--separator-disply-not-full));
-    //    }
-    // }
 }
 
 [part~='start'] {
@@ -226,6 +224,7 @@
     align-items: center;
     justify-content: center;
     width: var(--indicator-size);
+    min-width: var(--indicator-size);
     height: var(--indicator-size);
     position: relative;
 
@@ -246,6 +245,7 @@
 
 [part~='text'] {
     text-align: var(--align-text, initial);
+    min-width: var(--indicator-size);
 }
 
 [part~='subtitle'],

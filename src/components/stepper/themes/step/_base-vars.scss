@@ -6,14 +6,19 @@
     --body-padding: #{rem(16px)};
     --header-gap: #{rem(8px)};
     --header-padding: #{rem(8px)};
-    --header-min-width: #{rem(40px)};
     --vertical-body-padding: var(--body-padding);
-    --step-min-width: calc(var(--header-min-width) + var(--separator-min-width));
 
     // Indicator
     --indicator-size: #{rem(24px)};
     --indicator-roundness: calc(var(--indicator-size) / 2);
     --indicator-box-shadow-size: #{rem(1px)};
+
+    // Step min width
+    --step-min-width: calc(var(--indicator-size) + var(--header-padding) + var(--separator-size));
+
+    /* stylelint-disable */
+    --step-min-width-side-text: calc(var(--indicator-size) + var(--header-padding) + var(--separator-size) + var(--text-min-width));
+    /* stylelint-enable */
 
     // Separator
     --separator-size: #{rem(1px)};
@@ -22,6 +27,7 @@
     --separator-position: calc(var(--header-padding) + (var(--indicator-size) / 2) - (var(--separator-size) / 2));
     --separator-min-width: #{rem(4px)};
     --vertical-separator: var(--separator-size) var(--separator-type) var(--separator-color);
+    --text-min-width: var(--indicator-size);
 
     // ===========================================
     // COLORS
