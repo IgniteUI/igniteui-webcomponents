@@ -222,7 +222,6 @@ export default class IgcStepperComponent extends SizableMixin(
       step.contentTop = this.contentTop;
       step.index = index;
       step.active = this.activeStep === step;
-      step.style.setProperty('--step-index', index.toString());
       step.header?.setAttribute('aria-posinset', (index + 1).toString());
       step.header?.setAttribute('aria-setsize', this.steps.length.toString());
       step.header?.setAttribute('id', `igc-step-header-${index}`);
