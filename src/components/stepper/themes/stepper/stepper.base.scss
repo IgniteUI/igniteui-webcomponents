@@ -1,19 +1,35 @@
 @use '../../../../styles/common/component';
-@use '../step/base-vars' as *;
+@use '../../../../styles/utilities/index' as *;
 
 // STEPPER
 :host {
     font-family: var(--igc-font-family);
 
-    // TODO remove this before finalize the component styles
-    background: color(surface, 500);
-    padding: 16px;
-}
+    --margin: #{rem(16px)};
+    --body-padding: #{rem(16px)};
+    --header-gap: #{rem(8px)};
+    --header-padding: #{rem(8px)};
+    --vertical-body-padding: var(--body-padding);
 
-// TITLE POSITION [START,END]
-:host([title-position='start']),
-:host([title-position='end']) {
-    --step-min-width: #{rem(80px)};
+    // Indicator
+    --indicator-size: #{rem(24px)};
+    --indicator-roundness: calc(var(--indicator-size) / 2);
+    --indicator-box-shadow-size: #{rem(1px)};
+
+    // Separator
+    --separator-size: #{rem(1px)};
+    --separator-type: dashed;
+    --separator-type--completed: solid;
+    --separator-position: calc(var(--header-padding) + (var(--indicator-size) / 2) - (var(--separator-size) / 2));
+    --separator-min-width: #{rem(36px)};
+    --separator-min-width--header: #{rem(4px)};
+    --separator-min-width--full: calc(var(--separator-min-width) + var(--separator-min-width--header));
+    --text-min-width: var(--indicator-size);
+
+    // Step min width
+    --header-min-width: calc(var(--indicator-size) + (var(--header-padding) * 2));
+    --step-min-width: calc(var(--header-min-width) + var(--separator-min-width--full));
+    --step-min-width--first-step: var(--header-min-width);
 }
 
 // STEPPER [HORIZONTAL]
@@ -24,7 +40,7 @@
 
     display: grid;
     /* stylelint-disable */
-    grid-template-columns: minmax(var(--step-min-width), max-content) repeat(calc(#{var(--steps-count)} - 1), minmax(var(--step-min-width), auto));
+    grid-template-columns: minmax(var(--step-min-width--first-step), max-content) repeat(calc(#{var(--steps-count)} - 1), minmax(var(--step-min-width), auto));
     /* stylelint-enable */
 
     ::slotted(igc-step) {
@@ -49,8 +65,9 @@
 
 :host([orientation='horizontal'][title-position='start']),
 :host([orientation='horizontal'][title-position='end']) {
+    --step-min-width--first-step: calc(var(--header-min-width) + var(--indicator-size) + var(--header-padding));
     /* stylelint-disable */
-    grid-template-columns: minmax(var(--step-min-width-side-text), max-content) repeat(calc(#{var(--steps-count)} - 1), minmax(var(--step-min-width-side-text), auto));
+    --step-min-width: calc(var(--header-min-width) + var(--separator-min-width--full) - var(--separator-min-width--header) + var(--indicator-size) + var(--header-padding));
     /* stylelint-enable */
 }
 
@@ -61,11 +78,16 @@
 
 // LAST STEP
 ::slotted(igc-step:last-of-type) {
+    --vertical-body-disply--last-of-type: none;
     --horizontal-separator-display--last-of-type: none;
 }
 
 // NOT FULL HEADER
 :host(:not([step-type='full'])) {
+    /* stylelint-disable */
+    --step-min-width: calc(var(--header-min-width) + var(--separator-min-width--full) - var(--separator-min-width--header));
+    /* stylelint-enable */
+
     --separator-disply-not-full: none;
 
     ::slotted(igc-step) {

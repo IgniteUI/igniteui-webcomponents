@@ -1,9 +1,6 @@
 @use '../../../../../styles/utilities/index' as *;
 
 :host {
-    --indicator-box-shadow-size: #{rem(2px)};
-    --separator-size: #{rem(2px)};
-
     // header
     --header-color: #{color(gray, 900)};
     --header-background--hover: #{color(gray, 100)};

@@ -1,23 +1,8 @@
 @use '../../../../../styles/utilities/index' as *;
 
 :host {
-    --header-gap: #{rem(8px)};
-    --header-padding: #{rem(8px)};
-    --header-min-width: #{rem(56px)};
-    --step-not-top-bottom-min-width: #{rem(96px)};
-    --indicator-size: #{rem(40px)};
-    --indicator-roundness: #{rem(4px)};
-    --separator-size: #{rem(8px)};
     --separator-color: #{color(gray, 300)};
     --separator-color--completed: #{color(primary, 500)};
-    --separator-type: solid;
-    --indicator-box-shadow-size: #{rem(1px)};
-
-    // Step min width
-    --step-min-width: calc(var(--indicator-size) + var(--header-padding) + var(--separator-size));
-    /* stylelint-disable */
-    --step-min-width-side-text: calc(var(--indicator-size) + var(--header-padding) + var(--separator-size) + var(--text-min-width));
-    /* stylelint-enable */
 
     // Header
     --header-background--hover: #{color(gray, 300, .5)};
