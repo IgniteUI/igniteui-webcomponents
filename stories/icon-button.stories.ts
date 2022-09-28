@@ -153,7 +153,9 @@ const Template: Story<ArgTypes, Context> = (
       variant=${ifDefined(variant)}
       .size=${size}
       .disabled=${ifDefined(disabled)}
-    ></igc-icon-button>
+    >
+      <igc-ripple></igc-ripple>
+    </igc-icon-button>
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
@@ -171,8 +173,10 @@ const Template: Story<ArgTypes, Context> = (
       variant=${ifDefined(variant)}
       .size=${size}
       .disabled=${ifDefined(disabled)}
-      >💙</igc-icon-button
     >
+      <igc-ripple></igc-ripple>
+      💙
+    </igc-icon-button>
     <igc-icon-button
       href=${ifDefined(href)}
       target=${ifDefined(target)}
