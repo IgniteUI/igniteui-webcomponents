@@ -1,7 +1,6 @@
 @use '../../../../styles/utilities/index' as *;
 
 $disabled-color: var(--disabled-color, color(gray, 500)) !default;
-$padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 
 :host {
     --lines-clamped: 1;
@@ -18,7 +17,8 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding: $padding;
+    padding-inline: pad-inline(24px);
+    padding-block: pad-block(16px);
 
     &:focus,
     &:active {
@@ -56,7 +56,8 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
     @include type-style('body-2');
 
     overflow: hidden;
-    padding: $padding;
+    padding-inline: pad-inline(24px);
+    padding-block: pad-block(16px);
 }
 
 [part~='indicator'] {
@@ -68,12 +69,12 @@ $padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
 }
 
 :host([indicator-position='start']) [part~='indicator'] {
-    margin-inline-end: calc(var(--igc-spacing-large) * 2);
+    margin-inline-end: pad(16px);
 }
 
 :host([indicator-position='end']) [part~='indicator'] {
     order: 2;
-    margin-inline-start: calc(var(--igc-spacing-large) * 2);
+    margin-inline-start: pad(16px);
 }
 
 :host([indicator-position='none']) [part~='indicator'] {

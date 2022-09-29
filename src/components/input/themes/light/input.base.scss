@@ -1,12 +1,5 @@
-@use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-
-$input-height: (
-    large: rem(56px),
-    medium: rem(48px),
-    small: rem(40px)
-);
 
 %starfix {
     display: flex;
@@ -16,10 +9,24 @@ $input-height: (
 }
 
 :host {
+    --size: #{sizable(rem(40px), rem(48px), rem(56px))};
+
     position: relative;
     display: block;
     font-family: var(--ig-font-family);
     outline-style: none;
+}
+
+:host([size='large']) {
+    --component-size: var(--ig-size, var(--ig-size-large));
+}
+
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+}
+
+:host([size='small']) {
+    --component-size: var(--ig-size, var(--ig-size-small));
 }
 
 [part='label'] {
@@ -29,7 +36,7 @@ $input-height: (
 
 [part~='input'] {
     width: 100%;
-    height: 100%;
+    height: var(--size);
     border: none;
     outline-style: none;
     color: inherit;
@@ -41,6 +48,7 @@ $input-height: (
     position: relative;
     display: grid;
     color: color(gray, 900);
+    height: var(--size);
 }
 
 [part='prefix'],
@@ -69,25 +77,4 @@ $input-height: (
 
 [part='helper-text'] {
     @include type-style('caption');
-}
-
-:host([size='large']) {
-    [part~='input'],
-    [part~='container'] {
-        height: map.get($input-height, 'large');
-    }
-}
-
-:host([size='medium']) {
-    [part~='input'],
-    [part~='container'] {
-        height: map.get($input-height, 'medium');
-    }
-}
-
-:host([size='small']) {
-    [part~='input'],
-    [part~='container'] {
-        height: map.get($input-height, 'small');
-    }
 }

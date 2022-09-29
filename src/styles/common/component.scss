@@ -1,8 +1,11 @@
 @use '../utilities/mixins' as *;
+@use '../../../node_modules/igniteui-theming/sass/themes/mixins' as *;
 @use '../../../node_modules/igniteui-theming/sass/color/functions' as *;
 @use '../../../node_modules/igniteui-theming/sass/typography/functions' as *;
 
 :host {
+    @include sizable();
+
     position: relative;
     box-sizing: border-box;
 

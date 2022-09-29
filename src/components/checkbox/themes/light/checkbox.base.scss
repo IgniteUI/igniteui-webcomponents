@@ -13,7 +13,7 @@ input[type='checkbox'] {
 $mark-length: 24;
 
 [part~='control'] {
-    $size: var(--size, rem(20px));
+    --size: #{rem(20px)};
 
     position: relative;
     display: inline-flex;
@@ -27,8 +27,8 @@ $mark-length: 24;
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-        width: $size;
-        height: $size;
+        width: var(--size);
+        height: var(--size);
         border: rem(2px) solid color(gray, 600);
         transition: all .15s ease-in;
     }
