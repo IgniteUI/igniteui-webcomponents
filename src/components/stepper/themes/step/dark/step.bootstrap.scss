@@ -1,16 +1,18 @@
-@use '../../../../../styles/utilities/index' as *;
+@use '../../../../../styles/utilities/functions' as *;
 
-:host {
-    // Header
-    --header-background--hover: #{color(gray, 100, .3)};
-    --header-background--focus: #{color(gray, 100, .5)};
-    --header-shadow: #{color(gray, 400)};
+@mixin theme() {
+    igc-step {
+        // Header
+        --header-background--hover: #{color(gray, 100, .3)};
+        --header-background--focus: #{color(gray, 100, .5)};
+        --header-shadow: #{color(gray, 400)};
 
-    // inactive
-    --title-color: #{color(gray, 900)};
-    --color: #{color(gray, 700)};
+        // inactive
+        --title-color: #{color(gray, 900)};
+        --color: #{color(gray, 700)};
 
-    // disabled
-    --disabled-background: #{color(gray, 50, 0)};
-    --disabled-shadow: #{color(gray, 300)};
+        // disabled
+        --disabled-background: #{color(gray, 50, 0)};
+        --disabled-shadow: #{color(gray, 300)};
+    }
 }
