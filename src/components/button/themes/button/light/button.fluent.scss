@@ -10,6 +10,7 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
 
 [part='base'] {
     @include utils.border-radius(utils.rem(2px));
+
     padding: 0 utils.pad(8px, 16px, 16px);
 }
 

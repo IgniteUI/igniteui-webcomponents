@@ -4,7 +4,7 @@
 @use 'sass:map';
 @use 'sass:math';
 
-$border-radius: calc(#{var(--size)} / 2);
+$border-radius: #{calc(var(--size) / 2)};
 
 :host(igc-calendar) {
     --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
