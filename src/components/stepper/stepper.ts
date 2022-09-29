@@ -53,7 +53,7 @@ export default class IgcStepperComponent extends SizableMixin(
       End: this.onEndKey,
     })
   );
-  private init = true;
+
   private activeStep!: IgcStepComponent;
 
   /** Returns all of the stepper's steps. */
@@ -188,16 +188,6 @@ export default class IgcStepperComponent extends SizableMixin(
     this.setAttribute('aria-orientation', this.orientation);
   }
 
-  protected override async firstUpdated() {
-    await this.updateComplete;
-
-    this.init = false;
-
-    if (this.linear) {
-      this.linearChange();
-    }
-  }
-
   private activateFirstStep() {
     const firstEnabledStep = this.steps.find(
       (s: IgcStepComponent) => !s.disabled
@@ -257,7 +247,7 @@ export default class IgcStepperComponent extends SizableMixin(
 
     const nextStep = steps.find(
       (step: IgcStepComponent, i: number) =>
-        i > activeStepIndex && !step.disabled && !step.linearDisabled
+        i > activeStepIndex && step.isAccessible
     );
     if (nextStep) {
       this.activateStep(nextStep, false);
@@ -359,10 +349,6 @@ export default class IgcStepperComponent extends SizableMixin(
   }
 
   private calculateLinearDisabledSteps(): void {
-    if (!this.activeStep) {
-      return;
-    }
-
     if (!this.activeStep.invalid) {
       const firstRequiredIndex = this.getNextRequiredStep();
       if (firstRequiredIndex !== -1) {
@@ -388,9 +374,6 @@ export default class IgcStepperComponent extends SizableMixin(
   }
 
   private getNextRequiredStep(): number {
-    if (!this.activeStep) {
-      return -1;
-    }
     return this.steps.findIndex(
       (step: IgcStepComponent) =>
         step.index > this.activeStep.index &&
@@ -420,15 +403,16 @@ export default class IgcStepperComponent extends SizableMixin(
 
   protected stepsChanged(): void {
     this.style.setProperty('--steps-count', this.steps.length.toString());
-    this.syncProperties();
-    if (!this.init && this.linear) {
-      this.calculateLinearDisabledSteps();
-    }
 
-    // when the active step is removed
+    // initially when there isn't a predefined active step or when the active step is removed
     const hasActiveStep = this.steps.find((s) => s === this.activeStep);
     if (!hasActiveStep) {
       this.activateFirstStep();
+    }
+
+    this.syncProperties();
+    if (this.linear) {
+      this.calculateLinearDisabledSteps();
     }
   }
 
