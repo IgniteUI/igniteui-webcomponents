@@ -356,50 +356,40 @@ export default class IgcStepperComponent extends SizableMixin(
   private getNextStep(
     focusedStep: IgcStepComponent
   ): IgcStepComponent | undefined {
-    if (focusedStep) {
-      if (focusedStep.index === this.steps.length - 1) {
-        return this.steps.find((step: IgcStepComponent) => step.isAccessible);
-      }
-
-      const nextAccessible = this.steps.find(
-        (step: IgcStepComponent, i: number) =>
-          i > focusedStep.index && step.isAccessible
-      );
-      return nextAccessible
-        ? nextAccessible
-        : this.steps.find((step: IgcStepComponent) => step.isAccessible);
+    if (focusedStep.index === this.steps.length - 1) {
+      return this.steps.find((step: IgcStepComponent) => step.isAccessible);
     }
 
-    return undefined;
+    const nextAccessible = this.steps.find(
+      (step: IgcStepComponent, i: number) =>
+        i > focusedStep.index && step.isAccessible
+    );
+    return nextAccessible
+      ? nextAccessible
+      : this.steps.find((step: IgcStepComponent) => step.isAccessible);
   }
 
   private getPreviousStep(
     focusedStep: IgcStepComponent
   ): IgcStepComponent | undefined {
-    if (focusedStep) {
-      if (focusedStep.index === 0) {
-        return this.steps
-          .filter((step: IgcStepComponent) => step.isAccessible)
-          .pop();
-      }
-
-      let prevStep;
-      for (let i = focusedStep.index - 1; i >= 0; i--) {
-        const step = this.steps[i];
-        if (step.isAccessible) {
-          prevStep = step;
-          break;
-        }
-      }
-
-      return prevStep
-        ? prevStep
-        : this.steps
-            .filter((step: IgcStepComponent) => step.isAccessible)
-            .pop();
+    if (focusedStep.index === 0) {
+      return this.steps
+        .filter((step: IgcStepComponent) => step.isAccessible)
+        .pop();
     }
 
-    return undefined;
+    let prevStep;
+    for (let i = focusedStep.index - 1; i >= 0; i--) {
+      const step = this.steps[i];
+      if (step.isAccessible) {
+        prevStep = step;
+        break;
+      }
+    }
+
+    return prevStep
+      ? prevStep
+      : this.steps.filter((step: IgcStepComponent) => step.isAccessible).pop();
   }
 
   public calculateLinearDisabledSteps(): void {
