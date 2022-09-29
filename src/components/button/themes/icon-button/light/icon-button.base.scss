@@ -8,16 +8,18 @@
     vertical-align: middle;
 }
 
-::slotted(*) {
+::slotted(:not(igc-ripple)) {
     --icon-size: #{sizable(rem(16px), rem(20px), rem(24px))};
 
     font-size: var(--icon-size) !important;
     vertical-align: middle;
-}
-
-slot {
     pointer-events: none;
 }
+
+// This prevents the igc-ripple from working.
+// slot {
+//     pointer-events: none;
+// }
 
 [part='base'] {
     @include border-radius(50%);

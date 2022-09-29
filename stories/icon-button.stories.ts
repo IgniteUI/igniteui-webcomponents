@@ -153,7 +153,9 @@ const Template: Story<ArgTypes, Context> = (
       variant=${ifDefined(variant)}
       .size=${size}
       .disabled=${ifDefined(disabled)}
-    ></igc-icon-button>
+    >
+      <igc-ripple></igc-ripple>
+    </igc-icon-button>
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
@@ -163,9 +165,6 @@ const Template: Story<ArgTypes, Context> = (
       rel="stylesheet"
     />
     <igc-icon-button
-      .name=${name}
-      .collection=${collection}
-      .mirrored=${mirrored}
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
@@ -174,12 +173,11 @@ const Template: Story<ArgTypes, Context> = (
       variant=${ifDefined(variant)}
       .size=${size}
       .disabled=${ifDefined(disabled)}
-      >💙</igc-icon-button
     >
+      <igc-ripple></igc-ripple>
+      💙
+    </igc-icon-button>
     <igc-icon-button
-      .name=${name}
-      .collection=${collection}
-      .mirrored=${mirrored}
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
@@ -192,9 +190,6 @@ const Template: Story<ArgTypes, Context> = (
       <span class="material-icons">favorite</span>
     </igc-icon-button>
     <igc-icon-button
-      .name=${name}
-      .collection=${collection}
-      .mirrored=${mirrored}
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
