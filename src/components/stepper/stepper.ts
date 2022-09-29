@@ -15,10 +15,30 @@ import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
 import { watch } from '../common/decorators/watch.js';
 
 defineComponents(IgcStepComponent);
+
+/**
+ * IgxStepper provides a wizard-like workflow by dividing content into logical steps.
+ *
+ * @remarks
+ * The stepper component allows the user to navigate between multiple steps.
+ * It supports horizontal and vertical orientation as well as keyboard navigation and provides API methods to control the active step.
+ *
+ * @element igc-stepper
+ *
+ * @slot - Renders the step components inside default slot.
+ *
+ * @fires igcActiveStepChanging - Emitted when the active step is about to change.
+ * @fires igcActiveStepChanged - Emitted when the active step is changed.
+ */
 @themes({ bootstrap, fluent, indigo })
 export default class IgcStepperComponent extends SizableMixin(
   EventEmitterMixin<IgcStepperEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  /** @private */
+  public static readonly tagName = 'igc-stepper';
+  /** @private */
+  protected static styles = styles;
+
   private readonly keyDownHandlers: Map<string, Function> = new Map(
     Object.entries({
       Enter: this.activateStep,
@@ -33,13 +53,7 @@ export default class IgcStepperComponent extends SizableMixin(
       End: this.onEndKey,
     })
   );
-
-  /** @private */
-  public static readonly tagName = 'igc-stepper';
-
-  /** @private */
-  protected static styles = styles;
-
+  private init = true;
   private activeStep!: IgcStepComponent;
 
   /** Returns all of the stepper's steps. */
@@ -147,7 +161,7 @@ export default class IgcStepperComponent extends SizableMixin(
       this.activateStep(event.target, event.detail);
     });
 
-    this.addEventListener('stepInvalidStateChanged', (event: any) => {
+    this.addEventListener('stepDisabledInvalidChanged', (event: any) => {
       event.stopPropagation();
       if (this.linear) {
         this.calculateLinearDisabledSteps();
@@ -159,13 +173,6 @@ export default class IgcStepperComponent extends SizableMixin(
       const nextStep = this.steps[event.target.index + 1];
       if (nextStep) {
         nextStep.previousComplete = event.target.complete;
-      }
-    });
-
-    this.addEventListener('stepDisabledChanged', (event: any) => {
-      event.stopPropagation();
-      if (this.linear) {
-        this.calculateLinearDisabledSteps();
       }
     });
 
@@ -184,57 +191,20 @@ export default class IgcStepperComponent extends SizableMixin(
   protected override async firstUpdated() {
     await this.updateComplete;
 
-    if (!this.activeStep) {
-      this.activateFirstStep();
+    this.init = false;
+
+    if (this.linear) {
+      this.linearChange();
     }
   }
 
-  /** Activates the step at a given index. */
-  public navigateTo(index: number) {
-    const step = this.steps[index];
-    if (!step) {
-      return;
+  private activateFirstStep() {
+    const firstEnabledStep = this.steps.find(
+      (s: IgcStepComponent) => !s.disabled
+    );
+    if (firstEnabledStep) {
+      this.activateStep(firstEnabledStep, false);
     }
-    this.activateStep(step, false);
-  }
-
-  /** Activates the next enabled step. */
-  public next(): void {
-    this.moveToNextStep();
-  }
-
-  /** Activates the previous enabled step. */
-  public prev(): void {
-    this.moveToNextStep(false);
-  }
-
-  /**
-   * Resets the stepper to its initial state i.e. activates the first step.
-   *
-   * @remarks
-   * The steps' content will not be automatically reset.
-   */
-  public reset(): void {
-    this.steps.forEach((step) => (step.visited = false));
-    this.activateFirstStep();
-  }
-
-  private syncProperties(): void {
-    this.steps.forEach((step: IgcStepComponent, index: number) => {
-      step.orientation = this.orientation;
-      step.stepType = this.stepType;
-      step.titlePosition = this.titlePosition;
-      step.contentTop = this.contentTop;
-      step.index = index;
-      step.active = this.activeStep === step;
-      step.header?.setAttribute('aria-posinset', (index + 1).toString());
-      step.header?.setAttribute('aria-setsize', this.steps.length.toString());
-      step.header?.setAttribute('id', `igc-step-header-${index}`);
-      step.header?.setAttribute('aria-controls', `igc-step-content-${index}`);
-      if (this.linear) {
-        this.calculateLinearDisabledSteps();
-      }
-    });
   }
 
   private activateStep(step: IgcStepComponent, shouldEmit = true) {
@@ -266,6 +236,15 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
+  private changeActiveStep(step: IgcStepComponent) {
+    if (this.activeStep) {
+      this.activeStep.active = false;
+    }
+    step.active = true;
+    step.visited = true;
+    this.activeStep = step;
+  }
+
   private moveToNextStep(next = true) {
     let steps = this.steps;
     let activeStepIndex = this.activeStep.index;
@@ -285,25 +264,7 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
-  private changeActiveStep(step: IgcStepComponent) {
-    if (this.activeStep) {
-      this.activeStep.active = false;
-    }
-    step.active = true;
-    step.visited = true;
-    this.activeStep = step;
-  }
-
-  private activateFirstStep() {
-    const firstEnabledStep = this.steps.find(
-      (s: IgcStepComponent) => !s.disabled
-    );
-    if (firstEnabledStep) {
-      this.activateStep(firstEnabledStep, false);
-    }
-  }
-
-  public handleKeydown(event: KeyboardEvent, focusedStep: IgcStepComponent) {
+  private handleKeydown(event: KeyboardEvent, focusedStep: IgcStepComponent) {
     const key = event.key.toLowerCase();
 
     if (this.keyDownHandlers.has(event.key)) {
@@ -315,34 +276,34 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
-  protected onHomeKey() {
+  private onHomeKey() {
     this.steps
       .filter((step: IgcStepComponent) => step.isAccessible)[0]
       ?.header?.focus();
   }
 
-  protected onEndKey() {
+  private onEndKey() {
     this.steps
       .filter((step: IgcStepComponent) => step.isAccessible)
       .pop()
       ?.header?.focus();
   }
 
-  protected onArrowDownKeyDown(focusedStep: IgcStepComponent) {
+  private onArrowDownKeyDown(focusedStep: IgcStepComponent) {
     if (this.orientation === 'horizontal') {
       return;
     }
     this.getNextStep(focusedStep)?.header?.focus();
   }
 
-  protected onArrowUpKeyDown(focusedStep: IgcStepComponent) {
+  private onArrowUpKeyDown(focusedStep: IgcStepComponent) {
     if (this.orientation === 'horizontal') {
       return;
     }
     this.getPreviousStep(focusedStep)?.header?.focus();
   }
 
-  protected onArrowRightKeyDown(focusedStep: IgcStepComponent) {
+  private onArrowRightKeyDown(focusedStep: IgcStepComponent) {
     if (this.dir === 'rtl' && this.orientation === 'horizontal') {
       this.getPreviousStep(focusedStep)?.header?.focus();
     } else {
@@ -350,7 +311,7 @@ export default class IgcStepperComponent extends SizableMixin(
     }
   }
 
-  protected onArrowLeftKeyDown(focusedStep: IgcStepComponent) {
+  private onArrowLeftKeyDown(focusedStep: IgcStepComponent) {
     if (this.dir === 'rtl' && this.orientation === 'horizontal') {
       this.getNextStep(focusedStep)?.header?.focus();
     } else {
@@ -397,7 +358,7 @@ export default class IgcStepperComponent extends SizableMixin(
       : this.steps.filter((step: IgcStepComponent) => step.isAccessible).pop();
   }
 
-  public calculateLinearDisabledSteps(): void {
+  private calculateLinearDisabledSteps(): void {
     if (!this.activeStep) {
       return;
     }
@@ -412,26 +373,16 @@ export default class IgcStepperComponent extends SizableMixin(
         );
       }
     } else {
-      this.steps.forEach((step: IgcStepComponent) => {
-        if (step.index > this.activeStep.index) {
-          step.linearDisabled = true;
-        } else {
-          step.linearDisabled = false;
-        }
-      });
+      this.updateLinearDisabledSteps(this.activeStep.index);
     }
   }
 
   private updateLinearDisabledSteps(toIndex: number): void {
     this.steps.forEach((step: IgcStepComponent) => {
-      if (step.index > this.activeStep.index) {
-        if (step.index <= toIndex) {
-          step.linearDisabled = false;
-        } else {
-          step.linearDisabled = true;
-        }
-      } else {
+      if (step.index <= toIndex) {
         step.linearDisabled = false;
+      } else {
+        step.linearDisabled = true;
       }
     });
   }
@@ -449,15 +400,66 @@ export default class IgcStepperComponent extends SizableMixin(
     );
   }
 
+  private syncProperties(): void {
+    this.steps.forEach((step: IgcStepComponent, index: number) => {
+      step.orientation = this.orientation;
+      step.stepType = this.stepType;
+      step.titlePosition = this.titlePosition;
+      step.contentTop = this.contentTop;
+      step.index = index;
+      step.active = this.activeStep === step;
+      step.header?.setAttribute('aria-posinset', (index + 1).toString());
+      step.header?.setAttribute('aria-setsize', this.steps.length.toString());
+      step.header?.setAttribute('id', `igc-step-header-${index}`);
+      step.header?.setAttribute('aria-controls', `igc-step-content-${index}`);
+      if (index > 0) {
+        step.previousComplete = this.steps[index - 1].complete;
+      }
+    });
+  }
+
   protected stepsChanged(): void {
     this.style.setProperty('--steps-count', this.steps.length.toString());
     this.syncProperties();
+    if (!this.init && this.linear) {
+      this.calculateLinearDisabledSteps();
+    }
 
     // when the active step is removed
     const hasActiveStep = this.steps.find((s) => s === this.activeStep);
     if (!hasActiveStep) {
       this.activateFirstStep();
     }
+  }
+
+  /** Activates the step at a given index. */
+  public navigateTo(index: number) {
+    const step = this.steps[index];
+    if (!step) {
+      return;
+    }
+    this.activateStep(step, false);
+  }
+
+  /** Activates the next enabled step. */
+  public next(): void {
+    this.moveToNextStep();
+  }
+
+  /** Activates the previous enabled step. */
+  public prev(): void {
+    this.moveToNextStep(false);
+  }
+
+  /**
+   * Resets the stepper to its initial state i.e. activates the first step.
+   *
+   * @remarks
+   * The steps' content will not be automatically reset.
+   */
+  public reset(): void {
+    this.steps.forEach((step) => (step.visited = false));
+    this.activateFirstStep();
   }
 
   protected override render() {

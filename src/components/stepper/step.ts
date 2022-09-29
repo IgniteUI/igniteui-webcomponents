@@ -10,11 +10,40 @@ import { styles as indigo } from './themes/step/light/step.indigo.css.js';
 import { styles as fluent } from './themes/step/light/step.fluent.css.js';
 import { styles as material } from './themes/step/light/step.material.css.js';
 
+/**
+ * The step component is used within the `igc-stepper` element and it holds the content of each step.
+ * It also supports custom indicators, title and subtitle.
+ *
+ * @element igc-step
+ *
+ * @slot - Renders the content of the step.
+ * @slot indicator - Renders the indicator of the step. By default, it displays the step index + 1.
+ * @slot title - Renders the title of the step.
+ * @slot subtitle - Renders the subtitle of the step.
+ *
+ * @csspart header-container - Wrapper of the step's `header` and its separators.
+ * @csspart disabled - Indicates a disabled state. Applies to `header-container`.
+ * @csspart complete-start - Indicates a complete state of the current step. Applies to `header-container`.
+ * @csspart complete-end - Indicates a complete state of the previous step. Applies to `header-container`.
+ * @csspart optional - Indicates an optional state. Applies to `header-container`.
+ * @csspart invalid - Indicates an invalid state. Applies to `header-container`.
+ * @csspart top - Indicates that the title should be above the indicator. Applies to `header-container`.
+ * @csspart bottom - Indicates that the title should be below the indicator. Applies to `header-container`.
+ * @csspart start - Indicates that the title should be before the indicator. Applies to `header-container`.
+ * @csspart end - Indicates that the title should be after the indicator. Applies to `header-container`.
+ * @csspart header - Wrapper of the step's `indicator` and `text`.
+ * @csspart indicator - The indicator of the step.
+ * @csspart text - Wrapper of the step's `title` and `subtitle`.
+ * @csspart empty - Indicates that no title and subtitle has been provided to the step. Applies to `text`.
+ * @csspart title - The title of the step.
+ * @csspart subtitle - The subtitle of the step.
+ * @csspart body - Wrapper of the step's `content`.
+ * @csspart content - The steps `content`.
+ */
 @themes({ bootstrap, indigo, fluent, material })
 export default class IgcStepComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-step';
-
   /** @private */
   public static override styles = styles;
 
@@ -93,7 +122,7 @@ export default class IgcStepComponent extends LitElement {
   public visited = false;
 
   @watch('active')
-  public activeChange() {
+  protected activeChange() {
     if (this.active) {
       this.dispatchEvent(
         new CustomEvent('stepActiveChanged', { bubbles: true, detail: false })
@@ -101,43 +130,19 @@ export default class IgcStepComponent extends LitElement {
     }
   }
 
-  @watch('invalid')
-  public invalidStateChanged() {
+  @watch('disabled', { waitUntilFirstUpdate: true })
+  @watch('invalid', { waitUntilFirstUpdate: true })
+  protected disabledInvalidChange() {
     this.dispatchEvent(
-      new CustomEvent('stepInvalidStateChanged', {
-        bubbles: true,
-      })
+      new CustomEvent('stepDisabledInvalidChanged', { bubbles: true })
     );
   }
 
   @watch('complete', { waitUntilFirstUpdate: true })
-  public completeChange() {
+  protected completeChange() {
     this.dispatchEvent(
       new CustomEvent('stepCompleteChanged', { bubbles: true })
     );
-  }
-
-  @watch('disabled', { waitUntilFirstUpdate: true })
-  public disabledChange() {
-    this.dispatchEvent(
-      new CustomEvent('stepDisabledChanged', { bubbles: true })
-    );
-  }
-
-  protected override async firstUpdated() {
-    await this.updateComplete;
-
-    if (this.complete) {
-      this.dispatchEvent(
-        new CustomEvent('stepCompleteChanged', { bubbles: true })
-      );
-    }
-
-    if (this.disabled) {
-      this.dispatchEvent(
-        new CustomEvent('stepDisabledChanged', { bubbles: true })
-      );
-    }
   }
 
   protected handleClick(event: MouseEvent): void {
