@@ -3,6 +3,7 @@ import IgcStepperComponent from './stepper.js';
 import IgcStepComponent from './step.js';
 import sinon from 'sinon';
 import {
+  stepperLinearMode,
   PARTS,
   simpleStepper,
   SLOTS,
@@ -137,9 +138,10 @@ describe('Stepper', () => {
     });
 
     it('Should not allow moving forward to the next step in linear mode if the previous step is invalid', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        stepperLinearMode
+      );
       stepper.steps[0].active = true;
-      stepper.steps[0].invalid = true;
       await elementUpdated(stepper);
 
       expect(stepper.steps[0]).to.have.attribute('invalid');
@@ -236,7 +238,9 @@ describe('Stepper', () => {
     });
 
     it('Should determine the steps that are disabled in linear mode based on the validity of the active step', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        stepperLinearMode
+      );
 
       stepper.steps[0].active = true;
       stepper.steps[0].invalid = true;
@@ -263,9 +267,12 @@ describe('Stepper', () => {
     });
 
     it('Should set a step to be accessible if the previous one is being disabled and was accessible before that', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        stepperLinearMode
+      );
 
       stepper.steps[0].active = true;
+      stepper.steps[0].invalid = false;
       stepper.steps[1].invalid = true;
       await elementUpdated(stepper);
 
@@ -278,7 +285,9 @@ describe('Stepper', () => {
     });
 
     it('Should set a newly added invalid step to be accessible and the next one to be disabled', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        stepperLinearMode
+      );
 
       const step0 = stepper.steps[0];
       const step1 = stepper.steps[1];
@@ -301,7 +310,9 @@ describe('Stepper', () => {
     });
 
     it('Should set a step to be accessible if the previous one is being removed from the DOM and was accessible before that', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        stepperLinearMode
+      );
 
       const step0 = stepper.steps[0];
 
@@ -330,7 +341,9 @@ describe('Stepper', () => {
     });
 
     it('Should set a newly added step to be accessible if the next step is the active step', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        stepperLinearMode
+      );
 
       const step0 = stepper.steps[0];
       step0.active = true;
@@ -515,6 +528,26 @@ describe('Stepper', () => {
       expect(step1HeaderContainer.part.contains('complete-start')).to.be.true;
       expect(step1HeaderContainer.part.contains('complete-end')).to.be.true;
       expect(step2HeaderContainer.part.contains('complete-end')).to.be.true;
+
+      stepper.steps[2].complete = true;
+      await elementUpdated(stepper);
+
+      expect(step2HeaderContainer.part.contains('complete-start')).to.be.true;
+      expect(step2HeaderContainer.part.contains('complete-end')).to.be.true;
+
+      const newStep = document.createElement(IgcStepComponent.tagName);
+      stepper.append(newStep);
+      await elementUpdated(stepper);
+
+      stepper.steps[2].complete = true;
+      await elementUpdated(stepper);
+
+      const step3HeaderContainer = StepperTestFunctions.getElementByPart(
+        stepper.steps[3],
+        PARTS.headerContainer
+      ) as HTMLElement;
+
+      expect(step3HeaderContainer.part.contains('complete-end')).to.be.true;
     });
 
     it('Should apply the appropriate part to the header container of an optional step', async () => {
@@ -904,7 +937,9 @@ describe('Stepper', () => {
     // });
 
     it('Should properly set the linear disabled steps when the active step is removed from the DOM', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        stepperLinearMode
+      );
       const step = document.createElement(IgcStepComponent.tagName);
       stepper.prepend(step);
       await elementUpdated(stepper);

@@ -120,6 +120,22 @@ export const simpleStepper = `<igc-stepper>
                                         </igc-step>
                                       </igc-stepper>`;
 
+export const stepperLinearMode = `<igc-stepper linear>
+                                      <igc-step invalid>
+                                        <span slot="title">Step 1</span>
+                                        <span>STEP 1 CONTENT</span>
+                                      </igc-step>
+                                      <igc-step>
+                                        <span slot="title">Step 2</span>
+                                        <span>STEP 2 CONTENT</span>
+                                      </igc-step>
+                                      <igc-step>
+                                        <igc-icon slot="indicator" name='home'></igc-icon>
+                                        <span slot="title">Step 3</span>
+                                        <span>STEP 3 CONTENT</span>
+                                      </igc-step>
+                                    </igc-stepper>`;
+
 export const stepperWithTwoActiveSteps = `<igc-stepper>
                                         <igc-step active>
                                           <span slot="title">Step 1</span>
