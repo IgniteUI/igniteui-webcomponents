@@ -89,6 +89,21 @@ describe('Tabs component', () => {
       verifySelection(element, 'second');
     });
 
+    it('selects the tab with selected attribute in the template', async () => {
+      const tab = await fixture<IgcTabsComponent>(html`<igc-tabs>
+        <igc-tab panel="first">Tab 1</igc-tab>
+        <igc-tab panel="second" selected>Tab 2</igc-tab>
+        <igc-tab panel="third">Tab 3</igc-tab>
+        <igc-tab-panel id="first">Content 1</igc-tab-panel>
+        <igc-tab-panel id="second">Content 2</igc-tab-panel>
+        <igc-tab-panel id="third">Content 3</igc-tab-panel>
+      </igc-tabs>`);
+      verifySelection(tab, 'second');
+      expect(
+        (tab as any).panels.map((panel: any) => panel.style.display)
+      ).deep.equal(['none', 'block', 'none']);
+    });
+
     it('selects a tab on mouse click if it is not disabled', async () => {
       getTabs(element)[0].click();
       await elementUpdated(element);

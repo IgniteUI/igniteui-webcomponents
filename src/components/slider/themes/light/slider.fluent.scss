@@ -1,29 +1,38 @@
 @use 'sass:math';
 @use '../../../../styles/utilities' as *;
 
-$inactive-background: var(--inactive-background, color(gray, 400)) !default;
-$inactive-disabled-background: var(--inactive-disabled-background, color(gray, 200)) !default;
-$fill-background: var(--fill-background, color(gray, 700)) !default;
+$inactive-background: var(--inactive-background, color(gray, 600)) !default;
+$inactive-disabled-background: var(--inactive-disabled-background, color(gray, 100)) !default;
+$fill-background: var(--fill-background, color(gray, 800)) !default;
 $fill-hover-background: var(--fill-hover-background, color(primary, 500)) !default;
-$fill-disabled-background: var(--fill-disabled-background, color(gray, 400)) !default;
+$fill-disabled-background: var(--fill-disabled-background, color(gray, 500)) !default;
 $thumb-border: var(--thumb-border, color(gray, 700)) !default;
-$thumb-hover-border: var(--thumb-hover-border, color(primary, 500)) !default;
+$thumb-hover-border: var(--thumb-hover-border, color(primary, 700)) !default;
 $thumb-disabled-border: var(--thumb-disabled-border, color(gray, 400)) !default;
 $thumb-size: rem(16px);
 $thumb-radius: math.div($thumb-size, 2);
 
 :host(:hover) {
-    [part='inactive'] {
-        background: color(primary, 500, .32);
-    }
-
     [part='fill'] {
         background: $fill-hover-background;
     }
 
-    [part='thumb'] {
+    [part~='thumb'] {
         border-color: $thumb-hover-border;
     }
+}
+
+[part~='focused']::after {
+    $focus-outline-offset: rem(2px);
+
+    position: absolute;
+    content: '';
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 rem(1px) color(gray, 700);
+    width: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
+    height: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
 }
 
 [part='track'],
@@ -41,13 +50,21 @@ $thumb-radius: math.div($thumb-size, 2);
     background: $fill-background;
 }
 
-[part='thumb'] {
+[part~='thumb'] {
     background: color(surface, 500);
     border: rem(2px) solid $thumb-border;
     width: $thumb-size;
     height: $thumb-size;
     top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
     margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
+}
+
+[part='thumb-label-inner'] {
+    background: $fill-hover-background;
+
+    &::after {
+        border-top: rem(10px) solid $fill-hover-background;
+    }
 }
 
 :host([disabled]) {
@@ -59,7 +76,7 @@ $thumb-radius: math.div($thumb-size, 2);
         background: $fill-disabled-background;
     }
 
-    [part='thumb'] {
+    [part~='thumb'] {
         background: color(surface, 500);
         border-color: $thumb-disabled-border;
     }

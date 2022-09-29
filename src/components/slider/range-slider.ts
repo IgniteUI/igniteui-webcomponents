@@ -252,7 +252,10 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
         @pointerenter=${this.handleThumbPointerEnter}
         @pointerleave=${this.handleThumbPointerLeave}
         @focus=${(ev: Event) => this.handleFocus(ev)}
-        @blur=${() => (this.activeThumb = undefined)}
+        @blur=${() => (
+          this.activeThumb?.part.remove('focused'),
+          (this.activeThumb = undefined)
+        )}
       ></div>
       ${this.hideTooltip
         ? html``
