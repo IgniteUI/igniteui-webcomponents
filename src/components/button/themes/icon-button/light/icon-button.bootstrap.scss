@@ -1,6 +1,6 @@
 @use '../../../../../styles/utilities' as utils;
 
-button {
+[part='base'] {
     @include utils.border-radius(utils.rem(4px));
 
     transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
@@ -18,8 +18,32 @@ button {
     }
 }
 
+:host([size='small']) {
+    [part='base'] {
+        width: #{utils.rem(31px)};
+        height: #{utils.rem(31px)};
+        padding: calc(var(--igc-spacing-small) * 3.75);
+    }
+}
+
+:host([size='medium']) {
+    [part='base'] {
+        width: #{utils.rem(38px)};
+        height: #{utils.rem(38px)};
+        padding: calc(var(--igc-spacing-medium) * 2.25);
+    }
+}
+
+:host([size='large']) {
+    [part='base'] {
+        width: #{utils.rem(48px)};
+        height: #{utils.rem(48px)};
+        padding: calc(var(--igc-spacing-large) * 1.5);
+    }
+}
+
 :host([variant='contained']) {
-    button {
+    [part='base'] {
         color: #{utils.contrast-color(primary, 600)};
         background: #{utils.color(primary, 500)};
 
@@ -36,7 +60,7 @@ button {
 }
 
 :host([variant='outlined']) {
-    button {
+    [part='base'] {
         box-shadow: 0 0 0 utils.rem(1px) utils.color(primary, 500);
 
         &:hover {
@@ -54,21 +78,21 @@ button {
 }
 
 :host([disabled]) {
-    button {
+    [part='base'] {
         color: #{utils.color(primary, 100)};
         background: transparent;
     }
 }
 
 :host([disabled][variant='contained']) {
-    button {
+    [part='base'] {
         background: #{utils.color(primary, 100)};
         color: #{utils.color(primary, 300)};
     }
 }
 
 :host([disabled][variant='outlined']) {
-    button {
+    [part='base'] {
         color: #{utils.color(primary, 100)};
         box-shadow: 0 0 0 utils.rem(1px) utils.color(primary, 100);
     }

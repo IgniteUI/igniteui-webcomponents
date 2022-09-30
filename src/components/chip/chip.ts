@@ -1,15 +1,20 @@
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { blazorTwoWayBind } from '../common/decorators';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { themes } from '../../theming';
-import { styles } from './themes/chip.base.css';
-import { styles as bootstrap } from './themes/chip.bootstrap.css';
-import { styles as fluent } from './themes/chip.fluent.css';
-import { styles as indigo } from './themes/chip.indigo.css';
-import { styles as material } from './themes/chip.material.css';
+import { styles } from './themes/chip.base.css.js';
+import { styles as bootstrap } from './themes/chip.bootstrap.css.js';
+import { styles as fluent } from './themes/chip.fluent.css.js';
+import { styles as indigo } from './themes/chip.indigo.css.js';
+import { styles as material } from './themes/chip.material.css.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcIconComponent from '../icon/icon.js';
+
+defineComponents(IgcIconComponent);
 
 export interface IgcChipEventMap {
   igcRemove: CustomEvent<boolean>;
@@ -77,6 +82,12 @@ export default class IgcChipComponent extends SizableMixin(
     e.stopPropagation();
   }
 
+  protected handleKeyup(e: KeyboardEvent) {
+    if (/\s|enter/i.test(e.key)) {
+      this.handleRemove(e);
+    }
+  }
+
   protected override render() {
     return html`
       <button
@@ -89,21 +100,35 @@ export default class IgcChipComponent extends SizableMixin(
         <span part="prefix">
           ${this.selectable && this.selected
             ? html`<slot @slotchange=${this.slotChanges} name="select">
-                <igc-icon size=${this.size} name="select"></igc-icon>
+                <igc-icon
+                  size=${this.size}
+                  name="chip_select"
+                  collection="internal"
+                ></igc-icon>
               </slot>`
             : nothing}
           <slot name="start"></slot>
+          <slot name="prefix"></slot>
         </span>
         <slot></slot>
         <span part="suffix">
           <slot name="end"></slot>
+          <slot name="suffix"></slot>
           ${this.removable && !this.disabled
             ? html`<slot
                 @slotchange=${this.slotChanges}
                 @click=${this.handleRemove}
+                @keyup=${this.handleKeyup}
                 name="remove"
               >
-                <igc-icon size=${this.size} name="cancel"></igc-icon>
+                <igc-icon
+                  size=${this.size}
+                  name="chip_cancel"
+                  collection="internal"
+                  tabindex="0"
+                  role="button"
+                  aria-label="remove"
+                ></igc-icon>
               </slot>`
             : nothing}
         </span>

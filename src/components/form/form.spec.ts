@@ -10,7 +10,9 @@ import {
   defineAllComponents,
   IgcFormComponent,
   IgcRadioComponent,
+  IgcMaskInputComponent,
   IgcRatingComponent,
+  IgcDateTimeInputComponent,
 } from '../../index.js';
 
 describe('Form', () => {
@@ -89,6 +91,11 @@ describe('Form', () => {
     expectedValues.set('textarea', 'textareaValue');
     expectedValues.set('inputText', 'inputTextValue');
     expectedValues.set('igcRating', '3');
+    expectedValues.set('igcMasked', 'abcd');
+    expectedValues.set(
+      'igcDateTimeInput',
+      new Date('2020-10-11T22:00:00.000Z').toString()
+    );
     let formData = el.getFormData();
     verifyFormDataValues(formData, expectedValues);
 
@@ -124,6 +131,12 @@ describe('Form', () => {
     igcRadio.checked = true;
     const rating = el.querySelector('igc-rating') as IgcRatingComponent;
     rating.value = 5;
+    const masked = el.querySelector('igc-mask-input') as IgcMaskInputComponent;
+    masked.value = 'wxyz';
+    const dateTimeInput = el.querySelector(
+      'igc-date-time-input'
+    ) as IgcDateTimeInputComponent;
+    dateTimeInput.value = new Date(2020, 2, 3);
     await elementUpdated(el);
     el.reset();
     await elementUpdated(el);
@@ -132,6 +145,11 @@ describe('Form', () => {
     expectedValues.set('textarea', 'textareaValue');
     expectedValues.set('inputText', 'inputTextValue');
     expectedValues.set('igcRating', '3');
+    expectedValues.set('igcMasked', 'abcd');
+    expectedValues.set(
+      'igcDateTimeInput',
+      new Date('2020-10-11T22:00:00.000Z').toString()
+    );
     const formData = el.getFormData();
     verifyFormDataValues(formData, expectedValues);
   });
@@ -176,6 +194,8 @@ describe('Form', () => {
         <igc-radio name="igcRadio" value="igcRadioValue"></igc-radio>
         <igc-button type="submit">Submit</igc-button>
         <igc-rating name="igcRating" value="3"></igc-rating>
+        <igc-mask-input name="igcMasked" value="abcd"></igc-mask-input>
+        <igc-date-time-input name="igcDateTimeInput" value="2020-10-11T22:00:00.000Z"></igc-date-time-input>
       </igc-form>
     `
   ) => {

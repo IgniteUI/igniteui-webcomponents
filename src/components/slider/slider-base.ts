@@ -7,19 +7,28 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming';
-import { blazorTypeOverride, watch } from '../common/decorators';
-import { styles } from './themes/light/slider.base.css';
-import { styles as bootstrap } from './themes/light/slider.bootstrap.css';
-import { styles as fluent } from './themes/light/slider.fluent.css';
-import { styles as indigo } from './themes/light/slider.indigo.css';
-import { styles as material } from './themes/light/slider.material.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { blazorTypeOverride } from '../common/decorators/blazorTypeOverride.js';
+import { watch } from '../common/decorators/watch.js';
+import { styles } from './themes/light/slider.base.css.js';
+import { styles as bootstrap } from './themes/light/slider.bootstrap.css.js';
+import { styles as fluent } from './themes/light/slider.fluent.css.js';
+import { styles as indigo } from './themes/light/slider.indigo.css.js';
+import { styles as material } from './themes/light/slider.material.css.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcSliderLabelComponent from './slider-label.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import { isLTR } from '../common/util.js';
+
+defineComponents(IgcSliderLabelComponent);
 
 @themes({ material, bootstrap, fluent, indigo })
+@blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;
 
-  @query(`[part='thumb']`)
+  @query(`[part~='thumb']`)
   protected thumb!: HTMLElement;
 
   @queryAssignedElements({ selector: 'igc-slider-label' })
@@ -36,10 +45,10 @@ export class IgcSliderBaseComponent extends LitElement {
   protected activeThumb?: HTMLElement;
 
   @state()
-  private thumbLabelsVisible = false;
+  protected thumbLabelsVisible = false;
 
   @state()
-  private labels?: string[];
+  protected labels?: string[];
 
   public set min(value: number) {
     if (value < this.max) {
@@ -237,6 +246,15 @@ export class IgcSliderBaseComponent extends LitElement {
   public override connectedCallback() {
     super.connectedCallback();
     this.normalizeValue();
+    this.addEventListener('keyup', this.handleKeyUp);
+  }
+
+  public override disconnectedCallback() {
+    this.removeEventListener('keyup', this.handleKeyUp);
+  }
+
+  protected handleKeyUp() {
+    this.activeThumb?.part.add('focused');
   }
 
   protected handleSlotChange() {
@@ -275,21 +293,16 @@ export class IgcSliderBaseComponent extends LitElement {
   /* c8 ignore next */
   protected emitChangeEvent() {}
 
-  private get actualMin(): number {
+  protected get actualMin(): number {
     return typeof this.lowerBound === 'number'
       ? (this.lowerBound as number)
       : this.min;
   }
 
-  private get actualMax(): number {
+  protected get actualMax(): number {
     return typeof this.upperBound === 'number'
       ? (this.upperBound as number)
       : this.max;
-  }
-
-  private get isLTR(): boolean {
-    const styles = window.getComputedStyle(this);
-    return styles.getPropertyValue('direction') === 'ltr';
   }
 
   protected validateValue(value: number) {
@@ -299,7 +312,7 @@ export class IgcSliderBaseComponent extends LitElement {
     return value;
   }
 
-  private formatValue(value: number) {
+  protected formatValue(value: number) {
     return this.valueFormat
       ? this.valueFormat.replace(
           '{0}',
@@ -390,7 +403,7 @@ export class IgcSliderBaseComponent extends LitElement {
     const thumbPositionX = thumbBoundaries.left + thumbCenter;
 
     const scale = this.getBoundingClientRect().width / (this.max - this.min);
-    const change = this.isLTR
+    const change = isLTR(this)
       ? mouseX - thumbPositionX
       : thumbPositionX - mouseX;
 
@@ -433,6 +446,7 @@ export class IgcSliderBaseComponent extends LitElement {
     this.pointerCaptured = true;
     this.showThumbLabels();
     event.preventDefault();
+    this.activeThumb?.part.remove('focused');
   };
 
   private pointerMove = (event: PointerEvent) => {
@@ -461,13 +475,14 @@ export class IgcSliderBaseComponent extends LitElement {
     let increment = 0;
     const value = this.activeValue;
     const step = this.step ? this.step : 1;
+    const ltr = isLTR(this);
 
     switch (key) {
       case 'ArrowLeft':
-        increment += this.isLTR ? -step : step;
+        increment += ltr ? -step : step;
         break;
       case 'ArrowRight':
-        increment += this.isLTR ? step : -step;
+        increment += ltr ? step : -step;
         break;
       case 'ArrowUp':
         increment = step;
@@ -502,11 +517,11 @@ export class IgcSliderBaseComponent extends LitElement {
     }
   };
 
-  private handleThumbPointerEnter = () => {
+  protected handleThumbPointerEnter = () => {
     this.showThumbLabels();
   };
 
-  private handleThumbPointerLeave = () => {
+  protected handleThumbPointerLeave = () => {
     this.hideThumbLabels();
   };
 
@@ -564,7 +579,10 @@ export class IgcSliderBaseComponent extends LitElement {
         @pointerenter=${this.handleThumbPointerEnter}
         @pointerleave=${this.handleThumbPointerLeave}
         @focus=${(ev: Event) => (this.activeThumb = ev.target as HTMLElement)}
-        @blur=${() => (this.activeThumb = undefined)}
+        @blur=${() => (
+          this.activeThumb?.part.remove('focused'),
+          (this.activeThumb = undefined)
+        )}
       ></div>
       ${this.hideTooltip
         ? html``
@@ -601,7 +619,7 @@ export class IgcSliderBaseComponent extends LitElement {
             x2="100%"
             y2="1"
             stroke="currentColor"
-            stroke-dasharray="1.5px, calc(${interval * Math.sqrt(2)}% - 1.5px)"
+            stroke-dasharray="0, calc(${interval * Math.sqrt(2)}%)"
             stroke-linecap="round"
             stroke-width="2px"
           ></line>

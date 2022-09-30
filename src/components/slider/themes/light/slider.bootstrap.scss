@@ -17,11 +17,7 @@ $thumb-radius: calc(#{$thumb-size} / 2);
     background: $inactive-background;
 }
 
-[part='steps'] {
-    top: rem(3px);
-}
-
-[part='thumb'] {
+[part~='thumb'] {
     width: $thumb-size;
     height: $thumb-size;
     background: color(primary, 500);

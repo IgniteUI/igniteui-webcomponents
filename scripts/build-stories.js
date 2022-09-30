@@ -16,6 +16,18 @@ const REPLACE_REGEX = /\/\/ region default.*\/\/ endregion/gs;
 const UNION_TYPE_REGEX = /^("\w+"|[\d-]+)\s\|/;
 const SUPPORTED_TYPES = ['string', 'number', 'boolean', 'Date'];
 
+function reportMissingFiles(files) {
+  const msg = String.raw`
+The following story files were not found:
+
+
+${files.join('\n')}
+
+
+Check if they are needed at all...`;
+  report.warn(msg);
+}
+
 const capitalize = (str) => {
   const arr = str.split('-');
 
@@ -82,7 +94,6 @@ function extractTags(meta) {
       .map((prop) => {
         const options =
           UNION_TYPE_REGEX.test(prop.type) &&
-
           !SUPPORTED_TYPES.some(
             (type) => prop.type === type || prop.type.startsWith(`${type} `)
           )
@@ -99,8 +110,8 @@ function extractTags(meta) {
               ? prop.type === 'boolean'
                 ? prop.default === 'true'
                 : prop.type === 'Date'
-                  ? undefined
-                  : prop.default.replace(/"/g, '')
+                ? undefined
+                : prop.default.replace(/"/g, '')
               : undefined,
           },
         ];
@@ -150,30 +161,31 @@ function buildStoryMeta(story, meta) {
 
 async function buildStories() {
   const files = await readdir(SRC_DIR);
+  const missing = [];
 
   for (const file of files) {
     const meta = await processFileMeta(path.join(SRC_DIR, file));
-    const outFile = path.join(
-      DEST_DIR,
-      `${meta.component.replace(VENDOR_PREFIX, '')}.stories.ts`
-    );
+    const storyName = `${meta.component.replace(VENDOR_PREFIX, '')}.stories.ts`;
+    const outFile = path.join(DEST_DIR, storyName);
+
     try {
       const story = await readFile(outFile, 'utf8');
       await writeFile(outFile, buildStoryMeta(story, meta), 'utf8');
     } catch (e) {
       if (e.code === 'ENOENT') {
-        report.warn(
-          `!!! No such file '${e.path} !!! Does it need a story file?'`
-        );
+        missing.push(`\t${storyName}`);
       } else {
         report.error(e);
         process.exit(-1);
       }
     }
   }
+  if (missing.length > 0) {
+    reportMissingFiles(missing);
+  }
 }
 
 (async () => {
   await buildStories();
-  report.success('Stories metadata generation finished');
+  report.success('Stories metadata generation finished\n');
 })();

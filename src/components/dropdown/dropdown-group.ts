@@ -1,10 +1,11 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
-import { themes } from '../../theming';
-import { styles } from './themes/light/dropdown-group.base.css';
-import { styles as fluent } from './themes/light/dropdown-group.fluent.css';
-import IgcDropDownItemComponent from './dropdown-item';
-import IgcDropDownComponent from './dropdown';
+import { queryAssignedElements } from 'lit/decorators.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { SizableInterface } from '../common/mixins/sizable.js';
+import type IgcDropdownItemComponent from './dropdown-item';
+import { styles } from './themes/light/dropdown-group.base.css.js';
+import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
@@ -15,28 +16,31 @@ import IgcDropDownComponent from './dropdown';
  * @csspart label - The native label element.
  */
 @themes({ fluent })
-export default class IgcDropDownGroupComponent extends LitElement {
-  public static readonly tagName = 'igc-dropdown-group';
+export default class IgcDropdownGroupComponent extends LitElement {
+  public static readonly tagName: string = 'igc-dropdown-group';
 
   public static override styles = styles;
+  protected parent!: SizableInterface;
 
   /** All child `igc-dropdown-item`s. */
+  @blazorSuppress()
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
-  public items!: Array<IgcDropDownItemComponent>;
-
-  /** @private */
-  @property({ reflect: true })
-  public size: 'small' | 'medium' | 'large' = 'large';
+  public items!: Array<IgcDropdownItemComponent>;
 
   public override connectedCallback() {
     super.connectedCallback();
 
     this.setAttribute('role', 'group');
-    const dropdown = this.closest('igc-dropdown') as IgcDropDownComponent;
-    this.size = dropdown.size;
+    this.parent = this.getParent();
+  }
+
+  protected getParent() {
+    return this.closest('igc-dropdown')!;
   }
 
   protected override render() {
+    this.setAttribute('size', this.parent?.size ?? 'large');
+
     return html`
       <label part="label"><slot name="label"></slot></label>
       <slot></slot>
@@ -46,6 +50,6 @@ export default class IgcDropDownGroupComponent extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-dropdown-group': IgcDropDownGroupComponent;
+    'igc-dropdown-group': IgcDropdownGroupComponent;
   }
 }

@@ -6,7 +6,12 @@
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
 @use '../../../components/slider/themes/dark/slider.indigo' as slider;
 @use '../../../components/list/themes/dark/list.indigo' as list;
+@use '../../../components/tree/themes/dark/tree-item.indigo' as tree-item;
 @use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
+@use '../../../components/nav-drawer/themes/dark/nav-drawer.indigo' as nav-drawer;
+@use '../../../components/nav-drawer/themes/dark/nav-drawer-item.indigo' as nav-drawer-item;
+@use '../../../components/select/themes/dark/select.indigo' as select;
+@use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
 
 $palette: utils.palette(
     $primary: #3f51b5,
@@ -27,4 +32,9 @@ $palette: utils.palette(
 @include radio.theme();
 @include slider.theme();
 @include list.theme();
+@include tree-item.theme();
 @include dropdown.theme();
+@include nav-drawer.theme();
+@include nav-drawer-item.theme();
+@include select.theme();
+@include snackbar.theme();

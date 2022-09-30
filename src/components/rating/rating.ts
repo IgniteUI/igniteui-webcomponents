@@ -1,23 +1,24 @@
 import { html, LitElement, nothing } from 'lit';
-import {
-  property,
-  query,
-  queryAssignedElements,
-  state,
-} from 'lit/decorators.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { watch } from '../common/decorators/watch';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { SizableMixin } from '../common/mixins/sizable';
-import { styles } from './rating.base.css';
-import { styles as bootstrap } from './rating.bootstrap.css';
-import { styles as fluent } from './rating.fluent.css';
-import { styles as indigo } from './rating.indigo.css';
-import { clamp } from '../common/util';
-import type IgcRatingSymbolComponent from './rating-symbol';
-import { themes } from '../../theming';
+import { styleMap } from 'lit/directives/style-map.js';
+import { guard } from 'lit/directives/guard.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { watch } from '../common/decorators/watch.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { clamp, isLTR } from '../common/util.js';
+import { styles } from './rating.base.css.js';
+import { styles as bootstrap } from './rating.bootstrap.css.js';
+import { styles as fluent } from './rating.fluent.css.js';
+import { styles as indigo } from './rating.indigo.css.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
+import IgcIconComponent from '../icon/icon.js';
+
+defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -35,12 +36,17 @@ export interface IgcRatingEventMap {
  *
  * @csspart base - The main wrapper which holds all of the rating elements.
  * @csspart label - The label part.
- * @csspart symbol - The part for a single symbol.
- * @csspart fraction -The part for the selected symbols.
- * @csspart symbols-wrapper - The wrapper that holds all symbols.
- * @csspart large - A part responsible for the symbols size.
- * @csspart medium - A part responsible for the symbols size.
- * @csspart small- A part responsible for the symbols size.
+ * @csspart value-label - The value label part.
+ * @csspart symbols - A wrapper for all rating symbols.
+ * @csspart symbol - The part of the encapsulated default symbol.
+ * @csspart full - The part of the encapsulated full symbols.
+ * @csspart empty - The part of the encapsulated empty symbols.
+ *
+ * @cssproperty --symbol-size - The size of the symbols.
+ * @cssproperty --symbol-full-color - The color of the filled symbol.
+ * @cssproperty --symbol-empty-color - The color of the empty symbol.
+ * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
+ * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
 @themes({ fluent, bootstrap, indigo })
 export default class IgcRatingComponent extends SizableMixin(
@@ -50,11 +56,13 @@ export default class IgcRatingComponent extends SizableMixin(
 
   public static styles = [styles];
 
-  @query('[part="base"]', true)
+  protected ratingSymbols: Array<IgcRatingSymbolComponent> = [];
+
+  @query('[part="symbols"]', true)
   protected container!: HTMLElement;
 
-  @queryAssignedElements({ selector: 'igc-rating-symbol' })
-  protected ratingSymbols!: Array<IgcRatingSymbolComponent>;
+  @queryAssignedNodes({ slot: 'value-label', flatten: true })
+  protected valueLabel!: Array<Node>;
 
   @state()
   protected hoverValue = -1;
@@ -70,29 +78,33 @@ export default class IgcRatingComponent extends SizableMixin(
     return this.ratingSymbols.length > 0;
   }
 
-  protected get isLTR() {
-    return (
-      window.getComputedStyle(this).getPropertyValue('direction') === 'ltr'
-    );
-  }
-
   protected get valueText() {
+    // Skip IEEE 754 representation for screen readers
+    const value = this.round(this.value);
+
     return this.valueFormat
-      ? this.valueFormat.replace(/\{0\}/gm, `${this.value}`)
-      : this.value;
+      ? this.valueFormat
+          .replace(/\{0\}/gm, `${value}`)
+          .replace(/\{1\}/gm, `${this.max}`)
+      : `${value} of ${this.max}`;
   }
 
-  /** The maximum value for the rating */
+  /**
+   * The maximum value for the rating.
+   *
+   * If there are projected symbols, the maximum value will be resolved
+   * based on the number of symbols.
+   */
   @property({ type: Number })
   public max = 5;
 
-  /** The minimum value change allowed. */
+  /**
+   * The minimum value change allowed.
+   *
+   * Valid values are in the interval between 0 and 1 inclusive.
+   */
   @property({ type: Number })
   public step = 1;
-
-  /** The symbol which the rating will display. */
-  @property()
-  public symbol = '⭐';
 
   /** The name attribute of the control */
   @property()
@@ -103,8 +115,9 @@ export default class IgcRatingComponent extends SizableMixin(
   public label!: string;
 
   /**
-   * A format string which sets aria-valuetext. All instances of '{0}' will be replaced
-   * with the current value of the control.
+   * A format string which sets aria-valuetext. Instances of '{0}' will be replaced
+   * with the current value of the control and instances of '{1}' with the maximum value for the control.
+   *
    * Important for screen-readers and useful for localization.
    */
   @property({ attribute: 'value-format' })
@@ -126,6 +139,10 @@ export default class IgcRatingComponent extends SizableMixin(
   @property({ type: Boolean, reflect: true })
   public readonly = false;
 
+  /** Toggles single selection visual mode. */
+  @property({ type: Boolean })
+  public single = false;
+
   @watch('max')
   protected handleMaxChange() {
     this.hasProjectedSymbols
@@ -143,7 +160,15 @@ export default class IgcRatingComponent extends SizableMixin(
 
   @watch('step')
   protected handlePrecisionChange() {
-    this.step = clamp(this.step, 0.001, 1);
+    this.step = !this.single ? clamp(this.step, 0.001, 1) : 1;
+  }
+
+  @watch('single')
+  protected handleSelectionChange() {
+    if (this.single) {
+      this.step = 1;
+      this.value = Math.ceil(this.value);
+    }
   }
 
   constructor() {
@@ -193,15 +218,16 @@ export default class IgcRatingComponent extends SizableMixin(
     }
 
     let result = this.value;
+    const ltr = isLTR(this);
 
     switch (key) {
       case 'ArrowUp':
       case 'ArrowRight':
-        result += this.isLTR ? this.step : -this.step;
+        result += ltr ? this.step : -this.step;
         break;
       case 'ArrowDown':
       case 'ArrowLeft':
-        result -= this.isLTR ? this.step : -this.step;
+        result -= ltr ? this.step : -this.step;
         break;
       case 'Home':
         result = this.step;
@@ -221,16 +247,25 @@ export default class IgcRatingComponent extends SizableMixin(
     }
   }
 
-  protected handleSlotChange() {
+  protected handleSlotChange(event: Event) {
+    const slot = event.target as HTMLSlotElement;
+
+    this.ratingSymbols = slot
+      .assignedElements()
+      .filter(
+        (el) => el instanceof IgcRatingSymbolComponent
+      ) as IgcRatingSymbolComponent[];
+
     if (this.hasProjectedSymbols) {
       this.max = this.ratingSymbols.length;
     }
+
     this.requestUpdate();
   }
 
   protected calcNewValue(x: number) {
     const { width, left, right } = this.container.getBoundingClientRect();
-    const percent = this.isLTR ? (x - left) / width : (right - x) / width;
+    const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
     const value = this.round(this.max * percent + this.step / 2);
 
     return clamp(value, this.step, this.max);
@@ -244,6 +279,26 @@ export default class IgcRatingComponent extends SizableMixin(
   protected round(value: number) {
     value = Math.round(value / this.step) * this.step;
     return Number(value.toFixed(this.getPrecision(this.step)));
+  }
+
+  protected clipSymbol(index: number, isLTR = true) {
+    const value = this.hoverState ? this.hoverValue : this.value;
+    const progress = index + 1 - value;
+    const exclusive = progress === 0 || this.value === index + 1 ? 0 : 1;
+    const selection = this.single ? exclusive : progress;
+    const activate = (p: number) => clamp(p * 100, 0, 100);
+
+    const forward = `inset(0 ${activate(
+      isLTR ? selection : 1 - selection
+    )}% 0 0)`;
+    const backward = `inset(0 0 0 ${activate(
+      isLTR ? 1 - selection : selection
+    )}%)`;
+
+    return {
+      backward: isLTR ? backward : forward,
+      forward: isLTR ? forward : backward,
+    };
   }
 
   /**
@@ -263,60 +318,92 @@ export default class IgcRatingComponent extends SizableMixin(
   }
 
   protected *renderSymbols() {
+    const ltr = isLTR(this);
     for (let i = 0; i < this.max; i++) {
-      yield html`<span part="symbol ${this.size}">${this.symbol}</span>`;
+      const { forward, backward } = this.clipSymbol(i, ltr);
+      yield html`<igc-rating-symbol exportparts="symbol, full, empty">
+        <igc-icon
+          collection="internal"
+          name="star"
+          style=${styleMap({ clipPath: forward })}
+        ></igc-icon>
+        <igc-icon
+          collection="internal"
+          name="star_border"
+          style=${styleMap({ clipPath: backward })}
+          slot="empty"
+        ></igc-icon>
+      </igc-rating-symbol>`;
     }
   }
 
-  protected renderProjected() {
-    return html`${this.ratingSymbols.map((each) => {
-      const clone = each.cloneNode(true) as IgcRatingSymbolComponent;
-      clone.setAttribute('part', `symbol ${this.size}`);
-      return clone;
-    })}`;
-  }
+  protected clipProjected() {
+    if (this.hasProjectedSymbols) {
+      const ltr = isLTR(this);
+      this.ratingSymbols.forEach((symbol: IgcRatingSymbolComponent, i) => {
+        const full = symbol.shadowRoot?.querySelector(
+          '[part="symbol full"]'
+        ) as HTMLElement;
 
-  protected renderFractionWrapper(styles: { width: string }) {
-    return html`<div
-      @click=${this.handleClick}
-      @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
-      @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
-      @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
-    >
-      <slot @slotchange=${this.handleSlotChange}></slot>
+        const empty = symbol.shadowRoot?.querySelector(
+          '[part="symbol empty"]'
+        ) as HTMLElement;
+        const { forward, backward } = this.clipSymbol(i, ltr);
 
-      <div style=${styleMap(styles)} part="fraction ${this.size}">
-        <div part="symbols-wrapper">
-          ${this.hasProjectedSymbols
-            ? this.renderProjected()
-            : this.renderSymbols()}
-        </div>
-      </div>
-      <div part="symbols-wrapper">
-        ${this.hasProjectedSymbols
-          ? this.renderProjected()
-          : this.renderSymbols()}
-      </div>
-    </div>`;
+        if (full) {
+          full.style.clipPath = forward;
+        }
+
+        if (empty) {
+          empty.style.clipPath = backward;
+        }
+      });
+    }
   }
 
   protected override render() {
-    const value = this.hoverState ? this.hoverValue : this.value;
-    const styles = { width: `${Math.round((value / this.max) * 100)}%` };
+    const props = [
+      this.value,
+      this.hoverValue,
+      this.max,
+      this.step,
+      this.single,
+      this.hoverState,
+      this.ratingSymbols,
+    ];
 
     return html`
-      <label part="label ${this.size}">${this.label}</label>
+      <label part="label" id="rating-label" ?hidden=${!this.label}
+        >${this.label}</label
+      >
       <div
         part="base"
         role="slider"
         tabindex=${ifDefined(this.disabled ? undefined : 0)}
-        aria-label=${this.label ?? nothing}
+        aria-labelledby="rating-label"
         aria-valuemin="0"
         aria-valuenow=${this.value}
         aria-valuemax=${this.max}
         aria-valuetext=${this.valueText}
       >
-        ${this.renderFractionWrapper(styles)}
+        <div
+          aria-hidden="true"
+          part="symbols"
+          @click=${this.handleClick}
+          @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
+          @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
+          @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
+        >
+          <slot @slotchange=${this.handleSlotChange}>
+            ${guard(props, () => {
+              this.clipProjected();
+              return this.renderSymbols();
+            })}
+          </slot>
+        </div>
+        <label part="value-label" ?hidden=${this.valueLabel.length === 0}>
+          <slot name="value-label"></slot>
+        </label>
       </div>
     `;
   }

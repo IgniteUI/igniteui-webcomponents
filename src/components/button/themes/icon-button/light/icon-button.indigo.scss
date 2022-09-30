@@ -1,6 +1,6 @@
 @use '../../../../../styles/utilities' as utils;
 
-button {
+[part='base'] {
     transition: color .15s ease-in-out, box-shadow .15s ease-in-out, background .15s ease-in-out;
     color: utils.color(gray, 700);
 
@@ -17,8 +17,31 @@ button {
     }
 }
 
+:host([size='small']) {
+    [part='base'] {
+        width: #{utils.rem(28px)};
+        height: #{utils.rem(28px)};
+        padding: calc(var(--igc-spacing-small) * 3);
+    }
+}
+
+:host([size='medium']) {
+    [part='base'] {
+        width: #{utils.rem(32px)};
+        height: #{utils.rem(32px)};
+        padding: calc(var(--igc-spacing-medium) * 1.5);
+    }
+}
+
+:host([size='large']) {
+    [part='base'] {
+        width: #{utils.rem(36px)};
+        height: #{utils.rem(36px)};
+    }
+}
+
 :host([variant='contained']) {
-    button {
+    [part='base'] {
         color: utils.contrast-color(primary, 600);
         background: utils.color(primary, 500);
 
@@ -35,7 +58,7 @@ button {
 }
 
 :host([variant='outlined']) {
-    button {
+    [part='base'] {
         box-shadow: none;
 
         &::after {
@@ -61,7 +84,7 @@ button {
 }
 
 :host([disabled]) {
-    button {
+    [part='base'] {
         color: utils.color(gray, 400);
         background: transparent;
         box-shadow: none;
@@ -69,7 +92,7 @@ button {
 }
 
 :host([disabled][variant='contained']) {
-    button {
+    [part='base'] {
         background: utils.color(gray, 100);
         color: utils.color(gray, 400);
     }

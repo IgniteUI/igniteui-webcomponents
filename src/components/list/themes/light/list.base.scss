@@ -5,7 +5,8 @@
     display: flex;
     flex-flow: column nowrap;
     font-family: var(--igc-font-family);
-    overflow: hidden;
+    overflow: hidden auto;
+    height: auto;
     background: color(surface, 500);
 }
 

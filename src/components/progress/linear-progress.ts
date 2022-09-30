@@ -1,13 +1,13 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { asPercent, partNameMap } from '../common/util';
-import { IgcProgressBaseComponent } from './base';
-import { styles } from './themes/linear/linear.progress.base.css';
-import { styles as bootstrap } from './themes/linear/linear.progress.bootstrap.css';
-import { styles as fluent } from './themes/linear/linear.progress.fluent.css';
-import { styles as indigo } from './themes/linear/linear.progress.indigo.css';
-import { themes } from '../../theming';
+import { asPercent, partNameMap } from '../common/util.js';
+import { IgcProgressBaseComponent } from './base.js';
+import { styles } from './themes/linear/linear.progress.base.css.js';
+import { styles as bootstrap } from './themes/linear/linear.progress.bootstrap.css.js';
+import { styles as fluent } from './themes/linear/linear.progress.fluent.css.js';
+import { styles as indigo } from './themes/linear/linear.progress.indigo.css.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { themes } from '../../theming/theming-decorator.js';
 
 /**
  * A linear progress indicator used to express unspecified wait time or display
@@ -81,6 +81,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
           part="${partNameMap(this.wrapperParts)}"
           style="${styleMap(this.animInfo)}"
         ></div>
+        <div part="${partNameMap(this.wrapperParts)} secondary"></div>
       </div>
       ${this.renderDefaultSlot()}
     `;

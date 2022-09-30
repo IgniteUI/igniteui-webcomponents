@@ -1,23 +1,21 @@
 import { html, LitElement } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
-import { themes } from '../../../theming';
-import {
-  blazorIndirectRender,
-  blazorSuppressComponent,
-  watch,
-} from '../../common/decorators';
-import { Constructor } from '../../common/mixins/constructor';
-import { EventEmitterMixin } from '../../common/mixins/event-emitter';
-import { partNameMap } from '../../common/util';
+import { property, query } from 'lit/decorators.js';
+import { themes } from '../../../theming/theming-decorator.js';
+import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
+import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
+import { watch } from '../../common/decorators/watch.js';
+import { Constructor } from '../../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
+import { partNameMap } from '../../common/util.js';
 import {
   IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
-} from '../common/calendar-base';
-import { Calendar, TimeDeltaInterval } from '../common/calendar.model';
-import { setDateSafe } from '../common/utils';
-import { styles as bootstrap } from '../themes/bootstrap/year-month-view.bootstrap.css';
-import { styles as fluent } from '../themes/fluent/year-month-view.fluent.css';
-import { styles } from '../themes/year-month-view.base.css';
+} from '../common/calendar-base.js';
+import { Calendar, TimeDeltaInterval } from '../common/calendar.model.js';
+import { setDateSafe } from '../common/utils.js';
+import { styles as bootstrap } from '../themes/bootstrap/year-month-view.bootstrap.css.js';
+import { styles as fluent } from '../themes/fluent/year-month-view.fluent.css.js';
+import { styles } from '../themes/year-month-view.base.css.js';
 
 /**
  * Instantiate a months view as a separate component in the calendar.
@@ -28,7 +26,6 @@ import { styles } from '../themes/year-month-view.base.css';
  * @csspart month - The month container.
  * @csspart month-inner - The inner month container.
  */
-@customElement('igc-months-view')
 @blazorIndirectRender
 @blazorSuppressComponent
 @themes({
@@ -39,6 +36,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>
 >(LitElement) {
+  public static readonly tagName = 'igc-months-view';
   public static styles = styles;
   private calendarModel = new Calendar();
   private monthFormatter: any;

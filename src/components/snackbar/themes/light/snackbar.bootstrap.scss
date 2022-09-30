@@ -1,0 +1,11 @@
+@use '../../../../styles/utilities' as *;
+
+[part~='base'] {
+    background: color(surface, 500);
+    color: contrast-color(surface, 500);
+    box-shadow: var(--igc-elevation-10);
+}
+
+igc-button::part(base):hover {
+    color: color(primary, 500);
+}

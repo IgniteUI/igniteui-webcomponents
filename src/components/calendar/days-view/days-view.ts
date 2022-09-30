@@ -1,32 +1,30 @@
 import { html } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
-import { themes } from '../../../theming';
-import {
-  blazorIndirectRender,
-  blazorSuppressComponent,
-  watch,
-} from '../../common/decorators';
+import { property, query } from 'lit/decorators.js';
+import { themes } from '../../../theming/theming-decorator.js';
+import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
+import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
+import { watch } from '../../common/decorators/watch.js';
 import {
   IgcCalendarResourceStringEN,
   IgcCalendarResourceStrings,
-} from '../../common/i18n/calendar.resources';
-import { Constructor } from '../../common/mixins/constructor';
-import { EventEmitterMixin } from '../../common/mixins/event-emitter';
-import { partNameMap } from '../../common/util';
+} from '../../common/i18n/calendar.resources.js';
+import { Constructor } from '../../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
+import { partNameMap } from '../../common/util.js';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
-} from '../common/calendar-base';
+} from '../common/calendar-base.js';
 import {
   DateRangeType,
   ICalendarDate,
   isDateInRanges,
   TimeDeltaInterval,
-} from '../common/calendar.model';
-import { areEqualDates, getDateOnly, isEqual } from '../common/utils';
-import { styles as bootstrap } from '../themes/bootstrap/days-view.bootstrap.css';
-import { styles } from '../themes/days-view.base.css';
-import { styles as fluent } from '../themes/fluent/days-view.fluent.css';
+} from '../common/calendar.model.js';
+import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
+import { styles as bootstrap } from '../themes/bootstrap/days-view.bootstrap.css.js';
+import { styles } from '../themes/days-view.base.css.js';
+import { styles as fluent } from '../themes/fluent/days-view.fluent.css.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
@@ -47,7 +45,6 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
  * @csspart week-number - The week number container.
  * @csspart week-number-inner - The inner week number container.
  */
-@customElement('igc-days-view')
 @blazorSuppressComponent
 @blazorIndirectRender
 @themes({
@@ -58,7 +55,9 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
+  public static readonly tagName = 'igc-days-view';
   public static styles = styles;
+  private labelFormatter!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];
 
@@ -115,6 +114,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   private initFormatters() {
     this.formatterWeekday = new Intl.DateTimeFormat(this.locale, {
       weekday: this.weekDayFormat,
+    });
+    this.labelFormatter = new Intl.DateTimeFormat(this.locale, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   }
 
@@ -540,6 +545,30 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     });
   }
 
+  protected dayLabelFormatter(value: ICalendarDate) {
+    // Range selection in progress
+    if (
+      this.rangePreviewDate &&
+      areEqualDates(this.rangePreviewDate, value.date)
+    ) {
+      return (this.labelFormatter as any).formatRange(
+        this.values!.at(0),
+        this.rangePreviewDate
+      );
+    }
+
+    // Range selection finished
+    if (this.isFirstInRange(value) || this.isLastInRange(value)) {
+      return (this.labelFormatter as any).formatRange(
+        this.values!.at(0),
+        this.values!.at(-1)
+      );
+    }
+
+    // Default
+    return this.labelFormatter.format(value.date);
+  }
+
   private renderDateItem(day: ICalendarDate) {
     const datePartName = partNameMap(this.resolveDayItemPartName(day));
     const dateInnerPartName = datePartName.replace('date', 'date-inner');
@@ -548,11 +577,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       <span
         part=${dateInnerPartName}
         role="gridcell"
-        aria-label=${day.date.toLocaleString(this.locale, {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
+        aria-label=${this.dayLabelFormatter(day)}
         aria-selected=${this.isSelected(day)}
         aria-disabled=${this.isDisabled(day.date)}
         tabindex=${this.active && areEqualDates(this.activeDate, day.date)

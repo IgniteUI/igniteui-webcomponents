@@ -10,6 +10,10 @@ label {
     }
 }
 
+[part~='label'] {
+    @include type-category('subtitle-1');
+}
+
 [part~='indicator'] {
     stroke: color(surface, 500);
 }

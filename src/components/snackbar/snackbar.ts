@@ -1,13 +1,19 @@
 import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { themes } from '../../theming/theming-decorator.js';
+
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { themes } from '../../theming';
-import { styles } from './themes/snackbar.base.css';
-import { styles as bootstrap } from './themes/snackbar.bootstrap.css';
-import { styles as fluent } from './themes/snackbar.fluent.css';
-import { styles as indigo } from './themes/snackbar.indigo.css';
+import { styles } from './themes/light/snackbar.base.css.js';
+import { styles as bootstrap } from './themes/light/snackbar.bootstrap.css.js';
+import { styles as fluent } from './themes/light/snackbar.fluent.css.js';
+import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcButtonComponent from '../button/button.js';
+
+defineComponents(IgcButtonComponent);
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
@@ -83,6 +89,11 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
     clearTimeout(this.autoHideTimeout);
   }
 
+  /** Toggles the open state of the component. */
+  public toggle() {
+    this.open ? this.hide() : this.show();
+  }
+
   private handleClick() {
     this.emitEvent('igcAction');
   }
@@ -98,6 +109,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
               <igc-button
                 variant="flat"
                 part="action"
+                size="small"
                 @click=${this.handleClick}
               >
                 ${ifDefined(this.actionText)}

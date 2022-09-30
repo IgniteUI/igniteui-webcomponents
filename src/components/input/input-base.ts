@@ -1,18 +1,20 @@
 import { html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { ReactiveTheme, ThemeController, themes } from '../../theming';
+import { themes } from '../../theming/theming-decorator.js';
+import type { ReactiveTheme, ThemeController } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { partNameMap } from '../common/util.js';
-import { styles } from './themes/light/input.base.css';
-import { styles as bootstrap } from './themes/light/input.bootstrap.css';
-import { styles as fluent } from './themes/light/input.fluent.css';
-import { styles as indigo } from './themes/light/input.indigo.css';
-import { styles as material } from './themes/light/input.material.css';
-
-let nextId = 0;
+import { Direction } from '../common/types.js';
+import { createCounter, partNameMap } from '../common/util.js';
+import { styles } from './themes/light/input.base.css.js';
+import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
+import { styles as fluent } from './themes/light/input.fluent.css.js';
+import { styles as indigo } from './themes/light/input.indigo.css.js';
+import { styles as material } from './themes/light/input.material.css.js';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
@@ -24,6 +26,7 @@ export interface IgcInputEventMap {
 }
 
 @themes({ bootstrap, material, fluent, indigo })
+@blazorDeepImport
 export abstract class IgcInputBaseComponent
   extends SizableMixin(
     EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
@@ -35,11 +38,13 @@ export abstract class IgcInputBaseComponent
     delegatesFocus: true,
   };
   public static styles = styles;
+  private static readonly increment = createCounter();
 
-  protected inputId = `input-${nextId++}`;
+  protected inputId = `input-${IgcInputBaseComponent.increment()}`;
 
   /** The value attribute of the control. */
-  public abstract value: string;
+  @blazorSuppress()
+  public abstract value: string | Date | null;
 
   @query('input', true)
   protected input!: HTMLInputElement;
@@ -50,7 +55,15 @@ export abstract class IgcInputBaseComponent
   @queryAssignedElements({ slot: 'suffix' })
   protected suffixes!: Array<HTMLElement>;
 
+  @queryAssignedElements({ slot: 'helper-text' })
+  protected helperText!: Array<HTMLElement>;
+
   protected themeController!: ThemeController;
+
+  /** The direction attribute of the control. */
+  @property({ reflect: true })
+  @blazorSuppress()
+  public override dir: Direction = 'auto';
 
   /** The name attribute of the control. */
   @property()
@@ -112,6 +125,7 @@ export abstract class IgcInputBaseComponent
       [base]: true,
       prefixed: this.prefixes.length > 0,
       suffixed: this.suffixes.length > 0,
+      filled: !!this.value,
     };
   }
 
@@ -123,10 +137,10 @@ export abstract class IgcInputBaseComponent
     this.emitEvent('igcBlur');
   }
 
-  protected handleChange() {
-    this.value = this.input.value;
-    this.emitEvent('igcChange', { detail: this.value });
-  }
+  // protected handleChange() {
+  //   this.value = this.input.value;
+  //   this.emitEvent('igcChange', { detail: this.value });
+  // }
 
   /** Sets the text selection range of the control */
   public setSelectionRange(
@@ -179,7 +193,7 @@ export abstract class IgcInputBaseComponent
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
-      <div part="helper-text">
+      <div part="helper-text" .hidden="${this.helperText.length == 0}">
         <slot name="helper-text"></slot>
       </div>
     `;
@@ -190,7 +204,7 @@ export abstract class IgcInputBaseComponent
       <div part="${partNameMap(this.resolvePartNames('container'))}">
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
-      <div part="helper-text">
+      <div part="helper-text" .hidden="${this.helperText.length == 0}">
         <slot name="helper-text"></slot>
       </div>`;
   }

@@ -1,9 +1,15 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming';
-import { partNameMap } from '../common/util';
-import { styles as indigo } from './styles/indigo/nav-drawer.indigo.css';
-import { styles } from './styles/nav-drawer.base.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { partNameMap } from '../common/util.js';
+import { styles as indigo } from './themes/light/indigo/nav-drawer.indigo.css.js';
+import { styles } from './themes/light/nav-drawer.base.css.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
+import IgcNavDrawerItemComponent from './nav-drawer-item.js';
+
+defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
 
 /**
  * Represents a side navigation container that provides
@@ -25,7 +31,7 @@ export default class IgcNavDrawerComponent extends LitElement {
 
   /** The position of the drawer. */
   @property({ reflect: true })
-  public position: 'start' | 'end' | 'top' | 'bottom' = 'start';
+  public position: 'start' | 'end' | 'top' | 'bottom' | 'relative' = 'start';
 
   /** Determines whether the drawer is opened. */
   @property({ type: Boolean, reflect: true })
@@ -69,15 +75,18 @@ export default class IgcNavDrawerComponent extends LitElement {
   }
 
   protected override render() {
-    return html` <div part="base">
-      <div part="main">
-        <slot></slot>
-      </div>
+    return html`
+      <div part="overlay" @click=${this.hide}></div>
+      <div part="base">
+        <div part="main">
+          <slot></slot>
+        </div>
 
-      <div part="${partNameMap(this.resolvePartNames('mini'))}">
-        <slot name="mini"></slot>
+        <div part="${partNameMap(this.resolvePartNames('mini'))}">
+          <slot name="mini"></slot>
+        </div>
       </div>
-    </div>`;
+    `;
   }
 }
 

@@ -1,12 +1,11 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import {
-  blazorIndirectRender,
-  blazorSuppress,
-  watch,
-} from '../../common/decorators';
-import { Calendar, DateRangeDescriptor } from './calendar.model';
-import { getWeekDayNumber } from './utils';
+import { blazorDeepImport } from '../../common/decorators/blazorDeepImport.js';
+import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
+import { blazorSuppress } from '../../common/decorators/blazorSuppress.js';
+import { watch } from '../../common/decorators/watch.js';
+import { Calendar, DateRangeDescriptor } from './calendar.model.js';
+import { getWeekDayNumber } from './utils.js';
 
 export const MONTHS_PER_ROW = 3;
 export const YEARS_PER_ROW = 3;
@@ -16,6 +15,7 @@ export interface IgcCalendarBaseEventMap {
 }
 
 @blazorIndirectRender
+@blazorDeepImport
 export class IgcCalendarBaseComponent extends LitElement {
   protected calendarModel = new Calendar();
 
@@ -25,8 +25,9 @@ export class IgcCalendarBaseComponent extends LitElement {
    */
   @blazorSuppress()
   @property({
-    converter: (value) => {
-      return value ? new Date(value) : undefined;
+    converter: {
+      fromAttribute: (value: string) => (value ? new Date(value) : undefined),
+      toAttribute: (value: Date) => value.toISOString(),
     },
   })
   public value?: Date;
@@ -38,15 +39,17 @@ export class IgcCalendarBaseComponent extends LitElement {
    */
   @blazorSuppress()
   @property({
-    converter: (value) => {
-      if (!value) {
-        return undefined;
-      }
-      return value
-        .split(',')
-        .map((v) => v.trim())
-        .filter((v) => v)
-        .map((v) => new Date(v));
+    converter: {
+      fromAttribute: (value: string) =>
+        !value
+          ? undefined
+          : value
+              .split(',')
+              .map((v) => v.trim())
+              .filter((v) => v)
+              .map((v) => new Date(v)),
+      toAttribute: (value: Date[]) =>
+        value.map((v) => v.toISOString()).join(','),
     },
   })
   public values?: Date[];
@@ -74,7 +77,10 @@ export class IgcCalendarBaseComponent extends LitElement {
   @blazorSuppress()
   @property({
     attribute: 'active-date',
-    converter: (value) => (value ? new Date(value) : new Date()),
+    converter: {
+      fromAttribute: (value: string) => (value ? new Date(value) : new Date()),
+      toAttribute: (value: Date) => value.toISOString(),
+    },
   })
   public activeDate = new Date();
 

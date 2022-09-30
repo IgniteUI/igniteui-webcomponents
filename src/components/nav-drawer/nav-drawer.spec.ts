@@ -5,20 +5,12 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import {
-  defineComponents,
-  IgcNavDrawerComponent,
-  IgcNavDrawerItemComponent,
-  IgcNavDrawerHeaderItemComponent,
-} from '../../index.js';
+import { defineComponents, IgcNavDrawerComponent } from '../../index.js';
+import type { IgcNavDrawerItemComponent } from '../../index.js';
 
 describe('Navigation Drawer', () => {
   before(() => {
-    defineComponents(
-      IgcNavDrawerComponent,
-      IgcNavDrawerItemComponent,
-      IgcNavDrawerHeaderItemComponent
-    );
+    defineComponents(IgcNavDrawerComponent);
   });
 
   let el: IgcNavDrawerComponent;
@@ -53,7 +45,8 @@ describe('Navigation Drawer', () => {
     });
 
     it('render nav drawer item slots successfully', async () => {
-      expect(el.children[0]).shadowDom.equal(`
+      expect(el.children[0]).shadowDom.equal(
+        `
         <div part="base">
           <span part="icon">
             <slot name="icon"></slot>
@@ -62,11 +55,16 @@ describe('Navigation Drawer', () => {
             <slot name="content"></slot>
           </span>
         </div>
-      `);
+      `,
+        {
+          ignoreAttributes: ['hidden'],
+        }
+      );
     });
 
     it('render nav drawer slots successfully', async () => {
       expect(el).shadowDom.equal(`
+        <div part="overlay"></div>
         <div part="base">
           <div part="main">
             <slot></slot>

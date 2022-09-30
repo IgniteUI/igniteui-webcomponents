@@ -1,9 +1,15 @@
 import { html, LitElement } from 'lit';
-import { property, queryAssignedElements, state } from 'lit/decorators.js';
-import { themes } from '../../theming';
-import { partNameMap } from '../common/util';
-import { styles as indigo } from './styles/indigo/nav-drawer-item.indigo.css';
-import { styles } from './styles/nav-drawer-item.base.css';
+import {
+  property,
+  queryAssignedElements,
+  queryAssignedNodes,
+  state,
+} from 'lit/decorators.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { partNameMap } from '../common/util.js';
+import { styles as fluent } from './themes/light/fluent/nav-drawer-item.fluent.css.js';
+import { styles as indigo } from './themes/light/indigo/nav-drawer-item.indigo.css.js';
+import { styles } from './themes/light/nav-drawer-item.base.css.js';
 
 /**
  * Represents a navigation drawer item.
@@ -17,7 +23,7 @@ import { styles } from './styles/nav-drawer-item.base.css';
  * @csspart icon - The icon container.
  * @csspart content - The content container.
  */
-@themes({ indigo })
+@themes({ fluent, indigo })
 export default class IgcNavDrawerItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-item';
   public static override styles = styles;
@@ -36,6 +42,9 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   @queryAssignedElements({ slot: 'content' })
   private _text!: Array<HTMLElement>;
 
+  @queryAssignedNodes({ slot: 'icon', flatten: true })
+  protected navdrawerIcon!: Array<Node>;
+
   public override connectedCallback() {
     super.connectedCallback();
     this.shadowRoot?.addEventListener('slotchange', (_) => {
@@ -53,7 +62,7 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   protected override render() {
     return html`
       <div part="${partNameMap(this.resolvePartNames('base'))}">
-        <span part="icon">
+        <span part="icon" .hidden="${this.navdrawerIcon.length == 0}">
           <slot name="icon"></slot>
         </span>
         <span part="content">

@@ -1,9 +1,0 @@
-@use '../../../styles/utilities' as *;
-
-[part~='base'] {
-    background: color(gray, 100);
-    color: contrast-color(gray, 100);
-    border-radius: 0;
-    min-width: rem(352px);
-    padding: rem(9px) rem(12px);
-}

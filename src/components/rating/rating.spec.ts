@@ -8,13 +8,21 @@ import {
 
 describe('Rating component', () => {
   before(() => {
-    defineComponents(IgcRatingComponent, IgcRatingSymbolComponent);
+    defineComponents(IgcRatingComponent);
   });
 
   const getRatingSymbols = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelectorAll(
-      `[part~='symbol']`
-    ) as NodeListOf<HTMLSpanElement>;
+      'igc-rating-symbol'
+    ) as NodeListOf<IgcRatingSymbolComponent>;
+  const getProjectedSymbols = (el: IgcRatingComponent) => {
+    const slot = el.shadowRoot!.querySelector(
+      'slot:not([name])'
+    ) as HTMLSlotElement;
+    return slot
+      .assignedElements()
+      .filter((el) => el.matches('igc-rating-symbol'));
+  };
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
   const fireKeyboardEvent = (key: string) =>
@@ -118,9 +126,12 @@ describe('Rating component', () => {
       el.max = 10;
       await elementUpdated(el);
 
-      expect(getRatingWrapper(el).getAttribute('aria-label')).to.equal(label);
       expect(getRatingWrapper(el).getAttribute('aria-valuenow')).to.equal('0');
       expect(getRatingWrapper(el).getAttribute('aria-valuemax')).to.equal('10');
+
+      expect(el.shadowRoot!.querySelector('[part="label"]')?.textContent).to.eq(
+        label
+      );
 
       el.value = 7;
       await elementUpdated(el);
@@ -128,6 +139,13 @@ describe('Rating component', () => {
     });
 
     it('correctly reflects value-format', async () => {
+      el.value = 3;
+      await elementUpdated(el);
+
+      expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
+        '3 of 5'
+      );
+
       el.valueFormat = 'You have selected {0}';
       el.max = 9;
       el.value = 6;
@@ -136,6 +154,15 @@ describe('Rating component', () => {
 
       expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
         'You have selected 6'
+      );
+
+      el.valueFormat = 'Selected {0} of {1}';
+      el.step = 0.1;
+      el.value = 5.2;
+      await elementUpdated(el);
+
+      expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
+        'Selected 5.2 of 9'
       );
     });
 
@@ -150,7 +177,7 @@ describe('Rating component', () => {
 
       expect(projected.max).to.equal(3);
 
-      getRatingSymbols(projected).forEach((symbol) =>
+      getProjectedSymbols(projected).forEach((symbol) =>
         expect(symbol.textContent).to.eq('🐝')
       );
     });
@@ -329,6 +356,14 @@ describe('Rating component', () => {
 
       getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
       expect(eventSpy).to.not.be.calledOnce;
+    });
+
+    it('sets step to 1 if in single selection mode', async () => {
+      el.step = 0.1;
+      el.single = true;
+
+      await elementUpdated(el);
+      expect(el.step).to.equal(1);
     });
   });
 });

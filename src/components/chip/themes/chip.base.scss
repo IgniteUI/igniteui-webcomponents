@@ -3,16 +3,18 @@
 
 :host {
     display: inline-flex;
+    vertical-align: top;
 }
 
 :host button {
+    @include type-category('body-2');
     @include border-radius(rem(16px));
 
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: var(--igc-font-family);
-    border: 0;
+    border-style: none;
     box-shadow: none;
     cursor: pointer;
 

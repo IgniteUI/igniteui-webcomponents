@@ -3,7 +3,7 @@
 $text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
 $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
 
-button {
+[part='base'] {
     @include utils.border-radius(utils.rem(2px));
 
     background: transparent;
@@ -36,8 +36,31 @@ button {
     }
 }
 
+:host([size='small']) {
+    [part='base'] {
+        width: #{utils.rem(24px)};
+        height: #{utils.rem(24px)};
+    }
+}
+
+:host([size='medium']) {
+    [part='base'] {
+        width: #{utils.rem(32px)};
+        height: #{utils.rem(32px)};
+        padding: calc(var(--igc-spacing-medium) * 1.5);
+    }
+}
+
+:host([size='large']) {
+    [part='base'] {
+        width: #{utils.rem(38px)};
+        height: #{utils.rem(38px)};
+        padding: calc(var(--igc-spacing-large) * .875);
+    }
+}
+
 :host([variant='contained']) {
-    button {
+    [part='base'] {
         color: $text-color;
         background: utils.color(primary, 500);
 
@@ -57,7 +80,7 @@ button {
 }
 
 :host([variant='outlined']) {
-    button {
+    [part='base'] {
         color: utils.color(gray, 900);
         box-shadow: 0 0 0 1px utils.color(gray, 700);
 
@@ -77,7 +100,7 @@ button {
 }
 
 :host([disabled]) {
-    button {
+    [part='base'] {
         color: utils.color(gray, 400);
         background: utils.color(gray, 100);
     }
@@ -85,7 +108,7 @@ button {
 
 :host([disabled][variant='contained']),
 :host([disabled][variant='outlined']) {
-    button {
+    [part='base'] {
         color: utils.color(gray, 500);
     }
 }

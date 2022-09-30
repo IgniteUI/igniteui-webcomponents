@@ -2,11 +2,12 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { alternateName, blazorTwoWayBind, watch } from '../common/decorators';
-import { partNameMap } from '../common/util';
-import { IgcInputBaseComponent } from './input-base';
-
-type Direction = 'ltr' | 'rtl' | 'auto';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
+import { watch } from '../common/decorators/watch.js';
+import { partNameMap } from '../common/util.js';
+import { IgcInputBaseComponent } from './input-base.js';
 
 /**
  * @element igc-input
@@ -33,10 +34,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
   public value = '';
-
-  /** The direction attribute of the control. */
-  @property({ reflect: true })
-  public override dir: Direction = 'auto';
 
   /** The type attribute of the control. */
   @alternateName('displayType')
@@ -98,12 +95,16 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   public autocomplete!: string;
 
+  @property({ type: Number })
+  public override tabIndex = 0;
+
   /** Checks for validity of the control and shows the browser message if it's invalid. */
   public reportValidity() {
     return this.input.reportValidity();
   }
 
   /** Replaces the selected text in the input. */
+  @blazorSuppress()
   public override setRangeText(
     replacement: string,
     start: number,
@@ -149,6 +150,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.emitEvent('igcInput', { detail: this.value });
   }
 
+  private handleChange() {
+    this.value = this.input.value;
+    this.emitEvent('igcChange', { detail: this.value });
+  }
+
   @watch('value', { waitUntilFirstUpdate: true })
   protected handleValueChange() {
     this.updateComplete.then(
@@ -164,12 +170,13 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         name="${ifDefined(this.name)}"
         type="${ifDefined(this.type)}"
         pattern="${ifDefined(this.pattern)}"
-        placeholder="${this.placeholder ?? ' '}"
+        placeholder="${ifDefined(this.placeholder)}"
         .value="${live(this.value)}"
         ?readonly="${this.readonly}"
         ?disabled="${this.disabled}"
         ?required="${this.required}"
         ?autofocus="${this.autofocus}"
+        tabindex=${this.tabIndex}
         autocomplete="${ifDefined(this.autocomplete as any)}"
         inputmode="${ifDefined(this.inputmode)}"
         min="${ifDefined(this.min)}"

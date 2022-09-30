@@ -1,34 +1,40 @@
 import { html } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming';
-import { watch } from '../common/decorators';
 import {
   IgcCalendarResourceStringEN,
   IgcCalendarResourceStrings,
-} from '../common/i18n/calendar.resources';
-import { Constructor } from '../common/mixins/constructor';
-import { EventEmitterMixin } from '../common/mixins/event-emitter';
-import { SizableMixin } from '../common/mixins/sizable';
-import { partNameMap } from '../common/util';
-import '../icon/icon';
+} from '../common/i18n/calendar.resources.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { partNameMap } from '../common/util.js';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
   YEARS_PER_ROW,
-} from './common/calendar-base';
-import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model';
-import { calculateYearsRangeStart, setDateSafe } from './common/utils';
-import './days-view/days-view';
-import type IgcDaysViewComponent from './days-view/days-view';
-import './months-view/months-view';
-import type IgcMonthsViewComponent from './months-view/months-view';
-import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css';
-import { styles } from './themes/calendar.base.css';
-import { styles as fluent } from './themes/fluent/calendar.fluent.css';
-import './years-view/years-view';
-import type IgcYearsViewComponent from './years-view/years-view';
+} from './common/calendar-base.js';
+import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
+import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
+import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css.js';
+import { styles } from './themes/calendar.base.css.js';
+import { styles as fluent } from './themes/fluent/calendar.fluent.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { watch } from '../common/decorators/watch.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcYearsViewComponent from './years-view/years-view.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import IgcMonthsViewComponent from './months-view/months-view.js';
+import IgcIconComponent from '../icon/icon.js';
+
+defineComponents(
+  IgcIconComponent,
+  IgcDaysViewComponent,
+  IgcMonthsViewComponent,
+  IgcYearsViewComponent
+);
 
 /**
  * Represents a calendar that lets users

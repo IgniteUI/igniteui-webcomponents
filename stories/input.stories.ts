@@ -17,15 +17,15 @@ const metadata = {
       defaultValue: 'text',
     },
     inputmode: {
-      type: '"numeric" | "email" | "search" | "tel" | "url" | "none" | "txt" | "decimal"',
+      type: '"numeric" | "none" | "email" | "search" | "tel" | "url" | "txt" | "decimal"',
       description: 'The input mode attribute of the control.',
       options: [
         'numeric',
+        'none',
         'email',
         'search',
         'tel',
         'url',
-        'none',
         'txt',
         'decimal',
       ],
@@ -78,6 +78,11 @@ const metadata = {
       type: 'string',
       description: 'The autocomplete attribute of the control.',
       control: 'text',
+    },
+    tabIndex: {
+      type: 'number',
+      control: 'number',
+      defaultValue: '0',
     },
     value: {
       type: 'string',
@@ -139,11 +144,11 @@ interface ArgTypes {
   type: 'number' | 'email' | 'password' | 'search' | 'tel' | 'text' | 'url';
   inputmode:
     | 'numeric'
+    | 'none'
     | 'email'
     | 'search'
     | 'tel'
     | 'url'
-    | 'none'
     | 'txt'
     | 'decimal';
   pattern: string;
@@ -155,6 +160,7 @@ interface ArgTypes {
   step: number;
   autofocus: boolean;
   autocomplete: string;
+  tabIndex: number;
   value: string;
   name: string;
   outlined: boolean;

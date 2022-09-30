@@ -1,0 +1,33 @@
+@use '../../../../../styles/utilities/index' as *;
+
+$active-background: var(--active-background, color(gray, 600, .8)) !default;
+$text-color: var(--text-color, color(gray, 300, .8)) !default;
+$hover-text-color: var(--hover-text-color, color(gray, 100)) !default;
+
+:host {
+    [part~='base'] {
+        @include border-radius(rem(24px));
+
+        gap: rem(24px);
+        color: $text-color;
+        padding: rem(4px);
+        margin: rem(15px) rem(8px) !important;
+
+        &:hover,
+        &:focus-within {
+            background: transparent;
+            color: $hover-text-color;
+        }
+    }
+
+    [part='content'] {
+        padding-inline-start: rem(8px);
+    }
+}
+
+:host([active]) {
+    [part~='base'] {
+        background: $active-background;
+        color: color(gray, 50);
+    }
+}

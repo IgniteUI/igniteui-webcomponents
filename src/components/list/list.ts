@@ -1,8 +1,14 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming';
-import { SizableMixin } from '../common/mixins/sizable';
-import { styles } from './themes/light/list.base.css';
-import { styles as bootstrap } from './themes/light/list.bootstrap.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { styles } from './themes/light/list.base.css.js';
+import { styles as bootstrap } from './themes/light/list.bootstrap.css.js';
+
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcListHeaderComponent from './list-header.js';
+import IgcListItemComponent from './list-item.js';
+
+defineComponents(IgcListItemComponent, IgcListHeaderComponent);
 
 /**
  * Displays a collection of data items in a templatable list format.

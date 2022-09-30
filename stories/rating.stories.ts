@@ -1,7 +1,7 @@
 import { html, svg } from 'lit';
-import { Context, Story } from './story.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { range } from 'lit-html/directives/range.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { Context, Story } from './story.js';
 
 // region default
 const metadata = {
@@ -10,21 +10,17 @@ const metadata = {
   argTypes: {
     max: {
       type: 'number',
-      description: 'The maximum value for the rating',
+      description:
+        'The maximum value for the rating.\n\nIf there are projected symbols, the maximum value will be resolved\nbased on the number of symbols.',
       control: 'number',
       defaultValue: '5',
     },
     step: {
       type: 'number',
-      description: 'The minimum value change allowed.',
+      description:
+        'The minimum value change allowed.\n\nValid values are in the interval between 0 and 1 inclusive.',
       control: 'number',
       defaultValue: '1',
-    },
-    symbol: {
-      type: 'string',
-      description: 'The symbol which the rating will display.',
-      control: 'text',
-      defaultValue: '⭐',
     },
     name: {
       type: 'string',
@@ -39,7 +35,7 @@ const metadata = {
     valueFormat: {
       type: 'string',
       description:
-        "A format string which sets aria-valuetext. All instances of '{0}' will be replaced\nwith the current value of the control.\nImportant for screen-readers and useful for localization.",
+        "A format string which sets aria-valuetext. Instances of '{0}' will be replaced\nwith the current value of the control and instances of '{1}' with the maximum value for the control.\n\nImportant for screen-readers and useful for localization.",
       control: 'text',
     },
     value: {
@@ -66,6 +62,12 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    single: {
+      type: 'boolean',
+      description: 'Toggles single selection visual mode.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -81,7 +83,6 @@ export default metadata;
 interface ArgTypes {
   max: number;
   step: number;
-  symbol: string;
   name: string;
   label: string;
   valueFormat: string;
@@ -89,6 +90,7 @@ interface ArgTypes {
   disabled: boolean;
   hoverPreview: boolean;
   readonly: boolean;
+  single: boolean;
   size: 'small' | 'medium' | 'large';
 }
 // endregion
@@ -103,7 +105,6 @@ const Template: Story<ArgTypes, Context> = (
   {
     size,
     hoverPreview,
-    symbol,
     step,
     max,
     disabled,
@@ -111,14 +112,15 @@ const Template: Story<ArgTypes, Context> = (
     label = 'Default',
     value,
     valueFormat,
+    single,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   const heartSVG = svg`<?xml version="1.0" ?><svg
-  width="24px"
-  height="24px"
   viewBox="0 0 24 24"
   xmlns="http://www.w3.org/2000/svg"
+  width="100%"
+  height="100%"
 >
   <defs>
     <style>
@@ -176,19 +178,18 @@ const Template: Story<ArgTypes, Context> = (
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
+        ?single=${single}
         .step=${Number(step)}
-        .symbol=${symbol}
         .value=${value}
         .max=${max}
         .valueFormat=${valueFormat}
-      >
-      </igc-rating>
+      ></igc-rating>
     </div>
     <div
       style="display: inline-flex; align-items: flex-end; gap: 8px; margin: 24px 0;"
     >
       <igc-rating
-        label="Custom symbols with a really really long label"
+        label="Custom symbols with single selection enabled"
         @igcChange=${hoverHandler}
         @igcHover=${hoverHandler}
         dir=${ifDefined(direction)}
@@ -199,21 +200,27 @@ const Template: Story<ArgTypes, Context> = (
         .step=${Number(step)}
         .valueFormat=${valueFormat}
         max="5"
+        single
       >
         ${emoji.map(
-          (each) => html`<igc-rating-symbol>${each}</igc-rating-symbol>`
+          (each) =>
+            html`<igc-rating-symbol>
+              <div>${each}</div>
+              <div slot="empty">${each}</div>
+            </igc-rating-symbol>`
         )}
+        <span slot="value-label" id="selection">Select a value</span>
       </igc-rating>
-      <span style="min-height: 24px" id="selection">Select a value</span>
     </div>
     <div>
       <igc-rating
-        label="With igc-icon"
+        label="With custom igc-icon(s)"
         dir=${ifDefined(direction)}
         size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
+        ?single=${single}
         .step=${Number(step)}
         .value=${value}
         .max=${max}
@@ -221,7 +228,12 @@ const Template: Story<ArgTypes, Context> = (
       >
         ${Array.from(range(5)).map(
           () => html`<igc-rating-symbol>
-            <igc-icon name="diamond-circled"></igc-icon>
+            <igc-icon collection="default" name="bandage"></igc-icon>
+            <igc-icon
+              collection="default"
+              name="bacteria"
+              slot="empty"
+            ></igc-icon>
           </igc-rating-symbol>`
         )}
       </igc-rating>
@@ -234,13 +246,18 @@ const Template: Story<ArgTypes, Context> = (
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readonly}
+        ?single=${single}
         .step=${Number(step)}
         .value=${value}
         .max=${max}
         .valueFormat=${valueFormat}
       >
         ${Array.from(range(5)).map(
-          () => html`<igc-rating-symbol>${heartSVG}</igc-rating-symbol>`
+          () =>
+            html`<igc-rating-symbol>
+              <div>${heartSVG}</div>
+              <div slot="empty">${heartSVG}</div>
+            </igc-rating-symbol>`
         )}
       </igc-rating>
     </div>

@@ -1,8 +1,8 @@
+import { all } from '@igniteui/material-icons-extended';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
-import { all } from '@igniteui/material-icons-extended';
+import { Context, Story } from './story';
 
 const icons = all.map((icon) => icon.name);
 
@@ -154,6 +154,52 @@ const Template: Story<ArgTypes, Context> = (
       .size=${size}
       .disabled=${ifDefined(disabled)}
     >
+      <igc-ripple></igc-ripple>
+    </igc-icon-button>
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <igc-icon-button
+      href=${ifDefined(href)}
+      target=${ifDefined(target)}
+      rel=${ifDefined(rel)}
+      dir=${ifDefined(direction)}
+      download=${ifDefined(download)}
+      variant=${ifDefined(variant)}
+      .size=${size}
+      .disabled=${ifDefined(disabled)}
+    >
+      <igc-ripple></igc-ripple>
+      💙
+    </igc-icon-button>
+    <igc-icon-button
+      href=${ifDefined(href)}
+      target=${ifDefined(target)}
+      rel=${ifDefined(rel)}
+      dir=${ifDefined(direction)}
+      download=${ifDefined(download)}
+      variant=${ifDefined(variant)}
+      .size=${size}
+      .disabled=${ifDefined(disabled)}
+    >
+      <span class="material-icons">favorite</span>
+    </igc-icon-button>
+    <igc-icon-button
+      href=${ifDefined(href)}
+      target=${ifDefined(target)}
+      rel=${ifDefined(rel)}
+      dir=${ifDefined(direction)}
+      download=${ifDefined(download)}
+      variant=${ifDefined(variant)}
+      .size=${size}
+      .disabled=${ifDefined(disabled)}
+    >
+      <i class="fa-solid fa-droplet"></i>
     </igc-icon-button>
   `;
 };

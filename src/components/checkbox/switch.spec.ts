@@ -36,7 +36,7 @@ describe('Switch', () => {
     });
 
     it('should initialize switch component with default values', async () => {
-      expect(input.id).to.equal('switch-0');
+      expect(input.id).to.equal('switch-1');
       expect(el.name).to.be.undefined;
       expect(input.name).to.equal('');
       expect(el.value).to.be.undefined;

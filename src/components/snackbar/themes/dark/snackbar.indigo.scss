@@ -1,0 +1,8 @@
+@use '../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-snackbar {
+        --background-color: #{color(gray, 300)};
+        --text-color: #{contrast-color(gray, 200)};
+    }
+}

@@ -3,9 +3,21 @@
 
 :host {
     display: inline-flex;
+    vertical-align: middle;
 }
 
-button {
+::slotted(:not(igc-ripple)) {
+    font-size: var(--size) !important;
+    vertical-align: middle;
+    pointer-events: none;
+}
+
+// This prevents the igc-ripple from working.
+// slot {
+//     pointer-events: none;
+// }
+
+[part='base'] {
     @include border-radius(50%);
 
     display: flex;
@@ -21,35 +33,31 @@ button {
     cursor: pointer;
     transition: box-shadow .2s ease-in, background .15s ease-out;
     transition-delay: .05s;
+    font-size: var(--size);
+    line-height: 1;
 }
 
 :host([size='small']) {
-    igc-icon {
-        --size: #{rem(16px)};
-    }
+    --size: #{rem(16px)};
 
-    button {
+    [part='base'] {
         padding: calc(var(--igc-spacing-small) * 2);
     }
 }
 
 :host([size='medium']) {
-    igc-icon {
-        --size: #{rem(20px)};
-    }
+    --size: #{rem(20px)};
 
-    button {
-        padding: calc(var(--igc-spacing-medium) * 1.5);
+    [part='base'] {
+        padding: calc(var(--igc-spacing-medium) * 1.25);
     }
 }
 
 :host([size='large']) {
-    igc-icon {
-        --size: #{rem(24px)};
-    }
+    --size: #{rem(24px)};
 
-    button {
-        padding: var(--igc-spacing-large);
+    [part='base'] {
+        padding: calc(var(--igc-spacing-large) * .75);
     }
 }
 

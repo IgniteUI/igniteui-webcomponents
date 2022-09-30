@@ -15,3 +15,10 @@
     padding-inline-start: rem(4px);
     padding-inline-end: rem(4px);
 }
+
+::slotted(*) {
+    @include type-category('h5') {
+        line-height: normal;
+        margin: 0;
+    }
+}

@@ -19,7 +19,11 @@ $thumb-radius: math.div($thumb-size, 2);
     top: rem(1px);
 }
 
-[part='thumb'] {
+[part='steps'] {
+    color: color(secondary, 200);
+}
+
+[part~='thumb'] {
     width: $thumb-size;
     height: $thumb-size;
     top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);

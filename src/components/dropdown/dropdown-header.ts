@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
-import { themes } from '../../theming';
-import { styles } from './themes/light/dropdown-header.base.css';
-import { styles as bootstrap } from './themes/light/dropdown-header.bootstrap.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './themes/light/dropdown-header.base.css.js';
+import { styles as bootstrap } from './themes/light/dropdown-header.bootstrap.css.js';
 
 /**
  * @element igc-dropdown-header - Represents a header item in a dropdown list.
@@ -9,17 +9,17 @@ import { styles as bootstrap } from './themes/light/dropdown-header.bootstrap.cs
  * @slot - Renders the header.
  */
 @themes({ bootstrap })
-export default class IgcDropDownHeaderComponent extends LitElement {
-  public static readonly tagName = 'igc-dropdown-header';
+export default class IgcDropdownHeaderComponent extends LitElement {
+  public static readonly tagName: string = 'igc-dropdown-header';
 
   public static override styles = styles;
 
-  public override render() {
+  protected override render() {
     return html`<slot></slot>`;
   }
 }
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-dropdown-header': IgcDropDownHeaderComponent;
+    'igc-dropdown-header': IgcDropdownHeaderComponent;
   }
 }

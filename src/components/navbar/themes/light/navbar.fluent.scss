@@ -1,0 +1,8 @@
+@use '../../../../styles/utilities' as *;
+
+::slotted(*) {
+    @include type-category('subtitle-2') {
+        line-height: normal;
+        margin: 0;
+    }
+}

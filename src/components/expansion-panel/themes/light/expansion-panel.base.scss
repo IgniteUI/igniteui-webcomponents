@@ -1,0 +1,91 @@
+@use '../../../../styles/utilities/index' as *;
+
+$disabled-color: var(--disabled-color, color(gray, 500)) !default;
+$padding: calc(var(--igc-spacing-large) * 2) calc(var(--igc-spacing-large) * 3);
+
+:host {
+    --lines-clamped: 1;
+
+    color: color(gray, 900);
+    background: color(surface, 500);
+    width: auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+[part='header'] {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: $padding;
+
+    &:focus,
+    &:active {
+        outline: transparent;
+        background: color(gray, 100);
+    }
+
+    *:not([part~='indicator']) {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1 0 0%;
+        overflow: hidden;
+        user-select: none;
+    }
+}
+
+[part='title']::slotted(*) {
+    @include type-category('h5');
+    @include line-clamp(var(--lines-clamped), true, true);
+
+    margin: 0;
+}
+
+[part='subtitle'] {
+    &::slotted(*) {
+        @include type-category('subtitle-2');
+        @include ellipsis();
+    }
+
+    color: color(gray, 700);
+}
+
+:host([open]) [part~='content'] {
+    @include type-category('body-2');
+
+    overflow: hidden;
+    padding: $padding;
+}
+
+[part~='indicator'] {
+    color: color(gray, 800);
+}
+
+[part~='indicator'] igc-icon {
+    --size: #{rem(24px)};
+}
+
+:host([indicator-position='start']) [part~='indicator'] {
+    margin-inline-end: calc(var(--igc-spacing-large) * 2);
+}
+
+:host([indicator-position='end']) [part~='indicator'] {
+    order: 2;
+    margin-inline-start: calc(var(--igc-spacing-large) * 2);
+}
+
+:host([indicator-position='none']) [part~='indicator'] {
+    display: none;
+}
+
+:host([disabled]) {
+    pointer-events: none;
+
+    [part='title'],
+    [part='subtitle'],
+    [part~='indicator'] {
+        color: $disabled-color;
+    }
+}

@@ -2,17 +2,15 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { themes } from '../../theming';
+import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
-import { partNameMap } from '../common/util.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
-import { styles } from './themes/light/checkbox.base.css';
-import { styles as bootstrap } from './themes/light/checkbox.bootstrap.css';
-import { styles as fluent } from './themes/light/checkbox.fluent.css';
-import { styles as indigo } from './themes/light/checkbox.indigo.css';
-import { styles as material } from './themes/light/checkbox.material.css';
-
-let nextId = 0;
+import { styles } from './themes/light/checkbox.base.css.js';
+import { styles as bootstrap } from './themes/light/checkbox.bootstrap.css.js';
+import { styles as fluent } from './themes/light/checkbox.fluent.css.js';
+import { styles as indigo } from './themes/light/checkbox.indigo.css.js';
+import { styles as material } from './themes/light/checkbox.material.css.js';
 
 /**
  * A check box allowing single values to be selected/deselected.
@@ -35,7 +33,8 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
   protected static styles = styles;
 
-  private inputId = `checkbox-${nextId++}`;
+  private static readonly increment = createCounter();
+  private inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
   private labelId = `checkbox-label-${this.inputId}`;
 
   /** Draws the checkbox in indeterminate state. */
@@ -65,7 +64,6 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
         })}
         for=${this.inputId}
         @pointerdown=${this.handleMouseDown}
-        .focused=${this.focused}
       >
         <input
           id=${this.inputId}
