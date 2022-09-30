@@ -105,22 +105,29 @@ export class StepperTestFunctions {
 // Templates
 
 export const simpleStepper = `<igc-stepper>
-                                        <igc-step>
-                                          <span slot="title">Step 1</span>
-                                          <span>STEP 1 CONTENT</span>
-                                        </igc-step>
-                                        <igc-step>
-                                          <span slot="title">Step 2</span>
-                                          <span>STEP 2 CONTENT</span>
-                                        </igc-step>
-                                        <igc-step>
-                                          <igc-icon slot="indicator" name='home'></igc-icon>
-                                          <span slot="title">Step 3</span>
-                                          <span>STEP 3 CONTENT</span>
-                                        </igc-step>
-                                      </igc-stepper>`;
+                                  <igc-step>
+                                    <span slot="title">Step 1</span>
+                                    <span>STEP 1 CONTENT</span>
+                                  </igc-step>
+                                  <igc-step>
+                                    <span slot="title">Step 2</span>
+                                    <span>STEP 2 CONTENT</span>
+                                  </igc-step>
+                                  <igc-step>
+                                    <span slot="title">Step 3</span>
+                                    <span>STEP 3 CONTENT</span>
+                                  </igc-step>
+                                  <igc-step>
+                                    <span slot="title">Step 3</span>
+                                    <span>STEP 4 CONTENT</span>
+                                  </igc-step>
+                                  <igc-step>
+                                    <span slot="title">Step 3</span>
+                                    <span>STEP 5 CONTENT</span>
+                                  </igc-step>
+                              </igc-stepper>`;
 
-export const stepperLinearMode = `<igc-stepper linear>
+export const linearModeStepper = `<igc-stepper linear>
                                       <igc-step invalid>
                                         <span slot="title">Step 1</span>
                                         <span>STEP 1 CONTENT</span>
@@ -165,7 +172,6 @@ export const stepperWithActiveDisabledStep = `<igc-stepper>
                                           <span>STEP 3 CONTENT</span>
                                         </igc-step>
                                       </igc-stepper>`;
-
 // export const simpleHierarchyTree = `<igc-tree>
 //                                          <igc-tree-item label="Tree Item 1">
 //                                            <igc-tree-item label="Tree Item 1.1">
