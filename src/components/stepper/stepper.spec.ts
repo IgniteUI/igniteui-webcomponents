@@ -3,6 +3,7 @@ import IgcStepperComponent from './stepper.js';
 import IgcStepComponent from './step.js';
 import sinon from 'sinon';
 import {
+  linearModeStepper,
   PARTS,
   simpleStepper,
   SLOTS,
@@ -27,7 +28,7 @@ describe('Stepper', () => {
 
     it('Should render a vertical stepper containing a sequence of steps', async () => {
       // stepper.steps should return all steps
-      expect(stepper.steps.length).to.equal(3);
+      expect(stepper.steps.length).to.equal(5);
       expect(stepper).to.contain('igc-step');
 
       expect(stepper.getAttribute('orientation')).to.not.be.null;
@@ -137,9 +138,10 @@ describe('Stepper', () => {
     });
 
     it('Should not allow moving forward to the next step in linear mode if the previous step is invalid', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        linearModeStepper
+      );
       stepper.steps[0].active = true;
-      stepper.steps[0].invalid = true;
       await elementUpdated(stepper);
 
       expect(stepper.steps[0]).to.have.attribute('invalid');
@@ -235,8 +237,32 @@ describe('Stepper', () => {
       expect(stepper.steps[2].visited).to.be.false;
     });
 
-    it('Should determine the steps that are disabled in linear mode based on the validity of the active step', async () => {
+    it('Should mark all steps before the active one as visited and all after that as not visited if the linear mode is enabled at runtime', async () => {
+      const step1 = stepper.steps[1];
+      const step2 = stepper.steps[2];
+      const step4 = stepper.steps[4];
+
+      step4.active = true;
+      await elementUpdated(stepper);
+
+      step2.active = true;
+      step2.invalid = true;
+      await elementUpdated(stepper);
+
+      expect(step4.visited).to.be.true;
+      expect(step1.visited).to.be.false;
+
       stepper.linear = true;
+      await elementUpdated(stepper);
+
+      expect(step4.visited).to.be.false;
+      expect(step1.visited).to.be.true;
+    });
+
+    it('Should determine the steps that are disabled in linear mode based on the validity of the active step', async () => {
+      stepper = await StepperTestFunctions.createStepperElement(
+        linearModeStepper
+      );
 
       stepper.steps[0].active = true;
       stepper.steps[0].invalid = true;
@@ -263,9 +289,12 @@ describe('Stepper', () => {
     });
 
     it('Should set a step to be accessible if the previous one is being disabled and was accessible before that', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        linearModeStepper
+      );
 
       stepper.steps[0].active = true;
+      stepper.steps[0].invalid = false;
       stepper.steps[1].invalid = true;
       await elementUpdated(stepper);
 
@@ -278,7 +307,9 @@ describe('Stepper', () => {
     });
 
     it('Should set a newly added invalid step to be accessible and the next one to be disabled', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        linearModeStepper
+      );
 
       const step0 = stepper.steps[0];
       const step1 = stepper.steps[1];
@@ -301,7 +332,9 @@ describe('Stepper', () => {
     });
 
     it('Should set a step to be accessible if the previous one is being removed from the DOM and was accessible before that', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        linearModeStepper
+      );
 
       const step0 = stepper.steps[0];
 
@@ -330,7 +363,9 @@ describe('Stepper', () => {
     });
 
     it('Should set a newly added step to be accessible if the next step is the active step', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        linearModeStepper
+      );
 
       const step0 = stepper.steps[0];
       step0.active = true;
@@ -515,6 +550,36 @@ describe('Stepper', () => {
       expect(step1HeaderContainer.part.contains('complete-start')).to.be.true;
       expect(step1HeaderContainer.part.contains('complete-end')).to.be.true;
       expect(step2HeaderContainer.part.contains('complete-end')).to.be.true;
+
+      stepper.steps[2].complete = true;
+      await elementUpdated(stepper);
+
+      expect(step2HeaderContainer.part.contains('complete-start')).to.be.true;
+      expect(step2HeaderContainer.part.contains('complete-end')).to.be.true;
+
+      const newStep = document.createElement(IgcStepComponent.tagName);
+      stepper.append(newStep);
+      await elementUpdated(stepper);
+
+      stepper.steps[2].complete = true;
+      await elementUpdated(stepper);
+
+      const step3HeaderContainer = StepperTestFunctions.getElementByPart(
+        stepper.steps[3],
+        PARTS.headerContainer
+      ) as HTMLElement;
+
+      expect(step3HeaderContainer.part.contains('complete-end')).to.be.true;
+
+      stepper.steps[2].complete = false;
+      await elementUpdated(stepper);
+
+      expect(step3HeaderContainer.part.contains('complete-end')).to.be.false;
+
+      stepper.removeChild(stepper.steps[2]);
+      await elementUpdated(stepper);
+
+      expect(step3HeaderContainer.part.contains('complete-end')).to.be.true;
     });
 
     it('Should apply the appropriate part to the header container of an optional step', async () => {
@@ -872,7 +937,7 @@ describe('Stepper', () => {
 
     it('Should render dynamically added step and properly set the active state of the steps', async () => {
       const stepsLength = stepper.steps.length;
-      expect(stepsLength).to.equal(3);
+      expect(stepsLength).to.equal(5);
 
       const step = document.createElement(IgcStepComponent.tagName);
 
@@ -904,7 +969,9 @@ describe('Stepper', () => {
     // });
 
     it('Should properly set the linear disabled steps when the active step is removed from the DOM', async () => {
-      stepper.linear = true;
+      stepper = await StepperTestFunctions.createStepperElement(
+        linearModeStepper
+      );
       const step = document.createElement(IgcStepComponent.tagName);
       stepper.prepend(step);
       await elementUpdated(stepper);
@@ -928,12 +995,10 @@ describe('Stepper', () => {
 
     it('Should activate the first accessible step and clear the visited steps collection when the stepper is reset', async () => {
       // "visit" some steps
-      stepper.steps[0].active = true;
-      await elementUpdated(stepper);
-      stepper.steps[1].active = true;
-      await elementUpdated(stepper);
-      stepper.steps[2].active = true;
-      await elementUpdated(stepper);
+      for (const step of stepper.steps) {
+        step.active = true;
+        await elementUpdated(stepper);
+      }
       stepper.steps[1].active = true;
       await elementUpdated(stepper);
 
@@ -952,24 +1017,24 @@ describe('Stepper', () => {
     });
 
     // ????
-    it('Should render step indicator and title when such are defined in the template', () => {
-      const step = stepper.steps[2];
-      const indicatorSlot = StepperTestFunctions.getSlot(step, SLOTS.indicator);
-      expect(indicatorSlot).not.to.be.null;
+    // it('Should render step indicator and title when such are defined in the template', () => {
+    //   const step = stepper.steps[2];
+    //   const indicatorSlot = StepperTestFunctions.getSlot(step, SLOTS.indicator);
+    //   expect(indicatorSlot).not.to.be.null;
 
-      let elements = indicatorSlot.assignedElements();
-      expect(elements.length).to.equal(1);
-      expect(elements[0].tagName).to.equal('IGC-ICON');
-      expect(elements[0]).to.have.attribute('name', 'home');
+    //   let elements = indicatorSlot.assignedElements();
+    //   expect(elements.length).to.equal(1);
+    //   expect(elements[0].tagName).to.equal('IGC-ICON');
+    //   expect(elements[0]).to.have.attribute('name', 'home');
 
-      const titleSlot = StepperTestFunctions.getSlot(step, SLOTS.title);
-      expect(indicatorSlot).not.to.be.null;
+    //   const titleSlot = StepperTestFunctions.getSlot(step, SLOTS.title);
+    //   expect(indicatorSlot).not.to.be.null;
 
-      elements = titleSlot.assignedElements();
-      expect(elements.length).to.equal(1);
-      expect(elements[0].tagName).to.equal('SPAN');
-      expect(elements[0].textContent).to.equal('Step 3');
-    });
+    //   elements = titleSlot.assignedElements();
+    //   expect(elements.length).to.equal(1);
+    //   expect(elements[0].tagName).to.equal('SPAN');
+    //   expect(elements[0].textContent).to.equal('Step 3');
+    // });
 
     // it('should render dynamically added step and properly set the linear disabled steps with its addition', async () => {
     //   const stepsLength = stepper.steps.length;
@@ -1058,7 +1123,7 @@ describe('Stepper', () => {
 
     it('Should navigate to first/last step on Home/End key press', async () => {
       const firstStep = stepper.steps[0];
-      const lastStep = stepper.steps[2];
+      const lastStep = stepper.steps[4];
 
       lastStep.active = true;
       lastStep.header.focus();
@@ -1133,7 +1198,7 @@ describe('Stepper', () => {
     it('Should navigate to the next/previous step in horizontal orientation on Arrow Right/Left key press', () => {
       const firstStep = stepper.steps[0];
       const secondStep = stepper.steps[1];
-      const thirdStep = stepper.steps[2];
+      const lastStep = stepper.steps[4];
 
       firstStep.header.focus();
 
@@ -1162,10 +1227,10 @@ describe('Stepper', () => {
       expect(firstStep.header).to.equal(firstStep.shadowRoot!.activeElement);
       expect(firstStep).to.equal(document.activeElement);
 
-      thirdStep.header.focus();
+      lastStep.header.focus();
       firstStep.disabled = true;
 
-      thirdStep.header.dispatchEvent(
+      lastStep.header.dispatchEvent(
         new KeyboardEvent('keydown', {
           key: 'ArrowRight',
           bubbles: true,
@@ -1184,8 +1249,8 @@ describe('Stepper', () => {
         })
       );
 
-      expect(thirdStep.header).to.equal(thirdStep.shadowRoot!.activeElement);
-      expect(thirdStep).to.equal(document.activeElement);
+      expect(lastStep.header).to.equal(lastStep.shadowRoot!.activeElement);
+      expect(lastStep).to.equal(document.activeElement);
 
       firstStep.disabled = false;
       firstStep.header.focus();
@@ -1198,8 +1263,8 @@ describe('Stepper', () => {
         })
       );
 
-      expect(thirdStep.header).to.equal(thirdStep.shadowRoot!.activeElement);
-      expect(thirdStep).to.equal(document.activeElement);
+      expect(lastStep.header).to.equal(lastStep.shadowRoot!.activeElement);
+      expect(lastStep).to.equal(document.activeElement);
     });
 
     it('Should navigate to the next/previous step in horizontal orientation on Arrow Right/Left key press (rtl)', () => {
