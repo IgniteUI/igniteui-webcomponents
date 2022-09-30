@@ -934,6 +934,8 @@ describe('Stepper', () => {
       await elementUpdated(stepper);
       stepper.steps[2].active = true;
       await elementUpdated(stepper);
+      stepper.steps[1].active = true;
+      await elementUpdated(stepper);
 
       for (const step of stepper.steps) {
         expect(step.visited).to.be.true;
