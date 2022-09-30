@@ -12,6 +12,8 @@ const Themes = {
   indigo_dark: await import('../src/styles/themes/dark/indigo.scss'),
 };
 
+const typography = await import('../src/styles/themes/extra/typography.scss');
+
 export const globalTypes = {
   theme: {
     name: 'Theme',
@@ -75,6 +77,7 @@ const themeProvider = (Story, context) => {
   const styles = htmlNoMin`
     <style>
       ${theme.default}
+      ${typography.default}
     </style>`;
 
   return html` ${styles} ${Story()} `;

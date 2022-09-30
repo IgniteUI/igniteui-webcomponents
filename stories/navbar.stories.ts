@@ -30,7 +30,7 @@ const Template: Story<any, Context> = (
   return html`
     <igc-navbar dir=${ifDefined(direction)} style="height:30px">
       <igc-icon slot="start" name="home"></igc-icon>
-      <h2>${content}</h2>
+      <h2 slotted-styles>${content}</h2>
       <igc-input
         slot="end"
         style="align-self: center"
