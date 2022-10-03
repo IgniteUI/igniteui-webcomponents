@@ -1,7 +1,7 @@
 @use '../../../../../node_modules/igniteui-theming/sass/color/functions' as *;
 
 @mixin theme() {
-    igc-grid {
+    apx-grid {
         // Grid body
         --content-text-color: #{color(null, gray, 800)};
 
