@@ -132,11 +132,11 @@ export const linearModeStepper = `<igc-stepper linear>
                                         <span slot="title">Step 1</span>
                                         <span>STEP 1 CONTENT</span>
                                       </igc-step>
-                                      <igc-step>
+                                      <igc-step invalid>
                                         <span slot="title">Step 2</span>
                                         <span>STEP 2 CONTENT</span>
                                       </igc-step>
-                                      <igc-step>
+                                      <igc-step invalid>
                                         <igc-icon slot="indicator" name='home'></igc-icon>
                                         <span slot="title">Step 3</span>
                                         <span>STEP 3 CONTENT</span>

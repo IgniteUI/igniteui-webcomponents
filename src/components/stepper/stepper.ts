@@ -229,9 +229,9 @@ export default class IgcStepperComponent extends SizableMixin(
   private changeActiveStep(step: IgcStepComponent) {
     if (this.activeStep) {
       this.activeStep.active = false;
-      this.activeStep.visited = true;
     }
     step.active = true;
+    step.visited = true;
     this.activeStep = step;
   }
 
