@@ -352,39 +352,22 @@ export default class IgcStepperComponent extends SizableMixin(
   }
 
   private calculateLinearDisabledSteps(): void {
-    const firstRequiredIndex = this.getNextRequiredStep();
-    if (!this.activeStep.invalid) {
-      if (firstRequiredIndex !== -1) {
-        this.updateLinearDisabledSteps(firstRequiredIndex);
-      }
+    const firstInvalidStep = this.steps
+      .filter((step: IgcStepComponent) => !step.disabled && !step.optional)
+      .find((step: IgcStepComponent) => step.invalid);
+    if (firstInvalidStep) {
+      this.steps.forEach((step: IgcStepComponent) => {
+        if (step.index <= firstInvalidStep.index) {
+          step.linearDisabled = false;
+        } else {
+          step.linearDisabled = true;
+        }
+      });
     } else {
-      const index = this.activeStep.optional
-        ? firstRequiredIndex >= 0
-          ? firstRequiredIndex
-          : this.steps.length - 1
-        : this.activeStep.index;
-      this.updateLinearDisabledSteps(index);
+      this.steps.forEach(
+        (step: IgcStepComponent) => (step.linearDisabled = false)
+      );
     }
-  }
-
-  private updateLinearDisabledSteps(toIndex: number): void {
-    this.steps.forEach((step: IgcStepComponent) => {
-      if (step.index <= toIndex) {
-        step.linearDisabled = false;
-      } else {
-        step.linearDisabled = true;
-      }
-    });
-  }
-
-  private getNextRequiredStep(): number {
-    return this.steps.findIndex(
-      (step: IgcStepComponent) =>
-        step.index > this.activeStep.index &&
-        !step.optional &&
-        !step.disabled &&
-        step.invalid
-    );
   }
 
   private syncProperties(): void {
