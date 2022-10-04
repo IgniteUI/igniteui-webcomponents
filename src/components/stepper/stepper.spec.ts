@@ -4,6 +4,7 @@ import IgcStepComponent from './step.js';
 import sinon from 'sinon';
 import {
   linearModeStepper,
+  linearModeStepperWithOptionalStep,
   PARTS,
   simpleStepper,
   SLOTS,
@@ -405,6 +406,40 @@ describe('Stepper', () => {
       stepper.prepend(newStep);
 
       expect(newStep.isAccessible).to.be.true;
+    });
+
+    it("Should not set steps to be accessible if a linear disabled step's invalid or disabled states are changed through API", async () => {
+      stepper = await StepperTestFunctions.createStepperElement(
+        linearModeStepper
+      );
+      stepper.navigateTo(2);
+      await elementUpdated(stepper);
+
+      // the step at index 1 should not be accessible because the previous one is required and invalid
+      expect(stepper.steps[1].isAccessible).to.be.false;
+
+      stepper.steps[2].disabled = true;
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[1].isAccessible).to.be.false;
+
+      stepper.steps[2].invalid = true;
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[1].isAccessible).to.be.false;
+    });
+
+    it('Should set a step to be accessible in linear mode if the previous one is accessible and optional', async () => {
+      stepper = await StepperTestFunctions.createStepperElement(
+        linearModeStepperWithOptionalStep
+      );
+      // the step at index 0 is set to be invalid and optional initially
+      expect(stepper.steps[1].isAccessible).to.be.true;
+
+      // test whether a step will become accessible when the previous step is invalid but is accessible and optional
+      stepper.steps[1].optional = true;
+      await elementUpdated(stepper);
+      expect(stepper.steps[2].isAccessible).to.be.true;
     });
   });
 
