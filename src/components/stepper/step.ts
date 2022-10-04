@@ -132,6 +132,7 @@ export default class IgcStepComponent extends LitElement {
 
   @watch('disabled', { waitUntilFirstUpdate: true })
   @watch('invalid', { waitUntilFirstUpdate: true })
+  @watch('optional', { waitUntilFirstUpdate: true })
   protected disabledInvalidChange() {
     this.dispatchEvent(
       new CustomEvent('stepDisabledInvalidChanged', { bubbles: true })

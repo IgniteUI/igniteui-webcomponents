@@ -352,17 +352,18 @@ export default class IgcStepperComponent extends SizableMixin(
   }
 
   private calculateLinearDisabledSteps(): void {
+    const firstRequiredIndex = this.getNextRequiredStep();
     if (!this.activeStep.invalid) {
-      const firstRequiredIndex = this.getNextRequiredStep();
       if (firstRequiredIndex !== -1) {
         this.updateLinearDisabledSteps(firstRequiredIndex);
-      } else {
-        this.steps.forEach(
-          (step: IgcStepComponent) => (step.linearDisabled = false)
-        );
       }
     } else {
-      this.updateLinearDisabledSteps(this.activeStep.index);
+      const index = this.activeStep.optional
+        ? firstRequiredIndex >= 0
+          ? firstRequiredIndex
+          : this.steps.length - 1
+        : this.activeStep.index;
+      this.updateLinearDisabledSteps(index);
     }
   }
 
