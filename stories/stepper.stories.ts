@@ -80,7 +80,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
       .size=${size}
       .dir=${direction}
     >
-      <igc-step invalid id="asd" complete>
+      <igc-step id="asd" complete>
         <span slot="title">Card Type</span>
         <!-- <span slot="subtitle">subtitle</span> -->
         <span>
@@ -95,7 +95,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <input />
         <button>Asd</button>
       </igc-step>
-      <igc-step invalid active complete>
+      <igc-step active complete>
         <span slot="title"
           >Business information (Lorem ipsum dolor sit amet.)</span
         >
@@ -109,7 +109,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           <textarea name="" id="" cols="30" rows="10"></textarea>
         </div>
       </igc-step>
-      <igc-step invalid>
+      <igc-step>
         <!--        <span slot="title">Personal information</span>-->
         <span slot="subtitle">subtitle</span>
         <span
@@ -117,7 +117,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
           eleifend gravida erat. Curabitur gravida malesuada arcu,
         </span>
       </igc-step>
-      <igc-step invalid>
+      <igc-step>
         <!--        <span slot="indicator"><igc-icon name="home"></igc-icon></span>-->
         <!--        <span slot="title">Shipping Details</span>-->
         <!--        <span slot="subtitle">subtitle</span>-->
