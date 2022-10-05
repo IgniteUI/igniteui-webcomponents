@@ -466,7 +466,7 @@ describe('Stepper', () => {
       newStepAtIndex2.active = true;
 
       // add an active step after the currently active step in the stepper
-      stepper.prepend(newStepAtIndex2);
+      stepper.insertBefore(newStepAtIndex2, stepper.steps[2]);
       await elementUpdated(stepper);
 
       // the newly added step should be the active step of the stepper
