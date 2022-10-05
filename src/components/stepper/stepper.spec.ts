@@ -214,7 +214,7 @@ describe('Stepper', () => {
         stepperWithTwoActiveSteps
       );
       // two steps are set to be active initially
-      expect(stepper.steps[0].visited).to.be.true;
+      expect(stepper.steps[0].visited).to.be.false;
       expect(stepper.steps[1].visited).to.be.true;
 
       stepper.steps[3].active = true;
