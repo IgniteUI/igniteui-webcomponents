@@ -391,10 +391,15 @@ export default class IgcStepperComponent extends SizableMixin(
   protected stepsChanged(): void {
     this.style.setProperty('--steps-count', this.steps.length.toString());
 
-    // initially when there isn't a predefined active step or when the active step is removed
-    const hasActiveStep = this.steps.find((s) => s === this.activeStep);
-    if (!hasActiveStep) {
+    const lastActiveStep = this.steps
+      .reverse()
+      .find((step: IgcStepComponent) => step.active);
+    if (!lastActiveStep) {
+      // initially when there isn't a predefined active step or when the active step is removed
       this.activateFirstStep();
+    } else {
+      // activate the last step marked as active
+      this.activateStep(lastActiveStep, false);
     }
 
     this.syncProperties();

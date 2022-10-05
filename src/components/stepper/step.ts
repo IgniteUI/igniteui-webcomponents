@@ -121,7 +121,7 @@ export default class IgcStepComponent extends LitElement {
   @property({ attribute: false })
   public visited = false;
 
-  @watch('active')
+  @watch('active', { waitUntilFirstUpdate: true })
   protected activeChange() {
     if (this.active) {
       this.dispatchEvent(
