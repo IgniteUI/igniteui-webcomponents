@@ -138,7 +138,7 @@ describe('Stepper', () => {
       expect(stepper.steps[1].active).to.be.true;
     });
 
-    it('Should emit ing and ed events when a step is activated', async () => {
+    it('Should emit ing and ed events when a step is activated through UI', async () => {
       eventSpy = sinon.spy(stepper, 'emitEvent');
       await elementUpdated(stepper);
 
@@ -169,6 +169,31 @@ describe('Stepper', () => {
       expect(eventSpy.secondCall).calledWith('igcActiveStepChanged', argsEd);
     });
 
+    it('Should not emit events when a step is activated through API', async () => {
+      eventSpy = sinon.spy(stepper, 'emitEvent');
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[0].active).to.be.true;
+
+      stepper.next();
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[1].active).to.be.true;
+      expect(eventSpy.callCount).to.equal(0);
+
+      stepper.prev();
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[0].active).to.be.true;
+      expect(eventSpy.callCount).to.equal(0);
+
+      stepper.navigateTo(2);
+      await elementUpdated(stepper);
+
+      expect(stepper.steps[2].active).to.be.true;
+      expect(eventSpy.callCount).to.equal(0);
+    });
+
     it('Should be able to cancel the igcActiveStepChanging event', async () => {
       stepper.addEventListener('igcActiveStepChanging', (event) => {
         event.preventDefault();
@@ -189,7 +214,7 @@ describe('Stepper', () => {
         stepperWithTwoActiveSteps
       );
       // two steps are set to be active initially
-      expect(stepper.steps[0].visited).to.be.false;
+      expect(stepper.steps[0].visited).to.be.true;
       expect(stepper.steps[1].visited).to.be.true;
 
       stepper.steps[3].active = true;
@@ -419,6 +444,35 @@ describe('Stepper', () => {
       stepper.steps[1].optional = true;
       await elementUpdated(stepper);
       expect(stepper.steps[2].isAccessible).to.be.true;
+    });
+
+    it('Should properly set the active step of the stepper when an active step is added dynamically', async () => {
+      // initially the step at index 0 is the active step
+      expect(stepper.steps[0].active).to.be.true;
+
+      const newStepAtIndex0 = document.createElement(IgcStepComponent.tagName);
+      newStepAtIndex0.active = true;
+
+      // add an active step before the currently active step in the stepper
+      stepper.prepend(newStepAtIndex0);
+      await elementUpdated(stepper);
+
+      // the newly added step shouldn't be the active step of the stepper
+      expect(newStepAtIndex0.active).to.be.false;
+      expect(newStepAtIndex0.visited).to.be.false;
+      expect(stepper.steps[1].active).to.be.true;
+
+      const newStepAtIndex2 = document.createElement(IgcStepComponent.tagName);
+      newStepAtIndex2.active = true;
+
+      // add an active step after the currently active step in the stepper
+      stepper.prepend(newStepAtIndex2);
+      await elementUpdated(stepper);
+
+      // the newly added step should be the active step of the stepper
+      expect(newStepAtIndex2.active).to.be.true;
+      expect(newStepAtIndex2.visited).to.be.true;
+      expect(stepper.steps[1].active).to.be.false;
     });
   });
 
