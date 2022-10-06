@@ -365,7 +365,7 @@
     }
 }
 
-:host([invalid]) {
+[part~='invalid'] {
     [part~='indicator'] {
         span {
             color: var(--error-color);
@@ -414,7 +414,7 @@
     }
 }
 
-:host([disabled]) {
+[part~='disabled'] {
     [part='header'] {
         background: color(gray, 50, 0);
     }
