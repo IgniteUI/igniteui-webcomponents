@@ -4,13 +4,11 @@ import IgcStepComponent from './step.js';
 import sinon from 'sinon';
 import {
   linearModeStepper,
-  linearModeStepperWithOptionalStep,
   PARTS,
   simpleStepper,
   SLOTS,
   StepperTestFunctions,
-  stepperWithActiveDisabledStep,
-  stepperWithTwoActiveSteps,
+  stepperActiveDisabledSteps,
 } from './stepper-utils.spec.js';
 import { elementUpdated, expect } from '@open-wc/testing';
 
@@ -116,7 +114,7 @@ describe('Stepper', () => {
 
     it('Should not allow activating more than one step at a time', async () => {
       stepper = await StepperTestFunctions.createStepperElement(
-        stepperWithTwoActiveSteps
+        stepperActiveDisabledSteps
       );
       // the first two steps are set to be active initially
       // should be activated only the last one
@@ -146,7 +144,7 @@ describe('Stepper', () => {
 
     it('Should activate a step when it is set to be active and disabled initially', async () => {
       stepper = await StepperTestFunctions.createStepperElement(
-        stepperWithActiveDisabledStep
+        stepperActiveDisabledSteps
       );
 
       // the step at index 1 is set to be disabled and active initially
@@ -256,7 +254,7 @@ describe('Stepper', () => {
 
     it('Should not mark a step as visited if it has not been activated before', async () => {
       stepper = await StepperTestFunctions.createStepperElement(
-        stepperWithTwoActiveSteps
+        stepperActiveDisabledSteps
       );
       // two steps are set to be active initially
       expect(stepper.steps[0].visited).to.be.false;
@@ -324,6 +322,10 @@ describe('Stepper', () => {
       const step1 = stepper.steps[1];
       const step2 = stepper.steps[2];
 
+      // the optional state is set to true initially
+      step0.optional = false;
+      await elementUpdated(stepper);
+
       for (let i = 1; i < stepper.steps.length; i++) {
         expect(stepper.steps[i].isAccessible).to.be.false;
       }
@@ -347,6 +349,10 @@ describe('Stepper', () => {
       const step0 = stepper.steps[0];
       const step1 = stepper.steps[1];
       const step2 = stepper.steps[2];
+
+      // the optional state is set to true initially
+      step0.optional = false;
+      await elementUpdated(stepper);
 
       expect(step0.invalid).to.be.true;
       expect(step0).to.have.attribute('invalid');
@@ -461,6 +467,11 @@ describe('Stepper', () => {
       stepper = await StepperTestFunctions.createStepperElement(
         linearModeStepper
       );
+
+      // the optional state is set to true initially
+      stepper.steps[0].optional = false;
+      await elementUpdated(stepper);
+
       stepper.navigateTo(2);
       await elementUpdated(stepper);
 
@@ -480,7 +491,7 @@ describe('Stepper', () => {
 
     it('Should set a step to be accessible in linear mode if the previous one is accessible and optional', async () => {
       stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepperWithOptionalStep
+        linearModeStepper
       );
       // the step at index 0 is set to be invalid and optional initially
       expect(stepper.steps[1].isAccessible).to.be.true;
@@ -705,7 +716,7 @@ describe('Stepper', () => {
 
     it('Should apply the appropriate part to the header container of a step which has not title and subtitle', async () => {
       stepper = await StepperTestFunctions.createStepperElement(
-        stepperWithTwoActiveSteps
+        stepperActiveDisabledSteps
       );
       stepper.stepType = 'indicator';
       await elementUpdated(stepper);

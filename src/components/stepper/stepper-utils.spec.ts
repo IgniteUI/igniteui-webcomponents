@@ -72,22 +72,6 @@ export const simpleStepper = `<igc-stepper>
                               </igc-stepper>`;
 
 export const linearModeStepper = `<igc-stepper linear>
-                                      <igc-step invalid>
-                                        <span slot="title">Step 1</span>
-                                        <span>STEP 1 CONTENT</span>
-                                      </igc-step>
-                                      <igc-step invalid>
-                                        <span slot="title">Step 2</span>
-                                        <span>STEP 2 CONTENT</span>
-                                      </igc-step>
-                                      <igc-step invalid>
-                                        <igc-icon slot="indicator" name='home'></igc-icon>
-                                        <span slot="title">Step 3</span>
-                                        <span>STEP 3 CONTENT</span>
-                                      </igc-step>
-                                    </igc-stepper>`;
-
-export const linearModeStepperWithOptionalStep = `<igc-stepper linear>
                                       <igc-step invalid optional>
                                         <span slot="title">Step 1</span>
                                         <span>STEP 1 CONTENT</span>
@@ -103,12 +87,12 @@ export const linearModeStepperWithOptionalStep = `<igc-stepper linear>
                                       </igc-step>
                                     </igc-stepper>`;
 
-export const stepperWithTwoActiveSteps = `<igc-stepper>
+export const stepperActiveDisabledSteps = `<igc-stepper>
                                         <igc-step active>
                                           <span slot="title">Step 1</span>
                                           <span>STEP 1 CONTENT</span>
                                         </igc-step>
-                                        <igc-step active>
+                                        <igc-step active disabled>
                                           <span slot="title">Step 2</span>
                                           <span>STEP 2 CONTENT</span>
                                         </igc-step>
@@ -118,21 +102,5 @@ export const stepperWithTwoActiveSteps = `<igc-stepper>
                                         <igc-step>
                                           <span slot="title">Step 2</span>
                                           <span>STEP 4 CONTENT</span>
-                                        </igc-step>
-                                      </igc-stepper>`;
-
-export const stepperWithActiveDisabledStep = `<igc-stepper>
-                                        <igc-step>
-                                          <span slot="title">Step 1</span>
-                                          <span>STEP 1 CONTENT</span>
-                                        </igc-step>
-                                        <igc-step disabled active>
-                                          <span slot="title">Step 2</span>
-                                          <span>STEP 2 CONTENT</span>
-                                        </igc-step>
-                                        <igc-step>
-                                          <igc-icon slot="indicator" name='home'></igc-icon>
-                                          <span slot="title">Step 3</span>
-                                          <span>STEP 3 CONTENT</span>
                                         </igc-step>
                                       </igc-stepper>`;
