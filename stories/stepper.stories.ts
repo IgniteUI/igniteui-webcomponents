@@ -336,7 +336,6 @@ Add your note here...
         <igc-button @click=${submitAndReset}>Submit & Reset</igc-button>
       </igc-step>
     </igc-stepper>
-
     <span>test content bottom</span>
   `;
 };
