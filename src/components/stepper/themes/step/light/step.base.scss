@@ -365,6 +365,21 @@
     }
 }
 
+:host([invalid]) {
+    [part~='indicator'] {
+        span {
+            color: var(--error-color);
+            background: var(--error-background);
+            box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var(--error-shadow);
+        }
+    }
+
+    [part~='title'],
+    [part~='subtitle'] {
+        color: var(--error-background);
+    }
+}
+
 :host([active]) {
     [part~='body'] {
         display: var(--vertical-body-disply, block);
@@ -399,22 +414,7 @@
     }
 }
 
-[part~='error'] {
-    [part~='indicator'] {
-        span {
-            color: var(--error-color);
-            background: var(--error-background);
-            box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var(--error-shadow);
-        }
-    }
-
-    [part~='title'],
-    [part~='subtitle'] {
-        color: var(--error-background);
-    }
-}
-
-[part~='disabled'] {
+:host([disabled]) {
     [part='header'] {
         background: color(gray, 50, 0);
     }
