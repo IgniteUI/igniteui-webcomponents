@@ -262,7 +262,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
         <span slot="subtitle">Currently you can pay only cash</span>
       </igc-step>
 
-      <igc-step id="step-5">
+      <igc-step id="step-5" optional>
         <span slot="title">Additional Notes</span>
         <span slot="subtitle">(Optional)</span>
         <form id="additionalNotesForm">
