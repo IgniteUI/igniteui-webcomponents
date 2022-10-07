@@ -130,7 +130,7 @@ describe('Stepper', () => {
       expect(stepper.steps[0]).to.have.attribute('active');
     });
 
-    it('Should properly set the active state of the steps when a the active step is removed dynamically', async () => {
+    it('Should properly set the active state of the steps when the active step is removed dynamically', async () => {
       const step0 = stepper.steps[0];
       const step1 = stepper.steps[1];
 
@@ -682,9 +682,6 @@ describe('Stepper', () => {
     });
 
     it('Should apply the appropriate part to the header container of an invalid step', async () => {
-      stepper.linear = true;
-      await elementUpdated(stepper);
-
       const step1 = stepper.steps[1];
       const step1HeaderContainer = StepperTestFunctions.getElementByPart(
         step1,
