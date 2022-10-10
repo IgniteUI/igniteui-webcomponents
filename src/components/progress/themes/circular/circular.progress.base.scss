@@ -9,8 +9,11 @@
     display: inline-flex;
     position: relative;
 
-    --stroke-thickness: #{rem(2px)};
-    --diameter: #{rem(30px)};
+    // Do not use rem values here
+    // This will break the component in Safari
+    // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
+    --stroke-thickness: 2px;
+    --diameter: 30px;
 }
 
 [part~='label'] {
@@ -42,6 +45,7 @@
 [part~='svg'] {
     width: $diameter;
     height: $diameter;
+    transform: rotate(-90deg);
 }
 
 [part~='track'] {
@@ -52,8 +56,6 @@
     stroke-dasharray: #{$circumference} #{$circumference};
     stroke-dashoffset: calc(#{$circumference} - var(--percentage) * #{$circumference});
     transition: stroke-dashoffset var(--duration) linear;
-    transform-origin: 50% 50%;
-    transform: rotate(-90deg);
 
     --percentage: 0;
     --duration: 500ms;
@@ -61,11 +63,18 @@
 
 [part~='track'],
 [part~='fill'] {
+    width: 100%;
+    height: 100%;
     fill: transparent;
     stroke-width: var(--stroke-thickness);
     cx: calc(#{$diameter} / 2);
     cy: calc(#{$diameter} / 2);
     r: $radius;
+
+    // Do not use % values inside transform origin
+    // This will break the component in Safari
+    // https://github.com/IgniteUI/igniteui-webcomponents/issues/377
+    transform-origin: center;
 }
 
 [part~='gradient_start'],

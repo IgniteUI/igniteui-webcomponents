@@ -3,7 +3,7 @@
 $track-color: color(primary, 50, .3);
 
 :host {
-    --stroke-thickness: #{rem(1.5px)};
+    --stroke-thickness: 1.5px;
 }
 
 [part~='track'] {
