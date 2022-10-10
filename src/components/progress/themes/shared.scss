@@ -104,24 +104,24 @@ $indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
 
 // Fluent linear animation
 @keyframes indeterminate-bar-fluent {
-    from {
+    0% {
         transform: translateX(-100%);
         transform-origin: left;
     }
 
-    to {
+    100% {
         transform: translateX(310%);
         transform-origin: right;
     }
 }
 
 @keyframes indeterminate-bar-fluent-rtl {
-    from {
+    0% {
         transform: translateX(-310%);
         transform-origin: right;
     }
 
-    to {
+    100% {
         transform: translateX(100%);
         transform-origin: left;
     }
@@ -129,23 +129,23 @@ $indeterminate-secondary-scale-step-3: cubic-bezier(.4, .627, .6, .902);
 
 // Circular animation
 @keyframes indeterminate-accordion {
-    from {
+    0% {
         stroke-dashoffset: calc(#{$circumference} * 2);
         stroke-dasharray: calc(#{$circumference} * 9 / 10);
     }
 
-    to {
+    100% {
         stroke-dashoffset: calc(#{$circumference} * 2 / 5);
     }
 }
 
 @keyframes indeterminate-accordion-rtl {
-    from {
+    0% {
         stroke-dashoffset: calc(#{$circumference} * -2);
         stroke-dasharray: calc(#{$circumference} * 9 / 10);
     }
 
-    to {
+    100% {
         stroke-dashoffset: calc(#{$circumference} * -2 / 5);
     }
 }

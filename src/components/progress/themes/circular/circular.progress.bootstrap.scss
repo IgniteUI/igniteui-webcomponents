@@ -1,8 +1,8 @@
 @use '../../../../styles/utilities/index' as *;
 
 :host {
-    --stroke-thickness: #{rem(4px)};
-    --diameter: #{rem(28px)};
+    --stroke-thickness: 4px;
+    --diameter: 28px;
 }
 
 [part~='svg'][part~='indeterminate'] {
