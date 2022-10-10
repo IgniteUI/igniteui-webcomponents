@@ -9,7 +9,7 @@ $text-color: color(gray, 900);
 $track-color: color(gray, 300);
 $fill-color: $primary-color;
 $track-roundness: 0;
-$background-size: rem(40px) rem(40px);
+$background-size: #{rem(40px)} #{rem(40px)};
 $stripe-grays: color(gray, 50, .7);
 $stripe-size: rem(16px);
 $animation-direction: normal;
