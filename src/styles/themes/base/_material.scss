@@ -2,7 +2,7 @@
 @use '../../../../node_modules/igniteui-theming/sass/typography/presets' as *;
 @use '../../../../node_modules/igniteui-theming/sass/elevations/presets' as *;
 
-.igc-scrollbar {
+.ig-scrollbar {
     --scrolbar-size: #{rem(16px)};
     --igc-scrollbar-track-color: #{color(null, gray, 100)};
     --igc-scrollbar-thumb-color: #{color(null, gray, 400)};
