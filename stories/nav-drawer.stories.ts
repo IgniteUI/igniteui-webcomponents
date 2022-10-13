@@ -177,7 +177,7 @@ const Template: Story<ArgTypes, Context> = (
 ) => {
   return html`
     <div
-      class="igc-scrollbar"
+      class="ig-scrollbar"
       style="display: flex; margin-top: -8px; margin-left: -8px; height: 100vh;"
     >
       <igc-nav-drawer

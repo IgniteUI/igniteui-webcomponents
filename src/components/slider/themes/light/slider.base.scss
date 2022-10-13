@@ -24,7 +24,7 @@ slot {
     align-items: center;
     height: rem(48px);
     transition: all .2s ease-out;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
 }
 
 [part='track'] {
@@ -119,7 +119,7 @@ slot {
     opacity: 1;
     transition: opacity .2s ease-in-out;
 
-    @include type-category('caption');
+    @include type-style('caption');
 }
 
 [part='tick-label-inner'] {
@@ -156,7 +156,7 @@ slot {
 }
 
 [part='thumb-label-inner'] {
-    @include type-category('caption');
+    @include type-style('caption');
     @include border-radius(rem(2px));
 
     display: flex;

@@ -4,7 +4,7 @@ $input-background: var(--input-background, #fff) !default;
 
 :host {
     ::slotted([slot='helper-text']) {
-        @include utils.type-category('body-2');
+        @include utils.type-style('body-2');
 
         color: utils.color(gray, 700);
     }

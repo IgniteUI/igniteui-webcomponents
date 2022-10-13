@@ -1,12 +1,11 @@
-@use 'sass:map';
-@use '../../../../styles/utilities' as utils;
+@use '../../../../styles/utilities' as *;
 
-$focused-border-width: utils.rem(2px);
-$input-height: (
-    large: utils.rem(48px),
-    medium: utils.rem(40px),
-    small: utils.rem(32px)
-);
+$focused-border-width: rem(2px);
+$focused-height: calc(var(--size) - #{($focused-border-width * 2)});
+
+:host {
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+}
 
 :host(:focus-within) {
     igc-input[readonly]:not([disabled])::part(container) {
@@ -16,27 +15,19 @@ $input-height: (
 
 :host(:not([invalid]):focus-within) {
     igc-input[readonly]:not([disabled])::part(container) {
-        border-color: utils.color(primary, 500);
+        border-color: color(primary, 500);
         border-width: #{$focused-border-width};
     }
 
     igc-input[readonly]:not([disabled])::part(prefix) {
-        margin-inline-start: utils.rem(-1px);
+        margin-inline-start: rem(-1px);
     }
 
     igc-input[readonly]:not([disabled])::part(suffix) {
-        margin-inline-end: utils.rem(-1px);
+        margin-inline-end: rem(-1px);
     }
 
-    igc-input[readonly][size='large']:not([disabled])::part(input) {
-        height: #{map.get($input-height, 'large') - ($focused-border-width * 2)};
-    }
-
-    igc-input[readonly][size='medium']:not([disabled])::part(input) {
-        height: #{map.get($input-height, 'medium') - ($focused-border-width * 2)};
-    }
-
-    igc-input[readonly][size='small']:not([disabled])::part(input) {
-        height: #{map.get($input-height, 'small') - ($focused-border-width * 2)};
+    igc-input[readonly]:not([disabled])::part(input) {
+        height: $focused-height;
     }
 }

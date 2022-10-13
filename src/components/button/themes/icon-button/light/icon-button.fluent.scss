@@ -1,15 +1,22 @@
-@use '../../../../../styles/utilities' as utils;
+@use '../../../../../styles/utilities' as *;
 
-$text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
-$hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
+$text-color: var(--text-color, #{contrast-color(primary, 600)}) !default;
+$hover-background: var(--hover-background, #{color(primary, 600)}) !default;
+
+:host {
+    --size: #{sizable(rem(24px), rem(32px), rem(38px))};
+}
 
 [part='base'] {
-    @include utils.border-radius(utils.rem(2px));
+    @include border-radius(rem(2px));
 
     background: transparent;
-    color: utils.color(primary, 500);
+    color: color(primary, 500);
     transition: color .15s ease-out, background .15s ease-out;
     box-shadow: none;
+    width: var(--size);
+    height: var(--size);
+    padding: pad(4px, 6px, 7px);
 
     &::after {
         position: absolute;
@@ -22,67 +29,44 @@ $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !defaul
     }
 
     &:hover {
-        color: utils.color(primary, 500);
-        background: utils.color(gray, 200);
+        color: color(primary, 500);
+        background: color(gray, 200);
     }
 
     &:active {
-        color: utils.color(primary, 500);
-        background: utils.color(gray, 300);
+        color: color(primary, 500);
+        background: color(gray, 300);
     }
 
     &:focus-visible::after {
-        box-shadow: 0 0 0 utils.rem(1px) utils.color(gray, 500);
-    }
-}
-
-:host([size='small']) {
-    [part='base'] {
-        width: #{utils.rem(24px)};
-        height: #{utils.rem(24px)};
-    }
-}
-
-:host([size='medium']) {
-    [part='base'] {
-        width: #{utils.rem(32px)};
-        height: #{utils.rem(32px)};
-        padding: calc(var(--igc-spacing-medium) * 1.5);
-    }
-}
-
-:host([size='large']) {
-    [part='base'] {
-        width: #{utils.rem(38px)};
-        height: #{utils.rem(38px)};
-        padding: calc(var(--igc-spacing-large) * .875);
+        box-shadow: 0 0 0 rem(1px) color(gray, 500);
     }
 }
 
 :host([variant='contained']) {
     [part='base'] {
         color: $text-color;
-        background: utils.color(primary, 500);
+        background: color(primary, 500);
 
         &:hover {
             background: $hover-background;
         }
 
         &:active {
-            color: utils.contrast-color(primary, 800);
-            background: utils.color(primary, 800);
+            color: contrast-color(primary, 800);
+            background: color(primary, 800);
         }
 
         &:focus-visible::after {
-            box-shadow: 0 0 0 utils.rem(1px) utils.contrast-color(primary, 600);
+            box-shadow: 0 0 0 rem(1px) contrast-color(primary, 600);
         }
     }
 }
 
 :host([variant='outlined']) {
     [part='base'] {
-        color: utils.color(gray, 900);
-        box-shadow: 0 0 0 1px utils.color(gray, 700);
+        color: color(gray, 900);
+        box-shadow: 0 0 0 1px color(gray, 700);
 
         &:focus {
             background: transparent;
@@ -90,25 +74,25 @@ $hover-background: var(--hover-background, #{utils.color(primary, 600)}) !defaul
 
         &:hover,
         &:focus:hover {
-            background: utils.color(gray, 100);
+            background: color(gray, 100);
         }
 
         &:focus:active {
-            background: utils.color(gray, 200);
+            background: color(gray, 200);
         }
     }
 }
 
 :host([disabled]) {
     [part='base'] {
-        color: utils.color(gray, 400);
-        background: utils.color(gray, 100);
+        color: color(gray, 400);
+        background: color(gray, 100);
     }
 }
 
 :host([disabled][variant='contained']),
 :host([disabled][variant='outlined']) {
     [part='base'] {
-        color: utils.color(gray, 500);
+        color: color(gray, 500);
     }
 }

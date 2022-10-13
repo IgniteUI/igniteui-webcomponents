@@ -2,12 +2,16 @@
 @use '../../../../../styles/utilities' as *;
 
 :host {
+    --icon-size: #{sizable(rem(16px), rem(20px), rem(24px))};
+
     display: inline-flex;
     vertical-align: middle;
 }
 
 ::slotted(:not(igc-ripple)) {
-    font-size: var(--size) !important;
+    --icon-size: #{sizable(rem(16px), rem(20px), rem(24px))};
+
+    font-size: var(--icon-size) !important;
     vertical-align: middle;
     pointer-events: none;
 }
@@ -26,39 +30,27 @@
     border: none;
     outline-style: none;
     background: transparent;
-    padding: 0;
+    padding: pad(4px, 5px, 6px);
     color: color(gray, 900);
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     cursor: pointer;
     transition: box-shadow .2s ease-in, background .15s ease-out;
     transition-delay: .05s;
-    font-size: var(--size);
+    font-size: var(--icon-size);
     line-height: 1;
 }
 
 :host([size='small']) {
-    --size: #{rem(16px)};
-
-    [part='base'] {
-        padding: calc(var(--igc-spacing-small) * 2);
-    }
+    --component-size: var(--ig-size, var(--ig-size-small));
 }
 
 :host([size='medium']) {
-    --size: #{rem(20px)};
-
-    [part='base'] {
-        padding: calc(var(--igc-spacing-medium) * 1.25);
-    }
+    --component-size: var(--ig-size, var(--ig-size-medium));
 }
 
 :host([size='large']) {
-    --size: #{rem(24px)};
-
-    [part='base'] {
-        padding: calc(var(--igc-spacing-large) * .75);
-    }
+    --component-size: var(--ig-size, var(--ig-size-large));
 }
 
 :host([disabled]) {

@@ -2,6 +2,10 @@
 
 $selected-item-color: var(--selected-item-color, contrast-color(gray, 200)) !default;
 
+:host {
+    padding: pad(2px, 4px, 8px);
+}
+
 :host(:hover),
 :host([active]) {
     background: color(gray, 100);

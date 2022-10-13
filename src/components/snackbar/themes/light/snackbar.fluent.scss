@@ -5,7 +5,7 @@
 }
 
 [part~='message'] {
-    @include type-category('caption');
+    @include type-style('caption');
 }
 
 igc-button::part(base),

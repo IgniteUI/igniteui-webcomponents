@@ -2,14 +2,14 @@
 @use '../../../../styles/utilities' as *;
 
 ::slotted([slot='title']) {
-    @include type-category('h5');
+    @include type-style('h5');
 
     color: color(gray, 900);
     opacity: 1;
 }
 
 ::slotted([slot='subtitle']) {
-    @include type-category('body-1');
+    @include type-style('body-1');
 
     color: color(gray, 800);
     opacity: 1;
