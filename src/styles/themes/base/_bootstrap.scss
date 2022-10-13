@@ -10,7 +10,7 @@
 
 @mixin root-styles($palette) {
     :root {
-        --igc-theme: bootstrap;
+        --ig-theme: bootstrap;
         --ig-radius-factor: 1;
         --ig-spacing: 1;
         --ig-spacing-inline: 1;
