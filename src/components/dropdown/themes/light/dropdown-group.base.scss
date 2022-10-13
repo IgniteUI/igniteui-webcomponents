@@ -5,7 +5,7 @@
     pointer-events: auto;
 
     ::slotted([slot='label']) {
-        @include type-category('overline');
+        @include type-style('overline');
         @include ellipsis();
 
         display: block;
@@ -13,38 +13,7 @@
         position: relative;
         color: color(secondary, 500);
         pointer-events: none;
-    }
-}
-
-:host([size='small']) {
-    ::slotted(igc-dropdown-item),
-    ::slotted(igc-select-item) {
-        padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 3);
-    }
-
-    ::slotted([slot='label']) {
-        padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
-    }
-}
-
-:host([size='medium']) {
-    ::slotted(igc-dropdown-item),
-    ::slotted(igc-select-item) {
-        padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 3);
-    }
-
-    ::slotted([slot='label']) {
-        padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
-    }
-}
-
-:host([size='large']) {
-    ::slotted(igc-dropdown-item),
-    ::slotted(igc-select-item) {
-        padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 3);
-    }
-
-    ::slotted([slot='label']) {
-        padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
+        padding-inline: pad-inline(4px, 8px, 16px);
+        padding-block: pad-block(2px, 4px, 8px);
     }
 }

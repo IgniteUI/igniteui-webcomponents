@@ -239,7 +239,7 @@ const Template: Story<ArgTypes, Context> = (
       ></igc-dropdown-item>`}
     </igc-dropdown>
 
-    <div class="igc-scrollbar" style="display: flex;">
+    <div class="ig-scrollbar" style="display: flex;">
       <div style="position: absolute; right: 0px; top: 50px">
         <style>
           #ddl2::part(list) {

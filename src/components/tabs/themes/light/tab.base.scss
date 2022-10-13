@@ -55,7 +55,7 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
 }
 
 [part='content'] {
-    @include type-category('button');
+    @include type-style('button');
 
     display: flex;
     align-items: center;

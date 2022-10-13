@@ -1,153 +1,78 @@
 @use '../../../styles/utilities/index' as *;
+@use '../../../styles/common/component';
 @use 'shared-calendar' as *;
 @use 'sass:map';
 @use 'sass:math';
 
+$border-radius: #{calc(var(--size) / 2)};
+
 :host(igc-calendar) {
+    --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
+
     display: flex;
     flex-direction: column;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
     background: $calendar-background;
     color: $calendar-foreground;
 
     > * {
-        font-family: var(--igc-font-family);
+        font-family: var(--ig-font-family);
+    }
+
+    igc-days-view::part(date),
+    igc-days-view::part(week-number),
+    igc-days-view::part(label),
+    igc-days-view::part(days-row) {
+        height: var(--size);
+    }
+
+    igc-days-view::part(week-number-inner),
+    igc-days-view::part(date-inner) {
+        width: calc(var(--size) - #{rem(2px)});
+        min-width: calc(var(--size) - #{rem(2px)});
+        height: 100%;
+    }
+
+    igc-days-view::part(label) {
+        min-width: var(--size);
+        height: var(--size);
+    }
+
+    igc-days-view::part(date-inner) {
+        @include border-radius(calc($border-radius + rem(2px)));
+    }
+
+    igc-months-view {
+        grid-template-rows: repeat(4, minmax(var(--size), 1fr));
+
+        &::part(month-inner) {
+            height: var(--size);
+
+            @include border-radius(calc($border-radius + rem(2px)));
+        }
+    }
+
+    igc-years-view {
+        grid-template-rows: repeat(5, minmax(var(--size), 1fr));
+
+        &::part(year-inner) {
+            height: var(--size);
+
+            @include border-radius(calc($border-radius + rem(2px)));
+        }
     }
 }
 
 :host(igc-calendar[size='large']) {
-    igc-days-view::part(date),
-    igc-days-view::part(week-number),
-    igc-days-view::part(label),
-    igc-days-view::part(days-row) {
-        height: $date-size-large;
-    }
-
-    igc-days-view::part(week-number-inner),
-    igc-days-view::part(date-inner) {
-        width: calc(#{$date-size-large} - #{rem(2px)});
-        min-width: calc(#{$date-size-large} - #{rem(2px)});
-        height: 100%;
-    }
-
-    igc-days-view::part(label) {
-        min-width: $date-size-large;
-        height: $date-size-large;
-    }
-
-    igc-days-view::part(date-inner) {
-        @include border-radius(math.div($date-size-large, 2) + rem(2px));
-    }
-
-    igc-months-view {
-        grid-template-rows: repeat(4, minmax($date-size-large, 1fr));
-
-        &::part(month-inner) {
-            height: $date-size-large;
-
-            @include border-radius(math.div($date-size-large, 2) + rem(2px));
-        }
-    }
-
-    igc-years-view {
-        grid-template-rows: repeat(5, minmax($date-size-large, 1fr));
-
-        &::part(year-inner) {
-            height: $date-size-large;
-
-            @include border-radius(math.div($date-size-large, 2) + rem(2px));
-        }
-    }
+    --component-size: var(--ig-size, var(--ig-size-large));
 }
 
 :host(igc-calendar[size='medium']) {
-    igc-days-view::part(date),
-    igc-days-view::part(week-number),
-    igc-days-view::part(label),
-    igc-days-view::part(days-row) {
-        height: $date-size-medium;
-    }
-
-    igc-days-view::part(week-number-inner),
-    igc-days-view::part(date-inner) {
-        width: calc(#{$date-size-medium} - #{rem(2px)});
-        min-width: calc(#{$date-size-medium} - #{rem(2px)});
-        height: 100%;
-    }
-
-    igc-days-view::part(label) {
-        min-width: $date-size-medium;
-        height: $date-size-medium;
-    }
-
-    igc-days-view::part(date-inner) {
-        @include border-radius(math.div($date-size-medium, 2) + rem(2px));
-    }
-
-    igc-months-view {
-        grid-template-rows: repeat(4, minmax($date-size-medium, 1fr));
-
-        &::part(month-inner) {
-            height: $date-size-medium;
-
-            @include border-radius(math.div($date-size-medium, 2) + rem(2px));
-        }
-    }
-
-    igc-years-view {
-        grid-template-rows: repeat(5, minmax($date-size-medium, 1fr));
-
-        &::part(year-inner) {
-            height: $date-size-medium;
-
-            @include border-radius(math.div($date-size-medium, 2) + rem(2px));
-        }
-    }
+    --component-size: var(--ig-size, var(--ig-size-medium));
 }
 
 :host(igc-calendar[size='small']) {
-    igc-days-view::part(date),
-    igc-days-view::part(week-number),
-    igc-days-view::part(label),
-    igc-days-view::part(days-row) {
-        height: $date-size-small;
-    }
-
-    igc-days-view::part(week-number-inner),
-    igc-days-view::part(date-inner) {
-        width: calc(#{$date-size-small} - #{rem(2px)});
-        min-width: calc(#{$date-size-small} - #{rem(2px)});
-        height: 100%;
-    }
-
-    igc-days-view::part(label) {
-        min-width: $date-size-small;
-        height: $date-size-small;
-    }
-
-    igc-days-view::part(date-inner) {
-        @include border-radius(math.div($date-size-small, 2) + rem(2px));
-    }
-
-    igc-months-view {
-        grid-template-rows: repeat(4, minmax($date-size-small, 1fr));
-
-        &::part(month-inner) {
-            height: $date-size-small;
-
-            @include border-radius(math.div($date-size-small, 2) + rem(2px));
-        }
-    }
-
-    igc-years-view {
-        grid-template-rows: repeat(6, minmax($date-size-small, 1fr));
-
-        &::part(year-inner) {
-            height: $date-size-small;
-
-            @include border-radius(math.div($date-size-small, 2) + rem(2px));
-        }
-    }
+    --component-size: var(--ig-size, var(--ig-size-small));
 }
 
 [part='navigation'] {
@@ -228,14 +153,14 @@
 }
 
 [part='header-date'] {
-    @include type-category('h4');
+    @include type-style('h4');
 
     display: flex;
     white-space: pre-wrap;
 }
 
 [part='header-title'] {
-    @include type-category('overline');
+    @include type-style('overline');
 }
 
 .aria-off-screen {

@@ -2,6 +2,8 @@
 @use '../../../styles/utilities' as *;
 
 :host {
+    --size: #{sizable(rem(40px), rem(64px), rem(88px))};
+
     display: inline-block;
 }
 
@@ -17,7 +19,7 @@
     outline-style: none;
     flex-shrink: 0;
     overflow: hidden;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
     width: var(--size);
     height: var(--size);
 
@@ -40,16 +42,16 @@ img {
     text-transform: uppercase;
 }
 
-:host([size='large']) [part='base'] {
-    --size: #{rem(88px)};
+:host([size='large']) {
+    --component-size: var(--ig-size, var(--ig-size-large));
 }
 
-:host([size='medium']) [part='base'] {
-    --size: #{rem(64px)};
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
 }
 
-:host([size='small']) [part='base'] {
-    --size: #{rem(40px)};
+:host([size='small']) {
+    --component-size: var(--ig-size, var(--ig-size-small));
 }
 
 :host([shape='rounded']) [part='base'] {

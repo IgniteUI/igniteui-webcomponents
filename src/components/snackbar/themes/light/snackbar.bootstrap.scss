@@ -3,7 +3,7 @@
 [part~='base'] {
     background: color(surface, 500);
     color: contrast-color(surface, 500);
-    box-shadow: var(--igc-elevation-10);
+    box-shadow: var(--ig-elevation-10);
 }
 
 igc-button::part(base):hover {

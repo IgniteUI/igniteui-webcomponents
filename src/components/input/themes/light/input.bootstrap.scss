@@ -1,18 +1,35 @@
-@use '../../../../styles/utilities' as utils;
+@use '../../../../styles/utilities' as *;
 
 $input-background: var(--input-background, #fff) !default;
 
+:host([size='large']) {
+    --component-size: var(--ig-size, var(--ig-size-large));
+}
+
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+}
+
+:host([size='small']) {
+    --component-size: var(--ig-size, var(--ig-size-small));
+}
+
 :host {
+    --size: #{sizable(rem(31px), rem(38px), rem(48px))};
+    --font: #{sizable(rem(14px), rem(16px), rem(20px))};
+    --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
+
     &::after {
         background: none;
     }
 
     [part~='container'] {
-        @include utils.border-radius(utils.rem(4px));
+        @include border-radius(rem(4px));
 
         border-style: none;
         grid-template-columns: auto 1fr auto;
         background: $input-background;
+        height: var(--size);
 
         &::after {
             display: none;
@@ -20,13 +37,16 @@ $input-background: var(--input-background, #fff) !default;
     }
 
     [part~='input'] {
-        @include utils.border-radius(utils.rem(4px));
+        @include border-radius(rem(4px));
 
-        padding: initial;
+        height: var(--size);
+        font-size: var(--input-font);
+        padding-inline: pad-inline(8px, 12px, 16px);
+        padding-block: pad-block(4px, 6px, 8px);
         background: inherit;
         box-shadow: 0 0 0 0 transparent;
         z-index: 1;
-        border: 1px solid utils.color(gray, 400);
+        border: 1px solid color(gray, 400);
         transition: box-shadow .15s ease-out, border .15s ease-out;
         grid-area: 1 / 2;
     }
@@ -46,9 +66,9 @@ $input-background: var(--input-background, #fff) !default;
     }
 
     label {
-        line-height: utils.rem(24px);
-        margin-bottom: utils.rem(4px);
-        color: utils.color(gray, 700);
+        line-height: rem(24px);
+        margin-bottom: rem(4px);
+        color: color(gray, 700);
 
         &:empty {
             display: none;
@@ -58,15 +78,17 @@ $input-background: var(--input-background, #fff) !default;
     [part='prefix'],
     [part='suffix'] {
         position: relative;
-        padding: rem(16px);
         border-radius: none;
         min-width: auto;
-        color: utils.color(gray, 800);
-        background: utils.color(gray, 300);
+        color: color(gray, 800);
+        background: color(gray, 300);
         transition: box-shadow .15s ease-out, border .15s ease-out;
+        font-size: var(--font);
+        padding-inline: pad-inline(8px, 12px, 16px);
+        padding-block: pad-block(4px, 6px, 8px);
 
         &:focus-within {
-            box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 300, .38);
+            box-shadow: 0 0 0 rem(4px) color(gray, 300, .38);
         }
     }
 
@@ -74,7 +96,7 @@ $input-background: var(--input-background, #fff) !default;
         grid-area: 1 / 1;
         border: {
             style: solid;
-            color: utils.color(gray, 400);
+            color: color(gray, 400);
             inline: {
                 start-width: 1px;
                 end-width: 0;
@@ -84,10 +106,10 @@ $input-background: var(--input-background, #fff) !default;
                 end-width: 1px;
             };
             start: {
-                start-radius: utils.rem(4px);
+                start-radius: rem(4px);
             };
             end: {
-                start-radius: utils.rem(4px);
+                start-radius: rem(4px);
             };
         }
     }
@@ -97,7 +119,7 @@ $input-background: var(--input-background, #fff) !default;
 
         border: {
             style: solid;
-            color: utils.color(gray, 400);
+            color: color(gray, 400);
             inline: {
                 start-width: 0;
                 end-width: 1px;
@@ -107,87 +129,33 @@ $input-background: var(--input-background, #fff) !default;
                 end-width: 1px;
             };
             start: {
-                end-radius: utils.rem(4px);
+                end-radius: rem(4px);
             };
             end: {
-                end-radius: utils.rem(4px);
+                end-radius: rem(4px);
             };
         }
     }
 
     [part='helper-text'] {
-        @include utils.type-category('body-2');
+        @include type-style('body-2');
 
         margin-top: rem(4px);
-        color: utils.color(gray, 700);
-    }
-}
-
-:host([size='large']) {
-    [part~='container'],
-    [part~='input'] {
-        height: utils.rem(48px);
-    }
-
-    [part~='input'] {
-        font-size: utils.rem(20px);
-        padding: utils.rem(8px) utils.rem(16px);
-    }
-
-    [part='prefix'],
-    [part='suffix'] {
-        font-size: rem(20px);
-        padding: utils.rem(8px) utils.rem(16px);
-    }
-}
-
-:host([size='medium']) {
-    [part~='container'],
-    [part~='input'] {
-        height: utils.rem(38px);
-    }
-
-    [part~='input'] {
-        font-size: utils.rem(16px);
-        padding: utils.rem(6px) utils.rem(12px);
-    }
-
-    [part='prefix'],
-    [part='suffix'] {
-        font-size: utils.rem(16px);
-        padding: utils.rem(6px) utils.rem(12px);
-    }
-}
-
-:host([size='small']) {
-    [part~='container'],
-    [part~='input'] {
-        height: utils.rem(31px);
-    }
-
-    [part~='input'] {
-        font-size: utils.rem(16px);
-        padding: utils.rem(4px) utils.rem(8px);
-    }
-
-    [part='prefix'],
-    [part='suffix'] {
-        font-size: utils.rem(14px);
-        padding: utils.rem(4px) utils.rem(8px);
+        color: color(gray, 700);
     }
 }
 
 :host(:focus-within) {
     [part~='input'] {
-        box-shadow: 0 0 0 utils.rem(4px) utils.color(primary, 500, .38);
-        border-color: utils.color(primary, 500);
+        box-shadow: 0 0 0 rem(4px) color(primary, 500, .38);
+        border-color: color(primary, 500);
     }
 }
 
 :host([invalid]:focus-within) {
     [part~='input'] {
-        box-shadow: 0 0 0 utils.rem(4px) utils.color(error, 500, .38);
-        border-color: utils.color(error, 500);
+        box-shadow: 0 0 0 rem(4px) color(error, 500, .38);
+        border-color: color(error, 500);
     }
 }
 
@@ -196,12 +164,12 @@ $input-background: var(--input-background, #fff) !default;
     [part='prefix'],
     [part='suffix'],
     [part~='container'] {
-        background: utils.color(gray, 100);
-        color: utils.color(gray, 400);
+        background: color(gray, 100);
+        color: color(gray, 400);
     }
 
     [part~='input'] {
-        border-color: utils.color(gray, 300);
+        border-color: color(gray, 300);
     }
 }
 
@@ -209,13 +177,13 @@ $input-background: var(--input-background, #fff) !default;
     [part='prefix'],
     [part='suffix'],
     [part~='container'] {
-        color: utils.color(gray, 800);
+        color: color(gray, 800);
     }
 }
 
 :host(:focus-within[readonly]) {
     [part~='input'] {
-        box-shadow: 0 0 0 utils.rem(4px) utils.color(gray, 400, .38);
-        border-color: utils.color(gray, 400);
+        box-shadow: 0 0 0 rem(4px) color(gray, 400, .38);
+        border-color: color(gray, 400);
     }
 }

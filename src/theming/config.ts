@@ -18,8 +18,7 @@ function isOfTypeTheme(theme: string): theme is Theme {
 export const getTheme: () => Theme = () => {
   if (!theme) {
     const [_, t] =
-      Object.entries(getAllCSSVariables()).find(([v]) => v === 'igcTheme') ||
-      [];
+      Object.entries(getAllCSSVariables()).find(([v]) => v === 'igTheme') || [];
 
     theme = t && isOfTypeTheme(t) ? (t as Theme) : 'bootstrap';
   }

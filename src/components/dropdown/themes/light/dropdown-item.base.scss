@@ -2,7 +2,7 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
-    @include type-category('body-2');
+    @include type-style('body-2');
 
     display: flex;
     justify-content: flex-start;
@@ -13,6 +13,8 @@
     cursor: pointer;
     color: color(gray, 800);
     outline-style: none;
+    padding-inline: pad-inline(6px, 12px, 24px);
+    padding-block: pad-block(2px, 4px, 8px);
 }
 
 :host(:hover),
@@ -57,9 +59,9 @@
 }
 
 [name='prefix']::slotted(*) {
-    margin-inline-end: calc(var(--igc-spacing-large) * 2);
+    margin-inline-end: pad(16px);
 }
 
 [name='suffix']::slotted(*) {
-    margin-inline-start: calc(var(--igc-spacing-large) * 2);
+    margin-inline-start: pad(16px);
 }

@@ -26,7 +26,7 @@ $content-color: var(--content-color, color(gray, 700));
     max-width: 40ch;
     color: $content-color;
 
-    @include type-category('body-1') {
+    @include type-style('body-1') {
         margin: 0;
     }
 }
@@ -37,7 +37,7 @@ $content-color: var(--content-color, color(gray, 700));
     align-items: center;
     color: color(gray, 900);
 
-    @include type-category('h6') {
+    @include type-style('h6') {
         margin: 0;
     }
 }

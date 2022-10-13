@@ -35,7 +35,7 @@ export default class IgcRippleComponent extends LitElement {
       borderRadius: '50%',
       top: `${top}px`,
       left: `${left}px`,
-      background: 'var(--color, hsl(var(--igc-gray-800)))',
+      background: 'var(--color, hsl(var(--ig-gray-800)))',
     };
     const frames: Keyframe[] = [
       { opacity: 0.5, transform: 'scale(.3)' },

@@ -1,164 +1,29 @@
-@use '../../utilities' as utils;
+@use '../../../../node_modules/igniteui-theming' as *;
+@use '../../../../node_modules/igniteui-theming/sass/typography/presets' as *;
+@use '../../../../node_modules/igniteui-theming/sass/elevations/presets' as *;
 
-$elevations: utils.elevations(
-    rgb(0 0 0 / 26%),
-    rgb(0 0 0 / 12%),
-    rgb(0 0 0 / 8%)
-) !default;
-$bootstrap_h1: utils.type-style(
-    $font-size: utils.rem(40px),
-    $font-weight: 500,
-    $line-height: utils.rem(48px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: utils.rem(8px)
-);
-$bootstrap_h2: utils.type-style(
-    $font-size: utils.rem(32px),
-    $font-weight: 500,
-    $line-height: utils.rem(38.4px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: utils.rem(8px)
-);
-$bootstrap_h3: utils.type-style(
-    $font-size: utils.rem(28px),
-    $font-weight: 500,
-    $line-height: utils.rem(33.6px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: utils.rem(8px)
-);
-$bootstrap_h4: utils.type-style(
-    $font-size: utils.rem(24px),
-    $font-weight: 500,
-    $line-height: utils.rem(28.8px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: utils.rem(8px)
-);
-$bootstrap_h5: utils.type-style(
-    $font-size: utils.rem(20px),
-    $font-weight: 500,
-    $line-height: utils.rem(24px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: utils.rem(8px)
-);
-$bootstrap_h6: utils.type-style(
-    $font-size: utils.rem(16px),
-    $font-weight: 500,
-    $line-height: utils.rem(19.2px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: utils.rem(8px)
-);
-$bootstrap_body-1: utils.type-style(
-    $font-size: utils.rem(16px),
-    $font-weight: 400,
-    $line-height: utils.rem(24px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: 0
-);
-$bootstrap_body-2: utils.type-style(
-    $font-size: utils.rem(14.4px),
-    $font-weight: 400,
-    $line-height: utils.rem(24px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: 0
-);
-$bootstrap_subtitle-1: utils.type-style(
-    $font-size: utils.rem(14px),
-    $font-weight: 400,
-    $line-height: utils.rem(24px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: 0
-);
-$bootstrap_subtitle-2: utils.type-style(
-    $font-size: utils.rem(14.4px),
-    $font-weight: 400,
-    $line-height: utils.rem(21.6px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: 0
-);
-$bootstrap_button: utils.type-style(
-    $font-size: utils.rem(16px),
-    $font-weight: 500,
-    $line-height: utils.rem(24px),
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: 0
-);
-$bootstrap_caption: utils.type-style(
-    $font-size: utils.rem(12px),
-    $font-weight: 400,
-    $letter-spacing: utils.rem(.4px),
-    $line-height: utils.rem(16px),
-    $text-transform: none
-);
-$bootstrap_overline: utils.type-style(
-    $font-size: utils.rem(10px),
-    $font-weight: 400,
-    $letter-spacing: utils.rem(1.5px),
-    $line-height: utils.rem(16px),
-    $text-transform: uppercase
-);
-$bootstrap_weekday: utils.type-style(
-    $font-size: utils.rem(13px),
-    $font-weight: 400,
-    $line-height: normal,
-    $text-transform: none,
-    $margin-top: 0,
-    $margin-bottom: 0
-);
-$_base-scale: utils.type-scale(
-    $_meta: (variant: 'bootstrap'),
-    $h1: $bootstrap_h1,
-    $h2: $bootstrap_h2,
-    $h3: $bootstrap_h3,
-    $h4: $bootstrap_h4,
-    $h5: $bootstrap_h5,
-    $h6: $bootstrap_h6,
-    $subtitle-1: $bootstrap_subtitle-1,
-    $subtitle-2: $bootstrap_subtitle-2,
-    $body-1: $bootstrap_body-1,
-    $body-2: $bootstrap_body-2,
-    $button: $bootstrap_button,
-    $caption: $bootstrap_caption,
-    $overline: $bootstrap_overline
-);
-$type-scale: utils.extend(
-    $_base-scale,
-    (
-        calendar-labels: $bootstrap_weekday,
-    )
-);
-
-.igc-scrollbar {
-    --scrolbar-size: #{utils.rem(16px)};
-    --igc-scrollbar-track-color: #{utils.color(gray, 100)};
-    --igc-scrollbar-thumb-color: #{utils.color(gray, 400)};
+.ig-scrollbar {
+    --scrolbar-size: #{rem(16px)};
+    --ig-scrollbar-track-color: #{color(null, gray, 100)};
+    --ig-scrollbar-thumb-color: #{color(null, gray, 400)};
 }
 
 @mixin root-styles($palette) {
     :root {
-        --igc-theme: bootstrap;
-        --igc-radius-factor: 1;
-        --igc-spacing-small: #{utils.rem(2px)};
-        --igc-spacing-medium: #{utils.rem(4px)};
-        --igc-spacing-large: #{utils.rem(8px)};
-
-        @include utils.palette($palette);
-        @include utils.elevations($elevations);
-        /* stylelint-disable */
-        @include utils.typography(
-            $font-family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
-            $type-scale: $type-scale
-        );
-        /* stylelint-enable */
+        --ig-theme: bootstrap;
+        --ig-radius-factor: 1;
+        --ig-spacing: 1;
+        --ig-spacing-inline: 1;
+        --ig-spacing-block: 1;
+        --ig-size-small: 1;
+        --ig-size-medium: 2;
+        --ig-size-large: 3;
     }
+
+    @include palette($palette);
+    @include elevations($material-elevations);
+    @include typography(
+        $font-family: $bootstrap-typeface,
+        $type-scale: $bootstrap-type-scale
+    );
 }

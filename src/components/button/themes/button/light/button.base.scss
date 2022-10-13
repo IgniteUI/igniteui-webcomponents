@@ -1,9 +1,9 @@
 @use '../../../../../styles/common/component';
 @use '../../../../../styles/utilities' as *;
 
-$slot-spacing: var(--igc-spacing-large);
-
 :host {
+    --size: #{sizable(rem(24px), rem(30px), rem(36px))};
+
     display: inline-flex;
     vertical-align: middle;
 
@@ -12,8 +12,21 @@ $slot-spacing: var(--igc-spacing-large);
     }
 }
 
+:host([size='small']) {
+    --component-size: var(--ig-size, var(--ig-size-small));
+}
+
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+}
+
+:host([size='large']) {
+    --component-size: var(--ig-size, var(--ig-size-large));
+}
+
 [part='base'] {
     @include border-radius(rem(4px));
+    @include type-style(button);
 
     position: relative;
     display: inline-flex;
@@ -28,13 +41,8 @@ $slot-spacing: var(--igc-spacing-large);
     white-space: nowrap;
     text-decoration: none;
     z-index: 0;
-    font-family: var(--igc-button-font-family);
-    font-weight: var(--igc-button-font-weight);
-    font-size: var(--igc-button-font-size);
-    font-style: var(--igc-button-font-style);
-    letter-spacing: var(--igc-button-letter-spacing);
-    line-height: var(--igc-button-line-height);
-    text-transform: var(--igc-button-text-transform);
+    height: var(--size);
+    padding: 0 pad(8px, 12px, 16px);
 
     &::before {
         position: absolute;
@@ -61,27 +69,12 @@ $slot-spacing: var(--igc-spacing-large);
     }
 }
 
-:host([size='large']) [part='base'] {
-    height: var(--size, 36px);
-    padding: 0 calc(var(--igc-spacing-large) * 2);
-}
-
-:host([size='medium']) [part='base'] {
-    height: var(--size, 30px);
-    padding: 0 calc(var(--igc-spacing-medium) * 3);
-}
-
-:host([size='small']) [part='base'] {
-    height: var(--size, 24px);
-    padding: 0 calc(var(--igc-spacing-small) * 4);
-}
-
 [name='prefix']::slotted(*) {
-    margin-inline-end: $slot-spacing;
+    margin-inline-end: pad(8px);
 }
 
 [name='suffix']::slotted(*) {
-    margin-inline-start: $slot-spacing;
+    margin-inline-start: pad(8px);
 }
 
 span[part='prefix'],
@@ -142,21 +135,13 @@ span[part='suffix'] {
     @extend %contained;
 }
 
+:host([variant='fab']) {
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+}
+
 :host([variant='fab']) [part='base'] {
     @include border-radius(calc(var(--size) / 2));
 
     min-width: var(--size);
     min-height: var(--size);
-}
-
-:host([variant='fab'][size='large']) [part='base'] {
-    --size: #{rem(48px)};
-}
-
-:host([variant='fab'][size='medium']) [part='base'] {
-    --size: #{rem(40px)};
-}
-
-:host([variant='fab'][size='small']) [part='base'] {
-    --size: #{rem(32px)};
 }

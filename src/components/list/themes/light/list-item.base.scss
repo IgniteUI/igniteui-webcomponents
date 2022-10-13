@@ -8,6 +8,8 @@
     color: color(gray, 800);
     background: color(surface, 500);
     transition: background .15s ease-out;
+    padding-inline: pad-inline(4px, 8px, 16px);
+    padding-block: pad-block(2px, 4px, 8px);
 }
 
 :host(:hover),
@@ -33,19 +35,19 @@
 }
 
 [name='start']::slotted(*) {
-    margin-inline-end: calc(var(--igc-spacing-large) * 2);
+    margin-inline-end: pad(16px);
 }
 
 [name='end']::slotted(*) {
-    margin-inline-start: calc(var(--igc-spacing-large) * 2);
+    margin-inline-start: pad(16px);
 }
 
 [part='title'] {
-    @include type-category('subtitle-1');
+    @include type-style('subtitle-1');
 }
 
 [part='subtitle'] {
-    @include type-category('caption');
+    @include type-style('caption');
 
     opacity: .74;
 }
