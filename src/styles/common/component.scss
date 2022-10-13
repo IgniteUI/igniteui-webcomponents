@@ -15,10 +15,10 @@
         box-sizing: border-box;
     }
 
-    @include igc-scrollbar(
+    @include ig-scrollbar(
         var(--scrolbar-size, rem(14px)),
-        var(--igc-scrollbar-track-color, color(null, gray, 200)),
-        var(--igc-scrollbar-thumb-color, color(null, gray, 400))
+        var(--ig-scrollbar-track-color, color(null, gray, 200)),
+        var(--ig-scrollbar-thumb-color, color(null, gray, 400))
     );
 }
 

@@ -4,8 +4,8 @@
 
 .ig-scrollbar {
     --scrolbar-size: #{rem(16px)};
-    --igc-scrollbar-track-color: #{color(null, gray, 200)};
-    --igc-scrollbar-thumb-color: #{color(null, gray, 400)};
+    --ig-scrollbar-track-color: #{color(null, gray, 200)};
+    --ig-scrollbar-thumb-color: #{color(null, gray, 400)};
 }
 
 @mixin root-styles($palette) {

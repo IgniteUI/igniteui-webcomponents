@@ -1,4 +1,4 @@
-@mixin igc-scrollbar($track-size, $track-bg, $thumb-bg) {
+@mixin ig-scrollbar($track-size, $track-bg, $thumb-bg) {
     // Firefox only
     scrollbar-width: $track-size;
     scrollbar-color: $thumb-bg $track-bg;
