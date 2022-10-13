@@ -14,7 +14,7 @@ $border-color: var(--border-color, color(gray, 300));
 
 [part='title'],
 [part='footer'] {
-    @include type-category('h5') {
+    @include type-style('h5') {
         margin: 0;
     }
 

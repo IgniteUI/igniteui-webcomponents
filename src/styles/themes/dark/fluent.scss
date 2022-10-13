@@ -1,5 +1,6 @@
-@use '../../utilities' as utils;
+@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/fluent' as base;
+@use '../third-party/grid/fluent.dark' as grid;
 @use '../../../components/button/themes/button/dark/button.fluent' as button;
 @use '../../../components/button/themes/icon-button/dark/icon-button.fluent' as icon-button;
 @use '../../../components/checkbox/themes/dark/checkbox.fluent' as checkbox;
@@ -13,19 +14,7 @@
 @use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.fluent' as nav-drawer-item;
-
-$palette: utils.palette(
-    $primary: #0078d4,
-    $secondary: #0078d4,
-    $gray: #fff,
-    $surface: #222,
-    $success: #107c10,
-    $warn: #797673,
-    $error: #a80000,
-    $variant: 'fluent'
-) !default;
-
-@include base.root-styles($palette);
+@include base.root-styles($dark-fluent-palette);
 @include button.theme();
 @include icon-button.theme();
 @include checkbox.theme();
@@ -39,3 +28,4 @@ $palette: utils.palette(
 @include select.theme();
 @include tree-item.theme();
 @include nav-drawer-item.theme();
+@include grid.theme();

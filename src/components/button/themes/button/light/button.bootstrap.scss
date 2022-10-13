@@ -1,24 +1,16 @@
 @use 'sass:math';
 @use '../../../../../styles/utilities' as utils;
 
+:host {
+    --size: #{utils.sizable(utils.rem(31px), utils.rem(38px), utils.rem(48px))};
+}
+
 :host [part='base'] {
     transition: all .15s ease-out;
 
     &::before {
         transition: all .15s ease-out;
     }
-}
-
-:host([size='large']) [part='base'] {
-    --size: #{utils.rem(48px)};
-}
-
-:host([size='medium']) [part='base'] {
-    --size: #{utils.rem(38px)};
-}
-
-:host([size='small']) [part='base'] {
-    --size: #{utils.rem(31px)};
 }
 
 :host([disabled][variant='flat']) [part='base'] {
@@ -69,7 +61,7 @@
 
 :host(:not([disabled])[variant='contained']) [part='base'] {
     color: #{utils.contrast-color(primary, 600)};
-    box-shadow: var(--igc-elevation-0);
+    box-shadow: var(--ig-elevation-0);
 
     &:hover {
         color: #{utils.contrast-color(primary, 600)};
@@ -144,7 +136,7 @@
 
 :host(:not([disabled])[variant='fab']) [part='base'] {
     color: #{utils.contrast-color(primary, 600)};
-    box-shadow: var(--igc-elevation-0);
+    box-shadow: var(--ig-elevation-0);
 
     &:hover {
         color: #{utils.contrast-color(primary, 600)};

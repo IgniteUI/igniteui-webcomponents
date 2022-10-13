@@ -11,7 +11,7 @@ label {
 }
 
 [part~='label'] {
-    @include type-category('subtitle-1');
+    @include type-style('subtitle-1');
 }
 
 [part~='indicator'] {

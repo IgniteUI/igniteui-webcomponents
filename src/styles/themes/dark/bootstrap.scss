@@ -1,5 +1,6 @@
-@use '../../utilities' as utils;
+@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/bootstrap' as base;
+@use '../third-party/grid/bootstrap.dark' as grid;
 @use '../../../components/dropdown/themes/dark/dropdown.bootstrap' as dropdown;
 @use '../../../components/input/themes/dark/input.dark.bootstrap' as input;
 @use '../../../components/slider/themes/dark/slider.bootstrap' as slider;
@@ -8,20 +9,7 @@
 @use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
 @use '../../../components/select/themes/dark/select.bootstrap' as select;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.bootstrap' as nav-drawer-item;
-
-$palette: utils.palette(
-    $primary: #0d6efd,
-    $secondary: #6c757d,
-    $gray: #adb5bd,
-    $surface: #212529,
-    $info: #0dcaf0,
-    $success: #198754,
-    $warn: #ffc107,
-    $error: #dc3545,
-    $variant: 'bootstrap'
-) !default;
-
-@include base.root-styles($palette);
+@include base.root-styles($dark-bootstrap-palette);
 @include dropdown.theme();
 @include input.theme();
 @include slider.theme();
@@ -30,3 +18,4 @@ $palette: utils.palette(
 @include tree-item.theme();
 @include nav-drawer-item.theme();
 @include select.theme();
+@include grid.theme();
