@@ -927,7 +927,7 @@ describe('Stepper', () => {
       }
     });
 
-    it('Should indicate each step with a corresponding number when igxStepIndicator is not specified in the step template and stepType is either “indicator” or “full”', async () => {
+    it('Should indicate each step with a corresponding number when the steps indicators are not specified and stepType is either “indicator” or “full”', async () => {
       const step3 = stepper.steps[2];
 
       let step3IndicatorElement = StepperTestFunctions.getElementByPart(
