@@ -122,7 +122,7 @@ describe('Stepper', () => {
       expect(stepper.steps[1].active).to.be.true;
     });
 
-    it('Should not change the active step when the navigateTo method is called with mismatched index', async () => {
+    it('Should not change the active step when the navigateTo method is called with a mismatched index', async () => {
       stepper.navigateTo(999);
       await elementUpdated(stepper);
 
@@ -508,7 +508,7 @@ describe('Stepper', () => {
       stepper = await StepperTestFunctions.createStepperElement(simpleStepper);
     });
 
-    it('Should apply the appropriate attribute to a stepper in horizontal and in vertical orientation', async () => {
+    it('Should apply the appropriate attribute to a stepper in a horizontal and vertical orientation', async () => {
       expect(stepper.orientation).to.equal('horizontal');
 
       stepper.orientation = 'vertical';
@@ -548,7 +548,7 @@ describe('Stepper', () => {
       }
     });
 
-    it('Should apply the appropriate part to the header container of a step which is disabled or linear disabled', async () => {
+    it('Should apply the appropriate part to the header container of a step that is disabled or linear disabled', async () => {
       stepper.steps[0].disabled = true;
       await elementUpdated(stepper);
 
@@ -711,7 +711,7 @@ describe('Stepper', () => {
       expect(step1HeaderContainer.part.contains('invalid')).to.be.true;
     });
 
-    it('Should apply the appropriate part to the header container of a step which has not title and subtitle', async () => {
+    it('Should apply the appropriate part to the header container of a step that has no title and subtitle', async () => {
       stepper = await StepperTestFunctions.createStepperElement(
         stepperActiveDisabledSteps
       );
@@ -927,7 +927,7 @@ describe('Stepper', () => {
       }
     });
 
-    it('Should indicate each step with a corresponding number when the steps indicators are not specified and stepType is either “indicator” or “full”', async () => {
+    it("Should indicate each step with a corresponding number when the steps' indicators are not specified and stepType is either “indicator” or “full”", async () => {
       const step3 = stepper.steps[2];
 
       let step3IndicatorElement = StepperTestFunctions.getElementByPart(
@@ -1001,7 +1001,7 @@ describe('Stepper', () => {
       }
     });
 
-    it("Should properly render the step's content in vertical orientation when contentTop is set to true", async () => {
+    it("Should properly render the step's content in a vertical orientation when contentTop is set to true", async () => {
       stepper.orientation = 'vertical';
       await elementUpdated(stepper);
 
@@ -1037,7 +1037,7 @@ describe('Stepper', () => {
       eventSpy = sinon.spy(stepper, 'emitEvent');
     });
 
-    it('Should navigate to first/last step on Home/End key press', async () => {
+    it('Should navigate to the first/last step on Home/End key press', async () => {
       const firstStep = stepper.steps[0];
       const lastStep = stepper.steps[4];
 
@@ -1072,7 +1072,7 @@ describe('Stepper', () => {
       expect(lastStep).to.equal(document.activeElement);
     });
 
-    it('Should navigate to first/last step on Home/End key press (rtl)', async () => {
+    it('Should navigate to the first/last step on Home/End key press (RTL)', async () => {
       stepper.dir = 'rtl';
 
       const firstStep = stepper.steps[0];
@@ -1221,7 +1221,7 @@ describe('Stepper', () => {
       expect(step4).to.equal(document.activeElement);
     });
 
-    it('Should navigate to the next/previous step in horizontal orientation on Arrow Right/Left key press (rtl)', () => {
+    it('Should navigate to the next/previous step in horizontal orientation on Arrow Right/Left key press (RTL)', () => {
       stepper.dir = 'rtl';
 
       const step0 = stepper.steps[0];
@@ -1296,7 +1296,7 @@ describe('Stepper', () => {
       expect(step4).to.equal(document.activeElement);
     });
 
-    it('Should navigate to the next/previous step in vertical orientation on Arrow Down/Up key press', async () => {
+    it('Should navigate to the next/previous step in a vertical orientation on Arrow Down/Up key press', async () => {
       stepper.orientation = 'vertical';
       await elementUpdated(stepper);
 
