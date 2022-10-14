@@ -1,4 +1,4 @@
-@use '../../../../../styles/utilities/index' as *;
+@use '../../../../../styles/utilities' as *;
 
 :host {
     --separator-color: #{color(gray, 300)};
