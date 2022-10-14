@@ -250,7 +250,7 @@ $fs: rem(16px) !default;
 }
 
 [part='helper-text'] {
-    @include type-category('caption');
+    @include type-style('caption');
 
     padding: 0 rem(8px);
     margin-top: rem(4px);

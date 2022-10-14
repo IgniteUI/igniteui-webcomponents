@@ -5,7 +5,7 @@
     display: block;
 
     ::slotted([slot='helper-text']) {
-        @include utils.type-category('caption');
+        @include utils.type-style('caption');
 
         color: utils.color(gray, 600);
     }

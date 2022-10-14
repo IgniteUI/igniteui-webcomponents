@@ -3,7 +3,7 @@
 
 :host {
     display: inline-flex;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
 
     --size: #{rem(36px)};
     --thumb-size: #{rem(20px)};
@@ -58,7 +58,7 @@ label {
 }
 
 [part~='label'] {
-    @include type-category('subtitle-1');
+    @include type-style('subtitle-1');
 
     display: inline-block;
     color: color(gray, 900);

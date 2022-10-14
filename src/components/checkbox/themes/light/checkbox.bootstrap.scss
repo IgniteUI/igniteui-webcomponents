@@ -3,11 +3,11 @@
 [part~='control'] {
     @include border-radius(rem(4px));
 
-    $size: var(--size, rem(16px));
+    --size: #{rem(16px)};
 
-    width: $size;
-    height: $size;
-    min-width: $size;
+    width: var(--size);
+    height: var(--size);
+    min-width: var(--size);
     transition: background-color .15s ease-in-out;
 
     &::after {
@@ -29,7 +29,7 @@
 }
 
 [part~='label'] {
-    @include type-category('body-2');
+    @include type-style('body-2');
 
     transition: none;
 }

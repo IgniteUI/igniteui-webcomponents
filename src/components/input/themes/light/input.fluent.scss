@@ -1,22 +1,32 @@
-@use 'sass:map';
-@use '../../../../styles/utilities' as utils;
+@use '../../../../styles/utilities' as *;
 
-$container-background: var(--container-background, utils.color(surface, 500)) !default;
-$input-height: (
-    large: utils.rem(48px),
-    medium: utils.rem(40px),
-    small: utils.rem(32px)
-);
-$resting-border-width: utils.rem(1px);
-$focused-border-width: utils.rem(2px);
+$container-background: var(--container-background, color(surface, 500)) !default;
+$resting-border-width: rem(1px);
+$focused-border-width: rem(2px);
+$resting-height: calc(var(--size) - #{($resting-border-width * 2)});
+$focused-height: calc(var(--size) - #{($focused-border-width * 2)});
+
+:host([size='large']) {
+    --component-size: var(--ig-size, var(--ig-size-large));
+}
+
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+}
+
+:host([size='small']) {
+    --component-size: var(--ig-size, var(--ig-size-small));
+}
 
 :host {
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+
     [part='prefix'],
     [part='suffix'] {
-        padding: 0 utils.rem(10px);
-        color: utils.color(gray, 700);
-        background: utils.color(gray, 100);
-        font-size: utils.rem(14px);
+        padding: 0 rem(10px);
+        color: color(gray, 700);
+        background: color(gray, 100);
+        font-size: rem(14px);
     }
 
     [part='prefix'] {
@@ -28,21 +38,22 @@ $focused-border-width: utils.rem(2px);
     }
 
     [part='label'] {
-        margin-bottom: utils.rem(8px);
-        font-size: utils.rem(14px);
+        margin-bottom: rem(8px);
+        font-size: rem(14px);
         font-weight: 600;
-        color: utils.color(gray, 900);
+        color: color(gray, 900);
     }
 
     [part^='container'] {
-        @include utils.border-radius(2px);
+        @include border-radius(2px);
 
-        border: #{$resting-border-width} solid utils.color(gray, 500);
+        border: #{$resting-border-width} solid color(gray, 500);
         transition: none;
         background: $container-background;
         cursor: text;
         grid-template-columns: auto 1fr auto;
         overflow: hidden;
+        height: var(--size);
 
         &::after {
             background: transparent;
@@ -52,10 +63,10 @@ $focused-border-width: utils.rem(2px);
     }
 
     [part~='input'] {
+        height: $resting-height;
         background: initial;
-        font-size: utils.rem(14px);
-        padding: utils.rem(8px);
-        height: 100%;
+        font-size: rem(14px);
+        padding: rem(8px);
         max-height: 100%;
         border: none;
         grid-area: 1 / 2;
@@ -63,62 +74,14 @@ $focused-border-width: utils.rem(2px);
 
     [part='helper-text'] {
         padding: 0;
-        margin-top: utils.rem(8px);
-        color: utils.color(gray, 600);
-    }
-}
-
-:host([size='large']) {
-    [part^='container'] {
-        height: map.get($input-height, 'large');
-    }
-
-    [part~='input'] {
-        height: #{map.get($input-height, 'large') - ($resting-border-width * 2)};
-    }
-}
-
-:host([size='medium']) {
-    [part^='container'] {
-        height: map.get($input-height, 'medium');
-    }
-
-    [part~='input'] {
-        height: #{map.get($input-height, 'medium') - ($resting-border-width * 2)};
-    }
-}
-
-:host([size='small']) {
-    [part^='container'] {
-        height: map.get($input-height, 'small');
-    }
-
-    [part~='input'] {
-        height: #{map.get($input-height, 'small') - ($resting-border-width * 2)};
-    }
-}
-
-:host([size='large']:focus-within) {
-    [part~='input'] {
-        height: #{map.get($input-height, 'large') - ($focused-border-width * 2)};
-    }
-}
-
-:host([size='medium']:focus-within) {
-    [part~='input'] {
-        height: #{map.get($input-height, 'medium') - ($focused-border-width * 2)};
-    }
-}
-
-:host([size='small']:focus-within) {
-    [part~='input'] {
-        height: #{map.get($input-height, 'small') - ($focused-border-width * 2)};
+        margin-top: rem(8px);
+        color: color(gray, 600);
     }
 }
 
 :host(:not([invalid]):hover) {
     [part^='container'] {
-        border-color: utils.color(gray, 700);
+        border-color: color(gray, 700);
     }
 }
 
@@ -127,37 +90,41 @@ $focused-border-width: utils.rem(2px);
         border-width: #{$focused-border-width};
     }
 
+    [part~='input'] {
+        height: $focused-height;
+    }
+
     [part='prefix'] {
-        margin-inline-start: utils.rem(-1px);
+        margin-inline-start: rem(-1px);
     }
 
     [part='suffix'] {
-        margin-inline-end: utils.rem(-1px);
+        margin-inline-end: rem(-1px);
     }
 }
 
 :host(:not([invalid]):focus-within),
 :host(:not([invalid]):focus-within:hover) {
     [part^='container'] {
-        border-color: utils.color(primary, 500);
+        border-color: color(primary, 500);
     }
 }
 
 :host([required]),
 :host([outlined][required]) {
     [part='label']::after {
-        color: utils.color(error, 500);
+        color: color(error, 500);
     }
 }
 
 :host([invalid]),
 :host([outlined][invalid]) {
     [part^='container'] {
-        border-color: utils.color(error, 500);
+        border-color: color(error, 500);
     }
 
     [part='helper-text'] {
-        color: utils.color(error, 500);
+        color: color(error, 500);
     }
 }
 
@@ -165,20 +132,20 @@ $focused-border-width: utils.rem(2px);
     pointer-events: none;
 
     [part^='container'] {
-        border-color: utils.color(gray, 100);
-        color: utils.color(gray, 400);
+        border-color: color(gray, 100);
+        color: color(gray, 400);
     }
 
     [part^='container'],
     [part='prefix'],
     [part='suffix'] {
-        background: utils.color(gray, 100);
+        background: color(gray, 100);
     }
 
     [part='prefix'],
     [part='suffix'],
     [part='label'],
     [part='helper-text'] {
-        color: utils.color(gray, 400);
+        color: color(gray, 400);
     }
 }

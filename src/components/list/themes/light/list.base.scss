@@ -4,23 +4,20 @@
 :host {
     display: flex;
     flex-flow: column nowrap;
-    font-family: var(--igc-font-family);
+    font-family: var(--ig-font-family);
     overflow: hidden auto;
     height: auto;
     background: color(surface, 500);
 }
 
-:host([size='small']) ::slotted(igc-list-item),
-:host([size='small']) ::slotted(igc-list-header) {
-    padding: var(--igc-spacing-small) calc(var(--igc-spacing-small) * 2);
+:host([size='small']) {
+    --component-size: var(--ig-size, var(--ig-size-small));
 }
 
-:host([size='medium']) ::slotted(igc-list-item),
-:host([size='medium']) ::slotted(igc-list-header) {
-    padding: var(--igc-spacing-medium) calc(var(--igc-spacing-medium) * 2);
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
 }
 
-:host([size='large']) ::slotted(igc-list-item),
-:host([size='large']) ::slotted(igc-list-header) {
-    padding: var(--igc-spacing-large) calc(var(--igc-spacing-large) * 2);
+:host([size='large']) {
+    --component-size: var(--ig-size, var(--ig-size-large));
 }

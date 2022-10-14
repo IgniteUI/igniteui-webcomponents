@@ -43,6 +43,16 @@ export const globalTypes = {
       showName: 'True',
     },
   },
+  size: {
+    name: 'Size',
+    description: 'Component size',
+    defaultValue: 'attribute',
+    toolbar: {
+      icon: 'grow',
+      items: ['attribute', 'small', 'medium', 'large'],
+      showName: 'True',
+    },
+  }
 };
 
 export const parameters = {
@@ -65,6 +75,16 @@ const getTheme = (themeName, variant) => {
   return Themes[`${themeName}_${variant}`];
 };
 
+const getSize = (size) => {
+  if(size === 'attribute') {
+    return;
+  }
+
+  return `:root {
+    --ig-size: var(--ig-size-${size});
+  }`;
+};
+
 const themeProvider = (Story, context) => {
   const theme = getTheme(context.globals.theme, context.globals.variant);
 
@@ -75,6 +95,7 @@ const themeProvider = (Story, context) => {
   const styles = htmlNoMin`
     <style>
       ${theme.default}
+      ${getSize(context.globals.size)}
     </style>`;
 
   return html` ${styles} ${Story()} `;
