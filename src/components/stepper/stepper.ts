@@ -106,7 +106,7 @@ export default class IgcStepperComponent extends SizableMixin(
    * When the stepper is horizontally orientated the title is positioned below the indicator.
    * When the stepper is horizontally orientated the title is positioned on the right side of the indicator.
    */
-  @property({ reflect: true, attribute: 'title-position' })
+  @property({ reflect: false, attribute: 'title-position' })
   public titlePosition?: 'bottom' | 'top' | 'end' | 'start';
 
   @watch('orientation', { waitUntilFirstUpdate: true })
