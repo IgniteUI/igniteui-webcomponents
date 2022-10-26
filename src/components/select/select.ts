@@ -22,11 +22,11 @@ import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
-import { styles } from './themes/light/select.base.css';
-import { styles as bootstrap } from './themes/light/select.bootstrap.css';
-import { styles as fluent } from './themes/light/select.fluent.css';
-import { styles as indigo } from './themes/light/select.indigo.css';
-import { styles as material } from './themes/light/select.material.css';
+import { styles } from './themes/light/select.base.css.js';
+import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
+import { styles as fluent } from './themes/light/select.fluent.css.js';
+import { styles as indigo } from './themes/light/select.indigo.css.js';
+import { styles as material } from './themes/light/select.material.css.js';
 
 defineComponents(
   IgcIconComponent,
