@@ -36,3 +36,8 @@ igc-input::part(input) {
         background: transparent;
     }
 }
+
+[name='prefix']::slotted(*),
+[name='suffix']::slotted(*) {
+    display: flex;
+}
