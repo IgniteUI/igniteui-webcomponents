@@ -1,6 +1,6 @@
 import { ReactiveElement } from 'lit';
 import { updateWhenThemeChanges } from './theming-controller.js';
-import { ReactiveTheme, Themes } from './types';
+import { ReactiveTheme, Themes } from './types.js';
 
 /**
  * Class decorator to enable multiple theme support for a component.
