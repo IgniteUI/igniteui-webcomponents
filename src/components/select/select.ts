@@ -193,6 +193,11 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     return !this.invalid;
   }
 
+  /** A wrapper around the custom reportValidity method to comply with the native select API. */
+  public checkValidity() {
+    return this.reportValidity();
+  }
+
   public override async firstUpdated() {
     super.firstUpdated();
     await this.updateComplete;
