@@ -31,7 +31,7 @@ describe('Tabs component', () => {
 
   const getSelectedPanel = (tabs: IgcTabsComponent) => {
     const collection = getPanels(tabs).filter(
-      (panel) => panel.hasAttribute('hidden') == false
+      (panel) => panel.hasAttribute('hidden') === false
     );
     expect(collection.length).to.equal(1);
     return collection.at(0) as IgcTabPanelComponent;
