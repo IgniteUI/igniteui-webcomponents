@@ -167,7 +167,9 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     this.size = 'medium';
 
     /** Return the focus to the target element when closing the list of options. */
-    this.addEventListener('igcClosing', () => this.target.focus());
+    this.addEventListener('igcChange', () => {
+      if (this.open) this.target.focus();
+    });
   }
 
   /** Override the dropdown target focusout behavior to prevent the focus from
@@ -189,6 +191,11 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     this.invalid = this.required && !this.value;
     if (this.invalid) this.target.focus();
     return !this.invalid;
+  }
+
+  /** A wrapper around the custom reportValidity method to comply with the native select API. */
+  public checkValidity() {
+    return this.reportValidity();
   }
 
   public override async firstUpdated() {

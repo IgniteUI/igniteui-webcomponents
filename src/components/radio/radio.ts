@@ -125,6 +125,11 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     return this.input.reportValidity();
   }
 
+  /** Checks for validity of the control and emits the invalid event if it invalid. */
+  public checkValidity() {
+    return this.input.checkValidity();
+  }
+
   /**
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
