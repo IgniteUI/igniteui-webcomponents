@@ -31,7 +31,7 @@ describe('Tabs component', () => {
 
   const getSelectedPanel = (tabs: IgcTabsComponent) => {
     const collection = getPanels(tabs).filter(
-      (panel) => panel.style.display === 'block'
+      (panel) => panel.hasAttribute('hidden') == false
     );
     expect(collection.length).to.equal(1);
     return collection.at(0) as IgcTabPanelComponent;
@@ -100,8 +100,8 @@ describe('Tabs component', () => {
       </igc-tabs>`);
       verifySelection(tab, 'second');
       expect(
-        (tab as any).panels.map((panel: any) => panel.style.display)
-      ).deep.equal(['none', 'block', 'none']);
+        (tab as any).panels.map((panel: any) => panel.hasAttribute('hidden'))
+      ).deep.equal([true, false, true]);
     });
 
     it('selects a tab on mouse click if it is not disabled', async () => {
