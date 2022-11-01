@@ -17,6 +17,7 @@ export default class IgcTabPanelComponent extends LitElement {
   private static readonly increment = createCounter();
 
   public override connectedCallback() {
+    super.connectedCallback();
     this.setAttribute('role', 'tabpanel');
     this.tabIndex = this.hasAttribute('tabindex') ? this.tabIndex : 0;
     this.slot = this.slot.length > 0 ? this.slot : 'panel';
