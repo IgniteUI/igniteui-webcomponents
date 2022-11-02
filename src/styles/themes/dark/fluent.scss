@@ -1,5 +1,6 @@
 @use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/fluent' as base;
+@use '../base/scrollbars';
 @use '../third-party/grid/fluent.dark' as grid;
 @use '../../../components/button/themes/button/dark/button.fluent' as button;
 @use '../../../components/button/themes/icon-button/dark/icon-button.fluent' as icon-button;

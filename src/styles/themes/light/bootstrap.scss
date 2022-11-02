@@ -1,3 +1,4 @@
 @use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/bootstrap' as base;
+@use '../base/scrollbars';
 @include base.root-styles($light-bootstrap-palette);

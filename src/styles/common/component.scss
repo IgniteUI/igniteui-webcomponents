@@ -16,9 +16,9 @@
     }
 
     @include ig-scrollbar(
-        var(--scrolbar-size, rem(14px)),
-        var(--ig-scrollbar-track-color, color(null, gray, 200)),
-        var(--ig-scrollbar-thumb-color, color(null, gray, 400))
+        var(--ig-scrollbar-size),
+        var(--ig-scrollbar-track-background),
+        var(--ig-scrollbar-thumb-background)
     );
 }
 
