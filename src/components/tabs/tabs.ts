@@ -236,11 +236,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected updateSelectedTab() {
     this.tabs.forEach((tab) => (tab.selected = tab === this.activeTab));
-    this.panels.forEach((panel) =>
-      Object.assign(panel.style, {
-        display: panel.id === this.activeTab?.panel ? 'block' : 'none',
-      })
-    );
+    this.panels.forEach((panel) => {
+      panel.hidden = panel.id !== this.activeTab?.panel;
+    });
   }
 
   protected syncAttributes() {

@@ -22,11 +22,11 @@ import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
-import { styles } from './themes/light/select.base.css';
-import { styles as bootstrap } from './themes/light/select.bootstrap.css';
-import { styles as fluent } from './themes/light/select.fluent.css';
-import { styles as indigo } from './themes/light/select.indigo.css';
-import { styles as material } from './themes/light/select.material.css';
+import { styles } from './themes/light/select.base.css.js';
+import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
+import { styles as fluent } from './themes/light/select.fluent.css.js';
+import { styles as indigo } from './themes/light/select.indigo.css.js';
+import { styles as material } from './themes/light/select.material.css.js';
 
 defineComponents(
   IgcIconComponent,
@@ -167,7 +167,9 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     this.size = 'medium';
 
     /** Return the focus to the target element when closing the list of options. */
-    this.addEventListener('igcClosing', () => this.target.focus());
+    this.addEventListener('igcChange', () => {
+      if (this.open) this.target.focus();
+    });
   }
 
   /** Override the dropdown target focusout behavior to prevent the focus from
@@ -189,6 +191,11 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     this.invalid = this.required && !this.value;
     if (this.invalid) this.target.focus();
     return !this.invalid;
+  }
+
+  /** A wrapper around the custom reportValidity method to comply with the native select API. */
+  public checkValidity() {
+    return this.reportValidity();
   }
 
   public override async firstUpdated() {

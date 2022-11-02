@@ -103,6 +103,11 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     return this.input.reportValidity();
   }
 
+  /** Checks for validity of the control and emits the invalid event if it invalid. */
+  public checkValidity() {
+    return this.input.checkValidity();
+  }
+
   /** Replaces the selected text in the input. */
   @blazorSuppress()
   public override setRangeText(
