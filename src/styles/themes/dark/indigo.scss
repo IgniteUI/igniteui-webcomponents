@@ -1,5 +1,6 @@
 @use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
 @use '../base/indigo' as base;
+@use '../base/scrollbars';
 @use '../third-party/grid/indigo.dark' as grid;
 @use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
