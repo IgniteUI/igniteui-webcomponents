@@ -394,7 +394,7 @@ export default class IgcRatingComponent extends SizableMixin(
           @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
           @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
         >
-          <slot @slotchange=${this.handleSlotChange}>
+          <slot name="symbol" @slotchange=${this.handleSlotChange}>
             ${guard(props, () => {
               this.clipProjected();
               return this.renderSymbols();

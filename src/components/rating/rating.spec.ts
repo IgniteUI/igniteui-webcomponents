@@ -24,7 +24,7 @@ describe('Rating component', () => {
     ) as NodeListOf<IgcRatingSymbolComponent>;
   const getProjectedSymbols = (el: IgcRatingComponent) => {
     const slot = el.shadowRoot!.querySelector(
-      'slot:not([name])'
+      'slot[name="symbol"]'
     ) as HTMLSlotElement;
     return slot
       .assignedElements()
