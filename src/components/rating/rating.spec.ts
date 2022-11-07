@@ -1,4 +1,11 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  fixtureCleanup,
+  html,
+} from '@open-wc/testing';
+import { nothing } from 'lit';
 import sinon from 'sinon';
 import {
   defineComponents,
@@ -164,6 +171,51 @@ describe('Rating component', () => {
       expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
         'Selected 5.2 of 9'
       );
+    });
+
+    it('correctly renders default symbols', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating max="10"></igc-rating>`
+      );
+      const symbols = getRatingSymbols(rating);
+
+      expect(symbols.length).to.equal(10);
+
+      symbols.forEach((symbol) => {
+        // in lieu of actual rendered check or more comprehensive symbol checks:
+        expect(symbol.offsetParent).to.be.ok;
+        expect(symbol.getClientRects()).to.not.be.empty;
+      });
+    });
+
+    it('correctly renders either default or projected symbols', async () => {
+      const renderCustomSymbols = () => html`
+        <igc-rating-symbol>🐝</igc-rating-symbol>
+        <igc-rating-symbol>🐝</igc-rating-symbol>
+        <igc-rating-symbol>🐝</igc-rating-symbol>
+      `;
+      const renderRating = (custom = false) => html`
+        <igc-rating> ${custom ? renderCustomSymbols() : nothing} </igc-rating>
+      `;
+      let rating = await fixture<IgcRatingComponent>(renderRating());
+
+      expect(getProjectedSymbols(rating)).to.be.empty;
+      const symbols = getRatingSymbols(rating);
+
+      expect(symbols).to.have.lengthOf(rating.max);
+      symbols.forEach((symbol) => {
+        expect(symbol.offsetParent).to.be.ok;
+        expect(symbol.getClientRects()).to.not.be.empty;
+      });
+
+      fixtureCleanup();
+      rating = await fixture<IgcRatingComponent>(renderRating(true));
+
+      expect(getProjectedSymbols(rating)).to.have.lengthOf(3);
+      getRatingSymbols(rating).forEach((symbol) => {
+        expect(symbol.offsetParent).to.be.null;
+        expect(symbol.getClientRects()).to.be.empty;
+      });
     });
 
     it('correctly renders symbols passed through igc-rating-symbol', async () => {
