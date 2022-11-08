@@ -18,6 +18,11 @@ export default class IgcRatingSymbolComponent extends LitElement {
   public static readonly tagName = 'igc-rating-symbol';
   public static override styles = [styles];
 
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.slot = this.slot.length > 0 ? this.slot : 'symbol';
+  }
+
   protected override render() {
     return html`
       <div part="symbol full">
