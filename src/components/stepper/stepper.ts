@@ -149,7 +149,7 @@ export default class IgcStepperComponent extends SizableMixin(
       }
     });
     if (this.linear) {
-      this.calculateLinearDisabledSteps();
+      this.updateStepsLinearDisabled();
     }
   }
 
@@ -164,7 +164,7 @@ export default class IgcStepperComponent extends SizableMixin(
     this.addEventListener('stepDisabledInvalidChanged', (event: any) => {
       event.stopPropagation();
       if (this.linear) {
-        this.calculateLinearDisabledSteps();
+        this.updateStepsLinearDisabled();
       }
     });
 
@@ -351,7 +351,7 @@ export default class IgcStepperComponent extends SizableMixin(
       : this.steps.filter((step: IgcStepComponent) => step.isAccessible).pop();
   }
 
-  private calculateLinearDisabledSteps(): void {
+  private updateStepsLinearDisabled(): void {
     const firstInvalidStep = this.steps
       .filter((step: IgcStepComponent) => !step.disabled && !step.optional)
       .find((step: IgcStepComponent) => step.invalid);
@@ -388,7 +388,7 @@ export default class IgcStepperComponent extends SizableMixin(
     });
   }
 
-  protected stepsChanged(): void {
+  private stepsChanged(): void {
     this.style.setProperty('--steps-count', this.steps.length.toString());
 
     const lastActiveStep = this.steps
@@ -404,7 +404,7 @@ export default class IgcStepperComponent extends SizableMixin(
 
     this.syncProperties();
     if (this.linear) {
-      this.calculateLinearDisabledSteps();
+      this.updateStepsLinearDisabled();
     }
   }
 

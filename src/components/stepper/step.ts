@@ -133,7 +133,7 @@ export default class IgcStepComponent extends LitElement {
   @watch('disabled', { waitUntilFirstUpdate: true })
   @watch('invalid', { waitUntilFirstUpdate: true })
   @watch('optional', { waitUntilFirstUpdate: true })
-  protected disabledInvalidChange() {
+  protected disabledInvalidOptionalChange() {
     this.dispatchEvent(
       new CustomEvent('stepDisabledInvalidChanged', { bubbles: true })
     );
@@ -146,7 +146,7 @@ export default class IgcStepComponent extends LitElement {
     );
   }
 
-  protected handleClick(event: MouseEvent): void {
+  private handleClick(event: MouseEvent): void {
     event.stopPropagation();
     if (this.isAccessible) {
       this.dispatchEvent(
@@ -155,7 +155,7 @@ export default class IgcStepComponent extends LitElement {
     }
   }
 
-  protected handleKeydown(event: KeyboardEvent): void {
+  private handleKeydown(event: KeyboardEvent): void {
     this.dispatchEvent(
       new CustomEvent('stepHeaderKeydown', {
         bubbles: true,
