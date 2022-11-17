@@ -160,7 +160,7 @@
 [part~='body'] {
     display: var(--vertical-body-disply--last-of-type, var(--vertical-body-disply, none));
     grid-row-start: var(--body-top, 2);
-    grid-column: span #{var(--steps-count)};
+    grid-column: span var(--steps-count);
     margin-inline-start: calc(var(--body-indent--vertical) / 2);
     padding-inline-start: var(--horizontal-body-padding, #{calc(var(--body-indent--vertical) / 2)});
     padding-inline-end: var(--horizontal-body-padding, var(--vertical-body-padding));
@@ -170,7 +170,7 @@
     position: relative;
     color: color(gray, 900);
 
-    // Thous tow lines here are on purpose, they make sure that step body content
+    // Thous two lines here are on purpose, they make sure that step body content
     // does not get involved in grid width calculation. They fix a very weird bug.
     // https://stackoverflow.com/questions/73856035/css-grid-columns-changing-size-with-long-content/73858982#73858982
     width: 0;
@@ -196,7 +196,7 @@
 
     &::before,
     &::after {
-        inset-block-end: #{var(--step-separator-position)};
+        inset-block-end: var(--step-separator-position);
     }
 
     [part~='header'] {
@@ -205,7 +205,7 @@
 
         &::before,
         &::after {
-            inset-block-end: #{var(--step-separator-position)};
+            inset-block-end: var(--step-separator-position);
         }
     }
 }
@@ -215,7 +215,7 @@
 
     &::before,
     &::after {
-        inset-block-start: #{var(--step-separator-position)};
+        inset-block-start: var(--step-separator-position);
     }
 
     [part~='header'] {
@@ -224,7 +224,7 @@
 
         &::before,
         &::after {
-            inset-block-start: #{var(--step-separator-position)};
+            inset-block-start: var(--step-separator-position);
         }
     }
 }
