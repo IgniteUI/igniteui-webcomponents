@@ -1,7 +1,7 @@
 @use '../../../../../node_modules/igniteui-theming/sass/color/functions' as *;
 
 @mixin theme() {
-    apx-grid {
+    apex-grid {
         // Header row
         --header-border-color: #{color(null, gray, 200, .28)};
 
