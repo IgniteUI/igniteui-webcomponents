@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -49,11 +49,17 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   @query('input[type="radio"]', true)
   protected input!: HTMLInputElement;
 
+  @queryAssignedNodes({ flatten: true })
+  protected label!: Array<Node>;
+
   @state()
   private _tabIndex = 0;
 
   @state()
   private focused = false;
+
+  @state()
+  protected hideLabel = false;
 
   /** The name attribute of the control. */
   @property()
@@ -189,6 +195,14 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     return Array.from<IgcRadioComponent>(group.querySelectorAll('igc-radio'));
   }
 
+  protected override async firstUpdated() {
+    if (this.label.length === 0) {
+      this.hideLabel = true;
+    }
+
+    await this.updateComplete;
+  }
+
   protected override render() {
     return html`
       <label
@@ -222,6 +236,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           part="${partNameMap({ control: true, checked: this.checked })}"
         ></span>
         <span
+          .hidden="${this.hideLabel}"
           part="${partNameMap({ label: true, checked: this.checked })}"
           id="${this.labelId}"
         >

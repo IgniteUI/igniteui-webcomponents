@@ -71,6 +71,7 @@ label {
     align-items: center;
     cursor: pointer;
     flex-flow: row nowrap;
+    gap: rem(8px);
 
     &:hover [part='control checked'] {
         background: color(secondary, 500, .06);
@@ -155,15 +156,8 @@ label {
     }
 }
 
-:host([label-position='after']) {
-    [part~='label'] {
-        margin-inline-start: rem(8px);
-    }
-}
-
 :host([label-position='before']) {
     [part~='label'] {
         order: -1;
-        margin-inline-end: rem(8px);
     }
 }
