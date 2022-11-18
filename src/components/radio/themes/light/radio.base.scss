@@ -14,6 +14,7 @@ input[type='radio'] {
 [part~='base'] {
     display: flex;
     align-items: center;
+    gap: rem(8px);
     cursor: pointer;
     transition: color .15s ease-in;
 
@@ -111,15 +112,8 @@ input[type='radio'] {
     }
 }
 
-:host([label-position='after']) {
-    [part~='label'] {
-        margin-inline-start: rem(8px);
-    }
-}
-
 :host([label-position='before']) {
     [part~='label'] {
         order: -1;
-        margin-inline-end: rem(8px);
     }
 }
