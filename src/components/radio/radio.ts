@@ -59,7 +59,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   private focused = false;
 
   @state()
-  protected hide = false;
+  protected hideLabel = false;
 
   /** The name attribute of the control. */
   @property()
@@ -196,8 +196,8 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   }
 
   protected override async firstUpdated() {
-    if (this.label.length == 0) {
-      this.hide = true;
+    if (this.label.length === 0) {
+      this.hideLabel = true;
     }
 
     await this.updateComplete;
@@ -236,7 +236,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           part="${partNameMap({ control: true, checked: this.checked })}"
         ></span>
         <span
-          .hidden="${this.hide}"
+          .hidden="${this.hideLabel}"
           part="${partNameMap({ label: true, checked: this.checked })}"
           id="${this.labelId}"
         >

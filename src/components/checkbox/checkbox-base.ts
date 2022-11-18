@@ -27,7 +27,7 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   protected focused = false;
 
   @state()
-  protected hide = false;
+  protected hideLabel = false;
 
   /** The name attribute of the control. */
   @property()
@@ -129,8 +129,8 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   }
 
   protected override async firstUpdated() {
-    if (this.label.length == 0) {
-      this.hide = true;
+    if (this.label.length === 0) {
+      this.hideLabel = true;
     }
 
     await this.updateComplete;
