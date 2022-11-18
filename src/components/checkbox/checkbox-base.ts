@@ -1,5 +1,5 @@
 import { LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
@@ -20,8 +20,14 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   @query('input[type="checkbox"]', true)
   protected input!: HTMLInputElement;
 
+  @queryAssignedNodes({ flatten: true })
+  protected label!: Array<Node>;
+
   @state()
   protected focused = false;
+
+  @state()
+  protected hide = false;
 
   /** The name attribute of the control. */
   @property()
@@ -120,5 +126,13 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
     if (!this.focused) {
       this.focused = true;
     }
+  }
+
+  protected override async firstUpdated() {
+    if (this.label.length == 0) {
+      this.hide = true;
+    }
+
+    await this.updateComplete;
   }
 }

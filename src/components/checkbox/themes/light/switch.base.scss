@@ -19,6 +19,7 @@ label {
     flex-flow: row nowrap;
     align-items: center;
     cursor: pointer;
+    gap: rem(8px);
 
     &:hover [part~='thumb'] {
         &::after {
@@ -88,16 +89,9 @@ label {
     }
 }
 
-:host([label-position='after']) {
-    [part~='label'] {
-        margin-inline-start: rem(8px);
-    }
-}
-
 :host([label-position='before']) {
     [part~='label'] {
         order: -1;
-        margin-inline-end: rem(8px);
     }
 }
 

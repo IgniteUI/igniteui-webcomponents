@@ -93,6 +93,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           </span>
         </span>
         <span
+          .hidden="${this.hide}"
           part=${partNameMap({ label: true, checked: this.checked })}
           id=${this.labelId}
         >
