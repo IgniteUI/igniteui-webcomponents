@@ -13,6 +13,7 @@ export { default as IgcCheckboxComponent } from './components/checkbox/checkbox.
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress.js';
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
 export { default as IgcChipComponent } from './components/chip/chip.js';
+export { default as IgcComboComponent } from './components/combo/combo.js';
 export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
 export { default as IgcDialogComponent } from './components/dialog/dialog.js';
 export { default as IgcDropdownComponent } from './components/dropdown/dropdown.js';
