@@ -1,0 +1,6 @@
+@use '../../../../../styles/utilities' as *;
+@use '../../../../dropdown/themes/light/dropdown-item.base' as *;
+
+:host {
+    gap: rem(8px);
+}

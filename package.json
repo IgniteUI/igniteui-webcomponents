@@ -57,7 +57,9 @@
     "lit": "^2.4.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.6.0",
     "@igniteui/material-icons-extended": "^2.11.0",
+    "@lit-labs/virtualizer": "^0.7.2",
     "@open-wc/eslint-config": "^8.0.2",
     "@open-wc/testing": "^3.1.6",
     "@storybook/storybook-deployer": "^2.8.16",
@@ -79,7 +81,6 @@
     "keep-a-changelog": "^2.1.0",
     "lint-staged": "^13.0.3",
     "lit-analyzer": "^2.0.0-pre.2",
-    "lit-virtualizer": "^0.4.2",
     "madge": "^5.0.1",
     "node-watch": "^0.7.3",
     "postcss": "^8.4.18",

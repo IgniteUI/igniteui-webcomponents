@@ -1,11 +1,17 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, TemplateResult } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/combo.base.css.js';
 import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
 import { styles as material } from './themes/light/combo.material.css.js';
 import { styles as fluent } from './themes/light/combo.fluent.css.js';
 import { styles as indigo } from './themes/light/combo.indigo.css.js';
-import { property } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
+import { virtualize } from '@lit-labs/virtualizer/virtualize.js';
+import { watch } from '../common/decorators/watch.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcComboItemComponent from './combo-item.js';
+
+defineComponents(IgcComboItemComponent);
 
 /**
  * @element igc-combo
@@ -35,9 +41,15 @@ import { property } from 'lit/decorators.js';
  * @csspart helper-text - The helper text wrapper.
  */
 @themes({ material, bootstrap, fluent, indigo })
-export default class IgcComboComponent extends LitElement {
+export default class IgcComboComponent<T extends object> extends LitElement {
   public static readonly tagName = 'igc-combo';
   public static override styles = styles;
+
+  @property({ attribute: 'value-key' })
+  public valueKey?: keyof T;
+
+  @property({ attribute: 'display-key' })
+  public displayKey?: keyof T = this.valueKey;
 
   /** The value attribute of the control. */
   @property({ reflect: false, type: String })
@@ -49,18 +61,49 @@ export default class IgcComboComponent extends LitElement {
 
   /** The data source used to build the list of options. */
   @property({ attribute: false })
-  public data: Array<object> = [];
+  public data: Array<T> = [];
+
+  @state()
+  protected dataState: Array<object> = [];
+
+  @watch('data')
+  protected dataChanged() {
+    this.dataState = structuredClone(this.data);
+  }
+
+  @watch('valueKey')
+  protected updateDisplayKey() {
+    this.displayKey = this.displayKey ?? this.valueKey;
+  }
+
+  @property({ attribute: false })
+  public itemTemplate: <T>(item: T) => TemplateResult = (item) => {
+    if (this.displayKey) {
+      return html`${(item as any)[this.displayKey]}`;
+    }
+
+    return html`${item}`;
+  };
+
+  protected itemRenderer = <T>(item: T): TemplateResult => {
+    return html`<igc-combo-item>${this.itemTemplate(item)}</igc-combo-item>`;
+  };
 
   public override render() {
     return html`
-      <div>this is a combo component</div>
-      <slot></slot>
+      <div part="list">
+        ${virtualize({
+          scroller: true,
+          items: this.dataState,
+          renderItem: this.itemRenderer,
+        })}
+      </div>
     `;
   }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'igc-combo': IgcComboComponent;
+    'igc-combo': IgcComboComponent<object>;
   }
 }
