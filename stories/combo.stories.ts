@@ -21,12 +21,18 @@ const metadata = {
       description: 'The name attribute of the control.',
       control: 'text',
     },
+    scrollIndex: {
+      type: 'number',
+      control: 'number',
+      defaultValue: '0',
+    },
   },
 };
 export default metadata;
 interface ArgTypes {
   value: string | undefined;
   name: string;
+  scrollIndex: number;
 }
 // endregion
 
@@ -69,6 +75,13 @@ function generateCities(amount = 200) {
 //   `;
 // };
 
+// const headerItemTemplate = (item: City) => {
+//   return html`Group header for ${item.country}`;
+// };
+
+// .itemTemplate=${itemTemplate}
+// .headerItemTemplate=${headerItemTemplate}
+
 const Template: Story<ArgTypes, Context> = (
   { name }: ArgTypes,
   { globals: { direction } }: Context
@@ -78,6 +91,7 @@ const Template: Story<ArgTypes, Context> = (
     dir=${ifDefined(direction)}
     value-key="id"
     display-key="name"
+    group-key="country"
     .data=${generateCities(1000)}
   ></igc-combo>
 `;

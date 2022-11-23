@@ -5,13 +5,15 @@ import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
 import { styles as material } from './themes/light/combo.material.css.js';
 import { styles as fluent } from './themes/light/combo.fluent.css.js';
 import { styles as indigo } from './themes/light/combo.indigo.css.js';
-import { property, state } from 'lit/decorators.js';
+import { property, queryAll, state } from 'lit/decorators.js';
 import { virtualize } from '@lit-labs/virtualizer/virtualize.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcComboItemComponent from './combo-item.js';
+import IgcComboHeaderComponent from './combo-header.js';
+import { NavigationController } from './controllers/navigation.js';
 
-defineComponents(IgcComboItemComponent);
+defineComponents(IgcComboItemComponent, IgcComboHeaderComponent);
 
 /**
  * @element igc-combo
@@ -45,11 +47,16 @@ export default class IgcComboComponent<T extends object> extends LitElement {
   public static readonly tagName = 'igc-combo';
   public static override styles = styles;
 
+  protected navigationController = new NavigationController<T>(this);
+
   @property({ attribute: 'value-key' })
   public valueKey?: keyof T;
 
   @property({ attribute: 'display-key' })
   public displayKey?: keyof T = this.valueKey;
+
+  @property({ attribute: 'group-key' })
+  public groupKey?: keyof T = this.displayKey;
 
   /** The value attribute of the control. */
   @property({ reflect: false, type: String })
@@ -63,8 +70,14 @@ export default class IgcComboComponent<T extends object> extends LitElement {
   @property({ attribute: false })
   public data: Array<T> = [];
 
+  @property()
+  public scrollIndex = 0;
+
+  @queryAll('igc-combo-item')
+  public items!: NodeListOf<IgcComboItemComponent>;
+
   @state()
-  protected dataState: Array<object> = [];
+  public dataState: Array<object> = [];
 
   @watch('data')
   protected dataChanged() {
@@ -76,6 +89,31 @@ export default class IgcComboComponent<T extends object> extends LitElement {
     this.displayKey = this.displayKey ?? this.valueKey;
   }
 
+  @watch('groupKey')
+  protected groupItems() {
+    if (!this.groupKey) return;
+
+    this.dataState = Object.values(
+      this.dataState.reduce((acc: any, obj: any) => {
+        const key = obj[this.groupKey];
+
+        if (!acc[key]) {
+          acc[key] = [];
+          acc[key].push({
+            [this.valueKey as string]: key,
+            [this.displayKey as string]: key,
+            [this.groupKey as string]: key,
+            header: true,
+          });
+        }
+        acc[key].push({ ...obj, header: false });
+        return acc;
+      }, {})
+    );
+
+    this.dataState = this.dataState.flat();
+  }
+
   @property({ attribute: false })
   public itemTemplate: <T>(item: T) => TemplateResult = (item) => {
     if (this.displayKey) {
@@ -85,18 +123,50 @@ export default class IgcComboComponent<T extends object> extends LitElement {
     return html`${item}`;
   };
 
-  protected itemRenderer = <T>(item: T): TemplateResult => {
-    return html`<igc-combo-item>${this.itemTemplate(item)}</igc-combo-item>`;
+  @property({ attribute: false })
+  public headerItemTemplate: <T>(item: T) => TemplateResult = (item) => {
+    return html`${(item as any)[this.groupKey]}`;
   };
+
+  protected itemRenderer = <T>(item: T, index: number): TemplateResult => {
+    const headerTemplate = html`<igc-combo-header
+      >${this.headerItemTemplate(item)}</igc-combo-header
+    >`;
+    const itemTemplate = html`<igc-combo-item
+      id="${index}"
+      .activeNode=${this.navigationController.active}
+      .index=${index}
+      >${this.itemTemplate(item)}</igc-combo-item
+    >`;
+
+    return (item as any)?.header ? headerTemplate : itemTemplate;
+  };
+
+  public scrollToIndex(index: number) {
+    this.scrollIndex = index;
+  }
+
+  // public get totalItems() {
+  //   return this.dataState.filter((i) => i.header !== true).length;
+  // }
+
+  protected keydownHandler(event: KeyboardEvent) {
+    this.navigationController.navigate(event);
+  }
 
   public override render() {
     return html`
-      <div part="list">
-        ${virtualize({
-          scroller: true,
-          items: this.dataState,
-          renderItem: this.itemRenderer,
-        })}
+      <div @keydown=${this.keydownHandler} tabindex="0">
+        <div part="list">
+          ${virtualize({
+            scroller: true,
+            items: this.dataState,
+            renderItem: this.itemRenderer,
+            scrollToIndex: {
+              index: this.scrollIndex,
+            },
+          })}
+        </div>
       </div>
     `;
   }
