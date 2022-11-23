@@ -86,7 +86,7 @@ const Template: Story<ArgTypes, Context> = (
     value-key="id"
     display-key="name"
     group-key="country"
-    .data=${generateCities(1000)}
+    .data=${generateCities(200)}
   ></igc-combo>
 `;
 

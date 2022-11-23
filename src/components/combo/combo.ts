@@ -49,6 +49,9 @@ export default class IgcComboComponent<T extends object> extends LitElement {
 
   protected navigationController = new NavigationController<T>(this);
 
+  private scrollIndex = 0;
+  private scrollPosition = 'center';
+
   @property({ attribute: 'value-key' })
   public valueKey?: keyof T;
 
@@ -69,9 +72,6 @@ export default class IgcComboComponent<T extends object> extends LitElement {
   /** The data source used to build the list of options. */
   @property({ attribute: false })
   public data: Array<T> = [];
-
-  @state()
-  private scrollIndex = -1;
 
   @queryAll('igc-combo-item')
   public items!: NodeListOf<IgcComboItemComponent>;
@@ -106,7 +106,7 @@ export default class IgcComboComponent<T extends object> extends LitElement {
             header: true,
           });
         }
-        acc[key].push({ ...obj, header: false });
+        acc[key].push(Object.assign(obj, { header: false }));
         return acc;
       }, {})
     );
@@ -141,8 +141,9 @@ export default class IgcComboComponent<T extends object> extends LitElement {
     return html`${(item as any)?.header ? headerTemplate : itemTemplate}`;
   };
 
-  public scrollToIndex(index: number) {
+  public scrollToIndex(index: number, position?: string) {
     this.scrollIndex = index;
+    if (position) this.scrollPosition = position;
   }
 
   protected keydownHandler(event: KeyboardEvent) {
@@ -159,6 +160,7 @@ export default class IgcComboComponent<T extends object> extends LitElement {
             renderItem: this.itemRenderer,
             scrollToIndex: {
               index: this.scrollIndex,
+              position: this.scrollPosition,
             },
           })}
         </div>

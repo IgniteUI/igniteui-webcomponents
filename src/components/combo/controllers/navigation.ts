@@ -25,17 +25,16 @@ export class NavigationController<T extends object>
 
   protected _active = START_INDEX;
 
-  protected get currentNode() {
-    const node = this.active;
-    return node === START_INDEX ? 0 : node;
+  protected get currentItem() {
+    const item = this.active;
+    return item === START_INDEX ? START_INDEX : item;
   }
 
-  protected get firstItemIndex() {
-    const items = this.host.dataState.filter((i) => (i as any).header !== true);
-    return this.host.dataState.indexOf(items[0]);
+  protected get firstItem() {
+    return this.host.dataState.findIndex((i: any) => i.header !== true);
   }
 
-  protected get lastItemIndex() {
+  protected get lastItem() {
     return this.host.dataState.length - 1;
   }
 
@@ -43,7 +42,7 @@ export class NavigationController<T extends object>
     return this._active;
   }
 
-  public set active(node: any) {
+  public set active(node: number) {
     this._active = node;
     this.host.requestUpdate();
   }
@@ -53,43 +52,38 @@ export class NavigationController<T extends object>
   }
 
   protected home() {
-    this.active = this.firstItemIndex;
+    this.active = this.firstItem;
     this.host.scrollToIndex(this.active);
   }
 
-  protected end() {
-    this.active = this.lastItemIndex;
+  protected async end() {
+    this.active = this.lastItem;
     this.host.scrollToIndex(this.active);
   }
 
   protected arrowDown() {
-    this.navigateTo(DIRECTION.Down);
+    this.getNextItem(DIRECTION.Down);
   }
 
   protected arrowUp() {
-    this.navigateTo(DIRECTION.Up);
+    this.getNextItem(DIRECTION.Up);
   }
 
-  protected navigateTo(direction: DIRECTION) {
-    const index = this.getNearestItem(this.currentNode, direction);
+  protected getNextItem(direction: DIRECTION) {
+    const next = this.getNearestItem(this.currentItem, direction);
 
-    if (index === -1) {
-      return;
-    }
+    if (next === -1) return;
 
-    this.active = index;
-    this.host.scrollToIndex(index);
+    this.active = next;
+    this.host.scrollToIndex(this.active);
   }
 
   protected getNearestItem(startIndex: number, direction: number) {
     let index = startIndex;
     const items = this.host.dataState;
 
-    while (
-      items[index + direction] &&
-      (items[index + direction] as any).header
-    ) {
-      index += direction;
+    if ((items[index + direction] as any)?.header) {
+      this.getNearestItem((index += direction), direction);
     }
 
     index += direction;
