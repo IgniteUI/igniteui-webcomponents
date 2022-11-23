@@ -21,18 +21,12 @@ const metadata = {
       description: 'The name attribute of the control.',
       control: 'text',
     },
-    scrollIndex: {
-      type: 'number',
-      control: 'number',
-      defaultValue: '0',
-    },
   },
 };
 export default metadata;
 interface ArgTypes {
   value: string | undefined;
   name: string;
-  scrollIndex: number;
 }
 // endregion
 

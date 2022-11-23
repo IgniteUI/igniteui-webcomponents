@@ -70,8 +70,8 @@ export default class IgcComboComponent<T extends object> extends LitElement {
   @property({ attribute: false })
   public data: Array<T> = [];
 
-  @property()
-  public scrollIndex = 0;
+  @state()
+  private scrollIndex = -1;
 
   @queryAll('igc-combo-item')
   public items!: NodeListOf<IgcComboItemComponent>;
@@ -132,23 +132,18 @@ export default class IgcComboComponent<T extends object> extends LitElement {
     const headerTemplate = html`<igc-combo-header
       >${this.headerItemTemplate(item)}</igc-combo-header
     >`;
+
     const itemTemplate = html`<igc-combo-item
-      id="${index}"
-      .activeNode=${this.navigationController.active}
-      .index=${index}
+      .active=${this.navigationController.active === index}
       >${this.itemTemplate(item)}</igc-combo-item
     >`;
 
-    return (item as any)?.header ? headerTemplate : itemTemplate;
+    return html`${(item as any)?.header ? headerTemplate : itemTemplate}`;
   };
 
   public scrollToIndex(index: number) {
     this.scrollIndex = index;
   }
-
-  // public get totalItems() {
-  //   return this.dataState.filter((i) => i.header !== true).length;
-  // }
 
   protected keydownHandler(event: KeyboardEvent) {
     this.navigationController.navigate(event);
