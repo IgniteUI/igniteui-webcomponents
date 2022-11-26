@@ -13,9 +13,9 @@ const metadata = {
   component: 'igc-nav-drawer',
   argTypes: {
     position: {
-      type: '"start" | "end" | "top" | "bottom" | "relative"',
+      type: '"top" | "bottom" | "start" | "end" | "relative"',
       description: 'The position of the drawer.',
-      options: ['start', 'end', 'top', 'bottom', 'relative'],
+      options: ['top', 'bottom', 'start', 'end', 'relative'],
       control: {
         type: 'select',
       },
@@ -31,7 +31,7 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
+  position: 'top' | 'bottom' | 'start' | 'end' | 'relative';
   open: boolean;
 }
 // endregion

@@ -14,13 +14,13 @@ const metadata = {
       defaultValue: false,
     },
     labelAlign: {
-      type: '"top" | "bottom" | "top-start" | "top-end" | "bottom-start" | "bottom-end"',
+      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end"',
       description: 'The position for the default label of the control.',
       options: [
         'top',
-        'bottom',
         'top-start',
         'top-end',
+        'bottom',
         'bottom-start',
         'bottom-end',
       ],
@@ -81,9 +81,9 @@ interface ArgTypes {
   striped: boolean;
   labelAlign:
     | 'top'
-    | 'bottom'
     | 'top-start'
     | 'top-end'
+    | 'bottom'
     | 'bottom-start'
     | 'bottom-end';
   max: number;

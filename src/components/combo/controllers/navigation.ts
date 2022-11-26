@@ -1,5 +1,6 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
-import IgcComboComponent from '../combo';
+import IgcComboComponent from '../combo.js';
+import { ComboRecord } from '../types.js';
 
 type ComboHost<T extends object> = ReactiveControllerHost &
   IgcComboComponent<T>;
@@ -31,7 +32,9 @@ export class NavigationController<T extends object>
   }
 
   protected get firstItem() {
-    return this.host.dataState.findIndex((i: any) => i.header !== true);
+    return this.host.dataState.findIndex(
+      (i: ComboRecord<T>) => i.header !== true
+    );
   }
 
   protected get lastItem() {
@@ -56,7 +59,7 @@ export class NavigationController<T extends object>
     this.host.scrollToIndex(this.active);
   }
 
-  protected async end() {
+  protected end() {
     this.active = this.lastItem;
     this.host.scrollToIndex(this.active);
   }
@@ -82,7 +85,7 @@ export class NavigationController<T extends object>
     let index = startIndex;
     const items = this.host.dataState;
 
-    if ((items[index + direction] as any)?.header) {
+    if (items[index + direction]?.header) {
       this.getNearestItem((index += direction), direction);
     }
 

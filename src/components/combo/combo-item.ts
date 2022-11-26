@@ -16,6 +16,12 @@ export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';
   public static override styles = styles;
 
+  @property({ attribute: false })
+  public activeNode!: number;
+
+  @property({ attribute: false })
+  public index!: number;
+
   /**
    * Determines whether the item is selected.
    */
@@ -42,6 +48,8 @@ export default class IgcComboItemComponent extends LitElement {
   }
 
   protected override render() {
+    this.active = this.activeNode === this.index;
+
     return html`
       <section part="prefix">
         <igc-checkbox ?checked=${this.selected}></igc-checkbox>

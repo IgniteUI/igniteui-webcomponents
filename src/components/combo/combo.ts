@@ -5,13 +5,17 @@ import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
 import { styles as material } from './themes/light/combo.material.css.js';
 import { styles as fluent } from './themes/light/combo.fluent.css.js';
 import { styles as indigo } from './themes/light/combo.indigo.css.js';
-import { property, queryAll, state } from 'lit/decorators.js';
+import { property, query, queryAll, state } from 'lit/decorators.js';
 import { virtualize } from '@lit-labs/virtualizer/virtualize.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import { NavigationController } from './controllers/navigation.js';
+import { IgcToggleController } from '../toggle/toggle.controller.js';
+import { IgcToggleComponent } from '../toggle/types.js';
+import { Keys, ComboRecord } from './types.js';
+import { DataController } from './controllers/data.js';
 
 defineComponents(IgcComboItemComponent, IgcComboHeaderComponent);
 
@@ -43,23 +47,38 @@ defineComponents(IgcComboItemComponent, IgcComboHeaderComponent);
  * @csspart helper-text - The helper text wrapper.
  */
 @themes({ material, bootstrap, fluent, indigo })
-export default class IgcComboComponent<T extends object> extends LitElement {
+export default class IgcComboComponent<T extends object>
+  extends LitElement
+  implements IgcToggleComponent
+{
   public static readonly tagName = 'igc-combo';
   public static override styles = styles;
 
   protected navigationController = new NavigationController<T>(this);
+  protected dataController = new DataController<T>(this);
+  protected toggleController!: IgcToggleController;
 
   private scrollIndex = 0;
   private scrollPosition = 'center';
 
+  @query('[part="target"]')
+  private target!: HTMLElement;
+
+  @queryAll('igc-combo-item')
+  public items!: NodeListOf<IgcComboItemComponent>;
+
+  /** Sets the open state of the component. */
+  @property({ type: Boolean })
+  public open = false;
+
   @property({ attribute: 'value-key' })
-  public valueKey?: keyof T;
+  public valueKey?: Keys<T>;
 
   @property({ attribute: 'display-key' })
-  public displayKey?: keyof T = this.valueKey;
+  public displayKey?: Keys<T> = this.valueKey;
 
   @property({ attribute: 'group-key' })
-  public groupKey?: keyof T = this.displayKey;
+  public groupKey?: Keys<T> = this.displayKey;
 
   /** The value attribute of the control. */
   @property({ reflect: false, type: String })
@@ -73,11 +92,8 @@ export default class IgcComboComponent<T extends object> extends LitElement {
   @property({ attribute: false })
   public data: Array<T> = [];
 
-  @queryAll('igc-combo-item')
-  public items!: NodeListOf<IgcComboItemComponent>;
-
   @state()
-  public dataState: Array<object> = [];
+  public dataState: Array<ComboRecord<T>> = [];
 
   @watch('data')
   protected dataChanged() {
@@ -92,53 +108,63 @@ export default class IgcComboComponent<T extends object> extends LitElement {
   @watch('groupKey')
   protected groupItems() {
     if (!this.groupKey) return;
-
-    this.dataState = Object.values(
-      this.dataState.reduce((acc: any, obj: any) => {
-        const key = obj[this.groupKey];
-
-        if (!acc[key]) {
-          acc[key] = [];
-          acc[key].push({
-            [this.valueKey as string]: key,
-            [this.displayKey as string]: key,
-            [this.groupKey as string]: key,
-            header: true,
-          });
-        }
-        acc[key].push(Object.assign(obj, { header: false }));
-        return acc;
-      }, {})
-    );
-
-    this.dataState = this.dataState.flat();
+    this.dataState = this.dataController.group(this.dataState);
   }
 
   @property({ attribute: false })
-  public itemTemplate: <T>(item: T) => TemplateResult = (item) => {
+  public itemTemplate: (item: T) => TemplateResult = (item) => {
     if (this.displayKey) {
-      return html`${(item as any)[this.displayKey]}`;
+      return html`${item[this.displayKey]}`;
     }
 
     return html`${item}`;
   };
 
   @property({ attribute: false })
-  public headerItemTemplate: <T>(item: T) => TemplateResult = (item) => {
-    return html`${(item as any)[this.groupKey]}`;
+  public headerItemTemplate: (item: ComboRecord<T>) => TemplateResult = (
+    item
+  ) => {
+    return html`${item[this.groupKey!]}`;
   };
 
-  protected itemRenderer = <T>(item: T, index: number): TemplateResult => {
+  constructor() {
+    super();
+
+    this.toggleController = new IgcToggleController(this, {
+      target: this.target,
+      closeCallback: () => {},
+    });
+  }
+
+  public show() {
+    if (this.open) return;
+    this.open = true;
+  }
+
+  public hide() {
+    if (!this.open) return;
+    this.open = false;
+  }
+
+  public toggle() {
+    this.open ? this.hide() : this.show();
+  }
+
+  protected itemRenderer = (
+    item: ComboRecord<T>,
+    index: number
+  ): TemplateResult => {
     const headerTemplate = html`<igc-combo-header
       >${this.headerItemTemplate(item)}</igc-combo-header
     >`;
 
     const itemTemplate = html`<igc-combo-item
-      .active=${this.navigationController.active === index}
+      .index=${index}
+      .activeNode=${this.navigationController.active}
       >${this.itemTemplate(item)}</igc-combo-item
     >`;
 
-    return html`${(item as any)?.header ? headerTemplate : itemTemplate}`;
+    return html`${item?.header ? headerTemplate : itemTemplate}`;
   };
 
   public scrollToIndex(index: number, position?: string) {
@@ -152,7 +178,17 @@ export default class IgcComboComponent<T extends object> extends LitElement {
 
   public override render() {
     return html`
-      <div @keydown=${this.keydownHandler} tabindex="0">
+      <div
+        part="target"
+        style="height: 50px; background: red"
+        @click=${this.toggle}
+      ></div>
+      <div
+        @keydown=${this.keydownHandler}
+        tabindex="0"
+        part="list-wrapper"
+        ${this.toggleController.toggleDirective}
+      >
         <div part="list">
           ${virtualize({
             scroller: true,
