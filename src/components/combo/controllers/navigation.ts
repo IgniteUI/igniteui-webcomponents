@@ -19,6 +19,8 @@ export class NavigationController<T extends object>
     Object.entries({
       ArrowDown: this.arrowDown,
       ArrowUp: this.arrowUp,
+      ' ': this.space,
+      Enter: this.enter,
       Home: this.home,
       End: this.end,
     })
@@ -47,6 +49,7 @@ export class NavigationController<T extends object>
 
   public set active(node: number) {
     this._active = node;
+    this.host.scrollToIndex(node);
     this.host.requestUpdate();
   }
 
@@ -56,12 +59,20 @@ export class NavigationController<T extends object>
 
   protected home() {
     this.active = this.firstItem;
-    this.host.scrollToIndex(this.active);
   }
 
   protected end() {
     this.active = this.lastItem;
-    this.host.scrollToIndex(this.active);
+  }
+
+  protected space() {
+    if (this.active !== -1) {
+      this.host.toggleItem(this.active);
+    }
+  }
+
+  protected enter() {
+    this.space();
   }
 
   protected arrowDown() {
@@ -76,9 +87,7 @@ export class NavigationController<T extends object>
     const next = this.getNearestItem(this.currentItem, direction);
 
     if (next === -1) return;
-
     this.active = next;
-    this.host.scrollToIndex(this.active);
   }
 
   protected getNearestItem(startIndex: number, direction: number) {

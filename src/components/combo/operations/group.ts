@@ -1,6 +1,3 @@
-// import type { Values } from '../internal/types.js';
-// import type { SortExpression, SortState } from './sort/types.js';
-
 import { ComboHost, ComboRecord, Keys } from '../types.js';
 
 export default class GroupDataOperation<T extends object> {
@@ -21,10 +18,10 @@ export default class GroupDataOperation<T extends object> {
         });
       }
 
-      group.push(Object.assign(item, { header: false }));
+      group.push(item);
       result.set(key, group);
     });
 
-    return [...result.values()].flat() as Array<ComboRecord<T>>;
+    return Array.from(result.values()).flat();
   }
 }

@@ -11,13 +11,19 @@ import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcComboHeaderComponent from './combo-header.js';
+import IgcInputComponent from '../input/input.js';
 import { NavigationController } from './controllers/navigation.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { IgcToggleComponent } from '../toggle/types.js';
 import { Keys, ComboRecord } from './types.js';
 import { DataController } from './controllers/data.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
-defineComponents(IgcComboItemComponent, IgcComboHeaderComponent);
+defineComponents(
+  IgcComboItemComponent,
+  IgcComboHeaderComponent,
+  IgcInputComponent
+);
 
 /**
  * @element igc-combo
@@ -95,6 +101,9 @@ export default class IgcComboComponent<T extends object>
   @state()
   public dataState: Array<ComboRecord<T>> = [];
 
+  @state()
+  protected selected: Set<T> = new Set();
+
   @watch('data')
   protected dataChanged() {
     this.dataState = structuredClone(this.data);
@@ -109,6 +118,21 @@ export default class IgcComboComponent<T extends object>
   protected groupItems() {
     if (!this.groupKey) return;
     this.dataState = this.dataController.group(this.dataState);
+  }
+
+  @watch('selected', { waitUntilFirstUpdate: true })
+  protected updateValue() {
+    const values = Array.from(this.selected.values());
+
+    this.value = values
+      .map((value) => {
+        if (typeof value === 'object') {
+          return value[this.valueKey!];
+        } else {
+          return value;
+        }
+      })
+      .join(', ');
   }
 
   @property({ attribute: false })
@@ -136,6 +160,34 @@ export default class IgcComboComponent<T extends object>
     });
   }
 
+  public select(items?: T[]) {
+    if (!items || items.length === 0) {
+      this.dataState
+        .filter((i) => !i.header)
+        .forEach((item) => {
+          this.selected.add(item);
+        });
+    }
+
+    items?.forEach((item) => {
+      this.selected.add(item);
+    });
+
+    this.requestUpdate('selected');
+  }
+
+  public deselect(items?: T[]) {
+    if (!items || items.length === 0) {
+      this.selected.clear();
+    }
+
+    items?.forEach((item) => {
+      this.selected.delete(item);
+    });
+
+    this.requestUpdate('selected');
+  }
+
   public show() {
     if (this.open) return;
     this.open = true;
@@ -159,8 +211,10 @@ export default class IgcComboComponent<T extends object>
     >`;
 
     const itemTemplate = html`<igc-combo-item
+      @click=${this.itemClickHandler}
       .index=${index}
       .activeNode=${this.navigationController.active}
+      .selected=${this.selected.has(item)}
       >${this.itemTemplate(item)}</igc-combo-item
     >`;
 
@@ -176,13 +230,27 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.navigate(event);
   }
 
+  protected itemClickHandler(event: MouseEvent) {
+    const target = event.target as IgcComboItemComponent;
+    this.toggleItem(target.index);
+  }
+
+  public toggleItem(index: number) {
+    const target = Array.from(this.items).find((i) => i.index === index);
+    const item = this.dataState[index];
+    target!.selected = !target!.selected;
+    target!.selected ? this.select([item]) : this.deselect([item]);
+    this.navigationController.active = target!.index;
+  }
+
   public override render() {
     return html`
-      <div
+      <igc-input
         part="target"
-        style="height: 50px; background: red"
         @click=${this.toggle}
-      ></div>
+        .value=${ifDefined(this.value)}
+        readonly
+      ></igc-input>
       <div
         @keydown=${this.keydownHandler}
         tabindex="0"
