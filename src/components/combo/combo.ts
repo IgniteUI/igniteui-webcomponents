@@ -15,7 +15,7 @@ import IgcInputComponent from '../input/input.js';
 import { NavigationController } from './controllers/navigation.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { IgcToggleComponent } from '../toggle/types.js';
-import { Keys, ComboRecord } from './types.js';
+import { Keys, ComboRecord, Values } from './types.js';
 import { DataController } from './controllers/data.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
@@ -160,30 +160,86 @@ export default class IgcComboComponent<T extends object>
     });
   }
 
-  public select(items?: T[]) {
+  private selectValueKeys(values: Values<T>[]) {
+    if (values.length === 0) return;
+
+    values.forEach((value) => {
+      const item = this.dataState.find((i) => i[this.valueKey!] === value);
+
+      if (item) {
+        this.selected.add(item);
+      }
+    });
+  }
+
+  private deselectValueKeys(values: Values<T>[]) {
+    if (values.length === 0) return;
+
+    values.forEach((value) => {
+      const item = this.dataState.find((i) => i[this.valueKey!] === value);
+
+      if (item) {
+        this.selected.delete(item);
+      }
+    });
+  }
+
+  private selectObjects(items: T[]) {
+    if (items.length === 0) return;
+
+    items.forEach((item) => {
+      this.selected.add(item as ComboRecord<T>);
+    });
+  }
+
+  private deselectObjects(items: T[]) {
+    if (items.length === 0) return;
+
+    items.forEach((item) => {
+      this.selected.delete(item as ComboRecord<T>);
+    });
+  }
+
+  private selectAll() {
+    this.dataState
+      .filter((i) => !i.header)
+      .forEach((item) => {
+        this.selected.add(item);
+      });
+    this.requestUpdate('selected');
+  }
+
+  private deselectAll() {
+    this.selected.clear();
+    this.requestUpdate('selected');
+  }
+
+  public select(items?: T[] | Values<T>[]) {
     if (!items || items.length === 0) {
-      this.dataState
-        .filter((i) => !i.header)
-        .forEach((item) => {
-          this.selected.add(item);
-        });
+      this.selectAll();
+      return;
     }
 
-    items?.forEach((item) => {
-      this.selected.add(item);
-    });
+    if (this.valueKey) {
+      this.selectValueKeys(items as Values<T>[]);
+    } else {
+      this.selectObjects(items as T[]);
+    }
 
     this.requestUpdate('selected');
   }
 
-  public deselect(items?: T[]) {
+  public deselect(items?: T[] | Values<T>[]) {
     if (!items || items.length === 0) {
-      this.selected.clear();
+      this.deselectAll();
+      return;
     }
 
-    items?.forEach((item) => {
-      this.selected.delete(item);
-    });
+    if (this.valueKey) {
+      this.deselectValueKeys(items as Values<T>[]);
+    } else {
+      this.deselectObjects(items as T[]);
+    }
 
     this.requestUpdate('selected');
   }
@@ -237,7 +293,15 @@ export default class IgcComboComponent<T extends object>
 
   public toggleItem(index: number) {
     const item = this.dataState[index];
-    !this.selected.has(item) ? this.select([item]) : this.deselect([item]);
+
+    if (this.valueKey) {
+      !this.selected.has(item)
+        ? this.select([item[this.valueKey]])
+        : this.deselect([item[this.valueKey]]);
+    } else {
+      !this.selected.has(item) ? this.select([item]) : this.deselect([item]);
+    }
+
     this.navigationController.active = index;
   }
 
