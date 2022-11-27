@@ -127,7 +127,7 @@ export default class IgcComboComponent<T extends object>
     this.value = values
       .map((value) => {
         if (typeof value === 'object') {
-          return value[this.valueKey!];
+          return this.displayKey ? value[this.displayKey] : value;
         } else {
           return value;
         }

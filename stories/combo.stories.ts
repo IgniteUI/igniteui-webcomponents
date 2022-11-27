@@ -133,7 +133,7 @@ const Template: Story<ArgTypes, Context> = (
   <igc-combo
     name=${ifDefined(name)}
     dir=${ifDefined(direction)}
-    value-key="name"
+    value-key="id"
     display-key="name"
     group-key="country"
     .data=${cities}
