@@ -46,7 +46,7 @@ export default class IgcComboItemComponent extends LitElement {
   protected override render() {
     return html`
       <section part="prefix">
-        <igc-checkbox ?checked=${this.selected}></igc-checkbox>
+        <igc-checkbox ?checked=${this.selected} tabindex="-1"></igc-checkbox>
       </section>
       <section part="content">
         <slot></slot>
