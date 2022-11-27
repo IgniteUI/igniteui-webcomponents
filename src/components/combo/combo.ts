@@ -241,6 +241,12 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.active = index;
   }
 
+  protected handleClearIconClick(e: MouseEvent) {
+    e.stopPropagation();
+    this.deselect();
+    this.navigationController.active = 0;
+  }
+
   public override render() {
     return html`
       <igc-input
@@ -248,7 +254,32 @@ export default class IgcComboComponent<T extends object>
         @click=${this.toggle}
         .value=${ifDefined(this.value)}
         readonly
-      ></igc-input>
+      >
+        <span
+          slot="suffix"
+          part="clear-icon"
+          style="display: flex"
+          @click=${this.handleClearIconClick}
+          ?hidden=${this.selected.size === 0}
+        >
+          <slot name="clear-icon">
+            <igc-icon
+              name="chip_cancel"
+              collection="internal"
+              aria-hidden="true"
+            ></igc-icon>
+          </slot>
+        </span>
+        <span slot="suffix" part="toggle-icon" style="display: flex">
+          <slot name="toggle-icon">
+            <igc-icon
+              name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+              collection="internal"
+              aria-hidden="true"
+            ></igc-icon>
+          </slot>
+        </span>
+      </igc-input>
       <div
         @keydown=${this.keydownHandler}
         tabindex="0"
