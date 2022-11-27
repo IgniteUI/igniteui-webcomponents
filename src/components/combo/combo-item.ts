@@ -17,9 +17,6 @@ export default class IgcComboItemComponent extends LitElement {
   public static override styles = styles;
 
   @property({ attribute: false })
-  public activeNode!: number;
-
-  @property({ attribute: false })
   public index!: number;
 
   /**
@@ -39,7 +36,6 @@ export default class IgcComboItemComponent extends LitElement {
     this.selected
       ? this.setAttribute('aria-selected', 'true')
       : this.removeAttribute('aria-selected');
-    this.active = this.selected;
   }
 
   public override connectedCallback() {
@@ -48,8 +44,6 @@ export default class IgcComboItemComponent extends LitElement {
   }
 
   protected override render() {
-    this.active = this.activeNode === this.index;
-
     return html`
       <section part="prefix">
         <igc-checkbox ?checked=${this.selected}></igc-checkbox>

@@ -213,7 +213,7 @@ export default class IgcComboComponent<T extends object>
     const itemTemplate = html`<igc-combo-item
       @click=${this.itemClickHandler}
       .index=${index}
-      .activeNode=${this.navigationController.active}
+      .active=${this.navigationController.active === index}
       .selected=${this.selected.has(item)}
       >${this.itemTemplate(item)}</igc-combo-item
     >`;
@@ -236,11 +236,9 @@ export default class IgcComboComponent<T extends object>
   }
 
   public toggleItem(index: number) {
-    const target = Array.from(this.items).find((i) => i.index === index);
     const item = this.dataState[index];
-    target!.selected = !target!.selected;
-    target!.selected ? this.select([item]) : this.deselect([item]);
-    this.navigationController.active = target!.index;
+    !this.selected.has(item) ? this.select([item]) : this.deselect([item]);
+    this.navigationController.active = index;
   }
 
   public override render() {

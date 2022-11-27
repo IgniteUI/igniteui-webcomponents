@@ -73,6 +73,7 @@ export class NavigationController<T extends object>
 
   protected enter() {
     this.space();
+    this.host.open = false;
   }
 
   protected arrowDown() {

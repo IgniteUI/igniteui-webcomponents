@@ -4,3 +4,7 @@
 :host {
     gap: rem(8px);
 }
+
+igc-checkbox {
+    pointer-events: none;
+}
