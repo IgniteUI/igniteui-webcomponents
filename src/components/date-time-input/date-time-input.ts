@@ -11,7 +11,10 @@ import {
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { IgcMaskInputBaseComponent } from '../mask-input/mask-input-base.js';
+import {
+  IgcMaskInputBaseComponent,
+  MaskRange,
+} from '../mask-input/mask-input-base.js';
 import { partNameMap } from '../common/util.js';
 import { IgcInputEventMap } from '../input/input-base.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -396,12 +399,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  protected updateInput(part: string, start: number, finish: number) {
+  protected async updateInput(string: string, range: MaskRange) {
     const { value, end } = this.parser.replace(
       this.maskedValue,
-      part,
-      start,
-      finish
+      string,
+      range.start,
+      range.end
     );
 
     this.maskedValue = value;
@@ -409,11 +412,11 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.updateValue();
     this.requestUpdate();
 
-    if (start !== this.inputFormat.length) {
+    if (range.start !== this.inputFormat.length) {
       this.emitEvent('igcInput', { detail: this.value?.toString() });
     }
-
-    this.updateComplete.then(() => this.input.setSelectionRange(end, end));
+    await this.updateComplete;
+    this.input.setSelectionRange(end, end);
   }
 
   private trySpinValue(
