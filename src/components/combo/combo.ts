@@ -316,6 +316,7 @@ export default class IgcComboComponent<T extends object>
     return html`
       <igc-input
         part="target"
+        exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this.toggle}
         .value=${ifDefined(this.value)}
         readonly
@@ -323,7 +324,6 @@ export default class IgcComboComponent<T extends object>
         <span
           slot="suffix"
           part="clear-icon"
-          style="display: flex"
           @click=${this.handleClearIconClick}
           ?hidden=${this.selected.size === 0}
         >
@@ -335,7 +335,7 @@ export default class IgcComboComponent<T extends object>
             ></igc-icon>
           </slot>
         </span>
-        <span slot="suffix" part="toggle-icon" style="display: flex">
+        <span slot="suffix" part="toggle-icon">
           <slot name="toggle-icon">
             <igc-icon
               name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
@@ -352,7 +352,9 @@ export default class IgcComboComponent<T extends object>
         ${this.toggleController.toggleDirective}
       >
         <div part="filter-input">
-          <igc-input></igc-input>
+          <igc-input
+            exportparts="container: input, input: native-input, label, prefix, suffix"
+          ></igc-input>
         </div>
         <slot name="header"></slot>
         <igc-combo-list

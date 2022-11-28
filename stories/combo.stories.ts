@@ -131,6 +131,7 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => html`
   <igc-combo
+    style="max-width: 500px;"
     name=${ifDefined(name)}
     dir=${ifDefined(direction)}
     value-key="id"
@@ -138,8 +139,8 @@ const Template: Story<ArgTypes, Context> = (
     group-key="country"
     .data=${cities}
   >
-    <div slot="header">This is a custom header</div>
-    <div slot="footer">This is a custom footer</div>
+    <header slot="header">This is a custom header</header>
+    <footer slot="footer">This is a custom footer</footer>
   </igc-combo>
 `;
 
