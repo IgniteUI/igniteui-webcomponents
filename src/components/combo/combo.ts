@@ -6,9 +6,9 @@ import { styles as material } from './themes/light/combo.material.css.js';
 import { styles as fluent } from './themes/light/combo.fluent.css.js';
 import { styles as indigo } from './themes/light/combo.indigo.css.js';
 import { property, query, queryAll, state } from 'lit/decorators.js';
-import { virtualize } from '@lit-labs/virtualizer/virtualize.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcComboListComponent from './combo-list.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcInputComponent from '../input/input.js';
@@ -20,6 +20,7 @@ import { DataController } from './controllers/data.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 defineComponents(
+  IgcComboListComponent,
   IgcComboItemComponent,
   IgcComboHeaderComponent,
   IgcInputComponent
@@ -63,9 +64,6 @@ export default class IgcComboComponent<T extends object>
   protected navigationController = new NavigationController<T>(this);
   protected dataController = new DataController<T>(this);
   protected toggleController!: IgcToggleController;
-
-  private scrollIndex = 0;
-  private scrollPosition = 'center';
 
   @query('[part="target"]')
   private target!: HTMLElement;
@@ -267,7 +265,7 @@ export default class IgcComboComponent<T extends object>
     >`;
 
     const itemTemplate = html`<igc-combo-item
-      @click=${this.itemClickHandler}
+      @click=${this.itemClickHandler.bind(this)}
       .index=${index}
       .active=${this.navigationController.active === index}
       .selected=${this.selected.has(item)}
@@ -277,13 +275,16 @@ export default class IgcComboComponent<T extends object>
     return html`${item?.header ? headerTemplate : itemTemplate}`;
   };
 
-  public scrollToIndex(index: number, position?: string) {
-    this.scrollIndex = index;
-    if (position) this.scrollPosition = position;
-  }
-
   protected keydownHandler(event: KeyboardEvent) {
-    this.navigationController.navigate(event);
+    const target = event
+      .composedPath()
+      .find(
+        (el) => el instanceof IgcComboListComponent
+      ) as IgcComboListComponent;
+
+    if (target) {
+      this.navigationController.navigate(event, target);
+    }
   }
 
   protected itemClickHandler(event: MouseEvent) {
@@ -354,17 +355,12 @@ export default class IgcComboComponent<T extends object>
           <igc-input></igc-input>
         </div>
         <slot name="header"></slot>
-        <div part="list">
-          ${virtualize({
-            scroller: true,
-            items: this.dataState,
-            renderItem: this.itemRenderer,
-            scrollToIndex: {
-              index: this.scrollIndex,
-              position: this.scrollPosition,
-            },
-          })}
-        </div>
+        <igc-combo-list
+          part="list"
+          .items=${this.dataState}
+          .renderItem=${this.itemRenderer}
+        >
+        </igc-combo-list>
         <slot name="footer"></slot>
       </div>
     `;

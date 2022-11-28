@@ -1,4 +1,5 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
+import IgcComboListComponent from '../combo-list.js';
 import IgcComboComponent from '../combo.js';
 import { ComboRecord } from '../types.js';
 
@@ -49,7 +50,6 @@ export class NavigationController<T extends object>
 
   public set active(node: number) {
     this._active = node;
-    this.host.scrollToIndex(node);
     this.host.requestUpdate();
   }
 
@@ -57,12 +57,14 @@ export class NavigationController<T extends object>
     this.host.addController(this);
   }
 
-  protected home() {
+  protected home(container: IgcComboListComponent) {
     this.active = this.firstItem;
+    container.scrollToIndex(this.active, 'center');
   }
 
-  protected end() {
+  protected end(container: IgcComboListComponent) {
     this.active = this.lastItem;
+    container.scrollToIndex(this.active, 'center');
   }
 
   protected space() {
@@ -76,12 +78,14 @@ export class NavigationController<T extends object>
     this.host.open = false;
   }
 
-  protected arrowDown() {
+  protected arrowDown(container: IgcComboListComponent) {
     this.getNextItem(DIRECTION.Down);
+    container.scrollToIndex(this.active, 'center');
   }
 
-  protected arrowUp() {
+  protected arrowUp(container: IgcComboListComponent) {
     this.getNextItem(DIRECTION.Up);
+    container.scrollToIndex(this.active, 'center');
   }
 
   protected getNextItem(direction: DIRECTION) {
@@ -114,10 +118,10 @@ export class NavigationController<T extends object>
     this.active = START_INDEX;
   }
 
-  public navigate(event: KeyboardEvent) {
+  public navigate(event: KeyboardEvent, container: IgcComboListComponent) {
     if (this.handlers.has(event.key)) {
       event.preventDefault();
-      this.handlers.get(event.key)!.call(this);
+      this.handlers.get(event.key)!.call(this, container);
     }
   }
 }
