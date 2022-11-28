@@ -1,6 +1,10 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
-:host {
-    color: red;
+[part='list-wrapper'] {
+    height: fit-content;
+}
+
+[part='list'] {
+    min-height: 300px !important;
 }

@@ -350,6 +350,10 @@ export default class IgcComboComponent<T extends object>
         part="list-wrapper"
         ${this.toggleController.toggleDirective}
       >
+        <div part="filter-input">
+          <igc-input></igc-input>
+        </div>
+        <slot name="header"></slot>
         <div part="list">
           ${virtualize({
             scroller: true,
@@ -361,6 +365,7 @@ export default class IgcComboComponent<T extends object>
             },
           })}
         </div>
+        <slot name="footer"></slot>
       </div>
     `;
   }

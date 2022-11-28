@@ -137,7 +137,10 @@ const Template: Story<ArgTypes, Context> = (
     display-key="name"
     group-key="country"
     .data=${cities}
-  ></igc-combo>
+  >
+    <div slot="header">This is a custom header</div>
+    <div slot="footer">This is a custom footer</div>
+  </igc-combo>
 `;
 
 export const Basic = Template.bind({});
