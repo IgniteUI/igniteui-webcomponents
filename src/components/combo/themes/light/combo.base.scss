@@ -1,10 +1,59 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
+:host {
+    font-family: var(--ig-font-family);
+}
+
+igc-input {
+    cursor: pointer;
+}
+
+igc-input::part(input) {
+    cursor: pointer;
+
+    &::selection {
+        background: transparent;
+    }
+}
+
+:host([disabled]) {
+    ::slotted([slot='helper-text']) {
+        color: color(gray, 400);
+    }
+}
+
+[part='clear-icon'],
+[part='toggle-icon'] {
+    display: flex;
+    cursor: pointer;
+}
+
 [part='list-wrapper'] {
-    height: fit-content;
+    @include border-radius(rem(4px));
+
+    background: color(surface);
+    color: color(gray, 700);
+    padding: rem(8px) 0;
+    box-shadow: elevation(8);
+
+    igc-input {
+        --ig-size: var(--ig-size-small);
+    }
+}
+
+[part='filter-input'] {
+    padding: rem(8px) rem(16px);
+    z-index: 26;
 }
 
 [part='list'] {
-    min-height: 300px !important;
+    $min-width: rem(150px);
+
+    min-width: $min-width;
+    min-height: calc($min-width * 3);
+
+    > * {
+        width: 100%;
+    }
 }
