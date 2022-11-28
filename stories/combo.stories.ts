@@ -139,8 +139,12 @@ const Template: Story<ArgTypes, Context> = (
     group-key="country"
     .data=${cities}
   >
-    <header slot="header">This is a custom header</header>
-    <footer slot="footer">This is a custom footer</footer>
+    <header style="text-align:center; padding:4px 0 8px" slot="header">
+      This is a custom header
+    </header>
+    <footer style="text-align:center; padding:8px 0 4px" slot="footer">
+      This is a custom footer
+    </footer>
   </igc-combo>
 `;
 
