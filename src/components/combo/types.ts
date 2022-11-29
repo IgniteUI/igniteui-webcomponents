@@ -16,7 +16,7 @@ export type ComboHost<T extends object> = ReactiveControllerHost &
 export type GroupingDirection = 'asc' | 'desc';
 
 export interface FilteringOptions<T extends object> {
-  filterKey: Keys<T> | null;
+  filterKey: Keys<T> | undefined;
   caseSensitive?: boolean;
 }
 

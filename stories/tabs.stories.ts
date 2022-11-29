@@ -109,6 +109,7 @@ const Template: Story<ArgTypes, Context> = (
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
     <igc-tab panel="first">
       <igc-icon name="home"></igc-icon>
+      <input />
       <span
         >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua.</span
