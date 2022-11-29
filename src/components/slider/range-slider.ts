@@ -69,6 +69,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
   /**
    * The current value of the lower thumb.
+   * @attr
    */
   @property({ type: Number })
   public get lower() {
@@ -83,6 +84,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
   /**
    * The current value of the upper thumb.
+   * @attr
    */
   @property({ type: Number })
   public get upper() {
@@ -91,12 +93,14 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
   /**
    * The aria label of the lower thumb.
+   * @attr aria-label-lower
    */
   @property({ attribute: 'aria-label-lower' })
   public ariaLabelLower!: string;
 
   /**
    * The aria label of the upper thumb.
+   * @attr aria-label-upper
    */
   @property({ attribute: 'aria-label-upper' })
   public ariaLabelUpper!: string;

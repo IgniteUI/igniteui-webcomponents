@@ -39,7 +39,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    *
    * - `raw` will return the clean user input.
    * - `withFormatting` will return the value with all literals and prompts.
-   *
+   * @attr value-mode
    */
   @property({ attribute: 'value-mode' })
   public valueMode: 'raw' | 'withFormatting' = 'raw';
@@ -48,7 +48,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    * The value of the input.
    *
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
-   *
+   * @attr
    */
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
@@ -65,7 +65,10 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.maskedValue = this.parser.apply(this._value);
   }
 
-  /** The mask pattern to apply on the input. */
+  /**
+   * The mask pattern to apply on the input.
+   * @attr
+   */
   @property()
   public get mask() {
     return this._mask;

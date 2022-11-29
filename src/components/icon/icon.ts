@@ -29,8 +29,6 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   private _collection = 'default';
 
-  @property()
-  @alternateName('iconName')
   public set name(value: string) {
     if (this._name !== value) {
       this._name = value;
@@ -43,6 +41,8 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
    *
    * @attr [name=""]
    */
+  @property()
+  @alternateName('iconName')
   public get name(): string {
     return this._name;
   }
@@ -67,6 +67,7 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   /**
    * Whether to flip the icon. Useful for RTL layouts.
+   * @attr
    */
   @property({ type: Boolean, reflect: true })
   public mirrored = false;

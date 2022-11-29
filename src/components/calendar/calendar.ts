@@ -129,7 +129,8 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   /** The resource strings. */
   @property({ attribute: false })
-  public resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
+  public resourceStrings: IgcCalendarResourceStrings =
+    IgcCalendarResourceStringEN;
 
   @watch('formatOptions')
   @watch('locale')

@@ -60,35 +60,60 @@ export abstract class IgcInputBaseComponent
 
   protected themeController!: ThemeController;
 
-  /** The direction attribute of the control. */
+  /**
+   * The direction attribute of the control.
+   * @attr
+   */
   @property({ reflect: true })
   @blazorSuppress()
   public override dir: Direction = 'auto';
 
-  /** The name attribute of the control. */
+  /**
+   * The name attribute of the control.
+   * @attr
+   */
   @property()
   public name!: string;
 
+  /**
+   * Whether the control will have outlined appearance.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
 
-  /** Makes the control a required field. */
+  /**
+   * Makes the control a required field.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public required = false;
 
-  /** Makes the control a disabled field. */
+  /**
+   * Makes the control a disabled field.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
-  /** Makes the control a readonly field. */
+  /**
+   * Makes the control a readonly field.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public readonly = false;
 
-  /** The placeholder attribute of the control. */
+  /**
+   * The placeholder attribute of the control.
+   * @attr
+   */
   @property({ type: String })
   public placeholder!: string;
 
-  /** The label for the control. */
+  /**
+   * The label for the control.
+   * @attr
+   */
   @property({ type: String })
   public label!: string;
 
@@ -136,11 +161,6 @@ export abstract class IgcInputBaseComponent
   protected handleBlur() {
     this.emitEvent('igcBlur');
   }
-
-  // protected handleChange() {
-  //   this.value = this.input.value;
-  //   this.emitEvent('igcChange', { detail: this.value });
-  // }
 
   /** Sets the text selection range of the control */
   public setSelectionRange(

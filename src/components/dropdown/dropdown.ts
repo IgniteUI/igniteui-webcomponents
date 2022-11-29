@@ -111,44 +111,67 @@ export default class IgcDropdownComponent
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-group' })
   protected groups!: Array<IgcDropdownGroupComponent>;
 
-  /** Whether the dropdown should be kept open on selection. */
+  /**
+   * Whether the dropdown should be kept open on selection.
+   * @attr keep-open-on-select
+   */
   @property({ type: Boolean, attribute: 'keep-open-on-select' })
   public keepOpenOnSelect = false;
 
-  /** Sets the open state of the component. */
+  /**
+   * Sets the open state of the component.
+   * @attr
+   */
   @property({ type: Boolean })
   public open = false;
 
   /** The preferred placement of the component around the target element.
    * @type {"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"}
+   * @attr
    */
   @property()
   public placement: IgcPlacement = 'bottom-start';
 
-  /** Sets the component's positioning strategy. */
+  /**
+   * Sets the component's positioning strategy.
+   * @attr position-strategy
+   */
   @property({ attribute: 'position-strategy' })
   public positionStrategy: 'absolute' | 'fixed' = 'absolute';
 
-  /** Determines the behavior of the component during scrolling the container. */
+  /**
+   * Determines the behavior of the component during scrolling the container.
+   * @attr scroll-strategy
+   */
   @property({ attribute: 'scroll-strategy' })
   public scrollStrategy: 'scroll' | 'block' | 'close' = 'scroll';
 
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
    * When true, once enough space is detected on its preferred side, it will flip back.
+   * @attr
    */
   @property({ type: Boolean })
   public flip = false;
 
-  /** The distance from the target element. */
+  /**
+   * The distance from the target element.
+   * @attr
+   */
   @property({ type: Number })
   public distance = 0;
 
-  /** Whether the component should be kept open on clicking outside of it. */
+  /**
+   * Whether the component should be kept open on clicking outside of it.
+   * @attr keep-open-on-outside-click
+   */
   @property({ type: Boolean, attribute: 'keep-open-on-outside-click' })
   public keepOpenOnOutsideClick = false;
 
-  /** Whether the dropdown's width should be the same as the target's one. */
+  /**
+   * Whether the dropdown's width should be the same as the target's one.
+   * @attr same-width
+   */
   @property({ type: Boolean, attribute: 'same-width' })
   public sameWidth = false;
 

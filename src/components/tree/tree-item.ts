@@ -99,33 +99,52 @@ export default class IgcTreeItemComponent extends LitElement {
   @blazorSuppress()
   public indeterminate = false;
 
-  /** The tree item label. */
+  /**
+   * The tree item label.
+   * @attr
+   */
   @property()
   public label = '';
 
-  /** The tree item expansion state. */
+  /**
+   * The tree item expansion state.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public expanded = false;
 
-  /** Marks the item as the tree's active item. */
+  /**
+   * Marks the item as the tree's active item.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public active = false;
 
-  /** Get/Set whether the tree item is disabled. Disabled items are ignored for user interactions. */
+  /**
+   * Get/Set whether the tree item is disabled. Disabled items are ignored for user interactions.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
-  /** The tree item selection state. */
+  /**
+   * The tree item selection state.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public selected = false;
 
-  /** To be used for load-on-demand scenarios in order to specify whether the item is loading data. */
+  /**
+   * To be used for load-on-demand scenarios in order to specify whether the item is loading data.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public loading = false;
 
   /**
    * The value entry that the tree item is visualizing. Required for searching through items.
    * @type any
+   * @attr
    */
   @property({ attribute: true })
   public value: any = undefined;

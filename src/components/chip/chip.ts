@@ -44,24 +44,39 @@ export default class IgcChipComponent extends SizableMixin(
 
   public static styles = styles;
 
-  /** Sets the disabled state for the chip. */
+  /**
+   * Sets the disabled state for the chip.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  /** 	Defines if the chip is removable or not. */
+  /**
+   * Defines if the chip is removable or not.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public removable = false;
 
-  /**	Defines if the chip is selectable or not. */
+  /**
+   * Defines if the chip is selectable or not.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public selectable = false;
 
-  /**	Defines if the chip is selected or not. */
+  /**
+   * Defines if the chip is selected or not.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   @blazorTwoWayBind('igcSelect', 'detail')
   public selected = false;
 
-  /** A property that sets the color variant of the chip component. */
+  /**
+   * A property that sets the color variant of the chip component.
+   * @attr
+   */
   @property({ reflect: true })
   public variant!: 'primary' | 'success' | 'danger' | 'warning' | 'info';
 
