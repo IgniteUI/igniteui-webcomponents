@@ -2,6 +2,7 @@ import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineAllComponents } from '../src/index.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
 // import { faker } from '@faker-js/faker';
 
 defineAllComponents();
@@ -20,6 +21,54 @@ const metadata = {
       type: 'string',
       description: 'The name attribute of the control.',
       control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled attribute of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    required: {
+      type: 'boolean',
+      description: 'The required attribute of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'The invalid attribute of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    outlined: {
+      type: 'boolean',
+      description: 'The outlined attribute of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    autofocus: {
+      type: 'boolean',
+      description: 'The autofocus attribute of the control.',
+      control: 'boolean',
+    },
+    label: {
+      type: 'string',
+      description: 'The label attribute of the control.',
+      control: 'text',
+    },
+    placeholder: {
+      type: 'string',
+      description: 'The placeholder attribute of the control.',
+      control: 'text',
+    },
+    dir: {
+      type: '"ltr" | "rtl" | "auto"',
+      description: 'The direction attribute of the control.',
+      options: ['ltr', 'rtl', 'auto'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'auto',
     },
     caseSensitiveIcon: {
       type: 'boolean',
@@ -80,6 +129,14 @@ export default metadata;
 interface ArgTypes {
   value: string | undefined;
   name: string;
+  disabled: boolean;
+  required: boolean;
+  invalid: boolean;
+  outlined: boolean;
+  autofocus: boolean;
+  label: string;
+  placeholder: string;
+  dir: 'ltr' | 'rtl' | 'auto';
   caseSensitiveIcon: boolean;
   disableFiltering: boolean;
   scrollStrategy: 'scroll' | 'block' | 'close' | undefined;
@@ -197,13 +254,32 @@ const cities = [
 
 // const simpleCities = ['Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true];
 
+registerIconFromText(
+  'location',
+  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
+);
+
 const Template: Story<ArgTypes, Context> = (
-  { name, disableFiltering, caseSensitiveIcon }: ArgTypes,
+  {
+    name,
+    disableFiltering,
+    caseSensitiveIcon,
+    label = 'Location(s)',
+    placeholder = 'Cities of interest',
+    open = false,
+    disabled = false,
+    outlined = false,
+    invalid = false,
+    required = false,
+    autofocus = false,
+  }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-combo
     .data=${cities}
+    label=${ifDefined(label)}
     name=${ifDefined(name)}
+    placeholder=${ifDefined(placeholder)}
     dir=${ifDefined(direction)}
     value-key="id"
     display-key="name"
@@ -211,13 +287,16 @@ const Template: Story<ArgTypes, Context> = (
     ?case-sensitive-icon=${ifDefined(caseSensitiveIcon)}
     ?disable-filtering=${ifDefined(disableFiltering)}
     group-sorting="asc"
+    ?open=${open}
+    ?autofocus=${autofocus}
+    ?outlined=${outlined}
+    ?required=${required}
+    ?disabled=${disabled}
+    ?invalid=${invalid}
+    .dir=${direction}
   >
-    <header style="text-align:center; padding:4px 0 8px" slot="header">
-      This is a custom header
-    </header>
-    <footer style="text-align:center; padding:8px 0 4px" slot="footer">
-      This is a custom footer
-    </footer>
+    <igc-icon slot="prefix" name="location"></igc-icon>
+    <span slot="helper-text">Sample helper text.</span>
   </igc-combo>
 `;
 

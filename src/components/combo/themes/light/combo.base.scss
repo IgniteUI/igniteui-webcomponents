@@ -38,8 +38,9 @@ igc-input::part(input) {
 
     background: color(surface);
     color: color(gray, 700);
-    padding: rem(8px) 0;
     box-shadow: elevation(8);
+    overflow: hidden;
+    outline-style: none;
 
     igc-input {
         --ig-size: var(--ig-size-small);
@@ -77,7 +78,8 @@ igc-input::part(input) {
     $min-width: rem(150px);
 
     min-width: $min-width;
-    min-height: calc($min-width * 3);
+    min-height: rem(200px) !important;
+    outline-style: none;
 
     > * {
         width: 100%;

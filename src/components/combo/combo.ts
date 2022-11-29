@@ -5,20 +5,26 @@ import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
 import { styles as material } from './themes/light/combo.material.css.js';
 import { styles as fluent } from './themes/light/combo.fluent.css.js';
 import { styles as indigo } from './themes/light/combo.indigo.css.js';
-import { property, query, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  state,
+} from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcComboListComponent from './combo-list.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcComboHeaderComponent from './combo-header.js';
 import IgcInputComponent from '../input/input.js';
+import IgcIconComponent from '../icon/icon.js';
 import { NavigationController } from './controllers/navigation.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { IgcToggleComponent } from '../toggle/types.js';
 import {
   Keys,
-  ComboRecord,
   Values,
+  ComboRecord,
   GroupingDirection,
   FilteringOptions,
 } from './types.js';
@@ -28,6 +34,7 @@ import { partNameMap } from '../common/util.js';
 import { filteringOptionsConverter } from './utils/converters.js';
 
 defineComponents(
+  IgcIconComponent,
   IgcComboListComponent,
   IgcComboItemComponent,
   IgcComboHeaderComponent,
@@ -76,6 +83,15 @@ export default class IgcComboComponent<T extends object>
   @query('[part="target"]')
   private target!: HTMLElement;
 
+  @queryAssignedElements({ slot: 'helper-text' })
+  protected helperText!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'suffix' })
+  protected inputSuffix!: Array<HTMLElement>;
+
+  @queryAssignedElements({ slot: 'prefix' })
+  protected inputPrefix!: Array<HTMLElement>;
+
   /** The data source used to build the list of options. */
   @property({ attribute: false })
   public data: Array<T> = [];
@@ -87,6 +103,38 @@ export default class IgcComboComponent<T extends object>
   /** The name attribute of the control. */
   @property()
   public name!: string;
+
+  /** The disabled attribute of the control. */
+  @property({ reflect: true, type: Boolean })
+  public disabled = false;
+
+  /** The required attribute of the control. */
+  @property({ reflect: true, type: Boolean })
+  public required = false;
+
+  /** The invalid attribute of the control. */
+  @property({ reflect: true, type: Boolean })
+  public invalid = false;
+
+  /** The outlined attribute of the control. */
+  @property({ reflect: true, type: Boolean })
+  public outlined = false;
+
+  /** The autofocus attribute of the control. */
+  @property({ type: Boolean })
+  public override autofocus!: boolean;
+
+  /** The label attribute of the control. */
+  @property({ type: String })
+  public label!: string;
+
+  /** The placeholder attribute of the control. */
+  @property({ type: String })
+  public placeholder!: string;
+
+  /** The direction attribute of the control. */
+  @property({ reflect: true })
+  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
   /** Sets the open state of the component. */
   @property({ type: Boolean })
@@ -191,6 +239,12 @@ export default class IgcComboComponent<T extends object>
       target: this.target,
       closeCallback: () => {},
     });
+  }
+
+  protected override firstUpdated() {
+    if (this.autofocus) {
+      this.target.focus();
+    }
   }
 
   private selectValueKeys(values: Values<T>[]) {
@@ -352,19 +406,36 @@ export default class IgcComboComponent<T extends object>
 
   protected toggleCaseSensitivity() {
     this.filteringOptions.caseSensitive = !this.filteringOptions.caseSensitive;
-    this.requestUpdate();
+    this.requestUpdate('pipeline');
+  }
+
+  protected get hasPrefixes() {
+    return this.inputPrefix.length > 0;
+  }
+
+  protected get hasSuffixes() {
+    return this.inputSuffix.length > 0;
   }
 
   public override render() {
     return html`
       <igc-input
-        outlined
         part="target"
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this.toggle}
         value=${ifDefined(this.value)}
+        placeholder=${ifDefined(this.placeholder)}
+        label=${ifDefined(this.label)}
+        dir=${this.dir}
+        .disabled="${this.disabled}"
+        .required=${this.required}
+        .invalid=${this.invalid}
+        .outlined=${this.outlined}
         readonly
       >
+        <span slot=${this.hasPrefixes && 'prefix'}>
+          <slot name="prefix"></slot>
+        </span>
         <span
           slot="suffix"
           part="clear-icon"
@@ -378,6 +449,9 @@ export default class IgcComboComponent<T extends object>
               aria-hidden="true"
             ></igc-icon>
           </slot>
+        </span>
+        <span slot=${this.hasSuffixes && 'suffix'}>
+          <slot name="suffix"></slot>
         </span>
         <span slot="suffix" part="toggle-icon">
           <slot name="toggle-icon">
@@ -401,6 +475,7 @@ export default class IgcComboComponent<T extends object>
             exportparts="container: input, input: native-input, label, prefix, suffix"
             @igcInput=${this.handleSearchInput}
             @keydown=${(e: KeyboardEvent) => e.stopPropagation()}
+            dir=${this.dir}
           >
             <igc-icon
               slot=${this.caseSensitiveIcon && 'suffix'}
@@ -422,6 +497,13 @@ export default class IgcComboComponent<T extends object>
         >
         </igc-combo-list>
         <slot name="footer"></slot>
+      </div>
+      <div
+        id="helper-text"
+        part="helper-text"
+        ?hidden="${this.helperText.length === 0}"
+      >
+        <slot name="helper-text"></slot>
       </div>
     `;
   }
