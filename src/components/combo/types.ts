@@ -12,3 +12,10 @@ export type ComboRecord<T extends object> = T & ComboRecordMeta;
 
 export type ComboHost<T extends object> = ReactiveControllerHost &
   IgcComboComponent<T>;
+
+export type GroupingDirection = 'asc' | 'desc';
+
+export interface FilteringOptions<T extends object> {
+  filterKey: Keys<T> | null;
+  caseSensitive?: boolean;
+}

@@ -69,7 +69,7 @@ export class NavigationController<T extends object>
 
   protected space() {
     if (this.active !== -1) {
-      this.host.toggleItem(this.active);
+      this.host.toggleSelect(this.active);
     }
   }
 

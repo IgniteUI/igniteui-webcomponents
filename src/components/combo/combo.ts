@@ -5,7 +5,7 @@ import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
 import { styles as material } from './themes/light/combo.material.css.js';
 import { styles as fluent } from './themes/light/combo.fluent.css.js';
 import { styles as indigo } from './themes/light/combo.indigo.css.js';
-import { property, query, queryAll, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcComboListComponent from './combo-list.js';
@@ -15,9 +15,16 @@ import IgcInputComponent from '../input/input.js';
 import { NavigationController } from './controllers/navigation.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { IgcToggleComponent } from '../toggle/types.js';
-import { Keys, ComboRecord, Values } from './types.js';
+import {
+  Keys,
+  ComboRecord,
+  Values,
+  GroupingDirection,
+  FilteringOptions,
+} from './types.js';
 import { DataController } from './controllers/data.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { partNameMap } from '../common/util.js';
 
 defineComponents(
   IgcComboListComponent,
@@ -68,33 +75,48 @@ export default class IgcComboComponent<T extends object>
   @query('[part="target"]')
   private target!: HTMLElement;
 
-  @queryAll('igc-combo-item')
-  public items!: NodeListOf<IgcComboItemComponent>;
-
-  /** Sets the open state of the component. */
-  @property({ type: Boolean })
-  public open = false;
-
-  @property({ attribute: 'value-key' })
-  public valueKey?: Keys<T>;
-
-  @property({ attribute: 'display-key' })
-  public displayKey?: Keys<T> = this.valueKey;
-
-  @property({ attribute: 'group-key' })
-  public groupKey?: Keys<T> = this.displayKey;
+  /** The data source used to build the list of options. */
+  @property({ attribute: false })
+  public data: Array<T> = [];
 
   /** The value attribute of the control. */
-  @property({ reflect: false, type: String })
+  @property({ type: String, reflect: false })
   public value?: string | undefined;
 
   /** The name attribute of the control. */
   @property()
   public name!: string;
 
-  /** The data source used to build the list of options. */
-  @property({ attribute: false })
-  public data: Array<T> = [];
+  /** Sets the open state of the component. */
+  @property({ type: Boolean })
+  public open = false;
+
+  @property({ attribute: 'value-key', reflect: false })
+  public valueKey?: Keys<T>;
+
+  @property({ attribute: 'display-key', reflect: false })
+  public displayKey?: Keys<T> = this.valueKey;
+
+  @property({ attribute: 'group-key', reflect: false })
+  public groupKey?: Keys<T> = this.displayKey;
+
+  @property({ attribute: 'group-sorting', reflect: false })
+  public groupSorting?: GroupingDirection = 'asc';
+
+  @property({ attribute: 'filtering-options', reflect: false })
+  public filteringOptions: FilteringOptions<T> = {
+    filterKey: this.displayKey ?? null,
+    caseSensitive: false,
+  };
+
+  @property({ type: Boolean, attribute: 'case-sensitive-icon', reflect: false })
+  public caseSensitiveIcon = false;
+
+  @property({ type: Boolean, attribute: 'disable-filtering', reflect: false })
+  public disableFiltering = false;
+
+  @state()
+  public searchTerm = '';
 
   @state()
   public dataState: Array<ComboRecord<T>> = [];
@@ -113,9 +135,10 @@ export default class IgcComboComponent<T extends object>
   }
 
   @watch('groupKey')
-  protected groupItems() {
-    if (!this.groupKey) return;
-    this.dataState = this.dataController.group(this.dataState);
+  @watch('searchTerm')
+  protected pipeline() {
+    this.dataState = this.dataController.apply([...this.data]);
+    this.navigationController.active = 0;
   }
 
   @watch('selected', { waitUntilFirstUpdate: true })
@@ -242,6 +265,10 @@ export default class IgcComboComponent<T extends object>
     this.requestUpdate('selected');
   }
 
+  protected handleSearchInput(e: CustomEvent) {
+    this.searchTerm = e.detail;
+  }
+
   public show() {
     if (this.open) return;
     this.open = true;
@@ -289,10 +316,10 @@ export default class IgcComboComponent<T extends object>
 
   protected itemClickHandler(event: MouseEvent) {
     const target = event.target as IgcComboItemComponent;
-    this.toggleItem(target.index);
+    this.toggleSelect(target.index);
   }
 
-  public toggleItem(index: number) {
+  public toggleSelect(index: number) {
     const item = this.dataState[index];
 
     if (this.valueKey) {
@@ -310,6 +337,10 @@ export default class IgcComboComponent<T extends object>
     e.stopPropagation();
     this.deselect();
     this.navigationController.active = 0;
+  }
+
+  protected toggleCaseSensitivity() {
+    this.filteringOptions.caseSensitive = !this.filteringOptions.caseSensitive;
   }
 
   public override render() {
@@ -351,10 +382,23 @@ export default class IgcComboComponent<T extends object>
         part="list-wrapper"
         ${this.toggleController.toggleDirective}
       >
-        <div part="filter-input">
+        <div part="filter-input" ?hidden=${this.disableFiltering}>
           <igc-input
             exportparts="container: input, input: native-input, label, prefix, suffix"
-          ></igc-input>
+            @igcInput=${this.handleSearchInput}
+            @keydown=${(e: KeyboardEvent) => e.stopPropagation()}
+          >
+            <igc-icon
+              slot=${this.caseSensitiveIcon && 'suffix'}
+              name="star"
+              collection="internal"
+              part=${partNameMap({
+                'case-icon': true,
+                active: this.filteringOptions.caseSensitive ?? false,
+              })}
+              @click=${this.toggleCaseSensitivity}
+            ></igc-icon>
+          </igc-input>
         </div>
         <slot name="header"></slot>
         <igc-combo-list

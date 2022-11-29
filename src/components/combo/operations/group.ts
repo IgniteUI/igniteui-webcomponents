@@ -1,8 +1,49 @@
-import { ComboHost, ComboRecord, Keys } from '../types.js';
+import {
+  ComboHost,
+  ComboRecord,
+  GroupingDirection,
+  Keys,
+  Values,
+} from '../types.js';
 
 export default class GroupDataOperation<T extends object> {
+  protected orderBy = new Map(
+    Object.entries({
+      asc: 1,
+      desc: -1,
+    })
+  );
+
+  protected resolveValue(record: T, key: Keys<T>) {
+    return record[key];
+  }
+
+  protected compareValues(first: Values<T>, second: Values<T>) {
+    if (typeof first === 'string' && typeof second === 'string') {
+      return first.localeCompare(second);
+    }
+    return first > second ? 1 : first < second ? -1 : 0;
+  }
+
+  protected compareObjects(
+    first: T,
+    second: T,
+    key: Keys<T>,
+    direction: GroupingDirection
+  ) {
+    const [a, b] = [
+      this.resolveValue(first, key),
+      this.resolveValue(second, key),
+    ];
+
+    return this.orderBy.get(direction)! * this.compareValues(a, b);
+  }
+
   public apply(data: T[], host: ComboHost<T>) {
-    const { groupKey, valueKey, displayKey } = host;
+    const { groupKey, valueKey, displayKey, groupSorting } = host;
+
+    if (!groupKey) return data;
+
     const result = new Map();
 
     data.forEach((item: T) => {
@@ -19,6 +60,14 @@ export default class GroupDataOperation<T extends object> {
       }
 
       group.push(item);
+
+      group.sort((a: ComboRecord<T>, b: ComboRecord<T>) => {
+        if (!a.header && !b.header) {
+          return this.compareObjects(a, b, displayKey!, groupSorting!);
+        }
+        return 1;
+      });
+
       result.set(key, group);
     });
 
