@@ -1,11 +1,11 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
-import { watch } from '../common/decorators';
+import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
-import { themes } from '../../theming';
-import { styles } from './themes/step/light/step.base.css';
-import { styles as bootstrap } from './themes/step/light/step.bootstrap.css';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './themes/step/light/step.base.css.js';
+import { styles as bootstrap } from './themes/step/light/step.bootstrap.css.js';
 import { styles as indigo } from './themes/step/light/step.indigo.css.js';
 import { styles as fluent } from './themes/step/light/step.fluent.css.js';
 import { styles as material } from './themes/step/light/step.material.css.js';
