@@ -241,12 +241,6 @@ export default class IgcComboComponent<T extends object>
     });
   }
 
-  protected override firstUpdated() {
-    if (this.autofocus) {
-      this.target.focus();
-    }
-  }
-
   private selectValueKeys(values: Values<T>[]) {
     if (values.length === 0) return;
 
@@ -431,6 +425,7 @@ export default class IgcComboComponent<T extends object>
         .required=${this.required}
         .invalid=${this.invalid}
         .outlined=${this.outlined}
+        .autofocus=${this.autofocus}
         readonly
       >
         <span slot=${this.hasPrefixes && 'prefix'}>
