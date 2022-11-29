@@ -82,3 +82,11 @@ igc-input::part(input) {
         width: 100%;
     }
 }
+
+[part='case-icon'] {
+    color: color(gray, 600);
+}
+
+[part='case-icon active'] {
+    color: color(gray, 900);
+}

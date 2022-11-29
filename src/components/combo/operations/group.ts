@@ -1,10 +1,5 @@
-import {
-  ComboHost,
-  ComboRecord,
-  GroupingDirection,
-  Keys,
-  Values,
-} from '../types.js';
+import { DataController } from '../controllers/data.js';
+import { ComboRecord, GroupingDirection, Keys, Values } from '../types.js';
 
 export default class GroupDataOperation<T extends object> {
   protected orderBy = new Map(
@@ -39,8 +34,10 @@ export default class GroupDataOperation<T extends object> {
     return this.orderBy.get(direction)! * this.compareValues(a, b);
   }
 
-  public apply(data: T[], host: ComboHost<T>) {
-    const { groupKey, valueKey, displayKey, groupSorting } = host;
+  public apply(data: T[], controller: DataController<T>) {
+    const {
+      groupingOptions: { groupKey, valueKey, displayKey, direction },
+    } = controller;
 
     if (!groupKey) return data;
 
@@ -63,7 +60,7 @@ export default class GroupDataOperation<T extends object> {
 
       group.sort((a: ComboRecord<T>, b: ComboRecord<T>) => {
         if (!a.header && !b.header) {
-          return this.compareObjects(a, b, displayKey!, groupSorting!);
+          return this.compareObjects(a, b, displayKey!, direction!);
         }
         return 1;
       });

@@ -19,3 +19,10 @@ export interface FilteringOptions<T extends object> {
   filterKey: Keys<T> | null;
   caseSensitive?: boolean;
 }
+
+export interface GroupingOptions<T extends object> {
+  groupKey?: Keys<T>;
+  valueKey?: Keys<T>;
+  displayKey?: Keys<T>;
+  direction: GroupingDirection;
+}
