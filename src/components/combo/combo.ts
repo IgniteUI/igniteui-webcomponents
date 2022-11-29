@@ -110,7 +110,7 @@ export default class IgcComboComponent<T extends object>
     converter: filteringOptionsConverter,
   })
   public filteringOptions: FilteringOptions<T> = {
-    filterKey: this.displayKey ?? null,
+    filterKey: this.displayKey,
     caseSensitive: false,
   };
 
