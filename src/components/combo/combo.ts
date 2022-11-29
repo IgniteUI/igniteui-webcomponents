@@ -140,6 +140,12 @@ export default class IgcComboComponent<T extends object>
     this.displayKey = this.displayKey ?? this.valueKey;
   }
 
+  @watch('displayKey')
+  protected updateFilterKey() {
+    this.filteringOptions.filterKey =
+      this.filteringOptions.filterKey ?? this.displayKey;
+  }
+
   @watch('groupKey')
   @watch('pipeline')
   protected pipeline() {
@@ -163,7 +169,7 @@ export default class IgcComboComponent<T extends object>
   }
 
   @property({ attribute: false })
-  public itemTemplate: (item: T) => TemplateResult = (item) => {
+  public itemTemplate: (item: ComboRecord<T>) => TemplateResult = (item) => {
     if (this.displayKey) {
       return html`${item[this.displayKey]}`;
     }
@@ -173,7 +179,7 @@ export default class IgcComboComponent<T extends object>
 
   @property({ attribute: false })
   public headerItemTemplate: (item: ComboRecord<T>) => TemplateResult = (
-    item
+    item: ComboRecord<T>
   ) => {
     return html`${item[this.groupKey!]}`;
   };
@@ -289,12 +295,11 @@ export default class IgcComboComponent<T extends object>
     this.open ? this.hide() : this.show();
   }
 
-  protected itemRenderer = (
-    item: ComboRecord<T>,
-    index: number
-  ): TemplateResult => {
+  protected itemRenderer = (item: T, index: number): TemplateResult => {
+    const record = item as ComboRecord<T>;
+
     const headerTemplate = html`<igc-combo-header
-      >${this.headerItemTemplate(item)}</igc-combo-header
+      >${this.headerItemTemplate(record)}</igc-combo-header
     >`;
 
     const itemTemplate = html`<igc-combo-item
@@ -302,10 +307,10 @@ export default class IgcComboComponent<T extends object>
       .index=${index}
       .active=${this.navigationController.active === index}
       .selected=${this.selected.has(item)}
-      >${this.itemTemplate(item)}</igc-combo-item
+      >${this.itemTemplate(record)}</igc-combo-item
     >`;
 
-    return html`${item?.header ? headerTemplate : itemTemplate}`;
+    return html`${record.header ? headerTemplate : itemTemplate}`;
   };
 
   protected keydownHandler(event: KeyboardEvent) {
@@ -357,7 +362,7 @@ export default class IgcComboComponent<T extends object>
         part="target"
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this.toggle}
-        .value=${ifDefined(this.value)}
+        value=${ifDefined(this.value)}
         readonly
       >
         <span

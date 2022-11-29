@@ -208,7 +208,6 @@ const Template: Story<ArgTypes, Context> = (
     value-key="id"
     display-key="name"
     group-key="country"
-    filtering-options="{'filterKey': 'name', 'caseSensitive': false}"
     ?case-sensitive-icon=${ifDefined(caseSensitiveIcon)}
     ?disable-filtering=${ifDefined(disableFiltering)}
     group-sorting="asc"

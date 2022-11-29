@@ -43,6 +43,7 @@ igc-input::part(input) {
 
     igc-input {
         --ig-size: var(--ig-size-small);
+        --ig-theme: material;
     }
 
     igc-input::part(container) {
