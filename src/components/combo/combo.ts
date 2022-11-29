@@ -80,9 +80,6 @@ export default class IgcComboComponent<T extends object>
   protected dataController = new DataController<T>(this);
   protected toggleController!: IgcToggleController;
 
-  @query('[part="target"]')
-  private target!: HTMLElement;
-
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
 
@@ -91,6 +88,12 @@ export default class IgcComboComponent<T extends object>
 
   @queryAssignedElements({ slot: 'prefix' })
   protected inputPrefix!: Array<HTMLElement>;
+
+  @query('[part="search-input"]')
+  private input!: IgcInputComponent;
+
+  @query('[part="target"]')
+  private target!: IgcInputComponent;
 
   /** The data source used to build the list of options. */
   @property({ attribute: false })
@@ -329,9 +332,12 @@ export default class IgcComboComponent<T extends object>
     this.dataController.searchTerm = e.detail;
   }
 
-  public show() {
+  public async show() {
     if (this.open) return;
     this.open = true;
+
+    await this.updateComplete;
+    this.input.focus();
   }
 
   public hide() {
@@ -376,6 +382,7 @@ export default class IgcComboComponent<T extends object>
   protected itemClickHandler(event: MouseEvent) {
     const target = event.target as IgcComboItemComponent;
     this.toggleSelect(target.index);
+    this.input.focus();
   }
 
   public toggleSelect(index: number) {
@@ -421,6 +428,7 @@ export default class IgcComboComponent<T extends object>
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}
         dir=${this.dir}
+        @keydown=${(e: KeyboardEvent) => e.stopPropagation()}
         .disabled="${this.disabled}"
         .required=${this.required}
         .invalid=${this.invalid}
@@ -460,12 +468,12 @@ export default class IgcComboComponent<T extends object>
       </igc-input>
       <div
         @keydown=${this.keydownHandler}
-        tabindex="0"
         part="list-wrapper"
         ${this.toggleController.toggleDirective}
       >
         <div part="filter-input" ?hidden=${this.disableFiltering}>
           <igc-input
+            part="search-input"
             placeholder="Search"
             exportparts="container: input, input: native-input, label, prefix, suffix"
             @igcInput=${this.handleSearchInput}
@@ -489,8 +497,12 @@ export default class IgcComboComponent<T extends object>
           part="list"
           .items=${this.dataState}
           .renderItem=${this.itemRenderer}
+          ?hidden=${this.dataState.length === 0}
         >
         </igc-combo-list>
+        <slot name="empty" ?hidden=${this.dataState.length > 0}>
+          <div part="empty">The list is empty</div>
+        </slot>
         <slot name="footer"></slot>
       </div>
       <div
