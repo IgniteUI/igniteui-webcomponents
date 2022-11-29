@@ -353,6 +353,7 @@ export default class IgcComboComponent<T extends object>
   public override render() {
     return html`
       <igc-input
+        outlined
         part="target"
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this.toggle}
@@ -391,6 +392,7 @@ export default class IgcComboComponent<T extends object>
       >
         <div part="filter-input" ?hidden=${this.disableFiltering}>
           <igc-input
+            placeholder="Search"
             exportparts="container: input, input: native-input, label, prefix, suffix"
             @igcInput=${this.handleSearchInput}
             @keydown=${(e: KeyboardEvent) => e.stopPropagation()}
