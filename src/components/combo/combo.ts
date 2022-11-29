@@ -25,6 +25,7 @@ import {
 import { DataController } from './controllers/data.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
+import { filteringOptionsConverter } from './utils/converters.js';
 
 defineComponents(
   IgcComboListComponent,
@@ -101,9 +102,13 @@ export default class IgcComboComponent<T extends object>
   public groupKey?: Keys<T> = this.displayKey;
 
   @property({ attribute: 'group-sorting', reflect: false })
-  public groupSorting?: GroupingDirection = 'asc';
+  public groupSorting: GroupingDirection = 'asc';
 
-  @property({ attribute: 'filtering-options', reflect: false })
+  @property({
+    attribute: 'filtering-options',
+    reflect: false,
+    converter: filteringOptionsConverter,
+  })
   public filteringOptions: FilteringOptions<T> = {
     filterKey: this.displayKey ?? null,
     caseSensitive: false,
@@ -116,9 +121,6 @@ export default class IgcComboComponent<T extends object>
   public disableFiltering = false;
 
   @state()
-  public searchTerm = '';
-
-  @state()
   public dataState: Array<ComboRecord<T>> = [];
 
   @state()
@@ -127,6 +129,10 @@ export default class IgcComboComponent<T extends object>
   @watch('data')
   protected dataChanged() {
     this.dataState = structuredClone(this.data);
+
+    if (this.hasUpdated) {
+      this.pipeline();
+    }
   }
 
   @watch('valueKey')
@@ -135,7 +141,7 @@ export default class IgcComboComponent<T extends object>
   }
 
   @watch('groupKey')
-  @watch('searchTerm')
+  @watch('pipeline')
   protected pipeline() {
     this.dataState = this.dataController.apply([...this.data]);
     this.navigationController.active = 0;
@@ -266,7 +272,7 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected handleSearchInput(e: CustomEvent) {
-    this.searchTerm = e.detail;
+    this.dataController.searchTerm = e.detail;
   }
 
   public show() {
@@ -341,6 +347,7 @@ export default class IgcComboComponent<T extends object>
 
   protected toggleCaseSensitivity() {
     this.filteringOptions.caseSensitive = !this.filteringOptions.caseSensitive;
+    this.requestUpdate();
   }
 
   public override render() {
@@ -390,7 +397,7 @@ export default class IgcComboComponent<T extends object>
           >
             <igc-icon
               slot=${this.caseSensitiveIcon && 'suffix'}
-              name="star"
+              name="case_sensitive"
               collection="internal"
               part=${partNameMap({
                 'case-icon': true,

@@ -1,9 +1,11 @@
-import { ComboHost } from '../types.js';
+import { DataController } from '../controllers/data';
 
 export default class FilterDataOperation<T extends object> {
-  public apply(data: T[], host: ComboHost<T>) {
-    const { searchTerm, filteringOptions } = host;
-    const { filterKey, caseSensitive } = filteringOptions;
+  public apply(data: T[], controller: DataController<T>) {
+    const {
+      searchTerm,
+      filteringOptions: { filterKey, caseSensitive },
+    } = controller;
 
     if (!searchTerm) return data;
 
