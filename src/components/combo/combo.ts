@@ -244,6 +244,11 @@ export default class IgcComboComponent<T extends object>
     });
   }
 
+  public override async firstUpdated() {
+    await this.updateComplete;
+    this.requestUpdate();
+  }
+
   private selectValueKeys(values: Values<T>[]) {
     if (values.length === 0) return;
 
