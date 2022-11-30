@@ -422,6 +422,10 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.active = index;
   }
 
+  public navigateTo(item: T) {
+    this.navigationController.navigateTo(item, this.list);
+  }
+
   protected handleClearIconClick(e: MouseEvent) {
     e.stopPropagation();
     this.deselect();

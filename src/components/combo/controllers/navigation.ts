@@ -120,6 +120,11 @@ export class NavigationController<T extends object>
     this.active = START_INDEX;
   }
 
+  public navigateTo(item: T, container: IgcComboListComponent) {
+    this.active = this.host.dataState.findIndex((i) => i === item);
+    container.scrollToIndex(this.active);
+  }
+
   public navigate(event: KeyboardEvent, container: IgcComboListComponent) {
     if (this.handlers.has(event.key)) {
       event.preventDefault();
