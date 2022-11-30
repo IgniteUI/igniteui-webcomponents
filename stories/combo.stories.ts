@@ -12,11 +12,6 @@ const metadata = {
   title: 'Combo',
   component: 'igc-combo',
   argTypes: {
-    value: {
-      type: 'string | undefined',
-      description: 'The value attribute of the control.',
-      control: 'text',
-    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -93,6 +88,10 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    value: {
+      type: 'string | undefined',
+      control: 'text',
+    },
     scrollStrategy: {
       type: '"scroll" | "block" | "close" | undefined',
       options: ['scroll', 'block', 'close', 'undefined'],
@@ -140,7 +139,6 @@ const metadata = {
 };
 export default metadata;
 interface ArgTypes {
-  value: string | undefined;
   name: string;
   disabled: boolean;
   required: boolean;
@@ -154,6 +152,7 @@ interface ArgTypes {
   dir: 'ltr' | 'rtl' | 'auto';
   caseSensitiveIcon: boolean;
   disableFiltering: boolean;
+  value: string | undefined;
   scrollStrategy: 'scroll' | 'block' | 'close' | undefined;
   keepOpenOnOutsideClick: boolean | undefined;
   open: boolean;
@@ -169,13 +168,11 @@ interface ArgTypes {
     handles: [
       'igcFocus',
       'igcBlur',
-      'igcChange',
       'igcOpening',
       'igcOpened',
       'igcClosing',
       'igcClosed',
-      'igcFiltering',
-      'igcFiltered',
+      'igcChange',
     ],
   },
 };

@@ -14,6 +14,7 @@ export type ComboHost<T extends object> = ReactiveControllerHost &
   IgcComboComponent<T>;
 
 export type GroupingDirection = 'asc' | 'desc';
+export type ComboChangeType = 'selection' | 'deselection' | 'addition';
 
 export interface FilteringOptions<T extends object> {
   filterKey: Keys<T> | undefined;
@@ -27,15 +28,19 @@ export interface GroupingOptions<T extends object> {
   direction: GroupingDirection;
 }
 
+export interface IgcComboChangeEventArgs {
+  newValue: string;
+  items: object;
+  type: ComboChangeType;
+}
+
 export interface IgcComboEventMap {
   /* blazorSuppress */
-  igcChange: CustomEvent<string>;
+  igcChange: CustomEvent<IgcComboChangeEventArgs>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
-  igcOpening: CustomEvent<string>;
-  igcOpened: CustomEvent<string>;
-  igcClosing: CustomEvent<string>;
-  igcClosed: CustomEvent<string>;
-  igcFiltering: CustomEvent<string>;
-  igcFiltered: CustomEvent<string>;
+  igcOpening: CustomEvent<void>;
+  igcOpened: CustomEvent<void>;
+  igcClosing: CustomEvent<void>;
+  igcClosed: CustomEvent<void>;
 }

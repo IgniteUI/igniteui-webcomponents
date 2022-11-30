@@ -1,10 +1,6 @@
-import { ReactiveController, ReactiveControllerHost } from 'lit';
+import { ReactiveController } from 'lit';
 import IgcComboListComponent from '../combo-list.js';
-import IgcComboComponent from '../combo.js';
-import { ComboRecord } from '../types.js';
-
-type ComboHost<T extends object> = ReactiveControllerHost &
-  IgcComboComponent<T>;
+import { ComboRecord, ComboHost } from '../types.js';
 
 const START_INDEX: Readonly<number> = -1;
 
