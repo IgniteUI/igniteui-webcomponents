@@ -16,12 +16,28 @@ enum DIRECTION {
 export class NavigationController<T extends object>
   implements ReactiveController
 {
-  protected handlers = new Map(
+  protected hostHandlers = new Map(
+    Object.entries({
+      Escape: this.escape,
+      ArrowDown: this.hostArrowDown,
+    })
+  );
+
+  protected searchInputHandlers = new Map(
+    Object.entries({
+      Escape: this.escape,
+      ArrowDown: this.inputArrowDown,
+      Tab: this.inputArrowDown,
+    })
+  );
+
+  protected listHandlers = new Map(
     Object.entries({
       ArrowDown: this.arrowDown,
       ArrowUp: this.arrowUp,
       ' ': this.space,
       Enter: this.enter,
+      Escape: this.escape,
       Home: this.home,
       End: this.end,
     })
@@ -75,9 +91,25 @@ export class NavigationController<T extends object>
     }
   }
 
+  protected escape() {
+    this.host.hide();
+  }
+
   protected enter() {
     this.space();
     this.host.open = false;
+  }
+
+  protected inputArrowDown(container: IgcComboListComponent) {
+    container.focus();
+
+    if (this.active === 0) {
+      this.active = this.firstItem;
+    }
+  }
+
+  protected hostArrowDown() {
+    this.host.show();
   }
 
   protected arrowDown(container: IgcComboListComponent) {
@@ -125,10 +157,26 @@ export class NavigationController<T extends object>
     container.scrollToIndex(this.active);
   }
 
-  public navigate(event: KeyboardEvent, container: IgcComboListComponent) {
-    if (this.handlers.has(event.key)) {
+  public navigateHost(event: KeyboardEvent) {
+    if (this.hostHandlers.has(event.key)) {
       event.preventDefault();
-      this.handlers.get(event.key)!.call(this, container);
+      this.hostHandlers.get(event.key)!.call(this);
+    }
+  }
+
+  public navigateInput(event: KeyboardEvent, container: IgcComboListComponent) {
+    event.stopPropagation();
+
+    if (this.searchInputHandlers.has(event.key)) {
+      event.preventDefault();
+      this.searchInputHandlers.get(event.key)!.call(this, container);
+    }
+  }
+
+  public navigateList(event: KeyboardEvent, container: IgcComboListComponent) {
+    if (this.listHandlers.has(event.key)) {
+      event.preventDefault();
+      this.listHandlers.get(event.key)!.call(this, container);
     }
   }
 }
