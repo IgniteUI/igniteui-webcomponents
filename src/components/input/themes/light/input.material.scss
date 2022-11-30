@@ -317,6 +317,7 @@ $fs: rem(16px) !default;
 }
 
 // Filled Style
+:host([outlined]:focus),
 :host([outlined]:focus-within) {
     [part='suffix'] {
         margin-inline-end: rem(-1px);
@@ -339,6 +340,14 @@ $fs: rem(16px) !default;
     [part='end'] {
         border-color: transparent;
         border-width: rem(1px);
+    }
+
+    [part='start'] {
+        border-end-start-radius: 0;
+    }
+
+    [part='end'] {
+        border-end-end-radius: 0;
     }
 
     [part='notch'],

@@ -7,9 +7,9 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     align-items: center;
     width: fit-content;
     box-sizing: border-box;
-    height: 100%;
+    height: calc(100% - #{rem(2px)});
     padding-inline: pad-inline(2px, 4px, 8px);
-    padding-block: pad-block(11px, 13px, 15px);
+    padding-block: pad-block(9px, 11px, 13px);
 }
 
 :host {
