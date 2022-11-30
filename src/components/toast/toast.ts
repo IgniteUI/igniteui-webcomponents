@@ -16,7 +16,7 @@ import { styles as indigo } from './themes/toast.indigo.css.js';
 
 @themes({ bootstrap, fluent, indigo })
 export default class IgcToastComponent extends LitElement {
-  public static tagName = 'igc-toast';
+  public static readonly tagName = 'igc-toast';
   public static override styles = [styles];
 
   private displayTimeout!: ReturnType<typeof setTimeout>;
