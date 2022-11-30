@@ -37,7 +37,7 @@ $fs: rem(16px) !default;
     box-sizing: border-box;
     height: 100%;
     padding-inline: pad-inline(8px);
-    padding-block: pad-block(12px, 14px, 16px);
+    padding-block: pad-block(11px, 13px, 15px);
 }
 
 :host {
@@ -157,9 +157,7 @@ $fs: rem(16px) !default;
 }
 
 [part='start'] {
-    width: auto;
-    min-width: rem(12px);
-    flex-shrink: 0;
+    justify-content: flex-start;
     grid-area: 1 / 1;
     border: {
         style: solid;
@@ -221,12 +219,8 @@ $fs: rem(16px) !default;
 }
 
 [part='end'] {
-    display: flex;
     justify-content: flex-end;
-    flex-grow: 1;
-    height: 100%;
     grid-area: 1 / 4;
-    min-width: rem(12px);
     border: {
         style: solid;
         color: $idle-color;
@@ -255,7 +249,10 @@ $fs: rem(16px) !default;
 
 [part='start'],
 [part='end'] {
+    display: flex;
+    min-width: rem(12px);
     height: var(--size);
+    overflow: hidden;
 }
 
 [part='helper-text'] {
@@ -320,11 +317,28 @@ $fs: rem(16px) !default;
 }
 
 // Filled Style
+:host([outlined]:focus-within) {
+    [part='suffix'] {
+        margin-inline-end: rem(-1px);
+    }
+
+    [part='prefix'] {
+        margin-inline-start: rem(-1px);
+    }
+
+    [part='suffix'],
+    [part='prefix'] {
+        ::slotted(*) {
+            padding-block: pad-block(10px, 12px, 14px);
+        }
+    }
+}
+
 :host(:not([outlined])) {
     [part='start'],
     [part='end'] {
         border-color: transparent;
-        border-top-width: rem(1px);
+        border-width: rem(1px);
     }
 
     [part='notch'],
