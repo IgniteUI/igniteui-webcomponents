@@ -11,18 +11,19 @@ igc-input {
     cursor: pointer;
 }
 
-igc-input::part(input) {
-    cursor: pointer;
-
-    &::selection {
-        background: transparent;
-    }
+igc-input::part(helper-text) {
+    position: absolute;
 }
 
 :host([disabled]) {
+    igc-input::part(label),
+    igc-input::part(input)::placeholder,
     ::slotted([slot='helper-text']) {
         color: color(gray, 400);
     }
+
+    pointer-events: none;
+    user-select: none;
 }
 
 [part='clear-icon'],
@@ -64,6 +65,10 @@ igc-input::part(input) {
         border-inline-end: 0;
         border-block-start: 0;
         box-shadow: none;
+
+        &::selection {
+            background: color(primary, 100);
+        }
     }
 }
 

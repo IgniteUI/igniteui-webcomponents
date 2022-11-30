@@ -1,1 +1,6 @@
+@use '../../../../styles/utilities' as *;
 @use '../../../select/themes/light/select.material';
+
+[part='toggle-icon'] {
+    background: color(gray, 300);
+}
