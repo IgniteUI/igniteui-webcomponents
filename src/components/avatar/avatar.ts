@@ -26,22 +26,34 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-avatar';
   public static override styles = styles;
 
-  /** The image source to use. */
+  /**
+   * The image source to use.
+   * @attr
+   */
   @property()
   public src!: string;
 
   @state()
   private hasError = false;
 
-  /** Alternative text for the image. */
+  /**
+   * Alternative text for the image.
+   * @attr
+   */
   @property()
   public alt!: string;
 
-  /** Initials to use as a fallback when no image is available. */
+  /**
+   * Initials to use as a fallback when no image is available.
+   * @attr
+   */
   @property()
   public initials!: string;
 
-  /** The shape of the avatar. */
+  /**
+   * The shape of the avatar.
+   * @attr
+   */
   @property({ reflect: true })
   public shape: 'circle' | 'rounded' | 'square' = 'square';
 

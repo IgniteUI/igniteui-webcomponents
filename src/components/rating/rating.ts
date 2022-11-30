@@ -94,6 +94,7 @@ export default class IgcRatingComponent extends SizableMixin(
    *
    * If there are projected symbols, the maximum value will be resolved
    * based on the number of symbols.
+   * @attr
    */
   @property({ type: Number })
   public max = 5;
@@ -102,15 +103,22 @@ export default class IgcRatingComponent extends SizableMixin(
    * The minimum value change allowed.
    *
    * Valid values are in the interval between 0 and 1 inclusive.
+   * @attr
    */
   @property({ type: Number })
   public step = 1;
 
-  /** The name attribute of the control */
+  /**
+   * The name attribute of the control
+   * @attr
+   */
   @property()
   public name!: string;
 
-  /** The label of the control. */
+  /**
+   * The label of the control.
+   * @attr
+   */
   @property()
   public label!: string;
 
@@ -119,27 +127,43 @@ export default class IgcRatingComponent extends SizableMixin(
    * with the current value of the control and instances of '{1}' with the maximum value for the control.
    *
    * Important for screen-readers and useful for localization.
+   * @attr value-format
    */
   @property({ attribute: 'value-format' })
   public valueFormat!: string;
 
-  /** The current value of the component */
+  /**
+   * The current value of the component
+   * @attr
+   */
   @property({ type: Number })
   public value = 0;
 
-  /** Sets the disabled state of the component */
+  /**
+   * Sets the disabled state of the component
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  /** Sets hover preview behavior for the component */
+  /**
+   * Sets hover preview behavior for the component
+   * @attr
+   */
   @property({ type: Boolean, reflect: true, attribute: 'hover-preview' })
   public hoverPreview = false;
 
-  /** Sets the readonly state of the component */
+  /**
+   * Sets the readonly state of the component
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public readonly = false;
 
-  /** Toggles single selection visual mode. */
+  /**
+   * Toggles single selection visual mode.
+   * @attr
+   */
   @property({ type: Boolean })
   public single = false;
 

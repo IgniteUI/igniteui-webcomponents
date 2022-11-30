@@ -28,11 +28,17 @@ export default class IgcNavDrawerItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-item';
   public static override styles = styles;
 
-  /** Determines whether the drawer is disabled. */
+  /**
+   * Determines whether the drawer is disabled.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  /** Determines whether the drawer is active. */
+  /**
+   * Determines whether the drawer is active.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public active = false;
 

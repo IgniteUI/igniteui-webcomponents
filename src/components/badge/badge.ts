@@ -19,16 +19,25 @@ export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
   public static override styles = styles;
 
-  /** The type of badge. */
+  /**
+   * The type of badge.
+   * @attr
+   */
   @property({ reflect: true })
   public variant: 'primary' | 'info' | 'success' | 'warning' | 'danger' =
     'primary';
 
-  /** Sets whether to draw an outlined version of the badge. */
+  /**
+   * Sets whether to draw an outlined version of the badge.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public outlined = false;
 
-  /** The shape of the badge. */
+  /**
+   * The shape of the badge.
+   * @attr
+   */
   @property({ reflect: true })
   public shape: 'rounded' | 'square' = 'rounded';
 

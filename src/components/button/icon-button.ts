@@ -31,20 +31,32 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
   protected static styles = styles;
 
-  /** The name of the icon. */
+  /**
+   * The name of the icon.
+   * @attr
+   */
   @alternateName('iconName')
   @property()
   public name!: string;
 
-  /** The name of the icon collection. */
+  /**
+   * The name of the icon collection.
+   * @attr
+   */
   @property()
   public collection!: string;
 
-  /** Whether to flip the icon button. Useful for RTL layouts. */
+  /**
+   * Whether to flip the icon button. Useful for RTL layouts.
+   * @attr
+   */
   @property({ type: Boolean })
   public mirrored = false;
 
-  /** The visual variant of the icon button. */
+  /**
+   * The visual variant of the icon button.
+   * @attr
+   */
   @property({ reflect: true })
   public variant: 'flat' | 'contained' | 'outlined' = 'contained';
 

@@ -29,32 +29,44 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   /**
    * The type of the button. Defaults to undefined.
+   * @attr
    */
   @alternateName('displayType')
   @property()
   public type!: 'button' | 'reset' | 'submit';
 
-  /** The URL the button points to. */
+  /**
+   * The URL the button points to.
+   * @attr
+   */
   @property()
   public href!: string;
 
-  /** Prompts to save the linked URL instead of navigating to it. */
+  /**
+   * Prompts to save the linked URL instead of navigating to it.
+   * @attr
+   */
   @property()
   public download!: string;
 
-  /** Where to display the linked URL, as the name for a browsing context. */
+  /**
+   * Where to display the linked URL, as the name for a browsing context.
+   * @attr
+   */
   @property()
   public target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
 
   /**
    * The relationship of the linked URL.
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+   * @attr
    */
   @property()
   public rel!: string;
 
   /**
    * Determines whether the button is disabled.
+   * @attr
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
