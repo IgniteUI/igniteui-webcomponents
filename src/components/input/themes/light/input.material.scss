@@ -137,14 +137,6 @@ $fs: rem(16px) !default;
         }
     }
 
-    [part='prefix'] {
-        padding-inline-start: rem(4px);
-    }
-
-    [part='suffix'] {
-        padding-inline-end: rem(4px);
-    }
-
     [part='label'] {
         color: $active-color;
     }
@@ -152,6 +144,16 @@ $fs: rem(16px) !default;
 
 [part^='container'] {
     grid-template-columns: auto auto 1fr auto;
+}
+
+%suffix-preffix {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    box-sizing: border-box;
+    height: 100%;
+    padding-inline: pad-inline(2px, 4px, 8px);
+    padding-block: pad-block(11px, 13px, 15px);
 }
 
 [part='start'] {
@@ -179,8 +181,9 @@ $fs: rem(16px) !default;
     }
 
     > [part='prefix'] {
-        padding-inline-start: rem(5px);
-        padding-inline-end: rem(4px);
+        ::slotted(*) {
+            @extend %suffix-preffix;
+        }
     }
 }
 
@@ -244,9 +247,15 @@ $fs: rem(16px) !default;
     }
 
     > [part='suffix'] {
-        padding-inline-start: rem(4px);
-        padding-inline-end: rem(5px);
+        ::slotted(*) {
+            @extend %suffix-preffix;
+        }
     }
+}
+
+[part='start'],
+[part='end'] {
+    height: var(--size);
 }
 
 [part='helper-text'] {
