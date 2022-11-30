@@ -31,7 +31,10 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
 
   protected static styles = styles;
 
-  /** Sets the variant of the button. */
+  /**
+   * Sets the variant of the button.
+   * @attr
+   */
   @property({ reflect: true })
   public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'contained';
 

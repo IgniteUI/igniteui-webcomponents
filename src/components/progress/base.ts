@@ -24,28 +24,46 @@ export abstract class IgcProgressBaseComponent extends LitElement {
   @state()
   protected percentage = 0;
 
-  /** Maximum value of the control. */
+  /**
+   * Maximum value of the control.
+   * @attr
+   */
   @property({ type: Number })
   public max = 100;
 
-  /** The value of the control. */
+  /**
+   * The value of the control.
+   * @attr
+   */
   @property({ type: Number })
   public value = 0;
 
-  /** The variant of the control. */
+  /**
+   * The variant of the control.
+   * @attr
+   */
   @property({ reflect: true })
   public variant: 'primary' | 'info' | 'success' | 'warning' | 'danger' =
     'primary';
 
-  /** Animation duration in milliseconds. */
+  /**
+   * Animation duration in milliseconds.
+   * @attr animation-duration
+   */
   @property({ type: Number, attribute: 'animation-duration' })
   public animationDuration = 500;
 
-  /** The indeterminate state of the control. */
+  /**
+   * The indeterminate state of the control.
+   * @attr
+   */
   @property({ type: Boolean, reflect: false })
   public indeterminate = false;
 
-  /** Shows/hides the label of the control. */
+  /**
+   * Shows/hides the label of the control.
+   * @attr hide-label
+   */
   @property({ type: Boolean, attribute: 'hide-label', reflect: false })
   public hideLabel = false;
 
@@ -54,6 +72,7 @@ export abstract class IgcProgressBaseComponent extends LitElement {
    * Placeholders:
    *  {0} - current value of the control.
    *  {1} - max value of the control.
+   * @attr label-format
    */
   @property({ attribute: 'label-format' })
   public labelFormat!: string;

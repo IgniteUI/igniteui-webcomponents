@@ -55,6 +55,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   /**
    * The current value of the slider.
+   * @attr
    */
   @property({ type: Number })
   public get value() {
@@ -73,6 +74,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
 
   /**
    * The aria label of the slider thumb.
+   * @attr
    */
   @property({ attribute: 'aria-label' })
   public override get ariaLabel() {

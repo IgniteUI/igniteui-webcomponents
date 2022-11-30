@@ -46,19 +46,31 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
 
   private autoHideTimeout!: number;
 
-  /** Determines whether the snackbar is opened. */
+  /**
+   * Determines whether the snackbar is opened.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  /** Determines the duration in ms in which the snackbar will be visible. */
+  /**
+   * Determines the duration in ms in which the snackbar will be visible.
+   * @attr display-time
+   */
   @property({ type: Number, attribute: 'display-time' })
   public displayTime = 4000;
 
-  /** Determines whether the snackbar should close after the displayTime is over. */
+  /**
+   * Determines whether the snackbar should close after the displayTime is over.
+   * @attr keep-open
+   */
   @property({ type: Boolean, attribute: 'keep-open' })
   public keepOpen = false;
 
-  /** The snackbar action button. */
+  /**
+   * The snackbar action button.
+   * @attr action-text
+   */
   @property({ attribute: 'action-text' })
   public actionText!: string;
 

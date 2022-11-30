@@ -16,7 +16,10 @@ export default class IgcCardActionsComponent extends LitElement {
   public static readonly tagName = 'igc-card-actions';
   public static override styles = styles;
 
-  /** The orientation of the actions. */
+  /**
+   * The orientation of the actions.
+   * @attr
+   */
   @property({ reflect: true })
   public orientation: 'vertical' | 'horizontal' = 'horizontal';
 

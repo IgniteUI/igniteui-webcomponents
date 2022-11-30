@@ -68,7 +68,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     seconds: 1,
   };
 
-  /** The date format to apply on the input. */
+  /**
+   * The date format to apply on the input.
+   * @attr input-format
+   */
   @property({ attribute: 'input-format' })
   public get inputFormat(): string {
     return this._inputFormat || this._defaultMask;
@@ -81,7 +84,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  /** The value of the input. */
+  /**
+   * The value of the input.
+   * @attr
+   */
   @property({
     converter: {
       fromAttribute: (value: string) =>
@@ -105,7 +111,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.validate();
   }
 
-  /** The minimum value required for the input to remain valid. */
+  /**
+   * The minimum value required for the input to remain valid.
+   * @attr min-value
+   */
   @property({
     attribute: 'min-value',
     converter: {
@@ -116,7 +125,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   })
   public minValue!: Date | null;
 
-  /** The maximum value required for the input to remain valid. */
+  /**
+   * The maximum value required for the input to remain valid.
+   * @attr max-value
+   */
   @property({
     attribute: 'max-value',
     converter: {
@@ -130,6 +142,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   /**
    * Format to display the value in when not editing.
    * Defaults to the input format if not set.
+   * @attr display-format
    */
   @property({ attribute: 'display-format' })
   public displayFormat!: string;
@@ -141,11 +154,17 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   @property({ attribute: false })
   public spinDelta!: DatePartDeltas;
 
-  /** Sets whether to loop over the currently spun segment. */
+  /**
+   * Sets whether to loop over the currently spun segment.
+   * @attr spin-loop
+   */
   @property({ type: Boolean, attribute: 'spin-loop' })
   public spinLoop = true;
 
-  /** The locale settings used to display the value. */
+  /**
+   * The locale settings used to display the value.
+   * @attr
+   */
   @property()
   public locale = 'en';
 

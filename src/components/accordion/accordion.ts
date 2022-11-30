@@ -24,6 +24,10 @@ export default class IgcAccordionComponent extends LitElement {
     return this.panels.filter((p) => !p.disabled);
   }
 
+  /**
+   * Allows only one panel to be expanded at a time.
+   * @attr single-expand
+   */
   @property({ attribute: 'single-expand', reflect: true, type: Boolean })
   public singleExpand = false;
 
