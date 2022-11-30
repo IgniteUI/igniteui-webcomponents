@@ -2,6 +2,8 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+
     font-family: var(--ig-font-family);
 }
 
