@@ -78,6 +78,12 @@ const metadata = {
       },
       defaultValue: 'auto',
     },
+    open: {
+      type: 'boolean',
+      description: 'Sets the open state of the component.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     caseSensitiveIcon: {
       type: 'boolean',
       control: 'boolean',
@@ -91,49 +97,6 @@ const metadata = {
     value: {
       type: 'string | undefined',
       control: 'text',
-    },
-    scrollStrategy: {
-      type: '"scroll" | "block" | "close" | undefined',
-      options: ['scroll', 'block', 'close', 'undefined'],
-      control: {
-        type: 'inline-radio',
-      },
-    },
-    keepOpenOnOutsideClick: {
-      type: 'boolean | undefined',
-      control: 'boolean | undefined',
-    },
-    open: {
-      type: 'boolean',
-      description: 'Sets the open state of the component.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    positionStrategy: {
-      type: '"absolute" | "fixed" | undefined',
-      description:
-        'The positioning strategy to use.\nUse the `fixed` strategy when the target element is in a fixed container, otherwise - use `absolute`.',
-      options: ['absolute', 'fixed', 'undefined'],
-      control: {
-        type: 'inline-radio',
-      },
-    },
-    flip: {
-      type: 'boolean | undefined',
-      description:
-        "Whether the element should be flipped to the opposite side once it's about to overflow the visible area.\nOnce enough space is detected on its preferred side, it will flip back.",
-      control: 'boolean | undefined',
-    },
-    distance: {
-      type: 'number | undefined',
-      description:
-        'Whether to prevent the element from being cut off by moving it so it stays visible within its boundary area.',
-      control: 'number',
-    },
-    sameWidth: {
-      type: 'boolean | undefined',
-      description: 'Whether to make the toggle the same width as the target.',
-      control: 'boolean | undefined',
     },
   },
 };
@@ -150,16 +113,10 @@ interface ArgTypes {
   placeholder: string;
   placeholderSearch: string;
   dir: 'ltr' | 'rtl' | 'auto';
+  open: boolean;
   caseSensitiveIcon: boolean;
   disableFiltering: boolean;
   value: string | undefined;
-  scrollStrategy: 'scroll' | 'block' | 'close' | undefined;
-  keepOpenOnOutsideClick: boolean | undefined;
-  open: boolean;
-  positionStrategy: 'absolute' | 'fixed' | undefined;
-  flip: boolean | undefined;
-  distance: number | undefined;
-  sameWidth: boolean | undefined;
 }
 // endregion
 

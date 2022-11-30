@@ -77,7 +77,7 @@ export default class IgcComboComponent<T extends object>
   extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
     LitElement
   )
-  implements IgcToggleComponent
+  implements Partial<IgcToggleComponent>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
