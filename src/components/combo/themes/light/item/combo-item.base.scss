@@ -3,6 +3,8 @@
 
 :host {
     gap: rem(8px);
+
+    --component-size: var(--ig-size, var(--ig-size-medium));
 }
 
 igc-checkbox {

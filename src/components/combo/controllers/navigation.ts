@@ -68,7 +68,9 @@ export class NavigationController<T extends object>
   }
 
   protected space() {
-    if (this.active !== -1) {
+    const item = this.host.dataState[this.active];
+
+    if (!item.header) {
       this.host.toggleSelect(this.active);
     }
   }

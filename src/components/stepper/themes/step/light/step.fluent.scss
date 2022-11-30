@@ -1,0 +1,22 @@
+@use '../../../../../styles/utilities' as *;
+
+:host {
+    // uncompleted
+    --indicator-color: #{color(gray, 900)};
+    --indicator-background: #{color(gray, 50, 0)};
+    --indicator-shadow: var(--indicator-background);
+
+    // completed
+    --completed-indicator-color: #{contrast-color(gray, 50)};
+    --completed-indicator-background: #{color(gray, 300)};
+    --completed-indicator-shadow: #{color(gray, 300)};
+
+    // optional
+    --optional-indicator-color: var(--indicator-color);
+    --optional-indicator-background: var(--indicator-background);
+    --optional-indicator-shadow: var(--indicator-shadow);
+
+    // disabled
+    --disabled-background: #{color(gray, 200)};
+    --disabled-shadow: var(--disabled-background);
+}

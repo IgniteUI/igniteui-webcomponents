@@ -18,7 +18,7 @@ export default class FilterDataOperation<T extends object> {
 
       return caseSensitive
         ? value.includes(term)
-        : value.toLowerCase().includes(term);
+        : value.toLocaleLowerCase().includes(term);
     });
   }
 }

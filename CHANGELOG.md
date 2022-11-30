@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Stepper Component [#219](https://github.com/IgniteUI/igniteui-webcomponents/issues/219)
+
 ## [4.0.0] - 2022-11-02
 ### Changed
 - Themes
