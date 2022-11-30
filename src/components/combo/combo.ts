@@ -90,7 +90,7 @@ export default class IgcComboComponent<T extends object>
   protected inputPrefix!: Array<HTMLElement>;
 
   @query('[part="search-input"]')
-  private input!: IgcInputComponent;
+  public input!: IgcInputComponent;
 
   @query('[part="target"]')
   private target!: IgcInputComponent;
@@ -255,6 +255,10 @@ export default class IgcComboComponent<T extends object>
     });
 
     this.addEventListener('blur', () => this.hide());
+    this.addEventListener(
+      'keydown',
+      this.navigationController.navigateHost.bind(this.navigationController)
+    );
   }
 
   public override async firstUpdated() {
@@ -398,7 +402,7 @@ export default class IgcComboComponent<T extends object>
       ) as IgcComboListComponent;
 
     if (target) {
-      this.navigationController.navigate(event, target);
+      this.navigationController.navigateList(event, target);
     }
   }
 
@@ -420,6 +424,10 @@ export default class IgcComboComponent<T extends object>
     }
 
     this.navigationController.active = index;
+  }
+
+  public navigateTo(item: T) {
+    this.navigationController.navigateTo(item, this.list);
   }
 
   protected handleClearIconClick(e: MouseEvent) {
@@ -451,7 +459,9 @@ export default class IgcComboComponent<T extends object>
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}
         dir=${this.dir}
-        @keydown=${(e: KeyboardEvent) => e.stopPropagation()}
+        @keydown=${this.navigationController.navigateHost.bind(
+          this.navigationController
+        )}
         .disabled="${this.disabled}"
         .required=${this.required}
         .invalid=${this.invalid}
@@ -500,7 +510,8 @@ export default class IgcComboComponent<T extends object>
             placeholder=${this.placeholderSearch}
             exportparts="container: input, input: native-input, label, prefix, suffix"
             @igcInput=${this.handleSearchInput}
-            @keydown=${(e: KeyboardEvent) => e.stopPropagation()}
+            @keydown=${(e: KeyboardEvent) =>
+              this.navigationController.navigateInput(e, this.list)}
             dir=${this.dir}
           >
             <igc-icon
