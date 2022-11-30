@@ -30,6 +30,16 @@ $fs: rem(16px) !default;
     border-top: $idle-border-width solid transparent;
 }
 
+%suffix-preffix {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    box-sizing: border-box;
+    height: 100%;
+    padding-inline: pad-inline(8px);
+    padding-block: pad-block(12px, 14px, 16px);
+}
+
 :host {
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
@@ -144,16 +154,6 @@ $fs: rem(16px) !default;
 
 [part^='container'] {
     grid-template-columns: auto auto 1fr auto;
-}
-
-%suffix-preffix {
-    display: inline-flex;
-    align-items: center;
-    width: fit-content;
-    box-sizing: border-box;
-    height: 100%;
-    padding-inline: pad-inline(2px, 4px, 8px);
-    padding-block: pad-block(11px, 13px, 15px);
 }
 
 [part='start'] {
