@@ -189,7 +189,9 @@ $input-background: var(--input-background, #fff) !default;
         border-block-color: color(gray, 300);
         border-inline-color: transparent;
     }
+}
 
+:host([disabled]) {
     [part='helper-text'] {
         color: color(gray, 400);
     }
