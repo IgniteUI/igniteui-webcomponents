@@ -38,7 +38,7 @@ igc-input::part(input) {
 
     background: color(surface);
     color: color(gray, 700);
-    padding: rem(8px) 0;
+    padding-block-start: rem(8px);
     box-shadow: elevation(8);
 
     igc-input {
@@ -68,7 +68,8 @@ igc-input::part(input) {
 }
 
 [part='filter-input'] {
-    padding: rem(8px) rem(16px);
+    padding-inline: pad-inline(4px, 8px, 16px);
+    padding-block: pad-block(8px);
     z-index: 26;
 }
 
