@@ -51,6 +51,13 @@ const metadata = {
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
     },
+    autofocusOptions: {
+      type: 'boolean',
+      description:
+        'Focuses the first item in the list of options when the menu opens.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     label: {
       type: 'string',
       description: 'The label attribute of the control.',
@@ -60,6 +67,12 @@ const metadata = {
       type: 'string',
       description: 'The placeholder attribute of the control.',
       control: 'text',
+    },
+    placeholderSearch: {
+      type: 'string',
+      description: 'The placeholder attribute of the search input.',
+      control: 'text',
+      defaultValue: 'Search',
     },
     dir: {
       type: '"ltr" | "rtl" | "auto"',
@@ -134,8 +147,10 @@ interface ArgTypes {
   invalid: boolean;
   outlined: boolean;
   autofocus: boolean;
+  autofocusOptions: boolean;
   label: string;
   placeholder: string;
+  placeholderSearch: string;
   dir: 'ltr' | 'rtl' | 'auto';
   caseSensitiveIcon: boolean;
   disableFiltering: boolean;
@@ -266,34 +281,38 @@ const Template: Story<ArgTypes, Context> = (
     caseSensitiveIcon,
     label = 'Location(s)',
     placeholder = 'Cities of interest',
+    placeholderSearch = 'Search',
     open = false,
     disabled = false,
     outlined = false,
     invalid = false,
     required = false,
     autofocus = false,
+    autofocusOptions,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-combo
     .data=${cities}
+    .dir=${direction}
     label=${ifDefined(label)}
     name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
+    placeholder-search=${ifDefined(placeholderSearch)}
     dir=${ifDefined(direction)}
     value-key="id"
     display-key="name"
     group-key="country"
+    group-sorting="asc"
     ?case-sensitive-icon=${ifDefined(caseSensitiveIcon)}
     ?disable-filtering=${ifDefined(disableFiltering)}
-    group-sorting="asc"
     ?open=${open}
     ?autofocus=${autofocus}
+    ?autofocus-options=${ifDefined(autofocusOptions)}
     ?outlined=${outlined}
     ?required=${required}
     ?disabled=${disabled}
     ?invalid=${invalid}
-    .dir=${direction}
   >
     <igc-icon slot="prefix" name="location"></igc-icon>
     <span slot="helper-text">Sample helper text.</span>

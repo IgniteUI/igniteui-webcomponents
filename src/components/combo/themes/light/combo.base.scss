@@ -75,15 +75,8 @@ igc-input::part(input) {
 }
 
 [part='list'] {
-    $min-width: rem(150px);
-
-    min-width: $min-width;
     min-height: rem(200px) !important;
     outline-style: none;
-
-    > * {
-        width: 100%;
-    }
 }
 
 [part='case-icon'] {

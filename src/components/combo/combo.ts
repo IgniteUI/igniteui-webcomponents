@@ -95,6 +95,9 @@ export default class IgcComboComponent<T extends object>
   @query('[part="target"]')
   private target!: IgcInputComponent;
 
+  @query('igc-combo-list')
+  private list!: IgcComboListComponent;
+
   /** The data source used to build the list of options. */
   @property({ attribute: false })
   public data: Array<T> = [];
@@ -127,6 +130,10 @@ export default class IgcComboComponent<T extends object>
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
+  /** Focuses the first item in the list of options when the menu opens.*/
+  @property({ attribute: 'autofocus-options', type: Boolean })
+  public autofocusOptions = false;
+
   /** The label attribute of the control. */
   @property({ type: String })
   public label!: string;
@@ -134,6 +141,10 @@ export default class IgcComboComponent<T extends object>
   /** The placeholder attribute of the control. */
   @property({ type: String })
   public placeholder!: string;
+
+  /** The placeholder attribute of the search input. */
+  @property({ attribute: 'placeholder-search', type: String })
+  public placeholderSearch = 'Search';
 
   /** The direction attribute of the control. */
   @property({ reflect: true })
@@ -242,6 +253,8 @@ export default class IgcComboComponent<T extends object>
       target: this.target,
       closeCallback: () => {},
     });
+
+    this.addEventListener('blur', () => this.hide());
   }
 
   public override async firstUpdated() {
@@ -342,7 +355,12 @@ export default class IgcComboComponent<T extends object>
     this.open = true;
 
     await this.updateComplete;
-    this.input.focus();
+
+    this.list.focus();
+
+    if (!this.autofocusOptions) {
+      this.input.focus();
+    }
   }
 
   public hide() {
@@ -479,7 +497,7 @@ export default class IgcComboComponent<T extends object>
         <div part="filter-input" ?hidden=${this.disableFiltering}>
           <igc-input
             part="search-input"
-            placeholder="Search"
+            placeholder=${this.placeholderSearch}
             exportparts="container: input, input: native-input, label, prefix, suffix"
             @igcInput=${this.handleSearchInput}
             @keydown=${(e: KeyboardEvent) => e.stopPropagation()}
