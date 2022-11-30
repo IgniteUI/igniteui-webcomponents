@@ -174,10 +174,24 @@ $input-background: var(--input-background, #fff) !default;
     [part~='container'] {
         background: color(gray, 100);
         color: color(gray, 400);
+        border-block-color: color(gray, 300);
+    }
+
+    [part='prefix'] {
+        border-inline-start-color: color(gray, 300);
+    }
+
+    [part='suffix'] {
+        border-inline-end-color: color(gray, 300);
     }
 
     [part~='input'] {
-        border-color: color(gray, 300);
+        border-block-color: color(gray, 300);
+        border-inline-color: transparent;
+    }
+
+    [part='helper-text'] {
+        color: color(gray, 400);
     }
 }
 
