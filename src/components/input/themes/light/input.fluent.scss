@@ -35,7 +35,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
         width: fit-content;
         height: 100%;
         padding-inline: pad-inline(8px, 12px, 16px);
-        padding-block: pad-block(4px, 6px, 8px);
+        padding-block: pad-block(7px, 9px, 11px);
     }
 
     [part='prefix'] {
@@ -109,6 +109,11 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
     [part='suffix'] {
         margin-inline-end: rem(-1px);
+    }
+
+    [name='prefix']::slotted(*),
+    [name='suffix']::slotted(*) {
+        padding-block: pad-block(6px, 8px, 10px);
     }
 }
 
