@@ -13,6 +13,15 @@ export class DataController<T extends object> implements ReactiveController {
   protected filtering = new FilterDataOperation<T>();
   private _searchTerm = '';
 
+  private emitFilteringEvent() {
+    const args = { cancelable: true };
+    return this.host.emitEvent('igcFiltering', args);
+  }
+
+  private emitFilteredEvent() {
+    return this.host.emitEvent('igcFiltered');
+  }
+
   constructor(protected host: ComboHost<T>) {
     this.host.addController(this);
   }
@@ -41,10 +50,14 @@ export class DataController<T extends object> implements ReactiveController {
 
   public hostConnected() {}
 
-  public apply(data: T[]) {
+  public async apply(data: T[]) {
+    if (!this.emitFilteringEvent()) return;
     data = this.filtering.apply(data, this);
-    data = this.grouping.apply(data, this);
+    await this.host.updateComplete;
 
+    this.emitFilteredEvent();
+
+    data = this.grouping.apply(data, this);
     return data as ComboRecord<T>[];
   }
 }

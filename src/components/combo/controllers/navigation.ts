@@ -92,12 +92,12 @@ export class NavigationController<T extends object>
   }
 
   protected escape() {
-    this.host.hide();
+    this.host.hide(true);
   }
 
   protected enter() {
     this.space();
-    this.host.open = false;
+    this.host.hide(true);
   }
 
   protected inputArrowDown(container: IgcComboListComponent) {
@@ -109,7 +109,7 @@ export class NavigationController<T extends object>
   }
 
   protected hostArrowDown() {
-    this.host.show();
+    this.host.show(true);
   }
 
   protected arrowDown(container: IgcComboListComponent) {

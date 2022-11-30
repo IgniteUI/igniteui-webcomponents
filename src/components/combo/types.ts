@@ -26,3 +26,16 @@ export interface GroupingOptions<T extends object> {
   displayKey?: Keys<T>;
   direction: GroupingDirection;
 }
+
+export interface IgcComboEventMap {
+  /* blazorSuppress */
+  igcChange: CustomEvent<string>;
+  igcFocus: CustomEvent<void>;
+  igcBlur: CustomEvent<void>;
+  igcOpening: CustomEvent<string>;
+  igcOpened: CustomEvent<string>;
+  igcClosing: CustomEvent<string>;
+  igcClosed: CustomEvent<string>;
+  igcFiltering: CustomEvent<string>;
+  igcFiltered: CustomEvent<string>;
+}

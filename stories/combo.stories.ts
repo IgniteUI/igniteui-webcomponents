@@ -164,6 +164,22 @@ interface ArgTypes {
 }
 // endregion
 
+(metadata as any).parameters = {
+  actions: {
+    handles: [
+      'igcFocus',
+      'igcBlur',
+      'igcChange',
+      'igcOpening',
+      'igcOpened',
+      'igcClosing',
+      'igcClosed',
+      'igcFiltering',
+      'igcFiltered',
+    ],
+  },
+};
+
 // interface City {
 //   id: string;
 //   name: string;
