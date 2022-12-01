@@ -6,18 +6,16 @@
 
     display: block;
     font-family: var(--ig-font-family);
+    z-index: 1;
 
     > igc-input::part(input) {
+        text-overflow: ellipsis;
         cursor: pointer;
 
         &::selection {
             background: transparent;
         }
     }
-}
-
-igc-input::part(helper-text) {
-    position: absolute;
 }
 
 :host([disabled]) {
@@ -42,7 +40,6 @@ igc-input::part(helper-text) {
     @include border-radius(rem(4px));
 
     position: absolute;
-    width: 100%;
     background: color(surface);
     color: color(gray, 700);
     box-shadow: elevation(8);

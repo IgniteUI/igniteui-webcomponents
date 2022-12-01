@@ -163,6 +163,14 @@ export default class IgcComboComponent<T extends object>
   @property({ type: Boolean })
   public open = false;
 
+  /** @hidden @internal */
+  @property({ type: Boolean })
+  public flip = true;
+
+  /** @hidden @internal */
+  @property({ type: Boolean, attribute: 'same-width' })
+  public sameWidth = true;
+
   /**
    * The key in the data source used when selecting items.
    * @attr value-key
@@ -283,6 +291,13 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.active = 0;
   }
 
+  @watch('open')
+  protected toggleDirectiveChange() {
+    if (!this.target) return;
+    this.toggleController.target = this.target;
+    this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
+  }
+
   constructor() {
     super();
 
@@ -308,6 +323,12 @@ export default class IgcComboComponent<T extends object>
   protected override async firstUpdated() {
     await this.updateComplete;
     this.requestUpdate();
+  }
+
+  protected override async getUpdateComplete() {
+    const result = await super.getUpdateComplete();
+    await this.toggleController.rendered;
+    return result;
   }
 
   /**
@@ -497,7 +518,10 @@ export default class IgcComboComponent<T extends object>
       <igc-input
         part="target"
         exportparts="container: input, input: native-input, label, prefix, suffix"
-        @click=${() => this.toggle(true)}
+        @click=${(e: MouseEvent) => {
+          e.preventDefault();
+          this.toggle(true);
+        }}
         value=${ifDefined(this.value)}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}

@@ -83,6 +83,16 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    flip: {
+      type: 'boolean',
+      control: 'boolean',
+      defaultValue: true,
+    },
+    sameWidth: {
+      type: 'boolean',
+      control: 'boolean',
+      defaultValue: true,
+    },
     groupSorting: {
       type: '"asc" | "desc"',
       description:
@@ -128,6 +138,8 @@ interface ArgTypes {
   placeholderSearch: string;
   dir: 'ltr' | 'rtl' | 'auto';
   open: boolean;
+  flip: boolean;
+  sameWidth: boolean;
   groupSorting: 'asc' | 'desc';
   caseSensitiveIcon: boolean;
   disableFiltering: boolean;
