@@ -12,9 +12,7 @@ export default class FilterDataOperation<T extends object> {
     const term = caseSensitive ? searchTerm : searchTerm.toLocaleLowerCase();
 
     return data.filter((item: T) => {
-      const value = filterKey
-        ? (item[filterKey] as any).toString()
-        : item.toString();
+      const value = filterKey ? String(item[filterKey] as any) : String(item);
 
       return caseSensitive
         ? value.includes(term)

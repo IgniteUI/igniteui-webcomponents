@@ -221,14 +221,14 @@ export default class IgcComboComponent<T extends object>
       return html`${item[this.displayKey]}`;
     }
 
-    return html`${item}`;
+    return html`${String(item)}`;
   };
 
   @property({ attribute: false })
   public headerItemTemplate: (item: ComboRecord<T>) => TemplateResult = (
     item: ComboRecord<T>
   ) => {
-    return html`${item[this.groupKey!]}`;
+    return html`${this.groupKey && item[this.groupKey]}`;
   };
 
   constructor() {
@@ -328,11 +328,12 @@ export default class IgcComboComponent<T extends object>
     const record = item as ComboRecord<T>;
     const { selected } = this.selectionController;
 
-    const headerTemplate = html`<igc-combo-header
+    const headerTemplate = html`<igc-combo-header part="group-header"
       >${this.headerItemTemplate(record)}</igc-combo-header
     >`;
 
     const itemTemplate = html`<igc-combo-item
+      part="item"
       @click=${this.itemClickHandler.bind(this)}
       .index=${index}
       .active=${this.navigationController.active === index}
@@ -340,7 +341,9 @@ export default class IgcComboComponent<T extends object>
       >${this.itemTemplate(record)}</igc-combo-item
     >`;
 
-    return html`${record.header ? headerTemplate : itemTemplate}`;
+    return html`${this.groupKey && record.header
+      ? headerTemplate
+      : itemTemplate}`;
   };
 
   protected keydownHandler(event: KeyboardEvent) {

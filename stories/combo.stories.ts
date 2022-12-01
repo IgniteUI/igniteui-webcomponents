@@ -3,7 +3,6 @@ import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineAllComponents } from '../src/index.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
-// import { faker } from '@faker-js/faker';
 
 defineAllComponents();
 
@@ -134,41 +133,17 @@ interface ArgTypes {
   },
 };
 
-// interface City {
-//   id: string;
-//   name: string;
-//   zip: string;
-//   country: string;
-// }
-
-// function generateCity(): City {
-//   const id = faker.datatype.uuid();
-//   const name = faker.address.cityName();
-//   const zip = faker.address.zipCode();
-//   const country = faker.address.country();
-
-//   return {
-//     id,
-//     name,
-//     zip,
-//     country,
-//   };
-// }
-
-// function generateCities(amount = 200) {
-//   const result: Array<City> = [];
-
-//   for (let i = 0; i <= amount; i++) {
-//     result.push(generateCity());
-//   }
-
-//   return result;
-// }
+interface City {
+  id: string;
+  name: string;
+  zip: string;
+  country: string;
+}
 
 // const itemTemplate = (item: City) => {
 //   return html`
 //     <div>
-//       <b>${item.name}</b>, <span>${item.country}</span>
+//       <span><b>${item.name}</b> [${item.zip}]</span>
 //     </div>
 //   `;
 // };
@@ -177,67 +152,64 @@ interface ArgTypes {
 //   return html`Group header for ${item.country}`;
 // };
 
-// .itemTemplate=${itemTemplate}
-// .headerItemTemplate=${headerItemTemplate}
-// const cities = generateCities(200);
-const cities = [
+const cities: City[] = [
   {
     id: 'BG01',
     name: 'Sofia',
     country: 'Bulgaria',
-    zip: 1000,
+    zip: '1000',
   },
   {
     id: 'BG02',
     name: 'Plovdiv',
     country: 'Bulgaria',
-    zip: 4000,
+    zip: '4000',
   },
   {
     id: 'BG03',
     name: 'Varna',
     country: 'Bulgaria',
-    zip: 9000,
+    zip: '9000',
   },
   {
     id: 'US01',
     name: 'New York',
     country: 'United States',
-    zip: 1000,
+    zip: '1000',
   },
   {
     id: 'US02',
     name: 'Boston',
     country: 'United States',
-    zip: 4000,
+    zip: '4000',
   },
   {
     id: 'US03',
     name: 'San Francisco',
     country: 'United States',
-    zip: 9000,
+    zip: '9000',
   },
   {
     id: 'JP01',
     name: 'Tokyo',
     country: 'Japan',
-    zip: 1000,
+    zip: '1000',
   },
   {
     id: 'JP02',
     name: 'Yokohama',
     country: 'Japan',
-    zip: 4000,
+    zip: '4000',
   },
   {
     id: 'JP03',
     name: 'Osaka',
     country: 'Japan',
-    zip: 9000,
+    zip: '9000',
   },
 ];
 
-// const simpleCities = ['Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true];
+// const mandzhasgrozde = [0, 'Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true, null, undefined, NaN, 0];
 
 registerIconFromText(
   'location',
@@ -270,7 +242,6 @@ const Template: Story<ArgTypes, Context> = (
     placeholder=${ifDefined(placeholder)}
     placeholder-search=${ifDefined(placeholderSearch)}
     dir=${ifDefined(direction)}
-    value-key="id"
     display-key="name"
     group-key="country"
     group-sorting="asc"
