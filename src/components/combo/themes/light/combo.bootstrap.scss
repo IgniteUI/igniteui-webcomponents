@@ -4,3 +4,25 @@
 [part='clear-icon'] {
     border-inline-end: 1px solid color(gray, 400);
 }
+
+[part='list-wrapper'] {
+    igc-input::part(suffix) {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
+
+    [part='search-input'] {
+        [part~='case-icon'] {
+            border-block-end: 1px solid color(gray, 400);
+            transition: border .15s ease-out;
+        }
+
+        &:focus,
+        &:focus-within {
+            [part~='case-icon'] {
+                border-block-end: 1px solid color(primary, 500);
+            }
+        }
+    }
+}

@@ -5,10 +5,10 @@
     --component-size: var(--ig-size, var(--ig-size-medium));
 
     font-family: var(--ig-font-family);
-}
 
-igc-input {
-    cursor: pointer;
+    > igc-input::part(input) {
+        cursor: pointer;
+    }
 }
 
 igc-input::part(helper-text) {
@@ -27,7 +27,8 @@ igc-input::part(helper-text) {
 }
 
 [part='clear-icon'],
-[part='toggle-icon'] {
+[part='toggle-icon'],
+[part~='case-icon'] {
     display: flex;
     cursor: pointer;
 }
@@ -69,6 +70,10 @@ igc-input::part(helper-text) {
         &::selection {
             background: color(primary, 100);
         }
+    }
+
+    [part='case-icon active'] {
+        color: color(primary, 500);
     }
 }
 

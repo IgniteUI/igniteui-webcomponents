@@ -4,3 +4,25 @@
 [part='toggle-icon'] {
     background: color(gray, 300);
 }
+
+[part='target'] {
+    &:focus-within {
+        [part='toggle-icon'] {
+            background: color(gray, 400, .3);
+        }
+    }
+}
+
+[part~='case-icon'] {
+    padding: rem(8px);
+}
+
+:host {
+    ::slotted([slot='helper-text']) {
+        @include type-style('caption');
+
+        padding: 0 rem(8px);
+        margin-top: rem(4px);
+        color: color(gray, 600);
+    }
+}
