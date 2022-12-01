@@ -6,7 +6,6 @@
 
     display: block;
     font-family: var(--ig-font-family);
-    z-index: 1;
 
     > igc-input::part(input) {
         text-overflow: ellipsis;
@@ -45,6 +44,7 @@
     box-shadow: elevation(8);
     overflow: hidden;
     outline-style: none;
+    z-index: 999999;
 
     igc-input {
         --ig-size: var(--ig-size-small);
