@@ -359,7 +359,12 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected itemClickHandler(event: MouseEvent) {
-    const target = event.target as IgcComboItemComponent;
+    const target = event
+      .composedPath()
+      .find(
+        (el) => el instanceof IgcComboItemComponent
+      ) as IgcComboItemComponent;
+
     this.toggleSelect(target.index);
     this.input.focus();
   }

@@ -140,17 +140,17 @@ interface City {
   country: string;
 }
 
-// const itemTemplate = (item: City) => {
-//   return html`
-//     <div>
-//       <span><b>${item.name}</b> [${item.zip}]</span>
-//     </div>
-//   `;
-// };
+const itemTemplate = (item: City) => {
+  return html`
+    <div>
+      <span><b>${item.name}</b> [${item.zip}]</span>
+    </div>
+  `;
+};
 
-// const headerItemTemplate = (item: City) => {
-//   return html`Group header for ${item.country}`;
-// };
+const headerItemTemplate = (item: City) => {
+  return html`Country of ${item.country}`;
+};
 
 const cities: City[] = [
   {
@@ -175,37 +175,37 @@ const cities: City[] = [
     id: 'US01',
     name: 'New York',
     country: 'United States',
-    zip: '1000',
+    zip: '10001',
   },
   {
     id: 'US02',
     name: 'Boston',
     country: 'United States',
-    zip: '4000',
+    zip: '02108',
   },
   {
     id: 'US03',
     name: 'San Francisco',
     country: 'United States',
-    zip: '9000',
+    zip: '94103',
   },
   {
     id: 'JP01',
     name: 'Tokyo',
     country: 'Japan',
-    zip: '1000',
+    zip: '163-8001',
   },
   {
     id: 'JP02',
     name: 'Yokohama',
     country: 'Japan',
-    zip: '4000',
+    zip: '781-0240',
   },
   {
     id: 'JP03',
     name: 'Osaka',
     country: 'Japan',
-    zip: '9000',
+    zip: '552-0021',
   },
 ];
 
@@ -237,11 +237,14 @@ const Template: Story<ArgTypes, Context> = (
   <igc-combo
     .data=${cities}
     .dir=${direction}
+    .itemTemplate=${itemTemplate}
+    .headerItemTemplate=${headerItemTemplate}
     label=${ifDefined(label)}
     name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
     placeholder-search=${ifDefined(placeholderSearch)}
     dir=${ifDefined(direction)}
+    value-key="id"
     display-key="name"
     group-key="country"
     group-sorting="asc"
