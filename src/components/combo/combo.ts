@@ -190,7 +190,7 @@ export default class IgcComboComponent<T extends object>
 
   @watch('data')
   protected dataChanged() {
-    this.dataState = structuredClone(this.data);
+    this.dataState = structuredClone(this.data) as ComboRecord<T>[];
 
     if (this.hasUpdated) {
       this.pipeline();
