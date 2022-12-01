@@ -14,10 +14,10 @@ export class SelectionController<T extends object>
   public getValue(items: T[]) {
     return items
       .map((value) => {
-        if (typeof value === 'object') {
+        if (typeof value === 'object' && value !== null) {
           return this.host.displayKey
             ? String(value[this.host.displayKey])
-            : value;
+            : String(value);
         } else {
           return String(value);
         }

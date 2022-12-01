@@ -217,6 +217,10 @@ export default class IgcComboComponent<T extends object>
 
   @property({ attribute: false })
   public itemTemplate: (item: ComboRecord<T>) => TemplateResult = (item) => {
+    if (typeof item !== 'object' || item === null) {
+      return String(item) as any;
+    }
+
     if (this.displayKey) {
       return html`${item[this.displayKey]}`;
     }
@@ -225,7 +229,7 @@ export default class IgcComboComponent<T extends object>
   };
 
   @property({ attribute: false })
-  public headerItemTemplate: (item: ComboRecord<T>) => TemplateResult = (
+  public groupHeaderTemplate: (item: ComboRecord<T>) => TemplateResult = (
     item: ComboRecord<T>
   ) => {
     return html`${this.groupKey && item[this.groupKey]}`;
@@ -320,8 +324,8 @@ export default class IgcComboComponent<T extends object>
     emit && this.emitEvent('igcClosed');
   }
 
-  public toggle() {
-    this.open ? this.hide(true) : this.show(true);
+  public toggle(emit = false) {
+    this.open ? this.hide(emit) : this.show(emit);
   }
 
   protected itemRenderer = (item: T, index: number): TemplateResult => {
@@ -329,7 +333,7 @@ export default class IgcComboComponent<T extends object>
     const { selected } = this.selectionController;
 
     const headerTemplate = html`<igc-combo-header part="group-header"
-      >${this.headerItemTemplate(record)}</igc-combo-header
+      >${this.groupHeaderTemplate(record)}</igc-combo-header
     >`;
 
     const itemParts = partNameMap({
@@ -410,7 +414,7 @@ export default class IgcComboComponent<T extends object>
       <igc-input
         part="target"
         exportparts="container: input, input: native-input, label, prefix, suffix"
-        @click=${this.toggle}
+        @click=${() => this.toggle(true)}
         value=${ifDefined(this.value)}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}

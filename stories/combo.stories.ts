@@ -143,13 +143,13 @@ interface City {
 const itemTemplate = (item: City) => {
   return html`
     <div>
-      <span><b>${item.name}</b> [${item.zip}]</span>
+      <span><b>${item?.name ?? item}</b> [${item?.zip}]</span>
     </div>
   `;
 };
 
-const headerItemTemplate = (item: City) => {
-  return html`Country of ${item.country}`;
+const groupHeaderTemplate = (item: City) => {
+  return html`<div>Country of ${item?.country ?? item}</div>`;
 };
 
 const cities: City[] = [
@@ -238,7 +238,7 @@ const Template: Story<ArgTypes, Context> = (
     .data=${cities}
     .dir=${direction}
     .itemTemplate=${itemTemplate}
-    .headerItemTemplate=${headerItemTemplate}
+    .groupHeaderTemplate=${groupHeaderTemplate}
     label=${ifDefined(label)}
     name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
