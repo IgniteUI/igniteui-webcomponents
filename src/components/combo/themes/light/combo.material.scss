@@ -13,7 +13,7 @@
     }
 }
 
-:host(:focus-within) {
+:host([outlined]:focus-within) {
     igc-input::part(suffix) {
         margin-inline-end: -1px;
     }
