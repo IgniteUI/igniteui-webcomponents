@@ -44,7 +44,9 @@ export default class GroupDataOperation<T extends object> {
     const result = new Map();
 
     data.forEach((item: T) => {
-      const key = item[groupKey!];
+      if (typeof item !== 'object' || item === null) return;
+
+      const key = item[groupKey!] ?? 'Other';
       const group = result.get(key) ?? <ComboRecord<T>>[];
 
       if (group.length === 0) {

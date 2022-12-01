@@ -57,7 +57,6 @@
     "lit": "^2.4.0"
   },
   "devDependencies": {
-    "@faker-js/faker": "^7.6.0",
     "@igniteui/material-icons-extended": "^2.11.0",
     "@lit-labs/virtualizer": "^0.7.2",
     "@open-wc/eslint-config": "^8.0.2",

@@ -1,5 +1,10 @@
 import { ReactiveController } from 'lit';
-import { ComboHost, Values, IgcComboChangeEventArgs } from '../types.js';
+import {
+  ComboRecord,
+  ComboHost,
+  Values,
+  IgcComboChangeEventArgs,
+} from '../types.js';
 
 export class SelectionController<T extends object>
   implements ReactiveController
@@ -9,10 +14,12 @@ export class SelectionController<T extends object>
   public getValue(items: T[]) {
     return items
       .map((value) => {
-        if (typeof value === 'object') {
-          return this.host.displayKey ? value[this.host.displayKey] : value;
+        if (typeof value === 'object' && value !== null) {
+          return this.host.displayKey
+            ? String(value[this.host.displayKey])
+            : String(value);
         } else {
-          return value;
+          return String(value);
         }
       })
       .join(', ');
@@ -48,7 +55,8 @@ export class SelectionController<T extends object>
     if (items.length === 0) return;
 
     items.forEach((item) => {
-      if (this.host.dataState.find((i) => !i.header && i === item)) {
+      const i = this.host.dataState.includes(item as ComboRecord<T>);
+      if (i) {
         this._selected.add(item);
       }
     });
@@ -58,7 +66,8 @@ export class SelectionController<T extends object>
     if (items.length === 0) return;
 
     items.forEach((item) => {
-      if (this.host.dataState.find((i) => !i.header && i === item)) {
+      const i = this.host.dataState.includes(item as ComboRecord<T>);
+      if (i) {
         this._selected.delete(item);
       }
     });

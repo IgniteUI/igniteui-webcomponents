@@ -4,6 +4,7 @@
 :host {
     --component-size: var(--ig-size, var(--ig-size-medium));
 
+    display: block;
     font-family: var(--ig-font-family);
 
     > igc-input::part(input) {
@@ -36,6 +37,8 @@ igc-input::part(helper-text) {
 [part='list-wrapper'] {
     @include border-radius(rem(4px));
 
+    position: absolute;
+    width: 100%;
     background: color(surface);
     color: color(gray, 700);
     box-shadow: elevation(8);
