@@ -1,10 +1,6 @@
-import { ReactiveController, ReactiveControllerHost } from 'lit';
+import { ReactiveController } from 'lit';
 import IgcComboListComponent from '../combo-list.js';
-import IgcComboComponent from '../combo.js';
-import { ComboRecord } from '../types.js';
-
-type ComboHost<T extends object> = ReactiveControllerHost &
-  IgcComboComponent<T>;
+import { ComboRecord, ComboHost } from '../types.js';
 
 const START_INDEX: Readonly<number> = -1;
 
@@ -92,12 +88,12 @@ export class NavigationController<T extends object>
   }
 
   protected escape() {
-    this.host.hide();
+    this.host.hide(true);
   }
 
   protected enter() {
     this.space();
-    this.host.open = false;
+    this.host.hide(true);
   }
 
   protected inputArrowDown(container: IgcComboListComponent) {
@@ -109,7 +105,7 @@ export class NavigationController<T extends object>
   }
 
   protected hostArrowDown() {
-    this.host.show();
+    this.host.show(true);
   }
 
   protected arrowDown(container: IgcComboListComponent) {
