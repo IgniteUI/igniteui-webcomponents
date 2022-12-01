@@ -1,10 +1,6 @@
-import { ReactiveController, ReactiveControllerHost } from 'lit';
+import { ReactiveController } from 'lit';
 import IgcComboListComponent from '../combo-list.js';
-import IgcComboComponent from '../combo.js';
-import { ComboRecord } from '../types.js';
-
-type ComboHost<T extends object> = ReactiveControllerHost &
-  IgcComboComponent<T>;
+import { ComboRecord, ComboHost } from '../types.js';
 
 const START_INDEX: Readonly<number> = -1;
 
@@ -16,12 +12,28 @@ enum DIRECTION {
 export class NavigationController<T extends object>
   implements ReactiveController
 {
-  protected handlers = new Map(
+  protected hostHandlers = new Map(
+    Object.entries({
+      Escape: this.escape,
+      ArrowDown: this.hostArrowDown,
+    })
+  );
+
+  protected searchInputHandlers = new Map(
+    Object.entries({
+      Escape: this.escape,
+      ArrowDown: this.inputArrowDown,
+      Tab: this.inputArrowDown,
+    })
+  );
+
+  protected listHandlers = new Map(
     Object.entries({
       ArrowDown: this.arrowDown,
       ArrowUp: this.arrowUp,
       ' ': this.space,
       Enter: this.enter,
+      Escape: this.escape,
       Home: this.home,
       End: this.end,
     })
@@ -68,14 +80,32 @@ export class NavigationController<T extends object>
   }
 
   protected space() {
-    if (this.active !== -1) {
+    const item = this.host.dataState[this.active];
+
+    if (!item.header) {
       this.host.toggleSelect(this.active);
     }
   }
 
+  protected escape() {
+    this.host.hide(true);
+  }
+
   protected enter() {
     this.space();
-    this.host.open = false;
+    this.host.hide(true);
+  }
+
+  protected inputArrowDown(container: IgcComboListComponent) {
+    container.focus();
+
+    if (this.active === 0) {
+      this.active = this.firstItem;
+    }
+  }
+
+  protected hostArrowDown() {
+    this.host.show(true);
   }
 
   protected arrowDown(container: IgcComboListComponent) {
@@ -118,10 +148,31 @@ export class NavigationController<T extends object>
     this.active = START_INDEX;
   }
 
-  public navigate(event: KeyboardEvent, container: IgcComboListComponent) {
-    if (this.handlers.has(event.key)) {
+  public navigateTo(item: T, container: IgcComboListComponent) {
+    this.active = this.host.dataState.findIndex((i) => i === item);
+    container.scrollToIndex(this.active);
+  }
+
+  public navigateHost(event: KeyboardEvent) {
+    if (this.hostHandlers.has(event.key)) {
       event.preventDefault();
-      this.handlers.get(event.key)!.call(this, container);
+      this.hostHandlers.get(event.key)!.call(this);
+    }
+  }
+
+  public navigateInput(event: KeyboardEvent, container: IgcComboListComponent) {
+    event.stopPropagation();
+
+    if (this.searchInputHandlers.has(event.key)) {
+      event.preventDefault();
+      this.searchInputHandlers.get(event.key)!.call(this, container);
+    }
+  }
+
+  public navigateList(event: KeyboardEvent, container: IgcComboListComponent) {
+    if (this.listHandlers.has(event.key)) {
+      event.preventDefault();
+      this.listHandlers.get(event.key)!.call(this, container);
     }
   }
 }

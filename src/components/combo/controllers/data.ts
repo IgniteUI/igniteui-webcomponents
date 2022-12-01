@@ -41,7 +41,7 @@ export class DataController<T extends object> implements ReactiveController {
 
   public hostConnected() {}
 
-  public apply(data: T[]) {
+  public async apply(data: T[]): Promise<ComboRecord<T>[]> {
     data = this.filtering.apply(data, this);
     data = this.grouping.apply(data, this);
 
