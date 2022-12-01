@@ -95,7 +95,7 @@ const metadata = {
       defaultValue: false,
     },
     value: {
-      type: 'string | undefined',
+      type: 'string',
       control: 'text',
     },
   },
@@ -116,7 +116,7 @@ interface ArgTypes {
   open: boolean;
   caseSensitiveIcon: boolean;
   disableFiltering: boolean;
-  value: string | undefined;
+  value: string;
 }
 // endregion
 

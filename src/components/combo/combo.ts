@@ -82,8 +82,6 @@ export default class IgcComboComponent<T extends object>
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
 
-  private _value?: string | undefined;
-
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
   protected dataController = new DataController<T>(this);
@@ -217,13 +215,6 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.active = 0;
   }
 
-  @watch('selected', { waitUntilFirstUpdate: true })
-  protected updateValue() {
-    const { selected } = this.selectionController;
-    const values = Array.from(selected.values());
-    this._value = this.selectionController.getValue(values);
-  }
-
   @property({ attribute: false })
   public itemTemplate: (item: ComboRecord<T>) => TemplateResult = (item) => {
     if (this.displayKey) {
@@ -263,7 +254,9 @@ export default class IgcComboComponent<T extends object>
   }
 
   public get value() {
-    return this._value;
+    return this.selectionController.getValue(
+      Array.from(this.selectionController.selected)
+    );
   }
 
   public override async firstUpdated() {
@@ -404,7 +397,7 @@ export default class IgcComboComponent<T extends object>
         part="target"
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${this.toggle}
-        value=${ifDefined(this._value)}
+        value=${ifDefined(this.value)}
         placeholder=${ifDefined(this.placeholder)}
         label=${ifDefined(this.label)}
         dir=${this.dir}

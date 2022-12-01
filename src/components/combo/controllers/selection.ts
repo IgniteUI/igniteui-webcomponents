@@ -1,5 +1,5 @@
 import { ReactiveController } from 'lit';
-import { ComboRecord, ComboHost, Values, ComboChangeType } from '../types.js';
+import { ComboHost, Values, IgcComboChangeEventArgs } from '../types.js';
 
 export class SelectionController<T extends object>
   implements ReactiveController
@@ -18,11 +18,8 @@ export class SelectionController<T extends object>
       .join(', ');
   }
 
-  private handleChange(newValue: string, items: T[], type: ComboChangeType) {
-    return this.host.emitEvent('igcChange', {
-      cancelable: true,
-      detail: { newValue, items, type },
-    });
+  private handleChange(detail: IgcComboChangeEventArgs) {
+    return this.host.emitEvent('igcChange', { cancelable: true, detail });
   }
 
   private getItemsByValueKey(keys: Values<T>[]) {
@@ -31,31 +28,19 @@ export class SelectionController<T extends object>
     );
   }
 
-  private selectValueKeys(values: Values<T>[]) {
-    if (values.length === 0) return;
+  private selectValueKeys(keys: Values<T>[]) {
+    if (keys.length === 0) return;
 
-    values.forEach((value) => {
-      const item = this.host.dataState.find(
-        (i) => i[this.host.valueKey!] === value
-      );
-
-      if (item) {
-        this._selected.add(item);
-      }
+    this.getItemsByValueKey(keys).forEach((item) => {
+      return item && this._selected.add(item);
     });
   }
 
-  private deselectValueKeys(values: Values<T>[]) {
-    if (values.length === 0) return;
+  private deselectValueKeys(keys: Values<T>[]) {
+    if (keys.length === 0) return;
 
-    values.forEach((value) => {
-      const item = this.host.dataState.find(
-        (i) => i[this.host.valueKey!] === value
-      );
-
-      if (item) {
-        this._selected.delete(item);
-      }
+    this.getItemsByValueKey(keys).forEach((item) => {
+      return item && this._selected.delete(item);
     });
   }
 
@@ -63,7 +48,9 @@ export class SelectionController<T extends object>
     if (items.length === 0) return;
 
     items.forEach((item) => {
-      this._selected.add(item as ComboRecord<T>);
+      if (this.host.dataState.find((i) => !i.header && i === item)) {
+        this._selected.add(item);
+      }
     });
   }
 
@@ -71,7 +58,9 @@ export class SelectionController<T extends object>
     if (items.length === 0) return;
 
     items.forEach((item) => {
-      this._selected.delete(item as ComboRecord<T>);
+      if (this.host.dataState.find((i) => !i.header && i === item)) {
+        this._selected.delete(item);
+      }
     });
   }
 
@@ -81,13 +70,12 @@ export class SelectionController<T extends object>
       .forEach((item) => {
         this._selected.add(item);
       });
-
-    this.host.requestUpdate('selected');
+    this.host.requestUpdate();
   }
 
   private deselectAll() {
     this._selected.clear();
-    this.host.requestUpdate('selected');
+    this.host.requestUpdate();
   }
 
   public async select(items?: T[] | Values<T>[], emit = false) {
@@ -96,13 +84,19 @@ export class SelectionController<T extends object>
       return;
     }
 
-    const values = this.getItemsByValueKey(items as Values<T>[]);
+    const values = this.host.valueKey
+      ? this.getItemsByValueKey(items as Values<T>[])
+      : items;
     const selected = Array.from(this._selected.values());
     const payload = [...values, ...selected] as T[];
 
     if (
       emit &&
-      !this.handleChange(this.getValue(payload), values as T[], 'selection')
+      !this.handleChange({
+        newValue: this.getValue(payload),
+        items: values as T[],
+        type: 'selection',
+      })
     ) {
       return;
     }
@@ -113,7 +107,7 @@ export class SelectionController<T extends object>
       this.selectObjects(items as T[]);
     }
 
-    this.host.requestUpdate('selected');
+    this.host.requestUpdate();
   }
 
   public async deselect(items?: T[] | Values<T>[], emit = false) {
@@ -122,7 +116,9 @@ export class SelectionController<T extends object>
       return;
     }
 
-    const values = this.getItemsByValueKey(items as Values<T>[]);
+    const values = this.host.valueKey
+      ? this.getItemsByValueKey(items as Values<T>[])
+      : items;
     const selected = Array.from(this._selected.values());
     const payload = structuredClone(selected);
 
@@ -130,7 +126,11 @@ export class SelectionController<T extends object>
 
     if (
       emit &&
-      !this.handleChange(this.getValue(payload), values as T[], 'deselection')
+      !this.handleChange({
+        newValue: this.getValue(payload),
+        items: values as T[],
+        type: 'deselection',
+      })
     ) {
       return;
     }
@@ -141,7 +141,7 @@ export class SelectionController<T extends object>
       this.deselectObjects(items as T[]);
     }
 
-    this.host.requestUpdate('selected');
+    this.host.requestUpdate();
   }
 
   public get selected(): Set<T> {
