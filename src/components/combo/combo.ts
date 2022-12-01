@@ -320,6 +320,22 @@ export default class IgcComboComponent<T extends object>
     );
   }
 
+  @watch('value')
+  protected validate() {
+    this.updateComplete.then(() => this.reportValidity());
+  }
+
+  /** Checks the validity of the control. */
+  public reportValidity() {
+    this.invalid = this.required && !this.value;
+    return !this.invalid;
+  }
+
+  /** A wrapper around the reportValidity method to comply with the native input API. */
+  public checkValidity() {
+    return this.reportValidity();
+  }
+
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions) {
     this.target.focus(options);
