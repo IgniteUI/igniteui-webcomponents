@@ -83,18 +83,33 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    groupSorting: {
+      type: '"asc" | "desc"',
+      description:
+        'Sorts the items in each group by ascending or descending order.',
+      options: ['asc', 'desc'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'asc',
+    },
     caseSensitiveIcon: {
       type: 'boolean',
+      description:
+        'Enables the case sensitive search icon in the filtering input.',
       control: 'boolean',
       defaultValue: false,
     },
     disableFiltering: {
       type: 'boolean',
+      description: 'Disables the filtering of the list of options.',
       control: 'boolean',
       defaultValue: false,
     },
     value: {
       type: 'string',
+      description:
+        'Returns the current selection as a list of commma separated values,\nrepresented by the display key, when provided.',
       control: 'text',
     },
   },
@@ -113,6 +128,7 @@ interface ArgTypes {
   placeholderSearch: string;
   dir: 'ltr' | 'rtl' | 'auto';
   open: boolean;
+  groupSorting: 'asc' | 'desc';
   caseSensitiveIcon: boolean;
   disableFiltering: boolean;
   value: string;
@@ -231,6 +247,7 @@ const Template: Story<ArgTypes, Context> = (
     required = false,
     autofocus = false,
     autofocusOptions,
+    groupSorting = 'asc',
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -247,7 +264,7 @@ const Template: Story<ArgTypes, Context> = (
     value-key="id"
     display-key="name"
     group-key="country"
-    group-sorting="asc"
+    group-sorting="${ifDefined(groupSorting)}"
     ?case-sensitive-icon=${ifDefined(caseSensitiveIcon)}
     ?disable-filtering=${ifDefined(disableFiltering)}
     ?open=${open}
