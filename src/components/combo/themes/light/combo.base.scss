@@ -9,6 +9,10 @@
 
     > igc-input::part(input) {
         cursor: pointer;
+
+        &::selection {
+            background: transparent;
+        }
     }
 }
 
