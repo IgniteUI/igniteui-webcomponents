@@ -37,7 +37,10 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   private inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
   private labelId = `checkbox-label-${this.inputId}`;
 
-  /** Draws the checkbox in indeterminate state. */
+  /**
+   * Draws the checkbox in indeterminate state.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public indeterminate = false;
 

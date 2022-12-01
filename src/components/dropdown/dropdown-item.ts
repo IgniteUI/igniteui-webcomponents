@@ -31,8 +31,9 @@ export default class IgcDropdownItemComponent extends LitElement {
   /**
    * Тhe current value of the item.
    * If not specified, the element's text content is used.
+   * @attr
    */
-  @property({ type: String })
+  @property()
   public get value() {
     return this._value ? this._value : this.textContent ?? '';
   }
@@ -45,18 +46,21 @@ export default class IgcDropdownItemComponent extends LitElement {
 
   /**
    * Determines whether the item is selected.
+   * @attr
    */
   @property({ type: Boolean, reflect: true })
   public selected = false;
 
   /**
    * Determines whether the item is active.
+   * @attr
    */
   @property({ type: Boolean, reflect: true })
   public active = false;
 
   /**
    * Determines whether the item is disabled.
+   * @attr
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;

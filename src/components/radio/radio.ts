@@ -61,36 +61,60 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   @state()
   protected hideLabel = false;
 
-  /** The name attribute of the control. */
+  /**
+   * The name attribute of the control.
+   * @attr
+   */
   @property()
   public name!: string;
 
-  /** The value attribute of the control. */
+  /**
+   * The value attribute of the control.
+   * @attr
+   */
   @property()
   public value!: string;
 
-  /** Makes the control a required field. */
+  /**
+   * Makes the control a required field.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public required = false;
 
-  /** The checked state of the control. */
+  /**
+   * The checked state of the control.
+   * @attr
+   */
   @property({ type: Boolean })
   @blazorTwoWayBind('igcChange', 'detail')
   public checked = false;
 
-  /** Disables the radio control. */
+  /**
+   * Disables the radio control.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  /** Controls the validity of the control. */
+  /**
+   * Controls the validity of the control.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public invalid = false;
 
-  /** The label position of the radio control. */
+  /**
+   * The label position of the radio control.
+   * @attr label-position
+   */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
 
-  /** Sets the aria-labelledby attribute for the radio control. */
+  /**
+   * Sets the aria-labelledby attribute for the radio control.
+   * @attr
+   */
   @property({ reflect: true, attribute: 'aria-labelledby' })
   public ariaLabelledby!: string;
 

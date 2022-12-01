@@ -46,6 +46,7 @@ const metadata = {
     },
     outlined: {
       type: 'boolean',
+      description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
       defaultValue: false,
     },

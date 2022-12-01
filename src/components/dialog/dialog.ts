@@ -54,11 +54,17 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @query('dialog', true)
   private dialog!: HTMLDialogElement;
 
-  /** Whether the dialog should be closed when pressing the 'ESCAPE' button.  */
+  /**
+   * Whether the dialog should be closed when pressing the 'ESCAPE' button.
+   * @attr close-on-escape
+   */
   @property({ type: Boolean, attribute: 'close-on-escape' })
   public closeOnEscape = true;
 
-  /** Whether the dialog should be closed when clicking outside of it.  */
+  /**
+   * Whether the dialog should be closed when clicking outside of it.
+   * @attr close-on-outside-click
+   */
   @property({ type: Boolean, attribute: 'close-on-outside-click' })
   public closeOnOutsideClick = false;
 
@@ -67,15 +73,22 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    *
    * When there is projected content in the `footer` slot this property
    * has no effect.
+   * @attr hide-default-action
    */
   @property({ type: Boolean, attribute: 'hide-default-action' })
   public hideDefaultAction = false;
 
-  /** Whether the dialog is opened. */
+  /**
+   * Whether the dialog is opened.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  /** Sets the title of the dialog.  */
+  /**
+   * Sets the title of the dialog.
+   * @attr
+   */
   @property()
   public override title!: string;
 

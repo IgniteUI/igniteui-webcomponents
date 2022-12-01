@@ -86,7 +86,8 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   /** The resource strings. */
   @property({ attribute: false })
-  public resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
+  public resourceStrings: IgcCalendarResourceStrings =
+    IgcCalendarResourceStringEN;
 
   @watch('weekDayFormat')
   @watch('locale')
