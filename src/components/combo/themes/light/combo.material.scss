@@ -1,1 +1,38 @@
-@use '../../../select/themes/light/select.material' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../select/themes/light/select.material';
+
+[part='toggle-icon'] {
+    background: color(gray, 300);
+}
+
+[part='target']:not([outlined]) {
+    &:focus-within {
+        [part='toggle-icon'] {
+            background: color(gray, 400, .3);
+        }
+    }
+}
+
+:host([outlined]:focus-within) {
+    igc-input::part(suffix) {
+        margin-inline-end: -1px;
+    }
+
+    igc-input::part(prefix) {
+        margin-inline-start: -1px;
+    }
+}
+
+[part~='case-icon'] {
+    padding: rem(8px);
+}
+
+:host {
+    ::slotted([slot='helper-text']) {
+        @include type-style('caption');
+
+        padding: 0 rem(8px);
+        margin-top: rem(4px);
+        color: color(gray, 600);
+    }
+}

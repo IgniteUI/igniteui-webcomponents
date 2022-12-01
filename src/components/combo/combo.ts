@@ -413,6 +413,7 @@ export default class IgcComboComponent<T extends object>
 
     return html`
       <igc-input
+        outlined
         part="target"
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${() => this.toggle(true)}

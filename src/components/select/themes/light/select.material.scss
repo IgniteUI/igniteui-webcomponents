@@ -1,13 +1,13 @@
-@use '../../../../styles/utilities' as utils;
+@use '../../../../styles/utilities' as *;
 
-$idle-color: utils.color(gray, 600) !default;
-$idle-hover-color: utils.color(gray, 800) !default;
-$hover-background: utils.color(gray, 200) !default;
+$idle-color: color(gray, 600) !default;
+$idle-hover-color: color(gray, 800) !default;
+$hover-background: color(gray, 200) !default;
 $focus-background: var(--focus-background, color(gray, 300)) !default;
-$active-color: utils.color(primary, 500) !default;
-$error-color: utils.color(error, 500) !default;
-$idle-border-width: utils.rem(1px) !default;
-$active-border-width: utils.rem(2px) !default;
+$active-color: color(primary, 500) !default;
+$error-color: color(error, 500) !default;
+$idle-border-width: rem(1px) !default;
+$active-border-width: rem(2px) !default;
 
 :host([outlined]:focus-within) {
     igc-input[readonly]:not([disabled])::part(start) {
@@ -100,17 +100,5 @@ $active-border-width: utils.rem(2px) !default;
 
     igc-input[readonly]:not([disabled])::part(label) {
         color: $error-color;
-    }
-}
-
-:host(:not([outlined]):focus-within) {
-    igc-input[readonly]:not([disabled])::part(container) {
-        background: var(--focus-background, utils.color(gray, 300));
-        border-bottom: utils.color(primary, 500);
-
-        &::after {
-            transform: scaleX(1);
-            opacity: 1;
-        }
     }
 }

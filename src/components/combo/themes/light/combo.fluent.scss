@@ -1,1 +1,27 @@
-@use '../../../select/themes/light/select.fluent' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../select/themes/light/select.fluent';
+
+:host {
+    ::slotted([slot='helper-text']) {
+        @include type-style('caption');
+
+        display: block;
+        padding: 0;
+        margin-top: rem(8px);
+        color: color(gray, 600);
+    }
+}
+
+[part='filter-input'] {
+    padding: pad(2px, 4px, 8px);
+}
+
+[part='list-wrapper'] {
+    igc-input::part(suffix) {
+        background: transparent;
+    }
+
+    igc-input::part(input) {
+        height: var(--size);
+    }
+}

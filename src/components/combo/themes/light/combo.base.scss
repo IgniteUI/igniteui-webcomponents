@@ -2,30 +2,34 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+
     display: block;
     font-family: var(--ig-font-family);
-}
 
-igc-input {
-    cursor: pointer;
-}
-
-igc-input::part(input) {
-    cursor: pointer;
-
-    &::selection {
-        background: transparent;
+    > igc-input::part(input) {
+        cursor: pointer;
     }
+}
+
+igc-input::part(helper-text) {
+    position: absolute;
 }
 
 :host([disabled]) {
+    igc-input::part(label),
+    igc-input::part(input)::placeholder,
     ::slotted([slot='helper-text']) {
         color: color(gray, 400);
     }
+
+    pointer-events: none;
+    user-select: none;
 }
 
 [part='clear-icon'],
-[part='toggle-icon'] {
+[part='toggle-icon'],
+[part~='case-icon'] {
     display: flex;
     cursor: pointer;
 }
@@ -65,11 +69,20 @@ igc-input::part(input) {
         border-inline-end: 0;
         border-block-start: 0;
         box-shadow: none;
+
+        &::selection {
+            background: color(primary, 100);
+        }
+    }
+
+    [part='case-icon active'] {
+        color: color(primary, 500);
     }
 }
 
 [part='filter-input'] {
-    padding: rem(8px) rem(16px);
+    padding-inline: pad-inline(4px, 8px, 16px);
+    padding-block: pad-block(8px);
     z-index: 26;
 }
 
@@ -84,4 +97,14 @@ igc-input::part(input) {
 
 [part='case-icon active'] {
     color: color(gray, 900);
+}
+
+[part='empty'] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    color: color(gray, 700);
+    padding: rem(16px) rem(24px);
+    font-size: rem(13px);
 }

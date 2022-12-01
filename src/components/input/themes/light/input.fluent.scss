@@ -26,6 +26,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
         color: color(gray, 700);
         background: color(gray, 100);
         font-size: rem(14px);
+        cursor: default;
     }
 
     [name='prefix']::slotted(*),
