@@ -332,8 +332,14 @@ export default class IgcComboComponent<T extends object>
       >${this.headerItemTemplate(record)}</igc-combo-header
     >`;
 
+    const itemParts = partNameMap({
+      item: true,
+      selected: selected.has(item),
+      active: this.navigationController.active === index,
+    });
+
     const itemTemplate = html`<igc-combo-item
-      part="item"
+      part="${itemParts}"
       @click=${this.itemClickHandler.bind(this)}
       .index=${index}
       .active=${this.navigationController.active === index}
