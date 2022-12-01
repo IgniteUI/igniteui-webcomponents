@@ -100,10 +100,11 @@ igc-input::part(helper-text) {
 }
 
 [part='empty'] {
-    @include type-style('caption');
-
-    text-align: center;
-    padding-inline: pad-inline(8px, 16px, 24px);
-    padding-block-start: pad-block(4px, 8px, 16px);
-    padding-block-end: pad-block(8px, 16px, 24px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    color: color(gray, 700);
+    padding: rem(16px) rem(24px);
+    font-size: rem(13px);
 }

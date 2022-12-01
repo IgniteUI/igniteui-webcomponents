@@ -13,6 +13,16 @@
     }
 }
 
+:host(:focus-within) {
+    igc-input::part(suffix) {
+        margin-inline-end: -1px;
+    }
+
+    igc-input::part(prefix) {
+        margin-inline-start: -1px;
+    }
+}
+
 [part~='case-icon'] {
     padding: rem(8px);
 }
