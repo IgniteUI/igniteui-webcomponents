@@ -344,6 +344,7 @@ export default class IgcComboComponent<T extends object>
 
     const itemTemplate = html`<igc-combo-item
       part="${itemParts}"
+      exportparts="checkbox, checkbox-indicator, checked"
       @click=${this.itemClickHandler.bind(this)}
       .index=${index}
       .active=${this.navigationController.active === index}
