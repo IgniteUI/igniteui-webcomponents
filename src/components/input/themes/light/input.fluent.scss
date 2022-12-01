@@ -105,11 +105,11 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 
     [part='prefix'] {
-        margin-inline-start: rem(-1px);
+        margin-inline-start: calc($focused-border-width / 2 * -1);
     }
 
     [part='suffix'] {
-        margin-inline-end: rem(-1px);
+        margin-inline-end: calc($focused-border-width / 2 * -1);
     }
 
     [name='prefix']::slotted(*),
@@ -140,6 +140,12 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
     [part='helper-text'] {
         color: color(error, 500);
+    }
+}
+
+:host([disabled][outlined][invalid]) {
+    [part^='container'] {
+        border-color: color(gray, 100);
     }
 }
 

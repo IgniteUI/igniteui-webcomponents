@@ -26,3 +26,9 @@
         }
     }
 }
+
+:host([disabled]) {
+    [part='clear-icon'] {
+        border-inline-end: 1px solid color(gray, 300);
+    }
+}
