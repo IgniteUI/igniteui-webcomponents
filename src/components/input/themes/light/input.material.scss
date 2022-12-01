@@ -317,6 +317,7 @@ $fs: rem(16px) !default;
 }
 
 // Filled Style
+:host([outlined]:active),
 :host([outlined]:focus),
 :host([outlined]:focus-within) {
     [part='suffix'] {
