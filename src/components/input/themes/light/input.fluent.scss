@@ -105,11 +105,11 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 
     [part='prefix'] {
-        margin-inline-start: calc($focused-border-width / 2 * -1);
+        margin-inline-start: rem(-1px);
     }
 
     [part='suffix'] {
-        margin-inline-end: calc($focused-border-width / 2 * -1);
+        margin-inline-end: rem(-1px);
     }
 
     [name='prefix']::slotted(*),
