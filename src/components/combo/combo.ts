@@ -370,11 +370,6 @@ export default class IgcComboComponent<T extends object>
     );
   }
 
-  protected override async firstUpdated() {
-    await this.updateComplete;
-    this.requestUpdate();
-  }
-
   protected override async getUpdateComplete() {
     const result = await super.getUpdateComplete();
     await this.toggleController.rendered;
