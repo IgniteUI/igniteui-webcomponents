@@ -1,4 +1,4 @@
-import { DataController } from '../controllers/data';
+import { DataController } from '../controllers/data.js';
 
 export default class FilterDataOperation<T extends object> {
   public apply(data: T[], controller: DataController<T>) {
