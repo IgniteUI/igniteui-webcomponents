@@ -12,6 +12,23 @@
     }
 }
 
+:host([invalid]:focus-within) {
+    igc-input::part(input) {
+        height: calc(var(--size) - #{rem(4px)});
+    }
+
+    igc-input::part(suffix) {
+        height: var(--size);
+        margin-inline-end: rem(-1px);
+        margin-block-start: rem(-2px);
+    }
+
+    igc-input::part(prefix) {
+        margin-inline-start: rem(-1px);
+        margin-block-start: rem(-2px);
+    }
+}
+
 [part='filter-input'] {
     padding: pad(2px, 4px, 8px);
 }
