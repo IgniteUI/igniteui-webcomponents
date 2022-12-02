@@ -107,8 +107,9 @@ export default class IgcComboComponent<T extends object>
   @queryAssignedElements({ slot: 'prefix' })
   protected inputPrefix!: Array<HTMLElement>;
 
+  /** @hidden @internal */
   @query('[part="search-input"]')
-  private input!: IgcInputComponent;
+  public input!: IgcInputComponent;
 
   @query('[part="input"]')
   private target!: IgcInputComponent;
@@ -624,6 +625,7 @@ export default class IgcComboComponent<T extends object>
         <igc-combo-list
           id="dropdown"
           part="list"
+          aria-label="${this.label}"
           .items=${this.dataState}
           .renderItem=${this.itemRenderer}
           ?hidden=${this.dataState.length === 0}

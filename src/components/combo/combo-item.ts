@@ -47,12 +47,13 @@ export default class IgcComboItemComponent extends LitElement {
     return html`
       <section part="prefix">
         <igc-checkbox
+          aria-hidden="true"
           ?checked=${this.selected}
           tabindex="-1"
           exportparts="control: checkbox, indicator: checkbox-indicator, checked"
         ></igc-checkbox>
       </section>
-      <section part="content">
+      <section id="content" part="content">
         <slot></slot>
       </section>
     `;

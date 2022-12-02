@@ -144,6 +144,12 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 }
 
+:host([disabled][outlined][invalid]) {
+    [part^='container'] {
+        border-color: color(gray, 100);
+    }
+}
+
 :host([disabled]) {
     pointer-events: none;
 
