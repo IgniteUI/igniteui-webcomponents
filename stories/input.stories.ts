@@ -86,7 +86,7 @@ const metadata = {
     },
     value: {
       type: 'string',
-      description: 'The value attribute of the control.',
+      description: 'The value of the control.',
       control: 'text',
       defaultValue: '',
     },
@@ -97,6 +97,7 @@ const metadata = {
     },
     outlined: {
       type: 'boolean',
+      description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
       defaultValue: false,
     },

@@ -29,11 +29,17 @@ export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
   public static override styles = styles;
 
-  /** The position of the drawer. */
+  /**
+   * The position of the drawer.
+   * @attr
+   */
   @property({ reflect: true })
   public position: 'start' | 'end' | 'top' | 'bottom' | 'relative' = 'start';
 
-  /** Determines whether the drawer is opened. */
+  /**
+   * Determines whether the drawer is opened.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public open = false;
 

@@ -31,15 +31,24 @@ export default class IgcTabComponent extends LitElement {
   @query('[part="base"]', true)
   private tab!: HTMLElement;
 
-  /** The id of the tab panel which will be controlled by the tab. */
-  @property({ type: String })
+  /**
+   * The id of the tab panel which will be controlled by the tab.
+   * @attr
+   */
+  @property()
   public panel = '';
 
-  /** Determines whether the tab is selected. */
+  /**
+   * Determines whether the tab is selected.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public selected = false;
 
-  /** Determines whether the tab is disabled. */
+  /**
+   * Determines whether the tab is disabled.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 

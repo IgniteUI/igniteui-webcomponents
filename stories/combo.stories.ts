@@ -45,10 +45,9 @@ const metadata = {
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
     },
-    autofocusOptions: {
+    autofocusList: {
       type: 'boolean',
-      description:
-        'Focuses the first item in the list of options when the menu opens.',
+      description: 'Focuses the list of options when the menu opens.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -83,18 +82,43 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
+    flip: {
+      type: 'boolean',
+      control: 'boolean',
+      defaultValue: true,
+    },
+    sameWidth: {
+      type: 'boolean',
+      control: 'boolean',
+      defaultValue: true,
+    },
+    groupSorting: {
+      type: '"asc" | "desc"',
+      description:
+        'Sorts the items in each group by ascending or descending order.',
+      options: ['asc', 'desc'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'asc',
+    },
     caseSensitiveIcon: {
       type: 'boolean',
+      description:
+        'Enables the case sensitive search icon in the filtering input.',
       control: 'boolean',
       defaultValue: false,
     },
     disableFiltering: {
       type: 'boolean',
+      description: 'Disables the filtering of the list of options.',
       control: 'boolean',
       defaultValue: false,
     },
     value: {
       type: 'string',
+      description:
+        'Returns the current selection as a list of commma separated values,\nrepresented by the display key, when provided.',
       control: 'text',
     },
   },
@@ -107,12 +131,15 @@ interface ArgTypes {
   invalid: boolean;
   outlined: boolean;
   autofocus: boolean;
-  autofocusOptions: boolean;
+  autofocusList: boolean;
   label: string;
   placeholder: string;
   placeholderSearch: string;
   dir: 'ltr' | 'rtl' | 'auto';
   open: boolean;
+  flip: boolean;
+  sameWidth: boolean;
+  groupSorting: 'asc' | 'desc';
   caseSensitiveIcon: boolean;
   disableFiltering: boolean;
   value: string;
@@ -230,7 +257,8 @@ const Template: Story<ArgTypes, Context> = (
     invalid = false,
     required = false,
     autofocus = false,
-    autofocusOptions,
+    autofocusList,
+    groupSorting = 'asc',
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
@@ -247,12 +275,12 @@ const Template: Story<ArgTypes, Context> = (
     value-key="id"
     display-key="name"
     group-key="country"
-    group-sorting="asc"
+    group-sorting="${ifDefined(groupSorting)}"
     ?case-sensitive-icon=${ifDefined(caseSensitiveIcon)}
     ?disable-filtering=${ifDefined(disableFiltering)}
     ?open=${open}
     ?autofocus=${autofocus}
-    ?autofocus-options=${ifDefined(autofocusOptions)}
+    ?autofocus-list=${ifDefined(autofocusList)}
     ?outlined=${outlined}
     ?required=${required}
     ?disabled=${disabled}

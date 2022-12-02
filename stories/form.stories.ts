@@ -55,6 +55,12 @@ const Template: Story<ArgTypes, Context> = ({
 }: ArgTypes) => {
   const radios = ['Male', 'Female'];
   const minDate = new Date(2020, 2, 3);
+  const comboData = [
+    { make: 'Volvo', group: 'Swedish cars' },
+    { make: 'Saab', group: 'Swedish cars' },
+    { make: 'Mercedes', group: 'German cars' },
+    { make: 'Audi', group: 'German cars' },
+  ];
 
   return html`
     <igc-form id="form" ?novalidate=${novalidate}>
@@ -63,7 +69,13 @@ The cat was playing<br> in the garden.</textarea
       >
       <br /><br />
       <label for="full-name">Full name:</label>
-      <input type="text" id="full-name" name="full-name" value="Your name" />
+      <input
+        type="text"
+        id="full-name"
+        name="full-name"
+        value="Your name"
+      />
+      <br /><br />
       <div>
         <label>Gender:</label>
         <igc-radio-group id="gender">
@@ -75,6 +87,7 @@ The cat was playing<br> in the garden.</textarea
           )}
         </igc-radio-group>
       </div>
+      <br /><br />
       <label for="cars-multiple">Choose multiple cars:</label>
       <select name="cars-multiple" id="cars-multiple" multiple>
         <option value="volvo" selected>Volvo</option>
@@ -94,6 +107,7 @@ The cat was playing<br> in the garden.</textarea
           <option value="audi">Audi</option>
         </optgroup>
       </select>
+      <br /><br />
       <igc-select
         name="cars-custom"
         label="Favorite car"
@@ -111,6 +125,17 @@ The cat was playing<br> in the garden.</textarea
           <igc-select-item value="audi">Audi</igc-select-item>
         </igc-select-group>
       </igc-select>
+      <br /><br />
+      <igc-combo
+        .data=${comboData}
+        display-key="make"
+        group-key="group"
+        name="cars-combo"
+        label="Favorite car(s)"
+        placeholder="Choose cars"
+        required
+      >
+      </igc-combo>
       <br /><br />
       <label for="browser">Choose your browser from the list:</label>
       <input list="browsers" name="browser" id="browser" />
@@ -172,8 +197,16 @@ The cat was playing<br> in the garden.</textarea
         max-value="2020-04-02T21:00:00.000Z"
         required
       >
-        <igc-icon name="clear" slot="prefix" @click=${handleClear}></igc-icon>
-        <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
+        <igc-icon
+          name="clear"
+          slot="prefix"
+          @click=${handleClear}
+        ></igc-icon>
+        <igc-icon
+          name="up"
+          slot="suffix"
+          @click=${handleIncrement}
+        ></igc-icon>
         <igc-icon
           name="down"
           slot="suffix"
@@ -186,6 +219,8 @@ The cat was playing<br> in the garden.</textarea
       <igc-button type="reset">Reset</igc-button>
       <igc-button type="submit">Submit</igc-button>
     </igc-form>
+  </igc-combo></igc-combo
+>
   `;
 };
 

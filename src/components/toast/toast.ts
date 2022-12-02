@@ -16,23 +16,29 @@ import { styles as indigo } from './themes/toast.indigo.css.js';
 
 @themes({ bootstrap, fluent, indigo })
 export default class IgcToastComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-toast';
-
-  /** @private */
+  public static readonly tagName = 'igc-toast';
   public static override styles = [styles];
 
-  private displayTimeout: any;
+  private displayTimeout!: ReturnType<typeof setTimeout>;
 
-  /** Determines whether the toast is opened. */
+  /**
+   * Determines whether the toast is opened.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  /** Determines the time after which the toast will close */
+  /**
+   * Determines the time after which the toast will close
+   * @attr display-time
+   */
   @property({ type: Number, reflect: false, attribute: 'display-time' })
   public displayTime = 4000;
 
-  /** Determines whether the toast is closed automatically or not. */
+  /**
+   * Determines whether the toast is closed automatically or not.
+   * @attr keep-open
+   */
   @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
   public keepOpen = false;
 

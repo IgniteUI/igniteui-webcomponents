@@ -48,15 +48,24 @@ export default class IgcTreeComponent extends SizableMixin(
   @blazorSuppress()
   public navService!: IgcTreeNavigationService;
 
-  /** Whether a single or multiple of a parent's child items can be expanded. */
+  /**
+   * Whether a single or multiple of a parent's child items can be expanded.
+   * @attr single-branch-expand
+   */
   @property({ attribute: 'single-branch-expand', reflect: true, type: Boolean })
   public singleBranchExpand = false;
 
-  /** The selection state of the tree. */
+  /**
+   * The selection state of the tree.
+   * @attr
+   */
   @property({ reflect: true })
   public selection: 'none' | 'multiple' | 'cascade' = 'none';
 
-  /** The direction attribute of the control. */
+  /**
+   * The direction attribute of the control.
+   * @attr
+   */
   @property({ reflect: true })
   public override dir: Direction = 'auto';
 

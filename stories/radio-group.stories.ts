@@ -9,6 +9,7 @@ const metadata = {
   argTypes: {
     alignment: {
       type: '"vertical" | "horizontal"',
+      description: 'Alignment of the radio controls inside this group.',
       options: ['vertical', 'horizontal'],
       control: {
         type: 'inline-radio',
