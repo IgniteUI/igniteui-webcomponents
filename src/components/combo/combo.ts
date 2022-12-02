@@ -64,13 +64,24 @@ defineComponents(
  * @fires igcClosing - Emitter just before the list of options is closed.
  * @fires igcClosed - Emitted after the list of options is closed.
  *
- * @csspart list - The list of options wrapper.
- * @csspart input - The encapsulated igc-input.
  * @csspart label - The encapsulated text label.
+ * @csspart input - The main input field.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart toggle-icon - The toggle icon wrapper.
+ * @csspart clear-icon - The clear icon wrapper.
  * @csspart helper-text - The helper text wrapper.
+ * @csspart search-input - The search input field.
+ * @csspart list-wrapper - The list of options wrapper.
+ * @csspart list - The list of options box.
+ * @csspart item - Represents each item in the list of options.
+ * @csspart group-header - Represents each header in the list of options.
+ * @csspart active - Appended to the item parts list when the item is active.
+ * @csspart selected - Appended to the item parts list when the item is selected.
+ * @csspart checkbox - Represents each checkbox of each list item.
+ * @csspart checkbox-indicator - Represents the checkbox indicator of each list item.
+ * @csspart checked - Appended to checkbox parts list when checkbox is checked.
+ * @csspart empty - The container holding the empty content.
  */
 @themes({ material, bootstrap, fluent, indigo })
 export default class IgcComboComponent<T extends object>
