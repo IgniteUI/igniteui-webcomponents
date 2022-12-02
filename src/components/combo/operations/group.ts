@@ -41,13 +41,13 @@ export default class GroupDataOperation<T extends object> {
 
     if (!groupKey) return data;
 
-    const result = new Map();
+    const groups = new Map();
 
     data.forEach((item: T) => {
       if (typeof item !== 'object' || item === null) return;
 
       const key = item[groupKey!] ?? 'Other';
-      const group = result.get(key) ?? <ComboRecord<T>>[];
+      const group = groups.get(key) ?? <ComboRecord<T>>[];
 
       if (group.length === 0) {
         group.push({
@@ -59,17 +59,18 @@ export default class GroupDataOperation<T extends object> {
       }
 
       group.push(item);
+      groups.set(key, group);
+    });
 
+    groups.forEach((group) => {
       group.sort((a: ComboRecord<T>, b: ComboRecord<T>) => {
         if (!a.header && !b.header) {
           return this.compareObjects(a, b, displayKey!, direction);
         }
         return 1;
       });
-
-      result.set(key, group);
     });
 
-    return Array.from(result.values()).flat();
+    return Array.from(groups.values()).flat();
   }
 }
