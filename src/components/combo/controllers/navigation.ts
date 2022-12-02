@@ -22,6 +22,7 @@ export class NavigationController<T extends object>
   protected searchInputHandlers = new Map(
     Object.entries({
       Escape: this.escape,
+      ArrowUp: this.escape,
       ArrowDown: this.inputArrowDown,
       Tab: this.inputArrowDown,
     })
@@ -34,6 +35,7 @@ export class NavigationController<T extends object>
       ' ': this.space,
       Enter: this.enter,
       Escape: this.escape,
+      Tab: this.escape,
       Home: this.home,
       End: this.end,
     })
@@ -121,7 +123,12 @@ export class NavigationController<T extends object>
   protected getNextItem(direction: DIRECTION) {
     const next = this.getNearestItem(this.currentItem, direction);
 
-    if (next === -1) return;
+    if (next === -1) {
+      if (this.active === this.lastItem) return;
+      this.host.input.focus();
+      return;
+    }
+
     this.active = next;
   }
 
