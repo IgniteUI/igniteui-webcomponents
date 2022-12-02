@@ -303,14 +303,20 @@ export default class IgcComboComponent<T extends object>
 
     this.toggleController = new IgcToggleController(this, {
       target: this.target,
+      closeCallback: async () => {
+        if (!this.handleClosing()) return;
+        this.open = false;
+
+        await this.updateComplete;
+        this.emitEvent('igcClosed');
+      },
     });
 
     this.addEventListener('focus', () => {
       this.emitEvent('igcFocus');
     });
 
-    this.addEventListener('blur', async () => {
-      await this.hide(true);
+    this.addEventListener('blur', () => {
       this.emitEvent('igcBlur');
     });
 
@@ -423,6 +429,7 @@ export default class IgcComboComponent<T extends object>
 
     await this.updateComplete;
     emit && this.emitEvent('igcClosed');
+    this.target.focus();
   }
 
   /** Toggles the list of options. */
