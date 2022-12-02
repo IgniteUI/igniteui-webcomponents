@@ -36,6 +36,7 @@ import { partNameMap } from '../common/util.js';
 import { filteringOptionsConverter } from './utils/converters.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 
 defineComponents(
   IgcIconComponent,
@@ -84,6 +85,9 @@ defineComponents(
  * @csspart empty - The container holding the empty content.
  */
 @themes({ material, bootstrap, fluent, indigo })
+@blazorAdditionalDependencies(
+  'IgcIconComponent, IgcComboListComponent, IgcComboItemComponent, IgcComboHeaderComponent, IgcInputComponent'
+)
 export default class IgcComboComponent<T extends object>
   extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
     LitElement
@@ -121,27 +125,45 @@ export default class IgcComboComponent<T extends object>
   @property({ attribute: false })
   public data: Array<T> = [];
 
-  /** The name attribute of the control. */
+  /**
+   * The name attribute of the control.
+   * @attr name
+   */
   @property()
   public name!: string;
 
-  /** The disabled attribute of the control. */
+  /**
+   * The disabled attribute of the control.
+   * @attr disabled
+   */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
-  /** The required attribute of the control. */
+  /**
+   * The required attribute of the control.
+   * @attr required
+   */
   @property({ reflect: true, type: Boolean })
   public required = false;
 
-  /** The invalid attribute of the control. */
+  /**
+   * The invalid attribute of the control.
+   * @attr invalid
+   */
   @property({ reflect: true, type: Boolean })
   public invalid = false;
 
-  /** The outlined attribute of the control. */
+  /**
+   * The outlined attribute of the control.
+   * @attr outlined
+   */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
 
-  /** The autofocus attribute of the control. */
+  /**
+   * The autofocus attribute of the control.
+   * @attr autofocus
+   */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
@@ -152,11 +174,17 @@ export default class IgcComboComponent<T extends object>
   @property({ attribute: 'autofocus-list', type: Boolean })
   public autofocusList = false;
 
-  /** The label attribute of the control. */
+  /**
+   * The label attribute of the control.
+   * @attr label
+   */
   @property({ type: String })
   public label!: string;
 
-  /** The placeholder attribute of the control. */
+  /**
+   * The placeholder attribute of the control.
+   * @attr placeholder
+   */
   @property({ type: String })
   public placeholder!: string;
 
@@ -167,11 +195,17 @@ export default class IgcComboComponent<T extends object>
   @property({ attribute: 'placeholder-search', type: String })
   public placeholderSearch = 'Search';
 
-  /** The direction attribute of the control. */
+  /**
+   * The direction attribute of the control.
+   * @attr dir
+   */
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
-  /** Sets the open state of the component. */
+  /**
+   * Sets the open state of the component.
+   * @attr open
+   */
   @property({ type: Boolean })
   public open = false;
 
@@ -248,7 +282,7 @@ export default class IgcComboComponent<T extends object>
    * @type {(item: T) => TemplateResult}
    */
   @property({ attribute: false })
-  public itemTemplate: (item: ComboRecord<T>) => TemplateResult = (item) => {
+  public itemTemplate: (item: T) => TemplateResult = (item) => {
     if (typeof item !== 'object' || item === null) {
       return String(item) as any;
     }
@@ -265,9 +299,7 @@ export default class IgcComboComponent<T extends object>
    * @type {(item: T) => TemplateResult}
    */
   @property({ attribute: false })
-  public groupHeaderTemplate: (item: ComboRecord<T>) => TemplateResult = (
-    item: ComboRecord<T>
-  ) => {
+  public groupHeaderTemplate: (item: T) => TemplateResult = (item) => {
     return html`${this.groupKey && item[this.groupKey]}`;
   };
 
@@ -390,8 +422,8 @@ export default class IgcComboComponent<T extends object>
    * If not argument is provided all items will be selected.
    * @param { T[] | Values<T>[] } items - A list of values or values as set by the valueKey.
    */
-  public select(items?: T[] | Values<T>[], emit = false) {
-    this.selectionController.select(items, emit);
+  public select(items?: T[] | Values<T>[]) {
+    this.selectionController.select(items, false);
   }
 
   /**
@@ -399,8 +431,8 @@ export default class IgcComboComponent<T extends object>
    * If not argument is provided all items will be deselected.
    * @param { T[] | Values<T>[] } items - A list of values or values as set by the valueKey.
    */
-  public deselect(items?: T[] | Values<T>[], emit = false) {
-    this.selectionController.deselect(items, emit);
+  public deselect(items?: T[] | Values<T>[]) {
+    this.selectionController.deselect(items, false);
   }
 
   protected handleSearchInput(e: CustomEvent) {
@@ -417,8 +449,8 @@ export default class IgcComboComponent<T extends object>
     return this.emitEvent('igcClosing', args);
   }
 
-  /** Shows the list of options. */
-  public async show(emit = false) {
+  /** @hidden @internal */
+  public async _show(emit = true) {
     if (this.open) return;
     if (emit && !this.handleOpening()) return;
     this.open = true;
@@ -433,8 +465,13 @@ export default class IgcComboComponent<T extends object>
     }
   }
 
-  /** Hides the list of options. */
-  public async hide(emit = false) {
+  /** Shows the list of options. */
+  public show() {
+    this._show(false);
+  }
+
+  /** @hidden @internal */
+  public async _hide(emit = true) {
     if (!this.open) return;
     if (emit && !this.handleClosing()) return;
     this.open = false;
@@ -444,23 +481,33 @@ export default class IgcComboComponent<T extends object>
     this.target.focus();
   }
 
+  /** Hides the list of options. */
+  public hide() {
+    this._hide(false);
+  }
+
+  /** @hidden @internal */
+  public _toggle(emit = true) {
+    this.open ? this._hide(emit) : this._show(emit);
+  }
+
   /** Toggles the list of options. */
-  public toggle(emit = false) {
-    this.open ? this.hide(emit) : this.show(emit);
+  public toggle() {
+    this._toggle(false);
   }
 
   protected itemRenderer = (item: T, index: number): TemplateResult => {
     const record = item as ComboRecord<T>;
-    const { selected } = this.selectionController;
-
+    const active = this.navigationController.active === index;
+    const selected = this.selectionController.selected.has(item);
     const headerTemplate = html`<igc-combo-header part="group-header"
       >${this.groupHeaderTemplate(record)}</igc-combo-header
     >`;
 
     const itemParts = partNameMap({
       item: true,
-      selected: selected.has(item),
-      active: this.navigationController.active === index,
+      selected,
+      active,
     });
 
     const itemTemplate = html`<igc-combo-item
@@ -468,8 +515,8 @@ export default class IgcComboComponent<T extends object>
       exportparts="checkbox, checkbox-indicator, checked"
       @click=${this.itemClickHandler.bind(this)}
       .index=${index}
-      .active=${this.navigationController.active === index}
-      .selected=${selected.has(item)}
+      .active=${active}
+      .selected=${selected}
       >${this.itemTemplate(record)}</igc-combo-item
     >`;
 
@@ -513,7 +560,7 @@ export default class IgcComboComponent<T extends object>
 
   protected handleClearIconClick(e: MouseEvent) {
     e.stopPropagation();
-    this.deselect();
+    this.selectionController.deselect([], true);
     this.navigationController.active = 0;
   }
 
@@ -544,7 +591,7 @@ export default class IgcComboComponent<T extends object>
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${(e: MouseEvent) => {
           e.preventDefault();
-          this.toggle(true);
+          this._toggle(true);
         }}
         value=${ifDefined(this.value)}
         placeholder=${ifDefined(this.placeholder)}

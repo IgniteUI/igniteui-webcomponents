@@ -122,6 +122,16 @@ export class SelectionController<T extends object>
 
   public async deselect(items?: T[] | Values<T>[], emit = false) {
     if (!items || items.length === 0) {
+      if (
+        emit &&
+        !this.handleChange({
+          newValue: '',
+          items: Array.from(this.selected),
+          type: 'deselection',
+        })
+      ) {
+        return;
+      }
       this.deselectAll();
       return;
     }
