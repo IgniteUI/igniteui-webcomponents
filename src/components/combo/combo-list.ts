@@ -7,6 +7,7 @@ export default class IgcComboListComponent extends LitVirtualizer {
   public override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('tabindex', '0');
+    this.setAttribute('role', 'listbox');
   }
 }
 

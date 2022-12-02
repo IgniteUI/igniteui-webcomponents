@@ -99,7 +99,7 @@ export default class IgcComboComponent<T extends object>
   @query('[part="search-input"]')
   private input!: IgcInputComponent;
 
-  @query('[part="target"]')
+  @query('[part="input"]')
   private target!: IgcInputComponent;
 
   @query('igc-combo-list')
@@ -523,7 +523,12 @@ export default class IgcComboComponent<T extends object>
 
     return html`
       <igc-input
-        part="target"
+        id="input"
+        part="input"
+        role="combobox"
+        aria-owns="dropdown"
+        aria-describedby="helper-text"
+        aria-disabled=${this.disabled}
         exportparts="container: input, input: native-input, label, prefix, suffix"
         @click=${(e: MouseEvent) => {
           e.preventDefault();
@@ -606,6 +611,7 @@ export default class IgcComboComponent<T extends object>
         </div>
         <slot name="header"></slot>
         <igc-combo-list
+          id="dropdown"
           part="list"
           .items=${this.dataState}
           .renderItem=${this.itemRenderer}
