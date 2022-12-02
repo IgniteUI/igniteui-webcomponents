@@ -45,10 +45,9 @@ const metadata = {
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
     },
-    autofocusOptions: {
+    autofocusList: {
       type: 'boolean',
-      description:
-        'Focuses the first item in the list of options when the menu opens.',
+      description: 'Focuses the list of options when the menu opens.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -132,7 +131,7 @@ interface ArgTypes {
   invalid: boolean;
   outlined: boolean;
   autofocus: boolean;
-  autofocusOptions: boolean;
+  autofocusList: boolean;
   label: string;
   placeholder: string;
   placeholderSearch: string;
@@ -258,7 +257,7 @@ const Template: Story<ArgTypes, Context> = (
     invalid = false,
     required = false,
     autofocus = false,
-    autofocusOptions,
+    autofocusList,
     groupSorting = 'asc',
   }: ArgTypes,
   { globals: { direction } }: Context
@@ -281,7 +280,7 @@ const Template: Story<ArgTypes, Context> = (
     ?disable-filtering=${ifDefined(disableFiltering)}
     ?open=${open}
     ?autofocus=${autofocus}
-    ?autofocus-options=${ifDefined(autofocusOptions)}
+    ?autofocus-list=${ifDefined(autofocusList)}
     ?outlined=${outlined}
     ?required=${required}
     ?disabled=${disabled}

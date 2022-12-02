@@ -38,9 +38,9 @@ const metadata = {
       defaultValue: false,
     },
     titlePosition: {
-      type: '"top" | "bottom" | "start" | "end" | undefined',
+      type: '"start" | "end" | "top" | "bottom" | undefined',
       description: 'Get/Set the position of the steps title.',
-      options: ['top', 'bottom', 'start', 'end', 'undefined'],
+      options: ['start', 'end', 'top', 'bottom', 'undefined'],
       control: {
         type: 'select',
       },
@@ -62,7 +62,7 @@ interface ArgTypes {
   stepType: 'indicator' | 'title' | 'full';
   linear: boolean;
   contentTop: boolean;
-  titlePosition: 'top' | 'bottom' | 'start' | 'end' | undefined;
+  titlePosition: 'start' | 'end' | 'top' | 'bottom' | undefined;
   size: 'small' | 'medium' | 'large';
 }
 // endregion

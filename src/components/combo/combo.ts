@@ -145,11 +145,11 @@ export default class IgcComboComponent<T extends object>
   public override autofocus!: boolean;
 
   /**
-   * Focuses the first item in the list of options when the menu opens.
-   * @attr autofocus-options
+   * Focuses the list of options when the menu opens.
+   * @attr autofocus-list
    */
-  @property({ attribute: 'autofocus-options', type: Boolean })
-  public autofocusOptions = false;
+  @property({ attribute: 'autofocus-list', type: Boolean })
+  public autofocusList = false;
 
   /** The label attribute of the control. */
   @property({ type: String })
@@ -427,7 +427,7 @@ export default class IgcComboComponent<T extends object>
 
     this.list.focus();
 
-    if (!this.autofocusOptions) {
+    if (!this.autofocusList) {
       this.input.focus();
     }
   }
