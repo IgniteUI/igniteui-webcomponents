@@ -568,119 +568,147 @@ export default class IgcComboComponent<T extends object>
     return this.inputSuffix.length > 0;
   }
 
-  protected override render() {
+  private renderToggleIcon() {
+    return html`
+      <span slot="suffix" part="toggle-icon">
+        <slot name="toggle-icon">
+          <igc-icon
+            name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+            collection="internal"
+            aria-hidden="true"
+          ></igc-icon>
+        </slot>
+      </span>
+    `;
+  }
+
+  private renderClearIcon() {
     const { selected } = this.selectionController;
 
-    return html`
+    return html`<span
+      slot="suffix"
+      part="clear-icon"
+      @click=${this.handleClearIconClick}
+      ?hidden=${selected.size === 0}
+    >
+      <slot name="clear-icon">
+        <igc-icon
+          name="chip_cancel"
+          collection="internal"
+          aria-hidden="true"
+        ></igc-icon>
+      </slot>
+    </span>`;
+  }
+
+  private renderInput() {
+    return html`<igc-input
+      id="input"
+      part="input"
+      role="combobox"
+      aria-owns="dropdown"
+      aria-describedby="helper-text"
+      aria-disabled=${this.disabled}
+      exportparts="container: input, input: native-input, label, prefix, suffix"
+      @click=${(e: MouseEvent) => {
+        e.preventDefault();
+        this._toggle(true);
+      }}
+      value=${ifDefined(this.value)}
+      placeholder=${ifDefined(this.placeholder)}
+      label=${ifDefined(this.label)}
+      dir=${this.dir}
+      @igcFocus=${(e: Event) => e.stopPropagation()}
+      @igcBlur=${(e: Event) => e.stopPropagation()}
+      @keydown=${this.navigationController.navigateHost.bind(
+        this.navigationController
+      )}
+      .disabled="${this.disabled}"
+      .required=${this.required}
+      .invalid=${this.invalid}
+      .outlined=${this.outlined}
+      .autofocus=${this.autofocus}
+      readonly
+    >
+      <span slot=${this.hasPrefixes && 'prefix'}>
+        <slot name="prefix"></slot>
+      </span>
+      ${this.renderClearIcon()}
+      <span slot=${this.hasSuffixes && 'suffix'}>
+        <slot name="suffix"></slot>
+      </span>
+      ${this.renderToggleIcon()}
+    </igc-input>`;
+  }
+
+  private renderSearchInput() {
+    return html`<div part="filter-input" ?hidden=${this.disableFiltering}>
       <igc-input
-        id="input"
-        part="input"
-        role="combobox"
-        aria-owns="dropdown"
-        aria-describedby="helper-text"
-        aria-disabled=${this.disabled}
+        part="search-input"
+        placeholder=${this.placeholderSearch}
         exportparts="container: input, input: native-input, label, prefix, suffix"
-        @click=${(e: MouseEvent) => {
-          e.preventDefault();
-          this._toggle(true);
-        }}
-        value=${ifDefined(this.value)}
-        placeholder=${ifDefined(this.placeholder)}
-        label=${ifDefined(this.label)}
-        dir=${this.dir}
         @igcFocus=${(e: Event) => e.stopPropagation()}
         @igcBlur=${(e: Event) => e.stopPropagation()}
-        @keydown=${this.navigationController.navigateHost.bind(
-          this.navigationController
-        )}
-        .disabled="${this.disabled}"
-        .required=${this.required}
-        .invalid=${this.invalid}
-        .outlined=${this.outlined}
-        .autofocus=${this.autofocus}
-        readonly
+        @igcInput=${this.handleSearchInput}
+        @keydown=${(e: KeyboardEvent) =>
+          this.navigationController.navigateInput(e, this.list)}
+        dir=${this.dir}
       >
-        <span slot=${this.hasPrefixes && 'prefix'}>
-          <slot name="prefix"></slot>
-        </span>
-        <span
-          slot="suffix"
-          part="clear-icon"
-          @click=${this.handleClearIconClick}
-          ?hidden=${selected.size === 0}
-        >
-          <slot name="clear-icon">
-            <igc-icon
-              name="chip_cancel"
-              collection="internal"
-              aria-hidden="true"
-            ></igc-icon>
-          </slot>
-        </span>
-        <span slot=${this.hasSuffixes && 'suffix'}>
-          <slot name="suffix"></slot>
-        </span>
-        <span slot="suffix" part="toggle-icon">
-          <slot name="toggle-icon">
-            <igc-icon
-              name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-              collection="internal"
-              aria-hidden="true"
-            ></igc-icon>
-          </slot>
-        </span>
+        <igc-icon
+          slot=${this.caseSensitiveIcon && 'suffix'}
+          name="case_sensitive"
+          collection="internal"
+          part=${partNameMap({
+            'case-icon': true,
+            active: this.filteringOptions.caseSensitive ?? false,
+          })}
+          @click=${this.toggleCaseSensitivity}
+        ></igc-icon>
       </igc-input>
-      <div
-        @keydown=${this.listKeydownHandler}
-        part="list-wrapper"
-        ${this.toggleController.toggleDirective}
+    </div>`;
+  }
+
+  private renderEmptyTemplate() {
+    return html`<slot name="empty" ?hidden=${this.dataState.length > 0}>
+      <div part="empty">The list is empty</div>
+    </slot>`;
+  }
+
+  private renderList() {
+    return html`<div
+      @keydown=${this.listKeydownHandler}
+      part="list-wrapper"
+      ${this.toggleController.toggleDirective}
+    >
+      ${this.renderSearchInput()}
+      <slot name="header"></slot>
+      <igc-combo-list
+        id="dropdown"
+        part="list"
+        aria-label="${this.label}"
+        .items=${this.dataState}
+        .renderItem=${this.itemRenderer}
+        ?hidden=${this.dataState.length === 0}
       >
-        <div part="filter-input" ?hidden=${this.disableFiltering}>
-          <igc-input
-            part="search-input"
-            placeholder=${this.placeholderSearch}
-            exportparts="container: input, input: native-input, label, prefix, suffix"
-            @igcFocus=${(e: Event) => e.stopPropagation()}
-            @igcBlur=${(e: Event) => e.stopPropagation()}
-            @igcInput=${this.handleSearchInput}
-            @keydown=${(e: KeyboardEvent) =>
-              this.navigationController.navigateInput(e, this.list)}
-            dir=${this.dir}
-          >
-            <igc-icon
-              slot=${this.caseSensitiveIcon && 'suffix'}
-              name="case_sensitive"
-              collection="internal"
-              part=${partNameMap({
-                'case-icon': true,
-                active: this.filteringOptions.caseSensitive ?? false,
-              })}
-              @click=${this.toggleCaseSensitivity}
-            ></igc-icon>
-          </igc-input>
-        </div>
-        <slot name="header"></slot>
-        <igc-combo-list
-          id="dropdown"
-          part="list"
-          aria-label="${this.label}"
-          .items=${this.dataState}
-          .renderItem=${this.itemRenderer}
-          ?hidden=${this.dataState.length === 0}
-        >
-        </igc-combo-list>
-        <slot name="empty" ?hidden=${this.dataState.length > 0}>
-          <div part="empty">The list is empty</div>
-        </slot>
-        <slot name="footer"></slot>
-      </div>
-      <div
-        id="helper-text"
-        part="helper-text"
-        ?hidden="${this.helperText.length === 0}"
-      >
-        <slot name="helper-text"></slot>
-      </div>
+      </igc-combo-list>
+      <slot name="footer"></slot>
+      ${this.renderEmptyTemplate()}
+    </div>`;
+  }
+
+  private renderHelperText() {
+    return html`<div
+      id="helper-text"
+      part="helper-text"
+      ?hidden="${this.helperText.length === 0}"
+    >
+      <slot name="helper-text"></slot>
+    </div>`;
+  }
+
+  protected override render() {
+    return html`
+      ${this.renderInput()}${this.renderList()}${this.renderHelperText()}
     `;
   }
 }
