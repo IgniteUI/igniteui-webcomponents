@@ -87,11 +87,6 @@ const metadata = {
       control: 'boolean',
       defaultValue: true,
     },
-    sameWidth: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: false,
-    },
     groupSorting: {
       type: '"asc" | "desc"',
       description:
@@ -138,7 +133,6 @@ interface ArgTypes {
   dir: 'ltr' | 'rtl' | 'auto';
   open: boolean;
   flip: boolean;
-  sameWidth: boolean;
   groupSorting: 'asc' | 'desc';
   caseSensitiveIcon: boolean;
   disableFiltering: boolean;

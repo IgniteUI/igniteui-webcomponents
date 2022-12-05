@@ -64,10 +64,8 @@ export default class GroupDataOperation<T extends object> {
 
     groups.forEach((group) => {
       group.sort((a: ComboRecord<T>, b: ComboRecord<T>) => {
-        if (!a.header && !b.header) {
-          return this.compareObjects(a, b, displayKey!, direction);
-        }
-        return 1;
+        if (a.header || b.header) return;
+        return this.compareObjects(a, b, displayKey!, direction);
       });
     });
 
