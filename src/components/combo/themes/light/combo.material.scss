@@ -5,7 +5,7 @@
     background: color(gray, 300);
 }
 
-[part='input']:not([outlined]) {
+igc-input#target:not([outlined]) {
     &:focus-within {
         [part='toggle-icon'] {
             background: color(gray, 400, .3);

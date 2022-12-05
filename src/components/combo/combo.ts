@@ -72,6 +72,7 @@ defineComponents(
  *
  * @csspart label - The encapsulated text label.
  * @csspart input - The main input field.
+ * @csspart native-input - The native input of the main input field.
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  * @csspart toggle-icon - The toggle icon wrapper.
@@ -122,7 +123,7 @@ export default class IgcComboComponent<T extends object>
   @query('[part="search-input"]')
   public input!: IgcInputComponent;
 
-  @query('[part="input"]')
+  @query('igc-input#target')
   private target!: IgcInputComponent;
 
   @query('igc-combo-list')
@@ -624,8 +625,7 @@ export default class IgcComboComponent<T extends object>
 
   private renderInput() {
     return html`<igc-input
-      id="input"
-      part="input"
+      id="target"
       role="combobox"
       aria-owns="dropdown"
       aria-describedby="helper-text"
@@ -667,7 +667,7 @@ export default class IgcComboComponent<T extends object>
       <igc-input
         part="search-input"
         placeholder=${this.placeholderSearch}
-        exportparts="container: input, input: native-input, label, prefix, suffix"
+        exportparts="input: search-input"
         @igcFocus=${(e: Event) => e.stopPropagation()}
         @igcBlur=${(e: Event) => e.stopPropagation()}
         @igcInput=${this.handleSearchInput}

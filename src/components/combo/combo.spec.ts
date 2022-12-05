@@ -89,7 +89,7 @@ describe('Combo', () => {
         '[part="list"]'
       ) as IgcComboListComponent;
       input = combo.shadowRoot!.querySelector(
-        '[part="input"]'
+        'igc-input#target'
       ) as IgcInputComponent;
       searchInput = combo.shadowRoot!.querySelector(
         '[part="search-input"]'
