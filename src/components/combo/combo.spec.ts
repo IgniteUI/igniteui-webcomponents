@@ -1,14 +1,16 @@
 import { html } from 'lit';
-// import sinon from 'sinon';
+import sinon from 'sinon';
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-// import IgcInputComponent from '../input/input';
+import IgcInputComponent from '../input/input';
 import IgcComboComponent from './combo.js';
-// import IgcComboItemComponent from './combo-item.js';
+import IgcComboListComponent from './combo-list.js';
+import IgcComboItemComponent from './combo-item.js';
+import IgcListComponent from '../list/list.js';
 // import IgcComboListComponent from './combo-list.js';
 // import IgcComboHeaderComponent from './combo-header.js';
 
-describe('Combo Component', () => {
+describe('Combo', () => {
   interface City {
     id: string;
     name: string;
@@ -16,8 +18,8 @@ describe('Combo Component', () => {
     zip: string;
   }
 
-  // let input: IgcInputComponent;
-  // let searchInput: IgcInputComponent;
+  let input: IgcInputComponent;
+  let searchInput: IgcInputComponent;
 
   const cities: City[] = [
     {
@@ -56,35 +58,23 @@ describe('Combo Component', () => {
       country: 'United States',
       zip: '94103',
     },
-    {
-      id: 'JP01',
-      name: 'Tokyo',
-      country: 'Japan',
-      zip: '163-8001',
-    },
-    {
-      id: 'JP02',
-      name: 'Yokohama',
-      country: 'Japan',
-      zip: '781-0240',
-    },
-    {
-      id: 'JP03',
-      name: 'Osaka',
-      country: 'Japan',
-      zip: '552-0021',
-    },
   ];
 
   let combo: IgcComboComponent<City>;
-  // const comboItems = (el: IgcComboItemComponent) =>
-  //   [...el.querySelectorAll('igc-combo-item')] as IgcComboItemComponent[];
+  let list: IgcComboListComponent;
+  let options: IgcComboListComponent;
+  const items = (combo: IgcComboComponent<City>) =>
+    [
+      ...combo
+        .shadowRoot!.querySelector('igc-combo-list')!
+        .querySelectorAll('[part~="item"]'),
+    ] as IgcComboItemComponent[];
 
   before(() => {
     defineComponents(IgcComboComponent);
   });
 
-  describe('', () => {
+  describe('Component', () => {
     beforeEach(async () => {
       combo = await fixture<IgcComboComponent<City>>(
         html`<igc-combo
@@ -95,36 +85,550 @@ describe('Combo Component', () => {
         ></igc-combo>`
       );
 
-      // input = combo.shadowRoot!.querySelector(
-      //   '[part="input"]'
-      // ) as IgcInputComponent;
-      // searchInput = combo.shadowRoot!.querySelector(
-      //   '[part="search-input"]'
-      // ) as IgcInputComponent;
+      options = combo.shadowRoot!.querySelector(
+        '[part="list"]'
+      ) as IgcComboListComponent;
+      input = combo.shadowRoot!.querySelector(
+        '[part="input"]'
+      ) as IgcInputComponent;
+      searchInput = combo.shadowRoot!.querySelector(
+        '[part="search-input"]'
+      ) as IgcInputComponent;
     });
 
     it('is accessible.', async () => {
       combo.open = true;
-      combo.label = 'Simple Select';
+      combo.label = 'Simple Combo';
       await elementUpdated(combo);
-      await expect(combo).to.be.accessible();
+      await expect(combo).to.be.accessible({
+        ignoredRules: ['aria-hidden-focus', 'nested-interactive'],
+      });
+    });
+
+    it('is successfully created with default properties.', () => {
+      expect(document.querySelector('igc-combo')).to.exist;
+      expect(combo.data).to.equal(cities);
+      expect(combo.open).to.be.false;
+      expect(combo.name).to.be.undefined;
+      expect(combo.value).to.equal('');
+      expect(combo.disabled).to.be.false;
+      expect(combo.required).to.be.false;
+      expect(combo.invalid).to.be.false;
+      expect(combo.autofocus).to.be.undefined;
+      expect(combo.autofocusList).to.be.false;
+      expect(combo.label).to.be.undefined;
+      expect(combo.placeholder).to.be.undefined;
+      expect(combo.placeholderSearch).to.equal('Search');
+      expect(combo.outlined).to.be.false;
+      expect(combo.dir).to.equal('auto');
+      expect(combo.flip).to.be.true;
+      expect(combo.sameWidth).to.be.true;
+      expect(combo.valueKey).to.equal('id');
+      expect(combo.displayKey).to.equal('name');
+      expect(combo.groupKey).to.equal('country');
+      expect(combo.groupSorting).to.equal('asc');
+      expect(combo.filteringOptions).includes({
+        filterKey: combo.displayKey,
+        caseSensitive: false,
+      });
+      expect(combo.caseSensitiveIcon).to.be.false;
+      expect(combo.disableFiltering).to.be.false;
+    });
+
+    it('correctly applies input related properties to encapsulated inputs', async () => {
+      combo.label = 'Select Label';
+      combo.placeholder = 'Select Placeholder';
+      combo.placeholderSearch = 'Select Placeholder';
+      await elementUpdated(combo);
+
+      expect(input.value).to.equal(combo.value);
+      expect(input.placeholder).to.equal(combo.placeholder);
+      expect(input.label).to.equal(combo.label);
+      expect(input.disabled).to.equal(combo.disabled);
+      expect(input.required).to.equal(input.required);
+      expect(input.invalid).to.equal(combo.invalid);
+      expect(input.outlined).to.equal(combo.outlined);
+      expect(input.dir).to.equal(combo.dir);
+      expect(input.autofocus).to.equal(combo.autofocus);
+
+      expect(searchInput.placeholder).to.equal(combo.placeholderSearch);
+      expect(searchInput.dir).to.equal(combo.dir);
+    });
+
+    it('should open the menu upon calling the show method', async () => {
+      combo.show();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+    });
+
+    it('should close the menu upon calling the hide method', async () => {
+      combo.hide();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+    });
+
+    it('should toggle the menu upon calling the toggle method', async () => {
+      combo.toggle();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.true;
+
+      combo.toggle();
+      await elementUpdated(combo);
+
+      expect(combo.open).to.be.false;
+    });
+
+    it('should open the menu upon clicking on the input', async () => {
+      const eventSpy = sinon.spy(combo, 'emitEvent');
+      input.click();
+
+      await elementUpdated(combo);
+
+      expect(eventSpy).calledWith('igcOpening');
+      expect(eventSpy).calledWith('igcOpened');
+      expect(combo.open).to.be.true;
+    });
+
+    it('should hide the menu upon clicking on the input', async () => {
+      const eventSpy = sinon.spy(combo, 'emitEvent');
+      combo.show();
+      input.click();
+
+      await elementUpdated(combo);
+
+      expect(eventSpy).calledWith('igcClosing');
+      expect(eventSpy).calledWith('igcClosed');
+      expect(combo.open).to.be.false;
+    });
+
+    it('should be able to cancel the igcOpening event', async () => {
+      combo.open = false;
+      combo.addEventListener('igcOpening', (event: CustomEvent) => {
+        event.preventDefault();
+      });
+      const eventSpy = sinon.spy(combo, 'emitEvent');
+      input.click();
+      await elementUpdated(combo);
+
+      expect(eventSpy).calledOnceWithExactly('igcOpening', {
+        cancelable: true,
+      });
+      expect(eventSpy).not.calledWith('igcOpened');
+    });
+
+    it('should be able to cancel the igcClosing event', async () => {
+      combo.open = true;
+      combo.addEventListener('igcClosing', (event: CustomEvent) => {
+        event.preventDefault();
+      });
+      const eventSpy = sinon.spy(combo, 'emitEvent');
+      input.click();
+      await elementUpdated(combo);
+
+      expect(eventSpy).calledOnceWithExactly('igcClosing', {
+        cancelable: true,
+      });
+      expect(eventSpy).not.calledWith('igcClosed');
+    });
+
+    it('should focus the input when the host is focused', async () => {
+      combo.focus();
+      await elementUpdated(combo);
+
+      expect(document.activeElement).to.equal(combo);
+    });
+
+    it('should blur the input when the host is blurred', async () => {
+      combo.blur();
+      await elementUpdated(combo);
+
+      expect(document.activeElement).not.to.equal(combo);
+    });
+
+    it('should render all data items as combo-list items', async () => {
+      combo.open = true;
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      const cityNames: string[] = [];
+
+      items(combo).forEach((item) => {
+        cityNames.push(item.textContent!);
+      });
+
+      cities.forEach((city) => {
+        expect(cityNames).to.include(city[combo.displayKey!]);
+      });
+    });
+
+    it('should configure the filtering options by attribute', async () => {
+      combo.setAttribute(
+        'filtering-options',
+        '{"filterKey": "zip", "caseSensitive": true}'
+      );
+      await elementUpdated(combo);
+
+      expect(combo.filteringOptions.filterKey).to.equal('zip');
+      expect(combo.filteringOptions.caseSensitive).to.equal(true);
+    });
+
+    it('should select/deselect an item by value key', async () => {
+      const item = cities[0];
+      combo.select([item[combo.valueKey!]]);
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+
+      const selected = items(combo).find((item) => item.selected);
+      expect(selected?.textContent).to.equal(item[combo.displayKey!]);
+
+      combo.deselect([item[combo.valueKey!]]);
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+
+      items(combo).forEach((item) => {
+        expect(item.selected).to.be.false;
+      });
+    });
+
+    it('should select/deselect an item by value when no valueKey is present', async () => {
+      combo.valueKey = undefined;
+      await elementUpdated(combo);
+
+      const item = cities[0];
+      combo.select([item]);
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+
+      const selected = items(combo).find((item) => item.selected);
+      expect(selected?.textContent).to.equal(item[combo.displayKey!]);
+
+      combo.deselect([item]);
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+
+      items(combo).forEach((item) => {
+        expect(item.selected).to.be.false;
+      });
+    });
+
+    it('should select/deselect all items', async () => {
+      combo.select();
+      await elementUpdated(combo);
+      await elementUpdated(list);
+
+      items(combo).forEach((item) => {
+        expect(item.selected).to.be.true;
+      });
+
+      combo.deselect();
+      await elementUpdated(combo);
+      await elementUpdated(list);
+
+      items(combo).forEach((item) => {
+        expect(item.selected).to.be.false;
+      });
+    });
+
+    it('should clear the selection by pressing on the clear button', async () => {
+      combo.select();
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+
+      const button = combo.shadowRoot!.querySelector('[part="clear-icon"]');
+
+      (button! as HTMLSpanElement).click();
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+
+      items(combo).forEach((item) => {
+        expect(item.selected).to.be.false;
+      });
+    });
+
+    it('should toggle case sensitivity by pressing on the case sensitive icon', async () => {
+      const button = combo.shadowRoot!.querySelector(
+        '[part~="case-icon"]'
+      ) as HTMLElement;
+      expect(combo.filteringOptions.caseSensitive).to.be.false;
+
+      button.click();
+      await elementUpdated(combo);
+
+      expect(combo.filteringOptions.caseSensitive).to.be.true;
+
+      button.click();
+      await elementUpdated(combo);
+      expect(combo.filteringOptions.caseSensitive).to.be.false;
+    });
+
+    it('should not fire igcChange event on selection/deselection via methods calls', async () => {
+      const item = cities[0];
+      combo.select([item[combo.valueKey!]]);
+
+      combo.addEventListener('igcChange', (event: CustomEvent) =>
+        event.preventDefault()
+      );
+
+      const eventSpy = sinon.spy(combo, 'emitEvent');
+      expect(eventSpy).not.calledWith('igcChange');
+    });
+
+    it('should fire igcChange event on selection/deselection on mouse click', async () => {
+      const eventSpy = sinon.spy(combo, 'emitEvent');
+      combo.open = true;
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+
+      items(combo)[0].click();
+      expect(eventSpy).calledWith('igcChange');
+    });
+
+    it('reports validity when required', async () => {
+      const validity = sinon.spy(combo, 'reportValidity');
+
+      combo.required = true;
+      await elementUpdated(combo);
+
+      combo.checkValidity();
+      expect(validity).to.have.returned(false);
+      expect(combo.invalid).to.be.true;
+
+      combo.select();
+      await elementUpdated(combo);
+      combo.checkValidity();
+
+      expect(validity).to.have.returned(true);
+      expect(combo.invalid).to.be.false;
+    });
+
+    it('reports validity when not required', async () => {
+      const validity = sinon.spy(combo, 'reportValidity');
+
+      combo.required = false;
+      await elementUpdated(combo);
+
+      combo.checkValidity();
+      expect(validity).to.have.returned(true);
+      expect(combo.invalid).to.be.false;
+
+      combo.deselect();
+      await elementUpdated(combo);
+      combo.checkValidity();
+
+      expect(validity).to.have.returned(true);
+      expect(combo.invalid).to.be.false;
+    });
+
+    it('opens the list of options when Down or Alt+Down keys are pressed', async () => {
+      combo.open = false;
+      pressKey(input, 'ArrowDown', 1, { altKey: false });
+      expect(combo.open).to.be.true;
+
+      combo.open = false;
+      pressKey(input, 'ArrowDown', 1, { altKey: true });
+      expect(combo.open).to.be.true;
+    });
+
+    it('closes the list of options when search input is on focus and the Up key is pressed', async () => {
+      combo.show();
+      await elementUpdated(combo);
+      expect(combo.open).to.be.true;
+
+      pressKey(searchInput, 'ArrowUp', 1, { altKey: false });
+      expect(combo.open).to.be.false;
+    });
+
+    it('activates the first list item when clicking pressing ArrowDown when the search input is on focus', async () => {
+      combo.show();
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      expect(items(combo)[0].active).to.be.false;
+      pressKey(searchInput, 'ArrowDown', 1, { altKey: false });
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      expect(items(combo)[0].active).to.be.true;
+    });
+
+    it('navigates between the items with ArrowUp and ArrowDown keys', async () => {
+      combo.autofocusList = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      const options = combo.shadowRoot!.querySelector(
+        '[part="list"]'
+      ) as IgcListComponent;
+      expect(items(combo)[0].active).to.be.false;
+      pressKey(options, 'ArrowDown', 2, { altKey: false });
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      expect(items(combo)[1].active).to.be.true;
+      pressKey(options, 'ArrowUp', 1, { altKey: false });
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      expect(items(combo)[0].active).to.be.true;
+    });
+
+    it('should activate the first list item by pressing the Home key', async () => {
+      combo.autofocusList = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      pressKey(options, 'Home', 1, { altKey: false });
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      expect(items(combo)[0].active).to.be.true;
+    });
+
+    it('should activate the last list item by pressing the End key', async () => {
+      combo.autofocusList = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      pressKey(options, 'End', 1, { altKey: false });
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      const itms = items(combo);
+      expect(itms[itms.length - 1].active).to.be.true;
+    });
+
+    it('should select the active item by pressing the Space key', async () => {
+      combo.autofocusList = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      pressKey(options, 'ArrowDown', 2, { altKey: false });
+      pressKey(options, ' ', 1, { altKey: false });
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      const itms = items(combo);
+      expect(itms[1].active).to.be.true;
+      expect(itms[1].selected).to.be.true;
+      expect(combo.open).to.be.true;
+    });
+
+    it('should select the active item and close the menu by pressing the Enter key', async () => {
+      combo.autofocusList = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      pressKey(options, 'ArrowDown', 2, { altKey: false });
+      pressKey(options, 'Enter', 1, { altKey: false });
+
+      await elementUpdated(combo);
+      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
+
+      const itms = items(combo);
+      expect(itms[1].active).to.be.true;
+      expect(itms[1].selected).to.be.true;
+      expect(combo.open).to.be.false;
     });
   });
 });
-// const pressKey = (
-//   target: HTMLElement,
-//   key: string,
-//   times = 1,
-//   options?: Object
-// ) => {
-//   for (let i = 0; i < times; i++) {
-//     target.dispatchEvent(
-//       new KeyboardEvent('keydown', {
-//         key: key,
-//         bubbles: true,
-//         composed: true,
-//         ...options,
-//       })
-//     );
-//   }
-// };
+
+const pressKey = (
+  target: HTMLElement,
+  key: string,
+  times = 1,
+  options?: Object
+) => {
+  for (let i = 0; i < times; i++) {
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: key,
+        bubbles: true,
+        composed: true,
+        ...options,
+      })
+    );
+  }
+};
