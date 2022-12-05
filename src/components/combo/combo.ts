@@ -77,6 +77,7 @@ defineComponents(
  * @csspart suffix - The suffix wrapper.
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart clear-icon - The clear icon wrapper.
+ * @csspart case-icon - The case icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  * @csspart search-input - The search input field.
  * @csspart list-wrapper - The list of options wrapper.
