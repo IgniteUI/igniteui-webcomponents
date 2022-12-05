@@ -30,6 +30,7 @@ import {
   GroupingDirection,
   FilteringOptions,
   IgcComboEventMap,
+  ComboItemTemplate,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
@@ -286,7 +287,7 @@ export default class IgcComboComponent<T extends object>
    * @type {(item: T) => TemplateResult}
    */
   @property({ attribute: false })
-  public itemTemplate: (item: T) => TemplateResult = (item) => {
+  public itemTemplate: ComboItemTemplate<T> = (item) => {
     if (typeof item !== 'object' || item === null) {
       return String(item) as any;
     }
@@ -303,7 +304,7 @@ export default class IgcComboComponent<T extends object>
    * @type {(item: T) => TemplateResult}
    */
   @property({ attribute: false })
-  public groupHeaderTemplate: (item: T) => TemplateResult = (item) => {
+  public groupHeaderTemplate: ComboItemTemplate<T> = (item) => {
     return html`${this.groupKey && item[this.groupKey]}`;
   };
 
