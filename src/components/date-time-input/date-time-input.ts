@@ -686,7 +686,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override renderInput() {
-    return html`<div>
+    return html`
       <input
         type="text"
         part=${partNameMap(this.resolvePartNames('input'))}
@@ -708,7 +708,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         @dragleave=${this.handleDragLeave}
         @dragstart=${this.handleDragStart}
       />
-    </div>`;
+    `;
   }
 }
 
