@@ -2,7 +2,7 @@
 @use '../../../select/themes/light/select.bootstrap';
 
 [part='clear-icon'] {
-    border-inline-end: 1px solid color(gray, 400);
+    border-inline-end: rem(1px) solid color(gray, 400);
 }
 
 [part='list-wrapper'] {
@@ -14,14 +14,14 @@
 
     [part='search-input'] {
         [part~='case-icon'] {
-            border-block-end: 1px solid color(gray, 400);
+            border-block-end: rem(1px) solid color(gray, 400);
             transition: border .15s ease-out;
         }
 
         &:focus,
         &:focus-within {
             [part~='case-icon'] {
-                border-block-end: 1px solid color(primary, 500);
+                border-block-end: rem(1px) solid color(primary, 500);
             }
         }
     }
@@ -29,6 +29,6 @@
 
 :host([disabled]) {
     [part='clear-icon'] {
-        border-inline-end: 1px solid color(gray, 300);
+        border-inline-end: rem(1px) solid color(gray, 300);
     }
 }

@@ -39,6 +39,7 @@
     @include border-radius(rem(4px));
 
     position: absolute;
+    width: 100%;
     background: color(surface);
     color: color(gray, 700);
     box-shadow: elevation(8);
@@ -54,7 +55,7 @@
     igc-input::part(container) {
         background: transparent;
         border-inline-start: 0;
-        border-inline-end: 0;
+        border-inline-end-color: transparent;
         border-block-start: 0;
         border-radius: 0;
     }
@@ -67,7 +68,7 @@
         border-radius: 0;
         padding: 0;
         border-inline-start: 0;
-        border-inline-end: 0;
+        border-inline-end-color: transparent;
         border-block-start: 0;
         box-shadow: none;
 
@@ -94,7 +95,6 @@
 
 [part='case-icon'] {
     color: color(gray, 600);
-    min-width: rem(20px);
 }
 
 [part='case-icon active'] {

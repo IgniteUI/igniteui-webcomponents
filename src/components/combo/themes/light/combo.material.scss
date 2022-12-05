@@ -23,10 +23,6 @@
     }
 }
 
-[part~='case-icon'] {
-    padding: 0;
-}
-
 :host {
     ::slotted([slot='helper-text']) {
         @include type-style('caption');

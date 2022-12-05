@@ -90,7 +90,7 @@ const metadata = {
     sameWidth: {
       type: 'boolean',
       control: 'boolean',
-      defaultValue: true,
+      defaultValue: false,
     },
     groupSorting: {
       type: '"asc" | "desc"',

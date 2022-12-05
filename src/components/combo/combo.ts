@@ -213,10 +213,6 @@ export default class IgcComboComponent<T extends object>
   @property({ type: Boolean })
   public flip = true;
 
-  /** @hidden @internal */
-  @property({ type: Boolean, attribute: 'same-width' })
-  public sameWidth = true;
-
   /**
    * The key in the data source used when selecting items.
    * @attr value-key
