@@ -36,6 +36,11 @@ import { partNameMap } from '../common/util.js';
 import { filteringOptionsConverter } from './utils/converters.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
+import type {
+  ReactiveTheme,
+  ThemeController,
+  Theme,
+} from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 
 defineComponents(
@@ -92,7 +97,7 @@ export default class IgcComboComponent<T extends object>
   extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
     LitElement
   )
-  implements Partial<IgcToggleComponent>
+  implements Partial<IgcToggleComponent>, ReactiveTheme
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
@@ -101,6 +106,8 @@ export default class IgcComboComponent<T extends object>
   protected selectionController = new SelectionController<T>(this);
   protected dataController = new DataController<T>(this);
   protected toggleController!: IgcToggleController;
+  protected themeController!: ThemeController;
+  protected theme!: Theme;
 
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
@@ -366,6 +373,14 @@ export default class IgcComboComponent<T extends object>
     );
   }
 
+  public themeAdopted(controller: ThemeController) {
+    this.themeController = controller;
+  }
+
+  protected override willUpdate() {
+    this.theme = this.themeController.theme;
+  }
+
   protected override async getUpdateComplete() {
     const result = await super.getUpdateComplete();
     await this.toggleController.rendered;
@@ -569,11 +584,16 @@ export default class IgcComboComponent<T extends object>
   }
 
   private renderToggleIcon() {
+    const openIcon =
+      this.theme === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
+    const closeIcon =
+      this.theme === 'material' ? 'keyboard_arrow_down' : 'arrow_drop_down';
+
     return html`
       <span slot="suffix" part="toggle-icon">
         <slot name="toggle-icon">
           <igc-icon
-            name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+            name=${this.open ? openIcon : closeIcon}
             collection="internal"
             aria-hidden="true"
           ></igc-icon>
@@ -584,6 +604,7 @@ export default class IgcComboComponent<T extends object>
 
   private renderClearIcon() {
     const { selected } = this.selectionController;
+    const icon = this.theme === 'material' ? 'chip_cancel' : 'clear';
 
     return html`<span
       slot="suffix"
@@ -593,7 +614,7 @@ export default class IgcComboComponent<T extends object>
     >
       <slot name="clear-icon">
         <igc-icon
-          name="chip_cancel"
+          name="${icon}"
           collection="internal"
           aria-hidden="true"
         ></igc-icon>
