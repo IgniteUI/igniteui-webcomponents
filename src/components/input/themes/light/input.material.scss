@@ -33,7 +33,7 @@ $fs: rem(16px) !default;
 %suffix-preffix {
     display: inline-flex;
     align-items: center;
-    min-width: fit-content;
+    width: max-content;
     height: 100%;
     padding-inline: pad-inline(8px, 12px, 16px);
 }

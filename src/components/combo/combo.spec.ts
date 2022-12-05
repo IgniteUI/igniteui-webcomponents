@@ -122,7 +122,6 @@ describe('Combo', () => {
       expect(combo.outlined).to.be.false;
       expect(combo.dir).to.equal('auto');
       expect(combo.flip).to.be.true;
-      expect(combo.sameWidth).to.be.true;
       expect(combo.valueKey).to.equal('id');
       expect(combo.displayKey).to.equal('name');
       expect(combo.groupKey).to.equal('country');

@@ -33,7 +33,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     [name='suffix']::slotted(*) {
         display: inline-flex;
         align-items: center;
-        min-width: fit-content;
+        width: max-content;
         height: 100%;
         padding-inline: pad-inline(8px, 12px, 16px);
     }

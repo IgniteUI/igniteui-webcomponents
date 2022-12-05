@@ -39,6 +39,7 @@
     @include border-radius(rem(4px));
 
     position: absolute;
+    width: 100%;
     background: color(surface);
     color: color(gray, 700);
     box-shadow: elevation(8);
