@@ -6,10 +6,8 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     display: inline-flex;
     align-items: center;
     min-width: fit-content;
-    box-sizing: content-box;
-    height: calc(100% - #{rem(2px)});
+    height: 100%;
     padding-inline: pad-inline(8px, 12px, 16px);
-    padding-block: pad-block(9px, 11px, 13px);
 }
 
 :host {
