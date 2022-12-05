@@ -120,9 +120,8 @@ export default class IgcComboComponent<T extends object>
   @queryAssignedElements({ slot: 'prefix' })
   protected inputPrefix!: Array<HTMLElement>;
 
-  /** @hidden @internal */
   @query('[part="search-input"]')
-  public input!: IgcInputComponent;
+  protected input!: IgcInputComponent;
 
   @query('igc-input#target')
   private target!: IgcInputComponent;
@@ -308,9 +307,8 @@ export default class IgcComboComponent<T extends object>
     return html`${this.groupKey && item[this.groupKey]}`;
   };
 
-  /** @hidden @internal */
   @state()
-  public dataState: Array<ComboRecord<T>> = [];
+  protected dataState: Array<ComboRecord<T>> = [];
 
   @watch('data')
   protected dataChanged() {
@@ -457,8 +455,7 @@ export default class IgcComboComponent<T extends object>
     return this.emitEvent('igcClosing', args);
   }
 
-  /** @hidden @internal */
-  public async _show(emit = true) {
+  protected async _show(emit = true) {
     if (this.open) return;
     if (emit && !this.handleOpening()) return;
     this.open = true;
@@ -478,8 +475,7 @@ export default class IgcComboComponent<T extends object>
     this._show(false);
   }
 
-  /** @hidden @internal */
-  public async _hide(emit = true) {
+  protected async _hide(emit = true) {
     if (!this.open) return;
     if (emit && !this.handleClosing()) return;
     this.open = false;
@@ -556,8 +552,7 @@ export default class IgcComboComponent<T extends object>
     this.input.focus();
   }
 
-  /** @internal @hidden */
-  public toggleSelect(index: number) {
+  protected toggleSelect(index: number) {
     this.selectionController.changeSelection(index);
     this.navigationController.active = index;
   }
