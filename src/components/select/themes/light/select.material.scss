@@ -102,3 +102,15 @@ $active-border-width: rem(2px) !default;
         color: $error-color;
     }
 }
+
+[part~='toggle-icon'] {
+    background: color(gray, 300);
+}
+
+igc-input:not([outlined]) {
+    &:focus-within {
+        [part~='toggle-icon'] {
+            background: color(gray, 400, .3);
+        }
+    }
+}
