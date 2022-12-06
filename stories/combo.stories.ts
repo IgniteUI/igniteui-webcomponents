@@ -161,7 +161,7 @@ interface City {
   country: string;
 }
 
-const itemTemplate: ComboItemTemplate<City> = (item: City) => {
+const itemTemplate: ComboItemTemplate<City> = ({ item }) => {
   return html`
     <div>
       <span><b>${item?.name ?? item}</b> [${item?.zip}]</span>
@@ -169,7 +169,7 @@ const itemTemplate: ComboItemTemplate<City> = (item: City) => {
   `;
 };
 
-const groupHeaderTemplate: ComboItemTemplate<City> = (item: City) => {
+const groupHeaderTemplate: ComboItemTemplate<City> = ({ item }) => {
   return html`<div>Country of ${item?.country ?? item}</div>`;
 };
 

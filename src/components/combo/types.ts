@@ -45,4 +45,9 @@ export interface IgcComboEventMap {
   igcClosed: CustomEvent<void>;
 }
 
-export type ComboItemTemplate<T extends object> = (item: T) => TemplateResult;
+export type ComboItemTemplate<T extends object> = (
+  props: ComboTemplateProps<T>
+) => TemplateResult;
+export interface ComboTemplateProps<T extends object> {
+  item: T;
+}

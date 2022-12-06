@@ -287,7 +287,7 @@ export default class IgcComboComponent<T extends object>
    * @type {ComboItemTemplate<T>}
    */
   @property({ attribute: false })
-  public itemTemplate: ComboItemTemplate<T> = (item) => {
+  public itemTemplate: ComboItemTemplate<T> = ({ item }) => {
     if (typeof item !== 'object' || item === null) {
       return String(item) as any;
     }
@@ -304,7 +304,7 @@ export default class IgcComboComponent<T extends object>
    * @type {ComboItemTemplate<T>}
    */
   @property({ attribute: false })
-  public groupHeaderTemplate: ComboItemTemplate<T> = (item) => {
+  public groupHeaderTemplate: ComboItemTemplate<T> = ({ item }) => {
     return html`${this.groupKey && item[this.groupKey]}`;
   };
 
@@ -506,7 +506,7 @@ export default class IgcComboComponent<T extends object>
     const active = this.navigationController.active === index;
     const selected = this.selectionController.selected.has(item);
     const headerTemplate = html`<igc-combo-header part="group-header"
-      >${this.groupHeaderTemplate(record)}</igc-combo-header
+      >${this.groupHeaderTemplate({ item: record })}</igc-combo-header
     >`;
 
     const itemParts = partNameMap({
@@ -522,7 +522,7 @@ export default class IgcComboComponent<T extends object>
       .index=${index}
       .active=${active}
       .selected=${selected}
-      >${this.itemTemplate(record)}</igc-combo-item
+      >${this.itemTemplate({ item: record })}</igc-combo-item
     >`;
 
     return html`${this.groupKey && record.header
