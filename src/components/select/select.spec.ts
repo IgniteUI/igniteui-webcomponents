@@ -1,12 +1,12 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents';
-import IgcInputComponent from '../input/input';
-import IgcSelectComponent from './select';
-import IgcSelectGroupComponent from './select-group';
-import IgcSelectHeaderComponent from './select-header';
-import IgcSelectItemComponent from './select-item';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcInputComponent from '../input/input.js';
+import IgcSelectComponent from './select.js';
+import IgcSelectGroupComponent from './select-group.js';
+import IgcSelectHeaderComponent from './select-header.js';
+import IgcSelectItemComponent from './select-item.js';
 
 describe('Select component', () => {
   let select: IgcSelectComponent;
