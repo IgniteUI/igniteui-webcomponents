@@ -80,3 +80,7 @@ export type {
   DatePartDeltas,
 } from './components/date-time-input/date-util.js';
 export type { IgcRangeSliderValue } from './components/slider/range-slider.js';
+export type {
+  IgcActiveStepChangingArgs,
+  IgcActiveStepChangedArgs,
+} from './components/stepper/stepper.common.js';
