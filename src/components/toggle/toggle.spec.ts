@@ -7,7 +7,7 @@ import {
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
 import PopperTestComponent from './test.component.spec.js';
-import { IgcToggleOptions } from './types';
+import type { IgcToggleOptions } from './types';
 
 describe('Toggle directive', () => {
   let popper: any;

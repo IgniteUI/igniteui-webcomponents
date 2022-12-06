@@ -1,12 +1,12 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
-import IgcButtonComponent from '../button/button';
-import { defineComponents } from '../common/definitions/defineComponents';
-import IgcDropdownComponent from './dropdown';
-import IgcDropdownGroupComponent from './dropdown-group';
-import IgcDropdownHeaderComponent from './dropdown-header';
-import IgcDropdownItemComponent from './dropdown-item';
+import IgcButtonComponent from '../button/button.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcDropdownComponent from './dropdown.js';
+import IgcDropdownGroupComponent from './dropdown-group.js';
+import IgcDropdownHeaderComponent from './dropdown-header.js';
+import IgcDropdownItemComponent from './dropdown-item.js';
 
 describe('Dropdown component', () => {
   before(() => {

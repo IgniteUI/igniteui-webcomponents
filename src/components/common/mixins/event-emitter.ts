@@ -1,5 +1,5 @@
 import { LitElement } from 'lit';
-import { AbstractConstructor, Constructor } from './constructor';
+import type { AbstractConstructor, Constructor } from './constructor';
 
 export type UnpackCustomEvent<T> = T extends CustomEvent<infer U> ? U : never;
 

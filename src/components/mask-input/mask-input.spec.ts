@@ -3,8 +3,8 @@ import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents } from '../../index.js';
 import { MaskParser } from './mask-parser.js';
-import IgcMaskInputComponent from './mask-input';
-import IgcFormComponent from '../form/form';
+import IgcMaskInputComponent from './mask-input.js';
+import IgcFormComponent from '../form/form.js';
 
 describe('Masked input', () => {
   before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));

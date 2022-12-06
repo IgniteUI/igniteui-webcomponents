@@ -2,7 +2,7 @@ import { all } from '@igniteui/material-icons-extended';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
-import { Context, Story } from './story';
+import type { Context, Story } from './story';
 
 const icons = all.map((icon) => icon.name);
 
