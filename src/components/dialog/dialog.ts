@@ -192,11 +192,11 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     const label = this.ariaLabel ? this.ariaLabel : undefined;
     const labelledby = label ? undefined : this.titleId;
 
+    /* eslint-disable lit-a11y/click-events-have-key-events */
     return html`
       <div part="backdrop" aria-hidden="true" ?hidden=${!this.open}></div>
       <dialog
         part="base"
-        role="dialog"
         @click=${this.handleClick}
         @cancel=${this.handleCancel}
         aria-label=${ifDefined(label)}

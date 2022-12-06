@@ -80,6 +80,7 @@ export default class IgcNavDrawerComponent extends LitElement {
     };
   }
 
+  /* eslint-disable lit-a11y/click-events-have-key-events */
   protected override render() {
     return html`
       <div part="overlay" @click=${this.hide}></div>
