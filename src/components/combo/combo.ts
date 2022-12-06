@@ -30,6 +30,7 @@ import {
   GroupingDirection,
   FilteringOptions,
   IgcComboEventMap,
+  ComboItemTemplate,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
@@ -77,6 +78,7 @@ defineComponents(
  * @csspart suffix - The suffix wrapper.
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart clear-icon - The clear icon wrapper.
+ * @csspart case-icon - The case icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  * @csspart search-input - The search input field.
  * @csspart list-wrapper - The list of options wrapper.
@@ -119,9 +121,8 @@ export default class IgcComboComponent<T extends object>
   @queryAssignedElements({ slot: 'prefix' })
   protected inputPrefix!: Array<HTMLElement>;
 
-  /** @hidden @internal */
   @query('[part="search-input"]')
-  public input!: IgcInputComponent;
+  protected input!: IgcInputComponent;
 
   @query('igc-input#target')
   private target!: IgcInputComponent;
@@ -283,10 +284,10 @@ export default class IgcComboComponent<T extends object>
 
   /**
    * The template used for the content of each combo item.
-   * @type {(item: T) => TemplateResult}
+   * @type {ComboItemTemplate<T>}
    */
   @property({ attribute: false })
-  public itemTemplate: (item: T) => TemplateResult = (item) => {
+  public itemTemplate: ComboItemTemplate<T> = (item) => {
     if (typeof item !== 'object' || item === null) {
       return String(item) as any;
     }
@@ -300,16 +301,15 @@ export default class IgcComboComponent<T extends object>
 
   /**
    * The template used for the content of each combo group header.
-   * @type {(item: T) => TemplateResult}
+   * @type {ComboItemTemplate<T>}
    */
   @property({ attribute: false })
-  public groupHeaderTemplate: (item: T) => TemplateResult = (item) => {
+  public groupHeaderTemplate: ComboItemTemplate<T> = (item) => {
     return html`${this.groupKey && item[this.groupKey]}`;
   };
 
-  /** @hidden @internal */
   @state()
-  public dataState: Array<ComboRecord<T>> = [];
+  protected dataState: Array<ComboRecord<T>> = [];
 
   @watch('data')
   protected dataChanged() {
@@ -336,7 +336,7 @@ export default class IgcComboComponent<T extends object>
   @watch('pipeline')
   protected async pipeline() {
     this.dataState = await this.dataController.apply([...this.data]);
-    this.navigationController.active = 0;
+    this.navigationController.active = -1;
   }
 
   @watch('open')
@@ -456,8 +456,7 @@ export default class IgcComboComponent<T extends object>
     return this.emitEvent('igcClosing', args);
   }
 
-  /** @hidden @internal */
-  public async _show(emit = true) {
+  protected async _show(emit = true) {
     if (this.open) return;
     if (emit && !this.handleOpening()) return;
     this.open = true;
@@ -477,8 +476,7 @@ export default class IgcComboComponent<T extends object>
     this._show(false);
   }
 
-  /** @hidden @internal */
-  public async _hide(emit = true) {
+  protected async _hide(emit = true) {
     if (!this.open) return;
     if (emit && !this.handleClosing()) return;
     this.open = false;
@@ -555,8 +553,7 @@ export default class IgcComboComponent<T extends object>
     this.input.focus();
   }
 
-  /** @internal @hidden */
-  public toggleSelect(index: number) {
+  protected toggleSelect(index: number) {
     this.selectionController.changeSelection(index);
     this.navigationController.active = index;
   }
@@ -568,7 +565,7 @@ export default class IgcComboComponent<T extends object>
   protected handleClearIconClick(e: MouseEvent) {
     e.stopPropagation();
     this.selectionController.deselect([], true);
-    this.navigationController.active = 0;
+    this.navigationController.active = -1;
   }
 
   protected toggleCaseSensitivity() {

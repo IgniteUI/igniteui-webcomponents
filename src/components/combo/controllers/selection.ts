@@ -11,6 +11,11 @@ export class SelectionController<T extends object>
 {
   private _selected: Set<T> = new Set();
 
+  public get dataState() {
+    // @ts-expect-error protected access
+    return this.host.dataState;
+  }
+
   public getValue(items: T[]) {
     return items
       .map((value) => {
@@ -32,7 +37,7 @@ export class SelectionController<T extends object>
 
   private getItemsByValueKey(keys: Values<T>[]) {
     return keys.map((key) =>
-      this.host.dataState.find((i) => i[this.host.valueKey!] === key)
+      this.dataState.find((i) => i[this.host.valueKey!] === key)
     );
   }
 
@@ -56,7 +61,7 @@ export class SelectionController<T extends object>
     if (items.length === 0) return;
 
     items.forEach((item) => {
-      const i = this.host.dataState.includes(item as ComboRecord<T>);
+      const i = this.dataState.includes(item as ComboRecord<T>);
       if (i) {
         this._selected.add(item);
       }
@@ -67,7 +72,7 @@ export class SelectionController<T extends object>
     if (items.length === 0) return;
 
     items.forEach((item) => {
-      const i = this.host.dataState.includes(item as ComboRecord<T>);
+      const i = this.dataState.includes(item as ComboRecord<T>);
       if (i) {
         this._selected.delete(item);
       }
@@ -75,7 +80,7 @@ export class SelectionController<T extends object>
   }
 
   private selectAll() {
-    this.host.dataState
+    this.dataState
       .filter((i) => !i.header)
       .forEach((item) => {
         this._selected.add(item);
@@ -169,7 +174,7 @@ export class SelectionController<T extends object>
   }
 
   public changeSelection(index: number) {
-    const item = this.host.dataState[index];
+    const item = this.dataState[index];
 
     if (this.host.valueKey) {
       !this.selected.has(item)

@@ -1,4 +1,4 @@
-import { ReactiveControllerHost } from 'lit';
+import { ReactiveControllerHost, TemplateResult } from 'lit';
 import IgcComboComponent from './combo.js';
 
 export type Keys<T> = keyof T;
@@ -44,3 +44,5 @@ export interface IgcComboEventMap {
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
 }
+
+export type ComboItemTemplate<T extends object> = (item: T) => TemplateResult;

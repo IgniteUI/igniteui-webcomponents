@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineAllComponents } from '../src/index.js';
+import { defineAllComponents, ComboItemTemplate } from '../src/index.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 
 defineAllComponents();
@@ -161,7 +161,7 @@ interface City {
   country: string;
 }
 
-const itemTemplate = (item: City) => {
+const itemTemplate: ComboItemTemplate<City> = (item: City) => {
   return html`
     <div>
       <span><b>${item?.name ?? item}</b> [${item?.zip}]</span>
@@ -169,7 +169,7 @@ const itemTemplate = (item: City) => {
   `;
 };
 
-const groupHeaderTemplate = (item: City) => {
+const groupHeaderTemplate: ComboItemTemplate<City> = (item: City) => {
   return html`<div>Country of ${item?.country ?? item}</div>`;
 };
 
@@ -270,11 +270,11 @@ const Template: Story<ArgTypes, Context> = (
     display-key="name"
     group-key="country"
     group-sorting="${ifDefined(groupSorting)}"
-    ?case-sensitive-icon=${ifDefined(caseSensitiveIcon)}
-    ?disable-filtering=${ifDefined(disableFiltering)}
+    ?case-sensitive-icon=${caseSensitiveIcon}
+    ?disable-filtering=${disableFiltering}
     ?open=${open}
     ?autofocus=${autofocus}
-    ?autofocus-list=${ifDefined(autofocusList)}
+    ?autofocus-list=${autofocusList}
     ?outlined=${outlined}
     ?required=${required}
     ?disabled=${disabled}

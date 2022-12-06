@@ -43,19 +43,42 @@ export class NavigationController<T extends object>
 
   protected _active = START_INDEX;
 
+  public get input() {
+    // @ts-expect-error protected access
+    return this.host.input;
+  }
+
+  public get dataState() {
+    // @ts-expect-error protected access
+    return this.host.dataState;
+  }
+
+  public show() {
+    // @ts-expect-error protected access
+    this.host._show(true);
+  }
+
+  public hide() {
+    // @ts-expect-error protected access
+    this.host._hide(true);
+  }
+
+  public toggleSelect(index: number) {
+    // @ts-expect-error protected access
+    this.host.toggleSelect(index);
+  }
+
   protected get currentItem() {
     const item = this.active;
     return item === START_INDEX ? START_INDEX : item;
   }
 
   protected get firstItem() {
-    return this.host.dataState.findIndex(
-      (i: ComboRecord<T>) => i.header !== true
-    );
+    return this.dataState.findIndex((i: ComboRecord<T>) => i.header !== true);
   }
 
   protected get lastItem() {
-    return this.host.dataState.length - 1;
+    return this.dataState.length - 1;
   }
 
   public get active() {
@@ -82,32 +105,29 @@ export class NavigationController<T extends object>
   }
 
   protected space() {
-    const item = this.host.dataState[this.active];
+    const item = this.dataState[this.active];
 
     if (!item.header) {
-      this.host.toggleSelect(this.active);
+      this.toggleSelect(this.active);
     }
   }
 
   protected escape() {
-    this.host._hide();
+    this.hide();
   }
 
   protected enter() {
     this.space();
-    this.host._hide();
+    this.hide();
   }
 
   protected inputArrowDown(container: IgcComboListComponent) {
     container.focus();
-
-    if (this.active === 0) {
-      this.active = this.firstItem;
-    }
+    this.arrowDown(container);
   }
 
   protected hostArrowDown() {
-    this.host._show();
+    this.show();
   }
 
   protected arrowDown(container: IgcComboListComponent) {
@@ -124,8 +144,10 @@ export class NavigationController<T extends object>
     const next = this.getNearestItem(this.currentItem, direction);
 
     if (next === -1) {
-      if (this.active === this.lastItem) return;
-      this.host.input.focus();
+      if (this.active === this.firstItem) {
+        this.input.focus();
+        this.active = START_INDEX;
+      }
       return;
     }
 
@@ -134,10 +156,10 @@ export class NavigationController<T extends object>
 
   protected getNearestItem(startIndex: number, direction: number) {
     let index = startIndex;
-    const items = this.host.dataState;
+    const items = this.dataState;
 
-    if (items[index + direction]?.header) {
-      this.getNearestItem((index += direction), direction);
+    while (items[index + direction]?.header) {
+      index += direction;
     }
 
     index += direction;
@@ -156,7 +178,7 @@ export class NavigationController<T extends object>
   }
 
   public navigateTo(item: T, container: IgcComboListComponent) {
-    this.active = this.host.dataState.findIndex((i) => i === item);
+    this.active = this.dataState.findIndex((i) => i === item);
     container.scrollToIndex(this.active);
   }
 
