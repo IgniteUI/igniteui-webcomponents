@@ -284,7 +284,7 @@ export default class IgcComboComponent<T extends object>
 
   /**
    * The template used for the content of each combo item.
-   * @type {(item: T) => TemplateResult}
+   * @type {ComboItemTemplate<T>}
    */
   @property({ attribute: false })
   public itemTemplate: ComboItemTemplate<T> = (item) => {
@@ -301,7 +301,7 @@ export default class IgcComboComponent<T extends object>
 
   /**
    * The template used for the content of each combo group header.
-   * @type {(item: T) => TemplateResult}
+   * @type {ComboItemTemplate<T>}
    */
   @property({ attribute: false })
   public groupHeaderTemplate: ComboItemTemplate<T> = (item) => {
@@ -336,7 +336,7 @@ export default class IgcComboComponent<T extends object>
   @watch('pipeline')
   protected async pipeline() {
     this.dataState = await this.dataController.apply([...this.data]);
-    this.navigationController.active = 0;
+    this.navigationController.active = -1;
   }
 
   @watch('open')
@@ -565,7 +565,7 @@ export default class IgcComboComponent<T extends object>
   protected handleClearIconClick(e: MouseEvent) {
     e.stopPropagation();
     this.selectionController.deselect([], true);
-    this.navigationController.active = 0;
+    this.navigationController.active = -1;
   }
 
   protected toggleCaseSensitivity() {

@@ -123,10 +123,7 @@ export class NavigationController<T extends object>
 
   protected inputArrowDown(container: IgcComboListComponent) {
     container.focus();
-
-    if (this.active === 0) {
-      this.active = this.firstItem;
-    }
+    this.arrowDown(container);
   }
 
   protected hostArrowDown() {
@@ -147,8 +144,10 @@ export class NavigationController<T extends object>
     const next = this.getNearestItem(this.currentItem, direction);
 
     if (next === -1) {
-      if (this.active === this.lastItem) return;
-      this.input.focus();
+      if (this.active === this.firstItem) {
+        this.input.focus();
+        this.active = START_INDEX;
+      }
       return;
     }
 
@@ -159,8 +158,8 @@ export class NavigationController<T extends object>
     let index = startIndex;
     const items = this.dataState;
 
-    if (items[index + direction]?.header) {
-      this.getNearestItem((index += direction), direction);
+    while (items[index + direction]?.header) {
+      index += direction;
     }
 
     index += direction;
