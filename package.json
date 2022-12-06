@@ -73,6 +73,7 @@
     "concurrently": "^7.6.0",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
     "globby": "^13.1.2",
     "husky": "^8.0.2",
     "igniteui-theming": "^1.1.4",

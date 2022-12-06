@@ -1,6 +1,6 @@
 import { expect, oneEvent } from '@open-wc/testing';
-import { configureTheme, getTheme } from './config';
-import { CHANGE_THEME_EVENT } from './theming-event';
+import { configureTheme, getTheme } from './config.js';
+import { CHANGE_THEME_EVENT } from './theming-event.js';
 
 describe('Theming Config', () => {
   it('should set the theme and raise event with the new theme', async () => {

@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { DateParts, DateTimeUtil } from './date-util';
+import { DateParts, DateTimeUtil } from './date-util.js';
 
 describe('Date Util', () => {
   const DEFAULT_LOCALE = 'en';

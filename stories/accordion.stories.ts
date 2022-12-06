@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { Story } from './story';
+import type { Story } from './story';
 
 // region default
 const metadata = {
