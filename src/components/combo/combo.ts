@@ -90,6 +90,8 @@ defineComponents(
  * @csspart checkbox - Represents each checkbox of each list item.
  * @csspart checkbox-indicator - Represents the checkbox indicator of each list item.
  * @csspart checked - Appended to checkbox parts list when checkbox is checked.
+ * @csspart header - The container holding the header content.
+ * @csspart footer - The container holding the footer content.
  * @csspart empty - The container holding the empty content.
  */
 @themes({ material, bootstrap, fluent, indigo })
@@ -699,7 +701,9 @@ export default class IgcComboComponent<T extends object>
       ${this.toggleController.toggleDirective}
     >
       ${this.renderSearchInput()}
-      <slot name="header"></slot>
+      <div part="header">
+        <slot name="header"></slot>
+      </div>
       <igc-combo-list
         id="dropdown"
         part="list"
@@ -710,7 +714,9 @@ export default class IgcComboComponent<T extends object>
       >
       </igc-combo-list>
       ${this.renderEmptyTemplate()}
-      <slot name="footer"></slot>
+      <div part="footer">
+        <slot name="footer"></slot>
+      </div>
     </div>`;
   }
 
