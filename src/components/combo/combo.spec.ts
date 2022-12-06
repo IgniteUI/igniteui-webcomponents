@@ -2,13 +2,11 @@ import { html } from 'lit';
 import sinon from 'sinon';
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcInputComponent from '../input/input';
+import IgcInputComponent from '../input/input.js';
 import IgcComboComponent from './combo.js';
 import IgcComboListComponent from './combo-list.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcListComponent from '../list/list.js';
-// import IgcComboListComponent from './combo-list.js';
-// import IgcComboHeaderComponent from './combo-header.js';
 
 describe('Combo', () => {
   interface City {
