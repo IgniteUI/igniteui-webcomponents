@@ -1,6 +1,6 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story';
+import type { Context, Story } from './story';
 import {
   registerIcon,
   registerIconFromText,

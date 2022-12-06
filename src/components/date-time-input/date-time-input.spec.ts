@@ -6,10 +6,10 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents';
-import { MaskParser } from '../mask-input/mask-parser';
-import IgcDateTimeInputComponent from './date-time-input';
-import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { MaskParser } from '../mask-input/mask-parser.js';
+import IgcDateTimeInputComponent from './date-time-input.js';
+import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util.js';
 
 describe('Date Time Input component', () => {
   before(() => defineComponents(IgcDateTimeInputComponent));

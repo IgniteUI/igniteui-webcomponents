@@ -6,7 +6,7 @@ import {
   elementUpdated,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcExpansionPanelComponent } from '../../index';
+import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
 
 const SLOTS = {
   indicator: 'slot[name="indicator"]',
@@ -539,9 +539,9 @@ const getDefaultSlot = (panel: IgcExpansionPanelComponent): HTMLSlotElement => {
 
 const testTemplate = `<igc-expansion-panel>
     <span slot="title">
-      <span>Sample header text</span> 
+      <span>Sample header text</span>
     </span>
     <div slot="subtitle">Sample subtitle</div>
     <igc-icon slot="indicator" name='select'></igc-icon>
-    <p>Sample content</p> 
+    <p>Sample content</p>
 </igc-expansion-panel>`;
