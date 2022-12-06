@@ -709,8 +709,8 @@ export default class IgcComboComponent<T extends object>
         ?hidden=${this.dataState.length === 0}
       >
       </igc-combo-list>
-      <slot name="footer"></slot>
       ${this.renderEmptyTemplate()}
+      <slot name="footer"></slot>
     </div>`;
   }
 
