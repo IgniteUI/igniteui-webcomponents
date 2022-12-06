@@ -689,9 +689,9 @@ export default class IgcComboComponent<T extends object>
   }
 
   private renderEmptyTemplate() {
-    return html`<slot name="empty" ?hidden=${this.dataState.length > 0}>
-      <div part="empty">The list is empty</div>
-    </slot>`;
+    return html`<div part="empty" ?hidden=${this.dataState.length > 0}>
+      <slot name="empty">The list is empty</slot>
+    </div>`;
   }
 
   private renderList() {
