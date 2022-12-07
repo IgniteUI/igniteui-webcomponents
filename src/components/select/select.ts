@@ -22,11 +22,7 @@ import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
-import type {
-  ReactiveTheme,
-  ThemeController,
-  Theme,
-} from '../../theming/types.js';
+import type { ThemeController, Theme } from '../../theming/types.js';
 import { styles } from './themes/light/select.base.css.js';
 import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
@@ -77,13 +73,10 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcSelectComponent
-  extends EventEmitterMixin<
-    IgcSelectEventMap,
-    Constructor<IgcDropdownComponent>
-  >(IgcDropdownComponent)
-  implements ReactiveTheme
-{
+export default class IgcSelectComponent extends EventEmitterMixin<
+  IgcSelectEventMap,
+  Constructor<IgcDropdownComponent>
+>(IgcDropdownComponent) {
   /** @private */
   public static readonly tagName = 'igc-select';
   public static styles = styles;
@@ -215,7 +208,7 @@ export default class IgcSelectComponent
     });
   }
 
-  public themeAdopted(controller: ThemeController) {
+  protected themeAdopted(controller: ThemeController) {
     this.themeController = controller;
   }
 

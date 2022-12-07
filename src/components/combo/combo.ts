@@ -37,11 +37,7 @@ import { partNameMap } from '../common/util.js';
 import { filteringOptionsConverter } from './utils/converters.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import type {
-  ReactiveTheme,
-  ThemeController,
-  Theme,
-} from '../../theming/types.js';
+import type { ThemeController, Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 
 defineComponents(
@@ -102,7 +98,7 @@ export default class IgcComboComponent<T extends object>
   extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
     LitElement
   )
-  implements Partial<IgcToggleComponent>, ReactiveTheme
+  implements Partial<IgcToggleComponent>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
@@ -376,7 +372,7 @@ export default class IgcComboComponent<T extends object>
     );
   }
 
-  public themeAdopted(controller: ThemeController) {
+  protected themeAdopted(controller: ThemeController) {
     this.themeController = controller;
   }
 
