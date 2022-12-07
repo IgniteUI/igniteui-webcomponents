@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Stepper Component [#219](https://github.com/IgniteUI/igniteui-webcomponents/issues/219)
 - Combo Component [#411](https://github.com/IgniteUI/igniteui-webcomponents/issues/411)
+- Mask Input - Skip literal positions when deleting symbols in the component
+
+### Fixed
+- Mask input - Validation state on user input [#558](https://github.com/IgniteUI/igniteui-webcomponents/issues/558)
 
 ## [4.0.0] - 2022-11-02
 ### Changed

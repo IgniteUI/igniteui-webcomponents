@@ -379,6 +379,28 @@ describe('Masked input', () => {
       expect(input().value).to.equal(parser.apply(masked.value));
     });
 
+    it('Delete key behavior - skip literals', async () => {
+      masked.mask = 'CC--CCC---CC';
+      masked.value = '1234567';
+      // value: 12--345---67
+      await elementUpdated(masked);
+
+      // value: 12--345---67
+      masked.setSelectionRange(1, 1);
+      fireKeyboardEvent(input(), 'keydown', { key: 'Delete' });
+      fireInputEvent(input(), 'deleteContentForward');
+      // value: 1_--345---67
+      await elementUpdated(masked);
+
+      fireKeyboardEvent(input(), 'keydown', { key: 'Delete' });
+      fireInputEvent(input(), 'deleteContentForward');
+      // value: 1_--_45---67
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal('1_--_45---67');
+      expect(masked.value).to.equal('14567');
+    });
+
     it('Backspace key behavior', async () => {
       masked.value = '1234';
       await elementUpdated(masked);
@@ -390,6 +412,30 @@ describe('Masked input', () => {
 
       expect(masked.value).to.equal('234');
       expect(input().value).to.equal(parser.apply(input().value));
+    });
+
+    it('Backspace key behavior - skip literals', async () => {
+      masked.mask = 'CC--CCC---CC';
+      masked.value = '1234567';
+      // value: 12--345---67
+      await elementUpdated(masked);
+
+      masked.setSelectionRange(4, 5);
+      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
+      fireInputEvent(input(), 'deleteContentBackward');
+      // value: 12--_45---67
+      await elementUpdated(masked);
+
+      // Emulate range shift on multiple backspace presses as
+      // it is not correctly reflected in test environment
+      masked.setSelectionRange(3, 4);
+      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
+      fireInputEvent(input(), 'deleteContentBackward');
+      // value: 1_--_45---67
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal('1_--_45---67');
+      expect(masked.value).to.equal('14567');
     });
 
     it('Backspace key behavior with composition', async () => {

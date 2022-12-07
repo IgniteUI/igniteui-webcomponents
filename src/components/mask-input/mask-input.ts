@@ -5,7 +5,7 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { partNameMap } from '../common/util.js';
-import { IgcMaskInputBaseComponent } from './mask-input-base.js';
+import { IgcMaskInputBaseComponent, MaskRange } from './mask-input-base.js';
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -75,8 +75,12 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   }
 
   /** The mask pattern to apply on the input. */
-  public set mask(val: string) {
-    this._mask = val;
+  public set mask(value: string) {
+    this._mask = value;
+    this.parser.mask = value;
+    if (this.value) {
+      this.maskedValue = this.parser.apply(this._value);
+    }
   }
 
   @watch('prompt')
@@ -87,43 +91,34 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  @watch('_mask')
-  protected maskChange() {
-    this.parser.mask = this.mask;
-    if (this.value) {
-      this.maskedValue = this.parser.apply(this._value);
-    }
-  }
-
   @watch('required', { waitUntilFirstUpdate: true })
   @watch('disabled', { waitUntilFirstUpdate: true })
   @watch('value', { waitUntilFirstUpdate: true })
-  protected handleInvalidState() {
-    this.updateComplete.then(() => (this.invalid = !this.checkValidity()));
+  protected async handleInvalidState() {
+    await this.updateComplete;
+    this.invalid = !this.checkValidity();
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-
-    this.mask = this.mask || this.parser.mask;
-    this.prompt = this.prompt || this.parser.prompt;
-  }
-
-  protected updateInput(part: string, start: number, finish: number) {
+  protected async updateInput(string: string, range: MaskRange) {
     const { value, end } = this.parser.replace(
       this.maskedValue,
-      part,
-      start,
-      finish
+      string,
+      range.start,
+      range.end
     );
+
     this.maskedValue = value;
     this._value = this.parser.parse(value);
 
     this.requestUpdate();
-    if (start !== this.mask.length) {
+
+    if (range.start !== this.mask.length) {
       this.emitEvent('igcInput', { detail: this.value });
     }
-    this.updateComplete.then(() => this.input.setSelectionRange(end, end));
+    await this.updateComplete;
+
+    this.input.setSelectionRange(end, end);
+    this.invalid = !this.checkValidity();
   }
 
   protected handleDragEnter() {
@@ -138,7 +133,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  protected override handleFocus() {
+  protected override async handleFocus() {
     this.hasFocus = true;
     super.handleFocus();
 
@@ -147,9 +142,11 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
 
     if (!this._value) {
-      this.maskedValue = this.parser.apply();
       // In case of empty value, select the whole mask
-      this.updateComplete.then(() => this.select());
+      this.maskedValue = this.parser.apply();
+
+      await this.updateComplete;
+      this.select();
     }
   }
 

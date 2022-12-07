@@ -48,7 +48,7 @@ export class MaskParser {
   protected literals = new Map<number, string>();
   protected _escapedMask!: string;
 
-  protected get literalPositions() {
+  public get literalPositions() {
     this.getMaskLiterals();
     return Array.from(this.literals.keys());
   }
@@ -123,6 +123,22 @@ export class MaskParser {
         REQUIRED.has(char) && !positions.includes(pos) ? pos : -1
       )
       .filter((pos) => pos > -1);
+  }
+
+  public getPreviousNonLiteralPosition(start: number) {
+    const positions = this.literalPositions;
+    for (let i = start; i > 0; i--) {
+      if (!positions.includes(i)) return i;
+    }
+    return start;
+  }
+
+  public getNextNonLiteralPosition(start: number) {
+    const positions = this.literalPositions;
+    for (let i = start; i < this._escapedMask.length; i++) {
+      if (!positions.includes(i)) return i;
+    }
+    return start;
   }
 
   public replace(masked = '', value: string, start: number, end: number) {

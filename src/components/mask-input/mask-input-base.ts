@@ -3,15 +3,16 @@ import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
 import { MaskParser } from './mask-parser.js';
-interface MaskSelection {
+
+export type MaskRange = {
   start: number;
   end: number;
-}
+};
 
 @blazorDeepImport
 export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   protected parser = new MaskParser();
-  protected selection: MaskSelection = { start: 0, end: 0 };
+  protected selection: MaskRange = { start: 0, end: 0 };
   protected compositionStart = 0;
 
   @state()
@@ -31,7 +32,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   @property({ reflect: true, type: Boolean })
   public invalid = false;
 
-  protected get inputSelection(): MaskSelection {
+  protected get inputSelection(): MaskRange {
     return {
       start: this.input.selectionStart || 0,
       end: this.input.selectionEnd || 0,
@@ -64,49 +65,55 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   }
 
   protected handleInput({ inputType, isComposing }: InputEvent) {
+    const EMPTY = '';
     const value = this.input.value;
-    const start = this.selection.start;
-    let end = this.selection.end;
+    const { start, end } = this.selection;
+    const deleteEnd = this.parser.getNextNonLiteralPosition(end) + 1;
 
     switch (inputType) {
       case 'deleteContentForward':
-        this.updateInput('', start, (end = start === end ? ++end : end));
+        this.updateInput(EMPTY, { start, end: deleteEnd });
         return this.updateComplete.then(() =>
-          this.input.setSelectionRange(end, end)
+          this.input.setSelectionRange(deleteEnd, deleteEnd)
         );
 
       case 'deleteContentBackward':
         if (isComposing) return;
-        return this.updateInput('', this.inputSelection.start, end);
+        return this.updateInput(EMPTY, {
+          start: this.parser.getPreviousNonLiteralPosition(
+            this.inputSelection.start
+          ),
+          end,
+        });
 
       case 'deleteByCut':
-        return this.updateInput('', start, end);
+        return this.updateInput(EMPTY, this.selection);
 
       case 'insertText':
         return this.updateInput(
           value.substring(start, this.inputSelection.end),
-          start,
-          end
+          this.selection
         );
 
       case 'insertFromPaste':
         return this.updateInput(
           value.substring(start, this.inputSelection.end),
-          start,
-          this.inputSelection.start
+          {
+            start,
+            end: this.inputSelection.start,
+          }
         );
 
       case 'insertFromDrop':
         return this.updateInput(
           value.substring(this.inputSelection.start, this.inputSelection.end),
-          this.inputSelection.start,
-          this.inputSelection.end
+          { ...this.inputSelection }
         );
     }
   }
 
-  protected handleKeydown(e: KeyboardEvent) {
-    if (!e.key) {
+  protected handleKeydown({ key }: KeyboardEvent) {
+    if (!key) {
       return;
     }
     this.selection = this.inputSelection;
@@ -125,9 +132,10 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   }
 
   protected handleCompositionEnd({ data }: CompositionEvent) {
-    const start = this.compositionStart,
-      end = this.inputSelection.end;
-    this.updateInput(data, start, end);
+    this.updateInput(data, {
+      start: this.compositionStart,
+      end: this.inputSelection.end,
+    });
   }
 
   protected handleInvalid() {
@@ -144,9 +152,5 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
     this.selection = { start, end };
   }
 
-  protected abstract updateInput(
-    part: string,
-    start: number,
-    finish: number
-  ): void;
+  protected abstract updateInput(string: string, range: MaskRange): void;
 }
