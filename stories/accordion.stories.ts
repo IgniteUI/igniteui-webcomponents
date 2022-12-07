@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { Story } from './story';
+import type { Story } from './story';
 
 // region default
 const metadata = {
@@ -8,6 +8,7 @@ const metadata = {
   argTypes: {
     singleExpand: {
       type: 'boolean',
+      description: 'Allows only one panel to be expanded at a time.',
       control: 'boolean',
       defaultValue: false,
     },

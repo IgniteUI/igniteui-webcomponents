@@ -8,6 +8,7 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
 
 :host [part='base'] {
     transition-duration: .1s;
+    gap: utils.rem(6px);
 }
 
 :host [part~='control'] {

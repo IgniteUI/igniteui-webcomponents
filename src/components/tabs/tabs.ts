@@ -102,7 +102,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     return this.activeTab?.panel ?? '';
   }
 
-  /** Sets the alignment for the tab headers */
+  /**
+   * Sets the alignment for the tab headers
+   * @attr
+   */
   @property({ reflect: true })
   public alignment: 'start' | 'end' | 'center' | 'justify' = 'start';
 
@@ -111,6 +114,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
    * the tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys
    * and the corresponding panel is displayed.
    * When set to manual, the tab is only focused. The selection happens after pressing Space or Enter.
+   * @attr
    */
   @property()
   public activation: 'auto' | 'manual' = 'auto';

@@ -31,11 +31,18 @@ import { IgcInputBaseComponent } from './input-base.js';
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
 
+  /**
+   * The value of the control.
+   * @attr
+   */
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
   public value = '';
 
-  /** The type attribute of the control. */
+  /**
+   * The type attribute of the control.
+   * @attr
+   */
   @alternateName('displayType')
   @property({ reflect: true })
   public type:
@@ -47,7 +54,10 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'text'
     | 'url' = 'text';
 
-  /** The input mode attribute of the control. */
+  /**
+   * The input mode attribute of the control.
+   * @attr
+   */
   @property()
   public inputmode!:
     | 'none'
@@ -59,39 +69,66 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'email'
     | 'url';
 
-  /** The pattern attribute of the control. */
+  /**
+   * The pattern attribute of the control.
+   * @attr
+   */
   @property({ type: String })
   public pattern!: string;
 
-  /** Controls the validity of the control. */
+  /**
+   * Controls the validity of the control.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public invalid = false;
 
-  /** The minlength attribute of the control. */
+  /**
+   * The minlength attribute of the control.
+   * @attr
+   */
   @property({ type: Number })
   public minlength!: number;
 
-  /** The maxlength attribute of the control. */
+  /**
+   * The maxlength attribute of the control.
+   * @attr
+   */
   @property({ type: Number })
   public maxlength!: number;
 
-  /** The min attribute of the control. */
+  /**
+   * The min attribute of the control.
+   * @attr
+   */
   @property()
   public min!: number | string;
 
-  /** The max attribute of the control. */
+  /**
+   * The max attribute of the control.
+   * @attr
+   */
   @property()
   public max!: number | string;
 
-  /** The step attribute of the control. */
+  /**
+   * The step attribute of the control.
+   * @attr
+   */
   @property({ type: Number })
   public step!: number;
 
-  /** The autofocus attribute of the control. */
+  /**
+   * The autofocus attribute of the control.
+   * @attr
+   */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
-  /** The autocomplete attribute of the control. */
+  /**
+   * The autocomplete attribute of the control.
+   * @attr
+   */
   @property()
   public autocomplete!: string;
 

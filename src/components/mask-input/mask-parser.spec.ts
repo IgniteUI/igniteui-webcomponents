@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { MaskParser } from './mask-parser';
+import { MaskParser } from './mask-parser.js';
 
 describe('Mask parser', () => {
   let parser: MaskParser;

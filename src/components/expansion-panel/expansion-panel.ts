@@ -52,15 +52,24 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   public static styles = styles;
   private static readonly increment = createCounter();
 
-  /** Indicates whether the contents of the control should be visible. */
+  /**
+   * Indicates whether the contents of the control should be visible.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public open = false;
 
-  /** Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions. */
+  /**
+   * Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
-  /** The indicator position of the expansion panel. */
+  /**
+   * The indicator position of the expansion panel.
+   * @attr indicator-position
+   */
   @property({ reflect: true, attribute: 'indicator-position' })
   public indicatorPosition: 'start' | 'end' | 'none' = 'start';
 

@@ -1,8 +1,8 @@
 import { LitElement, html } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import { blazorSuppressComponent } from '../common/decorators';
+import { blazorSuppressComponent } from '../common/decorators/index.js';
 import { igcToggle } from './toggle.directive';
-import { IgcToggleOptions } from './types';
+import type { IgcToggleOptions } from './types';
 
 @blazorSuppressComponent
 export default class PopperTestComponent extends LitElement {

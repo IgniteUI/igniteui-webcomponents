@@ -1,0 +1,5 @@
+@mixin theme() {
+    igc-combo::part(input) {
+        --container-background: transparent;
+    }
+}

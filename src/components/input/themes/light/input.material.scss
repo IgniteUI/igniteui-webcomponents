@@ -30,6 +30,14 @@ $fs: rem(16px) !default;
     border-top: $idle-border-width solid transparent;
 }
 
+%suffix-preffix {
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    height: 100%;
+    padding-inline: pad-inline(8px, 12px, 16px);
+}
+
 :host {
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
@@ -137,14 +145,6 @@ $fs: rem(16px) !default;
         }
     }
 
-    [part='prefix'] {
-        padding-inline-start: rem(4px);
-    }
-
-    [part='suffix'] {
-        padding-inline-end: rem(4px);
-    }
-
     [part='label'] {
         color: $active-color;
     }
@@ -155,9 +155,7 @@ $fs: rem(16px) !default;
 }
 
 [part='start'] {
-    width: auto;
-    min-width: rem(12px);
-    flex-shrink: 0;
+    justify-content: flex-start;
     grid-area: 1 / 1;
     border: {
         style: solid;
@@ -179,8 +177,9 @@ $fs: rem(16px) !default;
     }
 
     > [part='prefix'] {
-        padding-inline-start: rem(5px);
-        padding-inline-end: rem(4px);
+        ::slotted(*) {
+            @extend %suffix-preffix;
+        }
     }
 }
 
@@ -218,12 +217,8 @@ $fs: rem(16px) !default;
 }
 
 [part='end'] {
-    display: flex;
     justify-content: flex-end;
-    flex-grow: 1;
-    height: 100%;
     grid-area: 1 / 4;
-    min-width: rem(12px);
     border: {
         style: solid;
         color: $idle-color;
@@ -244,9 +239,18 @@ $fs: rem(16px) !default;
     }
 
     > [part='suffix'] {
-        padding-inline-start: rem(4px);
-        padding-inline-end: rem(5px);
+        ::slotted(*) {
+            @extend %suffix-preffix;
+        }
     }
+}
+
+[part='start'],
+[part='end'] {
+    display: flex;
+    min-width: rem(12px);
+    height: var(--size);
+    overflow: hidden;
 }
 
 [part='helper-text'] {
@@ -311,11 +315,38 @@ $fs: rem(16px) !default;
 }
 
 // Filled Style
+:host([outlined]:active),
+:host([outlined]:focus),
+:host([outlined]:focus-within) {
+    [part='suffix'] {
+        margin-inline-end: rem(-1px);
+    }
+
+    [part='prefix'] {
+        margin-inline-start: rem(-1px);
+    }
+
+    [part='suffix'],
+    [part='prefix'] {
+        ::slotted(*) {
+            padding-block: pad-block(10px, 12px, 14px);
+        }
+    }
+}
+
 :host(:not([outlined])) {
     [part='start'],
     [part='end'] {
         border-color: transparent;
-        border-top-width: rem(1px);
+        border-width: rem(1px);
+    }
+
+    [part='start'] {
+        border-end-start-radius: 0;
+    }
+
+    [part='end'] {
+        border-end-end-radius: 0;
     }
 
     [part='notch'],

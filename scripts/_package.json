@@ -30,6 +30,7 @@
     "circular progress",
     "checkbox",
     "chip",
+    "combo",
     "date input",
     "dropdown",
     "expansion panel",
@@ -54,7 +55,8 @@
     "tree"
   ],
   "dependencies": {
-    "@floating-ui/dom": "^1.0.4",
-    "lit": "^2.4.0"
+    "@floating-ui/dom": "^1.0.7",
+    "lit": "^2.4.1",
+    "@lit-labs/virtualizer": "^0.7.2"
   }
 }

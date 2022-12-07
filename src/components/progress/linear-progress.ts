@@ -34,11 +34,17 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
   public static readonly tagName = 'igc-linear-progress';
   public static override styles = styles;
 
-  /** Sets the striped look of the control. */
+  /**
+   * Sets the striped look of the control.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public striped = false;
 
-  /** The position for the default label of the control. */
+  /**
+   * The position for the default label of the control.
+   * @attr label-align
+   */
   @property({ attribute: 'label-align', reflect: true })
   public labelAlign:
     | 'top-start'

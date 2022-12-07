@@ -14,6 +14,7 @@
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.indigo' as nav-drawer-item;
 @use '../../../components/select/themes/dark/select.indigo' as select;
 @use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
+@use '../../../components/combo/themes/dark/combo.indigo' as combo;
 @include base.root-styles($dark-indigo-palette);
 @include checkbox.theme();
 @include switch.theme();
@@ -28,3 +29,4 @@
 @include select.theme();
 @include snackbar.theme();
 @include grid.theme();
+@include combo.theme();

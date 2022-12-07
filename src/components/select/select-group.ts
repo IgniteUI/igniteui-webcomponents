@@ -28,6 +28,10 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
   })
   protected activeItems!: Array<IgcSelectItemComponent>;
 
+  /**
+   * Whether the group item and all its children are disabled.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 

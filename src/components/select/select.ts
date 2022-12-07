@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, PropertyValueMap } from 'lit';
 import {
   property,
   query,
@@ -22,6 +22,7 @@ import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
+import type { ThemeController, Theme } from '../../theming/types.js';
 import { styles } from './themes/light/select.base.css.js';
 import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
@@ -81,6 +82,8 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   public static styles = styles;
   private searchTerm = '';
   private lastKeyTime = Date.now();
+  protected themeController!: ThemeController;
+  protected theme!: Theme;
 
   private readonly targetKeyHandlers: Map<string, Function> = new Map(
     Object.entries({
@@ -118,47 +121,80 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   @query('div[role="combobox"]')
   protected override target!: IgcInputComponent;
 
-  /** The value attribute of the control. */
+  /**
+   * The value attribute of the control.
+   * @attr
+   */
   @property({ reflect: false, type: String })
   public value?: string | undefined;
 
-  /** The name attribute of the control. */
+  /**
+   * The name attribute of the control.
+   * @attr
+   */
   @property()
   public name!: string;
 
-  /** The disabled attribute of the control. */
+  /**
+   * The disabled attribute of the control.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
-  /** The required attribute of the control. */
+  /**
+   * The required attribute of the control.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public required = false;
 
-  /** The invalid attribute of the control. */
+  /**
+   * The invalid attribute of the control.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public invalid = false;
 
-  /** The outlined attribute of the control. */
+  /**
+   * The outlined attribute of the control.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
 
-  /** The autofocus attribute of the control. */
+  /**
+   * The autofocus attribute of the control.
+   * @attr
+   */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
-  /** The label attribute of the control. */
-  @property({ type: String })
+  /**
+   * The label attribute of the control.
+   * @attr
+   */
+  @property()
   public label!: string;
 
-  /** The placeholder attribute of the control. */
-  @property({ type: String })
+  /**
+   * The placeholder attribute of the control.
+   * @attr
+   */
+  @property()
   public placeholder!: string;
 
-  /** Whether the dropdown's width should be the same as the target's one. */
+  /**
+   * Whether the dropdown's width should be the same as the target's one.
+   * @attr same-width
+   */
   @property({ type: Boolean, attribute: 'same-width' })
   public override sameWidth = true;
 
-  /** The direction attribute of the control. */
+  /**
+   * The direction attribute of the control.
+   * @attr
+   */
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
@@ -170,6 +206,16 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     this.addEventListener('igcChange', () => {
       if (this.open) this.target.focus();
     });
+  }
+
+  protected themeAdopted(controller: ThemeController) {
+    this.themeController = controller;
+  }
+
+  protected override willUpdate(changes: PropertyValueMap<any>) {
+    super.willUpdate(changes);
+
+    this.theme = this.themeController.theme;
   }
 
   /** Override the dropdown target focusout behavior to prevent the focus from
@@ -374,6 +420,11 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const openIcon =
+      this.theme === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
+    const closeIcon =
+      this.theme === 'material' ? 'keyboard_arrow_down' : 'arrow_drop_down';
+
     return html`
       <div
         role="combobox"
@@ -413,7 +464,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
             <slot name="toggle-icon">
               <igc-icon
                 size=${this.size}
-                name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                name=${this.open ? openIcon : closeIcon}
                 collection="internal"
                 aria-hidden="true"
               ></igc-icon>

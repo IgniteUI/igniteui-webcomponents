@@ -1,0 +1,11 @@
+@use '../../../../styles/utilities' as *;
+@use '../../../select/themes/light/select.indigo';
+
+:host {
+    ::slotted([slot='helper-text']) {
+        @include type-style('caption');
+
+        padding: 0;
+        color: color(gray, 600);
+    }
+}

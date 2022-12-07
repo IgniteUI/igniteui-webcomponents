@@ -24,6 +24,10 @@ export default class IgcRadioGroupComponent extends LitElement {
     this.addEventListener('igcChange', this.updateRequiredState);
   }
 
+  /**
+   * Alignment of the radio controls inside this group.
+   * @attr
+   */
   @property({ reflect: true })
   public alignment: 'vertical' | 'horizontal' = 'vertical';
 
