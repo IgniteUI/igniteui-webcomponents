@@ -2,8 +2,8 @@
 @use '../../styles/utilities' as *;
 
 svg {
-    height: 100%;
-    width: 100%;
+    height: var(--size);
+    width: var(--size);
 }
 
 :host {

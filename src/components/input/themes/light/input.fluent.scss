@@ -23,10 +23,19 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
     [part='prefix'],
     [part='suffix'] {
-        padding: 0 rem(10px);
         color: color(gray, 700);
         background: color(gray, 100);
         font-size: rem(14px);
+        cursor: default;
+    }
+
+    [name='prefix']::slotted(*),
+    [name='suffix']::slotted(*) {
+        display: inline-flex;
+        align-items: center;
+        width: max-content;
+        height: 100%;
+        padding-inline: pad-inline(8px, 12px, 16px);
     }
 
     [part='prefix'] {
@@ -101,6 +110,11 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     [part='suffix'] {
         margin-inline-end: rem(-1px);
     }
+
+    [name='prefix']::slotted(*),
+    [name='suffix']::slotted(*) {
+        padding-block: pad-block(6px, 8px, 10px);
+    }
 }
 
 :host(:not([invalid]):focus-within),
@@ -125,6 +139,12 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
     [part='helper-text'] {
         color: color(error, 500);
+    }
+}
+
+:host([disabled][outlined][invalid]) {
+    [part^='container'] {
+        border-color: color(gray, 100);
     }
 }
 

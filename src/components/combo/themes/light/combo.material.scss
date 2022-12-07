@@ -1,0 +1,22 @@
+@use '../../../../styles/utilities' as *;
+@use '../../../select/themes/light/select.material';
+
+:host([outlined]:focus-within) {
+    igc-input::part(suffix) {
+        margin-inline-end: -1px;
+    }
+
+    igc-input::part(prefix) {
+        margin-inline-start: -1px;
+    }
+}
+
+:host {
+    ::slotted([slot='helper-text']) {
+        @include type-style('caption');
+
+        padding: 0 rem(8px);
+        margin-top: rem(4px);
+        color: color(gray, 600);
+    }
+}

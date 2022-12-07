@@ -1,0 +1,13 @@
+@use '../../../../../styles/utilities' as *;
+@use '../../../../dropdown/themes/light/dropdown-item.base' as *;
+
+:host {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+
+    gap: rem(8px);
+    border-radius: 0 !important;
+}
+
+igc-checkbox {
+    pointer-events: none;
+}

@@ -1,0 +1,44 @@
+@use '../../../../styles/utilities' as *;
+@use '../../../select/themes/light/select.fluent';
+
+:host {
+    ::slotted([slot='helper-text']) {
+        @include type-style('caption');
+
+        display: block;
+        padding: 0;
+        margin-top: rem(8px);
+        color: color(gray, 600);
+    }
+}
+
+:host([invalid]:focus-within) {
+    igc-input::part(input) {
+        height: calc(var(--size) - #{rem(4px)});
+    }
+
+    igc-input::part(suffix) {
+        height: var(--size);
+        margin-inline-end: rem(-1px);
+        margin-block-start: rem(-2px);
+    }
+
+    igc-input::part(prefix) {
+        margin-inline-start: rem(-1px);
+        margin-block-start: rem(-2px);
+    }
+}
+
+[part='filter-input'] {
+    padding: pad(2px, 4px, 8px);
+}
+
+[part='list-wrapper'] {
+    igc-input::part(suffix) {
+        background: transparent;
+    }
+
+    igc-input::part(input) {
+        height: var(--size);
+    }
+}

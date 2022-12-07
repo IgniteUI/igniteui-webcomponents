@@ -12,6 +12,7 @@ import IgcCardMediaComponent from '../../card/card.media.js';
 import IgcCheckboxComponent from '../../checkbox/checkbox.js';
 import IgcChipComponent from '../../chip/chip.js';
 import IgcCircularProgressComponent from '../../progress/circular-progress.js';
+import IgcComboComponent from '../../combo/combo.js';
 import IgcDropdownComponent from '../../dropdown/dropdown.js';
 import IgcDropdownGroupComponent from '../../dropdown/dropdown-group.js';
 import IgcDropdownHeaderComponent from '../../dropdown/dropdown-header.js';
@@ -65,6 +66,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcCardComponent,
   IgcCheckboxComponent,
   IgcChipComponent,
+  IgcComboComponent,
   IgcDropdownComponent,
   IgcDropdownGroupComponent,
   IgcDropdownHeaderComponent,
