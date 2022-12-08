@@ -11,7 +11,7 @@
     --size: #{sizable(rem(40px), rem(48px), rem(56px))};
 
     position: relative;
-    display: contents;
+    display: block;
     font-family: var(--ig-font-family);
     outline-style: none;
 }
@@ -33,7 +33,6 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    max-width: 100%;
 }
 
 [part~='input'] {
