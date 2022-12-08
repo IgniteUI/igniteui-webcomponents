@@ -17,6 +17,12 @@
     }
 }
 
+:host([invalid]) {
+    ::slotted([slot='helper-text']) {
+        color: color(error, 500);
+    }
+}
+
 :host([disabled]) {
     igc-input::part(label),
     igc-input::part(input)::placeholder,
