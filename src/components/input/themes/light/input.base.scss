@@ -31,6 +31,8 @@
 [part='label'] {
     display: inline-block;
     white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 [part~='input'] {
