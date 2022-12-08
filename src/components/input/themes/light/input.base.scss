@@ -11,7 +11,7 @@
     --size: #{sizable(rem(40px), rem(48px), rem(56px))};
 
     position: relative;
-    display: block;
+    display: contents;
     font-family: var(--ig-font-family);
     outline-style: none;
 }
@@ -31,6 +31,9 @@
 [part='label'] {
     display: inline-block;
     white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 100%;
 }
 
 [part~='input'] {
