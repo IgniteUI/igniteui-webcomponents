@@ -100,6 +100,8 @@ $fs: rem(16px) !default;
         font-size 150ms cubic-bezier(.4, 0, .2, 1);
     /* stylelint-enable */
     line-height: 1;
+    text-overflow: ellipsis;
+    overflow: hidden;
     will-change: font-size, color, transform;
 }
 
@@ -187,6 +189,7 @@ $fs: rem(16px) !default;
     display: flex;
     align-items: center;
     width: auto;
+    min-width: 0;
     height: 100%;
     grid-area: 1 / 2;
     padding: 0 rem(4px);
