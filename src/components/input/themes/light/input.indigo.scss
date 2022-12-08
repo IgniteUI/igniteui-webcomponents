@@ -104,8 +104,7 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
         }
     }
 
-    [part='label'],
-    [part^='helper-text'] {
+    [part='label'] {
         color: color(error, 500);
     }
 }

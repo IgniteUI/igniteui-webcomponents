@@ -273,8 +273,7 @@ $fs: rem(16px) !default;
         border-color: $error-color;
     }
 
-    [part='label'],
-    [part='helper-text'] {
+    [part='label'] {
         color: $error-color;
     }
 

@@ -159,6 +159,7 @@ $input-background: var(--input-background, #fff) !default;
     }
 }
 
+:host([invalid]),
 :host([invalid]:focus-within) {
     [part~='input'] {
         box-shadow: 0 0 0 rem(4px) color(error, 500, .38);

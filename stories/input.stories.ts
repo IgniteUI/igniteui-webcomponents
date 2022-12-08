@@ -178,7 +178,7 @@ const Template: Story<ArgTypes, Context> = (
   {
     type,
     size,
-    label,
+    label = 'Sample Label',
     outlined,
     autofocus,
     autocomplete,
@@ -192,13 +192,14 @@ const Template: Story<ArgTypes, Context> = (
     disabled,
     min,
     max,
+    invalid,
   }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
   <igc-input
     type=${type}
     label=${label}
-    size=${size}
+    size=${ifDefined(size)}
     placeholder=${ifDefined(placeholder)}
     dir=${direction}
     minlength=${ifDefined(minlength)}
@@ -209,6 +210,7 @@ const Template: Story<ArgTypes, Context> = (
     max=${ifDefined(max)}
     .value=${value}
     ?autofocus=${autofocus}
+    ?invalid=${invalid}
     .readonly=${readonly}
     .outlined=${outlined}
     .required=${required}

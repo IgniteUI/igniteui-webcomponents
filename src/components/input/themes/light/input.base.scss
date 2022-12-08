@@ -16,6 +16,12 @@
     outline-style: none;
 }
 
+:host([invalid]) {
+    [part='helper-text'] {
+        color: color(error, 500);
+    }
+}
+
 :host([size='large']) {
     --component-size: var(--ig-size, var(--ig-size-large));
 }
