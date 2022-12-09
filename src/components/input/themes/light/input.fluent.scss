@@ -136,10 +136,6 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     [part^='container'] {
         border-color: color(error, 500);
     }
-
-    [part='helper-text'] {
-        color: color(error, 500);
-    }
 }
 
 :host([disabled][outlined][invalid]) {

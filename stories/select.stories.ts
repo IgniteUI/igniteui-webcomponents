@@ -262,7 +262,7 @@ const items = [
 ];
 const Template: Story<ArgTypes, Context> = (
   {
-    label,
+    label = 'Sample Label',
     placeholder,
     name,
     value = 'docs',
