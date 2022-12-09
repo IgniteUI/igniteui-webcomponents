@@ -234,9 +234,9 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
   /** Checks the validity of the control and moves the focus to it if it is not valid. */
   public reportValidity() {
-    this.invalid = this.required && !this.value;
-    if (this.invalid) this.target.focus();
-    return !this.invalid;
+    const valid = this.checkValidity();
+    if (!valid) this.target.focus();
+    return valid;
   }
 
   /** Checks the validity of the control. */
