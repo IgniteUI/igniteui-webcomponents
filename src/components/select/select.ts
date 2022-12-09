@@ -232,16 +232,17 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     this.target.blur();
   }
 
-  /** Checks the validity of the control. */
+  /** Checks the validity of the control and moves the focus to it if it is not valid. */
   public reportValidity() {
-    this.invalid = this.required && !this.value;
-    if (this.invalid) this.target.focus();
-    return !this.invalid;
+    const valid = this.checkValidity();
+    if (!valid) this.target.focus();
+    return valid;
   }
 
-  /** A wrapper around the custom reportValidity method to comply with the native select API. */
+  /** Checks the validity of the control. */
   public checkValidity() {
-    return this.reportValidity();
+    this.invalid = this.required && !this.value;
+    return !this.invalid;
   }
 
   public override async firstUpdated() {
