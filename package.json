@@ -76,7 +76,7 @@
     "eslint-plugin-import": "^2.26.0",
     "globby": "^13.1.2",
     "husky": "^8.0.2",
-    "igniteui-theming": "^1.1.4",
+    "igniteui-theming": "^1.2.0",
     "igniteui-typedoc-theme": "^3.1.0",
     "keep-a-changelog": "^2.1.0",
     "lint-staged": "^13.0.4",
