@@ -6,7 +6,6 @@ import IgcInputComponent from '../input/input.js';
 import IgcComboComponent from './combo.js';
 import IgcComboListComponent from './combo-list.js';
 import IgcComboItemComponent from './combo-item.js';
-import IgcListComponent from '../list/list.js';
 
 describe('Combo', () => {
   interface City {
@@ -92,12 +91,17 @@ describe('Combo', () => {
       searchInput = combo.shadowRoot!.querySelector(
         '[part="search-input"]'
       ) as IgcInputComponent;
+      list = combo.shadowRoot!.querySelector(
+        'igc-combo-list'
+      ) as IgcComboListComponent;
     });
 
     it('is accessible.', async () => {
       combo.open = true;
       combo.label = 'Simple Combo';
+
       await elementUpdated(combo);
+
       await expect(combo).to.be.accessible({
         ignoredRules: ['aria-hidden-focus', 'nested-interactive'],
       });
@@ -249,10 +253,7 @@ describe('Combo', () => {
       combo.open = true;
 
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
+      await list.layoutComplete;
 
       const cityNames: string[] = [];
 
@@ -281,9 +282,8 @@ describe('Combo', () => {
       combo.select([item[combo.valueKey!]]);
 
       await elementUpdated(combo);
-      await elementUpdated(list);
       await new Promise((resolve) => {
-        setTimeout(resolve, 100);
+        setTimeout(resolve, 200);
       });
 
       const selected = items(combo).find((item) => item.selected);
@@ -292,7 +292,9 @@ describe('Combo', () => {
       combo.deselect([item[combo.valueKey!]]);
 
       await elementUpdated(combo);
-      await elementUpdated(list);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 200);
+      });
 
       items(combo).forEach((item) => {
         expect(item.selected).to.be.false;
@@ -307,7 +309,6 @@ describe('Combo', () => {
       combo.select([item]);
 
       await elementUpdated(combo);
-      await elementUpdated(list);
       await new Promise((resolve) => {
         setTimeout(resolve, 100);
       });
@@ -318,7 +319,6 @@ describe('Combo', () => {
       combo.deselect([item]);
 
       await elementUpdated(combo);
-      await elementUpdated(list);
 
       items(combo).forEach((item) => {
         expect(item.selected).to.be.false;
@@ -328,7 +328,6 @@ describe('Combo', () => {
     it('should select/deselect all items', async () => {
       combo.select();
       await elementUpdated(combo);
-      await elementUpdated(list);
 
       items(combo).forEach((item) => {
         expect(item.selected).to.be.true;
@@ -336,7 +335,6 @@ describe('Combo', () => {
 
       combo.deselect();
       await elementUpdated(combo);
-      await elementUpdated(list);
 
       items(combo).forEach((item) => {
         expect(item.selected).to.be.false;
@@ -347,14 +345,12 @@ describe('Combo', () => {
       combo.select();
 
       await elementUpdated(combo);
-      await elementUpdated(list);
 
       const button = combo.shadowRoot!.querySelector('[part="clear-icon"]');
 
       (button! as HTMLSpanElement).click();
 
       await elementUpdated(combo);
-      await elementUpdated(list);
 
       items(combo).forEach((item) => {
         expect(item.selected).to.be.false;
@@ -394,10 +390,7 @@ describe('Combo', () => {
       combo.open = true;
 
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 100);
-      });
+      await list.layoutComplete;
 
       items(combo)[0].click();
       expect(eventSpy).calledWith('igcChange');
@@ -461,19 +454,12 @@ describe('Combo', () => {
     it('activates the first list item when clicking pressing ArrowDown when the search input is on focus', async () => {
       combo.show();
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
+      await list.layoutComplete;
 
       expect(items(combo)[0].active).to.be.false;
       pressKey(searchInput, 'ArrowDown', 1, { altKey: false });
 
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
 
       expect(items(combo)[0].active).to.be.true;
     });
@@ -484,31 +470,17 @@ describe('Combo', () => {
 
       combo.show();
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
+      await list.layoutComplete;
 
-      const options = combo.shadowRoot!.querySelector(
-        '[part="list"]'
-      ) as IgcListComponent;
       expect(items(combo)[0].active).to.be.false;
-      pressKey(options, 'ArrowDown', 2, { altKey: false });
+      pressKey(list, 'ArrowDown', 2, { altKey: false });
 
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
 
       expect(items(combo)[1].active).to.be.true;
       pressKey(options, 'ArrowUp', 1, { altKey: false });
 
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
 
       expect(items(combo)[0].active).to.be.true;
     });
@@ -519,18 +491,11 @@ describe('Combo', () => {
 
       combo.show();
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
+      await list.layoutComplete;
 
       pressKey(options, 'Home', 1, { altKey: false });
 
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
 
       expect(items(combo)[0].active).to.be.true;
     });
@@ -541,18 +506,11 @@ describe('Combo', () => {
 
       combo.show();
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
+      await list.layoutComplete;
 
       pressKey(options, 'End', 1, { altKey: false });
 
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
 
       const itms = items(combo);
       expect(itms[itms.length - 1].active).to.be.true;
@@ -564,19 +522,12 @@ describe('Combo', () => {
 
       combo.show();
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
+      await list.layoutComplete;
 
       pressKey(options, 'ArrowDown', 2, { altKey: false });
       pressKey(options, ' ', 1, { altKey: false });
 
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
 
       const itms = items(combo);
       expect(itms[1].active).to.be.true;
@@ -590,19 +541,12 @@ describe('Combo', () => {
 
       combo.show();
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
+      await list.layoutComplete;
 
       pressKey(options, 'ArrowDown', 2, { altKey: false });
       pressKey(options, 'Enter', 1, { altKey: false });
 
       await elementUpdated(combo);
-      await elementUpdated(list);
-      await new Promise((resolve) => {
-        setTimeout(resolve, 200);
-      });
 
       const itms = items(combo);
       expect(itms[1].active).to.be.true;
