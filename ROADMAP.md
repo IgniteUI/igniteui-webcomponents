@@ -15,7 +15,7 @@
 
 # Previous Milestone
 
-## Milestone 4 (Released 12th Dec, 2022) [Blog]()
+## Milestone 4 (Released 12th Dec, 2022) [Blog](https://www.infragistics.com/community/blogs/b/infragistics/posts/ignite-ui-december-release-2022)
 
 1. **[DONE]** Pivot Data Grid
 2. **[DONE]** Combobox component [#172](https://github.com/IgniteUI/igniteui-webcomponents/issues/172)
