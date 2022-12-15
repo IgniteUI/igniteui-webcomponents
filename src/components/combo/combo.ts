@@ -429,6 +429,7 @@ export default class IgcComboComponent<T extends object>
    */
   public select(items?: T[] | Values<T>[]) {
     this.selectionController.select(items, false);
+    this.list.requestUpdate();
   }
 
   /**
@@ -438,6 +439,7 @@ export default class IgcComboComponent<T extends object>
    */
   public deselect(items?: T[] | Values<T>[]) {
     this.selectionController.deselect(items, false);
+    this.list.requestUpdate();
   }
 
   protected handleSearchInput(e: CustomEvent) {
