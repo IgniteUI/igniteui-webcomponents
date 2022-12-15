@@ -81,6 +81,18 @@ export class NavigationController<T extends object>
     return this.dataState.length - 1;
   }
 
+  protected scrollToActive(
+    container: IgcComboListComponent,
+    behavior: ScrollBehavior = 'auto'
+  ) {
+    container.element(this.active)?.scrollIntoView({
+      block: 'center',
+      behavior,
+    });
+
+    container.requestUpdate();
+  }
+
   public get active() {
     return this._active;
   }
@@ -96,12 +108,12 @@ export class NavigationController<T extends object>
 
   protected home(container: IgcComboListComponent) {
     this.active = this.firstItem;
-    container.scrollToIndex(this.active, 'center');
+    this.scrollToActive(container, 'smooth');
   }
 
   protected end(container: IgcComboListComponent) {
     this.active = this.lastItem;
-    container.scrollToIndex(this.active, 'center');
+    this.scrollToActive(container, 'smooth');
   }
 
   protected space() {
@@ -132,12 +144,12 @@ export class NavigationController<T extends object>
 
   protected arrowDown(container: IgcComboListComponent) {
     this.getNextItem(DIRECTION.Down);
-    container.scrollToIndex(this.active, 'center');
+    this.scrollToActive(container);
   }
 
   protected arrowUp(container: IgcComboListComponent) {
     this.getNextItem(DIRECTION.Up);
-    container.scrollToIndex(this.active, 'center');
+    this.scrollToActive(container);
   }
 
   protected getNextItem(direction: DIRECTION) {
@@ -179,7 +191,7 @@ export class NavigationController<T extends object>
 
   public navigateTo(item: T, container: IgcComboListComponent) {
     this.active = this.dataState.findIndex((i) => i === item);
-    container.scrollToIndex(this.active);
+    this.scrollToActive(container, 'smooth');
   }
 
   public navigateHost(event: KeyboardEvent) {
