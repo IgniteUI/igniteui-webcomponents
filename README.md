@@ -25,8 +25,13 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ |
 
 |Components|Status|Documentation|Released Version|
 |:--|:--:|:--:|:--:|
-|Select|:white_check_mark:|[Docs](#https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/select)|[3.4.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.4.0)|
-|Dialog|:white_check_mark:|[Docs](#https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/dialog-window)|[3.4.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.4.0)|
+|Pivot Grid|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/pivot-grid/overview)|
+|Combo|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/combo/overview)|[4.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/4.1.0)|
+|Stepper|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/stepper)|[4.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/4.1.0)|
+|Data Grid|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/grid/overview)||
+|Tree Grid|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree-grid/overview)||
+|Select|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/select)|[3.4.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.4.0)|
+|Dialog|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/dialog)|[3.4.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.4.0)|
 |Date Time Input|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/date-time-input)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
 |Tabs|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/tabs)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
 |Accordion|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/accordion)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
