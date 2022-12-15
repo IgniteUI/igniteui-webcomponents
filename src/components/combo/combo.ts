@@ -554,6 +554,7 @@ export default class IgcComboComponent<T extends object>
   protected toggleSelect(index: number) {
     this.selectionController.changeSelection(index);
     this.navigationController.active = index;
+    this.list.requestUpdate();
   }
 
   protected navigateTo(item: T) {
