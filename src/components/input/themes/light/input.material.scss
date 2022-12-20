@@ -11,18 +11,10 @@ $idle-border-width: rem(1px) !default;
 $active-border-width: rem(2px) !default;
 $fs: rem(16px) !default;
 
-%large-label {
-    transform: translateY(-26px);
-    font-size: rem(12px);
-}
+%label {
+    --label-position: #{sizable(18px, 22px, 26px)};
 
-%medium-label {
-    transform: translateY(-22px);
-    font-size: rem(12px);
-}
-
-%small-label {
-    transform: translateY(-18px);
+    transform: translateY(calc(var(--label-position) * -1));
     font-size: rem(12px);
 }
 
@@ -49,43 +41,9 @@ $fs: rem(16px) !default;
     }
 }
 
-:host([size='large']) {
-    input:placeholder-shown + [part='notch'] [part='label'],
-    [part~='filled'] + [part='notch'] [part='label'] {
-        @extend %large-label;
-    }
-}
-
-:host([size='medium']) {
-    input:placeholder-shown + [part='notch'] [part='label'],
-    [part~='filled'] + [part='notch'] [part='label'] {
-        @extend %medium-label;
-    }
-}
-
-:host([size='small']) {
-    input:placeholder-shown + [part='notch'] [part='label'],
-    [part~='filled'] + [part='notch'] [part='label'] {
-        @extend %small-label;
-    }
-}
-
-:host([size='large']:focus-within) {
-    [part='label'] {
-        @extend %large-label;
-    }
-}
-
-:host([size='medium']:focus-within) {
-    [part='label'] {
-        @extend %medium-label;
-    }
-}
-
-:host([size='small']:focus-within) {
-    [part='label'] {
-        @extend %small-label;
-    }
+input:placeholder-shown + [part='notch'] [part='label'],
+[part~='filled'] + [part='notch'] [part='label'] {
+    @extend %label;
 }
 
 [part~='input'] {
@@ -150,6 +108,8 @@ $fs: rem(16px) !default;
     }
 
     [part='label'] {
+        @extend %label;
+
         color: $active-color;
     }
 
