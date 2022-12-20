@@ -126,7 +126,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-//
 [part^='container'] {
     grid-template-columns: auto auto 1fr auto;
 }
