@@ -1,10 +1,10 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
 
-$idle-color: color(gray, 600) !default;
+$idle-color: color(gray, 500) !default;
 $idle-hover-color: color(gray, 800) !default;
 $hover-background: color(gray, 200) !default;
-$focus-background: var(--focus-background, color(gray, 300)) !default;
+$focus-background: var(--focus-background, color(gray, 200)) !default;
 $active-color: color(primary, 500) !default;
 $error-color: color(error, 500) !default;
 $idle-border-width: rem(1px) !default;
@@ -42,6 +42,10 @@ $fs: rem(16px) !default;
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
+    }
+
+    input::placeholder {
+        color: color(gray, 700);
     }
 }
 
@@ -92,13 +96,11 @@ $fs: rem(16px) !default;
 }
 
 [part='label'] {
-    color: $idle-color;
-    /* stylelint-disable */
+    color: color(gray, 700);
     transition:
         transform 150ms cubic-bezier(.4, 0, .2, 1),
         color 150ms cubic-bezier(.4, 0, .2, 1),
         font-size 150ms cubic-bezier(.4, 0, .2, 1);
-    /* stylelint-enable */
     line-height: 1;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -150,8 +152,21 @@ $fs: rem(16px) !default;
     [part='label'] {
         color: $active-color;
     }
+
+    [part~='prefix'],
+    [part~='suffix'] {
+        color: color(gray, 900);
+    }
 }
 
+[part~='filled'] {
+    [part~='prefix'],
+    [part~='suffix'] {
+        color: color(gray, 900);
+    }
+}
+
+//
 [part^='container'] {
     grid-template-columns: auto auto 1fr auto;
 }
@@ -261,7 +276,7 @@ $fs: rem(16px) !default;
 
     padding: 0 rem(8px);
     margin-top: rem(4px);
-    color: color(gray, 600);
+    color: color(gray, 700);
 }
 
 :host([invalid]),
@@ -291,24 +306,28 @@ $fs: rem(16px) !default;
 :host([disabled]) {
     pointer-events: none;
 
+    [part~='container'] {
+        background: color(gray, 100);
+    }
+
     [part~='input'],
     [part='label'],
     [part='prefix'],
     [part='suffix'],
     [part='helper-text'] {
-        color: color(gray, 400);
+        color: color(gray, 500);
     }
 
     [part='start'],
     [part='filler'],
     [part='notch'],
     [part='end'] {
-        color: color(gray, 400);
-        border-color: color(gray, 400);
+        color: color(gray, 500);
+        border-color: color(gray, 500);
     }
 
     input::placeholder {
-        color: color(gray, 300);
+        color: color(gray, 500);
     }
 
     [part~='filled'] + [part='notch'] {
@@ -363,7 +382,7 @@ $fs: rem(16px) !default;
     }
 
     [part~='container'] {
-        background: color(gray, 100);
+        background: color(gray, 200);
         border-bottom: 1px solid $idle-color;
 
         border: {
@@ -447,10 +466,11 @@ $fs: rem(16px) !default;
     [part='prefix'],
     [part='suffix'],
     [part='helper-text'] {
-        color: color(gray, 400);
+        color: color(gray, 500);
     }
 
     [part~='container'] {
-        border-color: color(gray, 400);
+        background: color(gray, 100);
+        border-color: color(gray, 500);
     }
 }
