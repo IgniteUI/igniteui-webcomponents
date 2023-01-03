@@ -55,7 +55,7 @@
     "tree"
   ],
   "dependencies": {
-    "@floating-ui/dom": "^1.0.12",
+    "@floating-ui/dom": "^1.1.0",
     "@lit-labs/virtualizer": "^1.0.1",
     "lit": "^2.5.0"
   }
