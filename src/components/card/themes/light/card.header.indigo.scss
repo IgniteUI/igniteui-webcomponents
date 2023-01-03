@@ -3,10 +3,8 @@
 
 ::slotted([slot='title']) {
     color: color(gray, 900);
-    opacity: 1;
 }
 
 ::slotted([slot='subtitle']) {
     color: color(gray, 500);
-    opacity: 1;
 }
