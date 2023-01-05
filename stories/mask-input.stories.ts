@@ -1,6 +1,9 @@
 import { html } from 'lit';
 import { Story, Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { IgcMaskInputComponent } from '../src/index.js';
+
+IgcMaskInputComponent.register();
 
 // region default
 const metadata = {
@@ -140,10 +143,10 @@ const Template: Story<ArgTypes, Context> = (
     label=${ifDefined(label)}
     size=${ifDefined(size)}
     value-mode=${ifDefined(valueMode)}
-    ?readonly=${ifDefined(readonly)}
-    ?outlined=${ifDefined(outlined)}
-    ?required=${ifDefined(required)}
-    ?disabled=${ifDefined(disabled)}
+    ?readonly=${readonly}
+    ?outlined=${outlined}
+    ?required=${required}
+    ?disabled=${disabled}
   >
     <igc-icon name="github" slot="prefix"></igc-icon>
     <igc-icon name="github" slot="suffix"></igc-icon>

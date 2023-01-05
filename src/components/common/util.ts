@@ -1,3 +1,5 @@
+import type { IgniteComponent } from './types';
+
 export interface PartNameInfo {
   readonly [name: string]: string | boolean | number;
 }
@@ -51,4 +53,17 @@ export function createCounter() {
 
 export function isLTR(element: HTMLElement) {
   return getComputedStyle(element).getPropertyValue('direction') === 'ltr';
+}
+
+export function registerComponent(
+  component: IgniteComponent,
+  dependencies: IgniteComponent[] = []
+) {
+  for (const dependency of dependencies) {
+    dependency.register();
+  }
+
+  if (!customElements.get(component.tagName)) {
+    customElements.define(component.tagName, component);
+  }
 }

@@ -1,6 +1,5 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
@@ -13,8 +12,7 @@ import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
 import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
 import { watch } from '../common/decorators/watch.js';
-
-defineComponents(IgcStepComponent);
+import { registerComponent } from '../common/util.js';
 
 /**
  * IgxStepper provides a wizard-like workflow by dividing content into logical steps.
@@ -34,10 +32,12 @@ defineComponents(IgcStepComponent);
 export default class IgcStepperComponent extends SizableMixin(
   EventEmitterMixin<IgcStepperEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  /** @private */
   public static readonly tagName = 'igc-stepper';
-  /** @private */
   protected static styles = styles;
+
+  public static register() {
+    registerComponent(this, [IgcStepComponent]);
+  }
 
   private readonly keyDownHandlers: Map<string, Function> = new Map(
     Object.entries({

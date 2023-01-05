@@ -4,7 +4,11 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import {
+  createCounter,
+  partNameMap,
+  registerComponent,
+} from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/light/checkbox.base.css.js';
 import { styles as bootstrap } from './themes/light/checkbox.bootstrap.css.js';
@@ -32,6 +36,10 @@ import { styles as material } from './themes/light/checkbox.material.css.js';
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
   protected static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private static readonly increment = createCounter();
   private inputId = `checkbox-${IgcCheckboxComponent.increment()}`;

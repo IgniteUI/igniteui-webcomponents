@@ -7,12 +7,8 @@ import { styles } from './themes/light/expansion-panel.base.css.js';
 import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
 import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
 import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
-import { createCounter } from '../common/util.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { createCounter, registerComponent } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
-
-defineComponents(IgcIconComponent);
 
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;
@@ -28,6 +24,7 @@ export interface IgcExpansionPanelComponentEventMap {
  *
  * @element igc-expansion-panel
  *
+ * @slot - default content of the expansion panel
  * @slot title - renders the title of the panel's header
  * @slot subtitle - renders the subtitle of the panel's header
  * @slot indicator - renders the expand/collapsed indicator
@@ -51,6 +48,10 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-expansion-panel';
   public static styles = styles;
   private static readonly increment = createCounter();
+
+  public static register() {
+    registerComponent(this, [IgcIconComponent]);
+  }
 
   /**
    * Indicates whether the contents of the control should be visible.

@@ -52,7 +52,9 @@ import IgcTreeItemComponent from '../../tree/tree-item.js';
 import IgcStepperComponent from '../../stepper/stepper.js';
 import IgcStepComponent from '../../stepper/step.js';
 
-const allComponents: CustomElementConstructor[] = [
+import type { IgniteComponent } from '../types.js';
+
+const allComponents: IgniteComponent[] = [
   IgcAvatarComponent,
   IgcAccordionComponent,
   IgcBadgeComponent,

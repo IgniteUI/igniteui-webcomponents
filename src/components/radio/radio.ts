@@ -8,7 +8,11 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import {
+  createCounter,
+  partNameMap,
+  registerComponent,
+} from '../common/util.js';
 import { styles } from './themes/light/radio.base.css.js';
 import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
 import { styles as fluent } from './themes/light/radio.fluent.css.js';
@@ -42,6 +46,10 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-radio';
   protected static styles = styles;
   private static readonly increment = createCounter();
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;

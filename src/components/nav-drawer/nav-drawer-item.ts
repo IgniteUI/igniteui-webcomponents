@@ -6,7 +6,7 @@ import {
   state,
 } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, registerComponent } from '../common/util.js';
 import { styles as fluent } from './themes/light/fluent/nav-drawer-item.fluent.css.js';
 import { styles as indigo } from './themes/light/indigo/nav-drawer-item.indigo.css.js';
 import { styles } from './themes/light/nav-drawer-item.base.css.js';
@@ -27,6 +27,10 @@ import { styles } from './themes/light/nav-drawer-item.base.css.js';
 export default class IgcNavDrawerItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-item';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   /**
    * Determines whether the drawer is disabled.

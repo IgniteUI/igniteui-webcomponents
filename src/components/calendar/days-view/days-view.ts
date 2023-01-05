@@ -10,7 +10,7 @@ import {
 } from '../../common/i18n/calendar.resources.js';
 import { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import { partNameMap } from '../../common/util.js';
+import { partNameMap, registerComponent } from '../../common/util.js';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
@@ -57,6 +57,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-days-view';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
+
   private labelFormatter!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];

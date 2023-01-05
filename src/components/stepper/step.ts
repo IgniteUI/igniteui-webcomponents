@@ -2,7 +2,7 @@ import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators/watch.js';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, registerComponent } from '../common/util.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/step/light/step.base.css.js';
 import { styles as bootstrap } from './themes/step/light/step.bootstrap.css.js';
@@ -42,10 +42,12 @@ import { styles as material } from './themes/step/light/step.material.css.js';
  */
 @themes({ bootstrap, indigo, fluent, material })
 export default class IgcStepComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-step';
-  /** @private */
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;

@@ -1,7 +1,8 @@
 import { html } from 'lit';
-import IgcTreeItemComponent from '../src/components/tree/tree-item.js';
-import IgcTreeComponent from '../src/components/tree/tree.js';
+import { IgcTreeComponent, IgcTreeItemComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
+
+IgcTreeComponent.register();
 
 // region default
 const metadata = {
@@ -194,7 +195,7 @@ const BasicTemplate: Story<ArgTypes, Context> = (
                 `
               )}
             </igc-tree-item>
-            <igc-tree-item #asd>
+            <igc-tree-item>
               <p slot="label" role="none">
                 <a href="http://infragistics.com">Infragistics</a>
               </p>

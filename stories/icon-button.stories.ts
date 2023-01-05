@@ -1,10 +1,12 @@
 import { all } from '@igniteui/material-icons-extended';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
+import { IgcIconButtonComponent, registerIconFromText } from '../src/index.js';
 import type { Context, Story } from './story';
 
 const icons = all.map((icon) => icon.name);
+
+IgcIconButtonComponent.register();
 
 // region default
 const metadata = {
@@ -152,7 +154,7 @@ const Template: Story<ArgTypes, Context> = (
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
       .size=${size}
-      .disabled=${ifDefined(disabled)}
+      ?disabled=${disabled}
     >
       <igc-ripple></igc-ripple>
     </igc-icon-button>
@@ -172,7 +174,7 @@ const Template: Story<ArgTypes, Context> = (
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
       .size=${size}
-      .disabled=${ifDefined(disabled)}
+      ?disabled=${disabled}
     >
       <igc-ripple></igc-ripple>
       💙
@@ -185,7 +187,7 @@ const Template: Story<ArgTypes, Context> = (
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
       .size=${size}
-      .disabled=${ifDefined(disabled)}
+      ?disabled=${disabled}
     >
       <span class="material-icons">favorite</span>
     </igc-icon-button>
@@ -197,7 +199,7 @@ const Template: Story<ArgTypes, Context> = (
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
       .size=${size}
-      .disabled=${ifDefined(disabled)}
+      ?disabled=${disabled}
     >
       <i class="fa-solid fa-droplet"></i>
     </igc-icon-button>

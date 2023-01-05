@@ -2,6 +2,9 @@ import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { DateRangeDescriptor } from '../src/components/calendar/common/calendar.model.js';
+import { IgcCalendarComponent } from '../src/index.js';
+
+IgcCalendarComponent.register();
 
 // region default
 const metadata = {

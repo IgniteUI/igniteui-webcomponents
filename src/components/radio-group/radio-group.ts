@@ -1,16 +1,17 @@
 import { html, LitElement } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { isLTR } from '../common/util.js';
+import { isLTR, registerComponent } from '../common/util.js';
 import IgcRadioComponent from '../radio/radio.js';
 import { styles } from './radio-group.base.css.js';
-
-defineComponents(IgcRadioComponent);
 
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
 
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this, [IgcRadioComponent]);
+  }
 
   @queryAssignedElements({
     flatten: true,

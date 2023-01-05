@@ -1,7 +1,9 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIcon } from '../src/components/icon/icon.registry.js';
+import { IgcNavbarComponent, registerIcon } from '../src/index.js';
 import { Context, Story } from './story.js';
+
+IgcNavbarComponent.register();
 
 // region default
 const metadata = {

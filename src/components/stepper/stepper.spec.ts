@@ -1,4 +1,3 @@
-import { defineComponents } from '../../index.js';
 import IgcStepperComponent from './stepper.js';
 import IgcStepComponent from './step.js';
 import sinon from 'sinon';
@@ -14,7 +13,7 @@ import { elementUpdated, expect } from '@open-wc/testing';
 
 describe('Stepper', () => {
   before(() => {
-    defineComponents(IgcStepperComponent);
+    IgcStepperComponent.register();
   });
 
   let stepper: IgcStepperComponent;

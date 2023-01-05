@@ -8,7 +8,6 @@ import {
 import { TemplateResult } from 'lit';
 import sinon from 'sinon';
 import {
-  defineComponents,
   IgcTabsComponent,
   IgcTabComponent,
   IgcTabPanelComponent,
@@ -50,7 +49,7 @@ describe('Tabs component', () => {
   };
 
   before(() => {
-    defineComponents(IgcTabsComponent, IgcTabComponent, IgcTabPanelComponent);
+    IgcTabsComponent.register();
   });
 
   let element: IgcTabsComponent;

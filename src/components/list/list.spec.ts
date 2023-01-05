@@ -1,18 +1,9 @@
 import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
-import {
-  defineComponents,
-  IgcListComponent,
-  IgcListHeaderComponent,
-  IgcListItemComponent,
-} from '../../index.js';
+import { IgcListComponent } from '../../index.js';
 
 describe('List', () => {
   before(() => {
-    defineComponents(
-      IgcListComponent,
-      IgcListHeaderComponent,
-      IgcListItemComponent
-    );
+    IgcListComponent.register();
   });
 
   let el: IgcListComponent;

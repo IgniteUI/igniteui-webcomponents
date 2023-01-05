@@ -7,12 +7,12 @@ import {
   aTimeout,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcSnackbarComponent } from '../../index.js';
+import { IgcSnackbarComponent } from '../../index.js';
 import type IgcButtonComponent from '../button/button.js';
 
 describe('Snackbar', () => {
   before(() => {
-    defineComponents(IgcSnackbarComponent);
+    IgcSnackbarComponent.register();
   });
 
   let el: IgcSnackbarComponent;

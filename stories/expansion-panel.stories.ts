@@ -1,5 +1,8 @@
 import { html } from 'lit';
+import { IgcExpansionPanelComponent } from '../src/index.js';
 import type { Story } from './story';
+
+IgcExpansionPanelComponent.register();
 
 // region default
 const metadata = {

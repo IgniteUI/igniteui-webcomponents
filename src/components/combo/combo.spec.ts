@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import sinon from 'sinon';
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcInputComponent from '../input/input.js';
 import IgcComboComponent from './combo.js';
 import IgcComboListComponent from './combo-list.js';
@@ -68,7 +67,7 @@ describe('Combo', () => {
     ] as IgcComboItemComponent[];
 
   before(() => {
-    defineComponents(IgcComboComponent);
+    IgcComboComponent.register();
   });
 
   describe('Component', () => {

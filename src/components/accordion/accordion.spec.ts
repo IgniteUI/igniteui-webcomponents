@@ -5,12 +5,11 @@ import {
   unsafeStatic,
   elementUpdated,
 } from '@open-wc/testing';
-import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
 import IgcAccordionComponent from './accordion.js';
 
 describe('Accordion', () => {
   before(() => {
-    defineComponents(IgcAccordionComponent, IgcExpansionPanelComponent);
+    IgcAccordionComponent.register();
   });
 
   let accordion: IgcAccordionComponent;
@@ -412,21 +411,21 @@ const testTemplate = `
             Expansion panel 1 title
         </h1>
         <h2 slot="subtitle">Expansion panel 1 subtitle</h2>
-        <p>Sample content 1</p> 
+        <p>Sample content 1</p>
     </igc-expansion-panel>
     <igc-expansion-panel open>
         <h1 slot="title">
             Expansion panel 2 title
         </h1>
         <h2 slot="subtitle">Expansion panel 2 subtitle</h2>
-        <p>Sample content 2</p> 
+        <p>Sample content 2</p>
     </igc-expansion-panel>
     <igc-expansion-panel>
         <h1 slot="title">
             Expansion panel 3 title
         </h1>
         <h2 slot="subtitle">Expansion panel 3 subtitle</h2>
-        <p>Sample content 3</p> 
+        <p>Sample content 3</p>
     </igc-expansion-panel>
 </igc-accordion>
 `;
@@ -444,7 +443,7 @@ const nestedAccTemplate = `
                   Expansion panel 1.1 title
               </h1>
               <h2 slot="subtitle">Expansion panel 1.1 subtitle</h2>
-              <p>Sample content 1.1</p> 
+              <p>Sample content 1.1</p>
           </igc-expansion-panel>
         </igc-accordion>
     </igc-expansion-panel>
@@ -453,7 +452,7 @@ const nestedAccTemplate = `
           Expansion panel 2 title
       </h1>
       <h2 slot="subtitle">Expansion panel 2 subtitle</h2>
-      <p>Sample content 2</p> 
+      <p>Sample content 2</p>
     </igc-expansion-panel>
 </igc-accordion>
 `;

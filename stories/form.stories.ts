@@ -1,7 +1,9 @@
 import { html } from 'lit';
 import { DatePart } from '../src/components/date-time-input/date-util.js';
-import { IgcDateTimeInputComponent } from '../src/index.js';
+import { IgcDateTimeInputComponent, IgcFormComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
+
+IgcFormComponent.register();
 
 // region default
 const metadata = {

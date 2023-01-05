@@ -5,7 +5,7 @@ import {
   state,
 } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, registerComponent } from '../common/util.js';
 import { styles } from './themes/light/tree-item.base.css.js';
 import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
@@ -17,16 +17,9 @@ import { IgcTreeNavigationService } from './tree.navigation.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcCheckboxComponent,
-  IgcCircularProgressComponent
-);
 
 const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
   small: 1 / 2,
@@ -56,10 +49,16 @@ const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
  */
 @themes({ bootstrap, fluent, indigo })
 export default class IgcTreeItemComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-tree-item';
-  /** @private */
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this, [
+      IgcIconComponent,
+      IgcCheckboxComponent,
+      IgcCircularProgressComponent,
+    ]);
+  }
 
   private tabbableEl?: HTMLElement[];
   private focusedProgrammatically = false;

@@ -1,5 +1,8 @@
 import { html } from 'lit';
+import { IgcListComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
+
+IgcListComponent.register();
 
 // region default
 const metadata = {

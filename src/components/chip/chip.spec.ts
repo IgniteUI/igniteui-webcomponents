@@ -1,9 +1,9 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcChipComponent } from '../../index.js';
+import { IgcChipComponent } from '../../index.js';
 
 describe('Chip', () => {
   before(() => {
-    defineComponents(IgcChipComponent);
+    IgcChipComponent.register();
   });
 
   it('should initialize with default values', async () => {

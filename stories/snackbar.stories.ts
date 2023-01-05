@@ -3,6 +3,8 @@ import { Story, Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { IgcSnackbarComponent } from '../src/index.js';
 
+IgcSnackbarComponent.register();
+
 // region default
 const metadata = {
   title: 'Snackbar',

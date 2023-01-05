@@ -2,6 +2,8 @@ import { html } from 'lit';
 import { IgcStepperComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
 
+IgcStepperComponent.register();
+
 // region default
 const metadata = {
   title: 'Stepper',

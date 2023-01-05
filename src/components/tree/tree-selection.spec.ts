@@ -1,6 +1,6 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcCheckboxComponent } from '../../index.js';
+import { IgcCheckboxComponent } from '../../index.js';
 import IgcTreeComponent from './tree.js';
 import IgcTreeItemComponent from './tree-item.js';
 import {
@@ -15,7 +15,7 @@ import { IgcTreeSelectionService } from './tree.selection.js';
 
 describe('Tree Selection', () => {
   before(() => {
-    defineComponents(IgcTreeItemComponent, IgcTreeComponent);
+    IgcTreeComponent.register();
   });
 
   let tree: IgcTreeComponent;

@@ -5,11 +5,11 @@ import {
   elementUpdated,
   unsafeStatic,
 } from '@open-wc/testing';
-import { defineComponents, IgcToastComponent } from '../../index.js';
+import { IgcToastComponent } from '../../index.js';
 
 describe('Toast', () => {
   before(() => {
-    defineComponents(IgcToastComponent);
+    IgcToastComponent.register();
   });
 
   let toast: IgcToastComponent;

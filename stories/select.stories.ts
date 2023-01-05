@@ -1,20 +1,9 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import {
-  defineComponents,
-  IgcSelectComponent,
-  IgcSelectGroupComponent,
-  IgcSelectHeaderComponent,
-  IgcSelectItemComponent,
-} from '../src/index.js';
+import { IgcSelectComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
 
-defineComponents(
-  IgcSelectComponent,
-  IgcSelectItemComponent,
-  IgcSelectGroupComponent,
-  IgcSelectHeaderComponent
-);
+IgcSelectComponent.register();
 
 // region default
 const metadata = {

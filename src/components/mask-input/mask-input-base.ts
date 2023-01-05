@@ -24,7 +24,10 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   @state()
   protected _mask = '';
 
-  /** The prompt symbol to use for unfilled parts of the mask. */
+  /**
+   * The prompt symbol to use for unfilled parts of the mask.
+   * @attr
+   */
   @property()
   public prompt!: string;
 

@@ -1,5 +1,6 @@
 import { LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { registerComponent } from '../common/util.js';
 
 /**
  * Used for defining gradient stops in the igc-circular-progress.
@@ -12,6 +13,10 @@ import { property } from 'lit/decorators.js';
  */
 export default class IgcCircularGradientComponent extends LitElement {
   public static readonly tagName = 'igc-circular-gradient';
+
+  public static register() {
+    registerComponent(this);
+  }
 
   /**
    * Defines where the gradient stop is placed along the gradient vector

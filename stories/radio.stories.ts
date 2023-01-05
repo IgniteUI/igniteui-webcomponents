@@ -1,6 +1,9 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { IgcRadioComponent } from '../src/index.js';
+
+IgcRadioComponent.register();
 
 // region default
 const metadata = {

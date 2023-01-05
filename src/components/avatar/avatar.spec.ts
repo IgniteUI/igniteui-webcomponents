@@ -1,9 +1,9 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcAvatarComponent } from '../../index.js';
+import { IgcAvatarComponent } from '../../index.js';
 
 describe('Avatar', () => {
   before(() => {
-    defineComponents(IgcAvatarComponent);
+    IgcAvatarComponent.register();
   });
 
   it('passes the a11y audit', async () => {

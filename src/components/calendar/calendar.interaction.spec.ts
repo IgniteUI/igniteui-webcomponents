@@ -1,6 +1,6 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcCalendarComponent } from '../../index.js';
+import { IgcCalendarComponent } from '../../index.js';
 import { createCalendarElement } from './calendar-rendering.spec.js';
 import type IgcDaysViewComponent from './days-view/days-view.js';
 import {
@@ -13,7 +13,7 @@ import {
 
 describe('Calendar Interaction', () => {
   before(() => {
-    defineComponents(IgcCalendarComponent);
+    IgcCalendarComponent.register();
   });
 
   const calendarModel = new Calendar();

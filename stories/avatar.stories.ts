@@ -1,9 +1,9 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineAllComponents } from '../src/index.js';
+import { IgcAvatarComponent } from '../src/index.js';
 
-defineAllComponents();
+IgcAvatarComponent.register();
 
 // region default
 const metadata = {

@@ -1,13 +1,12 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
 import {
-  defineComponents,
   IgcDropdownComponent,
   IgcDropdownItemComponent,
   IgcInputComponent,
 } from '../src/index.js';
+import { Context, Story } from './story.js';
 
-defineComponents(IgcDropdownComponent, IgcInputComponent);
+IgcDropdownComponent.register();
 
 // region default
 const metadata = {

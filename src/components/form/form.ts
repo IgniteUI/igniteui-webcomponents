@@ -4,6 +4,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { registerComponent } from '../common/util.js';
 
 export interface IgcFormEventMap {
   igcSubmit: CustomEvent<FormData>;
@@ -32,6 +33,10 @@ export default class IgcFormComponent extends EventEmitterMixin<
       display: block;
     }
   `;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private _controlsWithChecked = [
     'input',

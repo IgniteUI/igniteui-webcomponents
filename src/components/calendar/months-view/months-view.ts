@@ -6,7 +6,7 @@ import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressC
 import { watch } from '../../common/decorators/watch.js';
 import { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
-import { partNameMap } from '../../common/util.js';
+import { partNameMap, registerComponent } from '../../common/util.js';
 import {
   IgcCalendarBaseEventMap,
   MONTHS_PER_ROW,
@@ -38,6 +38,11 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-months-view';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
+
   private calendarModel = new Calendar();
   private monthFormatter: any;
 

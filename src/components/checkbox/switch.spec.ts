@@ -6,11 +6,11 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcSwitchComponent } from '../../index.js';
+import { IgcSwitchComponent } from '../../index.js';
 
 describe('Switch', () => {
   before(() => {
-    defineComponents(IgcSwitchComponent);
+    IgcSwitchComponent.register();
   });
 
   const label = 'Label';

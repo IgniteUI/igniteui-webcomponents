@@ -6,11 +6,7 @@ import {
   html,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import {
-  defineComponents,
-  IgcRangeSliderComponent,
-  IgcSliderComponent,
-} from '../../index.js';
+import { IgcRangeSliderComponent, IgcSliderComponent } from '../../index.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 
 describe('Slider component', () => {
@@ -54,7 +50,7 @@ describe('Slider component', () => {
     let slider: IgcSliderComponent;
 
     before(() => {
-      defineComponents(IgcSliderComponent);
+      IgcSliderComponent.register();
     });
 
     beforeEach(async () => {
@@ -670,7 +666,7 @@ describe('Slider component', () => {
     let slider: IgcRangeSliderComponent;
 
     before(() => {
-      defineComponents(IgcRangeSliderComponent);
+      IgcRangeSliderComponent.register();
     });
 
     beforeEach(async () => {

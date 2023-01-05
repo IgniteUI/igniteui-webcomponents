@@ -6,11 +6,11 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcRadioComponent } from '../../index.js';
+import { IgcRadioComponent } from '../../index.js';
 
 describe('Radio Component', () => {
   before(() => {
-    defineComponents(IgcRadioComponent);
+    IgcRadioComponent.register();
   });
 
   const label = 'Apple';

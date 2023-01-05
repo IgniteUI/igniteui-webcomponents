@@ -8,7 +8,7 @@ import {
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, registerComponent } from '../common/util.js';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
@@ -23,18 +23,10 @@ import { styles as fluent } from './themes/fluent/calendar.fluent.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import IgcIconComponent from '../icon/icon.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcDaysViewComponent,
-  IgcMonthsViewComponent,
-  IgcYearsViewComponent
-);
 
 /**
  * Represents a calendar that lets users
@@ -76,6 +68,16 @@ export default class IgcCalendarComponent extends SizableMixin(
 ) {
   public static styles = styles;
   public static readonly tagName = 'igc-calendar';
+
+  public static register() {
+    registerComponent(this, [
+      IgcIconComponent,
+      IgcDaysViewComponent,
+      IgcMonthsViewComponent,
+      IgcYearsViewComponent,
+    ]);
+  }
+
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;

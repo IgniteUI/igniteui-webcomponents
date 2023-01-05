@@ -2,7 +2,10 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
+import { IgcTabsComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
+
+IgcTabsComponent.register();
 
 // region default
 const metadata = {

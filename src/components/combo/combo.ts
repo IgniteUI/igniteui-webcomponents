@@ -12,12 +12,6 @@ import {
   state,
 } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcComboListComponent from './combo-list.js';
-import IgcComboItemComponent from './combo-item.js';
-import IgcComboHeaderComponent from './combo-header.js';
-import IgcInputComponent from '../input/input.js';
-import IgcIconComponent from '../icon/icon.js';
 import { NavigationController } from './controllers/navigation.js';
 import { SelectionController } from './controllers/selection.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
@@ -33,20 +27,17 @@ import {
   ComboItemTemplate,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, registerComponent } from '../common/util.js';
 import { filteringOptionsConverter } from './utils/converters.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import type { ThemeController, Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcComboListComponent,
-  IgcComboItemComponent,
-  IgcComboHeaderComponent,
-  IgcInputComponent
-);
+import IgcIconComponent from '../icon/icon.js';
+import IgcComboHeaderComponent from './combo-header.js';
+import IgcComboListComponent from './combo-list.js';
+import IgcComboItemComponent from './combo-item.js';
+import IgcInputComponent from '../input/input.js';
 
 /**
  * @element igc-combo
@@ -102,6 +93,16 @@ export default class IgcComboComponent<T extends object>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, [
+      IgcIconComponent,
+      IgcComboListComponent,
+      IgcComboItemComponent,
+      IgcComboHeaderComponent,
+      IgcInputComponent,
+    ]);
+  }
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);

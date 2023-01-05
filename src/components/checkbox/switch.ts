@@ -3,7 +3,11 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import {
+  createCounter,
+  partNameMap,
+  registerComponent,
+} from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/light/switch.base.css.js';
 import { styles as bootstrap } from './themes/light/switch.bootstrap.css.js';
@@ -32,6 +36,10 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
   public static styles = styles;
   private static readonly increment = createCounter();
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private inputId = `switch-${IgcSwitchComponent.increment()}`;
   private labelId = `switch-label-${this.inputId}`;

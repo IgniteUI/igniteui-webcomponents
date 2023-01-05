@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/util.js';
 import { styles as bootstrap } from './themes/light/card.content.bootstrap.css.js';
 import { styles } from './themes/light/card.content.material.css.js';
 
@@ -12,6 +13,10 @@ import { styles } from './themes/light/card.content.material.css.js';
 export default class IgcCardContentComponent extends LitElement {
   public static readonly tagName = 'igc-card-content';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   protected override render() {
     return html` <slot></slot> `;

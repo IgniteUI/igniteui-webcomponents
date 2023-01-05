@@ -1,3 +1,4 @@
+import { registerComponent } from '../common/util.js';
 import IgcDropdownHeaderComponent from '../dropdown/dropdown-header.js';
 
 /**
@@ -6,8 +7,11 @@ import IgcDropdownHeaderComponent from '../dropdown/dropdown-header.js';
  * @slot - Renders the header.
  */
 export default class IgcSelectHeaderComponent extends IgcDropdownHeaderComponent {
-  /** @private */
   public static override readonly tagName = 'igc-select-header';
+
+  public static override register() {
+    registerComponent(this);
+  }
 }
 
 declare global {

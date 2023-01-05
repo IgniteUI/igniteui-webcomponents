@@ -6,15 +6,17 @@ import { styles as fluent } from '../dropdown/themes/light/dropdown-item.fluent.
 import { styles as indigo } from '../dropdown/themes/light/dropdown-item.indigo.css.js';
 import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
-import IgcCheckboxComopnent from '../checkbox/checkbox.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-
-defineComponents(IgcCheckboxComopnent);
+import { registerComponent } from '../common/util.js';
+import IgcCheckboxComponent from '../checkbox/checkbox.js';
 
 @themes({ bootstrap, fluent, indigo })
 export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this, [IgcCheckboxComponent]);
+  }
 
   @property({ attribute: false })
   public index!: number;

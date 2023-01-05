@@ -1,7 +1,10 @@
 import { html, svg } from 'lit';
 import { range } from 'lit-html/directives/range.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { IgcRatingComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
+
+IgcRatingComponent.register();
 
 // region default
 const metadata = {
@@ -176,7 +179,7 @@ const Template: Story<ArgTypes, Context> = (
         dir=${ifDefined(direction)}
         size=${ifDefined(size)}
         ?disabled=${disabled}
-        ?hover-preview=${hoverPreview}
+        ?hoverPreview=${hoverPreview}
         ?readonly=${readonly}
         ?single=${single}
         .step=${Number(step)}
@@ -195,7 +198,7 @@ const Template: Story<ArgTypes, Context> = (
         dir=${ifDefined(direction)}
         size=${ifDefined(size)}
         ?disabled=${disabled}
-        ?hover-preview=${hoverPreview}
+        ?hoverPreview=${hoverPreview}
         ?readonly=${readonly}
         .step=${Number(step)}
         .valueFormat=${valueFormat}
@@ -218,7 +221,7 @@ const Template: Story<ArgTypes, Context> = (
         dir=${ifDefined(direction)}
         size=${ifDefined(size)}
         ?disabled=${disabled}
-        ?hover-preview=${hoverPreview}
+        ?hoverPreview=${hoverPreview}
         ?readonly=${readonly}
         ?single=${single}
         .step=${Number(step)}
@@ -244,7 +247,7 @@ const Template: Story<ArgTypes, Context> = (
         dir=${ifDefined(direction)}
         size=${ifDefined(size)}
         ?disabled=${disabled}
-        ?hover-preview=${hoverPreview}
+        ?hoverPreview=${hoverPreview}
         ?readonly=${readonly}
         ?single=${single}
         .step=${Number(step)}

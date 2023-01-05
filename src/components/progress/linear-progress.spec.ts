@@ -5,10 +5,10 @@ import {
   fixture,
   html,
 } from '@open-wc/testing';
-import { defineComponents, IgcLinearProgressComponent } from '../../index.js';
+import { IgcLinearProgressComponent } from '../../index.js';
 
 describe('Linear progress component', () => {
-  before(() => defineComponents(IgcLinearProgressComponent));
+  before(() => IgcLinearProgressComponent.register());
 
   let progress: IgcLinearProgressComponent;
 

@@ -5,11 +5,11 @@ import {
   fixture,
   html,
 } from '@open-wc/testing';
-import { defineComponents, IgcCircularProgressComponent } from '../../index.js';
+import { IgcCircularProgressComponent } from '../../index.js';
 import type IgcCircularGradientComponent from './circular-gradient.js';
 
 describe('Circular progress component', () => {
-  before(() => defineComponents(IgcCircularProgressComponent));
+  before(() => IgcCircularProgressComponent.register());
 
   let progress: IgcCircularProgressComponent;
 

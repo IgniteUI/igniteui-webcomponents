@@ -1,5 +1,6 @@
 import { queryAssignedNodes } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/util.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 
 /**
@@ -16,15 +17,14 @@ import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
  * @csspart suffix - The suffix wrapper.
  */
 export default class IgcSelectItemComponent extends IgcDropdownItemComponent {
-  @queryAssignedNodes({ flatten: true })
-  private content!: Array<Element>;
-
-  /** @private */
   public static override readonly tagName = 'igc-select-item';
 
-  constructor() {
-    super();
+  public static override register() {
+    registerComponent(this);
   }
+
+  @queryAssignedNodes({ flatten: true })
+  private content!: Array<Element>;
 
   @watch('active')
   protected activeChange() {

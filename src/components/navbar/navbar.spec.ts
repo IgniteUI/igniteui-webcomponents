@@ -1,9 +1,9 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import { defineComponents, IgcNavbarComponent } from '../../index.js';
+import { IgcNavbarComponent } from '../../index.js';
 
 describe('Navbar component', () => {
   before(() => {
-    defineComponents(IgcNavbarComponent);
+    IgcNavbarComponent.register();
   });
 
   it('passes the a11y audit', async () => {

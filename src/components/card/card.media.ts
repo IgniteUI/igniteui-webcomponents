@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { registerComponent } from '../common/util.js';
 import { styles } from './themes/light/card.media.material.css.js';
 
 /** A container for card's media - could be an image, gif, video
@@ -9,6 +10,10 @@ import { styles } from './themes/light/card.media.material.css.js';
 export default class IgcCardMediaComponent extends LitElement {
   public static readonly tagName = 'igc-card-media';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   protected override render() {
     return html` <slot></slot> `;

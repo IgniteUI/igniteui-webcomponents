@@ -6,7 +6,7 @@ import {
   elementUpdated,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
+import { IgcExpansionPanelComponent } from '../../index.js';
 
 const SLOTS = {
   indicator: 'slot[name="indicator"]',
@@ -24,7 +24,7 @@ const PARTS = {
 
 describe('Expansion Panel', () => {
   before(() => {
-    defineComponents(IgcExpansionPanelComponent);
+    IgcExpansionPanelComponent.register();
   });
 
   let panel: IgcExpansionPanelComponent;

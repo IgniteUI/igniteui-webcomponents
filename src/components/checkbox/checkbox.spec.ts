@@ -6,11 +6,11 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcCheckboxComponent } from '../../index.js';
+import { IgcCheckboxComponent } from '../../index.js';
 
 describe('Checkbox', () => {
   before(() => {
-    defineComponents(IgcCheckboxComponent);
+    IgcCheckboxComponent.register();
   });
 
   const label = 'Label';

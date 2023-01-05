@@ -10,7 +10,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/index.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { registerComponent } from '../common/util.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
@@ -28,14 +28,6 @@ import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcInputComponent,
-  IgcSelectGroupComponent,
-  IgcSelectHeaderComponent,
-  IgcSelectItemComponent
-);
 
 export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
@@ -77,9 +69,19 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   IgcSelectEventMap,
   Constructor<IgcDropdownComponent>
 >(IgcDropdownComponent) {
-  /** @private */
   public static readonly tagName = 'igc-select';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, [
+      IgcIconComponent,
+      IgcInputComponent,
+      IgcSelectGroupComponent,
+      IgcSelectHeaderComponent,
+      IgcSelectItemComponent,
+    ]);
+  }
+
   private searchTerm = '';
   private lastKeyTime = Date.now();
   protected themeController!: ThemeController;

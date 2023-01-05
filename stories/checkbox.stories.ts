@@ -1,6 +1,9 @@
 import { html } from 'lit';
 import { Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { IgcCheckboxComponent } from '../src/index.js';
+
+IgcCheckboxComponent.register();
 
 // region default
 const metadata = {

@@ -1,5 +1,8 @@
 import { html } from 'lit';
+import { IgcRippleComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
+
+IgcRippleComponent.register();
 
 // region default
 const metadata = {

@@ -1,10 +1,10 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineAllComponents, ComboItemTemplate } from '../src/index.js';
+import { ComboItemTemplate, IgcComboComponent } from '../src/index.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 
-defineAllComponents();
+IgcComboComponent.register();
 
 // region default
 const metadata = {

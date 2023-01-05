@@ -1,6 +1,5 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents } from '../../index.js';
 import IgcTreeComponent from './tree.js';
 import IgcTreeItemComponent from './tree-item.js';
 import { navigationTree, SLOTS, TreeTestFunctions } from './tree-utils.spec.js';
@@ -9,7 +8,7 @@ import { IgcTreeNavigationService } from './tree.navigation.js';
 
 describe('Tree Navigation', () => {
   before(() => {
-    defineComponents(IgcTreeItemComponent, IgcTreeComponent);
+    IgcTreeComponent.register();
   });
 
   let tree: IgcTreeComponent;

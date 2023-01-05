@@ -1,11 +1,9 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcInputComponent from '../input/input.js';
 import IgcSelectComponent from './select.js';
 import IgcSelectGroupComponent from './select-group.js';
-import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
 
 describe('Select component', () => {
@@ -50,13 +48,7 @@ describe('Select component', () => {
     [...el.querySelectorAll('igc-select-item')] as IgcSelectItemComponent[];
 
   before(() => {
-    defineComponents(
-      IgcSelectComponent,
-      IgcSelectGroupComponent,
-      IgcSelectItemComponent,
-      IgcSelectHeaderComponent,
-      IgcInputComponent
-    );
+    IgcSelectComponent.register();
   });
 
   describe('', () => {

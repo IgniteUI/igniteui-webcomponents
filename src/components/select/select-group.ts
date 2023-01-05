@@ -1,7 +1,8 @@
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/util.js';
 import IgcDropdownGroupComponent from '../dropdown/dropdown-group.js';
-import IgcSelectItemComponent from './select-item.js';
+import type IgcSelectItemComponent from './select-item.js';
 
 /**
  * @element igc-select-group - A container for a group of `igc-select-item` components.
@@ -12,8 +13,11 @@ import IgcSelectItemComponent from './select-item.js';
  * @csspart label - The native label element.
  */
 export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
-  /** @private */
   public static override readonly tagName = 'igc-select-group';
+
+  public static override register() {
+    registerComponent(this);
+  }
 
   private observer!: MutationObserver;
   private controlledItems!: Array<IgcSelectItemComponent>;

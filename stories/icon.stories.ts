@@ -1,11 +1,14 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { Context, Story } from './story';
-import {
-  registerIcon,
-  registerIconFromText,
-} from '../src/components/icon/icon.registry';
 import { all } from '@igniteui/material-icons-extended';
+import {
+  IgcIconComponent,
+  registerIconFromText,
+  registerIcon,
+} from '../src/index.js';
+
+IgcIconComponent.register();
 
 const icons = all.map((icon) => icon.name);
 

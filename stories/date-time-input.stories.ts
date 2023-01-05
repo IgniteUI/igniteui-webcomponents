@@ -8,6 +8,8 @@ import {
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { IgcDateTimeInputComponent } from '../src/index.js';
 
+IgcDateTimeInputComponent.register();
+
 // region default
 const metadata = {
   title: 'Date Time Input',

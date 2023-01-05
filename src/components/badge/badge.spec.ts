@@ -1,9 +1,9 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcBadgeComponent } from '../../index.js';
+import { IgcBadgeComponent } from '../../index.js';
 
 describe('Badge', () => {
   before(() => {
-    defineComponents(IgcBadgeComponent);
+    IgcBadgeComponent.register();
   });
 
   it('passes the a11y audit', async () => {

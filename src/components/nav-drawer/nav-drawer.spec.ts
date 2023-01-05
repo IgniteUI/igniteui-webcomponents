@@ -5,12 +5,12 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { defineComponents, IgcNavDrawerComponent } from '../../index.js';
+import { IgcNavDrawerComponent } from '../../index.js';
 import type { IgcNavDrawerItemComponent } from '../../index.js';
 
 describe('Navigation Drawer', () => {
   before(() => {
-    defineComponents(IgcNavDrawerComponent);
+    IgcNavDrawerComponent.register();
   });
 
   let el: IgcNavDrawerComponent;

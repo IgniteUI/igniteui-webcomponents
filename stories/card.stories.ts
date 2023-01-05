@@ -1,5 +1,8 @@
 import { html } from 'lit';
+import { IgcCardComponent } from '../src/index.js';
 import type { Story } from './story';
+
+IgcCardComponent.register();
 
 // region default
 const metadata = {

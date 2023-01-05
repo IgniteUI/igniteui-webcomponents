@@ -7,6 +7,8 @@ import {
   IgcNavDrawerItemComponent,
 } from '../src/index.js';
 
+IgcNavDrawerComponent.register();
+
 // region default
 const metadata = {
   title: 'Nav Drawer',

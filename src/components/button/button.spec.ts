@@ -6,7 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcButtonComponent } from '../../index.js';
+import { IgcButtonComponent } from '../../index.js';
 
 // export const DEFAULT_CLASSES = 'native';
 export const classValue = (changeableValue: string) => {
@@ -15,7 +15,7 @@ export const classValue = (changeableValue: string) => {
 
 describe('Button component', () => {
   before(() => {
-    defineComponents(IgcButtonComponent);
+    IgcButtonComponent.register();
   });
 
   const DIFF_OPTIONS = {

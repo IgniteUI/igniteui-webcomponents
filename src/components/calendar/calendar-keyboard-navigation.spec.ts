@@ -1,10 +1,10 @@
 import { expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcCalendarComponent } from '../../index.js';
+import { IgcCalendarComponent } from '../../index.js';
 import { createCalendarElement } from './calendar-rendering.spec';
 
 describe('Calendar Rendering', () => {
   before(() => {
-    defineComponents(IgcCalendarComponent);
+    IgcCalendarComponent.register();
   });
 
   let el: IgcCalendarComponent;

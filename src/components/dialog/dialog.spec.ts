@@ -6,7 +6,7 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcDialogComponent } from '../../index.js';
+import { IgcDialogComponent } from '../../index.js';
 
 describe('Dialog component', () => {
   const fireMouseEvent = (type: string, opts: MouseEventInit) =>
@@ -14,7 +14,7 @@ describe('Dialog component', () => {
   const getBoundingRect = (el: Element) => el.getBoundingClientRect();
 
   before(() => {
-    defineComponents(IgcDialogComponent);
+    IgcDialogComponent.register();
   });
 
   let dialog: IgcDialogComponent;

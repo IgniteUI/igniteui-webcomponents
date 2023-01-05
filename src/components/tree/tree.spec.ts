@@ -1,6 +1,5 @@
 import { aTimeout, elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents } from '../../index.js';
 import type { IgcCheckboxComponent, IgcTreeItemComponent } from '../../index';
 import IgcTreeComponent from './tree.js';
 import {
@@ -19,7 +18,7 @@ import {
 
 describe('Tree', () => {
   before(() => {
-    defineComponents(IgcTreeComponent);
+    IgcTreeComponent.register();
   });
 
   let tree: IgcTreeComponent;

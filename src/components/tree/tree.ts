@@ -12,10 +12,8 @@ import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { Direction } from '../common/types.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcTreeItemComponent from './tree-item.js';
-
-defineComponents(IgcTreeItemComponent);
+import { registerComponent } from '../common/util.js';
 
 /**
  * The tree allows users to represent hierarchical data in a tree-view structure,
@@ -36,10 +34,12 @@ defineComponents(IgcTreeItemComponent);
 export default class IgcTreeComponent extends SizableMixin(
   EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  /** @private */
   public static readonly tagName = 'igc-tree';
-  /** @private */
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, [IgcTreeItemComponent]);
+  }
 
   /** @private */
   @blazorSuppress()

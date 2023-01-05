@@ -1,9 +1,9 @@
 import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcCardComponent } from '../../index.js';
+import { IgcCardComponent } from '../../index.js';
 
 describe('Card Component', () => {
   before(() => {
-    defineComponents(IgcCardComponent);
+    IgcCardComponent.register();
   });
 
   let el: IgcCardComponent;

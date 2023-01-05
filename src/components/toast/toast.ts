@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/util.js';
 import { styles } from './themes/toast.base.css.js';
 import { styles as bootstrap } from './themes/toast.bootstrap.css.js';
 import { styles as fluent } from './themes/toast.fluent.css.js';
@@ -18,6 +19,10 @@ import { styles as indigo } from './themes/toast.indigo.css.js';
 export default class IgcToastComponent extends LitElement {
   public static readonly tagName = 'igc-toast';
   public static override styles = [styles];
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private displayTimeout!: ReturnType<typeof setTimeout>;
 

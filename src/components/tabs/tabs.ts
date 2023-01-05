@@ -15,19 +15,21 @@ import { styles as fluent } from './themes/light/tabs.fluent.css.js';
 import { styles as indigo } from './themes/light/tabs.indigo.css.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import { createCounter, getOffset, isLTR } from '../common/util.js';
+import {
+  createCounter,
+  getOffset,
+  isLTR,
+  registerComponent,
+} from '../common/util.js';
 import {
   getAttributesForTags,
   getNodesForTags,
   observerConfig,
 } from './utils.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcTabComponent from './tab.js';
 import IgcTabPanelComponent from './tab-panel.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-
-defineComponents(IgcTabComponent, IgcTabPanelComponent, IgcIconButtonComponent);
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -59,8 +61,16 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tabs';
-
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, [
+      IgcTabComponent,
+      IgcTabPanelComponent,
+      IgcIconButtonComponent,
+    ]);
+  }
+
   private static readonly increment = createCounter();
 
   @queryAssignedElements({ selector: 'igc-tab' })

@@ -4,7 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, registerComponent } from '../common/util.js';
 import { IgcMaskInputBaseComponent, MaskRange } from './mask-input-base.js';
 
 /**
@@ -31,6 +31,10 @@ import { IgcMaskInputBaseComponent, MaskRange } from './mask-input-base.js';
  */
 export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
+
+  public static register() {
+    registerComponent(this);
+  }
 
   protected _value = '';
 

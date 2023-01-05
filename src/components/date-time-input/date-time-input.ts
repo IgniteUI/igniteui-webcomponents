@@ -15,7 +15,7 @@ import {
   IgcMaskInputBaseComponent,
   MaskRange,
 } from '../mask-input/mask-input-base.js';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, registerComponent } from '../common/util.js';
 import { IgcInputEventMap } from '../input/input-base.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { AbstractConstructor } from '../common/mixins/constructor.js';
@@ -52,6 +52,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   AbstractConstructor<IgcMaskInputBaseComponent>
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
+
+  public static register() {
+    registerComponent(this);
+  }
 
   protected _defaultMask!: string;
   protected _value!: Date | null;

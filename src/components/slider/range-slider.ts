@@ -4,6 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { registerComponent } from '../common/util.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 
 /* blazorSuppress */
@@ -51,6 +52,10 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   Constructor<IgcSliderBaseComponent>
 >(IgcSliderBaseComponent) {
   public static readonly tagName = 'igc-range-slider';
+
+  public static register() {
+    registerComponent(this);
+  }
 
   @query(`#thumbFrom`)
   private thumbFrom!: HTMLElement;

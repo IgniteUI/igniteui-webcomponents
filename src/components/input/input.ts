@@ -6,7 +6,7 @@ import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, registerComponent } from '../common/util.js';
 import { IgcInputBaseComponent } from './input-base.js';
 
 /**
@@ -30,6 +30,10 @@ import { IgcInputBaseComponent } from './input-base.js';
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
+
+  public static register() {
+    registerComponent(this);
+  }
 
   /**
    * The value of the control.

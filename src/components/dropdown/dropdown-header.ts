@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/util.js';
 import { styles } from './themes/light/dropdown-header.base.css.js';
 import { styles as bootstrap } from './themes/light/dropdown-header.bootstrap.css.js';
 import { styles as fluent } from './themes/light/dropdown-header.fluent.css.js';
@@ -14,6 +15,10 @@ export default class IgcDropdownHeaderComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-header';
 
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   protected override render() {
     return html`<slot></slot>`;

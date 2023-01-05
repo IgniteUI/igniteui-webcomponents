@@ -1,5 +1,8 @@
 import { html } from 'lit';
 import type { Story } from './story';
+import { IgcAccordionComponent } from '../src/index.js';
+
+IgcAccordionComponent.register();
 
 // region default
 const metadata = {

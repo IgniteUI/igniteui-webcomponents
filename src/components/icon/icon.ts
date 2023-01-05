@@ -5,6 +5,7 @@ import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
+import { registerComponent } from '../common/util.js';
 import { styles } from './icon.material.css.js';
 import {
   IconsRegistry,
@@ -23,6 +24,10 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-icon';
 
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   @state() private svg = '';
 

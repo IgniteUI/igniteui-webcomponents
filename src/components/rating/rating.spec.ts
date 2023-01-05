@@ -7,15 +7,11 @@ import {
 } from '@open-wc/testing';
 import { nothing } from 'lit';
 import sinon from 'sinon';
-import {
-  defineComponents,
-  IgcRatingComponent,
-  IgcRatingSymbolComponent,
-} from '../../index.js';
+import { IgcRatingComponent, IgcRatingSymbolComponent } from '../../index.js';
 
 describe('Rating component', () => {
   before(() => {
-    defineComponents(IgcRatingComponent);
+    IgcRatingComponent.register();
   });
 
   const getRatingSymbols = (el: IgcRatingComponent) =>

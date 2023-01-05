@@ -2,6 +2,7 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { registerComponent } from '../common/util.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 
 export interface IgcSliderEventMap {
@@ -43,6 +44,10 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   Constructor<IgcSliderBaseComponent>
 >(IgcSliderBaseComponent) {
   public static readonly tagName = 'igc-slider';
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private _value = 0;
   private _ariaLabel!: string;

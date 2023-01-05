@@ -1,6 +1,9 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { IgcButtonComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
+
+IgcButtonComponent.register();
 
 // region default
 const metadata = {

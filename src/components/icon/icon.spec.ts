@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import { defineComponents, IgcIconComponent } from '../../index.js';
+import { IgcIconComponent } from '../../index.js';
 import { registerIconFromText } from './icon.registry';
 
 const bugSvgContent =
@@ -17,7 +17,7 @@ const searchSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24
 
 describe('Icon component', () => {
   before(() => {
-    defineComponents(IgcIconComponent);
+    IgcIconComponent.register();
   });
 
   beforeEach(() => {

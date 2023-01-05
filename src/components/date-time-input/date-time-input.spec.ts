@@ -6,13 +6,12 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util.js';
 
 describe('Date Time Input component', () => {
-  before(() => defineComponents(IgcDateTimeInputComponent));
+  before(() => IgcDateTimeInputComponent.register());
 
   const parser = new MaskParser();
   const defaultPrompt = '_';

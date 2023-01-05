@@ -5,11 +5,11 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { defineComponents, IgcIconButtonComponent } from '../../index.js';
+import { IgcIconButtonComponent } from '../../index.js';
 
 describe('IconButton component', () => {
   before(() => {
-    defineComponents(IgcIconButtonComponent);
+    IgcIconButtonComponent.register();
   });
 
   const DIFF_OPTIONS = {

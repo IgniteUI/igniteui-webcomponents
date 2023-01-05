@@ -24,16 +24,10 @@ import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
 import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
 import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
-
-defineComponents(
-  IgcDropdownGroupComponent,
-  IgcDropdownHeaderComponent,
-  IgcDropdownItemComponent
-);
+import { registerComponent } from '../common/util.js';
 
 export interface IgcDropdownEventMap extends IgcToggleEventMap {
   igcChange: CustomEvent<IgcDropdownItemComponent>;
@@ -70,6 +64,14 @@ export default class IgcDropdownComponent
   public static readonly tagName: string = 'igc-dropdown';
 
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, [
+      IgcDropdownGroupComponent,
+      IgcDropdownHeaderComponent,
+      IgcDropdownItemComponent,
+    ]);
+  }
 
   protected toggleController!: IgcToggleController;
   protected selectedItem!: IgcDropdownItemComponent | null;

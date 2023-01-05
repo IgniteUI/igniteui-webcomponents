@@ -1,9 +1,9 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineComponents, IgcDialogComponent } from '../src/index.js';
+import { IgcDialogComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
 
-defineComponents(IgcDialogComponent);
+IgcDialogComponent.register();
 
 // region default
 const metadata = {
