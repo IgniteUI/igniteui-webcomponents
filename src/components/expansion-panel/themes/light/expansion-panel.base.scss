@@ -55,22 +55,21 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 
 [part~='content'] {
     @include type-style('body-2');
-    overflow: hidden;
-    padding-inline: pad-inline(24px);
-
     @include slide-out-bck-center();
+
     animation-name: slide-out-bck-center;
     animation-duration: .35s;
-
     transition: padding .35s $ease-out-quad;
+    overflow: hidden;
+    padding-inline: pad-inline(24px);
 }
 
 :host([open]) [part~='content'] {
-    padding-block: pad-block(16px);
-
     @include slide-in-fwd-center();
+
     animation-name: slide-in-fwd-center;
     animation-duration: .35s;
+    padding-block: pad-block(16px);
 }
 
 [part~='indicator'] {
