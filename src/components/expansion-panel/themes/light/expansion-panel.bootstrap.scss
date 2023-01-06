@@ -13,6 +13,6 @@
     color: color(gray, 600);
 }
 
-:host([open]) [part~='content'] {
+[part~='content'] {
     @include type-style('body-1');
 }

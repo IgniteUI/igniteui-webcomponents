@@ -1,4 +1,5 @@
 @use '../../../../styles/utilities/index' as *;
+@use '../../../../../node_modules/igniteui-theming//sass/animations/index' as *;
 
 $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 
@@ -52,12 +53,24 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
     color: color(gray, 700);
 }
 
-:host([open]) [part~='content'] {
+[part~='content'] {
     @include type-style('body-2');
-
     overflow: hidden;
     padding-inline: pad-inline(24px);
+
+    @include slide-out-bck-center();
+    animation-name: slide-out-bck-center;
+    animation-duration: .35s;
+
+    transition: padding .35s $ease-out-quad;
+}
+
+:host([open]) [part~='content'] {
     padding-block: pad-block(16px);
+
+    @include slide-in-fwd-center();
+    animation-name: slide-in-fwd-center;
+    animation-duration: .35s;
 }
 
 [part~='indicator'] {

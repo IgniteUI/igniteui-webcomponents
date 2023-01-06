@@ -8,7 +8,7 @@
     @include type-style('body-2');
 }
 
-:host([open]) [part~='content'] {
+[part~='content'] {
     @include type-style('caption');
 
     color: color(gray, 700);

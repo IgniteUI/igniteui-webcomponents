@@ -1,4 +1,5 @@
 @use '../../../styles/utilities/index' as *;
+@use '../../../../node_modules/igniteui-theming//sass/animations/easings' as *;
 
 :host {
     ::slotted(igc-expansion-panel) {
@@ -6,6 +7,7 @@
     }
 
     ::slotted(igc-expansion-panel[open]) {
+        transition: margin 350ms $out-quad;
         margin: rem(8px) 0;
     }
 

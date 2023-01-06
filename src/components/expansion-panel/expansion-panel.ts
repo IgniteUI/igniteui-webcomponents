@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -66,6 +66,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
+  @state()
+  protected showContent = false;
+
   /**
    * The indicator position of the expansion panel.
    * @attr indicator-position
@@ -89,10 +92,24 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this.panelHeader!.focus();
 
     if (this.open) {
+      this.playAnimation();
       this.closeWithEvent();
     } else {
+      this.showContent = true;
       this.openWithEvent();
     }
+  }
+
+  private playAnimation() {
+    const content = this.shadowRoot?.querySelector('.content');
+
+    content?.addEventListener('animationend', () => {
+      if (this.open) {
+        this.showContent = true;
+      } else {
+        this.showContent = false;
+      }
+    });
   }
 
   private handleKeydown(event: KeyboardEvent) {
@@ -222,12 +239,13 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   private contentTemplate() {
     return html`
       <div
+        class="content"
         part="content"
         role="region"
         id="${this.panelId!}-content"
         aria-labelledby="${this.panelId!}-header"
       >
-        <slot ?hidden=${!this.open}></slot>
+        <slot ?hidden=${!this.showContent}></slot>
       </div>
     `;
   }
