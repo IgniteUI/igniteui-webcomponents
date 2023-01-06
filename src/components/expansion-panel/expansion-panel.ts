@@ -92,17 +92,14 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this.panelHeader!.focus();
 
     if (this.open) {
-      this.playAnimation();
       this.closeWithEvent();
     } else {
-      this.showContent = true;
       this.openWithEvent();
     }
   }
 
   private playAnimation() {
-    const content = this.shadowRoot?.querySelector('.content');
-
+    const content = this.shadowRoot?.querySelector('div[part="content"]');
     content?.addEventListener('animationend', () => {
       if (this.open) {
         this.showContent = true;
@@ -157,6 +154,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       return;
     }
 
+    this.playAnimation();
     this.open = true;
     this.emitEvent('igcOpened', { detail: this });
   }
@@ -181,6 +179,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       return;
     }
 
+    this.playAnimation();
     this.open = false;
     this.emitEvent('igcClosed', { detail: this });
   }
@@ -239,7 +238,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   private contentTemplate() {
     return html`
       <div
-        class="content"
         part="content"
         role="region"
         id="${this.panelId!}-content"
