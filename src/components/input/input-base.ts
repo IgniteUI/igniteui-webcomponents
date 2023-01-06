@@ -46,7 +46,7 @@ export abstract class IgcInputBaseComponent
   @blazorSuppress()
   public abstract value: string | Date | null;
 
-  @query('input', true)
+  @query('input')
   protected input!: HTMLInputElement;
 
   @queryAssignedElements({ slot: 'prefix' })
