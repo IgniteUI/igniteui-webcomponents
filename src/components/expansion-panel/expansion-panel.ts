@@ -11,6 +11,11 @@ import { createCounter } from '../common/util.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
+import {
+  AnimationPlayer,
+  growVerIn,
+  growVerOut,
+} from '../../animations/index.js';
 
 defineComponents(IgcIconComponent);
 
@@ -51,6 +56,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-expansion-panel';
   public static styles = styles;
   private static readonly increment = createCounter();
+  private animationPlayer = new AnimationPlayer();
 
   /**
    * Indicates whether the contents of the control should be visible.
@@ -75,6 +81,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   @query('[part~="header"]', true)
   protected panelHeader!: HTMLElement;
+
+  @query('[part~="content"]', true)
+  protected panelContent!: HTMLElement;
 
   private panelId!: string;
 
@@ -120,6 +129,14 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
   }
 
+  private _playOpenAnimation(callback?: () => void) {
+    this.animationPlayer.animate(this.panelContent, growVerIn, callback);
+  }
+
+  private _playCloseAnimation(callback?: () => void) {
+    this.animationPlayer.animate(this.panelContent, growVerOut, callback);
+  }
+
   /**
    * @private
    * Opens the panel.
@@ -141,7 +158,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
 
     this.open = true;
-    this.emitEvent('igcOpened', { detail: this });
+    this._playOpenAnimation(() =>
+      this.emitEvent('igcOpened', { detail: this })
+    );
   }
 
   /**
@@ -165,7 +184,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
 
     this.open = false;
-    this.emitEvent('igcClosed', { detail: this });
+    this._playCloseAnimation(() => {
+      this.emitEvent('igcClosed', { detail: this });
+    });
   }
 
   /** Toggles panel open state. */
@@ -175,11 +196,19 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   /** Hides the panel content. */
   public hide(): void {
+    if (this.open) {
+      this._playCloseAnimation();
+    }
+
     this.open = false;
   }
 
   /** Shows the panel content. */
   public show(): void {
+    if (!this.open) {
+      this._playOpenAnimation();
+    }
+
     this.open = true;
   }
 
@@ -226,8 +255,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         role="region"
         id="${this.panelId!}-content"
         aria-labelledby="${this.panelId!}-header"
+        aria-hidden=${!this.open}
       >
-        <slot ?hidden=${!this.open}></slot>
+        <slot></slot>
       </div>
     `;
   }
