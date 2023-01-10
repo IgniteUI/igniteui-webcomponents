@@ -43,6 +43,7 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
 
   public override disconnectedCallback() {
     this.observer.disconnect();
+    super.disconnectedCallback();
   }
 
   protected override getParent() {
