@@ -267,6 +267,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   public override disconnectedCallback() {
     this.removeEventListener('keyup', this.handleKeyUp);
+    super.disconnectedCallback();
   }
 
   protected handleKeyUp() {
