@@ -1,29 +1,14 @@
-// import { playwrightLauncher } from '@web/test-runner-playwright';
+import { litSsrPlugin } from '@lit-labs/testing/web-test-runner-ssr-plugin.js';
 
 export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   files: ['dist/**/*.spec.js'],
-  // nodeResolve: true,
-
-  /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
-  // esbuildTarget: 'auto',
 
   /** Configure bare import resolve plugin */
   nodeResolve: {
     exportConditions: ['browser', 'production'],
   },
 
-  /** Amount of browsers to run concurrently */
-  // concurrentBrowsers: 2,
+  plugins: [litSsrPlugin()],
 
-  /** Amount of test files per browser to test concurrently */
-  // concurrency: 1,
-
-  /** Browsers to run tests on */
-  // browsers: [
-  //   playwrightLauncher({ product: 'chromium' }),
-  //   playwrightLauncher({ product: 'firefox' }),
-  //   playwrightLauncher({ product: 'webkit' }),
-  // ],
-
-  // See documentation for all available options
+  // See https://modern-web.dev/guides/test-runner/dev-server/ for all available options
 });

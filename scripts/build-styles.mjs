@@ -1,5 +1,5 @@
 import { globby } from 'globby';
-import report from './report.js';
+import report from './report.mjs';
 import { sassRender, template } from './sass.mjs';
 
 (async () => {
@@ -19,5 +19,8 @@ import { sassRender, template } from './sass.mjs';
       process.exit(-1);
     });
   }
-  report.success(`Styles generated in ${Math.round((Date.now() - startTime) / 1000)}s`);
+
+  report.success(
+    `Styles generated in ${Math.round((Date.now() - startTime) / 1000)}s`
+  );
 })();

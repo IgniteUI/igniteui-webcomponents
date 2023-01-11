@@ -6,6 +6,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/IgniteUI/igniteui-webcomponents"
@@ -25,8 +26,8 @@
     "build:docs:json": "web-component-analyzer \"src/**/*.ts\" --format json --outDir docs/json",
     "build:docs:schema": "web-component-analyzer src --format json --outFile custom-elements.json",
     "build:docs:vscode-schema": "web-component-analyzer src --format vscode --outFile vscode-html-custom-data.json",
-    "build:meta": "node scripts/build-stories.js",
-    "watch-meta": "node scripts/stories-watcher.js ",
+    "build:meta": "node scripts/build-stories.mjs",
+    "watch-meta": "node scripts/stories-watcher.mjs ",
     "watch-scss": "node scripts/styles-watcher.mjs",
     "watch-ts": "tsc --watch --preserveWatchOutput",
     "check": "madge --circular --warning --no-spinner dist/src/index.js",
@@ -45,10 +46,10 @@
     "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
     "storybook": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"npm:watch-meta\" \"wds -c .storybook/server.mjs\"",
     "storybook:build": "npm run build && build-storybook -o ./storybook-static",
-    "build:typedoc:watch": "node scripts/build-typedoc.js watch",
-    "build:typedoc:serve": "node scripts/build-typedoc.js serve  && concurrently -k -r \"npm:build:typedoc:watch\"",
-    "build:typedoc:ja": "set NODE_ENV=production && node scripts/build-typedoc.js buildJA",
-    "build:typedoc:en": "set NODE_ENV=production && node scripts/build-typedoc.js buildEN",
+    "build:typedoc:watch": "node scripts/build-typedoc.mjs watch",
+    "build:typedoc:serve": "node scripts/build-typedoc.mjs serve  && concurrently -k -r \"npm:build:typedoc:watch\"",
+    "build:typedoc:ja": "set NODE_ENV=production && node scripts/build-typedoc.mjs buildJA",
+    "build:typedoc:en": "set NODE_ENV=production && node scripts/build-typedoc.mjs buildEN",
     "deploy-storybook": "storybook-to-ghpages --ci --existing-output-dir=./storybook-static",
     "prepare": "husky install"
   },
@@ -59,6 +60,7 @@
   },
   "devDependencies": {
     "@igniteui/material-icons-extended": "^2.11.0",
+    "@lit-labs/testing": "^0.2.0",
     "@open-wc/eslint-config": "^9.1.0",
     "@open-wc/testing": "^3.1.7",
     "@storybook/storybook-deployer": "^2.8.16",

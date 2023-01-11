@@ -7,5 +7,5 @@ module.exports = {
     config.plugins.push(postCSS({ include: ['**/*.scss'], inject: false }));
 
     return config;
-  }
+  },
 };
