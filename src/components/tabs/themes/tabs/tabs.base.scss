@@ -1,0 +1,82 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+
+// TABS
+:host {
+    font-family: var(--ig-font-family);
+
+    --margin: #{rem(16px)};
+    --body-padding: #{rem(16px)};
+    --header-gap: #{rem(8px)};
+    --header-padding: #{rem(8px)};
+
+    // Indicator
+    --indicator-size: #{rem(24px)};
+    --indicator-roundness: calc(var(--indicator-size) / 2);
+    --indicator-box-shadow-size: #{rem(1px)};
+
+    // Separator
+    --separator-size: #{rem(1px)};
+    --separator-type: dashed;
+    --separator-type--completed: solid;
+    --separator-position: calc(var(--header-padding) + (var(--indicator-size) / 2) - (var(--separator-size) / 2));
+    --separator-min-width: #{rem(36px)};
+    --separator-min-width--header: #{rem(4px)};
+    --separator-min-width--full: calc(var(--separator-min-width) + var(--separator-min-width--header));
+    --text-min-width: var(--indicator-size);
+
+    // Tab min width
+    --header-min-width: calc(var(--indicator-size) + (var(--header-padding) * 2));
+    --tab-min-width: calc(var(--header-min-width) + var(--separator-min-width--full));
+    --tab-min-width--first-tab: var(--header-min-width);
+
+    --horizontal-content-disply: block;
+    --horizontal-body-padding: #{rem(8px)};
+
+    display: grid;
+    /* stylelint-disable */
+    grid-template-columns: minmax(var(--tab-min-width--first-tab), max-content) repeat(calc(var(--tabs-count) - 1), minmax(var(--tab-min-width), auto));
+    /* stylelint-enable */
+
+    ::slotted(igc-tab) {
+        // display: contents make all direct children of the tab to behave like they are direct children of the tabs
+        display: contents;
+        pointer-events: none;
+
+        --align-text: center;
+        --align-items: center;
+    }
+
+    // FIRST TAB
+    ::slotted(igc-tab:first-of-type) {
+        --horizontal-separator-visibility--first-of-type: none;
+    }
+
+    // LAST TAB
+    ::slotted(igc-tab:last-of-type) {
+        --horizontal-separator-visibility--last-of-type: none;
+    }
+}
+
+// FIRST TAB
+::slotted(igc-tab:first-of-type) {
+    --horizontal-separator-display--first-of-type: none;
+}
+
+// LAST TAB
+::slotted(igc-tab:last-of-type) {
+    --horizontal-separator-display--last-of-type: none;
+}
+
+// NOT FULL HEADER
+:host {
+    /* stylelint-disable */
+    --tab-min-width: calc(var(--header-min-width) + var(--separator-min-width--full) - var(--separator-min-width--header));
+    /* stylelint-enable */
+
+    --separator-disply-not-full: none;
+
+    ::slotted(igc-tab) {
+        --tab-not-full-header-aligmnet: center;
+    }
+}

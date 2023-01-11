@@ -1,0 +1,9 @@
+@use '../../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-tab {
+        --header-background--hover: #{color(gray, 100, .3)};
+        --header-background--focus: #{color(gray, 100, .5)};
+        --header-separator-visibility--hover: hidden;
+    }
+}

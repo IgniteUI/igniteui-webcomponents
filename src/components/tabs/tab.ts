@@ -1,11 +1,11 @@
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { watch } from '../common/decorators/watch.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { createCounter } from '../common/util.js';
-import { styles } from './themes/light/tab.base.css.js';
-import { styles as bootstrap } from './themes/light/tab.bootstrap.css.js';
-import { styles as fluent } from './themes/light/tab.fluent.css.js';
-import { styles as indigo } from './themes/light/tab.indigo.css.js';
+import { styles } from './themes/tab/light/tab.base.css.js';
+import { styles as bootstrap } from './themes/tab/light/tab.bootstrap.css.js';
+import { styles as fluent } from './themes/tab/light/tab.fluent.css.js';
+import { styles as indigo } from './themes/tab/light/tab.indigo.css.js';
 
 /**
  * Represents the tab header.
@@ -26,17 +26,11 @@ export default class IgcTabComponent extends LitElement {
 
   public static override styles = styles;
 
-  private static readonly increment = createCounter();
+  @query('[part~="header"]')
+  public header!: HTMLElement;
 
-  @query('[part="base"]', true)
-  private tab!: HTMLElement;
-
-  /**
-   * The id of the tab panel which will be controlled by the tab.
-   * @attr
-   */
-  @property()
-  public panel = '';
+  @query('[part~="body"]')
+  public contentBody!: HTMLElement;
 
   /**
    * Determines whether the tab is selected.
@@ -52,36 +46,67 @@ export default class IgcTabComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
-    this.id =
-      this.getAttribute('id') || `igc-tab-${IgcTabComponent.increment()}`;
+  /** @private */
+  @property({ attribute: false })
+  public index = -1;
+
+  /** @private */
+  @property({ attribute: false })
+  public activation: 'auto' | 'manual' = 'auto';
+
+  @watch('selected', { waitUntilFirstUpdate: true })
+  protected selectedChange() {
+    if (this.selected) {
+      this.dispatchEvent(
+        new CustomEvent('tabSelectedChanged', { bubbles: true, detail: false })
+      );
+    }
   }
 
-  /** Sets focus to the tab. */
-  public override focus(options?: FocusOptions) {
-    this.tab.focus(options);
+  private handleClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent('tabSelectedChanged', { bubbles: true, detail: true })
+    );
   }
 
-  /** Removes focus from the tab. */
-  public override blur() {
-    this.tab.blur();
+  private handleKeydown(event: KeyboardEvent): void {
+    this.dispatchEvent(
+      new CustomEvent('tabHeaderKeydown', {
+        bubbles: true,
+        detail: { event, focusedTab: this },
+      })
+    );
   }
 
   protected override render() {
     return html`
+      <div part="header-container">
+        <div
+          part="header"
+          role="tab"
+          aria-selected="${this.selected}"
+          aria-disabled="${this.disabled}"
+          tabindex="${this.selected ? '0' : '-1'}"
+          @click=${this.handleClick}
+          @keydown=${this.handleKeydown}
+        >
+          <div part="text">
+            <slot name="prefix" part="prefix"></slot>
+            <slot name="title" part="title"></slot>
+            <slot name="suffix" part="suffix"></slot>
+          </div>
+        </div>
+      </div>
       <div
-        part="base"
-        role="tab"
-        aria-disabled=${this.disabled ? 'true' : 'false'}
-        aria-selected=${this.selected ? 'true' : 'false'}
-        tabindex=${this.disabled || !this.selected ? -1 : 0}
+        id="igc-tab-content-${this.index}"
+        part="body"
+        role="tabpanel"
+        aria-labelledby="igc-tab-header-${this.index}"
       >
-        <slot name="prefix" part="prefix"></slot>
         <div part="content">
           <slot></slot>
         </div>
-        <slot name="suffix" part="suffix"></slot>
       </div>
     `;
   }

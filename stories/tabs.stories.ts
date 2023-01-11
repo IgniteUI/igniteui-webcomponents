@@ -9,11 +9,6 @@ const metadata = {
   title: 'Tabs',
   component: 'igc-tabs',
   argTypes: {
-    selected: {
-      type: 'string',
-      description: 'Returns the currently selected tab.',
-      control: 'text',
-    },
     alignment: {
       type: '"start" | "end" | "center" | "justify"',
       description: 'Sets the alignment for the tab headers',
@@ -33,13 +28,22 @@ const metadata = {
       },
       defaultValue: 'auto',
     },
+    size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
+      control: {
+        type: 'inline-radio',
+      },
+      defaultValue: 'large',
+    },
   },
 };
 export default metadata;
 interface ArgTypes {
-  selected: string;
   alignment: 'start' | 'end' | 'center' | 'justify';
   activation: 'auto' | 'manual';
+  size: 'small' | 'medium' | 'large';
 }
 // endregion
 
@@ -57,7 +61,8 @@ const removableTabs = Array.from(
   map(
     range(10),
     (i) =>
-      html`<igc-tab panel=${i}>
+      html`<igc-tab>
+        <div slot="title">
           Item ${i + 1}
           <igc-icon-button
             @click=${remove}
@@ -66,8 +71,9 @@ const removableTabs = Array.from(
             collection="internal"
             name="chip_cancel"
           ></igc-icon-button>
-        </igc-tab>
-        <igc-tab-panel id=${i}><h1>Content for ${i + 1}</h1></igc-tab-panel>`
+        </div>
+        <h1>Content for ${i + 1}</h1>
+      </igc-tab>`
   )
 );
 
@@ -75,8 +81,10 @@ const tabs = Array.from(
   map(
     range(18),
     (i) =>
-      html`<igc-tab panel=${i} ?disabled=${i === 2}> Item ${i + 1} </igc-tab>
-        <igc-tab-panel id=${i}> Content ${i + 1}</igc-tab-panel>`
+      html`<igc-tab ?disabled=${i === 2}
+        ><div slot="title">Item ${i + 1}</div>
+        <p>Content ${i + 1}</p></igc-tab
+      >`
   )
 );
 
@@ -93,44 +101,51 @@ const Template: Story<ArgTypes, Context> = (
   </igc-tabs>
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
-    <igc-tab panel="first">
-      <igc-icon name="home"></igc-icon>
+    <igc-tab>
+      <igc-icon name="home" slot="title"></igc-icon>
+      Content 1
     </igc-tab>
-    <igc-tab panel="second">
-      <igc-icon name="search"></igc-icon>
+    <igc-tab>
+      <igc-icon name="search" slot="title"></igc-icon>
+      Content 2
     </igc-tab>
-    <igc-tab panel="third" disabled>
-      <igc-icon name="favorite"></igc-icon>
+    <igc-tab disabled>
+      <igc-icon name="favorite" slot="title"></igc-icon>
+      Content 3
     </igc-tab>
-    <igc-tab-panel id="first">Content 1</igc-tab-panel>
-    <igc-tab-panel id="second">Content 2</igc-tab-panel>
   </igc-tabs>
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
-    <igc-tab panel="first">
-      <igc-icon name="home"></igc-icon>
-      <input />
-      <span
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua.</span
-      >
+    <igc-tab>
+      <div slot="title">
+        <igc-icon name="home"></igc-icon>
+        <input />
+        <span
+          >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.</span
+        >
+      </div>
+      Content 1
     </igc-tab>
-    <igc-tab panel="second">
-      <igc-icon name="search"></igc-icon>
-      <span
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua.</span
-      >
+    <igc-tab>
+      <div slot="title">
+        <igc-icon name="search"></igc-icon>
+        <span
+          >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.</span
+        >
+      </div>
+      Content 2
     </igc-tab>
-    <igc-tab panel="third" disabled>
-      <igc-icon name="favorite"></igc-icon>
-      <span
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua.</span
-      >
+    <igc-tab disabled>
+      <div slot="title">
+        <igc-icon name="favorite"></igc-icon>
+        <span
+          >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.</span
+        >
+      </div>
     </igc-tab>
-    <igc-tab-panel id="first">Content 1</igc-tab-panel>
-    <igc-tab-panel id="second">Content 2</igc-tab-panel>
   </igc-tabs>
 `;
 
@@ -143,7 +158,9 @@ const TabStrip: Story<ArgTypes, Context> = (
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >
-    ${Array.from(range(1, 11)).map((i) => html` <igc-tab>${i}</igc-tab> `)}
+    ${Array.from(range(1, 11)).map(
+      (i) => html` <igc-tab><div slot="title">${i}</div></igc-tab> `
+    )}
   </igc-tabs>
 `;
 

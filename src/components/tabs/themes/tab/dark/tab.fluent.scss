@@ -1,0 +1,11 @@
+@use '../../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-tab {
+        // uncompleted
+        --indicator-color: #{color(gray, 900)};
+        --indicator-background: #{color(gray, 50, 0)};
+        --indicator-shadow: var(--indicator-background);
+        --header-separator-visibility--hover: hidden;
+    }
+}

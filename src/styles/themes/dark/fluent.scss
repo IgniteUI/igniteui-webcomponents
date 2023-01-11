@@ -12,7 +12,6 @@
 @use '../../../components/slider/themes/dark/slider.fluent.scss' as slider;
 @use '../../../components/list/themes/dark/list.fluent' as list;
 @use '../../../components/select/themes/dark/select.fluent' as select;
-@use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.fluent' as nav-drawer-item;
 @use '../../../components/combo/themes/dark/combo.fluent' as combo;
@@ -26,7 +25,6 @@
 @include radio.theme();
 @include slider.theme();
 @include list.theme();
-@include tab.theme();
 @include select.theme();
 @include tree-item.theme();
 @include nav-drawer-item.theme();

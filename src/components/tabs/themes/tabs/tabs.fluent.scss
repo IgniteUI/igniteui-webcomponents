@@ -1,7 +1,8 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
+// TABS
 :host {
-    overflow: hidden;
-    flex-grow: 1;
+    --indicator-roundness: #{rem(2px)};
+    --indicator-box-shadow-size: #{rem(1px)};
 }

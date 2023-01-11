@@ -1,0 +1,8 @@
+@use '../../../../../styles/utilities' as *;
+
+:host {
+    // completed
+    --completed-indicator-color: #{contrast-color(gray, 900)};
+    --completed-indicator-background: #{color(gray, 900)};
+    --completed-indicator-shadow: var(--completed-indicator-background);
+}
