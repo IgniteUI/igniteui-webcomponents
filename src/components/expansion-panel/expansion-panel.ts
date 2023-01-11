@@ -56,7 +56,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-expansion-panel';
   public static styles = styles;
   private static readonly increment = createCounter();
-  private animationPlayer = new AnimationPlayer();
+  private animationPlayer!: AnimationPlayer;
 
   /**
    * Indicates whether the contents of the control should be visible.
@@ -94,6 +94,10 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       `igc-expansion-panel-${IgcExpansionPanelComponent.increment()}`;
   }
 
+  public override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.panelContent);
+  }
+
   private handleClicked() {
     this.panelHeader!.focus();
 
@@ -129,19 +133,21 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
   }
 
-  private _playOpenAnimation(callback?: () => void) {
-    this.animationPlayer.animate(this.panelContent, growVerIn, callback);
-  }
+  private async toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? growVerIn : growVerOut;
+    await this.animationPlayer.stopAll();
 
-  private _playCloseAnimation(callback?: () => void) {
-    this.animationPlayer.animate(this.panelContent, growVerOut, callback);
+    const event = (await this.animationPlayer.play(
+      animation
+    )) as AnimationPlaybackEvent;
+    return event.type;
   }
 
   /**
    * @private
    * Opens the panel.
    */
-  private openWithEvent() {
+  private async openWithEvent() {
     if (this.open) {
       return;
     }
@@ -158,16 +164,19 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
 
     this.open = true;
-    this._playOpenAnimation(() =>
-      this.emitEvent('igcOpened', { detail: this })
-    );
+
+    const status = await this.toggleAnimation('open');
+
+    if (status === 'finish') {
+      this.emitEvent('igcOpened', { detail: this });
+    }
   }
 
   /**
    * @private
    * Closes the panel.
    */
-  private closeWithEvent() {
+  private async closeWithEvent() {
     if (!this.open) {
       return;
     }
@@ -184,9 +193,12 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
 
     this.open = false;
-    this._playCloseAnimation(() => {
+
+    const status = await this.toggleAnimation('close');
+
+    if (status === 'finish') {
       this.emitEvent('igcClosed', { detail: this });
-    });
+    }
   }
 
   /** Toggles panel open state. */
@@ -197,7 +209,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   /** Hides the panel content. */
   public hide(): void {
     if (this.open) {
-      this._playCloseAnimation();
+      this.toggleAnimation('close');
     }
 
     this.open = false;
@@ -206,7 +218,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   /** Shows the panel content. */
   public show(): void {
     if (!this.open) {
-      this._playOpenAnimation();
+      this.toggleAnimation('open');
     }
 
     this.open = true;
