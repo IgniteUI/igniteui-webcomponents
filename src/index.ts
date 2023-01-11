@@ -86,3 +86,4 @@ export type {
   IgcActiveStepChangedArgs,
 } from './components/stepper/stepper.common.js';
 export type { ComboItemTemplate } from './components/combo/types.js';
+export type { IgniteComponent } from './components/common/types.js';
