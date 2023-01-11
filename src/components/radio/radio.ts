@@ -138,6 +138,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
 
   public override disconnectedCallback() {
     this.removeEventListener('keyup', this.handleKeyUp);
+    super.disconnectedCallback();
   }
 
   protected handleKeyUp() {
