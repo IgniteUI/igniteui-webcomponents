@@ -416,6 +416,60 @@ describe('Calendar Rendering', () => {
         `${today.getDate()}`
       );
     });
+
+    it("navigates to the date set as value initially, selection 'single'", async () => {
+      const valueDate = new Date('08/06/2023');
+      el = await fixture<IgcCalendarComponent>(
+        html`<igc-calendar value="${valueDate}" />`
+      );
+      await elementUpdated(el);
+
+      expect(el.activeDate.getFullYear()).to.equal(valueDate.getFullYear());
+      expect(el.activeDate.getMonth()).to.equal(valueDate.getMonth());
+      expect(el.activeDate.getDate()).to.equal(valueDate.getDate());
+
+      const headerDate = el.shadowRoot?.querySelector(
+        '[part=header-date]'
+      ) as Element;
+      expect(headerDate.textContent).to.equal('Sun, Aug 6');
+    });
+
+    it("navigates to the first date of the initially set values, selection 'range'", async () => {
+      const valueDates = [new Date('08/06/2023'), new Date('08/09/2023')];
+      el = await fixture<IgcCalendarComponent>(
+        html`<igc-calendar values="${valueDates}" selection="range" />`
+      );
+      await elementUpdated(el);
+
+      expect(el.activeDate.getFullYear()).to.equal(valueDates[0].getFullYear());
+      expect(el.activeDate.getMonth()).to.equal(valueDates[0].getMonth());
+      expect(el.activeDate.getDate()).to.equal(valueDates[0].getDate());
+
+      const headerDate = el.shadowRoot?.querySelector(
+        '[part=header-date]'
+      ) as Element;
+      expect(headerDate.textContent)
+        .to.contain('Aug 6')
+        .and.to.contain('-')
+        .and.to.contain('Aug 9');
+    });
+
+    it("navigates to the first date of the initially set values as attribute, selection 'multiple'", async () => {
+      const valueDates = [new Date('08/06/2023'), new Date('08/09/2023')];
+      el = await fixture<IgcCalendarComponent>(
+        html`<igc-calendar values="${valueDates}" selection="multiple" />`
+      );
+      await elementUpdated(el);
+
+      expect(el.activeDate.getFullYear()).to.equal(valueDates[0].getFullYear());
+      expect(el.activeDate.getMonth()).to.equal(valueDates[0].getMonth());
+      expect(el.activeDate.getDate()).to.equal(valueDates[0].getDate());
+
+      const buttonMonthsNav = el.shadowRoot
+        ?.querySelector('[part=navigation]')
+        ?.querySelector('button[part=months-navigation]') as Element;
+      expect(buttonMonthsNav.textContent).to.contain('August');
+    });
   });
 });
 
