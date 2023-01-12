@@ -81,21 +81,19 @@ export default class IgcTabComponent extends LitElement {
 
   protected override render() {
     return html`
-      <div part="header-container">
-        <div
-          part="header"
-          role="tab"
-          aria-selected="${this.selected}"
-          aria-disabled="${this.disabled}"
-          tabindex="${this.selected ? '0' : '-1'}"
-          @click=${this.handleClick}
-          @keydown=${this.handleKeydown}
-        >
-          <div part="text">
-            <slot name="prefix" part="prefix"></slot>
-            <slot name="title" part="title"></slot>
-            <slot name="suffix" part="suffix"></slot>
-          </div>
+      <div
+        part="header"
+        role="tab"
+        aria-selected="${this.selected}"
+        aria-disabled="${this.disabled}"
+        tabindex="${this.selected ? '0' : '-1'}"
+        @click=${this.handleClick}
+        @keydown=${this.handleKeydown}
+      >
+        <div part="base">
+          <slot name="prefix" part="prefix"></slot>
+          <slot name="title" part="title"></slot>
+          <slot name="suffix" part="suffix"></slot>
         </div>
       </div>
       <div

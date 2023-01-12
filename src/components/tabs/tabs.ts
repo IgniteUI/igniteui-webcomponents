@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import {
   property,
   query,
@@ -19,8 +19,9 @@ import { styles } from './themes/tabs/tabs.base.css.js';
 import { styles as bootstrap } from './themes/tabs/tabs.bootstrap.css.js';
 import { styles as fluent } from './themes/tabs/tabs.fluent.css.js';
 import { styles as indigo } from './themes/tabs/tabs.indigo.css.js';
+import IgcIconButtonComponent from '../button/icon-button.js';
 
-defineComponents(IgcTabComponent);
+defineComponents(IgcTabComponent, IgcIconButtonComponent);
 
 /**
  * IgcTabs provides a wizard-like workflow by dividing content into logical tabs.
@@ -103,6 +104,8 @@ export default class IgcTabsComponent extends SizableMixin(
   @property({ reflect: true })
   public override dir: Direction = 'auto';
 
+  protected resizeObserver!: ResizeObserver;
+
   @watch('activation', { waitUntilFirstUpdate: true })
   protected activationChange(): void {
     this.tabs.forEach(
@@ -145,9 +148,52 @@ export default class IgcTabsComponent extends SizableMixin(
     });
   }
 
-  public override connectedCallback(): void {
-    super.connectedCallback();
+  protected override async firstUpdated() {
     this.setAttribute('role', 'tablist');
+
+    this.showScrollButtons =
+      this.container.scrollWidth > this.container.clientWidth;
+
+    await this.updateComplete;
+
+    this.setupObserver();
+    // this.setSelectedTab(
+    //   this.tabs.filter((tab) => tab.selected).at(-1) ?? this.enabledTabs.at(0)
+    // );
+    // this.updateSelectedTab();
+  }
+
+  protected updateButtonsOnResize() {
+    // Hide the buttons in the resize observer callback and synchronously update the DOM
+    // in order to get the actual size
+    this.showScrollButtons = false;
+    this.performUpdate();
+
+    this.showScrollButtons =
+      this.container.scrollWidth > this.container.clientWidth;
+
+    this.syncProperties();
+    this.updateScrollButtons();
+  }
+
+  protected updateScrollButtons() {
+    const { scrollLeft, offsetWidth } = this.container,
+      { scrollWidth } = this.wrapper;
+
+    this.disableEndScrollButton =
+      scrollWidth <= Math.abs(scrollLeft) + offsetWidth;
+    this.disableStartScrollButton = scrollLeft === 0;
+  }
+
+  protected setupObserver() {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.updateButtonsOnResize();
+      this.alignIndicator();
+    });
+
+    [this.container, this.wrapper, ...this.tabs].forEach((element) =>
+      this.resizeObserver.observe(element)
+    );
   }
 
   private selectFirstTab() {
@@ -272,6 +318,10 @@ export default class IgcTabsComponent extends SizableMixin(
   }
 
   private syncProperties(): void {
+    const tabsLength = this.showScrollButtons
+      ? this.tabs.length + 2
+      : this.tabs.length;
+    this.style.setProperty('--tabs-count', tabsLength.toString());
     this.tabs.forEach((tab: IgcTabComponent, index: number) => {
       tab.activation = this.activation;
       tab.index = index;
@@ -283,9 +333,7 @@ export default class IgcTabsComponent extends SizableMixin(
     });
   }
 
-  private tabsChanged(): void {
-    this.style.setProperty('--tabs-count', this.tabs.length.toString());
-
+  private async tabsChanged(): Promise<void> {
     const lastSelectedTab = this.tabs
       .reverse()
       .find((tab: IgcTabComponent) => tab.selected);
@@ -296,8 +344,6 @@ export default class IgcTabsComponent extends SizableMixin(
       // activate the last tab marked as selected
       this.selectTab(lastSelectedTab, false);
     }
-
-    this.syncProperties();
   }
 
   /** Selects the tab at a given index. */
@@ -309,8 +355,43 @@ export default class IgcTabsComponent extends SizableMixin(
     this.selectTab(tab, false);
   }
 
+  private handleScroll() {}
+
+  protected renderScrollButton(direction: 'start' | 'end') {
+    const start = direction === 'start';
+    // this.showScrollButtons = true;
+
+    return this.showScrollButtons
+      ? html`<igc-icon-button
+          tabindex="-1"
+          aria-hidden="true"
+          size="large"
+          variant="flat"
+          collection="internal"
+          part="${direction}-scroll-button"
+          name="navigate_${start ? 'before' : 'next'}"
+          .disabled=${start
+            ? this.disableStartScrollButton
+            : this.disableEndScrollButton}
+        ></igc-icon-button>`
+      : nothing;
+  }
+
   protected override render() {
-    return html`<slot @slotchange=${this.tabsChanged}></slot>`;
+    return html`
+      <div part="headers">
+        <div part="headers-content" @scroll=${this.handleScroll}>
+          <div part="headers-wrapper">
+            <div part="headers-scroll" role="tablist">
+              ${this.renderScrollButton('start')}
+              <slot @slotchange=${this.tabsChanged}></slot>
+              ${this.renderScrollButton('end')}
+            </div>
+            <div part="selected-indicator"></div>
+          </div>
+        </div>
+      </div>
+    `;
   }
 }
 

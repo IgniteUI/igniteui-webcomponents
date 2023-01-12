@@ -1,223 +1,146 @@
 @use '../../../../../styles/common/component';
 @use '../../../../../styles/utilities' as *;
 
-:host {
-    // text
-    --title-color: #{contrast-color(gray, 50)};
-
-    // separator
-    --separator-color: #{color(gray, 300)};
-    --separator-color--completed: #{color(gray, 900)};
-
-    // header
-    --header-color: #{contrast-color(gray, 50)};
-    --header-background--hover: #{color(gray, 200)};
-    --header-background--focus: #{color(gray, 100)};
-    --header-shadow: #{color(gray, 50, 0)};
-
-    // active
-    --active-title-color: var(--title-color);
-
-    // disabled
-    --disabled-color: #{color(gray, 500)};
-    --disabled-background: #{color(gray, 100)};
-    --disabled-shadow: var(--disabled-background);
-
-    align-items: flex-start;
-}
-
-[part~='header-container'],
-[part~='header'] {
-    width: var(--header-width-vertical, auto);
-
-    &::before {
-        content: '';
-        width: auto;
-        flex: 1;
-        border-block-start: var(--separator-size) var(--separator-type) var(--separator-color);
-        height: var(--separator-size);
-        position: relative;
-    }
-}
-
-[part~='header-container'] {
-    display: flex;
-    pointer-events: none;
-    position: relative;
-    justify-content: center;
-
-    // Reset the context so that is possible to set background on the whole tabs
-    z-index: 0;
-
-    [part~='header'] {
-        pointer-events: all;
-        align-items: center;
-    }
-
-    [part='title'] {
-        pointer-events: none;
-    }
-
-    &::before {
-        min-width: var(--separator-min-width);
-        display: var(--hide-horizontal-separator, var(--horizontal-separator-display--first-of-type));
-    }
-}
+$hover-background: var(--hover-background, color(gray, 200)) !default;
 
 [part~='header'] {
-    display: flex;
-    align-items: var(--align-items, flex-start);
-    grid-row: var(--header-bottom, 1);
-    position: relative;
-    overflow: hidden;
-    padding: var(--header-padding);
-    justify-content: flex-start;
-    gap: var(--header-gap);
-    color: var(--header-color);
-    z-index: var(--vertical-header-z-index);
-
-    &::before,
-    &::after {
-        content: '';
-        flex: 1;
-        border-block-start: var(--separator-size) var(--separator-type) var(--separator-color);
-        height: var(--separator-size);
-        min-width: var(--separator-min-width--header);
-        width: calc(50% - (var(--indicator-size) / 2) - var(--header-padding));
-        position: absolute;
-        z-index: -1;
-    }
-
-    &::before {
-        inset-inline-start: 0;
-        /* stylelint-disable */
-        display: var(--hide-horizontal-separator, var(--separator-disply-not-full, var(--horizontal-separator-display--first-of-type)));
-        /* stylelint-enable */
-    }
-
-    &::after {
-        inset-inline-end: 0;
-        /* stylelint-disable */
-        display: var(--hide-horizontal-separator, var(--separator-disply-not-full, var(--horizontal-separator-display--last-of-type)));
-        /* stylelint-enable */
-    }
-
-    &:focus,
-    &:hover {
-        cursor: pointer;
-        outline: none;
-    }
-
-    &:hover {
-        &::before,
-        &::after {
-            visibility: var(--header-separator-visibility--hover);
-        }
-
-        background: var(--header-background--hover);
-    }
-
-    &:focus,
-    &:focus-within,
-    &:active {
-        &::before,
-        &::after {
-            visibility: var(--header-separator-visibility--hover);
-        }
-
-        background: var(--header-background--focus);
-        box-shadow: inset 0 0 0 rem(1px) var(--header-shadow);
-    }
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  min-width: rem(90px);
+  max-width: rem(360px);
+  word-wrap: break-word;
+  padding: rem(12px) rem(16px);
+  overflow: hidden;
+  pointer-events: all;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.35, 0, 0.25, 1);
+  user-select: none;
+  background: color(surface, 500);
+  color: color(gray, 700);
 }
 
-[part~='body'] {
-    display: var(--vertical-body-disply--last-of-type, var(--vertical-body-disply, none));
-    grid-row-start: var(--body-top, 2);
-    grid-column: span var(--tabs-count);
-    margin-inline-start: calc(var(--body-indent--vertical) / 2);
-    padding-inline-start: var(--horizontal-body-padding, #{calc(var(--body-indent--vertical) / 2)});
-    padding-inline-end: var(--horizontal-body-padding, var(--vertical-body-padding));
-    padding-block-start: var(--horizontal-body-padding, var(--vertical-body-padding));
-    padding-block-end: var(--horizontal-body-padding, var(--vertical-body-padding));
-    z-index: 1;
-    position: relative;
-    color: color(gray, 900);
-
-    // Thous two lines here are on purpose, they make sure that tab body content
-    // does not get involved in grid width calculation. They fix a very weird bug.
-    // https://stackoverflow.com/questions/73856035/css-grid-columns-changing-size-with-long-content/73858982#73858982
-    width: 0;
-    min-width: 100%;
-
-    &::before {
-        display: var(--hide-last-separator, var(--hide-first-separator, var(--vertical-separator-visibility)));
-        content: '';
-        position: absolute;
-        inset-inline-start: calc((var(--separator-size) / 2) * -1);
-        height: 100%;
-        inset-block-start: 0 !important;
-        border-inline-start: var(--separator-size) var(--separator-type) var(--separator-color);
-    }
-}
-
-[part='content'] {
-    display: var(--horizontal-content-disply, none);
-}
-
-[part~='title'] {
-    text-align: var(--align-text, initial);
-    min-width: var(--indicator-size);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-[part~='title'] {
-    @include type-style('body-2');
-
-    color: var(--title-color);
+[part='header'] {
+  &:hover,
+  &:focus-within {
+    background: $hover-background;
+    color: color(gray, 700);
+  }
 }
 
 :host([selected]) {
-    [part~='body'] {
-        display: var(--vertical-body-disply, block);
-    }
+  [part='header'] {
+    color: color(primary, 500);
 
-    [part~='body bottom'] {
-        &::before {
-            inset-block-start: 0;
-        }
+    ::slotted(igc-icon) {
+      color: color(primary, 500);
     }
-
-    [part='content'] {
-        display: var(--horizontal-content-disply, block);
-        pointer-events: all;
-    }
-
-    [part~='title'] {
-        color: var(--active-title-color);
-        font-weight: 600;
-    }
+  }
 }
 
-[part~='disabled'] {
-    [part='header'] {
-        background: color(gray, 50, 0);
+:host([selected]) {
+  [part='header'] {
+    &:hover,
+    &:focus-within {
+      color: color(primary, 500);
     }
+  }
+}
 
-    &:focus,
-    &:focus-visible,
-    &:focus-within,
-    &:active,
-    &:hover {
-        [part='header'] {
-            background: color(gray, 50, 0);
-            cursor: default;
-            box-shadow: inset 0 0 0 rem(1px) color(gray, 50, 0);
-        }
-    }
+:host([disabled]) {
+  [part='header'] {
+    pointer-events: none;
+    cursor: initial;
+    color: color(gray, 500);
+  }
+}
 
-    [part~='title'] {
-        color: var(--disabled-color);
+[part='base'] {
+  display: flex;
+  grid-row: var(--header-bottom, 1);
+  align-items: center;
+  justify-content: space-between;
+  outline-style: none;
+  gap: rem(8px);
+  pointer-events: none;
+
+  ::slotted(igc-icon) {
+    --size: #{rem(24px)};
+  }
+}
+
+[part='title'] {
+  @include type-style('button');
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  outline-style: none;
+
+  ::slotted(*) {
+    @include line-clamp(2, true, true);
+  }
+
+  ::slotted(igc-icon:not(:only-child)) {
+    margin-bottom: rem(8px);
+  }
+}
+
+// body
+
+[part~='body'] {
+  display: var(
+    --vertical-body-disply--last-of-type,
+    var(--vertical-body-disply, none)
+  );
+  grid-row-start: var(--body-top, 2);
+  grid-column: span var(--tabs-count);
+  margin-inline-start: calc(var(--body-indent--vertical) / 2);
+  padding-inline-start: var(
+    --horizontal-body-padding,
+    #{calc(var(--body-indent--vertical) / 2)}
+  );
+  padding-inline-end: var(
+    --horizontal-body-padding,
+    var(--vertical-body-padding)
+  );
+  padding-block-start: var(
+    --horizontal-body-padding,
+    var(--vertical-body-padding)
+  );
+  padding-block-end: var(
+    --horizontal-body-padding,
+    var(--vertical-body-padding)
+  );
+  z-index: 1;
+  position: relative;
+  color: color(gray, 900);
+
+  // Thous two lines here are on purpose, they make sure that tab body content
+  // does not get involved in grid width calculation. They fix a very weird bug.
+  // https://stackoverflow.com/questions/73856035/css-grid-columns-changing-size-with-long-content/73858982#73858982
+  width: 0;
+  min-width: 100%;
+}
+
+[part='content'] {
+  display: var(--horizontal-content-disply, none);
+}
+
+:host([selected]) {
+  [part~='body'] {
+    display: var(--vertical-body-disply, block);
+    &::before {
+      inset-block-start: 0;
     }
+  }
+
+  [part='content'] {
+    display: var(--horizontal-content-disply, block);
+    pointer-events: all;
+  }
 }
