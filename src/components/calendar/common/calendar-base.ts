@@ -108,7 +108,7 @@ export class IgcCalendarBaseComponent extends LitElement {
 
   protected override async firstUpdated() {
     if (this.selection === 'single') {
-      this.activeDate = this.value ? this.value : new Date();
+      this.activeDate = this.value ?? new Date();
     } else {
       this.activeDate = this.values ? this.values[0] : new Date();
     }

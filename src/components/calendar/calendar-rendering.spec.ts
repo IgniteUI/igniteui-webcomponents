@@ -420,7 +420,7 @@ describe('Calendar Rendering', () => {
     it("navigates to the date set as value initially, selection 'single'", async () => {
       const valueDate = new Date('08/06/2023');
       el = await fixture<IgcCalendarComponent>(
-        html`<igc-calendar value="${valueDate}" />`
+        html`<igc-calendar .value="${valueDate}" />`
       );
       await elementUpdated(el);
 
@@ -437,7 +437,7 @@ describe('Calendar Rendering', () => {
     it("navigates to the first date of the initially set values, selection 'range'", async () => {
       const valueDates = [new Date('08/06/2023'), new Date('08/09/2023')];
       el = await fixture<IgcCalendarComponent>(
-        html`<igc-calendar values="${valueDates}" selection="range" />`
+        html`<igc-calendar .values="${valueDates}" .selection="${'range'}" />`
       );
       await elementUpdated(el);
 
@@ -457,7 +457,10 @@ describe('Calendar Rendering', () => {
     it("navigates to the first date of the initially set values as attribute, selection 'multiple'", async () => {
       const valueDates = [new Date('08/06/2023'), new Date('08/09/2023')];
       el = await fixture<IgcCalendarComponent>(
-        html`<igc-calendar values="${valueDates}" selection="multiple" />`
+        html`<igc-calendar
+          .values="${valueDates}"
+          .selection="${'multiple'}"
+        />`
       );
       await elementUpdated(el);
 
