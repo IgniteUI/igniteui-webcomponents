@@ -167,6 +167,9 @@ export default class IgcComboComponent<T extends object>
   @property({ reflect: true, type: Boolean })
   public outlined = false;
 
+  @property({ reflect: false, type: Boolean })
+  public simplified = false;
+
   /**
    * The autofocus attribute of the control.
    * @attr autofocus
@@ -386,6 +389,10 @@ export default class IgcComboComponent<T extends object>
     return result;
   }
 
+  protected resetSearchTerm() {
+    this.dataController.searchTerm = '';
+  }
+
   /**
    * Returns the current selection as a list of commma separated values,
    * represented by the display key, when provided.
@@ -446,6 +453,15 @@ export default class IgcComboComponent<T extends object>
     this.dataController.searchTerm = e.detail;
   }
 
+  protected handleInput(e: CustomEvent) {
+    this.dataController.searchTerm = e.detail;
+
+    if (e.detail.length == 0) {
+      this.selectionController.deselect([], true);
+      this.list.requestUpdate();
+    }
+  }
+
   protected handleOpening() {
     const args = { cancelable: true };
     return this.emitEvent('igcOpening', args);
@@ -464,7 +480,9 @@ export default class IgcComboComponent<T extends object>
     await this.updateComplete;
     emit && this.emitEvent('igcOpened');
 
-    this.list.focus();
+    if (!this.simplified) {
+      this.list.focus();
+    }
 
     if (!this.autofocusList) {
       this.input.focus();
@@ -567,6 +585,20 @@ export default class IgcComboComponent<T extends object>
     e.stopPropagation();
     this.selectionController.deselect([], true);
     this.navigationController.active = -1;
+    this.list.requestUpdate();
+
+    if (this.simplified) {
+      this.dataController.searchTerm = '';
+    }
+  }
+
+  protected handleInputKeydown(e: KeyboardEvent) {
+    if (this.simplified) {
+      e.stopPropagation();
+      if (!this.open) this.show();
+    }
+
+    this.navigationController.navigateHost.bind(this.navigationController);
   }
 
   protected toggleCaseSensitivity() {
@@ -639,15 +671,14 @@ export default class IgcComboComponent<T extends object>
       dir=${this.dir}
       @igcFocus=${(e: Event) => e.stopPropagation()}
       @igcBlur=${(e: Event) => e.stopPropagation()}
-      @keydown=${this.navigationController.navigateHost.bind(
-        this.navigationController
-      )}
+      @keydown=${this.handleInputKeydown}
+      @igcInput=${this.handleInput}
       .disabled="${this.disabled}"
       .required=${this.required}
       .invalid=${this.invalid}
       .outlined=${this.outlined}
       .autofocus=${this.autofocus}
-      readonly
+      ?readonly=${!this.simplified}
     >
       <span slot=${this.hasPrefixes && 'prefix'}>
         <slot name="prefix"></slot>
@@ -661,7 +692,10 @@ export default class IgcComboComponent<T extends object>
   }
 
   private renderSearchInput() {
-    return html`<div part="filter-input" ?hidden=${this.disableFiltering}>
+    return html`<div
+      part="filter-input"
+      ?hidden=${this.disableFiltering || this.simplified}
+    >
       <igc-input
         part="search-input"
         placeholder=${this.placeholderSearch}

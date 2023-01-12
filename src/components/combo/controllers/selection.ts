@@ -16,6 +16,11 @@ export class SelectionController<T extends object>
     return this.host.dataState;
   }
 
+  public resetSearchTerm() {
+    // @ts-expect-error protected access
+    this.host.resetSearchTerm();
+  }
+
   public getValue(items: T[]) {
     return items
       .map((value) => {
@@ -97,6 +102,11 @@ export class SelectionController<T extends object>
     if (!items || items.length === 0) {
       this.selectAll();
       return;
+    }
+
+    if (this.host.simplified) {
+      this._selected.clear();
+      this.resetSearchTerm();
     }
 
     const values = this.host.valueKey
