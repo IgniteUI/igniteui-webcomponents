@@ -25,7 +25,7 @@ export class AnimationPlayer {
   public async play(animation: AnimationReferenceMetadata) {
     const { steps, options } = animation;
 
-    return new Promise((resolve) => {
+    return new Promise<AnimationPlaybackEvent>((resolve) => {
       if (options?.duration === Infinity) {
         throw new Error('Promise-based animations must be finite.');
       }
@@ -45,12 +45,12 @@ export class AnimationPlayer {
     return Promise.all(
       this.target.getAnimations().map((animation) => {
         return new Promise((resolve) => {
-          const handleAnimationEvent = requestAnimationFrame(resolve);
+          const handleAnimationEvent = () => requestAnimationFrame(resolve);
 
-          animation.addEventListener('cancel', () => handleAnimationEvent, {
+          animation.addEventListener('cancel', handleAnimationEvent, {
             once: true,
           });
-          animation.addEventListener('finish', () => handleAnimationEvent, {
+          animation.addEventListener('finish', handleAnimationEvent, {
             once: true,
           });
           animation.cancel();

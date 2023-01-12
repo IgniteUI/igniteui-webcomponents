@@ -135,12 +135,13 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private async toggleAnimation(dir: 'open' | 'close') {
     const animation = dir === 'open' ? growVerIn : growVerOut;
-    await this.animationPlayer.stopAll();
 
-    const event = (await this.animationPlayer.play(
-      animation
-    )) as AnimationPlaybackEvent;
-    return event.type;
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(animation),
+    ]);
+
+    return event.type === 'finish';
   }
 
   /**
@@ -165,9 +166,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
     this.open = true;
 
-    const status = await this.toggleAnimation('open');
-
-    if (status === 'finish') {
+    if (await this.toggleAnimation('open')) {
       this.emitEvent('igcOpened', { detail: this });
     }
   }
@@ -194,16 +193,14 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
     this.open = false;
 
-    const status = await this.toggleAnimation('close');
-
-    if (status === 'finish') {
+    if (await this.toggleAnimation('close')) {
       this.emitEvent('igcClosed', { detail: this });
     }
   }
 
   /** Toggles panel open state. */
   public toggle(): void {
-    this.open = !this.open;
+    this.open ? this.hide() : this.show();
   }
 
   /** Hides the panel content. */
