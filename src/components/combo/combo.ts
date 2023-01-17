@@ -622,7 +622,7 @@ export default class IgcComboComponent<T extends object>
     this.list.requestUpdate();
 
     if (this.simplified) {
-      this.dataController.searchTerm = '';
+      this.resetSearchTerm();
     }
   }
 
