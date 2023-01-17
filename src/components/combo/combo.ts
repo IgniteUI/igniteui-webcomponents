@@ -405,6 +405,14 @@ export default class IgcComboComponent<T extends object>
     this.dataController.searchTerm = '';
   }
 
+  @watch('simplified', { waitUntilFirstUpdate: true })
+  protected async resetState() {
+    await this.updateComplete;
+    this.deselect();
+    this.resetSearchTerm();
+    this.navigationController.active = -1;
+  }
+
   /**
    * Returns the current selection as a list of commma separated values,
    * represented by the display key, when provided.
