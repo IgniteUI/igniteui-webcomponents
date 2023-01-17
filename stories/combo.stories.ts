@@ -42,6 +42,8 @@ const metadata = {
     },
     simplified: {
       type: 'boolean',
+      description:
+        'Enables single selection mode and moves item filtering to the main input.',
       control: 'boolean',
       defaultValue: false,
     },

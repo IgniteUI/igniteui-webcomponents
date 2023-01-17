@@ -169,7 +169,11 @@ export default class IgcComboComponent<T extends object>
   @property({ reflect: true, type: Boolean })
   public outlined = false;
 
-  @property({ reflect: false, type: Boolean })
+  /**
+   * Enables single selection mode and moves item filtering to the main input.
+   * @attr simplified
+   */
+  @property({ reflect: true, type: Boolean })
   public simplified = false;
 
   /**
@@ -582,7 +586,9 @@ export default class IgcComboComponent<T extends object>
     }
   }
 
-  protected async itemClickHandler(event: MouseEvent) {
+  protected itemClickHandler(event: MouseEvent) {
+    const input = this.simplified ? this.target : this.input;
+
     const target = event
       .composedPath()
       .find(
@@ -590,13 +596,10 @@ export default class IgcComboComponent<T extends object>
       ) as IgcComboItemComponent;
 
     this.toggleSelect(target.index);
+    input.focus();
 
     if (this.simplified) {
-      await this.updateComplete;
-      this.target.focus();
       this._hide();
-    } else {
-      this.input.focus();
     }
   }
 
