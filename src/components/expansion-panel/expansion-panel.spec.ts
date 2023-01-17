@@ -4,6 +4,7 @@ import {
   expect,
   unsafeStatic,
   elementUpdated,
+  waitUntil,
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { IgcExpansionPanelComponent } from '../../index.js';
@@ -168,16 +169,16 @@ describe('Expansion Panel', () => {
     it('Should get expanded/collapsed on using the API toggle() method', async () => {
       expect(panel.open).to.be.false;
 
-      let contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).to.have.attribute('hidden');
+      let content = panel.shadowRoot!.querySelector(PARTS.content);
+      expect(content?.ariaHidden).to.equal('true');
 
       panel.toggle();
       await elementUpdated(panel);
 
       expect(panel.open).to.be.true;
 
-      contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).not.to.have.attribute('hidden');
+      content = panel.shadowRoot!.querySelector(PARTS.content);
+      expect(content?.ariaHidden).to.equal('false');
 
       expect(eventSpy).not.to.have.been.called;
     });
@@ -190,8 +191,8 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.true;
 
-      let contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).not.to.have.attribute('hidden');
+      let content = panel.shadowRoot!.querySelector(PARTS.content);
+      expect(content?.ariaHidden).to.equal('false');
 
       expect(eventSpy).not.to.have.been.called;
 
@@ -200,8 +201,8 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
 
-      contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).to.have.attribute('hidden');
+      content = panel.shadowRoot!.querySelector(PARTS.content);
+      expect(content?.ariaHidden).to.equal('true');
 
       expect(eventSpy).not.to.have.been.called;
     });
@@ -214,8 +215,8 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.true;
 
-      let contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).not.to.have.attribute('hidden');
+      let content = panel.shadowRoot!.querySelector(PARTS.content);
+      expect(content?.ariaHidden).to.equal('false');
 
       expect(eventSpy).not.to.have.been.called;
 
@@ -224,8 +225,8 @@ describe('Expansion Panel', () => {
 
       expect(panel.open).to.be.false;
 
-      contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).to.have.attribute('hidden');
+      content = panel.shadowRoot!.querySelector(PARTS.content);
+      expect(content?.ariaHidden).to.equal('true');
 
       expect(eventSpy).not.to.have.been.called;
     });
@@ -236,12 +237,9 @@ describe('Expansion Panel', () => {
       expect(panel.open).to.be.false;
 
       header?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(panel);
+      await waitUntil(() => eventSpy.calledWith('igcOpened'));
 
       expect(panel.open).to.be.true;
-
-      let contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).not.to.have.attribute('hidden');
 
       // Verify events are called
       expect(eventSpy.callCount).to.equal(2);
@@ -260,13 +258,9 @@ describe('Expansion Panel', () => {
       eventSpy.resetHistory();
 
       header?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(panel);
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(panel.open).to.be.false;
-
-      contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).to.have.attribute('hidden');
-
       expect(eventSpy.callCount).to.equal(2);
 
       const closingArgs = {
@@ -288,12 +282,12 @@ describe('Expansion Panel', () => {
       expect(panel.open).to.be.false;
 
       indicator?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(panel);
+      await waitUntil(() => eventSpy.calledWith('igcOpened'));
 
       expect(panel.open).to.be.true;
 
-      let contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).not.to.have.attribute('hidden');
+      let content = panel.shadowRoot!.querySelector(PARTS.content);
+      expect(content?.ariaHidden).to.equal('false');
 
       // Verify events are called
       expect(eventSpy.callCount).to.equal(2);
@@ -312,12 +306,12 @@ describe('Expansion Panel', () => {
       eventSpy.resetHistory();
 
       indicator?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      await elementUpdated(panel);
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(panel.open).to.be.false;
 
-      contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).to.have.attribute('hidden');
+      content = panel.shadowRoot!.querySelector(PARTS.content);
+      expect(content?.ariaHidden).to.equal('true');
       expect(eventSpy.callCount).to.equal(2);
 
       const closingArgs = {
@@ -335,12 +329,9 @@ describe('Expansion Panel', () => {
     it('Should get expanded/collapsed on arrowdown/arrowup', async () => {
       const header = panel.shadowRoot?.querySelector(PARTS.header);
       triggerKeydown(header as HTMLElement, 'arrowdown');
-      await elementUpdated(panel);
+      await waitUntil(() => eventSpy.calledWith('igcOpened'));
 
       expect(panel.open).to.be.true;
-
-      let contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).not.to.have.attribute('hidden');
 
       // Verify events are called
       expect(eventSpy.callCount).to.equal(2);
@@ -359,13 +350,9 @@ describe('Expansion Panel', () => {
       eventSpy.resetHistory();
 
       triggerKeydown(header as HTMLElement, 'arrowup');
-      await elementUpdated(panel);
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(panel.open).to.be.false;
-
-      contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).to.have.attribute('hidden');
-
       expect(eventSpy.callCount).to.equal(2);
 
       const closingArgs = {
@@ -383,12 +370,9 @@ describe('Expansion Panel', () => {
     it('Should get expanded/collapsed on space/enter', async () => {
       const header = panel.shadowRoot?.querySelector(PARTS.header);
       triggerKeydown(header as HTMLElement, ' ', false);
-      await elementUpdated(panel);
+      await waitUntil(() => eventSpy.calledWith('igcOpened'));
 
       expect(panel.open).to.be.true;
-
-      let contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).not.to.have.attribute('hidden');
 
       // Verify events are called
       expect(eventSpy.callCount).to.equal(2);
@@ -407,13 +391,9 @@ describe('Expansion Panel', () => {
       eventSpy.resetHistory();
 
       triggerKeydown(header as HTMLElement, 'enter', false);
-      await elementUpdated(panel);
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(panel.open).to.be.false;
-
-      contentSlot = getDefaultSlot(panel);
-      expect(contentSlot).to.have.attribute('hidden');
-
       expect(eventSpy.callCount).to.equal(2);
 
       const closingArgs = {

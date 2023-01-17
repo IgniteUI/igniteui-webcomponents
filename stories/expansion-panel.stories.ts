@@ -41,24 +41,16 @@ interface ArgTypes {
   indicatorPosition: 'start' | 'end' | 'none';
 }
 // endregion
+
+(metadata as any).parameters = {
+  actions: {
+    handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
+  },
+};
+
 interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
-
-const handleOpening = (ev: any) => {
-  console.log(ev);
-};
-
-const handleOpened = (ev: any) => {
-  console.log(ev);
-};
-
-const handleClosing = (ev: any) => {
-  console.log(ev);
-};
-const handleClosed = (ev: any) => {
-  console.log(ev);
-};
 
 const Template: Story<ArgTypes, Context> = (
   { open = false, disabled = false, indicatorPosition = 'start' }: ArgTypes,
@@ -70,10 +62,6 @@ const Template: Story<ArgTypes, Context> = (
       .open="${open}"
       .disabled="${disabled}"
       .dir="${direction}"
-      @igcOpening=${handleOpening}
-      @igcOpened=${handleOpened}
-      @igcClosing=${handleClosing}
-      @igcClosed=${handleClosed}
     >
       <h1 slot="title">The Expendables</h1>
       <h3 slot="subtitle">Action, Adventure, Thriller</h3>

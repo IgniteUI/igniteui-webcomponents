@@ -22,39 +22,23 @@ interface ArgTypes {
   singleExpand: boolean;
 }
 // endregion
+
+(metadata as any).parameters = {
+  actions: {
+    handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
+  },
+};
+
 interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
-
-const handleOpening = (ev: any) => {
-  console.log(ev);
-};
-
-const handleOpened = (ev: any) => {
-  console.log(ev);
-};
-
-const handleClosing = (ev: any) => {
-  console.log(ev);
-};
-
-const handleClosed = (ev: any) => {
-  console.log(ev);
-};
 
 const Template: Story<ArgTypes, Context> = (
   { singleExpand = false }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
   return html`
-    <igc-accordion
-      .singleExpand="${singleExpand}"
-      .dir="${direction}"
-      @igcOpening=${handleOpening}
-      @igcOpened=${handleOpened}
-      @igcClosing=${handleClosing}
-      @igcClosed=${handleClosed}
-    >
+    <igc-accordion .singleExpand="${singleExpand}" .dir="${direction}">
       <igc-expansion-panel>
         <div slot="title">Expansion panel 1 title</div>
         <div slot="subtitle">Expansion panel 1 subtitle</div>
