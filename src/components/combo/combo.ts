@@ -94,6 +94,7 @@ defineComponents(
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcComboListComponent, IgcComboItemComponent, IgcComboHeaderComponent, IgcInputComponent'
 )
+// TODO: pressing arrow down should scroll to the selected item
 export default class IgcComboComponent<T extends object>
   extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
     LitElement
@@ -102,6 +103,7 @@ export default class IgcComboComponent<T extends object>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
+  private _value = '';
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
@@ -337,7 +339,6 @@ export default class IgcComboComponent<T extends object>
   @watch('pipeline')
   protected async pipeline() {
     this.dataState = await this.dataController.apply([...this.data]);
-    this.navigationController.active = -1;
   }
 
   @watch('open')
@@ -366,6 +367,13 @@ export default class IgcComboComponent<T extends object>
     });
 
     this.addEventListener('blur', () => {
+      const { selected } = this.selectionController;
+
+      if (selected.size === 0) {
+        this.target.value = '';
+        this.resetSearchTerm();
+      }
+
       this.emitEvent('igcBlur');
     });
 
@@ -398,9 +406,16 @@ export default class IgcComboComponent<T extends object>
    * represented by the display key, when provided.
    */
   public get value() {
-    return this.selectionController.getValue(
+    return this._value;
+  }
+
+  protected async updateValue() {
+    this._value = this.selectionController.getValue(
       Array.from(this.selectionController.selected)
     );
+
+    await this.updateComplete;
+    this.target.value = this._value;
   }
 
   @watch('value')
@@ -449,17 +464,23 @@ export default class IgcComboComponent<T extends object>
     this.list.requestUpdate();
   }
 
-  protected handleSearchInput(e: CustomEvent) {
+  protected handleMainInput(e: CustomEvent) {
+    if (e.detail.length === 0) {
+      this.navigationController.active = -1;
+    }
+
     this.dataController.searchTerm = e.detail;
+    this._show();
+
+    const { selected } = this.selectionController;
+    const active = this.dataState.findIndex((i) => !i.header);
+
+    this.navigationController.active = active;
+    this.selectionController.deselect([], selected.size > 0);
   }
 
-  protected handleInput(e: CustomEvent) {
+  protected handleSearchInput(e: CustomEvent) {
     this.dataController.searchTerm = e.detail;
-
-    if (e.detail.length == 0) {
-      this.selectionController.deselect([], true);
-      this.list.requestUpdate();
-    }
   }
 
   protected handleOpening() {
@@ -501,7 +522,7 @@ export default class IgcComboComponent<T extends object>
 
     await this.updateComplete;
     emit && this.emitEvent('igcClosed');
-    this.target.focus();
+    this.navigationController.active = -1;
   }
 
   /** Hides the list of options. */
@@ -540,6 +561,7 @@ export default class IgcComboComponent<T extends object>
       .index=${index}
       .active=${active}
       .selected=${selected}
+      ?simplified=${this.simplified}
       >${this.itemTemplate({ item: record })}</igc-combo-item
     >`;
 
@@ -560,7 +582,7 @@ export default class IgcComboComponent<T extends object>
     }
   }
 
-  protected itemClickHandler(event: MouseEvent) {
+  protected async itemClickHandler(event: MouseEvent) {
     const target = event
       .composedPath()
       .find(
@@ -568,12 +590,20 @@ export default class IgcComboComponent<T extends object>
       ) as IgcComboItemComponent;
 
     this.toggleSelect(target.index);
-    this.input.focus();
+
+    if (this.simplified) {
+      await this.updateComplete;
+      this.target.focus();
+      this._hide();
+    } else {
+      this.input.focus();
+    }
   }
 
   protected toggleSelect(index: number) {
     this.selectionController.changeSelection(index);
     this.navigationController.active = index;
+    this.updateValue();
     this.list.requestUpdate();
   }
 
@@ -584,6 +614,7 @@ export default class IgcComboComponent<T extends object>
   protected handleClearIconClick(e: MouseEvent) {
     e.stopPropagation();
     this.selectionController.deselect([], true);
+    this.updateValue();
     this.navigationController.active = -1;
     this.list.requestUpdate();
 
@@ -592,13 +623,12 @@ export default class IgcComboComponent<T extends object>
     }
   }
 
-  protected handleInputKeydown(e: KeyboardEvent) {
-    if (this.simplified) {
-      e.stopPropagation();
-      if (!this.open) this.show();
-    }
+  protected handleMainInputKeydown(e: KeyboardEvent) {
+    this.navigationController.navigateMainInput(e, this.list);
+  }
 
-    this.navigationController.navigateHost.bind(this.navigationController);
+  protected handleSearchInputKeydown(e: KeyboardEvent) {
+    this.navigationController.navigateSearchInput(e, this.list);
   }
 
   protected toggleCaseSensitivity() {
@@ -653,7 +683,7 @@ export default class IgcComboComponent<T extends object>
     </span>`;
   }
 
-  private renderInput() {
+  private renderMainInput() {
     return html`<igc-input
       id="target"
       role="combobox"
@@ -665,15 +695,21 @@ export default class IgcComboComponent<T extends object>
         e.preventDefault();
         this._toggle(true);
       }}
-      value=${ifDefined(this.value)}
       placeholder=${ifDefined(this.placeholder)}
       label=${ifDefined(this.label)}
       dir=${this.dir}
-      @igcFocus=${(e: Event) => e.stopPropagation()}
+      @igcChange=${(e: Event) => e.stopPropagation()}
+      @igcFocus=${(e: Event) => {
+        e.stopPropagation();
+
+        requestAnimationFrame(() => {
+          this.target.select();
+        });
+      }}
       @igcBlur=${(e: Event) => e.stopPropagation()}
-      @keydown=${this.handleInputKeydown}
-      @igcInput=${this.handleInput}
-      .disabled="${this.disabled}"
+      @igcInput=${this.handleMainInput}
+      @keydown=${this.handleMainInputKeydown}
+      .disabled=${this.disabled}
       .required=${this.required}
       .invalid=${this.invalid}
       .outlined=${this.outlined}
@@ -703,8 +739,7 @@ export default class IgcComboComponent<T extends object>
         @igcFocus=${(e: Event) => e.stopPropagation()}
         @igcBlur=${(e: Event) => e.stopPropagation()}
         @igcInput=${this.handleSearchInput}
-        @keydown=${(e: KeyboardEvent) =>
-          this.navigationController.navigateInput(e, this.list)}
+        @keydown=${this.handleSearchInputKeydown}
         dir=${this.dir}
       >
         <igc-icon
@@ -765,7 +800,7 @@ export default class IgcComboComponent<T extends object>
 
   protected override render() {
     return html`
-      ${this.renderInput()}${this.renderList()}${this.renderHelperText()}
+      ${this.renderMainInput()}${this.renderList()}${this.renderHelperText()}
     `;
   }
 }

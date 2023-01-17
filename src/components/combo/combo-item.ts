@@ -31,6 +31,12 @@ export default class IgcComboItemComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public active = false;
 
+  /**
+   * Simplified items do not render checkboxes.
+   */
+  @property({ type: Boolean, reflect: true })
+  public simplified = false;
+
   @watch('selected')
   protected selectedChange() {
     this.selected
@@ -51,6 +57,7 @@ export default class IgcComboItemComponent extends LitElement {
           ?checked=${this.selected}
           tabindex="-1"
           exportparts="control: checkbox, indicator: checkbox-indicator, checked"
+          ?hidden=${this.simplified}
         ></igc-checkbox>
       </section>
       <section id="content" part="content">
