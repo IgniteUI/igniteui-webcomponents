@@ -456,6 +456,7 @@ export default class IgcComboComponent<T extends object>
   public select(items?: T[] | Values<T>[]) {
     this.selectionController.select(items, false);
     this.list.requestUpdate();
+    this.updateValue();
   }
 
   /**
@@ -466,6 +467,7 @@ export default class IgcComboComponent<T extends object>
   public deselect(items?: T[] | Values<T>[]) {
     this.selectionController.deselect(items, false);
     this.list.requestUpdate();
+    this.updateValue();
   }
 
   protected handleMainInput(e: CustomEvent) {

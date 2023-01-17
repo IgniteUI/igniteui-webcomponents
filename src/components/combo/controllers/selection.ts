@@ -84,6 +84,15 @@ export class SelectionController<T extends object>
     });
   }
 
+  private selectFirst() {
+    const items = this.dataState.filter((i) => !i.header);
+
+    if (items.length > 0) {
+      this._selected.add(items[0]);
+    }
+    this.host.requestUpdate();
+  }
+
   private selectAll() {
     this.dataState
       .filter((i) => !i.header)
@@ -99,19 +108,23 @@ export class SelectionController<T extends object>
   }
 
   public async select(items?: T[] | Values<T>[], emit = false) {
+    const { simplified } = this.host;
+
     if (!items || items.length === 0) {
-      this.selectAll();
+      simplified ? this.selectFirst() : this.selectAll();
       return;
     }
 
-    if (this.host.simplified) {
+    if (simplified) {
       this._selected.clear();
       this.resetSearchTerm();
     }
 
+    const _items = simplified ? items.slice(0, 1) : items;
+
     const values = this.host.valueKey
-      ? this.getItemsByValueKey(items as Values<T>[])
-      : items;
+      ? this.getItemsByValueKey(_items as Values<T>[])
+      : _items;
     const selected = Array.from(this._selected.values());
     const payload = [...values, ...selected] as T[];
 
@@ -127,9 +140,9 @@ export class SelectionController<T extends object>
     }
 
     if (this.host.valueKey) {
-      this.selectValueKeys(items as Values<T>[]);
+      this.selectValueKeys(_items as Values<T>[]);
     } else {
-      this.selectObjects(items as T[]);
+      this.selectObjects(_items as T[]);
     }
 
     this.host.requestUpdate();
@@ -151,9 +164,10 @@ export class SelectionController<T extends object>
       return;
     }
 
+    const _items = this.host.simplified ? items.slice(0, 1) : items;
     const values = this.host.valueKey
-      ? this.getItemsByValueKey(items as Values<T>[])
-      : items;
+      ? this.getItemsByValueKey(_items as Values<T>[])
+      : _items;
     const selected = Array.from(this._selected.values());
     const payload = structuredClone(selected);
 
@@ -171,9 +185,9 @@ export class SelectionController<T extends object>
     }
 
     if (this.host.valueKey) {
-      this.deselectValueKeys(items as Values<T>[]);
+      this.deselectValueKeys(_items as Values<T>[]);
     } else {
-      this.deselectObjects(items as T[]);
+      this.deselectObjects(_items as T[]);
     }
 
     this.host.requestUpdate();
