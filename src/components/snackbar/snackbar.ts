@@ -113,12 +113,12 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   }
 
   /** Closes the snackbar. */
-  public hide() {
+  public async hide() {
     if (!this.open) {
       return;
     }
 
-    this.toggleAnimation('close');
+    await this.toggleAnimation('close');
     this.open = false;
     clearTimeout(this.autoHideTimeout);
   }
