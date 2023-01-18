@@ -14,6 +14,7 @@ import { styles as material } from './themes/light/dialog.material.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcButtonComponent from '../button/button.js';
+import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
 
 defineComponents(IgcButtonComponent);
 
@@ -50,6 +51,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private titleId = `title-${IgcDialogComponent.increment()}`;
+  private animationPlayer!: AnimationPlayer;
 
   @query('dialog', true)
   private dialog!: HTMLDialogElement;
@@ -102,10 +104,22 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   protected override async firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.dialog);
     await this.updateComplete;
     if (this.open) {
       this.dialog.showModal();
     }
+  }
+
+  private async toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? fadeIn : fadeOut;
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(animation),
+    ]);
+
+    return event.type === 'finish';
   }
 
   /** Opens the dialog. */
@@ -114,16 +128,19 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       return;
     }
 
+    this.toggleAnimation('open');
     this.open = true;
   }
 
   /** Closes the dialog. */
-  public hide() {
+  public async hide() {
     if (!this.open) {
       return;
     }
 
-    this.open = false;
+    if (await this.toggleAnimation('close')) {
+      this.open = false;
+    }
   }
 
   /** Toggles the open state of the dialog. */
@@ -140,9 +157,12 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       return;
     }
 
-    this.open = false;
+    if (await this.toggleAnimation('close')) {
+      this.open = false;
+      this.emitEvent('igcClosed');
+    }
+
     await this.updateComplete;
-    this.emitEvent('igcClosed');
   }
 
   private handleCancel(event: Event) {

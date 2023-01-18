@@ -1,5 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming/theming-decorator.js';
 
@@ -12,6 +12,7 @@ import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcButtonComponent from '../button/button.js';
+import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
 
 defineComponents(IgcButtonComponent);
 
@@ -45,6 +46,10 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   public static styles = styles;
 
   private autoHideTimeout!: number;
+  private animationPlayer!: AnimationPlayer;
+
+  @query('[part~="base"]', true)
+  protected content!: HTMLElement;
 
   /**
    * Determines whether the snackbar is opened.
@@ -74,12 +79,28 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   @property({ attribute: 'action-text' })
   public actionText!: string;
 
+  public override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.content);
+  }
+
+  private async toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? fadeIn : fadeOut;
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(animation),
+    ]);
+
+    return event.type === 'finish';
+  }
+
   /** Opens the snackbar. */
   public show() {
     if (this.open) {
       return;
     }
 
+    this.toggleAnimation('open');
     this.open = true;
 
     clearTimeout(this.autoHideTimeout);
@@ -97,6 +118,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
       return;
     }
 
+    this.toggleAnimation('close');
     this.open = false;
     clearTimeout(this.autoHideTimeout);
   }
