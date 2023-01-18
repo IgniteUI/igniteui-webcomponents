@@ -138,9 +138,8 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       return;
     }
 
-    if (await this.toggleAnimation('close')) {
-      this.open = false;
-    }
+    await this.toggleAnimation('close');
+    this.open = false;
   }
 
   /** Toggles the open state of the dialog. */
