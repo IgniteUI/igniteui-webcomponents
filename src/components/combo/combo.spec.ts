@@ -553,6 +553,186 @@ describe('Combo', () => {
       expect(itms[1].selected).to.be.true;
       expect(combo.open).to.be.false;
     });
+
+    it('should support a simplified variant', async () => {
+      combo.simplified = true;
+      await elementUpdated(combo);
+      expect(combo.getAttribute('simplified')).to.exist;
+    });
+
+    it('should use the main input for filtering in simplified mode', async () => {
+      const filter = combo.shadowRoot!.querySelector('[part="filter-input"]');
+      combo.simplified = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(filter!.getAttribute('hidden')).to.exist;
+      expect(input.getAttribute('readonly')).to.not.exist;
+      expect(items(combo).length).to.equal(cities.length);
+
+      const term = 'sof';
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(items(combo).length).to.equal(1);
+      expect(items(combo)[0].textContent).to.equal('Sofia');
+    });
+
+    it('should select the first matched item upon pressing enter after search', async () => {
+      combo.simplified = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      const term = 'sof';
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(items(combo)[0].active).to.be.true;
+
+      pressKey(input, 'Enter');
+
+      await elementUpdated(combo);
+      expect(combo.value).to.equal('Sofia');
+    });
+
+    it('should select only one item at a time in simplified mode', async () => {
+      combo.simplified = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      const term = '';
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
+
+      pressKey(input, 'ArrowDown');
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(items(combo)[1].active).to.be.true;
+      expect(items(combo)[1].selected).to.be.false;
+
+      pressKey(options, ' ');
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(items(combo)[1].selected).to.be.true;
+
+      pressKey(options, 'ArrowDown');
+      pressKey(options, ' ');
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(items(combo)[1].selected).to.be.false;
+      expect(items(combo)[2].selected).to.be.true;
+      expect(combo.value).to.equal(cities[2].name);
+    });
+
+    it('should clear selection upon changing the search term via input', async () => {
+      combo.simplified = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      pressKey(options, ' ');
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(items(combo)[0].selected).to.be.true;
+
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      items(combo).forEach((i) => {
+        expect(i.selected).to.be.false;
+      });
+    });
+
+    it('should select the first item via the Selection API in simplified mode if no keys are passed', async () => {
+      combo.simplified = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      combo.select([]);
+      await elementUpdated(combo);
+
+      expect(items(combo)[0].selected).to.be.true;
+      expect(combo.value).to.equal('Plovdiv');
+    });
+
+    it('should select the first key via the Selection API in simplified mode', async () => {
+      combo.simplified = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      const selection = ['BG01', 'BG02'];
+      combo.select(selection);
+
+      await elementUpdated(combo);
+
+      const match = cities.find((i) => i.id === selection[0]);
+      expect(combo.value).to.equal(match?.name);
+
+      const selected = items(combo).filter((i) => i.selected);
+
+      expect(selected.length).to.equal(1);
+      expect(selected[0].textContent).to.equal(match?.name);
+    });
+
+    it('should deselect the first key via the Selection API in simplified mode', async () => {
+      combo.simplified = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      const selection = ['BG01', 'BG02'];
+      combo.select(selection);
+
+      await elementUpdated(combo);
+
+      const match = cities.find((i) => i.id === selection[0]);
+      expect(combo.value).to.equal(match?.name);
+
+      combo.deselect(selection);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.equal('');
+      items(combo).forEach((i) => {
+        expect(i.selected).to.be.false;
+      });
+    });
   });
 });
 
