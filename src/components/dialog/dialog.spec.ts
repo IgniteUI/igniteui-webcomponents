@@ -230,7 +230,7 @@ describe('Dialog component', () => {
       await elementUpdated(dialog);
 
       dialog.shadowRoot!.querySelector('igc-button')!.click();
-      await elementUpdated(dialog);
+      await waitUntil(() => !dialog.open);
 
       expect(spy.callCount).to.equal(2);
       expect(spy.firstCall).calledWith('igcClosing');
@@ -337,7 +337,7 @@ describe('Dialog component', () => {
 
       const form = document.getElementById('form');
       form?.dispatchEvent(new Event('igcSubmit'));
-      await elementUpdated(dialog);
+      await waitUntil(() => !dialog.open);
 
       expect(dialog.open).to.eq(false);
     });
