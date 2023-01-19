@@ -5,7 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [4.1.0]
+## [4.1.1] - 2023-01-12
+
+### Fixed
+- Input - position label based on component size [#589](https://github.com/IgniteUI/igniteui-webcomponents/pull/589)
+- Input - material themes don't match design by [#580](https://github.com/IgniteUI/igniteui-webcomponents/issues/580)
+- Input - do not cache the underlying input [#604](https://github.com/IgniteUI/igniteui-webcomponents/issues/604)
+- Card - color discrepancy between WC and Angular [#586](https://github.com/IgniteUI/igniteui-webcomponents/issues/586)
+- Theme - update stale --igc-* variables to --ig-* [#603](https://github.com/IgniteUI/igniteui-webcomponents/issues/603)
+- Removed dangling references after element disconnect [#608](https://github.com/IgniteUI/igniteui-webcomponents/pull/608)
+
+## [4.1.0] - 2022-12-09
 ### Added
 - Stepper Component [#219](https://github.com/IgniteUI/igniteui-webcomponents/issues/219)
 - Combo Component [#411](https://github.com/IgniteUI/igniteui-webcomponents/issues/411)
@@ -184,6 +194,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.0...4.1.1
 [4.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.0.0...4.1.0
 [4.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.2...4.0.0
 [3.4.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.1...3.4.2
