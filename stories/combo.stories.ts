@@ -40,7 +40,7 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    simplified: {
+    singleSelect: {
       type: 'boolean',
       description:
         'Enables single selection mode and moves item filtering to the main input.',
@@ -132,7 +132,7 @@ interface ArgTypes {
   required: boolean;
   invalid: boolean;
   outlined: boolean;
-  simplified: boolean;
+  singleSelect: boolean;
   autofocus: boolean;
   autofocusList: boolean;
   label: string;
@@ -259,7 +259,7 @@ const Template: Story<ArgTypes, Context> = (
     invalid = false,
     required = false,
     autofocus = false,
-    simplified = false,
+    singleSelect = false,
     autofocusList,
     groupSorting = 'asc',
   }: ArgTypes,
@@ -288,7 +288,7 @@ const Template: Story<ArgTypes, Context> = (
     ?required=${required}
     ?disabled=${disabled}
     ?invalid=${invalid}
-    ?simplified=${simplified}
+    ?single-select=${singleSelect}
   >
     <igc-icon slot="prefix" name="location"></igc-icon>
     <span slot="helper-text">Sample helper text.</span>

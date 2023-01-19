@@ -54,7 +54,7 @@ export class NavigationController<T extends object>
 
   public get input() {
     // @ts-expect-error protected access
-    return this.host.simplified ? this.host.target : this.host.input;
+    return this.host.singleSelect ? this.host.target : this.host.input;
   }
 
   public get dataState() {
@@ -158,7 +158,7 @@ export class NavigationController<T extends object>
     this.show();
     await container.updateComplete;
 
-    if (this.host.simplified) {
+    if (this.host.singleSelect) {
       container.focus();
       this.arrowDown(container);
     }

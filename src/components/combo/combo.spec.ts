@@ -554,15 +554,15 @@ describe('Combo', () => {
       expect(combo.open).to.be.false;
     });
 
-    it('should support a simplified variant', async () => {
-      combo.simplified = true;
+    it('should support a single selection variant', async () => {
+      combo.singleSelect = true;
       await elementUpdated(combo);
-      expect(combo.getAttribute('simplified')).to.exist;
+      expect(combo.getAttribute('single-select')).to.exist;
     });
 
-    it('should use the main input for filtering in simplified mode', async () => {
+    it('should use the main input for filtering in single selection mode', async () => {
       const filter = combo.shadowRoot!.querySelector('[part="filter-input"]');
-      combo.simplified = true;
+      combo.singleSelect = true;
       await elementUpdated(combo);
 
       combo.show();
@@ -584,7 +584,7 @@ describe('Combo', () => {
     });
 
     it('should select the first matched item upon pressing enter after search', async () => {
-      combo.simplified = true;
+      combo.singleSelect = true;
       await elementUpdated(combo);
 
       combo.show();
@@ -605,8 +605,8 @@ describe('Combo', () => {
       expect(combo.value).to.equal('Sofia');
     });
 
-    it('should select only one item at a time in simplified mode', async () => {
-      combo.simplified = true;
+    it('should select only one item at a time in single selection mode', async () => {
+      combo.singleSelect = true;
       await elementUpdated(combo);
 
       combo.show();
@@ -643,7 +643,7 @@ describe('Combo', () => {
     });
 
     it('should clear selection upon changing the search term via input', async () => {
-      combo.simplified = true;
+      combo.singleSelect = true;
       await elementUpdated(combo);
 
       combo.show();
@@ -672,8 +672,8 @@ describe('Combo', () => {
       });
     });
 
-    it('should select the first item via the Selection API in simplified mode if no keys are passed', async () => {
-      combo.simplified = true;
+    it('should select the first item via the Selection API in single selection mode if no keys are passed', async () => {
+      combo.singleSelect = true;
       await elementUpdated(combo);
 
       combo.show();
@@ -687,8 +687,8 @@ describe('Combo', () => {
       expect(combo.value).to.equal('Plovdiv');
     });
 
-    it('should select the first key via the Selection API in simplified mode', async () => {
-      combo.simplified = true;
+    it('should select the first key via the Selection API in single selection mode', async () => {
+      combo.singleSelect = true;
       await elementUpdated(combo);
 
       combo.show();
@@ -709,8 +709,8 @@ describe('Combo', () => {
       expect(selected[0].textContent).to.equal(match?.name);
     });
 
-    it('should deselect the first key via the Selection API in simplified mode', async () => {
-      combo.simplified = true;
+    it('should deselect the first key via the Selection API in single selection mode', async () => {
+      combo.singleSelect = true;
       await elementUpdated(combo);
 
       combo.show();

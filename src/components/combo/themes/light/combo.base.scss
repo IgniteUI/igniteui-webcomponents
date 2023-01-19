@@ -13,7 +13,7 @@
     }
 }
 
-:host(:not([simplified])) {
+:host(:not([single-select])) {
     > igc-input::part(input) {
         &::selection {
             background: transparent;

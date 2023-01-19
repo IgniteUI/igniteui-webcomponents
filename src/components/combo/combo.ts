@@ -171,10 +171,10 @@ export default class IgcComboComponent<T extends object>
 
   /**
    * Enables single selection mode and moves item filtering to the main input.
-   * @attr simplified
+   * @attr single-select
    */
-  @property({ reflect: true, type: Boolean })
-  public simplified = false;
+  @property({ attribute: 'single-select', reflect: true, type: Boolean })
+  public singleSelect = false;
 
   /**
    * The autofocus attribute of the control.
@@ -405,7 +405,7 @@ export default class IgcComboComponent<T extends object>
     this.dataController.searchTerm = '';
   }
 
-  @watch('simplified', { waitUntilFirstUpdate: true })
+  @watch('singleSelect', { waitUntilFirstUpdate: true })
   protected async resetState() {
     await this.updateComplete;
     this.deselect();
@@ -515,7 +515,7 @@ export default class IgcComboComponent<T extends object>
     await this.updateComplete;
     emit && this.emitEvent('igcOpened');
 
-    if (!this.simplified) {
+    if (!this.singleSelect) {
       this.list.focus();
     }
 
@@ -575,7 +575,7 @@ export default class IgcComboComponent<T extends object>
       .index=${index}
       .active=${active}
       .selected=${selected}
-      ?simplified=${this.simplified}
+      ?hide-checkbox=${this.singleSelect}
       >${this.itemTemplate({ item: record })}</igc-combo-item
     >`;
 
@@ -597,7 +597,7 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected itemClickHandler(event: MouseEvent) {
-    const input = this.simplified ? this.target : this.input;
+    const input = this.singleSelect ? this.target : this.input;
 
     const target = event
       .composedPath()
@@ -608,7 +608,7 @@ export default class IgcComboComponent<T extends object>
     this.toggleSelect(target.index);
     input.focus();
 
-    if (this.simplified) {
+    if (this.singleSelect) {
       this._hide();
     }
   }
@@ -631,7 +631,7 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.active = -1;
     this.list.requestUpdate();
 
-    if (this.simplified) {
+    if (this.singleSelect) {
       this.resetSearchTerm();
     }
   }
@@ -727,7 +727,7 @@ export default class IgcComboComponent<T extends object>
       .invalid=${this.invalid}
       .outlined=${this.outlined}
       .autofocus=${this.autofocus}
-      ?readonly=${!this.simplified}
+      ?readonly=${!this.singleSelect}
     >
       <span slot=${this.hasPrefixes && 'prefix'}>
         <slot name="prefix"></slot>
@@ -743,7 +743,7 @@ export default class IgcComboComponent<T extends object>
   private renderSearchInput() {
     return html`<div
       part="filter-input"
-      ?hidden=${this.disableFiltering || this.simplified}
+      ?hidden=${this.disableFiltering || this.singleSelect}
     >
       <igc-input
         part="search-input"

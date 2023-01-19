@@ -108,19 +108,19 @@ export class SelectionController<T extends object>
   }
 
   public async select(items?: T[] | Values<T>[], emit = false) {
-    const { simplified } = this.host;
+    const { singleSelect } = this.host;
 
     if (!items || items.length === 0) {
-      simplified ? this.selectFirst() : this.selectAll();
+      singleSelect ? this.selectFirst() : this.selectAll();
       return;
     }
 
-    if (simplified) {
+    if (singleSelect) {
       this._selected.clear();
       this.resetSearchTerm();
     }
 
-    const _items = simplified ? items.slice(0, 1) : items;
+    const _items = singleSelect ? items.slice(0, 1) : items;
 
     const values = this.host.valueKey
       ? this.getItemsByValueKey(_items as Values<T>[])
@@ -164,7 +164,7 @@ export class SelectionController<T extends object>
       return;
     }
 
-    const _items = this.host.simplified ? items.slice(0, 1) : items;
+    const _items = this.host.singleSelect ? items.slice(0, 1) : items;
     const values = this.host.valueKey
       ? this.getItemsByValueKey(_items as Values<T>[])
       : _items;
