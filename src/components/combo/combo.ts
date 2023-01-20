@@ -473,9 +473,26 @@ export default class IgcComboComponent<T extends object>
   }
 
   /**
-   * Selects the options in the list by either value or key value.
+   * Selects option(s) in the list by either reference or valueKey.
    * If not argument is provided all items will be selected.
-   * @param { Item<T> | Items<T> } items - A list of values or values as set by the valueKey.
+   * @param { Item<T> | Items<T> } items - One or more items to be selected. Multiple items should be passed as an array.
+   * When valueKey is specified, the corresponding value should be used in place of the item reference.
+   * @example
+   * ```typescript
+   * const combo<IgcComboComponent<T>> = document.querySelector('igc-combo');
+   *
+   * // Select one item at a time by reference when valueKey is not specified.
+   * combo.select(combo.data[0]);
+   *
+   * // Select multiple items at a time by reference when valueKey is not specified.
+   * combo.select([combo.data[0], combo.data[1]]);
+   *
+   * // Select one item at a time when valueKey is specified.
+   * combo.select('BG01');
+   *
+   * // Select multiple items at a time when valueKey is specified.
+   * combo.select(['BG01', 'BG02']);
+   * ```
    */
   public select(items?: Item<T> | Items<T>) {
     const _items = this.normalizeSelection(items);
@@ -485,9 +502,26 @@ export default class IgcComboComponent<T extends object>
   }
 
   /**
-   * Deselects the options in the list by either value or key value.
+   * Deselects option(s) in the list by either reference or valueKey.
    * If not argument is provided all items will be deselected.
-   * @param { Item<T> | Items<T> } items - A list of values or values as set by the valueKey.
+   * @param { Item<T> | Items<T> } items - One or more items to be deselected. Multiple items should be passed as an array.
+   * When valueKey is specified, the corresponding value should be used in place of the item reference.
+   * @example
+   * ```typescript
+   * const combo<IgcComboComponent<T>> = document.querySelector('igc-combo');
+   *
+   * // Deselect one item at a time by reference when valueKey is not specified.
+   * combo.deselect(combo.data[0]);
+   *
+   * // Deselect multiple items at a time by reference when valueKey is not specified.
+   * combo.deselect([combo.data[0], combo.data[1]]);
+   *
+   * // Deselect one item at a time when valueKey is specified.
+   * combo.deselect('BG01');
+   *
+   * // Deselect multiple items at a time when valueKey is specified.
+   * combo.deselect(['BG01', 'BG02']);
+   * ```
    */
   public deselect(items?: Item<T> | Items<T>) {
     const _items = this.normalizeSelection(items);
