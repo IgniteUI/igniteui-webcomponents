@@ -531,18 +531,14 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected handleMainInput(e: CustomEvent) {
-    if (e.detail.length === 0) {
-      this.navigationController.active = -1;
-    }
-
     this.dataController.searchTerm = e.detail;
     this._show();
 
+    this.navigationController.active =
+      e.detail.length > 0 ? this.dataState.findIndex((i) => !i.header) : -1;
+
     const { selected } = this.selectionController;
     const selection = selected.values().next().value;
-    const active = this.dataState.findIndex((i) => !i.header);
-
-    this.navigationController.active = active;
 
     if (selection) {
       const item = this.valueKey ? selection[this.valueKey] : selection;
