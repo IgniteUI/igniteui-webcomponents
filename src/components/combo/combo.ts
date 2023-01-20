@@ -539,10 +539,15 @@ export default class IgcComboComponent<T extends object>
     this._show();
 
     const { selected } = this.selectionController;
+    const selection = selected.values().next().value;
     const active = this.dataState.findIndex((i) => !i.header);
 
     this.navigationController.active = active;
-    this.selectionController.deselect([], selected.size > 0);
+
+    if (selection) {
+      const item = this.valueKey ? selection[this.valueKey] : selection;
+      this.selectionController.deselect([item], selected.size > 0);
+    }
   }
 
   protected handleSearchInput(e: CustomEvent) {
