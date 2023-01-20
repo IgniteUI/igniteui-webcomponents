@@ -613,7 +613,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      input.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: 'v' }));
       pressKey(input, 'ArrowDown');
 
       await elementUpdated(combo);
@@ -635,6 +635,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
+      expect(items(combo)[0].selected).to.be.false;
       expect(items(combo)[1].selected).to.be.true;
     });
 
@@ -646,7 +647,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      input.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: 'v' }));
       pressKey(input, 'ArrowDown');
 
       await elementUpdated(combo);

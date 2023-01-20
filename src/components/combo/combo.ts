@@ -530,12 +530,18 @@ export default class IgcComboComponent<T extends object>
     this.updateValue();
   }
 
-  protected handleMainInput(e: CustomEvent) {
-    this.dataController.searchTerm = e.detail;
+  protected async handleMainInput(e: CustomEvent) {
     this._show();
+    this.dataController.searchTerm = e.detail;
 
-    this.navigationController.active =
-      e.detail.length > 0 ? this.dataState.findIndex((i) => !i.header) : -1;
+    // wait for the dataState to update after filtering
+    await this.updateComplete;
+
+    const match = e.detail.length > 0 && this.dataState.length > 0;
+    this.navigationController.active = match ? 1 : -1;
+
+    // update the list after changing the active item
+    this.list.requestUpdate();
 
     const { selected } = this.selectionController;
     const selection = selected.values().next().value;
