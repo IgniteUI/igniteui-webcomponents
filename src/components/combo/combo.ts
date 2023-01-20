@@ -31,6 +31,8 @@ import {
   FilteringOptions,
   IgcComboEventMap,
   ComboItemTemplate,
+  Items,
+  Item,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
@@ -456,13 +458,28 @@ export default class IgcComboComponent<T extends object>
     this.target.blur();
   }
 
+  protected normalizeSelection(items?: Item<T> | Items<T>): Items<T> {
+    let _items: Items<T> = [];
+
+    if (items !== undefined) {
+      if (!Array.isArray(items)) {
+        _items = this.valueKey ? [items as Values<T>] : [items as T];
+      } else {
+        _items = this.valueKey ? (items as Values<T>[]) : (items as T[]);
+      }
+    }
+
+    return _items;
+  }
+
   /**
    * Selects the options in the list by either value or key value.
    * If not argument is provided all items will be selected.
-   * @param { T[] | Values<T>[] } items - A list of values or values as set by the valueKey.
+   * @param { Item<T> | Items<T> } items - A list of values or values as set by the valueKey.
    */
-  public select(items?: T[] | Values<T>[]) {
-    this.selectionController.select(items, false);
+  public select(items?: Item<T> | Items<T>) {
+    const _items = this.normalizeSelection(items);
+    this.selectionController.select(_items, false);
     this.list.requestUpdate();
     this.updateValue();
   }
@@ -470,10 +487,11 @@ export default class IgcComboComponent<T extends object>
   /**
    * Deselects the options in the list by either value or key value.
    * If not argument is provided all items will be deselected.
-   * @param { T[] | Values<T>[] } items - A list of values or values as set by the valueKey.
+   * @param { Item<T> | Items<T> } items - A list of values or values as set by the valueKey.
    */
-  public deselect(items?: T[] | Values<T>[]) {
-    this.selectionController.deselect(items, false);
+  public deselect(items?: Item<T> | Items<T>) {
+    const _items = this.normalizeSelection(items);
+    this.selectionController.deselect(_items, false);
     this.list.requestUpdate();
     this.updateValue();
   }

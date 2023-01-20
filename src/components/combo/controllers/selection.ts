@@ -4,6 +4,7 @@ import {
   ComboHost,
   Values,
   IgcComboChangeEventArgs,
+  Items,
 } from '../types.js';
 
 export class SelectionController<T extends object>
@@ -84,15 +85,6 @@ export class SelectionController<T extends object>
     });
   }
 
-  private selectFirst() {
-    const items = this.dataState.filter((i) => !i.header);
-
-    if (items.length > 0) {
-      this._selected.add(items[0]);
-    }
-    this.host.requestUpdate();
-  }
-
   private selectAll() {
     this.dataState
       .filter((i) => !i.header)
@@ -107,17 +99,17 @@ export class SelectionController<T extends object>
     this.host.requestUpdate();
   }
 
-  public async select(items?: T[] | Values<T>[], emit = false) {
+  public async select(items?: Items<T>, emit = false) {
     const { singleSelect } = this.host;
-
-    if (!items || items.length === 0) {
-      singleSelect ? this.selectFirst() : this.selectAll();
-      return;
-    }
 
     if (singleSelect) {
       this._selected.clear();
       this.resetSearchTerm();
+    }
+
+    if (!items || items.length === 0) {
+      !singleSelect && this.selectAll();
+      return;
     }
 
     const _items = singleSelect ? items.slice(0, 1) : items;
@@ -148,7 +140,9 @@ export class SelectionController<T extends object>
     this.host.requestUpdate();
   }
 
-  public async deselect(items?: T[] | Values<T>[], emit = false) {
+  public async deselect(items?: Items<T>, emit = false) {
+    const { singleSelect } = this.host;
+
     if (!items || items.length === 0) {
       if (
         emit &&
@@ -160,7 +154,8 @@ export class SelectionController<T extends object>
       ) {
         return;
       }
-      this.deselectAll();
+
+      !singleSelect && this.deselectAll();
       return;
     }
 

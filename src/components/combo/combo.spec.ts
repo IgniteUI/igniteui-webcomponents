@@ -672,7 +672,7 @@ describe('Combo', () => {
       });
     });
 
-    it('should select the first item via the Selection API in single selection mode if no keys are passed', async () => {
+    it('Selection API should select nothing in single selection mode if nothing is passed', async () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
 
@@ -680,14 +680,17 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      combo.select([]);
+      combo.select();
       await elementUpdated(combo);
 
-      expect(items(combo)[0].selected).to.be.true;
-      expect(combo.value).to.equal('Plovdiv');
+      items(combo).forEach((i) => {
+        expect(i.selected).to.be.false;
+      });
+
+      expect(combo.value).to.equal('');
     });
 
-    it('should select the first key via the Selection API in single selection mode', async () => {
+    it('Selection API should deselect nothing in single selection mode if nothing is passed', async () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
 
@@ -695,12 +698,31 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      const selection = ['BG01', 'BG02'];
+      const selection = 'BG01';
       combo.select(selection);
 
       await elementUpdated(combo);
 
-      const match = cities.find((i) => i.id === selection[0]);
+      const match = cities.find((i) => i.id === selection);
+      expect(combo.value).to.equal(match?.name);
+
+      combo.deselect();
+      await elementUpdated(combo);
+
+      expect(combo.value).to.equal(match?.name);
+    });
+
+    it('should select a single item using valueKey as argument with the Selection API', async () => {
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      const selection = 'BG01';
+      combo.select(selection);
+
+      await elementUpdated(combo);
+
+      const match = cities.find((i) => i.id === selection);
       expect(combo.value).to.equal(match?.name);
 
       const selected = items(combo).filter((i) => i.selected);
@@ -709,26 +731,70 @@ describe('Combo', () => {
       expect(selected[0].textContent).to.equal(match?.name);
     });
 
-    it('should deselect the first key via the Selection API in single selection mode', async () => {
-      combo.singleSelect = true;
+    it('should deselect a single item using valueKey as argument with the Selection API', async () => {
       await elementUpdated(combo);
 
       combo.show();
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      const selection = ['BG01', 'BG02'];
+      const selection = 'BG01';
       combo.select(selection);
 
       await elementUpdated(combo);
 
-      const match = cities.find((i) => i.id === selection[0]);
+      const match = cities.find((i) => i.id === selection);
       expect(combo.value).to.equal(match?.name);
 
       combo.deselect(selection);
       await elementUpdated(combo);
 
       expect(combo.value).to.equal('');
+
+      items(combo).forEach((i) => {
+        expect(i.selected).to.be.false;
+      });
+    });
+
+    it('should select the item passed as argument with the Selection API', async () => {
+      combo.valueKey = undefined;
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      const item = cities[0];
+      combo.select(item);
+
+      await elementUpdated(combo);
+
+      expect(combo.value).to.equal(item?.name);
+
+      const selected = items(combo).filter((i) => i.selected);
+
+      expect(selected.length).to.equal(1);
+      expect(selected[0].textContent).to.equal(item?.name);
+    });
+
+    it('should deselect the item passed as argument with the Selection API', async () => {
+      combo.valueKey = undefined;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      const item = cities[0];
+      combo.select(item);
+
+      await elementUpdated(combo);
+
+      expect(combo.value).to.equal(item?.name);
+
+      combo.deselect(item);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.equal('');
+
       items(combo).forEach((i) => {
         expect(i.selected).to.be.false;
       });
