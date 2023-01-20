@@ -126,6 +126,10 @@ export class NavigationController<T extends object>
   }
 
   protected space() {
+    if (this.active === START_INDEX) {
+      return;
+    }
+
     const item = this.dataState[this.active];
 
     if (!item.header) {

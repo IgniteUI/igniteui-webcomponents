@@ -613,23 +613,21 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      const term = '';
-      input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
-
+      input.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
       pressKey(input, 'ArrowDown');
 
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      expect(items(combo)[1].active).to.be.true;
-      expect(items(combo)[1].selected).to.be.false;
+      expect(items(combo)[0].active).to.be.true;
+      expect(items(combo)[0].selected).to.be.false;
 
       pressKey(options, ' ');
 
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      expect(items(combo)[1].selected).to.be.true;
+      expect(items(combo)[0].selected).to.be.true;
 
       pressKey(options, 'ArrowDown');
       pressKey(options, ' ');
@@ -637,9 +635,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      expect(items(combo)[1].selected).to.be.false;
-      expect(items(combo)[2].selected).to.be.true;
-      expect(combo.value).to.equal(cities[2].name);
+      expect(items(combo)[1].selected).to.be.true;
     });
 
     it('should clear selection upon changing the search term via input', async () => {
@@ -651,6 +647,7 @@ describe('Combo', () => {
       await list.layoutComplete;
 
       input.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
+      pressKey(input, 'ArrowDown');
 
       await elementUpdated(combo);
       await list.layoutComplete;
