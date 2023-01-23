@@ -543,13 +543,8 @@ export default class IgcComboComponent<T extends object>
     // update the list after changing the active item
     this.list.requestUpdate();
 
-    const { selected } = this.selectionController;
-    const selection = selected.values().next().value;
-
-    if (selection) {
-      const item = this.valueKey ? selection[this.valueKey] : selection;
-      this.selectionController.deselect([item], selected.size > 0);
-    }
+    // clear the selection upon typing
+    this.clearSingleSelection();
   }
 
   protected handleSearchInput(e: CustomEvent) {
@@ -683,16 +678,29 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.navigateTo(item, this.list);
   }
 
+  protected clearSingleSelection() {
+    const { selected } = this.selectionController;
+    const selection = selected.values().next().value;
+
+    if (selection) {
+      const item = this.valueKey ? selection[this.valueKey] : selection;
+      this.selectionController.deselect([item], selected.size > 0);
+    }
+  }
+
   protected handleClearIconClick(e: MouseEvent) {
     e.stopPropagation();
-    this.selectionController.deselect([], true);
-    this.updateValue();
-    this.navigationController.active = -1;
-    this.list.requestUpdate();
 
     if (this.singleSelect) {
       this.resetSearchTerm();
+      this.clearSingleSelection();
+    } else {
+      this.selectionController.deselect([], true);
     }
+
+    this.updateValue();
+    this.navigationController.active = -1;
+    this.list.requestUpdate();
   }
 
   protected handleMainInputKeydown(e: KeyboardEvent) {
