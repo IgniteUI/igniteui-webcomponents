@@ -410,7 +410,9 @@ export default class IgcComboComponent<T extends object>
   @watch('singleSelect', { waitUntilFirstUpdate: true })
   protected async resetState() {
     await this.updateComplete;
-    this.deselect();
+
+    this.selectionController.selected.clear();
+    this.updateValue();
     this.resetSearchTerm();
     this.navigationController.active = -1;
   }
