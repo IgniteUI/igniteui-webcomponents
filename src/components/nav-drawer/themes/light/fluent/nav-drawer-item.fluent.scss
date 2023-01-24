@@ -2,7 +2,7 @@
 
 $active-icon-color: var(--active-icon-color, color(primary, 500)) !default;
 
-[part='base'] {
+[part='content'] {
     @include type-style('body-2');
 }
 
