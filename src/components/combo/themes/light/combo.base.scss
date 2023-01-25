@@ -34,6 +34,10 @@
         color: color(gray, 400);
     }
 
+    igc-input::part(input)::selection {
+        background: transparent;
+    }
+
     pointer-events: none;
     user-select: none;
 }
