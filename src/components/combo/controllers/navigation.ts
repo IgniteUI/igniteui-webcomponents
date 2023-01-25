@@ -15,7 +15,16 @@ export class NavigationController<T extends object>
   protected hostHandlers = new Map(
     Object.entries({
       Escape: this.escape,
-      ArrowDown: this.hostArrowDown,
+    })
+  );
+
+  protected mainInputHandlers = new Map(
+    Object.entries({
+      Escape: this.escape,
+      ArrowUp: this.hide,
+      ArrowDown: this.mainInputArrowDown,
+      Tab: this.tab,
+      Enter: this.enter,
     })
   );
 
@@ -35,7 +44,7 @@ export class NavigationController<T extends object>
       ' ': this.space,
       Enter: this.enter,
       Escape: this.escape,
-      Tab: this.escape,
+      Tab: this.tab,
       Home: this.home,
       End: this.end,
     })
@@ -45,7 +54,7 @@ export class NavigationController<T extends object>
 
   public get input() {
     // @ts-expect-error protected access
-    return this.host.input;
+    return this.host.singleSelect ? this.host.target : this.host.input;
   }
 
   public get dataState() {
@@ -117,6 +126,10 @@ export class NavigationController<T extends object>
   }
 
   protected space() {
+    if (this.active === START_INDEX) {
+      return;
+    }
+
     const item = this.dataState[this.active];
 
     if (!item.header) {
@@ -126,11 +139,18 @@ export class NavigationController<T extends object>
 
   protected escape() {
     this.hide();
+    this.host.focus();
   }
 
   protected enter() {
+    if (this.active === START_INDEX) {
+      return;
+    }
+
     this.space();
     this.hide();
+    requestAnimationFrame(() => this.input.select());
+    this.host.focus();
   }
 
   protected inputArrowDown(container: IgcComboListComponent) {
@@ -138,8 +158,19 @@ export class NavigationController<T extends object>
     this.arrowDown(container);
   }
 
-  protected hostArrowDown() {
+  protected async mainInputArrowDown(container: IgcComboListComponent) {
     this.show();
+    await container.updateComplete;
+
+    if (this.host.singleSelect) {
+      container.focus();
+      this.arrowDown(container);
+    }
+  }
+
+  protected tab() {
+    this.hide();
+    this.host.blur();
   }
 
   protected arrowDown(container: IgcComboListComponent) {
@@ -201,7 +232,22 @@ export class NavigationController<T extends object>
     }
   }
 
-  public navigateInput(event: KeyboardEvent, container: IgcComboListComponent) {
+  public navigateMainInput(
+    event: KeyboardEvent,
+    container: IgcComboListComponent
+  ) {
+    event.stopPropagation();
+
+    if (this.mainInputHandlers.has(event.key)) {
+      event.preventDefault();
+      this.mainInputHandlers.get(event.key)!.call(this, container);
+    }
+  }
+
+  public navigateSearchInput(
+    event: KeyboardEvent,
+    container: IgcComboListComponent
+  ) {
     event.stopPropagation();
 
     if (this.searchInputHandlers.has(event.key)) {
@@ -211,6 +257,8 @@ export class NavigationController<T extends object>
   }
 
   public navigateList(event: KeyboardEvent, container: IgcComboListComponent) {
+    event.stopPropagation();
+
     if (this.listHandlers.has(event.key)) {
       event.preventDefault();
       this.listHandlers.get(event.key)!.call(this, container);
