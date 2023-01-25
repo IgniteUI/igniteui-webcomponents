@@ -8,6 +8,8 @@ export interface ComboRecordMeta {
   header: boolean;
 }
 
+export type Item<T extends object> = T | Values<T>;
+
 export type ComboRecord<T extends object> = T & ComboRecordMeta;
 
 export type ComboHost<T extends object> = ReactiveControllerHost &
