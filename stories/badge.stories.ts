@@ -45,15 +45,46 @@ const Template: Story<ArgTypes, Context> = (
   { outlined = false, shape, variant }: ArgTypes,
   { globals: { direction } }: Context
 ) => {
-  const content = '';
   return html`
     <igc-badge
       ?outlined=${outlined}
       shape=${ifDefined(shape)}
       variant=${ifDefined(variant)}
       dir=${ifDefined(direction)}
-      >${content}</igc-badge
     >
+    </igc-badge>
+    <igc-badge
+      ?outlined=${outlined}
+      shape=${ifDefined(shape)}
+      variant=${ifDefined(variant)}
+      dir=${ifDefined(direction)}
+    >
+      <span>1</span>
+    </igc-badge>
+    <igc-badge
+      ?outlined=${outlined}
+      shape=${ifDefined(shape)}
+      variant=${ifDefined(variant)}
+      dir=${ifDefined(direction)}
+    >
+      <span>99</span>
+    </igc-badge>
+    <igc-badge
+      ?outlined=${outlined}
+      shape=${ifDefined(shape)}
+      variant="success"
+      dir=${ifDefined(direction)}
+    >
+      <span>online</span>
+    </igc-badge>
+    <igc-badge
+      ?outlined=${outlined}
+      shape=${ifDefined(shape)}
+      variant=${ifDefined(variant)}
+      dir=${ifDefined(direction)}
+    >
+      <igc-icon name="star" collection="internal"></igc-icon>
+    </igc-badge>
   `;
 };
 
