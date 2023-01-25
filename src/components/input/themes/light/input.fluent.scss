@@ -161,6 +161,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     [part='suffix'],
     [part='label'],
     [part='helper-text'],
+    [part~='input'],
     [part~='input']::placeholder {
         color: color(gray, 500);
     }

@@ -10,7 +10,11 @@
     > igc-input::part(input) {
         text-overflow: ellipsis;
         cursor: pointer;
+    }
+}
 
+:host(:not([single-select])) {
+    > igc-input::part(input) {
         &::selection {
             background: transparent;
         }
@@ -26,6 +30,10 @@
 :host([disabled]) {
     pointer-events: none;
     user-select: none;
+
+    igc-input::part(input)::selection {
+        background: transparent;
+    }
 }
 
 [part='helper-text'] {
