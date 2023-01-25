@@ -4,7 +4,7 @@ import {
   ComboHost,
   Values,
   IgcComboChangeEventArgs,
-  Items,
+  Item,
 } from '../types.js';
 
 export class SelectionController<T extends object>
@@ -99,7 +99,7 @@ export class SelectionController<T extends object>
     this.host.requestUpdate();
   }
 
-  public async select(items?: Items<T>, emit = false) {
+  public async select(items?: Item<T>[], emit = false) {
     const { singleSelect } = this.host;
 
     if (singleSelect) {
@@ -140,7 +140,7 @@ export class SelectionController<T extends object>
     this.host.requestUpdate();
   }
 
-  public async deselect(items?: Items<T>, emit = false) {
+  public async deselect(items?: Item<T>[], emit = false) {
     const { singleSelect } = this.host;
 
     if (!items || items.length === 0) {

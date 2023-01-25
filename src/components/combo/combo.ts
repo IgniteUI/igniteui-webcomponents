@@ -25,13 +25,11 @@ import { DataController } from './controllers/data.js';
 import { IgcToggleComponent } from '../toggle/types.js';
 import {
   Keys,
-  Values,
   ComboRecord,
   GroupingDirection,
   FilteringOptions,
   IgcComboEventMap,
   ComboItemTemplate,
-  Items,
   Item,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -460,18 +458,8 @@ export default class IgcComboComponent<T extends object>
     this.target.blur();
   }
 
-  protected normalizeSelection(items?: Item<T> | Items<T>): Items<T> {
-    let _items: Items<T> = [];
-
-    if (items !== undefined) {
-      if (!Array.isArray(items)) {
-        _items = this.valueKey ? [items as Values<T>] : [items as T];
-      } else {
-        _items = this.valueKey ? (items as Values<T>[]) : (items as T[]);
-      }
-    }
-
-    return _items;
+  protected normalizeSelection(items: Item<T> | Item<T>[] = []): Item<T>[] {
+    return Array.isArray(items) ? items : [items];
   }
 
   /**
@@ -496,7 +484,7 @@ export default class IgcComboComponent<T extends object>
    * combo.select(['BG01', 'BG02']);
    * ```
    */
-  public select(items?: Item<T> | Items<T>) {
+  public select(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.select(_items, false);
     this.list.requestUpdate();
@@ -525,7 +513,7 @@ export default class IgcComboComponent<T extends object>
    * combo.deselect(['BG01', 'BG02']);
    * ```
    */
-  public deselect(items?: Item<T> | Items<T>) {
+  public deselect(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.deselect(_items, false);
     this.list.requestUpdate();

@@ -9,7 +9,6 @@ export interface ComboRecordMeta {
 }
 
 export type Item<T extends object> = T | Values<T>;
-export type Items<T extends object> = T[] | Values<T>[];
 
 export type ComboRecord<T extends object> = T & ComboRecordMeta;
 
