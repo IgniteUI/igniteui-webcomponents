@@ -31,10 +31,9 @@
 
 [part='headers-scroll'] {
   display: grid;
-  grid-template-columns: minmax(var(--tab-min-width--first-step), max-content) repeat(
-      calc(var(--tabs-count) - 2),
-      minmax(rem(90px), auto)
-    );
+  grid-template-columns:
+    48px repeat(var(--tabs-count), minmax(max-content, auto))
+    48px;
   row-gap: 8px;
   font-family: 'Roboto', sans-serif;
 

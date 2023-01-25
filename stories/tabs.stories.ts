@@ -78,14 +78,19 @@ const removableTabs = Array.from(
 );
 
 const tabs = Array.from(
-  map(
-    range(18),
-    (i) =>
-      html`<igc-tab ?disabled=${i === 2}
+  map(range(18), (i) => {
+    if (i === 9) {
+      return html`<igc-tab
+        ><div slot="title">ASd Dsa Asd Dsa</div>
+        <p>Content ${i + 1}</p></igc-tab
+      >`;
+    } else {
+      return html`<igc-tab ?disabled=${i === 2}
         ><div slot="title">Item ${i + 1}</div>
         <p>Content ${i + 1}</p></igc-tab
-      >`
-  )
+      >`;
+    }
+  })
 );
 
 const Template: Story<ArgTypes, Context> = (

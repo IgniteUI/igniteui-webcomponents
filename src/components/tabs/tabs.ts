@@ -178,21 +178,21 @@ export default class IgcTabsComponent extends SizableMixin(
 
   protected updateScrollButtons() {
     const { scrollLeft, offsetWidth } = this.container,
-      offsetWidth1 = this.wrapper.offsetWidth;
+      { scrollWidth } = this.wrapper;
 
     this.disableEndScrollButton =
-      offsetWidth1 <= Math.abs(scrollLeft) + offsetWidth + 48;
-    this.disableStartScrollButton = scrollLeft <= 48;
+      scrollWidth <= Math.abs(scrollLeft) + offsetWidth;
+    this.disableStartScrollButton = scrollLeft === 0;
   }
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
     const { scrollLeft, offsetWidth } = this.container;
     const LTR = isLTR(this),
       next = direction === 'end';
-    // debugger;
-    const pivot = Math.abs(next ? offsetWidth + scrollLeft : scrollLeft);
+    // TODO: don't hardcode 96px and fix for RTL
+    const pivot = Math.abs(next ? offsetWidth + scrollLeft - 96 : scrollLeft);
 
-    let amount = this.tabs
+    const nextTab = this.tabs
       .map((tab) => ({
         start: LTR
           ? getOffset(tab.header, this.wrapper).left
@@ -202,11 +202,18 @@ export default class IgcTabsComponent extends SizableMixin(
       .filter((offset) =>
         next ? offset.start + offset.width > pivot : offset.start < pivot
       )
-      .at(next ? 0 : -1)!.width;
+      .at(next ? 0 : -1);
+
+    let amount = next
+      ? nextTab!.start + nextTab!.width - pivot
+      : pivot - nextTab!.start;
 
     amount *= next ? 1 : -1;
     this.container.scrollBy({ left: LTR ? amount : -amount });
-    // this.style.setProperty('--margin-left', (this.container.scrollLeft + amount).toString() + 'px');
+    this.style.setProperty(
+      '--margin-left',
+      (this.container.scrollLeft + amount).toString() + 'px'
+    );
   }
 
   protected setupObserver() {
@@ -342,10 +349,7 @@ export default class IgcTabsComponent extends SizableMixin(
   }
 
   private syncProperties(): void {
-    const tabsLength = this.showScrollButtons
-      ? this.tabs.length + 2
-      : this.tabs.length;
-    this.style.setProperty('--tabs-count', tabsLength.toString());
+    this.style.setProperty('--tabs-count', this.tabs.length.toString());
     this.tabs.forEach((tab: IgcTabComponent, index: number) => {
       tab.activation = this.activation;
       tab.index = index;

@@ -35,7 +35,7 @@ export function getOffset(element: HTMLElement, parent: HTMLElement) {
 
   return {
     top: Math.round(top - pTop),
-    left: Math.round(left - pLeft),
+    left: Math.round(left - pLeft - 48),
     right: Math.round(right - pRight),
     bottom: Math.round(bottom - pBottom),
   };

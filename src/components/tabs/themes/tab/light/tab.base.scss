@@ -134,7 +134,7 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
 :host([selected]) {
   [part~='body'] {
     display: var(--vertical-body-disply, block);
-    margin-left: var(--margin-left);
+    padding-left: var(--margin-left);
     &::before {
       inset-block-start: 0;
     }
