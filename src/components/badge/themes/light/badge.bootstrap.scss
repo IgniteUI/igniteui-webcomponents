@@ -1,10 +1,10 @@
 @use '../../../../styles/utilities' as *;
 
 :host([shape='square']),
-:host([outlined][shape='square']) [part="base"] {
+:host([outlined][shape='square']) [part='base'] {
     border-radius: rem(4px);
 }
 
-:host([outlined]) [part="base"] {
+:host([outlined]) [part='base'] {
     box-shadow: inset 0 0 0 rem(1px) color(gray, 50);
 }
