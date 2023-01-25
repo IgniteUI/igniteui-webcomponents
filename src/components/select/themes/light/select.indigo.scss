@@ -6,6 +6,12 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     background: color(gray, 300);
 }
 
+[part='helper-text'] {
+    margin-top: rem(6px);
+    padding: 0 rem(12px);
+    color: color(gray, 600);
+}
+
 :host {
     ::slotted([slot='helper-text']) {
         color: color(gray, 600);
@@ -13,8 +19,12 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
 }
 
 :host([disabled]) {
-    ::slotted([slot='helper-text']) {
+    [part='helper-text'] ::slotted([slot='helper-text']) {
         color: color(gray, 300);
+    }
+
+    [part='toggle-icon'] {
+        background: color(gray, 100);
     }
 }
 

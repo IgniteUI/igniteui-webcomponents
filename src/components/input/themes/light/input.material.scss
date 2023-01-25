@@ -233,8 +233,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='helper-text'] {
     @include type-style('caption');
 
-    padding: 0 rem(8px);
-    margin-top: rem(4px);
+    padding: 0 rem(16px);
+    margin-top: rem(5px);
     color: color(gray, 700);
 }
 

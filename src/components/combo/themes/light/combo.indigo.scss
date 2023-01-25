@@ -1,11 +1,21 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../select/themes/light/select.indigo';
 
-:host {
-    ::slotted([slot='helper-text']) {
-        @include type-style('caption');
+[part='helper-text'] {
+    margin-top: rem(6px);
+    padding: 0 rem(12px);
 
-        padding: 0;
+    ::slotted([slot='helper-text']) {
         color: color(gray, 600);
+    }
+}
+
+:host([disabled]) {
+    [part='helper-text'] ::slotted([slot='helper-text']) {
+        color: color(gray, 300);
+    }
+
+    [part='toggle-icon'] {
+        background: color(gray, 100);
     }
 }

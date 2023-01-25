@@ -24,14 +24,18 @@
 }
 
 :host([disabled]) {
-    igc-input::part(label),
-    igc-input::part(input)::placeholder,
-    ::slotted([slot='helper-text']) {
-        color: color(gray, 400);
-    }
-
     pointer-events: none;
     user-select: none;
+}
+
+[part='helper-text'] {
+    line-height: 1;
+
+    ::slotted([slot='helper-text']) {
+        @include type-style('caption');
+
+        line-height: inherit;
+    }
 }
 
 [part='clear-icon'],
