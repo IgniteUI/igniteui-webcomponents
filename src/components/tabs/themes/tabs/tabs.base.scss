@@ -5,6 +5,16 @@
 :host {
   display: block;
   -tab-min-width--first-step: rem(90px);
+
+  igc-icon-button:first-of-type {
+    position: sticky;
+    left: 0;
+  }
+
+  igc-icon-button:last-of-type {
+    position: sticky;
+    right: 0;
+  }
 }
 
 [part='headers-content'] {
