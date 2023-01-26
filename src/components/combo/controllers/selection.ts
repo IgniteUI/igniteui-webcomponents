@@ -4,6 +4,7 @@ import {
   ComboHost,
   Values,
   IgcComboChangeEventArgs,
+  Item,
 } from '../types.js';
 
 export class SelectionController<T extends object>
@@ -14,6 +15,11 @@ export class SelectionController<T extends object>
   public get dataState() {
     // @ts-expect-error protected access
     return this.host.dataState;
+  }
+
+  public resetSearchTerm() {
+    // @ts-expect-error protected access
+    this.host.resetSearchTerm();
   }
 
   public getValue(items: T[]) {
@@ -93,15 +99,24 @@ export class SelectionController<T extends object>
     this.host.requestUpdate();
   }
 
-  public async select(items?: T[] | Values<T>[], emit = false) {
+  public async select(items?: Item<T>[], emit = false) {
+    const { singleSelect } = this.host;
+
+    if (singleSelect) {
+      this._selected.clear();
+      this.resetSearchTerm();
+    }
+
     if (!items || items.length === 0) {
-      this.selectAll();
+      !singleSelect && this.selectAll();
       return;
     }
 
+    const _items = singleSelect ? items.slice(0, 1) : items;
+
     const values = this.host.valueKey
-      ? this.getItemsByValueKey(items as Values<T>[])
-      : items;
+      ? this.getItemsByValueKey(_items as Values<T>[])
+      : _items;
     const selected = Array.from(this._selected.values());
     const payload = [...values, ...selected] as T[];
 
@@ -117,15 +132,17 @@ export class SelectionController<T extends object>
     }
 
     if (this.host.valueKey) {
-      this.selectValueKeys(items as Values<T>[]);
+      this.selectValueKeys(_items as Values<T>[]);
     } else {
-      this.selectObjects(items as T[]);
+      this.selectObjects(_items as T[]);
     }
 
     this.host.requestUpdate();
   }
 
-  public async deselect(items?: T[] | Values<T>[], emit = false) {
+  public async deselect(items?: Item<T>[], emit = false) {
+    const { singleSelect } = this.host;
+
     if (!items || items.length === 0) {
       if (
         emit &&
@@ -137,13 +154,15 @@ export class SelectionController<T extends object>
       ) {
         return;
       }
-      this.deselectAll();
+
+      !singleSelect && this.deselectAll();
       return;
     }
 
+    const _items = this.host.singleSelect ? items.slice(0, 1) : items;
     const values = this.host.valueKey
-      ? this.getItemsByValueKey(items as Values<T>[])
-      : items;
+      ? this.getItemsByValueKey(_items as Values<T>[])
+      : _items;
     const selected = Array.from(this._selected.values());
     const payload = structuredClone(selected);
 
@@ -161,9 +180,9 @@ export class SelectionController<T extends object>
     }
 
     if (this.host.valueKey) {
-      this.deselectValueKeys(items as Values<T>[]);
+      this.deselectValueKeys(_items as Values<T>[]);
     } else {
-      this.deselectObjects(items as T[]);
+      this.deselectObjects(_items as T[]);
     }
 
     this.host.requestUpdate();
