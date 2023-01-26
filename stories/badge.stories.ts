@@ -46,6 +46,10 @@ const Template: Story<ArgTypes, Context> = (
   { globals: { direction } }: Context
 ) => {
   return html`
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
     <igc-badge
       ?outlined=${outlined}
       shape=${ifDefined(shape)}
@@ -84,6 +88,14 @@ const Template: Story<ArgTypes, Context> = (
       dir=${ifDefined(direction)}
     >
       <igc-icon name="star" collection="internal"></igc-icon>
+    </igc-badge>
+    <igc-badge
+      ?outlined=${outlined}
+      shape=${ifDefined(shape)}
+      variant="warning"
+      dir=${ifDefined(direction)}
+    >
+      <span class="material-icons">wifi</span>
     </igc-badge>
   `;
 };

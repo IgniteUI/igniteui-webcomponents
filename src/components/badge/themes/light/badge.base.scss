@@ -20,12 +20,12 @@
     overflow: hidden;
     white-space: nowrap;
     font-family: var(--ig-font-family);
-    font-size: calc(var(--size) / 2);
     font-weight: inherit;
 }
 
 ::slotted(*) {
     --size: calc(var(--_badge-size) / 2);
+    font-size: calc(var(--_badge-size) / 2) !important;
 }
 
 :host(:not(:empty)) [part='base'] {
