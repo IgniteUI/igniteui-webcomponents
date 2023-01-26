@@ -10,7 +10,11 @@
     > igc-input::part(input) {
         text-overflow: ellipsis;
         cursor: pointer;
+    }
+}
 
+:host(:not([single-select])) {
+    > igc-input::part(input) {
         &::selection {
             background: transparent;
         }
@@ -28,6 +32,10 @@
     igc-input::part(input)::placeholder,
     ::slotted([slot='helper-text']) {
         color: color(gray, 400);
+    }
+
+    igc-input::part(input)::selection {
+        background: transparent;
     }
 
     pointer-events: none;

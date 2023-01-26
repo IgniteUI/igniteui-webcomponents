@@ -121,7 +121,7 @@ export default class IgcAccordionComponent extends LitElement {
     if (!panel.emitEvent('igcClosing', { cancelable: true, detail: panel })) {
       return;
     }
-    panel.open = false;
+    panel.hide();
     await panel.updateComplete;
 
     panel.emitEvent('igcClosed', { detail: panel });
@@ -135,7 +135,7 @@ export default class IgcAccordionComponent extends LitElement {
       return;
     }
 
-    panel.open = true;
+    panel.show();
     await panel.updateComplete;
 
     panel.emitEvent('igcOpened', { detail: panel });
@@ -143,12 +143,12 @@ export default class IgcAccordionComponent extends LitElement {
 
   /** Hides all of the child expansion panels' contents. */
   public hideAll() {
-    this.panels.forEach((p) => (p.open = false));
+    this.panels.forEach((p) => p.hide());
   }
 
   /** Shows all of the child expansion panels' contents. */
   public showAll() {
-    this.panels.forEach((p) => (p.open = true));
+    this.panels.forEach((p) => p.show());
   }
 
   protected override render() {
