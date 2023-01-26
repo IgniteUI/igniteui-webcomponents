@@ -483,9 +483,7 @@ describe('Slider component', () => {
         expect(style.marginInlineStart).to.eq('0px');
         expect(style.marginBlock).to.eq('-9px');
         expect(style.writingMode).to.eq('vertical-rl');
-        expect(style.transform).to.eq(
-          'matrix(-1, 1.22465e-16, -1.22465e-16, -1, 0, 0)'
-        );
+        expect(style.transform).to.eq('matrix(-1, 0, 0, -1, 0, 0)');
       }
     });
 
