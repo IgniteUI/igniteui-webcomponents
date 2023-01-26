@@ -25,6 +25,7 @@
 
 ::slotted(*) {
     --size: calc(var(--_badge-size) / 2);
+
     font-size: calc(var(--_badge-size) / 2) !important;
 }
 
