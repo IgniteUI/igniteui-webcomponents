@@ -2,11 +2,10 @@
 
 $hover-color: var(--hover-color, utils.color(gray, 700)) !default;
 $checked-hover-color: var(--checked-hover-color, utils.color(primary, 900)) !default;
-$invalid-color: var(--invalid-color, utils.color(error, 500)) !default;
 $invalid-hover-color: var(--invalid-hover-color, utils.color(error, 700)) !default;
 $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
 
-:host [part='base'] {
+:host [part~='base'] {
     transition-duration: .1s;
     gap: utils.rem(6px);
 }
@@ -66,19 +65,15 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
 }
 
 :host(:not([disabled])[invalid]) {
-    [part~='label'] {
-        color: $invalid-color;
-    }
-
-    [part~='control'] {
+    [part='control checked'] {
         &::before {
-            background: $invalid-color;
+            background: utils.color(error, 500);
         }
     }
 
-    [part='control checked'] {
+    [part~='control'] {
         &::after {
-            border-color: $invalid-color;
+            border-color: utils.color(error, 500);
         }
     }
 }
@@ -87,7 +82,11 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
 :host(:not([disabled])[invalid]:focus-within) {
     [part='control'] {
         &::after {
-            border-color: $invalid-hover-color;
+            border-color: utils.color(error, 500);
+        }
+
+        &::before {
+            background: utils.color(error, 500);
         }
     }
 
