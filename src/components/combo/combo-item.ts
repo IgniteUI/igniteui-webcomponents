@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, nothing } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/item/combo-item.base.css.js';
 import { styles as bootstrap } from '../dropdown/themes/light/dropdown-item.bootstrap.css.js';
@@ -31,6 +31,9 @@ export default class IgcComboItemComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public active = false;
 
+  @property({ attribute: 'hide-checkbox', type: Boolean, reflect: false })
+  public hideCheckbox = false;
+
   @watch('selected')
   protected selectedChange() {
     this.selected
@@ -43,16 +46,20 @@ export default class IgcComboItemComponent extends LitElement {
     this.setAttribute('role', 'option');
   }
 
+  private renderCheckbox() {
+    return html`<section part="prefix">
+      <igc-checkbox
+        aria-hidden="true"
+        ?checked=${this.selected}
+        tabindex="-1"
+        exportparts="control: checkbox, indicator: checkbox-indicator, checked"
+      ></igc-checkbox>
+    </section>`;
+  }
+
   protected override render() {
     return html`
-      <section part="prefix">
-        <igc-checkbox
-          aria-hidden="true"
-          ?checked=${this.selected}
-          tabindex="-1"
-          exportparts="control: checkbox, indicator: checkbox-indicator, checked"
-        ></igc-checkbox>
-      </section>
+      ${!this.hideCheckbox ? this.renderCheckbox() : nothing}
       <section id="content" part="content">
         <slot></slot>
       </section>
