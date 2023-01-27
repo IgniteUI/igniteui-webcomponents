@@ -2,30 +2,35 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
-    --size: #{rem(12px)};
+    --size: #{rem(22px)};
+    --_badge-size: var(--size);
 
     display: inline-flex;
     font-weight: 500;
+    vertical-align: top;
 }
 
-span {
+[part='base'] {
     display: inline-flex;
     min-width: var(--size);
     min-height: var(--size);
-    max-height: calc(var(--size) * 2);
     line-height: 1;
     justify-content: center;
     align-items: center;
     overflow: hidden;
     white-space: nowrap;
     font-family: var(--ig-font-family);
-    font-size: var(--ig-subtitle-1-font-size);
     font-weight: inherit;
 }
 
-:host(:not(:empty)) span {
-    padding: rem(4px) rem(8px);
-    min-width: calc(var(--size) * 2);
+::slotted(*) {
+    --size: calc(var(--_badge-size) / 2);
+
+    font-size: calc(var(--_badge-size) / 2) !important;
+}
+
+:host(:not(:empty)) [part='base'] {
+    padding: calc(var(--size) / 8) calc(var(--size) / 5.5);
 }
 
 :host([variant='primary']) {
@@ -54,15 +59,15 @@ span {
 }
 
 :host([shape='rounded']),
-:host([outlined][shape='rounded']) span {
-    border-radius: calc(var(--size) / 2);
+:host([outlined][shape='rounded']) [part='base'] {
+    border-radius: calc(var(--size) * 2);
 }
 
 :host([shape='square']),
-:host([outlined][shape='square']) span {
+:host([outlined][shape='square']) [part='base'] {
     border-radius: 0;
 }
 
-:host([outlined]) span {
+:host([outlined]) [part='base'] {
     box-shadow: inset 0 0 0 rem(2px) color(gray, 50);
 }
