@@ -17,6 +17,7 @@ interface ToggleControllerConfig {
   closeCallback?: Function;
 }
 
+/* blazorSuppress */
 /**
  * Controller, bundling the creation of a toggle directive and handling global events,
  * related to the configuration of togglable components.

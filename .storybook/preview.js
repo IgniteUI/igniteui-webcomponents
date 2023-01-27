@@ -52,22 +52,12 @@ export const globalTypes = {
       items: ['attribute', 'small', 'medium', 'large'],
       showName: 'True',
     },
-  }
+  },
 };
 
 export const parameters = {
   backgrounds: {
-    default: 'light',
-    values: [
-      {
-        name: 'light',
-        value: '#fff',
-      },
-      {
-        name: 'dark',
-        value: '#000',
-      },
-    ],
+    disable: true,
   },
 };
 
@@ -76,7 +66,7 @@ const getTheme = (themeName, variant) => {
 };
 
 const getSize = (size) => {
-  if(size === 'attribute') {
+  if (size === 'attribute') {
     return;
   }
 
@@ -94,6 +84,10 @@ const themeProvider = (Story, context) => {
   const htmlNoMin = html;
   const styles = htmlNoMin`
     <style>
+      .sb-main-padded {
+          background: ${context.globals.variant === 'light' ? '#fff' : '#000'};
+      }
+
       ${theme.default}
       ${getSize(context.globals.size)}
     </style>`;
