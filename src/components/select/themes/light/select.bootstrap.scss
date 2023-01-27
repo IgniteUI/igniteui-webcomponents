@@ -3,6 +3,10 @@
 $input-background: var(--input-background, #fff) !default;
 
 :host {
+    [part='helper-text'] {
+        margin-top: rem(4px);
+    }
+
     ::slotted([slot='helper-text']) {
         @include type-style('body-2');
 
@@ -22,6 +26,12 @@ $input-background: var(--input-background, #fff) !default;
     igc-input[readonly]:not([disabled])::part(input) {
         box-shadow: 0 0 0 rem(4px) color(error, 500, .38);
         border-color: color(error, 500);
+    }
+}
+
+:host([disabled]) {
+    ::slotted([slot='helper-text']) {
+        color: color(gray, 400);
     }
 }
 
