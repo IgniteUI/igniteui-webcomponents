@@ -9,8 +9,13 @@
 :host([disabled]) {
     igc-input::part(label),
     igc-input::part(input)::placeholder,
+    [part~='toggle-icon'],
     ::slotted([slot='helper-text']) {
         color: color(gray, 500);
+    }
+
+    [part~='toggle-icon'] {
+        background: color(gray, 100);
     }
 }
 

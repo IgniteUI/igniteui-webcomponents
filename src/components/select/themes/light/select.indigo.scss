@@ -24,7 +24,7 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     }
 
     [part='toggle-icon'] {
-        background: color(gray, 100);
+        background: transparent;
     }
 }
 

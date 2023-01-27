@@ -114,8 +114,13 @@ $active-border-width: rem(2px) !default;
 }
 
 :host([disabled]) {
+    [part~='toggle-icon'],
     ::slotted([slot='helper-text']) {
         color: color(gray, 500);
+    }
+
+    [part~='toggle-icon'] {
+        background: color(gray, 100);
     }
 }
 

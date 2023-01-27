@@ -27,7 +27,7 @@ $fs: rem(16px) !default;
     align-items: center;
     width: max-content;
     height: 100%;
-    padding-inline: pad-inline(8px, 12px, 16px);
+    padding-inline: pad-inline(12px, 14px, 16px);
 }
 
 :host {
@@ -431,5 +431,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part~='container'] {
         background: color(gray, 100);
         border-color: color(gray, 500);
+        border-bottom-style: dashed;
     }
 }
