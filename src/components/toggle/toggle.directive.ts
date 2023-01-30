@@ -17,6 +17,7 @@ import { noChange } from 'lit';
 import type { IgcToggleOptions } from './types.js';
 import type { IgcToggleController } from './toggle.controller.js';
 
+/* blazorSuppressComponent */
 export class IgcToggleDirective extends Directive {
   private part: PartInfo;
   private shiftOptions? = {

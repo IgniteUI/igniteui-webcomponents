@@ -107,6 +107,23 @@ $active-border-width: rem(2px) !default;
     background: color(gray, 300);
 }
 
+[part='helper-text'] {
+    color: color(gray, 700);
+    margin-top: rem(5px);
+    padding: 0 rem(16px);
+}
+
+:host([disabled]) {
+    [part~='toggle-icon'],
+    ::slotted([slot='helper-text']) {
+        color: color(gray, 500);
+    }
+
+    [part~='toggle-icon'] {
+        background: color(gray, 100);
+    }
+}
+
 igc-input:not([outlined]) {
     &:focus-within {
         [part~='toggle-icon'] {
