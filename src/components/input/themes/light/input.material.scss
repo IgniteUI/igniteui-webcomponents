@@ -225,7 +225,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='start'],
 [part='end'] {
     display: flex;
-    min-width: rem(12px);
+    min-width: sizable(rem(10px), rem(12px), rem(14px));
     height: var(--size);
     overflow: hidden;
 }
@@ -233,7 +233,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='helper-text'] {
     @include type-style('caption');
 
-    padding: 0 rem(16px);
+    padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     margin-top: rem(5px);
     color: color(gray, 700);
 }
@@ -264,10 +264,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host([disabled]) {
     pointer-events: none;
-
-    [part~='container'] {
-        background: color(gray, 100);
-    }
 
     [part~='input'],
     [part='label'],
