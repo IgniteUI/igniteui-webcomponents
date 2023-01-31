@@ -1,7 +1,5 @@
 @use '../../styles/utilities' as *;
 
 :host([alignment='horizontal']) {
-    ::slotted(igc-radio:not(:first-of-type)) {
-        margin-inline-start: rem(12px);
-    }
+    gap: rem(12px);
 }

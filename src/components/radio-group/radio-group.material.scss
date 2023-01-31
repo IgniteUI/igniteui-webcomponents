@@ -1,13 +1,9 @@
 @use '../../styles/utilities' as *;
 
 :host([alignment='vertical']) {
-    ::slotted(igc-radio:not(:first-of-type)) {
-        margin-block-start: 0;
-    }
+    gap: 0;
 }
 
 :host([alignment='horizontal']) {
-    ::slotted(igc-radio:not(:first-of-type)) {
-        margin-inline-start: rem(16px);
-    }
+    gap: rem(16px);
 }
