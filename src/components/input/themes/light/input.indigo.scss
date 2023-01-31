@@ -32,10 +32,11 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
         }
     }
 
-    [part='label'] {
-        color: color(gray, 600);
-        margin-bottom: rem(4px);
-        font-size: initial;
+    [part~='label'] {
+        color: color(gray, 900);
+        font-size: rem(14px);
+        font-weight: 600;
+        line-height: 1;
     }
 
     [part^='container'] {
@@ -62,13 +63,14 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     [part~='input'] {
         font-size: rem(16px);
         background: initial;
-        padding: rem(8px);
+        padding: rem(8px) rem(12px);
         border: none;
         grid-area: 1 / 2;
     }
 
     [part='helper-text'] {
-        padding: 0;
+        margin-top: rem(6px);
+        padding: 0 rem(12px);
         color: color(gray, 600);
     }
 }
@@ -120,7 +122,8 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     [part='prefix'],
     [part='suffix'],
     [part='label'],
-    [part='helper-text'] {
+    [part='helper-text'],
+    [part~='input']::placeholder {
         color: color(gray, 300);
     }
 }
