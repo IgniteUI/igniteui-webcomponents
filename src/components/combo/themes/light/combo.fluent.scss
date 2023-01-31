@@ -7,8 +7,16 @@
 
         display: block;
         padding: 0;
-        margin-top: rem(8px);
-        color: color(gray, 600);
+        margin-top: rem(5px);
+        color: color(gray, 700);
+    }
+}
+
+:host([disabled]) {
+    igc-input::part(label),
+    igc-input::part(input)::placeholder,
+    ::slotted([slot='helper-text']) {
+        color: color(gray, 500);
     }
 }
 
