@@ -527,12 +527,8 @@ export default class IgcComboComponent<T extends object>
     // wait for the dataState to update after filtering
     await this.updateComplete;
 
-    const items = this.dataState.filter((i) => !i.header);
-
-    this.navigationController.active =
-      items.length > 0 && e.detail.length > 0
-        ? this.dataState.indexOf(items.at(0)!)
-        : -1;
+    const matchIndex = this.dataState.findIndex((i) => !i.header);
+    this.navigationController.active = e.detail.length > 0 ? matchIndex : -1;
 
     // update the list after changing the active item
     this.list.requestUpdate();
