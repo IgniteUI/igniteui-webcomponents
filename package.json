@@ -85,7 +85,7 @@
     "node-watch": "^0.7.3",
     "postcss": "^8.4.21",
     "prettier": "^2.8.3",
-    "rimraf": "^4.1.2",
+    "rimraf": "^3.0.2",
     "rollup-plugin-postcss": "^4.0.2",
     "sass": "^1.57.1",
     "sinon": "^15.0.1",
