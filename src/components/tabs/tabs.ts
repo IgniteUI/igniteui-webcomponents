@@ -65,11 +65,11 @@ export default class IgcTabsComponent extends SizableMixin(
   @queryAssignedElements({ selector: 'igc-tab' })
   public tabs!: Array<IgcTabComponent>;
 
-  @query('[part="headers-wrapper"]', true)
-  protected wrapper!: HTMLElement;
+  @query('[part="headers-scroll"]', true)
+  protected scrollWrapper!: HTMLElement;
 
-  @query('[part="headers-content"]', true)
-  protected container!: HTMLElement;
+  // @query('[part="headers-content"]', true)
+  // protected container!: HTMLElement;
 
   @query('[part="selected-indicator"]', true)
   protected selectedIndicator!: HTMLElement;
@@ -125,8 +125,8 @@ export default class IgcTabsComponent extends SizableMixin(
         width: `${this.selectedTab!.offsetWidth}px`,
         transform: `translate(${
           isLTR(this)
-            ? getOffset(this.selectedTab!, this.wrapper).left
-            : getOffset(this.selectedTab!, this.wrapper).right
+            ? getOffset(this.selectedTab!, this).left
+            : getOffset(this.selectedTab!, this).right
         }px)`,
       });
     }
@@ -152,7 +152,7 @@ export default class IgcTabsComponent extends SizableMixin(
     this.setAttribute('role', 'tablist');
 
     this.showScrollButtons =
-      this.container.scrollWidth > this.container.clientWidth;
+      this.scrollWrapper.scrollWidth > this.scrollWrapper.clientWidth;
 
     await this.updateComplete;
 
@@ -170,15 +170,15 @@ export default class IgcTabsComponent extends SizableMixin(
     this.performUpdate();
 
     this.showScrollButtons =
-      this.container.scrollWidth > this.container.clientWidth;
+      this.scrollWrapper.scrollWidth > this.scrollWrapper.clientWidth;
 
     this.syncProperties();
     this.updateScrollButtons();
   }
 
   protected updateScrollButtons() {
-    const { scrollLeft, offsetWidth } = this.container,
-      { scrollWidth } = this.wrapper;
+    const { scrollLeft, offsetWidth } = this.scrollWrapper,
+      { scrollWidth } = this;
 
     this.disableEndScrollButton =
       scrollWidth <= Math.abs(scrollLeft) + offsetWidth;
@@ -186,7 +186,7 @@ export default class IgcTabsComponent extends SizableMixin(
   }
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
-    const { scrollLeft, offsetWidth } = this.container;
+    const { scrollLeft, offsetWidth } = this.scrollWrapper;
     const LTR = isLTR(this),
       next = direction === 'end';
     // TODO: don't hardcode 96px and fix for RTL
@@ -195,8 +195,8 @@ export default class IgcTabsComponent extends SizableMixin(
     const nextTab = this.tabs
       .map((tab) => ({
         start: LTR
-          ? getOffset(tab.header, this.wrapper).left
-          : Math.abs(getOffset(tab.header, this.wrapper).right),
+          ? getOffset(tab.header, this).left
+          : Math.abs(getOffset(tab.header, this).right),
         width: tab.header.offsetWidth,
       }))
       .filter((offset) =>
@@ -209,10 +209,10 @@ export default class IgcTabsComponent extends SizableMixin(
       : pivot - nextTab!.start;
 
     amount *= next ? 1 : -1;
-    this.container.scrollBy({ left: LTR ? amount : -amount });
+    this.scrollWrapper.scrollBy({ left: LTR ? amount : -amount });
     this.style.setProperty(
       '--margin-left',
-      (this.container.scrollLeft + amount).toString() + 'px'
+      (this.scrollWrapper.scrollLeft + amount).toString() + 'px'
     );
   }
 
@@ -222,7 +222,7 @@ export default class IgcTabsComponent extends SizableMixin(
       this.alignIndicator();
     });
 
-    [this.container, this.wrapper, ...this.tabs].forEach((element) =>
+    [this.scrollWrapper, this, ...this.tabs].forEach((element) =>
       this.resizeObserver.observe(element)
     );
   }
@@ -299,18 +299,53 @@ export default class IgcTabsComponent extends SizableMixin(
   }
 
   private onArrowRightKeyDown(focusedTab: IgcTabComponent) {
-    if (this.dir === 'rtl') {
-      this.getPreviousTab(focusedTab)?.header?.focus();
+    const nextTab =
+      this.dir === 'rtl'
+        ? this.getPreviousTab(focusedTab)
+        : this.getNextTab(focusedTab);
+    nextTab?.header?.focus({ preventScroll: true });
+    nextTab?.header?.scrollIntoView({ inline: 'nearest' });
+
+    this.scrollTabIntoView(nextTab!);
+
+    if (nextTab === this.tabs[0]) {
+      this.scrollWrapper.scrollBy({ left: -48 });
+    }
+  }
+
+  public scrollTabIntoView(tab: IgcTabComponent, next = true) {
+    const header = tab.header;
+    const headerBoundingRect = header.getBoundingClientRect();
+    const wrapperBoundingRect = this.scrollWrapper.getBoundingClientRect();
+    if (next) {
+      if (headerBoundingRect.right > wrapperBoundingRect.right - 48) {
+        this.scrollWrapper.scrollBy({
+          left: Math.abs(
+            wrapperBoundingRect.right - 48 - headerBoundingRect.right
+          ),
+        });
+      }
     } else {
-      this.getNextTab(focusedTab)?.header?.focus();
+      if (headerBoundingRect.left < wrapperBoundingRect.left + 48) {
+        this.scrollWrapper.scrollBy({
+          left: headerBoundingRect.left - wrapperBoundingRect.left - 48,
+        });
+      }
     }
   }
 
   private onArrowLeftKeyDown(focusedTab: IgcTabComponent) {
-    if (this.dir === 'rtl') {
-      this.getNextTab(focusedTab)?.header?.focus();
-    } else {
-      this.getPreviousTab(focusedTab)?.header?.focus();
+    const nextTab =
+      this.dir === 'rtl'
+        ? this.getNextTab(focusedTab)
+        : this.getPreviousTab(focusedTab);
+    nextTab?.header?.focus({ preventScroll: true });
+    nextTab?.header?.scrollIntoView({ inline: 'nearest' });
+
+    this.scrollTabIntoView(nextTab!, false);
+
+    if (nextTab === this.tabs[this.tabs.length - 1]) {
+      this.scrollWrapper.scrollBy({ left: 48 });
     }
   }
 
@@ -409,17 +444,11 @@ export default class IgcTabsComponent extends SizableMixin(
 
   protected override render() {
     return html`
-      <div part="headers">
-        <div part="headers-content" @scroll=${this.handleScroll}>
-          <div part="headers-wrapper">
-            <div part="headers-scroll" role="tablist">
-              ${this.renderScrollButton('start')}
-              <slot @slotchange=${this.tabsChanged}></slot>
-              ${this.renderScrollButton('end')}
-            </div>
-            <div part="selected-indicator"></div>
-          </div>
-        </div>
+      <div part="headers-scroll" role="tablist" @scroll=${this.handleScroll}>
+        ${this.renderScrollButton('start')}
+        <slot @slotchange=${this.tabsChanged}></slot>
+        ${this.renderScrollButton('end')}
+        <div part="selected-indicator"></div>
       </div>
     `;
   }

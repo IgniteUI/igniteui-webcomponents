@@ -33,6 +33,13 @@ export default class IgcTabComponent extends LitElement {
   public contentBody!: HTMLElement;
 
   /**
+   * The tree item label.
+   * @attr
+   */
+  @property()
+  public label = '';
+
+  /**
    * Determines whether the tab is selected.
    * @attr
    */
@@ -92,7 +99,9 @@ export default class IgcTabComponent extends LitElement {
       >
         <div part="base">
           <slot name="prefix" part="prefix"></slot>
-          <slot name="title" part="title"></slot>
+          <slot name="label" part="label">
+            <span part="text">${this.label}</span>
+          </slot>
           <slot name="suffix" part="suffix"></slot>
         </div>
       </div>
@@ -102,9 +111,7 @@ export default class IgcTabComponent extends LitElement {
         role="tabpanel"
         aria-labelledby="igc-tab-header-${this.index}"
       >
-        <div part="content">
-          <slot></slot>
-        </div>
+        <slot></slot>
       </div>
     `;
   }

@@ -71,7 +71,7 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
   }
 }
 
-[part='title'] {
+[part='label'] {
   @include type-style('button');
 
   display: flex;
@@ -93,55 +93,21 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
 // body
 
 [part~='body'] {
-  display: var(
-    --vertical-body-disply--last-of-type,
-    var(--vertical-body-disply, none)
-  );
-  grid-row-start: var(--body-top, 2);
-  grid-column: span var(--tabs-count);
-  margin-inline-start: calc(var(--body-indent--vertical) / 2);
-  padding-inline-start: var(
-    --horizontal-body-padding,
-    #{calc(var(--body-indent--vertical) / 2)}
-  );
-  padding-inline-end: var(
-    --horizontal-body-padding,
-    var(--vertical-body-padding)
-  );
-  padding-block-start: var(
-    --horizontal-body-padding,
-    var(--vertical-body-padding)
-  );
-  padding-block-end: var(
-    --horizontal-body-padding,
-    var(--vertical-body-padding)
-  );
-  z-index: 1;
-  position: relative;
-  color: color(gray, 900);
-
-  // Thous two lines here are on purpose, they make sure that tab body content
-  // does not get involved in grid width calculation. They fix a very weird bug.
-  // https://stackoverflow.com/questions/73856035/css-grid-columns-changing-size-with-long-content/73858982#73858982
-  width: 0;
-  min-width: 100%;
-}
-
-[part='content'] {
-  display: var(--horizontal-content-disply, none);
+  display: none;
+  position: sticky;
+  left: 0;
+  width: 800px; // JS
+  grid-row: 3;
+  grid-column: 1 / -1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  transform: translateX(-100px); // JS
+  transition: all 250ms ease-in-out;
 }
 
 :host([selected]) {
   [part~='body'] {
-    display: var(--vertical-body-disply, block);
-    padding-left: var(--margin-left);
-    &::before {
-      inset-block-start: 0;
-    }
-  }
-
-  [part='content'] {
-    display: var(--horizontal-content-disply, block);
-    pointer-events: all;
+    display: flex;
+    transform: translateX(0px);
   }
 }

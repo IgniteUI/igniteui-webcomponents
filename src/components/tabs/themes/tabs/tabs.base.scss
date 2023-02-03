@@ -4,29 +4,14 @@
 // TABS
 :host {
   display: block;
-  -tab-min-width--first-step: rem(90px);
 
   igc-icon-button:first-of-type {
-    position: sticky;
-    left: 0;
+    inset-inline-start: 0;
   }
 
   igc-icon-button:last-of-type {
-    position: sticky;
-    right: 0;
+    inset-inline-end: 0;
   }
-}
-
-[part='headers-content'] {
-  display: flex;
-  flex: 1 1 auto;
-  scroll-behavior: smooth;
-  overflow: hidden;
-}
-
-[part='headers-wrapper'] {
-  position: relative;
-  flex-grow: 1;
 }
 
 [part='headers-scroll'] {
@@ -36,27 +21,36 @@
     48px;
   row-gap: 8px;
   font-family: 'Roboto', sans-serif;
+  align-items: center;
+  overflow: hidden;
 
   ::slotted(igc-tab) {
     display: contents;
     pointer-events: none;
   }
+
+  ::slotted(igc-tab:first-of-type) {
+    margin-left: 48px;
+  }
+
+  ::slotted(igc-tab:last-of-type) {
+    margin-right: 48px;
+  }
 }
 
 [part='start-scroll-button'],
 [part='end-scroll-button'] {
-  -tab-min-width--first-step: rem(48px);
+  position: sticky;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1;
   border: none;
   padding: 0;
-  height: rem(72px);
+  height: rem(48px);
   min-width: rem(48px);
   width: rem(48px);
   cursor: pointer;
-  position: relative;
   background: color(surface, 500);
 
   &:hover,

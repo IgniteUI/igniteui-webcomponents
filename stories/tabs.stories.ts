@@ -62,7 +62,7 @@ const removableTabs = Array.from(
     range(10),
     (i) =>
       html`<igc-tab>
-        <div slot="title">
+        <div slot="label">
           Item ${i + 1}
           <igc-icon-button
             @click=${remove}
@@ -81,12 +81,16 @@ const tabs = Array.from(
   map(range(18), (i) => {
     if (i === 9) {
       return html`<igc-tab
-        ><div slot="title">ASd Dsa Asd Dsa</div>
-        <p>Content ${i + 1}</p></igc-tab
+        ><div slot="label">ASd Dsa Asd Dsa</div>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur
+          accusantium mollitia dolorem illo expedita aperiam impedit molestias
+          quas in doloremque?
+        </p></igc-tab
       >`;
     } else {
       return html`<igc-tab ?disabled=${i === 2}
-        ><div slot="title">Item ${i + 1}</div>
+        ><div slot="label">Item ${i + 1}</div>
         <p>Content ${i + 1}</p></igc-tab
       >`;
     }
@@ -107,22 +111,22 @@ const Template: Story<ArgTypes, Context> = (
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
     <igc-tab>
-      <igc-icon name="home" slot="title"></igc-icon>
+      <igc-icon name="home" slot="label"></igc-icon>
       Content 1
     </igc-tab>
     <igc-tab>
-      <igc-icon name="search" slot="title"></igc-icon>
+      <igc-icon name="search" slot="label"></igc-icon>
       Content 2
     </igc-tab>
     <igc-tab disabled>
-      <igc-icon name="favorite" slot="title"></igc-icon>
+      <igc-icon name="favorite" slot="label"></igc-icon>
       Content 3
     </igc-tab>
   </igc-tabs>
 
   <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
     <igc-tab>
-      <div slot="title">
+      <div slot="label">
         <igc-icon name="home"></igc-icon>
         <input />
         <span
@@ -133,7 +137,7 @@ const Template: Story<ArgTypes, Context> = (
       Content 1
     </igc-tab>
     <igc-tab>
-      <div slot="title">
+      <div slot="label">
         <igc-icon name="search"></igc-icon>
         <span
           >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
@@ -143,7 +147,7 @@ const Template: Story<ArgTypes, Context> = (
       Content 2
     </igc-tab>
     <igc-tab disabled>
-      <div slot="title">
+      <div slot="label">
         <igc-icon name="favorite"></igc-icon>
         <span
           >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
@@ -164,7 +168,7 @@ const TabStrip: Story<ArgTypes, Context> = (
     activation="${ifDefined(activation)}"
   >
     ${Array.from(range(1, 11)).map(
-      (i) => html` <igc-tab><div slot="title">${i}</div></igc-tab> `
+      (i) => html` <igc-tab><div slot="label">${i}</div></igc-tab> `
     )}
   </igc-tabs>
 `;
