@@ -181,7 +181,7 @@ export default class IgcTabsComponent extends SizableMixin(
       { scrollWidth } = this;
 
     this.disableEndScrollButton =
-      scrollWidth <= Math.abs(scrollLeft) + offsetWidth;
+      scrollWidth === Math.abs(scrollLeft) + offsetWidth;
     this.disableStartScrollButton = scrollLeft === 0;
   }
 
@@ -304,13 +304,13 @@ export default class IgcTabsComponent extends SizableMixin(
         ? this.getPreviousTab(focusedTab)
         : this.getNextTab(focusedTab);
     nextTab?.header?.focus({ preventScroll: true });
-    nextTab?.header?.scrollIntoView({ inline: 'nearest' });
+    nextTab?.header?.scrollIntoView();
 
-    this.scrollTabIntoView(nextTab!);
+    // this.scrollTabIntoView(nextTab!);
 
-    if (nextTab === this.tabs[0]) {
-      this.scrollWrapper.scrollBy({ left: -48 });
-    }
+    // if (nextTab === this.tabs[0]) {
+    //   this.scrollWrapper.scrollBy({ left: -48 });
+    // }
   }
 
   public scrollTabIntoView(tab: IgcTabComponent, next = true) {
@@ -340,13 +340,13 @@ export default class IgcTabsComponent extends SizableMixin(
         ? this.getNextTab(focusedTab)
         : this.getPreviousTab(focusedTab);
     nextTab?.header?.focus({ preventScroll: true });
-    nextTab?.header?.scrollIntoView({ inline: 'nearest' });
+    nextTab?.header?.scrollIntoView();
 
-    this.scrollTabIntoView(nextTab!, false);
+    // this.scrollTabIntoView(nextTab!, false);
 
-    if (nextTab === this.tabs[this.tabs.length - 1]) {
-      this.scrollWrapper.scrollBy({ left: 48 });
-    }
+    // if (nextTab === this.tabs[this.tabs.length - 1]) {
+    //   this.scrollWrapper.scrollBy({ left: 48 });
+    // }
   }
 
   private getNextTab(focusedTab: IgcTabComponent): IgcTabComponent | undefined {

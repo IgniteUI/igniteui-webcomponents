@@ -23,6 +23,8 @@
   font-family: 'Roboto', sans-serif;
   align-items: center;
   overflow: hidden;
+  scroll-padding-left: 48px;
+  scroll-padding-right: 48px;
 
   ::slotted(igc-tab) {
     display: contents;
