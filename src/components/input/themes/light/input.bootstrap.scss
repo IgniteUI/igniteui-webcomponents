@@ -186,13 +186,14 @@ $input-background: var(--input-background, #fff) !default;
     }
 
     [part~='input'] {
-        border-block-color: color(gray, 300);
-        border-inline-color: transparent;
+        border-color: color(gray, 300);
     }
 }
 
 :host([disabled]) {
-    [part='helper-text'] {
+    [part='label'],
+    [part='helper-text'],
+    [part~='input']::placeholder {
         color: color(gray, 400);
     }
 }

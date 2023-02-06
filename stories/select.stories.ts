@@ -368,7 +368,7 @@ function groupBy(objectArray: any, property: string) {
 
 const checkoutForm = html`
   <igc-form>
-    <igc-select>
+    <igc-select label="Sample Label">
       ${Object.entries(groupBy(countries, 'continent')).map(
         ([continent, countries]) => html`
           <igc-select-group>
@@ -386,6 +386,7 @@ const checkoutForm = html`
           </igc-select-group>
         `
       )}
+      <span slot="helper-text">Sample helper text.</span>
     </igc-select>
   </igc-form>
 `;

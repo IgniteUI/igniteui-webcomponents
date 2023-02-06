@@ -47,7 +47,6 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 
     [part='label'] {
-        margin-bottom: rem(8px);
         font-size: rem(14px);
         font-weight: 600;
         color: color(gray, 900);
@@ -83,8 +82,8 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
     [part='helper-text'] {
         padding: 0;
-        margin-top: rem(8px);
-        color: color(gray, 600);
+        margin-top: rem(5px);
+        color: color(gray, 700);
     }
 }
 
@@ -161,7 +160,10 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     [part='prefix'],
     [part='suffix'],
     [part='label'],
-    [part='helper-text'] {
-        color: color(gray, 400);
+    [part='label']::after,
+    [part='helper-text'],
+    [part~='input'],
+    [part~='input']::placeholder {
+        color: color(gray, 500);
     }
 }
