@@ -222,6 +222,7 @@ export class IgcSliderBaseComponent extends LitElement {
   /**
    * Number format options used for the thumb and tick label values in the slider.
    */
+  /* blazorSuppress */
   @property({ attribute: false })
   public valueFormatOptions?: Intl.NumberFormatOptions;
 
