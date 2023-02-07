@@ -2,7 +2,7 @@
 name: Component
 about: Tasks for new components/ features implementation
 title: ''
-labels: 'feature, status: new'
+labels: 'feature, :new: status: new'
 assignees: ''
 
 ---
