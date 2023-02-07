@@ -10,7 +10,7 @@ import IgcCheckboxComopnent from '../checkbox/checkbox.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 
 defineComponents(IgcCheckboxComopnent);
-
+/* blazorSuppress */
 @themes({ bootstrap, fluent, indigo })
 export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';

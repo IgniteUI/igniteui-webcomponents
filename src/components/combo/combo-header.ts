@@ -4,6 +4,7 @@ import { styles } from './themes/light/header/combo-header.base.css.js';
 import { styles as bootstrap } from '../dropdown/themes/light/dropdown-header.bootstrap.css.js';
 import { styles as fluent } from '../dropdown/themes/light/dropdown-header.fluent.css.js';
 
+/* blazorSuppress */
 @themes({ bootstrap, fluent })
 export default class IgcComboHeaderComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-header';

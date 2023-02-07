@@ -92,9 +92,7 @@ defineComponents(
  * @csspart empty - The container holding the empty content.
  */
 @themes({ material, bootstrap, fluent, indigo })
-@blazorAdditionalDependencies(
-  'IgcIconComponent, IgcComboListComponent, IgcComboItemComponent, IgcComboHeaderComponent, IgcInputComponent'
-)
+@blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 // TODO: pressing arrow down should scroll to the selected item
 export default class IgcComboComponent<T extends object>
