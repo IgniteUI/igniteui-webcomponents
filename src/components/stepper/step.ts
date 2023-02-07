@@ -53,9 +53,11 @@ export default class IgcStepComponent extends LitElement {
   @queryAssignedElements({ slot: 'subtitle' })
   private _subTitleChildren!: Array<HTMLElement>;
 
+  /* blazorSuppress */
   @query('[part~="header"]')
   public header!: HTMLElement;
 
+  /* blazorSuppress */
   @query('[part~="body"]')
   public contentBody!: HTMLElement;
 

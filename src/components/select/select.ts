@@ -28,6 +28,7 @@ import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
+import { alternateName } from '../common/decorators/alternateName.js';
 
 defineComponents(
   IgcIconComponent,
@@ -223,11 +224,13 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   protected override handleFocusout() {}
 
   /** Sets focus on the component. */
+  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.target.focus(options);
   }
 
   /** Removes focus from the component. */
+  @alternateName('blurComponent')
   public override blur() {
     this.target.blur();
   }

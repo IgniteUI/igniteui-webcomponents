@@ -39,6 +39,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import type { ThemeController, Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 
 defineComponents(
   IgcIconComponent,
@@ -94,6 +95,7 @@ defineComponents(
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcComboListComponent, IgcComboItemComponent, IgcComboHeaderComponent, IgcInputComponent'
 )
+@blazorIndirectRender
 // TODO: pressing arrow down should scroll to the selected item
 export default class IgcComboComponent<T extends object>
   extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
@@ -131,6 +133,8 @@ export default class IgcComboComponent<T extends object>
   private list!: IgcComboListComponent;
 
   /** The data source used to generate the list of options. */
+  /* treatAsRef */
+  /* blazorAlternateType: object */
   @property({ attribute: false })
   public data: Array<T> = [];
 
@@ -229,6 +233,7 @@ export default class IgcComboComponent<T extends object>
   @property({ type: Boolean })
   public flip = true;
 
+  /* blazorAlternateType: string */
   /**
    * The key in the data source used when selecting items.
    * @attr value-key
@@ -236,6 +241,7 @@ export default class IgcComboComponent<T extends object>
   @property({ attribute: 'value-key', reflect: false })
   public valueKey?: Keys<T>;
 
+  /* blazorAlternateType: string */
   /**
    * The key in the data source used to display items in the list.
    * @attr display-key
@@ -243,6 +249,7 @@ export default class IgcComboComponent<T extends object>
   @property({ attribute: 'display-key', reflect: false })
   public displayKey?: Keys<T> = this.valueKey;
 
+  /* blazorAlternateType: string */
   /**
    * The key in the data source used to group items in the list.
    * @attr group-key
@@ -289,6 +296,7 @@ export default class IgcComboComponent<T extends object>
   @property({ type: Boolean, attribute: 'disable-filtering', reflect: false })
   public disableFiltering = false;
 
+  /* blazorSuppress */
   /**
    * The template used for the content of each combo item.
    * @type {ComboItemTemplate<T>}
@@ -306,6 +314,7 @@ export default class IgcComboComponent<T extends object>
     return html`${String(item)}`;
   };
 
+  /* blazorSuppress */
   /**
    * The template used for the content of each combo group header.
    * @type {ComboItemTemplate<T>}
@@ -448,11 +457,13 @@ export default class IgcComboComponent<T extends object>
     return this.reportValidity();
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions) {
     this.target.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur() {
     this.target.blur();
@@ -600,8 +611,9 @@ export default class IgcComboComponent<T extends object>
 
   protected itemRenderer = (item: T, index: number): TemplateResult => {
     const record = item as ComboRecord<T>;
+    const dataItem = this.data.at(record.dataIndex);
     const active = this.navigationController.active === index;
-    const selected = this.selectionController.selected.has(item);
+    const selected = this.selectionController.selected.has(dataItem!);
     const headerTemplate = html`<igc-combo-header part="group-header"
       >${this.groupHeaderTemplate({ item: record })}</igc-combo-header
     >`;
@@ -618,7 +630,7 @@ export default class IgcComboComponent<T extends object>
       @click=${this.itemClickHandler.bind(this)}
       .index=${index}
       .active=${active}
-      .selected=${selected}
+      ?selected=${selected}
       ?hide-checkbox=${this.singleSelect}
       >${this.itemTemplate({ item: record })}</igc-combo-item
     >`;
@@ -658,7 +670,9 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected toggleSelect(index: number) {
-    this.selectionController.changeSelection(index);
+    const { dataIndex } = this.dataState.at(index)!;
+
+    this.selectionController.changeSelection(dataIndex);
     this.navigationController.active = index;
     this.updateValue();
     this.list.requestUpdate();
