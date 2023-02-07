@@ -13,6 +13,8 @@
     }
 }
 
+[part~='date-inner'][part~='weekend'],
+[part~='date-inner'][part~='inactive'],
 [part~='date-inner'][part~='selected'][part~='single'] {
     &:focus,
     &:hover {
@@ -53,7 +55,8 @@
     }
 }
 
-[part~='selected'][part~='date-inner'][part~='single'] {
+[part~='selected'][part~='date-inner'][part~='single'],
+[part~='selected'][part~='date-inner'][part~='single'][part~='weekend'] {
     border-color: $border-color;
     background: $selected-background;
     color: $selected-color;
