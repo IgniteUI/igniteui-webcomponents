@@ -9,6 +9,7 @@
     &:hover {
         background: $background-hover;
         border-color: $background-hover;
+        color: $color-hover;
     }
 }
 
@@ -110,6 +111,8 @@
 
 [part~='date-inner'][part~='selected'][part~='range'][part~='weekend'],
 [part~='date-inner'][part~='selected'][part~='range'][part~='inactive'] {
+    color: $selected-color;
+
     &:hover,
     &:focus {
         color: $selected-color-hover;
@@ -128,11 +131,13 @@
     color: $selected-color;
 
     &:hover {
+        color: $color-hover;
         background: $selected-background-hover;
         border-color: $border-color;
     }
 
     &:focus {
+        color: $color-hover;
         background: $selected-background;
         border-color: $border-color;
     }

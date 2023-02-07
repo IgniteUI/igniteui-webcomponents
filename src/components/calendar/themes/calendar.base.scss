@@ -109,8 +109,6 @@ $border-radius: #{calc(var(--size) / 2)};
 }
 
 [part~='navigation-button'] {
-    margin-inline-start: rem(24px);
-
     &[part~='vertical'] {
         transform: rotate(90deg);
     }
@@ -119,6 +117,7 @@ $border-radius: #{calc(var(--size) / 2)};
 [part='navigation-buttons'] {
     display: flex;
     align-items: center;
+    gap: rem(24px);
 }
 
 :host(igc-calendar[header-orientation='vertical']) {
