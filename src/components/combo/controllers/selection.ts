@@ -1,20 +1,13 @@
 import { ReactiveController } from 'lit';
-import {
-  ComboRecord,
-  ComboHost,
-  Values,
-  IgcComboChangeEventArgs,
-  Item,
-} from '../types.js';
+import { ComboHost, Values, IgcComboChangeEventArgs, Item } from '../types.js';
 
 export class SelectionController<T extends object>
   implements ReactiveController
 {
   private _selected: Set<T> = new Set();
 
-  public get dataState() {
-    // @ts-expect-error protected access
-    return this.host.dataState;
+  public get data() {
+    return this.host.data;
   }
 
   public resetSearchTerm() {
@@ -43,7 +36,7 @@ export class SelectionController<T extends object>
 
   private getItemsByValueKey(keys: Values<T>[]) {
     return keys.map((key) =>
-      this.dataState.find((i) => i[this.host.valueKey!] === key)
+      this.data.find((i) => i[this.host.valueKey!] === key)
     );
   }
 
@@ -67,7 +60,7 @@ export class SelectionController<T extends object>
     if (items.length === 0) return;
 
     items.forEach((item) => {
-      const i = this.dataState.includes(item as ComboRecord<T>);
+      const i = this.data.includes(item);
       if (i) {
         this._selected.add(item);
       }
@@ -78,7 +71,7 @@ export class SelectionController<T extends object>
     if (items.length === 0) return;
 
     items.forEach((item) => {
-      const i = this.dataState.includes(item as ComboRecord<T>);
+      const i = this.data.includes(item);
       if (i) {
         this._selected.delete(item);
       }
@@ -86,11 +79,9 @@ export class SelectionController<T extends object>
   }
 
   private selectAll() {
-    this.dataState
-      .filter((i) => !i.header)
-      .forEach((item) => {
-        this._selected.add(item);
-      });
+    this.data.forEach((item) => {
+      this._selected.add(item);
+    });
     this.host.requestUpdate();
   }
 
@@ -193,7 +184,7 @@ export class SelectionController<T extends object>
   }
 
   public changeSelection(index: number) {
-    const item = this.dataState[index];
+    const item = this.data[index];
 
     if (this.host.valueKey) {
       !this.selected.has(item)
