@@ -600,8 +600,9 @@ export default class IgcComboComponent<T extends object>
 
   protected itemRenderer = (item: T, index: number): TemplateResult => {
     const record = item as ComboRecord<T>;
+    const dataItem = this.data.at(record.dataIndex);
     const active = this.navigationController.active === index;
-    const selected = this.selectionController.selected.has(item);
+    const selected = this.selectionController.selected.has(dataItem!);
     const headerTemplate = html`<igc-combo-header part="group-header"
       >${this.groupHeaderTemplate({ item: record })}</igc-combo-header
     >`;
@@ -618,7 +619,7 @@ export default class IgcComboComponent<T extends object>
       @click=${this.itemClickHandler.bind(this)}
       .index=${index}
       .active=${active}
-      .selected=${selected}
+      ?selected=${selected}
       ?hide-checkbox=${this.singleSelect}
       >${this.itemTemplate({ item: record })}</igc-combo-item
     >`;
@@ -658,7 +659,9 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected toggleSelect(index: number) {
-    this.selectionController.changeSelection(index);
+    const { dataIndex } = this.dataState.at(index)!;
+
+    this.selectionController.changeSelection(dataIndex);
     this.navigationController.active = index;
     this.updateValue();
     this.list.requestUpdate();
