@@ -1,66 +1,126 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
-// TABS
+$tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
+
 :host {
-  display: block;
+    --scroll-button-size: #{rem(48px)};
+    --tabs-width: 100%;
 
-  igc-icon-button:first-of-type {
+    display: flex;
+}
+
+%fake-column {
+    content: '';
+    width: 100%;
+    height: 100%;
+    background: color(surface, 500);
+}
+
+:host([alignment='start']) {
+    [part~='headers-scroll']:not([part~='scrollable']) {
+        grid-template-columns: repeat(var(--tabs-count), minmax(auto, min-content)) auto;
+
+        &::after {
+            @extend %fake-column;
+        }
+    }
+}
+
+:host([alignment='center']) {
+    [part~='headers-scroll']:not([part~='scrollable']) {
+        grid-template-columns: auto repeat(var(--tabs-count), minmax(auto, min-content)) auto;
+
+        &::before,
+        &::after {
+            @extend %fake-column;
+        }
+    }
+}
+
+:host([alignment='end']) {
+    [part~='headers-scroll']:not([part~='scrollable']) {
+        grid-template-columns: auto repeat(var(--tabs-count), minmax(auto, min-content));
+
+        &::before {
+            @extend %fake-column;
+        }
+    }
+}
+
+:host([alignment='justify']) {
+    [part~='headers-scroll']:not([part~='scrollable']) {
+        grid-template-columns: repeat(var(--tabs-count), minmax(auto, 1fr));
+    }
+}
+
+[part~='headers-scroll']:not([part~='scrollable']) {
+    grid-template-columns: repeat(var(--tabs-count), minmax(auto, min-content));
+}
+
+[part~='headers-scroll'] {
+    display: grid;
+    grid-template-columns: var(--scroll-button-size) repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-button-size);
+    align-items: center;
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+    scroll-padding-left: var(--scroll-button-size);
+    scroll-padding-right: var(--scroll-button-size);
+
+    ::slotted(igc-tab) {
+        display: contents;
+        pointer-events: none;
+    }
+}
+
+[part~='start-scroll-button'],
+[part~='end-scroll-button'] {
+    position: sticky;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    border: none;
+    padding: 0;
+    height: 100%;
+    min-width: var(--scroll-button-size);
+    width: var(--scroll-button-size);
+    cursor: pointer;
+    background: color(surface, 500);
+
+    &:hover,
+    &:focus {
+        background: color(gray, 100);
+    }
+
+    ::slotted(*) {
+        box-shadow: none;
+    }
+}
+
+[part~='start-scroll-button'] {
     inset-inline-start: 0;
-  }
+}
 
-  igc-icon-button:last-of-type {
+[part~='end-scroll-button'] {
     inset-inline-end: 0;
-  }
 }
 
-[part='headers-scroll'] {
-  display: grid;
-  grid-template-columns:
-    48px repeat(var(--tabs-count), minmax(max-content, auto))
-    48px;
-  row-gap: 8px;
-  font-family: 'Roboto', sans-serif;
-  align-items: center;
-  overflow: hidden;
-  scroll-padding-left: 48px;
-  scroll-padding-right: 48px;
+[part='selected-indicator'] {
+    position: relative;
+    grid-row: 2;
+    grid-column: 1 / -1;
 
-  ::slotted(igc-tab) {
-    display: contents;
-    pointer-events: none;
-  }
-
-  ::slotted(igc-tab:first-of-type) {
-    margin-left: 48px;
-  }
-
-  ::slotted(igc-tab:last-of-type) {
-    margin-right: 48px;
-  }
-}
-
-[part='start-scroll-button'],
-[part='end-scroll-button'] {
-  position: sticky;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  border: none;
-  padding: 0;
-  height: rem(48px);
-  min-width: rem(48px);
-  width: rem(48px);
-  cursor: pointer;
-  background: color(surface, 500);
-
-  &:hover,
-  &:focus {
-    background: color(gray, 100);
-  }
-
-  ::slotted(*) {
-    box-shadow: none;
-  }
+    &::after {
+        content: '';
+        inset-inline-start: calc(var(--scroll-button-size) * 2);
+        inset-block-start: 0;
+        position: absolute;
+        transform: translateX(0);
+        height: rem(2px);
+        min-width: rem(90px);
+        background: color(primary, 500);
+        transition: transform .3s $tabs-animation-function, width .2s $tabs-animation-function;
+    }
 }

@@ -13,7 +13,7 @@ import { IgcTabsEventMap } from './tabs.common.js';
 import IgcTabComponent from './tab.js';
 import { Direction } from '../common/types.js';
 import { watch } from '../common/decorators/watch.js';
-import { getOffset, isLTR } from '../common/util.js';
+import { getOffset, isLTR, partNameMap } from '../common/util.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/tabs/tabs.base.css.js';
 import { styles as bootstrap } from './themes/tabs/tabs.bootstrap.css.js';
@@ -444,7 +444,14 @@ export default class IgcTabsComponent extends SizableMixin(
 
   protected override render() {
     return html`
-      <div part="headers-scroll" role="tablist" @scroll=${this.handleScroll}>
+      <div
+        part="${partNameMap({
+          'headers-scroll': true,
+          scrollable: this.showScrollButtons,
+        })}"
+        role="tablist"
+        @scroll=${this.handleScroll}
+      >
         ${this.renderScrollButton('start')}
         <slot @slotchange=${this.tabsChanged}></slot>
         ${this.renderScrollButton('end')}

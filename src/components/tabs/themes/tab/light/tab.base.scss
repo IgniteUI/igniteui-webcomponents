@@ -4,110 +4,104 @@
 $hover-background: var(--hover-background, color(gray, 200)) !default;
 
 [part~='header'] {
-  display: inline-flex;
-  flex-shrink: 0;
-  justify-content: center;
-  align-items: center;
-  min-width: rem(90px);
-  max-width: rem(360px);
-  word-wrap: break-word;
-  padding: rem(12px) rem(16px);
-  overflow: hidden;
-  pointer-events: all;
-  cursor: pointer;
-  position: relative;
-  //   transition: all 0.3s cubic-bezier(0.35, 0, 0.25, 1);
-  user-select: none;
-  background: color(surface, 500);
-  color: color(gray, 700);
-}
-
-[part='header'] {
-  &:hover,
-  &:focus-within {
-    background: $hover-background;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    word-wrap: break-word;
+    padding: rem(12px) rem(16px);
+    overflow: hidden;
+    max-width: rem(360px);
+    min-width: rem(90px);
+    pointer-events: all;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    background: color(surface, 500);
     color: color(gray, 700);
-  }
-}
 
-:host([selected]) {
-  [part='header'] {
-    color: color(primary, 500);
-
-    ::slotted(igc-icon) {
-      color: color(primary, 500);
-    }
-  }
-}
-
-:host([selected]) {
-  [part='header'] {
     &:hover,
     &:focus-within {
-      color: color(primary, 500);
+        background: $hover-background;
+        color: color(gray, 700);
     }
-  }
-}
-
-:host([disabled]) {
-  [part='header'] {
-    pointer-events: none;
-    cursor: initial;
-    color: color(gray, 500);
-  }
 }
 
 [part='base'] {
-  display: flex;
-  grid-row: var(--header-bottom, 1);
-  align-items: center;
-  justify-content: space-between;
-  outline-style: none;
-  gap: rem(8px);
-  pointer-events: none;
+    display: flex;
+    grid-row: var(--header-bottom, 1);
+    align-items: center;
+    justify-content: space-between;
+    outline-style: none;
+    gap: rem(8px);
+    pointer-events: none;
 
-  ::slotted(igc-icon) {
-    --size: #{rem(24px)};
-  }
+    ::slotted(igc-icon) {
+        --size: #{rem(24px)};
+    }
 }
 
 [part='label'] {
-  @include type-style('button');
+    @include type-style('button');
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  text-align: center;
-  outline-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    outline-style: none;
 
-  ::slotted(*) {
-    @include line-clamp(2, true, true);
-  }
+    ::slotted(*) {
+        @include line-clamp(2, true, true);
+    }
 
-  ::slotted(igc-icon:not(:only-child)) {
-    margin-bottom: rem(8px);
-  }
+    ::slotted(igc-icon:not(:only-child)) {
+        margin-bottom: rem(8px);
+    }
 }
 
-// body
-
 [part~='body'] {
-  display: none;
-  position: sticky;
-  left: 0;
-  width: 800px; // JS
-  grid-row: 3;
-  grid-column: 1 / -1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  transform: translateX(-100px); // JS
-  transition: all 250ms ease-in-out;
+    display: none;
+    position: sticky;
+    inset-inline-start: 0;
+    background: contrast-color(gray, 900);
+
+    // TODO Set the width of the body to be the width of the stepper.
+    width: var(--tabs-width);
+    grid-row: 3;
+    grid-column: 1 / -1;
+    padding: 10px;
+    border: 1px solid #ddd;
+
+    // TODO Dynamically set the translate based ont scroll direction.
+    transform: translateX(100%);
+    transition: all 250ms ease-in-out;
 }
 
 :host([selected]) {
-  [part~='body'] {
-    display: flex;
-    transform: translateX(0px);
-  }
+    [part='header'] {
+        color: color(primary, 500);
+
+        ::slotted(igc-icon) {
+            color: color(primary, 500);
+        }
+
+        &:hover,
+        &:focus-within {
+            color: color(primary, 500);
+        }
+    }
+
+    [part~='body'] {
+        display: flex;
+        transform: translateX(0);
+    }
+}
+
+:host([disabled]) {
+    [part='header'] {
+        pointer-events: none;
+        cursor: initial;
+        color: color(gray, 500);
+    }
 }
