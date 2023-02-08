@@ -1,7 +1,27 @@
 @use '../../../../../styles/common/component';
 @use '../../../../../styles/utilities' as *;
 
-$hover-background: var(--hover-background, color(gray, 200)) !default;
+:host {
+    // Header idle
+    --header-background: #{color(surface, 500)};
+    --header-foreground: #{color(gray, 700)};
+    --header-background--hover: #{color(gray, 200)};
+    --header-foreground--hover: var(--header-foreground);
+
+    // Header Selected
+    --header-background--selected: var(--header-background);
+    --header-foreground--selected: #{color(primary, 500)};
+    --header-foreground--selected--hover: var(--header-background);
+    --header-background--selected--hover: #{color(primary, 500)};
+
+    // Header Disabled
+    --header-background--disabled: #{color(primary, 500, .5)};
+    --header-foreground--disabled: var(--header-background);
+
+    // Body
+    --body-background: var(--header-background);
+    --body-foreground: #{color(gray, 700)};
+}
 
 [part~='header'] {
     display: flex;
@@ -19,13 +39,13 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     cursor: pointer;
     position: relative;
     user-select: none;
-    background: color(surface, 500);
-    color: color(gray, 700);
+    background: var(--header-background);
+    color: var(--header-foreground);
 
     &:hover,
     &:focus-within {
-        background: $hover-background;
-        color: color(gray, 700);
+        background: var(--header-background--hover);
+        color: var(--header-foreground--hover);
     }
 }
 
@@ -66,31 +86,32 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     display: none;
     position: sticky;
     inset-inline-start: 0;
-    background: contrast-color(gray, 900);
+    background: var(--body-background);
+    color: var(--body-foreground);
 
     // TODO Set the width of the body to be the width of the stepper.
     width: var(--tabs-width);
     grid-row: 3;
     grid-column: 1 / -1;
     padding: 10px;
-    border: 1px solid #ddd;
 
     // TODO Dynamically set the translate based on scroll direction.
     transform: translateX(100%);
-    transition: all 250ms ease-in-out;
+    transition: transform 250ms ease-in-out;
 }
 
 :host([selected]) {
     [part='header'] {
-        color: color(primary, 500);
+        background: var(--header-background--selected);
+        color: var(--header-foreground--selected);
 
         ::slotted(igc-icon) {
-            color: color(primary, 500);
+            color: var(--header-foreground--selected);
         }
 
         &:hover,
         &:focus-within {
-            color: color(primary, 500);
+            color: var(--header-foreground--selected--hover);
         }
     }
 
@@ -104,6 +125,6 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     [part='header'] {
         pointer-events: none;
         cursor: initial;
-        color: color(gray, 500);
+        color: var(--header-foreground--disabled);
     }
 }
