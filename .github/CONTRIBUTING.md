@@ -11,6 +11,8 @@ In order to perform all the necessary checks before pulling your changes in, you
 
     npm install
     npm test
+    
+For detailed information on issue and pull request statuses, process for testing, etc. please refer to the general [Guidelines in Ignite UI for Angular](https://github.com/IgniteUI/igniteui-angular/blob/master/.github/CONTRIBUTING.md).
 
 # Coding Guidelines
 

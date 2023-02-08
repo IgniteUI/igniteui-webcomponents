@@ -797,6 +797,91 @@ describe('Combo', () => {
         expect(i.selected).to.be.false;
       });
     });
+
+    it('should select item(s) even if the list of items has been filtered', async () => {
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      // Filter the list of items
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      // Verify we can only see one item in the list
+      expect(items(combo).length).to.equal(1);
+      expect(items(combo)[0].textContent).to.equal('Sofia');
+
+      // Select an item not visible in the list using the API
+      combo.select('US01');
+      await elementUpdated(combo);
+
+      // The combo value should've updated
+      expect(combo.value).to.equal('New York');
+
+      // Let's verify the list of items has been updated
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      // Get a list of all selected items
+      const selected = items(combo).filter((item) => item.selected);
+
+      // We should only see one item as selected
+      expect(selected.length).to.equal(1);
+
+      // It should match the one selected via the API
+      expect(selected[0].textContent).to.equal('New York');
+    });
+
+    it('should deselect item(s) even if the list of items has been filtered', async () => {
+      // Select an item via the API
+      combo.select('US01');
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      // Get a list of all selected items
+      let selected = items(combo).filter((item) => item.selected);
+
+      // We should only see one item as selected
+      expect(selected.length).to.equal(1);
+
+      // It should match the one selected via the API
+      expect(selected[0].textContent).to.equal('New York');
+      expect(combo.value).to.equal('New York');
+
+      // Filter the list of items
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      // Verify we can only see one item in the list
+      expect(items(combo).length).to.equal(1);
+      expect(items(combo)[0].textContent).to.equal('Sofia');
+
+      // Deselect the previously selected item while the list is filtered
+      combo.deselect('US01');
+      await elementUpdated(combo);
+
+      // The value should be updated
+      expect(combo.value).to.equal('');
+
+      // Verify the list of items has been updated
+      searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      // Get a list of all selected items again
+      selected = items(combo).filter((item) => item.selected);
+
+      // No items should be selected
+      expect(selected.length).to.equal(0);
+    });
   });
 });
 
