@@ -97,13 +97,11 @@ export default class IgcTabComponent extends LitElement {
         @click=${this.handleClick}
         @keydown=${this.handleKeydown}
       >
-        <div part="base">
-          <slot name="prefix" part="prefix"></slot>
-          <slot name="label" part="label">
-            <span part="text">${this.label}</span>
-          </slot>
-          <slot name="suffix" part="suffix"></slot>
-        </div>
+        <slot name="prefix" part="prefix"></slot>
+        <slot name="label" part="label">
+          <span part="text">${this.label}</span>
+        </slot>
+        <slot name="suffix" part="suffix"></slot>
       </div>
       <div
         id="igc-tab-content-${this.index}"

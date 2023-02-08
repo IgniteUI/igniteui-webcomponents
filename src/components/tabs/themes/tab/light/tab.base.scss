@@ -5,10 +5,12 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
 
 [part~='header'] {
     display: flex;
-    height: 100%;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    justify-content: var(--header-content, flex-start);
+    height: 100%;
     word-wrap: break-word;
+    gap: rem(8px);
     padding: rem(12px) rem(16px);
     overflow: hidden;
     max-width: var(--tab-max-width, rem(360px));

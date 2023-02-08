@@ -71,7 +71,7 @@ export default class IgcTabsComponent extends SizableMixin(
   // @query('[part="headers-content"]', true)
   // protected container!: HTMLElement;
 
-  @query('[part="selected-indicator"]', true)
+  @query('[part="selected-indicator"] span', true)
   protected selectedIndicator!: HTMLElement;
 
   @state()
@@ -455,7 +455,7 @@ export default class IgcTabsComponent extends SizableMixin(
         ${this.renderScrollButton('start')}
         <slot @slotchange=${this.tabsChanged}></slot>
         ${this.renderScrollButton('end')}
-        <div part="selected-indicator"></div>
+        <div part="selected-indicator"><span></span></div>
       </div>
     `;
   }
