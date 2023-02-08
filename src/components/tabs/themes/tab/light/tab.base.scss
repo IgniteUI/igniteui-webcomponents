@@ -11,7 +11,7 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     word-wrap: break-word;
     padding: rem(12px) rem(16px);
     overflow: hidden;
-    max-width: rem(360px);
+    max-width: var(--tab-max-width, rem(360px));
     min-width: rem(90px);
     pointer-events: all;
     cursor: pointer;
@@ -73,7 +73,7 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     padding: 10px;
     border: 1px solid #ddd;
 
-    // TODO Dynamically set the translate based ont scroll direction.
+    // TODO Dynamically set the translate based on scroll direction.
     transform: translateX(100%);
     transition: all 250ms ease-in-out;
 }

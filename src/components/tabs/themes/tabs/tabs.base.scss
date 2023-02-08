@@ -6,6 +6,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 :host {
     --scroll-button-size: #{rem(48px)};
     --tabs-width: 100%;
+    --tab-min-width: #{rem(90px)};
 
     display: flex;
 }
@@ -49,6 +50,8 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 }
 
 :host([alignment='justify']) {
+    --tab-max-width: 100%;
+
     [part~='headers-scroll']:not([part~='scrollable']) {
         grid-template-columns: repeat(var(--tabs-count), minmax(auto, 1fr));
     }
@@ -56,11 +59,15 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
 [part~='headers-scroll']:not([part~='scrollable']) {
     grid-template-columns: repeat(var(--tabs-count), minmax(auto, min-content));
+    min-width: var(--tab-min-width);
 }
 
 [part~='headers-scroll'] {
     display: grid;
+    /* stylelint-disable */
     grid-template-columns: var(--scroll-button-size) repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-button-size);
+    /* stylelint-enable */
+    min-width: calc(var(--tab-min-width) + (2 * var(--scroll-button-size)));
     align-items: center;
     overflow: hidden;
     width: 100%;
@@ -108,17 +115,21 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 }
 
 [part='selected-indicator'] {
+    $indicator-size: rem(2px);
+
+    height: $indicator-size;
     position: relative;
     grid-row: 2;
     grid-column: 1 / -1;
+    margin-block-start: calc(#{$indicator-size} * -1);
 
     &::after {
         content: '';
-        inset-inline-start: calc(var(--scroll-button-size) * 2);
+        inset-inline-start: var(--scroll-button-size);
         inset-block-start: 0;
         position: absolute;
         transform: translateX(0);
-        height: rem(2px);
+        height: $indicator-size;
         min-width: rem(90px);
         background: color(primary, 500);
         transition: transform .3s $tabs-animation-function, width .2s $tabs-animation-function;
