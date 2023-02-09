@@ -177,6 +177,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
+  /* blazorSuppress */
   /** Replaces the selected text in the control and re-applies the mask */
   public override setRangeText(
     replacement: string,
