@@ -65,8 +65,14 @@ export default class IgcTabsComponent extends SizableMixin(
   @queryAssignedElements({ selector: 'igc-tab' })
   public tabs!: Array<IgcTabComponent>;
 
-  @query('[part="headers-scroll"]', true)
+  @query('[part~="headers-scroll"]', true)
   protected scrollWrapper!: HTMLElement;
+
+  @query('[part="start-scroll-button"]', true)
+  protected startButton!: HTMLElement;
+
+  @query('[part="end-scroll-button"]', true)
+  protected endButton!: HTMLElement;
 
   // @query('[part="headers-content"]', true)
   // protected container!: HTMLElement;
@@ -139,6 +145,7 @@ export default class IgcTabsComponent extends SizableMixin(
 
     this.addEventListener('tabSelectedChanged', (event: any) => {
       event.stopPropagation();
+      // event.target.header.scrollIntoView();
       this.selectTab(event.target, event.detail);
     });
 
@@ -163,6 +170,11 @@ export default class IgcTabsComponent extends SizableMixin(
     // this.updateSelectedTab();
   }
 
+  public override disconnectedCallback() {
+    this.resizeObserver?.disconnect();
+    super.disconnectedCallback();
+  }
+
   protected updateButtonsOnResize() {
     // Hide the buttons in the resize observer callback and synchronously update the DOM
     // in order to get the actual size
@@ -177,54 +189,66 @@ export default class IgcTabsComponent extends SizableMixin(
   }
 
   protected updateScrollButtons() {
-    const { scrollLeft, offsetWidth } = this.scrollWrapper,
-      { scrollWidth } = this;
+    const { scrollLeft, scrollWidth } = this.scrollWrapper;
+    const offsetWidth = this.scrollWrapper.getBoundingClientRect().width;
 
     this.disableEndScrollButton =
-      scrollWidth === Math.abs(scrollLeft) + offsetWidth;
+      Math.abs(scrollLeft + offsetWidth - scrollWidth) < 1;
     this.disableStartScrollButton = scrollLeft === 0;
   }
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
-    const { scrollLeft, offsetWidth } = this.scrollWrapper;
-    const LTR = isLTR(this),
-      next = direction === 'end';
-    // TODO: don't hardcode 96px and fix for RTL
-    const pivot = Math.abs(next ? offsetWidth + scrollLeft - 96 : scrollLeft);
+    const wrapperBoundingRect = this.scrollWrapper.getBoundingClientRect();
+    // const LTR = isLTR(this);
+    const next = direction === 'end';
+    const buttonWidth = next
+      ? this.startButton.getBoundingClientRect().width
+      : this.endButton.getBoundingClientRect().width;
 
     const nextTab = this.tabs
       .map((tab) => ({
-        start: LTR
-          ? getOffset(tab.header, this).left
-          : Math.abs(getOffset(tab.header, this).right),
-        width: tab.header.offsetWidth,
+        headerBoundingClientRect: tab.header.getBoundingClientRect(),
+        tab: tab,
       }))
-      .filter((offset) =>
-        next ? offset.start + offset.width > pivot : offset.start < pivot
+      .filter((tab) =>
+        next
+          ? tab.headerBoundingClientRect.right -
+              wrapperBoundingRect.right +
+              buttonWidth >
+            1
+          : wrapperBoundingRect.left +
+              buttonWidth -
+              tab.headerBoundingClientRect.left >
+            1
       )
       .at(next ? 0 : -1);
 
-    let amount = next
-      ? nextTab!.start + nextTab!.width - pivot
-      : pivot - nextTab!.start;
+    // this.scrollWrapper.scrollLeft = nextTab?.headerBoundingClientRect
+    nextTab!.tab.header.scrollIntoView();
 
-    amount *= next ? 1 : -1;
-    this.scrollWrapper.scrollBy({ left: LTR ? amount : -amount });
-    this.style.setProperty(
-      '--margin-left',
-      (this.scrollWrapper.scrollLeft + amount).toString() + 'px'
-    );
+    // let amount = next
+    //   ? nextTab!.start + nextTab!.width - pivot
+    //   : pivot - nextTab!.start;
+
+    // amount *= next ? 1 : -1;
+    // this.scrollWrapper.scrollBy({ left: LTR ? amount : -amount });
+    // this.style.setProperty(
+    //   '--margin-left',
+    //   (this.scrollWrapper.scrollLeft + amount).toString() + 'px'
+    // );
   }
 
   protected setupObserver() {
     this.resizeObserver = new ResizeObserver(() => {
+      this.style.setProperty(
+        '--tabs-width',
+        this.getBoundingClientRect().width + 'px'
+      );
       this.updateButtonsOnResize();
       this.alignIndicator();
     });
 
-    [this.scrollWrapper, this, ...this.tabs].forEach((element) =>
-      this.resizeObserver.observe(element)
-    );
+    this.resizeObserver.observe(this);
   }
 
   private selectFirstTab() {
@@ -263,6 +287,7 @@ export default class IgcTabsComponent extends SizableMixin(
     } else {
       this.changeSelectedTab(tab);
     }
+    this.alignIndicator();
   }
 
   private changeSelectedTab(tab: IgcTabComponent) {
@@ -305,33 +330,6 @@ export default class IgcTabsComponent extends SizableMixin(
         : this.getNextTab(focusedTab);
     nextTab?.header?.focus({ preventScroll: true });
     nextTab?.header?.scrollIntoView();
-
-    // this.scrollTabIntoView(nextTab!);
-
-    // if (nextTab === this.tabs[0]) {
-    //   this.scrollWrapper.scrollBy({ left: -48 });
-    // }
-  }
-
-  public scrollTabIntoView(tab: IgcTabComponent, next = true) {
-    const header = tab.header;
-    const headerBoundingRect = header.getBoundingClientRect();
-    const wrapperBoundingRect = this.scrollWrapper.getBoundingClientRect();
-    if (next) {
-      if (headerBoundingRect.right > wrapperBoundingRect.right - 48) {
-        this.scrollWrapper.scrollBy({
-          left: Math.abs(
-            wrapperBoundingRect.right - 48 - headerBoundingRect.right
-          ),
-        });
-      }
-    } else {
-      if (headerBoundingRect.left < wrapperBoundingRect.left + 48) {
-        this.scrollWrapper.scrollBy({
-          left: headerBoundingRect.left - wrapperBoundingRect.left - 48,
-        });
-      }
-    }
   }
 
   private onArrowLeftKeyDown(focusedTab: IgcTabComponent) {
