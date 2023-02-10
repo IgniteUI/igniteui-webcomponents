@@ -26,7 +26,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
 :host([alignment='start']) {
     [part~='headers-scroll']:not([part~='scrollable']) {
-        grid-template-columns: repeat(var(--tabs-count), minmax(min-content, auto)) 1fr;
+        grid-template-columns: repeat(var(--tabs-count), minmax(max-content, auto)) 1fr;
 
         &::after {
             @extend %fake-column;
@@ -36,7 +36,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
 :host([alignment='center']) {
     [part~='headers-scroll']:not([part~='scrollable']) {
-        grid-template-columns: 1fr repeat(var(--tabs-count), minmax(min-content, auto)) 1fr;
+        grid-template-columns: 1fr repeat(var(--tabs-count), minmax(max-content, auto)) 1fr;
 
         &::before,
         &::after {
@@ -47,7 +47,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
 :host([alignment='end']) {
     [part~='headers-scroll']:not([part~='scrollable']) {
-        grid-template-columns: 1fr repeat(var(--tabs-count), minmax(min-content, auto));
+        grid-template-columns: 1fr repeat(var(--tabs-count), minmax(max-content, auto));
 
         &::before {
             @extend %fake-column;
