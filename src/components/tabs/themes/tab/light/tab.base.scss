@@ -22,6 +22,21 @@
     // Body
     --body-background: transparent;
     --body-foreground: #{color(gray, 700)};
+
+    ::slotted([slot='label']) {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: rem(8px);
+
+        span {
+            @include line-clamp(2, true, true);
+        }
+    }
+
+    ::slotted(*) {
+        @include line-clamp(2, true, true);
+    }
 }
 
 [part~='header'] {
@@ -74,21 +89,6 @@
 
 [part='label'] {
     @include type-style('button');
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-    outline-style: none;
-
-    ::slotted(*) {
-        @include line-clamp(2, true, true);
-    }
-
-    ::slotted(igc-icon:not(:only-child)) {
-        margin-bottom: rem(8px);
-    }
 }
 
 [part~='body'] {
