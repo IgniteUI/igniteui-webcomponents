@@ -14,6 +14,7 @@ import IgcTabComponent from './tab.js';
 import { Direction } from '../common/types.js';
 import { watch } from '../common/decorators/watch.js';
 import { getOffset, isLTR, partNameMap } from '../common/util.js';
+import type { ThemeController } from '../../theming/types.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/tabs/tabs.base.css.js';
 import { styles as bootstrap } from './themes/tabs/tabs.bootstrap.css.js';
@@ -45,6 +46,8 @@ export default class IgcTabsComponent extends SizableMixin(
   public static readonly tagName = 'igc-tabs';
   /** @private */
   protected static styles = styles;
+  /** @private */
+  protected themeController!: ThemeController;
 
   private readonly keyDownHandlers: Map<string, Function> = new Map(
     Object.entries({
@@ -121,6 +124,10 @@ export default class IgcTabsComponent extends SizableMixin(
 
   @watch('alignment', { waitUntilFirstUpdate: true })
   protected alignIndicator() {
+    if (this.themeController.theme === 'bootstrap') {
+      return;
+    }
+
     const styles: Partial<CSSStyleDeclaration> = {
       visibility: this.selectedTab ? 'visible' : 'hidden',
       transitionDuration: '0.3s',
@@ -168,6 +175,10 @@ export default class IgcTabsComponent extends SizableMixin(
     //   this.tabs.filter((tab) => tab.selected).at(-1) ?? this.enabledTabs.at(0)
     // );
     // this.updateSelectedTab();
+  }
+
+  protected themeAdopted(controller: ThemeController) {
+    this.themeController = controller;
   }
 
   public override disconnectedCallback() {
@@ -440,6 +451,13 @@ export default class IgcTabsComponent extends SizableMixin(
       : nothing;
   }
 
+  protected renderSelectIndicator() {
+    if (this.themeController.theme !== 'bootstrap') {
+      return html`<div part="selected-indicator"><span></span></div>`;
+    }
+    return nothing;
+  }
+
   protected override render() {
     return html`
       <div
@@ -452,8 +470,7 @@ export default class IgcTabsComponent extends SizableMixin(
       >
         ${this.renderScrollButton('start')}
         <slot @slotchange=${this.tabsChanged}></slot>
-        ${this.renderScrollButton('end')}
-        <div part="selected-indicator"><span></span></div>
+        ${this.renderScrollButton('end')} ${this.renderSelectIndicator()}
       </div>
     `;
   }
