@@ -6,6 +6,7 @@ import { styles } from './themes/tab/light/tab.base.css.js';
 import { styles as bootstrap } from './themes/tab/light/tab.bootstrap.css.js';
 import { styles as fluent } from './themes/tab/light/tab.fluent.css.js';
 import { styles as indigo } from './themes/tab/light/tab.indigo.css.js';
+import { styles as material } from './themes/tab/light/tab.material.css.js';
 
 /**
  * Represents the tab header.
@@ -20,7 +21,7 @@ import { styles as indigo } from './themes/tab/light/tab.indigo.css.js';
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({ bootstrap, fluent, indigo, material })
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
 

@@ -1,1 +1,7 @@
 @use '../../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-tab {
+        --header-background--hover: #{color(gray, 100, .7)};
+    }
+}

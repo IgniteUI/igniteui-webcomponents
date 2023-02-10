@@ -130,7 +130,6 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 [part='selected-indicator'] {
     $indicator-size: rem(2px);
 
-    display: none;
     height: $indicator-size;
     position: relative;
     grid-row: 2;

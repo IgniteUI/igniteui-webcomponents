@@ -7,19 +7,20 @@
     --header-foreground: #{color(gray, 700)};
     --header-background--hover: #{color(gray, 200)};
     --header-foreground--hover: var(--header-foreground);
+    --header-foreground--focus-within: #{color(primary, 500)};
 
     // Header Selected
     --header-background--selected: var(--header-background);
     --header-foreground--selected: #{color(primary, 500)};
-    --header-foreground--selected--hover: var(--header-background);
-    --header-background--selected--hover: #{color(primary, 500)};
+    --header-background--selected--hover: var(--header-background--hover);
+    --header-foreground--selected--hover: var(--header-foreground--selected);
 
     // Header Disabled
     --header-background--disabled: #{color(primary, 500, .5)};
-    --header-foreground--disabled: var(--header-background);
+    --header-foreground--disabled: #{color(gray, 500)};
 
     // Body
-    --body-background: var(--header-background);
+    --body-background: transparent;
     --body-foreground: #{color(gray, 700)};
 }
 
@@ -27,10 +28,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex-shrink: 0;
     justify-content: var(--header-content, flex-start);
     height: 100%;
     word-wrap: break-word;
-    gap: rem(8px);
     padding: rem(12px) rem(16px);
     overflow: hidden;
     max-width: var(--tab-max-width, rem(360px));
@@ -45,7 +46,15 @@
     &:hover,
     &:focus-within {
         background: var(--header-background--hover);
+    }
+
+    &:hover {
         color: var(--header-foreground--hover);
+    }
+
+    &:focus-within {
+        outline: none;
+        color: var(--header-foreground--focus-within);
     }
 }
 
@@ -111,6 +120,7 @@
 
         &:hover,
         &:focus-within {
+            background: var(--header-background--selected--hover);
             color: var(--header-foreground--selected--hover);
         }
     }
