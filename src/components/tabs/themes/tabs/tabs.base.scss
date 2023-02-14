@@ -4,6 +4,10 @@
 $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
 :host {
+    overflow: hidden;
+    scroll-padding-left: var(--scroll-btn-size);
+    scroll-padding-right: var(--scroll-btn-size);
+
     // Header idle
     --header-background: #{color(surface, 500)};
     --header-foreground: #{color(gray, 700)};
@@ -108,11 +112,8 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     /* stylelint-enable */
     min-width: calc(var(--tab-min-width) + (2 * var(--scroll-btn-size)));
     align-items: center;
-    overflow: hidden;
     width: 100%;
     position: relative;
-    scroll-padding-left: var(--scroll-btn-size);
-    scroll-padding-right: var(--scroll-btn-size);
 
     ::slotted(igc-tab) {
         display: contents;
@@ -123,6 +124,14 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 // Tabs position END
 
 // Scroll buttons
+
+:host([dir='rtl']) {
+    [part~='start-scroll-button'],
+    [part~='end-scroll-button'] {
+        transform: scaleX(-1);
+    }
+}
+
 [part~='start-scroll-button'],
 [part~='end-scroll-button'] {
     position: sticky;
