@@ -2,5 +2,41 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
-    --tabs-border--bootstrap: #{rem(1px)} solid var(--shadow-color--selected);
+    $disabled-foregrounbd: #{color(primary, 500, .5)};
+
+    --shadow-color--hover: #{color(gray, 200)};
+    --shadow-color--selected: #{color(gray, 300)};
+    --shadow-color--selected--focus: #{color(primary, 700)};
+    --tabs-border: #{rem(1px)} solid var(--shadow-color--selected);
+
+    // Header idle
+    --header-foreground: #{color(primary, 500)};
+    --header-background--hover: #{color(surface, 500)};
+    --header-foreground--hover: #{color(primary, 700)};
+    --header-foreground--focus-within: #{color(gray, 800)};
+
+    // Header selected
+    --header-foreground--selected: #{color(gray, 800)};
+    --header-foreground--selected--hover: #{color(gray, 800)};
+
+    // Scroll buttons
+    --scroll-btn-foreground: #{color(gray, 500)};
+    --scroll-btn-foreground--disabled: #{$disabled-foregrounbd};
+
+    // Disabled
+    --header-foreground--disabled: #{$disabled-foregrounbd};
+}
+
+:host([alignment='end']),
+:host([alignment='center']),
+:host([alignment='start']) {
+    [part~='headers-scroll']:not([part~='scrollable']) {
+        &::after {
+            border-block-end: var(--tabs-border);
+        }
+    }
+}
+
+igc-icon-button::part(base) {
+    transition-duration: 0ms;
 }

@@ -1,8 +1,13 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
-// TABS
 :host {
-    --indicator-box-shadow-size: #{rem(2px)};
-    --separator-size: #{rem(2px)};
+    --header-background: #{contrast-color(gray, 900)};
+    --header-background--hover: #{contrast-color(gray, 900)};
+    --header-foreground--hover: #{color(gray, 900)};
+    --header-foreground--selected: #{color(gray, 700)};
+    --scroll-btn-background: var(--header-background);
+    --scroll-btn-background--hover: var(--header-background--hover);
+    --scroll-btn-foreground--hover: var(--header-foreground--hover);
+    --scroll-btn-background--disabled: var(--header-background);
 }

@@ -1,8 +1,8 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 
-// TABS
 :host {
-    --indicator-roundness: #{rem(2px)};
-    --indicator-box-shadow-size: #{rem(1px)};
+    --scroll-btn-foreground--disabled: #{color(gray, 400)};
+    --header-foreground: #{color(gray, 900)};
+    --header-foreground--disabled: #{color(gray, 400)};
 }

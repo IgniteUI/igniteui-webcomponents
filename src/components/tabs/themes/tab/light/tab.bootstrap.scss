@@ -1,20 +1,5 @@
 @use '../../../../../styles/utilities' as *;
 
-:host {
-    // Header idle
-    --header-foreground: #{color(primary, 500)};
-    --header-background--hover: #{color(surface, 500)};
-    --header-foreground--hover: #{color(primary, 700)};
-    --header-foreground--focus-within: #{color(gray, 800)};
-
-    // Header selected
-    --header-foreground--selected: #{color(gray, 800)};
-    --header-foreground--selected--hover: #{color(gray, 800)};
-
-    // Disabled
-    --header-foreground--disabled: #{color(primary, 500, .5)};
-}
-
 %header-focus-within {
     box-shadow: inset 0 0 0 rem(2px) var(--shadow-color--selected--focus);
     border-radius: rem(4px);
@@ -47,6 +32,10 @@
 
     &:focus-within {
         @extend %header-focus-within;
+
+        &:hover {
+            box-shadow: inset 0 0 0 rem(2px) var(--shadow-color--selected--focus);
+        }
     }
 }
 
@@ -59,6 +48,7 @@
             background: var(--header-background);
         }
 
+        &:focus-within:hover,
         &:focus-within {
             @extend %header-focus-within;
         }

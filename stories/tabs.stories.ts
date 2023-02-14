@@ -81,7 +81,10 @@ const tabs = Array.from(
   map(range(18), (i) => {
     if (i === 9) {
       return html`<igc-tab
-        ><div slot="label">ASd Dsa Asd Dsa</div>
+        ><div slot="label">
+          Lorem ipsum dolor sit amet, consec tetur adipi scing elitt dolorem
+          illo expedita aperiam impedit molestias
+        </div>
         <p>
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur
           accusantium mollitia dolorem illo expedita aperiam impedit molestias
@@ -91,7 +94,7 @@ const tabs = Array.from(
     } else {
       return html`<igc-tab ?disabled=${i === 2}
         ><div slot="label">Item ${i + 1}</div>
-        <p>Content ${i + 1}</p></igc-tab
+        Content ${i + 1}</igc-tab
       >`;
     }
   })
@@ -101,61 +104,93 @@ const Template: Story<ArgTypes, Context> = (
   { activation, alignment }: ArgTypes,
   { globals: { direction } }: Context
 ) => html`
-  <igc-tabs
-    dir="${ifDefined(direction)}"
-    alignment="${ifDefined(alignment)}"
-    activation="${ifDefined(activation)}"
-  >
-    ${tabs}
-  </igc-tabs>
+  <div style="display: flex; flex-direction: column; gap: 24px">
+    <igc-tabs
+      dir="${ifDefined(direction)}"
+      alignment="${ifDefined(alignment)}"
+      activation="${ifDefined(activation)}"
+    >
+      ${tabs}
+    </igc-tabs>
 
-  <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
-    <igc-tab>
-      <igc-icon name="home" slot="label"></igc-icon>
-      Content 1
-    </igc-tab>
-    <igc-tab>
-      <igc-icon name="search" slot="label"></igc-icon>
-      Content 2
-    </igc-tab>
-    <igc-tab disabled>
-      <igc-icon name="favorite" slot="label"></igc-icon>
-      Content 3
-    </igc-tab>
-  </igc-tabs>
+    <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
+      <igc-tab>
+        <igc-icon name="home" slot="label"></igc-icon>
+        Content 1
+      </igc-tab>
+      <igc-tab>
+        <igc-icon name="search" slot="label"></igc-icon>
+        Content 2
+      </igc-tab>
+      <igc-tab disabled>
+        <igc-icon name="favorite" slot="label"></igc-icon>
+        Content 3
+      </igc-tab>
+    </igc-tabs>
 
-  <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
-    <igc-tab>
-      <div slot="label">
-        <igc-icon name="home"></igc-icon>
-        <input />
-        <span
-          >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua.</span
-        >
-      </div>
-      Content 1
-    </igc-tab>
-    <igc-tab>
-      <div slot="label">
-        <igc-icon name="search"></igc-icon>
-        <span
-          >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua.</span
-        >
-      </div>
-      Content 2
-    </igc-tab>
-    <igc-tab disabled>
-      <div slot="label">
-        <igc-icon name="favorite"></igc-icon>
-        <span
-          >Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua.</span
-        >
-      </div>
-    </igc-tab>
-  </igc-tabs>
+    <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
+      <igc-tab>
+        <igc-icon name="home" slot="prefix"></igc-icon>
+        <span slot="label">Label with suffix/prefix</span>
+        Content 1
+        <igc-icon name="home" slot="suffix"></igc-icon>
+      </igc-tab>
+      <igc-tab>
+        <igc-icon name="search" slot="prefix"></igc-icon>
+        <span slot="label">Label with suffix/prefix</span>
+        Content 2
+        <igc-icon name="search" slot="suffix"></igc-icon>
+      </igc-tab>
+      <igc-tab>
+        <igc-icon name="favorite" slot="prefix"></igc-icon>
+        <span slot="label">Label with suffix/prefix</span>
+        Content 3
+        <igc-icon name="favorite" slot="suffix"></igc-icon>
+      </igc-tab>
+    </igc-tabs>
+
+    <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
+      <igc-tab>
+        <div slot="label">
+          <div
+            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;"
+          >
+            <igc-icon name="home"></igc-icon>
+            <input />
+            <strong>Custom layout</strong>
+            <span>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </span>
+          </div>
+        </div>
+        Content 1
+      </igc-tab>
+      <igc-tab>
+        <igc-icon slot="prefix" name="favorite"></igc-icon>
+        <div slot="label">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </div>
+        <igc-icon slot="suffix" name="favorite"></igc-icon>
+
+        Content 2
+      </igc-tab>
+      <igc-tab disabled>
+        <div slot="label">
+          <div
+            style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;"
+          >
+            <igc-icon name="favorite"></igc-icon>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </p>
+          </div>
+        </div>
+      </igc-tab>
+    </igc-tabs>
+  </div>
 `;
 
 const TabStrip: Story<ArgTypes, Context> = (

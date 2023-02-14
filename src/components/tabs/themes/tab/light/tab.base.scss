@@ -2,38 +2,6 @@
 @use '../../../../../styles/utilities' as *;
 
 :host {
-    // Header idle
-    --header-background: #{color(surface, 500)};
-    --header-foreground: #{color(gray, 700)};
-    --header-background--hover: #{color(gray, 200)};
-    --header-foreground--hover: var(--header-foreground);
-    --header-foreground--focus-within: #{color(primary, 500)};
-
-    // Header Selected
-    --header-background--selected: var(--header-background);
-    --header-foreground--selected: #{color(primary, 500)};
-    --header-background--selected--hover: var(--header-background--hover);
-    --header-foreground--selected--hover: var(--header-foreground--selected);
-
-    // Header Disabled
-    --header-background--disabled: #{color(primary, 500, .5)};
-    --header-foreground--disabled: #{color(gray, 500)};
-
-    // Body
-    --body-background: transparent;
-    --body-foreground: #{color(gray, 700)};
-
-    ::slotted([slot='label']) {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: rem(8px);
-
-        span {
-            @include line-clamp(2, true, true);
-        }
-    }
-
     ::slotted(*) {
         @include line-clamp(2, true, true);
     }
@@ -45,18 +13,15 @@
     align-items: center;
     flex-shrink: 0;
     text-align: center;
-    justify-content: var(--header-content, flex-start);
+    justify-content: center;
     height: 100%;
-    padding: rem(12px) rem(16px);
-    overflow: hidden;
-    max-width: var(--tab-max-width, rem(360px));
-    min-width: rem(90px);
     pointer-events: all;
+    min-height: rem(42px);
     cursor: pointer;
     position: relative;
-    user-select: none;
     background: var(--header-background);
     color: var(--header-foreground);
+    z-index: 9;
 
     &:hover,
     &:focus-within {
@@ -77,18 +42,31 @@
     display: flex;
     grid-row: var(--header-bottom, 1);
     align-items: center;
-    justify-content: space-between;
-    outline-style: none;
+    justify-content: center;
     gap: rem(8px);
+    min-width: rem(90px);
+    max-width: var(--tab-max-width, rem(360px));
+    padding: rem(12px) rem(16px);
+    overflow: hidden;
+    user-select: none;
     pointer-events: none;
-
-    ::slotted(igc-icon) {
-        --size: #{rem(24px)};
-    }
+    outline-style: none;
 }
 
-[part='label'] {
+[part='content'] {
     @include type-style('button');
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    outline-style: none;
+    flex: 1;
+
+    ::slotted(*) {
+        @include line-clamp(2, true, true);
+    }
 }
 
 [part~='body'] {
@@ -97,13 +75,9 @@
     inset-inline-start: 0;
     background: var(--body-background);
     color: var(--body-foreground);
-
-    // TODO Set the width of the body to be the width of the stepper.
     width: var(--tabs-width);
     grid-row: 3;
     grid-column: 1 / -1;
-
-    // TODO Dynamically set the translate based on scroll direction.
     transform: translateX(100%);
     transition: transform 250ms ease-in-out;
 }
@@ -136,4 +110,8 @@
         cursor: initial;
         color: var(--header-foreground--disabled);
     }
+}
+
+::slotted(igc-icon) {
+    --size: #{rem(24px)};
 }
