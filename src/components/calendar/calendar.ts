@@ -28,6 +28,7 @@ import IgcYearsViewComponent from './years-view/years-view.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import IgcIconComponent from '../icon/icon.js';
+import { Theme, ThemeController } from '../../theming/types.js';
 
 defineComponents(
   IgcIconComponent,
@@ -79,6 +80,8 @@ export default class IgcCalendarComponent extends SizableMixin(
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
+  protected themeController!: ThemeController;
+  private theme!: Theme;
 
   @state()
   private rangePreviewDate?: Date;
@@ -136,6 +139,14 @@ export default class IgcCalendarComponent extends SizableMixin(
   @watch('locale')
   protected formattersChange() {
     this.initFormatters();
+  }
+
+  protected themeAdopted(controller: ThemeController) {
+    this.themeController = controller;
+  }
+
+  protected override willUpdate() {
+    this.theme = this.themeController.theme;
   }
 
   constructor() {
@@ -589,6 +600,10 @@ export default class IgcCalendarComponent extends SizableMixin(
 
     let startYear = undefined;
     let endYear = undefined;
+    const prev_icon =
+      this.theme === 'fluent' ? 'arrow_upward' : 'navigate_before';
+    const next_icon =
+      this.theme === 'fluent' ? 'arrow_downward' : 'navigate_next';
 
     if (this.activeView === 'years') {
       startYear = calculateYearsRangeStart(activeDate, this.yearPerPage);
@@ -641,7 +656,7 @@ export default class IgcCalendarComponent extends SizableMixin(
             >
               <igc-icon
                 aria-hidden="true"
-                name="navigate_before"
+                name=${prev_icon}
                 collection="internal"
               ></igc-icon>
             </button>
@@ -655,7 +670,7 @@ export default class IgcCalendarComponent extends SizableMixin(
             >
               <igc-icon
                 aria-hidden="true"
-                name="navigate_next"
+                name=${next_icon}
                 collection="internal"
               ></igc-icon>
             </button>
