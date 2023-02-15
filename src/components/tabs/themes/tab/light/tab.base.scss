@@ -72,7 +72,7 @@
 [part~='body'] {
     display: none;
     position: relative;
-    inset-inline-start: var(--scroll-into-view);
+    inset-inline-start: var(--scroll-left);
     background: var(--body-background);
     color: var(--body-foreground);
     width: var(--tabs-width);
