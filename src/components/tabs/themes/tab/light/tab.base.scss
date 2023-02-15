@@ -71,8 +71,8 @@
 
 [part~='body'] {
     display: none;
-    position: sticky;
-    inset-inline-start: 0;
+    position: relative;
+    inset-inline-start: var(--scroll-into-view);
     background: var(--body-background);
     color: var(--body-foreground);
     width: var(--tabs-width);

@@ -91,6 +91,15 @@ const tabs = Array.from(
           quas in doloremque?
         </p></igc-tab
       >`;
+    } else if (i === 10) {
+      return html`<igc-tab
+        ><div slot="label">Lorem ipsum dolor sit amet, cons</div>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur
+          accusantium mollitia dolorem illo expedita aperiam impedit molestias
+          quas in doloremque?
+        </p></igc-tab
+      >`;
     } else {
       return html`<igc-tab ?disabled=${i === 2}
         ><div slot="label">Item ${i + 1}</div>

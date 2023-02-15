@@ -49,6 +49,8 @@ export default class IgcTabsComponent extends SizableMixin(
   /** @private */
   protected themeController!: ThemeController;
 
+  private hostWidth = 0;
+
   private readonly keyDownHandlers: Map<string, Function> = new Map(
     Object.entries({
       Enter: this.selectTab,
@@ -132,17 +134,21 @@ export default class IgcTabsComponent extends SizableMixin(
       visibility: this.selectedTab ? 'visible' : 'hidden',
       transitionDuration: '0.3s',
     };
+    // console.log(getOffset(this.selectedTab!.header, this.scrollWrapper).left);
+    // console.log(this.selectedTab!.header.offsetLeft);
 
     if (this.selectedTab) {
       Object.assign(styles, {
-        width: `${this.selectedTab!.offsetWidth}px`,
+        width: `${this.selectedTab!.header.getBoundingClientRect().width}px`,
         transform: `translate(${
           isLTR(this)
-            ? getOffset(this.selectedTab!, this).left
+            ? this.selectedTab!.header.offsetLeft
             : getOffset(this.selectedTab!, this).right
         }px)`,
       });
     }
+
+    console.log(styles);
 
     Object.assign(this.selectedIndicator.style, styles);
   }
@@ -164,10 +170,6 @@ export default class IgcTabsComponent extends SizableMixin(
 
   protected override async firstUpdated() {
     this.setAttribute('role', 'tablist');
-
-    this.showScrollButtons =
-      this.scrollWrapper.scrollWidth > this.scrollWrapper.clientWidth;
-
     await this.updateComplete;
 
     this.setupObserver();
@@ -190,12 +192,11 @@ export default class IgcTabsComponent extends SizableMixin(
     // Hide the buttons in the resize observer callback and synchronously update the DOM
     // in order to get the actual size
     this.showScrollButtons = false;
-    this.performUpdate();
+    // this.performUpdate();
 
     this.showScrollButtons =
       this.scrollWrapper.scrollWidth > this.scrollWrapper.clientWidth;
 
-    this.syncProperties();
     this.updateScrollButtons();
   }
 
@@ -250,12 +251,42 @@ export default class IgcTabsComponent extends SizableMixin(
   }
 
   protected setupObserver() {
-    this.resizeObserver = new ResizeObserver(() => {
-      this.style.setProperty(
-        '--tabs-width',
-        this.getBoundingClientRect().width + 'px'
-      );
+    this.scrollWrapper.addEventListener(
+      'scroll',
+      () => {
+        this.style.setProperty(
+          '--scroll-left',
+          Math.abs(this.scrollWrapper.scrollLeft) + 'px'
+        );
+        const asd =
+          Math.abs(this.scrollWrapper.scrollLeft) +
+          this.scrollWrapper.getBoundingClientRect().width -
+          48 -
+          48; // TODO: get it from button size
+        this.style.setProperty('--arrow-right-start', asd + 'px');
+        console.log('asd');
+      },
+      {
+        passive: true,
+      }
+    );
+    this.resizeObserver = new ResizeObserver((entries) => {
+      const width = entries[0].contentRect.width;
+      if (width === this.hostWidth) {
+        return;
+      }
+
+      this.hostWidth = width;
+      console.log('observe');
+      this.style.setProperty('--tabs-width', width + 'px');
+      const asd =
+        this.scrollWrapper.scrollLeft +
+        this.scrollWrapper.getBoundingClientRect().width -
+        48 -
+        48;
+      this.style.setProperty('--arrow-right-start', asd + 'px');
       this.updateButtonsOnResize();
+      this.performUpdate();
       this.alignIndicator();
     });
 
@@ -350,12 +381,6 @@ export default class IgcTabsComponent extends SizableMixin(
         : this.getPreviousTab(focusedTab);
     nextTab?.header?.focus({ preventScroll: true });
     nextTab?.header?.scrollIntoView();
-
-    // this.scrollTabIntoView(nextTab!, false);
-
-    // if (nextTab === this.tabs[this.tabs.length - 1]) {
-    //   this.scrollWrapper.scrollBy({ left: 48 });
-    // }
   }
 
   private getNextTab(focusedTab: IgcTabComponent): IgcTabComponent | undefined {
@@ -416,6 +441,7 @@ export default class IgcTabsComponent extends SizableMixin(
       // activate the last tab marked as selected
       this.selectTab(lastSelectedTab, false);
     }
+    this.syncProperties();
   }
 
   /** Selects the tab at a given index. */
@@ -468,9 +494,9 @@ export default class IgcTabsComponent extends SizableMixin(
         role="tablist"
         @scroll=${this.handleScroll}
       >
-        ${this.renderScrollButton('start')}
+        ${this.renderScrollButton('start')} ${this.renderScrollButton('end')}
         <slot @slotchange=${this.tabsChanged}></slot>
-        ${this.renderScrollButton('end')} ${this.renderSelectIndicator()}
+        ${this.renderSelectIndicator()}
       </div>
     `;
   }
