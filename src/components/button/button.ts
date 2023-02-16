@@ -15,8 +15,8 @@ import { styles as material } from './themes/button/light/button.material.css.js
  * @element igc-button
  *
  * @slot - Renders the label of the button.
- * @slot prefix - Renders content before the label of the button.
- * @slot suffix - Renders content after the label of the button.
+ * @deprecated @slot prefix - Renders content before the label of the button.
+ * @deprecated @slot suffix - Renders content after the label of the button.
  *
  * @fires igcFocus - Emitted when the button gains focus.
  * @fires igcBlur - Emitted when the button loses focus.
