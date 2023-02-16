@@ -216,8 +216,8 @@ const Template: Story<ArgTypes, Context> = (
     .required=${required}
     .disabled=${disabled}
   >
-    <igc-icon name="github" slot="prefix"></igc-icon>
-    <igc-icon name="github" slot="suffix"></igc-icon>
+    <igc-icon name="github" slot="prefix" size=${size}></igc-icon>
+    <igc-icon name="github" slot="suffix" size=${size}></igc-icon>
     <span slot="helper-text">This is some helper text</span>
   </igc-input>
 `;
