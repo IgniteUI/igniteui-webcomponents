@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, queryAssignedNodes, state } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/button/light/button.base.css.js';
@@ -31,6 +31,18 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
 
   protected static styles = styles;
 
+  @queryAssignedNodes({ slot: 'prefix' })
+  protected prefixes!: Array<HTMLElement>;
+
+  @queryAssignedNodes({ slot: 'suffix' })
+  protected suffixes!: Array<HTMLElement>;
+
+  @state()
+  protected hasPrefixes = false;
+
+  @state()
+  protected hasSuffixes = false;
+
   /**
    * Sets the variant of the button.
    * @attr
@@ -58,13 +70,22 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
     };
   }
 
+  public override connectedCallback() {
+    super.connectedCallback();
+
+    this.shadowRoot?.addEventListener('slotchange', () => {
+      this.hasPrefixes = this.prefixes.length > 0;
+      this.hasSuffixes = this.suffixes.length > 0;
+    });
+  }
+
   protected renderContent() {
     return html`
-      <span part="prefix">
+      <span part="prefix" ?hidden=${!this.hasPrefixes}>
         <slot name="prefix"></slot>
       </span>
       <slot></slot>
-      <span part="suffix">
+      <span part="suffix" ?hidden=${!this.hasSuffixes}>
         <slot name="suffix"></slot>
       </span>
     `;
