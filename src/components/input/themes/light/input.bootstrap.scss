@@ -49,6 +49,7 @@ $input-background: var(--input-background, #fff) !default;
         border: 1px solid color(gray, 400);
         transition: box-shadow .15s ease-out, border .15s ease-out;
         grid-area: 1 / 2;
+        background-clip: padding-box;
     }
 
     [part*='input prefixed'] {
