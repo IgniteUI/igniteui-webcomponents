@@ -7,8 +7,9 @@
     display: inline-flex;
     vertical-align: middle;
 
-    ::slotted(span) {
+    ::slotted(*) {
         display: inline-flex;
+        align-items: center;
     }
 }
 
@@ -68,12 +69,6 @@
         color: color(gray, 500);
         box-shadow: none;
     }
-}
-
-span[part='prefix'],
-span[part='suffix'] {
-    display: inline-flex;
-    align-items: center;
 }
 
 %flat {
