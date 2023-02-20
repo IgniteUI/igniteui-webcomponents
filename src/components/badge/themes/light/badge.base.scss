@@ -5,6 +5,8 @@
     --size: #{rem(22px)};
     --_badge-size: var(--size);
 
+    width: fit-content;
+    height: fit-content;
     display: inline-flex;
     font-weight: 500;
     vertical-align: top;

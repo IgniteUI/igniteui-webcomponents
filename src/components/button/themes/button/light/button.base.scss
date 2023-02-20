@@ -6,6 +6,7 @@
 
     display: inline-flex;
     vertical-align: middle;
+    height: var(--size);
 
     ::slotted(span) {
         display: inline-flex;
