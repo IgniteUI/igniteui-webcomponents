@@ -205,38 +205,61 @@ export default class IgcTabsComponent extends SizableMixin(
     const offsetWidth = this.scrollWrapper.getBoundingClientRect().width;
 
     this.disableEndScrollButton =
-      Math.abs(scrollLeft + offsetWidth - scrollWidth) < 1;
+      Math.abs(Math.abs(scrollLeft) + offsetWidth + 48 - scrollWidth) < 1;
     this.disableStartScrollButton = scrollLeft === 0;
   }
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
     const wrapperBoundingRect = this.scrollWrapper.getBoundingClientRect();
-    // const LTR = isLTR(this);
+    const LTR = isLTR(this);
     const next = direction === 'end';
     const buttonWidth = next
       ? this.startButton.getBoundingClientRect().width
       : this.endButton.getBoundingClientRect().width;
 
-    const nextTab = this.tabs
-      .map((tab) => ({
-        headerBoundingClientRect: tab.header.getBoundingClientRect(),
-        tab: tab,
-      }))
-      .filter((tab) =>
-        next
-          ? tab.headerBoundingClientRect.right -
-              wrapperBoundingRect.right +
-              buttonWidth >
-            1
-          : wrapperBoundingRect.left +
-              buttonWidth -
-              tab.headerBoundingClientRect.left >
-            1
-      )
-      .at(next ? 0 : -1);
+    let nextTab;
+    if (LTR) {
+      nextTab = this.tabs
+        .map((tab) => ({
+          headerBoundingClientRect: tab.header.getBoundingClientRect(),
+          tab: tab,
+        }))
+        .filter((tab) =>
+          next
+            ? tab.headerBoundingClientRect.right -
+                wrapperBoundingRect.right +
+                buttonWidth >
+              1
+            : wrapperBoundingRect.left +
+                buttonWidth -
+                tab.headerBoundingClientRect.left >
+              1
+        )
+        .at(next ? 0 : -1);
+    } else {
+      nextTab = this.tabs
+        .map((tab) => ({
+          headerBoundingClientRect: tab.header.getBoundingClientRect(),
+          tab: tab,
+        }))
+        .filter((tab) =>
+          next
+            ? wrapperBoundingRect.left +
+                buttonWidth -
+                tab.headerBoundingClientRect.left >
+              1
+            : tab.headerBoundingClientRect.right -
+                wrapperBoundingRect.right +
+                buttonWidth >
+              1
+        )
+        .at(next ? 0 : -1);
+    }
 
     // this.scrollWrapper.scrollLeft = nextTab?.headerBoundingClientRect
-    nextTab!.tab.header.scrollIntoView();
+    if (nextTab) {
+      nextTab!.tab.header.scrollIntoView();
+    }
 
     // let amount = next
     //   ? nextTab!.start + nextTab!.width - pivot
