@@ -522,9 +522,9 @@ export default class IgcTabsComponent extends SizableMixin(
         role="tablist"
         @scroll=${this.handleScroll}
       >
-        ${this.renderScrollButton('start')} ${this.renderScrollButton('end')}
+        ${this.renderScrollButton('start')}
         <slot @slotchange=${this.tabsChanged}></slot>
-        ${this.renderSelectIndicator()}
+        ${this.renderScrollButton('end')} ${this.renderSelectIndicator()}
       </div>
     `;
   }

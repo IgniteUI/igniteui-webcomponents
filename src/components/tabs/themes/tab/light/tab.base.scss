@@ -71,14 +71,13 @@
 
 [part~='body'] {
     display: none;
-    position: relative;
-    inset-inline-start: var(--arrow-left-start);
+    position: sticky;
+    inset-inline-start: 0;
     background: var(--body-background);
     color: var(--body-foreground);
     width: var(--tabs-width);
     grid-row: 3;
-    grid-column: -1 / 1;
-    transform: translateX(100%);
+    grid-column: 1 / -1;
     transition: transform 250ms ease-in-out;
 }
 
