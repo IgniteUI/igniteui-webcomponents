@@ -13,7 +13,7 @@ import { IgcTabsEventMap } from './tabs.common.js';
 import IgcTabComponent from './tab.js';
 import { Direction } from '../common/types.js';
 import { watch } from '../common/decorators/watch.js';
-import { getOffset, isLTR, partNameMap } from '../common/util.js';
+import { isLTR, partNameMap } from '../common/util.js';
 import type { ThemeController } from '../../theming/types.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/tabs/tabs.base.css.js';
@@ -143,7 +143,9 @@ export default class IgcTabsComponent extends SizableMixin(
         transform: `translate(${
           isLTR(this)
             ? this.selectedTab!.header.offsetLeft
-            : getOffset(this.selectedTab!, this).right
+            : this.selectedTab!.header.offsetLeft -
+              this.scrollWrapper.getBoundingClientRect().width +
+              this.selectedTab!.header.getBoundingClientRect().width
         }px)`,
       });
     }
@@ -303,7 +305,7 @@ export default class IgcTabsComponent extends SizableMixin(
       console.log('observe');
       this.style.setProperty('--tabs-width', width + 'px');
       const asd =
-        this.scrollWrapper.scrollLeft +
+        Math.abs(this.scrollWrapper.scrollLeft) +
         this.scrollWrapper.getBoundingClientRect().width -
         48 -
         48;
@@ -361,6 +363,7 @@ export default class IgcTabsComponent extends SizableMixin(
     }
     tab.selected = true;
     this.selectedTab = tab;
+    tab.header.scrollIntoView();
   }
 
   private handleKeydown(event: KeyboardEvent, focusedTab: IgcTabComponent) {
