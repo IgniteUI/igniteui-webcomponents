@@ -206,8 +206,10 @@ export default class IgcTabsComponent extends SizableMixin(
     const { scrollLeft, scrollWidth } = this.scrollWrapper;
     const offsetWidth = this.scrollWrapper.getBoundingClientRect().width;
 
+    // TODO: Add scroll button width to the offset before subtracting
+    //  scrollWidth in all browsers except safari (if css solution is rejected)
     this.disableEndScrollButton =
-      Math.abs(Math.abs(scrollLeft) + offsetWidth + 48 - scrollWidth) < 1;
+      Math.abs(Math.abs(scrollLeft) + offsetWidth - scrollWidth) < 1;
     this.disableStartScrollButton = scrollLeft === 0;
   }
 

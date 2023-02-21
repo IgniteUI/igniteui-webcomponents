@@ -121,17 +121,24 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
 [part~='scrollable'] {
     /* stylelint-disable */
-    grid-template-columns: var(--scroll-btn-size) 0 repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-btn-size) var(--scroll-btn-size);
+    grid-template-columns: var(--scroll-btn-size) 0 repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-btn-size);
     /* stylelint-enable */
 
-    // This after is a fake column needed in order to make safari work
-    &::after {
-        content: '';
-        width: var(--scroll-btn-size);
+    /** Safari */
+    /* stylelint-disable */
+    @supports selector(:nth-child(1 of x)) {
 
-        // The height is needed otherwise safari do not recognize this as a column.
-        height: 100%;
+        grid-template-columns: var(--scroll-btn-size) 0 repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-btn-size) var(--scroll-btn-size);
+
+        &::after {
+            content: '';
+            width: var(--scroll-btn-size);
+
+            // The height is needed otherwise safari do not recognize this as a column.
+            height: 100%;
+        }
     }
+    /* stylelint-enable */
 }
 
 // Tabs position END
