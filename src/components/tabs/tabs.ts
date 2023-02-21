@@ -255,7 +255,7 @@ export default class IgcTabsComponent extends SizableMixin(
       'scroll',
       () => {
         this.style.setProperty(
-          '--scroll-left',
+          '--arrow-left-start',
           Math.abs(this.scrollWrapper.scrollLeft) + 'px'
         );
         const asd =

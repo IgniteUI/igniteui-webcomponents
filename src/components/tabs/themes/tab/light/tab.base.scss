@@ -72,12 +72,12 @@
 [part~='body'] {
     display: none;
     position: relative;
-    inset-inline-start: var(--scroll-left);
+    inset-inline-start: var(--arrow-left-start);
     background: var(--body-background);
     color: var(--body-foreground);
     width: var(--tabs-width);
     grid-row: 3;
-    grid-column: 1 / -1;
+    grid-column: -1 / 1;
     transform: translateX(100%);
     transition: transform 250ms ease-in-out;
 }

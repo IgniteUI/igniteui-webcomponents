@@ -7,7 +7,7 @@
     --shadow-color--hover: #{color(gray, 200)};
     --shadow-color--selected: #{color(gray, 300)};
     --shadow-color--selected--focus: #{color(primary, 700)};
-    --tabs-border: #{rem(1px)} solid var(--shadow-color--selected);
+    --tabs-border: var(--shadow-color--selected);
 
     // Header idle
     --header-foreground: #{color(primary, 500)};
@@ -31,8 +31,9 @@
 :host([alignment='center']),
 :host([alignment='start']) {
     [part~='headers-scroll']:not([part~='scrollable']) {
+        &::before,
         &::after {
-            border-block-end: var(--tabs-border);
+            border-block-end: rem(1px) solid var(--tabs-border);
         }
     }
 }

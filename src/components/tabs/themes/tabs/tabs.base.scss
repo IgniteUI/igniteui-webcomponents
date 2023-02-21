@@ -37,8 +37,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     --scroll-btn-foreground--hover: #{color(gray, 700)};
     --scroll-btn-background--disabled: #{color(surface, 500)};
     --scroll-btn-foreground--disabled: #{color(gray, 500)};
-
-    --scroll-left: 0px;
+    --arrow-left-start: 0;
 
     display: flex;
 }
@@ -89,7 +88,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
     [part~='scrollable'] {
         /* stylelint-disable */
-        grid-template-columns: var(--scroll-btn-size) 0px repeat(var(--tabs-count), minmax(min-content, auto)) var(--scroll-btn-size);
+        grid-template-columns: var(--scroll-btn-size) 0 repeat(var(--tabs-count), minmax(min-content, auto)) var(--scroll-btn-size);
         /* stylelint-enable */
     }
 
@@ -105,14 +104,11 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
 [part~='headers-scroll'] {
     display: grid;
-    /* stylelint-disable */
-    grid-template-columns: var(--scroll-btn-size) 0px repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-btn-size);
-    /* stylelint-enable */
+    grid-template-columns: repeat(var(--tabs-count), minmax(max-content, auto));
     min-width: calc(var(--tab-min-width) + (2 * var(--scroll-btn-size)));
     align-items: center;
     width: 100%;
     position: relative;
-
     overflow: hidden;
     scroll-padding-left: var(--scroll-btn-size);
     scroll-padding-right: var(--scroll-btn-size);
@@ -120,6 +116,21 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     ::slotted(igc-tab) {
         display: contents;
         pointer-events: none;
+    }
+}
+
+[part~='scrollable'] {
+    /* stylelint-disable */
+    grid-template-columns: var(--scroll-btn-size) 0 repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-btn-size) var(--scroll-btn-size);
+    /* stylelint-enable */
+
+    // This after is a fake column needed in order to make safari work
+    &::after {
+        content: '';
+        width: var(--scroll-btn-size);
+
+        // The height is needed otherwise safari do not recognize this as a column.
+        height: 100%;
     }
 }
 
@@ -174,7 +185,7 @@ igc-icon-button[disabled]::part(base) {
 }
 
 [part~='start-scroll-button'] {
-    inset-inline-start: var(--scroll-left);
+    inset-inline-start: var(--arrow-left-start);
 }
 
 [part~='end-scroll-button'] {
