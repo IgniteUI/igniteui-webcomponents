@@ -83,7 +83,7 @@
     "igniteui-typedoc-theme": "^3.1.0",
     "keep-a-changelog": "^2.2.1",
     "lint-staged": "^13.1.2",
-    "lit-analyzer": "^1.2.1",
+    "lit-analyzer": "^2.0.0-pre.2",
     "lit-html": "^2.6.1",
     "madge": "^6.0.0",
     "node-watch": "^0.7.3",
