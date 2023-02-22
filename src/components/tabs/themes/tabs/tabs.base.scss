@@ -24,7 +24,7 @@ $arrow-start: 0;
 
     // Body
     --body-background: transparent;
-    --body-foreground: #{color(gray, 700)};
+    --body-foreground: #{contrast-color(gray, 50)};
 
     // Scroll buttons
     --scroll-btn-size: #{rem(48px)};
