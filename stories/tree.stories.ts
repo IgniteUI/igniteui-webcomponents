@@ -1,7 +1,12 @@
 import { html } from 'lit';
-import IgcTreeItemComponent from '../src/components/tree/tree-item.js';
-import IgcTreeComponent from '../src/components/tree/tree.js';
 import { Context, Story } from './story.js';
+import {
+  defineComponents,
+  IgcTreeComponent,
+  IgcTreeItemComponent,
+} from '../src/index.js';
+
+defineComponents(IgcTreeComponent);
 
 // region default
 const metadata = {

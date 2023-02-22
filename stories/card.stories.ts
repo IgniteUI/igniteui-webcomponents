@@ -1,5 +1,25 @@
+import {
+  facebook,
+  instagram,
+  twitter,
+} from '@igniteui/material-icons-extended';
 import { html } from 'lit';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
 import type { Story } from './story';
+import {
+  defineComponents,
+  IgcAvatarComponent,
+  IgcCardComponent,
+  IgcIconButtonComponent,
+} from '../src/index.js';
+
+defineComponents(IgcAvatarComponent, IgcCardComponent, IgcIconButtonComponent);
+
+const icons = [facebook, instagram, twitter];
+
+icons.forEach((icon) => {
+  registerIconFromText(icon.name, icon.value);
+});
 
 // region default
 const metadata = {
@@ -58,7 +78,11 @@ const Template: Story<ArgTypes, Context> = (
           <igc-card-actions>
             <igc-button slot="start">Like</igc-button>
             <igc-button slot="start">Learn More</igc-button>
-            <igc-icon-button slot="end" name="home"></igc-icon-button>
+            <igc-icon-button
+              slot="end"
+              name="star_border"
+              collection="internal"
+            ></igc-icon-button>
           </igc-card-actions>
         </igc-card>
       </div>

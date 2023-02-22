@@ -1,20 +1,16 @@
 import { html } from 'lit';
+import { github } from '@igniteui/material-icons-extended';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Context, Story } from './story.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
   defineComponents,
   IgcSelectComponent,
-  IgcSelectGroupComponent,
-  IgcSelectHeaderComponent,
-  IgcSelectItemComponent,
+  IgcIconComponent,
 } from '../src/index.js';
-import { Context, Story } from './story.js';
 
-defineComponents(
-  IgcSelectComponent,
-  IgcSelectItemComponent,
-  IgcSelectGroupComponent,
-  IgcSelectHeaderComponent
-);
+defineComponents(IgcSelectComponent, IgcIconComponent);
+registerIconFromText(github.name, github.value);
 
 // region default
 const metadata = {
@@ -300,7 +296,6 @@ const Template: Story<ArgTypes, Context> = (
         ?disabled=${item.disabled}
         ?selected=${item.selected}
       >
-        <igc-icon slot="prefix" name="home"></igc-icon>
         ${item.text}
         <igc-icon slot="suffix" name="github"></igc-icon>
       </igc-select-item>`

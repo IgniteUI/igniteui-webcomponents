@@ -1,7 +1,34 @@
 import { html } from 'lit';
 import { DatePart } from '../src/components/date-time-input/date-util.js';
-import { IgcDateTimeInputComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
+import {
+  defineComponents,
+  IgcFormComponent,
+  IgcButtonComponent,
+  IgcInputComponent,
+  IgcDateTimeInputComponent,
+  IgcMaskInputComponent,
+  IgcSelectComponent,
+  IgcComboComponent,
+  IgcCheckboxComponent,
+  IgcRadioGroupComponent,
+  IgcSwitchComponent,
+  IgcIconComponent,
+} from '../src/index.js';
+
+defineComponents(
+  IgcFormComponent,
+  IgcButtonComponent,
+  IgcInputComponent,
+  IgcDateTimeInputComponent,
+  IgcMaskInputComponent,
+  IgcSelectComponent,
+  IgcComboComponent,
+  IgcCheckboxComponent,
+  IgcRadioGroupComponent,
+  IgcSwitchComponent,
+  IgcIconComponent
+);
 
 // region default
 const metadata = {
@@ -202,16 +229,19 @@ The cat was playing<br> in the garden.</textarea
       >
         <igc-icon
           name="clear"
+          collection="internal"
           slot="prefix"
           @click=${handleClear}
         ></igc-icon>
         <igc-icon
-          name="up"
+          name="arrow_drop_up"
           slot="suffix"
+          collection="internal"
           @click=${handleIncrement}
         ></igc-icon>
         <igc-icon
-          name="down"
+          name="arrow_drop_down"
+          collection="internal"
           slot="suffix"
           @click=${handleDecrement}
         ></igc-icon>

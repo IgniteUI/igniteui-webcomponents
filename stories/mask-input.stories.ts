@@ -1,6 +1,16 @@
 import { html } from 'lit';
+import { github } from '@igniteui/material-icons-extended';
 import { Story, Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
+import {
+  defineComponents,
+  IgcMaskInputComponent,
+  IgcIconComponent,
+} from '../src/index.js';
+
+defineComponents(IgcMaskInputComponent, IgcIconComponent);
+registerIconFromText(github.name, github.value);
 
 // region default
 const metadata = {

@@ -1,5 +1,13 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
+import {
+  defineComponents,
+  IgcListComponent,
+  IgcAvatarComponent,
+  IgcButtonComponent,
+} from '../src/index.js';
+
+defineComponents(IgcListComponent, IgcAvatarComponent, IgcButtonComponent);
 
 // region default
 const metadata = {

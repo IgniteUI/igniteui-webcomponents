@@ -13,7 +13,7 @@ async function sassToCss(sassFile) {
   });
 
   let cssStr = result.css.toString();
-  cssStr = await postcss([autoprefixer]).process(cssStr).css;
+  cssStr = postcss([autoprefixer]).process(cssStr).css;
 
   // Strip BOM if any
   if (cssStr.charCodeAt(0) === 0xfeff) {

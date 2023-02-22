@@ -1,9 +1,13 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineAllComponents, IgcToastComponent } from '../src/index.js';
+import {
+  defineComponents,
+  IgcButtonComponent,
+  IgcToastComponent,
+} from '../src/index.js';
 
-defineAllComponents();
+defineComponents(IgcToastComponent, IgcButtonComponent);
 
 // region default
 const metadata = {

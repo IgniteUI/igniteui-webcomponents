@@ -2,11 +2,7 @@
   "compilerOptions": {
     "target": "es2019",
     "module": "es2020",
-    "lib": [
-      "es2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["es2020", "DOM", "DOM.Iterable"],
     "outDir": "dist",
     "rootDir": "./",
     "declaration": true,
@@ -32,17 +28,16 @@
       }
     ]
   },
-  "include": [
-    "**/*.ts"
-  ],
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.stories.ts"],
   "typedocOptions": {
     "out": "dist/docs/typescript",
-    "exclude": "**/*.spec.ts",
+    "exclude": ["src/**/*.spec.ts", "src/**/*.stories.ts"],
     "theme": "igtheme",
     "excludePrivate": true,
     "excludeProtected": true,
     "excludeExternals": true,
     "name": "Ignite UI for Web Components",
     "readme": "none"
-  },
+  }
 }

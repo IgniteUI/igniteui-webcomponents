@@ -3,6 +3,9 @@ import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { ComboItemTemplate } from '../src/index.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
+import { defineComponents, IgcComboComponent } from '../src/index.js';
+
+defineComponents(IgcComboComponent);
 
 // region default
 const metadata = {

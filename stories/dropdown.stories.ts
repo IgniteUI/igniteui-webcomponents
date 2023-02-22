@@ -1,11 +1,19 @@
+import { github, whiteHouse1 } from '@igniteui/material-icons-extended';
 import { html } from 'lit';
 import { Context, Story } from './story.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
   defineComponents,
   IgcDropdownComponent,
   IgcDropdownItemComponent,
   IgcInputComponent,
 } from '../src/index.js';
+
+const icons = [github, whiteHouse1];
+
+icons.forEach((icon) => {
+  registerIconFromText(icon.name, icon.value);
+});
 
 defineComponents(IgcDropdownComponent, IgcInputComponent);
 
@@ -207,35 +215,25 @@ const Template: Story<ArgTypes, Context> = (
         .map(
           (item) =>
             html`<igc-dropdown-item
-              ><igc-icon slot="prefix" name="home"></igc-icon>${item}<igc-icon
-                name="github"
-                slot="suffix"
-              ></igc-icon
+              ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+              >${item}<igc-icon name="github" slot="suffix"></igc-icon
             ></igc-dropdown-item>`
         )}
       ${html`<igc-dropdown-item disabled
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[2]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
+        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+        >${items[2]}<igc-icon name="github" slot="suffix"></igc-icon
       ></igc-dropdown-item>`}
       ${html`<igc-dropdown-item
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[3]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
+        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+        >${items[3]}<igc-icon name="github" slot="suffix"></igc-icon
       ></igc-dropdown-item>`}
       ${html`<igc-dropdown-item
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[4]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
+        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+        >${items[4]}<igc-icon name="github" slot="suffix"></igc-icon
       ></igc-dropdown-item>`}
       ${html`<igc-dropdown-item disabled
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
+        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+        >${items[5]}<igc-icon name="github" slot="suffix"></igc-icon
       ></igc-dropdown-item>`}
     </igc-dropdown>
 

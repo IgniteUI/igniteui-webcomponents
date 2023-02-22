@@ -3,9 +3,13 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { Context, Story } from './story.js';
 import {
+  defineComponents,
+  IgcIconComponent,
   IgcNavDrawerComponent,
   IgcNavDrawerItemComponent,
 } from '../src/index.js';
+
+defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 
 // region default
 const metadata = {

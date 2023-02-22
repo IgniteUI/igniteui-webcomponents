@@ -1,6 +1,9 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Context, Story } from './story.js';
+import { defineComponents, IgcRangeSliderComponent } from '../src/index.js';
+
+defineComponents(IgcRangeSliderComponent);
 
 // region default
 const metadata = {

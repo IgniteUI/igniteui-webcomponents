@@ -5,6 +5,10 @@ import {
   registerIcon,
   registerIconFromText,
 } from '../src/components/icon/icon.registry';
+import { defineComponents, IgcIconComponent } from '../src/index.js';
+
+defineComponents(IgcIconComponent);
+
 import { all } from '@igniteui/material-icons-extended';
 
 const icons = all.map((icon) => icon.name);

@@ -3,6 +3,13 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
 import { Context, Story } from './story.js';
+import {
+  defineComponents,
+  IgcTabsComponent,
+  registerIcon,
+} from '../src/index.js';
+
+defineComponents(IgcTabsComponent);
 
 // region default
 const metadata = {
@@ -48,6 +55,21 @@ interface ArgTypes {
     handles: ['igcChange'],
   },
 };
+
+registerIcon(
+  'home',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+);
+
+registerIcon(
+  'search',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
+);
+
+registerIcon(
+  'favorite',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg'
+);
 
 const remove = (e: MouseEvent) => {
   (e.target as HTMLElement).closest('igc-tab')?.remove();

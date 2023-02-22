@@ -6,7 +6,9 @@ import {
   DatePart,
 } from '../src/components/date-time-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { IgcDateTimeInputComponent } from '../src/index.js';
+import { defineComponents, IgcDateTimeInputComponent } from '../src/index.js';
+
+defineComponents(IgcDateTimeInputComponent);
 
 // region default
 const metadata = {

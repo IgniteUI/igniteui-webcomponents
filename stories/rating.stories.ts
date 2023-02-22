@@ -1,7 +1,20 @@
 import { html, svg } from 'lit';
+import { bacteria, bandage } from '@igniteui/material-icons-extended';
 import { range } from 'lit-html/directives/range.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { Context, Story } from './story.js';
+import {
+  defineComponents,
+  IgcRatingComponent,
+  IgcIconComponent,
+} from '../src/index.js';
+
+defineComponents(IgcRatingComponent, IgcIconComponent);
+const icons = [bacteria, bandage];
+icons.forEach((icon) => {
+  registerIconFromText(icon.name, icon.value);
+});
 
 // region default
 const metadata = {

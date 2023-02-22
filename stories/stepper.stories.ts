@@ -1,6 +1,12 @@
 import { html } from 'lit';
-import { IgcStepperComponent } from '../src/index.js';
 import { Context, Story } from './story.js';
+import {
+  defineComponents,
+  IgcButtonComponent,
+  IgcStepperComponent,
+} from '../src/index.js';
+
+defineComponents(IgcStepperComponent, IgcButtonComponent);
 
 // region default
 const metadata = {

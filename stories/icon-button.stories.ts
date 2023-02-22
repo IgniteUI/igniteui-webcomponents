@@ -3,6 +3,9 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import type { Context, Story } from './story';
+import { defineComponents, IgcIconButtonComponent } from '../src/index.js';
+
+defineComponents(IgcIconButtonComponent);
 
 const icons = all.map((icon) => icon.name);
 

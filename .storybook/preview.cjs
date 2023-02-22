@@ -1,68 +1,19 @@
 import { html } from 'lit-html';
-import { configureTheme } from '../dist/src/theming';
+import { configureTheme } from '../src/theming';
 
-const Themes = {
-  material_light: await import('../src/styles/themes/light/material.scss'),
-  bootstrap_light: await import('../src/styles/themes/light/bootstrap.scss'),
-  fluent_light: await import('../src/styles/themes/light/fluent.scss'),
-  indigo_light: await import('../src/styles/themes/light/indigo.scss'),
-  material_dark: await import('../src/styles/themes/dark/material.scss'),
-  bootstrap_dark: await import('../src/styles/themes/dark/bootstrap.scss'),
-  fluent_dark: await import('../src/styles/themes/dark/fluent.scss'),
-  indigo_dark: await import('../src/styles/themes/dark/indigo.scss'),
-};
+const themes = import.meta.glob('../dist/themes/**/*.css', {
+  as: 'inline',
+});
 
-export const globalTypes = {
-  theme: {
-    name: 'Theme',
-    description: 'Global theme for components',
-    defaultValue: 'bootstrap',
-    toolbar: {
-      icon: 'cog',
-      items: ['bootstrap', 'material', 'fluent', 'indigo'],
-      showName: 'True',
-    },
-  },
-  variant: {
-    name: 'Variant',
-    description: 'Theme variant',
-    defaultValue: 'light',
-    toolbar: {
-      icon: 'mirror',
-      items: ['light', 'dark'],
-      showName: 'True',
-    },
-  },
-  direction: {
-    name: 'Direction',
-    description: 'Component direction',
-    defaultValue: 'ltr',
-    toolbar: {
-      icon: 'accessibility',
-      items: ['ltr', 'rtl'],
-      showName: 'True',
-    },
-  },
-  size: {
-    name: 'Size',
-    description: 'Component size',
-    defaultValue: 'attribute',
-    toolbar: {
-      icon: 'grow',
-      items: ['attribute', 'small', 'medium', 'large'],
-      showName: 'True',
-    },
-  },
-};
+const getTheme = async ({ theme, variant }) => {
+  const matcher = `../dist/themes/${variant}/${theme}.css`;
 
-export const parameters = {
-  backgrounds: {
-    disable: true,
-  },
-};
+  const [_, resolver] = Object.entries(themes).find(([path]) => {
+    return path.match(matcher);
+  });
 
-const getTheme = (themeName, variant) => {
-  return Themes[`${themeName}_${variant}`];
+  const stylesheet = await resolver();
+  return stylesheet.default;
 };
 
 const getSize = (size) => {
@@ -75,9 +26,62 @@ const getSize = (size) => {
   }`;
 };
 
-const themeProvider = (Story, context) => {
-  const theme = getTheme(context.globals.theme, context.globals.variant);
+export const globalTypes = {
+  theme: {
+    name: 'Theme',
+    description: 'Global theme for components',
+    defaultValue: 'bootstrap',
+    toolbar: {
+      icon: 'cog',
+      items: ['bootstrap', 'material', 'fluent', 'indigo'],
+      title: 'Theme'
+    },
+  },
+  variant: {
+    name: 'Variant',
+    description: 'Theme variant',
+    defaultValue: 'light',
+    toolbar: {
+      icon: 'mirror',
+      items: ['light', 'dark'],
+      title: 'Variant'
+    },
+  },
+  direction: {
+    name: 'Direction',
+    description: 'Component direction',
+    defaultValue: 'ltr',
+    toolbar: {
+      icon: 'accessibility',
+      items: ['ltr', 'rtl'],
+      title: 'Direction'
+    },
+  },
+  size: {
+    name: 'Size',
+    description: 'Component size',
+    defaultValue: 'attribute',
+    toolbar: {
+      icon: 'grow',
+      items: ['attribute', 'small', 'medium', 'large'],
+      title: 'Size'
+    },
+  },
+};
 
+export const parameters = {
+  backgrounds: {
+    disable: true,
+  },
+};
+
+export const loaders = [
+  async ({ globals }) => ({
+    theme: await getTheme(globals),
+  }),
+];
+
+const themeProvider = (Story, context) => {
   configureTheme(context.globals.theme);
 
   // Workaround for https://github.com/cfware/babel-plugin-template-html-minifier/issues/56
@@ -88,7 +92,7 @@ const themeProvider = (Story, context) => {
           background: ${context.globals.variant === 'light' ? '#fff' : '#000'};
       }
 
-      ${theme.default}
+      ${context.loaded.theme}
       ${getSize(context.globals.size)}
     </style>`;
 

@@ -2,6 +2,22 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { Context, Story } from './story.js';
+import {
+  defineComponents,
+  IgcAvatarComponent,
+  IgcNavbarComponent,
+  IgcInputComponent,
+  IgcIconComponent,
+  IgcButtonComponent,
+} from '../src/index.js';
+
+defineComponents(
+  IgcNavbarComponent,
+  IgcAvatarComponent,
+  IgcInputComponent,
+  IgcIconComponent,
+  IgcButtonComponent
+);
 
 // region default
 const metadata = {

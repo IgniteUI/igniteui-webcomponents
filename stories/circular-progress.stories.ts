@@ -1,6 +1,12 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Context, Story } from './story.js';
+import {
+  defineComponents,
+  IgcCircularProgressComponent,
+} from '../src/index.js';
+
+defineComponents(IgcCircularProgressComponent);
 
 // region default
 const metadata = {
