@@ -1,12 +1,12 @@
 import { html } from 'lit-html';
 import { configureTheme } from '../src/theming';
 
-const themes = import.meta.glob('../dist/themes/**/*.css', {
+const themes = import.meta.glob('../src/styles/themes/**/*.scss', {
   as: 'inline',
 });
 
 const getTheme = async ({ theme, variant }) => {
-  const matcher = `../dist/themes/${variant}/${theme}.css`;
+  const matcher = `../src/styles/themes/${variant}/${theme}.scss`;
 
   const [_, resolver] = Object.entries(themes).find(([path]) => {
     return path.match(matcher);

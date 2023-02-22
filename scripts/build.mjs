@@ -3,6 +3,7 @@ import { exec as _exec } from 'child_process';
 import { copyFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { promisify } from 'util';
+import { buildThemes } from './build-styles.mjs';
 
 const exec = promisify(_exec);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,6 +21,9 @@ const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
   await exec(
     `tsc -p scripts/tsconfig.prod.json && tsc -p scripts/tsconfig.dts.prod.json`
   );
+
+  console.info(`Generating theme files...`);
+  await buildThemes();
 
   console.info(`Generating custom-elements.json file...`);
   await exec(`npm run build:docs:schema`);
