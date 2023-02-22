@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Deprecated
+  - Button - The prefix/suffix slots are no longer needed and will be removed in the next major release.
+
 ## [4.2.1] - 2023-02-01
 
 ### Fixed
