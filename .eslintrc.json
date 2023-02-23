@@ -3,19 +3,29 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:storybook/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": ["import", "@typescript-eslint"],
+  "plugins": [
+    "import",
+    "@typescript-eslint"
+  ],
   "env": {
     "browser": true
   },
   "rules": {
-    "import/extensions": ["error", "always", { "ignorePackages": true }],
+    "import/extensions": [
+      "error",
+      "always",
+      {
+        "ignorePackages": true
+      }
+    ],
     "no-prototype-builtins": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
@@ -42,7 +52,10 @@
   },
   "overrides": [
     {
-      "files": ["rollup.config.js", "web-test-runner.config.js"],
+      "files": [
+        "rollup.config.js",
+        "web-test-runner.config.js"
+      ],
       "env": {
         "node": true
       }
