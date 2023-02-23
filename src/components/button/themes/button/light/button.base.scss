@@ -8,8 +8,9 @@
     vertical-align: middle;
     height: var(--size);
 
-    ::slotted(span) {
+    ::slotted(*) {
         display: inline-flex;
+        align-items: center;
     }
 }
 
@@ -44,6 +45,7 @@
     z-index: 0;
     height: var(--size);
     padding: 0 pad(8px, 12px, 16px);
+    gap: rem(8px);
 
     &::before {
         position: absolute;
@@ -68,20 +70,6 @@
         color: color(gray, 500);
         box-shadow: none;
     }
-}
-
-[name='prefix']::slotted(*) {
-    margin-inline-end: pad(8px);
-}
-
-[name='suffix']::slotted(*) {
-    margin-inline-start: pad(8px);
-}
-
-span[part='prefix'],
-span[part='suffix'] {
-    display: inline-flex;
-    align-items: center;
 }
 
 %flat {
