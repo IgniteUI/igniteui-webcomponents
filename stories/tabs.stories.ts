@@ -12,7 +12,7 @@ import {
 defineComponents(IgcTabsComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Tabs',
   component: 'igc-tabs',
   argTypes: {
@@ -41,13 +41,13 @@ const metadata = {
       defaultValue: 'auto',
     },
   },
+  args: {
+    alignment: 'start',
+    activation: 'auto',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  selected: string;
-  alignment: 'start' | 'end' | 'center' | 'justify';
-  activation: 'auto' | 'manual';
-}
+
 // endregion
 
 (metadata as any).parameters = {

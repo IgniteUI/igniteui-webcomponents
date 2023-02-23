@@ -1,7 +1,12 @@
-import { html } from 'lit-html';
-import { configureTheme } from '../src/theming';
+/// <reference types="vite/client" />
 
-const themes = import.meta.glob('../src/styles/themes/**/*.scss', {
+import { html } from 'lit';
+import { configureTheme } from '../src/theming';
+import type { Decorator } from '@storybook/web-components';
+
+type ThemeImport = { default: string };
+
+const themes = import.meta.glob<ThemeImport>('../src/styles/themes/**/*.scss', {
   as: 'inline',
 });
 
@@ -10,7 +15,7 @@ const getTheme = async ({ theme, variant }) => {
 
   const [_, resolver] = Object.entries(themes).find(([path]) => {
     return path.match(matcher);
-  });
+  })!;
 
   const stylesheet = await resolver();
   return stylesheet.default;
@@ -34,7 +39,7 @@ export const globalTypes = {
     toolbar: {
       icon: 'cog',
       items: ['bootstrap', 'material', 'fluent', 'indigo'],
-      title: 'Theme'
+      title: 'Theme',
     },
   },
   variant: {
@@ -44,7 +49,7 @@ export const globalTypes = {
     toolbar: {
       icon: 'mirror',
       items: ['light', 'dark'],
-      title: 'Variant'
+      title: 'Variant',
     },
   },
   direction: {
@@ -54,7 +59,7 @@ export const globalTypes = {
     toolbar: {
       icon: 'accessibility',
       items: ['ltr', 'rtl'],
-      title: 'Direction'
+      title: 'Direction',
     },
   },
   size: {
@@ -64,7 +69,7 @@ export const globalTypes = {
     toolbar: {
       icon: 'grow',
       items: ['attribute', 'small', 'medium', 'large'],
-      title: 'Size'
+      title: 'Size',
     },
   },
 };
@@ -81,22 +86,19 @@ export const loaders = [
   }),
 ];
 
-const themeProvider = (Story, context) => {
+const themeProvider: Decorator = (Story, context) => {
   configureTheme(context.globals.theme);
 
-  // Workaround for https://github.com/cfware/babel-plugin-template-html-minifier/issues/56
-  const htmlNoMin = html;
-  const styles = htmlNoMin`
-    <style>
-      .sb-main-padded {
-          background: ${context.globals.variant === 'light' ? '#fff' : '#000'};
-      }
+  const styles = html`<style>
+    .sb-main-padded {
+        background: ${context.globals.variant === 'light' ? '#fff' : '#000'};
+    }
 
-      ${context.loaded.theme}
-      ${getSize(context.globals.size)}
-    </style>`;
+    ${context.loaded.theme}
+    ${getSize(context.globals.size)}
+  </style>`;
 
-  return html` ${styles} ${Story()} `;
+  return html`${styles}${Story()}`;
 };
 
 export const decorators = [themeProvider];

@@ -10,7 +10,7 @@ import {
 defineComponents(IgcListComponent, IgcAvatarComponent, IgcButtonComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'List',
   component: 'igc-list',
   argTypes: {
@@ -24,11 +24,12 @@ const metadata = {
       defaultValue: 'large',
     },
   },
+  args: {
+    size: 'large',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 const employeeData = [

@@ -20,10 +20,11 @@ defineComponents(
 );
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Navbar',
   component: 'igc-navbar',
   argTypes: {},
+  args: {},
 };
 export default metadata;
 

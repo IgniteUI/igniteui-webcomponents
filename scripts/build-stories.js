@@ -1,3 +1,5 @@
+// @ts-check
+
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
@@ -16,6 +18,16 @@ const REPLACE_REGEX = /\/\/ region default.*\/\/ endregion/gs;
 const UNION_TYPE_REGEX = /^("\w+"|[\d-]+)\s\|/;
 const SUPPORTED_TYPES = ['string', 'number', 'boolean', 'Date'];
 
+/**
+ * @typedef ArgTypes
+ * @prop {string} type
+ * @prop {string} description
+ *
+ */
+
+/**
+ * @param {string[]} files
+ */
 function reportMissingFiles(files) {
   const msg = String.raw`
 The following story files were not found:
@@ -74,6 +86,16 @@ async function processFileMeta(path) {
   return extractTags(data.tags[0]);
 }
 
+function isSupportedType(prop) {
+  return (
+    (prop.type &&
+      SUPPORTED_TYPES.some(
+        (type) => prop.type === type || prop.type.startsWith(`${type} `)
+      )) ||
+    UNION_TYPE_REGEX.test(prop.type)
+  );
+}
+
 /**
  *
  * @param {object} meta
@@ -82,15 +104,8 @@ async function processFileMeta(path) {
 function extractTags(meta) {
   return {
     component: meta.name,
-    args: Array.from(meta.properties || [])
-      .filter(
-        (prop) =>
-          prop.type &&
-          (SUPPORTED_TYPES.some(
-            (type) => prop.type === type || prop.type.startsWith(`${type} `)
-          ) ||
-            UNION_TYPE_REGEX.test(prop.type))
-      )
+    argTypes: Array.from(meta.properties || [])
+      .filter(isSupportedType)
       .map((prop) => {
         const options =
           UNION_TYPE_REGEX.test(prop.type) &&
@@ -119,18 +134,17 @@ function extractTags(meta) {
   };
 }
 
-const buildArgTypes = (meta, indent = '  ') => {
-  // Skip ArgTypes for "dumb" components.
-  if (!meta.args.length) {
-    return '';
+function setDefaultValue(props) {
+  if ('defaultValue' in props) {
+    return props.defaultValue;
   }
-
-  return [
-    'interface ArgTypes {',
-    ...meta.args.map(([name, obj]) => `${indent}${name}: ${obj.type};`),
-    '}',
-  ].join('\n');
-};
+  switch (props.type) {
+    case 'string':
+      return '';
+    case 'number':
+      return 0;
+  }
+}
 
 /**
  *
@@ -143,14 +157,18 @@ function buildStoryMeta(story, meta) {
     title: capitalize(meta.component.replace(VENDOR_PREFIX, '')),
     component: meta.component,
     argTypes: {},
+    args: {},
   };
 
-  meta.args.forEach((arg) => (storyMeta.argTypes[arg[0]] = arg[1]));
-  let payload = `// region default\nconst metadata = ${JSON.stringify(
+  meta.argTypes.forEach(
+    (arg) => (storyMeta.args[arg[0]] = setDefaultValue(arg[1]))
+  );
+  meta.argTypes.forEach((arg) => (storyMeta.argTypes[arg[0]] = arg[1]));
+  let payload = `// region default\nconst metadata: Meta = ${JSON.stringify(
     storyMeta,
     undefined,
     2
-  )}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`;
+  )}\nexport default metadata;\n\n// endregion`;
 
   payload = prettier
     .format(payload, { singleQuote: true, parser: 'babel' })

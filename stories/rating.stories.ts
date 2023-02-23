@@ -17,7 +17,7 @@ icons.forEach((icon) => {
 });
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Rating',
   component: 'igc-rating',
   argTypes: {
@@ -91,21 +91,19 @@ const metadata = {
       defaultValue: 'large',
     },
   },
+  args: {
+    max: '5',
+    step: '1',
+    value: '0',
+    disabled: false,
+    hoverPreview: false,
+    readonly: false,
+    single: false,
+    size: 'large',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  max: number;
-  step: number;
-  name: string;
-  label: string;
-  valueFormat: string;
-  value: number;
-  disabled: boolean;
-  hoverPreview: boolean;
-  readonly: boolean;
-  single: boolean;
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 (metadata as any).parameters = {

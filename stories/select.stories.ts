@@ -13,7 +13,7 @@ defineComponents(IgcSelectComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Select',
   component: 'igc-select',
   argTypes: {
@@ -166,42 +166,26 @@ const metadata = {
       defaultValue: 'medium',
     },
   },
+  args: {
+    disabled: false,
+    required: false,
+    invalid: false,
+    outlined: false,
+    dir: 'auto',
+    keepOpenOnSelect: false,
+    scrollStrategy: 'scroll',
+    keepOpenOnOutsideClick: false,
+    open: false,
+    placement: 'bottom-start',
+    positionStrategy: 'absolute',
+    flip: false,
+    distance: '0',
+    sameWidth: true,
+    size: 'medium',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  value: string | undefined;
-  name: string;
-  disabled: boolean;
-  required: boolean;
-  invalid: boolean;
-  outlined: boolean;
-  autofocus: boolean;
-  label: string;
-  placeholder: string;
-  dir: 'ltr' | 'rtl' | 'auto';
-  keepOpenOnSelect: boolean;
-  scrollStrategy: 'scroll' | 'block' | 'close';
-  keepOpenOnOutsideClick: boolean;
-  open: boolean;
-  placement:
-    | 'top'
-    | 'top-start'
-    | 'top-end'
-    | 'bottom'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'right'
-    | 'right-start'
-    | 'right-end'
-    | 'left'
-    | 'left-start'
-    | 'left-end';
-  positionStrategy: 'absolute' | 'fixed';
-  flip: boolean;
-  distance: number;
-  sameWidth: boolean;
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 (metadata as any).parameters = {

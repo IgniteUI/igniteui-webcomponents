@@ -5,7 +5,7 @@ import { defineComponents, IgcExpansionPanelComponent } from '../src/index.js';
 defineComponents(IgcExpansionPanelComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Expansion Panel',
   component: 'igc-expansion-panel',
   argTypes: {
@@ -33,13 +33,14 @@ const metadata = {
       defaultValue: 'start',
     },
   },
+  args: {
+    open: false,
+    disabled: false,
+    indicatorPosition: 'start',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  open: boolean;
-  disabled: boolean;
-  indicatorPosition: 'start' | 'end' | 'none';
-}
+
 // endregion
 
 (metadata as any).parameters = {

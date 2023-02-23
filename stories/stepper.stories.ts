@@ -9,7 +9,7 @@ import {
 defineComponents(IgcStepperComponent, IgcButtonComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Stepper',
   component: 'igc-stepper',
   argTypes: {
@@ -61,16 +61,16 @@ const metadata = {
       defaultValue: 'large',
     },
   },
+  args: {
+    orientation: 'horizontal',
+    stepType: 'full',
+    linear: false,
+    contentTop: false,
+    size: 'large',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  orientation: 'vertical' | 'horizontal';
-  stepType: 'indicator' | 'title' | 'full';
-  linear: boolean;
-  contentTop: boolean;
-  titlePosition: 'start' | 'end' | 'top' | 'bottom' | undefined;
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 const BasicTemplate: Story<ArgTypes, Context> = (
   { orientation, stepType, titlePosition, linear, contentTop, size }: ArgTypes,

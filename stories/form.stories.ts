@@ -31,7 +31,7 @@ defineComponents(
 );
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Form',
   component: 'igc-form',
   argTypes: {
@@ -43,11 +43,12 @@ const metadata = {
       defaultValue: false,
     },
   },
+  args: {
+    novalidate: false,
+  },
 };
 export default metadata;
-interface ArgTypes {
-  novalidate: boolean;
-}
+
 // endregion
 
 Object.assign(metadata.argTypes, {

@@ -9,7 +9,7 @@ import {
 defineComponents(IgcCircularProgressComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Circular Progress',
   component: 'igc-circular-progress',
   argTypes: {
@@ -59,17 +59,17 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    max: '100',
+    value: '0',
+    variant: 'primary',
+    animationDuration: '500',
+    indeterminate: false,
+    hideLabel: false,
+  },
 };
 export default metadata;
-interface ArgTypes {
-  max: number;
-  value: number;
-  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
-  animationDuration: number;
-  indeterminate: boolean;
-  hideLabel: boolean;
-  labelFormat: string;
-}
+
 // endregion
 
 const Template: Story<ArgTypes, Context> = (

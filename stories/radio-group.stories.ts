@@ -6,7 +6,7 @@ import { defineComponents, IgcRadioGroupComponent } from '../src/index.js';
 defineComponents(IgcRadioGroupComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Radio Group',
   component: 'igc-radio-group',
   argTypes: {
@@ -20,11 +20,12 @@ const metadata = {
       defaultValue: 'vertical',
     },
   },
+  args: {
+    alignment: 'vertical',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  alignment: 'vertical' | 'horizontal';
-}
+
 // endregion
 
 const Template: Story<ArgTypes, Context> = (

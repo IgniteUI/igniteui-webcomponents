@@ -8,7 +8,7 @@ import { defineComponents, IgcComboComponent } from '../src/index.js';
 defineComponents(IgcComboComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Combo',
   component: 'igc-combo',
   argTypes: {
@@ -125,28 +125,24 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    disabled: false,
+    required: false,
+    invalid: false,
+    outlined: false,
+    singleSelect: false,
+    autofocusList: false,
+    placeholderSearch: 'Search',
+    dir: 'auto',
+    open: false,
+    flip: true,
+    groupSorting: 'asc',
+    caseSensitiveIcon: false,
+    disableFiltering: false,
+  },
 };
 export default metadata;
-interface ArgTypes {
-  name: string;
-  disabled: boolean;
-  required: boolean;
-  invalid: boolean;
-  outlined: boolean;
-  singleSelect: boolean;
-  autofocus: boolean;
-  autofocusList: boolean;
-  label: string;
-  placeholder: string;
-  placeholderSearch: string;
-  dir: 'ltr' | 'rtl' | 'auto';
-  open: boolean;
-  flip: boolean;
-  groupSorting: 'asc' | 'desc';
-  caseSensitiveIcon: boolean;
-  disableFiltering: boolean;
-  value: string;
-}
+
 // endregion
 
 (metadata as any).parameters = {

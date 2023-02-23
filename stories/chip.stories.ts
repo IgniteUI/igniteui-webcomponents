@@ -6,7 +6,7 @@ import { defineComponents, IgcChipComponent } from '../src/index.js';
 defineComponents(IgcChipComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Chip',
   component: 'igc-chip',
   argTypes: {
@@ -53,16 +53,16 @@ const metadata = {
       defaultValue: 'medium',
     },
   },
+  args: {
+    disabled: false,
+    removable: false,
+    selectable: false,
+    selected: false,
+    size: 'medium',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  disabled: boolean;
-  removable: boolean;
-  selectable: boolean;
-  selected: boolean;
-  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 const handleRemove = (e: Event) => {

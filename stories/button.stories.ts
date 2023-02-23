@@ -6,7 +6,7 @@ import { defineComponents, IgcButtonComponent } from '../src/index.js';
 defineComponents(IgcButtonComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Button',
   component: 'igc-button',
   argTypes: {
@@ -73,19 +73,14 @@ const metadata = {
       defaultValue: 'medium',
     },
   },
+  args: {
+    variant: 'contained',
+    disabled: false,
+    size: 'medium',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  variant: 'flat' | 'contained' | 'outlined' | 'fab';
-  type: 'button' | 'reset' | 'submit';
-  href: string;
-  download: string;
-  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
-  rel: string;
-  disabled: boolean;
-  ariaLabel: string;
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 (metadata as any).parameters = {

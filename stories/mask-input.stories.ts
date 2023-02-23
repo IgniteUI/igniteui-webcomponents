@@ -13,7 +13,7 @@ defineComponents(IgcMaskInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Mask Input',
   component: 'igc-mask-input',
   argTypes: {
@@ -98,23 +98,18 @@ const metadata = {
       defaultValue: 'medium',
     },
   },
+  args: {
+    valueMode: 'raw',
+    invalid: false,
+    outlined: false,
+    required: false,
+    disabled: false,
+    readonly: false,
+    size: 'medium',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  valueMode: 'raw' | 'withFormatting';
-  mask: string;
-  prompt: string;
-  invalid: boolean;
-  value: string;
-  name: string;
-  outlined: boolean;
-  required: boolean;
-  disabled: boolean;
-  readonly: boolean;
-  placeholder: string;
-  label: string;
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 (metadata as any).parameters = {

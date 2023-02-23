@@ -10,7 +10,7 @@ import {
 defineComponents(IgcSnackbarComponent, IgcButtonComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Snackbar',
   component: 'igc-snackbar',
   argTypes: {
@@ -40,14 +40,14 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    open: false,
+    displayTime: '4000',
+    keepOpen: false,
+  },
 };
 export default metadata;
-interface ArgTypes {
-  open: boolean;
-  displayTime: number;
-  keepOpen: boolean;
-  actionText: string;
-}
+
 // endregion
 
 const handleOpen = () => {

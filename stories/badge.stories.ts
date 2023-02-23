@@ -6,7 +6,7 @@ import { defineComponents, IgcBadgeComponent } from '../src/index.js';
 defineComponents(IgcBadgeComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Badge',
   component: 'igc-badge',
   argTypes: {
@@ -35,13 +35,14 @@ const metadata = {
       defaultValue: 'rounded',
     },
   },
+  args: {
+    variant: 'primary',
+    outlined: false,
+    shape: 'rounded',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
-  outlined: boolean;
-  shape: 'rounded' | 'square';
-}
+
 // endregion
 
 const Template: Story<ArgTypes, Context> = (

@@ -18,7 +18,7 @@ icons.forEach((icon) => {
 defineComponents(IgcDropdownComponent, IgcInputComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Dropdown',
   component: 'igc-dropdown',
   argTypes: {
@@ -113,32 +113,21 @@ const metadata = {
       defaultValue: 'large',
     },
   },
+  args: {
+    keepOpenOnSelect: false,
+    scrollStrategy: 'scroll',
+    keepOpenOnOutsideClick: false,
+    open: false,
+    placement: 'bottom-start',
+    positionStrategy: 'absolute',
+    flip: false,
+    distance: '0',
+    sameWidth: false,
+    size: 'large',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  keepOpenOnSelect: boolean;
-  scrollStrategy: 'scroll' | 'block' | 'close';
-  keepOpenOnOutsideClick: boolean;
-  open: boolean;
-  placement:
-    | 'top'
-    | 'top-start'
-    | 'top-end'
-    | 'bottom'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'right'
-    | 'right-start'
-    | 'right-end'
-    | 'left'
-    | 'left-start'
-    | 'left-end';
-  positionStrategy: 'absolute' | 'fixed';
-  flip: boolean;
-  distance: number;
-  sameWidth: boolean;
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 (metadata as any).parameters = {

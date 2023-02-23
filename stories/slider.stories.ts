@@ -6,7 +6,7 @@ import { defineComponents, IgcSliderComponent } from '../src/index.js';
 defineComponents(IgcSliderComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Slider',
   component: 'igc-slider',
   argTypes: {
@@ -126,28 +126,21 @@ const metadata = {
       defaultValue: '0',
     },
   },
+  args: {
+    disabled: false,
+    discreteTrack: false,
+    hideTooltip: false,
+    primaryTicks: '0',
+    secondaryTicks: '0',
+    tickOrientation: 'end',
+    hidePrimaryLabels: false,
+    hideSecondaryLabels: false,
+    locale: 'en',
+    tickLabelRotation: '0',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  value: number;
-  ariaLabel: string;
-  min: number;
-  max: number;
-  lowerBound: number | undefined;
-  upperBound: number | undefined;
-  disabled: boolean;
-  discreteTrack: boolean;
-  hideTooltip: boolean;
-  step: number;
-  primaryTicks: number;
-  secondaryTicks: number;
-  tickOrientation: 'start' | 'end' | 'mirror';
-  hidePrimaryLabels: boolean;
-  hideSecondaryLabels: boolean;
-  locale: string;
-  valueFormat: string | undefined;
-  tickLabelRotation: 0 | 90 | -90;
-}
+
 // endregion
 
 (metadata as any).parameters = {

@@ -11,7 +11,7 @@ import { defineComponents, IgcDateTimeInputComponent } from '../src/index.js';
 defineComponents(IgcDateTimeInputComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Date Time Input',
   component: 'igc-date-time-input',
   argTypes: {
@@ -113,27 +113,19 @@ const metadata = {
       defaultValue: 'medium',
     },
   },
+  args: {
+    spinLoop: true,
+    locale: 'en',
+    invalid: false,
+    outlined: false,
+    required: false,
+    disabled: false,
+    readonly: false,
+    size: 'medium',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  inputFormat: string;
-  minValue: Date | null;
-  maxValue: Date | null;
-  displayFormat: string;
-  spinLoop: boolean;
-  locale: string;
-  prompt: string;
-  invalid: boolean;
-  value: Date | null;
-  name: string;
-  outlined: boolean;
-  required: boolean;
-  disabled: boolean;
-  readonly: boolean;
-  placeholder: string;
-  label: string;
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 registerIcon(

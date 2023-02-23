@@ -5,7 +5,7 @@ import { defineComponents, IgcAccordionComponent } from '../src/index.js';
 defineComponents(IgcAccordionComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Accordion',
   component: 'igc-accordion',
   argTypes: {
@@ -16,11 +16,12 @@ const metadata = {
       defaultValue: false,
     },
   },
+  args: {
+    singleExpand: false,
+  },
 };
 export default metadata;
-interface ArgTypes {
-  singleExpand: boolean;
-}
+
 // endregion
 
 (metadata as any).parameters = {

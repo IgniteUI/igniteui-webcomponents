@@ -6,7 +6,7 @@ import { defineComponents, IgcRadioComponent } from '../src/index.js';
 defineComponents(IgcRadioComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Radio',
   component: 'igc-radio',
   argTypes: {
@@ -59,18 +59,16 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    required: false,
+    checked: false,
+    disabled: false,
+    invalid: false,
+    labelPosition: 'after',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  name: string;
-  value: string;
-  required: boolean;
-  checked: boolean;
-  disabled: boolean;
-  invalid: boolean;
-  labelPosition: 'before' | 'after';
-  ariaLabelledby: string;
-}
+
 // endregion
 
 const Template: Story<ArgTypes, Context> = (

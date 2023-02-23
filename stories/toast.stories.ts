@@ -10,7 +10,7 @@ import {
 defineComponents(IgcToastComponent, IgcButtonComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Toast',
   component: 'igc-toast',
   argTypes: {
@@ -34,13 +34,14 @@ const metadata = {
       defaultValue: false,
     },
   },
+  args: {
+    open: false,
+    displayTime: '4000',
+    keepOpen: false,
+  },
 };
 export default metadata;
-interface ArgTypes {
-  open: boolean;
-  displayTime: number;
-  keepOpen: boolean;
-}
+
 // endregion
 const handleShow = () => {
   const toast = document.querySelector('igc-toast') as IgcToastComponent;

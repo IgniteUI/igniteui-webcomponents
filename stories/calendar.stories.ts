@@ -7,7 +7,7 @@ import { defineComponents, IgcCalendarComponent } from '../src/index.js';
 defineComponents(IgcCalendarComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Calendar',
   component: 'igc-calendar',
   argTypes: {
@@ -120,30 +120,22 @@ const metadata = {
       defaultValue: 'en',
     },
   },
+  args: {
+    hideOutsideDays: false,
+    hideHeader: false,
+    headerOrientation: 'horizontal',
+    orientation: 'horizontal',
+    visibleMonths: '1',
+    activeView: 'days',
+    size: 'large',
+    selection: 'single',
+    showWeekNumbers: false,
+    weekStart: 'sunday',
+    locale: 'en',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  hideOutsideDays: boolean;
-  hideHeader: boolean;
-  headerOrientation: 'vertical' | 'horizontal';
-  orientation: 'vertical' | 'horizontal';
-  visibleMonths: number;
-  activeView: 'days' | 'months' | 'years';
-  size: 'small' | 'medium' | 'large';
-  value: Date | undefined;
-  selection: 'single' | 'multiple' | 'range';
-  showWeekNumbers: boolean;
-  weekStart:
-    | 'sunday'
-    | 'monday'
-    | 'tuesday'
-    | 'wednesday'
-    | 'thursday'
-    | 'friday'
-    | 'saturday';
-  activeDate: Date;
-  locale: string;
-}
+
 // endregion
 
 (metadata as any).parameters = {

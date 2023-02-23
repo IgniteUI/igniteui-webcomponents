@@ -6,7 +6,7 @@ import { defineComponents, IgcLinearProgressComponent } from '../src/index.js';
 defineComponents(IgcLinearProgressComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Linear Progress',
   component: 'igc-linear-progress',
   argTypes: {
@@ -78,25 +78,19 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    striped: false,
+    labelAlign: 'top-start',
+    max: '100',
+    value: '0',
+    variant: 'primary',
+    animationDuration: '500',
+    indeterminate: false,
+    hideLabel: false,
+  },
 };
 export default metadata;
-interface ArgTypes {
-  striped: boolean;
-  labelAlign:
-    | 'top'
-    | 'bottom'
-    | 'top-start'
-    | 'top-end'
-    | 'bottom-start'
-    | 'bottom-end';
-  max: number;
-  value: number;
-  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
-  animationDuration: number;
-  indeterminate: boolean;
-  hideLabel: boolean;
-  labelFormat: string;
-}
+
 // endregion
 
 const Template: Story<ArgTypes, Context> = (

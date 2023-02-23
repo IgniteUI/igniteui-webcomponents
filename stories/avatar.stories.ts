@@ -1,12 +1,10 @@
-import { html } from 'lit';
-import { Context, Story } from './story.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import type { Meta, StoryObj as Story } from '@storybook/web-components';
 import { defineComponents, IgcAvatarComponent } from '../src/index.js';
 
 defineComponents(IgcAvatarComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Avatar',
   component: 'igc-avatar',
   argTypes: {
@@ -44,36 +42,25 @@ const metadata = {
       defaultValue: 'small',
     },
   },
+  args: {
+    shape: 'square',
+    size: 'small',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  src: string;
-  alt: string;
-  initials: string;
-  shape: 'circle' | 'rounded' | 'square';
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
-  {
-    size,
-    shape,
-    src = 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
-    alt,
-    initials = 'JB',
-  }: ArgTypes,
-  { globals: { direction } }: Context
-) => html`
-  <igc-avatar
-    initials=${ifDefined(initials)}
-    size=${ifDefined(size)}
-    shape=${ifDefined(shape)}
-    src=${ifDefined(src)}
-    alt=${ifDefined(alt)}
-    dir=${ifDefined(direction)}
-  >
-  </igc-avatar>
-`;
+export const Default: Story = {};
 
-export const Basic = Template.bind({});
+export const Image: Story = {
+  args: {
+    src: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+  },
+};
+
+export const WithInitials: Story = {
+  args: {
+    initials: 'RK',
+  },
+};

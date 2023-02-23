@@ -6,7 +6,7 @@ import { defineComponents, IgcDialogComponent } from '../src/index.js';
 defineComponents(IgcDialogComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Dialog',
   component: 'igc-dialog',
   argTypes: {
@@ -48,16 +48,15 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    closeOnEscape: true,
+    closeOnOutsideClick: false,
+    hideDefaultAction: false,
+    open: false,
+  },
 };
 export default metadata;
-interface ArgTypes {
-  closeOnEscape: boolean;
-  closeOnOutsideClick: boolean;
-  hideDefaultAction: boolean;
-  open: boolean;
-  title: string;
-  returnValue: string;
-}
+
 // endregion
 
 (metadata as any).parameters = {

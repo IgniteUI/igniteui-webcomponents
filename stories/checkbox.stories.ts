@@ -6,7 +6,7 @@ import { defineComponents, IgcCheckboxComponent } from '../src/index.js';
 defineComponents(IgcCheckboxComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Checkbox',
   component: 'igc-checkbox',
   argTypes: {
@@ -65,19 +65,17 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    indeterminate: false,
+    disabled: false,
+    checked: false,
+    required: false,
+    invalid: false,
+    labelPosition: 'after',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  indeterminate: boolean;
-  name: string;
-  value: string;
-  disabled: boolean;
-  checked: boolean;
-  required: boolean;
-  invalid: boolean;
-  labelPosition: 'before' | 'after';
-  ariaLabelledby: string;
-}
+
 // endregion
 
 interface Context {

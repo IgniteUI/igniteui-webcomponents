@@ -9,7 +9,7 @@ import {
 defineComponents(IgcTreeComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Tree',
   component: 'igc-tree',
   argTypes: {
@@ -39,13 +39,14 @@ const metadata = {
       defaultValue: 'large',
     },
   },
+  args: {
+    singleBranchExpand: false,
+    selection: 'none',
+    size: 'large',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  singleBranchExpand: boolean;
-  selection: 'multiple' | 'none' | 'cascade';
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 const handleEvent = (ev: any) => {

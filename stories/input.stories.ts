@@ -9,7 +9,7 @@ defineComponents(IgcInputComponent);
 registerIconFromText(github.name, github.value);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Input',
   component: 'igc-input',
   argTypes: {
@@ -145,39 +145,20 @@ const metadata = {
       defaultValue: 'medium',
     },
   },
+  args: {
+    type: 'text',
+    invalid: false,
+    tabIndex: '0',
+    value: '',
+    outlined: false,
+    required: false,
+    disabled: false,
+    readonly: false,
+    size: 'medium',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  type: 'number' | 'email' | 'password' | 'search' | 'tel' | 'text' | 'url';
-  inputmode:
-    | 'numeric'
-    | 'none'
-    | 'email'
-    | 'search'
-    | 'tel'
-    | 'url'
-    | 'txt'
-    | 'decimal';
-  pattern: string;
-  invalid: boolean;
-  minlength: number;
-  maxlength: number;
-  min: string | number;
-  max: string | number;
-  step: number;
-  autofocus: boolean;
-  autocomplete: string;
-  tabIndex: number;
-  value: string;
-  name: string;
-  outlined: boolean;
-  required: boolean;
-  disabled: boolean;
-  readonly: boolean;
-  placeholder: string;
-  label: string;
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 const Template: Story<ArgTypes, Context> = (

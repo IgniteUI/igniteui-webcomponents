@@ -6,7 +6,7 @@ import { defineComponents, IgcSwitchComponent } from '../src/index.js';
 defineComponents(IgcSwitchComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Switch',
   component: 'igc-switch',
   argTypes: {
@@ -59,18 +59,16 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    disabled: false,
+    checked: false,
+    required: false,
+    invalid: false,
+    labelPosition: 'after',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  name: string;
-  value: string;
-  disabled: boolean;
-  checked: boolean;
-  required: boolean;
-  invalid: boolean;
-  labelPosition: 'before' | 'after';
-  ariaLabelledby: string;
-}
+
 // endregion
 
 const Template: Story<ArgTypes, Context> = (

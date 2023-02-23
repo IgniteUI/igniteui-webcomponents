@@ -10,7 +10,7 @@ defineComponents(IgcIconButtonComponent);
 const icons = all.map((icon) => icon.name);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Icon Button',
   component: 'igc-icon-button',
   argTypes: {
@@ -93,22 +93,15 @@ const metadata = {
       defaultValue: 'large',
     },
   },
+  args: {
+    mirrored: false,
+    variant: 'contained',
+    disabled: false,
+    size: 'large',
+  },
 };
 export default metadata;
-interface ArgTypes {
-  name: string;
-  collection: string;
-  mirrored: boolean;
-  variant: 'flat' | 'contained' | 'outlined';
-  type: 'button' | 'reset' | 'submit';
-  href: string;
-  download: string;
-  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
-  rel: string;
-  disabled: boolean;
-  ariaLabel: string;
-  size: 'small' | 'medium' | 'large';
-}
+
 // endregion
 
 (metadata.argTypes.name as any).control = {

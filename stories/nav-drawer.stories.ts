@@ -12,7 +12,7 @@ import {
 defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 
 // region default
-const metadata = {
+const metadata: Meta = {
   title: 'Nav Drawer',
   component: 'igc-nav-drawer',
   argTypes: {
@@ -32,12 +32,13 @@ const metadata = {
       defaultValue: false,
     },
   },
+  args: {
+    position: 'start',
+    open: false,
+  },
 };
 export default metadata;
-interface ArgTypes {
-  position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
-  open: boolean;
-}
+
 // endregion
 
 registerIcon(
