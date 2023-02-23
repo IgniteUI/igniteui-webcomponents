@@ -5,7 +5,7 @@ import { defineComponents, IgcExpansionPanelComponent } from '../src/index.js';
 defineComponents(IgcExpansionPanelComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcExpansionPanelComponent> = {
   title: 'Expansion Panel',
   component: 'igc-expansion-panel',
   argTypes: {
@@ -40,6 +40,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

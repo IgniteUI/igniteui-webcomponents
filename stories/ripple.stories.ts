@@ -9,13 +9,14 @@ import {
 defineComponents(IgcButtonComponent, IgcRippleComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcRippleComponent> = {
   title: 'Ripple',
   component: 'igc-ripple',
   argTypes: {},
   args: {},
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

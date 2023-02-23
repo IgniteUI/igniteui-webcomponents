@@ -6,7 +6,7 @@ import { defineComponents, IgcDialogComponent } from '../src/index.js';
 defineComponents(IgcDialogComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcDialogComponent> = {
   title: 'Dialog',
   component: 'igc-dialog',
   argTypes: {
@@ -56,6 +56,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

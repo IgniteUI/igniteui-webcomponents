@@ -10,7 +10,7 @@ import {
 defineComponents(IgcSnackbarComponent, IgcButtonComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcSnackbarComponent> = {
   title: 'Snackbar',
   component: 'igc-snackbar',
   argTypes: {
@@ -47,6 +47,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

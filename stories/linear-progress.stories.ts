@@ -6,7 +6,7 @@ import { defineComponents, IgcLinearProgressComponent } from '../src/index.js';
 defineComponents(IgcLinearProgressComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcLinearProgressComponent> = {
   title: 'Linear Progress',
   component: 'igc-linear-progress',
   argTypes: {
@@ -90,6 +90,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

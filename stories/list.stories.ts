@@ -10,7 +10,7 @@ import {
 defineComponents(IgcListComponent, IgcAvatarComponent, IgcButtonComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcListComponent> = {
   title: 'List',
   component: 'igc-list',
   argTypes: {
@@ -29,6 +29,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

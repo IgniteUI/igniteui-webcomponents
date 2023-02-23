@@ -5,7 +5,7 @@ import { defineComponents, IgcAccordionComponent } from '../src/index.js';
 defineComponents(IgcAccordionComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcAccordionComponent> = {
   title: 'Accordion',
   component: 'igc-accordion',
   argTypes: {
@@ -21,6 +21,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

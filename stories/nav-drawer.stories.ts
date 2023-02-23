@@ -12,7 +12,7 @@ import {
 defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcNavDrawerComponent> = {
   title: 'Nav Drawer',
   component: 'igc-nav-drawer',
   argTypes: {
@@ -38,6 +38,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

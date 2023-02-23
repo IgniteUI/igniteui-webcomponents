@@ -22,7 +22,7 @@ icons.forEach((icon) => {
 });
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcCardComponent> = {
   title: 'Card',
   component: 'igc-card',
   argTypes: {
@@ -38,6 +38,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 interface Context {

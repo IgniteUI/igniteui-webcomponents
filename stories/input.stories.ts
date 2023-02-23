@@ -9,7 +9,7 @@ defineComponents(IgcInputComponent);
 registerIconFromText(github.name, github.value);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcInputComponent> = {
   title: 'Input',
   component: 'igc-input',
   argTypes: {
@@ -158,6 +158,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

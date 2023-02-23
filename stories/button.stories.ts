@@ -6,7 +6,7 @@ import { defineComponents, IgcButtonComponent } from '../src/index.js';
 defineComponents(IgcButtonComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcButtonComponent> = {
   title: 'Button',
   component: 'igc-button',
   argTypes: {
@@ -80,6 +80,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

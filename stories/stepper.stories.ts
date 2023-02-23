@@ -9,7 +9,7 @@ import {
 defineComponents(IgcStepperComponent, IgcButtonComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcStepperComponent> = {
   title: 'Stepper',
   component: 'igc-stepper',
   argTypes: {
@@ -70,6 +70,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 const BasicTemplate: Story<ArgTypes, Context> = (

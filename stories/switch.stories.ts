@@ -6,7 +6,7 @@ import { defineComponents, IgcSwitchComponent } from '../src/index.js';
 defineComponents(IgcSwitchComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcSwitchComponent> = {
   title: 'Switch',
   component: 'igc-switch',
   argTypes: {
@@ -68,6 +68,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

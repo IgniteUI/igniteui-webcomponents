@@ -6,7 +6,7 @@ import { defineComponents, IgcChipComponent } from '../src/index.js';
 defineComponents(IgcChipComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcChipComponent> = {
   title: 'Chip',
   component: 'igc-chip',
   argTypes: {
@@ -62,6 +62,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

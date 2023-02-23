@@ -6,7 +6,7 @@ import { defineComponents, IgcRangeSliderComponent } from '../src/index.js';
 defineComponents(IgcRangeSliderComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcRangeSliderComponent> = {
   title: 'Range Slider',
   component: 'igc-range-slider',
   argTypes: {
@@ -150,6 +150,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

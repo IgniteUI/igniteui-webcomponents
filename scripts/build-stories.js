@@ -40,6 +40,18 @@ Check if they are needed at all...`;
   report.warn(msg);
 }
 
+/**
+ *
+ *
+ * @param {*} string
+ */
+const toPascalCase = (string) =>
+  string
+    .match(/[a-zA-Z0-9]+/g || [])
+    .map((w) => `${w.charAt(0).toUpperCase()}${w.slice(1)}`)
+    .concat(['Component'])
+    .join('');
+
 const capitalize = (str) => {
   const arr = str.split('-');
 
@@ -164,11 +176,13 @@ function buildStoryMeta(story, meta) {
     (arg) => (storyMeta.args[arg[0]] = setDefaultValue(arg[1]))
   );
   meta.argTypes.forEach((arg) => (storyMeta.argTypes[arg[0]] = arg[1]));
-  let payload = `// region default\nconst metadata: Meta = ${JSON.stringify(
+  let payload = `// region default\nconst metadata: Meta<${toPascalCase(
+    meta.component
+  )}> = ${JSON.stringify(
     storyMeta,
     undefined,
     2
-  )}\nexport default metadata;\n\n// endregion`;
+  )}\nexport default metadata;\n type Story = StoryObj & typeof metadata;\n\n// endregion`;
 
   payload = prettier
     .format(payload, { singleQuote: true, parser: 'babel' })

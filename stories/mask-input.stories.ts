@@ -13,7 +13,7 @@ defineComponents(IgcMaskInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcMaskInputComponent> = {
   title: 'Mask Input',
   component: 'igc-mask-input',
   argTypes: {
@@ -109,6 +109,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

@@ -12,7 +12,7 @@ import {
 defineComponents(IgcTabsComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcTabsComponent> = {
   title: 'Tabs',
   component: 'igc-tabs',
   argTypes: {
@@ -47,6 +47,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

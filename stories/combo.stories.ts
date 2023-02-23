@@ -8,7 +8,7 @@ import { defineComponents, IgcComboComponent } from '../src/index.js';
 defineComponents(IgcComboComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcComboComponent> = {
   title: 'Combo',
   component: 'igc-combo',
   argTypes: {
@@ -142,6 +142,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

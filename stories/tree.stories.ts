@@ -9,7 +9,7 @@ import {
 defineComponents(IgcTreeComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcTreeComponent> = {
   title: 'Tree',
   component: 'igc-tree',
   argTypes: {
@@ -46,6 +46,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

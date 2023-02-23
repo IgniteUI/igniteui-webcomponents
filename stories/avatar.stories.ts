@@ -1,10 +1,10 @@
-import type { Meta, StoryObj as Story } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components';
 import { defineComponents, IgcAvatarComponent } from '../src/index.js';
 
 defineComponents(IgcAvatarComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcAvatarComponent> = {
   title: 'Avatar',
   component: 'igc-avatar',
   argTypes: {
@@ -48,6 +48,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

@@ -17,7 +17,7 @@ icons.forEach((icon) => {
 });
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcRatingComponent> = {
   title: 'Rating',
   component: 'igc-rating',
   argTypes: {
@@ -103,6 +103,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

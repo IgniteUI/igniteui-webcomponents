@@ -11,7 +11,7 @@ import { defineComponents, IgcDateTimeInputComponent } from '../src/index.js';
 defineComponents(IgcDateTimeInputComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcDateTimeInputComponent> = {
   title: 'Date Time Input',
   component: 'igc-date-time-input',
   argTypes: {
@@ -125,6 +125,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

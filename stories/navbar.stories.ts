@@ -20,13 +20,14 @@ defineComponents(
 );
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcNavbarComponent> = {
   title: 'Navbar',
   component: 'igc-navbar',
   argTypes: {},
   args: {},
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

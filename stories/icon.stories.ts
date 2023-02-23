@@ -14,7 +14,7 @@ import { all } from '@igniteui/material-icons-extended';
 const icons = all.map((icon) => icon.name);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcIconComponent> = {
   title: 'Icon',
   component: 'igc-icon',
   argTypes: {
@@ -55,6 +55,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

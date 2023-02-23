@@ -7,7 +7,7 @@ import { defineComponents, IgcCalendarComponent } from '../src/index.js';
 defineComponents(IgcCalendarComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcCalendarComponent> = {
   title: 'Calendar',
   component: 'igc-calendar',
   argTypes: {
@@ -135,6 +135,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

@@ -6,7 +6,7 @@ import { defineComponents, IgcCheckboxComponent } from '../src/index.js';
 defineComponents(IgcCheckboxComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcCheckboxComponent> = {
   title: 'Checkbox',
   component: 'igc-checkbox',
   argTypes: {
@@ -75,6 +75,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

@@ -9,7 +9,7 @@ import {
 defineComponents(IgcCircularProgressComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcCircularProgressComponent> = {
   title: 'Circular Progress',
   component: 'igc-circular-progress',
   argTypes: {
@@ -69,6 +69,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

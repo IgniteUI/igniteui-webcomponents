@@ -31,7 +31,7 @@ defineComponents(
 );
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcFormComponent> = {
   title: 'Form',
   component: 'igc-form',
   argTypes: {
@@ -48,6 +48,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

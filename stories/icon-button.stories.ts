@@ -10,7 +10,7 @@ defineComponents(IgcIconButtonComponent);
 const icons = all.map((icon) => icon.name);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcIconButtonComponent> = {
   title: 'Icon Button',
   component: 'igc-icon-button',
   argTypes: {
@@ -101,6 +101,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

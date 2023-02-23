@@ -6,7 +6,7 @@ import { defineComponents, IgcSliderComponent } from '../src/index.js';
 defineComponents(IgcSliderComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcSliderComponent> = {
   title: 'Slider',
   component: 'igc-slider',
   argTypes: {
@@ -140,6 +140,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 

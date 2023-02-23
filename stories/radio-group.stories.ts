@@ -6,7 +6,7 @@ import { defineComponents, IgcRadioGroupComponent } from '../src/index.js';
 defineComponents(IgcRadioGroupComponent);
 
 // region default
-const metadata: Meta = {
+const metadata: Meta<IgcRadioGroupComponent> = {
   title: 'Radio Group',
   component: 'igc-radio-group',
   argTypes: {
@@ -25,6 +25,7 @@ const metadata: Meta = {
   },
 };
 export default metadata;
+type Story = StoryObj & typeof metadata;
 
 // endregion
 
