@@ -113,10 +113,15 @@ $arrow-start: 0;
 
 :host([alignment='justify']) {
     --tab-max-width: 100%;
-    --header-content: center;
 
-    [part~='headers-scroll']:not([part~='scrollable']) {
-        grid-template-columns: repeat(var(--tabs-count), minmax(auto, 1fr));
+    [part~='scrollable'] {
+        /* stylelint-disable */
+        grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(min-content, auto)) var(--scroll-btn-size);
+        /* stylelint-enable */
+    }
+
+    [part~='headers-scroll'] {
+        grid-template-columns: repeat(var(--tabs-count), minmax(min-content, auto));
     }
 }
 
@@ -132,6 +137,7 @@ $arrow-start: 0;
 
 [part~='start-scroll-button'],
 [part~='end-scroll-button'] {
+    grid-row: 1;
     position: sticky;
     top: 0;
     height: 100%;

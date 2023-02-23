@@ -17,11 +17,14 @@
     height: 100%;
     pointer-events: all;
     min-height: rem(42px);
+    max-width: var(--tab-max-width, rem(360px));
+    min-width: rem(90px);
     cursor: pointer;
     position: relative;
     background: var(--header-background);
     color: var(--header-foreground);
     z-index: 9;
+    grid-row: 1;
 
     &:hover,
     &:focus-within {
