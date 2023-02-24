@@ -52,6 +52,10 @@
 
         &::after {
             background: var(--header-background);
+            width: calc(100% - (var(--shadow-size) * 2));
+            inset-inline-start: var(--shadow-size);
+            bottom: 0;
+            height: calc(var(--shadow-size) + 1px);
         }
 
         &:focus-within:hover,
