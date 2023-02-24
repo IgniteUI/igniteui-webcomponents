@@ -2,65 +2,51 @@
 @use '../../../tabs.common' as *;
 @use 'sass:map';
 
-%header-focus-within {
-    box-shadow: inset 0 0 0 var(--shadow-size--focus) var(--shadow-color--focus);
-    border-radius: rem(4px);
+%header-focus-visible {
+    box-shadow: inset 0 0 0 var(--border-size--focus) var(--border-color--focus);
+    border-radius: var(--border-radius);
     z-index: map.get($tabs-z-index, 'header-focus-within--bootstrap');
-
-    &::after {
-        display: none;
-    }
-}
-
-%fake-column-border {
-    border-block-end: rem(1px) solid var();
 }
 
 [part~='header'] {
-    border-start-start-radius: rem(4px);
-    border-start-end-radius: rem(4px);
+    border: var(--border-size) solid transparent;
 
+    &:focus,
     &:hover {
-        box-shadow: inset 0 0 0 var(--shadow-size) var(--shadow-color--hover);
+        border-start-start-radius: var(--border-radius);
+        border-start-end-radius: var(--border-radius);
     }
 
-    &::after {
-        content: '';
-        display: block;
-        position: absolute;
-        bottom: 0;
-        inset-inline-start: 0;
-        width: 100%;
-        height: var(--shadow-size);
-        background: var(--shadow-color);
-        z-index: map.get($tabs-z-index, 'header-after--bootstrap');
+    &:focus-visible {
+        @extend %header-focus-visible;
     }
+}
 
-    &:focus-within {
-        @extend %header-focus-within;
-
+:host(:not([selected])) {
+    [part~='header'] {
+        &:focus,
         &:hover {
-            box-shadow: inset 0 0 0 var(--shadow-size--focus) var(--shadow-color--focus);
+            border-color: var(--border-color--hover);
         }
     }
 }
 
 :host([selected]) {
     [part~='header'] {
+        border-start-start-radius: var(--border-radius);
+        border-start-end-radius: var(--border-radius);
+        margin-block-end: calc(var(--border-size) * 1px);
         position: relative;
-        box-shadow: inset 0 0 0 var(--shadow-size) var(--shadow-color);
+        border-color: var(--border-color);
+        border-block-end-color: var(--header-background--selected);
+        z-index: map.get($tabs-z-index, 'header-selected--bootstrap');
 
-        &::after {
-            background: var(--header-background);
-            width: calc(100% - (var(--shadow-size) * 2));
-            inset-inline-start: var(--shadow-size);
-            bottom: 0;
-            height: calc(var(--shadow-size) + 1px);
-        }
-
-        &:focus-within:hover,
-        &:focus-within {
-            @extend %header-focus-within;
+        &:focus-visible {
+            @extend %header-focus-visible;
         }
     }
+}
+
+[part~='body'] {
+    background: var(--body-background);
 }

@@ -508,6 +508,8 @@ export default class IgcTabsComponent extends SizableMixin(
   protected renderSelectIndicator() {
     if (this.themeController.theme !== 'bootstrap') {
       return html`<div part="selected-indicator"><span></span></div>`;
+    } else {
+      return html`<div part="separator"><span></span></div>`;
     }
     return nothing;
   }
