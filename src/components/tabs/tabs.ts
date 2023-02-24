@@ -516,17 +516,17 @@ export default class IgcTabsComponent extends SizableMixin(
 
   protected override render() {
     return html`
-      <div
-        part="${partNameMap({
-          tabs: true,
-          scrollable: this.showScrollButtons,
-        })}"
-        role="tablist"
-        @scroll=${this.handleScroll}
-      >
-        ${this.renderScrollButton('start')}
-        <slot @slotchange=${this.tabsChanged}></slot>
-        ${this.renderScrollButton('end')} ${this.renderSelectIndicator()}
+      <div part="tabs" role="tablist" @scroll=${this.handleScroll}>
+        <div
+          part="${partNameMap({
+            inner: true,
+            scrollable: this.showScrollButtons,
+          })}"
+        >
+          ${this.renderScrollButton('start')}
+          <slot @slotchange=${this.tabsChanged}></slot>
+          ${this.renderScrollButton('end')} ${this.renderSelectIndicator()}
+        </div>
       </div>
     `;
   }

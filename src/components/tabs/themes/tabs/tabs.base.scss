@@ -42,7 +42,9 @@ $arrow-start: 0;
     --scroll-btn-background--disabled: #{color(surface, 500)};
     --scroll-btn-foreground--disabled: #{color(gray, 500)};
 
-    display: flex;
+    display: block;
+    overflow: hidden;
+    position: relative;
 }
 
 %fake-column {
@@ -56,14 +58,29 @@ $arrow-start: 0;
 // Tabs position START
 
 [part~='tabs'] {
-    display: grid;
-    min-width: calc(var(--tab-min-width) + (2 * var(--scroll-btn-size)));
-    align-items: center;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
     scroll-padding-left: var(--scroll-btn-size);
     scroll-padding-right: var(--scroll-btn-size);
+
+    /* stylelint-disable */
+    -ms-overflow-style: none;
+    /* stylelint-enable */
+
+    overscroll-behavior: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    scrollbar-width: none;
+}
+
+[part~='inner'] {
+    display: grid;
+    align-items: center;
+    position: relative;
 
     ::slotted(igc-tab) {
         display: contents;
@@ -79,13 +96,13 @@ $arrow-start: 0;
     scroll-padding-inline: var(--scroll-btn-size);
 }
 
-[part~='tabs']:not([part~='scrollable']) {
+[part~='inner']:not([part~='scrollable']) {
     grid-template-columns: repeat(var(--tabs-count), minmax(auto, min-content));
     min-width: var(--tab-min-width);
 }
 
 :host([alignment='start']) {
-    [part~='tabs']:not([part~='scrollable']) {
+    [part~='inner']:not([part~='scrollable']) {
         grid-template-columns: repeat(var(--tabs-count), minmax(max-content, auto)) 1fr;
 
         &::after {
@@ -95,7 +112,7 @@ $arrow-start: 0;
 }
 
 :host([alignment='center']) {
-    [part~='tabs']:not([part~='scrollable']) {
+    [part~='inner']:not([part~='scrollable']) {
         grid-template-columns: 1fr repeat(var(--tabs-count), minmax(max-content, auto)) 1fr;
 
         &::before,
@@ -106,7 +123,7 @@ $arrow-start: 0;
 }
 
 :host([alignment='end']) {
-    [part~='tabs']:not([part~='scrollable']) {
+    [part~='inner']:not([part~='scrollable']) {
         grid-template-columns: 1fr repeat(var(--tabs-count), minmax(max-content, auto));
 
         &::before {
@@ -124,7 +141,7 @@ $arrow-start: 0;
         /* stylelint-enable */
     }
 
-    [part~='tabs'] {
+    [part~='inner'] {
         grid-template-columns: repeat(var(--tabs-count), minmax(min-content, auto));
     }
 }
