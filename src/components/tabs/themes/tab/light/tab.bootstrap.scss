@@ -1,13 +1,19 @@
 @use '../../../../../styles/utilities' as *;
+@use '../../../tabs.common' as *;
+@use 'sass:map';
 
 %header-focus-within {
-    box-shadow: inset 0 0 0 rem(2px) var(--shadow-color--selected--focus);
+    box-shadow: inset 0 0 0 var(--shadow-size--focus) var(--shadow-color--focus);
     border-radius: rem(4px);
-    z-index: 1;
+    z-index: map.get($tabs-z-index, 'header-focus-within--bootstrap');
 
     &::after {
         display: none;
     }
+}
+
+%fake-column-border {
+    border-block-end: rem(1px) solid var();
 }
 
 [part~='header'] {
@@ -15,7 +21,7 @@
     border-start-end-radius: rem(4px);
 
     &:hover {
-        box-shadow: inset 0 0 0 rem(1px) var(--shadow-color--hover);
+        box-shadow: inset 0 0 0 var(--shadow-size) var(--shadow-color--hover);
     }
 
     &::after {
@@ -25,16 +31,16 @@
         bottom: 0;
         inset-inline-start: 0;
         width: 100%;
-        height: rem(1px);
-        background: var(--shadow-color--selected);
-        z-index: 1;
+        height: var(--shadow-size);
+        background: var(--shadow-color);
+        z-index: map.get($tabs-z-index, 'header-after--bootstrap');
     }
 
     &:focus-within {
         @extend %header-focus-within;
 
         &:hover {
-            box-shadow: inset 0 0 0 rem(2px) var(--shadow-color--selected--focus);
+            box-shadow: inset 0 0 0 var(--shadow-size--focus) var(--shadow-color--focus);
         }
     }
 }
@@ -42,7 +48,7 @@
 :host([selected]) {
     [part~='header'] {
         position: relative;
-        box-shadow: inset 0 0 0 rem(1px) var(--shadow-color--selected);
+        box-shadow: inset 0 0 0 var(--shadow-size) var(--shadow-color);
 
         &::after {
             background: var(--header-background);

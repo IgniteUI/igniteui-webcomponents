@@ -70,7 +70,7 @@ export default class IgcTabsComponent extends SizableMixin(
   @queryAssignedElements({ selector: 'igc-tab' })
   public tabs!: Array<IgcTabComponent>;
 
-  @query('[part~="headers-scroll"]', true)
+  @query('[part~="tabs"]', true)
   protected scrollWrapper!: HTMLElement;
 
   @query('[part="start-scroll-button"]', true)
@@ -516,7 +516,7 @@ export default class IgcTabsComponent extends SizableMixin(
     return html`
       <div
         part="${partNameMap({
-          'headers-scroll': true,
+          tabs: true,
           scrollable: this.showScrollButtons,
         })}"
         role="tablist"

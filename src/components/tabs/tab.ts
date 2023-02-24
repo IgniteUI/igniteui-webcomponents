@@ -101,7 +101,7 @@ export default class IgcTabComponent extends LitElement {
         <div part="base">
           <slot name="prefix" part="prefix"></slot>
           <div part="content">
-            <slot name="label" part="label">${this.label}</slot>
+            <slot name="label">${this.label}</slot>
           </div>
           <slot name="suffix" part="suffix"></slot>
         </div>
