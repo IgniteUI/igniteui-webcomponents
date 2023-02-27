@@ -13,16 +13,22 @@ defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 
 // region default
 const metadata: Meta<IgcNavDrawerComponent> = {
-  title: 'Nav Drawer',
+  title: 'NavDrawer',
   component: 'igc-nav-drawer',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Represents a side navigation container that provides\nquick access between views.',
+      },
+    },
+  },
   argTypes: {
     position: {
       type: '"start" | "end" | "top" | "bottom" | "relative"',
       description: 'The position of the drawer.',
       options: ['start', 'end', 'top', 'bottom', 'relative'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'start',
     },
     open: {
@@ -32,13 +38,18 @@ const metadata: Meta<IgcNavDrawerComponent> = {
       defaultValue: false,
     },
   },
-  args: {
-    position: 'start',
-    open: false,
-  },
+  args: { position: 'start', open: false },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcNavDrawerArgs {
+  /** The position of the drawer. */
+  position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
+  /** Determines whether the drawer is opened. */
+  open: boolean;
+}
+type Story = StoryObj<IgcNavDrawerArgs>;
 
 // endregion
 

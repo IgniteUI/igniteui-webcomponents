@@ -7,8 +7,16 @@ defineComponents(IgcRangeSliderComponent);
 
 // region default
 const metadata: Meta<IgcRangeSliderComponent> = {
-  title: 'Range Slider',
+  title: 'RangeSlider',
   component: 'igc-range-slider',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A range slider component used to select two numeric values within a range.',
+      },
+    },
+  },
   argTypes: {
     lower: {
       type: 'number',
@@ -95,9 +103,7 @@ const metadata: Meta<IgcRangeSliderComponent> = {
       type: '"start" | "end" | "mirror"',
       description: 'Changes the orientation of the ticks.',
       options: ['start', 'end', 'mirror'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'end',
     },
     hidePrimaryLabels: {
@@ -130,9 +136,7 @@ const metadata: Meta<IgcRangeSliderComponent> = {
       description:
         'The degrees for the rotation of the tick labels. Defaults to 0.',
       options: ['0', '90', '-90'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: '0',
     },
   },
@@ -149,8 +153,58 @@ const metadata: Meta<IgcRangeSliderComponent> = {
     tickLabelRotation: '0',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcRangeSliderArgs {
+  /** The current value of the lower thumb. */
+  lower: number;
+  /** The current value of the upper thumb. */
+  upper: number;
+  /** The aria label of the lower thumb. */
+  ariaLabelLower: string;
+  /** The aria label of the upper thumb. */
+  ariaLabelUpper: string;
+  /** The minimum value of the slider scale. Defaults to 0. */
+  min: number;
+  /** The maximum value of the slider scale. Defaults to 100. */
+  max: number;
+  /** The lower bound of the slider value. If not set, the `min` value is applied. */
+  lowerBound: number | undefined;
+  /** The upper bound of the slider value. If not set, the `max` value is applied. */
+  upperBound: number | undefined;
+  /** Disables the UI interactions of the slider. */
+  disabled: boolean;
+  /**
+   * Marks the slider track as discrete so it displays the steps.
+   * If the `step` is 0, the slider will remain continuos even if `discreteTrack` is `true`.
+   */
+  discreteTrack: boolean;
+  /** Hides the thumb tooltip. */
+  hideTooltip: boolean;
+  /**
+   * Specifies the granularity that the value must adhere to.
+   * If set to 0 no stepping is implied and any value in the range is allowed.
+   */
+  step: number;
+  /** The number of primary ticks. It defaults to 0 which means no primary ticks are displayed. */
+  primaryTicks: number;
+  /** The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed. */
+  secondaryTicks: number;
+  /** Changes the orientation of the ticks. */
+  tickOrientation: 'start' | 'end' | 'mirror';
+  /** Hides the primary tick labels. */
+  hidePrimaryLabels: boolean;
+  /** Hides the secondary tick labels. */
+  hideSecondaryLabels: boolean;
+  /** The locale used to format the thumb and tick label values in the slider. */
+  locale: string;
+  /** String format used for the thumb and tick label values in the slider. */
+  valueFormat: string | undefined;
+  /** The degrees for the rotation of the tick labels. Defaults to 0. */
+  tickLabelRotation: 0 | 90 | -90;
+}
+type Story = StoryObj<IgcRangeSliderArgs>;
 
 // endregion
 

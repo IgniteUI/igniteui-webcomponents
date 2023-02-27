@@ -9,14 +9,20 @@ defineComponents(IgcBadgeComponent);
 const metadata: Meta<IgcBadgeComponent> = {
   title: 'Badge',
   component: 'igc-badge',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The badge is a component indicating a status on a related item or an area\nwhere some active indication is required.',
+      },
+    },
+  },
   argTypes: {
     variant: {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
       description: 'The type of badge.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'primary',
     },
     outlined: {
@@ -29,20 +35,24 @@ const metadata: Meta<IgcBadgeComponent> = {
       type: '"rounded" | "square"',
       description: 'The shape of the badge.',
       options: ['rounded', 'square'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'rounded',
     },
   },
-  args: {
-    variant: 'primary',
-    outlined: false,
-    shape: 'rounded',
-  },
+  args: { variant: 'primary', outlined: false, shape: 'rounded' },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcBadgeArgs {
+  /** The type of badge. */
+  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
+  /** Sets whether to draw an outlined version of the badge. */
+  outlined: boolean;
+  /** The shape of the badge. */
+  shape: 'rounded' | 'square';
+}
+type Story = StoryObj<IgcBadgeArgs>;
 
 // endregion
 

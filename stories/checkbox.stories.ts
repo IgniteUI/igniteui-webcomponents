@@ -9,6 +9,14 @@ defineComponents(IgcCheckboxComponent);
 const metadata: Meta<IgcCheckboxComponent> = {
   title: 'Checkbox',
   component: 'igc-checkbox',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A check box allowing single values to be selected/deselected.',
+      },
+    },
+  },
   argTypes: {
     indeterminate: {
       type: 'boolean',
@@ -54,9 +62,7 @@ const metadata: Meta<IgcCheckboxComponent> = {
       type: '"before" | "after"',
       description: 'The label position of the control.',
       options: ['before', 'after'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'after',
     },
     ariaLabelledby: {
@@ -74,8 +80,30 @@ const metadata: Meta<IgcCheckboxComponent> = {
     labelPosition: 'after',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcCheckboxArgs {
+  /** Draws the checkbox in indeterminate state. */
+  indeterminate: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The value attribute of the control. */
+  value: string;
+  /** Disables the control. */
+  disabled: boolean;
+  /** The checked state of the control. */
+  checked: boolean;
+  /** Makes the control a required field. */
+  required: boolean;
+  /** Controls the validity of the control. */
+  invalid: boolean;
+  /** The label position of the control. */
+  labelPosition: 'before' | 'after';
+  /** Sets the aria-labelledby attribute for the control. */
+  ariaLabelledby: string;
+}
+type Story = StoryObj<IgcCheckboxArgs>;
 
 // endregion
 

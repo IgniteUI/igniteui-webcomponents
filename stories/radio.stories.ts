@@ -9,6 +9,7 @@ defineComponents(IgcRadioComponent);
 const metadata: Meta<IgcRadioComponent> = {
   title: 'Radio',
   component: 'igc-radio',
+  parameters: { docs: { description: {} } },
   argTypes: {
     name: {
       type: 'string',
@@ -48,9 +49,7 @@ const metadata: Meta<IgcRadioComponent> = {
       type: '"before" | "after"',
       description: 'The label position of the radio control.',
       options: ['before', 'after'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'after',
     },
     ariaLabelledby: {
@@ -67,8 +66,28 @@ const metadata: Meta<IgcRadioComponent> = {
     labelPosition: 'after',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcRadioArgs {
+  /** The name attribute of the control. */
+  name: string;
+  /** The value attribute of the control. */
+  value: string;
+  /** Makes the control a required field. */
+  required: boolean;
+  /** The checked state of the control. */
+  checked: boolean;
+  /** Disables the radio control. */
+  disabled: boolean;
+  /** Controls the validity of the control. */
+  invalid: boolean;
+  /** The label position of the radio control. */
+  labelPosition: 'before' | 'after';
+  /** Sets the aria-labelledby attribute for the radio control. */
+  ariaLabelledby: string;
+}
+type Story = StoryObj<IgcRadioArgs>;
 
 // endregion
 

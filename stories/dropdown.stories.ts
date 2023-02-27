@@ -21,6 +21,9 @@ defineComponents(IgcDropdownComponent, IgcInputComponent);
 const metadata: Meta<IgcDropdownComponent> = {
   title: 'Dropdown',
   component: 'igc-dropdown',
+  parameters: {
+    docs: { description: { component: 'Represents a DropDown component.' } },
+  },
   argTypes: {
     keepOpenOnSelect: {
       type: 'boolean',
@@ -33,9 +36,7 @@ const metadata: Meta<IgcDropdownComponent> = {
       description:
         'Determines the behavior of the component during scrolling the container.',
       options: ['scroll', 'block', 'close'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'scroll',
     },
     keepOpenOnOutsideClick: {
@@ -69,18 +70,14 @@ const metadata: Meta<IgcDropdownComponent> = {
         'left-start',
         'left-end',
       ],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'bottom-start',
     },
     positionStrategy: {
       type: '"absolute" | "fixed"',
       description: "Sets the component's positioning strategy.",
       options: ['absolute', 'fixed'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'absolute',
     },
     flip: {
@@ -107,9 +104,7 @@ const metadata: Meta<IgcDropdownComponent> = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
@@ -126,8 +121,47 @@ const metadata: Meta<IgcDropdownComponent> = {
     size: 'large',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcDropdownArgs {
+  /** Whether the dropdown should be kept open on selection. */
+  keepOpenOnSelect: boolean;
+  /** Determines the behavior of the component during scrolling the container. */
+  scrollStrategy: 'scroll' | 'block' | 'close';
+  /** Whether the component should be kept open on clicking outside of it. */
+  keepOpenOnOutsideClick: boolean;
+  /** Sets the open state of the component. */
+  open: boolean;
+  /** The preferred placement of the component around the target element. */
+  placement:
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'right'
+    | 'right-start'
+    | 'right-end'
+    | 'left'
+    | 'left-start'
+    | 'left-end';
+  /** Sets the component's positioning strategy. */
+  positionStrategy: 'absolute' | 'fixed';
+  /**
+   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
+   * When true, once enough space is detected on its preferred side, it will flip back.
+   */
+  flip: boolean;
+  /** The distance from the target element. */
+  distance: number;
+  /** Whether the dropdown's width should be the same as the target's one. */
+  sameWidth: boolean;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcDropdownArgs>;
 
 // endregion
 

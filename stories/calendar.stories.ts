@@ -10,6 +10,14 @@ defineComponents(IgcCalendarComponent);
 const metadata: Meta<IgcCalendarComponent> = {
   title: 'Calendar',
   component: 'igc-calendar',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Represents a calendar that lets users\nto select a date value in a variety of different ways.',
+      },
+    },
+  },
   argTypes: {
     hideOutsideDays: {
       type: 'boolean',
@@ -29,9 +37,7 @@ const metadata: Meta<IgcCalendarComponent> = {
       type: '"vertical" | "horizontal"',
       description: 'The orientation of the header.',
       options: ['vertical', 'horizontal'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'horizontal',
     },
     orientation: {
@@ -39,9 +45,7 @@ const metadata: Meta<IgcCalendarComponent> = {
       description:
         'The orientation of the multiple months displayed in days view.',
       options: ['vertical', 'horizontal'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'horizontal',
     },
     visibleMonths: {
@@ -54,18 +58,14 @@ const metadata: Meta<IgcCalendarComponent> = {
       type: '"days" | "months" | "years"',
       description: 'The active view.',
       options: ['days', 'months', 'years'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'days',
     },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
     value: {
@@ -78,9 +78,7 @@ const metadata: Meta<IgcCalendarComponent> = {
       type: '"single" | "multiple" | "range"',
       description: 'Sets the type of date selection.',
       options: ['single', 'multiple', 'range'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'single',
     },
     showWeekNumbers: {
@@ -101,9 +99,7 @@ const metadata: Meta<IgcCalendarComponent> = {
         'friday',
         'saturday',
       ],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'sunday',
     },
     activeDate: {
@@ -134,59 +130,99 @@ const metadata: Meta<IgcCalendarComponent> = {
     locale: 'en',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcCalendarArgs {
+  /** Controls the visibility of the dates that do not belong to the current month. */
+  hideOutsideDays: boolean;
+  /** Determines whether the calendar hides its header. Even if set to false, the header is not displayed for `multiple` selection. */
+  hideHeader: boolean;
+  /** The orientation of the header. */
+  headerOrientation: 'vertical' | 'horizontal';
+  /** The orientation of the multiple months displayed in days view. */
+  orientation: 'vertical' | 'horizontal';
+  /** The number of months displayed in days view. */
+  visibleMonths: number;
+  /** The active view. */
+  activeView: 'days' | 'months' | 'years';
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+  /**
+   * Тhe current value of the calendar.
+   * Used when selection is set to single.
+   */
+  value: Date | undefined;
+  /** Sets the type of date selection. */
+  selection: 'single' | 'multiple' | 'range';
+  /** Show/hide the week numbers. */
+  showWeekNumbers: boolean;
+  /** Sets the start day of the week. */
+  weekStart:
+    | 'sunday'
+    | 'monday'
+    | 'tuesday'
+    | 'wednesday'
+    | 'thursday'
+    | 'friday'
+    | 'saturday';
+  /** Sets the date which is shown in view and is highlighted. By default it is the current date. */
+  activeDate: Date;
+  /** Sets the locale used for formatting and displaying the dates in the calendar. */
+  locale: string;
+}
+type Story = StoryObj<IgcCalendarArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
-  actions: {
-    handles: ['igcChange'],
-  },
-};
+// (metadata as any).parameters = {
+//   actions: {
+//     handles: ['igcChange'],
+//   },
+// };
 
-(metadata.argTypes as any).weekDayFormat = {
-  type: '"long" | "short" | "narrow"',
-  options: ['long', 'short', 'narrow'],
-  control: {
-    type: 'inline-radio',
-  },
-  table: {
-    defaultValue: {
-      summary: 'narrow',
-    },
-  },
-};
+// (metadata.argTypes as any).weekDayFormat = {
+//   type: '"long" | "short" | "narrow"',
+//   options: ['long', 'short', 'narrow'],
+//   control: {
+//     type: 'inline-radio',
+//   },
+//   table: {
+//     defaultValue: {
+//       summary: 'narrow',
+//     },
+//   },
+// };
 
-(metadata.argTypes as any).monthFormat = {
-  type: '"numeric" | "2-digit" | "long" | "short" | "narrow"',
-  options: ['numeric', '2-digit', 'long', 'short', 'narrow'],
-  control: {
-    type: 'inline-radio',
-  },
-  table: {
-    defaultValue: {
-      summary: 'long',
-    },
-  },
-};
+// (metadata.argTypes as any).monthFormat = {
+//   type: '"numeric" | "2-digit" | "long" | "short" | "narrow"',
+//   options: ['numeric', '2-digit', 'long', 'short', 'narrow'],
+//   control: {
+//     type: 'inline-radio',
+//   },
+//   table: {
+//     defaultValue: {
+//       summary: 'long',
+//     },
+//   },
+// };
 
-(metadata.argTypes as any).title = {
-  type: 'string',
-  control: 'text',
-};
+// (metadata.argTypes as any).title = {
+//   type: 'string',
+//   control: 'text',
+// };
 
-(metadata.argTypes as any).values = {
-  type: 'string',
-  control: 'text',
-};
+// (metadata.argTypes as any).values = {
+//   type: 'string',
+//   control: 'text',
+// };
 
-interface ArgTypes {
-  weekDayFormat: 'long' | 'short' | 'narrow';
-  monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
-  title: string;
-  values: string;
-}
+// interface ArgTypes {
+//   weekDayFormat: 'long' | 'short' | 'narrow';
+//   monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
+//   title: string;
+//   values: string;
+// }
 
 const Template: Story<ArgTypes, Context> = (
   {

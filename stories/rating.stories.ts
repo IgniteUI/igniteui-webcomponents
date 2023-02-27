@@ -20,6 +20,14 @@ icons.forEach((icon) => {
 const metadata: Meta<IgcRatingComponent> = {
   title: 'Rating',
   component: 'igc-rating',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Rating provides insight regarding others' opinions and experiences,\nand can allow the user to submit a rating of their own",
+      },
+    },
+  },
   argTypes: {
     max: {
       type: 'number',
@@ -85,9 +93,7 @@ const metadata: Meta<IgcRatingComponent> = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
@@ -102,8 +108,48 @@ const metadata: Meta<IgcRatingComponent> = {
     size: 'large',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcRatingArgs {
+  /**
+   * The maximum value for the rating.
+   *
+   * If there are projected symbols, the maximum value will be resolved
+   * based on the number of symbols.
+   */
+  max: number;
+  /**
+   * The minimum value change allowed.
+   *
+   * Valid values are in the interval between 0 and 1 inclusive.
+   */
+  step: number;
+  /** The name attribute of the control */
+  name: string;
+  /** The label of the control. */
+  label: string;
+  /**
+   * A format string which sets aria-valuetext. Instances of '{0}' will be replaced
+   * with the current value of the control and instances of '{1}' with the maximum value for the control.
+   *
+   * Important for screen-readers and useful for localization.
+   */
+  valueFormat: string;
+  /** The current value of the component */
+  value: number;
+  /** Sets the disabled state of the component */
+  disabled: boolean;
+  /** Sets hover preview behavior for the component */
+  hoverPreview: boolean;
+  /** Sets the readonly state of the component */
+  readonly: boolean;
+  /** Toggles single selection visual mode. */
+  single: boolean;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcRatingArgs>;
 
 // endregion
 

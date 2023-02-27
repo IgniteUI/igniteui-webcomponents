@@ -11,6 +11,7 @@ defineComponents(IgcComboComponent);
 const metadata: Meta<IgcComboComponent> = {
   title: 'Combo',
   component: 'igc-combo',
+  parameters: { docs: { description: {} } },
   argTypes: {
     name: {
       type: 'string',
@@ -79,9 +80,7 @@ const metadata: Meta<IgcComboComponent> = {
       type: '"ltr" | "rtl" | "auto"',
       description: 'The direction attribute of the control.',
       options: ['ltr', 'rtl', 'auto'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'auto',
     },
     open: {
@@ -90,19 +89,13 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    flip: {
-      type: 'boolean',
-      control: 'boolean',
-      defaultValue: true,
-    },
+    flip: { type: 'boolean', control: 'boolean', defaultValue: true },
     groupSorting: {
       type: '"asc" | "desc"',
       description:
         'Sorts the items in each group by ascending or descending order.',
       options: ['asc', 'desc'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'asc',
     },
     caseSensitiveIcon: {
@@ -141,8 +134,50 @@ const metadata: Meta<IgcComboComponent> = {
     disableFiltering: false,
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcComboArgs {
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled attribute of the control. */
+  disabled: boolean;
+  /** The required attribute of the control. */
+  required: boolean;
+  /** The invalid attribute of the control. */
+  invalid: boolean;
+  /** The outlined attribute of the control. */
+  outlined: boolean;
+  /** Enables single selection mode and moves item filtering to the main input. */
+  singleSelect: boolean;
+  /** The autofocus attribute of the control. */
+  autofocus: boolean;
+  /** Focuses the list of options when the menu opens. */
+  autofocusList: boolean;
+  /** The label attribute of the control. */
+  label: string;
+  /** The placeholder attribute of the control. */
+  placeholder: string;
+  /** The placeholder attribute of the search input. */
+  placeholderSearch: string;
+  /** The direction attribute of the control. */
+  dir: 'ltr' | 'rtl' | 'auto';
+  /** Sets the open state of the component. */
+  open: boolean;
+  flip: boolean;
+  /** Sorts the items in each group by ascending or descending order. */
+  groupSorting: 'asc' | 'desc';
+  /** Enables the case sensitive search icon in the filtering input. */
+  caseSensitiveIcon: boolean;
+  /** Disables the filtering of the list of options. */
+  disableFiltering: boolean;
+  /**
+   * Returns the current selection as a list of commma separated values,
+   * represented by the display key, when provided.
+   */
+  value: string;
+}
+type Story = StoryObj<IgcComboArgs>;
 
 // endregion
 

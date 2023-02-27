@@ -12,11 +12,21 @@ defineComponents(IgcButtonComponent, IgcRippleComponent);
 const metadata: Meta<IgcRippleComponent> = {
   title: 'Ripple',
   component: 'igc-ripple',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A ripple can be applied to an element to represent\ninteractive surface.',
+      },
+    },
+  },
   argTypes: {},
   args: {},
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+type Story = StoryObj;
 
 // endregion
 

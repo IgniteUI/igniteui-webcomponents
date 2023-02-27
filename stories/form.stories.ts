@@ -34,6 +34,14 @@ defineComponents(
 const metadata: Meta<IgcFormComponent> = {
   title: 'Form',
   component: 'igc-form',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The form is a component used to collect user input from\ninteractive controls.',
+      },
+    },
+  },
   argTypes: {
     novalidate: {
       type: 'boolean',
@@ -43,12 +51,16 @@ const metadata: Meta<IgcFormComponent> = {
       defaultValue: false,
     },
   },
-  args: {
-    novalidate: false,
-  },
+  args: { novalidate: false },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcFormArgs {
+  /** Specifies if form data validation should be skipped on submit. */
+  novalidate: boolean;
+}
+type Story = StoryObj<IgcFormArgs>;
 
 // endregion
 

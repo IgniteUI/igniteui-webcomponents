@@ -13,6 +13,13 @@ defineComponents(IgcToastComponent, IgcButtonComponent);
 const metadata: Meta<IgcToastComponent> = {
   title: 'Toast',
   component: 'igc-toast',
+  parameters: {
+    docs: {
+      description: {
+        component: 'A toast component is used to show a notification',
+      },
+    },
+  },
   argTypes: {
     open: {
       type: 'boolean',
@@ -34,14 +41,20 @@ const metadata: Meta<IgcToastComponent> = {
       defaultValue: false,
     },
   },
-  args: {
-    open: false,
-    displayTime: '4000',
-    keepOpen: false,
-  },
+  args: { open: false, displayTime: '4000', keepOpen: false },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcToastArgs {
+  /** Determines whether the toast is opened. */
+  open: boolean;
+  /** Determines the time after which the toast will close */
+  displayTime: number;
+  /** Determines whether the toast is closed automatically or not. */
+  keepOpen: boolean;
+}
+type Story = StoryObj<IgcToastArgs>;
 
 // endregion
 const handleShow = () => {

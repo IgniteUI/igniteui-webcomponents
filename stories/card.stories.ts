@@ -25,6 +25,14 @@ icons.forEach((icon) => {
 const metadata: Meta<IgcCardComponent> = {
   title: 'Card',
   component: 'igc-card',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A container which wraps different elements related to a single subject',
+      },
+    },
+  },
   argTypes: {
     elevated: {
       type: 'boolean',
@@ -33,12 +41,16 @@ const metadata: Meta<IgcCardComponent> = {
       defaultValue: false,
     },
   },
-  args: {
-    elevated: false,
-  },
+  args: { elevated: false },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcCardArgs {
+  /** Sets card elevated style, otherwise card looks outlined. */
+  elevated: boolean;
+}
+type Story = StoryObj<IgcCardArgs>;
 
 // endregion
 interface Context {

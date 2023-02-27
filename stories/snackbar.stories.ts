@@ -13,6 +13,14 @@ defineComponents(IgcSnackbarComponent, IgcButtonComponent);
 const metadata: Meta<IgcSnackbarComponent> = {
   title: 'Snackbar',
   component: 'igc-snackbar',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.',
+      },
+    },
+  },
   argTypes: {
     open: {
       type: 'boolean',
@@ -40,14 +48,22 @@ const metadata: Meta<IgcSnackbarComponent> = {
       control: 'text',
     },
   },
-  args: {
-    open: false,
-    displayTime: '4000',
-    keepOpen: false,
-  },
+  args: { open: false, displayTime: '4000', keepOpen: false },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcSnackbarArgs {
+  /** Determines whether the snackbar is opened. */
+  open: boolean;
+  /** Determines the duration in ms in which the snackbar will be visible. */
+  displayTime: number;
+  /** Determines whether the snackbar should close after the displayTime is over. */
+  keepOpen: boolean;
+  /** The snackbar action button. */
+  actionText: string;
+}
+type Story = StoryObj<IgcSnackbarArgs>;
 
 // endregion
 

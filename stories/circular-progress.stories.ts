@@ -10,8 +10,16 @@ defineComponents(IgcCircularProgressComponent);
 
 // region default
 const metadata: Meta<IgcCircularProgressComponent> = {
-  title: 'Circular Progress',
+  title: 'CircularProgress',
   component: 'igc-circular-progress',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A circular progress indicator used to express unspecified wait time or display\nthe length of a process.',
+      },
+    },
+  },
   argTypes: {
     max: {
       type: 'number',
@@ -29,9 +37,7 @@ const metadata: Meta<IgcCircularProgressComponent> = {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
       description: 'The variant of the control.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'primary',
     },
     animationDuration: {
@@ -68,8 +74,31 @@ const metadata: Meta<IgcCircularProgressComponent> = {
     hideLabel: false,
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcCircularProgressArgs {
+  /** Maximum value of the control. */
+  max: number;
+  /** The value of the control. */
+  value: number;
+  /** The variant of the control. */
+  variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
+  /** Animation duration in milliseconds. */
+  animationDuration: number;
+  /** The indeterminate state of the control. */
+  indeterminate: boolean;
+  /** Shows/hides the label of the control. */
+  hideLabel: boolean;
+  /**
+   * Format string for the default label of the control.
+   * Placeholders:
+   *  {0} - current value of the control.
+   *  {1} - max value of the control.
+   */
+  labelFormat: string;
+}
+type Story = StoryObj<IgcCircularProgressArgs>;
 
 // endregion
 

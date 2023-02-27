@@ -15,6 +15,9 @@ defineComponents(IgcTabsComponent);
 const metadata: Meta<IgcTabsComponent> = {
   title: 'Tabs',
   component: 'igc-tabs',
+  parameters: {
+    docs: { description: { component: 'Represents tabs component' } },
+  },
   argTypes: {
     selected: {
       type: 'string',
@@ -25,9 +28,7 @@ const metadata: Meta<IgcTabsComponent> = {
       type: '"start" | "end" | "center" | "justify"',
       description: 'Sets the alignment for the tab headers',
       options: ['start', 'end', 'center', 'justify'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'start',
     },
     activation: {
@@ -35,19 +36,29 @@ const metadata: Meta<IgcTabsComponent> = {
       description:
         'Determines the tab activation. When set to auto,\nthe tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys\nand the corresponding panel is displayed.\nWhen set to manual, the tab is only focused. The selection happens after pressing Space or Enter.',
       options: ['auto', 'manual'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'auto',
     },
   },
-  args: {
-    alignment: 'start',
-    activation: 'auto',
-  },
+  args: { alignment: 'start', activation: 'auto' },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcTabsArgs {
+  /** Returns the currently selected tab. */
+  selected: string;
+  /** Sets the alignment for the tab headers */
+  alignment: 'start' | 'end' | 'center' | 'justify';
+  /**
+   * Determines the tab activation. When set to auto,
+   * the tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys
+   * and the corresponding panel is displayed.
+   * When set to manual, the tab is only focused. The selection happens after pressing Space or Enter.
+   */
+  activation: 'auto' | 'manual';
+}
+type Story = StoryObj<IgcTabsArgs>;
 
 // endregion
 

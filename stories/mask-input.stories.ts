@@ -14,17 +14,23 @@ registerIconFromText(github.name, github.value);
 
 // region default
 const metadata: Meta<IgcMaskInputComponent> = {
-  title: 'Mask Input',
+  title: 'MaskInput',
   component: 'igc-mask-input',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A masked input is an input field where a developer can control user input and format the visible value,\nbased on configurable rules',
+      },
+    },
+  },
   argTypes: {
     valueMode: {
       type: '"raw" | "withFormatting"',
       description:
         'Dictates the behavior when retrieving the value of the control:\n\n- `raw` will return the clean user input.\n- `withFormatting` will return the value with all literals and prompts.',
       options: ['raw', 'withFormatting'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'raw',
     },
     mask: {
@@ -92,9 +98,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
@@ -108,8 +112,47 @@ const metadata: Meta<IgcMaskInputComponent> = {
     size: 'medium',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcMaskInputArgs {
+  /**
+   * Dictates the behavior when retrieving the value of the control:
+   *
+   * - `raw` will return the clean user input.
+   * - `withFormatting` will return the value with all literals and prompts.
+   */
+  valueMode: 'raw' | 'withFormatting';
+  /** The mask pattern to apply on the input. */
+  mask: string;
+  /** The prompt symbol to use for unfilled parts of the mask. */
+  prompt: string;
+  /** Controls the validity of the control. */
+  invalid: boolean;
+  /**
+   * The value of the input.
+   *
+   * Regardless of the currently set `value-mode`, an empty value will return an empty string.
+   */
+  value: string;
+  /** The name attribute of the control. */
+  name: string;
+  /** Whether the control will have outlined appearance. */
+  outlined: boolean;
+  /** Makes the control a required field. */
+  required: boolean;
+  /** Makes the control a disabled field. */
+  disabled: boolean;
+  /** Makes the control a readonly field. */
+  readonly: boolean;
+  /** The placeholder attribute of the control. */
+  placeholder: string;
+  /** The label for the control. */
+  label: string;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcMaskInputArgs>;
 
 // endregion
 

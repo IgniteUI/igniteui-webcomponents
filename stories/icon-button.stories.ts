@@ -11,8 +11,9 @@ const icons = all.map((icon) => icon.name);
 
 // region default
 const metadata: Meta<IgcIconButtonComponent> = {
-  title: 'Icon Button',
+  title: 'IconButton',
   component: 'igc-icon-button',
+  parameters: { docs: { description: {} } },
   argTypes: {
     name: {
       type: 'string',
@@ -34,18 +35,14 @@ const metadata: Meta<IgcIconButtonComponent> = {
       type: '"flat" | "contained" | "outlined"',
       description: 'The visual variant of the icon button.',
       options: ['flat', 'contained', 'outlined'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'contained',
     },
     type: {
       type: '"button" | "reset" | "submit"',
       description: 'The type of the button. Defaults to undefined.',
       options: ['button', 'reset', 'submit'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
     },
     href: {
       type: 'string',
@@ -63,9 +60,7 @@ const metadata: Meta<IgcIconButtonComponent> = {
       description:
         'Where to display the linked URL, as the name for a browsing context.',
       options: ['_blank', '_parent', '_self', '_top', 'undefined'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
     },
     rel: {
       type: 'string',
@@ -79,17 +74,12 @@ const metadata: Meta<IgcIconButtonComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    ariaLabel: {
-      type: 'string',
-      control: 'text',
-    },
+    ariaLabel: { type: 'string', control: 'text' },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
@@ -100,8 +90,38 @@ const metadata: Meta<IgcIconButtonComponent> = {
     size: 'large',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcIconButtonArgs {
+  /** The name of the icon. */
+  name: string;
+  /** The name of the icon collection. */
+  collection: string;
+  /** Whether to flip the icon button. Useful for RTL layouts. */
+  mirrored: boolean;
+  /** The visual variant of the icon button. */
+  variant: 'flat' | 'contained' | 'outlined';
+  /** The type of the button. Defaults to undefined. */
+  type: 'button' | 'reset' | 'submit';
+  /** The URL the button points to. */
+  href: string;
+  /** Prompts to save the linked URL instead of navigating to it. */
+  download: string;
+  /** Where to display the linked URL, as the name for a browsing context. */
+  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  /**
+   * The relationship of the linked URL.
+   * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+   */
+  rel: string;
+  /** Determines whether the button is disabled. */
+  disabled: boolean;
+  ariaLabel: string;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcIconButtonArgs>;
 
 // endregion
 

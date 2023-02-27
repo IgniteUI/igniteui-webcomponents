@@ -9,23 +9,27 @@ defineComponents(IgcButtonComponent);
 const metadata: Meta<IgcButtonComponent> = {
   title: 'Button',
   component: 'igc-button',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Represents a clickable button, used to submit forms or anywhere in a\ndocument for accessible, standard button functionality.',
+      },
+    },
+  },
   argTypes: {
     variant: {
       type: '"flat" | "contained" | "outlined" | "fab"',
       description: 'Sets the variant of the button.',
       options: ['flat', 'contained', 'outlined', 'fab'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'contained',
     },
     type: {
       type: '"button" | "reset" | "submit"',
       description: 'The type of the button. Defaults to undefined.',
       options: ['button', 'reset', 'submit'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
     },
     href: {
       type: 'string',
@@ -43,9 +47,7 @@ const metadata: Meta<IgcButtonComponent> = {
       description:
         'Where to display the linked URL, as the name for a browsing context.',
       options: ['_blank', '_parent', '_self', '_top', 'undefined'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
     },
     rel: {
       type: 'string',
@@ -59,28 +61,43 @@ const metadata: Meta<IgcButtonComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    ariaLabel: {
-      type: 'string',
-      control: 'text',
-    },
+    ariaLabel: { type: 'string', control: 'text' },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
-  args: {
-    variant: 'contained',
-    disabled: false,
-    size: 'medium',
-  },
+  args: { variant: 'contained', disabled: false, size: 'medium' },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcButtonArgs {
+  /** Sets the variant of the button. */
+  variant: 'flat' | 'contained' | 'outlined' | 'fab';
+  /** The type of the button. Defaults to undefined. */
+  type: 'button' | 'reset' | 'submit';
+  /** The URL the button points to. */
+  href: string;
+  /** Prompts to save the linked URL instead of navigating to it. */
+  download: string;
+  /** Where to display the linked URL, as the name for a browsing context. */
+  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  /**
+   * The relationship of the linked URL.
+   * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+   */
+  rel: string;
+  /** Determines whether the button is disabled. */
+  disabled: boolean;
+  ariaLabel: string;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcButtonArgs>;
 
 // endregion
 

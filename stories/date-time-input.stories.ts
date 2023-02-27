@@ -12,8 +12,16 @@ defineComponents(IgcDateTimeInputComponent);
 
 // region default
 const metadata: Meta<IgcDateTimeInputComponent> = {
-  title: 'Date Time Input',
+  title: 'DateTimeInput',
   component: 'igc-date-time-input',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A date time input is an input field that lets you set and edit the date and time in a chosen input element\nusing customizable display and input formats.',
+      },
+    },
+  },
   argTypes: {
     inputFormat: {
       type: 'string',
@@ -107,9 +115,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
@@ -124,8 +130,49 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     size: 'medium',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcDateTimeInputArgs {
+  /** The date format to apply on the input. */
+  inputFormat: string;
+  /** The minimum value required for the input to remain valid. */
+  minValue: Date | null;
+  /** The maximum value required for the input to remain valid. */
+  maxValue: Date | null;
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the input format if not set.
+   */
+  displayFormat: string;
+  /** Sets whether to loop over the currently spun segment. */
+  spinLoop: boolean;
+  /** The locale settings used to display the value. */
+  locale: string;
+  /** The prompt symbol to use for unfilled parts of the mask. */
+  prompt: string;
+  /** Controls the validity of the control. */
+  invalid: boolean;
+  /** The value of the input. */
+  value: Date | null;
+  /** The name attribute of the control. */
+  name: string;
+  /** Whether the control will have outlined appearance. */
+  outlined: boolean;
+  /** Makes the control a required field. */
+  required: boolean;
+  /** Makes the control a disabled field. */
+  disabled: boolean;
+  /** Makes the control a readonly field. */
+  readonly: boolean;
+  /** The placeholder attribute of the control. */
+  placeholder: string;
+  /** The label for the control. */
+  label: string;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcDateTimeInputArgs>;
 
 // endregion
 

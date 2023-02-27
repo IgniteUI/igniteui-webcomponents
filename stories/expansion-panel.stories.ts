@@ -6,8 +6,16 @@ defineComponents(IgcExpansionPanelComponent);
 
 // region default
 const metadata: Meta<IgcExpansionPanelComponent> = {
-  title: 'Expansion Panel',
+  title: 'ExpansionPanel',
   component: 'igc-expansion-panel',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The Expansion Panel Component provides a way to display information in a toggleable way -\ncompact summary view containing title and description and expanded detail view containing\nadditional content to the summary header.',
+      },
+    },
+  },
   argTypes: {
     open: {
       type: 'boolean',
@@ -27,20 +35,24 @@ const metadata: Meta<IgcExpansionPanelComponent> = {
       type: '"start" | "end" | "none"',
       description: 'The indicator position of the expansion panel.',
       options: ['start', 'end', 'none'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'start',
     },
   },
-  args: {
-    open: false,
-    disabled: false,
-    indicatorPosition: 'start',
-  },
+  args: { open: false, disabled: false, indicatorPosition: 'start' },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcExpansionPanelArgs {
+  /** Indicates whether the contents of the control should be visible. */
+  open: boolean;
+  /** Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions. */
+  disabled: boolean;
+  /** The indicator position of the expansion panel. */
+  indicatorPosition: 'start' | 'end' | 'none';
+}
+type Story = StoryObj<IgcExpansionPanelArgs>;
 
 // endregion
 

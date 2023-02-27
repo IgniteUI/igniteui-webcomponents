@@ -3,6 +3,7 @@
 import { html } from 'lit';
 import { configureTheme } from '../src/theming';
 import type { Decorator } from '@storybook/web-components';
+import { withActions } from '@storybook/addon-actions/decorator';
 
 type ThemeImport = { default: string };
 
@@ -101,4 +102,4 @@ const themeProvider: Decorator = (Story, context) => {
   return html`${styles}${Story()}`;
 };
 
-export const decorators = [themeProvider];
+export const decorators = [themeProvider, withActions];

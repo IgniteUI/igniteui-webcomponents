@@ -9,6 +9,14 @@ defineComponents(IgcSwitchComponent);
 const metadata: Meta<IgcSwitchComponent> = {
   title: 'Switch',
   component: 'igc-switch',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Similar to a checkbox, a switch controls the state of a single setting on or off.',
+      },
+    },
+  },
   argTypes: {
     name: {
       type: 'string',
@@ -48,9 +56,7 @@ const metadata: Meta<IgcSwitchComponent> = {
       type: '"before" | "after"',
       description: 'The label position of the control.',
       options: ['before', 'after'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'after',
     },
     ariaLabelledby: {
@@ -67,8 +73,28 @@ const metadata: Meta<IgcSwitchComponent> = {
     labelPosition: 'after',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcSwitchArgs {
+  /** The name attribute of the control. */
+  name: string;
+  /** The value attribute of the control. */
+  value: string;
+  /** Disables the control. */
+  disabled: boolean;
+  /** The checked state of the control. */
+  checked: boolean;
+  /** Makes the control a required field. */
+  required: boolean;
+  /** Controls the validity of the control. */
+  invalid: boolean;
+  /** The label position of the control. */
+  labelPosition: 'before' | 'after';
+  /** Sets the aria-labelledby attribute for the control. */
+  ariaLabelledby: string;
+}
+type Story = StoryObj<IgcSwitchArgs>;
 
 // endregion
 

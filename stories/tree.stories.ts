@@ -12,6 +12,14 @@ defineComponents(IgcTreeComponent);
 const metadata: Meta<IgcTreeComponent> = {
   title: 'Tree',
   component: 'igc-tree',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The tree allows users to represent hierarchical data in a tree-view structure,\nmaintaining parent-child relationships, as well as to define static tree-view structure without a corresponding data model.',
+      },
+    },
+  },
   argTypes: {
     singleBranchExpand: {
       type: 'boolean',
@@ -24,29 +32,31 @@ const metadata: Meta<IgcTreeComponent> = {
       type: '"multiple" | "none" | "cascade"',
       description: 'The selection state of the tree.',
       options: ['multiple', 'none', 'cascade'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'none',
     },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
-  args: {
-    singleBranchExpand: false,
-    selection: 'none',
-    size: 'large',
-  },
+  args: { singleBranchExpand: false, selection: 'none', size: 'large' },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcTreeArgs {
+  /** Whether a single or multiple of a parent's child items can be expanded. */
+  singleBranchExpand: boolean;
+  /** The selection state of the tree. */
+  selection: 'multiple' | 'none' | 'cascade';
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcTreeArgs>;
 
 // endregion
 

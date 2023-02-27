@@ -17,6 +17,7 @@ const icons = all.map((icon) => icon.name);
 const metadata: Meta<IgcIconComponent> = {
   title: 'Icon',
   component: 'igc-icon',
+  parameters: { docs: { description: { component: 'Icon component' } } },
   argTypes: {
     name: {
       type: 'string',
@@ -41,21 +42,29 @@ const metadata: Meta<IgcIconComponent> = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
-  args: {
-    name: '',
-    collection: 'default',
-    mirrored: false,
-    size: 'medium',
-  },
+  args: { name: '', collection: 'default', mirrored: false, size: 'medium' },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcIconArgs {
+  /** The name of the icon glyph to draw. */
+  name: string;
+  /**
+   * The name of the registered collection for look up of icons.
+   * Defaults to `default`.
+   */
+  collection: string;
+  /** Whether to flip the icon. Useful for RTL layouts. */
+  mirrored: boolean;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcIconArgs>;
 
 // endregion
 

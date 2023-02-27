@@ -16,6 +16,7 @@ registerIconFromText(github.name, github.value);
 const metadata: Meta<IgcSelectComponent> = {
   title: 'Select',
   component: 'igc-select',
+  parameters: { docs: { description: {} } },
   argTypes: {
     value: {
       type: 'string | undefined',
@@ -70,9 +71,7 @@ const metadata: Meta<IgcSelectComponent> = {
       type: '"ltr" | "rtl" | "auto"',
       description: 'The direction attribute of the control.',
       options: ['ltr', 'rtl', 'auto'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'auto',
     },
     keepOpenOnSelect: {
@@ -86,9 +85,7 @@ const metadata: Meta<IgcSelectComponent> = {
       description:
         'Determines the behavior of the component during scrolling the container.',
       options: ['scroll', 'block', 'close'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'scroll',
     },
     keepOpenOnOutsideClick: {
@@ -122,18 +119,14 @@ const metadata: Meta<IgcSelectComponent> = {
         'left-start',
         'left-end',
       ],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'bottom-start',
     },
     positionStrategy: {
       type: '"absolute" | "fixed"',
       description: "Sets the component's positioning strategy.",
       options: ['absolute', 'fixed'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'absolute',
     },
     flip: {
@@ -160,9 +153,7 @@ const metadata: Meta<IgcSelectComponent> = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
@@ -184,8 +175,67 @@ const metadata: Meta<IgcSelectComponent> = {
     size: 'medium',
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcSelectArgs {
+  /** The value attribute of the control. */
+  value: string | undefined;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled attribute of the control. */
+  disabled: boolean;
+  /** The required attribute of the control. */
+  required: boolean;
+  /** The invalid attribute of the control. */
+  invalid: boolean;
+  /** The outlined attribute of the control. */
+  outlined: boolean;
+  /** The autofocus attribute of the control. */
+  autofocus: boolean;
+  /** The label attribute of the control. */
+  label: string;
+  /** The placeholder attribute of the control. */
+  placeholder: string;
+  /** The direction attribute of the control. */
+  dir: 'ltr' | 'rtl' | 'auto';
+  /** Whether the dropdown should be kept open on selection. */
+  keepOpenOnSelect: boolean;
+  /** Determines the behavior of the component during scrolling the container. */
+  scrollStrategy: 'scroll' | 'block' | 'close';
+  /** Whether the component should be kept open on clicking outside of it. */
+  keepOpenOnOutsideClick: boolean;
+  /** Sets the open state of the component. */
+  open: boolean;
+  /** The preferred placement of the component around the target element. */
+  placement:
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'right'
+    | 'right-start'
+    | 'right-end'
+    | 'left'
+    | 'left-start'
+    | 'left-end';
+  /** Sets the component's positioning strategy. */
+  positionStrategy: 'absolute' | 'fixed';
+  /**
+   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
+   * When true, once enough space is detected on its preferred side, it will flip back.
+   */
+  flip: boolean;
+  /** The distance from the target element. */
+  distance: number;
+  /** Whether the dropdown's width should be the same as the target's one. */
+  sameWidth: boolean;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcSelectArgs>;
 
 // endregion
 

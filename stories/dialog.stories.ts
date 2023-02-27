@@ -9,6 +9,9 @@ defineComponents(IgcDialogComponent);
 const metadata: Meta<IgcDialogComponent> = {
   title: 'Dialog',
   component: 'igc-dialog',
+  parameters: {
+    docs: { description: { component: 'Represents a Dialog component.' } },
+  },
   argTypes: {
     closeOnEscape: {
       type: 'boolean',
@@ -55,8 +58,29 @@ const metadata: Meta<IgcDialogComponent> = {
     open: false,
   },
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+interface IgcDialogArgs {
+  /** Whether the dialog should be closed when pressing the 'ESCAPE' button. */
+  closeOnEscape: boolean;
+  /** Whether the dialog should be closed when clicking outside of it. */
+  closeOnOutsideClick: boolean;
+  /**
+   * Whether to hide the default action button for the dialog.
+   *
+   * When there is projected content in the `footer` slot this property
+   * has no effect.
+   */
+  hideDefaultAction: boolean;
+  /** Whether the dialog is opened. */
+  open: boolean;
+  /** Sets the title of the dialog. */
+  title: string;
+  /** Sets the return value for the dialog. */
+  returnValue: string;
+}
+type Story = StoryObj<IgcDialogArgs>;
 
 // endregion
 

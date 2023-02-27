@@ -23,11 +23,21 @@ defineComponents(
 const metadata: Meta<IgcNavbarComponent> = {
   title: 'Navbar',
   component: 'igc-navbar',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A navigation bar component is used to facilitate navigation through\na series of hierarchical screens within an app.',
+      },
+    },
+  },
   argTypes: {},
   args: {},
 };
+
 export default metadata;
-type Story = StoryObj & typeof metadata;
+
+type Story = StoryObj;
 
 // endregion
 
