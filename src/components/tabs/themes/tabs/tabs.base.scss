@@ -140,10 +140,6 @@ $arrow-start: 0;
         grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(min-content, auto)) var(--scroll-btn-size);
         /* stylelint-enable */
     }
-
-    [part~='inner'] {
-        grid-template-columns: repeat(var(--tabs-count), minmax(min-content, auto));
-    }
 }
 
 // Tabs position END

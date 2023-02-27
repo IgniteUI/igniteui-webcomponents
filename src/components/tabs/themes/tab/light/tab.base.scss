@@ -19,8 +19,7 @@
     height: 100%;
     pointer-events: all;
     min-height: rem(42px);
-    max-width: var(--tab-max-width--justify, var(--tab-max-width));
-    min-width: var(--tab-min-width);
+    padding: rem(12px) rem(16px);
     cursor: pointer;
     position: relative;
     background: var(--header-background);
@@ -49,9 +48,8 @@
     align-items: center;
     justify-content: center;
     gap: rem(8px);
-    min-width: rem(90px);
-    max-width: var(--tab-max-width, rem(360px));
-    padding: rem(12px) rem(16px);
+    max-width: var(--tab-max-width--justify, var(--tab-max-width));
+    min-width: var(--tab-min-width);
     overflow: hidden;
     user-select: none;
     pointer-events: none;
