@@ -6,6 +6,8 @@
 
     display: inline-flex;
     vertical-align: middle;
+    width: fit-content;
+    height: fit-content;
 }
 
 ::slotted(:not(igc-ripple)) {
