@@ -262,7 +262,11 @@ export default class IgcTabsComponent extends SizableMixin(
 
     // this.scrollWrapper.scrollLeft = nextTab?.headerBoundingClientRect
     if (nextTab) {
-      nextTab!.tab.header.scrollIntoView();
+      nextTab!.tab.header.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: direction === 'start' ? 'start' : 'end',
+      });
     }
 
     // let amount = next
