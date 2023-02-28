@@ -60,13 +60,9 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
 
   protected renderContent() {
     return html`
-      <span part="prefix">
-        <slot name="prefix"></slot>
-      </span>
+      <slot name="prefix"></slot>
       <slot></slot>
-      <span part="suffix">
-        <slot name="suffix"></slot>
-      </span>
+      <slot name="suffix"></slot>
     `;
   }
 }
