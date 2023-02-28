@@ -3,12 +3,6 @@
 @use '../../../tabs.common' as *;
 @use 'sass:map';
 
-:host {
-    ::slotted(*) {
-        @include line-clamp(2, true, true);
-    }
-}
-
 [part~='header'] {
     display: flex;
     flex-direction: column;
@@ -66,6 +60,8 @@
     text-align: center;
     outline-style: none;
     flex: 1;
+
+    @include line-clamp(2, true, true);
 
     ::slotted(*) {
         @include line-clamp(2, true, true);
