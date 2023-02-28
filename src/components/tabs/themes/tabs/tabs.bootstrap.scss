@@ -29,9 +29,6 @@
 
     // Disabled
     --header-foreground--disabled: #{$disabled-foreground};
-
-    // Body
-    --body-background: var(--header-background);
 }
 
 [part~='separator'] {
