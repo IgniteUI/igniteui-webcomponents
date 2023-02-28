@@ -186,7 +186,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     const { width } = this.scrollContainer.getBoundingClientRect();
 
     this.disableEndScrollButton =
-      Math.abs(Math.abs(scrollLeft) + width - scrollWidth) < OFFSET_TOLERANCE;
+      Math.abs(Math.abs(scrollLeft) + width - scrollWidth) <= OFFSET_TOLERANCE;
     this.disableStartScrollButton = scrollLeft === 0;
   }
 
