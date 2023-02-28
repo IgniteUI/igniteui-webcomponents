@@ -3,12 +3,13 @@ import { bacteria, bandage } from '@igniteui/material-icons-extended';
 import { range } from 'lit-html/directives/range.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import {
   defineComponents,
   IgcRatingComponent,
   IgcIconComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcRatingComponent, IgcIconComponent);
 const icons = [bacteria, bandage];
@@ -153,13 +154,13 @@ type Story = StoryObj<IgcRatingArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcChange', 'igcHover'],
   },
-};
+});
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     size,
     hoverPreview,
@@ -171,7 +172,7 @@ const Template: Story<ArgTypes, Context> = (
     value,
     valueFormat,
     single,
-  }: ArgTypes,
+  }: IgcRatingArgs,
   { globals: { direction } }: Context
 ) => {
   const heartSVG = svg`<?xml version="1.0" ?><svg
@@ -322,4 +323,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

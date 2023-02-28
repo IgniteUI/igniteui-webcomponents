@@ -2,8 +2,9 @@ import { all } from '@igniteui/material-icons-extended';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
-import type { Context, Story } from './story';
+import type { Context } from './story';
 import { defineComponents, IgcIconButtonComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcIconButtonComponent);
 
@@ -125,10 +126,10 @@ type Story = StoryObj<IgcIconButtonArgs>;
 
 // endregion
 
-(metadata.argTypes.name as any).control = {
-  type: 'select',
+Object.assign(metadata.argTypes!.name!, {
+  control: 'select',
   options: icons,
-};
+});
 
 all.forEach((icon) => {
   registerIconFromText(icon.name, icon.value);
@@ -142,7 +143,7 @@ icons.push('biking');
 icons.push('search');
 icons.sort();
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     name = 'biking',
     collection = 'default',
@@ -154,7 +155,7 @@ const Template: Story<ArgTypes, Context> = (
     rel,
     variant,
     disabled,
-  }: ArgTypes,
+  }: IgcIconButtonArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -221,4 +222,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

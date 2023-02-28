@@ -1,10 +1,11 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import {
   defineComponents,
   IgcButtonComponent,
   IgcStepperComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcStepperComponent, IgcButtonComponent);
 
@@ -89,8 +90,15 @@ interface IgcStepperArgs {
 type Story = StoryObj<IgcStepperArgs>;
 
 // endregion
-const BasicTemplate: Story<ArgTypes, Context> = (
-  { orientation, stepType, titlePosition, linear, contentTop, size }: ArgTypes,
+const BasicTemplate = (
+  {
+    orientation,
+    stepType,
+    titlePosition,
+    linear,
+    contentTop,
+    size,
+  }: IgcStepperArgs,
   { globals: { direction } }: Context
 ) => {
   const next = () => {
@@ -164,4 +172,4 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = BasicTemplate.bind({});
+export const Basic: Story = BasicTemplate.bind({});

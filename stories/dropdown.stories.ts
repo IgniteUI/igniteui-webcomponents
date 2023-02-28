@@ -1,6 +1,6 @@
 import { github, whiteHouse1 } from '@igniteui/material-icons-extended';
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
   defineComponents,
@@ -8,6 +8,7 @@ import {
   IgcDropdownItemComponent,
   IgcInputComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 const icons = [github, whiteHouse1];
 
@@ -165,7 +166,7 @@ type Story = StoryObj<IgcDropdownArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: [
       'igcChange',
@@ -175,7 +176,7 @@ type Story = StoryObj<IgcDropdownArgs>;
       'igcClosed',
     ],
   },
-};
+});
 
 const toggleDDL = (ev: Event, ddlId: string) => {
   const ddl = document.getElementById(ddlId) as IgcDropdownComponent;
@@ -197,7 +198,7 @@ const items = [
   'Documentation',
   'Builds',
 ];
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     size = 'large',
     open = false,
@@ -209,7 +210,7 @@ const Template: Story<ArgTypes, Context> = (
     keepOpenOnSelect = false,
     sameWidth = false,
     distance = 0,
-  }: ArgTypes,
+  }: IgcDropdownArgs,
   { globals: { direction } }: Context
 ) => html`
   <div
@@ -386,7 +387,7 @@ const Template: Story<ArgTypes, Context> = (
   </div>
 `;
 
-const FormTemplate: Story<null, null> = () => checkoutForm;
+const FormTemplate = () => checkoutForm;
 const countries = [
   'Bulgaria',
   'United Kingdom',
@@ -447,5 +448,5 @@ const checkoutForm = html`
   <!-- </div> -->
 `;
 
-export const Basic = Template.bind({});
-export const Form = FormTemplate.bind({});
+export const Basic: Story = Template.bind({});
+export const Form: Story = FormTemplate.bind({});

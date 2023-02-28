@@ -22,7 +22,7 @@ const getTheme = async ({ theme, variant }) => {
   return stylesheet.default;
 };
 
-const getSize = (size) => {
+const getSize = (size: 'small' | 'medium' | 'large' | 'attribute') => {
   if (size === 'attribute') {
     return;
   }

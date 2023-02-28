@@ -1,7 +1,8 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcBadgeComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { Context } from './story.js';
 
 defineComponents(IgcBadgeComponent);
 
@@ -56,8 +57,8 @@ type Story = StoryObj<IgcBadgeArgs>;
 
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
-  { outlined = false, shape, variant }: ArgTypes,
+const Template = (
+  { outlined = false, shape, variant }: IgcBadgeArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -115,4 +116,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

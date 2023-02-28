@@ -1,9 +1,10 @@
 import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { defineComponents, IgcInputComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcInputComponent);
 registerIconFromText(github.name, github.value);
@@ -206,7 +207,7 @@ type Story = StoryObj<IgcInputArgs>;
 
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     type,
     size,
@@ -225,7 +226,7 @@ const Template: Story<ArgTypes, Context> = (
     min,
     max,
     invalid,
-  }: ArgTypes,
+  }: IgcInputArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-input
@@ -254,4 +255,4 @@ const Template: Story<ArgTypes, Context> = (
   </igc-input>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

@@ -1,5 +1,6 @@
 import { html } from 'lit';
-import { Story, Context } from './story.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   defineComponents,
@@ -81,8 +82,8 @@ const handleHide = () => {
   snackbar?.hide();
 };
 
-const Template: Story<ArgTypes, Context> = (
-  { open, keepOpen, displayTime, actionText = 'Close' }: ArgTypes,
+const Template = (
+  { open, keepOpen, displayTime, actionText = 'Close' }: IgcSnackbarArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-snackbar
@@ -98,5 +99,5 @@ const Template: Story<ArgTypes, Context> = (
   <igc-button @click="${handleHide}">Hide Snackbar</igc-button>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});
 document.addEventListener('igcAction', handleHide);

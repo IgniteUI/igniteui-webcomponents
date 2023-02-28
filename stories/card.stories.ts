@@ -3,9 +3,9 @@ import {
   instagram,
   twitter,
 } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
-import type { Story } from './story';
 import {
   defineComponents,
   IgcAvatarComponent,
@@ -57,8 +57,8 @@ interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
 
-const Template: Story<ArgTypes, Context> = (
-  { elevated = false }: ArgTypes,
+const Template = (
+  { elevated = false }: IgcCardArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -200,4 +200,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

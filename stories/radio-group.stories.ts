@@ -1,7 +1,8 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcRadioGroupComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcRadioGroupComponent);
 
@@ -32,8 +33,8 @@ type Story = StoryObj<IgcRadioGroupArgs>;
 
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
-  { alignment }: ArgTypes,
+const Template = (
+  { alignment }: IgcRadioGroupArgs,
   { globals: { direction } }: Context
 ) => {
   const radios = ['apple', 'orange', 'mango', 'banana'];
@@ -52,4 +53,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

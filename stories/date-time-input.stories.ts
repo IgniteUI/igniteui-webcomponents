@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { Story, Context } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   DatePartDeltas,
@@ -7,6 +7,7 @@ import {
 } from '../src/components/date-time-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { defineComponents, IgcDateTimeInputComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcDateTimeInputComponent);
 
@@ -212,13 +213,13 @@ const handleClear = () => {
   input!.clear();
 };
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcChange', 'igcInput'],
   },
-};
+});
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     inputFormat,
     prompt,
@@ -236,7 +237,7 @@ const Template: Story<ArgTypes, Context> = (
     value,
     label,
     invalid,
-  }: ArgTypes,
+  }: IgcDateTimeInputArgs,
   { globals: { direction } }: Context
 ) => {
   const spinDelta: DatePartDeltas = {
@@ -271,4 +272,4 @@ const Template: Story<ArgTypes, Context> = (
   </igc-date-time-input>`;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

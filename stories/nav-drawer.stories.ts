@@ -1,13 +1,14 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import {
   defineComponents,
   IgcIconComponent,
   IgcNavDrawerComponent,
   IgcNavDrawerItemComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 
@@ -188,8 +189,8 @@ const navbarItems = [
   },
 ];
 
-const Template: Story<ArgTypes, Context> = (
-  { open = false, position }: ArgTypes,
+const Template = (
+  { open = false, position }: IgcNavDrawerArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -235,4 +236,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

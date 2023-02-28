@@ -1,11 +1,12 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import {
   defineComponents,
   IgcListComponent,
   IgcAvatarComponent,
   IgcButtonComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcListComponent, IgcAvatarComponent, IgcButtonComponent);
 
@@ -64,8 +65,8 @@ const employeeData = [
   },
 ];
 
-const BasicTemplate: Story<ArgTypes, Context> = (
-  { size }: ArgTypes,
+const BasicTemplate = (
+  { size }: IgcListArgs,
   { globals: { direction } }: Context
 ) => {
   const employees = new Array(48);
@@ -96,4 +97,4 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = BasicTemplate.bind({});
+export const Basic: Story = BasicTemplate.bind({});

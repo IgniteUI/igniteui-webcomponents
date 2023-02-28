@@ -1,13 +1,14 @@
 import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
   defineComponents,
   IgcSelectComponent,
   IgcIconComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcSelectComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -239,7 +240,7 @@ type Story = StoryObj<IgcSelectArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: [
       'igcFocus',
@@ -251,7 +252,7 @@ type Story = StoryObj<IgcSelectArgs>;
       'igcClosed',
     ],
   },
-};
+});
 
 const items = [
   {
@@ -291,7 +292,7 @@ const items = [
     selected: false,
   },
 ];
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     label = 'Sample Label',
     placeholder,
@@ -304,7 +305,7 @@ const Template: Story<ArgTypes, Context> = (
     invalid = false,
     required = false,
     autofocus = false,
-  }: ArgTypes,
+  }: IgcSelectArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-select
@@ -338,7 +339,7 @@ const Template: Story<ArgTypes, Context> = (
   </igc-select>
 `;
 
-const FormTemplate: Story<null, null> = () => checkoutForm;
+const FormTemplate = () => checkoutForm;
 const countries = [
   {
     continent: 'Europe',
@@ -421,5 +422,5 @@ const checkoutForm = html`
   </igc-form>
 `;
 
-export const Basic = Template.bind({});
-export const Form = FormTemplate.bind({});
+export const Basic: Story = Template.bind({});
+export const Form: Story = FormTemplate.bind({});

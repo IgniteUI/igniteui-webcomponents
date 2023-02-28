@@ -1,7 +1,8 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { defineComponents, IgcRangeSliderComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcRangeSliderComponent);
 
@@ -208,13 +209,13 @@ type Story = StoryObj<IgcRangeSliderArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcChange', 'igcInput'],
   },
-};
+});
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     disabled = false,
     discreteTrack = false,
@@ -234,7 +235,7 @@ const Template: Story<ArgTypes, Context> = (
     tickLabelRotation = 0,
     ariaLabelLower,
     ariaLabelUpper,
-  }: ArgTypes,
+  }: IgcRangeSliderArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-range-slider
@@ -261,4 +262,4 @@ const Template: Story<ArgTypes, Context> = (
   ></igc-range-slider>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

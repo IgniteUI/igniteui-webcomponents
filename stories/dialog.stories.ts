@@ -1,7 +1,8 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { defineComponents, IgcDialogComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcDialogComponent);
 
@@ -84,11 +85,11 @@ type Story = StoryObj<IgcDialogArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcClosing', 'igcClosed'],
   },
-};
+});
 
 const openDialog = (id: string) =>
   (document.getElementById(id) as IgcDialogComponent).show();
@@ -102,14 +103,14 @@ const authSelected = (ev: CustomEvent) => {
     ev.detail.value;
 };
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     closeOnEscape,
     closeOnOutsideClick,
     title,
     open,
     hideDefaultAction,
-  }: ArgTypes,
+  }: IgcDialogComponent,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -199,4 +200,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

@@ -1,8 +1,9 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { DateRangeDescriptor } from '../src/components/calendar/common/calendar.model.js';
 import { defineComponents, IgcCalendarComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcCalendarComponent);
 
@@ -175,56 +176,52 @@ type Story = StoryObj<IgcCalendarArgs>;
 
 // endregion
 
-// (metadata as any).parameters = {
-//   actions: {
-//     handles: ['igcChange'],
-//   },
-// };
+// Enhance the calendar args with extra properties
+interface IgcCalendarArgs {
+  weekDayFormat: '"long" | "short" | "narrow"';
+  monthFormat: '"numeric" | "2-digit" | "long" | "short" | "narrow"';
+  title: string;
+  values: string;
+}
 
-// (metadata.argTypes as any).weekDayFormat = {
-//   type: '"long" | "short" | "narrow"',
-//   options: ['long', 'short', 'narrow'],
-//   control: {
-//     type: 'inline-radio',
-//   },
-//   table: {
-//     defaultValue: {
-//       summary: 'narrow',
-//     },
-//   },
-// };
+Object.assign(metadata.parameters!, {
+  actions: {
+    handles: ['igcChange'],
+  },
+});
 
-// (metadata.argTypes as any).monthFormat = {
-//   type: '"numeric" | "2-digit" | "long" | "short" | "narrow"',
-//   options: ['numeric', '2-digit', 'long', 'short', 'narrow'],
-//   control: {
-//     type: 'inline-radio',
-//   },
-//   table: {
-//     defaultValue: {
-//       summary: 'long',
-//     },
-//   },
-// };
+// Add additional configration options
+Object.assign(metadata.argTypes!, {
+  weekDayFormat: {
+    type: '"long" | "short" | "narrow"',
+    options: ['long', 'short', 'narrow'],
+    control: {
+      type: 'inline-radio',
+    },
+  },
+  monthFormat: {
+    type: '"numeric" | "2-digit" | "long" | "short" | "narrow"',
+    options: ['numeric', '2-digit', 'long', 'short', 'narrow'],
+    control: {
+      type: 'inline-radio',
+    },
+  },
+  title: {
+    type: 'string',
+    control: 'text',
+  },
+  values: {
+    type: 'string',
+    control: 'text',
+  },
+});
 
-// (metadata.argTypes as any).title = {
-//   type: 'string',
-//   control: 'text',
-// };
+Object.assign(metadata.args!, {
+  weekDayFormat: 'narrow',
+  monthFormat: 'long',
+});
 
-// (metadata.argTypes as any).values = {
-//   type: 'string',
-//   control: 'text',
-// };
-
-// interface ArgTypes {
-//   weekDayFormat: 'long' | 'short' | 'narrow';
-//   monthFormat: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow';
-//   title: string;
-//   values: string;
-// }
-
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     showWeekNumbers,
     hideOutsideDays,
@@ -243,12 +240,12 @@ const Template: Story<ArgTypes, Context> = (
     value,
     values,
     activeDate,
-  }: ArgTypes,
+  }: IgcCalendarArgs,
   { globals: { direction } }: Context
 ) => {
   const formatOptions: Intl.DateTimeFormatOptions = {
-    month: monthFormat ?? 'long',
-    weekday: weekDayFormat ?? 'narrow',
+    month: monthFormat,
+    weekday: weekDayFormat,
   };
 
   const disabledDates: DateRangeDescriptor[] = [
@@ -294,4 +291,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

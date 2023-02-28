@@ -1,7 +1,8 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcChipComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcChipComponent);
 
@@ -90,7 +91,7 @@ const handleRemove = (e: Event) => {
   console.log(e);
 };
 
-const ChipTemplate: Story<ArgTypes, Context> = (
+const ChipTemplate = (
   {
     disabled,
     removable,
@@ -98,7 +99,7 @@ const ChipTemplate: Story<ArgTypes, Context> = (
     selected,
     size = 'medium',
     variant,
-  }: ArgTypes,
+  }: IgcChipArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-chip
@@ -117,4 +118,4 @@ const ChipTemplate: Story<ArgTypes, Context> = (
   </igc-chip>
 `;
 
-export const Basic = ChipTemplate.bind({});
+export const Basic: Story = ChipTemplate.bind({});

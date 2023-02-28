@@ -1,10 +1,11 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import {
   defineComponents,
   IgcTreeComponent,
   IgcTreeItemComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcTreeComponent);
 
@@ -183,8 +184,8 @@ const log4 = () => {
   );
 };
 
-const BasicTemplate: Story<ArgTypes, Context> = (
-  { size, singleBranchExpand, selection }: ArgTypes,
+const BasicTemplate = (
+  { size, singleBranchExpand, selection }: IgcTreeArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -248,4 +249,4 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = BasicTemplate.bind({});
+export const Basic: Story = BasicTemplate.bind({});

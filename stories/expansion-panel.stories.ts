@@ -1,6 +1,7 @@
 import { html } from 'lit';
-import type { Story } from './story';
 import { defineComponents, IgcExpansionPanelComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { Context } from './story.js';
 
 defineComponents(IgcExpansionPanelComponent);
 
@@ -56,18 +57,18 @@ type Story = StoryObj<IgcExpansionPanelArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
   },
-};
+});
 
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
-
-const Template: Story<ArgTypes, Context> = (
-  { open = false, disabled = false, indicatorPosition = 'start' }: ArgTypes,
+const Template = (
+  {
+    open = false,
+    disabled = false,
+    indicatorPosition = 'start',
+  }: IgcExpansionPanelArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -89,4 +90,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

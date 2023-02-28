@@ -2,12 +2,13 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import {
   defineComponents,
   IgcTabsComponent,
   registerIcon,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcTabsComponent);
 
@@ -62,11 +63,11 @@ type Story = StoryObj<IgcTabsArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcChange'],
   },
-};
+});
 
 registerIcon(
   'home',
@@ -114,8 +115,8 @@ const tabs = Array.from(
   )
 );
 
-const Template: Story<ArgTypes, Context> = (
-  { activation, alignment }: ArgTypes,
+const Template = (
+  { activation, alignment }: IgcTabsArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-tabs
@@ -168,8 +169,8 @@ const Template: Story<ArgTypes, Context> = (
   </igc-tabs>
 `;
 
-const TabStrip: Story<ArgTypes, Context> = (
-  { activation, alignment }: ArgTypes,
+const TabStrip = (
+  { activation, alignment }: IgcTabsArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-tabs
@@ -181,8 +182,8 @@ const TabStrip: Story<ArgTypes, Context> = (
   </igc-tabs>
 `;
 
-const RemovableTabs: Story<ArgTypes, Context> = (
-  { activation, alignment }: ArgTypes,
+const RemovableTabs = (
+  { activation, alignment }: IgcTabsArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-tabs
@@ -194,6 +195,6 @@ const RemovableTabs: Story<ArgTypes, Context> = (
   </igc-tabs>
 `;
 
-export const Basic = Template.bind({});
-export const Removable = RemovableTabs.bind({});
-export const Strip = TabStrip.bind({});
+export const Basic: Story = Template.bind({});
+export const Removable: Story = RemovableTabs.bind({});
+export const Strip: Story = TabStrip.bind({});

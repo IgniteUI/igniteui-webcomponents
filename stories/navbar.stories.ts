@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import {
   defineComponents,
   IgcAvatarComponent,
@@ -10,6 +10,7 @@ import {
   IgcIconComponent,
   IgcButtonComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(
   IgcNavbarComponent,
@@ -41,6 +42,23 @@ type Story = StoryObj;
 
 // endregion
 
+interface NavbarStoryArgs {
+  content: string;
+}
+
+type EnhancedStory = StoryObj<NavbarStoryArgs>;
+
+Object.assign(metadata.argTypes!, {
+  content: {
+    type: 'string',
+    control: 'text',
+  },
+});
+
+Object.assign(metadata.args!, {
+  content: 'Title',
+});
+
 registerIcon(
   'home',
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
@@ -51,8 +69,8 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg'
 );
 
-const Template: Story<any, Context> = (
-  { content = 'Title' }: any,
+const Template = (
+  { content }: NavbarStoryArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -82,4 +100,4 @@ const Template: Story<any, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story & EnhancedStory = Template.bind({});

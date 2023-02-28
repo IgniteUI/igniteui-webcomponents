@@ -1,7 +1,8 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcSwitchComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcSwitchComponent);
 
@@ -98,8 +99,8 @@ type Story = StoryObj<IgcSwitchArgs>;
 
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
-  { labelPosition, checked, disabled }: ArgTypes,
+const Template = (
+  { labelPosition, checked, disabled }: IgcSwitchArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -114,4 +115,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

@@ -1,6 +1,6 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { Context, Story } from './story';
+import type { Context } from './story';
 import {
   registerIcon,
   registerIconFromText,
@@ -10,6 +10,7 @@ import { defineComponents, IgcIconComponent } from '../src/index.js';
 defineComponents(IgcIconComponent);
 
 import { all } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 const icons = all.map((icon) => icon.name);
 
@@ -68,10 +69,14 @@ type Story = StoryObj<IgcIconArgs>;
 
 // endregion
 
-(metadata.argTypes.name as any).control = {
-  type: 'select',
+Object.assign(metadata.argTypes!.name!, {
+  control: 'select',
   options: icons,
-};
+});
+
+Object.assign(metadata.args!, {
+  name: 'biking',
+});
 
 all.forEach((icon) => {
   registerIconFromText(icon.name, icon.value);
@@ -93,15 +98,13 @@ const registerIconClick = () => {
   );
 };
 
-metadata.argTypes.name.defaultValue = 'biking';
-
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     name = 'biking',
     collection = 'default',
     size = 'medium',
     mirrored = false,
-  }: ArgTypes,
+  }: IgcIconArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -120,4 +123,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

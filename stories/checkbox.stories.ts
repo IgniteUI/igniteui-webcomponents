@@ -1,5 +1,5 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcCheckboxComponent } from '../src/index.js';
 
@@ -111,8 +111,8 @@ interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
 
-const Template: Story<ArgTypes, Context> = (
-  { labelPosition, checked, indeterminate, disabled }: ArgTypes,
+const Template = (
+  { labelPosition, checked, indeterminate, disabled }: IgcCheckboxArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -128,4 +128,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

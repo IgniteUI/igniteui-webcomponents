@@ -1,11 +1,11 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   defineComponents,
   IgcButtonComponent,
   IgcToastComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcToastComponent, IgcButtonComponent);
 
@@ -72,11 +72,11 @@ const handleToggle = () => {
   toast?.toggle();
 };
 
-const Template: Story<ArgTypes, Context> = ({
+const Template = ({
   open = false,
   displayTime = 4000,
   keepOpen = false,
-}: ArgTypes) => html`
+}: IgcToastArgs) => html`
   <igc-button @click=${handleShow}>Show Toast</igc-button>
   <igc-button @click=${handleHide}>Hide Toast</igc-button>
   <igc-button @click=${handleToggle}>Toggle Toast</igc-button>
@@ -89,4 +89,4 @@ const Template: Story<ArgTypes, Context> = ({
   </igc-toast>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

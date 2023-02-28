@@ -67,8 +67,6 @@ type Story = StoryObj<IgcAvatarArgs>;
 
 // endregion
 
-export const Default: Story = {};
-
 export const Image: Story = {
   args: {
     src: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',

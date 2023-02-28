@@ -1,6 +1,6 @@
 import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
-import { Story, Context } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
@@ -8,6 +8,7 @@ import {
   IgcMaskInputComponent,
   IgcIconComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcMaskInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -156,13 +157,13 @@ type Story = StoryObj<IgcMaskInputArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcChange', 'igcInput'],
   },
-};
+});
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     name,
     readonly,
@@ -176,7 +177,7 @@ const Template: Story<ArgTypes, Context> = (
     mask,
     prompt,
     size,
-  }: ArgTypes,
+  }: IgcMaskInputArgs,
   { globals: { direction } }: Context
 ) => {
   return html`<igc-mask-input
@@ -200,4 +201,4 @@ const Template: Story<ArgTypes, Context> = (
   </igc-mask-input>`;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

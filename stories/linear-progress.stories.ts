@@ -1,7 +1,8 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { defineComponents, IgcLinearProgressComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcLinearProgressComponent);
 
@@ -131,7 +132,7 @@ type Story = StoryObj<IgcLinearProgressArgs>;
 
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     striped,
     variant,
@@ -142,8 +143,8 @@ const Template: Story<ArgTypes, Context> = (
     indeterminate,
     labelAlign,
     labelFormat,
-  },
-  { globals: { direction } }
+  }: IgcLinearProgressArgs,
+  { globals: { direction } }: Context
 ) => html`
   <div
     style="display: flex; flex-direction: column; justify-content: center; gap: 16px"
@@ -164,4 +165,4 @@ const Template: Story<ArgTypes, Context> = (
   </div>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

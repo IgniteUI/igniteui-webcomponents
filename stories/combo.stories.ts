@@ -1,11 +1,19 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { ComboItemTemplate } from '../src/index.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { defineComponents, IgcComboComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcComboComponent);
+
+interface City {
+  id: string;
+  name: string;
+  zip: string;
+  country: string;
+}
 
 // region default
 const metadata: Meta<IgcComboComponent> = {
@@ -181,7 +189,7 @@ type Story = StoryObj<IgcComboArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: [
       'igcFocus',
@@ -193,14 +201,7 @@ type Story = StoryObj<IgcComboArgs>;
       'igcChange',
     ],
   },
-};
-
-interface City {
-  id: string;
-  name: string;
-  zip: string;
-  country: string;
-}
+});
 
 const itemTemplate: ComboItemTemplate<City> = ({ item }) => {
   return html`
@@ -278,7 +279,7 @@ registerIconFromText(
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
 );
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     name,
     disableFiltering,
@@ -295,7 +296,7 @@ const Template: Story<ArgTypes, Context> = (
     singleSelect = false,
     autofocusList,
     groupSorting = 'asc',
-  }: ArgTypes,
+  }: IgcComboComponent<City>,
   { globals: { direction } }: Context
 ) => html`
   <igc-combo
@@ -328,4 +329,4 @@ const Template: Story<ArgTypes, Context> = (
   </igc-combo>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

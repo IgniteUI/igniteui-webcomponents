@@ -1,10 +1,10 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
 import {
   defineComponents,
   IgcButtonComponent,
   IgcRippleComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcButtonComponent, IgcRippleComponent);
 
@@ -30,7 +30,7 @@ type Story = StoryObj;
 
 // endregion
 
-const Template: Story<null, Context> = () => html`
+const Template = () => html`
   <igc-button>
     <igc-ripple></igc-ripple>
     Button with ripple
@@ -42,4 +42,4 @@ const Template: Story<null, Context> = () => html`
   </h1>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

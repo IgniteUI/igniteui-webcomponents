@@ -1,7 +1,8 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { defineComponents, IgcButtonComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcButtonComponent);
 
@@ -101,14 +102,14 @@ type Story = StoryObj<IgcButtonArgs>;
 
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcBlur', 'igcFocus'],
   },
-};
+});
 
-const ButtonTemplate: Story<ArgTypes, Context> = (
-  { disabled = false, size, variant, type }: ArgTypes,
+const ButtonTemplate = (
+  { disabled = false, size, variant, type }: IgcButtonArgs,
   { globals: { direction } }: Context
 ) => {
   const handleClick = () => {
@@ -131,7 +132,7 @@ const ButtonTemplate: Story<ArgTypes, Context> = (
   `;
 };
 
-const LinkTemplate: Story<ArgTypes, Context> = (
+const LinkTemplate = (
   {
     disabled = false,
     size,
@@ -140,7 +141,7 @@ const LinkTemplate: Story<ArgTypes, Context> = (
     download,
     rel,
     target,
-  }: ArgTypes,
+  }: IgcButtonArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-button
@@ -157,9 +158,9 @@ const LinkTemplate: Story<ArgTypes, Context> = (
   </igc-button>
 `;
 
-export const Button = ButtonTemplate.bind({});
-export const Link = LinkTemplate.bind({});
-export const BlankTarget = LinkTemplate.bind({});
+export const Button: Story = ButtonTemplate.bind({});
+export const Link: Story = LinkTemplate.bind({});
+export const BlankTarget: Story = LinkTemplate.bind({});
 BlankTarget.args = {
   target: '_blank',
 };

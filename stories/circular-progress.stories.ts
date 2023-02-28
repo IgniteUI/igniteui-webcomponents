@@ -1,10 +1,11 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import {
   defineComponents,
   IgcCircularProgressComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcCircularProgressComponent);
 
@@ -102,7 +103,7 @@ type Story = StoryObj<IgcCircularProgressArgs>;
 
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     variant,
     hideLabel,
@@ -111,8 +112,8 @@ const Template: Story<ArgTypes, Context> = (
     animationDuration,
     indeterminate,
     labelFormat,
-  },
-  { globals: { direction } }
+  }: IgcCircularProgressArgs,
+  { globals: { direction } }: Context
 ) => html`
   <div style="display: flex; align-items: center; gap: 16px">
     <igc-circular-progress
@@ -158,4 +159,4 @@ const Template: Story<ArgTypes, Context> = (
   </div>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});
