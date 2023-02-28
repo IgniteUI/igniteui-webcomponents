@@ -1,13 +1,17 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../tabs.common' as *;
+@use 'sass:map';
 
 :host {
-    $disabled-foregrounbd: #{color(primary, 500, .5)};
+    $disabled-foreground: #{color(primary, 500, .5)};
 
-    --shadow-color--hover: #{color(gray, 200)};
-    --shadow-color--selected: #{color(gray, 300)};
-    --shadow-color--selected--focus: #{color(primary, 700)};
-    --tabs-border: var(--shadow-color--selected);
+    --border-radius: #{rem(4px)};
+    --border-color--hover: #{color(gray, 200)};
+    --border-color: #{color(gray, 300)};
+    --border-color--focus: #{color(primary, 700)};
+    --border-size: #{rem(1px)};
+    --border-size--focus: #{rem(2px)};
 
     // Header idle
     --header-foreground: #{color(primary, 500)};
@@ -21,23 +25,25 @@
 
     // Scroll buttons
     --scroll-btn-foreground: #{color(gray, 500)};
-    --scroll-btn-foreground--disabled: #{$disabled-foregrounbd};
+    --scroll-btn-foreground--disabled: #{$disabled-foreground};
 
     // Disabled
-    --header-foreground--disabled: #{$disabled-foregrounbd};
+    --header-foreground--disabled: #{$disabled-foreground};
+
+    // Body
+    --body-background: var(--header-background);
 }
 
-:host([alignment='end']),
-:host([alignment='center']),
-:host([alignment='start']) {
-    [part~='headers-scroll']:not([part~='scrollable']) {
-        &::before,
-        &::after {
-            border-block-end: rem(1px) solid var(--tabs-border);
-        }
-    }
+[part~='separator'] {
+    position: relative;
+    z-index: map.get($tabs-z-index, 'separator--bootstrap');
+    grid-row: 2;
+    grid-column: 1 / -1;
+    background: var(--border-color);
+    height: var(--border-size);
+    margin-block-start: calc(var(--border-size) * -1);
 }
 
 igc-icon-button::part(base) {
-    transition-duration: 0ms;
+    transition-duration: .15s;
 }

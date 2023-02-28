@@ -1,56 +1,52 @@
 @use '../../../../../styles/utilities' as *;
+@use '../../../tabs.common' as *;
+@use 'sass:map';
 
-%header-focus-within {
-    box-shadow: inset 0 0 0 rem(2px) var(--shadow-color--selected--focus);
-    border-radius: rem(4px);
-    z-index: 1;
-
-    &::after {
-        display: none;
-    }
+%header-focus-visible {
+    box-shadow: inset 0 0 0 var(--border-size--focus) var(--border-color--focus);
+    border-radius: var(--border-radius);
+    z-index: map.get($tabs-z-index, 'header-focus-within--bootstrap');
 }
 
 [part~='header'] {
-    border-start-start-radius: rem(4px);
-    border-start-end-radius: rem(4px);
+    border: var(--border-size) solid transparent;
 
+    &:focus,
     &:hover {
-        box-shadow: inset 0 0 0 rem(1px) var(--shadow-color--hover);
+        border-start-start-radius: var(--border-radius);
+        border-start-end-radius: var(--border-radius);
     }
 
-    &::after {
-        content: '';
-        display: block;
-        position: absolute;
-        bottom: 0;
-        inset-inline-start: 0;
-        width: 100%;
-        height: rem(1px);
-        background: var(--shadow-color--selected);
-        z-index: 1;
+    &:focus-visible {
+        @extend %header-focus-visible;
     }
+}
 
-    &:focus-within {
-        @extend %header-focus-within;
-
+:host(:not([selected])) {
+    [part~='header'] {
+        &:focus,
         &:hover {
-            box-shadow: inset 0 0 0 rem(2px) var(--shadow-color--selected--focus);
+            border-color: var(--border-color--hover);
         }
     }
 }
 
 :host([selected]) {
     [part~='header'] {
+        border-start-start-radius: var(--border-radius);
+        border-start-end-radius: var(--border-radius);
+        margin-block-end: calc(var(--border-size) * 1px);
         position: relative;
-        box-shadow: inset 0 0 0 rem(1px) var(--shadow-color--selected);
+        border-color: var(--border-color);
+        border-block-end-color: var(--header-background--selected);
+        z-index: map.get($tabs-z-index, 'header-selected--bootstrap');
 
-        &::after {
-            background: var(--header-background);
-        }
-
-        &:focus-within:hover,
-        &:focus-within {
-            @extend %header-focus-within;
+        &:focus-visible {
+            @extend %header-focus-visible;
         }
     }
+}
+
+[part~='body'] {
+    background: var(--body-background);
 }

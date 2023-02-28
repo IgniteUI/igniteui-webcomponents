@@ -1,11 +1,7 @@
 @use '../../../../../styles/common/component';
 @use '../../../../../styles/utilities' as *;
-
-:host {
-    ::slotted(*) {
-        @include line-clamp(2, true, true);
-    }
-}
+@use '../../../tabs.common' as *;
+@use 'sass:map';
 
 [part~='header'] {
     display: flex;
@@ -17,11 +13,13 @@
     height: 100%;
     pointer-events: all;
     min-height: rem(42px);
+    padding: rem(12px) rem(16px);
     cursor: pointer;
     position: relative;
     background: var(--header-background);
     color: var(--header-foreground);
-    z-index: 9;
+    z-index: map.get($tabs-z-index, 'header');
+    grid-row: 1;
 
     &:hover,
     &:focus-within {
@@ -44,9 +42,8 @@
     align-items: center;
     justify-content: center;
     gap: rem(8px);
-    min-width: rem(90px);
-    max-width: var(--tab-max-width, rem(360px));
-    padding: rem(12px) rem(16px);
+    max-width: var(--tab-max-width--justify, var(--tab-max-width));
+    min-width: var(--tab-min-width);
     overflow: hidden;
     user-select: none;
     pointer-events: none;
@@ -64,6 +61,8 @@
     outline-style: none;
     flex: 1;
 
+    @include line-clamp(2, true, true);
+
     ::slotted(*) {
         @include line-clamp(2, true, true);
     }
@@ -71,14 +70,13 @@
 
 [part~='body'] {
     display: none;
-    position: relative;
-    inset-inline-start: var(--arrow-left-start);
+    position: sticky;
+    inset-inline-start: 0;
     background: var(--body-background);
     color: var(--body-foreground);
     width: var(--tabs-width);
     grid-row: 3;
-    grid-column: -1 / 1;
-    transform: translateX(100%);
+    grid-column: 1 / -1;
     transition: transform 250ms ease-in-out;
 }
 

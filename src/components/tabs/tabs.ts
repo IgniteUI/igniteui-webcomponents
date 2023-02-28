@@ -70,7 +70,7 @@ export default class IgcTabsComponent extends SizableMixin(
   @queryAssignedElements({ selector: 'igc-tab' })
   public tabs!: Array<IgcTabComponent>;
 
-  @query('[part~="headers-scroll"]', true)
+  @query('[part~="tabs"]', true)
   protected scrollWrapper!: HTMLElement;
 
   @query('[part="start-scroll-button"]', true)
@@ -508,23 +508,25 @@ export default class IgcTabsComponent extends SizableMixin(
   protected renderSelectIndicator() {
     if (this.themeController.theme !== 'bootstrap') {
       return html`<div part="selected-indicator"><span></span></div>`;
+    } else {
+      return html`<div part="separator"><span></span></div>`;
     }
     return nothing;
   }
 
   protected override render() {
     return html`
-      <div
-        part="${partNameMap({
-          'headers-scroll': true,
-          scrollable: this.showScrollButtons,
-        })}"
-        role="tablist"
-        @scroll=${this.handleScroll}
-      >
-        ${this.renderScrollButton('start')} ${this.renderScrollButton('end')}
-        <slot @slotchange=${this.tabsChanged}></slot>
-        ${this.renderSelectIndicator()}
+      <div part="tabs" role="tablist" @scroll=${this.handleScroll}>
+        <div
+          part="${partNameMap({
+            inner: true,
+            scrollable: this.showScrollButtons,
+          })}"
+        >
+          ${this.renderScrollButton('start')}
+          <slot @slotchange=${this.tabsChanged}></slot>
+          ${this.renderScrollButton('end')} ${this.renderSelectIndicator()}
+        </div>
       </div>
     `;
   }
