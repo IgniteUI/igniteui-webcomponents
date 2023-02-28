@@ -58,10 +58,6 @@ export default class IgcTabComponent extends LitElement {
   @property({ attribute: false })
   public index = -1;
 
-  /** @private */
-  @property({ attribute: false })
-  public activation: 'auto' | 'manual' = 'auto';
-
   @watch('selected', { waitUntilFirstUpdate: true })
   protected selectedChange() {
     if (this.selected) {

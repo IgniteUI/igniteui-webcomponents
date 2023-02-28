@@ -28,22 +28,12 @@ const metadata = {
       },
       defaultValue: 'auto',
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
-      defaultValue: 'large',
-    },
   },
 };
 export default metadata;
 interface ArgTypes {
   alignment: 'start' | 'end' | 'center' | 'justify';
   activation: 'auto' | 'manual';
-  size: 'small' | 'medium' | 'large';
 }
 // endregion
 
