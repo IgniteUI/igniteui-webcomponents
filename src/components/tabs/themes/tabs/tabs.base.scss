@@ -1,6 +1,6 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../tabs.common' as *;
+@use '../tabs.common' as *;
 @use 'sass:map';
 
 $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
