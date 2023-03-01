@@ -44,9 +44,7 @@
     gap: rem(8px);
     max-width: var(--tab-max-width--justify, var(--tab-max-width));
     min-width: var(--tab-min-width);
-    overflow: hidden;
     user-select: none;
-    pointer-events: none;
     outline-style: none;
 }
 

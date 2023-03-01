@@ -1,5 +1,6 @@
 import { html, LitElement, nothing } from 'lit';
 import {
+  eventOptions,
   property,
   query,
   queryAssignedElements,
@@ -151,12 +152,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     this.addEventListener('tabSelectedChanged', (event: any) => {
       event.stopPropagation();
-      this.selectTab(event.target, event.detail);
-    });
-
-    this.addEventListener('tabHeaderKeydown', (event: any) => {
-      event.stopPropagation();
-      this.handleKeydown(event.detail.event, event.detail.focusedTab);
+      this.selectTab(event.target, false);
     });
   }
 
@@ -207,6 +203,36 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.resizeObserver.observe(this);
   }
 
+  private selectFirstTab() {
+    const firstEnabledTab = this.tabs.find(
+      (tab: IgcTabComponent) => !tab.disabled
+    );
+    if (firstEnabledTab) {
+      this.selectTab(firstEnabledTab, false);
+    }
+  }
+
+  private selectTab(tab: IgcTabComponent, shouldEmit = true) {
+    if (tab === this.activeTab) {
+      return;
+    }
+
+    this.setSelectedTab(tab);
+    if (shouldEmit) {
+      this.emitEvent('igcChange', { detail: this.activeTab });
+    }
+    this.alignIndicator();
+  }
+
+  private setSelectedTab(tab: IgcTabComponent) {
+    if (this.activeTab) {
+      this.activeTab.selected = false;
+    }
+    tab.selected = true;
+    this.activeTab = tab;
+    tab.header.scrollIntoView({ block: 'nearest' });
+  }
+
   protected scrollByTabOffset(direction: 'start' | 'end') {
     const containerBoundingRect = this.scrollContainer.getBoundingClientRect();
     const LTR = isLTR(this);
@@ -248,53 +274,35 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     }
   }
 
-  private selectFirstTab() {
-    const firstEnabledTab = this.tabs.find(
-      (tab: IgcTabComponent) => !tab.disabled
-    );
-    if (firstEnabledTab) {
-      this.selectTab(firstEnabledTab, false);
-    }
-  }
+  private handleClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    const tab = target.closest('igc-tab');
 
-  private selectTab(tab: IgcTabComponent, shouldEmit = true) {
-    if (tab === this.activeTab) {
+    if (!(tab && this.contains(tab)) || tab.disabled) {
       return;
     }
 
-    this.changeSelectedTab(tab);
-    if (shouldEmit) {
-      this.emitEvent('igcChange', { detail: this.activeTab });
-    }
-    this.alignIndicator();
+    tab.header.focus();
+    this.selectTab(tab);
   }
 
-  private changeSelectedTab(tab: IgcTabComponent) {
-    if (this.activeTab) {
-      this.activeTab.selected = false;
-    }
-    tab.selected = true;
-    this.activeTab = tab;
-    tab.header.scrollIntoView({ block: 'nearest' });
-  }
-
-  private handleKeydown(event: KeyboardEvent, focusedTab: IgcTabComponent) {
-    const key = event.key.toLowerCase();
+  private handleKeydown(event: KeyboardEvent) {
+    const target = event.target as HTMLElement;
+    const focusedTab = target.closest('igc-tab');
 
     if (this.keyDownHandlers.has(event.key)) {
       event.preventDefault();
-      const tab = this.keyDownHandlers.get(event.key)?.call(this, focusedTab);
-      if (tab) {
-        tab.header.focus({ preventScroll: true });
+      const nextTab = this.keyDownHandlers
+        .get(event.key)
+        ?.call(this, focusedTab);
+      if (nextTab) {
+        nextTab.header.focus({ preventScroll: true });
         if (this.activation === 'auto') {
-          this.selectTab(tab);
+          this.selectTab(nextTab);
         } else {
-          tab.header.scrollIntoView({ block: 'nearest' });
+          nextTab.header.scrollIntoView({ block: 'nearest' });
         }
       }
-    }
-    if (key === 'tab' && this.activeTab.index !== focusedTab.index) {
-      this.activeTab.header.focus();
     }
   }
 
@@ -349,14 +357,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.tabs.forEach((tab: IgcTabComponent, index: number) => {
       tab.index = index;
       tab.selected = this.activeTab === tab;
-      tab.header?.setAttribute('aria-posinset', (index + 1).toString());
       tab.header?.setAttribute('aria-setsize', this.tabs.length.toString());
-      tab.header?.setAttribute('id', `igc-tab-header-${index}`);
-      tab.header?.setAttribute('aria-controls', `igc-tab-content-${index}`);
     });
   }
 
-  private async tabsChanged(): Promise<void> {
+  private tabsChanged(): void {
     const lastSelectedTab = this.tabs
       .reverse()
       .find((tab: IgcTabComponent) => tab.selected);
@@ -368,19 +373,25 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       this.selectTab(lastSelectedTab, false);
     }
     this.syncProperties();
+    this.updateButtonsOnResize();
+    this.alignIndicator();
   }
 
-  /** Selects the tab at a given index. */
-  public navigateTo(index: number) {
-    const tab = this.tabs[index];
-    if (!tab) {
-      return;
-    }
-    this.selectTab(tab, false);
-  }
-
+  @eventOptions({ passive: true })
   private handleScroll() {
     this.updateScrollButtons();
+  }
+
+  /** Selects the specified tab by tab id or HTMLElement reference.  */
+  public select(tabIdentifier: IgcTabComponent | string) {
+    if (typeof tabIdentifier === 'string') {
+      tabIdentifier = this.tabs.find(
+        (tab) => tab.id === tabIdentifier
+      ) as IgcTabComponent;
+    }
+    if (tabIdentifier) {
+      this.setSelectedTab(tabIdentifier);
+    }
   }
 
   protected renderScrollButton(direction: 'start' | 'end') {
@@ -422,7 +433,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
           })}"
         >
           ${this.renderScrollButton('start')}
-          <slot @slotchange=${this.tabsChanged}></slot>
+          <slot
+            @slotchange=${this.tabsChanged}
+            @click=${this.handleClick}
+            @keydown=${this.handleKeydown}
+          ></slot>
           ${this.renderScrollButton('end')} ${this.renderSelectIndicator()}
         </div>
       </div>

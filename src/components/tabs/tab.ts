@@ -23,8 +23,9 @@ import { styles as material } from './themes/tab/light/tab.material.css.js';
  */
 @themes({ bootstrap, fluent, indigo, material })
 export default class IgcTabComponent extends LitElement {
+  /** @private */
   public static readonly tagName = 'igc-tab';
-
+  /** @private */
   public static override styles = styles;
 
   @query('[part~="header"]')
@@ -62,25 +63,9 @@ export default class IgcTabComponent extends LitElement {
   protected selectedChange() {
     if (this.selected) {
       this.dispatchEvent(
-        new CustomEvent('tabSelectedChanged', { bubbles: true, detail: false })
+        new CustomEvent('tabSelectedChanged', { bubbles: true })
       );
     }
-  }
-
-  private handleClick(event: MouseEvent): void {
-    event.stopPropagation();
-    this.dispatchEvent(
-      new CustomEvent('tabSelectedChanged', { bubbles: true, detail: true })
-    );
-  }
-
-  private handleKeydown(event: KeyboardEvent): void {
-    this.dispatchEvent(
-      new CustomEvent('tabHeaderKeydown', {
-        bubbles: true,
-        detail: { event, focusedTab: this },
-      })
-    );
   }
 
   protected override render() {
@@ -88,11 +73,12 @@ export default class IgcTabComponent extends LitElement {
       <div
         part="header"
         role="tab"
+        id="igc-tab-header-${this.index}"
+        tabindex="${this.selected ? '0' : '-1'}"
         aria-selected="${this.selected}"
         aria-disabled="${this.disabled}"
-        tabindex="${this.selected ? '0' : '-1'}"
-        @click=${this.handleClick}
-        @keydown=${this.handleKeydown}
+        aria-controls="igc-tab-content-${this.index}"
+        aria-posinset=${this.index + 1}
       >
         <div part="base">
           <slot name="prefix" part="prefix"></slot>
