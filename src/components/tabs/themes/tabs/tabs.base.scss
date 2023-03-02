@@ -45,6 +45,7 @@ $arrow-start: 0;
     display: block;
     overflow: hidden;
     position: relative;
+    height: 100%;
 }
 
 %fake-column {
@@ -61,6 +62,7 @@ $arrow-start: 0;
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
+    height: 100%;
     scroll-padding-left: var(--scroll-btn-size);
     scroll-padding-right: var(--scroll-btn-size);
 
@@ -81,6 +83,7 @@ $arrow-start: 0;
     display: grid;
     align-items: center;
     position: relative;
+    grid-template-rows: auto auto 1fr;
 
     ::slotted(igc-tab) {
         display: contents;

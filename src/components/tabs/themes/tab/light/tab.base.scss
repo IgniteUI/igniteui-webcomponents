@@ -75,6 +75,7 @@
     grid-row: 3;
     grid-column: 1 / -1;
     transition: transform 250ms ease-in-out;
+    height: 100%;
 }
 
 :host([selected]) {
