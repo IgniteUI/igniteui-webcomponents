@@ -48,8 +48,9 @@
     outline-style: none;
 }
 
-[part='content'] {
+[part~='content'] {
     @include type-style('button');
+    @include line-clamp(2, true, true);
 
     display: flex;
     align-items: center;
@@ -58,8 +59,6 @@
     text-align: center;
     outline-style: none;
     flex: 1;
-
-    @include line-clamp(2, true, true);
 
     ::slotted(*) {
         @include line-clamp(2, true, true);
