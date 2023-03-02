@@ -275,6 +275,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private handleClick(event: MouseEvent) {
+    const isOnHeader = event
+      .composedPath()
+      .filter((element) =>
+        (element as HTMLElement)?.id?.includes('igc-tab-header')
+      );
+    if (isOnHeader.length === 0) {
+      return;
+    }
+
     const target = event.target as HTMLElement;
     const tab = target.closest('igc-tab');
 
