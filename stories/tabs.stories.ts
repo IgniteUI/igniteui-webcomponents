@@ -75,19 +75,19 @@ const tabs = Array.from(
           Lorem ipsum dolor sit amet, consec tetur adipi scing elitt dolorem
           illo expedita aperiam impedit molestias
         </div>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur
-          accusantium mollitia dolorem illo expedita aperiam impedit molestias
-          quas in doloremque?
-        </p></igc-tab
-      >`;
+        <input />Lorem ipsum dolor sit amet consectetur adipisicing elit.
+        Consequuntur accusantium mollitia dolorem illo expedita aperiam impedit
+        molestias quas in doloremque?
+      </igc-tab>`;
     } else if (i === 10) {
       return html`<igc-tab
         ><div slot="label">Lorem ipsum dolor sit amet, cons</div>
+        <p>Content 4</p>
         <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur
-          accusantium mollitia dolorem illo expedita aperiam impedit molestias
-          quas in doloremque?
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores
+          explicabo iste asperiores corrupti veniam assumenda officia, adipisci
+          laudantium aliquam dolorum excepturi incidunt culpa, delectus. Cumque
+          iure itaque, aperiam dolore non.
         </p></igc-tab
       >`;
     } else {

@@ -24,6 +24,21 @@ defineComponents(IgcTabComponent, IgcIconButtonComponent);
 
 const OFFSET_TOLERANCE = 1;
 
+const getTabFromEvent = (event: Event): IgcTabComponent | null => {
+  const tabHeader = event
+    .composedPath()
+    .find((element) =>
+      (element as HTMLElement)?.id?.includes('igc-tab-header')
+    );
+
+  if (!tabHeader) {
+    return null;
+  }
+
+  const target = event.target as HTMLElement;
+  return target.closest('igc-tab');
+};
+
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
 }
@@ -275,17 +290,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private handleClick(event: MouseEvent) {
-    const isOnHeader = event
-      .composedPath()
-      .filter((element) =>
-        (element as HTMLElement)?.id?.includes('igc-tab-header')
-      );
-    if (isOnHeader.length === 0) {
-      return;
-    }
-
-    const target = event.target as HTMLElement;
-    const tab = target.closest('igc-tab');
+    const tab = getTabFromEvent(event);
 
     if (!(tab && this.contains(tab)) || tab.disabled) {
       return;
@@ -296,8 +301,11 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   private handleKeydown(event: KeyboardEvent) {
-    const target = event.target as HTMLElement;
-    const focusedTab = target.closest('igc-tab');
+    const focusedTab = getTabFromEvent(event);
+
+    if (!(focusedTab && this.contains(focusedTab)) || focusedTab.disabled) {
+      return;
+    }
 
     if (this.keyDownHandlers.has(event.key)) {
       event.preventDefault();
