@@ -220,22 +220,22 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
-[4.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v4.2.1...v4.2.2
-[4.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v4.2.0...v4.2.1
-[4.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v4.1.1...v4.2.0
-[4.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v4.1.0...v4.1.1
-[4.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v4.0.0...v4.1.0
-[4.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v3.4.2...v4.0.0
-[3.4.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v3.4.1...v3.4.2
-[3.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v3.4.0...v3.4.1
-[3.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v3.3.1...v3.4.0
-[3.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v3.3.0...v3.3.1
-[3.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v3.2.0...v3.3.0
-[3.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v3.1.0...v3.2.0
-[3.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v3.0.0...v3.1.0
-[3.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v2.2.0...v3.0.0
-[2.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v2.1.1...v2.2.0
-[2.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v2.1.0...v2.1.1
-[2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v2.0.0...v2.1.0
-[2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/v1.0.0...v2.0.0
-[1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/v1.0.0
+[4.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.1...4.2.2
+[4.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.0...4.2.1
+[4.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.1...4.2.0
+[4.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.0...4.1.1
+[4.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.0.0...4.1.0
+[4.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.2...4.0.0
+[3.4.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.1...3.4.2
+[3.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.0...3.4.1
+[3.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.3.1...3.4.0
+[3.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.3.0...3.3.1
+[3.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.2.0...3.3.0
+[3.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.1.0...3.2.0
+[3.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.0.0...3.1.0
+[3.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.2.0...3.0.0
+[2.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.1...2.2.0
+[2.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.0...2.1.1
+[2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.0.0...2.1.0
+[2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/1.0.0...2.0.0
+[1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
