@@ -1,11 +1,43 @@
-# IgniteUI Web Components Changelog
+# Ignite UI Web Components Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [4.1.0]
+## [Unreleased]
+
+### Deprecated
+  - Button - The prefix/suffix slots are no longer needed and will be removed in the next major release.
+
+## [4.2.1] - 2023-02-01
+
+### Fixed
+ - Combo - Matching item not activated on filtering in single selection mode
+
+
+## [4.2.0] - 2023-01-31
+
+### Added
+ - Combo - Single Selection mode via the `single-select` attribute [#626](https://github.com/IgniteUI/igniteui-webcomponents/issues/626)
+
+### Fixed
+ - Input - UI inconsistencies [#619](https://github.com/IgniteUI/igniteui-webcomponents/issues/619), [#620](https://github.com/IgniteUI/igniteui-webcomponents/issues/620), [#633](https://github.com/IgniteUI/igniteui-webcomponents/issues/633), [#638](https://github.com/IgniteUI/igniteui-webcomponents/issues/638)
+ - Badge - Doesn't correctly render `igc-icon` and font icons [#631](https://github.com/IgniteUI/igniteui-webcomponents/issues/631)
+ - Radio - UI inconsistencies [#621](https://github.com/IgniteUI/igniteui-webcomponents/issues/621), [#623](https://github.com/IgniteUI/igniteui-webcomponents/issues/623)
+ - Navigation Drawer - Can't override item margin [#614](https://github.com/IgniteUI/igniteui-webcomponents/issues/614)
+
+## [4.1.1] - 2023-01-12
+
+### Fixed
+- Input - position label based on component size [#589](https://github.com/IgniteUI/igniteui-webcomponents/pull/589)
+- Input - material themes don't match design by [#580](https://github.com/IgniteUI/igniteui-webcomponents/issues/580)
+- Input - do not cache the underlying input [#604](https://github.com/IgniteUI/igniteui-webcomponents/issues/604)
+- Card - color discrepancy between WC and Angular [#586](https://github.com/IgniteUI/igniteui-webcomponents/issues/586)
+- Theme - update stale --igc-* variables to --ig-* [#603](https://github.com/IgniteUI/igniteui-webcomponents/issues/603)
+- Removed dangling references after element disconnect [#608](https://github.com/IgniteUI/igniteui-webcomponents/pull/608)
+
+## [4.1.0] - 2022-12-09
 ### Added
 - Stepper Component [#219](https://github.com/IgniteUI/igniteui-webcomponents/issues/219)
 - Combo Component [#411](https://github.com/IgniteUI/igniteui-webcomponents/issues/411)
@@ -184,6 +216,9 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.0...4.2.1
+[4.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.1...4.2.0
+[4.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.0...4.1.1
 [4.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.0.0...4.1.0
 [4.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.2...4.0.0
 [3.4.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.1...3.4.2

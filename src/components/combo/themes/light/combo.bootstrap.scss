@@ -1,6 +1,10 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../select/themes/light/select.bootstrap';
 
+[part='helper-text'] {
+    margin-top: rem(4px);
+}
+
 [part='clear-icon'] {
     border-inline-end: rem(1px) solid color(gray, 400);
 }
@@ -28,6 +32,12 @@
 }
 
 :host([disabled]) {
+    igc-input::part(label),
+    igc-input::part(input)::placeholder,
+    ::slotted([slot='helper-text']) {
+        color: color(gray, 400);
+    }
+
     [part='clear-icon'] {
         border-inline-end: rem(1px) solid color(gray, 300);
     }

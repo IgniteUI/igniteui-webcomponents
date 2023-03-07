@@ -4,9 +4,13 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { isLTR } from '../common/util.js';
 import IgcRadioComponent from '../radio/radio.js';
 import { styles } from './radio-group.base.css.js';
+import { styles as material } from './radio-group.material.css.js';
+import { styles as fluent } from './radio-group.fluent.css.js';
+import { themes } from '../../theming/theming-decorator.js';
 
 defineComponents(IgcRadioComponent);
 
+@themes({ material, fluent })
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
 

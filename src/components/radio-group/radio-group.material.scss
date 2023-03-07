@@ -1,0 +1,9 @@
+@use '../../styles/utilities' as *;
+
+:host([alignment='vertical']) {
+    gap: 0;
+}
+
+:host([alignment='horizontal']) {
+    gap: rem(16px);
+}

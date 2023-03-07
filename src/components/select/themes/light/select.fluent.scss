@@ -3,6 +3,14 @@
 $focused-border-width: rem(2px);
 $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
+[part='helper-text'] {
+    margin-top: rem(5px);
+
+    ::slotted([slot='helper-text']) {
+        color: color(gray, 700);
+    }
+}
+
 :host {
     --size: #{sizable(rem(32px), rem(40px), rem(48px))};
 }
@@ -29,5 +37,11 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
     igc-input[readonly]:not([disabled])::part(input) {
         height: $focused-height;
+    }
+}
+
+:host([disabled]) {
+    [part='helper-text'] ::slotted([slot='helper-text']) {
+        color: color(gray, 500);
     }
 }

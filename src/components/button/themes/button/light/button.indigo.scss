@@ -7,7 +7,6 @@
 [part='base'] {
     @include utils.border-radius(calc(var(--size) / 2));
 
-    &::before,
     &::after {
         @include utils.border-radius(calc(var(--size) / 2));
     }
@@ -18,22 +17,15 @@
 }
 
 :host(:not([disabled])[variant='flat']) [part='base'] {
+    background: transparent;
     color: #{utils.color(gray, 700)};
     transition: color .15s ease-in-out, box-shadow .15s ease-in-out;
 
     &:hover,
     &:focus,
     &:active {
+        background: transparent;
         color: #{utils.color(gray, 900)};
-    }
-
-    &:hover::before {
-        background: transparent;
-    }
-
-    &:focus::before,
-    &:active::before {
-        background: transparent;
     }
 
     &:focus,
@@ -44,7 +36,7 @@
 
 :host(:not([disabled])[variant='outlined']) [part='base'] {
     color: #{utils.color(gray, 700)};
-    transition: color .15s ease-out;
+    transition: color .15s ease-out, background-color .1s ease-out 0s;
     box-shadow: inset 0 0 0 2px #{utils.color(gray, 500)};
     overflow: visible;
 
@@ -58,17 +50,13 @@
 
     &:hover {
         color: #{utils.color(gray, 900)};
-        background: #{utils.color(gray, 50)};
+        background: #{utils.color(secondary, 500, .12)};
     }
 
     &:focus,
     &:active {
-        color: #{utils.color(gray, 900)};
-    }
-
-    &:focus::before,
-    &:active::before {
         background: transparent;
+        color: #{utils.color(gray, 900)};
     }
 
     &:focus::after,
@@ -93,6 +81,7 @@
 :host(:not([disabled])[variant='fab']) [part='base'],
 :host(:not([disabled])[variant='contained']) [part='base'] {
     color: #{utils.contrast-color(primary, 600)};
+    background: #{utils.color(primary, 500)};
 
     &:hover {
         color: #{utils.contrast-color(primary, 600)};
@@ -104,16 +93,10 @@
         box-shadow: 0 0 0 utils.rem(3px) #{utils.color(primary, 200)};
     }
 
-    &::before {
-        background: #{utils.color(primary, 500)};
-        opacity: 1;
-    }
-
-    &:hover::before,
-    &:focus::before,
-    &:active::before {
+    &:hover,
+    &:focus,
+    &:active {
         background: #{utils.color(primary, 400)};
-        opacity: 1;
     }
 }
 

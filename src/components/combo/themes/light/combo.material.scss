@@ -1,6 +1,24 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../select/themes/light/select.material';
 
+[part='helper-text'] {
+    margin-top: rem(5px);
+    padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+}
+
+:host([disabled]) {
+    igc-input::part(label),
+    igc-input::part(input)::placeholder,
+    [part~='toggle-icon'],
+    ::slotted([slot='helper-text']) {
+        color: color(gray, 500);
+    }
+
+    [part~='toggle-icon'] {
+        background: color(gray, 100);
+    }
+}
+
 :host([outlined]:focus-within) {
     igc-input::part(suffix) {
         margin-inline-end: -1px;
@@ -15,8 +33,7 @@
     ::slotted([slot='helper-text']) {
         @include type-style('caption');
 
-        padding: 0 rem(8px);
-        margin-top: rem(4px);
-        color: color(gray, 600);
+        color: color(gray, 700);
+        line-height: 1;
     }
 }

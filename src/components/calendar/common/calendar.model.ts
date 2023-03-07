@@ -1,3 +1,4 @@
+/* creationType: DateRangeDescriptor */
 export interface DateRangeDescriptor {
   type: DateRangeType;
   dateRange?: Date[];

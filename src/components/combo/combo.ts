@@ -25,12 +25,12 @@ import { DataController } from './controllers/data.js';
 import { IgcToggleComponent } from '../toggle/types.js';
 import {
   Keys,
-  Values,
   ComboRecord,
   GroupingDirection,
   FilteringOptions,
   IgcComboEventMap,
   ComboItemTemplate,
+  Item,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
@@ -39,6 +39,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import type { ThemeController, Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 
 defineComponents(
   IgcIconComponent,
@@ -91,9 +92,9 @@ defineComponents(
  * @csspart empty - The container holding the empty content.
  */
 @themes({ material, bootstrap, fluent, indigo })
-@blazorAdditionalDependencies(
-  'IgcIconComponent, IgcComboListComponent, IgcComboItemComponent, IgcComboHeaderComponent, IgcInputComponent'
-)
+@blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
+@blazorIndirectRender
+// TODO: pressing arrow down should scroll to the selected item
 export default class IgcComboComponent<T extends object>
   extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
     LitElement
@@ -102,6 +103,7 @@ export default class IgcComboComponent<T extends object>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
+  private _value = '';
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
@@ -129,6 +131,8 @@ export default class IgcComboComponent<T extends object>
   private list!: IgcComboListComponent;
 
   /** The data source used to generate the list of options. */
+  /* treatAsRef */
+  /* blazorAlternateType: object */
   @property({ attribute: false })
   public data: Array<T> = [];
 
@@ -166,6 +170,13 @@ export default class IgcComboComponent<T extends object>
    */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
+
+  /**
+   * Enables single selection mode and moves item filtering to the main input.
+   * @attr single-select
+   */
+  @property({ attribute: 'single-select', reflect: true, type: Boolean })
+  public singleSelect = false;
 
   /**
    * The autofocus attribute of the control.
@@ -220,6 +231,7 @@ export default class IgcComboComponent<T extends object>
   @property({ type: Boolean })
   public flip = true;
 
+  /* blazorAlternateType: string */
   /**
    * The key in the data source used when selecting items.
    * @attr value-key
@@ -227,6 +239,7 @@ export default class IgcComboComponent<T extends object>
   @property({ attribute: 'value-key', reflect: false })
   public valueKey?: Keys<T>;
 
+  /* blazorAlternateType: string */
   /**
    * The key in the data source used to display items in the list.
    * @attr display-key
@@ -234,6 +247,7 @@ export default class IgcComboComponent<T extends object>
   @property({ attribute: 'display-key', reflect: false })
   public displayKey?: Keys<T> = this.valueKey;
 
+  /* blazorAlternateType: string */
   /**
    * The key in the data source used to group items in the list.
    * @attr group-key
@@ -280,6 +294,7 @@ export default class IgcComboComponent<T extends object>
   @property({ type: Boolean, attribute: 'disable-filtering', reflect: false })
   public disableFiltering = false;
 
+  /* blazorSuppress */
   /**
    * The template used for the content of each combo item.
    * @type {ComboItemTemplate<T>}
@@ -297,6 +312,7 @@ export default class IgcComboComponent<T extends object>
     return html`${String(item)}`;
   };
 
+  /* blazorSuppress */
   /**
    * The template used for the content of each combo group header.
    * @type {ComboItemTemplate<T>}
@@ -334,7 +350,6 @@ export default class IgcComboComponent<T extends object>
   @watch('pipeline')
   protected async pipeline() {
     this.dataState = await this.dataController.apply([...this.data]);
-    this.navigationController.active = -1;
   }
 
   @watch('open')
@@ -363,6 +378,13 @@ export default class IgcComboComponent<T extends object>
     });
 
     this.addEventListener('blur', () => {
+      const { selected } = this.selectionController;
+
+      if (selected.size === 0) {
+        this.target.value = '';
+        this.resetSearchTerm();
+      }
+
       this.emitEvent('igcBlur');
     });
 
@@ -386,14 +408,35 @@ export default class IgcComboComponent<T extends object>
     return result;
   }
 
+  protected resetSearchTerm() {
+    this.dataController.searchTerm = '';
+  }
+
+  @watch('singleSelect', { waitUntilFirstUpdate: true })
+  protected async resetState() {
+    await this.updateComplete;
+
+    this.selectionController.selected.clear();
+    this.updateValue();
+    this.resetSearchTerm();
+    this.navigationController.active = -1;
+  }
+
   /**
    * Returns the current selection as a list of commma separated values,
    * represented by the display key, when provided.
    */
   public get value() {
-    return this.selectionController.getValue(
+    return this._value;
+  }
+
+  protected async updateValue() {
+    this._value = this.selectionController.getValue(
       Array.from(this.selectionController.selected)
     );
+
+    await this.updateComplete;
+    this.target.value = this._value;
   }
 
   @watch('value')
@@ -412,32 +455,95 @@ export default class IgcComboComponent<T extends object>
     return this.reportValidity();
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus on the component. */
   public override focus(options?: FocusOptions) {
     this.target.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the component. */
   public override blur() {
     this.target.blur();
   }
 
-  /**
-   * Selects the options in the list by either value or key value.
-   * If not argument is provided all items will be selected.
-   * @param { T[] | Values<T>[] } items - A list of values or values as set by the valueKey.
-   */
-  public select(items?: T[] | Values<T>[]) {
-    this.selectionController.select(items, false);
+  protected normalizeSelection(items: Item<T> | Item<T>[] = []): Item<T>[] {
+    return Array.isArray(items) ? items : [items];
   }
 
   /**
-   * Deselects the options in the list by either value or key value.
-   * If not argument is provided all items will be deselected.
-   * @param { T[] | Values<T>[] } items - A list of values or values as set by the valueKey.
+   * Selects option(s) in the list by either reference or valueKey.
+   * If not argument is provided all items will be selected.
+   * @param { Item<T> | Items<T> } items - One or more items to be selected. Multiple items should be passed as an array.
+   * When valueKey is specified, the corresponding value should be used in place of the item reference.
+   * @example
+   * ```typescript
+   * const combo<IgcComboComponent<T>> = document.querySelector('igc-combo');
+   *
+   * // Select one item at a time by reference when valueKey is not specified.
+   * combo.select(combo.data[0]);
+   *
+   * // Select multiple items at a time by reference when valueKey is not specified.
+   * combo.select([combo.data[0], combo.data[1]]);
+   *
+   * // Select one item at a time when valueKey is specified.
+   * combo.select('BG01');
+   *
+   * // Select multiple items at a time when valueKey is specified.
+   * combo.select(['BG01', 'BG02']);
+   * ```
    */
-  public deselect(items?: T[] | Values<T>[]) {
-    this.selectionController.deselect(items, false);
+  public select(items?: Item<T> | Item<T>[]) {
+    const _items = this.normalizeSelection(items);
+    this.selectionController.select(_items, false);
+    this.list.requestUpdate();
+    this.updateValue();
+  }
+
+  /**
+   * Deselects option(s) in the list by either reference or valueKey.
+   * If not argument is provided all items will be deselected.
+   * @param { Item<T> | Items<T> } items - One or more items to be deselected. Multiple items should be passed as an array.
+   * When valueKey is specified, the corresponding value should be used in place of the item reference.
+   * @example
+   * ```typescript
+   * const combo<IgcComboComponent<T>> = document.querySelector('igc-combo');
+   *
+   * // Deselect one item at a time by reference when valueKey is not specified.
+   * combo.deselect(combo.data[0]);
+   *
+   * // Deselect multiple items at a time by reference when valueKey is not specified.
+   * combo.deselect([combo.data[0], combo.data[1]]);
+   *
+   * // Deselect one item at a time when valueKey is specified.
+   * combo.deselect('BG01');
+   *
+   * // Deselect multiple items at a time when valueKey is specified.
+   * combo.deselect(['BG01', 'BG02']);
+   * ```
+   */
+  public deselect(items?: Item<T> | Item<T>[]) {
+    const _items = this.normalizeSelection(items);
+    this.selectionController.deselect(_items, false);
+    this.list.requestUpdate();
+    this.updateValue();
+  }
+
+  protected async handleMainInput(e: CustomEvent) {
+    this._show();
+    this.dataController.searchTerm = e.detail;
+
+    // wait for the dataState to update after filtering
+    await this.updateComplete;
+
+    const matchIndex = this.dataState.findIndex((i) => !i.header);
+    this.navigationController.active = e.detail.length > 0 ? matchIndex : -1;
+
+    // update the list after changing the active item
+    this.list.requestUpdate();
+
+    // clear the selection upon typing
+    this.clearSingleSelection();
   }
 
   protected handleSearchInput(e: CustomEvent) {
@@ -462,7 +568,9 @@ export default class IgcComboComponent<T extends object>
     await this.updateComplete;
     emit && this.emitEvent('igcOpened');
 
-    this.list.focus();
+    if (!this.singleSelect) {
+      this.list.focus();
+    }
 
     if (!this.autofocusList) {
       this.input.focus();
@@ -481,7 +589,7 @@ export default class IgcComboComponent<T extends object>
 
     await this.updateComplete;
     emit && this.emitEvent('igcClosed');
-    this.target.focus();
+    this.navigationController.active = -1;
   }
 
   /** Hides the list of options. */
@@ -501,8 +609,9 @@ export default class IgcComboComponent<T extends object>
 
   protected itemRenderer = (item: T, index: number): TemplateResult => {
     const record = item as ComboRecord<T>;
+    const dataItem = this.data.at(record.dataIndex);
     const active = this.navigationController.active === index;
-    const selected = this.selectionController.selected.has(item);
+    const selected = this.selectionController.selected.has(dataItem!);
     const headerTemplate = html`<igc-combo-header part="group-header"
       >${this.groupHeaderTemplate({ item: record })}</igc-combo-header
     >`;
@@ -519,7 +628,8 @@ export default class IgcComboComponent<T extends object>
       @click=${this.itemClickHandler.bind(this)}
       .index=${index}
       .active=${active}
-      .selected=${selected}
+      ?selected=${selected}
+      ?hide-checkbox=${this.singleSelect}
       >${this.itemTemplate({ item: record })}</igc-combo-item
     >`;
 
@@ -541,6 +651,8 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected itemClickHandler(event: MouseEvent) {
+    const input = this.singleSelect ? this.target : this.input;
+
     const target = event
       .composedPath()
       .find(
@@ -548,22 +660,57 @@ export default class IgcComboComponent<T extends object>
       ) as IgcComboItemComponent;
 
     this.toggleSelect(target.index);
-    this.input.focus();
+    input.focus();
+
+    if (this.singleSelect) {
+      this._hide();
+    }
   }
 
   protected toggleSelect(index: number) {
-    this.selectionController.changeSelection(index);
+    const { dataIndex } = this.dataState.at(index)!;
+
+    this.selectionController.changeSelection(dataIndex);
     this.navigationController.active = index;
+    this.updateValue();
+    this.list.requestUpdate();
   }
 
   protected navigateTo(item: T) {
     this.navigationController.navigateTo(item, this.list);
   }
 
+  protected clearSingleSelection() {
+    const { selected } = this.selectionController;
+    const selection = selected.values().next().value;
+
+    if (selection) {
+      const item = this.valueKey ? selection[this.valueKey] : selection;
+      this.selectionController.deselect([item], selected.size > 0);
+    }
+  }
+
   protected handleClearIconClick(e: MouseEvent) {
     e.stopPropagation();
-    this.selectionController.deselect([], true);
+
+    if (this.singleSelect) {
+      this.resetSearchTerm();
+      this.clearSingleSelection();
+    } else {
+      this.selectionController.deselect([], true);
+    }
+
+    this.updateValue();
     this.navigationController.active = -1;
+    this.list.requestUpdate();
+  }
+
+  protected handleMainInputKeydown(e: KeyboardEvent) {
+    this.navigationController.navigateMainInput(e, this.list);
+  }
+
+  protected handleSearchInputKeydown(e: KeyboardEvent) {
+    this.navigationController.navigateSearchInput(e, this.list);
   }
 
   protected toggleCaseSensitivity() {
@@ -618,7 +765,7 @@ export default class IgcComboComponent<T extends object>
     </span>`;
   }
 
-  private renderInput() {
+  private renderMainInput() {
     return html`<igc-input
       id="target"
       role="combobox"
@@ -630,21 +777,26 @@ export default class IgcComboComponent<T extends object>
         e.preventDefault();
         this._toggle(true);
       }}
-      value=${ifDefined(this.value)}
       placeholder=${ifDefined(this.placeholder)}
       label=${ifDefined(this.label)}
       dir=${this.dir}
-      @igcFocus=${(e: Event) => e.stopPropagation()}
+      @igcChange=${(e: Event) => e.stopPropagation()}
+      @igcFocus=${(e: Event) => {
+        e.stopPropagation();
+
+        requestAnimationFrame(() => {
+          this.target.select();
+        });
+      }}
       @igcBlur=${(e: Event) => e.stopPropagation()}
-      @keydown=${this.navigationController.navigateHost.bind(
-        this.navigationController
-      )}
-      .disabled="${this.disabled}"
+      @igcInput=${this.handleMainInput}
+      @keydown=${this.handleMainInputKeydown}
+      .disabled=${this.disabled}
       .required=${this.required}
       .invalid=${this.invalid}
       .outlined=${this.outlined}
       .autofocus=${this.autofocus}
-      readonly
+      ?readonly=${!this.singleSelect}
     >
       <span slot=${this.hasPrefixes && 'prefix'}>
         <slot name="prefix"></slot>
@@ -658,7 +810,10 @@ export default class IgcComboComponent<T extends object>
   }
 
   private renderSearchInput() {
-    return html`<div part="filter-input" ?hidden=${this.disableFiltering}>
+    return html`<div
+      part="filter-input"
+      ?hidden=${this.disableFiltering || this.singleSelect}
+    >
       <igc-input
         part="search-input"
         placeholder=${this.placeholderSearch}
@@ -666,8 +821,7 @@ export default class IgcComboComponent<T extends object>
         @igcFocus=${(e: Event) => e.stopPropagation()}
         @igcBlur=${(e: Event) => e.stopPropagation()}
         @igcInput=${this.handleSearchInput}
-        @keydown=${(e: KeyboardEvent) =>
-          this.navigationController.navigateInput(e, this.list)}
+        @keydown=${this.handleSearchInputKeydown}
         dir=${this.dir}
       >
         <igc-icon
@@ -728,7 +882,7 @@ export default class IgcComboComponent<T extends object>
 
   protected override render() {
     return html`
-      ${this.renderInput()}${this.renderList()}${this.renderHelperText()}
+      ${this.renderMainInput()}${this.renderList()}${this.renderHelperText()}
     `;
   }
 }

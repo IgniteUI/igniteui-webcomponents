@@ -6,9 +6,14 @@
 
     display: inline-flex;
     vertical-align: middle;
+    height: var(--size);
 
-    ::slotted(span) {
+    ::slotted(*) {
         display: inline-flex;
+        align-items: center;
+
+        // Important is needed to override material icons styles
+        font-size: inherit !important;
     }
 }
 
@@ -43,16 +48,7 @@
     z-index: 0;
     height: var(--size);
     padding: 0 pad(8px, 12px, 16px);
-
-    &::before {
-        position: absolute;
-        content: '';
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        will-change: opacity;
-        transition: all .1s ease-out;
-    }
+    gap: rem(8px);
 }
 
 :host(:not([disabled])) [part='base']:hover {
@@ -69,37 +65,18 @@
     }
 }
 
-[name='prefix']::slotted(*) {
-    margin-inline-end: pad(8px);
-}
-
-[name='suffix']::slotted(*) {
-    margin-inline-start: pad(8px);
-}
-
-span[part='prefix'],
-span[part='suffix'] {
-    display: inline-flex;
-    align-items: center;
-}
-
 %flat {
     color: color(secondary, 500);
     background: transparent;
+    transition: background-color .1s ease-out 0s;
 
-    &::before {
-        opacity: 0;
+    &:hover {
+        background: color(secondary, 500, .12);
     }
 
-    &:hover::before {
-        background: color(secondary, 500);
-        opacity: .12;
-    }
-
-    &:focus::before,
-    &:active::before {
-        background: color(secondary, 500);
-        opacity: .24;
+    &:focus,
+    &:active {
+        background: color(secondary, 500, .24);
     }
 }
 
@@ -114,12 +91,12 @@ span[part='suffix'] {
 :host(:not([disabled])[variant='outlined']) [part='base'] {
     @extend %flat;
 
-    box-shadow: inset 0 0 0 1px color(secondary, 500);
+    box-shadow: inset 0 0 0 rem(1px) color(secondary, 500);
 }
 
 :host([disabled][variant='outlined']) [part='base'] {
     background: transparent;
-    box-shadow: inset 0 0 0 1px color(gray, 300);
+    box-shadow: inset 0 0 0 rem(1px) color(gray, 300);
 }
 
 %contained {

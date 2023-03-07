@@ -1,10 +1,8 @@
 import { html } from 'lit';
 import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineAllComponents, ComboItemTemplate } from '../src/index.js';
+import { ComboItemTemplate } from '../src/index.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
-
-defineAllComponents();
 
 // region default
 const metadata = {
@@ -37,6 +35,13 @@ const metadata = {
     outlined: {
       type: 'boolean',
       description: 'The outlined attribute of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    singleSelect: {
+      type: 'boolean',
+      description:
+        'Enables single selection mode and moves item filtering to the main input.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -125,6 +130,7 @@ interface ArgTypes {
   required: boolean;
   invalid: boolean;
   outlined: boolean;
+  singleSelect: boolean;
   autofocus: boolean;
   autofocusList: boolean;
   label: string;
@@ -251,6 +257,7 @@ const Template: Story<ArgTypes, Context> = (
     invalid = false,
     required = false,
     autofocus = false,
+    singleSelect = false,
     autofocusList,
     groupSorting = 'asc',
   }: ArgTypes,
@@ -279,6 +286,7 @@ const Template: Story<ArgTypes, Context> = (
     ?required=${required}
     ?disabled=${disabled}
     ?invalid=${invalid}
+    ?single-select=${singleSelect}
   >
     <igc-icon slot="prefix" name="location"></igc-icon>
     <span slot="helper-text">Sample helper text.</span>

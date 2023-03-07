@@ -17,10 +17,6 @@ input[type='radio'] {
     gap: rem(8px);
     cursor: pointer;
     transition: color .15s ease-in;
-
-    &:focus-within [part='control'] {
-        background: color(gray, 600, .12);
-    }
 }
 
 [part~='label'] {
