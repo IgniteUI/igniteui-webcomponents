@@ -174,7 +174,7 @@
         content: '';
         position: absolute;
         top: -$border-width;
-        width: 50%;
+        width: var(--size);
         height: 100%;
         border: $border-width solid $border-color;
         z-index: 3;
