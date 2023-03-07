@@ -1,34 +1,38 @@
 # Ignite UI Web Components Changelog
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
-
+## [4.2.2] - 2023-03-07
 ### Deprecated
-  - Button - The prefix/suffix slots are no longer needed and will be removed in the next major release.
+- Button - The prefix/suffix slots are no longer needed and will be removed in the next major release.
+
+### Fixed
+- Button - UI inconsistencies [#675](https://github.com/IgniteUI/igniteui-webcomponents/issues/675), [#679](https://github.com/IgniteUI/igniteui-webcomponents/issues/679)
+- Calendar - Fluent theme inconsistencies [#653](https://github.com/IgniteUI/igniteui-webcomponents/issues/653), [#672](https://github.com/IgniteUI/igniteui-webcomponents/issues/672)
+- Combo - Selection via API doesn't work on a searched list [#649](https://github.com/IgniteUI/igniteui-webcomponents/issues/649)
+- Dialog - Fluent theme inconsistency [#603](https://github.com/IgniteUI/igniteui-webcomponents/issues/603)
+- Input - UI inconsistencies [#657](https://github.com/IgniteUI/igniteui-webcomponents/issues/657), [#658](https://github.com/IgniteUI/igniteui-webcomponents/issues/658)
+- Toast - Fluent theme inconsistency [#668](https://github.com/IgniteUI/igniteui-webcomponents/issues/668)
+- Components missing in defineAllComponents [#691](https://github.com/IgniteUI/igniteui-webcomponents/issues/691)
+- Wrong host sizes for Avatar, Badge, Button and Icon Button [#669](https://github.com/IgniteUI/igniteui-webcomponents/issues/669)
 
 ## [4.2.1] - 2023-02-01
-
 ### Fixed
- - Combo - Matching item not activated on filtering in single selection mode
-
+- Combo - Matching item not activated on filtering in single selection mode
 
 ## [4.2.0] - 2023-01-31
-
 ### Added
- - Combo - Single Selection mode via the `single-select` attribute [#626](https://github.com/IgniteUI/igniteui-webcomponents/issues/626)
+- Combo - Single Selection mode via the `single-select` attribute [#626](https://github.com/IgniteUI/igniteui-webcomponents/issues/626)
 
 ### Fixed
- - Input - UI inconsistencies [#619](https://github.com/IgniteUI/igniteui-webcomponents/issues/619), [#620](https://github.com/IgniteUI/igniteui-webcomponents/issues/620), [#633](https://github.com/IgniteUI/igniteui-webcomponents/issues/633), [#638](https://github.com/IgniteUI/igniteui-webcomponents/issues/638)
- - Badge - Doesn't correctly render `igc-icon` and font icons [#631](https://github.com/IgniteUI/igniteui-webcomponents/issues/631)
- - Radio - UI inconsistencies [#621](https://github.com/IgniteUI/igniteui-webcomponents/issues/621), [#623](https://github.com/IgniteUI/igniteui-webcomponents/issues/623)
- - Navigation Drawer - Can't override item margin [#614](https://github.com/IgniteUI/igniteui-webcomponents/issues/614)
+- Input - UI inconsistencies [#619](https://github.com/IgniteUI/igniteui-webcomponents/issues/619), [#620](https://github.com/IgniteUI/igniteui-webcomponents/issues/620), [#633](https://github.com/IgniteUI/igniteui-webcomponents/issues/633), [#638](https://github.com/IgniteUI/igniteui-webcomponents/issues/638)
+- Badge - Doesn't correctly render `igc-icon` and font icons [#631](https://github.com/IgniteUI/igniteui-webcomponents/issues/631)
+- Radio - UI inconsistencies [#621](https://github.com/IgniteUI/igniteui-webcomponents/issues/621), [#623](https://github.com/IgniteUI/igniteui-webcomponents/issues/623)
+- Navigation Drawer - Can't override item margin [#614](https://github.com/IgniteUI/igniteui-webcomponents/issues/614)
 
 ## [4.1.1] - 2023-01-12
-
 ### Fixed
 - Input - position label based on component size [#589](https://github.com/IgniteUI/igniteui-webcomponents/pull/589)
 - Input - material themes don't match design by [#580](https://github.com/IgniteUI/igniteui-webcomponents/issues/580)
@@ -216,21 +220,40 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
-[4.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.0...4.2.1
-[4.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.1...4.2.0
-[4.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.0...4.1.1
-[4.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.0.0...4.1.0
-[4.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.2...4.0.0
-[3.4.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.1...3.4.2
-[3.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.0...3.4.1
-[3.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.3.1...3.4.0
-[3.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.3.0...3.3.1
-[3.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.2.0...3.3.0
-[3.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.1.0...3.2.0
-[3.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.0.0...3.1.0
-[3.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.2.0...3.0.0
-[2.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.1...2.2.0
-[2.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.0...2.1.1
-[2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.0.0...2.1.0
-[2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/1.0.0...2.0.0
-[1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0
+  [4.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.0...4.2.1
+  [4.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.1...4.2.0
+  [4.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.0...4.1.1
+  [4.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.0.0...4.1.0
+  [4.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.2...4.0.0
+  [3.4.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.1...3.4.2
+  [3.4.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.4.0...3.4.1
+  [3.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.3.1...3.4.0
+  [3.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.3.0...3.3.1
+  [3.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.2.0...3.3.0
+  [3.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.1.0...3.2.0
+  [3.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/3.0.0...3.1.0
+  [3.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.2.0...3.0.0
+  [2.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.1...2.2.0
+  [2.1.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.1.0...2.1.1
+  [2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/2.0.0...2.1.0
+  [2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/1.0.0...2.0.0
+
+[4.2.2]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v4.2.1...v4.2.2
+[4.2.1]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v4.2.0...v4.2.1
+[4.2.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v4.1.1...v4.2.0
+[4.1.1]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v4.1.0...v4.1.1
+[4.1.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v4.0.0...v4.1.0
+[4.0.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v3.4.2...v4.0.0
+[3.4.2]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v3.4.1...v3.4.2
+[3.4.1]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v3.4.0...v3.4.1
+[3.4.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v3.3.1...v3.4.0
+[3.3.1]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v3.3.0...v3.3.1
+[3.3.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v3.2.0...v3.3.0
+[3.2.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v3.1.0...v3.2.0
+[3.1.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v3.0.0...v3.1.0
+[3.0.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v2.2.0...v3.0.0
+[2.2.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v2.1.1...v2.2.0
+[2.1.1]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v2.1.0...v2.1.1
+[2.1.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/compare/v1.0.0...v2.0.0
+[1.0.0]: https://github.com/IgniteUI/igniteui-webcomponents.git/releases/tag/v1.0.0
