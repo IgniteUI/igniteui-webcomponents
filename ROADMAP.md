@@ -2,12 +2,9 @@
 
 # Current Milestone
 
-## Milestone 4 (Due Dec, 2022)
+## Milestone 5 (Due Feb, 2023)
 
-1. Pivot Data Grid
-2. Hierarchical Data Grid
-3. Simple Combo component [#411](https://github.com/IgniteUI/igniteui-webcomponents/issues/411)
-4. Combobox component [#172](https://github.com/IgniteUI/igniteui-webcomponents/issues/172)
+1. Simple Combo component [#411](https://github.com/IgniteUI/igniteui-webcomponents/issues/411)
 
 ## Going down the road
 
@@ -17,6 +14,11 @@
 4. Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
 
 # Previous Milestone
+
+## Milestone 4 (Released 12th Dec, 2022) [Blog](https://www.infragistics.com/community/blogs/b/infragistics/posts/ignite-ui-december-release-2022)
+
+1. **[DONE]** Pivot Data Grid
+2. **[DONE]** Combobox component [#172](https://github.com/IgniteUI/igniteui-webcomponents/issues/172)
 
 ## Milestone 3 (Released 03rd November. 2022) [Blog](https://www.infragistics.com/community/blogs/b/blagunas/posts/ignite-ui-for-web-components-what-s-new-in-22-2)
 

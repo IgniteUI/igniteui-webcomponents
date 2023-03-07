@@ -51,6 +51,11 @@ import IgcTreeComponent from '../../tree/tree.js';
 import IgcTreeItemComponent from '../../tree/tree-item.js';
 import IgcStepperComponent from '../../stepper/stepper.js';
 import IgcStepComponent from '../../stepper/step.js';
+import IgcDialogComponent from '../../dialog/dialog.js';
+import IgcSelectComponent from '../../select/select.js';
+import IgcSelectGroupComponent from '../../select/select-group.js';
+import IgcSelectHeaderComponent from '../../select/select-header.js';
+import IgcSelectItemComponent from '../../select/select-item.js';
 
 const allComponents: CustomElementConstructor[] = [
   IgcAvatarComponent,
@@ -71,6 +76,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcDropdownGroupComponent,
   IgcDropdownHeaderComponent,
   IgcDropdownItemComponent,
+  IgcDialogComponent,
   IgcSwitchComponent,
   IgcExpansionPanelComponent,
   IgcFormComponent,
@@ -89,6 +95,10 @@ const allComponents: CustomElementConstructor[] = [
   IgcRatingComponent,
   IgcRatingSymbolComponent,
   IgcRippleComponent,
+  IgcSelectGroupComponent,
+  IgcSelectHeaderComponent,
+  IgcSelectItemComponent,
+  IgcSelectComponent,
   IgcTreeComponent,
   IgcTreeItemComponent,
   IgcSliderComponent,
