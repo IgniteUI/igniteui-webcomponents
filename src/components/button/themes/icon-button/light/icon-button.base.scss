@@ -1,8 +1,10 @@
 @use '../../../../../styles/common/component';
 @use '../../../../../styles/utilities' as *;
 
+$icon-size: rem(18px);
+
 :host {
-    --icon-size: #{sizable(rem(16px), rem(20px), rem(24px))};
+    --icon-size: #{$icon-size};
 
     display: inline-flex;
     vertical-align: middle;
@@ -11,11 +13,15 @@
 }
 
 ::slotted(:not(igc-ripple)) {
-    --icon-size: #{sizable(rem(16px), rem(20px), rem(24px))};
+    --icon-size: #{$icon-size};
 
     font-size: var(--icon-size) !important;
     vertical-align: middle;
     pointer-events: none;
+}
+
+[part="icon"] {
+    --size: #{$icon-size};
 }
 
 // This prevents the igc-ripple from working.
