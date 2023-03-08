@@ -39,6 +39,16 @@ const getTabFromEvent = (event: Event): IgcTabComponent | null => {
   return target.closest('igc-tab');
 };
 
+const isFromHeaderContainer = (event: Event): boolean => {
+  const tabContent = event
+    .composedPath()
+    .find((element) =>
+      (element as HTMLElement)?.id?.includes('igc-tab-content')
+    );
+
+  return tabContent ? false : true;
+};
+
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
 }
@@ -399,6 +409,18 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.updateScrollButtons();
   }
 
+  // TODO: remove when scroll-padding is fixed
+  private handleFocus(event: FocusEvent) {
+    if (this.showScrollButtons && isFromHeaderContainer(event)) {
+      this.scrollContainer.part.add('focused');
+    }
+  }
+
+  // TODO: remove when scroll-padding is fixed
+  private handleBlur() {
+    this.scrollContainer.part.remove('focused');
+  }
+
   /** Selects the specified tab by tab id or HTMLElement reference.  */
   public select(tabIdentifier: IgcTabComponent | string) {
     if (typeof tabIdentifier === 'string') {
@@ -441,7 +463,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div part="tabs" @scroll=${this.handleScroll}>
+      <!-- Remove this container when rtl with position sticky is fixed -->
+      <div
+        part="tabs"
+        @scroll=${this.handleScroll}
+        @focusin=${this.handleFocus}
+        @focusout=${this.handleBlur}
+      >
         <div
           role="tablist"
           part="${partNameMap({

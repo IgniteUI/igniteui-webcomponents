@@ -60,11 +60,10 @@ $arrow-start: 0;
 
 [part~='tabs'] {
     display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
+    // overflow-x: auto;
+    // overflow-y: hidden;
+    overflow: hidden;
     height: 100%;
-    scroll-padding-left: var(--scroll-btn-size);
-    scroll-padding-right: var(--scroll-btn-size);
 
     /* stylelint-disable */
     -ms-overflow-style: none;
@@ -77,6 +76,10 @@ $arrow-start: 0;
     }
 
     scrollbar-width: none;
+}
+
+[part~='focused'] {
+    scroll-padding-inline: var(--scroll-btn-size);
 }
 
 [part~='inner'] {
@@ -96,7 +99,6 @@ $arrow-start: 0;
     grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-btn-size);
     /* stylelint-enable */
 
-    scroll-padding-inline: var(--scroll-btn-size);
 }
 
 [part~='inner']:not([part~='scrollable']) {
