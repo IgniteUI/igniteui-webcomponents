@@ -20,7 +20,7 @@ $icon-size: rem(18px);
     pointer-events: none;
 }
 
-[part="icon"] {
+[part='icon'] {
     --size: #{$icon-size};
 }
 
