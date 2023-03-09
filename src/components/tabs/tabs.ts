@@ -39,6 +39,7 @@ const getTabFromEvent = (event: Event): IgcTabComponent | null => {
   return target.closest('igc-tab');
 };
 
+// TODO: remove when scroll-padding is fixed
 const isFromHeaderContainer = (event: Event): boolean => {
   const tabContent = event
     .composedPath()
@@ -151,20 +152,21 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       transitionDuration: '0.3s',
     };
 
+    const activeTabOffesetLeft = this.activeTab!.header.offsetLeft;
+    const activeTabWidth = this.activeTab!.header.getBoundingClientRect().width;
+    const scrollContainerWidth =
+      this.scrollContainer.getBoundingClientRect().width;
+
     const getOffset = () => {
       if (isLTR(this)) {
-        return this.activeTab!.header.offsetLeft;
+        return activeTabOffesetLeft;
       }
-      return (
-        this.activeTab!.header.offsetLeft -
-        this.scrollContainer.getBoundingClientRect().width +
-        this.activeTab!.header.getBoundingClientRect().width
-      );
+      return activeTabOffesetLeft - scrollContainerWidth + activeTabWidth;
     };
 
     if (this.activeTab) {
       Object.assign(styles, {
-        width: `${this.activeTab!.header.getBoundingClientRect().width}px`,
+        width: `${activeTabWidth}px`,
         transform: `translate(${getOffset()}px)`,
       });
     }
@@ -214,14 +216,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   protected setupObserver() {
     this.resizeObserver = new ResizeObserver((entries) => {
       const width = entries[0].contentRect.width;
-      if (width === this.hostWidth) {
-        return;
+
+      if (width !== this.hostWidth) {
+        this.hostWidth = width;
+        this.style.setProperty('--tabs-width', width + 'px');
+        this.updateButtonsOnResize();
       }
 
-      this.hostWidth = width;
-      console.log('observe');
-      this.style.setProperty('--tabs-width', width + 'px');
-      this.updateButtonsOnResize();
+      // outside of the if check
+      // since it is used when the theme changes
       this.alignIndicator();
     });
 
@@ -246,7 +249,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     if (shouldEmit) {
       this.emitEvent('igcChange', { detail: this.activeTab });
     }
-    this.alignIndicator();
   }
 
   private setSelectedTab(tab: IgcTabComponent) {
@@ -255,7 +257,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     }
     tab.selected = true;
     this.activeTab = tab;
-    tab.header.scrollIntoView({ block: 'nearest' });
+
+    // In case that the tab to be selected introduce vertical scrollbar
+    // setTimeout will make sure that the header is scroll after the scrollbar appears
+    setTimeout(() => {
+      tab.header.scrollIntoView({ block: 'nearest' });
+      this.alignIndicator();
+    }, 0);
   }
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
@@ -396,11 +404,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       // initially when there isn't a predefined selected tab or when the selected tab is removed
       this.selectFirstTab();
     } else {
-      // activate the last tab marked as selected
+      // in case a new tab marked as selected is added dynamically
+      // select the last tab marked as selected
       this.selectTab(lastSelectedTab, false);
     }
     this.syncProperties();
     this.updateButtonsOnResize();
+    // align indicator correctly in case buttons are shown/hidden
+    this.performUpdate();
+
     this.alignIndicator();
   }
 
@@ -429,7 +441,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       ) as IgcTabComponent;
     }
     if (tabIdentifier) {
-      this.setSelectedTab(tabIdentifier);
+      this.selectTab(tabIdentifier, false);
     }
   }
 
@@ -463,7 +475,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <!-- Remove this container when rtl with position sticky is fixed -->
+      <!-- TODO: Remove this container when rtl with position sticky is fixed -->
       <div
         part="tabs"
         @scroll=${this.handleScroll}
