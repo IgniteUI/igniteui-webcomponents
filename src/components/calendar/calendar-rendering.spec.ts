@@ -417,7 +417,69 @@ describe('Calendar Rendering', () => {
       );
     });
 
-    it("navigates to the date set as value initially, selection 'single'", async () => {
+    it('navigates to the initially set active date regardless of any value(s) set', async () => {
+      // set as attribute in template and element has value set
+      const activeDate = new Date('08/06/2023');
+      const valueDate = new Date('06/06/2023');
+      el = await fixture<IgcCalendarComponent>(
+        html`<igc-calendar active-date="${activeDate}" .value=${valueDate} />`
+      );
+      await elementUpdated(el);
+
+      expect(el.activeDate.getFullYear()).to.equal(activeDate.getFullYear());
+      expect(el.activeDate.getMonth()).to.equal(activeDate.getMonth());
+      expect(el.activeDate.getDate()).to.equal(activeDate.getDate());
+
+      let headerDate = el.shadowRoot?.querySelector(
+        '[part=header-date]'
+      ) as Element;
+      expect(headerDate.textContent).to.equal('Tue, Jun 6');
+
+      let buttonMonthsNav = el.shadowRoot
+        ?.querySelector('[part=navigation]')
+        ?.querySelector('button[part=months-navigation]') as Element;
+
+      expect(buttonMonthsNav.textContent).to.contain('August');
+
+      // set through code and element has values set
+      const valueDates = [new Date('06/06/2023'), new Date('06/09/2023')];
+
+      el = await fixture<IgcCalendarComponent>(
+        html`<igc-calendar .values="${valueDates}" .selection="${'range'}" />`
+      );
+      el.activeDate = activeDate;
+      await elementUpdated(el);
+
+      expect(el.activeDate.getFullYear()).to.equal(activeDate.getFullYear());
+      expect(el.activeDate.getMonth()).to.equal(activeDate.getMonth());
+      expect(el.activeDate.getDate()).to.equal(activeDate.getDate());
+
+      headerDate = el.shadowRoot?.querySelector(
+        '[part=header-date]'
+      ) as Element;
+
+      expect(headerDate.textContent)
+        .to.contain('Jun 6')
+        .and.to.contain('-')
+        .and.to.contain('Jun 9');
+
+      buttonMonthsNav = el.shadowRoot
+        ?.querySelector('[part=navigation]')
+        ?.querySelector('button[part=months-navigation]') as Element;
+
+      expect(buttonMonthsNav.textContent).to.contain('August');
+    });
+
+    it('navigates to the current date if no initial active date is set and no value(s) are set', async () => {
+      const today = new Date();
+      el = await fixture<IgcCalendarComponent>(html`<igc-calendar />`);
+      await elementUpdated(el);
+      expect(el.activeDate.getFullYear()).to.equal(today.getFullYear());
+      expect(el.activeDate.getMonth()).to.equal(today.getMonth());
+      expect(el.activeDate.getDate()).to.equal(today.getDate());
+    });
+
+    it("navigates to the date set as value initially, selection 'single', no activeDate explicitly set", async () => {
       const valueDate = new Date('08/06/2023');
       el = await fixture<IgcCalendarComponent>(
         html`<igc-calendar .value="${valueDate}" />`
@@ -434,7 +496,7 @@ describe('Calendar Rendering', () => {
       expect(headerDate.textContent).to.equal('Sun, Aug 6');
     });
 
-    it("navigates to the first date of the initially set values, selection 'range'", async () => {
+    it("navigates to the first date of the initially set values, selection 'range', no activeDate explicitly set", async () => {
       const valueDates = [new Date('08/06/2023'), new Date('08/09/2023')];
       el = await fixture<IgcCalendarComponent>(
         html`<igc-calendar .values="${valueDates}" .selection="${'range'}" />`
@@ -454,7 +516,7 @@ describe('Calendar Rendering', () => {
         .and.to.contain('Aug 9');
     });
 
-    it("navigates to the first date of the initially set values as attribute, selection 'multiple'", async () => {
+    it("navigates to the first date of the initially set values as attribute, selection 'multiple', no activeDate explicitly set", async () => {
       const valueDates = [new Date('08/06/2023'), new Date('08/09/2023')];
       el = await fixture<IgcCalendarComponent>(
         html`<igc-calendar
