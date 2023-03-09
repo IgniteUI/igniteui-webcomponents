@@ -422,7 +422,7 @@ describe('Calendar Rendering', () => {
       const activeDate = new Date('08/06/2023');
       const valueDate = new Date('06/06/2023');
       el = await fixture<IgcCalendarComponent>(
-        html`<igc-calendar active-date="${activeDate}" .value=${valueDate} />`
+        html`<igc-calendar .activeDate="${activeDate}" .value=${valueDate} />`
       );
       await elementUpdated(el);
 
