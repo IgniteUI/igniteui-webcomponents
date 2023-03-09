@@ -1,9 +1,11 @@
 @use '../../../../styles/utilities' as utils;
 
 $hover-color: var(--hover-color, utils.color(gray, 700)) !default;
-$checked-hover-color: var(--checked-hover-color, utils.color(primary, 900)) !default;
+$checked-color: var(--checked-color, utils.color(primary, 500)) !default;
+$checked-hover-color: var(--checked-hover-color, utils.color(primary, 800)) !default;
 $invalid-hover-color: var(--invalid-hover-color, utils.color(error, 700)) !default;
 $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
+$disabled-label-color: var(--disabled-label-color, utils.color(gray, 500)) !default;
 
 :host [part~='base'] {
     transition-duration: .1s;
@@ -35,14 +37,7 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
     @include utils.type-style('body-2');
 }
 
-:host(:hover),
-:host(:focus-within) {
-    [part='control'] {
-        &::before {
-            background: $hover-color;
-        }
-    }
-
+:host(:hover) {
     [part='control checked'] {
         &::after {
             border-color: $checked-hover-color;
@@ -54,13 +49,22 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
     }
 }
 
+:host(:hover),
+:host(:focus-within) {
+    [part='control'] {
+        &::before {
+            background: $hover-color;
+        }
+    }
+}
+
 :host [part='control checked'] {
     &::before {
-        background: utils.color(primary, 500);
+        background: $checked-color;
     }
 
     &::after {
-        border-color: utils.color(primary, 500);
+        border-color: $checked-color;
     }
 }
 
@@ -78,18 +82,7 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
     }
 }
 
-:host(:not([disabled])[invalid]:hover),
-:host(:not([disabled])[invalid]:focus-within) {
-    [part='control'] {
-        &::after {
-            border-color: utils.color(error, 500);
-        }
-
-        &::before {
-            background: utils.color(error, 500);
-        }
-    }
-
+:host(:not([disabled])[invalid]:hover) {
     [part='control checked'] {
         &::after {
             border-color: $invalid-hover-color;
@@ -101,9 +94,22 @@ $disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
     }
 }
 
+:host(:not([disabled])[invalid]:hover),
+:host(:not([disabled])[invalid]:focus-within) {
+    [part='control'] {
+        &::after {
+            border-color: utils.color(error, 500);
+        }
+
+        &::before {
+            background: utils.color(error, 500);
+        }
+    }
+}
+
 :host([disabled]) {
     [part~='label'] {
-        color: $disabled-color;
+        color: $disabled-label-color;
     }
 
     [part~='control'] {
