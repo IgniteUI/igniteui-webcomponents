@@ -251,19 +251,19 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     }
   }
 
-  private setSelectedTab(tab: IgcTabComponent) {
+  private async setSelectedTab(tab: IgcTabComponent) {
     if (this.activeTab) {
       this.activeTab.selected = false;
     }
     tab.selected = true;
     this.activeTab = tab;
 
-    // In case that the tab to be selected introduce vertical scrollbar
-    // setTimeout will make sure that the header is scroll after the scrollbar appears
-    setTimeout(() => {
-      tab.header.scrollIntoView({ block: 'nearest' });
-      this.alignIndicator();
-    }, 0);
+    // In case that the tab to be selected introduce vertical scrollbar awaiting performUpdate
+    // will make sure that the header is scrolled into view after the scrollbar appears
+    await this.performUpdate();
+
+    tab.header.scrollIntoView({ block: 'nearest' });
+    this.alignIndicator();
   }
 
   protected scrollByTabOffset(direction: 'start' | 'end') {
@@ -387,7 +387,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       : this.tabs.filter((tab: IgcTabComponent) => !tab.disabled).pop();
   }
 
-  private syncProperties(): void {
+  private syncProperties() {
     this.style.setProperty('--tabs-count', this.tabs.length.toString());
     this.tabs.forEach((tab: IgcTabComponent, index: number) => {
       tab.index = index;
@@ -396,7 +396,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     });
   }
 
-  private tabsChanged(): void {
+  private async tabsChanged() {
     const lastSelectedTab = this.tabs
       .reverse()
       .find((tab: IgcTabComponent) => tab.selected);
@@ -411,7 +411,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     this.syncProperties();
     this.updateButtonsOnResize();
     // align indicator correctly in case buttons are shown/hidden
-    this.performUpdate();
+    await this.performUpdate();
 
     this.alignIndicator();
   }
