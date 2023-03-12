@@ -441,6 +441,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       ) as IgcTabComponent;
     }
     if (tabIdentifier) {
+      // TODO: add scroll paddings
       this.selectTab(tabIdentifier, false);
     }
   }
