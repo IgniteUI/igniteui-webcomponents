@@ -63,7 +63,7 @@ describe('Tabs component', () => {
     beforeEach(async () => {
       element = await fixture<IgcTabsComponent>(html`<igc-tabs>
         <igc-tab label="Tab 1" disabled>Content 1</igc-tab>
-        <igc-tab label="Tab 2">Content 2</igc-tab>
+        <igc-tab label="Tab 2"><input id="input" />Content 2</igc-tab>
         <igc-tab id="third"
           ><p slot="label">Tab 3</p>
           Content 3</igc-tab
@@ -128,6 +128,16 @@ describe('Tabs component', () => {
 
     it('`select` method does not change currently selected tab if the specified value does not exist.', async () => {
       element.select('test');
+      await elementUpdated(element);
+
+      verifySelection(element, getTabs(element)[1]);
+    });
+
+    it('keydown does not select another tab when focus is not over tab header', async () => {
+      const input = document.getElementById('input');
+      input?.focus();
+
+      input?.dispatchEvent(fireKeyboardEvent('ArrowRight'));
       await elementUpdated(element);
 
       verifySelection(element, getTabs(element)[1]);
