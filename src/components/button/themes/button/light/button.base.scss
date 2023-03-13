@@ -11,6 +11,9 @@
     ::slotted(*) {
         display: inline-flex;
         align-items: center;
+
+        // Important is needed to override material icons styles
+        font-size: inherit !important;
     }
 }
 
