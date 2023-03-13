@@ -489,7 +489,7 @@ describe('Tabs component', () => {
         );
       }
       element = await fixture<IgcTabsComponent>(
-        html`<igc-tabs>${tabs}</igc-tabs>`
+        html`<igc-tabs style="width: 400px;">${tabs}</igc-tabs>`
       );
     });
 
@@ -522,155 +522,112 @@ describe('Tabs component', () => {
     it('scrolls to start when start scroll button is clicked', async () => {
       element.select('18');
       await elementUpdated(element);
-      await aTimeout(1000);
-
-      console.log(endScrollButton(element).disabled);
-
-      // expect(endScrollButton(element).disabled).to.be.true;
 
       await waitUntil(
         () => endScrollButton(element).disabled,
         'End scroll button is not disabled at end of scroll'
       );
 
-      // startScrollButton(element).click();
+      startScrollButton(element).click();
+      await elementUpdated(element);
 
-      // await elementUpdated(element);
-      // await waitUntil(
-      //   () => !endScrollButton(element).disabled,
-      //   'End scroll button is disabled on opposite scroll'
-      // );
+      await waitUntil(
+        () => !endScrollButton(element).disabled,
+        'End scroll button is disabled on opposite scroll'
+      );
+    });
+
+    it('scrolls to end when end scroll button is clicked', async () => {
+      element.select('1');
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => startScrollButton(element).disabled,
+        'Start scroll button is not disabled at end of scroll'
+      );
+
+      endScrollButton(element).click();
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => !startScrollButton(element).disabled,
+        'Start scroll button is disabled on opposite scroll'
+      );
+    });
+
+    it('scrolls when tab is partially visible', async () => {
+      const header = element.querySelector('igc-tab')!;
+      header.label = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+      element.style.width = '300px';
+      await elementUpdated(element);
+
+      endScrollButton(element).click();
+      await elementUpdated(element);
+      await waitUntil(
+        () => !startScrollButton(element).disabled,
+        'Start scroll button is disabled on opposite scroll'
+      );
+    });
+
+    it('displays scroll buttons (RTL)', async () => {
+      element.setAttribute('dir', 'rtl');
+      await elementUpdated(element);
+
+      expect(startScrollButton(element)).to.not.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
+
+      element.select('18');
+      await elementUpdated(element);
+
+      expect(startScrollButton(element)).to.not.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
+
+      element.select('9');
+      await elementUpdated(element);
+      expect(startScrollButton(element)).to.not.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
+    });
+
+    it('scrolls to start when start scroll button is clicked (RTL)', async () => {
+      element.setAttribute('dir', 'rtl');
+      await elementUpdated(element);
+
+      element.select('18');
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => endScrollButton(element).disabled,
+        'End scroll button is not disabled at end of scroll'
+      );
+
+      startScrollButton(element).click();
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => !endScrollButton(element).disabled,
+        'End scroll button is disabled on opposite scroll'
+      );
+    });
+
+    it('scrolls to end when end scroll button is clicked (RTL)', async () => {
+      element.setAttribute('dir', 'rtl');
+      await elementUpdated(element);
+
+      element.select('1');
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => startScrollButton(element).disabled,
+        'Start scroll button is not disabled at end of scroll'
+      );
+
+      endScrollButton(element).click();
+
+      await elementUpdated(element);
+      await waitUntil(
+        () => !startScrollButton(element).disabled,
+        'Start scroll button is disabled on opposite scroll'
+      );
     });
   });
 });
-
-/*
-
-  it('scrolls to end when end scroll button is clicked', async () => {
-    element.select('1');
-
-    await elementUpdated(element);
-    await waitUntil(
-      () => startScrollButton(element).disabled,
-      'Start scroll button is not disabled at end of scroll'
-    );
-
-    endScrollButton(element).click();
-
-    await elementUpdated(element);
-    await waitUntil(
-      () => !startScrollButton(element).disabled,
-      'Start scroll button is disabled on opposite scroll'
-    );
-  });
-
-  it('scrolls when tab is partially visible', async () => {
-    const header = element.querySelector('igc-tab')!;
-    header.textContent =
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
-    element.style.width = '300px';
-    await elementUpdated(element);
-
-    endScrollButton(element).click();
-    await elementUpdated(element);
-    await waitUntil(
-      () => !startScrollButton(element).disabled,
-      'Start scroll button is disabled on opposite scroll'
-    );
-  });
-
-  it('displays scroll buttons (RTL)', async () => {
-    element.setAttribute('dir', 'rtl');
-    await elementUpdated(element);
-
-    expect(startScrollButton(element)).to.not.be.null;
-    expect(endScrollButton(element)).to.not.be.null;
-
-    element.select('18');
-    await elementUpdated(element);
-
-    expect(startScrollButton(element)).to.not.be.null;
-    expect(endScrollButton(element)).to.not.be.null;
-
-    element.select('9');
-    await elementUpdated(element);
-    expect(startScrollButton(element)).to.not.be.null;
-    expect(endScrollButton(element)).to.not.be.null;
-  });
-
-  it('scrolls to start when start scroll button is clicked (RTL)', async () => {
-    element.setAttribute('dir', 'rtl');
-    await elementUpdated(element);
-
-    element.select('18');
-
-    await elementUpdated(element);
-    await waitUntil(
-      () => endScrollButton(element).disabled,
-      'End scroll button is not disabled at end of scroll'
-    );
-
-    startScrollButton(element).click();
-
-    await elementUpdated(element);
-    await waitUntil(
-      () => !endScrollButton(element).disabled,
-      'End scroll button is disabled on opposite scroll'
-    );
-  });
-
-  it('scrolls to end when end scroll button is clicked (RTL)', async () => {
-    element.setAttribute('dir', 'rtl');
-    await elementUpdated(element);
-
-    element.select('1');
-
-    await elementUpdated(element);
-    await waitUntil(
-      () => startScrollButton(element).disabled,
-      'Start scroll button is not disabled at end of scroll'
-    );
-
-    endScrollButton(element).click();
-
-    await elementUpdated(element);
-    await waitUntil(
-      () => !startScrollButton(element).disabled,
-      'Start scroll button is disabled on opposite scroll'
-    );
-  });
-});
-
-describe('', () => {
-  beforeEach(async () => {
-    element = await fixture<IgcTabsComponent>(html`
-      <igc-tabs>
-        <igc-tab></igc-tab>
-        <igc-tab></igc-tab>
-        <igc-tab panel="special-offer"></igc-tab>
-        <igc-tab></igc-tab>
-        <igc-tab></igc-tab>
-
-        <igc-tab-panel></igc-tab-panel>
-        <igc-tab-panel></igc-tab-panel>
-        <igc-tab-panel id="special-offer"></igc-tab-panel>
-        <igc-tab-panel id="discounts"></igc-tab-panel>
-      </igc-tabs>
-    `);
-  });
-
-  it('correctly wires tab to panel relations based on provided attributes', async () => {
-    const [tabs, panels] = [getTabs(element), getPanels(element)];
-
-    // Check all but the last since it has no panel
-    tabs.slice(0, -1).forEach((tab, index) => {
-      expect(tab.panel).to.equal(panels.at(index)!.id);
-    });
-
-    // Check the last one for auto-generated `panel` prop.
-    expect(tabs.at(-1)?.panel).to.not.equal('');
-  });
-});
-});
-
-*/
