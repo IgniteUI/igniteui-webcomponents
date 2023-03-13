@@ -262,7 +262,14 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     // will make sure that the header is scrolled into view after the scrollbar appears
     await this.performUpdate();
 
+    // TODO: remove when scroll-padding is fixed
+    this.scrollContainer.part.add('focused');
+
     tab.header.scrollIntoView({ block: 'nearest' });
+
+    // TODO: remove when scroll-padding is fixed
+    this.scrollContainer.part.remove('focused');
+
     this.alignIndicator();
   }
 
@@ -441,7 +448,6 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       ) as IgcTabComponent;
     }
     if (tabIdentifier) {
-      // TODO: add scroll paddings
       this.selectTab(tabIdentifier, false);
     }
   }
