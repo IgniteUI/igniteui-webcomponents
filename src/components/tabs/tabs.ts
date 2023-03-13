@@ -55,7 +55,7 @@ export interface IgcTabsEventMap {
 }
 
 /**
- * IgcTabs provides a wizard-like workflow by dividing content into logical tabs.
+ * `IgcTabsComponent` provides a wizard-like workflow by dividing content into logical tabs.
  *
  * @remarks
  * The tabs component allows the user to navigate between multiple tabs.
@@ -63,10 +63,13 @@ export interface IgcTabsEventMap {
  *
  * @element igc-tabs
  *
- * @slot - Renders the tab components inside default slot.
+ * @fires igcChange - Emitted when the selected tab changes.
  *
- * @fires igcSelectedTabChanging - Emitted when the selected tab is about to change.
- * @fires igcSelectedTabChanged - Emitted when the selected tab is changed.
+ * @slot - Renders the `IgcTabComponents` inside default slot.
+ *
+ * @csspart start-scroll-button - The start scroll button displayed when the tabs overflow.
+ * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
+ * @csspart selected-indicator - The indicator that shows which tab is selected, it's visible for all themes except bootstrap.
  */
 @themes({ bootstrap, fluent, indigo })
 export default class IgcTabsComponent extends EventEmitterMixin<

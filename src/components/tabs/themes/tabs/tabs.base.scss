@@ -60,6 +60,7 @@ $arrow-start: 0;
 
 [part~='tabs'] {
     display: flex;
+
     // overflow-x: auto;
     // overflow-y: hidden;
     overflow: hidden;
@@ -98,7 +99,6 @@ $arrow-start: 0;
     /* stylelint-disable */
     grid-template-columns: var(--scroll-btn-size) repeat(var(--tabs-count), minmax(max-content, auto)) var(--scroll-btn-size);
     /* stylelint-enable */
-
 }
 
 [part~='inner']:not([part~='scrollable']) {

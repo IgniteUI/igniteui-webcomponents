@@ -9,17 +9,19 @@ import { styles as indigo } from './themes/tab/light/tab.indigo.css.js';
 import { styles as material } from './themes/tab/light/tab.material.css.js';
 
 /**
- * Represents the tab header.
+ * `IgcTabComponent` is used within the `igc-tabs` element and it holds the header and the content of each tab.
  *
  * @element igc-tab
  *
- * @slot prefix - Renders before the tab header content.
- * @slot - Renders the tab header content.
- * @slot suffix - Renders after the tab header content.
+ * @slot - Renders the tab's content.
+ * @slot label - Renders the tab header's label.
+ * @slot prefix - Renders the tab header's prefix.
+ * @slot suffix - Renders the tab header's suffix.
  *
- * @csspart content - The content wrapper.
- * @csspart prefix - The prefix wrapper.
- * @csspart suffix - The suffix wrapper.
+ * @csspart header - The header of a single tab.
+ * @csspart prefix - Holds the content prefix.
+ * @csspart suffix - Holds the content suffix.
+ * @csspart body - Holds the body content of a single tab, only the body of the selected tab is visible.
  */
 @themes({ bootstrap, fluent, indigo, material })
 export default class IgcTabComponent extends LitElement {
