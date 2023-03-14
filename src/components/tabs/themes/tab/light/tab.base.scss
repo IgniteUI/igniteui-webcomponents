@@ -15,15 +15,15 @@
     min-height: rem(42px);
     padding-block: rem(12px);
     padding-inline: rem(16px);
-	max-width: var(--tab-max-width--justify, var(--tab-max-width));
-	min-width: var(--tab-min-width);
+    max-width: var(--tab-max-width--justify, var(--tab-max-width));
+    min-width: var(--tab-min-width);
     cursor: pointer;
     position: relative;
     background: var(--header-background);
     color: var(--header-foreground);
     z-index: map.get($tabs-z-index, 'header');
     grid-row: 1;
-	word-break: break-word;
+    word-break: break-word;
 
     &:hover,
     &:focus-within {
