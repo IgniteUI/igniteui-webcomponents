@@ -72,8 +72,7 @@ const tabs = Array.from(
     if (i === 9) {
       return html`<igc-tab
         ><div slot="label">
-          Lorem ipsum dolor sit amet, consec tetur adipi scing elitt dolorem
-          illo expedita aperiam impedit molestias
+          Looooooooooooooooooooooooooooooooooooooooooooooong header
         </div>
         <input />Lorem ipsum dolor sit amet consectetur adipisicing elit.
         Consequuntur accusantium mollitia dolorem illo expedita aperiam impedit
