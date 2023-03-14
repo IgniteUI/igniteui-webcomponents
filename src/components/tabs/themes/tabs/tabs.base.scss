@@ -56,13 +56,8 @@ $arrow-start: 0;
     grid-row: 1;
 }
 
-// Tabs position START
-
 [part~='tabs'] {
     display: flex;
-
-    // overflow-x: auto;
-    // overflow-y: hidden;
     overflow: hidden;
     height: 100%;
 
@@ -79,6 +74,8 @@ $arrow-start: 0;
     scrollbar-width: none;
 }
 
+// TODO: Move this in part tabs when scroll-padding is fixed.
+// TODO Add reference to the chromium browsers issue.
 [part~='focused'] {
     scroll-padding-inline: var(--scroll-btn-size);
 }
@@ -147,9 +144,6 @@ $arrow-start: 0;
     }
 }
 
-// Tabs position END
-
-// Scroll buttons
 :host([dir='rtl']) {
     [part~='start-scroll-button'],
     [part~='end-scroll-button'] {
@@ -205,7 +199,6 @@ igc-icon-button[disabled]::part(base) {
     background: var(--scroll-btn-background--disabled);
 }
 
-// TODO move this from the base
 [part='selected-indicator'] {
     $indicator-height: rem(2px);
 

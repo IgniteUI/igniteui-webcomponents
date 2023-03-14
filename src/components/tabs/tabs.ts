@@ -309,6 +309,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       .at(next ? 0 : -1);
 
     if (nextTab) {
+      // TODO: remove when scroll-padding is fixed
+      this.scrollContainer.part.add('focused');
+
       nextTab!.tab.header.scrollIntoView({
         behavior: 'smooth',
         block: 'nearest',
