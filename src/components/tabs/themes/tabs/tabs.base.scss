@@ -75,7 +75,7 @@ $arrow-start: 0;
 }
 
 // TODO: Move this in part tabs when scroll-padding is fixed.
-// TODO Add reference to the chromium browsers issue.
+// TODO: Add reference to the chromium browsers issue.
 [part~='focused'] {
     scroll-padding-inline: var(--scroll-btn-size);
 }

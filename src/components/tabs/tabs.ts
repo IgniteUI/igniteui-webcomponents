@@ -40,6 +40,7 @@ const getTabFromEvent = (event: Event): IgcTabComponent | null => {
 };
 
 // TODO: remove when scroll-padding is fixed
+// TODO: Add reference to the chromium browsers issue.
 const isFromHeaderContainer = (event: Event): boolean => {
   const tabContent = event
     .composedPath()
@@ -266,11 +267,13 @@ export default class IgcTabsComponent extends EventEmitterMixin<
     await this.performUpdate();
 
     // TODO: remove when scroll-padding is fixed
+    // TODO: Add reference to the chromium browsers issue.
     this.scrollContainer.part.add('focused');
 
     tab.header.scrollIntoView({ block: 'nearest' });
 
     // TODO: remove when scroll-padding is fixed
+    // TODO: Add reference to the chromium browsers issue.
     this.scrollContainer.part.remove('focused');
 
     this.alignIndicator();
@@ -310,6 +313,9 @@ export default class IgcTabsComponent extends EventEmitterMixin<
 
     if (nextTab) {
       // TODO: remove when scroll-padding is fixed
+      // TODO: Add reference to the chromium browsers issue.
+      // Related to: safari click on button doesn't trigger focus
+      // https://bugs.webkit.org/show_bug.cgi?id=22261
       this.scrollContainer.part.add('focused');
 
       nextTab!.tab.header.scrollIntoView({
@@ -435,6 +441,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   // TODO: remove when scroll-padding is fixed
+  // TODO: Add reference to the chromium browsers issue.
   private handleFocus(event: FocusEvent) {
     if (this.showScrollButtons && isFromHeaderContainer(event)) {
       this.scrollContainer.part.add('focused');
@@ -442,6 +449,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   // TODO: remove when scroll-padding is fixed
+  // TODO: Add reference to the chromium browsers issue.
   private handleBlur() {
     this.scrollContainer.part.remove('focused');
   }
