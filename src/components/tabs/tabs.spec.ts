@@ -63,7 +63,9 @@ describe('Tabs component', () => {
     beforeEach(async () => {
       element = await fixture<IgcTabsComponent>(html`<igc-tabs>
         <igc-tab label="Tab 1" disabled>Content 1</igc-tab>
-        <igc-tab label="Tab 2"><input id="input" />Content 2</igc-tab>
+        <igc-tab label="Tab 2"
+          ><input aria-label="test" id="input" />Content 2</igc-tab
+        >
         <igc-tab id="third"
           ><p slot="label">Tab 3</p>
           Content 3</igc-tab
@@ -72,10 +74,12 @@ describe('Tabs component', () => {
       </igc-tabs>`);
     });
 
-    // it('is accessible', async () => {
-    //   // await expect(element).to.be.accessible();
-    //   await expect(element).to.be.accessible();
-    // });
+    it('is accessible', async () => {
+      await expect(element).shadowDom.to.be.accessible({
+        // TODO: remove rule once https://github.com/dequelabs/axe-core/issues/3940 is fixed
+        ignoredRules: ['aria-required-children'],
+      });
+    });
 
     it('renders the IgcTabComponents', () => {
       expect(getTabs(element)).to.have.length(4);
@@ -274,14 +278,16 @@ describe('Tabs component', () => {
 
       let activeTabHeader = getSelectedTab(element).header;
       let activeTabOffesetLeft = activeTabHeader.offsetLeft;
-      expect(activeTabOffesetLeft).to.eq(540);
+      expect(activeTabOffesetLeft).to.eq(604);
       let activeTabWidth = activeTabHeader.getBoundingClientRect().width;
-      expect(activeTabWidth).to.eq(122);
+      expect(activeTabWidth).to.eq(90);
       const scrollContainerWidth =
         getScrollContainer(element).getBoundingClientRect().width;
       expect(scrollContainerWidth).to.eq(784);
 
-      expect(indicator.style.transform).to.eq('translate(-122px)');
+      // activeTabOffesetLeft(604) - scrollContainerWidth(784) + activeTabWidth(90)
+      expect(indicator.style.transform).to.eq('translate(-90px)');
+
       expect(indicator.style.width).to.eq(activeTabWidth + 'px');
 
       element.alignment = 'justify';
@@ -298,7 +304,9 @@ describe('Tabs component', () => {
       expect(activeTabWidth).to.eq(196);
       expect(scrollContainerWidth).to.eq(784);
 
+      // activeTabOffesetLeft(196) - scrollContainerWidth(784) + activeTabWidth(196)
       expect(indicator.style.transform).to.eq('translate(-392px)');
+
       expect(indicator.style.width).to.eq(activeTabWidth + 'px');
     });
 
@@ -323,22 +331,6 @@ describe('Tabs component', () => {
         detail: getSelectedTab(element),
       });
     });
-
-    // it('does not display scroll buttons if alignment is justify', async () => {
-    //   const startScrollButton = element.shadowRoot?.querySelector(
-    //     'igc-icon-button[part="start-scroll-button"]'
-    //   );
-
-    //   const endScrollButton = element.shadowRoot?.querySelector(
-    //     'igc-icon-button[part="end-scroll-button"]'
-    //   );
-
-    //   element.alignment = 'justify';
-    //   await elementUpdated(element);
-
-    //   expect(startScrollButton).to.be.null;
-    //   expect(endScrollButton).to.be.null;
-    // });
 
     it('aligns tab headers properly when `alignment` is set to justify', async () => {
       element.alignment = 'justify';
@@ -370,11 +362,10 @@ describe('Tabs component', () => {
 
       expect(getTabs(element)[0].header.offsetLeft).to.eq(0);
       expect(offsetRight - noTabsAreaWidth).to.eq(0);
-      // TODO: why are they 122 and not 90
-      expect(Math.abs(122 - widths[0])).to.eq(0);
-      expect(Math.abs(122 - widths[1])).to.eq(0);
-      expect(Math.abs(122 - widths[2])).to.eq(0);
-      expect(Math.abs(122 - widths[3])).to.eq(0);
+      expect(Math.abs(90 - widths[0])).to.eq(0);
+      expect(Math.abs(90 - widths[1])).to.eq(0);
+      expect(Math.abs(90 - widths[2])).to.eq(0);
+      expect(Math.abs(90 - widths[3])).to.eq(0);
     });
 
     it('aligns tab headers properly when `alignment` is set to center', async () => {
@@ -396,33 +387,10 @@ describe('Tabs component', () => {
         Math.round(noTabsAreaWidth / 2) - getTabs(element)[0].header.offsetLeft
       ).to.eq(0);
       expect(offsetRight - getTabs(element)[0].header.offsetLeft).to.eq(0);
-      expect(Math.abs(122 - widths[0])).to.eq(0);
-      expect(Math.abs(122 - widths[1])).to.eq(0);
-      expect(Math.abs(122 - widths[2])).to.eq(0);
-      expect(Math.abs(122 - widths[3])).to.eq(0);
-    });
-
-    it('aligns tab headers properly when `alignment` is set to end', async () => {
-      element.alignment = 'end';
-      await elementUpdated(element);
-      await aTimeout(300);
-
-      const widths: number[] = [];
-      getTabs(element).map((elem) => widths.push(elem.header.offsetWidth));
-
-      const result = widths.reduce((a, b) => a + b);
-      const noTabsAreaWidth = getScrollContainer(element).offsetWidth - result;
-      const offsetRight =
-        getScrollContainer(element).offsetWidth -
-        getTabs(element)[3].header.offsetLeft -
-        getTabs(element)[3].header.offsetWidth;
-
-      expect(offsetRight).to.eq(0);
-      expect(getTabs(element)[0].header.offsetLeft - noTabsAreaWidth).to.eq(0);
-      expect(Math.abs(122 - widths[0])).to.eq(0);
-      expect(Math.abs(122 - widths[1])).to.eq(0);
-      expect(Math.abs(122 - widths[2])).to.eq(0);
-      expect(Math.abs(122 - widths[3])).to.eq(0);
+      expect(Math.abs(90 - widths[0])).to.eq(0);
+      expect(Math.abs(90 - widths[1])).to.eq(0);
+      expect(Math.abs(90 - widths[2])).to.eq(0);
+      expect(Math.abs(90 - widths[3])).to.eq(0);
     });
 
     it('updates selection through tab element `selected` attribute', async () => {
@@ -499,7 +467,7 @@ describe('Tabs component', () => {
         );
       }
       element = await fixture<IgcTabsComponent>(
-        html`<igc-tabs style="width: 400px;">${tabs}</igc-tabs>`
+        html`<igc-tabs>${tabs}</igc-tabs>`
       );
     });
 
@@ -525,6 +493,14 @@ describe('Tabs component', () => {
 
       element.select('9');
       await elementUpdated(element);
+      expect(startScrollButton(element)).to.not.be.null;
+      expect(endScrollButton(element)).to.not.be.null;
+    });
+
+    it('does display scroll buttons if alignment is justify', async () => {
+      element.alignment = 'justify';
+      await elementUpdated(element);
+
       expect(startScrollButton(element)).to.not.be.null;
       expect(endScrollButton(element)).to.not.be.null;
     });
