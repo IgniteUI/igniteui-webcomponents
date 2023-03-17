@@ -19,8 +19,9 @@ import { styles as material } from './themes/tab/light/tab.material.css.js';
  * @slot suffix - Renders the tab header's suffix.
  *
  * @csspart header - The header of a single tab.
- * @csspart prefix - Holds the content prefix.
- * @csspart suffix - Holds the content suffix.
+ * @csspart prefix - Holds the header's label prefix.
+ * @csspart content - Holds the header's label.
+ * @csspart suffix - Holds the header's label suffix.
  * @csspart body - Holds the body content of a single tab, only the body of the selected tab is visible.
  */
 @themes({ bootstrap, fluent, indigo, material })

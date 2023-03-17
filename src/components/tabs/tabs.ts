@@ -80,7 +80,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   /** @private */
   public static readonly tagName = 'igc-tabs';
   /** @private */
-  protected static styles = styles;
+  public static styles = styles;
   /** @private */
   protected themeController!: ThemeController;
 
