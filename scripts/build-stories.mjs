@@ -1,8 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const prettier = require('prettier');
-const report = require('./report');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import util from 'node:util';
+import prettier from 'prettier';
+
+import report from './report.mjs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);

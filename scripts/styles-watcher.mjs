@@ -1,5 +1,5 @@
 import watch from 'node-watch';
-import report from './report.js';
+import report from './report.mjs';
 import { sassRender, template } from './sass.mjs';
 
 const watchOptions = {
@@ -9,7 +9,7 @@ const watchOptions = {
   },
 };
 
-watch(['src'], watchOptions, function(_event, fileName) {
+watch(['src'], watchOptions, function (_event, fileName) {
   addToQueue(fileName);
 });
 
@@ -22,7 +22,7 @@ async function addToQueue(fileName) {
   }
   report.warn(`Change detected: ${fileName}`);
   updating = true;
-  console.log('Rebuilding styles...');
+  report.info('Rebuilding styles...');
 
   await sassRender(fileName, template, output).catch((err) => {
     report.error(err);
@@ -31,4 +31,4 @@ async function addToQueue(fileName) {
   updating = false;
 }
 
-console.log('Styles watcher started...');
+report.info('Styles watcher started...');

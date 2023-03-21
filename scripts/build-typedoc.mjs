@@ -1,30 +1,37 @@
-const path = require('path');
-const watch = require('node-watch');
-const { promisify } = require('util');
-const browserSync = require('browser-sync').create();
-const exec = promisify(require('child_process').exec);
+import path from 'node:path';
+import watch from 'node-watch';
+import { promisify } from 'node:util';
+import { create } from 'browser-sync';
+import { exec as _exec } from 'node:child_process';
+
+const browserSync = create();
+const exec = promisify(_exec);
 
 const ROOT = path.join.bind(null, path.resolve('./'));
 
 const TYPEDOC_THEME = {
   SRC: ROOT('node_modules', 'igniteui-typedoc-theme'),
-  OUTPUT: ROOT('dist', 'docs', 'typescript')
+  OUTPUT: ROOT('dist', 'docs', 'typescript'),
 };
 const TYPEDOC = {
   EXPORT_JSON_PATH: ROOT('dist', 'docs', 'typescript-exported'),
   PROJECT_PATH: ROOT('src', 'index.ts'),
-  TEMPLATE_STRINGS_PATH: ROOT('extras', 'template', 'strings', 'shell-strings.json')
+  TEMPLATE_STRINGS_PATH: ROOT(
+    'extras',
+    'template',
+    'strings',
+    'shell-strings.json'
+  ),
 };
-
 
 const browserReload = async () => browserSync.reload();
 
 const serve = async () => {
   const config = {
     server: {
-      baseDir: TYPEDOC_THEME.OUTPUT
+      baseDir: TYPEDOC_THEME.OUTPUT,
     },
-    port: 3000
+    port: 3000,
   };
   browserSync.init(config);
 };
@@ -35,7 +42,7 @@ const watchFunc = async () => {
     recursive: true,
     filter: (path) => {
       return /.(?:ts|js|scss|sass|hbs|png|jpg|gif)$/.test(path);
-    }
+    },
   };
 
   watch([TYPEDOC_THEME.SRC], options, async (event, path) => {
@@ -45,7 +52,10 @@ const watchFunc = async () => {
 };
 
 const buildTheme = async () => {
-  await exec(`typedoc ${TYPEDOC.PROJECT_PATH} --tsconfig ${ROOT('tsconfig.json')}`, { shell: true });
+  await exec(
+    `typedoc ${TYPEDOC.PROJECT_PATH} --tsconfig ${ROOT('tsconfig.json')}`,
+    { shell: true }
+  );
 };
 
 const exportJSON = async () => {
@@ -56,7 +66,7 @@ const exportJSON = async () => {
     '--tags',
     '--params',
     '--tsconfig',
-    ROOT('tsconfig.json')
+    ROOT('tsconfig.json'),
   ].join(' ');
 
   await exec(`typedoc ${args}`, { shell: true });
@@ -69,7 +79,7 @@ const importJSON = async () => {
     TYPEDOC.EXPORT_JSON_PATH,
     '--warns',
     '--tsconfig',
-    ROOT('tsconfig.json')
+    ROOT('tsconfig.json'),
   ].join(' ');
 
   await exec(`typedoc ${args}`, { shell: true });
@@ -86,24 +96,23 @@ const buildJA = async () => {
     '--localize',
     'jp',
     '--tsconfig',
-    ROOT('tsconfig.json')
+    ROOT('tsconfig.json'),
   ].join(' ');
 
   await exec(`typedoc ${args}`, { shell: true });
-}
+};
 
 const buildEN = async () => {
   const args = [
     TYPEDOC.PROJECT_PATH,
     '--localize',
     'en',
-    "--tsconfig",
-    ROOT('tsconfig.json')
+    '--tsconfig',
+    ROOT('tsconfig.json'),
   ].join(' ');
 
   await exec(`typedoc ${args}`, { shell: true });
 };
-
 
 (async () => {
   if (process.argv.length < 3) {
