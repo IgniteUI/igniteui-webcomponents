@@ -1,3 +1,4 @@
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
 
 $disabled-color: var(--disabled-color, color(gray, 500)) !default;
@@ -52,12 +53,26 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
     color: color(gray, 700);
 }
 
-:host([open]) [part~='content'] {
+[part='content'] ::slotted(*) {
     @include type-style('body-2');
+}
 
+[part~='content'] {
     overflow: hidden;
-    padding-inline: pad-inline(24px);
-    padding-block: pad-block(16px);
+
+    > slot {
+        display: block;
+        padding-inline: pad-inline(24px);
+        padding-block: pad-block(16px);
+    }
+}
+
+:host(:not([open])) [part~='content'] {
+    height: 0;
+}
+
+:host([open]) [part~='content'] {
+    height: auto;
 }
 
 [part~='indicator'] {

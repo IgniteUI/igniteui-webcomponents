@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
 
-$idle-color: color(gray, 600) !default;
+$idle-color: color(gray, 500) !default;
 $idle-hover-color: color(gray, 800) !default;
 $hover-background: color(gray, 200) !default;
 $focus-background: var(--focus-background, color(gray, 300)) !default;
@@ -27,13 +27,17 @@ $fs: rem(16px) !default;
     align-items: center;
     width: max-content;
     height: 100%;
-    padding-inline: pad-inline(8px, 12px, 16px);
+    padding-inline: pad-inline(rem(12px), rem(14px), rem(16px));
 }
 
 :host {
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
+    }
+
+    input::placeholder {
+        color: color(gray, 700);
     }
 }
 
@@ -50,13 +54,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='label'] {
-    color: $idle-color;
-    /* stylelint-disable */
+    color: color(gray, 700);
     transition:
         transform 150ms cubic-bezier(.4, 0, .2, 1),
         color 150ms cubic-bezier(.4, 0, .2, 1),
         font-size 150ms cubic-bezier(.4, 0, .2, 1);
-    /* stylelint-enable */
     line-height: 1;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -109,6 +111,18 @@ input:placeholder-shown + [part='notch'] [part='label'],
         @extend %label;
 
         color: $active-color;
+    }
+
+    [part~='prefix'],
+    [part~='suffix'] {
+        color: color(gray, 900);
+    }
+}
+
+[part~='filled'] {
+    [part~='prefix'],
+    [part~='suffix'] {
+        color: color(gray, 900);
     }
 }
 
@@ -211,7 +225,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='start'],
 [part='end'] {
     display: flex;
-    min-width: rem(12px);
+    min-width: sizable(rem(10px), rem(12px), rem(14px));
     height: var(--size);
     overflow: hidden;
 }
@@ -219,9 +233,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='helper-text'] {
     @include type-style('caption');
 
-    padding: 0 rem(8px);
-    margin-top: rem(4px);
-    color: color(gray, 600);
+    padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
+    margin-top: rem(5px);
+    color: color(gray, 700);
 }
 
 :host([invalid]),
@@ -256,19 +270,19 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='prefix'],
     [part='suffix'],
     [part='helper-text'] {
-        color: color(gray, 400);
+        color: color(gray, 500);
     }
 
     [part='start'],
     [part='filler'],
     [part='notch'],
     [part='end'] {
-        color: color(gray, 400);
-        border-color: color(gray, 400);
+        color: color(gray, 500);
+        border-color: color(gray, 500);
     }
 
     input::placeholder {
-        color: color(gray, 300);
+        color: color(gray, 500);
     }
 
     [part~='filled'] + [part='notch'] {
@@ -323,7 +337,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part~='container'] {
-        background: color(gray, 100);
+        background: color(gray, 200);
         border-bottom: 1px solid $idle-color;
 
         border: {
@@ -407,10 +421,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='prefix'],
     [part='suffix'],
     [part='helper-text'] {
-        color: color(gray, 400);
+        color: color(gray, 500);
     }
 
     [part~='container'] {
-        border-color: color(gray, 400);
+        background: color(gray, 100);
+        border-color: color(gray, 500);
+        border-bottom-style: dashed;
     }
 }

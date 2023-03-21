@@ -1,5 +1,7 @@
 @mixin theme() {
-    igc-input {
+    igc-input,
+    igc-mask-input,
+    igc-date-time-input {
         --input-background: transparent;
     }
 }

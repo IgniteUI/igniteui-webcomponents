@@ -151,17 +151,13 @@ describe('Button component', () => {
     });
 
     it('renders the prefix, content and suffix slots successfully', async () => {
-      expect(el).shadowDom.to.equal(`<button class="${classValue(
-        'contained medium'
-      )}" part="base">
-      <span part="prefix">
-        <slot name="prefix"></slot>
-      </span>
-      <slot></slot>
-      <span part="suffix">
-        <slot name="suffix"></slot>
-      </span>
-      </button>`);
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue('contained medium')}" part="base">
+         <slot name="prefix"></slot>
+         <slot></slot>
+         <slot name="suffix"></slot>
+         </button>`
+      );
     });
 
     it('sets type property successfully', async () => {
@@ -269,14 +265,16 @@ describe('LinkButton component', () => {
     });
 
     it('renders the prefix, content and suffix slots successfully', async () => {
-      expect(el).shadowDom.to.equal(`<a aria-disabled="false"
+      expect(el).shadowDom.to.equal(
+        `<a aria-disabled="false"
         class="${classValue(
           `contained medium`
         )}" href="/" part="base" role="button">
-        <span part="prefix"><slot name="prefix"></slot>
-        </span><slot></slot>
-        <span part="suffix"><slot name="suffix"></slot></span>
-      </a>`);
+        <slot name="prefix"></slot>
+        <slot></slot>
+        <slot name="suffix"></slot>
+      </a>`
+      );
     });
 
     it('is created with the proper default values', async () => {

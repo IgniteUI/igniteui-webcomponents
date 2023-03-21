@@ -1,89 +1,72 @@
-@use '../../../../../styles/utilities' as utils;
+@use '../../../../../styles/utilities' as *;
 
-$text-color: var(--text-color, #{utils.contrast-color(primary, 600)}) !default;
-$hover-background: var(--hover-background, #{utils.color(primary, 600)}) !default;
-$active-background: var(--active-background, #{utils.color(primary, 700)}) !default;
+$text-color: var(--text-color, #{contrast-color(primary, 600)}) !default;
+$hover-background: var(--hover-background, #{color(primary, 600)}) !default;
+$active-background: var(--active-background, #{color(primary, 700)}) !default;
 
 :host {
-    --size: #{utils.sizable(utils.rem(24px), utils.rem(32px), utils.rem(38px))};
+    --size: #{sizable(rem(24px), rem(32px), rem(38px))};
 }
 
 [part='base'] {
-    @include utils.border-radius(utils.rem(2px));
+    @include border-radius(rem(2px));
 
-    padding: 0 utils.pad(8px, 16px, 16px);
+    padding: 0 pad(8px, 16px, 16px);
 }
 
 // FLAT
 :host(:not([disabled])[variant='flat']) [part='base'] {
-    color: #{utils.color(gray, 900)};
+    color: #{color(gray, 900)};
 
     &:hover {
-        color: #{utils.color(primary, 500)};
+        color: #{color(primary, 500)};
     }
 
     &:active {
-        color: #{utils.color(gray, 900)};
+        color: #{color(gray, 900)};
     }
 
     &:hover,
     &:focus,
     &:active {
-        &::before {
-            background: transparent;
-        }
+        background: transparent;
     }
 }
 
 // OUTLINED
 :host(:not([disabled])[variant='outlined']) [part='base'] {
-    color: #{utils.color(gray, 900)};
+    color: #{color(gray, 900)};
     transition: color .15s ease-out;
-    box-shadow: 0 0 0 1px #{utils.color(gray, 700)};
+    box-shadow: 0 0 0 1px #{color(gray, 700)};
 
     &:hover,
     &:focus:hover {
-        &::before {
-            opacity: 1;
-            background: #{utils.color(gray, 100)};
-        }
+        background: #{color(gray, 100)};
     }
 
     &:focus {
-        &::before {
-            opacity: 1;
-            background: transparent;
-        }
+        background: transparent;
     }
 
     &:focus:active {
-        &::before {
-            opacity: 1;
-            background: #{utils.color(gray, 200)};
-        }
+        background: #{color(gray, 200)};
     }
 
     &:hover,
     &:focus,
     &:active {
-        color: #{utils.color(gray, 900)};
+        color: #{color(gray, 900)};
     }
 
     &:active,
     &:focus:active,
     &:focus-visible:hover:active,
     &:focus-visible:active {
-        &::before {
-            opacity: 1;
-            background: #{utils.color(gray, 200)};
-        }
+        background: #{color(gray, 200)};
     }
 
     &:focus-visible:hover {
-        &::before {
-            opacity: 1;
-            background: #{utils.color(gray, 100)};
-        }
+        background: #{color(gray, 100)};
     }
 }
 
@@ -92,10 +75,11 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
 :host(:not([disabled])[variant='outlined']) [part='base'] {
     &:focus-visible {
         position: relative;
+        background: transparent;
 
         &::after {
             content: '';
-            box-shadow: 0 0 0 1px #{utils.color(gray, 800)};
+            box-shadow: 0 0 0 1px #{color(gray, 800)};
             position: absolute;
             top: 2px;
             left: 2px;
@@ -103,27 +87,20 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
             width: calc(100% - 4px);
             height: calc(100% - 4px);
         }
-
-        &::before {
-            background: transparent;
-        }
     }
 }
 
 // FAB & CONTAINED
 :host(:not([disabled])[variant='contained']) [part='base'],
 :host(:not([disabled])[variant='fab']) [part='base'] {
+    background: #{color(primary, 500)};
     color: $text-color;
-    box-shadow: var(--ig-elevation-0);
+    box-shadow: none;
 
     &:hover,
     &:focus-visible:hover {
         color: $text-color;
-
-        &::before {
-            opacity: 1;
-            background: $hover-background;
-        }
+        background: $hover-background;
     }
 
     &:focus,
@@ -131,17 +108,9 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
         color: $text-color;
     }
 
-    &::before {
-        opacity: 1;
-        background: #{utils.color(primary, 500)};
-    }
-
     &:active,
     &:focus-visible:active {
-        &::before {
-            opacity: 1;
-            background: $active-background;
-        }
+        background: $active-background;
     }
 
     &:focus-visible {
@@ -149,7 +118,7 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
 
         &::after {
             content: '';
-            box-shadow: 0 0 0 1px #{utils.contrast-color(primary, 600)};
+            box-shadow: 0 0 0 1px #{contrast-color(primary, 600)};
             position: absolute;
             top: 3px;
             left: 3px;
@@ -157,41 +126,33 @@ $active-background: var(--active-background, #{utils.color(primary, 700)}) !defa
             width: calc(100% - 6px);
             height: calc(100% - 6px);
         }
-
-        &::before {
-            background: transparent;
-        }
     }
 }
 
 :host([variant='fab']) [part='base'] {
-    @include utils.border-radius(utils.rem(14px));
+    @include border-radius(rem(14px));
 
     &::after {
-        @include utils.border-radius(utils.rem(12px));
+        @include border-radius(rem(12px));
     }
 }
 
 // DISABLED START
 :host([disabled][variant='flat']) [part='base'] {
-    color: #{utils.color(gray, 400)};
+    color: #{color(gray, 400)};
     background: transparent;
 }
 
 :host([disabled][variant='fab']) [part='base'],
 :host([disabled][variant='contained']) [part='base'] {
-    color: #{utils.color(gray, 400)};
-
-    &::before {
-        opacity: 1;
-        background: #{utils.color(gray, 100)};
-    }
+    color: #{color(gray, 400)};
+    background: #{color(gray, 100)};
 }
 
 :host([disabled][variant='outlined']) [part='base'] {
     box-shadow: none;
-    color: #{utils.color(gray, 500, 8)};
-    background: #{utils.color(gray, 200)};
+    color: #{color(gray, 500, 8)};
+    background: #{color(gray, 200)};
 }
 
 // DISABLED END

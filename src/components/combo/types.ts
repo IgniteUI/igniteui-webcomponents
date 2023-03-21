@@ -6,7 +6,10 @@ export type Values<T> = T[keyof T];
 
 export interface ComboRecordMeta {
   header: boolean;
+  dataIndex: number;
 }
+
+export type Item<T extends object> = T | Values<T>;
 
 export type ComboRecord<T extends object> = T & ComboRecordMeta;
 
