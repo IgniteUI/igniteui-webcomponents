@@ -2,6 +2,10 @@
 @use '../../../../styles/utilities' as *;
 
 :host {
+    height: 100%;
     overflow: hidden;
-    flex-grow: 1;
+}
+
+:host(:not([hidden])) {
+    display: block;
 }
