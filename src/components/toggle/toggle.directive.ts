@@ -95,7 +95,8 @@ export class IgcToggleDirective extends Directive {
       const floatingElement = this.floatingElement;
       middleware.push(
         size({
-          apply({ rects }) {
+          apply: (args) => {
+            const { rects } = args;
             Object.assign(floatingElement.style, {
               width: `${rects.reference.width}px`,
             });
