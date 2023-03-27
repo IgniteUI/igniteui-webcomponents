@@ -1,7 +1,18 @@
-@use '../../../styles/common/component';
-@use '../../../styles/utilities' as *;
+@use 'sass:map';
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities/index' as *;
+
+$avatar-schema: extend(
+    (
+        name: 'igc-avatar'
+    ),
+    $light-avatar
+);
+$theme: digest-schema($avatar-schema);
 
 :host {
+    @include css-vars($theme);
+
     --size: #{sizable(rem(40px), rem(64px), rem(88px))};
 
     display: inline-flex;
@@ -15,8 +26,8 @@
     justify-content: center;
     align-items: center;
     user-select: none;
-    color: color(gray, 800);
-    background: color(gray, 400);
+    color: var-get($theme, 'color');
+    background: var-get($theme, 'background');
     border-radius: 0;
     outline-style: none;
     flex-shrink: 0;
@@ -57,7 +68,7 @@ img {
 }
 
 :host([shape='rounded']) [part='base'] {
-    border-radius: rem(8px);
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host([shape='circle']) [part='base'] {

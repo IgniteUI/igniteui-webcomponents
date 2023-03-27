@@ -1,0 +1,15 @@
+@use '../../../../styles/utilities/index' as *;
+
+@mixin theme() {
+    $dark-bootstrap-avatar-schema: extend(
+        (
+            name: 'igc-avatar'
+        ),
+        $dark-bootstrap-avatar
+    );
+    $theme: digest-schema($dark-bootstrap-avatar-schema);
+
+    igc-avatar {
+        @include css-vars($theme);
+    }
+}

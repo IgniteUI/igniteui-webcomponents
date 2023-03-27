@@ -1,0 +1,18 @@
+@use '../../../../styles/utilities/index' as *;
+
+$bootstrap-avatar-schema: extend(
+    (
+        name: 'igc-avatar'
+    ),
+    $bootstrap-avatar
+);
+$theme: digest-schema($bootstrap-avatar-schema);
+
+:host {
+    @include css-vars($theme);
+}
+
+:host([shape='square']) [part='base'],
+:host([shape='rounded']) [part='base'] {
+    border-radius: rem(4px);
+}
