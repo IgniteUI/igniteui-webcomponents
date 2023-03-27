@@ -6,8 +6,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 :host {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
+    flex: 1;
 }
 
 :host([alignment='start']) [part='headers-scroll'] {
@@ -45,6 +44,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     overflow: hidden;
     min-height: rem(42px);
     background: color(surface, 500);
+    flex: none;
 }
 
 [part='headers-content'] {
@@ -65,6 +65,8 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 }
 
 [part='content'] {
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
 }
 
