@@ -175,7 +175,7 @@ describe('Dialog component', () => {
     });
 
     it('is created with the proper default values', async () => {
-      expect(dialog.closeOnEscape).to.equal(true);
+      expect(dialog.keepOpenOnEscape).to.equal(false);
       expect(dialog.closeOnOutsideClick).to.equal(false);
       expect(dialog.title).to.be.undefined;
       expect(dialog.open).to.equal(false);
