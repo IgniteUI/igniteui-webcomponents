@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Deprecated
+- Dialog - Property `closeOnEscape` is deprecated in favor of new property `keepOpenOnEscape`.
+
 ## [4.2.2] - 2023-03-07
 ### Deprecated
 - Button - The prefix/suffix slots are no longer needed and will be removed in the next major release.
