@@ -15,7 +15,13 @@ const metadata = {
       description:
         "Whether the dialog should be closed when pressing the 'ESCAPE' button.",
       control: 'boolean',
-      defaultValue: true,
+    },
+    keepOpenOnEscape: {
+      type: 'boolean',
+      description:
+        "Whether the dialog should be kept open when pressing the 'ESCAPE' button.",
+      control: 'boolean',
+      defaultValue: false,
     },
     closeOnOutsideClick: {
       type: 'boolean',
@@ -52,6 +58,7 @@ const metadata = {
 export default metadata;
 interface ArgTypes {
   closeOnEscape: boolean;
+  keepOpenOnEscape: boolean;
   closeOnOutsideClick: boolean;
   hideDefaultAction: boolean;
   open: boolean;
@@ -80,7 +87,7 @@ const authSelected = (ev: CustomEvent) => {
 
 const Template: Story<ArgTypes, Context> = (
   {
-    closeOnEscape,
+    keepOpenOnEscape,
     closeOnOutsideClick,
     title,
     open,
@@ -103,7 +110,7 @@ const Template: Story<ArgTypes, Context> = (
 
       <igc-dialog
         id="default"
-        ?close-on-escape=${closeOnEscape}
+        ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
         ?hide-default-action=${hideDefaultAction}
         .open=${open}
@@ -119,7 +126,7 @@ const Template: Story<ArgTypes, Context> = (
       <igc-dialog
         id="projected"
         dir=${ifDefined(direction)}
-        ?close-on-escape=${closeOnEscape}
+        ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
       >
         <h4 slot="title">Danger</h4>
@@ -138,7 +145,7 @@ const Template: Story<ArgTypes, Context> = (
         id="with-form"
         dir=${ifDefined(direction)}
         hide-default-action
-        ?close-on-escape=${closeOnEscape}
+        ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
       >
         <h3 slot="title">Your credentials</h3>
