@@ -6,7 +6,6 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 :host {
     display: flex;
     flex-direction: column;
-    flex: 1;
 }
 
 :host([alignment='start']) [part='headers-scroll'] {
