@@ -1,0 +1,8 @@
+@use '../../../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-tab {
+        --header-foreground--hover: #{color(primary, 400)};
+        --header-foreground--selected--hover: var(--header-foreground--selected);
+    }
+}

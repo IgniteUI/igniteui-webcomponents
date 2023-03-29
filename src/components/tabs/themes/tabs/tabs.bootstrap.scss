@@ -1,0 +1,46 @@
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use '../tabs.common' as *;
+@use 'sass:map';
+
+:host {
+    $disabled-foreground: #{color(primary, 500, .5)};
+
+    --border-radius: #{rem(4px)};
+    --border-color--hover: #{color(gray, 200)};
+    --border-color: #{color(gray, 300)};
+    --border-color--focus: #{color(primary, 700)};
+    --border-size: #{rem(1px)};
+    --border-size--focus: #{rem(2px)};
+
+    // Header idle
+    --header-foreground: #{color(primary, 500)};
+    --header-background--hover: #{color(surface, 500)};
+    --header-foreground--hover: #{color(primary, 700)};
+    --header-foreground--focus-within: #{color(gray, 800)};
+
+    // Header selected
+    --header-foreground--selected: #{color(gray, 800)};
+    --header-foreground--selected--hover: #{color(gray, 800)};
+
+    // Scroll buttons
+    --scroll-btn-foreground: #{color(gray, 500)};
+    --scroll-btn-foreground--disabled: #{$disabled-foreground};
+
+    // Disabled
+    --header-foreground--disabled: #{$disabled-foreground};
+}
+
+[part~='separator'] {
+    position: relative;
+    z-index: map.get($tabs-z-index, 'separator--bootstrap');
+    grid-row: 2;
+    grid-column: 1 / -1;
+    background: var(--border-color);
+    height: var(--border-size);
+    margin-block-start: calc(var(--border-size) * -1);
+}
+
+igc-icon-button::part(base) {
+    transition-duration: .15s;
+}
