@@ -2,13 +2,13 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
 
-$avatar-schema: extend(
+$schema: extend(
     (
         name: 'igc-avatar'
     ),
-    $light-avatar
+    map.get($light-material-schema, 'avatar')
 );
-$theme: digest-schema($avatar-schema);
+$theme: digest-schema($schema);
 
 :host {
     @include css-vars($theme);

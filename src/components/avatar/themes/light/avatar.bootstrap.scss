@@ -1,12 +1,13 @@
+@use 'sass:map';
 @use '../../../../styles/utilities/index' as *;
 
-$bootstrap-avatar-schema: extend(
+$schema: extend(
     (
         name: 'igc-avatar'
     ),
-    $bootstrap-avatar
+    map.get($light-bootstrap-schema, 'avatar')
 );
-$theme: digest-schema($bootstrap-avatar-schema);
+$theme: digest-schema($schema);
 
 :host {
     @include css-vars($theme);
