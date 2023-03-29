@@ -17,6 +17,8 @@ export interface IgcCalendarBaseEventMap {
 @blazorIndirectRender
 @blazorDeepImport
 export class IgcCalendarBaseComponent extends LitElement {
+  private _activeDate = new Date();
+  private _activeDateSetFlag = false;
   protected calendarModel = new Calendar();
 
   /**
@@ -74,6 +76,13 @@ export class IgcCalendarBaseComponent extends LitElement {
     | 'saturday' = 'sunday';
 
   /** Sets the date which is shown in view and is highlighted. By default it is the current date. */
+  public set activeDate(val: Date) {
+    const oldVal = this._activeDate;
+    this._activeDate = val;
+    this._activeDateSetFlag = true;
+    this.requestUpdate('activeDate', oldVal);
+  }
+
   @blazorSuppress()
   @property({
     attribute: 'active-date',
@@ -82,7 +91,9 @@ export class IgcCalendarBaseComponent extends LitElement {
       toAttribute: (value: Date) => value.toISOString(),
     },
   })
-  public activeDate = new Date();
+  public get activeDate() {
+    return this._activeDate;
+  }
 
   /** Sets the locale used for formatting and displaying the dates in the calendar. */
   @property()
@@ -104,5 +115,16 @@ export class IgcCalendarBaseComponent extends LitElement {
   @watch('selection', { waitUntilFirstUpdate: true })
   protected selectionChange() {
     this.value = undefined;
+  }
+
+  protected override async firstUpdated() {
+    if (this._activeDateSetFlag) {
+      return;
+    }
+    if (this.selection === 'single') {
+      this.activeDate = this.value ?? this.activeDate;
+    } else {
+      this.activeDate = this.values ? this.values[0] : this.activeDate;
+    }
   }
 }
