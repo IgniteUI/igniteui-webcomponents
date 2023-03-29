@@ -19,7 +19,13 @@ const metadata: Meta<IgcDialogComponent> = {
       description:
         "Whether the dialog should be closed when pressing the 'ESCAPE' button.",
       control: 'boolean',
-      defaultValue: true,
+    },
+    keepOpenOnEscape: {
+      type: 'boolean',
+      description:
+        "Whether the dialog should be kept open when pressing the 'ESCAPE' button.",
+      control: 'boolean',
+      defaultValue: false,
     },
     closeOnOutsideClick: {
       type: 'boolean',
@@ -53,7 +59,7 @@ const metadata: Meta<IgcDialogComponent> = {
     },
   },
   args: {
-    closeOnEscape: true,
+    keepOpenOnEscape: false,
     closeOnOutsideClick: false,
     hideDefaultAction: false,
     open: false,
@@ -65,6 +71,8 @@ export default metadata;
 interface IgcDialogArgs {
   /** Whether the dialog should be closed when pressing the 'ESCAPE' button. */
   closeOnEscape: boolean;
+  /** Whether the dialog should be kept open when pressing the 'ESCAPE' button. */
+  keepOpenOnEscape: boolean;
   /** Whether the dialog should be closed when clicking outside of it. */
   closeOnOutsideClick: boolean;
   /**
@@ -105,7 +113,7 @@ const authSelected = (ev: CustomEvent) => {
 
 const Template = (
   {
-    closeOnEscape,
+    keepOpenOnEscape,
     closeOnOutsideClick,
     title,
     open,
@@ -128,7 +136,7 @@ const Template = (
 
       <igc-dialog
         id="default"
-        ?close-on-escape=${closeOnEscape}
+        ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
         ?hide-default-action=${hideDefaultAction}
         .open=${open}
@@ -144,7 +152,7 @@ const Template = (
       <igc-dialog
         id="projected"
         dir=${ifDefined(direction)}
-        ?close-on-escape=${closeOnEscape}
+        ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
       >
         <h4 slot="title">Danger</h4>
@@ -163,7 +171,7 @@ const Template = (
         id="with-form"
         dir=${ifDefined(direction)}
         hide-default-action
-        ?close-on-escape=${closeOnEscape}
+        ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
       >
         <h3 slot="title">Your credentials</h3>
