@@ -4,7 +4,9 @@
 $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 
 :host {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 :host([alignment='start']) [part='headers-scroll'] {
@@ -42,6 +44,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     overflow: hidden;
     min-height: rem(42px);
     background: color(surface, 500);
+    flex: none;
 }
 
 [part='headers-content'] {
@@ -59,6 +62,13 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 [part='headers-scroll'] {
     display: flex;
     height: 100%;
+}
+
+[part='content'] {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
 }
 
 [part='selected-indicator'] {
