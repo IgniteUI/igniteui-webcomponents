@@ -1,10 +1,11 @@
 # Ignite UI Web Components Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.2.3] - 2023-04-03
 ### Deprecated
 - Dialog - Property `closeOnEscape` is deprecated in favor of new property `keepOpenOnEscape`.
 
@@ -231,6 +232,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.2...4.2.3
 [4.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.1...4.2.2
 [4.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.0...4.2.1
 [4.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.1...4.2.0
