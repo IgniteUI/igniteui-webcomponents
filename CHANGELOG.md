@@ -1,12 +1,20 @@
 # Ignite UI Web Components Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.2.3] - 2023-04-03
 ### Deprecated
 - Dialog - Property `closeOnEscape` is deprecated in favor of new property `keepOpenOnEscape`.
+
+### Fixed
+- Radio Button- colors in selected focus state [#685](https://github.com/IgniteUI/igniteui-webcomponents/issues/685)
+- Icon Button - set icon size to match other design system products [#598](https://github.com/IgniteUI/igniteui-webcomponents/issues/598), [#695](https://github.com/IgniteUI/igniteui-webcomponents/issues/695)
+- Chip - removed outline styles for Fluent and Material themes [#702](https://github.com/IgniteUI/igniteui-webcomponents/pull/702)
+- Calendar - navigation to date on set value [#436](https://github.com/IgniteUI/igniteui-webcomponents/issues/436)
+- Tabs - not taking the full height of their parents [#710](https://github.com/IgniteUI/igniteui-webcomponents/issues/710)
 
 ## [4.2.2] - 2023-03-07
 ### Deprecated
@@ -224,6 +232,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.2...4.2.3
 [4.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.1...4.2.2
 [4.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.0...4.2.1
 [4.2.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.1.1...4.2.0

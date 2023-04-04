@@ -20,7 +20,6 @@
     flex-flow: row nowrap;
     flex-grow: 1;
     align-items: center;
-    overflow: hidden;
 }
 
 [part='middle'] {
@@ -30,6 +29,7 @@
     display: flex;
     flex-grow: 1;
     align-items: center;
+    overflow: visible;
 }
 
 [part='start'],
@@ -37,6 +37,7 @@
     display: flex;
     align-items: center;
     user-select: none;
+    overflow: visible;
 }
 
 [name='start']::slotted(*) {

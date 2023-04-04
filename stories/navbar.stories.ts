@@ -88,14 +88,18 @@ const Template = (
         <igc-icon name="search" slot="suffix"></igc-icon>
       </igc-input>
       <igc-icon slot="end" name="favorite"></igc-icon>
-      <igc-avatar
-        slot="end"
-        size="small"
-        shape="circle"
-        src="https://i.pravatar.cc/200"
-        >MP</igc-avatar
-      >
-      <igc-button slot="end" name="search">Login</igc-button>
+      <igc-dropdown slot="end">
+        <igc-avatar
+          slot="target"
+          size="small"
+          shape="circle"
+          src="https://i.pravatar.cc/200"
+          >MP</igc-avatar
+        >
+        <igc-dropdown-item>Settings</igc-dropdown-item>
+        <igc-dropdown-item>Help</igc-dropdown-item>
+        <igc-dropdown-item>Log Out</igc-dropdown-item>
+      </igc-dropdown>
     </igc-navbar>
   `;
 };
