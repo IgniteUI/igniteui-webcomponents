@@ -91,6 +91,7 @@ const themeProvider: Decorator = (Story, context) => {
   configureTheme(context.globals.theme);
 
   const styles = html`<style>
+    .docs-story,
     .sb-main-padded {
         background: ${context.globals.variant === 'light' ? '#fff' : '#000'};
     }
