@@ -252,6 +252,10 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     super.firstUpdated();
     await this.updateComplete;
 
+    if (this.hasPrefixes || this.hasSuffixes) {
+      this.requestUpdate();
+    }
+
     if (!this.selectedItem && this.value) {
       this.updateSelected();
     }
