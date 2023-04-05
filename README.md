@@ -185,9 +185,3 @@ To build a production version of Storybook, run
 ```bash
 npm run storybook:build
 ```
-
-## Local Demo with `web-dev-server`
-```bash
-npm serve
-```
-To run a local development server that serves the basic demo located in `demo/index.html`

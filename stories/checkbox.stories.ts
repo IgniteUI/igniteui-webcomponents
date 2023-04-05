@@ -1,11 +1,22 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { defineComponents, IgcCheckboxComponent } from '../src/index.js';
+
+defineComponents(IgcCheckboxComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcCheckboxComponent> = {
   title: 'Checkbox',
   component: 'igc-checkbox',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A check box allowing single values to be selected/deselected.',
+      },
+    },
+  },
   argTypes: {
     indeterminate: {
       type: 'boolean',
@@ -51,9 +62,7 @@ const metadata = {
       type: '"before" | "after"',
       description: 'The label position of the control.',
       options: ['before', 'after'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'after',
     },
     ariaLabelledby: {
@@ -62,27 +71,48 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    indeterminate: false,
+    disabled: false,
+    checked: false,
+    required: false,
+    invalid: false,
+    labelPosition: 'after',
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcCheckboxArgs {
+  /** Draws the checkbox in indeterminate state. */
   indeterminate: boolean;
+  /** The name attribute of the control. */
   name: string;
+  /** The value attribute of the control. */
   value: string;
+  /** Disables the control. */
   disabled: boolean;
+  /** The checked state of the control. */
   checked: boolean;
+  /** Makes the control a required field. */
   required: boolean;
+  /** Controls the validity of the control. */
   invalid: boolean;
+  /** The label position of the control. */
   labelPosition: 'before' | 'after';
+  /** Sets the aria-labelledby attribute for the control. */
   ariaLabelledby: string;
 }
+type Story = StoryObj<IgcCheckboxArgs>;
+
 // endregion
 
 interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
 
-const Template: Story<ArgTypes, Context> = (
-  { labelPosition, checked, indeterminate, disabled }: ArgTypes,
+const Template = (
+  { labelPosition, checked, indeterminate, disabled }: IgcCheckboxArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -98,4 +128,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

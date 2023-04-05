@@ -1,19 +1,25 @@
 import { html } from 'lit';
+import { github } from '@igniteui/material-icons-extended';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
+import { defineComponents, IgcInputComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcInputComponent);
+registerIconFromText(github.name, github.value);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcInputComponent> = {
   title: 'Input',
   component: 'igc-input',
+  parameters: { docs: { description: {} } },
   argTypes: {
     type: {
       type: '"number" | "email" | "password" | "search" | "tel" | "text" | "url"',
       description: 'The type attribute of the control.',
       options: ['number', 'email', 'password', 'search', 'tel', 'text', 'url'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'text',
     },
     inputmode: {
@@ -29,9 +35,7 @@ const metadata = {
         'txt',
         'decimal',
       ],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
     },
     pattern: {
       type: 'string',
@@ -79,11 +83,7 @@ const metadata = {
       description: 'The autocomplete attribute of the control.',
       control: 'text',
     },
-    tabIndex: {
-      type: 'number',
-      control: 'number',
-      defaultValue: '0',
-    },
+    tabIndex: { type: 'number', control: 'number', defaultValue: '0' },
     value: {
       type: 'string',
       description: 'The value of the control.',
@@ -133,16 +133,29 @@ const metadata = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
+  args: {
+    type: 'text',
+    invalid: false,
+    tabIndex: '0',
+    value: '',
+    outlined: false,
+    required: false,
+    disabled: false,
+    readonly: false,
+    size: 'medium',
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcInputArgs {
+  /** The type attribute of the control. */
   type: 'number' | 'email' | 'password' | 'search' | 'tel' | 'text' | 'url';
+  /** The input mode attribute of the control. */
   inputmode:
     | 'numeric'
     | 'none'
@@ -152,29 +165,49 @@ interface ArgTypes {
     | 'url'
     | 'txt'
     | 'decimal';
+  /** The pattern attribute of the control. */
   pattern: string;
+  /** Controls the validity of the control. */
   invalid: boolean;
+  /** The minlength attribute of the control. */
   minlength: number;
+  /** The maxlength attribute of the control. */
   maxlength: number;
+  /** The min attribute of the control. */
   min: string | number;
+  /** The max attribute of the control. */
   max: string | number;
+  /** The step attribute of the control. */
   step: number;
+  /** The autofocus attribute of the control. */
   autofocus: boolean;
+  /** The autocomplete attribute of the control. */
   autocomplete: string;
   tabIndex: number;
+  /** The value of the control. */
   value: string;
+  /** The name attribute of the control. */
   name: string;
+  /** Whether the control will have outlined appearance. */
   outlined: boolean;
+  /** Makes the control a required field. */
   required: boolean;
+  /** Makes the control a disabled field. */
   disabled: boolean;
+  /** Makes the control a readonly field. */
   readonly: boolean;
+  /** The placeholder attribute of the control. */
   placeholder: string;
+  /** The label for the control. */
   label: string;
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcInputArgs>;
+
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     type,
     size,
@@ -193,7 +226,7 @@ const Template: Story<ArgTypes, Context> = (
     min,
     max,
     invalid,
-  }: ArgTypes,
+  }: IgcInputArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-input
@@ -222,4 +255,4 @@ const Template: Story<ArgTypes, Context> = (
   </igc-input>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

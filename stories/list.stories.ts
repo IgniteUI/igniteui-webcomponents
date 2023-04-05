@@ -1,26 +1,47 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
+import {
+  defineComponents,
+  IgcListComponent,
+  IgcAvatarComponent,
+  IgcButtonComponent,
+} from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcListComponent, IgcAvatarComponent, IgcButtonComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcListComponent> = {
   title: 'List',
   component: 'igc-list',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Displays a collection of data items in a templatable list format.',
+      },
+    },
+  },
   argTypes: {
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
+  args: { size: 'large' },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcListArgs {
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcListArgs>;
+
 // endregion
 
 const employeeData = [
@@ -44,8 +65,8 @@ const employeeData = [
   },
 ];
 
-const BasicTemplate: Story<ArgTypes, Context> = (
-  { size }: ArgTypes,
+const BasicTemplate = (
+  { size }: IgcListArgs,
   { globals: { direction } }: Context
 ) => {
   const employees = new Array(48);
@@ -76,4 +97,4 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = BasicTemplate.bind({});
+export const Basic: Story = BasicTemplate.bind({});

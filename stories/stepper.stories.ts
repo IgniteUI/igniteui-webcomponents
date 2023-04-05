@@ -1,28 +1,39 @@
 import { html } from 'lit';
-import { IgcStepperComponent } from '../src/index.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
+import {
+  defineComponents,
+  IgcButtonComponent,
+  IgcStepperComponent,
+} from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcStepperComponent, IgcButtonComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcStepperComponent> = {
   title: 'Stepper',
   component: 'igc-stepper',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'IgxStepper provides a wizard-like workflow by dividing content into logical steps.',
+      },
+    },
+  },
   argTypes: {
     orientation: {
       type: '"vertical" | "horizontal"',
       description: 'Gets/Sets the orientation of the stepper.',
       options: ['vertical', 'horizontal'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'horizontal',
     },
     stepType: {
       type: '"indicator" | "title" | "full"',
       description: 'Get/Set the type of the steps.',
       options: ['indicator', 'title', 'full'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'full',
     },
     linear: {
@@ -41,33 +52,53 @@ const metadata = {
       type: '"start" | "end" | "top" | "bottom" | undefined',
       description: 'Get/Set the position of the steps title.',
       options: ['start', 'end', 'top', 'bottom', 'undefined'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
     },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
+  args: {
+    orientation: 'horizontal',
+    stepType: 'full',
+    linear: false,
+    contentTop: false,
+    size: 'large',
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcStepperArgs {
+  /** Gets/Sets the orientation of the stepper. */
   orientation: 'vertical' | 'horizontal';
+  /** Get/Set the type of the steps. */
   stepType: 'indicator' | 'title' | 'full';
+  /** Get/Set whether the stepper is linear. */
   linear: boolean;
+  /** Get/Set whether the content is displayed above the steps. */
   contentTop: boolean;
+  /** Get/Set the position of the steps title. */
   titlePosition: 'start' | 'end' | 'top' | 'bottom' | undefined;
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcStepperArgs>;
+
 // endregion
-const BasicTemplate: Story<ArgTypes, Context> = (
-  { orientation, stepType, titlePosition, linear, contentTop, size }: ArgTypes,
+const BasicTemplate = (
+  {
+    orientation,
+    stepType,
+    titlePosition,
+    linear,
+    contentTop,
+    size,
+  }: IgcStepperArgs,
   { globals: { direction } }: Context
 ) => {
   const next = () => {
@@ -141,4 +172,4 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = BasicTemplate.bind({});
+export const Basic: Story = BasicTemplate.bind({});

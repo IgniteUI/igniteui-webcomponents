@@ -1,47 +1,19 @@
-import autoprefixer from 'autoprefixer';
-import { exec as _exec } from 'child_process';
-import { mkdirSync as makeDir } from 'fs';
-import { copyFile, writeFile } from 'fs/promises';
-import { globby } from 'globby';
 import path from 'path';
-import postcss from 'postcss';
-import sass from 'sass';
+import { exec as _exec } from 'child_process';
+import { copyFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { promisify } from 'util';
+import { buildThemes } from './build-styles.mjs';
 
 const exec = promisify(_exec);
-const renderSass = sass.compile;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
-const THEMES_PATH = `src/styles/themes`;
-
-async function buildThemes() {
-  const paths = await globby(`${THEMES_PATH}/{light,dark}/*.scss`);
-
-  for (const sassFile of paths) {
-    const result = renderSass(sassFile, {
-      outputStyle: 'compressed',
-    });
-
-    let outCss = await postcss([autoprefixer]).process(result.css.toString())
-      .css;
-    if (outCss.charCodeAt(0) === 0xfeff) {
-      outCss = outCss.substring(1);
-    }
-
-    const outputFile = DEST_DIR(
-      sassFile.replace(/\.scss$/, '.css').replace('src/styles/', '')
-    );
-    makeDir(path.dirname(outputFile), { recursive: true });
-    await writeFile(outputFile, outCss, 'utf-8');
-  }
-}
 
 (async () => {
   await exec('npm run clean');
 
-  console.info('Inlining styles...');
+  console.info('Building styles...');
   await exec('npm run build:styles');
 
   // https://github.com/microsoft/TypeScript/issues/14619

@@ -1,12 +1,47 @@
 import { html } from 'lit';
 import { DatePart } from '../src/components/date-time-input/date-util.js';
-import { IgcDateTimeInputComponent } from '../src/index.js';
-import { Context, Story } from './story.js';
+import {
+  defineComponents,
+  IgcFormComponent,
+  IgcButtonComponent,
+  IgcInputComponent,
+  IgcDateTimeInputComponent,
+  IgcMaskInputComponent,
+  IgcSelectComponent,
+  IgcComboComponent,
+  IgcCheckboxComponent,
+  IgcRadioGroupComponent,
+  IgcSwitchComponent,
+  IgcIconComponent,
+} from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(
+  IgcFormComponent,
+  IgcButtonComponent,
+  IgcInputComponent,
+  IgcDateTimeInputComponent,
+  IgcMaskInputComponent,
+  IgcSelectComponent,
+  IgcComboComponent,
+  IgcCheckboxComponent,
+  IgcRadioGroupComponent,
+  IgcSwitchComponent,
+  IgcIconComponent
+);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcFormComponent> = {
   title: 'Form',
   component: 'igc-form',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The form is a component used to collect user input from\ninteractive controls.',
+      },
+    },
+  },
   argTypes: {
     novalidate: {
       type: 'boolean',
@@ -16,14 +51,20 @@ const metadata = {
       defaultValue: false,
     },
   },
+  args: { novalidate: false },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcFormArgs {
+  /** Specifies if form data validation should be skipped on submit. */
   novalidate: boolean;
 }
+type Story = StoryObj<IgcFormArgs>;
+
 // endregion
 
-Object.assign(metadata.argTypes, {
+Object.assign(metadata.argTypes!, {
   disabled: {
     type: 'boolean',
     description: 'Disable input fields',
@@ -38,7 +79,7 @@ Object.assign(metadata.argTypes, {
   },
 });
 
-interface ExtendedArgTypes extends ArgTypes {
+interface IgcFormArgs {
   disabled: boolean;
   outlined: boolean;
 }
@@ -64,17 +105,13 @@ const handleClear = () => {
   input?.clear();
 };
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcSubmit', 'igcReset'],
   },
-};
+});
 
-const Template: Story<ExtendedArgTypes, Context> = ({
-  novalidate,
-  disabled,
-  outlined,
-}: ExtendedArgTypes) => {
+const Template = ({ novalidate, disabled, outlined }: IgcFormArgs) => {
   const radios = ['Male', 'Female'];
   const minDate = new Date(2020, 2, 3);
   const comboData = [
@@ -202,16 +239,19 @@ The cat was playing<br> in the garden.</textarea
       >
         <igc-icon
           name="clear"
+          collection="internal"
           slot="prefix"
           @click=${handleClear}
         ></igc-icon>
         <igc-icon
-          name="up"
+          name="arrow_drop_up"
           slot="suffix"
+          collection="internal"
           @click=${handleIncrement}
         ></igc-icon>
         <igc-icon
-          name="down"
+          name="arrow_drop_down"
+          collection="internal"
           slot="suffix"
           @click=${handleDecrement}
         ></igc-icon>
@@ -269,7 +309,7 @@ The cat was playing<br> in the garden.</textarea
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});
 
 document.addEventListener('igcSubmit', function (event) {
   const customEvent = event as CustomEvent<FormData>;

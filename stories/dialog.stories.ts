@@ -1,14 +1,18 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Context } from './story.js';
 import { defineComponents, IgcDialogComponent } from '../src/index.js';
-import { Context, Story } from './story.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcDialogComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcDialogComponent> = {
   title: 'Dialog',
   component: 'igc-dialog',
+  parameters: {
+    docs: { description: { component: 'Represents a Dialog component.' } },
+  },
   argTypes: {
     closeOnEscape: {
       type: 'boolean',
@@ -54,24 +58,46 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    keepOpenOnEscape: false,
+    closeOnOutsideClick: false,
+    hideDefaultAction: false,
+    open: false,
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcDialogArgs {
+  /** Whether the dialog should be closed when pressing the 'ESCAPE' button. */
   closeOnEscape: boolean;
+  /** Whether the dialog should be kept open when pressing the 'ESCAPE' button. */
   keepOpenOnEscape: boolean;
+  /** Whether the dialog should be closed when clicking outside of it. */
   closeOnOutsideClick: boolean;
+  /**
+   * Whether to hide the default action button for the dialog.
+   *
+   * When there is projected content in the `footer` slot this property
+   * has no effect.
+   */
   hideDefaultAction: boolean;
+  /** Whether the dialog is opened. */
   open: boolean;
+  /** Sets the title of the dialog. */
   title: string;
+  /** Sets the return value for the dialog. */
   returnValue: string;
 }
+type Story = StoryObj<IgcDialogArgs>;
+
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcClosing', 'igcClosed'],
   },
-};
+});
 
 const openDialog = (id: string) =>
   (document.getElementById(id) as IgcDialogComponent).show();
@@ -85,14 +111,14 @@ const authSelected = (ev: CustomEvent) => {
     ev.detail.value;
 };
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     keepOpenOnEscape,
     closeOnOutsideClick,
     title,
     open,
     hideDefaultAction,
-  }: ArgTypes,
+  }: IgcDialogComponent,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -182,4 +208,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

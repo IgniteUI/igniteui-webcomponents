@@ -1,31 +1,40 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { defineComponents, IgcRadioGroupComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcRadioGroupComponent);
 
 // region default
-const metadata = {
-  title: 'Radio Group',
+const metadata: Meta<IgcRadioGroupComponent> = {
+  title: 'RadioGroup',
   component: 'igc-radio-group',
+  parameters: { docs: { description: {} } },
   argTypes: {
     alignment: {
       type: '"vertical" | "horizontal"',
       description: 'Alignment of the radio controls inside this group.',
       options: ['vertical', 'horizontal'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'vertical',
     },
   },
+  args: { alignment: 'vertical' },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcRadioGroupArgs {
+  /** Alignment of the radio controls inside this group. */
   alignment: 'vertical' | 'horizontal';
 }
+type Story = StoryObj<IgcRadioGroupArgs>;
+
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
-  { alignment }: ArgTypes,
+const Template = (
+  { alignment }: IgcRadioGroupArgs,
   { globals: { direction } }: Context
 ) => {
   const radios = ['apple', 'orange', 'mango', 'banana'];
@@ -44,4 +53,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

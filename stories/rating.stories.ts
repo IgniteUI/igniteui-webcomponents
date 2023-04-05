@@ -1,12 +1,34 @@
 import { html, svg } from 'lit';
+import { bacteria, bandage } from '@igniteui/material-icons-extended';
 import { range } from 'lit-html/directives/range.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
+import { Context } from './story.js';
+import {
+  defineComponents,
+  IgcRatingComponent,
+  IgcIconComponent,
+} from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcRatingComponent, IgcIconComponent);
+const icons = [bacteria, bandage];
+icons.forEach((icon) => {
+  registerIconFromText(icon.name, icon.value);
+});
 
 // region default
-const metadata = {
+const metadata: Meta<IgcRatingComponent> = {
   title: 'Rating',
   component: 'igc-rating',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          "Rating provides insight regarding others' opinions and experiences,\nand can allow the user to submit a rating of their own",
+      },
+    },
+  },
   argTypes: {
     max: {
       type: 'number',
@@ -72,36 +94,73 @@ const metadata = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
-};
-export default metadata;
-interface ArgTypes {
-  max: number;
-  step: number;
-  name: string;
-  label: string;
-  valueFormat: string;
-  value: number;
-  disabled: boolean;
-  hoverPreview: boolean;
-  readonly: boolean;
-  single: boolean;
-  size: 'small' | 'medium' | 'large';
-}
-// endregion
-
-(metadata as any).parameters = {
-  actions: {
-    handles: ['igcChange', 'igcHover'],
+  args: {
+    max: '5',
+    step: '1',
+    value: '0',
+    disabled: false,
+    hoverPreview: false,
+    readonly: false,
+    single: false,
+    size: 'large',
   },
 };
 
-const Template: Story<ArgTypes, Context> = (
+export default metadata;
+
+interface IgcRatingArgs {
+  /**
+   * The maximum value for the rating.
+   *
+   * If there are projected symbols, the maximum value will be resolved
+   * based on the number of symbols.
+   */
+  max: number;
+  /**
+   * The minimum value change allowed.
+   *
+   * Valid values are in the interval between 0 and 1 inclusive.
+   */
+  step: number;
+  /** The name attribute of the control */
+  name: string;
+  /** The label of the control. */
+  label: string;
+  /**
+   * A format string which sets aria-valuetext. Instances of '{0}' will be replaced
+   * with the current value of the control and instances of '{1}' with the maximum value for the control.
+   *
+   * Important for screen-readers and useful for localization.
+   */
+  valueFormat: string;
+  /** The current value of the component */
+  value: number;
+  /** Sets the disabled state of the component */
+  disabled: boolean;
+  /** Sets hover preview behavior for the component */
+  hoverPreview: boolean;
+  /** Sets the readonly state of the component */
+  readonly: boolean;
+  /** Toggles single selection visual mode. */
+  single: boolean;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
+}
+type Story = StoryObj<IgcRatingArgs>;
+
+// endregion
+
+Object.assign(metadata.parameters!, {
+  actions: {
+    handles: ['igcChange', 'igcHover'],
+  },
+});
+
+const Template = (
   {
     size,
     hoverPreview,
@@ -113,7 +172,7 @@ const Template: Story<ArgTypes, Context> = (
     value,
     valueFormat,
     single,
-  }: ArgTypes,
+  }: IgcRatingArgs,
   { globals: { direction } }: Context
 ) => {
   const heartSVG = svg`<?xml version="1.0" ?><svg
@@ -264,4 +323,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

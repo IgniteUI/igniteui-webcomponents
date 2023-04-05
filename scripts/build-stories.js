@@ -1,3 +1,5 @@
+// @ts-check
+
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
@@ -12,10 +14,23 @@ const VENDOR_PREFIX = 'igc-';
 const SRC_DIR = path.resolve(__dirname, '../docs/json');
 const DEST_DIR = path.resolve(__dirname, '../stories');
 
-const REPLACE_REGEX = /\/\/ region default.*\/\/ endregion/gs;
+const REPLACE_REGEX = new RegExp(
+  String.raw`// region default.*// endregion`,
+  'gs'
+);
 const UNION_TYPE_REGEX = /^("\w+"|[\d-]+)\s\|/;
 const SUPPORTED_TYPES = ['string', 'number', 'boolean', 'Date'];
 
+/**
+ * @typedef ArgTypes
+ * @prop {string} type
+ * @prop {string} description
+ *
+ */
+
+/**
+ * @param {string[]} files
+ */
 function reportMissingFiles(files) {
   const msg = String.raw`
 The following story files were not found:
@@ -28,15 +43,38 @@ Check if they are needed at all...`;
   report.warn(msg);
 }
 
-const capitalize = (str) => {
-  const arr = str.split('-');
+/**
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function capitalize(value) {
+  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+}
 
-  for (var i = 0; i < arr.length; i++) {
-    arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
-  }
+/**
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function toPascalCase(value) {
+  return (
+    value
+      .match(/[a-zA-Z0-9]+/g)
+      ?.map(capitalize)
+      .join('') ?? ''
+  );
+}
 
-  return arr.join(' ');
-};
+/**
+ * Builds the story title based on the component tag.
+ *
+ * @param {string} tag
+ * @returns {string}
+ */
+function storyTitle(tag, separator = '') {
+  return tag.split('-').map(capitalize).join(separator);
+}
 
 /**
  * Fixes the TS types to appropriate controls in the storybook js presentation.
@@ -74,6 +112,31 @@ async function processFileMeta(path) {
   return extractTags(data.tags[0]);
 }
 
+function isSupportedType(prop) {
+  return (
+    (prop.type &&
+      SUPPORTED_TYPES.some(
+        (type) => prop.type === type || prop.type.startsWith(`${type} `)
+      )) ||
+    UNION_TYPE_REGEX.test(prop.type)
+  );
+}
+
+function fixDefaultValue(prop) {
+  if (prop.default === undefined) {
+    return undefined;
+  }
+
+  switch (prop.type) {
+    case 'boolean':
+      return prop.default === 'true' ? true : false;
+    case 'Date':
+      return undefined;
+    default:
+      return prop.default.replace(/"/g, '');
+  }
+}
+
 /**
  *
  * @param {object} meta
@@ -82,15 +145,9 @@ async function processFileMeta(path) {
 function extractTags(meta) {
   return {
     component: meta.name,
-    args: Array.from(meta.properties || [])
-      .filter(
-        (prop) =>
-          prop.type &&
-          (SUPPORTED_TYPES.some(
-            (type) => prop.type === type || prop.type.startsWith(`${type} `)
-          ) ||
-            UNION_TYPE_REGEX.test(prop.type))
-      )
+    description: meta.description,
+    argTypes: Array.from(meta.properties || [])
+      .filter(isSupportedType)
       .map((prop) => {
         const options =
           UNION_TYPE_REGEX.test(prop.type) &&
@@ -106,31 +163,71 @@ function extractTags(meta) {
             description: prop.description,
             options,
             control: fixControlProp(prop.type, options),
-            defaultValue: prop.default
-              ? prop.type === 'boolean'
-                ? prop.default === 'true'
-                : prop.type === 'Date'
-                ? undefined
-                : prop.default.replace(/"/g, '')
-              : undefined,
+            defaultValue: fixDefaultValue(prop),
           },
         ];
       }),
   };
 }
 
-const buildArgTypes = (meta, indent = '  ') => {
-  // Skip ArgTypes for "dumb" components.
-  if (!meta.args.length) {
-    return '';
+function setDefaultValue(props) {
+  if ('defaultValue' in props) {
+    return props.defaultValue;
   }
+  switch (props.type) {
+    case 'string':
+      return '';
+    case 'number':
+      return 0;
+  }
+}
 
-  return [
-    'interface ArgTypes {',
-    ...meta.args.map(([name, obj]) => `${indent}${name}: ${obj.type};`),
-    '}',
-  ].join('\n');
-};
+/**
+ *
+ * @param {string} description
+ * @returns
+ */
+function buildComment(description) {
+  if (!description) return '';
+  const parts = description.split('\n');
+  return parts.length > 1
+    ? ['/**', ...parts.map((part) => `* ${part}`), '*/\n'].join('\n')
+    : `/** ${description} */\n`;
+}
+
+function buildArgs(meta) {
+  return Object.entries(meta.argTypes)
+    .map(
+      ([name, config]) =>
+        `${buildComment(config.description)}${name}: ${config.type};`
+    )
+    .join('\n');
+}
+
+function buildTypes(component, meta) {
+  return Object.entries(meta.argTypes).length
+    ? `
+interface ${component}Args {
+  ${buildArgs(meta)}
+}
+type Story = StoryObj<${component}Args>;`
+    : `type Story = StoryObj;`;
+}
+
+function buildStorySource(component, meta) {
+  const componentName = toPascalCase(component);
+  return String.raw`
+// region default
+const metadata: Meta<${componentName}Component> =
+${JSON.stringify(meta)}
+
+export default metadata;
+
+${buildTypes(componentName, meta)}
+
+// endregion
+`;
+}
 
 /**
  *
@@ -140,23 +237,24 @@ const buildArgTypes = (meta, indent = '  ') => {
  */
 function buildStoryMeta(story, meta) {
   const storyMeta = {
-    title: capitalize(meta.component.replace(VENDOR_PREFIX, '')),
+    title: storyTitle(meta.component.replace(VENDOR_PREFIX, '')),
     component: meta.component,
+    parameters: { docs: { description: { component: meta.description } } },
     argTypes: {},
+    args: {},
   };
 
-  meta.args.forEach((arg) => (storyMeta.argTypes[arg[0]] = arg[1]));
-  let payload = `// region default\nconst metadata = ${JSON.stringify(
-    storyMeta,
-    undefined,
-    2
-  )}\nexport default metadata;\n${buildArgTypes(meta)}\n// endregion`;
+  meta.argTypes.forEach(([name, config]) => {
+    storyMeta.args[name] = setDefaultValue(config);
+    storyMeta.argTypes[name] = config;
+  });
 
-  payload = prettier
-    .format(payload, { singleQuote: true, parser: 'babel' })
-    .trim();
+  const payload = prettier.format(buildStorySource(meta.component, storyMeta), {
+    singleQuote: true,
+    parser: 'babel',
+  });
 
-  return story.toString().replace(REPLACE_REGEX, payload);
+  return story.toString().replace(REPLACE_REGEX, payload.trim());
 }
 
 async function buildStories() {

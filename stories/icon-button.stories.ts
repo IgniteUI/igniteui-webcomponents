@@ -2,14 +2,19 @@ import { all } from '@igniteui/material-icons-extended';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
-import type { Context, Story } from './story';
+import type { Context } from './story';
+import { defineComponents, IgcIconButtonComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcIconButtonComponent);
 
 const icons = all.map((icon) => icon.name);
 
 // region default
-const metadata = {
-  title: 'Icon Button',
+const metadata: Meta<IgcIconButtonComponent> = {
+  title: 'IconButton',
   component: 'igc-icon-button',
+  parameters: { docs: { description: {} } },
   argTypes: {
     name: {
       type: 'string',
@@ -31,18 +36,14 @@ const metadata = {
       type: '"flat" | "contained" | "outlined"',
       description: 'The visual variant of the icon button.',
       options: ['flat', 'contained', 'outlined'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'contained',
     },
     type: {
       type: '"button" | "reset" | "submit"',
       description: 'The type of the button. Defaults to undefined.',
       options: ['button', 'reset', 'submit'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
     },
     href: {
       type: 'string',
@@ -60,9 +61,7 @@ const metadata = {
       description:
         'Where to display the linked URL, as the name for a browsing context.',
       options: ['_blank', '_parent', '_self', '_top', 'undefined'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
     },
     rel: {
       type: 'string',
@@ -76,42 +75,61 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    ariaLabel: {
-      type: 'string',
-      control: 'text',
-    },
+    ariaLabel: { type: 'string', control: 'text' },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
+  args: {
+    mirrored: false,
+    variant: 'contained',
+    disabled: false,
+    size: 'large',
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcIconButtonArgs {
+  /** The name of the icon. */
   name: string;
+  /** The name of the icon collection. */
   collection: string;
+  /** Whether to flip the icon button. Useful for RTL layouts. */
   mirrored: boolean;
+  /** The visual variant of the icon button. */
   variant: 'flat' | 'contained' | 'outlined';
+  /** The type of the button. Defaults to undefined. */
   type: 'button' | 'reset' | 'submit';
+  /** The URL the button points to. */
   href: string;
+  /** Prompts to save the linked URL instead of navigating to it. */
   download: string;
+  /** Where to display the linked URL, as the name for a browsing context. */
   target: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  /**
+   * The relationship of the linked URL.
+   * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
+   */
   rel: string;
+  /** Determines whether the button is disabled. */
   disabled: boolean;
   ariaLabel: string;
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcIconButtonArgs>;
+
 // endregion
 
-(metadata.argTypes.name as any).control = {
-  type: 'select',
+Object.assign(metadata.argTypes!.name!, {
+  control: 'select',
   options: icons,
-};
+});
 
 all.forEach((icon) => {
   registerIconFromText(icon.name, icon.value);
@@ -125,7 +143,7 @@ icons.push('biking');
 icons.push('search');
 icons.sort();
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     name = 'biking',
     collection = 'default',
@@ -137,7 +155,7 @@ const Template: Story<ArgTypes, Context> = (
     rel,
     variant,
     disabled,
-  }: ArgTypes,
+  }: IgcIconButtonArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -204,4 +222,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

@@ -1,17 +1,28 @@
 import { html } from 'lit';
-import { Story, Context } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   DatePartDeltas,
   DatePart,
 } from '../src/components/date-time-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { IgcDateTimeInputComponent } from '../src/index.js';
+import { defineComponents, IgcDateTimeInputComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcDateTimeInputComponent);
 
 // region default
-const metadata = {
-  title: 'Date Time Input',
+const metadata: Meta<IgcDateTimeInputComponent> = {
+  title: 'DateTimeInput',
   component: 'igc-date-time-input',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A date time input is an input field that lets you set and edit the date and time in a chosen input element\nusing customizable display and input formats.',
+      },
+    },
+  },
   argTypes: {
     inputFormat: {
       type: 'string',
@@ -105,33 +116,65 @@ const metadata = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
+  args: {
+    spinLoop: true,
+    locale: 'en',
+    invalid: false,
+    outlined: false,
+    required: false,
+    disabled: false,
+    readonly: false,
+    size: 'medium',
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcDateTimeInputArgs {
+  /** The date format to apply on the input. */
   inputFormat: string;
+  /** The minimum value required for the input to remain valid. */
   minValue: Date | null;
+  /** The maximum value required for the input to remain valid. */
   maxValue: Date | null;
+  /**
+   * Format to display the value in when not editing.
+   * Defaults to the input format if not set.
+   */
   displayFormat: string;
+  /** Sets whether to loop over the currently spun segment. */
   spinLoop: boolean;
+  /** The locale settings used to display the value. */
   locale: string;
+  /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
+  /** Controls the validity of the control. */
   invalid: boolean;
+  /** The value of the input. */
   value: Date | null;
+  /** The name attribute of the control. */
   name: string;
+  /** Whether the control will have outlined appearance. */
   outlined: boolean;
+  /** Makes the control a required field. */
   required: boolean;
+  /** Makes the control a disabled field. */
   disabled: boolean;
+  /** Makes the control a readonly field. */
   readonly: boolean;
+  /** The placeholder attribute of the control. */
   placeholder: string;
+  /** The label for the control. */
   label: string;
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcDateTimeInputArgs>;
+
 // endregion
 
 registerIcon(
@@ -170,13 +213,13 @@ const handleClear = () => {
   input!.clear();
 };
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcChange', 'igcInput'],
   },
-};
+});
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     inputFormat,
     prompt,
@@ -194,7 +237,7 @@ const Template: Story<ArgTypes, Context> = (
     value,
     label,
     invalid,
-  }: ArgTypes,
+  }: IgcDateTimeInputArgs,
   { globals: { direction } }: Context
 ) => {
   const spinDelta: DatePartDeltas = {
@@ -229,4 +272,4 @@ const Template: Story<ArgTypes, Context> = (
   </igc-date-time-input>`;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});
