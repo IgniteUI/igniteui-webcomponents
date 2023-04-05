@@ -1,11 +1,16 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { defineComponents, IgcRadioComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcRadioComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcRadioComponent> = {
   title: 'Radio',
   component: 'igc-radio',
+  parameters: { docs: { description: {} } },
   argTypes: {
     name: {
       type: 'string',
@@ -45,9 +50,7 @@ const metadata = {
       type: '"before" | "after"',
       description: 'The label position of the radio control.',
       options: ['before', 'after'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'after',
     },
     ariaLabelledby: {
@@ -56,22 +59,41 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    required: false,
+    checked: false,
+    disabled: false,
+    invalid: false,
+    labelPosition: 'after',
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcRadioArgs {
+  /** The name attribute of the control. */
   name: string;
+  /** The value attribute of the control. */
   value: string;
+  /** Makes the control a required field. */
   required: boolean;
+  /** The checked state of the control. */
   checked: boolean;
+  /** Disables the radio control. */
   disabled: boolean;
+  /** Controls the validity of the control. */
   invalid: boolean;
+  /** The label position of the radio control. */
   labelPosition: 'before' | 'after';
+  /** Sets the aria-labelledby attribute for the radio control. */
   ariaLabelledby: string;
 }
+type Story = StoryObj<IgcRadioArgs>;
+
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
-  { labelPosition, checked, disabled, required, invalid }: ArgTypes,
+const Template = (
+  { labelPosition, checked, disabled, required, invalid }: IgcRadioArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-radio
@@ -86,4 +108,4 @@ const Template: Story<ArgTypes, Context> = (
   </igc-radio>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

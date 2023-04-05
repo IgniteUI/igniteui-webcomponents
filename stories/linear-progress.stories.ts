@@ -1,11 +1,23 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
+import { defineComponents, IgcLinearProgressComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcLinearProgressComponent);
 
 // region default
-const metadata = {
-  title: 'Linear Progress',
+const metadata: Meta<IgcLinearProgressComponent> = {
+  title: 'LinearProgress',
   component: 'igc-linear-progress',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A linear progress indicator used to express unspecified wait time or display\nthe length of a process.',
+      },
+    },
+  },
   argTypes: {
     striped: {
       type: 'boolean',
@@ -24,9 +36,7 @@ const metadata = {
         'bottom-start',
         'bottom-end',
       ],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'top-start',
     },
     max: {
@@ -45,9 +55,7 @@ const metadata = {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
       description: 'The variant of the control.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'primary',
     },
     animationDuration: {
@@ -75,10 +83,24 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    striped: false,
+    labelAlign: 'top-start',
+    max: '100',
+    value: '0',
+    variant: 'primary',
+    animationDuration: '500',
+    indeterminate: false,
+    hideLabel: false,
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcLinearProgressArgs {
+  /** Sets the striped look of the control. */
   striped: boolean;
+  /** The position for the default label of the control. */
   labelAlign:
     | 'top'
     | 'bottom'
@@ -86,17 +108,31 @@ interface ArgTypes {
     | 'top-end'
     | 'bottom-start'
     | 'bottom-end';
+  /** Maximum value of the control. */
   max: number;
+  /** The value of the control. */
   value: number;
+  /** The variant of the control. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
+  /** Animation duration in milliseconds. */
   animationDuration: number;
+  /** The indeterminate state of the control. */
   indeterminate: boolean;
+  /** Shows/hides the label of the control. */
   hideLabel: boolean;
+  /**
+   * Format string for the default label of the control.
+   * Placeholders:
+   *  {0} - current value of the control.
+   *  {1} - max value of the control.
+   */
   labelFormat: string;
 }
+type Story = StoryObj<IgcLinearProgressArgs>;
+
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     striped,
     variant,
@@ -107,8 +143,8 @@ const Template: Story<ArgTypes, Context> = (
     indeterminate,
     labelAlign,
     labelFormat,
-  },
-  { globals: { direction } }
+  }: IgcLinearProgressArgs,
+  { globals: { direction } }: Context
 ) => html`
   <div
     style="display: flex; flex-direction: column; justify-content: center; gap: 16px"
@@ -129,4 +165,4 @@ const Template: Story<ArgTypes, Context> = (
   </div>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

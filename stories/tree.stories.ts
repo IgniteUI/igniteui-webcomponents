@@ -1,12 +1,26 @@
 import { html } from 'lit';
-import IgcTreeItemComponent from '../src/components/tree/tree-item.js';
-import IgcTreeComponent from '../src/components/tree/tree.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
+import {
+  defineComponents,
+  IgcTreeComponent,
+  IgcTreeItemComponent,
+} from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcTreeComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcTreeComponent> = {
   title: 'Tree',
   component: 'igc-tree',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The tree allows users to represent hierarchical data in a tree-view structure,\nmaintaining parent-child relationships, as well as to define static tree-view structure without a corresponding data model.',
+      },
+    },
+  },
   argTypes: {
     singleBranchExpand: {
       type: 'boolean',
@@ -19,28 +33,32 @@ const metadata = {
       type: '"multiple" | "none" | "cascade"',
       description: 'The selection state of the tree.',
       options: ['multiple', 'none', 'cascade'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'none',
     },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
+  args: { singleBranchExpand: false, selection: 'none', size: 'large' },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcTreeArgs {
+  /** Whether a single or multiple of a parent's child items can be expanded. */
   singleBranchExpand: boolean;
+  /** The selection state of the tree. */
   selection: 'multiple' | 'none' | 'cascade';
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcTreeArgs>;
+
 // endregion
 
 const handleEvent = (ev: any) => {
@@ -166,8 +184,8 @@ const log4 = () => {
   );
 };
 
-const BasicTemplate: Story<ArgTypes, Context> = (
-  { size, singleBranchExpand, selection }: ArgTypes,
+const BasicTemplate = (
+  { size, singleBranchExpand, selection }: IgcTreeArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -231,4 +249,4 @@ const BasicTemplate: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = BasicTemplate.bind({});
+export const Basic: Story = BasicTemplate.bind({});

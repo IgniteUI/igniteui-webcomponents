@@ -437,7 +437,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
       <div
         role="combobox"
         tabindex=${this.disabled ? -1 : 0}
-        aria-owns="dropdown"
+        aria-controls="dropdown"
         aria-describedby="helper-text"
         aria-disabled=${this.disabled}
         @focusin=${this.handleFocus}

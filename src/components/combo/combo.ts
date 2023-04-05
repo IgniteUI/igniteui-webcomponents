@@ -769,7 +769,7 @@ export default class IgcComboComponent<T extends object>
     return html`<igc-input
       id="target"
       role="combobox"
-      aria-owns="dropdown"
+      aria-controls="dropdown"
       aria-describedby="helper-text"
       aria-disabled=${this.disabled}
       exportparts="container: input, input: native-input, label, prefix, suffix"

@@ -21,6 +21,7 @@ export default class IgcComboItemComponent extends LitElement {
 
   /**
    * Determines whether the item is selected.
+   * @attr selected
    */
   @property({ type: Boolean, reflect: true })
   public selected = false;
@@ -31,6 +32,10 @@ export default class IgcComboItemComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public active = false;
 
+  /**
+   * Determines whether the item is active.
+   * @attr hide-checkbox
+   */
   @property({ attribute: 'hide-checkbox', type: Boolean, reflect: false })
   public hideCheckbox = false;
 

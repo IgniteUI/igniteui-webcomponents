@@ -1,25 +1,23 @@
 import { html } from 'lit';
+import { github } from '@igniteui/material-icons-extended';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { Context } from './story.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
   defineComponents,
   IgcSelectComponent,
-  IgcSelectGroupComponent,
-  IgcSelectHeaderComponent,
-  IgcSelectItemComponent,
+  IgcIconComponent,
 } from '../src/index.js';
-import { Context, Story } from './story.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
-defineComponents(
-  IgcSelectComponent,
-  IgcSelectItemComponent,
-  IgcSelectGroupComponent,
-  IgcSelectHeaderComponent
-);
+defineComponents(IgcSelectComponent, IgcIconComponent);
+registerIconFromText(github.name, github.value);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcSelectComponent> = {
   title: 'Select',
   component: 'igc-select',
+  parameters: { docs: { description: {} } },
   argTypes: {
     value: {
       type: 'string | undefined',
@@ -74,9 +72,7 @@ const metadata = {
       type: '"ltr" | "rtl" | "auto"',
       description: 'The direction attribute of the control.',
       options: ['ltr', 'rtl', 'auto'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'auto',
     },
     keepOpenOnSelect: {
@@ -90,9 +86,7 @@ const metadata = {
       description:
         'Determines the behavior of the component during scrolling the container.',
       options: ['scroll', 'block', 'close'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'scroll',
     },
     keepOpenOnOutsideClick: {
@@ -126,18 +120,14 @@ const metadata = {
         'left-start',
         'left-end',
       ],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'bottom-start',
     },
     positionStrategy: {
       type: '"absolute" | "fixed"',
       description: "Sets the component's positioning strategy.",
       options: ['absolute', 'fixed'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'absolute',
     },
     flip: {
@@ -164,29 +154,61 @@ const metadata = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
+  args: {
+    disabled: false,
+    required: false,
+    invalid: false,
+    outlined: false,
+    dir: 'auto',
+    keepOpenOnSelect: false,
+    scrollStrategy: 'scroll',
+    keepOpenOnOutsideClick: false,
+    open: false,
+    placement: 'bottom-start',
+    positionStrategy: 'absolute',
+    flip: false,
+    distance: '0',
+    sameWidth: true,
+    size: 'medium',
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcSelectArgs {
+  /** The value attribute of the control. */
   value: string | undefined;
+  /** The name attribute of the control. */
   name: string;
+  /** The disabled attribute of the control. */
   disabled: boolean;
+  /** The required attribute of the control. */
   required: boolean;
+  /** The invalid attribute of the control. */
   invalid: boolean;
+  /** The outlined attribute of the control. */
   outlined: boolean;
+  /** The autofocus attribute of the control. */
   autofocus: boolean;
+  /** The label attribute of the control. */
   label: string;
+  /** The placeholder attribute of the control. */
   placeholder: string;
+  /** The direction attribute of the control. */
   dir: 'ltr' | 'rtl' | 'auto';
+  /** Whether the dropdown should be kept open on selection. */
   keepOpenOnSelect: boolean;
+  /** Determines the behavior of the component during scrolling the container. */
   scrollStrategy: 'scroll' | 'block' | 'close';
+  /** Whether the component should be kept open on clicking outside of it. */
   keepOpenOnOutsideClick: boolean;
+  /** Sets the open state of the component. */
   open: boolean;
+  /** The preferred placement of the component around the target element. */
   placement:
     | 'top'
     | 'top-start'
@@ -200,15 +222,25 @@ interface ArgTypes {
     | 'left'
     | 'left-start'
     | 'left-end';
+  /** Sets the component's positioning strategy. */
   positionStrategy: 'absolute' | 'fixed';
+  /**
+   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
+   * When true, once enough space is detected on its preferred side, it will flip back.
+   */
   flip: boolean;
+  /** The distance from the target element. */
   distance: number;
+  /** Whether the dropdown's width should be the same as the target's one. */
   sameWidth: boolean;
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcSelectArgs>;
+
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: [
       'igcFocus',
@@ -220,7 +252,7 @@ interface ArgTypes {
       'igcClosed',
     ],
   },
-};
+});
 
 const items = [
   {
@@ -260,7 +292,7 @@ const items = [
     selected: false,
   },
 ];
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     label = 'Sample Label',
     placeholder,
@@ -273,7 +305,7 @@ const Template: Story<ArgTypes, Context> = (
     invalid = false,
     required = false,
     autofocus = false,
-  }: ArgTypes,
+  }: IgcSelectArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-select
@@ -300,7 +332,6 @@ const Template: Story<ArgTypes, Context> = (
         ?disabled=${item.disabled}
         ?selected=${item.selected}
       >
-        <igc-icon slot="prefix" name="home"></igc-icon>
         ${item.text}
         <igc-icon slot="suffix" name="github"></igc-icon>
       </igc-select-item>`
@@ -308,7 +339,7 @@ const Template: Story<ArgTypes, Context> = (
   </igc-select>
 `;
 
-const FormTemplate: Story<null, null> = () => checkoutForm;
+const FormTemplate = () => checkoutForm;
 const countries = [
   {
     continent: 'Europe',
@@ -391,5 +422,5 @@ const checkoutForm = html`
   </igc-form>
 `;
 
-export const Basic = Template.bind({});
-export const Form = FormTemplate.bind({});
+export const Basic: Story = Template.bind({});
+export const Form: Story = FormTemplate.bind({});

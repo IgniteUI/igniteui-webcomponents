@@ -1,12 +1,27 @@
 import { html } from 'lit';
-import { Story, Context } from './story.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { IgcSnackbarComponent } from '../src/index.js';
+import {
+  defineComponents,
+  IgcButtonComponent,
+  IgcSnackbarComponent,
+} from '../src/index.js';
+
+defineComponents(IgcSnackbarComponent, IgcButtonComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcSnackbarComponent> = {
   title: 'Snackbar',
   component: 'igc-snackbar',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.',
+      },
+    },
+  },
   argTypes: {
     open: {
       type: 'boolean',
@@ -34,14 +49,23 @@ const metadata = {
       control: 'text',
     },
   },
+  args: { open: false, displayTime: '4000', keepOpen: false },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcSnackbarArgs {
+  /** Determines whether the snackbar is opened. */
   open: boolean;
+  /** Determines the duration in ms in which the snackbar will be visible. */
   displayTime: number;
+  /** Determines whether the snackbar should close after the displayTime is over. */
   keepOpen: boolean;
+  /** The snackbar action button. */
   actionText: string;
 }
+type Story = StoryObj<IgcSnackbarArgs>;
+
 // endregion
 
 const handleOpen = () => {
@@ -58,8 +82,8 @@ const handleHide = () => {
   snackbar?.hide();
 };
 
-const Template: Story<ArgTypes, Context> = (
-  { open, keepOpen, displayTime, actionText = 'Close' }: ArgTypes,
+const Template = (
+  { open, keepOpen, displayTime, actionText = 'Close' }: IgcSnackbarArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-snackbar
@@ -75,5 +99,5 @@ const Template: Story<ArgTypes, Context> = (
   <igc-button @click="${handleHide}">Hide Snackbar</igc-button>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});
 document.addEventListener('igcAction', handleHide);
