@@ -223,6 +223,11 @@ export default class IgcSelectComponent extends EventEmitterMixin<
    * being returned to the target element when the select loses focus. */
   protected override handleFocusout() {}
 
+  /** Monitor input slot changes and request update */
+  protected inputSlotChanged() {
+    this.requestUpdate();
+  }
+
   /** Sets focus on the component. */
   @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
@@ -251,10 +256,6 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   public override async firstUpdated() {
     super.firstUpdated();
     await this.updateComplete;
-
-    if (this.hasPrefixes || this.hasSuffixes || this.helperText) {
-      this.requestUpdate();
-    }
 
     if (!this.selectedItem && this.value) {
       this.updateSelected();
@@ -463,10 +464,10 @@ export default class IgcSelectComponent extends EventEmitterMixin<
           @igcFocus=${(e: Event) => e.stopPropagation()}
         >
           <span slot=${this.hasPrefixes ? 'prefix' : ''}>
-            <slot name="prefix"></slot>
+            <slot name="prefix" @slotchange=${this.inputSlotChanged}></slot>
           </span>
           <span slot=${this.hasSuffixes ? 'suffix' : ''}>
-            <slot name="suffix"></slot>
+            <slot name="suffix" @slotchange=${this.inputSlotChanged}></slot>
           </span>
           <span slot="suffix" part="toggle-icon" style="display: flex">
             <slot name="toggle-icon">
@@ -485,7 +486,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
         part="helper-text"
         ?hidden="${this.helperText.length === 0}"
       >
-        <slot name="helper-text"></slot>
+        <slot name="helper-text" @slotchange="${this.inputSlotChanged}"></slot>
       </div>
       <div
         part="base"
