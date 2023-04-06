@@ -21,7 +21,8 @@ $disabled-label-color: color(gray, 400) !default;
     color: color(gray, 900);
 }
 
-:host([disabled]), :host(:disabled) {
+:host([disabled]),
+:host(:disabled) {
     [part~='symbols-wrapper'] {
         color: $disabled-color;
     }
