@@ -53,10 +53,14 @@ export default class IgcRatingComponent extends SizableMixin(
   EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-rating';
+  public static readonly formAssociated = true;
 
   public static styles = [styles];
 
   protected ratingSymbols: Array<IgcRatingSymbolComponent> = [];
+
+  #internals: ElementInternals;
+  #disabled = false;
 
   @query('[part="symbols"]', true)
   protected container!: HTMLElement;
@@ -87,6 +91,32 @@ export default class IgcRatingComponent extends SizableMixin(
           .replace(/\{0\}/gm, `${value}`)
           .replace(/\{1\}/gm, `${this.max}`)
       : `${value} of ${this.max}`;
+  }
+
+  /** Returns the HTMLFormElement associated with this element. */
+  public get form() {
+    return this.#internals.form;
+  }
+
+  /**
+   * Returns a ValidityState object which represents the different validity states
+   * the element can be in, with respect to constraint validation.
+   */
+  public get validity() {
+    return this.#internals.validity;
+  }
+
+  /** A string containing the validation message of this element. */
+  public get validationMessage() {
+    return this.#internals.validationMessage;
+  }
+
+  /**
+   * A boolean value which returns true if the element is a submittable element
+   * that is a candidate for constraint validation.
+   */
+  public get willValidate() {
+    return this.#internals.willValidate;
   }
 
   /**
@@ -140,11 +170,22 @@ export default class IgcRatingComponent extends SizableMixin(
   public value = 0;
 
   /**
-   * Sets the disabled state of the component
+   * The disabled state of the component
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  public disabled = false;
+  public get disabled() {
+    return this.#disabled;
+  }
+
+  public set disabled(value: boolean) {
+    const old = this.#disabled;
+    this.#disabled = value;
+    this.#disabled
+      ? this.setAttribute('disabled', '')
+      : this.removeAttribute('disabled');
+    this.requestUpdate('disabled', old);
+  }
 
   /**
    * Sets hover preview behavior for the component
@@ -179,7 +220,8 @@ export default class IgcRatingComponent extends SizableMixin(
 
   @watch('value')
   protected handleValueChange() {
-    this.value = clamp(this.value, 0, this.max);
+    this.value = clamp(isNaN(this.value) ? 0 : this.value, 0, this.max);
+    this.#internals.setFormValue(this.value.toString());
   }
 
   @watch('step')
@@ -197,6 +239,7 @@ export default class IgcRatingComponent extends SizableMixin(
 
   constructor() {
     super();
+    this.#internals = this.attachInternals();
     this.addEventListener('keydown', this.handleKeyDown);
   }
 
@@ -287,6 +330,14 @@ export default class IgcRatingComponent extends SizableMixin(
     this.requestUpdate();
   }
 
+  protected formResetCallback() {
+    this.value = parseFloat(this.getAttribute('value')!);
+  }
+
+  protected formDisabledCallback(state: boolean) {
+    this.#disabled = state;
+  }
+
   protected calcNewValue(x: number) {
     const { width, left, right } = this.container.getBoundingClientRect();
     const percent = isLTR(this) ? (x - left) / width : (right - x) / width;
@@ -339,6 +390,19 @@ export default class IgcRatingComponent extends SizableMixin(
    */
   public stepDown(n = 1) {
     this.value -= this.round(n * this.step);
+  }
+
+  /** Checks if an element meets any constraint validation rules applied to it. */
+  public checkValidity() {
+    return this.#internals.checkValidity();
+  }
+
+  /**
+   * Checks if an element meets any constraint validation rules applied to it,
+   * and also sends a validation message to the user agent.
+   */
+  public reportValidity() {
+    return this.#internals.reportValidity();
   }
 
   protected *renderSymbols() {

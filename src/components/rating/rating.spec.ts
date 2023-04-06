@@ -12,6 +12,7 @@ import {
   IgcRatingComponent,
   IgcRatingSymbolComponent,
 } from '../../index.js';
+import { makeFormHandlers } from '../common/utils.spec.js';
 
 describe('Rating component', () => {
   before(() => {
@@ -416,6 +417,59 @@ describe('Rating component', () => {
 
       await elementUpdated(el);
       expect(el.step).to.equal(1);
+    });
+  });
+
+  describe('Form integration', () => {
+    let form: HTMLFormElement;
+    const rating = () => form.querySelector('igc-rating')!;
+
+    beforeEach(async () => {
+      form = await fixture<HTMLFormElement>(
+        html`<form>
+          <fieldset>
+            <igc-rating name="rating" value="3"></igc-rating>
+          </fieldset>
+        </form>`
+      );
+    });
+
+    it('is form associated', async () => {
+      expect(rating().form).equals(form);
+    });
+
+    it('is associated on submit', async () => {
+      makeFormHandlers(form).submit((data) => {
+        expect(data.get('rating')).to.equal('3');
+      });
+    });
+
+    it('is correctly reset when the parent form is reset', async () => {
+      rating().value = 4;
+      await elementUpdated(form);
+      form.reset();
+      expect(rating().value).to.equal(3);
+    });
+
+    it('correctly reflects disabled state based on ancestor disabled state', async () => {
+      const fieldset = form.querySelector('fieldset')!;
+
+      fieldset.disabled = true;
+      await elementUpdated(form);
+      expect(rating().disabled).to.be.true;
+
+      fieldset.disabled = false;
+      await elementUpdated(form);
+      expect(rating().disabled).to.be.false;
+    });
+
+    it('passes validation constraints', async () => {
+      const element = rating();
+      expect(element.checkValidity()).to.be.true;
+      expect(element.reportValidity()).to.be.true;
+      expect(element.validationMessage).to.equal('');
+      expect(element.willValidate).to.be.true;
+      expect(element.validity).instanceof(ValidityState);
     });
   });
 });

@@ -61,13 +61,13 @@
     margin: 0;
 }
 
-:host(:not([disabled], [readonly])) {
+:host(:not(:disabled, [disabled], [readonly])) {
     [part~='symbols'] {
         cursor: pointer;
     }
 }
 
-:host([disabled]) {
+:host([disabled]), :host(:disabled) {
     [part~='value-label'],
     [part~='label'] {
         color: color(gray, 400);
