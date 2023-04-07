@@ -239,10 +239,15 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected updateSelectedTab() {
-    this.tabs.forEach((tab) => (tab.selected = tab === this.activeTab));
-    this.panels.forEach((panel) => {
-      panel.hidden = panel.id !== this.activeTab?.panel;
-    });
+    const activeTabIndex = this.activeTab
+      ? this.tabs.indexOf(this.activeTab)
+      : -1;
+    if (activeTabIndex !== -1) {
+      this.tabs.forEach((tab) => (tab.selected = tab === this.activeTab));
+      this.panels.forEach((panel) => {
+        panel.hidden = panel.id !== this.activeTab?.panel;
+      });
+    }
   }
 
   protected syncAttributes() {
