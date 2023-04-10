@@ -31,7 +31,7 @@
     "check": "madge --circular --warning --no-spinner dist/src/index.js",
     "clean": "npm run clean:dist && npm run clean:styles && npm run clean:docs",
     "clean:dist": "rimraf ./dist",
-    "clean:styles": "rimraf \"src/**/*.css.ts\"",
+    "clean:styles": "rimraf --glob \"src/**/*.css.ts\"",
     "clean:docs": "rimraf ./docs",
     "lint": "npm run lint:eslint && npm run lint:lit-analyzer && npm run lint:prettier && npm run lint:styles",
     "lint:eslint": "eslint --ext .ts . --ignore-path .gitignore",
