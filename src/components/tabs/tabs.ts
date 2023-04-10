@@ -198,7 +198,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       const attributes = getAttributesForTags<IgcTabComponent>(
         records,
         'igc-tab'
-      );
+      ).filter((e) => e.closest(this.tagName)?.isSameNode(this));
+
       const changed = getNodesForTags<IgcTabComponent>(
         records,
         this,
@@ -239,15 +240,10 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   }
 
   protected updateSelectedTab() {
-    const activeTabIndex = this.activeTab
-      ? this.tabs.indexOf(this.activeTab)
-      : -1;
-    if (activeTabIndex !== -1) {
-      this.tabs.forEach((tab) => (tab.selected = tab === this.activeTab));
-      this.panels.forEach((panel) => {
-        panel.hidden = panel.id !== this.activeTab?.panel;
-      });
-    }
+    this.tabs.forEach((tab) => (tab.selected = tab === this.activeTab));
+    this.panels.forEach((panel) => {
+      panel.hidden = panel.id !== this.activeTab?.panel;
+    });
   }
 
   protected syncAttributes() {
