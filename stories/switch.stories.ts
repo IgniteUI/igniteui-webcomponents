@@ -31,7 +31,7 @@ const metadata: Meta<IgcSwitchComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'Disables the control.',
+      description: 'The disabled state of the component',
       control: 'boolean',
       defaultValue: false,
     },
@@ -82,7 +82,7 @@ interface IgcSwitchArgs {
   name: string;
   /** The value attribute of the control. */
   value: string;
-  /** Disables the control. */
+  /** The disabled state of the component */
   disabled: boolean;
   /** The checked state of the control. */
   checked: boolean;
@@ -116,3 +116,32 @@ const Template = (
 };
 
 export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  render: () => {
+    const onSubmit = (e: SubmitEvent) => {
+      e.preventDefault();
+    };
+
+    return html`
+      <form action="" @submit=${onSubmit}>
+        <fieldset>
+          <legend>Default section</legend>
+          <igc-switch name="switch-1">Switch 1</igc-switch>
+        </fieldset>
+        <fieldset>
+          <legend>Required section</legend>
+          <igc-switch required name="required-switch"
+            >Required switch</igc-switch
+          >
+        </fieldset>
+        <fieldset disabled>
+          <legend>Disabled section</legend>
+          <igc-switch name="switch-2">Switch 2</igc-switch>
+        </fieldset>
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+      </form>
+    `;
+  },
+};

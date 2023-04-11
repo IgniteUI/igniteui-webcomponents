@@ -68,7 +68,7 @@ const metadata: Meta<IgcRatingComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'Sets the disabled state of the component',
+      description: 'The disabled state of the component',
       control: 'boolean',
       defaultValue: false,
     },
@@ -139,7 +139,7 @@ interface IgcRatingArgs {
   valueFormat: string;
   /** The current value of the component */
   value: number;
-  /** Sets the disabled state of the component */
+  /** The disabled state of the component */
   disabled: boolean;
   /** Sets hover preview behavior for the component */
   hoverPreview: boolean;

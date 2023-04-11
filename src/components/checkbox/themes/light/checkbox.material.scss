@@ -40,7 +40,8 @@ label {
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='label'] {
         color: color(gray, 400);
     }

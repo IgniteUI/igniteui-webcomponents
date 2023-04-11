@@ -5,6 +5,8 @@ import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { watch } from '../common/decorators/watch.js';
+import type { FormAssociatedElement } from '../common/types';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;
@@ -13,10 +15,17 @@ export interface IgcCheckboxEventMap {
 }
 
 @blazorDeepImport
-export class IgcCheckboxBaseComponent extends EventEmitterMixin<
-  IgcCheckboxEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export class IgcCheckboxBaseComponent
+  extends EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(
+    LitElement
+  )
+  implements FormAssociatedElement
+{
+  public static readonly formAssociated = true;
+
+  #internals: ElementInternals;
+  #disabled = false;
+
   @query('input[type="checkbox"]', true)
   protected input!: HTMLInputElement;
 
@@ -28,6 +37,32 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 
   @state()
   protected hideLabel = false;
+
+  /** Returns the HTMLFormElement associated with this element. */
+  public get form() {
+    return this.#internals.form;
+  }
+
+  /**
+   * Returns a ValidityState object which represents the different validity states
+   * the element can be in, with respect to constraint validation.
+   */
+  public get validity() {
+    return this.#internals.validity;
+  }
+
+  /** A string containing the validation message of this element. */
+  public get validationMessage() {
+    return this.#internals.validationMessage;
+  }
+
+  /**
+   * A boolean value which returns true if the element is a submittable element
+   * that is a candidate for constraint validation.
+   */
+  public get willValidate() {
+    return this.#internals.willValidate;
+  }
 
   /**
    * The name attribute of the control.
@@ -44,12 +79,20 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   public value!: string;
 
   /**
-   * Disables the control.
-   * @attr
+   * The disabled state of the component
+   * @attr [disabled=false]
    */
   @property({ type: Boolean, reflect: true })
-  public disabled = false;
+  public get disabled() {
+    return this.#disabled;
+  }
 
+  public set disabled(value: boolean) {
+    const old = this.#disabled;
+    this.#disabled = value;
+    this.toggleAttribute('disabled', this.#disabled);
+    this.requestUpdate('disabled', old);
+  }
   /**
    * The checked state of the control.
    * @attr
@@ -83,6 +126,68 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   @property({ reflect: true, attribute: 'aria-labelledby' })
   public ariaLabelledby!: string;
 
+  constructor() {
+    super();
+    this.#internals = this.attachInternals();
+    this.addEventListener('keyup', this.handleKeyUp);
+
+    this.addEventListener('invalid', (e) => {
+      e.preventDefault();
+      this.invalid = true;
+    });
+  }
+
+  @watch('checked')
+  protected checkedChanged() {
+    this.checked
+      ? this.#internals.setFormValue(this.value || 'on')
+      : this.#internals.setFormValue(null);
+
+    this.#updateValidity();
+
+    if (this.hasUpdated) {
+      this.invalid = !this.checkValidity();
+    }
+  }
+
+  @watch('required', { waitUntilFirstUpdate: true })
+  protected requiredChange() {
+    this.#updateValidity();
+  }
+
+  @watch('focused', { waitUntilFirstUpdate: true })
+  @watch('indeterminate', { waitUntilFirstUpdate: true })
+  protected handleChange() {
+    this.invalid = !this.checkValidity();
+  }
+
+  #updateValidity(message = '') {
+    const flags: ValidityStateFlags = {};
+    let msg = '';
+
+    if (this.required && !this.checked) {
+      flags.valueMissing = true;
+      msg = 'This field is required';
+    }
+
+    if (message) {
+      flags.customError = true;
+      msg = message;
+    }
+
+    this.#internals.setValidity(flags, msg);
+  }
+
+  protected formResetCallback() {
+    this.checked = Boolean(this.getAttribute('checked'));
+    this.invalid = false;
+  }
+
+  protected formDisabledCallback(state: boolean) {
+    this.#disabled = state;
+    this.requestUpdate();
+  }
+
   /** Simulates a click on the control. */
   public override click() {
     this.input.click();
@@ -102,12 +207,12 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
 
   /** Checks for validity of the control and shows the browser message if it invalid. */
   public reportValidity() {
-    return this.input.reportValidity();
+    return this.#internals.reportValidity();
   }
 
   /** Checks for validity of the control and emits the invalid event if it invalid. */
   public checkValidity() {
-    return this.input.checkValidity();
+    return this.#internals.checkValidity();
   }
 
   /**
@@ -115,8 +220,13 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
    * As long as `message` is not empty, the control is considered invalid.
    */
   public setCustomValidity(message: string) {
-    this.input.setCustomValidity(message);
-    this.invalid = !this.input.checkValidity();
+    this.#updateValidity(message);
+    this.invalid = !this.checkValidity();
+  }
+
+  protected handleClick() {
+    this.checked = !this.checked;
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   protected handleBlur() {
@@ -134,27 +244,13 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
     this.focused = false;
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener('keyup', this.handleKeyUp);
-  }
-
-  public override disconnectedCallback() {
-    this.removeEventListener('keyup', this.handleKeyUp);
-    super.disconnectedCallback();
-  }
-
   protected handleKeyUp() {
     if (!this.focused) {
       this.focused = true;
     }
   }
 
-  protected override async firstUpdated() {
-    if (this.label.length === 0) {
-      this.hideLabel = true;
-    }
-
-    await this.updateComplete;
+  protected handleSlotChange() {
+    this.hideLabel = this.label.length < 1;
   }
 }

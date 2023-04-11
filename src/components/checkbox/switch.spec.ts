@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcSwitchComponent } from '../../index.js';
+import { formSubmitter } from '../common/utils.spec.js';
 
 describe('Switch', () => {
   before(() => {
@@ -200,5 +201,118 @@ describe('Switch', () => {
     ) => {
       return fixture<IgcSwitchComponent>(html`${unsafeStatic(template)}`);
     };
+  });
+
+  describe('Form integration', () => {
+    let form: HTMLFormElement;
+    let switchEl: IgcSwitchComponent;
+
+    beforeEach(async () => {
+      form = await fixture<HTMLFormElement>(html`
+        <form>
+          <fieldset>
+            <igc-switch name="switch">
+              I have reviewed ToC and I agree
+            </igc-switch>
+          </fieldset>
+        </form>
+      `);
+      switchEl = form.querySelector('igc-switch')!;
+    });
+
+    it('is form associated', async () => {
+      expect(switchEl.form).to.equal(form);
+    });
+
+    it('is associated on submit with default value "on"', async () => {
+      const submit = formSubmitter(form);
+
+      switchEl.checked = true;
+      await elementUpdated(switchEl);
+
+      submit((data) => expect(data.get('switch')).to.equal('on'));
+    });
+
+    it('is associated on submit with value', async () => {
+      const submit = formSubmitter(form);
+
+      switchEl.checked = true;
+      switchEl.value = 'toc-accepted';
+      await elementUpdated(switchEl);
+
+      submit((data) => expect(data.get('switch')).to.equal('toc-accepted'));
+    });
+
+    it('is not associated on submit if not checked', async () => {
+      const submit = formSubmitter(form);
+
+      submit((data) => expect(data.get('switch')).to.be.null);
+    });
+
+    it('is correctly reset when the parent form is reset', async () => {
+      switchEl.checked = true;
+      await elementUpdated(switchEl);
+
+      form.reset();
+      expect(switchEl.checked).to.be.false;
+    });
+
+    it('correctly reflects disabled state based on ancestor disabled state', async () => {
+      const fieldset = form.querySelector('fieldset')!;
+
+      fieldset.disabled = true;
+      await elementUpdated(form);
+      expect(switchEl.disabled).to.be.true;
+
+      fieldset.disabled = false;
+      await elementUpdated(form);
+      expect(switchEl.disabled).to.be.false;
+    });
+
+    describe('constraint validation and validation states', () => {
+      it('required constraint', async () => {
+        const submit = formSubmitter(form);
+
+        switchEl.required = true;
+        await elementUpdated(switchEl);
+
+        submit();
+
+        expect(switchEl.checkValidity()).to.be.false;
+        expect(switchEl.invalid).to.be.true;
+
+        form.reset();
+
+        switchEl.required = false;
+        await elementUpdated(switchEl);
+
+        submit();
+
+        expect(switchEl.checkValidity()).to.be.true;
+        expect(switchEl.invalid).to.be.false;
+      });
+
+      it('custom error constraint', async () => {
+        const submit = formSubmitter(form);
+
+        switchEl.setCustomValidity('no');
+        await elementUpdated(switchEl);
+
+        submit();
+
+        expect(switchEl.checkValidity()).to.be.false;
+        expect(switchEl.invalid).to.be.true;
+
+        form.reset();
+
+        switchEl.setCustomValidity('');
+        await elementUpdated(switchEl);
+
+        submit();
+
+        expect(switchEl.checkValidity()).to.be.true;
+        expect(switchEl.invalid).to.be.false;
+      });
+    });
   });
 });

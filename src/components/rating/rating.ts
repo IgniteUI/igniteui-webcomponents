@@ -17,6 +17,7 @@ import { styles as indigo } from './rating.indigo.css.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import IgcIconComponent from '../icon/icon.js';
+import type { FormAssociatedElement } from '../common/types';
 
 defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
 
@@ -49,9 +50,12 @@ export interface IgcRatingEventMap {
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
 @themes({ fluent, bootstrap, indigo })
-export default class IgcRatingComponent extends SizableMixin(
-  EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
-) {
+export default class IgcRatingComponent
+  extends SizableMixin(
+    EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
+  )
+  implements FormAssociatedElement
+{
   public static readonly tagName = 'igc-rating';
   public static readonly formAssociated = true;
 
@@ -171,7 +175,7 @@ export default class IgcRatingComponent extends SizableMixin(
 
   /**
    * The disabled state of the component
-   * @attr
+   * @attr [disabled=false]
    */
   @property({ type: Boolean, reflect: true })
   public get disabled() {
@@ -181,9 +185,7 @@ export default class IgcRatingComponent extends SizableMixin(
   public set disabled(value: boolean) {
     const old = this.#disabled;
     this.#disabled = value;
-    this.#disabled
-      ? this.setAttribute('disabled', '')
-      : this.removeAttribute('disabled');
+    this.toggleAttribute('disabled', this.#disabled);
     this.requestUpdate('disabled', old);
   }
 
@@ -336,6 +338,7 @@ export default class IgcRatingComponent extends SizableMixin(
 
   protected formDisabledCallback(state: boolean) {
     this.#disabled = state;
+    this.requestUpdate();
   }
 
   protected calcNewValue(x: number) {
@@ -403,6 +406,16 @@ export default class IgcRatingComponent extends SizableMixin(
    */
   public reportValidity() {
     return this.#internals.reportValidity();
+  }
+
+  /**
+   * Sets a custom validation message for the control.
+   * As long as `message` is not empty, the control is considered invalid.
+   */
+  public setCustomValidity(message: string) {
+    message
+      ? this.#internals.setValidity({ customError: true }, message)
+      : this.#internals.setValidity({});
   }
 
   protected *renderSymbols() {

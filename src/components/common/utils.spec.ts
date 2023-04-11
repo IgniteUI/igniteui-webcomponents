@@ -1,20 +1,16 @@
-export function makeFormHandlers(host: HTMLFormElement) {
-  const opts = { once: true };
-  return {
-    submit: (callback: (data: FormData) => void) => {
-      host.addEventListener(
-        'submit',
-        (e) => {
-          e.preventDefault();
+export function formSubmitter(host: HTMLFormElement) {
+  return function (callback?: (data: FormData) => void) {
+    host.addEventListener(
+      'submit',
+      (ev) => {
+        ev.preventDefault();
+        if (callback) {
           callback(new FormData(host));
-        },
-        opts
-      );
-      host.requestSubmit();
-    },
-    reset: (callback: (data: FormData) => void) => {
-      host.addEventListener('reset', () => callback(new FormData(host)), opts);
-      host.reset();
-    },
+        }
+      },
+      { once: true }
+    );
+
+    host.requestSubmit();
   };
 }

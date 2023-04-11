@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcCheckboxComponent } from '../../index.js';
+import { formSubmitter } from '../common/utils.spec.js';
 
 describe('Checkbox', () => {
   before(() => {
@@ -240,5 +241,118 @@ describe('Checkbox', () => {
     ) => {
       return fixture<IgcCheckboxComponent>(html`${unsafeStatic(template)}`);
     };
+  });
+
+  describe('Form integration', () => {
+    let form: HTMLFormElement;
+    let checkbox: IgcCheckboxComponent;
+
+    beforeEach(async () => {
+      form = await fixture<HTMLFormElement>(html`<form>
+        <fieldset>
+          <igc-checkbox name="checkbox"
+            >I have reviewed ToC and I agree</igc-checkbox
+          >
+        </fieldset>
+      </form>`);
+      checkbox = form.querySelector('igc-checkbox')!;
+    });
+
+    it('is form associated', async () => {
+      expect(checkbox.form).to.equal(form);
+    });
+
+    it('is associated on submit with default value "on"', async () => {
+      const submit = formSubmitter(form);
+
+      checkbox.checked = true;
+      await elementUpdated(checkbox);
+
+      submit((data) => {
+        expect(data.get('checkbox')).to.equal('on');
+      });
+    });
+
+    it('is associated on submit with value', async () => {
+      const submit = formSubmitter(form);
+
+      checkbox.checked = true;
+      checkbox.value = 'toc-accepted';
+      await elementUpdated(checkbox);
+
+      submit((data) => expect(data.get('checkbox')).to.equal('toc-accepted'));
+    });
+
+    it('is not associated on submit if not checked', async () => {
+      const submit = formSubmitter(form);
+
+      submit((data) => expect(data.get('checkbox')).to.be.null);
+    });
+
+    it('is correctly reset when the parent form is reset', async () => {
+      checkbox.checked = true;
+      await elementUpdated(checkbox);
+
+      form.reset();
+      expect(checkbox.checked).to.be.false;
+    });
+
+    it('reflects disabled state based on ancestor disabled state', async () => {
+      const fieldset = form.querySelector('fieldset')!;
+
+      fieldset.disabled = true;
+      await elementUpdated(form);
+      expect(checkbox.disabled).to.be.true;
+
+      fieldset.disabled = false;
+      await elementUpdated(form);
+      expect(checkbox.disabled).to.be.false;
+    });
+
+    describe('constraint validation and validation states', () => {
+      it('required constraint', async () => {
+        const submit = formSubmitter(form);
+
+        checkbox.required = true;
+        await elementUpdated(checkbox);
+
+        submit();
+
+        expect(checkbox.checkValidity()).to.be.false;
+        expect(checkbox.invalid).to.be.true;
+
+        form.reset();
+
+        checkbox.required = false;
+        await elementUpdated(checkbox);
+
+        submit();
+
+        expect(checkbox.checkValidity()).to.be.true;
+        expect(checkbox.invalid).to.be.false;
+      });
+
+      it('custom error constraint', async () => {
+        const submit = formSubmitter(form);
+
+        checkbox.setCustomValidity('no');
+        await elementUpdated(checkbox);
+
+        submit();
+
+        expect(checkbox.checkValidity()).to.be.false;
+        expect(checkbox.invalid).to.be.true;
+
+        form.reset();
+
+        checkbox.setCustomValidity('');
+        await elementUpdated(checkbox);
+
+        submit();
+
+        expect(checkbox.checkValidity()).to.be.true;
+        expect(checkbox.invalid).to.be.false;
+      });
+    });
   });
 });

@@ -12,7 +12,7 @@ import {
   IgcRatingComponent,
   IgcRatingSymbolComponent,
 } from '../../index.js';
-import { makeFormHandlers } from '../common/utils.spec.js';
+import { formSubmitter } from '../common/utils.spec.js';
 
 describe('Rating component', () => {
   before(() => {
@@ -422,7 +422,7 @@ describe('Rating component', () => {
 
   describe('Form integration', () => {
     let form: HTMLFormElement;
-    const rating = () => form.querySelector('igc-rating')!;
+    let rating: IgcRatingComponent;
 
     beforeEach(async () => {
       form = await fixture<HTMLFormElement>(
@@ -432,23 +432,26 @@ describe('Rating component', () => {
           </fieldset>
         </form>`
       );
+      rating = form.querySelector('igc-rating')!;
     });
 
     it('is form associated', async () => {
-      expect(rating().form).equals(form);
+      expect(rating.form).to.equal(form);
     });
 
     it('is associated on submit', async () => {
-      makeFormHandlers(form).submit((data) => {
+      const submit = formSubmitter(form);
+
+      submit((data) => {
         expect(data.get('rating')).to.equal('3');
       });
     });
 
     it('is correctly reset when the parent form is reset', async () => {
-      rating().value = 4;
+      rating.value = 4;
       await elementUpdated(form);
       form.reset();
-      expect(rating().value).to.equal(3);
+      expect(rating.value).to.equal(3);
     });
 
     it('correctly reflects disabled state based on ancestor disabled state', async () => {
@@ -456,20 +459,27 @@ describe('Rating component', () => {
 
       fieldset.disabled = true;
       await elementUpdated(form);
-      expect(rating().disabled).to.be.true;
+      expect(rating.disabled).to.be.true;
 
       fieldset.disabled = false;
       await elementUpdated(form);
-      expect(rating().disabled).to.be.false;
+      expect(rating.disabled).to.be.false;
     });
 
-    it('passes validation constraints', async () => {
-      const element = rating();
-      expect(element.checkValidity()).to.be.true;
-      expect(element.reportValidity()).to.be.true;
-      expect(element.validationMessage).to.equal('');
-      expect(element.willValidate).to.be.true;
-      expect(element.validity).instanceof(ValidityState);
+    it('default validation constraints', async () => {
+      expect(rating.checkValidity()).to.be.true;
+      expect(rating.reportValidity()).to.be.true;
+      expect(rating.validationMessage).to.equal('');
+      expect(rating.willValidate).to.be.true;
+      expect(rating.validity).instanceof(ValidityState);
+    });
+
+    it('supports custom validation constraints', async () => {
+      rating.setCustomValidity('Nope!');
+      expect(rating.reportValidity()).to.be.false;
+
+      rating.setCustomValidity('');
+      expect(rating.reportValidity()).to.be.true;
     });
   });
 });

@@ -36,7 +36,7 @@ const metadata: Meta<IgcCheckboxComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'Disables the control.',
+      description: 'The disabled state of the component',
       control: 'boolean',
       defaultValue: false,
     },
@@ -90,7 +90,7 @@ interface IgcCheckboxArgs {
   name: string;
   /** The value attribute of the control. */
   value: string;
-  /** Disables the control. */
+  /** The disabled state of the component */
   disabled: boolean;
   /** The checked state of the control. */
   checked: boolean;
@@ -129,3 +129,32 @@ const Template = (
 };
 
 export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  render: () => {
+    const onSubmit = (e: SubmitEvent) => {
+      e.preventDefault();
+    };
+
+    return html`
+      <form action="" @submit=${onSubmit}>
+        <fieldset>
+          <legend>Default section</legend>
+          <igc-checkbox name="checkbox-1">Checkbox 1</igc-checkbox>
+        </fieldset>
+        <fieldset>
+          <legend>Required section</legend>
+          <igc-checkbox required name="required-checkbox"
+            >Required checkbox</igc-checkbox
+          >
+        </fieldset>
+        <fieldset disabled>
+          <legend>Disabled section</legend>
+          <igc-checkbox name="checkbox-2">Checkbox 2</igc-checkbox>
+        </fieldset>
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+      </form>
+    `;
+  },
+};
