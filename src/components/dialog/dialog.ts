@@ -61,11 +61,11 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    * @attr close-on-escape
    */
   @property({ type: Boolean, attribute: 'close-on-escape' })
-  public get closeOnEscape(): boolean {
-    return !this.keepOpenOnEscape;
-  }
   public set closeOnEscape(value: boolean) {
     this.keepOpenOnEscape = !value;
+  }
+  public get closeOnEscape(): boolean {
+    return !this.keepOpenOnEscape;
   }
 
   /**
