@@ -12,6 +12,7 @@
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.bootstrap' as nav-drawer-item;
 @use '../../../components/combo/themes/dark/combo.bootstrap' as combo;
 @use '../../../components/avatar/themes/dark/avatar.base.bootstrap' as avatar;
+@use '../../../components/button/themes/button/dark/button.bootstrap' as button;
 @include base.root-styles($dark-bootstrap-palette);
 @include dropdown.theme();
 @include input.theme();
@@ -24,3 +25,4 @@
 @include grid.theme();
 @include combo.theme();
 @include avatar.theme();
+@include button.theme();
