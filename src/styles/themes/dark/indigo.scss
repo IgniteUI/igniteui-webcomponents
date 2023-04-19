@@ -17,6 +17,7 @@
 @use '../../../components/combo/themes/dark/combo.indigo' as combo;
 @use '../../../components/button/themes/button/dark/button.indigo' as button;
 @use '../../../components/icon/dark/icon.indigo' as icon;
+@use '../../../components/navbar/themes/dark/navbar.indigo' as navbar;
 @include base.root-styles($dark-indigo-palette);
 @include checkbox.theme();
 @include switch.theme();
@@ -34,3 +35,4 @@
 @include combo.theme();
 @include button.theme();
 @include icon.theme();
+@include navbar.theme();

@@ -10,6 +10,7 @@
 @use '../../../components/combo/themes/dark/combo.material' as combo;
 @use '../../../components/button/themes/button/dark/button.material' as button;
 @use '../../../components/icon/dark/icon.material' as icon;
+@use '../../../components/navbar/themes/dark/navbar.material' as navbar;
 @include base.root-styles($dark-material-palette);
 @include radio.theme();
 @include input.theme();
@@ -20,3 +21,4 @@
 @include combo.theme();
 @include button.theme();
 @include icon.theme();
+@include navbar.theme();

@@ -1,5 +1,5 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use '../../../styles/common/component';
+@use '../../../styles/utilities/index' as *;
 
 :host {
     display: flex;
@@ -7,9 +7,6 @@
     min-height: rem(56px);
     max-height: rem(128px);
     padding: 0 rem(16px);
-    background: color(primary, 500);
-    color: contrast-color(primary, 600);
-    box-shadow: var(--ig-elevation-4);
     font-family: var(--ig-font-family);
     z-index: 4;
 }
@@ -59,10 +56,10 @@
 
 ::slotted(igc-icon) {
     cursor: pointer;
-    color: contrast-color(primary, 600);
     width: rem(32px);
     height: rem(32px);
     font-size: rem(32px);
+    transition: color .15s cubic-bezier(.25, .46, .45, .94);
 }
 
 ::slotted(*) {

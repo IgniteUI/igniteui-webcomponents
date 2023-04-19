@@ -14,6 +14,7 @@
 @use '../../../components/avatar/themes/dark/avatar.base.bootstrap' as avatar;
 @use '../../../components/button/themes/button/dark/button.bootstrap' as button;
 @use '../../../components/icon/dark/icon.bootstrap' as icon;
+@use '../../../components/navbar/themes/dark/navbar.bootstrap' as navbar;
 @include base.root-styles($dark-bootstrap-palette);
 @include dropdown.theme();
 @include input.theme();
@@ -28,3 +29,4 @@
 @include avatar.theme();
 @include button.theme();
 @include icon.theme();
+@include navbar.theme();

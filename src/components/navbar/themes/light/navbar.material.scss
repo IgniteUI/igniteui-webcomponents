@@ -1,8 +1,8 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use '../../../../styles/utilities/index' as *;
 
-$schema: extend((name: 'igc-navbar'), map.get($light-indigo-schema, 'navbar'));
+$schema: extend((name: 'igc-navbar'), map.get($light-material-schema, 'navbar'));
 $theme: digest-schema($schema);
 
 :host {
