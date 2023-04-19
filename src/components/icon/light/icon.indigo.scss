@@ -1,0 +1,16 @@
+@use 'sass:map';
+@use '../../../styles/common/component';
+@use '../../../styles/utilities/index' as *;
+
+$schema: extend((name: 'igc-icon'), map.get($light-indigo-schema, 'icon'));
+$theme: digest-schema($schema);
+
+:host {
+    @include css-vars($theme);
+
+    color: var-get($theme, 'color');
+}
+
+svg {
+    fill: currentcolor;
+}

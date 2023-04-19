@@ -9,6 +9,7 @@
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.base.scss' as nav-drawer-item;
 @use '../../../components/combo/themes/dark/combo.material' as combo;
 @use '../../../components/button/themes/button/dark/button.material' as button;
+@use '../../../components/icon/dark/icon.material' as icon;
 @include base.root-styles($dark-material-palette);
 @include radio.theme();
 @include input.theme();
@@ -18,3 +19,4 @@
 @include grid.theme();
 @include combo.theme();
 @include button.theme();
+@include icon.theme();

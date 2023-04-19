@@ -1,11 +1,6 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-svg {
-    height: var(--size);
-    width: var(--size);
-}
-
 :host {
     --size: #{sizable(rem(16px), rem(20px), rem(24px))};
 
@@ -14,7 +9,6 @@ svg {
     justify-content: center;
     width: var(--size);
     height: var(--size);
-    fill: currentcolor;
 }
 
 :host([size='small']) {
@@ -27,6 +21,11 @@ svg {
 
 :host([size='large']) {
     --component-size: var(--ig-size, var(--ig-size-large));
+}
+
+svg {
+    height: var(--size);
+    width: var(--size);
 }
 
 :host([mirrored]) {

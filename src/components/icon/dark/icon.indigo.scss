@@ -1,0 +1,11 @@
+@use 'sass:map';
+@use '../../../styles/utilities/index' as *;
+
+@mixin theme() {
+    $schema: extend((name: 'igc-icon'), map.get($dark-indigo-schema, 'icon'));
+    $theme: digest-schema($schema);
+
+    igc-icon {
+        @include css-vars($theme);
+    }
+}
