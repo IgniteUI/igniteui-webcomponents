@@ -198,7 +198,8 @@ export default class IgcTabsComponent extends EventEmitterMixin<
       const attributes = getAttributesForTags<IgcTabComponent>(
         records,
         'igc-tab'
-      );
+      ).filter((e) => e.closest(this.tagName)?.isSameNode(this));
+
       const changed = getNodesForTags<IgcTabComponent>(
         records,
         this,

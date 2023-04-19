@@ -1,11 +1,23 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { defineComponents, IgcChipComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcChipComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcChipComponent> = {
   title: 'Chip',
   component: 'igc-chip',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Chips help people enter information, make selections, filter content, or trigger actions.',
+      },
+    },
+  },
   argTypes: {
     disabled: {
       type: 'boolean',
@@ -36,37 +48,50 @@ const metadata = {
       description:
         'A property that sets the color variant of the chip component.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
     },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
+  args: {
+    disabled: false,
+    removable: false,
+    selectable: false,
+    selected: false,
+    size: 'medium',
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcChipArgs {
+  /** Sets the disabled state for the chip. */
   disabled: boolean;
+  /** Defines if the chip is removable or not. */
   removable: boolean;
+  /** Defines if the chip is selectable or not. */
   selectable: boolean;
+  /** Defines if the chip is selected or not. */
   selected: boolean;
+  /** A property that sets the color variant of the chip component. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcChipArgs>;
+
 // endregion
 
 const handleRemove = (e: Event) => {
   console.log(e);
 };
 
-const ChipTemplate: Story<ArgTypes, Context> = (
+const ChipTemplate = (
   {
     disabled,
     removable,
@@ -74,7 +99,7 @@ const ChipTemplate: Story<ArgTypes, Context> = (
     selected,
     size = 'medium',
     variant,
-  }: ArgTypes,
+  }: IgcChipArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-chip
@@ -93,4 +118,4 @@ const ChipTemplate: Story<ArgTypes, Context> = (
   </igc-chip>
 `;
 
-export const Basic = ChipTemplate.bind({});
+export const Basic: Story = ChipTemplate.bind({});

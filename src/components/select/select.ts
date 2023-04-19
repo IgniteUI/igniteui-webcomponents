@@ -28,6 +28,7 @@ import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
+import { alternateName } from '../common/decorators/alternateName.js';
 
 defineComponents(
   IgcIconComponent,
@@ -222,12 +223,19 @@ export default class IgcSelectComponent extends EventEmitterMixin<
    * being returned to the target element when the select loses focus. */
   protected override handleFocusout() {}
 
+  /** Monitor input slot changes and request update */
+  protected inputSlotChanged() {
+    this.requestUpdate();
+  }
+
   /** Sets focus on the component. */
+  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.target.focus(options);
   }
 
   /** Removes focus from the component. */
+  @alternateName('blurComponent')
   public override blur() {
     this.target.blur();
   }
@@ -430,7 +438,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
       <div
         role="combobox"
         tabindex=${this.disabled ? -1 : 0}
-        aria-owns="dropdown"
+        aria-controls="dropdown"
         aria-describedby="helper-text"
         aria-disabled=${this.disabled}
         @focusin=${this.handleFocus}
@@ -456,10 +464,10 @@ export default class IgcSelectComponent extends EventEmitterMixin<
           @igcFocus=${(e: Event) => e.stopPropagation()}
         >
           <span slot=${this.hasPrefixes ? 'prefix' : ''}>
-            <slot name="prefix"></slot>
+            <slot name="prefix" @slotchange=${this.inputSlotChanged}></slot>
           </span>
           <span slot=${this.hasSuffixes ? 'suffix' : ''}>
-            <slot name="suffix"></slot>
+            <slot name="suffix" @slotchange=${this.inputSlotChanged}></slot>
           </span>
           <span slot="suffix" part="toggle-icon" style="display: flex">
             <slot name="toggle-icon">
@@ -478,7 +486,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
         part="helper-text"
         ?hidden="${this.helperText.length === 0}"
       >
-        <slot name="helper-text"></slot>
+        <slot name="helper-text" @slotchange="${this.inputSlotChanged}"></slot>
       </div>
       <div
         part="base"

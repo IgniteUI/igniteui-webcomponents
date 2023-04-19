@@ -4,6 +4,12 @@
     transition: box-shadow .1s ease-out;
 
     &::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        inset-inline-start: 0;
+        inset-block-start: 0;
         opacity: 0;
     }
 
@@ -32,15 +38,6 @@
     @extend %contained;
 
     box-shadow: var(--ig-elevation-2);
-
-    &:hover {
-        box-shadow: var(--ig-elevation-4);
-    }
-
-    &:focus,
-    &:active {
-        box-shadow: var(--ig-elevation-8);
-    }
 }
 
 :host(:not([disabled])[variant='fab']) [part='base'] {

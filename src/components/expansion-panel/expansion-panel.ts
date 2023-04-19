@@ -33,6 +33,7 @@ export interface IgcExpansionPanelComponentEventMap {
  *
  * @element igc-expansion-panel
  *
+ * @slot - renders the default content of the panel
  * @slot title - renders the title of the panel's header
  * @slot subtitle - renders the subtitle of the panel's header
  * @slot indicator - renders the expand/collapsed indicator

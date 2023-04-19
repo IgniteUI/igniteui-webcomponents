@@ -25,8 +25,10 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ |
 
 |Components|Status|Documentation|Released Version|
 |:--|:--:|:--:|:--:|
-|Select|:white_check_mark:|[Docs](#https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/select)|[3.4.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.4.0)|
-|Dialog|:white_check_mark:|[Docs](#https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/dialog-window)|[3.4.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.4.0)|
+|Combo|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/combo/overview)|[4.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/4.1.0)|
+|Stepper|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/stepper)|[4.1.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/4.1.0)|
+|Select|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/select)|[3.4.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.4.0)|
+|Dialog|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/notifications/dialog)|[3.4.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.4.0)|
 |Date Time Input|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/date-time-input)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
 |Tabs|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/tabs)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
 |Accordion|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/layouts/accordion)|[3.3.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/3.3.0)|
@@ -59,6 +61,14 @@ Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ | Latest ✔ |
 |Radio Group|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/radio)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
 |Ripple|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/ripple)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
 |Switch|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/inputs/switch)|[1.0.0](https://github.com/IgniteUI/igniteui-webcomponents/releases/tag/1.0.0)|
+
+## Components available in [Ignite UI for WebComponents Grids](https://www.npmjs.com/package/igniteui-webcomponents-grids)
+
+|Components|Status|Documentation|Released Version|
+|:--|:--:|:--:|:--:|
+|Pivot Grid|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/pivot-grid/overview)|
+|Data Grid|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/grid/overview)||
+|Tree Grid|:white_check_mark:|[Docs](https://www.infragistics.com/products/ignite-ui-web-components/web-components/components/grids/tree-grid/overview)||
 
 ## Usage
 
@@ -175,9 +185,3 @@ To build a production version of Storybook, run
 ```bash
 npm run storybook:build
 ```
-
-## Local Demo with `web-dev-server`
-```bash
-npm serve
-```
-To run a local development server that serves the basic demo located in `demo/index.html`

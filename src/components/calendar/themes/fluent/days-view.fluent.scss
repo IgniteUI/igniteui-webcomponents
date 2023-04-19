@@ -9,9 +9,12 @@
     &:hover {
         background: $background-hover;
         border-color: $background-hover;
+        color: $color-hover;
     }
 }
 
+[part~='date-inner'][part~='weekend'],
+[part~='date-inner'][part~='inactive'],
 [part~='date-inner'][part~='selected'][part~='single'] {
     &:focus,
     &:hover {
@@ -52,7 +55,8 @@
     }
 }
 
-[part~='selected'][part~='date-inner'][part~='single'] {
+[part~='selected'][part~='date-inner'][part~='single'],
+[part~='selected'][part~='date-inner'][part~='single'][part~='weekend'] {
     border-color: $border-color;
     background: $selected-background;
     color: $selected-color;
@@ -110,6 +114,8 @@
 
 [part~='date-inner'][part~='selected'][part~='range'][part~='weekend'],
 [part~='date-inner'][part~='selected'][part~='range'][part~='inactive'] {
+    color: $selected-color;
+
     &:hover,
     &:focus {
         color: $selected-color-hover;
@@ -128,11 +134,13 @@
     color: $selected-color;
 
     &:hover {
+        color: $color-hover;
         background: $selected-background-hover;
         border-color: $border-color;
     }
 
     &:focus {
+        color: $color-hover;
         background: $selected-background;
         border-color: $border-color;
     }
@@ -166,7 +174,7 @@
         content: '';
         position: absolute;
         top: -$border-width;
-        width: 50%;
+        width: var(--size);
         height: 100%;
         border: $border-width solid $border-color;
         z-index: 3;

@@ -11,7 +11,9 @@ describe('Date Util', () => {
     expect(DateTimeUtil.getDefaultMask('')).to.equal('MM/dd/yyyy');
     expect(DateTimeUtil.getDefaultMask(DEFAULT_LOCALE)).to.equal('MM/dd/yyyy');
     expect(DateTimeUtil.getDefaultMask('no')).to.equal('dd.MM.yyyy');
-    expect(DateTimeUtil.getDefaultMask('bg')).to.equal('dd.MM.yyyy г.');
+    expect(DateTimeUtil.getDefaultMask('bg').normalize('NFKC')).to.equal(
+      'dd.MM.yyyy г.'
+    );
   });
 
   it('should correctly parse all date time parts (base)', () => {

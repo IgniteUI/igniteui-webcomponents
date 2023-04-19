@@ -4,7 +4,9 @@
 :host {
     --size: #{sizable(rem(40px), rem(64px), rem(88px))};
 
-    display: inline-block;
+    display: inline-flex;
+    width: fit-content;
+    height: fit-content;
 }
 
 [part='base'] {

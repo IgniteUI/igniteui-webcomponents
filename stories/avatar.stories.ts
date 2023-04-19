@@ -1,14 +1,20 @@
-import { html } from 'lit';
-import { Context, Story } from './story.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineAllComponents } from '../src/index.js';
+import type { Meta, StoryObj } from '@storybook/web-components';
+import { defineComponents, IgcAvatarComponent } from '../src/index.js';
 
-defineAllComponents();
+defineComponents(IgcAvatarComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcAvatarComponent> = {
   title: 'Avatar',
   component: 'igc-avatar',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'An avatar component is used as a representation of a user identity\ntypically in a user profile.',
+      },
+    },
+  },
   argTypes: {
     src: {
       type: 'string',
@@ -29,51 +35,46 @@ const metadata = {
       type: '"circle" | "rounded" | "square"',
       description: 'The shape of the avatar.',
       options: ['circle', 'rounded', 'square'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'square',
     },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'small',
     },
   },
+  args: { shape: 'square', size: 'small' },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcAvatarArgs {
+  /** The image source to use. */
   src: string;
+  /** Alternative text for the image. */
   alt: string;
+  /** Initials to use as a fallback when no image is available. */
   initials: string;
+  /** The shape of the avatar. */
   shape: 'circle' | 'rounded' | 'square';
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcAvatarArgs>;
+
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
-  {
-    size,
-    shape,
-    src = 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
-    alt,
-    initials = 'JB',
-  }: ArgTypes,
-  { globals: { direction } }: Context
-) => html`
-  <igc-avatar
-    initials=${ifDefined(initials)}
-    size=${ifDefined(size)}
-    shape=${ifDefined(shape)}
-    src=${ifDefined(src)}
-    alt=${ifDefined(alt)}
-    dir=${ifDefined(direction)}
-  >
-  </igc-avatar>
-`;
+export const Image: Story = {
+  args: {
+    src: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+  },
+};
 
-export const Basic = Template.bind({});
+export const WithInitials: Story = {
+  args: {
+    initials: 'RK',
+  },
+};

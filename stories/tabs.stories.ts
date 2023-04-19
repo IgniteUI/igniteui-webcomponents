@@ -2,12 +2,23 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
+import {
+  defineComponents,
+  IgcTabsComponent,
+  registerIcon,
+} from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcTabsComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcTabsComponent> = {
   title: 'Tabs',
   component: 'igc-tabs',
+  parameters: {
+    docs: { description: { component: 'Represents tabs component' } },
+  },
   argTypes: {
     selected: {
       type: 'string',
@@ -18,9 +29,7 @@ const metadata = {
       type: '"start" | "end" | "center" | "justify"',
       description: 'Sets the alignment for the tab headers',
       options: ['start', 'end', 'center', 'justify'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'start',
     },
     activation: {
@@ -28,26 +37,52 @@ const metadata = {
       description:
         'Determines the tab activation. When set to auto,\nthe tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys\nand the corresponding panel is displayed.\nWhen set to manual, the tab is only focused. The selection happens after pressing Space or Enter.',
       options: ['auto', 'manual'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'auto',
     },
   },
+  args: { alignment: 'start', activation: 'auto' },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcTabsArgs {
+  /** Returns the currently selected tab. */
   selected: string;
+  /** Sets the alignment for the tab headers */
   alignment: 'start' | 'end' | 'center' | 'justify';
+  /**
+   * Determines the tab activation. When set to auto,
+   * the tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys
+   * and the corresponding panel is displayed.
+   * When set to manual, the tab is only focused. The selection happens after pressing Space or Enter.
+   */
   activation: 'auto' | 'manual';
 }
+type Story = StoryObj<IgcTabsArgs>;
+
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcChange'],
   },
-};
+});
+
+registerIcon(
+  'home',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_home_24px.svg'
+);
+
+registerIcon(
+  'search',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_search_24px.svg'
+);
+
+registerIcon(
+  'favorite',
+  'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg'
+);
 
 const remove = (e: MouseEvent) => {
   (e.target as HTMLElement).closest('igc-tab')?.remove();
@@ -80,8 +115,8 @@ const tabs = Array.from(
   )
 );
 
-const Template: Story<ArgTypes, Context> = (
-  { activation, alignment }: ArgTypes,
+const Template = (
+  { activation, alignment }: IgcTabsArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-tabs
@@ -134,8 +169,8 @@ const Template: Story<ArgTypes, Context> = (
   </igc-tabs>
 `;
 
-const TabStrip: Story<ArgTypes, Context> = (
-  { activation, alignment }: ArgTypes,
+const TabStrip = (
+  { activation, alignment }: IgcTabsArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-tabs
@@ -147,8 +182,8 @@ const TabStrip: Story<ArgTypes, Context> = (
   </igc-tabs>
 `;
 
-const RemovableTabs: Story<ArgTypes, Context> = (
-  { activation, alignment }: ArgTypes,
+const RemovableTabs = (
+  { activation, alignment }: IgcTabsArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-tabs
@@ -160,6 +195,6 @@ const RemovableTabs: Story<ArgTypes, Context> = (
   </igc-tabs>
 `;
 
-export const Basic = Template.bind({});
-export const Removable = RemovableTabs.bind({});
-export const Strip = TabStrip.bind({});
+export const Basic: Story = Template.bind({});
+export const Removable: Story = RemovableTabs.bind({});
+export const Strip: Story = TabStrip.bind({});

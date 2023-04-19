@@ -1,18 +1,31 @@
 @use '../../../../styles/utilities' as *;
 
+$hover-background: var(--hover-background, color(gray, 600, .06)) !default;
+$focus-background: var(--focus-background, color(gray, 600, .12)) !default;
+$hover-invalid-background: var(--hover-invalid-background, color(error, 500, .06)) !default;
+$focus-invalid-background: var(--focus-invalid-background, color(error, 500, .12)) !default;
+$hover-selected-background: var(--hover-selected-background, color(secondary, 500, .06)) !default;
+$focus-selected-background: var(--focus-selected-background, color(secondary, 500, .12)) !default;
+
 [part~='base'] {
+    gap: rem(2px);
+
     &:hover [part='control'] {
-        background: color(gray, 600, .06);
+        background: $hover-background;
+    }
+
+    &:focus-within [part='control'] {
+        background: $focus-background;
     }
 }
 
 [part='base checked'] {
     &:hover [part~='control'] {
-        background: color(secondary, 500, .06);
+        background: $hover-selected-background;
     }
 
     &:focus-within [part~='control'] {
-        background: color(secondary, 500, .12);
+        background: $focus-selected-background;
     }
 }
 
@@ -20,6 +33,17 @@
     [part='control checked'] {
         &::before {
             background: color(error, 500);
+        }
+    }
+
+    [part~='base'],
+    [part='base checked'] {
+        &:hover [part~='control'] {
+            background: $hover-invalid-background;
+        }
+
+        &:focus-within [part~='control'] {
+            background: $focus-invalid-background;
         }
     }
 }

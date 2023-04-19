@@ -1,6 +1,8 @@
 @use '../../../styles/utilities' as *;
 
 :host {
+    @include type-style('caption');
+
     color: contrast-color(gray, 100);
     background: color(gray, 100);
     padding: rem(8px) rem(12px);

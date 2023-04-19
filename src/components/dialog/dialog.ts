@@ -56,12 +56,26 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @query('dialog', true)
   private dialog!: HTMLDialogElement;
 
+  /* blazorSuppress */
   /**
    * Whether the dialog should be closed when pressing the 'ESCAPE' button.
+   * @deprecated since version 4.2.3. Use `keepOpenOnEscape` instead.
    * @attr close-on-escape
    */
   @property({ type: Boolean, attribute: 'close-on-escape' })
-  public closeOnEscape = true;
+  public set closeOnEscape(value: boolean) {
+    this.keepOpenOnEscape = !value;
+  }
+  public get closeOnEscape(): boolean {
+    return !this.keepOpenOnEscape;
+  }
+
+  /**
+   * Whether the dialog should be kept open when pressing the 'ESCAPE' button.
+   * @attr keep-open-on-escape
+   */
+  @property({ type: Boolean, attribute: 'keep-open-on-escape' })
+  public keepOpenOnEscape = false;
 
   /**
    * Whether the dialog should be closed when clicking outside of it.
@@ -167,7 +181,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   private handleCancel(event: Event) {
     event.preventDefault();
 
-    if (this.closeOnEscape) {
+    if (!this.keepOpenOnEscape) {
       this.hideWithEvent();
     }
   }

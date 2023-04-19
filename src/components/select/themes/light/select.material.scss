@@ -110,7 +110,7 @@ $active-border-width: rem(2px) !default;
 [part='helper-text'] {
     color: color(gray, 700);
     margin-top: rem(5px);
-    padding: 0 rem(16px);
+    padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
 }
 
 :host([disabled]) {
