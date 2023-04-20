@@ -67,7 +67,8 @@ $thumb-radius: math.div($thumb-size, 2);
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='inactive'] {
         background: $inactive-disabled-background;
     }
