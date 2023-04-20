@@ -63,7 +63,8 @@ $disabled-color: var(--disabled-color, utils.color(gray, 300)) !default;
     box-shadow: 0 0 0 utils.rem(4px) utils.color(error, 200, .87);
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     pointer-events: none;
     user-select: none;
 
@@ -75,14 +76,18 @@ $disabled-color: var(--disabled-color, utils.color(gray, 300)) !default;
 }
 
 :host([disabled]) [part='control']::after,
-:host([disabled]) [part='control checked']::after {
+:host(:disabled) [part='control']::after,
+:host([disabled]) [part='control checked']::after,
+:host(:disabled) [part='control checked']::after {
     border-color: $disabled-color;
 }
 
-:host([disabled]) [part='control checked']::before {
+:host([disabled]) [part='control checked']::before,
+:host(:disabled) [part='control checked']::before {
     background: $disabled-color;
 }
 
-:host([disabled]) [part~='label'] {
+:host([disabled]) [part~='label'],
+:host(:disabled) [part~='label'] {
     color: $disabled-color;
 }

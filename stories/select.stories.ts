@@ -308,35 +308,37 @@ const Template = (
   }: IgcSelectArgs,
   { globals: { direction } }: Context
 ) => html`
-  <igc-select
-    value=${value}
-    label=${ifDefined(label)}
-    name=${ifDefined(name)}
-    placeholder=${ifDefined(placeholder)}
-    size=${size}
-    ?open=${open}
-    ?autofocus=${autofocus}
-    ?outlined=${outlined}
-    ?required=${required}
-    ?disabled=${disabled}
-    ?invalid=${invalid}
-    .dir=${direction}
-  >
-    <header slot="header">Sample Header</header>
-    <footer slot="footer">Sample Footer</footer>
-    <span slot="helper-text">Sample helper text.</span>
-    <igc-select-header>Tasks</igc-select-header>
-    ${items.map(
-      (item) => html` <igc-select-item
-        value=${item.value}
-        ?disabled=${item.disabled}
-        ?selected=${item.selected}
-      >
-        ${item.text}
-        <igc-icon slot="suffix" name="github"></igc-icon>
-      </igc-select-item>`
-    )}
-  </igc-select>
+  <fieldset disabled>
+    <igc-select
+      value=${value}
+      label=${ifDefined(label)}
+      name=${ifDefined(name)}
+      placeholder=${ifDefined(placeholder)}
+      size=${size}
+      ?open=${open}
+      ?autofocus=${autofocus}
+      ?outlined=${outlined}
+      ?required=${required}
+      ?disabled=${disabled}
+      ?invalid=${invalid}
+      .dir=${direction}
+    >
+      <header slot="header">Sample Header</header>
+      <footer slot="footer">Sample Footer</footer>
+      <span slot="helper-text">Sample helper text.</span>
+      <igc-select-header>Tasks</igc-select-header>
+      ${items.map(
+        (item) => html` <igc-select-item
+          value=${item.value}
+          ?disabled=${item.disabled}
+          ?selected=${item.selected}
+        >
+          ${item.text}
+          <igc-icon slot="suffix" name="github"></igc-icon>
+        </igc-select-item>`
+      )}
+    </igc-select>
+  </fieldset>
 `;
 
 const FormTemplate = () => checkoutForm;

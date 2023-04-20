@@ -96,16 +96,18 @@ const Template = (
   { labelPosition, checked, disabled, required, invalid }: IgcRadioArgs,
   { globals: { direction } }: Context
 ) => html`
-  <igc-radio
-    label-position="${ifDefined(labelPosition)}"
-    .disabled="${disabled}"
-    .checked="${checked}"
-    .required=${required}
-    .invalid="${invalid}"
-    dir=${ifDefined(direction)}
-  >
-    Label
-  </igc-radio>
+  <fieldset disabled>
+    <igc-radio
+      label-position="${ifDefined(labelPosition)}"
+      .disabled="${disabled}"
+      .checked="${checked}"
+      .required=${required}
+      .invalid="${invalid}"
+      dir=${ifDefined(direction)}
+    >
+      Label
+    </igc-radio>
+  </fieldset>
 `;
 
 export const Basic: Story = Template.bind({});

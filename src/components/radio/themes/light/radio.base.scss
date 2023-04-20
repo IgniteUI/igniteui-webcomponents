@@ -86,7 +86,8 @@ input[type='radio'] {
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     pointer-events: none;
     user-select: none;
 

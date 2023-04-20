@@ -162,11 +162,13 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
     }
 }
 
-:host([disabled]) [part~='label'] {
+:host([disabled]) [part~='label'],
+:host(:disabled) [part~='label'] {
     color: $disabled-color;
 }
 
 :host([disabled]) [part~='control'],
+:host(:disabled) [part~='control'],
 :host([disabled][invalid]) [part~='control'] {
     &::after {
         box-shadow: inset 0 0 0 1px $disabled-color;
@@ -174,6 +176,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
 }
 
 :host([disabled]) [part='control checked'],
+:host(:disabled) [part='control checked'],
 :host([disabled][invalid]) [part='control checked'] {
     &::after {
         background: $disabled-color;
@@ -181,6 +184,7 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
 }
 
 :host([disabled][indeterminate]) [part~='control'],
+:host(:disabled[indeterminate]) [part~='control'],
 :host([disabled][invalid][indeterminate]) [part~='control'] {
     &::before {
         background: $disabled-color;

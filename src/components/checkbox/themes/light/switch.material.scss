@@ -76,7 +76,8 @@ label {
     animation-fill-mode: forwards;
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='thumb'] {
         box-shadow: var(--ig-elevation-1);
         background: color(gray, 200);

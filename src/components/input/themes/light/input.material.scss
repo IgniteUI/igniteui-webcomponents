@@ -262,7 +262,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     pointer-events: none;
 
     [part~='input'],
@@ -415,7 +416,8 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([outlined])[disabled]) {
+:host(:not([outlined])[disabled]),
+:host(:not([outlined]):disabled) {
     [part~='input'],
     [part='label'],
     [part='prefix'],

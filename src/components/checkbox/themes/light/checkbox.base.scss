@@ -146,7 +146,8 @@ label {
     pointer-events: none;
 }
 
-:host([disabled][indeterminate]) {
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
     [part~='control'] {
         &::after {
             background: color(gray, 300);

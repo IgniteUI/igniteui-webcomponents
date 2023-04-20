@@ -299,34 +299,36 @@ const Template = (
   }: IgcComboComponent<City>,
   { globals: { direction } }: Context
 ) => html`
-  <igc-combo
-    .data=${cities}
-    .dir=${direction}
-    .itemTemplate=${itemTemplate}
-    .groupHeaderTemplate=${groupHeaderTemplate}
-    label=${ifDefined(label)}
-    name=${ifDefined(name)}
-    placeholder=${ifDefined(placeholder)}
-    placeholder-search=${ifDefined(placeholderSearch)}
-    dir=${ifDefined(direction)}
-    value-key="id"
-    display-key="name"
-    group-key="country"
-    group-sorting="${ifDefined(groupSorting)}"
-    ?case-sensitive-icon=${caseSensitiveIcon}
-    ?disable-filtering=${disableFiltering}
-    ?open=${open}
-    ?autofocus=${autofocus}
-    ?autofocus-list=${autofocusList}
-    ?outlined=${outlined}
-    ?required=${required}
-    ?disabled=${disabled}
-    ?invalid=${invalid}
-    ?single-select=${singleSelect}
-  >
-    <igc-icon slot="prefix" name="location"></igc-icon>
-    <span slot="helper-text">Sample helper text.</span>
-  </igc-combo>
+  <fieldset disabled>
+    <igc-combo
+      .data=${cities}
+      .dir=${direction}
+      .itemTemplate=${itemTemplate}
+      .groupHeaderTemplate=${groupHeaderTemplate}
+      label=${ifDefined(label)}
+      name=${ifDefined(name)}
+      placeholder=${ifDefined(placeholder)}
+      placeholder-search=${ifDefined(placeholderSearch)}
+      dir=${ifDefined(direction)}
+      value-key="id"
+      display-key="name"
+      group-key="country"
+      group-sorting="${ifDefined(groupSorting)}"
+      ?case-sensitive-icon=${caseSensitiveIcon}
+      ?disable-filtering=${disableFiltering}
+      ?open=${open}
+      ?autofocus=${autofocus}
+      ?autofocus-list=${autofocusList}
+      ?outlined=${outlined}
+      ?required=${required}
+      ?disabled=${disabled}
+      ?invalid=${invalid}
+      ?single-select=${singleSelect}
+    >
+      <igc-icon slot="prefix" name="location"></igc-icon>
+      <span slot="helper-text">Sample helper text.</span>
+    </igc-combo>
+  </fieldset>
 `;
 
 export const Basic: Story = Template.bind({});

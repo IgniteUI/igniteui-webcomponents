@@ -15,7 +15,8 @@
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [role='combobox'] {
         pointer-events: none;
     }

@@ -40,7 +40,8 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='helper-text'] ::slotted([slot='helper-text']) {
         color: color(gray, 500);
     }

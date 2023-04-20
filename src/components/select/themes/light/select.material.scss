@@ -113,7 +113,8 @@ $active-border-width: rem(2px) !default;
     padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='toggle-icon'],
     ::slotted([slot='helper-text']) {
         color: color(gray, 500);

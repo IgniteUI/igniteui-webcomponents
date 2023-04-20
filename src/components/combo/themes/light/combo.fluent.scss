@@ -12,7 +12,8 @@
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     igc-input::part(label),
     igc-input::part(input)::placeholder,
     ::slotted([slot='helper-text']) {
