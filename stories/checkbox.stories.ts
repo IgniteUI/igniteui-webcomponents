@@ -125,17 +125,6 @@ const Template = (
     >
       Label
     </igc-checkbox>
-    <fieldset disabled>
-      <igc-checkbox
-        label-position=${ifDefined(labelPosition)}
-        .checked=${checked}
-        .indeterminate=${indeterminate}
-        .disabled=${disabled}
-        dir=${ifDefined(direction)}
-      >
-        Label
-      </igc-checkbox>
-    </fieldset>
   `;
 };
 
