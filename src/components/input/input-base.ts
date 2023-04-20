@@ -15,6 +15,7 @@ import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
 import { styles as fluent } from './themes/light/input.fluent.css.js';
 import { styles as indigo } from './themes/light/input.indigo.css.js';
 import { styles as material } from './themes/light/input.material.css.js';
+import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
@@ -28,8 +29,10 @@ export interface IgcInputEventMap {
 @themes({ bootstrap, material, fluent, indigo })
 @blazorDeepImport
 export abstract class IgcInputBaseComponent
-  extends SizableMixin(
-    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
+  extends FormAssociatedMixin(
+    SizableMixin(
+      EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
+    )
   )
   implements ReactiveTheme
 {
@@ -37,6 +40,7 @@ export abstract class IgcInputBaseComponent
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
+
   public static styles = styles;
   private static readonly increment = createCounter();
 
@@ -69,32 +73,11 @@ export abstract class IgcInputBaseComponent
   public override dir: Direction = 'auto';
 
   /**
-   * The name attribute of the control.
-   * @attr
-   */
-  @property()
-  public name!: string;
-
-  /**
    * Whether the control will have outlined appearance.
    * @attr
    */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
-
-  /**
-   * Makes the control a required field.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public required = false;
-
-  /**
-   * Makes the control a disabled field.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
 
   /**
    * Makes the control a readonly field.
@@ -124,7 +107,12 @@ export abstract class IgcInputBaseComponent
 
   public override connectedCallback() {
     super.connectedCallback();
-    this.shadowRoot!.addEventListener('slotchange', () => this.requestUpdate());
+    this.shadowRoot!.addEventListener('slotchange', this.handleSlotChange);
+  }
+
+  public override disconnectedCallback() {
+    this.shadowRoot!.removeEventListener('slotchange', this.handleSlotChange);
+    super.disconnectedCallback();
   }
 
   public themeAdopted(controller: ThemeController): void {
@@ -144,6 +132,7 @@ export abstract class IgcInputBaseComponent
   }
 
   protected abstract renderInput(): TemplateResult;
+  protected handleSlotChange = () => this.requestUpdate();
 
   protected resolvePartNames(base: string) {
     return {

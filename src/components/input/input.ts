@@ -6,8 +6,9 @@ import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
-import { partNameMap } from '../common/util.js';
+import { partNameMap, format, asNumber, isDefined } from '../common/util.js';
 import { IgcInputBaseComponent } from './input-base.js';
+import messages from '../common/localization/validation-en.js';
 
 /**
  * @element igc-input
@@ -77,13 +78,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public pattern!: string;
 
   /**
-   * Controls the validity of the control.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public invalid = false;
-
-  /**
    * The minlength attribute of the control.
    * @attr
    */
@@ -135,14 +129,105 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property({ type: Number })
   public override tabIndex = 0;
 
-  /** Checks for validity of the control and shows the browser message if it's invalid. */
-  public reportValidity() {
-    return this.input.reportValidity();
+  @watch('min', { waitUntilFirstUpdate: true })
+  @watch('max', { waitUntilFirstUpdate: true })
+  @watch('minlength', { waitUntilFirstUpdate: true })
+  @watch('maxlength', { waitUntilFirstUpdate: true })
+  @watch('pattern', { waitUntilFirstUpdate: true })
+  @watch('step', { waitUntilFirstUpdate: true })
+  protected constraintsChanged() {
+    this.updateValidity();
   }
 
-  /** Checks for validity of the control and emits the invalid event if it invalid. */
-  public checkValidity() {
-    return this.input.checkValidity();
+  @watch('value')
+  protected valueChange() {
+    const value = this.value ? this.value : null;
+    this.setFormValue(value, value);
+    this.updateValidity();
+    this.setInvalidState();
+  }
+
+  private numberValidation(message: string) {
+    const flags: ValidityStateFlags = {};
+    let msg = '';
+
+    const hasValue = isDefined(this.value);
+    const valueAsNumber = asNumber(this.value);
+
+    if (this.required && !hasValue) {
+      flags.valueMissing = true;
+      msg = messages.required;
+    }
+
+    if (isDefined(this.min) && hasValue && valueAsNumber < asNumber(this.min)) {
+      flags.rangeUnderflow = true;
+      msg = format(messages.min, `${this.min}`);
+    }
+
+    if (isDefined(this.max) && hasValue && valueAsNumber > asNumber(this.max)) {
+      flags.rangeOverflow = true;
+      msg = format(messages.max, `${this.max}`);
+    }
+
+    if (
+      isDefined(this.step) &&
+      hasValue &&
+      (valueAsNumber - asNumber(this.min)) % asNumber(this.step, 1) !== 0
+    ) {
+      flags.stepMismatch = true;
+      msg = `Value does not conform to step constrain`;
+    }
+
+    if (message) {
+      flags.customError = true;
+      msg = message;
+    }
+
+    this.setValidity(flags, msg);
+  }
+
+  private stringValidation(message: string) {
+    const flags: ValidityStateFlags = {};
+    let msg = '';
+
+    if (this.required && !this.value) {
+      flags.valueMissing = true;
+      msg = messages.required;
+    }
+
+    if (this.minlength && this.value?.length < this.minlength) {
+      flags.tooShort = true;
+      msg = format(messages.minLength, `${this.minlength}`);
+    }
+
+    if (this.maxlength && this.value?.length > this.maxlength) {
+      flags.tooLong = true;
+      msg = format(messages.maxLength, `${this.maxlength}`);
+    }
+
+    if (this.pattern && !new RegExp(this.pattern, 'u').test(this.value)) {
+      flags.patternMismatch = true;
+      msg = messages.pattern;
+    }
+
+    if (message) {
+      flags.customError = true;
+      msg = message;
+    }
+
+    this.setValidity(flags, msg);
+  }
+
+  protected override updateValidity(message = '') {
+    this.type === 'number'
+      ? this.numberValidation(message)
+      : this.stringValidation(message);
+  }
+
+  protected override formResetCallback() {
+    super.formResetCallback();
+    this.value = this.getAttribute('value') ?? '';
+    this.invalid = false;
   }
 
   /** Replaces the selected text in the input. */
@@ -155,15 +240,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   ) {
     super.setRangeText(replacement, start, end, selectMode);
     this.value = this.input.value;
-  }
-
-  /**
-   * Sets a custom validation message for the control.
-   * As long as `message` is not empty, the control is considered invalid.
-   */
-  public setCustomValidity(message: string) {
-    this.input.setCustomValidity(message);
-    this.invalid = !this.input.checkValidity();
   }
 
   /** Selects all text within the input. */
@@ -183,10 +259,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.handleChange();
   }
 
-  private handleInvalid() {
-    this.invalid = true;
-  }
-
   private handleInput() {
     this.value = this.input.value;
     this.emitEvent('igcInput', { detail: this.value });
@@ -197,41 +269,43 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  @watch('value', { waitUntilFirstUpdate: true })
-  protected handleValueChange() {
-    this.updateComplete.then(
-      () => (this.invalid = !this.input.checkValidity())
-    );
+  protected override handleFocus(): void {
+    this._dirty = true;
+    super.handleFocus();
+  }
+
+  protected override handleBlur(): void {
+    this.invalid = !this.checkValidity();
+    super.handleBlur();
   }
 
   protected renderInput() {
     return html`
       <input
-        id="${this.inputId}"
-        part="${partNameMap(this.resolvePartNames('input'))}"
-        name="${ifDefined(this.name)}"
-        type="${ifDefined(this.type)}"
-        pattern="${ifDefined(this.pattern)}"
-        placeholder="${ifDefined(this.placeholder)}"
-        .value="${live(this.value)}"
-        ?readonly="${this.readonly}"
-        ?disabled="${this.disabled}"
-        ?required="${this.required}"
-        ?autofocus="${this.autofocus}"
+        id=${this.inputId}
+        part=${partNameMap(this.resolvePartNames('input'))}
+        name=${ifDefined(this.name)}
+        type=${ifDefined(this.type)}
+        pattern=${ifDefined(this.pattern)}
+        placeholder=${ifDefined(this.placeholder)}
+        .value=${live(this.value)}
+        ?readonly=${this.readonly}
+        ?disabled=${this.disabled}
+        ?required=${this.required}
+        ?autofocus=${this.autofocus}
         tabindex=${this.tabIndex}
-        autocomplete="${ifDefined(this.autocomplete as any)}"
-        inputmode="${ifDefined(this.inputmode)}"
-        min="${ifDefined(this.min)}"
-        max="${ifDefined(this.max)}"
-        minlength="${ifDefined(this.minlength)}"
-        maxlength="${ifDefined(this.maxlength)}"
-        step="${ifDefined(this.step)}"
-        aria-invalid="${this.invalid ? 'true' : 'false'}"
-        @invalid="${this.handleInvalid}"
-        @change="${this.handleChange}"
-        @input="${this.handleInput}"
-        @focus="${this.handleFocus}"
-        @blur="${this.handleBlur}"
+        autocomplete=${ifDefined(this.autocomplete as any)}
+        inputmode=${ifDefined(this.inputmode)}
+        min=${ifDefined(this.min)}
+        max=${ifDefined(this.max)}
+        minlength=${ifDefined(this.minlength)}
+        maxlength=${ifDefined(this.maxlength)}
+        step=${ifDefined(this.step)}
+        aria-invalid=${this.invalid ? 'true' : 'false'}
+        @change=${this.handleChange}
+        @input=${this.handleInput}
+        @focus=${this.handleFocus}
+        @blur=${this.handleBlur}
       />
     `;
   }

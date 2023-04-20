@@ -268,7 +268,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   private get targetDatePart(): DatePart | undefined {
     let result;
 
-    if (this.hasFocus) {
+    if (this.focused) {
       const partType = this._inputDateParts.find(
         (p) =>
           p.start <= this.inputSelection.start &&
@@ -311,7 +311,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   /** Checks for validity of the control and shows the browser message if it's invalid. */
-  public reportValidity() {
+  public override reportValidity() {
     const state = this._value
       ? Object.keys(this.validate()!).length === 0
       : this.input.reportValidity();
@@ -321,7 +321,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   /** Check for validity of the control */
-  public checkValidity() {
+  public override checkValidity() {
     if (this.disabled) {
       return this.input.checkValidity();
     }
@@ -368,7 +368,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected updateMask() {
-    if (this.hasFocus) {
+    if (this.focused) {
       this.maskedValue = this.getMaskedValue();
     } else {
       if (!this.value || !DateTimeUtil.isValidDate(this.value)) {
@@ -407,13 +407,13 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected handleDragLeave() {
-    if (!this.hasFocus) {
+    if (!this.focused) {
       this.updateMask();
     }
   }
 
   protected handleDragEnter() {
-    if (!this.hasFocus) {
+    if (!this.focused) {
       this.maskedValue = this.getMaskedValue();
     }
   }
@@ -496,7 +496,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private onWheel(event: WheelEvent) {
-    if (!this.hasFocus) {
+    if (!this.focused) {
       return;
     }
 
@@ -625,14 +625,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected override handleFocus() {
-    this.hasFocus = true;
+    this.focused = true;
     this._oldValue = this.value;
     this.updateMask();
     this.emitEvent('igcFocus');
   }
 
   protected override handleBlur() {
-    this.hasFocus = false;
+    this.focused = false;
 
     if (!this.isComplete() && this.maskedValue !== this.emptyMask) {
       const parse = this.parseDate(this.maskedValue);

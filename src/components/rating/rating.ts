@@ -8,7 +8,7 @@ import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { clamp, isLTR } from '../common/util.js';
+import { clamp, format, isLTR } from '../common/util.js';
 import { styles } from './rating.base.css.js';
 import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
@@ -17,7 +17,7 @@ import { styles as indigo } from './rating.indigo.css.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import IgcIconComponent from '../icon/icon.js';
-import type { FormAssociatedElement } from '../common/types';
+import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 
 defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
 
@@ -50,21 +50,15 @@ export interface IgcRatingEventMap {
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
 @themes({ fluent, bootstrap, indigo })
-export default class IgcRatingComponent
-  extends SizableMixin(
+export default class IgcRatingComponent extends FormAssociatedMixin(
+  SizableMixin(
     EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
   )
-  implements FormAssociatedElement
-{
+) {
   public static readonly tagName = 'igc-rating';
-  public static readonly formAssociated = true;
-
   public static styles = [styles];
 
   protected ratingSymbols: Array<IgcRatingSymbolComponent> = [];
-
-  #internals: ElementInternals;
-  #disabled = false;
 
   @query('[part="symbols"]', true)
   protected container!: HTMLElement;
@@ -89,38 +83,9 @@ export default class IgcRatingComponent
   protected get valueText() {
     // Skip IEEE 754 representation for screen readers
     const value = this.round(this.value);
-
     return this.valueFormat
-      ? this.valueFormat
-          .replace(/\{0\}/gm, `${value}`)
-          .replace(/\{1\}/gm, `${this.max}`)
+      ? format(this.valueFormat, `${value}`, `${this.max}`)
       : `${value} of ${this.max}`;
-  }
-
-  /** Returns the HTMLFormElement associated with this element. */
-  public get form() {
-    return this.#internals.form;
-  }
-
-  /**
-   * Returns a ValidityState object which represents the different validity states
-   * the element can be in, with respect to constraint validation.
-   */
-  public get validity() {
-    return this.#internals.validity;
-  }
-
-  /** A string containing the validation message of this element. */
-  public get validationMessage() {
-    return this.#internals.validationMessage;
-  }
-
-  /**
-   * A boolean value which returns true if the element is a submittable element
-   * that is a candidate for constraint validation.
-   */
-  public get willValidate() {
-    return this.#internals.willValidate;
   }
 
   /**
@@ -141,13 +106,6 @@ export default class IgcRatingComponent
    */
   @property({ type: Number })
   public step = 1;
-
-  /**
-   * The name attribute of the control
-   * @attr
-   */
-  @property()
-  public name!: string;
 
   /**
    * The label of the control.
@@ -172,22 +130,6 @@ export default class IgcRatingComponent
    */
   @property({ type: Number })
   public value = 0;
-
-  /**
-   * The disabled state of the component
-   * @attr [disabled=false]
-   */
-  @property({ type: Boolean, reflect: true })
-  public get disabled() {
-    return this.#disabled;
-  }
-
-  public set disabled(value: boolean) {
-    const old = this.#disabled;
-    this.#disabled = value;
-    this.toggleAttribute('disabled', this.#disabled);
-    this.requestUpdate('disabled', old);
-  }
 
   /**
    * Sets hover preview behavior for the component
@@ -223,7 +165,7 @@ export default class IgcRatingComponent
   @watch('value')
   protected handleValueChange() {
     this.value = clamp(isNaN(this.value) ? 0 : this.value, 0, this.max);
-    this.#internals.setFormValue(this.value.toString());
+    this.setFormValue(this.value.toString());
   }
 
   @watch('step')
@@ -241,7 +183,6 @@ export default class IgcRatingComponent
 
   constructor() {
     super();
-    this.#internals = this.attachInternals();
     this.addEventListener('keydown', this.handleKeyDown);
   }
 
@@ -332,13 +273,22 @@ export default class IgcRatingComponent
     this.requestUpdate();
   }
 
-  protected formResetCallback() {
-    this.value = parseFloat(this.getAttribute('value')!);
+  protected override updateValidity(message: string): void {
+    const flags: ValidityStateFlags = {};
+    let msg = '';
+
+    if (message) {
+      flags.customError = true;
+      msg = message;
+    }
+
+    this.setValidity(flags, msg);
   }
 
-  protected formDisabledCallback(state: boolean) {
-    this.#disabled = state;
-    this.requestUpdate();
+  protected override formResetCallback() {
+    super.formResetCallback();
+    this.value = parseFloat(this.getAttribute('value')!);
+    this.invalid = false;
   }
 
   protected calcNewValue(x: number) {
@@ -393,29 +343,6 @@ export default class IgcRatingComponent
    */
   public stepDown(n = 1) {
     this.value -= this.round(n * this.step);
-  }
-
-  /** Checks if an element meets any constraint validation rules applied to it. */
-  public checkValidity() {
-    return this.#internals.checkValidity();
-  }
-
-  /**
-   * Checks if an element meets any constraint validation rules applied to it,
-   * and also sends a validation message to the user agent.
-   */
-  public reportValidity() {
-    return this.#internals.reportValidity();
-  }
-
-  /**
-   * Sets a custom validation message for the control.
-   * As long as `message` is not empty, the control is considered invalid.
-   */
-  public setCustomValidity(message: string) {
-    message
-      ? this.#internals.setValidity({ customError: true }, message)
-      : this.#internals.setValidity({});
   }
 
   protected *renderSymbols() {

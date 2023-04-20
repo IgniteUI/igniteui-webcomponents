@@ -7,7 +7,7 @@ import {
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcSwitchComponent } from '../../index.js';
-import { formSubmitter } from '../common/utils.spec.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Switch', () => {
   before(() => {
@@ -204,115 +204,73 @@ describe('Switch', () => {
   });
 
   describe('Form integration', () => {
-    let form: HTMLFormElement;
-    let switchEl: IgcSwitchComponent;
+    const spec = new FormAssociatedTestBed<IgcSwitchComponent>(
+      html`<igc-switch name="checkbox"
+        >I have reviewed ToC and I agree</igc-switch
+      >`
+    );
 
     beforeEach(async () => {
-      form = await fixture<HTMLFormElement>(html`
-        <form>
-          <fieldset>
-            <igc-switch name="switch">
-              I have reviewed ToC and I agree
-            </igc-switch>
-          </fieldset>
-        </form>
-      `);
-      switchEl = form.querySelector('igc-switch')!;
+      await spec.setup(IgcSwitchComponent.tagName);
     });
 
     it('is form associated', async () => {
-      expect(switchEl.form).to.equal(form);
+      expect(spec.element.form).to.equal(spec.form);
     });
 
     it('is associated on submit with default value "on"', async () => {
-      const submit = formSubmitter(form);
+      spec.element.checked = true;
+      await elementUpdated(spec.element);
 
-      switchEl.checked = true;
-      await elementUpdated(switchEl);
-
-      submit((data) => expect(data.get('switch')).to.equal('on'));
+      expect(spec.submit()?.get(spec.element.name)).to.equal('on');
     });
 
-    it('is associated on submit with value', async () => {
-      const submit = formSubmitter(form);
+    it('is associated on submit with passed value', async () => {
+      spec.element.checked = true;
+      spec.element.value = 'accepted';
+      await elementUpdated(spec.element);
 
-      switchEl.checked = true;
-      switchEl.value = 'toc-accepted';
-      await elementUpdated(switchEl);
-
-      submit((data) => expect(data.get('switch')).to.equal('toc-accepted'));
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
     });
 
     it('is not associated on submit if not checked', async () => {
-      const submit = formSubmitter(form);
-
-      submit((data) => expect(data.get('switch')).to.be.null);
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
     });
 
-    it('is correctly reset when the parent form is reset', async () => {
-      switchEl.checked = true;
-      await elementUpdated(switchEl);
+    it('is correctly reset on form reset', async () => {
+      spec.element.checked = true;
+      await elementUpdated(spec.element);
 
-      form.reset();
-      expect(switchEl.checked).to.be.false;
+      spec.reset();
+      expect(spec.element.checked).to.be.false;
     });
 
-    it('correctly reflects disabled state based on ancestor disabled state', async () => {
-      const fieldset = form.querySelector('fieldset')!;
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
 
-      fieldset.disabled = true;
-      await elementUpdated(form);
-      expect(switchEl.disabled).to.be.true;
-
-      fieldset.disabled = false;
-      await elementUpdated(form);
-      expect(switchEl.disabled).to.be.false;
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
     });
 
-    describe('constraint validation and validation states', () => {
-      it('required constraint', async () => {
-        const submit = formSubmitter(form);
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
 
-        switchEl.required = true;
-        await elementUpdated(switchEl);
+      spec.element.checked = true;
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
 
-        submit();
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
 
-        expect(switchEl.checkValidity()).to.be.false;
-        expect(switchEl.invalid).to.be.true;
-
-        form.reset();
-
-        switchEl.required = false;
-        await elementUpdated(switchEl);
-
-        submit();
-
-        expect(switchEl.checkValidity()).to.be.true;
-        expect(switchEl.invalid).to.be.false;
-      });
-
-      it('custom error constraint', async () => {
-        const submit = formSubmitter(form);
-
-        switchEl.setCustomValidity('no');
-        await elementUpdated(switchEl);
-
-        submit();
-
-        expect(switchEl.checkValidity()).to.be.false;
-        expect(switchEl.invalid).to.be.true;
-
-        form.reset();
-
-        switchEl.setCustomValidity('');
-        await elementUpdated(switchEl);
-
-        submit();
-
-        expect(switchEl.checkValidity()).to.be.true;
-        expect(switchEl.invalid).to.be.false;
-      });
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });

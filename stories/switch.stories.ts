@@ -19,37 +19,14 @@ const metadata: Meta<IgcSwitchComponent> = {
     },
   },
   argTypes: {
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
     value: {
       type: 'string',
       description: 'The value attribute of the control.',
       control: 'text',
     },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled state of the component',
-      control: 'boolean',
-      defaultValue: false,
-    },
     checked: {
       type: 'boolean',
       description: 'The checked state of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -65,35 +42,58 @@ const metadata: Meta<IgcSwitchComponent> = {
       description: 'Sets the aria-labelledby attribute for the control.',
       control: 'text',
     },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
   },
   args: {
-    disabled: false,
     checked: false,
-    required: false,
-    invalid: false,
     labelPosition: 'after',
+    required: false,
+    disabled: false,
+    invalid: false,
   },
 };
 
 export default metadata;
 
 interface IgcSwitchArgs {
-  /** The name attribute of the control. */
-  name: string;
   /** The value attribute of the control. */
   value: string;
-  /** The disabled state of the component */
-  disabled: boolean;
   /** The checked state of the control. */
   checked: boolean;
-  /** Makes the control a required field. */
-  required: boolean;
-  /** Controls the validity of the control. */
-  invalid: boolean;
   /** The label position of the control. */
   labelPosition: 'before' | 'after';
   /** Sets the aria-labelledby attribute for the control. */
   ariaLabelledby: string;
+  /** The name attribute of the control. */
+  name: string;
+  /** Makes the control a required field in form context. */
+  required: boolean;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
 }
 type Story = StoryObj<IgcSwitchArgs>;
 

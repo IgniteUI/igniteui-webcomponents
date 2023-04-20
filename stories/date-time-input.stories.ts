@@ -62,37 +62,14 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The prompt symbol to use for unfilled parts of the mask.',
       control: 'text',
     },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     value: {
       type: 'Date | null',
       description: 'The value of the input.',
       control: 'date',
     },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Makes the control a disabled field.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -112,6 +89,29 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -123,11 +123,11 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
   args: {
     spinLoop: true,
     locale: 'en',
-    invalid: false,
     outlined: false,
+    readonly: false,
     required: false,
     disabled: false,
-    readonly: false,
+    invalid: false,
     size: 'medium',
   },
 };
@@ -152,24 +152,24 @@ interface IgcDateTimeInputArgs {
   locale: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
-  /** Controls the validity of the control. */
-  invalid: boolean;
   /** The value of the input. */
   value: Date | null;
-  /** The name attribute of the control. */
-  name: string;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a required field. */
-  required: boolean;
-  /** Makes the control a disabled field. */
-  disabled: boolean;
   /** Makes the control a readonly field. */
   readonly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;
+  /** The name attribute of the control. */
+  name: string;
+  /** Makes the control a required field in form context. */
+  required: boolean;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }

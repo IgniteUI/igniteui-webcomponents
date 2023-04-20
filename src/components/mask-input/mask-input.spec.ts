@@ -5,6 +5,7 @@ import { defineComponents } from '../../index.js';
 import { MaskParser } from './mask-parser.js';
 import IgcMaskInputComponent from './mask-input.js';
 import IgcFormComponent from '../form/form.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Masked input', () => {
   before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
@@ -548,6 +549,7 @@ describe('Masked input', () => {
     });
   });
 
+  // TODO: Remove after igc-form removal
   describe('igc-form interaction', async () => {
     let form: IgcFormComponent;
 
@@ -583,6 +585,94 @@ describe('Masked input', () => {
 
       expect(form.submit()).to.equal(false);
       expect(masked.invalid).to.equal(true);
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcMaskInputComponent>(
+      html`<igc-mask-input name="mask"></igc-mask-input>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcMaskInputComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is not associated on submit if no value', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is associated on submit', async () => {
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
+    it('is associated on submit with value formatting enabled', async () => {
+      spec.element.valueMode = 'withFormatting';
+      spec.element.mask = 'C - C - C';
+      spec.element.value = 'A';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+      expect(spec.element.value).to.equal('A - _ - _');
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal('');
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils mask pattern constraint', async () => {
+      spec.element.mask = '00 99';
+      spec.element.value = '1';
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'aa';
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = '11';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });

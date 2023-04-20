@@ -52,3 +52,34 @@ export function createCounter() {
 export function isLTR(element: HTMLElement) {
   return getComputedStyle(element).getPropertyValue('direction') === 'ltr';
 }
+
+/**
+ * Builds a string from format specifiers and replacement parameters.
+ *
+ * @example
+ * ```typescript
+ * format('{0} says "{1}".', 'John', 'Hello'); // 'John says "Hello".'
+ * ```
+ */
+export function format(template: string, ...params: string[]): string {
+  return template.replace(/{(\d+)}/g, function (match: string, index: number) {
+    if (index >= params.length) {
+      return match;
+    }
+
+    const value: string = params[index];
+    if (typeof value !== 'number' && !value) {
+      return '';
+    }
+    return value;
+  });
+}
+
+export function asNumber(value: unknown, fallback = 0) {
+  const parsed = parseFloat(value as string);
+  return isNaN(parsed) ? fallback : parsed;
+}
+
+export function isDefined<T = unknown>(value: T) {
+  return value !== undefined;
+}

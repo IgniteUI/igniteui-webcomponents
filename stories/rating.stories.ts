@@ -44,11 +44,6 @@ const metadata: Meta<IgcRatingComponent> = {
       control: 'number',
       defaultValue: '1',
     },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control',
-      control: 'text',
-    },
     label: {
       type: 'string',
       description: 'The label of the control.',
@@ -65,12 +60,6 @@ const metadata: Meta<IgcRatingComponent> = {
       description: 'The current value of the component',
       control: 'number',
       defaultValue: '0',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled state of the component',
-      control: 'boolean',
-      defaultValue: false,
     },
     hoverPreview: {
       type: 'boolean',
@@ -90,6 +79,29 @@ const metadata: Meta<IgcRatingComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -102,10 +114,12 @@ const metadata: Meta<IgcRatingComponent> = {
     max: '5',
     step: '1',
     value: '0',
-    disabled: false,
     hoverPreview: false,
     readonly: false,
     single: false,
+    required: false,
+    disabled: false,
+    invalid: false,
     size: 'large',
   },
 };
@@ -126,8 +140,6 @@ interface IgcRatingArgs {
    * Valid values are in the interval between 0 and 1 inclusive.
    */
   step: number;
-  /** The name attribute of the control */
-  name: string;
   /** The label of the control. */
   label: string;
   /**
@@ -139,14 +151,20 @@ interface IgcRatingArgs {
   valueFormat: string;
   /** The current value of the component */
   value: number;
-  /** The disabled state of the component */
-  disabled: boolean;
   /** Sets hover preview behavior for the component */
   hoverPreview: boolean;
   /** Sets the readonly state of the component */
   readonly: boolean;
   /** Toggles single selection visual mode. */
   single: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** Makes the control a required field in form context. */
+  required: boolean;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }

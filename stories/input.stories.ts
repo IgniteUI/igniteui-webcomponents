@@ -42,12 +42,6 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The pattern attribute of the control.',
       control: 'text',
     },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     minlength: {
       type: 'number',
       description: 'The minlength attribute of the control.',
@@ -90,26 +84,9 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'text',
       defaultValue: '',
     },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Makes the control a disabled field.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -129,6 +106,29 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -139,13 +139,13 @@ const metadata: Meta<IgcInputComponent> = {
   },
   args: {
     type: 'text',
-    invalid: false,
     tabIndex: '0',
     value: '',
     outlined: false,
+    readonly: false,
     required: false,
     disabled: false,
-    readonly: false,
+    invalid: false,
     size: 'medium',
   },
 };
@@ -167,8 +167,6 @@ interface IgcInputArgs {
     | 'decimal';
   /** The pattern attribute of the control. */
   pattern: string;
-  /** Controls the validity of the control. */
-  invalid: boolean;
   /** The minlength attribute of the control. */
   minlength: number;
   /** The maxlength attribute of the control. */
@@ -186,20 +184,22 @@ interface IgcInputArgs {
   tabIndex: number;
   /** The value of the control. */
   value: string;
-  /** The name attribute of the control. */
-  name: string;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a required field. */
-  required: boolean;
-  /** Makes the control a disabled field. */
-  disabled: boolean;
   /** Makes the control a readonly field. */
   readonly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;
+  /** The name attribute of the control. */
+  name: string;
+  /** Makes the control a required field in form context. */
+  required: boolean;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
@@ -256,3 +256,52 @@ const Template = (
 `;
 
 export const Basic: Story = Template.bind({});
+export const Form: Story = {
+  render: () => {
+    const onSubmit = (e: SubmitEvent) => e.preventDefault();
+
+    return html`<form action="" @submit=${onSubmit}>
+      <fieldset>
+        <legend>Default input</legend>
+        <igc-input name="i-1" label="Username"></igc-input>
+      </fieldset>
+      <fieldset disabled>
+        <legend>Disabled input</legend>
+        <igc-input name="i-disabled" label="Username"></igc-input>
+      </fieldset>
+      <fieldset>
+        <legend>Input constraints</legend>
+        <igc-input name="i-required" label="Required" required></igc-input>
+        <igc-input
+          name="i-minlength"
+          label="Minimum length (3 characters)"
+          minlength="3"
+        ></igc-input>
+        <igc-input
+          name="i-maximum"
+          label="Maximum length (3 characters)"
+          maxlength="3"
+        ></igc-input>
+        <igc-input
+          type="number"
+          name="i-min"
+          label="Minimum number (3)"
+          min="3"
+        ></igc-input>
+        <igc-input
+          type="number"
+          name="i-max"
+          label="Maximum number (17)"
+          max="17"
+        ></igc-input>
+        <igc-input
+          name="i-pattern"
+          pattern="[0-9]{3}"
+          label="Pattern [0-9]{3}"
+        ></igc-input>
+      </fieldset>
+      <button type="submit">Submit</button>
+      <button type="reset">Reset</button>
+    </form> `;
+  },
+};

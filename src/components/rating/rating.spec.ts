@@ -12,7 +12,7 @@ import {
   IgcRatingComponent,
   IgcRatingSymbolComponent,
 } from '../../index.js';
-import { formSubmitter } from '../common/utils.spec.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Rating component', () => {
   before(() => {
@@ -421,65 +421,44 @@ describe('Rating component', () => {
   });
 
   describe('Form integration', () => {
-    let form: HTMLFormElement;
-    let rating: IgcRatingComponent;
+    const spec = new FormAssociatedTestBed<IgcRatingComponent>(
+      html`<igc-rating name="rating" value="3"></igc-rating>`
+    );
 
     beforeEach(async () => {
-      form = await fixture<HTMLFormElement>(
-        html`<form>
-          <fieldset>
-            <igc-rating name="rating" value="3"></igc-rating>
-          </fieldset>
-        </form>`
-      );
-      rating = form.querySelector('igc-rating')!;
+      await spec.setup(IgcRatingComponent.tagName);
     });
 
     it('is form associated', async () => {
-      expect(rating.form).to.equal(form);
+      expect(spec.element.form).to.equal(spec.form);
     });
 
     it('is associated on submit', async () => {
-      const submit = formSubmitter(form);
-
-      submit((data) => {
-        expect(data.get('rating')).to.equal('3');
-      });
+      expect(spec.submit()?.get(spec.element.name)).to.equal('3');
     });
 
-    it('is correctly reset when the parent form is reset', async () => {
-      rating.value = 4;
-      await elementUpdated(form);
-      form.reset();
-      expect(rating.value).to.equal(3);
+    it('is correctly reset on form reset', async () => {
+      spec.element.value = 4;
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal(3);
     });
 
-    it('correctly reflects disabled state based on ancestor disabled state', async () => {
-      const fieldset = form.querySelector('fieldset')!;
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
 
-      fieldset.disabled = true;
-      await elementUpdated(form);
-      expect(rating.disabled).to.be.true;
-
-      fieldset.disabled = false;
-      await elementUpdated(form);
-      expect(rating.disabled).to.be.false;
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
     });
 
-    it('default validation constraints', async () => {
-      expect(rating.checkValidity()).to.be.true;
-      expect(rating.reportValidity()).to.be.true;
-      expect(rating.validationMessage).to.equal('');
-      expect(rating.willValidate).to.be.true;
-      expect(rating.validity).instanceof(ValidityState);
-    });
+    it('fulfils custom constraints', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
 
-    it('supports custom validation constraints', async () => {
-      rating.setCustomValidity('Nope!');
-      expect(rating.reportValidity()).to.be.false;
-
-      rating.setCustomValidity('');
-      expect(rating.reportValidity()).to.be.true;
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });
