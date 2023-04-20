@@ -107,7 +107,8 @@ $disabled-label-color: var(--disabled-label-color, utils.color(gray, 500)) !defa
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='label'] {
         color: $disabled-label-color;
     }

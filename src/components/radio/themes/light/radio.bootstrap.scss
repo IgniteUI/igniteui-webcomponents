@@ -70,7 +70,8 @@
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='control'] {
         &::after {
             border-color: #{utils.color(gray, 300)};

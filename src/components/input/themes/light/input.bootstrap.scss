@@ -169,6 +169,7 @@ $input-background: var(--input-background, #fff) !default;
 }
 
 :host([disabled]),
+:host(:disabled),
 :host([readonly]) {
     [part='prefix'],
     [part='suffix'],
@@ -191,7 +192,8 @@ $input-background: var(--input-background, #fff) !default;
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='label'],
     [part='helper-text'],
     [part~='input']::placeholder {

@@ -89,19 +89,26 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
     background: $invalid-hover-color;
 }
 
-:host([disabled]) [part~='label'] {
+:host([disabled]) [part~='label'],
+:host(:disabled) [part~='label'] {
     color: $disabled-color;
 }
 
 :host([disabled]) [part~='control'],
-:host([disabled][invalid]) [part~='control'] {
+:host(:disabled) [part~='control'],
+:host([disabled][invalid]) [part~='control'],
+:host(:disabled[invalid]) [part~='control'] {
     box-shadow: inset 0 0 0 1px $disabled-color;
 }
 
 :host([disabled]) [part~='control'][part~='checked'],
+:host(:disabled) [part~='control'][part~='checked'],
 :host([disabled][invalid]) [part~='control'][part~='checked'],
+:host(:disabled[invalid]) [part~='control'][part~='checked'],
 :host([disabled]) [part~='thumb'],
-:host([disabled][invalid]) [part~='thumb'] {
+:host(:disabled) [part~='thumb'],
+:host([disabled][invalid]) [part~='thumb'],
+:host(:disabled[invalid]) [part~='thumb'] {
     background: $disabled-color;
 }
 
@@ -120,6 +127,8 @@ $disabled-color: var(--disabled-color, color(gray, 400)) !default;
 }
 
 :host([disabled]) [part~='thumb'][part~='checked'],
-:host([disabled][invalid]) [part~='thumb'][part~='checked'] {
+:host(:disabled) [part~='thumb'][part~='checked'],
+:host([disabled][invalid]) [part~='thumb'][part~='checked'],
+:host(:disabled[invalid]) [part~='thumb'][part~='checked'] {
     background: $disabled-thumb-color;
 }

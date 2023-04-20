@@ -29,7 +29,8 @@ $input-background: var(--input-background, #fff) !default;
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     ::slotted([slot='helper-text']) {
         color: color(gray, 400);
     }
@@ -57,19 +58,26 @@ igc-input[readonly]:not([disabled])::part(input) {
     border-color: color(gray, 400);
 }
 
-igc-input[disabled] {
+igc-input[disabled],
+igc-input:disabled {
     pointer-events: none;
 }
 
 igc-input[disabled]::part(prefix),
+igc-input:disabled::part(prefix),
 igc-input[disabled]::part(suffix),
-igc-input[disabled]::part(container) {
+igc-input:disabled::part(suffix),
+igc-input[disabled]::part(container),
+igc-input:disabled::part(container) {
     background: color(gray, 100);
     color: color(gray, 400);
 }
 
 igc-input[disabled]::part(prefix),
+igc-input:disabled::part(prefix),
 igc-input[disabled]::part(suffix),
-igc-input[disabled]::part(input) {
+igc-input:disabled::part(suffix),
+igc-input[disabled]::part(input),
+igc-input:disabled::part(input) {
     border-color: color(gray, 300);
 }

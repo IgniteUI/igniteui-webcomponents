@@ -59,7 +59,8 @@ label {
     }
 }
 
-:host([disabled][indeterminate]) {
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
     [part~='control'] {
         &::after {
             background: color(secondary, 100);

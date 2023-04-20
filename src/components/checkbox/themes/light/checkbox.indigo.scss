@@ -79,6 +79,7 @@ $disabled-color: var(--disabled-color, color(gray, 300)) !default;
 }
 
 :host([disabled]),
+:host(:disabled),
 :host([disabled][invalid]) {
     [part~='control'] {
         &::after {
@@ -95,7 +96,8 @@ $disabled-color: var(--disabled-color, color(gray, 300)) !default;
     }
 }
 
-:host([disabled][indeterminate]) {
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
     [part~='control']::after {
         background: $disabled-color;
         border-color: $disabled-color;

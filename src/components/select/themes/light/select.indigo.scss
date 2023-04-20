@@ -18,7 +18,8 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='helper-text'] ::slotted([slot='helper-text']) {
         color: color(gray, 300);
     }

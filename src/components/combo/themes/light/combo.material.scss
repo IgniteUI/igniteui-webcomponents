@@ -6,7 +6,8 @@
     padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     igc-input::part(label),
     igc-input::part(input)::placeholder,
     [part~='toggle-icon'],
