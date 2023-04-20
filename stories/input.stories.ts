@@ -229,32 +229,30 @@ const Template = (
   }: IgcInputArgs,
   { globals: { direction } }: Context
 ) => html`
-  <fieldset disabled>
-    <igc-input
-      type=${type}
-      label=${label}
-      size=${ifDefined(size)}
-      placeholder=${ifDefined(placeholder)}
-      dir=${direction}
-      minlength=${ifDefined(minlength)}
-      maxlength=${ifDefined(maxlength)}
-      step=${ifDefined(step)}
-      autocomplete=${ifDefined(autocomplete)}
-      min=${ifDefined(min)}
-      max=${ifDefined(max)}
-      .value=${value}
-      ?autofocus=${autofocus}
-      ?invalid=${invalid}
-      .readonly=${readonly}
-      .outlined=${outlined}
-      .required=${required}
-      .disabled=${disabled}
-    >
-      <igc-icon name="github" slot="prefix" size=${size}></igc-icon>
-      <igc-icon name="github" slot="suffix" size=${size}></igc-icon>
-      <span slot="helper-text">This is some helper text</span>
-    </igc-input>
-  </fieldset>
+  <igc-input
+    type=${type}
+    label=${label}
+    size=${ifDefined(size)}
+    placeholder=${ifDefined(placeholder)}
+    dir=${direction}
+    minlength=${ifDefined(minlength)}
+    maxlength=${ifDefined(maxlength)}
+    step=${ifDefined(step)}
+    autocomplete=${ifDefined(autocomplete)}
+    min=${ifDefined(min)}
+    max=${ifDefined(max)}
+    .value=${value}
+    ?autofocus=${autofocus}
+    ?invalid=${invalid}
+    .readonly=${readonly}
+    .outlined=${outlined}
+    .required=${required}
+    .disabled=${disabled}
+  >
+    <igc-icon name="github" slot="prefix" size=${size}></igc-icon>
+    <igc-icon name="github" slot="suffix" size=${size}></igc-icon>
+    <span slot="helper-text">This is some helper text</span>
+  </igc-input>
 `;
 
 export const Basic: Story = Template.bind({});
