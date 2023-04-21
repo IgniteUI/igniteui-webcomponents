@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
+import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 
 export interface IgcSliderEventMap {
   /**
@@ -38,10 +39,11 @@ export interface IgcSliderEventMap {
  * @csspart inactive - The inactive element of the track.
  * @csspart fill - The filled part of the track.
  */
-export default class IgcSliderComponent extends EventEmitterMixin<
-  IgcSliderEventMap,
-  Constructor<IgcSliderBaseComponent>
->(IgcSliderBaseComponent) {
+export default class IgcSliderComponent extends FormAssociatedMixin(
+  EventEmitterMixin<IgcSliderEventMap, Constructor<IgcSliderBaseComponent>>(
+    IgcSliderBaseComponent
+  )
+) {
   public static readonly tagName = 'igc-slider';
 
   private _value = 0;
@@ -50,6 +52,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   public set value(val: number) {
     const oldVal = this._value;
     this._value = this.validateValue(val);
+    this.setFormValue(`${this._value}`, `${this._value}`);
     this.requestUpdate('value', oldVal);
   }
 
@@ -79,6 +82,23 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   @property({ attribute: 'aria-label' })
   public override get ariaLabel() {
     return this._ariaLabel;
+  }
+
+  protected override handleFormReset(): void {
+    const value = parseFloat(this.getAttribute('value')!);
+    this.value = !isNaN(value) ? value : 0;
+  }
+
+  protected override updateValidity(message: string): void {
+    const flags: ValidityStateFlags = {};
+    let msg = '';
+
+    if (message) {
+      flags.customError = true;
+      msg = message;
+    }
+
+    this.setValidity(flags, msg);
   }
 
   protected override get activeValue(): number {

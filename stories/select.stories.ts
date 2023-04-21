@@ -339,7 +339,6 @@ const Template = (
   </igc-select>
 `;
 
-const FormTemplate = () => checkoutForm;
 const countries = [
   {
     continent: 'Europe',
@@ -397,30 +396,123 @@ function groupBy(objectArray: any, property: string) {
   }, {});
 }
 
-const checkoutForm = html`
-  <igc-form>
-    <igc-select label="Sample Label">
-      ${Object.entries(groupBy(countries, 'continent')).map(
-        ([continent, countries]) => html`
-          <igc-select-group>
-            <igc-select-header slot="label">${continent}</igc-select-header>
-            ${(countries as any).map(
-              (item: any) => html`
-                <igc-select-item
-                  value=${item.value}
-                  ?disabled=${item.disabled}
-                  ?selected=${item.selected}
-                  >${item.country}</igc-select-item
-                >
+export const Form: Story = {
+  render: () => {
+    const onSubmit = (e: SubmitEvent) => {
+      e.preventDefault();
+      console.log(
+        JSON.stringify(
+          Object.fromEntries(new FormData(e.target as HTMLFormElement))
+        )
+      );
+    };
+
+    return html`
+      <form @submit=${onSubmit}>
+        <fieldset>
+          <legend>Default select</legend>
+          <!-- <igc-select
+            value="bg"
+            name="default-select"
+            label="Countries (value through attribute)"
+          >
+            ${Object.entries(groupBy(countries, 'continent')).map(
+            ([continent, countries]) => html`
+              <igc-select-group>
+                <igc-select-header slot="label">${continent}</igc-select-header>
+                ${(countries as any).map(
+                  (item: any) => html`
+                    <igc-select-item
+                      value=${item.value}
+                      ?disabled=${item.disabled}
+                      >${item.country}</igc-select-item
+                    >
+                  `
+                )}
+              </igc-select-group>
+            `
+          )}
+            <span slot="helper-text">Sample helper text.</span>
+          </igc-select> -->
+          <igc-select
+            name="default-select-2"
+            label="Countries (value through selected item)"
+          >
+            ${Object.entries(groupBy(countries, 'continent')).map(
+              ([continent, countries]) => html`
+                <igc-select-group>
+                  <igc-select-header slot="label"
+                    >${continent}</igc-select-header
+                  >
+                  ${(countries as any).map(
+                    (item: any) => html`
+                      <igc-select-item
+                        value=${item.value}
+                        ?selected=${item.selected}
+                        ?disabled=${item.disabled}
+                        >${item.country}</igc-select-item
+                      >
+                    `
+                  )}
+                </igc-select-group>
               `
             )}
-          </igc-select-group>
-        `
-      )}
-      <span slot="helper-text">Sample helper text.</span>
-    </igc-select>
-  </igc-form>
-`;
+            <span slot="helper-text">Sample helper text.</span>
+          </igc-select>
+        </fieldset>
+        <fieldset>
+          <legend>Required select</legend>
+          <igc-select name="required-select" label="Countries" required>
+            ${Object.entries(groupBy(countries, 'continent')).map(
+              ([continent, countries]) => html`
+                <igc-select-group>
+                  <igc-select-header slot="label"
+                    >${continent}</igc-select-header
+                  >
+                  ${(countries as any).map(
+                    (item: any) => html`
+                      <igc-select-item
+                        value=${item.value}
+                        ?disabled=${item.disabled}
+                        >${item.country}</igc-select-item
+                      >
+                    `
+                  )}
+                </igc-select-group>
+              `
+            )}
+            <span slot="helper-text">Sample helper text.</span>
+          </igc-select>
+        </fieldset>
+        <fieldset disabled>
+          <legend>Disabled form group</legend>
+          <igc-select label="Countries">
+            ${Object.entries(groupBy(countries, 'continent')).map(
+              ([continent, countries]) => html`
+                <igc-select-group>
+                  <igc-select-header slot="label"
+                    >${continent}</igc-select-header
+                  >
+                  ${(countries as any).map(
+                    (item: any) => html`
+                      <igc-select-item
+                        value=${item.value}
+                        ?disabled=${item.disabled}
+                        >${item.country}</igc-select-item
+                      >
+                    `
+                  )}
+                </igc-select-group>
+              `
+            )}
+            <span slot="helper-text">Sample helper text.</span>
+          </igc-select>
+        </fieldset>
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+      </form>
+    `;
+  },
+};
 
 export const Basic: Story = Template.bind({});
-export const Form: Story = FormTemplate.bind({});

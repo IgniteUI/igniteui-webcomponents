@@ -2,6 +2,7 @@ import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcCheckboxComponent } from '../src/index.js';
+import { disableStoryControls } from './story.js';
 
 defineComponents(IgcCheckboxComponent);
 
@@ -131,6 +132,7 @@ const Template = (
 export const Basic: Story = Template.bind({});
 
 export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
   render: () => {
     const onSubmit = (e: SubmitEvent) => {
       e.preventDefault();

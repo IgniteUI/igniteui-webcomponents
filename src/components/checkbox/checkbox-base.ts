@@ -94,10 +94,8 @@ export class IgcCheckboxBaseComponent extends FormAssociatedMixin(
     this.setValidity(flags, msg);
   }
 
-  protected override formResetCallback() {
-    super.formResetCallback();
+  protected override handleFormReset() {
     this.checked = this.getAttribute('checked') !== null;
-    this.invalid = false;
   }
 
   /** Simulates a click on the control. */

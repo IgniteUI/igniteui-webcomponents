@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
+import { Context, disableStoryControls } from './story.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { defineComponents, IgcInputComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
@@ -257,6 +257,7 @@ const Template = (
 
 export const Basic: Story = Template.bind({});
 export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
   render: () => {
     const onSubmit = (e: SubmitEvent) => e.preventDefault();
 

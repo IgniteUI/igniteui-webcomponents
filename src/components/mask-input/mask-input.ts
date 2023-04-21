@@ -116,11 +116,9 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.setValidity(flags, msg);
   }
 
-  protected override formResetCallback() {
-    super.formResetCallback();
+  protected override handleFormReset() {
     this.value = this.getAttribute('value') ?? '';
     this.updateMaskedValue();
-    this.invalid = false;
   }
 
   @watch('prompt')

@@ -165,7 +165,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   @watch('value')
   protected handleValueChange() {
     this.value = clamp(isNaN(this.value) ? 0 : this.value, 0, this.max);
-    this.setFormValue(this.value.toString());
+    this.setFormValue(`${this.value}`, `${this.value}`);
   }
 
   @watch('step')
@@ -285,10 +285,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     this.setValidity(flags, msg);
   }
 
-  protected override formResetCallback() {
-    super.formResetCallback();
+  protected override handleFormReset() {
     this.value = parseFloat(this.getAttribute('value')!);
-    this.invalid = false;
   }
 
   protected calcNewValue(x: number) {

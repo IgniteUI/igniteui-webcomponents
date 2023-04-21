@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { Context } from './story.js';
+import { Context, disableStoryControls } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcSwitchComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
@@ -118,6 +118,7 @@ const Template = (
 export const Basic: Story = Template.bind({});
 
 export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
   render: () => {
     const onSubmit = (e: SubmitEvent) => {
       e.preventDefault();

@@ -1,6 +1,6 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
+import { Context, disableStoryControls } from './story.js';
 import { defineComponents, IgcSliderComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
 
@@ -29,6 +29,23 @@ const metadata: Meta<IgcSliderComponent> = {
       description: 'The aria label of the slider thumb.',
       control: 'text',
     },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     min: {
       type: 'number',
       description: 'The minimum value of the slider scale. Defaults to 0.',
@@ -53,7 +70,7 @@ const metadata: Meta<IgcSliderComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'Disables the UI interactions of the slider.',
+      description: 'The disabled state of the component',
       control: 'boolean',
       defaultValue: false,
     },
@@ -132,6 +149,8 @@ const metadata: Meta<IgcSliderComponent> = {
     },
   },
   args: {
+    required: false,
+    invalid: false,
     disabled: false,
     discreteTrack: false,
     hideTooltip: false,
@@ -152,6 +171,12 @@ interface IgcSliderArgs {
   value: number;
   /** The aria label of the slider thumb. */
   ariaLabel: string;
+  /** The name attribute of the control. */
+  name: string;
+  /** Makes the control a required field in form context. */
+  required: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
   /** The minimum value of the slider scale. Defaults to 0. */
   min: number;
   /** The maximum value of the slider scale. Defaults to 100. */
@@ -160,7 +185,7 @@ interface IgcSliderArgs {
   lowerBound: number | undefined;
   /** The upper bound of the slider value. If not set, the `max` value is applied. */
   upperBound: number | undefined;
-  /** Disables the UI interactions of the slider. */
+  /** The disabled state of the component */
   disabled: boolean;
   /**
    * Marks the slider track as discrete so it displays the steps.
@@ -244,11 +269,6 @@ const Template = (
     .tickLabelRotation=${tickLabelRotation}
     dir=${ifDefined(direction)}
   ></igc-slider>
-  <!-- <input
-    type="range"
-    @input=${(ev: any) => console.log('input: ' + ev.target.value)}
-    @change=${(ev: any) => console.log('change: ' + ev.target.value)}
-  /> -->
 `;
 
 const ValueFormatTemplate = (
@@ -303,4 +323,26 @@ export const Labels: Story = LabelsTemplate.bind({});
 };
 (Labels as any).parameters = {
   controls: { include: [] },
+};
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const onSubmit = (e: SubmitEvent) => e.preventDefault();
+
+    return html`
+      <form action="" @submit=${onSubmit}>
+        <fieldset>
+          <legend>Default</legend>
+          <igc-slider name="slider" value="77"></igc-slider>
+        </fieldset>
+        <fieldset disabled="disabled">
+          <legend>Disabled</legend>
+          <igc-slider name="disabled-slider" value="50"></igc-slider>
+        </fieldset>
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+      </form>
+    `;
+  },
 };

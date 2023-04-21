@@ -12,14 +12,32 @@ export declare class FormAssociatedElementInterface {
   protected _dirty: boolean;
 
   /**
-   * Applies the `invalid` attribute on the control and the associated styles if the element has passed
-   * the first update cycle or it has been interacted with by the user.
+   * Applies the {@link FormAssociatedElementInterface.invalid | `invalid`} attribute on the control and the associated styles
+   * if the element has completed the first update cycle or it has been interacted with by the user.
    *
-   * Usually it should be called after `updateValidity`
+   * Usually, it should be called after {@link FormAssociatedElementInterface.updateValidity | `updateValidity()`}
    */
   protected setInvalidState(): void;
+
+  /**
+   * Implement all validation logic for the given component here.
+   *
+   * @remarks
+   * This method **has to be** overridden in extended classes.
+   */
   protected updateValidity(message: string): void;
+
+  /**
+   * Hook called during the formResetCallback() which should reset the component
+   * value to some initial state.
+   *
+   * @remarks
+   * This method **has to be** overridden in extended classes.
+   */
+  protected handleFormReset(): void;
+
   protected requiredChange(): void;
+
   protected setFormValue(
     value: string | File | FormData | null,
     state?: string | File | FormData | null | undefined
@@ -42,39 +60,49 @@ export declare class FormAssociatedElementInterface {
    * @attr [disabled=false]
    */
   public disabled: boolean;
+
   /**
    * Control the validity of the control.
    * @attr
    */
   public invalid: boolean;
+
   /**
    * The name attribute of the control.
    * @attr
    */
   public name: string;
+
   /**
-   * Makes the control a required field in form context.
+   * Makes the control a required field in a form context.
    * @attr
    */
   public required: boolean;
+
   /** Returns the HTMLFormElement associated with this element. */
   public readonly form: HTMLFormElement | null;
+
   /**
    * Returns a ValidityState object which represents the different validity states
    * the element can be in, with respect to constraint validation.
    */
   public readonly validity: ValidityState;
+
   /** A string containing the validation message of this element. */
   public readonly validationMessage: string;
+
   /**
    * A boolean value which returns true if the element is a submittable element
    * that is a candidate for constraint validation.
    */
   public readonly willValidate: boolean;
+
   /** Checks for validity of the control and emits the invalid event if it invalid. */
   public checkValidity(): boolean;
+
   /** Checks for validity of the control and shows the browser message if it invalid. */
   public reportValidity(): boolean;
+
   /**
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
@@ -168,17 +196,18 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     constructor(...args: any[]) {
       super(args);
       this._internals = this.attachInternals();
-
-      this.addEventListener('invalid', (ev) => {
-        ev.preventDefault();
-        this.invalid = true;
-      });
+      this.addEventListener('invalid', this.handleInvalid);
     }
 
     public override connectedCallback(): void {
       super.connectedCallback();
       this._dirty = false;
     }
+
+    protected handleInvalid = (event: Event) => {
+      event.preventDefault();
+      this.invalid = true;
+    };
 
     @watch('required', { waitUntilFirstUpdate: true })
     protected requiredChange() {
@@ -202,7 +231,13 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     }
 
     protected formResetCallback() {
+      this.handleFormReset();
       this._dirty = false;
+
+      // Apply any changes happening during form reset synchronously
+      this.performUpdate();
+
+      this.invalid = false;
     }
 
     protected formDisabledCallback(state: boolean) {
@@ -210,17 +245,36 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       this.requestUpdate();
     }
 
-    protected updateValidity(_message = '') {
+    /**
+     * Hook called during the formResetCallback() which should reset the component
+     * value to some initial state.
+     *
+     * @remarks
+     * This method **has to be** overridden in extended classes.
+     */
+    protected handleFormReset() {
       throw new Error(
-        '`updateValidity` must be overridden in extension classes'
+        '`handleFormReset()` must be overridden in extension classes'
       );
     }
 
     /**
-     * Applies the `invalid` attribute on the control and the associated styles if the element has passed
-     * the first update cycle or it has been interacted with by the user.
+     * Implement all validation logic for the given component here.
      *
-     * Usually it should be called after `updateValidity`
+     * @remarks
+     * This method **has to be** overridden in extended classes.
+     */
+    protected updateValidity(_message = '') {
+      throw new Error(
+        '`updateValidity()` must be overridden in extension classes'
+      );
+    }
+
+    /**
+     * Applies the {@link FormAssociatedElementInterface.invalid | `invalid`} attribute on the control and the associated styles
+     * if the element has completed the first update cycle or it has been interacted with by the user.
+     *
+     * Usually, it should be called after {@link FormAssociatedElementInterface.updateValidity | `updateValidity()`}
      */
     protected setInvalidState() {
       if (this.hasUpdated || this._dirty) {

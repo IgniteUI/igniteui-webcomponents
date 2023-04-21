@@ -224,10 +224,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
       : this.stringValidation(message);
   }
 
-  protected override formResetCallback() {
-    super.formResetCallback();
+  protected override handleFormReset() {
     this.value = this.getAttribute('value') ?? '';
-    this.invalid = false;
   }
 
   /** Replaces the selected text in the input. */
