@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { Context } from './story.js';
+import { Context, disableStoryControls } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { ComboItemTemplate } from '../src/index.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
@@ -21,29 +21,6 @@ const metadata: Meta<IgcComboComponent> = {
   component: 'igc-combo',
   parameters: { docs: { description: {} } },
   argTypes: {
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled attribute of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'The required attribute of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'The invalid attribute of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     outlined: {
       type: 'boolean',
       description: 'The outlined attribute of the control.',
@@ -122,14 +99,34 @@ const metadata: Meta<IgcComboComponent> = {
     value: {
       type: 'string',
       description:
-        'Returns the current selection as a list of commma separated values,\nrepresented by the display key, when provided.',
+        'Returns the current selection as a list of comma separated values,\nrepresented by the display key, when provided.',
       control: 'text',
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
     },
   },
   args: {
-    disabled: false,
-    required: false,
-    invalid: false,
     outlined: false,
     singleSelect: false,
     autofocusList: false,
@@ -140,20 +137,15 @@ const metadata: Meta<IgcComboComponent> = {
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
+    required: false,
+    disabled: false,
+    invalid: false,
   },
 };
 
 export default metadata;
 
 interface IgcComboArgs {
-  /** The name attribute of the control. */
-  name: string;
-  /** The disabled attribute of the control. */
-  disabled: boolean;
-  /** The required attribute of the control. */
-  required: boolean;
-  /** The invalid attribute of the control. */
-  invalid: boolean;
   /** The outlined attribute of the control. */
   outlined: boolean;
   /** Enables single selection mode and moves item filtering to the main input. */
@@ -180,10 +172,18 @@ interface IgcComboArgs {
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
   /**
-   * Returns the current selection as a list of commma separated values,
+   * Returns the current selection as a list of comma separated values,
    * represented by the display key, when provided.
    */
   value: string;
+  /** The name attribute of the control. */
+  name: string;
+  /** Makes the control a required field in form context. */
+  required: boolean;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
 }
 type Story = StoryObj<IgcComboArgs>;
 
@@ -330,3 +330,53 @@ const Template = (
 `;
 
 export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const onSubmit = (e: SubmitEvent) => {
+      e.preventDefault();
+      console.log(
+        JSON.stringify(
+          Object.fromEntries(new FormData(e.target as HTMLFormElement))
+        )
+      );
+    };
+
+    return html`
+      <form @submit=${onSubmit}>
+        <fieldset>
+          <igc-combo
+            label="Default"
+            name="combo"
+            .data=${cities}
+            value-key="id"
+            display-key="name"
+          ></igc-combo>
+        </fieldset>
+        <fieldset disabled="disabled">
+          <igc-combo
+            label="Disabled"
+            name="combo-disabled"
+            .data=${cities}
+            value-key="id"
+            display-key="name"
+          ></igc-combo>
+        </fieldset>
+        <fieldset>
+          <igc-combo
+            label="Required"
+            name="combo-required"
+            .data=${cities}
+            value-key="id"
+            display-key="name"
+            required
+          ></igc-combo>
+        </fieldset>
+
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+      </form>
+    `;
+  },
+};

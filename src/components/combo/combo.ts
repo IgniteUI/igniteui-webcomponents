@@ -33,6 +33,7 @@ import {
   Item,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { live } from 'lit/directives/live.js';
 import { partNameMap } from '../common/util.js';
 import { filteringOptionsConverter } from './utils/converters.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -40,6 +41,8 @@ import { Constructor } from '../common/mixins/constructor.js';
 import type { ThemeController, Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
+import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import messages from '../common/localization/validation-en.js';
 
 defineComponents(
   IgcIconComponent,
@@ -94,10 +97,9 @@ defineComponents(
 @themes({ material, bootstrap, fluent, indigo })
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
-// TODO: pressing arrow down should scroll to the selected item
 export default class IgcComboComponent<T extends object>
-  extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
-    LitElement
+  extends FormAssociatedMixin(
+    EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(LitElement)
   )
   implements Partial<IgcToggleComponent>
 {
@@ -135,34 +137,6 @@ export default class IgcComboComponent<T extends object>
   /* blazorAlternateType: object */
   @property({ attribute: false })
   public data: Array<T> = [];
-
-  /**
-   * The name attribute of the control.
-   * @attr name
-   */
-  @property()
-  public name!: string;
-
-  /**
-   * The disabled attribute of the control.
-   * @attr disabled
-   */
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
-
-  /**
-   * The required attribute of the control.
-   * @attr required
-   */
-  @property({ reflect: true, type: Boolean })
-  public required = false;
-
-  /**
-   * The invalid attribute of the control.
-   * @attr invalid
-   */
-  @property({ reflect: true, type: Boolean })
-  public invalid = false;
 
   /**
    * The outlined attribute of the control.
@@ -385,6 +359,7 @@ export default class IgcComboComponent<T extends object>
         this.resetSearchTerm();
       }
 
+      this.invalid = !this.checkValidity();
       this.emitEvent('igcBlur');
     });
 
@@ -422,8 +397,38 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.active = -1;
   }
 
+  @watch('required', { waitUntilFirstUpdate: true })
+  protected override async requiredChange() {
+    // Wait for the underlying igc-input to update
+    await this.updateComplete;
+
+    this.updateValidity();
+    this.invalid = !this.checkValidity();
+  }
+
+  protected override handleFormReset(): void {
+    this.deselect();
+  }
+
+  protected override updateValidity(message = ''): void {
+    const flags: ValidityStateFlags = {};
+    let msg = '';
+
+    if (this.required && !this.value) {
+      flags.valueMissing = true;
+      msg = messages.required;
+    }
+
+    if (message) {
+      flags.customError = true;
+      msg = message;
+    }
+
+    this.setValidity(flags, msg);
+  }
+
   /**
-   * Returns the current selection as a list of commma separated values,
+   * Returns the current selection as a list of comma separated values,
    * represented by the display key, when provided.
    */
   public get value() {
@@ -435,24 +440,18 @@ export default class IgcComboComponent<T extends object>
       Array.from(this.selectionController.selected)
     );
 
+    const value = this._value || null;
+    this.setFormValue(value);
+    this.updateValidity();
+    this.setInvalidState();
+
     await this.updateComplete;
     this.target.value = this._value;
   }
 
-  @watch('value')
-  protected validate() {
-    this.updateComplete.then(() => this.reportValidity());
-  }
-
-  /** Checks the validity of the control. */
-  public reportValidity() {
-    this.invalid = this.required && !this.value;
-    return !this.invalid;
-  }
-
-  /** A wrapper around the reportValidity method to comply with the native input API. */
-  public checkValidity() {
-    return this.reportValidity();
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.updateValidity();
   }
 
   /* alternateName: focusComponent */
@@ -793,7 +792,7 @@ export default class IgcComboComponent<T extends object>
       @keydown=${this.handleMainInputKeydown}
       .disabled=${this.disabled}
       .required=${this.required}
-      .invalid=${this.invalid}
+      .invalid=${live(this.invalid)}
       .outlined=${this.outlined}
       .autofocus=${this.autofocus}
       ?readonly=${!this.singleSelect}

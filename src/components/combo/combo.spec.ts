@@ -6,6 +6,7 @@ import IgcInputComponent from '../input/input.js';
 import IgcComboComponent from './combo.js';
 import IgcComboListComponent from './combo-list.js';
 import IgcComboItemComponent from './combo-item.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Combo', () => {
   interface City {
@@ -397,38 +398,30 @@ describe('Combo', () => {
     });
 
     it('reports validity when required', async () => {
-      const validity = sinon.spy(combo, 'reportValidity');
-
       combo.required = true;
       await elementUpdated(combo);
 
-      combo.checkValidity();
-      expect(validity).to.have.returned(false);
+      expect(combo.checkValidity()).to.be.false;
       expect(combo.invalid).to.be.true;
 
       combo.select();
       await elementUpdated(combo);
-      combo.checkValidity();
 
-      expect(validity).to.have.returned(true);
+      expect(combo.checkValidity()).to.be.true;
       expect(combo.invalid).to.be.false;
     });
 
     it('reports validity when not required', async () => {
-      const validity = sinon.spy(combo, 'reportValidity');
-
       combo.required = false;
       await elementUpdated(combo);
 
-      combo.checkValidity();
-      expect(validity).to.have.returned(true);
+      expect(combo.checkValidity()).to.be.true;
       expect(combo.invalid).to.be.false;
 
       combo.deselect();
       await elementUpdated(combo);
-      combo.checkValidity();
 
-      expect(validity).to.have.returned(true);
+      expect(combo.checkValidity()).to.be.true;
       expect(combo.invalid).to.be.false;
     });
 
@@ -881,6 +874,72 @@ describe('Combo', () => {
 
       // No items should be selected
       expect(selected.length).to.equal(0);
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<
+      IgcComboComponent<City>
+    >(html`<igc-combo
+      name="combo"
+      .data=${cities}
+      value-key="id"
+      display-key="name"
+    ></igc-combo>`);
+
+    beforeEach(async () => {
+      await spec.setup(IgcComboComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is not associated on submit if no value', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is associated on submit', async () => {
+      spec.element.select(['BG01', 'BG02']);
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.select(['BG01', 'BG02']);
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal('');
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.select(['BG01', 'BG02']);
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });
