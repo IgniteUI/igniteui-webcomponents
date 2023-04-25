@@ -1,5 +1,10 @@
 import { html } from 'lit';
-import { Context, disableStoryControls } from './story.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcSwitchComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
@@ -120,15 +125,11 @@ export const Basic: Story = Template.bind({});
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
-    const onSubmit = (e: SubmitEvent) => {
-      e.preventDefault();
-    };
-
     return html`
-      <form action="" @submit=${onSubmit}>
+      <form action="" @submit=${formSubmitHandler}>
         <fieldset>
           <legend>Default section</legend>
-          <igc-switch name="switch-1">Switch 1</igc-switch>
+          <igc-switch name="switch">Switch 1</igc-switch>
         </fieldset>
         <fieldset>
           <legend>Required section</legend>
@@ -138,10 +139,9 @@ export const Form: Story = {
         </fieldset>
         <fieldset disabled>
           <legend>Disabled section</legend>
-          <igc-switch name="switch-2">Switch 2</igc-switch>
+          <igc-switch name="switch-disabled">Switch 2</igc-switch>
         </fieldset>
-        <button type="submit">Submit</button>
-        <button type="reset">Reset</button>
+        ${formControls()}
       </form>
     `;
   },

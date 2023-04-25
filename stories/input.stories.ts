@@ -1,7 +1,12 @@
 import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, disableStoryControls } from './story.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { defineComponents, IgcInputComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
@@ -259,50 +264,47 @@ export const Basic: Story = Template.bind({});
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
-    const onSubmit = (e: SubmitEvent) => e.preventDefault();
-
-    return html`<form action="" @submit=${onSubmit}>
+    return html`<form action="" @submit=${formSubmitHandler}>
       <fieldset>
         <legend>Default input</legend>
-        <igc-input name="i-1" label="Username"></igc-input>
+        <igc-input name="input" label="Username"></igc-input>
       </fieldset>
       <fieldset disabled>
         <legend>Disabled input</legend>
-        <igc-input name="i-disabled" label="Username"></igc-input>
+        <igc-input name="input-disabled" label="Username"></igc-input>
       </fieldset>
       <fieldset>
         <legend>Input constraints</legend>
-        <igc-input name="i-required" label="Required" required></igc-input>
+        <igc-input name="input-required" label="Required" required></igc-input>
         <igc-input
-          name="i-minlength"
+          name="input-minlength"
           label="Minimum length (3 characters)"
           minlength="3"
         ></igc-input>
         <igc-input
-          name="i-maximum"
+          name="input-maximum"
           label="Maximum length (3 characters)"
           maxlength="3"
         ></igc-input>
         <igc-input
           type="number"
-          name="i-min"
+          name="input-min"
           label="Minimum number (3)"
           min="3"
         ></igc-input>
         <igc-input
           type="number"
-          name="i-max"
+          name="input-max"
           label="Maximum number (17)"
           max="17"
         ></igc-input>
         <igc-input
-          name="i-pattern"
+          name="input-pattern"
           pattern="[0-9]{3}"
           label="Pattern [0-9]{3}"
         ></igc-input>
       </fieldset>
-      <button type="submit">Submit</button>
-      <button type="reset">Reset</button>
+      ${formControls()}
     </form> `;
   },
 };

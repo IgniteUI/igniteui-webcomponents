@@ -1,6 +1,11 @@
 import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
-import { Context, disableStoryControls } from './story.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
@@ -206,19 +211,11 @@ export const Basic: Story = Template.bind({});
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
-    const onSubmit = (e: SubmitEvent) => {
-      e.preventDefault();
-      console.log(
-        JSON.stringify(
-          Object.fromEntries(new FormData(e.target as HTMLFormElement))
-        )
-      );
-    };
-    return html`<form action="" @submit=${onSubmit}>
+    return html`<form action="" @submit=${formSubmitHandler}>
       <fieldset>
         <legend>Default masked input</legend>
         <igc-mask-input
-          name="mask-default"
+          name="mask"
           value="XYZ"
           label="Default"
         ></igc-mask-input>
@@ -254,8 +251,7 @@ export const Form: Story = {
           mask="(+35\\9) 000-000-000"
         ></igc-mask-input>
       </fieldset>
-      <button type="submit">Submit</button>
-      <button type="reset">Reset</button>
+      ${formControls()}
     </form>`;
   },
 };

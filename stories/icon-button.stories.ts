@@ -71,7 +71,7 @@ const metadata: Meta<IgcIconButtonComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'Determines whether the button is disabled.',
+      description: 'The disabled state of the component',
       control: 'boolean',
       defaultValue: false,
     },
@@ -116,7 +116,7 @@ interface IgcIconButtonArgs {
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
    */
   rel: string;
-  /** Determines whether the button is disabled. */
+  /** The disabled state of the component */
   disabled: boolean;
   ariaLabel: string;
   /** Determines the size of the component. */

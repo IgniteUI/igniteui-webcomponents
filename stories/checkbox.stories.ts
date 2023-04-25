@@ -2,7 +2,11 @@ import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcCheckboxComponent } from '../src/index.js';
-import { disableStoryControls } from './story.js';
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcCheckboxComponent);
 
@@ -134,15 +138,11 @@ export const Basic: Story = Template.bind({});
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
-    const onSubmit = (e: SubmitEvent) => {
-      e.preventDefault();
-    };
-
     return html`
-      <form action="" @submit=${onSubmit}>
+      <form action="" @submit=${formSubmitHandler}>
         <fieldset>
           <legend>Default section</legend>
-          <igc-checkbox name="checkbox-1">Checkbox 1</igc-checkbox>
+          <igc-checkbox name="checkbox">Checkbox 1</igc-checkbox>
         </fieldset>
         <fieldset>
           <legend>Required section</legend>
@@ -152,10 +152,9 @@ export const Form: Story = {
         </fieldset>
         <fieldset disabled>
           <legend>Disabled section</legend>
-          <igc-checkbox name="checkbox-2">Checkbox 2</igc-checkbox>
+          <igc-checkbox name="checkbox-disabled">Checkbox 2</igc-checkbox>
         </fieldset>
-        <button type="submit">Submit</button>
-        <button type="reset">Reset</button>
+        ${formControls()}
       </form>
     `;
   },

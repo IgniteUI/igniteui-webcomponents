@@ -1,6 +1,11 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, disableStoryControls } from './story.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import { defineComponents, IgcSliderComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
 
@@ -328,10 +333,8 @@ export const Labels: Story = LabelsTemplate.bind({});
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
-    const onSubmit = (e: SubmitEvent) => e.preventDefault();
-
     return html`
-      <form action="" @submit=${onSubmit}>
+      <form action="" @submit=${formSubmitHandler}>
         <fieldset>
           <legend>Default</legend>
           <igc-slider name="slider" value="77"></igc-slider>
@@ -340,8 +343,7 @@ export const Form: Story = {
           <legend>Disabled</legend>
           <igc-slider name="disabled-slider" value="50"></igc-slider>
         </fieldset>
-        <button type="submit">Submit</button>
-        <button type="reset">Reset</button>
+        ${formControls()}
       </form>
     `;
   },

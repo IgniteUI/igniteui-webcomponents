@@ -1,5 +1,10 @@
 import { html } from 'lit';
-import { Context, disableStoryControls } from './story.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { ComboItemTemplate } from '../src/index.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
@@ -334,17 +339,8 @@ export const Basic: Story = Template.bind({});
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
-    const onSubmit = (e: SubmitEvent) => {
-      e.preventDefault();
-      console.log(
-        JSON.stringify(
-          Object.fromEntries(new FormData(e.target as HTMLFormElement))
-        )
-      );
-    };
-
     return html`
-      <form @submit=${onSubmit}>
+      <form @submit=${formSubmitHandler}>
         <fieldset>
           <igc-combo
             label="Default"
@@ -374,8 +370,7 @@ export const Form: Story = {
           ></igc-combo>
         </fieldset>
 
-        <button type="submit">Submit</button>
-        <button type="reset">Reset</button>
+        ${formControls()}
       </form>
     `;
   },

@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import { Context } from './story.js';
+import { Context, disableStoryControls } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   DatePartDeltas,
@@ -215,7 +215,7 @@ const handleClear = () => {
 
 Object.assign(metadata.parameters!, {
   actions: {
-    handles: ['igcChange', 'igcInput'],
+    handles: ['igcChange'],
   },
 });
 
@@ -273,3 +273,49 @@ const Template = (
 };
 
 export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const onSubmit = (e: SubmitEvent) => e.preventDefault();
+
+    return html`
+      <form action="" @submit=${onSubmit}>
+        <fieldset>
+          <igc-date-time-input
+            label="Default state"
+            name="dt-default"
+          ></igc-date-time-input>
+          <igc-date-time-input
+            label="Initial value"
+            name="dt-initial"
+            value="2023-03-17T15:35"
+            display-format="yyyy-MM-dd HH:mm"
+            input-format="yyyy-MM-dd HH:mm"
+          ></igc-date-time-input>
+          <igc-date-time-input
+            readonly
+            label="Readonly"
+            name="dt-readonly"
+            value="1987-07-17"
+          ></igc-date-time-input>
+        </fieldset>
+        <fieldset disabled="disabled">
+          <igc-date-time-input
+            name="dt-disabled"
+            label="Disabled editor"
+          ></igc-date-time-input>
+        </fieldset>
+        <fieldset>
+          <igc-date-time-input
+            required
+            name="dt-required"
+            label="Required"
+          ></igc-date-time-input>
+        </fieldset>
+        <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
+      </form>
+    `;
+  },
+};
