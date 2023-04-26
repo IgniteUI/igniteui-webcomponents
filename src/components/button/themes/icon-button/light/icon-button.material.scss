@@ -36,18 +36,21 @@
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: color(gray, 500);
     }
 }
 
-:host([disabled][variant='contained']) {
+:host([disabled][variant='contained']),
+:host(:disabled[variant='contained']) {
     [part='base'] {
         background: color(gray, 100);
     }
 }
 
+:host(:disabled[variant='outlined']),
 :host([disabled][variant='outlined']) {
     [part='base'] {
         background: color(gray, 100);
