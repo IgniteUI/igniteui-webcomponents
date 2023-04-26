@@ -51,19 +51,9 @@
     gap: rem(8px);
 }
 
-:host(:not([disabled])) [part='base']:hover {
+:host(:not([disabled])) [part='base']:hover,
+:host(:not(:disabled)) [part='base']:hover {
     cursor: pointer;
-}
-
-:host(:disabled),
-:host([disabled]) {
-    pointer-events: none;
-
-    [part='base'] {
-        background: color(gray, 300);
-        color: color(gray, 500);
-        box-shadow: none;
-    }
 }
 
 %flat {
@@ -81,19 +71,42 @@
     }
 }
 
-:host(:not([disabled])[variant='flat']) [part='base'] {
+:host(:not([disabled])[variant='flat']) [part='base'],
+:host(:not(:disabled)[variant='flat']) [part='base'] {
     @extend %flat;
 }
 
-:host(:disabled[variant='flat']) [part='base'],
-:host([disabled][variant='flat']) [part='base'] {
-    background: transparent;
-}
-
-:host(:not([disabled])[variant='outlined']) [part='base'] {
+:host(:not([disabled])[variant='outlined']) [part='base'],
+:host(:not(:disabled)[variant='outlined']) [part='base'] {
     @extend %flat;
 
     box-shadow: inset 0 0 0 rem(1px) color(secondary, 500);
+}
+
+%contained {
+    background: color(secondary, 500);
+    color: contrast-color(secondary, 500);
+}
+
+:host(:not([disabled])[variant='contained']) [part='base'],
+:host(:not(:disabled)[variant='contained']) [part='base'] {
+    @extend %contained;
+}
+
+:host(:not([disabled])[variant='fab']) [part='base'],
+:host(:not(:disabled)[variant='fab']) [part='base'] {
+    @extend %contained;
+}
+
+:host(:disabled),
+:host([disabled]) {
+    pointer-events: none;
+
+    [part='base'] {
+        background: color(gray, 300) !important;
+        color: color(gray, 500) !important;
+        box-shadow: none !important;
+    }
 }
 
 :host(:disabled[variant='outlined']) [part='base'],
@@ -102,17 +115,9 @@
     box-shadow: inset 0 0 0 rem(1px) color(gray, 300);
 }
 
-%contained {
-    background: color(secondary, 500);
-    color: contrast-color(secondary, 500);
-}
-
-:host(:not([disabled])[variant='contained']) [part='base'] {
-    @extend %contained;
-}
-
-:host(:not([disabled])[variant='fab']) [part='base'] {
-    @extend %contained;
+:host(:disabled[variant='flat']) [part='base'],
+:host([disabled][variant='flat']) [part='base'] {
+    background: transparent;
 }
 
 :host([variant='fab']) {
