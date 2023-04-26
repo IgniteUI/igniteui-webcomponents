@@ -22,7 +22,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   protected calendarModel = new Calendar();
 
   /**
-   * Тhe current value of the calendar.
+   * The current value of the calendar.
    * Used when selection is set to single.
    */
   @blazorSuppress()
@@ -36,7 +36,7 @@ export class IgcCalendarBaseComponent extends LitElement {
   //we suppress value for blazor since we need to expose it on the leaves with the events for now.
 
   /**
-   * Тhe current values of the calendar.
+   * The current values of the calendar.
    * Used when selection is set to multiple or range.
    */
   @blazorSuppress()
