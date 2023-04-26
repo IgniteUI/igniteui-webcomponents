@@ -61,6 +61,7 @@ $icon-size: rem(18px);
     --component-size: var(--ig-size, var(--ig-size-large));
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     pointer-events: none;
 }

@@ -60,21 +60,24 @@
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: #{color(primary, 100)};
         background: transparent;
     }
 }
 
-:host([disabled][variant='contained']) {
+:host([disabled][variant='contained']),
+:host(:disabled[variant='contained']) {
     [part='base'] {
         background: #{color(primary, 100)};
         color: #{color(primary, 300)};
     }
 }
 
-:host([disabled][variant='outlined']) {
+:host([disabled][variant='outlined']),
+:host(:disabled[variant='outlined']) {
     [part='base'] {
         color: #{color(primary, 100)};
         box-shadow: 0 0 0 rem(1px) color(primary, 100);

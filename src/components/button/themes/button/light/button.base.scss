@@ -55,6 +55,7 @@
     cursor: pointer;
 }
 
+:host(:disabled),
 :host([disabled]) {
     pointer-events: none;
 
@@ -84,6 +85,7 @@
     @extend %flat;
 }
 
+:host(:disabled[variant='flat']) [part='base'],
 :host([disabled][variant='flat']) [part='base'] {
     background: transparent;
 }
@@ -94,6 +96,7 @@
     box-shadow: inset 0 0 0 rem(1px) color(secondary, 500);
 }
 
+:host(:disabled[variant='outlined']) [part='base'],
 :host([disabled][variant='outlined']) [part='base'] {
     background: transparent;
     box-shadow: inset 0 0 0 rem(1px) color(gray, 300);

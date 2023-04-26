@@ -83,7 +83,8 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: color(gray, 400);
         background: color(gray, 100);
@@ -91,7 +92,9 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
 }
 
 :host([disabled][variant='contained']),
-:host([disabled][variant='outlined']) {
+:host(:disabled[variant='contained']),
+:host([disabled][variant='outlined']),
+:host(:disabled[variant='outlined']) {
     [part='base'] {
         color: color(gray, 500);
     }
