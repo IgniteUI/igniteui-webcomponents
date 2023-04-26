@@ -702,6 +702,53 @@ describe('Select component', () => {
       expect(validity).to.have.returned(true);
       expect(select.invalid).to.be.false;
     });
+
+    it('displays the list of options at the proper position when `open` is initially set', async () => {
+      select = await fixture<IgcSelectComponent>(html`<igc-select open>
+        ${items.map(
+          (item) =>
+            html`<igc-select-item
+              value=${item.value}
+              ?disabled=${item.disabled}
+            >
+              <span slot="prefix">FR</span>
+              ${item.text}
+              <span slot="suffix">FR</span>
+            </igc-select-item>`
+        )}
+        <span slot="helper-text">This is helper text</span>
+      </igc-select>`);
+
+      await elementUpdated(select);
+
+      expect(select.positionStrategy).to.eq('absolute');
+      expect(select.placement).to.eq('bottom-start');
+      expect(select.open).to.be.true;
+
+      const selectListWrapperRect = (
+        select.shadowRoot!.querySelector('[part="base"]') as HTMLElement
+      ).getBoundingClientRect();
+      const selectWrapperRect = (
+        select.shadowRoot!.querySelector('div[role="combobox"]') as HTMLElement
+      ).getBoundingClientRect();
+      const helperTextEl = select.shadowRoot!.querySelector(
+        'div[id="helper-text"]'
+      ) as HTMLSlotElement;
+      const helperTextElRect = helperTextEl.getBoundingClientRect();
+
+      // Check that the list options is displayed over the helper text
+      expect(selectListWrapperRect.x).to.eq(selectWrapperRect.x);
+      expect(helperTextElRect.x).to.eq(selectWrapperRect.x);
+      expect(selectListWrapperRect.y).to.eq(selectWrapperRect.bottom);
+      // the list options's Y coordinate is less than or equal to the helper text's Y value => it is proeprly displayed above it
+      expect(selectListWrapperRect.y).to.be.lessThanOrEqual(helperTextElRect.y);
+
+      const elementUnder = document.elementFromPoint(
+        selectWrapperRect.x,
+        helperTextElRect.bottom - 1
+      );
+      expect(elementUnder).not.to.eq(helperTextEl);
+    });
   });
 
   describe('', () => {
