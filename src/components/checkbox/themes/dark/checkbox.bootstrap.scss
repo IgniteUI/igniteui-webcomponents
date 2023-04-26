@@ -6,7 +6,7 @@
         (
             name: 'igc-checkbox'
         ),
-        map.get($dark-indigo-schema, 'checkbox')
+        map.get($dark-bootstrap-schema, 'checkbox')
     );
     $theme: digest-schema($schema);
 
