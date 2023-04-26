@@ -66,8 +66,10 @@
 }
 
 :host([disabled][variant='fab']),
+:host(:disabled[variant='fab']),
 :host(:not([disabled])[variant='fab']),
 :host([disabled][variant='contained']),
+:host(:disabled[variant='contained']),
 :host(:not([disabled])[variant='contained']) {
     [part='base'] {
         box-shadow: var(--ig-elevation-0);
@@ -101,13 +103,17 @@
 }
 
 :host([disabled][variant='flat']) [part='base'],
-:host([disabled][variant='outlined']) [part='base'] {
+:host(:disabled[variant='flat']) [part='base'],
+:host([disabled][variant='outlined']) [part='base'],
+:host(:disabled[variant='outlined']) [part='base'] {
     background: transparent;
     box-shadow: none;
     color: #{utils.color(gray, 400)};
 }
 
 :host([disabled][variant='fab']) [part='base'],
+:host(:disabled[variant='fab']) [part='base'],
+:host(:disabled[variant='contained']) [part='base'],
 :host([disabled][variant='contained']) [part='base'] {
     background: #{utils.color(gray, 100)};
     color: #{utils.color(gray, 400)};

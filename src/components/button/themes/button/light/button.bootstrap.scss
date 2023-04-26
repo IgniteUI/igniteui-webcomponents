@@ -27,13 +27,16 @@
     }
 }
 
-:host([disabled][variant='flat']) [part='base'] {
+:host([disabled][variant='flat']) [part='base'],
+:host(:disabled[variant='flat']) [part='base'] {
     background: transparent;
     color: #{color(primary, 100)};
 }
 
 :host([disabled][variant='fab']),
-:host([disabled][variant='contained']) {
+:host(:disabled[variant='fab']),
+:host([disabled][variant='contained']),
+:host(:disabled[variant='contained']) {
     [part='base'] {
         background: #{color(primary, 200)};
         color: #{contrast-color(primary, 600)};
@@ -81,7 +84,8 @@
     }
 }
 
-:host([disabled][variant='outlined']) [part='base'] {
+:host([disabled][variant='outlined']) [part='base'],
+:host(:disabled[variant='outlined']) [part='base'] {
     box-shadow: none;
     color: #{color(primary, 200)};
     border: rem(1px) solid color(primary, 200);

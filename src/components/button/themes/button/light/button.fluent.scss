@@ -137,22 +137,23 @@ $active-background: var(--active-background, #{color(primary, 700)}) !default;
     }
 }
 
-// DISABLED START
-:host([disabled][variant='flat']) [part='base'] {
+:host([disabled][variant='flat']) [part='base'],
+:host(:disabled[variant='flat']) [part='base'] {
     color: #{color(gray, 400)};
     background: transparent;
 }
 
 :host([disabled][variant='fab']) [part='base'],
-:host([disabled][variant='contained']) [part='base'] {
+:host(:disabled[variant='fab']) [part='base'],
+:host([disabled][variant='contained']) [part='base'],
+:host(:disabled[variant='contained']) [part='base'] {
     color: #{color(gray, 400)};
     background: #{color(gray, 100)};
 }
 
-:host([disabled][variant='outlined']) [part='base'] {
+:host([disabled][variant='outlined']) [part='base'],
+:host(:disabled[variant='outlined']) [part='base'] {
     box-shadow: none;
     color: #{color(gray, 500, 8)};
     background: #{color(gray, 200)};
 }
-
-// DISABLED END
