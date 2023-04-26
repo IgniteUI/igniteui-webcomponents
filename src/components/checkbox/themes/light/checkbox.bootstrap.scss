@@ -115,7 +115,7 @@ $theme: digest-schema($schema);
     }
 }
 
-:host(:focus-within:not([disabled])[invalid]) [part~='control']
+:host(:focus-within:not([disabled])[invalid]) [part~='control'],
 :host(:not([disabled])[invalid]) [part~='focused'] [part~='control'] {
     box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-color-hover');
 }
