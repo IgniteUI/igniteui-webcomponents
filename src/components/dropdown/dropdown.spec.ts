@@ -784,6 +784,35 @@ describe('Dropdown component', () => {
 
         expect(dropdown.open).to.be.true;
       });
+
+      it('the list renders at the proper position relative to the target element when `open` is initially set', async () => {
+        dropdown = await fixture<IgcDropdownComponent>(html`
+          <igc-dropdown open>
+            <input
+              type="button"
+              slot="target"
+              value="Dropdown"
+              aria-label="dropdownButton"
+            />
+            <igc-dropdown-header>Languages</igc-dropdown-header>
+            <igc-dropdown-item selected>JavaScript</igc-dropdown-item>
+            <igc-dropdown-item selected>TypeScript</igc-dropdown-item>
+            <igc-dropdown-item>SCSS</igc-dropdown-item>
+          </igc-dropdown>
+        `);
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.true;
+        expect(dropdown.positionStrategy).to.eq('absolute');
+        expect(dropdown.placement).to.eq('bottom-start');
+        expect(dropdown.distance).to.eq(0);
+
+        const listRect = ddListWrapper(dropdown).getBoundingClientRect();
+        const targetRect = target(dropdown).getBoundingClientRect();
+
+        expect(listRect.x).to.eq(targetRect.x);
+        expect(listRect.y).to.eq(targetRect.bottom);
+      });
     });
   });
 
