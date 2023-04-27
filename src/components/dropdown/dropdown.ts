@@ -179,6 +179,7 @@ export default class IgcDropdownComponent
   protected toggleDirectiveChange() {
     if (!this.target) return;
     this.toggleController.target = this.target;
+    this.requestUpdate();
 
     if (this.open) {
       document.addEventListener('keydown', this.handleKeyDown);
@@ -224,6 +225,7 @@ export default class IgcDropdownComponent
     }
 
     await this.updateComplete;
+    this.toggleDirectiveChange();
     this.setInitialSelection();
   }
 
