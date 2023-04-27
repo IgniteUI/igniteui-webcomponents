@@ -1,5 +1,14 @@
 @use '../../../../styles/utilities' as *;
 
+:host {
+    background: color(surface, 500);
+    color: color(gray, 900);
+}
+
+::slotted(igc-icon) {
+    color: color(primary, 500);
+}
+
 ::slotted(*) {
     @include type-style('subtitle-2') {
         line-height: normal;
