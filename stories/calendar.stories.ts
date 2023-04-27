@@ -72,7 +72,7 @@ const metadata: Meta<IgcCalendarComponent> = {
     value: {
       type: 'Date | undefined',
       description:
-        'Тhe current value of the calendar.\nUsed when selection is set to single.',
+        'The current value of the calendar.\nUsed when selection is set to single.',
       control: 'date',
     },
     selection: {
@@ -150,7 +150,7 @@ interface IgcCalendarArgs {
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
   /**
-   * Тhe current value of the calendar.
+   * The current value of the calendar.
    * Used when selection is set to single.
    */
   value: Date | undefined;
