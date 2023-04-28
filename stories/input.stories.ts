@@ -1,15 +1,15 @@
-import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
+import { IgcInputComponent, defineComponents } from '../src/index.js';
 import {
   Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
-import { defineComponents, IgcInputComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcInputComponent);
 registerIconFromText(github.name, github.value);
@@ -305,6 +305,7 @@ export const Form: Story = {
         ></igc-input>
       </fieldset>
       ${formControls()}
+      <igc-icon-button name="github" type="submit"></igc-icon-button>
     </form> `;
   },
 };

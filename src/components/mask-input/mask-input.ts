@@ -191,15 +191,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  protected handleClick() {
-    const { selectionStart: start, selectionEnd: end } = this.input;
-
-    // Clicking at the end of the input field will select the entire mask
-    if (start === end && start === this.maskedValue.length) {
-      this.select();
-    }
-  }
-
   protected updateMaskedValue() {
     if (this.maskedValue === this.emptyMask) {
       this.maskedValue = '';

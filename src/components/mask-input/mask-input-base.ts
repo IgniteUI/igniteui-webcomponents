@@ -125,9 +125,13 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
     });
   }
 
-  // TODO: Remove after date-time input implementation
-  protected handleInvalid() {
-    this.invalid = true;
+  protected handleClick() {
+    const { selectionStart: start, selectionEnd: end } = this.input;
+
+    // Clicking at the end of the input field will select the entire mask
+    if (start === end && start === this.maskedValue.length) {
+      this.select();
+    }
   }
 
   @blazorSuppress()

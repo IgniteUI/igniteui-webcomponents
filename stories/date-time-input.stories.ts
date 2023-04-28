@@ -1,13 +1,18 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { Context, disableStoryControls } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
-  DatePartDeltas,
   DatePart,
+  DatePartDeltas,
 } from '../src/components/date-time-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { defineComponents, IgcDateTimeInputComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+import { IgcDateTimeInputComponent, defineComponents } from '../src/index.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcDateTimeInputComponent);
 
@@ -215,7 +220,7 @@ const handleClear = () => {
 
 Object.assign(metadata.parameters!, {
   actions: {
-    handles: ['igcChange'],
+    handles: ['igcChange', 'igcInput'],
   },
 });
 
@@ -277,18 +282,16 @@ export const Basic: Story = Template.bind({});
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
-    const onSubmit = (e: SubmitEvent) => e.preventDefault();
-
     return html`
-      <form action="" @submit=${onSubmit}>
+      <form action="" @submit=${formSubmitHandler}>
         <fieldset>
           <igc-date-time-input
             label="Default state"
-            name="dt-default"
+            name="datetime-default"
           ></igc-date-time-input>
           <igc-date-time-input
             label="Initial value"
-            name="dt-initial"
+            name="datetime-initial"
             value="2023-03-17T15:35"
             display-format="yyyy-MM-dd HH:mm"
             input-format="yyyy-MM-dd HH:mm"
@@ -296,25 +299,36 @@ export const Form: Story = {
           <igc-date-time-input
             readonly
             label="Readonly"
-            name="dt-readonly"
+            name="datetime-readonly"
             value="1987-07-17"
           ></igc-date-time-input>
         </fieldset>
         <fieldset disabled="disabled">
           <igc-date-time-input
-            name="dt-disabled"
+            name="datetime-disabled"
             label="Disabled editor"
           ></igc-date-time-input>
         </fieldset>
         <fieldset>
           <igc-date-time-input
             required
-            name="dt-required"
+            name="datetime-required"
             label="Required"
           ></igc-date-time-input>
+          <igc-date-time-input
+            name="datetime-min"
+            label="Minimum constraint (2023-03-17)"
+            min-value="2023-03-17"
+            value="2020-01-01"
+          ></igc-date-time-input>
+          <igc-date-time-input
+            name="datetime-max"
+            label="Maximum constraint (2023-04-17)"
+            max-value="2023-04-17"
+            value="2024-03-17"
+          ></igc-date-time-input>
         </fieldset>
-        <button type="submit">Submit</button>
-        <button type="reset">Reset</button>
+        ${formControls()}
       </form>
     `;
   },

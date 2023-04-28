@@ -248,13 +248,13 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   /** Increments the numeric value of the input by one or more steps. */
   public stepUp(n?: number) {
     this.input.stepUp(n);
-    this.handleChange();
+    this.value = this.input.value;
   }
 
   /** Decrements the numeric value of the input by one or more steps. */
   public stepDown(n?: number) {
     this.input.stepDown(n);
-    this.handleChange();
+    this.value = this.input.value;
   }
 
   private handleInput() {
