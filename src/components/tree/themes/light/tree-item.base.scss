@@ -33,6 +33,18 @@ $toggle-icon-size: rem(24px);
     background: $disabled-background;
 }
 
+[role~='group'] {
+    overflow: hidden;
+}
+
+:host(:not([expanded])) [role~='group'] {
+    height: 0;
+}
+
+:host([expanded]) [role~='group'] {
+    height: auto;
+}
+
 [part~='wrapper'] {
     display: flex;
     align-items: center;

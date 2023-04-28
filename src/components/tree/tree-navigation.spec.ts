@@ -1,4 +1,4 @@
-import { elementUpdated, expect } from '@open-wc/testing';
+import { elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents } from '../../index.js';
 import IgcTreeComponent from './tree.js';
@@ -118,7 +118,7 @@ describe('Tree Navigation', () => {
         cancelable: true,
       })
     );
-    await elementUpdated(tree);
+    await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
 
     expect(item2.active).to.be.true;
     expect(item2.expanded).to.be.false;
@@ -201,7 +201,7 @@ describe('Tree Navigation', () => {
     await elementUpdated(tree);
 
     TreeTestFunctions.setFocusAndTriggerKeydown(item1, tree, 'ArrowRight');
-    await elementUpdated(tree);
+    await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
 
     expect(item1.expanded).to.be.true;
 
@@ -350,7 +350,6 @@ describe('Tree Navigation', () => {
     item3.active = true;
     await elementUpdated(tree);
     TreeTestFunctions.setFocusAndTriggerKeydown(item3, tree, '*');
-    await elementUpdated(tree);
 
     expect(topLevelItems[3].expanded).to.be.false; // Item4 does not have children => not expanded
     topLevelItems.pop();
