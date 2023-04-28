@@ -42,6 +42,7 @@
     /* stylelint-disable */
     grid-template-columns: minmax(var(--step-min-width--first-step), max-content) repeat(calc(var(--steps-count) - 1), minmax(var(--step-min-width), auto));
     /* stylelint-enable */
+    grid-template-rows: auto 1fr;
 
     ::slotted(igc-step) {
         // display: contents make all direct children of the step to behave like they are direct children of the stepper
