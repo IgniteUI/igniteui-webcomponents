@@ -56,6 +56,9 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @query('dialog', true)
   private dialog!: HTMLDialogElement;
 
+  @query('[part~="backdrop"]', true)
+  private backdrop!: HTMLElement;
+
   /* blazorSuppress */
   /**
    * Whether the dialog should be closed when pressing the 'ESCAPE' button.
@@ -142,6 +145,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       return;
     }
 
+    this.backdrop.setAttribute('aria-hidden', 'false');
     this.toggleAnimation('open');
     this.open = true;
   }
@@ -152,6 +156,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       return;
     }
 
+    this.backdrop.setAttribute('aria-hidden', 'true');
     await this.toggleAnimation('close');
     this.open = false;
   }
@@ -162,6 +167,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   protected async hideWithEvent() {
+    this.backdrop.setAttribute('aria-hidden', 'true');
     if (!this.open) {
       return;
     }
@@ -226,7 +232,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
     const labelledby = label ? undefined : this.titleId;
 
     return html`
-      <div part="backdrop" aria-hidden="true" ?hidden=${!this.open}></div>
+      <div part="backdrop" aria-hidden=${!this.open}></div>
       <dialog
         part="base"
         role="dialog"

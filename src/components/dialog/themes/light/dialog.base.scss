@@ -66,4 +66,11 @@ slot[name='footer'] {
     inset: 0;
     background: color(gray, 500, .54);
     z-index: 10005;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 350ms ease-out;
+}
+
+[part='backdrop'][aria-hidden='false'] {
+    opacity: 1;
 }
