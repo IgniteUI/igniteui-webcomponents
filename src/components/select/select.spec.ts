@@ -7,6 +7,7 @@ import IgcSelectComponent from './select.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Select component', () => {
   let select: IgcSelectComponent;
@@ -862,6 +863,77 @@ describe('Select component', () => {
       await elementUpdated(select);
 
       groups[0].items.forEach((i) => expect(i.disabled).to.be.true);
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcSelectComponent>(html`
+      <igc-select name="select"
+        >${items.map(
+          (item) =>
+            html`<igc-select-item
+              value=${item.value}
+              ?disabled=${item.disabled}
+            >
+              ${item.text}
+            </igc-select-item>`
+        )}</igc-select
+      >
+    `);
+
+    beforeEach(async () => {
+      await spec.setup(IgcSelectComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.eql(spec.form);
+    });
+
+    it('is not associated on submit if no value', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is associated on submit', async () => {
+      spec.element.value = 'spec';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
+    it('is correctly reset of form reset', async () => {
+      spec.element.value = 'spec';
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal(undefined);
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'spec';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });

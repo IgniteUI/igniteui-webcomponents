@@ -29,6 +29,8 @@ import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import messages from '../common/localization/validation-en.js';
 
 defineComponents(
   IgcIconComponent,
@@ -74,11 +76,11 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcSelectComponent extends EventEmitterMixin<
-  IgcSelectEventMap,
-  Constructor<IgcDropdownComponent>
->(IgcDropdownComponent) {
-  /** @private */
+export default class IgcSelectComponent extends FormAssociatedMixin(
+  EventEmitterMixin<IgcSelectEventMap, Constructor<IgcDropdownComponent>>(
+    IgcDropdownComponent
+  )
+) {
   public static readonly tagName = 'igc-select';
   public static styles = styles;
   private searchTerm = '';
@@ -128,34 +130,6 @@ export default class IgcSelectComponent extends EventEmitterMixin<
    */
   @property({ reflect: false, type: String })
   public value?: string | undefined;
-
-  /**
-   * The name attribute of the control.
-   * @attr
-   */
-  @property()
-  public name!: string;
-
-  /**
-   * The disabled attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
-
-  /**
-   * The required attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public required = false;
-
-  /**
-   * The invalid attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public invalid = false;
 
   /**
    * The outlined attribute of the control.
@@ -241,16 +215,10 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   }
 
   /** Checks the validity of the control and moves the focus to it if it is not valid. */
-  public reportValidity() {
-    const valid = this.checkValidity();
+  public override reportValidity() {
+    const valid = super.reportValidity();
     if (!valid) this.target.focus();
     return valid;
-  }
-
-  /** Checks the validity of the control. */
-  public checkValidity() {
-    this.invalid = this.required && !this.value;
-    return !this.invalid;
   }
 
   public override async firstUpdated() {
@@ -264,6 +232,8 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     if (this.autofocus) {
       this.target.focus();
     }
+
+    this.updateValidity();
   }
 
   @watch('selectedItem')
@@ -273,7 +243,12 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
   @watch('value')
   protected updateSelected() {
-    if (this.allItems.length === 0) return;
+    if (this.allItems.length === 0) {
+      this.setFormValue(null);
+      this.updateValidity();
+      this.setInvalidState();
+      return;
+    }
 
     if (this.selectedItem?.value !== this.value) {
       const matches = this.allItems.filter((i) => i.value === this.value);
@@ -284,16 +259,38 @@ export default class IgcSelectComponent extends EventEmitterMixin<
       if (index === -1) {
         this.value = undefined;
         this.clearSelection();
+        this.setFormValue(null);
+        this.updateValidity();
+        this.setInvalidState();
         return;
       }
 
       this.select(index);
     }
+    this.setFormValue(this.value!);
+    this.updateValidity();
+    this.setInvalidState();
   }
 
-  @watch('value')
-  protected validate() {
-    this.updateComplete.then(() => this.reportValidity());
+  protected override handleFormReset(): void {
+    this.value = this.getAttribute('value') ?? '';
+  }
+
+  protected override updateValidity(message = ''): void {
+    const flags: ValidityStateFlags = {};
+    let msg = '';
+
+    if (this.required && !this.value) {
+      flags.valueMissing = true;
+      msg = messages.required;
+    }
+
+    if (message) {
+      flags.customError = true;
+      msg = message;
+    }
+
+    this.setValidity(flags, msg);
   }
 
   protected selectNext() {
@@ -359,11 +356,13 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   }
 
   protected handleFocus() {
+    this._dirty = true;
     if (this.open) return;
     this.emitEvent('igcFocus');
   }
 
   protected handleBlur() {
+    this.invalid = !this.checkValidity();
     if (this.open) return;
     this.emitEvent('igcBlur');
   }
@@ -456,7 +455,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
           size=${this.size}
           dir=${this.dir}
           tabindex="-1"
-          .disabled="${this.disabled}"
+          .disabled=${this.disabled}
           .required=${this.required}
           .invalid=${this.invalid}
           .outlined=${this.outlined}

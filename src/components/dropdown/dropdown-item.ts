@@ -67,17 +67,13 @@ export default class IgcDropdownItemComponent extends LitElement {
 
   @watch('selected')
   protected selectedChange() {
-    this.selected
-      ? this.setAttribute('aria-selected', 'true')
-      : this.removeAttribute('aria-selected');
+    this.toggleAttribute('aria-selected', this.selected);
     this.active = this.selected;
   }
 
   @watch('disabled')
   protected disabledChange() {
-    this.disabled
-      ? this.setAttribute('aria-disabled', 'true')
-      : this.removeAttribute('aria-disabled');
+    this.toggleAttribute('aria-disabled', this.disabled);
   }
 
   public override connectedCallback() {
