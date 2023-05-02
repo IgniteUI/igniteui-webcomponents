@@ -36,6 +36,7 @@ export interface IgcComboChangeEventArgs {
   newValue: string;
   /* primitiveValue */
   items: object;
+  /* blazorAlternateName: changeType */
   type: ComboChangeType;
 }
 
