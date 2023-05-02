@@ -1,7 +1,12 @@
 import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
   defineComponents,
@@ -397,18 +402,10 @@ function groupBy(objectArray: any, property: string) {
 }
 
 export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
   render: () => {
-    const onSubmit = (e: SubmitEvent) => {
-      e.preventDefault();
-      console.log(
-        JSON.stringify(
-          Object.fromEntries(new FormData(e.target as HTMLFormElement))
-        )
-      );
-    };
-
     return html`
-      <form @submit=${onSubmit}>
+      <form @submit=${formSubmitHandler}>
         <fieldset>
           <legend>Default select</legend>
           <!-- <igc-select
@@ -508,8 +505,7 @@ export const Form: Story = {
             <span slot="helper-text">Sample helper text.</span>
           </igc-select>
         </fieldset>
-        <button type="submit">Submit</button>
-        <button type="reset">Reset</button>
+        ${formControls()}
       </form>
     `;
   },

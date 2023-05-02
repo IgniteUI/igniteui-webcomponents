@@ -899,13 +899,47 @@ describe('Combo', () => {
       expect(spec.submit()?.get(spec.element.name)).to.be.null;
     });
 
-    it('is associated on submit', async () => {
+    it('is associated on submit with value-key (single)', async () => {
+      spec.element.singleSelect = true;
+      await elementUpdated(spec.element);
       spec.element.select(['BG01', 'BG02']);
       await elementUpdated(spec.element);
 
-      expect(spec.submit()?.get(spec.element.name)).to.equal(
-        spec.element.value
-      );
+      expect(spec.submit()?.get(spec.element.name)).to.equal('BG01');
+    });
+
+    it('is associated on submit with value-key (multiple)', async () => {
+      spec.element.select(['BG01', 'BG02']);
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal('BG01');
+      expect(spec.submit()?.getAll(spec.element.name)).to.eql(['BG01', 'BG02']);
+    });
+
+    it('is associated on submit without value-key (single)', async () => {
+      const [first, second, _] = cities;
+
+      spec.element.valueKey = undefined;
+      spec.element.singleSelect = true;
+      await elementUpdated(spec.element);
+      spec.element.select([first, second]);
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(first.name);
+    });
+
+    it('is associated on submit without value-key (multiple)', async () => {
+      const [first, second, _] = cities;
+
+      spec.element.valueKey = undefined;
+      spec.element.select([first, second]);
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(first.name);
+      expect(spec.submit()?.getAll(spec.element.name)).to.eql([
+        first.name,
+        second.name,
+      ]);
     });
 
     it('is correctly reset on form reset', async () => {

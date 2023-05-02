@@ -31,7 +31,7 @@ export function formSubmitHandler(event: SubmitEvent) {
 
 export function formControls() {
   return html`
-    <igc-button type="submit">Submit</igc-button>
-    <igc-button type="reset">Reset</igc-button>
+    <igc-button variant="outlined" type="submit">Submit</igc-button>
+    <igc-button variant="outlined" type="reset">Reset</igc-button>
   `;
 }

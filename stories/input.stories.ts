@@ -266,15 +266,21 @@ export const Form: Story = {
   render: () => {
     return html`<form action="" @submit=${formSubmitHandler}>
       <fieldset>
-        <legend>Default input</legend>
-        <igc-input name="input" label="Username"></igc-input>
+        <igc-input name="input" label="Default" label="Username"></igc-input>
+        <igc-input
+          name="input-default"
+          label="Initial value"
+          value="Jane Doe"
+        ></igc-input>
       </fieldset>
       <fieldset disabled>
-        <legend>Disabled input</legend>
-        <igc-input name="input-disabled" label="Username"></igc-input>
+        <igc-input
+          name="input-disabled"
+          label="Username"
+          value="John Doe"
+        ></igc-input>
       </fieldset>
       <fieldset>
-        <legend>Input constraints</legend>
         <igc-input name="input-required" label="Required" required></igc-input>
         <igc-input
           name="input-minlength"

@@ -453,6 +453,17 @@ describe('Rating component', () => {
       expect(spec.element.disabled).to.be.false;
     });
 
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      spec.element.value = 0;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 3;
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
     it('fulfils custom constraints', async () => {
       spec.element.setCustomValidity('invalid');
       spec.submitFails();

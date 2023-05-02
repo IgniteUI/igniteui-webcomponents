@@ -13,6 +13,7 @@ import { styles } from './rating.base.css.js';
 import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
 import { styles as indigo } from './rating.indigo.css.js';
+import messages from '../common/localization/validation-en.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
@@ -166,6 +167,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   protected handleValueChange() {
     this.value = clamp(isNaN(this.value) ? 0 : this.value, 0, this.max);
     this.setFormValue(`${this.value}`, `${this.value}`);
+    this.updateValidity();
+    this.setInvalidState();
   }
 
   @watch('step')
@@ -273,9 +276,14 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     this.requestUpdate();
   }
 
-  protected override updateValidity(message: string): void {
+  protected override updateValidity(message = ''): void {
     const flags: ValidityStateFlags = {};
     let msg = '';
+
+    if (this.required && !this.value) {
+      flags.valueMissing = true;
+      msg = messages.required;
+    }
 
     if (message) {
       flags.customError = true;

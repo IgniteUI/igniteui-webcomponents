@@ -349,6 +349,19 @@ export const Form: Story = {
             value-key="id"
             display-key="name"
           ></igc-combo>
+          <igc-combo
+            label="No value key"
+            .data=${cities}
+            name="combo-not-key"
+            display-key="name"
+          ></igc-combo>
+          <igc-combo
+            .data=${cities}
+            single-select
+            label="Single selection"
+            name="combo-single"
+            display-key="name"
+          ></igc-combo>
         </fieldset>
         <fieldset disabled="disabled">
           <igc-combo

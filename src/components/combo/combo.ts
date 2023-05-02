@@ -435,13 +435,34 @@ export default class IgcComboComponent<T extends object>
     return this._value;
   }
 
+  protected override setFormValue(): void {
+    const key = this.valueKey || this.displayKey;
+    const items = Array.from(this.selectionController.selected).map((item) =>
+      key ? item[key] : item
+    );
+    const data = new FormData();
+
+    if (items.length < 1) {
+      return super.setFormValue(null);
+    }
+
+    if (this.singleSelect) {
+      data.set(this.name, key ? `${items[0]}` : JSON.stringify(items[0]));
+      return super.setFormValue(data);
+    }
+
+    for (const item of items) {
+      data.append(this.name, key ? `${item}` : JSON.stringify(item));
+    }
+    super.setFormValue(data);
+  }
+
   protected async updateValue() {
     this._value = this.selectionController.getValue(
       Array.from(this.selectionController.selected)
     );
 
-    const value = this._value || null;
-    this.setFormValue(value);
+    this.setFormValue();
     this.updateValidity();
     this.setInvalidState();
 
