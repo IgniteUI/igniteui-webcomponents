@@ -49,6 +49,7 @@ defineComponents(
   IgcInputComponent
 );
 
+/* blazorSupportsVisualChildren */
 /**
  * @element igc-combo
  *
