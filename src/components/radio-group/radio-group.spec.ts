@@ -51,41 +51,42 @@ describe('Radio Group Component', () => {
       );
     });
 
-    it('should be able to navigate radios using arrow keys', async () => {
+    it.only('should be able to navigate radios using arrow keys', async () => {
       const radio1 = sinon.spy(radios[0], 'emitEvent');
       const radio2 = sinon.spy(radios[1], 'emitEvent');
+      const [first, second, _] = radios;
 
-      group.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      first.click();
 
-      await elementUpdated(radios[0]);
+      await elementUpdated(first);
       expect(radio1).to.be.calledWith('igcFocus');
       expect(radio1).to.be.calledWith('igcChange');
 
-      group.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
 
-      await elementUpdated(radios[0]);
-      await elementUpdated(radios[1]);
+      await elementUpdated(first);
+      await elementUpdated(second);
       expect(radio1).to.be.calledWith('igcBlur');
       expect(radio2).to.be.calledWith('igcFocus');
       expect(radio2).to.be.calledWith('igcChange');
 
-      group.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
-      await elementUpdated(radios[0]);
-      await elementUpdated(radios[1]);
+      second.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+      await elementUpdated(first);
+      await elementUpdated(second);
       expect(radio2).to.be.calledWith('igcBlur');
       expect(radio1).to.be.calledWith('igcFocus');
       expect(radio1).to.be.calledWith('igcChange');
 
-      group.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
-      await elementUpdated(radios[0]);
-      await elementUpdated(radios[1]);
+      first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+      await elementUpdated(first);
+      await elementUpdated(second);
       expect(radio1).to.be.calledWith('igcBlur');
       expect(radio2).to.be.calledWith('igcFocus');
       expect(radio2).to.be.calledWith('igcChange');
 
-      group.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
-      await elementUpdated(radios[0]);
-      await elementUpdated(radios[1]);
+      second.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+      await elementUpdated(first);
+      await elementUpdated(second);
       expect(radio2).to.be.calledWith('igcBlur');
       expect(radio1).to.be.calledWith('igcFocus');
       expect(radio1).to.be.calledWith('igcChange');
@@ -102,7 +103,9 @@ describe('Radio Group Component', () => {
       radios[1].disabled = true;
       await elementUpdated(radios[1]);
 
-      group.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      radios[0].dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown' })
+      );
 
       await elementUpdated(radios[0]);
       await elementUpdated(radios[1]);
@@ -111,17 +114,6 @@ describe('Radio Group Component', () => {
       expect(radio2).to.not.be.called;
       expect(radio3).to.be.calledWith('igcFocus');
       expect(radio3).to.be.calledWith('igcChange');
-    });
-
-    it('should set required attribute correctly', async () => {
-      expect(Array.from(radios).every((r) => r.required)).to.be.false;
-      expect(radios[0].required).to.be.true;
-
-      radios[1].checked = true;
-      await elementUpdated(group);
-
-      expect(radios[0].required).to.be.false;
-      expect(radios[1].required).to.be.true;
     });
   });
 

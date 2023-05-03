@@ -75,11 +75,41 @@ export function format(template: string, ...params: string[]): string {
   });
 }
 
+/**
+ * Parse the passed `value` as a number or return the `fallback` if it can't be done.
+ */
 export function asNumber(value: unknown, fallback = 0) {
   const parsed = parseFloat(value as string);
   return isNaN(parsed) ? fallback : parsed;
 }
 
+/**
+ * Returns the value wrapped between the min and max bounds.
+ *
+ * If the value is greater than max, returns the min and vice-versa.
+ * If the value is between the bounds, it is returned unchanged.
+ */
+export function wrap(min: number, max: number, value: number) {
+  if (value < min) {
+    return max;
+  } else if (value > max) {
+    return min;
+  }
+
+  return value;
+}
+
 export function isDefined<T = unknown>(value: T) {
   return value !== undefined;
+}
+
+/** Convenient wrapper for `Array.some` */
+export function any<T>(
+  arr: T[],
+  predicate: keyof T | ((item: T, idx: number, array: T[]) => boolean)
+) {
+  if (predicate instanceof Function) {
+    return arr.some(predicate);
+  }
+  return arr.some((item) => Boolean(item[predicate]));
 }
