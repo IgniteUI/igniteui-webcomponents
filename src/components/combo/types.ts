@@ -31,14 +31,16 @@ export interface GroupingOptions<T extends object> {
   direction: GroupingDirection;
 }
 
+/* marshalByValue */
 export interface IgcComboChangeEventArgs {
   newValue: string;
+  /* primitiveValue */
   items: object;
+  /* blazorAlternateName: changeType */
   type: ComboChangeType;
 }
 
 export interface IgcComboEventMap {
-  /* blazorSuppress */
   igcChange: CustomEvent<IgcComboChangeEventArgs>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
