@@ -110,7 +110,7 @@
         border-block-start: var(--separator-size) var(--separator-type) var(--separator-color);
         height: var(--separator-size);
         min-width: var(--separator-min-width--header);
-        width: calc(50% - (var(--indicator-size) / 2) - var(--header-padding));
+        width: calc(50% - (var(--indicator-size) - #{rem(4px)}));
         position: absolute;
         z-index: -1;
     }
