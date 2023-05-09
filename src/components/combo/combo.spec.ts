@@ -907,7 +907,6 @@ describe('Combo', () => {
       combo.open = true;
 
       await elementUpdated(combo);
-      await list.layoutComplete;
 
       const items = combo
         .shadowRoot!.querySelector('igc-combo-list')!
