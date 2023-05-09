@@ -54,20 +54,12 @@ const metadata: Meta<IgcStepperComponent> = {
       options: ['start', 'end', 'top', 'bottom', 'undefined'],
       control: { type: 'select' },
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
   },
   args: {
     orientation: 'horizontal',
     stepType: 'full',
     linear: false,
     contentTop: false,
-    size: 'large',
   },
 };
 
@@ -84,21 +76,12 @@ interface IgcStepperArgs {
   contentTop: boolean;
   /** Get/Set the position of the steps title. */
   titlePosition: 'start' | 'end' | 'top' | 'bottom' | undefined;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcStepperArgs>;
 
 // endregion
 const BasicTemplate = (
-  {
-    orientation,
-    stepType,
-    titlePosition,
-    linear,
-    contentTop,
-    size,
-  }: IgcStepperArgs,
+  { orientation, stepType, titlePosition, linear, contentTop }: IgcStepperArgs,
   { globals: { direction } }: Context
 ) => {
   const next = () => {
@@ -121,7 +104,6 @@ const BasicTemplate = (
       .titlePosition=${titlePosition}
       .linear=${linear}
       .contentTop=${contentTop}
-      .size=${size}
       .dir=${direction}
     >
       <igc-step>

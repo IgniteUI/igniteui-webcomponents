@@ -60,6 +60,7 @@
     "@igniteui/material-icons-extended": "^2.11.0",
     "@open-wc/eslint-config": "^10.0.0",
     "@open-wc/testing": "^3.1.8",
+    "@storybook/addon-a11y": "^7.0.8",
     "@storybook/addon-actions": "^7.0.7",
     "@storybook/addon-essentials": "^7.0.7",
     "@storybook/addon-links": "^7.0.7",
