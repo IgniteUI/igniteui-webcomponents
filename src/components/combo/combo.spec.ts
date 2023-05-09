@@ -57,6 +57,22 @@ describe('Combo', () => {
     },
   ];
 
+  const primitive = [
+    0,
+    'Sofia',
+    4,
+    'Varna',
+    'varna',
+    false,
+    { a: 1, b: 2 },
+    -1,
+    true,
+    null,
+    undefined,
+    NaN,
+    0,
+  ];
+
   let combo: IgcComboComponent<City>;
   let list: IgcComboListComponent;
   let options: IgcComboListComponent;
@@ -881,6 +897,25 @@ describe('Combo', () => {
 
       // No items should be selected
       expect(selected.length).to.equal(0);
+    });
+
+    it('should display primitive values correctly', async () => {
+      const combo = await fixture<IgcComboComponent<any>>(
+        html`<igc-combo .data=${primitive}></igc-combo>`
+      );
+
+      combo.open = true;
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      const items = combo
+        .shadowRoot!.querySelector('igc-combo-list')!
+        .querySelectorAll('[part~="item"]');
+
+      items.forEach((item, index) => {
+        expect(item.textContent).to.equal(String(primitive[index]));
+      });
     });
   });
 });

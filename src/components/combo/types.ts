@@ -3,15 +3,13 @@ import IgcComboComponent from './combo.js';
 
 export type Keys<T> = keyof T;
 export type Values<T> = T[keyof T];
-
-export interface ComboRecordMeta {
-  header: boolean;
-  dataIndex: number;
-}
-
 export type Item<T extends object> = T | Values<T>;
 
-export type ComboRecord<T extends object> = T & ComboRecordMeta;
+export type ComboRecord<T extends object> = {
+  value: T;
+  header: boolean;
+  dataIndex: number;
+};
 
 export type ComboHost<T extends object> = ReactiveControllerHost &
   IgcComboComponent<T>;
