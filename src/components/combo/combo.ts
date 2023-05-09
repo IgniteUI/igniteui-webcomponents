@@ -628,13 +628,16 @@ export default class IgcComboComponent<T extends object>
     this._toggle(false);
   }
 
-  protected itemRenderer = (item: T, index: number): TemplateResult => {
-    const record = item as ComboRecord<T>;
+  protected itemRenderer = (
+    item: ComboRecord<T>,
+    index: number
+  ): TemplateResult => {
+    const record = item;
     const dataItem = this.data.at(record.dataIndex);
     const active = this.navigationController.active === index;
     const selected = this.selectionController.selected.has(dataItem!);
     const headerTemplate = html`<igc-combo-header part="group-header"
-      >${this.groupHeaderTemplate({ item: record })}</igc-combo-header
+      >${this.groupHeaderTemplate({ item: record.value })}</igc-combo-header
     >`;
 
     const itemParts = partNameMap({
@@ -651,7 +654,7 @@ export default class IgcComboComponent<T extends object>
       .active=${active}
       ?selected=${selected}
       ?hide-checkbox=${this.singleSelect}
-      >${this.itemTemplate({ item: record })}</igc-combo-item
+      >${this.itemTemplate({ item: record.value })}</igc-combo-item
     >`;
 
     return html`${this.groupKey && record.header

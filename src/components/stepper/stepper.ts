@@ -3,7 +3,6 @@ import { property, queryAssignedElements } from 'lit/decorators.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { IgcStepperEventMap } from './stepper.common.js';
 import IgcStepComponent from './step.js';
 import { Direction } from '../common/types.js';
@@ -31,9 +30,10 @@ defineComponents(IgcStepComponent);
  * @fires igcActiveStepChanged - Emitted when the active step is changed.
  */
 @themes({ bootstrap, fluent, indigo })
-export default class IgcStepperComponent extends SizableMixin(
-  EventEmitterMixin<IgcStepperEventMap, Constructor<LitElement>>(LitElement)
-) {
+export default class IgcStepperComponent extends EventEmitterMixin<
+  IgcStepperEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   /** @private */
   public static readonly tagName = 'igc-stepper';
   /** @private */
@@ -126,9 +126,18 @@ export default class IgcStepperComponent extends SizableMixin(
 
   @watch('titlePosition', { waitUntilFirstUpdate: true })
   protected titlePositionChange(): void {
-    this.steps.forEach(
-      (step: IgcStepComponent) => (step.titlePosition = this.titlePosition)
-    );
+    this.steps.forEach((step: IgcStepComponent) => {
+      if (
+        this.titlePosition !== 'bottom' &&
+        this.titlePosition !== 'top' &&
+        this.titlePosition !== 'end' &&
+        this.titlePosition !== 'start'
+      ) {
+        step.titlePosition = undefined;
+      } else {
+        step.titlePosition = this.titlePosition;
+      }
+    });
   }
 
   @watch('contentTop', { waitUntilFirstUpdate: true })
