@@ -39,17 +39,21 @@ export class DataController<T extends object> implements ReactiveController {
     };
   }
 
-  private index(data: T[]) {
-    return data.map((item, index) => ({ ...item, dataIndex: index }));
+  private index(data: T[]): ComboRecord<T>[] {
+    return data.map((item, index) => ({
+      value: item,
+      header: false,
+      dataIndex: index,
+    }));
   }
 
   public hostConnected() {}
 
   public async apply(data: T[]): Promise<ComboRecord<T>[]> {
-    data = this.index(data);
-    data = this.filtering.apply(data, this);
-    data = this.grouping.apply(data, this);
+    let records = this.index(data);
+    records = this.filtering.apply(records, this);
+    records = this.grouping.apply(records, this);
 
-    return data as ComboRecord<T>[];
+    return records;
   }
 }

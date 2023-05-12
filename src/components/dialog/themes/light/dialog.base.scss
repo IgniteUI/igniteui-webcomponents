@@ -61,12 +61,9 @@ slot[name='footer'] {
     }
 }
 
-dialog::backdrop {
-    background: none;
-}
-
 [part='backdrop'] {
     position: fixed;
     inset: 0;
     background: color(gray, 500, .54);
+    z-index: 10005;
 }

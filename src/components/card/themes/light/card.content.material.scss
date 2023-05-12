@@ -4,7 +4,7 @@
 :host {
     display: block;
     width: 100%;
-    flex: 1 1 auto;
+    overflow: auto;
     padding: rem(16px);
     color: color(gray, 700);
 }
