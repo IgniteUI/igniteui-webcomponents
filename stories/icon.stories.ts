@@ -18,7 +18,7 @@ const icons = all.map((icon) => icon.name);
 const metadata: Meta<IgcIconComponent> = {
   title: 'Icon',
   component: 'igc-icon',
-  parameters: { docs: { description: { component: 'Icon component' } } },
+  parameters: { docs: { description: {} } },
   argTypes: {
     name: {
       type: 'string',
