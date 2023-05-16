@@ -1,7 +1,8 @@
 import { DataController } from '../controllers/data.js';
+import { ComboRecord } from '../types.js';
 
 export default class FilterDataOperation<T extends object> {
-  public apply(data: T[], controller: DataController<T>) {
+  public apply(data: ComboRecord<T>[], controller: DataController<T>) {
     const {
       searchTerm,
       filteringOptions: { filterKey, caseSensitive },
@@ -11,8 +12,10 @@ export default class FilterDataOperation<T extends object> {
 
     const term = caseSensitive ? searchTerm : searchTerm.toLocaleLowerCase();
 
-    return data.filter((item: T) => {
-      const value = filterKey ? String(item[filterKey] as any) : String(item);
+    return data.filter((item: ComboRecord<T>) => {
+      const value = filterKey
+        ? String(item.value[filterKey] as any)
+        : String(item.value);
 
       return caseSensitive
         ? value.includes(term)
