@@ -7,10 +7,10 @@ import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './icon.base.css.js';
-import { styles as material } from './light/icon.material.css';
-import { styles as bootstrap } from './light/icon.bootstrap.css';
-import { styles as fluent } from './light/icon.fluent.css';
-import { styles as indigo } from './light/icon.indigo.css';
+import { styles as material } from './light/icon.material.css.js';
+import { styles as bootstrap } from './light/icon.bootstrap.css.js';
+import { styles as fluent } from './light/icon.fluent.css.js';
+import { styles as indigo } from './light/icon.indigo.css.js';
 import {
   IconsRegistry,
   registerIcon as registerIcon_impl,

@@ -1,5 +1,5 @@
 @use 'sass:map';
-@use '../../../../../styles/utilities/index' as *;
+@use '../../../../../styles/utilities' as *;
 
 $flat-schema: extend((name: 'igc-button'), map.get($light-material-schema, 'button', 'flat'));
 $contained-schema: extend((name: 'igc-button'), map.get($light-material-schema, 'button', 'raised'));

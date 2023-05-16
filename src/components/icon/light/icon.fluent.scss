@@ -1,6 +1,6 @@
 @use 'sass:map';
 @use '../../../styles/common/component';
-@use '../../../styles/utilities/index' as *;
+@use '../../../styles/utilities' as *;
 
 $schema: extend((name: 'igc-icon'), map.get($light-fluent-schema, 'icon'));
 $theme: digest-schema($schema);

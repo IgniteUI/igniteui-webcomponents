@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/navbar.base.css';
+import { styles } from './themes/navbar.base.css.js';
 import { styles as bootstrap } from './themes/light/navbar.bootstrap.css.js';
 import { styles as fluent } from './themes/light/navbar.fluent.css.js';
 import { styles as indigo } from './themes/light/navbar.indigo.css.js';

@@ -1,15 +1,15 @@
 @use 'sass:map';
-@use '../../../../styles/utilities/index' as *;
+@use '../../../../styles/utilities' as *;
+
+$schema: extend(
+    (
+        name: 'igc-avatar'
+    ),
+    map.get($dark-bootstrap-schema, 'avatar')
+);
+$theme: digest-schema($schema);
 
 @mixin theme() {
-    $schema: extend(
-        (
-            name: 'igc-avatar'
-        ),
-        map.get($dark-bootstrap-schema, 'avatar')
-    );
-    $theme: digest-schema($schema);
-
     igc-avatar {
         @include css-vars($theme);
     }

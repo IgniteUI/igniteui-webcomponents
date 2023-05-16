@@ -1,5 +1,5 @@
 @use 'sass:map';
-@use '../../../styles/utilities/index' as *;
+@use '../../../styles/utilities' as *;
 
 @mixin theme() {
     $schema: extend((name: 'igc-icon'), map.get($dark-fluent-schema, 'icon'));
