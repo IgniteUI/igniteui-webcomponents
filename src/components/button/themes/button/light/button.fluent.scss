@@ -36,6 +36,8 @@ $outline-btn-indent: rem(2px);
 }
 
 :host([variant='fab']) {
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+
     @include css-vars($fab-theme);
 
     [part='base'] {

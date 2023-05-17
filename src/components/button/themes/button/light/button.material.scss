@@ -23,6 +23,8 @@ $outlined-theme: digest-schema($outlined-schema);
 }
 
 :host([variant='fab']) {
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+
     @include css-vars($fab-theme);
 }
 
