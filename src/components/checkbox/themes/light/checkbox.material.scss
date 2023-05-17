@@ -152,7 +152,7 @@ $theme: digest-schema($schema);
 
     [part='base focused'] {
         [part~='control']::before {
-            background: var-get($theme, 'error-color-focus');
+            background: var-get($theme, 'error-color-hover');
         }
     }
 }
@@ -173,7 +173,7 @@ $theme: digest-schema($schema);
 
     [part='base focused'] {
         [part~='control']::before {
-            background: var-get($theme, 'error-color-focus');
+            background: var-get($theme, 'error-color-hover');
         }
     }
 }

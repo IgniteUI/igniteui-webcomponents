@@ -14,7 +14,6 @@ $empty-color: var-get($theme, 'empty-color');
 $disabled-color: var-get($theme, 'disabled-color');
 $error-color: var-get($theme, 'error-color');
 $error-color-hover: var-get($theme, 'error-color-hover');
-$error-color-focus: var-get($theme, 'error-color-focus');
 
 :host {
     @include css-vars($theme);
@@ -129,7 +128,7 @@ $error-color-focus: var-get($theme, 'error-color-focus');
 :host(:focus-within:not([disabled])[invalid]) {
     [part~='control'],
     [part='control checked'] {
-        box-shadow: 0 0 0 rem(4px) $error-color-focus;
+        box-shadow: 0 0 0 rem(4px) $error-color-hover;
     }
 }
 
@@ -148,7 +147,7 @@ $error-color-focus: var-get($theme, 'error-color-focus');
 
 :host(:focus-within:not([disabled])[invalid][indeterminate]) {
     [part~='control'] {
-        box-shadow: 0 0 0 rem(4px) $error-color-focus;
+        box-shadow: 0 0 0 rem(4px) $error-color-hover;
     }
 }
 
