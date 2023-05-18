@@ -2,7 +2,7 @@
 @use '../../../../styles/utilities' as *;
 
 @mixin theme() {
-    $schema: extend((name: 'igc-navbar'), map.get($dark-indigo-schema, 'navbar'));
+    $schema: extend((name: 'ig-navbar'), map.get($dark-indigo-schema, 'navbar'));
     $theme: digest-schema($schema);
 
     igc-navbar {

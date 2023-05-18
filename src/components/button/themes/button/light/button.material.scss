@@ -1,10 +1,10 @@
 @use 'sass:map';
 @use '../../../../../styles/utilities' as *;
 
-$flat-schema: extend((name: 'igc-button'), map.get($light-material-schema, 'button', 'flat'));
-$contained-schema: extend((name: 'igc-button'), map.get($light-material-schema, 'button', 'raised'));
-$fab-schema: extend((name: 'igc-button'), map.get($light-material-schema, 'button', 'fab'));
-$outlined-schema: extend((name: 'igc-button'), map.get($light-material-schema, 'button', 'outlined'));
+$flat-schema: extend((name: 'ig-button'), map.get($light-material-schema, 'button', 'flat'));
+$contained-schema: extend((name: 'ig-button'), map.get($light-material-schema, 'button', 'raised'));
+$fab-schema: extend((name: 'ig-button'), map.get($light-material-schema, 'button', 'fab'));
+$outlined-schema: extend((name: 'ig-button'), map.get($light-material-schema, 'button', 'outlined'));
 $flat-theme: digest-schema($flat-schema);
 $contained-theme: digest-schema($contained-schema);
 $fab-theme: digest-schema($fab-schema);

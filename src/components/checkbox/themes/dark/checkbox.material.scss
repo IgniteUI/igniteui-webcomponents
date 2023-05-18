@@ -4,7 +4,7 @@
 @mixin theme() {
     $schema: extend(
         (
-            name: 'igc-checkbox'
+            name: 'ig-checkbox'
         ),
         map.get($dark-material-schema, 'checkbox')
     );

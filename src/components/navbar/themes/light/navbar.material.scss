@@ -2,7 +2,7 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
 
-$schema: extend((name: 'igc-navbar'), map.get($light-material-schema, 'navbar'));
+$schema: extend((name: 'ig-navbar'), map.get($light-material-schema, 'navbar'));
 $theme: digest-schema($schema);
 
 :host {

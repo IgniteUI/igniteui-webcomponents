@@ -2,7 +2,7 @@
 @use '../../../styles/common/component';
 @use '../../../styles/utilities' as *;
 
-$schema: extend((name: 'igc-icon'), map.get($light-fluent-schema, 'icon'));
+$schema: extend((name: 'ig-icon'), map.get($light-fluent-schema, 'icon'));
 $theme: digest-schema($schema);
 
 :host {

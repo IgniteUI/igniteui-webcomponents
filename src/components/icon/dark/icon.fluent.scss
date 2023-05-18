@@ -2,7 +2,7 @@
 @use '../../../styles/utilities' as *;
 
 @mixin theme() {
-    $schema: extend((name: 'igc-icon'), map.get($dark-fluent-schema, 'icon'));
+    $schema: extend((name: 'ig-icon'), map.get($dark-fluent-schema, 'icon'));
     $theme: digest-schema($schema);
 
     igc-icon {

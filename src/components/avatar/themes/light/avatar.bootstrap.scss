@@ -3,7 +3,7 @@
 
 $schema: extend(
     (
-        name: 'igc-avatar'
+        name: 'ig-avatar'
     ),
     map.get($light-bootstrap-schema, 'avatar')
 );
