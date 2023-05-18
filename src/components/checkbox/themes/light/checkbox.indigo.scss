@@ -35,7 +35,7 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     min-width: var(--size, rem(20px));
 
     &::after {
-        @include border-radius(rem(2px));
+        @include border-radius(var-get($theme, 'border-radius'));
 
         border: rem(2px) solid $empty-color;
     }
@@ -51,23 +51,13 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     transform: scale(.8);
 }
 
-:host(:hover) {
-    [part~='control'] {
-        box-shadow: 0 0 0 rem(4px) var-get($theme, 'outline-color-hover-unchecked');
-    }
-
-    [part='control checked'] {
-        box-shadow: 0 0 0 rem(4px) var-get($theme, 'outline-color-hover-checked');
-    }
-}
-
 :host(:focus-within) {
     [part~='control'] {
-        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');
     }
 
     [part='control checked'] {
-        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focus-outline-color-focused');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-focused');
     }
 }
 
