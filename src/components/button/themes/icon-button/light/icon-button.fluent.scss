@@ -41,6 +41,10 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
     &:focus-visible::after {
         box-shadow: 0 0 0 rem(1px) color(gray, 500);
     }
+
+    igc-icon {
+        color: color(primary, 500);
+    }
 }
 
 :host([variant='contained']) {

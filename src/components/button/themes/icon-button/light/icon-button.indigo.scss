@@ -22,6 +22,10 @@
         background: transparent;
         box-shadow: 0 0 0 rem(3px) color(gray, 300);
     }
+
+    igc-icon {
+        color: color(gray, 700);
+    }
 }
 
 :host([variant='contained']) {
