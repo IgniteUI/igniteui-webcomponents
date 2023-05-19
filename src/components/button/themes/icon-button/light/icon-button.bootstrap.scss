@@ -43,6 +43,10 @@
             background: #{color(primary, 600)};
             box-shadow: 0 0 0 rem(4px) color(primary, 200, .5);
         }
+
+        igc-icon {
+            color: contrast-color(primary, 600);
+        }
     }
 }
 
@@ -62,12 +66,20 @@
             box-shadow: 0 0 0 rem(4px) color(primary, 200, .5);
         }
     }
+
+    igc-icon {
+        color: color(primary, 500);
+    }
 }
 
 :host([disabled]) {
     [part='base'] {
         color: #{color(primary, 100)};
         background: transparent;
+    }
+
+    igc-icon {
+        color: color(primary, 100);
     }
 }
 
@@ -76,11 +88,19 @@
         background: #{color(primary, 100)};
         color: #{color(primary, 300)};
     }
+
+    igc-icon {
+        color: color(primary, 300);
+    }
 }
 
 :host([disabled][variant='outlined']) {
     [part='base'] {
         color: #{color(primary, 100)};
         box-shadow: 0 0 0 rem(1px) color(primary, 100);
+    }
+
+    igc-icon {
+        color: color(primary, 100);
     }
 }

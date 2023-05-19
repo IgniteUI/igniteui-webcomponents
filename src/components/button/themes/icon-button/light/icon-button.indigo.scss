@@ -43,6 +43,10 @@
             box-shadow: 0 0 0 rem(3px) color(primary, 200);
         }
     }
+
+    igc-icon {
+        color: contrast-color(primary, 600);
+    }
 }
 
 :host([variant='outlined']) {
@@ -76,6 +80,10 @@
         color: color(gray, 400);
         background: transparent;
         box-shadow: none;
+    }
+
+    igc-icon {
+        color: color(gray, 400);
     }
 }
 

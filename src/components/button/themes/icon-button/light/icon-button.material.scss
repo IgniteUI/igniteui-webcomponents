@@ -45,6 +45,10 @@
     [part='base'] {
         color: color(gray, 500);
     }
+
+    igc-icon {
+        color: color(gray, 500);
+    }
 }
 
 :host([disabled][variant='contained']) {

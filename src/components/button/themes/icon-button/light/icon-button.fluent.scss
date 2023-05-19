@@ -65,6 +65,10 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
             box-shadow: 0 0 0 rem(1px) contrast-color(primary, 600);
         }
     }
+
+    igc-icon {
+        color: $text-color;
+    }
 }
 
 :host([variant='outlined']) {
@@ -85,6 +89,10 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
             background: color(gray, 200);
         }
     }
+
+    igc-icon {
+        color: color(gray, 900);
+    }
 }
 
 :host([disabled]) {
@@ -92,11 +100,19 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
         color: color(gray, 400);
         background: color(gray, 100);
     }
+
+    igc-icon {
+        color: color(gray, 400);
+    }
 }
 
 :host([disabled][variant='contained']),
 :host([disabled][variant='outlined']) {
     [part='base'] {
+        color: color(gray, 500);
+    }
+
+    igc-icon {
         color: color(gray, 500);
     }
 }
