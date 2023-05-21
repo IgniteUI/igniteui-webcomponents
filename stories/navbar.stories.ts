@@ -9,6 +9,7 @@ import {
   IgcInputComponent,
   IgcIconComponent,
   IgcButtonComponent,
+  IgcDropdownComponent,
 } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
 
@@ -17,7 +18,8 @@ defineComponents(
   IgcAvatarComponent,
   IgcInputComponent,
   IgcIconComponent,
-  IgcButtonComponent
+  IgcButtonComponent,
+  IgcDropdownComponent
 );
 
 // region default
