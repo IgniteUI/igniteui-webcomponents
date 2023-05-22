@@ -57,6 +57,10 @@
         &:hover {
             color: #{contrast-color(primary, 600)};
             background: #{color(primary, 600)};
+
+            igc-icon {
+                color: contrast-color(primary, 600);
+            }
         }
 
         &:focus,
@@ -64,6 +68,10 @@
             color: #{contrast-color(primary, 600)};
             background: #{color(primary, 600)};
             box-shadow: 0 0 0 rem(4px) color(primary, 200, .5);
+
+            igc-icon {
+                color: contrast-color(primary, 600);
+            }
         }
     }
 
