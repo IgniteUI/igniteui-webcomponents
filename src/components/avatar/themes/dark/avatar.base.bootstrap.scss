@@ -1,5 +1,6 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
 $schema: extend(
     (

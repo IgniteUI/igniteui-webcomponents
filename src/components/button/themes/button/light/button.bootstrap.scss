@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas' as *;
 
 $flat-schema: extend((name: 'ig-button'), map.get($light-bootstrap-schema, 'button', 'flat'));
 $contained-schema: extend((name: 'ig-button'), map.get($light-bootstrap-schema, 'button', 'raised'));

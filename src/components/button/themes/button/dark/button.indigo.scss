@@ -1,5 +1,6 @@
 @use 'sass:map';
 @use '../../../../../styles/utilities/index' as *;
+@use '../../../../../styles/themes/schemas' as *;
 
 @mixin theme() {
     $flat-schema: extend((name: 'ig-button'), map.get($dark-indigo-schema, 'button', 'flat'));

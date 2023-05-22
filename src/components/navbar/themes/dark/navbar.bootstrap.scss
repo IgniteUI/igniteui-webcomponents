@@ -1,5 +1,6 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
 @mixin theme() {
     $schema: extend((name: 'ig-navbar'), map.get($dark-bootstrap-schema, 'navbar'));
