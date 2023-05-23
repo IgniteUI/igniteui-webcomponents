@@ -1,12 +1,25 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: extend((name: 'ig-navbar'), map.get($light-fluent-schema, 'navbar'));
+$theme: digest-schema($schema);
 
 :host {
-    background: color(surface, 500);
-    color: color(gray, 900);
+    @include css-vars($theme);
+
+    background: var-get($theme, 'background');
+    color: var-get($theme, 'text-color');
+    box-shadow: elevation(map.get($schema, 'elevation'));
 }
 
 ::slotted(igc-icon) {
-    color: color(primary, 500);
+    color: var-get($theme, 'idle-icon-color');
+}
+
+::slotted(igc-icon:hover) {
+    color: var-get($theme, 'hover-icon-color');
 }
 
 ::slotted(*) {

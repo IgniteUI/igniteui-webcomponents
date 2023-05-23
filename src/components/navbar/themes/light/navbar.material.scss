@@ -1,9 +1,9 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use '../../../../styles/utilities/index' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend((name: 'ig-navbar'), map.get($light-bootstrap-schema, 'navbar'));
+$schema: extend((name: 'ig-navbar'), map.get($light-material-schema, 'navbar'));
 $theme: digest-schema($schema);
 
 :host {
@@ -12,7 +12,6 @@ $theme: digest-schema($schema);
     background: var-get($theme, 'background');
     color: var-get($theme, 'text-color');
     box-shadow: elevation(map.get($schema, 'elevation'));
-    padding: 0 rem(8px);
 }
 
 ::slotted(igc-icon) {
@@ -21,16 +20,4 @@ $theme: digest-schema($schema);
 
 ::slotted(igc-icon:hover) {
     color: var-get($theme, 'hover-icon-color');
-}
-
-[part='base'] {
-    padding-inline-start: rem(4px);
-    padding-inline-end: rem(4px);
-}
-
-::slotted(*) {
-    @include type-style('h5') {
-        line-height: normal;
-        margin: 0;
-    }
 }

@@ -1,20 +1,16 @@
 @use '../../styles/common/component';
 @use '../../styles/utilities' as *;
 
-svg {
-    height: var(--size);
-    width: var(--size);
-}
-
 :host {
-    --size: #{sizable(rem(16px), rem(20px), rem(24px))};
+    // TODO remove the important flag after this issue is fixed
+    // https://github.com/IgniteUI/igniteui-angular/issues/13024
+    --size: #{sizable(rem(16px), rem(20px), rem(24px))} !important;
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: var(--size);
     height: var(--size);
-    fill: currentcolor;
 }
 
 :host([size='small']) {
@@ -27,6 +23,11 @@ svg {
 
 :host([size='large']) {
     --component-size: var(--ig-size, var(--ig-size-large));
+}
+
+svg {
+    height: var(--size);
+    width: var(--size);
 }
 
 :host([mirrored]) {
