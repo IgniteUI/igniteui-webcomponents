@@ -72,7 +72,8 @@ $theme: digest-schema($schema);
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }
@@ -99,7 +100,8 @@ $theme: digest-schema($schema);
     }
 }
 
-:host(:not([disabled])[invalid][indeterminate]) {
+:host(:not([disabled])[invalid][indeterminate]),
+:host(:not(:disabled)[invalid][indeterminate]) {
     [part~='control'] {
         &::after {
             background: var-get($theme, 'error-color');
@@ -117,13 +119,23 @@ $theme: digest-schema($schema);
 }
 
 :host(:focus-within:not([disabled])[invalid]) [part~='control'],
-:host(:not([disabled])[invalid]) [part~='focused'] [part~='control'] {
+:host(:focus-within:not(:disabled)[invalid]) [part~='control'],
+:host(:not([disabled])[invalid]) [part~='focused'] [part~='control'],
+:host(:not(:disabled)[invalid]) [part~='focused'] [part~='control'] {
     box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-color-hover');
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='label'] {
         color: var-get($theme, 'disabled-color-label');
+    }
+
+    [part~='control'] {
+        &::after {
+            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'disabled-color-label');
+            border-color: var-get($theme, 'disabled-color-label');
+        }
     }
 
     [part='control checked']::after {
@@ -132,7 +144,8 @@ $theme: digest-schema($schema);
     }
 }
 
-:host([disabled][indeterminate]) {
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
     [part='control']::after {
         background: var-get($theme, 'disabled-color');
         box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'disabled-color');

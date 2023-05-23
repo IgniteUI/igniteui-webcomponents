@@ -28,8 +28,6 @@ $theme: digest-schema($schema);
 [part~='control'] {
     --size: #{rem(20px)};
 
-
-
     width: calc(var(--size) * 2);
     height: calc(var(--size) * 2);
     min-width: calc(var(--size) * 2);
@@ -128,7 +126,8 @@ $theme: digest-schema($schema);
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }
@@ -158,7 +157,8 @@ $theme: digest-schema($schema);
     }
 }
 
-:host(:not([disabled])[invalid][indeterminate]) {
+:host(:not([disabled])[invalid][indeterminate]),
+:host(:not(:disabled)[invalid][indeterminate]) {
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');
@@ -179,7 +179,8 @@ $theme: digest-schema($schema);
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='label'] {
         color: var-get($theme, 'disabled-color-label');
     }
@@ -197,7 +198,8 @@ $theme: digest-schema($schema);
     }
 }
 
-:host([disabled][indeterminate]) {
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
     [part~='control'] {
         &::after {
             background: var-get($theme, 'disabled-indeterminate-color');
