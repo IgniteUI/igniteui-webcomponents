@@ -4,39 +4,19 @@
 
 $schema: extend(
     (
-        name: 'igc-switch'
+        name: 'ig-switch'
     ),
     map.get($light-indigo-schema, 'switch')
 );
 $theme: digest-schema($schema);
-
-// border-color,
-// border-hover-color,
-// border-disabled-color,
-// border-on-color,
-// border-on-hover-color,
-// thumb-on-color
-// track-on-color
-// thumb-off-color
-// track-disabled-color
-// track-on-disabled-color
-// track-off-color
-// thumb-disabled-color
-// thumb-on-disabled-color
-// label-color
-// label-disabled-color
-// label-invalid-color
-// track-error-color
-// error-color
-// error-color-hover
-
 $checked-color: var-get($theme, 'track-on-color') !default;
 $border-width: rem(1px);
 
 :host {
     --size: #{rem(34px)};
     --thumb-size: #{rem(8px)};
-    --thumb-offset: #{rem(3px)};
+    --border-size: #{rem(1px)};
+    --thumb-offset: #{rem(2px)};
     --label-gap: #{rem(8px)};
 
     @include css-vars($theme);
@@ -47,7 +27,7 @@ $border-width: rem(1px);
 [part~='base'] {
     &:hover {
         [part~='control'][part~='checked'] {
-            border-color: var-get($theme, 'border-hover-color');
+            border-color: var-get($theme, 'border-on-hover-color');
         }
     }
 }
@@ -69,12 +49,9 @@ $border-width: rem(1px);
     background: var-get($theme, 'track-off-color');
 }
 
-:host(:not([disabled])) {
-    [part~='control'][part~='checked'] {
-        border-color: var-get($theme, 'border-on-color');
-        background: $checked-color;
-        box-shadow: inset 0 0 0 rem(2px) $checked-color;
-    }
+[part~='control'][part~='checked'] {
+    border-color: var-get($theme, 'border-on-color');
+    background: $checked-color;
 }
 
 [part~='thumb'] {
@@ -102,35 +79,29 @@ $border-width: rem(1px);
     transition: all .2s ease-in-out;
 }
 
-:host(:not([disabled])[invalid]) [part~='control'][part~='checked'] {
-    border-color: var-get($theme, 'error-color');
-}
-
-:host(:not([disabled])[invalid]) [part~='control'][part~='checked'],
-:host(:not([disabled])[invalid]) [part~='thumb'] {
-    background: var-get($theme, 'error-color');
-}
-
-:host(:not([disabled])[invalid]:hover) [part~='control'] {
-    box-shadow: 0 0 0 2px var-get($theme, 'error-color-hover');
-}
-
-:host(:not([disabled])[invalid]:focus-within) [part~='control'],
-:host(:not([disabled])[invalid]:focus-within) [part~='control'][part~='checked'] {
-    box-shadow: 0 0 0 2px var-get($theme, 'error-color-hover');
-}
-
 :host(:not([disabled])[invalid]) {
     [part~='control'] {
         background: var-get($theme, 'track-error-color');
     }
 
+    [part~='control'],
+    [part~='control'][part~='checked'] {
+        border-color: var-get($theme, 'error-color');
+    }
+
+    [part~='control'][part~='checked'],
     [part~='thumb'] {
         background: var-get($theme, 'error-color');
     }
 
+    [part~='control'][part~='focused'],
+    [part~='control'][part~='checked'][part~='focused'] {
+        box-shadow: 0 0 0 rem(2px) var-get($theme, 'error-color-hover');
+    }
+
+
     [part~='thumb'][part~='checked'] {
-        background: var-get($theme, 'error-color');
+        background: var-get($theme, 'thumb-on-error-color');
     }
 
     [part~='label'] {
@@ -138,8 +109,7 @@ $border-width: rem(1px);
     }
 }
 
-:host([disabled]),
-:host([disabled][invalid]) {
+:host([disabled]){
     [part~='control'] {
         border-color: var-get($theme, 'border-disabled-color');
         background: var-get($theme, 'track-disabled-color');
@@ -157,9 +127,10 @@ $border-width: rem(1px);
     [part~='thumb'][part~='checked'] {
         background: var-get($theme, 'thumb-on-disabled-color');
     }
+
+    [part~='label'] {
+        color: var-get($theme, 'label-disabled-color');
+    }
 }
 
-:host([disabled]) [part~='label'] {
-    color: var-get($theme, 'label-disabled-color');
-}
 

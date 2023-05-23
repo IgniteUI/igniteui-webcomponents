@@ -1,10 +1,16 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
 
 @mixin theme() {
+    $schema: extend(
+        (
+            name: 'ig-switch'
+        ),
+        map.get($dark-indigo-schema, 'switch')
+    );
+    $theme: digest-schema($schema);
+
     igc-switch {
-        --border-color: #{color(gray, 700)};
-        --checked-color: #{color(gray, 900)};
-        --thumb-color: #{color(gray, 700)};
-        --disabled-color: #{color(gray, 400)};
+        @include css-vars($theme);
     }
 }
