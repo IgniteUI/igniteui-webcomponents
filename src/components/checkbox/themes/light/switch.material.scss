@@ -1,10 +1,11 @@
 @use 'sass:map';
+@use 'sass:math';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
 
 $schema: extend(
     (
-        name: 'igc-switch'
+        name: 'ig-switch'
     ),
     map.get($light-material-schema, 'switch')
 );
@@ -80,6 +81,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 [part~='thumb'] {
     @include border-radius(var-get($theme, 'border-radius-thumb'));
 
+    animation-name: thumb-off;
     width: var(--thumb-size);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
@@ -92,8 +94,8 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
         position: absolute;
         content: '';
-        inset-block-start: calc(50% - #{$ripple-size / 2});
-        inset-inline-start: calc(50% - #{$ripple-size / 2});
+        inset-block-start: calc(50% - #{math.div($ripple-size, 2)});
+        inset-inline-start: calc(50% - #{math.div($ripple-size, 2)});
         width: $ripple-size;
         height: $ripple-size;
         overflow: hidden;
@@ -119,18 +121,32 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     transition: all .2s ease-in-out;
 }
 
-:host([invalid]) [part~='base'] {
-    &:hover [part~='thumb'] {
+
+:host([invalid]) {
+    [part~='control'] {
+        border-color: var-get($theme, 'track-error-color');
+        background: var-get($theme, 'track-error-color');
+    }
+
+    [part~='thumb'] {
+        background: var-get($theme, 'error-color');
+    }
+
+    [part~='thumb'][part~='checked'] {
+        background: var-get($theme, 'thumb-on-error-color');
+    }
+
+    [part~='thumb'][part~='focused'] {
         &::after {
             background: var-get($theme, 'error-color-hover');
-            opacity: .06;
         }
     }
 
-    &:focus-within [part~='thumb'] {
-        &::after {
-            background: var-get($theme, 'error-color-hover');
-            opacity: .12;
+    &:hover {
+        [part~='thumb'] {
+            &::after {
+                background: var-get($theme, 'error-color-hover');
+            }
         }
     }
 }

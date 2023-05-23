@@ -27,7 +27,6 @@ input[type='checkbox'] {
 
 [part~='thumb'] {
     position: relative;
-    // animation-name: thumb-off;
     animation-duration: .2s;
     animation-fill-mode: none;
 }
@@ -38,7 +37,6 @@ input[type='checkbox'] {
 }
 
 [part~='thumb'][part~='checked'] {
-    // animation-name: thumb-on;
     animation-duration: .2s;
     animation-fill-mode: forwards;
 }
@@ -81,3 +79,4 @@ input[type='checkbox'] {
         margin-inline-start: var(--thumb-offset);
     }
 }
+
