@@ -3,12 +3,21 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
+import {
+  AnimationPlayer,
+  growVerIn,
+  growVerOut,
+  fadeIn,
+  fadeOut,
+  EaseOut,
+} from '../../animations/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/step/light/step.base.css.js';
 import { styles as bootstrap } from './themes/step/light/step.bootstrap.css.js';
 import { styles as indigo } from './themes/step/light/step.indigo.css.js';
 import { styles as fluent } from './themes/step/light/step.fluent.css.js';
 import { styles as material } from './themes/step/light/step.material.css.js';
+import { animation } from '../../animations/types.js';
 
 /**
  * The step component is used within the `igc-stepper` element and it holds the content of each step.
@@ -46,6 +55,7 @@ export default class IgcStepComponent extends LitElement {
   public static readonly tagName = 'igc-step';
   /** @private */
   public static override styles = styles;
+  private animationPlayer!: AnimationPlayer;
 
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;
@@ -60,6 +70,17 @@ export default class IgcStepComponent extends LitElement {
   /* blazorSuppress */
   @query('[part~="body"]')
   public contentBody!: HTMLElement;
+
+  /* blazorSuppress */
+  @query('[part~="content"]')
+  public content!: HTMLElement;
+
+  /**
+   * Determines the stepper animation duration in ms.
+   * @attr duration
+   */
+  @property({ type: Number, attribute: 'animation-duration' })
+  public animationDuration = 320;
 
   /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
@@ -109,6 +130,14 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   @property({ attribute: false })
+  public verticalAnimation: 'grow' | 'fade' | 'none' = 'grow';
+
+  /** @private */
+  @property({ attribute: false })
+  public horizontalAnimation: 'slide' | 'fade' | 'none' = 'slide';
+
+  /** @private */
+  @property({ attribute: false })
   public index = -1;
 
   /** @private */
@@ -123,9 +152,73 @@ export default class IgcStepComponent extends LitElement {
   @property({ attribute: false })
   public visited = false;
 
+  public override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.content);
+  }
+
+  private async toggleAnimation(dir: 'open' | 'close') {
+    const slideInLeftFrames: Keyframe[] = [
+      { opacity: 0, transform: 'translateX(-500px)' },
+      { opacity: 1, transform: 'translateX(0)' },
+    ];
+
+    const slideInRightFrames: Keyframe[] = [
+      { opacity: 0, transform: 'translateX(500px)' },
+      { opacity: 1, transform: 'translateX(0)' },
+    ];
+
+    const opts: KeyframeAnimationOptions = {
+      duration: this.animationDuration,
+      easing: EaseOut.Quad,
+    };
+
+    const customSlideInLeft = animation(slideInLeftFrames, opts);
+    const customSlideInRight = animation(slideInRightFrames, opts);
+
+    let customAnimation =
+      dir === 'open' ? customSlideInLeft : customSlideInRight;
+
+    if (this.orientation == 'vertical') {
+      switch (this.verticalAnimation) {
+        case 'grow':
+          customAnimation = dir === 'open' ? growVerIn : growVerOut;
+          break;
+        case 'fade':
+          customAnimation = dir === 'open' ? fadeIn : fadeOut;
+          break;
+        case 'none':
+          this.animationDuration = 0;
+          break;
+      }
+    }
+
+    if (this.orientation == 'horizontal') {
+      switch (this.horizontalAnimation) {
+        case 'slide':
+          customAnimation =
+            dir === 'open' ? customSlideInLeft : customSlideInRight;
+          break;
+        case 'fade':
+          customAnimation = dir === 'open' ? fadeIn : fadeOut;
+          break;
+        case 'none':
+          this.animationDuration = 0;
+          break;
+      }
+    }
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(customAnimation),
+    ]);
+
+    return event.type === 'finish';
+  }
+
   @watch('active', { waitUntilFirstUpdate: true })
   protected activeChange() {
     if (this.active) {
+      this.toggleAnimation('open');
       this.dispatchEvent(
         new CustomEvent('stepActiveChanged', { bubbles: true, detail: false })
       );
@@ -236,7 +329,7 @@ export default class IgcStepComponent extends LitElement {
       role="tabpanel"
       aria-labelledby="igc-step-header-${this.index}"
     >
-      <div part="content">
+      <div part="content" aria-hidden="${!this.active}">
         <slot></slot>
       </div>
     </div>`;
