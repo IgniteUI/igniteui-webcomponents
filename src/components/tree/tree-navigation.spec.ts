@@ -350,6 +350,7 @@ describe('Tree Navigation', () => {
     item3.active = true;
     await elementUpdated(tree);
     TreeTestFunctions.setFocusAndTriggerKeydown(item3, tree, '*');
+    await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
 
     expect(topLevelItems[3].expanded).to.be.false; // Item4 does not have children => not expanded
     topLevelItems.pop();
@@ -386,10 +387,10 @@ describe('Tree Navigation', () => {
     // Item2 is already expanded, and Item4 has no children => no expanding events emitted for them
     expect(eventSpy.callCount).to.equal(4);
     expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs1);
-    expect(eventSpy.secondCall).calledWith('igcItemExpanded', {
+    expect(eventSpy.secondCall).calledWith('igcItemExpanding', expandingArgs2);
+    expect(eventSpy.thirdCall).calledWith('igcItemExpanded', {
       detail: topLevelItems[0],
     });
-    expect(eventSpy.thirdCall).calledWith('igcItemExpanding', expandingArgs2);
     expect(eventSpy.lastCall).calledWith('igcItemExpanded', {
       detail: item3,
     });
