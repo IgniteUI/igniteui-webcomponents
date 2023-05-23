@@ -1,0 +1,17 @@
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: extend(
+    (
+        name: 'ig-avatar'
+    ),
+    map.get($dark-bootstrap-schema, 'avatar')
+);
+$theme: digest-schema($schema);
+
+@mixin theme() {
+    igc-avatar {
+        @include css-vars($theme);
+    }
+}
