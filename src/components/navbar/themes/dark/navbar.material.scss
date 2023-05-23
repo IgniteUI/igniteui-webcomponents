@@ -3,15 +3,10 @@
 @use '../../../../styles/themes/schemas' as *;
 
 @mixin theme() {
-    $schema: extend(
-        (
-            name: 'ig-checkbox'
-        ),
-        map.get($dark-indigo-schema, 'checkbox')
-    );
+    $schema: extend((name: 'ig-navbar'), map.get($dark-material-schema, 'navbar'));
     $theme: digest-schema($schema);
 
-    igc-checkbox {
+    igc-navbar {
         @include css-vars($theme);
     }
 }

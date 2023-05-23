@@ -1,5 +1,6 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
 :host {
     display: inline-flex;
@@ -20,8 +21,6 @@ $mark-length: 24;
     user-select: none;
 
     &::after {
-        @include border-radius(rem(2px));
-
         position: absolute;
         content: '';
         left: 50%;
@@ -29,14 +28,12 @@ $mark-length: 24;
         transform: translate(-50%, -50%);
         width: var(--size);
         height: var(--size);
-        border: rem(2px) solid color(gray, 600);
         transition: all .15s ease-in;
     }
 }
 
 [part~='label'] {
     display: inline-block;
-    color: color(gray, 900);
     cursor: pointer;
     user-select: none;
     word-wrap: break-all;
@@ -69,19 +66,6 @@ label {
     cursor: pointer;
     flex-flow: row nowrap;
     gap: rem(8px);
-
-    &:hover [part='control checked'] {
-        background: color(secondary, 500, .06);
-    }
-
-    &:focus-within [part='control checked'] {
-        background: color(secondary, 500, .12);
-    }
-}
-
-[part='control checked']::after {
-    border-color: color(secondary, 500);
-    background: color(secondary, 500);
 }
 
 [part='indicator checked'] {
@@ -91,21 +75,6 @@ label {
 }
 
 :host([indeterminate]) {
-    [part~='base'] {
-        &:hover [part~='control'] {
-            background: color(secondary, 500, .06);
-        }
-
-        &:focus-within [part~='control'] {
-            background: color(secondary, 500, .12);
-        }
-    }
-
-    [part~='control']::after {
-        border-color: color(secondary, 500);
-        background: color(secondary, 500);
-    }
-
     [part~='indicator'] {
         stroke-dashoffset: 41;
         opacity: 1;
@@ -113,46 +82,10 @@ label {
     }
 }
 
-:host(:not([disabled])[invalid]) {
-    [part~='label'] {
-        color: color(error, 500);
-    }
-
-    [part~='control'] {
-        &::after {
-            border-color: color(error, 500);
-        }
-    }
-
-    [part='control checked'] {
-        &::after {
-            background: color(error, 500);
-        }
-    }
-}
-
-:host(:not([disabled])[invalid][indeterminate]) {
-    [part~='control'] {
-        &::after {
-            background: color(error, 500);
-        }
-    }
-}
-
-:host([disabled]),
-:host(:disabled) {
+:host([disabled]) {
     user-select: none;
     cursor: initial;
     pointer-events: none;
-}
-
-:host([disabled][indeterminate]),
-:host(:disabled[indeterminate]) {
-    [part~='control'] {
-        &::after {
-            background: color(gray, 300);
-        }
-    }
 }
 
 :host([label-position='before']) {
@@ -160,3 +93,4 @@ label {
         order: -1;
     }
 }
+

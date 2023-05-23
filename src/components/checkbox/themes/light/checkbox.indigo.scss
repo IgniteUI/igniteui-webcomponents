@@ -1,81 +1,145 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
-$border-color: var(--border-color, color(gray, 500)) !default;
-$checked-color: var(--checked-color, color(secondary, 500)) !default;
-$disabled-color: var(--disabled-color, color(gray, 300)) !default;
+$schema: extend(
+    (
+        name: 'ig-checkbox'
+    ),
+    map.get($light-indigo-schema, 'checkbox')
+);
+$theme: digest-schema($schema);
+$fill-color: var-get($theme, 'fill-color');
+$empty-color: var-get($theme, 'empty-color');
+$disabled-color: var-get($theme, 'disabled-color');
+$error-color: var-get($theme, 'error-color');
+$error-color-hover: var-get($theme, 'error-color-hover');
 
 :host {
+    @include css-vars($theme);
+
     font-weight: 600;
 }
 
+[part~='label'] {
+    @include type-style('body-1');
+
+    color: var-get($theme, 'label-color');
+}
+
 [part~='control'] {
-    @include border-radius(rem(3px));
+    @include border-radius(var-get($theme, 'border-radius-ripple'));
 
     width: var(--size, rem(20px));
     height: var(--size, rem(20px));
     min-width: var(--size, rem(20px));
 
     &::after {
-        border-radius: inherit;
-        border-color: $border-color;
+        @include border-radius(var-get($theme, 'border-radius'));
+
+        border: rem(2px) solid $empty-color;
     }
 }
 
-[part~='label'] {
-    @include type-style('body-1');
+[part='control checked']::after {
+    border-color: $fill-color;
+    background: $fill-color;
 }
 
 [part~='indicator'] {
-    stroke: color(surface, 500);
+    stroke: var-get($theme, 'tick-color');
     transform: scale(.8);
 }
 
-:host([indeterminate]) [part~='indicator'] {
-    transform: rotate(45deg) translateX(-.125rem) scale(.8);
-}
+:host(:focus-within) {
+    [part~='control'] {
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');
+    }
 
-:host(:not([invalid])) [part='control checked'],
-:host(:not([invalid])[indeterminate]) [part~='control'] {
-    &::after {
-        background: $checked-color;
-        border-color: $checked-color;
+    [part='control checked'] {
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-focused');
     }
 }
 
-:host(:hover) [part~='control'] {
-    box-shadow: 0 0 0 4px color(gray, 200, .87);
+:host([indeterminate]) {
+    [part~='indicator'] {
+        transform: rotate(45deg) translateX(-.125rem) scale(.8);
+    }
+
+    [part~='control'] {
+        background: $fill-color;
+
+        &::after {
+            border-color: $fill-color;
+        }
+    }
 }
 
-:host(:focus-within) [part~='control'] {
-    box-shadow: 0 0 0 4px color(gray, 300, .87);
+:host([indeterminate]:hover) {
+    [part~='control'] {
+        box-shadow: 0 0 0 rem(4px) color(secondary, 100, .87);
+    }
 }
 
-:host(:hover) [part='control checked'],
-:host([indeterminate]:hover) [part~='control'] {
-    box-shadow: 0 0 0 4px color(secondary, 100, .87);
+:host([indeterminate]:focus-within) {
+    [part~='control'] {
+        box-shadow: 0 0 0 rem(4px) color(secondary, 200, .87);
+    }
 }
 
-:host(:focus-within) [part='control checked'],
-:host([indeterminate]:focus-within) [part~='control'] {
-    box-shadow: 0 0 0 4px color(secondary, 200, .87);
+:host(:not([disabled])[invalid]) {
+    [part~='label'] {
+        color: $error-color;
+    }
+
+    [part~='control'] {
+        &::after {
+            border-color: $error-color;
+        }
+    }
+
+    [part='control checked'] {
+        box-shadow: inset 0 0 0 rem(4px) $error-color;
+        background: $error-color;
+
+        &::after {
+            background: $error-color;
+        }
+    }
 }
 
-:host(:not([disabled])[invalid]) [part='control checked'],
-:host(:not([disabled])[invalid][indeterminate]) [part~='control'] {
-    box-shadow: inset 0 0 0 4px color(error, 500);
-    background: color(error, 500);
+:host(:hover:not([disabled])[invalid]) {
+    [part~='control'],
+    [part='control checked'] {
+        box-shadow: 0 0 0 rem(4px) $error-color-hover;
+    }
 }
 
-:host([invalid]:hover) [part~='control'],
-:host([invalid]:hover) [part='control checked'],
-:host([invalid][indeterminate]:hover) [part~='control'] {
-    box-shadow: 0 0 0 4px color(error, 100, .87);
+:host(:focus-within:not([disabled])[invalid]) {
+    [part~='control'],
+    [part='control checked'] {
+        box-shadow: 0 0 0 rem(4px) $error-color-hover;
+    }
 }
 
-:host([invalid]:focus-within) [part~='control'],
-:host([invalid]:focus-within) [part='control checked'],
-:host([invalid][indeterminate]:focus-within) [part~='control'] {
-    box-shadow: 0 0 0 4px color(error, 200, .87);
+:host(:not([disabled])[invalid][indeterminate]) {
+    [part~='control'] {
+        box-shadow: inset 0 0 0 rem(4px) $error-color;
+        background: $error-color;
+    }
+}
+
+:host(:hover:not([disabled])[invalid][indeterminate]) {
+    [part~='control'] {
+        box-shadow: 0 0 0 rem(4px) $error-color-hover;
+    }
+}
+
+:host(:focus-within:not([disabled])[invalid][indeterminate]) {
+    [part~='control'] {
+        box-shadow: 0 0 0 rem(4px) $error-color-hover;
+    }
 }
 
 :host([disabled]),
