@@ -22,6 +22,10 @@
         background: transparent;
         box-shadow: 0 0 0 rem(3px) color(gray, 300);
     }
+
+    igc-icon {
+        color: color(gray, 700);
+    }
 }
 
 :host([variant='contained']) {
@@ -38,6 +42,10 @@
             background: #{color(primary, 400)};
             box-shadow: 0 0 0 rem(3px) color(primary, 200);
         }
+    }
+
+    igc-icon {
+        color: contrast-color(primary, 600);
     }
 }
 
@@ -72,6 +80,10 @@
         color: color(gray, 400);
         background: transparent;
         box-shadow: none;
+    }
+
+    igc-icon {
+        color: color(gray, 400);
     }
 }
 

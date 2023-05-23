@@ -8,6 +8,10 @@
 @use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.base.scss' as nav-drawer-item;
 @use '../../../components/combo/themes/dark/combo.material' as combo;
+@use '../../../components/button/themes/button/dark/button.material' as button;
+@use '../../../components/icon/dark/icon.material' as icon;
+@use '../../../components/navbar/themes/dark/navbar.material' as navbar;
+@use '../../../components/checkbox/themes/dark/checkbox.material' as checkbox;
 @include base.root-styles($dark-material-palette);
 @include radio.theme();
 @include input.theme();
@@ -16,3 +20,7 @@
 @include nav-drawer-item.theme();
 @include grid.theme();
 @include combo.theme();
+@include button.theme();
+@include icon.theme();
+@include navbar.theme();
+@include checkbox.theme();

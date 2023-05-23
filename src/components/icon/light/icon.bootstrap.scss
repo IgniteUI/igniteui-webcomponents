@@ -1,0 +1,17 @@
+@use 'sass:map';
+@use '../../../styles/common/component';
+@use '../../../styles/utilities' as *;
+@use '../../../styles/themes/schemas' as *;
+
+$schema: extend((name: 'ig-icon'), map.get($light-bootstrap-schema, 'icon'));
+$theme: digest-schema($schema);
+
+:host {
+    @include css-vars($theme);
+
+    color: var-get($theme, 'color');
+}
+
+svg {
+    fill: currentcolor;
+}
