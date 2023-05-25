@@ -152,6 +152,16 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     }
 }
 
+:host(:not([disabled])[invalid]) {
+    [part~='label'] {
+        color: var-get($theme, 'label-invalid-color');
+    }
+
+    [part~='control'] {
+        background: var-get($theme, 'track-error-color');
+    }
+}
+
 :host([disabled]) {
     [part~='control'] {
         background: var-get($theme, 'track-disabled-color');
@@ -173,19 +183,5 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 
     [part~='label'] {
         color: var-get($theme, 'label-disabled-color');
-    }
-}
-
-:host(:not([disabled])[invalid]) {
-    [part~='label'] {
-        color: var-get($theme, 'label-invalid-color');
-    }
-
-    [part~='thumb'] {
-        background: var-get($theme, 'error-color');
-    }
-
-    [part~='control'] {
-        background: var-get($theme, 'track-error-color');
     }
 }
