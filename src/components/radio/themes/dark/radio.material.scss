@@ -1,12 +1,37 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
 @mixin theme() {
+    $schema: extend(
+        (
+            name: 'ig-radio'
+        ),
+        map.get($dark-material-schema, 'radio')
+    );
+    $theme: digest-schema($schema);
+
     igc-radio {
-        --hover-background: #{utils.color(gray, 600, .12)};
-        --focus-background: #{utils.color(gray, 600, .24)};
-        --hover-invalid-background: #{utils.color(error, 500, .12)};
-        --focus-invalid-background: #{utils.color(error, 500, .24)};
-        --hover-selected-background: #{utils.color(secondary, 500, .12)};
-        --focus-selected-background: #{utils.color(secondary, 500, .24)};
+        @include css-vars($theme);
+
+        &:hover {
+            &::part(ripple) {
+                opacity: .12;
+            }
+
+            &::part(ripple checked) {
+                opacity: .12;
+            }
+        }
+
+        &:focus-within {
+            &::part(ripple) {
+                opacity: .24;
+            }
+
+            &::part(ripple checked) {
+                opacity: .24;
+            }
+        }
     }
 }

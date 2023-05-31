@@ -7,7 +7,7 @@
         (
             name: 'ig-radio'
         ),
-        map.get($dark-indigo-schema, 'radio')
+        map.get($dark-bootstrap-schema, 'radio')
     );
     $theme: digest-schema($schema);
 

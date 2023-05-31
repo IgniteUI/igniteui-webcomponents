@@ -1,49 +1,140 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
-$hover-background: var(--hover-background, color(gray, 600, .06)) !default;
-$focus-background: var(--focus-background, color(gray, 600, .12)) !default;
-$hover-invalid-background: var(--hover-invalid-background, color(error, 500, .06)) !default;
-$focus-invalid-background: var(--focus-invalid-background, color(error, 500, .12)) !default;
-$hover-selected-background: var(--hover-selected-background, color(secondary, 500, .06)) !default;
-$focus-selected-background: var(--focus-selected-background, color(secondary, 500, .12)) !default;
+$schema: extend(
+    (
+        name: 'ig-radio'
+    ),
+    map.get($light-material-schema, 'radio')
+);
+$theme: digest-schema($schema);
+
+[part~='ripple'] {
+    @include border-radius(var(--size));
+
+    display: block;
+    position: absolute;
+    top: calc(50% - 1.25rem);
+    width: calc(var(--size) * 2);
+    height: calc(var(--size) * 2);
+    min-width: calc(var(--size) * 2);
+    overflow: hidden;
+    pointer-events: none;
+    filter: opacity(1);
+}
+
+:host {
+    @include css-vars($theme);
+}
+
+[part~='label'] {
+    color: var-get($theme, 'label-color');
+}
 
 [part~='base'] {
     gap: rem(2px);
 
-    &:hover [part='control'] {
-        background: $hover-background;
+    &:hover {
+        [part~='ripple'] {
+            background: var-get($theme, 'empty-color');
+            opacity: .06;
+        }
+
+        [part='ripple checked'] {
+            background: var-get($theme, 'fill-color');
+            opacity: .06;
+        }
     }
 
-    &:focus-within [part='control'] {
-        background: $focus-background;
+    &:focus-within {
+        [part='ripple'] {
+            background: var-get($theme, 'empty-color');
+            opacity: .12;
+        }
+
+        [part='ripple checked'] {
+            background: var-get($theme, 'fill-color');
+            opacity: .12;
+        }
     }
 }
 
-[part='base checked'] {
-    &:hover [part~='control'] {
-        background: $hover-selected-background;
+[part~='control'] {
+    @include border-radius(var(--size));
+
+    position: relative;
+
+    &::before,
+    &::after {
+        @include border-radius(calc(var(--size) / 2));
     }
 
-    &:focus-within [part~='control'] {
-        background: $focus-selected-background;
+    &::after {
+        border: calc(var(--size) / 10) solid var-get($theme, 'empty-color');
+    }
+}
+
+[part='control checked'] {
+    &::before {
+        border-color: var-get($theme, 'fill-color');
+        background: var-get($theme, 'fill-color');
+    }
+
+    &::after {
+        border-color: var-get($theme, 'fill-color');
     }
 }
 
 :host(:not([disabled])[invalid]) {
-    [part='control checked'] {
-        &::before {
-            background: color(error, 500);
+    [part~='label'] {
+        color: var-get($theme, 'error-color');
+    }
+
+    [part~='control'] {
+        &::after {
+            border-color: var-get($theme, 'error-color');
         }
     }
 
-    [part~='base'],
-    [part='base checked'] {
-        &:hover [part~='control'] {
-            background: $hover-invalid-background;
+    [part='control checked'] {
+        &::before {
+            background: var-get($theme, 'error-color');
+        }
+    }
+
+    [part~='base'] {
+        &:hover  {
+            [part~='ripple'] {
+                background: var-get($theme, 'error-color');
+            }
         }
 
-        &:focus-within [part~='control'] {
-            background: $focus-invalid-background;
+        &:focus-within {
+            [part~='ripple'] {
+                background: var-get($theme, 'error-color');
+            }
+        }
+    }
+}
+
+:host([disabled]),
+:host(:disabled) {
+    [part~='label'] {
+        color: var-get($theme, 'disabled-label-color');
+    }
+
+    [part~='control'] {
+        &::after {
+            border-color: var-get($theme, 'disabled-color');
+        }
+    }
+
+    [part='control checked'] {
+        &::before {
+            background: var-get($theme, 'disabled-color');
+            border-color: var-get($theme, 'disabled-color');
         }
     }
 }
