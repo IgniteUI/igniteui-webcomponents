@@ -1,7 +1,17 @@
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: extend(
+    (
+        name: 'ig-input-group'
+    ),
+    map.get($dark-fluent-schema, 'input-group')
+);
+$theme: digest-schema($schema);
+
 @mixin theme() {
-    igc-input,
-    igc-mask-input,
-    igc-date-time-input {
-        --container-background: transparent;
+    igc-input {
+        @include css-vars($theme);
     }
 }

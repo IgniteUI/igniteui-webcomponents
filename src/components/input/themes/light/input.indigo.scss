@@ -1,5 +1,15 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
+$schema: extend(
+    (
+        name: 'ig-input'
+    ),
+    map.get($light-indigo-schema, 'input-group')
+);
+$theme: digest-schema($schema);
 $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
 
 %suffix-preffix {
@@ -11,6 +21,8 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
 }
 
 :host {
+    @include css-vars($theme);
+
     [part='prefix'],
     [part='suffix'] {
         color: color(gray, 600);
@@ -40,6 +52,7 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     }
 
     [part^='container'] {
+        color: color(gray, 900);
         background: transparent;
         border-bottom: 1px solid color(gray, 500);
         transition: background .25s ease-out;
@@ -84,6 +97,18 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     }
 }
 
+[part~='prefixed'] [part='prefix'] {
+    ::slotted(*) {
+        color: var-get($theme, 'input-prefix-color');
+    }
+}
+
+[part~='suffixed'] [part='suffix'] {
+    ::slotted(*) {
+        color: var-get($theme, 'input-suffix-color');
+    }
+}
+
 :host(:hover),
 :host([outlined]:hover) {
     [part^='container'] {
@@ -116,6 +141,10 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     }
 
     [part='label'] {
+        color: color(error, 500);
+    }
+
+    [part='helper-text'] {
         color: color(error, 500);
     }
 }

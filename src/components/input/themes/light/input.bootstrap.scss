@@ -1,5 +1,16 @@
 @use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
+$schema: extend(
+    (
+        name: 'ig-input'
+    ),
+    map.get($light-bootstrap-schema, 'input-group')
+);
+$theme: digest-schema($schema);
 $input-background: var(--input-background, #fff) !default;
 
 :host([size='large']) {
@@ -19,6 +30,8 @@ $input-background: var(--input-background, #fff) !default;
     --font: #{sizable(rem(14px), rem(16px), rem(20px))};
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
 
+    @include css-vars($theme);
+
     &::after {
         background: none;
     }
@@ -34,6 +47,10 @@ $input-background: var(--input-background, #fff) !default;
         &::after {
             display: none;
         }
+    }
+
+    [part^='container'] {
+        color: color(gray, 900);
     }
 
     [part~='input'] {
@@ -150,6 +167,24 @@ $input-background: var(--input-background, #fff) !default;
 
         margin-top: rem(4px);
         color: color(gray, 700);
+    }
+}
+
+:host([invalid]) {
+    [part='helper-text'] {
+        color: color(error, 500);
+    }
+}
+
+[part~='prefixed'] [part='prefix'] {
+    ::slotted(*) {
+        color: var-get($theme, 'input-prefix-color');
+    }
+}
+
+[part~='suffixed'] [part='suffix'] {
+    ::slotted(*) {
+        color: var-get($theme, 'input-suffix-color');
     }
 }
 

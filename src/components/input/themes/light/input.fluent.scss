@@ -1,5 +1,15 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
+$schema: extend(
+    (
+        name: 'ig-input'
+    ),
+    map.get($light-fluent-schema, 'input-group')
+);
+$theme: digest-schema($schema);
 $container-background: var(--container-background, color(surface, 500)) !default;
 $resting-border-width: rem(1px);
 $focused-border-width: rem(2px);
@@ -20,6 +30,8 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
 :host {
     --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+
+    @include css-vars($theme);
 
     [part='prefix'],
     [part='suffix'] {
@@ -55,6 +67,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     [part^='container'] {
         @include border-radius(2px);
 
+        color: color(gray, 900);
         border: #{$resting-border-width} solid color(gray, 500);
         transition: none;
         background: $container-background;
@@ -84,6 +97,18 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
         padding: 0;
         margin-top: rem(5px);
         color: color(gray, 700);
+    }
+}
+
+[part~='prefixed'] [part='prefix'] {
+    ::slotted(*) {
+        color: var-get($theme, 'input-prefix-color');
+    }
+}
+
+[part~='suffixed'] [part='suffix'] {
+    ::slotted(*) {
+        color: var-get($theme, 'input-suffix-color');
     }
 }
 
@@ -126,6 +151,12 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 :host([required]),
 :host([outlined][required]) {
     [part='label']::after {
+        color: color(error, 500);
+    }
+}
+
+:host([invalid]) {
+    [part='helper-text'] {
         color: color(error, 500);
     }
 }

@@ -4,7 +4,6 @@
 %starfix {
     display: flex;
     align-items: center;
-    color: color(gray, 700);
 }
 
 :host {
@@ -14,12 +13,6 @@
     display: block;
     font-family: var(--ig-font-family);
     outline-style: none;
-}
-
-:host([invalid]) {
-    [part='helper-text'] {
-        color: color(error, 500);
-    }
 }
 
 :host([size='large']) {
@@ -46,7 +39,6 @@
     height: var(--size);
     border: none;
     outline-style: none;
-    color: inherit;
     font-family: var(--ig-font-family);
     z-index: 1;
 }
@@ -54,7 +46,6 @@
 [part^='container'] {
     position: relative;
     display: grid;
-    color: color(gray, 900);
     height: var(--size);
 }
 
