@@ -45,12 +45,14 @@ $fs: rem(16px) !default;
     }
 }
 
-[part~='prefixed'] [part='prefix'] {
+[part='prefix'] {
     color: var-get($theme, 'input-prefix-color');
+    background: var-get($theme, 'input-prefix-background');
 }
 
-[part~='suffixed'] [part='suffix'] {
+[part='suffix'] {
     color: var-get($theme, 'input-suffix-color');
+    background: var-get($theme, 'input-suffix-background');
 }
 
 [part='prefix'],
@@ -142,7 +144,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-
 [part='start'],
 [part='end'] {
     display: flex;
@@ -178,6 +179,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([outlined])) {
+    [part='prefix'],
+    [part='suffix'] {
+        max-height: calc(100% - #{rem(1px)});
+    }
+
     [part='label'] {
         inset-inline-start: rem(2px);
     }
