@@ -110,7 +110,6 @@ $theme: digest-schema($schema);
 [part='prefix'] {
     color: var-get($theme, 'input-prefix-color');
     background: var-get($theme, 'input-prefix-background');
-
     grid-area: 1 / 1;
     border: {
         style: solid;
@@ -135,9 +134,7 @@ $theme: digest-schema($schema);
 [part='suffix'] {
     color: var-get($theme, 'input-suffix-color');
     background: var-get($theme, 'input-suffix-background');
-
     grid-area: 1 / 3;
-
     border: {
         style: solid;
         color: var-get($theme, 'border-color');
