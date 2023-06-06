@@ -10,7 +10,6 @@ $schema: extend(
     map.get($light-indigo-schema, 'input-group')
 );
 $theme: digest-schema($schema);
-$label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
 
 %suffix-preffix {
     display: inline-flex;
@@ -25,15 +24,14 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
 
     [part='prefix'],
     [part='suffix'] {
-        color: var-get($theme, 'input-prefix-color');
-        background: var-get($theme, 'input-prefix-background');
-
         ::slotted(*) {
             color: inherit;
         }
     }
 
     [part='prefix'] {
+        color: var-get($theme, 'input-prefix-color');
+        background: var-get($theme, 'input-prefix-background');
         grid-area: 1 / 1;
 
         ::slotted(*) {
@@ -42,6 +40,8 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     }
 
     [part='suffix'] {
+        color: var-get($theme, 'input-suffix-color');
+        background: var-get($theme, 'input-suffix-background');
         grid-area: 1 / 3;
 
         ::slotted(*) {
