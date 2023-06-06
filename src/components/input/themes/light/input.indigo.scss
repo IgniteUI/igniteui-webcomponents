@@ -25,7 +25,12 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
 
     [part='prefix'],
     [part='suffix'] {
-        color: color(gray, 600);
+        color: var-get($theme, 'input-prefix-color');
+        background: var-get($theme, 'input-prefix-background');
+
+        ::slotted(*) {
+            color: inherit;
+        }
     }
 
     [part='prefix'] {
@@ -45,16 +50,14 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     }
 
     [part~='label'] {
-        color: color(gray, 900);
+        color: var-get($theme, 'idle-secondary-color');
         font-size: rem(14px);
         font-weight: 600;
         line-height: 1;
     }
 
     [part^='container'] {
-        color: color(gray, 900);
-        background: transparent;
-        border-bottom: 1px solid color(gray, 500);
+        border-bottom: 1px solid var-get($theme, 'idle-bottom-line-color');
         transition: background .25s ease-out;
         grid-template-columns: auto 1fr auto;
 
@@ -66,7 +69,7 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
             left: 0;
             right: 0;
             bottom: -1px;
-            background: color(secondary, 500);
+            background: var-get($theme, 'focused-bottom-line-color');
             transform: scaleY(0);
             transition: transform 180ms cubic-bezier(.4, 0, .2, 1), opacity 180ms cubic-bezier(.4, 0, .2, 1);
             transform-origin: bottom center;
@@ -93,75 +96,80 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     [part='helper-text'] {
         margin-top: rem(6px);
         padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
-        color: color(gray, 600);
-    }
-}
-
-[part~='prefixed'] [part='prefix'] {
-    ::slotted(*) {
-        color: var-get($theme, 'input-prefix-color');
-    }
-}
-
-[part~='suffixed'] [part='suffix'] {
-    ::slotted(*) {
-        color: var-get($theme, 'input-suffix-color');
-    }
-}
-
-:host(:hover),
-:host([outlined]:hover) {
-    [part^='container'] {
-        background: color(gray, 100);
+        color: var-get($theme, 'helper-text-color');
     }
 }
 
 :host(:focus-within),
-:host([outlined]:focus-within) {
+:host(:hover) {
     [part^='container'] {
-        background: color(gray, 100);
+        background: var-get($theme, 'box-background-hover');
+    }
+}
 
+[part~='filled'] {
+    [part='prefix'] {
+        color: var-get($theme, 'input-prefix-color--filled');
+        background: var-get($theme, 'input-prefix-background--filled');
+    }
+
+    [part='suffix'] {
+        color: var-get($theme, 'input-suffix-color--filled');
+        background: var-get($theme, 'input-suffix-background--filled');
+    }
+}
+
+:host(:focus-within) {
+    [part^='container'] {
         &::after {
             transform: scaleY(1);
         }
     }
 
+    [part='prefix'] {
+        color: var-get($theme, 'input-prefix-color--focused');
+        background: var-get($theme, 'input-prefix-background--focused');
+    }
+
+    [part='suffix'] {
+        color: var-get($theme, 'input-suffix-color--focused');
+        background: var-get($theme, 'input-suffix-background--focused');
+    }
+
     [part='label'] {
-        color: $label-focus-color;
+        color: var-get($theme, 'focused-secondary-color');
     }
 }
 
 :host([invalid]) {
     [part^='container'] {
-        border-color: color(error, 500);
+        border-color: var-get($theme, 'error-secondary-color');
 
         &::after {
-            background: color(error, 500);
+            background: var-get($theme, 'error-secondary-color');
         }
     }
 
     [part='label'] {
-        color: color(error, 500);
+        color: var-get($theme, 'error-secondary-color');
     }
 
     [part='helper-text'] {
-        color: color(error, 500);
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
 :host([disabled]) {
-    pointer-events: none;
-
     [part^='container'] {
-        border-color: color(gray, 300);
-        color: color(gray, 300);
+        border-color: var-get($theme, 'disabled-bottom-line-color');
     }
 
     [part='prefix'],
     [part='suffix'],
     [part='label'],
+    [part~='input'],
     [part='helper-text'],
     [part~='input']::placeholder {
-        color: color(gray, 300);
+        color: var-get($theme, 'disabled-text-color');
     }
 }

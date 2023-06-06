@@ -175,8 +175,6 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 }
 
 :host([disabled]) {
-    pointer-events: none;
-
     [part^='container'] {
         border-color: color(gray, 100);
         color: color(gray, 400);

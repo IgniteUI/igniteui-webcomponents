@@ -456,8 +456,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host([disabled]) {
-    pointer-events: none;
-
     [part~='input'],
     [part='label'],
     [part='prefix'],
