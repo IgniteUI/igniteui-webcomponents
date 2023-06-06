@@ -119,12 +119,6 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    value: {
-      type: 'string',
-      description:
-        'Returns the current selection as a list of commma separated values,\nrepresented by the display key, when provided.',
-      control: 'text',
-    },
   },
   args: {
     disabled: false,
@@ -179,11 +173,6 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
-  /**
-   * Returns the current selection as a list of commma separated values,
-   * represented by the display key, when provided.
-   */
-  value: string;
 }
 type Story = StoryObj<IgcComboArgs>;
 
@@ -311,6 +300,7 @@ const Template = (
     dir=${ifDefined(direction)}
     value-key="id"
     display-key="name"
+    value="['BG01', 'BG02']"
     group-key="country"
     group-sorting="${ifDefined(groupSorting)}"
     ?case-sensitive-icon=${caseSensitiveIcon}

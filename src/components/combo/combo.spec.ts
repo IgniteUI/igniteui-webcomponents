@@ -128,7 +128,7 @@ describe('Combo', () => {
       expect(combo.data).to.equal(cities);
       expect(combo.open).to.be.false;
       expect(combo.name).to.be.undefined;
-      expect(combo.value).to.equal('');
+      expect(Array.isArray(combo.value)).to.be.true;
       expect(combo.disabled).to.be.false;
       expect(combo.required).to.be.false;
       expect(combo.invalid).to.be.false;
@@ -158,7 +158,6 @@ describe('Combo', () => {
       combo.placeholderSearch = 'Select Placeholder';
       await elementUpdated(combo);
 
-      expect(input.value).to.equal(combo.value);
       expect(input.placeholder).to.equal(combo.placeholder);
       expect(input.label).to.equal(combo.label);
       expect(input.disabled).to.equal(combo.disabled);
@@ -618,7 +617,7 @@ describe('Combo', () => {
       pressKey(input, 'Enter');
 
       await elementUpdated(combo);
-      expect(combo.value).to.equal('Sofia');
+      expect(combo.value[0]).to.equal('BG01');
     });
 
     it('should select only one item at a time in single selection mode', async () => {
@@ -701,7 +700,7 @@ describe('Combo', () => {
         expect(i.selected).to.be.false;
       });
 
-      expect(combo.value).to.equal('');
+      expect(combo.value.length).to.equal(0);
     });
 
     it('Selection API should deselect nothing in single selection mode if nothing is passed', async () => {
@@ -717,13 +716,12 @@ describe('Combo', () => {
 
       await elementUpdated(combo);
 
-      const match = cities.find((i) => i.id === selection);
-      expect(combo.value).to.equal(match?.name);
+      expect(combo.value[0]).to.equal(selection);
 
       combo.deselect();
       await elementUpdated(combo);
 
-      expect(combo.value).to.equal(match?.name);
+      expect(combo.value[0]).to.equal(selection);
     });
 
     it('should select a single item using valueKey as argument with the Selection API', async () => {
@@ -737,7 +735,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       const match = cities.find((i) => i.id === selection);
-      expect(combo.value).to.equal(match?.name);
+      expect(combo.value[0]).to.equal(selection);
 
       const selected = items(combo).filter((i) => i.selected);
 
@@ -757,13 +755,12 @@ describe('Combo', () => {
 
       await elementUpdated(combo);
 
-      const match = cities.find((i) => i.id === selection);
-      expect(combo.value).to.equal(match?.name);
+      expect(combo.value[0]).to.equal(selection);
 
       combo.deselect(selection);
       await elementUpdated(combo);
 
-      expect(combo.value).to.equal('');
+      expect(combo.value.length).to.equal(0);
 
       items(combo).forEach((i) => {
         expect(i.selected).to.be.false;
@@ -781,7 +778,7 @@ describe('Combo', () => {
 
       await elementUpdated(combo);
 
-      expect(combo.value).to.equal(item?.name);
+      expect(combo.value[0]).to.equal(item.name);
 
       const selected = items(combo).filter((i) => i.selected);
 
@@ -802,12 +799,12 @@ describe('Combo', () => {
 
       await elementUpdated(combo);
 
-      expect(combo.value).to.equal(item?.name);
+      expect(combo.value[0]).to.equal(item.name);
 
       combo.deselect(item);
       await elementUpdated(combo);
 
-      expect(combo.value).to.equal('');
+      expect(combo.value.length).to.equal(0);
 
       items(combo).forEach((i) => {
         expect(i.selected).to.be.false;
@@ -830,11 +827,12 @@ describe('Combo', () => {
       expect(items(combo)[0].textContent).to.equal('Sofia');
 
       // Select an item not visible in the list using the API
-      combo.select('US01');
+      const selection = 'US01';
+      combo.select(selection);
       await elementUpdated(combo);
 
       // The combo value should've updated
-      expect(combo.value).to.equal('New York');
+      expect(combo.value[0]).to.equal(selection);
 
       // Let's verify the list of items has been updated
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));
@@ -854,7 +852,8 @@ describe('Combo', () => {
 
     it('should deselect item(s) even if the list of items has been filtered', async () => {
       // Select an item via the API
-      combo.select('US01');
+      const selection = 'US01';
+      combo.select(selection);
       combo.show();
       await elementUpdated(combo);
       await list.layoutComplete;
@@ -867,7 +866,7 @@ describe('Combo', () => {
 
       // It should match the one selected via the API
       expect(selected[0].textContent).to.equal('New York');
-      expect(combo.value).to.equal('New York');
+      expect(combo.value[0]).to.equal(selection);
 
       // Filter the list of items
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
@@ -880,11 +879,11 @@ describe('Combo', () => {
       expect(items(combo)[0].textContent).to.equal('Sofia');
 
       // Deselect the previously selected item while the list is filtered
-      combo.deselect('US01');
+      combo.deselect(selection);
       await elementUpdated(combo);
 
       // The value should be updated
-      expect(combo.value).to.equal('');
+      expect(combo.value.length).to.equal(0);
 
       // Verify the list of items has been updated
       searchInput.dispatchEvent(new CustomEvent('igcInput', { detail: '' }));

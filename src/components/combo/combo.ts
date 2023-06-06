@@ -34,7 +34,10 @@ import {
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
-import { filteringOptionsConverter } from './utils/converters.js';
+import {
+  filteringOptionsConverter,
+  valueConverter,
+} from './utils/converters.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import type { ThemeController, Theme } from '../../theming/types.js';
@@ -104,7 +107,8 @@ export default class IgcComboComponent<T extends object>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
-  private _value = '';
+  private _value: string[] = [];
+  private _displayValue = '';
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
@@ -423,21 +427,38 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.active = -1;
   }
 
+  protected async selectItemsByValueKey(items: Item<T>[]) {
+    await this.updateComplete;
+
+    this.deselect([]);
+    this.select(items);
+  }
+
+  public set value(items: string[]) {
+    this.selectItemsByValueKey(items as Item<T>[]);
+  }
+
   /**
    * Returns the current selection as a list of commma separated values,
-   * represented by the display key, when provided.
+   * represented by the value key, when provided.
    */
+  @property({ attribute: true, converter: valueConverter })
   public get value() {
     return this._value;
   }
 
   protected async updateValue() {
+    await this.updateComplete;
+
     this._value = this.selectionController.getValue(
       Array.from(this.selectionController.selected)
     );
 
-    await this.updateComplete;
-    this.target.value = this._value;
+    this._displayValue = this.selectionController.getDisplayValue(
+      Array.from(this.selectionController.selected)
+    );
+
+    this.target.value = this._displayValue;
   }
 
   @watch('value')
@@ -447,7 +468,7 @@ export default class IgcComboComponent<T extends object>
 
   /** Checks the validity of the control. */
   public reportValidity() {
-    this.invalid = this.required && !this.value;
+    this.invalid = this.required && this.value.length === 0;
     return !this.invalid;
   }
 
@@ -497,7 +518,7 @@ export default class IgcComboComponent<T extends object>
   public select(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.select(_items, false);
-    this.list.requestUpdate();
+    this.list?.requestUpdate();
     this.updateValue();
   }
 
@@ -526,7 +547,7 @@ export default class IgcComboComponent<T extends object>
   public deselect(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.deselect(_items, false);
-    this.list.requestUpdate();
+    this.list?.requestUpdate();
     this.updateValue();
   }
 
