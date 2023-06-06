@@ -53,15 +53,14 @@ $fs: rem(16px) !default;
 
 [part~='prefixed'] [part='prefix'] {
     color: var-get($theme, 'input-prefix-color');
-
-    ::slotted(*) {
-        color: inherit;
-    }
 }
 
 [part~='suffixed'] [part='suffix'] {
     color: var-get($theme, 'input-suffix-color');
+}
 
+[part='prefix'],
+[part='suffix'] {
     ::slotted(*) {
         color: inherit;
     }
@@ -96,19 +95,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part~='prefix'] {
         background: var-get($theme, 'input-prefix-background--filled');
         color: var-get($theme, 'input-prefix-color--filled');
-
-        ::slotted(*) {
-            color: inherit;
-        }
     }
 
     [part~='suffix'] {
         background: var-get($theme, 'input-suffix-background--filled');
         color: var-get($theme, 'input-suffix-color--filled');
-
-        ::slotted(*) {
-            color: inherit;
-        }
     }
 }
 
@@ -157,6 +148,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+
 [part='start'],
 [part='end'] {
     display: flex;
@@ -183,19 +175,11 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part~='prefix'] {
         background: var-get($theme, 'input-prefix-background--focused');
         color: var-get($theme, 'input-prefix-color--focused');
-
-        ::slotted(*) {
-            color: inherit;
-        }
     }
 
     [part~='suffix'] {
         background: var-get($theme, 'input-suffix-background--focused');
         color: var-get($theme, 'input-suffix-color--focused');
-
-        ::slotted(*) {
-            color: inherit;
-        }
     }
 }
 
