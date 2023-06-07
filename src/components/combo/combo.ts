@@ -420,12 +420,11 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.active = -1;
   }
 
-  protected async selectItems(items: Item<T>[]) {
-    if (items.length === 0) return;
-    await this.updateComplete;
-
-    this.deselect([]);
-    this.select(items);
+  @watch('value')
+  protected selectItems() {
+    this.selectionController.deselect([]);
+    this.selectionController.select(this._value as Item<T>[]);
+    this.updateValue();
   }
 
   /**
@@ -455,7 +454,11 @@ export default class IgcComboComponent<T extends object>
    * ```
    */
   public set value(items: string[]) {
-    this.selectItems(items as Item<T>[]);
+    if (items?.length === 0) return;
+
+    const oldValue = this._value;
+    this._value = items;
+    this.requestUpdate('value', oldValue);
   }
 
   /**
@@ -468,8 +471,6 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected async updateValue() {
-    await this.updateComplete;
-
     this._value = this.selectionController.getValue(
       Array.from(this.selectionController.selected)
     );
@@ -478,6 +479,7 @@ export default class IgcComboComponent<T extends object>
       Array.from(this.selectionController.selected)
     );
 
+    await this.updateComplete;
     this.target.value = this._displayValue;
   }
 
