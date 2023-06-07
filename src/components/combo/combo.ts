@@ -435,7 +435,7 @@ export default class IgcComboComponent<T extends object>
    * @attr value
    *
    * @example
-   * ```html
+   * ```tsx
    * <igc-combo
    *  .data=${[
    *    {
@@ -446,9 +446,9 @@ export default class IgcComboComponent<T extends object>
    *      id: 'BG02',
    *      name: 'Plovdiv'
    *    }
-   *  ]}"
-   *  displayKey="name"
-   *  valueKey="id"
+   *  ]}
+   *  display-key='name'
+   *  value-key='id'
    *  value='["BG01", "BG02"]'>
    *  </igc-combo>
    * ```
