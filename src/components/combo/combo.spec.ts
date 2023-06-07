@@ -915,6 +915,37 @@ describe('Combo', () => {
         expect(item.textContent).to.equal(String(primitive[index]));
       });
     });
+
+    it('should be able to get the currently selected items by calling the `selectoin` getter', async () => {
+      combo.select([cities[0].id, cities[1].id, cities[2].id]);
+      await elementUpdated(combo);
+
+      expect(combo.selection[0]).to.equal(cities[0]);
+      expect(combo.selection[1]).to.equal(cities[1]);
+      expect(combo.selection[2]).to.equal(cities[2]);
+    });
+
+    it('should set the initial selection by using the `value` attribute', async () => {
+      const combo = await fixture<IgcComboComponent<any>>(
+        html`<igc-combo
+          .data=${primitive}
+          value='["Sofia", "Varna"]'
+        ></igc-combo>`
+      );
+
+      await elementUpdated(combo);
+
+      expect(combo.selection[0]).to.equal('Sofia');
+      expect(combo.selection[1]).to.equal('Varna');
+    });
+
+    it('should set the selection by using the `value` property', async () => {
+      combo.value = ['US01', 'US02'];
+      await elementUpdated(combo);
+
+      expect(combo.selection[0]).to.equal(cities[3]);
+      expect(combo.selection[1]).to.equal(cities[4]);
+    });
   });
 });
 
