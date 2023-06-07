@@ -8,10 +8,6 @@
     position: static;
     font-family: var(--ig-font-family);
 
-    > igc-input {
-        position: relative;
-    }
-
     > igc-input::part(input) {
         text-overflow: ellipsis;
         cursor: pointer;
