@@ -34,10 +34,7 @@ import {
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
-import {
-  filteringOptionsConverter,
-  valueConverter,
-} from './utils/converters.js';
+import { filteringOptionsConverter } from './utils/converters.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import type { ThemeController, Theme } from '../../theming/types.js';
@@ -427,22 +424,48 @@ export default class IgcComboComponent<T extends object>
     this.navigationController.active = -1;
   }
 
-  protected async selectItemsByValueKey(items: Item<T>[]) {
+  protected async selectItems(items: Item<T>[]) {
     await this.updateComplete;
 
     this.deselect([]);
     this.select(items);
   }
 
+  /**
+   * Sets the value (selected items). The passed value must be a valid JSON array.
+   * If the data source is an array of complex objects, the `displayKey` attribute must be set.
+   * Note that when `valueKey` is not explicitly set, it will fall back to the value of `displayKey`.
+   *
+   * @attr value
+   *
+   * @example
+   * ```html
+   * <igc-combo
+   *  .data=${[
+   *    {
+   *      id: 'BG01',
+   *      name: 'Sofia'
+   *    },
+   *    {
+   *      id: 'BG02',
+   *      name: 'Plovdiv'
+   *    }
+   *  ]}"
+   *  displayKey="name"
+   *  valueKey="id"
+   *  value='["BG01", "BG02"]'>
+   *  </igc-combo>
+   * ```
+   */
   public set value(items: string[]) {
-    this.selectItemsByValueKey(items as Item<T>[]);
+    this.selectItems(items as Item<T>[]);
   }
 
   /**
    * Returns the current selection as a list of commma separated values,
    * represented by the value key, when provided.
    */
-  @property({ attribute: true, converter: valueConverter })
+  @property({ attribute: true, type: Array })
   public get value() {
     return this._value;
   }
@@ -491,6 +514,13 @@ export default class IgcComboComponent<T extends object>
 
   protected normalizeSelection(items: Item<T> | Item<T>[] = []): Item<T>[] {
     return Array.isArray(items) ? items : [items];
+  }
+
+  /**
+   * Returns the current selection as an array of objects as provided in the `data` source.
+   */
+  public get selection() {
+    return Array.from(this.selectionController.selected.values());
   }
 
   /**

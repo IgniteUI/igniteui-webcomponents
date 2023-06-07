@@ -11,9 +11,3 @@ export const filteringOptionsConverter: ComplexAttributeConverter<
     return JSON.parse(value.replace(/'/gi, '"')) as FilteringOptions<object>;
   },
 };
-
-export const valueConverter: ComplexAttributeConverter<string[]> = {
-  fromAttribute: (value: string) => {
-    return JSON.parse(value.replace(/'/gi, '"'));
-  },
-};
