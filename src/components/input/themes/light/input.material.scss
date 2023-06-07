@@ -453,6 +453,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     [part='end'] {
         border-color: var-get($theme, 'disabled-border-color');
     }
+
+    [part='notch'] {
+        border-top-color: transparent;
+    }
 }
 
 :host([disabled]) {
