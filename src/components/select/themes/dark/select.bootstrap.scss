@@ -1,5 +1,14 @@
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$input-schema: extend((name: 'ig-input-group'), map.get($dark-bootstrap-schema, 'input-group'));
+$select-schema: extend((name: 'ig-input-group'), map.get($dark-bootstrap-schema, 'input-group'));
+$schema: map.merge($input-schema, $select-schema);
+$theme: digest-schema($schema);
+
 @mixin theme() {
-    igc-select::part(input) {
-        --input-background: transparent;
+    igc-select {
+        @include css-vars($theme);
     }
 }

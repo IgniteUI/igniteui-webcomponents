@@ -3,7 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$input-schema: extend((name: 'ig-input'), map.get($light-indigo-schema, 'input-group'));
+$input-schema: extend((name: 'ig-input-group'), map.get($light-indigo-schema, 'input-group'));
 $select-schema: extend((name: 'ig-select'), map.get($light-indigo-schema, 'select'));
 $schema: map.merge($input-schema, $select-schema);
 $theme: digest-schema($schema);
@@ -14,6 +14,15 @@ $theme: digest-schema($schema);
     ::slotted([slot='helper-text']) {
         color: var-get($theme, 'helper-text-color');
     }
+
+    igc-input::part(input) {
+        color: var-get($theme, 'filled-text-color');
+    }
+
+    [part='helper-text'] {
+        margin-top: rem(6px);
+        padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+    }
 }
 
 [part~='toggle-icon'] {
@@ -23,11 +32,6 @@ $theme: digest-schema($schema);
     igc-icon {
         color: inherit;
     }
-}
-
-[part='helper-text'] {
-    margin-top: rem(6px);
-    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
 }
 
 :host(:focus-within) {

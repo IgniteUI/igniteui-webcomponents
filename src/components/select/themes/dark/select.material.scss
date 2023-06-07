@@ -1,7 +1,14 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$input-schema: extend((name: 'ig-input-group'), map.get($dark-material-schema, 'input-group'));
+$select-schema: extend((name: 'ig-input-group'), map.get($dark-material-schema, 'input-group'));
+$schema: map.merge($input-schema, $select-schema);
+$theme: digest-schema($schema);
 
 @mixin theme() {
-    igc-select::part(input) {
-        --focus-background: #{utils.color(gray, 100)};
+    igc-select {
+        @include css-vars($theme);
     }
 }

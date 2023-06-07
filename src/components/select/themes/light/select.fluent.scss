@@ -3,7 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$input-schema: extend((name: 'ig-input'), map.get($light-fluent-schema, 'input-group'));
+$input-schema: extend((name: 'ig-input-group'), map.get($light-fluent-schema, 'input-group'));
 $select-schema: extend((name: 'ig-select'), map.get($light-fluent-schema, 'select'));
 $schema: map.merge($input-schema, $select-schema);
 $theme: digest-schema($schema);
@@ -18,6 +18,16 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 }
 
+[part~='toggle-icon'] {
+    background: var-get($theme, 'toggle-button-background');
+    color: var-get($theme, 'toggle-button-foreground');
+
+    igc-icon {
+        color: inherit;
+    }
+}
+
+
 :host {
     --size: #{sizable(rem(32px), rem(40px), rem(48px))};
 }
@@ -25,6 +35,15 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 :host(:focus-within) {
     igc-input[readonly]:not([disabled])::part(container) {
         border-width: #{$focused-border-width};
+    }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus');
+        color: var-get($theme, 'toggle-button-foreground-focus');
+
+        igc-icon {
+            color: inherit;
+        }
     }
 }
 
@@ -49,6 +68,15 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
 :host([disabled]) {
     [part='helper-text'] ::slotted([slot='helper-text']) {
-        color: color(gray, 500);
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-disabled');
+        color: var-get($theme, 'toggle-button-foreground-disabled');
+
+        igc-icon {
+            color: inherit;
+        }
     }
 }
