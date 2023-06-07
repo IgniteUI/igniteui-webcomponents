@@ -429,8 +429,8 @@ export default class IgcComboComponent<T extends object>
 
   /**
    * Sets the value (selected items). The passed value must be a valid JSON array.
-   * If the data source is an array of complex objects, the `displayKey` attribute must be set.
-   * Note that when `valueKey` is not explicitly set, it will fall back to the value of `displayKey`.
+   * If the data source is an array of complex objects, the `valueKey` attribute must be set.
+   * Note that when `displayKey` is not explicitly set, it will fall back to the value of `valueKey`.
    *
    * @attr value
    *
