@@ -5,7 +5,12 @@
     --component-size: var(--ig-size, var(--ig-size-medium));
 
     display: block;
+    position: static;
     font-family: var(--ig-font-family);
+
+    > igc-input {
+        position: relative;
+    }
 
     > igc-input::part(input) {
         text-overflow: ellipsis;
