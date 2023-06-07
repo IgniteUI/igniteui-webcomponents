@@ -421,6 +421,7 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected async selectItems(items: Item<T>[]) {
+    if (items.length === 0) return;
     await this.updateComplete;
 
     this.deselect([]);
@@ -544,7 +545,7 @@ export default class IgcComboComponent<T extends object>
   public select(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.select(_items, false);
-    this.list?.requestUpdate();
+    this.list.requestUpdate();
     this.updateValue();
   }
 
@@ -573,7 +574,7 @@ export default class IgcComboComponent<T extends object>
   public deselect(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.deselect(_items, false);
-    this.list?.requestUpdate();
+    this.list.requestUpdate();
     this.updateValue();
   }
 
