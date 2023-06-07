@@ -1,47 +1,85 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
-$label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
+$input-schema: extend((name: 'ig-input'), map.get($light-indigo-schema, 'input-group'));
+$select-schema: extend((name: 'ig-select'), map.get($light-indigo-schema, 'select'));
+$schema: map.merge($input-schema, $select-schema);
+$theme: digest-schema($schema);
+
+:host {
+    @include css-vars($theme);
+
+    ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'helper-text-color');
+    }
+}
 
 [part~='toggle-icon'] {
-    background: color(gray, 300);
+    background: var-get($theme, 'toggle-button-background');
+    color: var-get($theme, 'toggle-button-foreground');
+
+    igc-icon {
+        color: inherit;
+    }
 }
 
 [part='helper-text'] {
     margin-top: rem(6px);
     padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
-    color: color(gray, 600);
-}
-
-:host {
-    ::slotted([slot='helper-text']) {
-        color: color(gray, 600);
-    }
-}
-
-:host([disabled]) {
-    [part='helper-text'] ::slotted([slot='helper-text']) {
-        color: color(gray, 300);
-    }
-
-    [part='toggle-icon'] {
-        background: transparent;
-    }
 }
 
 :host(:focus-within) {
-    igc-input[readonly]:not([disabled])::part(container) {
+    igc-input::part(label) {
+        color: var-get($theme, 'focused-secondary-color');
+    }
+
+    igc-input::part(container) {
+        background: var-get($theme, 'box-background-hover');
+
         &::after {
             transform: scaleY(1);
         }
     }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus');
+        color: var-get($theme, 'toggle-button-foreground-focus');
+
+        igc-icon {
+            color: inherit;
+        }
+    }
 }
 
-:host(:not([invalid]):focus-within) {
-    igc-input[readonly]:not([disabled])::part(container) {
-        background: color(gray, 100);
+:host([invalid]) {
+    ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host([invalid]:focus-within) {
+    igc-input::part(label) {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host([disabled]) {
+    igc-input::part(input) {
+        color: var-get($theme, 'disabled-text-color');
     }
 
-    igc-input[readonly]:not([disabled])::part(label) {
-        color: $label-focus-color;
+    [part='helper-text'] ::slotted([slot='helper-text']) {
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-disabled');
+        color: var-get($theme, 'toggle-button-foreground-disabled');
+
+        igc-icon {
+            color: inherit;
+        }
     }
 }

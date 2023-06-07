@@ -1,5 +1,12 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
+$input-schema: extend((name: 'ig-input'), map.get($light-fluent-schema, 'input-group'));
+$select-schema: extend((name: 'ig-select'), map.get($light-fluent-schema, 'select'));
+$schema: map.merge($input-schema, $select-schema);
+$theme: digest-schema($schema);
 $focused-border-width: rem(2px);
 $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
