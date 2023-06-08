@@ -16,6 +16,17 @@ export class SelectionController<T extends object>
   }
 
   public getValue(items: T[]) {
+    return items.map((value) => {
+      if (typeof value === 'object' && value !== null) {
+        const key = this.host.valueKey ?? this.host.displayKey;
+        return key ? String(value[key]) : String(value);
+      } else {
+        return String(value);
+      }
+    });
+  }
+
+  public getDisplayValue(items: T[]) {
     return items
       .map((value) => {
         if (typeof value === 'object' && value !== null) {
@@ -114,7 +125,7 @@ export class SelectionController<T extends object>
     if (
       emit &&
       !this.handleChange({
-        newValue: this.getValue(payload),
+        newValue: this.getDisplayValue(payload),
         items: values as T[],
         type: 'selection',
       })
@@ -162,7 +173,7 @@ export class SelectionController<T extends object>
     if (
       emit &&
       !this.handleChange({
-        newValue: this.getValue(payload),
+        newValue: this.getDisplayValue(payload),
         items: values as T[],
         type: 'deselection',
       })
