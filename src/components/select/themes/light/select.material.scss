@@ -115,7 +115,9 @@ $active-border-width: rem(2px) !default;
         background: var-get($theme, 'box-background-focus');
         border-bottom-color: var-get($theme, 'focused-bottom-line-color');
     }
+}
 
+:host(:focus-within) {
     [part~='toggle-icon'] {
         background: var-get($theme, 'toggle-button-background-focus');
         color: var-get($theme, 'toggle-button-foreground-focus');
@@ -155,6 +157,10 @@ $active-border-width: rem(2px) !default;
 }
 
 :host([disabled]) {
+    // igc-input::part(input)::selection {
+    //     background: transparent;
+    // }
+
     [part~='toggle-icon'] {
         background: var-get($theme, 'toggle-button-background-disabled');
         color: var-get($theme, 'toggle-button-foreground-disabled');

@@ -3,7 +3,7 @@
 @use '../../../../styles/themes/schemas' as *;
 
 $input-schema: extend((name: 'ig-input-group'), map.get($dark-material-schema, 'input-group'));
-$select-schema: extend((name: 'ig-input-group'), map.get($dark-material-schema, 'input-group'));
+$select-schema: extend((name: 'ig-select'), map.get($dark-material-schema, 'input-group'));
 $schema: map.merge($input-schema, $select-schema);
 $theme: digest-schema($schema);
 

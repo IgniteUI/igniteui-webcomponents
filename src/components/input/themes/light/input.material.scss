@@ -106,6 +106,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='start'] {
     justify-content: flex-start;
     grid-area: 1 / 1;
+    border: {
+        start: {
+            start-radius: rem(4px);
+        };
+        end: {
+            start-radius: rem(4px);
+        };
+    }
 
     > [part='prefix'] {
         ::slotted(*) {
@@ -136,6 +144,14 @@ input:placeholder-shown + [part='notch'] [part='label'],
 [part='end'] {
     justify-content: flex-end;
     grid-area: 1 / 4;
+    border: {
+        start: {
+            end-radius: rem(4px);
+        };
+        end: {
+            end-radius: rem(4px);
+        };
+    }
 
     > [part='suffix'] {
         ::slotted(*) {
@@ -266,17 +282,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 :host(:not([outlined])[disabled]) {
-    [part~='input'],
-    [part='label'],
-    [part='prefix'],
-    [part='suffix'],
-    [part='helper-text'] {
-        color: color(gray, 500);
-    }
-
     [part~='container'] {
         background: color(gray, 100);
-        border-color: color(gray, 500);
+        border-color: var-get($theme, 'disabled-border-color');
         border-bottom-style: dashed;
     }
 }
@@ -427,6 +435,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
+    }
+
+    [part='notch'] {
+        border-top: $idle-border-width solid transparent;
     }
 }
 
