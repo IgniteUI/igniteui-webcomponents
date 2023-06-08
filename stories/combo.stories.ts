@@ -129,7 +129,7 @@ const metadata: Meta<IgcComboComponent> = {
     sameWidth: {
       type: 'boolean',
       description:
-        "Whether the dropdown's width should be the same as the target's one.",
+        "Whether the dropdown's width should be the same as the target's one.\nTrue by default.",
       control: 'boolean',
       defaultValue: true,
     },
@@ -197,7 +197,10 @@ interface IgcComboArgs {
   disableFiltering: boolean;
   /** Sets the component's positioning strategy. */
   positionStrategy: 'absolute' | 'fixed';
-  /** Whether the dropdown's width should be the same as the target's one. */
+  /**
+   * Whether the dropdown's width should be the same as the target's one.
+   * True by default.
+   */
   sameWidth: boolean;
   /**
    * Returns the current selection as a list of commma separated values,

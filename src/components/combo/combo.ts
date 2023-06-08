@@ -1,4 +1,5 @@
 import { html, LitElement, TemplateResult } from 'lit';
+import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/combo.base.css.js';
 import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
@@ -333,8 +334,9 @@ export default class IgcComboComponent<T extends object>
 
   /**
    * Whether the dropdown's width should be the same as the target's one.
+   * True by default.
    */
-  @property({ type: Boolean, attribute: 'same-width' })
+  @property({ type: Boolean, attribute: false })
   public sameWidth = true;
 
   @state()
@@ -868,6 +870,7 @@ export default class IgcComboComponent<T extends object>
     return html`<div
       @keydown=${this.listKeydownHandler}
       part="list-wrapper"
+      style=${styleMap({ position: this.positionStrategy })}
       ${this.toggleController.toggleDirective}
     >
       ${this.renderSearchInput()}
