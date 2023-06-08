@@ -293,6 +293,14 @@ describe('Combo', () => {
       expect(combo.filteringOptions.caseSensitive).to.equal(true);
     });
 
+    it('should correctly merge partially provided filtering options', async () => {
+      combo.setAttribute('filtering-options', '{"caseSensitive": true }');
+      await elementUpdated(combo);
+
+      expect(combo.filteringOptions.filterKey).not.to.be.undefined;
+      expect(combo.filteringOptions.caseSensitive).to.be.true;
+    });
+
     it('should select/deselect an item by value key', async () => {
       const item = cities[0];
       combo.select([item[combo.valueKey!]]);
@@ -574,6 +582,67 @@ describe('Combo', () => {
       combo.singleSelect = true;
       await elementUpdated(combo);
       expect(combo.getAttribute('single-select')).to.exist;
+    });
+
+    it('diacritic filtering configuration (matchDiacritics = false)', async () => {
+      const filter = async (str: string) => {
+        input.dispatchEvent(new CustomEvent('igcInput', { detail: str }));
+        await elementUpdated(combo);
+      };
+
+      combo.data = [
+        ...cities,
+        { country: 'Brazil', id: 'BR01', name: 'São Paulo', zip: '0000' },
+      ];
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      await filter('sao');
+      expect(items(combo).length).to.equal(1);
+
+      await filter('Sao');
+      expect(items(combo).length).to.equal(1);
+
+      await filter('São');
+      expect(items(combo).length).to.equal(1);
+
+      await filter('são');
+      expect(items(combo).length).to.equal(1);
+    });
+
+    it('diacritic filtering configuration (matchDiacritics = true)', async () => {
+      const filter = async (str: string) => {
+        input.dispatchEvent(new CustomEvent('igcInput', { detail: str }));
+        await elementUpdated(combo);
+      };
+
+      combo.data = [
+        ...cities,
+        { country: 'Brazil', id: 'BR01', name: 'São Paulo', zip: '0000' },
+      ];
+      combo.singleSelect = true;
+      combo.filteringOptions = { matchDiacritics: true };
+      await elementUpdated(combo);
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      await filter('sao');
+      expect(items(combo).length).to.equal(0);
+
+      await filter('Sao');
+      expect(items(combo).length).to.equal(0);
+
+      await filter('São');
+      expect(items(combo).length).to.equal(1);
+
+      await filter('são');
+      expect(items(combo).length).to.equal(1);
     });
 
     it('should use the main input for filtering in single selection mode', async () => {
