@@ -133,12 +133,6 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: true,
     },
-    value: {
-      type: 'string',
-      description:
-        'Returns the current selection as a list of commma separated values,\nrepresented by the display key, when provided.',
-      control: 'text',
-    },
   },
   args: {
     disabled: false,
@@ -202,11 +196,6 @@ interface IgcComboArgs {
    * True by default.
    */
   sameWidth: boolean;
-  /**
-   * Returns the current selection as a list of commma separated values,
-   * represented by the display key, when provided.
-   */
-  value: string;
 }
 type Story = StoryObj<IgcComboArgs>;
 
