@@ -428,8 +428,13 @@ export default class IgcComboComponent<T extends object>
 
   @watch('value')
   protected selectItems() {
-    this.selectionController.deselect([]);
-    this.selectionController.select(this._value as Item<T>[]);
+    if (!this._value || this.value.length === 0) {
+      this.selectionController.deselect([]);
+    } else {
+      this.selectionController.deselect([]);
+      this.selectionController.select(this._value as Item<T>[]);
+    }
+
     this.updateValue();
   }
 
@@ -460,8 +465,6 @@ export default class IgcComboComponent<T extends object>
    * ```
    */
   public set value(items: string[]) {
-    if (items?.length === 0) return;
-
     const oldValue = this._value;
     this._value = items;
     this.requestUpdate('value', oldValue);
@@ -487,6 +490,7 @@ export default class IgcComboComponent<T extends object>
 
     await this.updateComplete;
     this.target.value = this._displayValue;
+    this.list.requestUpdate();
   }
 
   @watch('value')
@@ -553,7 +557,6 @@ export default class IgcComboComponent<T extends object>
   public select(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.select(_items, false);
-    this.list.requestUpdate();
     this.updateValue();
   }
 
@@ -582,7 +585,6 @@ export default class IgcComboComponent<T extends object>
   public deselect(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.deselect(_items, false);
-    this.list.requestUpdate();
     this.updateValue();
   }
 
@@ -733,7 +735,6 @@ export default class IgcComboComponent<T extends object>
     this.selectionController.changeSelection(dataIndex);
     this.navigationController.active = index;
     this.updateValue();
-    this.list.requestUpdate();
   }
 
   protected navigateTo(item: T) {
@@ -762,7 +763,6 @@ export default class IgcComboComponent<T extends object>
 
     this.updateValue();
     this.navigationController.active = -1;
-    this.list.requestUpdate();
   }
 
   protected handleMainInputKeydown(e: KeyboardEvent) {

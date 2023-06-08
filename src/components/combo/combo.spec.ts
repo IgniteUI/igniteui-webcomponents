@@ -572,7 +572,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       const itms = items(combo);
-      expect(itms[1].active).to.be.true;
+      expect(itms[1].active).to.be.false;
       expect(itms[1].selected).to.be.true;
       expect(combo.open).to.be.false;
     });
