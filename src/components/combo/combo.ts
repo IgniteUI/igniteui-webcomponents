@@ -34,7 +34,6 @@ import {
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
-import { filteringOptionsConverter } from './utils/converters.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import type { ThemeController, Theme } from '../../theming/types.js';
@@ -106,6 +105,11 @@ export default class IgcComboComponent<T extends object>
   public static styles = styles;
   private _value: string[] = [];
   private _displayValue = '';
+  private _filteringOptions: FilteringOptions<T> = {
+    filterKey: this.displayKey,
+    caseSensitive: false,
+    matchDiacritics: false,
+  };
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
@@ -267,16 +271,17 @@ export default class IgcComboComponent<T extends object>
    * @type {FilteringOptions<T>}
    * @param filterKey - The key in the data source used when filtering the list of options.
    * @param caseSensitive - Determines whether the filtering operation should be case sensitive.
+   * @param matchDiacritics -If true, the filter distinguishes between accented letters and their base letters.
    */
-  @property({
-    attribute: 'filtering-options',
-    reflect: false,
-    converter: filteringOptionsConverter,
-  })
-  public filteringOptions: FilteringOptions<T> = {
-    filterKey: this.displayKey,
-    caseSensitive: false,
-  };
+  @property({ attribute: 'filtering-options', type: Object })
+  public get filteringOptions(): FilteringOptions<T> {
+    return this._filteringOptions;
+  }
+
+  public set filteringOptions(value: Partial<FilteringOptions<T>>) {
+    this._filteringOptions = { ...this._filteringOptions, ...value };
+    this.requestUpdate('pipeline');
+  }
 
   /**
    * Enables the case sensitive search icon in the filtering input.
@@ -339,8 +344,9 @@ export default class IgcComboComponent<T extends object>
 
   @watch('displayKey')
   protected updateFilterKey() {
-    this.filteringOptions.filterKey =
-      this.filteringOptions.filterKey ?? this.displayKey;
+    if (!this.filteringOptions.filterKey) {
+      this.filteringOptions = { filterKey: this.displayKey };
+    }
   }
 
   @watch('groupKey')
@@ -768,8 +774,9 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected toggleCaseSensitivity() {
-    this.filteringOptions.caseSensitive = !this.filteringOptions.caseSensitive;
-    this.requestUpdate('pipeline');
+    this.filteringOptions = {
+      caseSensitive: !this.filteringOptions.caseSensitive,
+    };
   }
 
   protected get hasPrefixes() {
