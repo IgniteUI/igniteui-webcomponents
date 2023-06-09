@@ -1,108 +1,162 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
-$hover-color: var(--hover-color, utils.color(gray, 700)) !default;
-$checked-color: var(--checked-color, utils.color(primary, 500)) !default;
-$checked-hover-color: var(--checked-hover-color, utils.color(primary, 800)) !default;
-$invalid-hover-color: var(--invalid-hover-color, utils.color(error, 700)) !default;
-$disabled-color: var(--disabled-color, utils.color(gray, 400)) !default;
-$disabled-label-color: var(--disabled-label-color, utils.color(gray, 500)) !default;
+$schema: map.get($light-fluent-schema, 'radio');
+$theme: digest-schema($schema);
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-radio');
+}
+
+[part~='label'] {
+    @include type-style('body-2');
+
+    color: var-get($theme, 'label-color');
+}
 
 :host [part~='base'] {
     transition-duration: .1s;
-    gap: utils.rem(6px);
+    gap: rem(6px);
 }
 
 :host [part~='control'] {
-    width: var(--size, utils.rem(20px));
-    height: var(--size, utils.rem(20px));
-    min-width: var(--size, utils.rem(20px));
-    background: transparent;
+    @include border-radius(var(--size));
+
+    width: var(--size);
+    height: var(--size);
+    min-width: var(--size);
+
+    // TODO SEE IF THIS CAN BE REMOVED
     transition: none;
 
     &::before,
     &::after {
-        transition-duration: .1s;
+        @include border-radius(calc(var(--size) / 2));
+
+        width: var(--size);
+        height: var(--size);
+        inset-inline-start: 0;
+        top: 0;
+
+        // TODO SEE IF THIS CAN BE REMOVED
+        transform: none;
     }
 
     &::before {
-        transform: translate(-50%, -50%) scale(.5);
+        backface-visibility: hidden;
+        transform: scale(0);
+        transition: all .2s ease-in;
+        z-index: 1;
     }
 
     &::after {
-        border: calc(var(--size, 20px) / 20) solid utils.color(gray, 900);
-    }
-}
-
-:host [part~='label'] {
-    @include utils.type-style('body-2');
-}
-
-:host(:hover) {
-    [part='control checked'] {
-        &::after {
-            border-color: $checked-hover-color;
-        }
-
-        &::before {
-            background: $checked-hover-color;
-        }
-    }
-}
-
-:host(:hover),
-:host(:focus-within) {
-    [part='control'] {
-        &::before {
-            background: $hover-color;
-        }
+        border: rem(1px) solid var-get($theme, 'empty-color');
     }
 }
 
 :host [part='control checked'] {
     &::before {
-        background: $checked-color;
+        border-color: var-get($theme, 'fill-color');
+        background: var-get($theme, 'fill-color');
+        transform: scale(.5);
     }
 
     &::after {
-        border-color: $checked-color;
+        border-color: var-get($theme, 'fill-color');
     }
 }
 
-:host(:not([disabled])[invalid]) {
-    [part='control checked'] {
+[part~='focused'] {
+    position: relative;
+
+    $focus-outline-offset-top: rem(2px);
+    $focus-outline-offset-left: rem(2px);
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: -$focus-outline-offset-top;
+        left: -$focus-outline-offset-left;
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'focus-outline-color');
+        width: calc(100% + (#{$focus-outline-offset-left} * 2));
+        height: calc(100% + (#{$focus-outline-offset-top} * 2));
+    }
+
+    [part='control'] {
         &::before {
-            background: utils.color(error, 500);
+            background: var-get($theme, 'hover-color')
+        }
+    }
+}
+
+:host(:hover) {
+    [part='control'] {
+        &::before {
+            background: var-get($theme, 'hover-color');
+            transform: scale(.5);
         }
     }
 
-    [part~='control'] {
+    [part='control checked'] {
         &::after {
-            border-color: utils.color(error, 500);
+            border-color: var-get($theme, 'fill-hover-border-color');
+        }
+
+        &::before {
+            background: var-get($theme, 'fill-color-hover');
+            border-color: var-get($theme, 'fill-hover-border-color');
         }
     }
 }
 
 :host(:not([disabled])[invalid]:hover) {
-    [part='control checked'] {
+    [part='control'] {
         &::after {
-            border-color: $invalid-hover-color;
+            border-color: var-get($theme, 'error-color-hover');
         }
 
         &::before {
-            background: $invalid-hover-color;
+            background: var-get($theme, 'error-color-hover');
+        }
+    }
+
+    [part='control checked'] {
+        &::after {
+            border-color: var-get($theme, 'error-color-hover');
+        }
+
+        &::before {
+            background: var-get($theme, 'error-color-hover');
         }
     }
 }
 
-:host(:not([disabled])[invalid]:hover),
-:host(:not([disabled])[invalid]:focus-within) {
-    [part='control'] {
+:host(:not([disabled])[invalid]) {
+    [part~='label'] {
+        color: var-get($theme, 'error-color');
+    }
+
+    [part~='control'] {
         &::after {
-            border-color: utils.color(error, 500);
+            border-color: var-get($theme, 'error-color');
+        }
+    }
+
+    [part='control checked'] {
+        &::before {
+            background: var-get($theme, 'error-color');
+        }
+    }
+
+    [part='focused'] [part='control'] {
+        &::after {
+            border-color: var-get($theme, 'error-color-hover');
         }
 
         &::before {
-            background: utils.color(error, 500);
+            background: var-get($theme, 'error-color-hover');
         }
     }
 }
@@ -110,35 +164,19 @@ $disabled-label-color: var(--disabled-label-color, utils.color(gray, 500)) !defa
 :host([disabled]),
 :host(:disabled) {
     [part~='label'] {
-        color: $disabled-label-color;
+        color: var-get($theme, 'disabled-label-color');
     }
 
     [part~='control'] {
         &::after {
-            border-color: $disabled-color;
+            border-color: var-get($theme, 'disabled-color');
         }
     }
 
     [part='control checked'] {
         &::before {
-            background: $disabled-color;
+            background: var-get($theme, 'disabled-color');
+            border-color: var-get($theme, 'disabled-color');
         }
-    }
-}
-
-[part~='focused'] {
-    position: relative;
-
-    $focus-outline-offset-top: utils.rem(2px);
-    $focus-outline-offset-left: utils.rem(2px);
-
-    &::after {
-        content: '';
-        position: absolute;
-        top: -$focus-outline-offset-top;
-        left: -$focus-outline-offset-left;
-        box-shadow: 0 0 0 1px utils.color(gray, 700);
-        width: calc(100% + (#{$focus-outline-offset-left} * 2));
-        height: calc(100% + (#{$focus-outline-offset-top} * 2));
     }
 }

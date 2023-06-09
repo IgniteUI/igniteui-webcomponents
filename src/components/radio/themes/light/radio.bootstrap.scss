@@ -1,13 +1,31 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-bootstrap-schema, 'radio');
+$theme: digest-schema($schema);
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-radio');
+
     &::part(base) {
         transition: none;
     }
 }
 
-:host [part~='control'] {
-    --size: #{utils.rem(16px)};
+[part~='label'] {
+    color: var-get($theme, 'label-color');
+}
+
+[part~='base'] {
+    gap: rem(8px);
+}
+
+[part~='control'] {
+    --size: #{rem(16px)};
+
+    @include border-radius(var(--size));
 
     width: var(--size);
     height: var(--size);
@@ -18,6 +36,8 @@
     &::before,
     &::after {
         transition: none;
+
+        @include border-radius(calc(var(--size) / 2));
     }
 
     &::before {
@@ -28,64 +48,67 @@
         width: inherit;
         height: inherit;
         min-width: inherit;
-        border-color: #{utils.color(gray, 400)};
-        border-width: calc(var(--size, #{utils.rem(10px)}) / 10);
+        border: rem(1px) solid  var-get($theme, 'empty-color');
     }
 }
 
-:host(:focus-within) [part~='control'] {
-    box-shadow: 0 0 0 #{calc(var(--size, #{utils.rem(16px)}) / 4)} #{utils.color(primary, 100)};
+[part~='focused'] [part~='control'] {
+    box-shadow: 0 0 0 rem(2px) var-get($theme, 'focus-outline-color');
 
     &::after {
-        border-color: #{utils.color(primary, 500)};
+        border-color: var-get($theme, 'fill-color');
     }
 }
 
-:host [part='control checked'] {
+[part='control checked'] {
     &::after {
-        background: #{utils.color(primary, 500)};
-        border-color: #{utils.color(primary, 500)};
+        background: var-get($theme, 'fill-color');
+        border-color: var-get($theme, 'fill-color');
     }
 
     &::before {
-        background: white;
+        border-color: var-get($theme, 'fill-hover-border-color');
+        background: var-get($theme, 'fill-hover-border-color');
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
+    [part~='label'] {
+        color: var-get($theme, 'error-color');
+    }
+
     [part~='control']::after {
-        border-color: utils.color(error, 500);
+        border-color: var-get($theme, 'error-color');
     }
 
     [part='control checked'] {
         &::after {
-            background: utils.color(error, 500);
+            background: var-get($theme, 'error-color');
         }
     }
-}
 
-:host([invalid]:focus-within) {
-    [part~='control'] {
-        box-shadow: 0 0 0 #{calc(var(--size, #{utils.rem(16px)}) / 4)} #{utils.color(error, 100)};
+    [part~='focused'] [part~='control'] {
+        box-shadow: 0 0 0 rem(2px) var-get($theme, 'error-color-hover');
     }
 }
 
 :host([disabled]),
 :host(:disabled) {
+    [part~='label'] {
+        color: var-get($theme, 'disabled-label-color');
+    }
+
     [part='control'] {
         &::after {
-            border-color: #{utils.color(gray, 300)};
+            border-color: var-get($theme, 'disabled-label-color');
         }
     }
 
     [part='control checked'] {
         &::after {
-            background: #{utils.color(primary, 200)};
-            border-color: #{utils.color(primary, 200)};
-        }
-
-        &::before {
-            background: white;
+            background: var-get($theme, 'disabled-color');
+            border-color: var-get($theme, 'disabled-color');
         }
     }
 }
