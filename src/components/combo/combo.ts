@@ -411,14 +411,18 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected override handleFormReset(): void {
-    this.deselect();
+    const value = this.getAttribute('value');
+    this.value = value ? JSON.parse(value) : [];
   }
 
   protected override updateValidity(message = ''): void {
     const flags: ValidityStateFlags = {};
     let msg = '';
 
-    if (this.required && !this.value) {
+    if (
+      this.required &&
+      !(Array.isArray(this.value) && this.value.length > 0)
+    ) {
       flags.valueMissing = true;
       msg = messages.required;
     }

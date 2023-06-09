@@ -1016,6 +1016,7 @@ describe('Combo', () => {
     >(html`<igc-combo
       name="combo"
       .data=${cities}
+      value='["BG01", "BG02"]'
       value-key="id"
       display-key="name"
     ></igc-combo>`);
@@ -1029,22 +1030,21 @@ describe('Combo', () => {
     });
 
     it('is not associated on submit if no value', async () => {
+      spec.element.value = [];
+      await elementUpdated(spec.element);
+
       expect(spec.submit()?.get(spec.element.name)).to.be.null;
     });
 
     it('is associated on submit with value-key (single)', async () => {
       spec.element.singleSelect = true;
-      await elementUpdated(spec.element);
-      spec.element.select(['BG01', 'BG02']);
+      spec.element.value = ['BG01', 'BG02'];
       await elementUpdated(spec.element);
 
       expect(spec.submit()?.get(spec.element.name)).to.equal('BG01');
     });
 
     it('is associated on submit with value-key (multiple)', async () => {
-      spec.element.select(['BG01', 'BG02']);
-      await elementUpdated(spec.element);
-
       expect(spec.submit()?.get(spec.element.name)).to.equal('BG01');
       expect(spec.submit()?.getAll(spec.element.name)).to.eql(['BG01', 'BG02']);
     });
@@ -1076,11 +1076,13 @@ describe('Combo', () => {
     });
 
     it('is correctly reset on form reset', async () => {
-      spec.element.select(['BG01', 'BG02']);
+      const initial = spec.element.value;
+
+      spec.element.value = [];
       await elementUpdated(spec.element);
 
       spec.reset();
-      expect(spec.element.value).to.equal('');
+      expect(spec.element.value).to.eql(initial);
     });
 
     it('reflects disabled ancestor state', async () => {
@@ -1092,11 +1094,12 @@ describe('Combo', () => {
     });
 
     it('fulfils required constraint', async () => {
+      spec.element.value = [];
       spec.element.required = true;
       await elementUpdated(spec.element);
       spec.submitFails();
 
-      spec.element.select(['BG01', 'BG02']);
+      spec.element.value = ['BG01', 'BG02'];
       await elementUpdated(spec.element);
       spec.submitValidates();
     });

@@ -101,12 +101,6 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    value: {
-      type: 'string',
-      description:
-        'Returns the current selection as a list of comma separated values,\nrepresented by the display key, when provided.',
-      control: 'text',
-    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -176,11 +170,6 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
-  /**
-   * Returns the current selection as a list of comma separated values,
-   * represented by the display key, when provided.
-   */
-  value: string;
   /** The name attribute of the control. */
   name: string;
   /** Makes the control a required field in form context. */
