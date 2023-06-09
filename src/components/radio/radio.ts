@@ -257,9 +257,12 @@ export default class IgcRadioComponent extends EventEmitterMixin<
           @blur="${this.handleBlur}"
           @focus="${this.handleFocus}"
         />
-        <span
-          part="${partNameMap({ control: true, checked: this.checked })}"
-        ></span>
+        <span part="${partNameMap({ control: true, checked: this.checked })}">
+          <span
+            .hidden="${this.disabled}"
+            part="${partNameMap({ ripple: true, checked: this.checked })}"
+          ></span>
+        </span>
         <span
           .hidden="${this.hideLabel}"
           part="${partNameMap({ label: true, checked: this.checked })}"
