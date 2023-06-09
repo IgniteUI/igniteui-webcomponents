@@ -5,9 +5,9 @@
 @mixin theme() {
     $schema: extend(
         (
-            name: 'switch'
+            name: 'ig-switch'
         ),
-        map.get($dark-fluent-schema, 'switch')
+        map.get($dark-bootstrap-schema, 'switch')
     );
     $theme: digest-schema($schema);
 

@@ -35,7 +35,6 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { partNameMap } from '../common/util.js';
-import { filteringOptionsConverter } from './utils/converters.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import type { ThemeController, Theme } from '../../theming/types.js';
@@ -106,7 +105,13 @@ export default class IgcComboComponent<T extends object>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
-  private _value = '';
+  private _value: string[] = [];
+  private _displayValue = '';
+  private _filteringOptions: FilteringOptions<T> = {
+    filterKey: this.displayKey,
+    caseSensitive: false,
+    matchDiacritics: false,
+  };
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
@@ -135,7 +140,6 @@ export default class IgcComboComponent<T extends object>
 
   /** The data source used to generate the list of options. */
   /* treatAsRef */
-  /* blazorAlternateType: object */
   @property({ attribute: false })
   public data: Array<T> = [];
 
@@ -206,7 +210,6 @@ export default class IgcComboComponent<T extends object>
   @property({ type: Boolean })
   public flip = true;
 
-  /* blazorAlternateType: string */
   /**
    * The key in the data source used when selecting items.
    * @attr value-key
@@ -214,7 +217,6 @@ export default class IgcComboComponent<T extends object>
   @property({ attribute: 'value-key', reflect: false })
   public valueKey?: Keys<T>;
 
-  /* blazorAlternateType: string */
   /**
    * The key in the data source used to display items in the list.
    * @attr display-key
@@ -222,7 +224,6 @@ export default class IgcComboComponent<T extends object>
   @property({ attribute: 'display-key', reflect: false })
   public displayKey?: Keys<T> = this.valueKey;
 
-  /* blazorAlternateType: string */
   /**
    * The key in the data source used to group items in the list.
    * @attr group-key
@@ -244,16 +245,17 @@ export default class IgcComboComponent<T extends object>
    * @type {FilteringOptions<T>}
    * @param filterKey - The key in the data source used when filtering the list of options.
    * @param caseSensitive - Determines whether the filtering operation should be case sensitive.
+   * @param matchDiacritics -If true, the filter distinguishes between accented letters and their base letters.
    */
-  @property({
-    attribute: 'filtering-options',
-    reflect: false,
-    converter: filteringOptionsConverter,
-  })
-  public filteringOptions: FilteringOptions<T> = {
-    filterKey: this.displayKey,
-    caseSensitive: false,
-  };
+  @property({ attribute: 'filtering-options', type: Object })
+  public get filteringOptions(): FilteringOptions<T> {
+    return this._filteringOptions;
+  }
+
+  public set filteringOptions(value: Partial<FilteringOptions<T>>) {
+    this._filteringOptions = { ...this._filteringOptions, ...value };
+    this.requestUpdate('pipeline');
+  }
 
   /**
    * Enables the case sensitive search icon in the filtering input.
@@ -316,8 +318,9 @@ export default class IgcComboComponent<T extends object>
 
   @watch('displayKey')
   protected updateFilterKey() {
-    this.filteringOptions.filterKey =
-      this.filteringOptions.filterKey ?? this.displayKey;
+    if (!this.filteringOptions.filterKey) {
+      this.filteringOptions = { filterKey: this.displayKey };
+    }
   }
 
   @watch('groupKey')
@@ -428,10 +431,55 @@ export default class IgcComboComponent<T extends object>
     this.setValidity(flags, msg);
   }
 
+  @watch('value')
+  protected selectItems() {
+    if (!this._value || this.value.length === 0) {
+      this.selectionController.deselect([]);
+    } else {
+      this.selectionController.deselect([]);
+      this.selectionController.select(this._value as Item<T>[]);
+    }
+
+    this.updateValue();
+  }
+
   /**
-   * Returns the current selection as a list of comma separated values,
-   * represented by the display key, when provided.
+   * Sets the value (selected items). The passed value must be a valid JSON array.
+   * If the data source is an array of complex objects, the `valueKey` attribute must be set.
+   * Note that when `displayKey` is not explicitly set, it will fall back to the value of `valueKey`.
+   *
+   * @attr value
+   *
+   * @example
+   * ```tsx
+   * <igc-combo
+   *  .data=${[
+   *    {
+   *      id: 'BG01',
+   *      name: 'Sofia'
+   *    },
+   *    {
+   *      id: 'BG02',
+   *      name: 'Plovdiv'
+   *    }
+   *  ]}
+   *  display-key='name'
+   *  value-key='id'
+   *  value='["BG01", "BG02"]'>
+   *  </igc-combo>
+   * ```
    */
+  public set value(items: string[]) {
+    const oldValue = this._value;
+    this._value = items;
+    this.requestUpdate('value', oldValue);
+  }
+
+  /**
+   * Returns the current selection as a list of commma separated values,
+   * represented by the value key, when provided.
+   */
+  @property({ attribute: true, type: Array })
   public get value() {
     return this._value;
   }
@@ -463,12 +511,17 @@ export default class IgcComboComponent<T extends object>
       Array.from(this.selectionController.selected)
     );
 
+    this._displayValue = this.selectionController.getDisplayValue(
+      Array.from(this.selectionController.selected)
+    );
+
     this.setFormValue();
     this.updateValidity();
     this.setInvalidState();
 
     await this.updateComplete;
-    this.target.value = this._value;
+    this.target.value = this._displayValue;
+    this.list.requestUpdate();
   }
 
   public override connectedCallback() {
@@ -490,6 +543,13 @@ export default class IgcComboComponent<T extends object>
 
   protected normalizeSelection(items: Item<T> | Item<T>[] = []): Item<T>[] {
     return Array.isArray(items) ? items : [items];
+  }
+
+  /**
+   * Returns the current selection as an array of objects as provided in the `data` source.
+   */
+  public get selection() {
+    return Array.from(this.selectionController.selected.values());
   }
 
   /**
@@ -517,7 +577,6 @@ export default class IgcComboComponent<T extends object>
   public select(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.select(_items, false);
-    this.list.requestUpdate();
     this.updateValue();
   }
 
@@ -546,7 +605,6 @@ export default class IgcComboComponent<T extends object>
   public deselect(items?: Item<T> | Item<T>[]) {
     const _items = this.normalizeSelection(items);
     this.selectionController.deselect(_items, false);
-    this.list.requestUpdate();
     this.updateValue();
   }
 
@@ -697,7 +755,6 @@ export default class IgcComboComponent<T extends object>
     this.selectionController.changeSelection(dataIndex);
     this.navigationController.active = index;
     this.updateValue();
-    this.list.requestUpdate();
   }
 
   protected navigateTo(item: T) {
@@ -726,7 +783,6 @@ export default class IgcComboComponent<T extends object>
 
     this.updateValue();
     this.navigationController.active = -1;
-    this.list.requestUpdate();
   }
 
   protected handleMainInputKeydown(e: KeyboardEvent) {
@@ -738,8 +794,9 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected toggleCaseSensitivity() {
-    this.filteringOptions.caseSensitive = !this.filteringOptions.caseSensitive;
-    this.requestUpdate('pipeline');
+    this.filteringOptions = {
+      caseSensitive: !this.filteringOptions.caseSensitive,
+    };
   }
 
   protected get hasPrefixes() {

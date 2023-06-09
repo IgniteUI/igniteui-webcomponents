@@ -316,6 +316,7 @@ const Template = (
     dir=${ifDefined(direction)}
     value-key="id"
     display-key="name"
+    value='["BG01", "BG02"]'
     group-key="country"
     group-sorting="${ifDefined(groupSorting)}"
     ?case-sensitive-icon=${caseSensitiveIcon}

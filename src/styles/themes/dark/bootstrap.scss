@@ -16,6 +16,7 @@
 @use '../../../components/icon/dark/icon.bootstrap' as icon;
 @use '../../../components/navbar/themes/dark/navbar.bootstrap' as navbar;
 @use '../../../components/checkbox/themes/dark/checkbox.bootstrap' as checkbox;
+@use '../../../components/checkbox/themes/dark/switch.bootstrap' as switch;
 @include base.root-styles($dark-bootstrap-palette);
 @include dropdown.theme();
 @include input.theme();
@@ -32,3 +33,4 @@
 @include icon.theme();
 @include navbar.theme();
 @include checkbox.theme();
+@include switch.theme();
