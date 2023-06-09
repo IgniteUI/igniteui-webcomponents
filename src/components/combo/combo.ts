@@ -330,14 +330,14 @@ export default class IgcComboComponent<T extends object>
    * Sets the component's positioning strategy.
    */
   @property({ attribute: 'position-strategy' })
-  public positionStrategy: 'absolute' | 'fixed' = 'fixed';
+  public positionStrategy: 'absolute' | 'fixed' = 'absolute';
 
   /**
    * Whether the dropdown's width should be the same as the target's one.
    * True by default.
    */
-  @property({ type: Boolean, attribute: false })
-  public sameWidth = true;
+  @property({ type: Boolean, attribute: 'same-width' })
+  public sameWidth = false;
 
   @state()
   protected dataState: Array<ComboRecord<T>> = [];
