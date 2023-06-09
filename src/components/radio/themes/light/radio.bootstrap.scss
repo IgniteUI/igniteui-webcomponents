@@ -3,16 +3,11 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-radio'
-    ),
-    map.get($light-bootstrap-schema, 'radio')
-);
+$schema: map.get($light-bootstrap-schema, 'radio');
 $theme: digest-schema($schema);
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-radio');
 
     &::part(base) {
         transition: none;

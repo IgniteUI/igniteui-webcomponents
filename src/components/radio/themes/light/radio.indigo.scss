@@ -3,19 +3,14 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-radio'
-    ),
-    map.get($light-indigo-schema, 'radio')
-);
+$schema: map.get($light-indigo-schema, 'radio');
 $theme: digest-schema($schema);
 $border-color: var(--border-color, color(gray, 600)) !default;
 $checked-color: var(--checked-color, color(secondary, 500)) !default;
 $disabled-color: var(--disabled-color, color(gray, 300)) !default;
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-radio');
 
     font-weight: 600;
 }

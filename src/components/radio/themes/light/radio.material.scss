@@ -3,12 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-radio'
-    ),
-    map.get($light-material-schema, 'radio')
-);
+$schema: map.get($light-material-schema, 'radio');
 $theme: digest-schema($schema);
 
 [part~='ripple'] {
@@ -26,7 +21,7 @@ $theme: digest-schema($schema);
 }
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-radio');
 }
 
 [part~='label'] {

@@ -3,15 +3,10 @@
 @use '../../../../styles/themes/schemas' as *;
 
 @mixin theme() {
-    $schema: extend(
-        (
-            name: 'ig-radio'
-        ),
-        map.get($dark-indigo-schema, 'radio')
-    );
+    $schema: map.get($dark-indigo-schema, 'radio');
     $theme: digest-schema($schema);
 
     igc-radio {
-        @include css-vars($theme);
+        @include css-vars-from-theme($theme, 'ig-radio');
     }
 }

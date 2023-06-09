@@ -3,16 +3,11 @@
 @use '../../../../styles/themes/schemas' as *;
 
 @mixin theme() {
-    $schema: extend(
-        (
-            name: 'ig-radio'
-        ),
-        map.get($dark-material-schema, 'radio')
-    );
+    $schema: map.get($dark-material-schema, 'radio');
     $theme: digest-schema($schema);
 
     igc-radio {
-        @include css-vars($theme);
+        @include css-vars-from-theme($theme, 'ig-radio');
 
         &:hover {
             &::part(ripple) {
