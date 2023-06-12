@@ -20,6 +20,7 @@ export type ComboChangeType = 'selection' | 'deselection' | 'addition';
 export interface FilteringOptions<T extends object> {
   filterKey: Keys<T> | undefined;
   caseSensitive?: boolean;
+  matchDiacritics?: boolean;
 }
 
 export interface GroupingOptions<T extends object> {
