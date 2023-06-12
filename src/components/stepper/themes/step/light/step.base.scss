@@ -169,6 +169,7 @@
     z-index: 1;
     position: relative;
     color: color(gray, 900);
+    overflow: auto;
 
     // Thous two lines here are on purpose, they make sure that step body content
     // does not get involved in grid width calculation. They fix a very weird bug.
@@ -189,6 +190,8 @@
 
 [part='content'] {
     display: var(--horizontal-content-disply, none);
+    height: 100%;
+    overflow: auto;
 }
 
 [part~='top'] {
