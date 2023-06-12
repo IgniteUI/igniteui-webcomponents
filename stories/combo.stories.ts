@@ -119,6 +119,20 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
+    positionStrategy: {
+      type: '"absolute" | "fixed"',
+      description: "Sets the component's positioning strategy.",
+      options: ['absolute', 'fixed'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'absolute',
+    },
+    sameWidth: {
+      type: 'boolean',
+      description:
+        "Whether the dropdown's width should be the same as the target's one.\nTrue by default.",
+      control: 'boolean',
+      defaultValue: false,
+    },
   },
   args: {
     disabled: false,
@@ -134,6 +148,8 @@ const metadata: Meta<IgcComboComponent> = {
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
+    positionStrategy: 'absolute',
+    sameWidth: false,
   },
 };
 
@@ -173,6 +189,13 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
+  /** Sets the component's positioning strategy. */
+  positionStrategy: 'absolute' | 'fixed';
+  /**
+   * Whether the dropdown's width should be the same as the target's one.
+   * True by default.
+   */
+  sameWidth: boolean;
 }
 type Story = StoryObj<IgcComboArgs>;
 
@@ -285,6 +308,8 @@ const Template = (
     singleSelect = false,
     autofocusList,
     groupSorting = 'asc',
+    positionStrategy = 'absolute',
+    sameWidth = false,
   }: IgcComboComponent<City>,
   { globals: { direction } }: Context
 ) => html`
@@ -302,7 +327,9 @@ const Template = (
     display-key="name"
     value='["BG01", "BG02"]'
     group-key="country"
-    group-sorting="${ifDefined(groupSorting)}"
+    group-sorting=${ifDefined(groupSorting)}
+    position-strategy=${positionStrategy}
+    ?same-width=${sameWidth}
     ?case-sensitive-icon=${caseSensitiveIcon}
     ?disable-filtering=${disableFiltering}
     ?open=${open}
