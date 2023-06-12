@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Combo: Added `matchDiacritics` to the filtering options property. Defaults to `false`.
+If set to `true` the filter distinguishes between accented letters and
+their base letters. Otherwise strings are normalized and then matched.
+
 ## [4.2.3] - 2023-04-03
 ### Deprecated
 - Dialog - Property `closeOnEscape` is deprecated in favor of new property `keepOpenOnEscape`.
