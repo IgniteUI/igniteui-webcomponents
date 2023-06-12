@@ -278,15 +278,8 @@ export default class IgcComboComponent<T extends object>
    */
   @property({ attribute: false })
   public itemTemplate: ComboItemTemplate<T> = ({ item }) => {
-    if (typeof item !== 'object' || item === null) {
-      return String(item) as any;
-    }
-
-    if (this.displayKey) {
-      return html`${item[this.displayKey]}`;
-    }
-
-    return html`${String(item)}`;
+    const template = this.displayKey ? `${item[this.displayKey]}` : `${item}`;
+    return html`${template}`;
   };
 
   /* blazorSuppress */
@@ -392,10 +385,9 @@ export default class IgcComboComponent<T extends object>
   }
 
   @watch('singleSelect', { waitUntilFirstUpdate: true })
-  protected async resetState() {
-    await this.updateComplete;
+  protected resetState() {
+    this.selectionController.deselect();
 
-    this.selectionController.selected.clear();
     this.updateValue();
     this.resetSearchTerm();
     this.navigationController.active = -1;
@@ -489,24 +481,29 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected override setFormValue(): void {
+    if (!this.name) {
+      return;
+    }
+
     const key = this.valueKey || this.displayKey;
     const items = Array.from(this.selectionController.selected).map((item) =>
       key ? item[key] : item
     );
-    const data = new FormData();
 
     if (items.length < 1) {
       return super.setFormValue(null);
     }
 
+    const data = new FormData();
+
     if (this.singleSelect) {
-      data.set(this.name, key ? `${items[0]}` : JSON.stringify(items[0]));
-      return super.setFormValue(data);
+      data.set(this.name, `${items[0]}`);
+    } else {
+      for (const item of items) {
+        data.append(this.name, `${item}`);
+      }
     }
 
-    for (const item of items) {
-      data.append(this.name, key ? `${item}` : JSON.stringify(item));
-    }
     super.setFormValue(data);
   }
 

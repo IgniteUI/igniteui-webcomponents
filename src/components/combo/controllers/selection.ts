@@ -16,32 +16,18 @@ export class SelectionController<T extends object>
   }
 
   public getValue(items: T[]) {
-    return items.map((value) => {
-      if (typeof value === 'object' && value !== null) {
-        const key = this.host.valueKey ?? this.host.displayKey;
-        return key ? String(value[key]) : String(value);
-      } else {
-        return String(value);
-      }
-    });
+    const key = this.host.valueKey ?? this.host.displayKey;
+    return items.map((item) => (key ? `${item[key]}` : `${item}`));
   }
 
   public getDisplayValue(items: T[]) {
-    return items
-      .map((value) => {
-        if (typeof value === 'object' && value !== null) {
-          return this.host.displayKey
-            ? String(value[this.host.displayKey])
-            : String(value);
-        } else {
-          return String(value);
-        }
-      })
-      .join(', ');
+    const key = this.host.displayKey;
+    return items.map((item) => (key ? `${item[key]}` : `${item}`)).join(', ');
   }
 
   private handleChange(detail: IgcComboChangeEventArgs) {
-    this.host.requestUpdate('value');
+    // TODO: Investigate
+    // this.host.requestUpdate('value');
     return this.host.emitEvent('igcChange', { cancelable: true, detail });
   }
 

@@ -329,6 +329,7 @@ export const Basic: Story = Template.bind({});
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
+    const primitive = [1, 2, 3, 4, 5, 'one', 'two', 'three', 'four', 'five'];
     return html`
       <form @submit=${formSubmitHandler}>
         <fieldset>
@@ -336,6 +337,14 @@ export const Form: Story = {
             label="Default"
             name="combo"
             .data=${cities}
+            value-key="id"
+            display-key="name"
+          ></igc-combo>
+          <igc-combo
+            label="Initial value"
+            .data=${cities}
+            name="combo-initial"
+            value='["BG01", "BG02"]'
             value-key="id"
             display-key="name"
           ></igc-combo>
@@ -351,6 +360,15 @@ export const Form: Story = {
             label="Single selection"
             name="combo-single"
             display-key="name"
+            value-key="id"
+          ></igc-combo>
+        </fieldset>
+        <fieldset>
+          <igc-combo
+            name="combo-primitive"
+            .value=${[1, 'one']}
+            .data=${primitive}
+            label="Primitives binding"
           ></igc-combo>
         </fieldset>
         <fieldset disabled="disabled">
