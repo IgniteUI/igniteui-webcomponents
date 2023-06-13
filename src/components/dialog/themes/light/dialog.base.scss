@@ -61,6 +61,10 @@ slot[name='footer'] {
     }
 }
 
+dialog::backdrop {
+    opacity: 0;
+}
+
 [part='backdrop'] {
     position: fixed;
     inset: 0;
