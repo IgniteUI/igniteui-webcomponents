@@ -3,12 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-input'
-    ),
-    map.get($light-material-schema, 'input-group')
-);
+$schema: map.get($light-material-schema, 'input-group');
 $theme: digest-schema($schema);
 $idle-border-width: rem(1px) !default;
 $active-border-width: rem(2px) !default;
@@ -34,7 +29,7 @@ $fs: rem(16px) !default;
 }
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-input');
 
     input:placeholder-shown + [part='notch'] {
         @extend %floated-styles;
@@ -173,7 +168,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     margin-top: rem(5px);
-    color: color(gray, 700);
+    color: var-get($theme, 'helper-text-color');
 }
 
 :host(:focus-within) {
@@ -281,9 +276,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-:host(:not([outlined])[disabled]) {
+:host(:not([outlined])[disabled]),
+:host(:not([outlined]):disabled) {
     [part~='container'] {
-        background: color(gray, 100);
+        background: var-get($theme, 'box-disabled-background');
         border-color: var-get($theme, 'disabled-border-color');
         border-bottom-style: dashed;
     }
@@ -458,6 +454,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host(:disabled[outlined]),
 :host([disabled][outlined]) {
     [part='start'],
     [part='filler'],
@@ -471,6 +468,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host(:disabled),
 :host([disabled]) {
     [part~='input'],
     [part='label'],

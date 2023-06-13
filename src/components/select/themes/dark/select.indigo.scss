@@ -2,13 +2,11 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$input-schema: extend((name: 'ig-input-group'), map.get($dark-indigo-schema, 'input-group'));
-$select-schema: extend((name: 'ig-select'), map.get($dark-indigo-schema, 'select'));
-$schema: map.merge($input-schema, $select-schema);
+$schema: map.get($dark-indigo-schema, 'select');
 $theme: digest-schema($schema);
 
 @mixin theme() {
     igc-select {
-        @include css-vars($theme);
+        @include css-vars-from-theme($theme, 'ig-select');
     }
 }

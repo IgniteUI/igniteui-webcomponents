@@ -4,12 +4,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-input'
-    ),
-    map.get($light-bootstrap-schema, 'input-group')
-);
+$schema: map.get($light-bootstrap-schema, 'input-group');
 $theme: digest-schema($schema);
 
 :host([size='large']) {
@@ -29,7 +24,7 @@ $theme: digest-schema($schema);
     --font: #{sizable(rem(14px), rem(16px), rem(20px))};
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
 
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-input');
 }
 
 [part~='container'] {
@@ -213,6 +208,7 @@ $theme: digest-schema($schema);
     }
 }
 
+:host(:disabled),
 :host([disabled]) {
     [part='prefix'],
     [part='suffix'],

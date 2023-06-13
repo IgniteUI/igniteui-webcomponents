@@ -2,16 +2,19 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-input-group'
-    ),
-    map.get($dark-material-schema, 'input-group')
-);
+$schema: map.get($dark-material-schema, 'input-group');
 $theme: digest-schema($schema);
 
 @mixin theme() {
     igc-input {
-        @include css-vars($theme);
+        @include css-vars-from-theme($theme, 'ig-input');
+    }
+
+    igc-select::part(input) {
+        @include css-vars-from-theme($theme, ig-select);
+    }
+
+    igc-combo::part(input) {
+        @include css-vars-from-theme($theme, ig-combo);
     }
 }

@@ -3,12 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-input'
-    ),
-    map.get($light-indigo-schema, 'input-group')
-);
+$schema: map.get($light-indigo-schema, 'input-group');
 $theme: digest-schema($schema);
 
 %suffix-preffix {
@@ -20,7 +15,7 @@ $theme: digest-schema($schema);
 }
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-input');
 
     [part='prefix'],
     [part='suffix'] {
@@ -77,6 +72,7 @@ $theme: digest-schema($schema);
     }
 
     [part~='input'] {
+        color: var-get($theme, 'idle-text-color');
         font-size: rem(16px);
         background: initial;
         padding-block: rem(8px);
@@ -159,6 +155,7 @@ $theme: digest-schema($schema);
     }
 }
 
+:host(:disabled),
 :host([disabled]) {
     [part^='container'] {
         border-color: var-get($theme, 'disabled-bottom-line-color');

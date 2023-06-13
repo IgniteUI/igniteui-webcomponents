@@ -3,18 +3,25 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$input-schema: extend((name: 'ig-input-group'), map.get($light-fluent-schema, 'input-group'));
-$select-schema: extend((name: 'ig-select'), map.get($light-fluent-schema, 'select'));
-$schema: map.merge($input-schema, $select-schema);
+$input-schema: map.get($light-fluent-schema, 'input-group');
+$schema: map.get($light-fluent-schema, 'select');
+$input-theme: digest-schema($input-schema);
 $theme: digest-schema($schema);
 $focused-border-width: rem(2px);
 $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
+
+:host {
+    @include css-vars-from-theme($input-theme, 'ig-input');
+    @include css-vars-from-theme($theme, 'ig-select');
+
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+}
 
 [part='helper-text'] {
     margin-top: rem(5px);
 
     ::slotted([slot='helper-text']) {
-        color: color(gray, 700);
+        color: var-get($input-theme, 'helper-text-color');
     }
 }
 
@@ -25,11 +32,6 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     igc-icon {
         color: inherit;
     }
-}
-
-
-:host {
-    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
 }
 
 :host(:focus-within) {
@@ -49,7 +51,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 
 :host(:not([invalid]):focus-within) {
     igc-input[readonly]:not([disabled])::part(container) {
-        border-color: color(primary, 500);
+        border-color: var-get($input-theme, 'focused-border-color');
         border-width: #{$focused-border-width};
     }
 
@@ -66,9 +68,10 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 }
 
+:host(:disabled),
 :host([disabled]) {
     [part='helper-text'] ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'disabled-text-color');
+        color: var-get($input-theme, 'disabled-text-color');
     }
 
     [part~='toggle-icon'] {

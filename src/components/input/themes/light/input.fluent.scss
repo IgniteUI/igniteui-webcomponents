@@ -3,12 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-input'
-    ),
-    map.get($light-fluent-schema, 'input-group')
-);
+$schema: map.get($light-fluent-schema, 'input-group');
 $theme: digest-schema($schema);
 $resting-border-width: rem(1px);
 $focused-border-width: rem(2px);
@@ -22,6 +17,9 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 :host([size='medium']) {
     --component-size: var(--ig-size, var(--ig-size-medium));
 }
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+}
 
 :host([size='small']) {
     --component-size: var(--ig-size, var(--ig-size-small));
@@ -30,7 +28,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 :host {
     --size: #{sizable(rem(32px), rem(40px), rem(48px))};
 
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-input');
 
     [part='prefix'],
     [part='suffix'] {
@@ -81,6 +79,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 
     [part~='input'] {
+        color: var-get($theme, 'idle-text-color');
         height: $resting-height;
         background: initial;
         font-size: rem(14px);
@@ -116,6 +115,10 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 }
 
 :host(:focus-within) {
+    [part='label'] {
+        color: color(gray, 800);
+    }
+
     [part^='container'] {
         border-color: var-get($theme, 'focused-border-color');
         border-width: #{$focused-border-width};
@@ -159,6 +162,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 }
 
+:host(:disabled),
 :host([disabled]) {
     [part^='container'] {
         border-color: var-get($theme, 'disabled-border-color');

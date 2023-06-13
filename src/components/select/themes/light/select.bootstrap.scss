@@ -3,13 +3,14 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$input-schema: extend((name: 'ig-input-group'), map.get($light-bootstrap-schema, 'input-group'));
-$select-schema: extend((name: 'ig-select'), map.get($light-bootstrap-schema, 'select'));
-$schema: map.merge($input-schema, $select-schema);
+$input-schema: map.get($light-bootstrap-schema, 'input-group');
+$schema: map.get($light-bootstrap-schema, 'select');
+$input-theme: digest-schema($input-schema);
 $theme: digest-schema($schema);
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($input-theme, 'ig-input');
+    @include css-vars-from-theme($theme, 'ig-select');
 
     [part='helper-text'] {
         margin-top: rem(4px);
@@ -18,7 +19,7 @@ $theme: digest-schema($schema);
     ::slotted([slot='helper-text']) {
         @include type-style('body-2');
 
-        color: var-get($theme, 'helper-text-color');
+        color: var-get($input-theme, 'helper-text-color');
     }
 }
 
@@ -33,8 +34,8 @@ $theme: digest-schema($schema);
 
 :host(:focus-within) {
     igc-input[readonly]:not([disabled])::part(input) {
-        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focused-secondary-color');
-        border-color: var-get($theme, 'focused-border-color');
+        box-shadow: 0 0 0 rem(4px) var-get($input-theme, 'focused-secondary-color');
+        border-color: var-get($input-theme, 'focused-border-color');
     }
 
     [part~='toggle-icon'] {
@@ -50,21 +51,21 @@ $theme: digest-schema($schema);
 :host([invalid]),
 :host([invalid]:focus-within) {
     igc-input[readonly]:not([disabled])::part(input) {
-        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
-        border-color: var-get($theme, 'error-secondary-color');
+        box-shadow: 0 0 0 rem(4px) var-get($input-theme, 'error-shadow-color');
+        border-color: var-get($input-theme, 'error-secondary-color');
     }
 }
 
 :host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'error-secondary-color');
+        color: var-get($input-theme, 'error-secondary-color');
     }
 }
 
 :host([disabled]),
 :host(:disabled) {
     ::slotted([slot='helper-text']) {
-        color: var-get($theme, 'disabled-text-color');
+        color: var-get($input-theme, 'disabled-text-color');
     }
 
     [part~='toggle-icon'] {
