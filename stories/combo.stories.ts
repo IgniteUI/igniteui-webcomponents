@@ -119,11 +119,19 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    value: {
-      type: 'string',
+    positionStrategy: {
+      type: '"absolute" | "fixed"',
+      description: "Sets the component's positioning strategy.",
+      options: ['absolute', 'fixed'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'absolute',
+    },
+    sameWidth: {
+      type: 'boolean',
       description:
-        'Returns the current selection as a list of commma separated values,\nrepresented by the display key, when provided.',
-      control: 'text',
+        "Whether the dropdown's width should be the same as the target's one.\nTrue by default.",
+      control: 'boolean',
+      defaultValue: false,
     },
   },
   args: {
@@ -140,6 +148,8 @@ const metadata: Meta<IgcComboComponent> = {
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
+    positionStrategy: 'absolute',
+    sameWidth: false,
   },
 };
 
@@ -179,11 +189,13 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
+  /** Sets the component's positioning strategy. */
+  positionStrategy: 'absolute' | 'fixed';
   /**
-   * Returns the current selection as a list of commma separated values,
-   * represented by the display key, when provided.
+   * Whether the dropdown's width should be the same as the target's one.
+   * True by default.
    */
-  value: string;
+  sameWidth: boolean;
 }
 type Story = StoryObj<IgcComboArgs>;
 
@@ -296,6 +308,8 @@ const Template = (
     singleSelect = false,
     autofocusList,
     groupSorting = 'asc',
+    positionStrategy = 'absolute',
+    sameWidth = false,
   }: IgcComboComponent<City>,
   { globals: { direction } }: Context
 ) => html`
@@ -311,8 +325,11 @@ const Template = (
     dir=${ifDefined(direction)}
     value-key="id"
     display-key="name"
+    value='["BG01", "BG02"]'
     group-key="country"
-    group-sorting="${ifDefined(groupSorting)}"
+    group-sorting=${ifDefined(groupSorting)}
+    position-strategy=${positionStrategy}
+    ?same-width=${sameWidth}
     ?case-sensitive-icon=${caseSensitiveIcon}
     ?disable-filtering=${disableFiltering}
     ?open=${open}
