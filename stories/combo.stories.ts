@@ -106,14 +106,14 @@ const metadata: Meta<IgcComboComponent> = {
       description: "Sets the component's positioning strategy.",
       options: ['absolute', 'fixed'],
       control: { type: 'inline-radio' },
-      defaultValue: 'absolute',
+      defaultValue: 'fixed',
     },
     sameWidth: {
       type: 'boolean',
       description:
-        "Whether the dropdown's width should be the same as the target's one.\nTrue by default.",
+        "Whether the dropdown's width should be the same as the target's one.",
       control: 'boolean',
-      defaultValue: false,
+      defaultValue: true,
     },
     name: {
       type: 'string',
@@ -150,8 +150,8 @@ const metadata: Meta<IgcComboComponent> = {
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
-    positionStrategy: 'absolute',
-    sameWidth: false,
+    positionStrategy: 'fixed',
+    sameWidth: true,
     required: false,
     disabled: false,
     invalid: false,
@@ -188,10 +188,7 @@ interface IgcComboArgs {
   disableFiltering: boolean;
   /** Sets the component's positioning strategy. */
   positionStrategy: 'absolute' | 'fixed';
-  /**
-   * Whether the dropdown's width should be the same as the target's one.
-   * True by default.
-   */
+  /** Whether the dropdown's width should be the same as the target's one. */
   sameWidth: boolean;
   /** The name attribute of the control. */
   name: string;

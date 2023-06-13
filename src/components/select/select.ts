@@ -6,13 +6,18 @@ import {
   state,
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/index.js';
+import type { Theme, ThemeController } from '../../theming/types.js';
+import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import messages from '../common/localization/validation-en.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
@@ -22,15 +27,11 @@ import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
-import type { ThemeController, Theme } from '../../theming/types.js';
 import { styles } from './themes/light/select.base.css.js';
 import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
-import { alternateName } from '../common/decorators/alternateName.js';
-import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
-import messages from '../common/localization/validation-en.js';
 
 defineComponents(
   IgcIconComponent,
@@ -362,7 +363,7 @@ export default class IgcSelectComponent extends FormAssociatedMixin(
   }
 
   protected handleBlur() {
-    this.invalid = !this.checkValidity();
+    this.setInvalidState();
     if (this.open) return;
     this.emitEvent('igcBlur');
   }
@@ -457,7 +458,7 @@ export default class IgcSelectComponent extends FormAssociatedMixin(
           tabindex="-1"
           .disabled=${this.disabled}
           .required=${this.required}
-          .invalid=${this.invalid}
+          .invalid=${live(this.invalid)}
           .outlined=${this.outlined}
           @igcBlur=${(e: Event) => e.stopPropagation()}
           @igcFocus=${(e: Event) => e.stopPropagation()}
