@@ -52,3 +52,13 @@ export function createCounter() {
 export function isLTR(element: HTMLElement) {
   return getComputedStyle(element).getPropertyValue('direction') === 'ltr';
 }
+
+export function extractText<T extends Node>(arr: T[]) {
+  return arr.reduce((agg: string[], item: T) => {
+    const text = item.textContent?.trim();
+    if (text) {
+      agg.push(text);
+    }
+    return agg;
+  }, []);
+}

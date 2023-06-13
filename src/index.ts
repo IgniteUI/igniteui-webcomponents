@@ -52,6 +52,7 @@ export { default as IgcTabComponent } from './components/tabs/tab.js';
 export { default as IgcTabPanelComponent } from './components/tabs/tab-panel.js';
 export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
+export { default as IgcTextareaComponent } from './components/textarea/textarea.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';
 export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
 export { default as IgcStepperComponent } from './components/stepper/stepper.js';

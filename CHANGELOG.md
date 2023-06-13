@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Combo: Added `matchDiacritics` to the filtering options property. Defaults to `false`.
 If set to `true` the filter distinguishes between accented letters and
 their base letters. Otherwise strings are normalized and then matched.
+- Text area component
 
 ## [4.2.3] - 2023-04-03
 ### Deprecated

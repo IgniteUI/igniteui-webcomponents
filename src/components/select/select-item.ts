@@ -1,6 +1,7 @@
 import { queryAssignedNodes } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
+import { extractText } from '../common/util.js';
 
 /**
  * Represents an item in a select list.
@@ -37,10 +38,7 @@ export default class IgcSelectItemComponent extends IgcDropdownItemComponent {
 
   /** Returns the text of the item without the prefix and suffix content. */
   public override get textContent() {
-    return this.content
-      .map((t) => t.textContent?.trim())
-      .filter((t) => t !== '')
-      .join(' ');
+    return extractText(this.content).join(' ');
   }
 
   /** Sets the textContent of the item without touching the prefix and suffix content. */
