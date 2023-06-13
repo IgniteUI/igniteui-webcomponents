@@ -17,9 +17,6 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 :host([size='medium']) {
     --component-size: var(--ig-size, var(--ig-size-medium));
 }
-:host([size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
 
 :host([size='small']) {
     --component-size: var(--ig-size, var(--ig-size-small));
