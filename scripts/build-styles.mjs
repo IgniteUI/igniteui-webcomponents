@@ -5,7 +5,7 @@ import { sassRender, template } from './sass.mjs';
 import path from 'path';
 import postcss from 'postcss';
 import { mkdirSync as makeDir } from 'fs';
-import sass from 'sass';
+import * as sass from 'sass';
 import { fileURLToPath } from 'url';
 import { writeFile } from 'fs/promises';
 

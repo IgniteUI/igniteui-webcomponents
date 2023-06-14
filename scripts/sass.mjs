@@ -2,14 +2,14 @@ import autoprefixer from 'autoprefixer';
 import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import postcss from 'postcss';
-import sass from 'sass';
+import * as sass from 'sass';
 
 export const template = path.resolve(process.argv[1], '../styles.tmpl');
 const renderSass = sass.compile;
 
 async function sassToCss(sassFile) {
   const result = renderSass(sassFile, {
-    outputStyle: 'compressed'
+    outputStyle: 'compressed',
   });
 
   let cssStr = result.css.toString();
