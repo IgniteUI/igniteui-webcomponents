@@ -117,6 +117,7 @@ describe('Combo', () => {
       combo.label = 'Simple Combo';
 
       await elementUpdated(combo);
+      await list.layoutComplete;
 
       await expect(combo).to.be.accessible({
         ignoredRules: ['aria-hidden-focus', 'nested-interactive'],
