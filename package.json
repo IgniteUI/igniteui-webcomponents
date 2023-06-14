@@ -99,7 +99,7 @@
     "stylelint-scss": "^5.0.1",
     "ts-lit-plugin": "^1.2.1",
     "tslib": "^2.5.3",
-    "typedoc": "^0.24.7",
+    "typedoc": "^0.23.21",
     "typedoc-plugin-localization": "^3.0.0",
     "typescript": "^5.0.4",
     "vite": "^4.3.9",
