@@ -4,6 +4,7 @@ import {
   expect,
   elementUpdated,
   unsafeStatic,
+  waitUntil,
 } from '@open-wc/testing';
 import { defineComponents, IgcToastComponent } from '../../index.js';
 
@@ -68,7 +69,7 @@ describe('Toast', () => {
       await elementUpdated(toast);
 
       toast.hide();
-      await elementUpdated(toast);
+      await waitUntil(() => !toast.open);
       expect(toast.open).to.eq(false);
     });
 
@@ -77,7 +78,7 @@ describe('Toast', () => {
       await elementUpdated(toast);
 
       toast.toggle();
-      await elementUpdated(toast);
+      await waitUntil(() => !toast.open);
       expect(toast.open).to.eq(false);
 
       toast.open = false;
