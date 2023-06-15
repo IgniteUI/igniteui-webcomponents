@@ -62,6 +62,10 @@ $active-border-width: rem(2px) !default;
     igc-input[readonly]:not([disabled])::part(label) {
         color: $active-color;
     }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus--border');
+    }
 }
 
 :host([outlined][invalid]:focus-within) {
@@ -143,6 +147,11 @@ $active-border-width: rem(2px) !default;
         color: inherit;
     }
 }
+
+[part='toggle-icon filled'] {
+    color: var-get($theme, 'toggle-button-foreground-filled');
+}
+
 
 [part='helper-text'] {
     color: var-get($input-theme, 'helper-text-color');
