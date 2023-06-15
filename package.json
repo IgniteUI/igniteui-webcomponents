@@ -79,7 +79,7 @@
     "eslint-plugin-storybook": "^0.6.12",
     "globby": "^13.1.4",
     "husky": "^8.0.3",
-    "igniteui-theming": "^1.4.6",
+    "igniteui-theming": "^1.4.8",
     "igniteui-typedoc-theme": "^3.1.0",
     "keep-a-changelog": "^2.3.0",
     "lint-staged": "^13.2.2",
