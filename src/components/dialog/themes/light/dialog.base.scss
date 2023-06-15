@@ -65,7 +65,7 @@ dialog::backdrop {
     opacity: 0;
 }
 
-[part='backdrop'] {
+[part~='backdrop'] {
     position: fixed;
     inset: 0;
     background: color(gray, 500, .54);
@@ -75,6 +75,6 @@ dialog::backdrop {
     transition: opacity 350ms ease-out;
 }
 
-[part='backdrop'][aria-hidden='false'] {
+:host([open]) [part='backdrop'] {
     opacity: 1;
 }
