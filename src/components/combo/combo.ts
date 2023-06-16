@@ -553,6 +553,7 @@ export default class IgcComboComponent<T extends object>
   /** Removes focus from the component. */
   public override blur() {
     this.target.blur();
+    super.blur();
   }
 
   protected normalizeSelection(items: Item<T> | Item<T>[] = []): Item<T>[] {
