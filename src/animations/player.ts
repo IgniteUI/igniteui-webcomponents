@@ -13,13 +13,17 @@ export class AnimationPlayer {
   }
 
   private parseKeyframes(keyframes: Keyframe[]) {
-    return keyframes.map((keyframe) => ({
-      ...keyframe,
-      height:
-        keyframe.height === 'auto'
-          ? `${this.target.scrollHeight}px`
-          : keyframe.height,
-    }));
+    return keyframes.map((keyframe) => {
+      if (!keyframe.height) return keyframe;
+
+      return {
+        ...keyframe,
+        height:
+          keyframe.height === 'auto'
+            ? `${this.target.scrollHeight}px`
+            : keyframe.height,
+      };
+    });
   }
 
   public async play(animation: AnimationReferenceMetadata) {
