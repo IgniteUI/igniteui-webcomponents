@@ -158,6 +158,14 @@ export default class IgcTextareaComponent
   @property({ type: Number })
   public maxLength!: number;
 
+  /**
+   * Indicates how the control should wrap the value for form submission.
+   *
+   * @attr
+   */
+  @property()
+  public wrap: 'hard' | 'soft' | 'off' = 'soft';
+
   public override async connectedCallback() {
     super.connectedCallback();
 
@@ -175,18 +183,6 @@ export default class IgcTextareaComponent
 
   public themeAdopted(controller: ThemeController): void {
     this.themeController = controller;
-  }
-
-  /* alternateName: focusComponent */
-  /** Sets focus on the control. */
-  public override focus(options?: FocusOptions) {
-    this.input.focus(options);
-  }
-
-  /* alternateName: blurComponent */
-  /** Removes focus from the control. */
-  public override blur() {
-    this.input.blur();
   }
 
   /** Selects all text within the control. */
@@ -295,7 +291,9 @@ export default class IgcTextareaComponent
 
   protected renderLabel() {
     return this.label
-      ? html`<label part="label" for=${this.inputId}>${this.label}</label>`
+      ? html`<label part="label" for=${this.id || this.inputId}
+          >${this.label}</label
+        >`
       : nothing;
   }
 
@@ -334,6 +332,7 @@ export default class IgcTextareaComponent
   protected renderInput() {
     return html`${this.renderValueSlot()}
       <textarea
+        id=${this.id || this.inputId}
         style=${styleMap(this.resizeStyles)}
         @input=${this.handleInput}
         @change=${this.handleChange}
@@ -343,6 +342,7 @@ export default class IgcTextareaComponent
         .cols=${this.cols}
         .rows=${this.rows}
         .value=${live(this.value)}
+        .wrap=${ifDefined(this.wrap)}
       ></textarea>`;
   }
 

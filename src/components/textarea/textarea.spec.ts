@@ -128,6 +128,34 @@ describe('Textarea component', () => {
       expect(textArea.matches(':focus')).to.be.false;
       expect(spy).calledOnceWithExactly('igcBlur');
     });
+
+    it('scroll()', async () => {
+      const text = new Text(
+        Array.from({ length: 100 }, (_, idx) => ` ${idx}`.repeat(250)).join(
+          '\n'
+        )
+      );
+      const textarea = element.shadowRoot?.querySelector('textarea');
+      const [xDelta, yDelta] = [250, 250];
+
+      element.wrap = 'off';
+      element.appendChild(text);
+      await elementUpdated(element);
+
+      element.scrollTo({ top: yDelta, left: xDelta });
+      await elementUpdated(element);
+      expect([textarea?.scrollLeft, textarea?.scrollTop]).to.eql([
+        xDelta,
+        yDelta,
+      ]);
+
+      element.scrollTo(xDelta * 2, yDelta * 2);
+      await elementUpdated(element);
+      expect([textarea?.scrollLeft, textarea?.scrollTop]).to.eql([
+        xDelta * 2,
+        yDelta * 2,
+      ]);
+    });
   });
 
   describe('Form integration', () => {

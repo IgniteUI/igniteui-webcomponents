@@ -71,8 +71,23 @@ const metadata: Meta<IgcTextareaComponent> = {
         "The maximum number of characters (UTF-16 code units) that the user can enter.\nIf this value isn't specified, the user can enter an unlimited number of characters.",
       control: 'number',
     },
+    wrap: {
+      type: '"hard" | "soft" | "off"',
+      description:
+        'Indicates how the control should wrap the value for form submission.',
+      options: ['hard', 'soft', 'off'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'soft',
+    },
   },
-  args: { cols: '20', rows: '2', value: '', outlined: false, resize: 'both' },
+  args: {
+    cols: '20',
+    rows: '2',
+    value: '',
+    outlined: false,
+    resize: 'both',
+    wrap: 'soft',
+  },
 };
 
 export default metadata;
@@ -104,6 +119,8 @@ interface IgcTextareaArgs {
    * If this value isn't specified, the user can enter an unlimited number of characters.
    */
   maxLength: number;
+  /** Indicates how the control should wrap the value for form submission. */
+  wrap: 'hard' | 'soft' | 'off';
 }
 type Story = StoryObj<IgcTextareaArgs>;
 
@@ -119,15 +136,23 @@ export const Default: Story = {
 };
 
 export const Projected: Story = {
-  args: { cols: 50, rows: 10 },
+  args: { cols: 50, rows: 5 },
   parameters: {
     actions: {
-      handles: ['igcInput', 'igcChange'],
+      handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'],
     },
   },
   render: ({ cols, rows, resize }) => {
     return html`
-      <igc-textarea autofocus .cols=${cols} .rows=${rows} .resize=${resize}>
+      <igc-textarea
+        spellcheck="false"
+        autofocus
+        id="feedback"
+        label="Your opinion matters"
+        .cols=${cols}
+        .rows=${rows}
+        .resize=${resize}
+      >
         <span>Hello world</span>
         <p>
           Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sed quisquam
