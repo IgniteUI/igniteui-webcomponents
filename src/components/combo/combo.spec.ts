@@ -117,6 +117,7 @@ describe('Combo', () => {
       combo.label = 'Simple Combo';
 
       await elementUpdated(combo);
+      await list.layoutComplete;
 
       await expect(combo).to.be.accessible({
         ignoredRules: ['aria-hidden-focus', 'nested-interactive'],
@@ -998,7 +999,7 @@ describe('Combo', () => {
       const combo = await fixture<IgcComboComponent<any>>(
         html`<igc-combo
           .data=${primitive}
-          value='["Sofia", "Varna"]'
+          .value=${['Sofia', 'Varna']}
         ></igc-combo>`
       );
 

@@ -245,6 +245,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   @alternateName('blurComponent')
   public override blur() {
     this.target.blur();
+    super.blur();
   }
 
   /** Checks the validity of the control and moves the focus to it if it is not valid. */
