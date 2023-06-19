@@ -43,7 +43,7 @@
     "test": "npm run build && wtr --coverage",
     "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
     "storybook": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-meta\" \"storybook dev -p 8000\"",
-    "storybook:build": "npm run build && storybook build -o ./storybook-static && touch ./storybook-static/.nojekyll",
+    "storybook:build": "npm run build && storybook build -o ./storybook-static",
     "build:typedoc:watch": "node scripts/build-typedoc.js watch",
     "build:typedoc:serve": "node scripts/build-typedoc.js serve && concurrently -k -r \"npm:build:typedoc:watch\"",
     "build:typedoc:ja": "set NODE_ENV=production && node scripts/build-typedoc.js buildJA",
