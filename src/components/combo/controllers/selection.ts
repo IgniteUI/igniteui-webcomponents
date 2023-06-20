@@ -125,7 +125,7 @@ export class SelectionController<T extends object>
     if (
       emit &&
       !this.handleChange({
-        newValue: this.getDisplayValue(payload),
+        newValue: this.getValue(payload),
         items: values as T[],
         type: 'selection',
       })
@@ -149,7 +149,7 @@ export class SelectionController<T extends object>
       if (
         emit &&
         !this.handleChange({
-          newValue: '',
+          newValue: [],
           items: Array.from(this.selected),
           type: 'deselection',
         })
@@ -166,14 +166,12 @@ export class SelectionController<T extends object>
       ? this.getItemsByValueKey(_items as Values<T>[])
       : _items;
     const selected = Array.from(this._selected.values());
-    const payload = structuredClone(selected);
-
-    payload.splice(selected.indexOf(values[0] as T));
+    const payload = selected.filter((item) => item !== values[0]);
 
     if (
       emit &&
       !this.handleChange({
-        newValue: this.getDisplayValue(payload),
+        newValue: this.getValue(payload),
         items: values as T[],
         type: 'deselection',
       })
