@@ -5,7 +5,6 @@ import {
   queryAssignedElements,
   queryAssignedNodes,
 } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -166,6 +165,12 @@ export default class IgcTextareaComponent
   @property()
   public wrap: 'hard' | 'soft' | 'off' = 'soft';
 
+  constructor() {
+    super();
+    this.addEventListener('focus', () => this.emitEvent('igcFocus'));
+    this.addEventListener('blur', () => this.emitEvent('igcBlur'));
+  }
+
   public override async connectedCallback() {
     super.connectedCallback();
 
@@ -242,14 +247,6 @@ export default class IgcTextareaComponent
     } else {
       Object.assign(this.input.style, { height: undefined });
     }
-  }
-
-  protected handleFocus() {
-    this.emitEvent('igcFocus');
-  }
-
-  protected handleBlur() {
-    this.emitEvent('igcBlur');
   }
 
   protected handleInput() {
@@ -336,13 +333,11 @@ export default class IgcTextareaComponent
         style=${styleMap(this.resizeStyles)}
         @input=${this.handleInput}
         @change=${this.handleChange}
-        @focus=${this.handleFocus}
-        @blur=${this.handleBlur}
-        .placeholder=${ifDefined(this.placeholder)}
+        .placeholder=${this.placeholder}
         .cols=${this.cols}
         .rows=${this.rows}
         .value=${live(this.value)}
-        .wrap=${ifDefined(this.wrap)}
+        .wrap=${this.wrap}
       ></textarea>`;
   }
 
