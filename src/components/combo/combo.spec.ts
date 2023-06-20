@@ -999,7 +999,7 @@ describe('Combo', () => {
       const combo = await fixture<IgcComboComponent<any>>(
         html`<igc-combo
           .data=${primitive}
-          value='["Sofia", "Varna"]'
+          .value=${['Sofia', 'Varna']}
         ></igc-combo>`
       );
 
