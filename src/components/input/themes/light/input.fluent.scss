@@ -1,4 +1,9 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-fluent-schema, 'input-group');
+$theme: digest-schema($schema);
 
 $container-background: var(--container-background, color(surface, 500)) !default;
 $resting-border-width: rem(1px);
@@ -53,7 +58,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 
     [part^='container'] {
-        @include border-radius(2px);
+        @include border-radius(map.get($theme, 'border-border-radius')...);
 
         border: #{$resting-border-width} solid color(gray, 500);
         transition: none;

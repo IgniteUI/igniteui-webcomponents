@@ -3,12 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-switch'
-    ),
-    map.get($light-bootstrap-schema, 'switch')
-);
+$schema: map.get($light-bootstrap-schema, 'switch');
 $theme: digest-schema($schema);
 
 :host {
@@ -18,7 +13,7 @@ $theme: digest-schema($schema);
     --thumb-offset: #{rem(2px)};
     --label-gap: #{rem(8px)};
 
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-switch');
 }
 
 [part~='focused'] {
@@ -37,7 +32,7 @@ $theme: digest-schema($schema);
 }
 
 [part~='control'] {
-    @include border-radius(var-get($theme, 'border-radius-track'));
+    @include border-radius(map.get($theme, 'border-radius-track')...);
 
     width: var(--size);
     height: rem(16px);
@@ -52,7 +47,7 @@ $theme: digest-schema($schema);
 }
 
 [part~='thumb'] {
-    @include border-radius(var-get($theme, 'border-radius-thumb'));
+    @include border-radius(map.get($theme, 'border-radius-thumb')...);
 
     width: var(--thumb-size);
     height: var(--thumb-size);

@@ -3,20 +3,15 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-checkbox'
-    ),
-    map.get($light-bootstrap-schema, 'checkbox')
-);
+$schema: map.get($light-bootstrap-schema, 'checkbox');
 $theme: digest-schema($schema);
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-checkbox');
 }
 
 [part~='control'] {
-    @include border-radius(var-get($theme, 'border-radius-ripple'));
+    @include border-radius(map.get($theme, 'border-radius-ripple')...);
 
     --size: #{rem(16px)};
 
@@ -30,7 +25,7 @@ $theme: digest-schema($schema);
     transform: translate3d(0, 0, 0);
 
     &::after {
-        @include border-radius(var-get($theme, 'border-radius'));
+        @include border-radius(map.get($theme, 'border-radius')...);
 
         width: inherit;
         height: inherit;

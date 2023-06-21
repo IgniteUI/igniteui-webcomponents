@@ -1,10 +1,15 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-bootstrap-schema, 'list');
+$theme: digest-schema($schema);
 
 $list-bg: contrast-color(gray, 900) !default;
 $separator-color: color(gray, 300) !default;
 
 :host {
-    @include border-radius(rem(4px));
+    @include border-radius(map.get($theme, 'border-radius')...);
 
     background: $list-bg;
     border: rem(1px) solid $separator-color;

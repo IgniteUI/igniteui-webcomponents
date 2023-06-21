@@ -1,6 +1,13 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-bootstrap-schema, 'snackbar');
+$theme: digest-schema($schema);
 
 [part~='base'] {
+    @include border-radius(map.get($theme, 'border-radius')...);
+
     background: color(surface, 500);
     color: contrast-color(surface, 500);
     box-shadow: var(--ig-elevation-10);

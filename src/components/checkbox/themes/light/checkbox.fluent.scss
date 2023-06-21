@@ -3,12 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-checkbox'
-    ),
-    map.get($light-fluent-schema, 'checkbox')
-);
+$schema: map.get($light-fluent-schema, 'checkbox');
 $theme: digest-schema($schema);
 $border-color: var-get($theme, 'empty-color');
 $hover-color: var-get($theme, 'tick-color-hover');
@@ -18,7 +13,7 @@ $invalid-hover-color: var-get($theme, 'error-color-hover');
 $disabled-color: var-get($theme, 'disabled-color');
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-checkbox');
 }
 
 [part~='control'] {
@@ -31,7 +26,7 @@ $disabled-color: var-get($theme, 'disabled-color');
     transform: translate3d(0, 0, 0);
 
     &::after {
-        @include border-radius(var-get($theme, 'border-radius'));
+        @include border-radius(map.get($theme, 'border-radius')...);
 
         background: transparent;
         box-shadow: inset 0 0 0 rem(1px) $border-color;
@@ -84,7 +79,7 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 
     [part~='control']::before {
-        @include border-radius(rem(2px));
+        @include border-radius(map.get($theme, 'border-radius')...);
 
         display: block;
         width: inherit;

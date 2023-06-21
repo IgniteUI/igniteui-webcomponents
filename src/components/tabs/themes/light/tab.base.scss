@@ -1,9 +1,15 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
+$schema: map.get($light-material-schema, 'tabs');
+$theme: digest-schema($schema);
 $hover-background: var(--hover-background, color(gray, 200)) !default;
 
 :host {
+    @include border-radius(map.get($theme, 'border-radius')...);
+
     display: inline-flex;
     flex-shrink: 0;
     justify-content: center;

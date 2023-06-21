@@ -1,4 +1,9 @@
+@use 'sass:map';
 @use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-indigo-schema, 'stepper');
+$theme: digest-schema($schema);
 
 :host {
     // header
@@ -40,4 +45,14 @@
     --disabled-color: #{color(gray, 500)};
     --disabled-background: #{color(gray, 50, 0)};
     --disabled-shadow: #{color(gray, 200)};
+}
+
+[part~='header'] {
+    @include border-radius(map.get($theme, 'border-radius-step-header')...);
+}
+
+[part~='indicator'] {
+    span {
+        @include border-radius(map.get($theme, 'border-radius-indicator')...);
+    }
 }

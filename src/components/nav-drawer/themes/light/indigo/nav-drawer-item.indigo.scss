@@ -1,4 +1,9 @@
-@use '../../../../../styles/utilities/index' as *;
+@use 'sass:map';
+@use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-indigo-schema, 'nav-drawer');
+$theme: digest-schema($schema);
 
 $active-background: var(--active-background, color(gray, 600, .8)) !default;
 $text-color: var(--text-color, color(gray, 300, .8)) !default;
@@ -6,7 +11,7 @@ $hover-text-color: var(--hover-text-color, color(gray, 100)) !default;
 
 :host {
     [part~='base'] {
-        @include border-radius(rem(24px));
+        @include border-radius(map.get($theme, 'item-border-radius')...);
 
         gap: rem(24px);
         color: $text-color;

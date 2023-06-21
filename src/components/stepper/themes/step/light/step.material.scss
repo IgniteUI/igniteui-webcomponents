@@ -1,8 +1,23 @@
+@use 'sass:map';
 @use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'stepper');
+$theme: digest-schema($schema);
 
 :host {
     // completed
     --completed-indicator-color: #{contrast-color(gray, 900)};
     --completed-indicator-background: #{color(gray, 900)};
     --completed-indicator-shadow: var(--completed-indicator-background);
+}
+
+[part~='header'] {
+    @include border-radius(map.get($theme, 'border-radius-step-header')...);
+}
+
+[part~='indicator'] {
+    span {
+        @include border-radius(map.get($theme, 'border-radius-indicator')...);
+    }
 }

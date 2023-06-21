@@ -1,15 +1,10 @@
-@use 'sass:map';
 @use 'sass:math';
+@use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-switch'
-    ),
-    map.get($light-material-schema, 'switch')
-);
+$schema: map.get($light-material-schema, 'switch');
 $theme: digest-schema($schema);
 $ripple-size: rem(40px);
 $ripple-radius: calc(#{$ripple-size} / 2);
@@ -20,7 +15,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     --thumb-offset: #{rem(-1px)};
     --label-gap: #{rem(8px)};
 
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-switch');
 }
 
 [part~='base'] {
@@ -66,7 +61,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 }
 
 [part~='control'] {
-    @include border-radius(var-get($theme, 'border-radius-track'));
+    @include border-radius(map.get($theme, 'border-radius-track')...);
 
     width: var(--size);
     height: rem(14px);
@@ -80,7 +75,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
 }
 
 [part~='thumb'] {
-    @include border-radius(var-get($theme, 'border-radius-thumb'));
+    @include border-radius(map.get($theme, 'border-radius-thumb')...);
 
     animation-name: thumb-off;
     width: var(--thumb-size);
@@ -91,7 +86,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     margin-inline-start: var(--thumb-offset);
 
     &::after {
-        @include border-radius(var-get($theme, 'border-radius-ripple'));
+        @include border-radius(map.get($theme, 'border-radius-ripple')...);
 
         position: absolute;
         content: '';

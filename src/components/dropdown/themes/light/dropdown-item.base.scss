@@ -1,7 +1,13 @@
-@use '../../../../styles/common/component';
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'drop-down');
+$theme: digest-schema($schema);
 
 :host {
+    @include border-radius(map.get($theme, 'item-border-radius')...);
     @include type-style('body-2');
 
     display: flex;

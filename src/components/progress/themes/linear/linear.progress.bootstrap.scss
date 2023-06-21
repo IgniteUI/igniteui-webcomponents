@@ -1,7 +1,11 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
 @use '../shared' as *;
 @use '../vars' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-bootstrap-schema, 'linear-bar');
+$theme: digest-schema($schema);
 
 $stripe-grays: color(gray, 50, .2);
 $stripe-size: rem(5px);
@@ -11,7 +15,7 @@ $stripe-size: rem(5px);
 }
 
 [part~='track'] {
-    @include border-radius(rem(4px));
+    @include border-radius(map.get($theme, 'track-border-radius')...);
 }
 
 [part~='striped'][part~='primary']:not([part~='indeterminate']) {

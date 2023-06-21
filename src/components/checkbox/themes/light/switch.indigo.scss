@@ -3,12 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-switch'
-    ),
-    map.get($light-indigo-schema, 'switch')
-);
+$schema: map.get($light-indigo-schema, 'switch');
 $theme: digest-schema($schema);
 $checked-color: var-get($theme, 'track-on-color') !default;
 $border-width: rem(1px);
@@ -20,7 +15,7 @@ $border-width: rem(1px);
     --thumb-offset: #{rem(2px)};
     --label-gap: #{rem(8px)};
 
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-switch');
 
     font-weight: 600;
 }
@@ -42,7 +37,7 @@ $border-width: rem(1px);
 }
 
 [part~='control'] {
-    @include border-radius(var-get($theme, 'border-radius-track'));
+    @include border-radius(map.get($theme, 'border-radius-track')...);
 
     width: var(--size);
     height: rem(16px);
@@ -56,7 +51,7 @@ $border-width: rem(1px);
 }
 
 [part~='thumb'] {
-    @include border-radius(var-get($theme, 'border-radius-thumb'));
+    @include border-radius(map.get($theme, 'border-radius-thumb')...);
 
     width: var(--thumb-size);
     height: var(--thumb-size);

@@ -1,7 +1,12 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-indigo-schema, 'drop-down');
+$theme: digest-schema($schema);
 
 :host {
-    @include border-radius(rem(2px));
+    @include border-radius(map.get($theme, 'item-border-radius')...);
 
     color: color(gray, 700);
 }

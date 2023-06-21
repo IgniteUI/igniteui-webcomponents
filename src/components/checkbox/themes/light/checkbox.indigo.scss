@@ -3,12 +3,7 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas' as *;
 
-$schema: extend(
-    (
-        name: 'ig-checkbox'
-    ),
-    map.get($light-indigo-schema, 'checkbox')
-);
+$schema: map.get($light-indigo-schema, 'checkbox');
 $theme: digest-schema($schema);
 $fill-color: var-get($theme, 'fill-color');
 $empty-color: var-get($theme, 'empty-color');
@@ -17,7 +12,7 @@ $error-color: var-get($theme, 'error-color');
 $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-checkbox');
 
     font-weight: 600;
 }
@@ -29,14 +24,14 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 [part~='control'] {
-    @include border-radius(var-get($theme, 'border-radius-ripple'));
+    @include border-radius(map.get($theme, 'border-radius-ripple')...);
 
     width: var(--size, rem(20px));
     height: var(--size, rem(20px));
     min-width: var(--size, rem(20px));
 
     &::after {
-        @include border-radius(var-get($theme, 'border-radius'));
+        @include border-radius(map.get($theme, 'border-radius')...);
 
         border: rem(2px) solid $empty-color;
     }

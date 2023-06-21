@@ -202,19 +202,19 @@ $outlined-theme: digest-schema($outlined-schema);
 }
 
 :host([variant='flat']) [part='base'] {
-    @include border-radius(var-get($flat-theme, 'border-radius'));
+    @include border-radius(map.get($flat-theme, 'border-radius')...);
 }
 
 :host([variant='outlined']) [part='base'] {
-    @include border-radius(var-get($outlined-theme, 'border-radius'));
+    @include border-radius(map.get($outlined-theme, 'border-radius')...);
 }
 
 :host([variant='contained']) [part='base'] {
-    @include border-radius(var-get($contained-theme, 'border-radius'));
+    @include border-radius(map.get($contained-theme, 'border-radius')...);
 }
 
 :host([variant='fab']) [part='base'] {
-    @include border-radius(var-get($fab-theme, 'border-radius'));
+    @include border-radius(map.get($fab-theme, 'border-radius')...);
 }
 
 :host([disabled][variant='flat']) [part='base'] {

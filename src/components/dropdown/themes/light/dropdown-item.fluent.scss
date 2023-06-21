@@ -1,8 +1,15 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-fluent-schema, 'drop-down');
+$theme: digest-schema($schema);
 
 $selected-item-color: var(--selected-item-color, contrast-color(gray, 200)) !default;
 
 :host {
+    @include border-radius(map.get($theme, 'item-border-radius')...);
+
     padding: pad(2px, 4px, 8px);
 }
 

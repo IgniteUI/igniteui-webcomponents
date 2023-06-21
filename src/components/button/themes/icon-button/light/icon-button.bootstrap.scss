@@ -1,11 +1,16 @@
+@use 'sass:map';
 @use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-bootstrap-schema, 'button', 'icon');
+$theme: digest-schema($schema);
 
 :host {
     --size: #{sizable(rem(31px), rem(38px), rem(48px))};
 }
 
 [part='base'] {
-    @include border-radius(rem(4px));
+    @include border-radius(map.get($theme, 'border-radius')...);
 
     width: var(--size);
     height: var(--size);

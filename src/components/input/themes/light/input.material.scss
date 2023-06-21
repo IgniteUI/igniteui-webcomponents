@@ -1,5 +1,9 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'input-group');
+$theme: digest-schema($schema);
 
 $idle-color: color(gray, 500) !default;
 $idle-hover-color: color(gray, 800) !default;
@@ -131,6 +135,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='start'] {
+    @include border-radius(map.get($theme, 'border-border-radius')...);
+
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
     justify-content: flex-start;
     grid-area: 1 / 1;
     border: {
@@ -143,12 +151,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
         block: {
             start-width: $idle-border-width;
             end-width: $idle-border-width;
-        };
-        start: {
-            start-radius: rem(4px);
-        };
-        end: {
-            start-radius: rem(4px);
         };
     }
 
@@ -194,6 +196,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='end'] {
+    @include border-radius(map.get($theme, 'border-border-radius')...);
+
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
     justify-content: flex-end;
     grid-area: 1 / 4;
     border: {
@@ -206,12 +212,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
         block: {
             start-width: $idle-border-width;
             end-width: $idle-border-width;
-        };
-        start: {
-            end-radius: rem(4px);
-        };
-        end: {
-            end-radius: rem(4px);
         };
     }
 
@@ -337,16 +337,12 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part~='container'] {
+        @include border-radius(map.get($theme, 'box-border-radius')...);
+
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
         background: color(gray, 200);
         border-bottom: 1px solid $idle-color;
-
-        border: {
-            start: {
-                end-radius: rem(4px);
-                start-radius: rem(4px);
-            };
-        }
-
         transition: border-bottom-width 150ms cubic-bezier(.4, 0, .2, 1);
 
         &::after {

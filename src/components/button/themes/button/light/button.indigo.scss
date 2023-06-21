@@ -38,19 +38,19 @@ $outlined-theme: digest-schema($outlined-schema);
 }
 
 :host([variant='flat']) [part='base'] {
-    @include border-radius(var-get($flat-theme, 'border-radius'));
+    @include border-radius(map.get($flat-theme, 'border-radius')...);
 }
 
 :host([variant='outlined']) [part='base'] {
-    @include border-radius(var-get($outlined-theme, 'border-radius'));
+    @include border-radius(map.get($outlined-theme, 'border-radius')...);
 }
 
 :host([variant='contained']) [part='base'] {
-    @include border-radius(var-get($contained-theme, 'border-radius'));
+    @include border-radius(map.get($contained-theme, 'border-radius')...);
 }
 
 :host([variant='fab']) [part='base'] {
-    @include border-radius(var-get($fab-theme, 'border-radius'));
+    @include border-radius(map.get($fab-theme, 'border-radius')...);
 }
 
 :host(:not([disabled])[variant='flat']) [part='base'] {
@@ -135,7 +135,6 @@ $outlined-theme: digest-schema($outlined-schema);
 :host(:not([disabled])[variant='contained']) [part='base'] {
     color: var-get($contained-theme, 'foreground');
     background: var-get($contained-theme, 'background');
-    border-radius: var-get($contained-theme, 'border-radius');
 
     &:hover {
         color: var-get($contained-theme, 'hover-foreground');

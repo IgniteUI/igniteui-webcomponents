@@ -1,5 +1,10 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'drop-down');
+$theme: digest-schema($schema);
 
 :host {
     display: flex;
@@ -7,7 +12,7 @@
 }
 
 [part='base'] {
-    @include border-radius(rem(4px));
+    @include border-radius(map.get($theme, 'border-radius')...);
 
     overflow-y: auto;
     overflow-x: hidden;

@@ -1,4 +1,14 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'dialog');
+$theme: digest-schema($schema);
+
+:host {
+    @include border-radius(map.get($theme, 'border-radius')...);
+}
 
 [part='title'] {
     padding-inline: rem(24px);

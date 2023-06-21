@@ -1,7 +1,14 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'list');
+$theme: digest-schema($schema);
 
 :host {
+    @include border-radius(map.get($theme, 'border-radius')...);
+
     display: flex;
     flex-flow: column nowrap;
     font-family: var(--ig-font-family);

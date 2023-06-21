@@ -1,7 +1,12 @@
+@use 'sass:map';
 @use '../../../styles/utilities' as *;
+@use '../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-indigo-schema, 'toast');
+$theme: digest-schema($schema);
 
 :host {
-    @include border-radius(rem(6px));
+    @include border-radius(map.get($theme, 'border-radius')...);
 
     color: contrast-color(gray, 700);
     background: color(gray, 700);

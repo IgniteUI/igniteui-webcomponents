@@ -1,8 +1,14 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-fluent-schema, 'card');
+$theme: digest-schema($schema);
 
 :host {
+    @include border-radius(map.get($theme, 'border-radius')...);
+
     border: rem(1px) solid color(gray, 100);
-    border-radius: 0;
 }
 
 :host([elevated]:hover),

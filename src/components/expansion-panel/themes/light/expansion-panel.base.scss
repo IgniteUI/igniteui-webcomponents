@@ -1,11 +1,16 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
+$schema: map.get($light-material-schema, 'expansion-panel');
+$theme: digest-schema($schema);
 $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 
 :host {
-    --lines-clamped: 1;
+    @include border-radius(map.get($theme, 'border-radius')...);
 
+    --lines-clamped: 1;
     color: color(gray, 900);
     background: color(surface, 500);
     width: auto;

@@ -1,6 +1,10 @@
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
 @use '../vars' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
+$schema: map.get($light-fluent-schema, 'linear-bar');
+$theme: digest-schema($schema);
 $track-color: color(gray, 200);
 
 :host {
@@ -9,6 +13,8 @@ $track-color: color(gray, 200);
 }
 
 [part~='track'] {
+    @include border-radius(map.get($theme, 'track-border-radius')...);
+
     background: $track-color;
     margin: rem(8px) 0;
 }

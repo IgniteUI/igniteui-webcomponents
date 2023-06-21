@@ -1,5 +1,10 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'snackbar');
+$theme: digest-schema($schema);
 
 :host {
     font-family: var(--ig-font-family);
@@ -10,7 +15,7 @@
 }
 
 [part~='base'] {
-    @include border-radius(rem(4px));
+    @include border-radius(map.get($theme, 'border-radius')...);
 
     display: flex;
     flex-wrap: row nowrap;

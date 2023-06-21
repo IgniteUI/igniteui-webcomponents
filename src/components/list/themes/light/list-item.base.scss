@@ -1,7 +1,14 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'list');
+$theme: digest-schema($schema);
 
 :host {
+    @include border-radius(map.get($theme, 'item-border-radius')...);
+
     display: flex;
     align-items: center;
     position: relative;

@@ -1,7 +1,14 @@
+@use 'sass:map';
 @use './chip.base.scss';
 @use '../../../styles/utilities' as *;
+@use '../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-indigo-schema, 'chip');
+$theme: digest-schema($schema);
 
 :host button {
+    @include border-radius(map.get($theme, 'border-radius')...);
+
     border: rem(1px) solid color(gray, 400);
     background: color(surface, 500);
     color: color(gray, 700);

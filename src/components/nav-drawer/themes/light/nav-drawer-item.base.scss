@@ -1,5 +1,10 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'nav-drawer');
+$theme: digest-schema($schema);
 
 $active-text-color: var(--active-text-color, color(primary, 500)) !default;
 $active-background: var(--active-background, color(primary, 500, .12)) !default;
@@ -7,7 +12,7 @@ $hover-background: var(--hover-background, color(gray, 200, .8)) !default;
 $item-margin: rem(8px);
 
 [part~='base'] {
-    @include border-radius(rem(4px));
+    @include border-radius(map.get($theme, 'item-border-radius')...);
 
     display: flex;
     gap: rem(32px);

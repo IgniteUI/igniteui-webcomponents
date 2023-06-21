@@ -1,6 +1,13 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-fluent-schema, 'tabs');
+$theme: digest-schema($schema);
 
 :host {
+    @include border-radius(map.get($theme, 'border-radius')...);
+
     color: color(gray, 900);
 
     ::slotted(igc-icon) {

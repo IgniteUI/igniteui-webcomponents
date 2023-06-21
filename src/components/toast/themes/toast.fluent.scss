@@ -1,10 +1,15 @@
+@use 'sass:map';
 @use '../../../styles/utilities' as *;
+@use '../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-fluent-schema, 'toast');
+$theme: digest-schema($schema);
 
 :host {
     @include type-style('caption');
+    @include border-radius(map.get($theme, 'border-radius')...);
 
     color: contrast-color(gray, 100);
     background: color(gray, 100);
     padding: rem(8px) rem(12px);
-    border-radius: 0;
 }

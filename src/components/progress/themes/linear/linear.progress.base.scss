@@ -1,7 +1,12 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
 @use '../shared' as *;
 @use '../vars' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-material-schema, 'linear-bar');
+$theme: digest-schema($schema);
 
 :host {
     @extend %host !optional;
@@ -27,12 +32,13 @@
 }
 
 [part~='track'] {
+    @include border-radius(map.get($theme, 'track-border-radius')...);
+
     position: relative;
     width: inherit;
     height: var(--track-size);
     background: $track-color;
     overflow: hidden;
-    border-radius: $track-roundness;
     z-index: 0;
 }
 

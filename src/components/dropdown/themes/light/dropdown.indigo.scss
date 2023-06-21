@@ -1,7 +1,12 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-indigo-schema, 'drop-down');
+$theme: digest-schema($schema);
 
 [part='base'] {
-    @include border-radius(rem(2px));
+    @include border-radius(map.get($theme, 'border-radius')...);
 
     box-shadow: var(--ig-elevation-3);
     padding: 0;

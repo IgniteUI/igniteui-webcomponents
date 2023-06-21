@@ -1,9 +1,15 @@
-@use '../../../../../styles/utilities/index' as *;
+@use 'sass:map';
+@use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas' as *;
 
+$schema: map.get($light-indigo-schema, 'nav-drawer');
+$theme: digest-schema($schema);
 $background: var(--background, color(gray, 700)) !default;
 
 :host {
     [part='base'] {
+        @include border-radius(map.get($theme, 'border-radius')...);
+
         background: $background;
         border: none;
         box-shadow: none;
