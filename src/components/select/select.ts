@@ -161,7 +161,14 @@ export default class IgcSelectComponent extends FormAssociatedMixin(
   public placeholder!: string;
 
   /**
+   * @deprecated since version 5.0. It will be removed in the next major release.
+   * @hidden @internal
+   */
+  public override positionStrategy: 'absolute' | 'fixed' = 'fixed';
+
+  /**
    * Whether the dropdown's width should be the same as the target's one.
+   * @deprecated since version 5.0. It will be removed in the next major release.
    * @attr same-width
    */
   @property({ type: Boolean, attribute: 'same-width' })
