@@ -1,6 +1,11 @@
 @use 'sass:math';
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
 @use 'vars' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-bootstrap-schema, 'calendar');
+$theme: digest-schema($schema);
 
 :host {
     padding-block-start: rem(16px);
@@ -8,7 +13,7 @@
 
 [part~='month-inner'],
 [part~='year-inner'] {
-    border-radius: $border-radius;
+    @include border-radius(map.get($theme, 'month-border-radius')...);
 }
 
 [part~='month-inner'][part~='selected'],

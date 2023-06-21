@@ -1,17 +1,28 @@
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
 @use '../calendar.base';
 @use '../shared-calendar' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
 
+$schema: map.get($light-fluent-schema, 'calendar');
+$theme: digest-schema($schema);
 $header-bg: var(--header-bg, #{color(primary, 500)});
 $header-color: var(--header-color, #{contrast-color(primary, 600)});
+
+:host(igc-calendar) {
+    @include border-radius(map.get($theme, 'border-radius')...);
+}
 
 :host([size='large']),
 :host([size='medium']),
 :host([size='small']) {
-    igc-days-view::part(date-inner),
+    igc-days-view::part(date-inner) {
+        border-radius: 0;
+    }
+
     igc-months-view::part(month-inner),
     igc-years-view::part(year-inner) {
-        border-radius: 0;
+        @include border-radius(map.get($theme, 'month-border-radius')...);
     }
 }
 

@@ -1,8 +1,12 @@
 @use 'sass:map';
 @use 'sass:math';
-@use '../../../../styles/utilities/index' as *;
 @use '../shared-calendar' as *;
 @use 'vars' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-bootstrap-schema, 'calendar');
+$theme: digest-schema($schema);
 
 :host([part='days-view']) {
     overflow: hidden;
@@ -26,7 +30,7 @@
 }
 
 [part~='date-inner'] {
-    border-radius: $border-radius;
+    @include border-radius(map.get($theme, 'date-border-radius')...);
 }
 
 [part~='date-inner'][part~='current'] {
@@ -131,11 +135,12 @@
     }
 
     &::after {
+        @include border-radius(map.get($theme, 'date-border-radius')...);
+
         content: '';
         position: absolute;
         width: calc(100% - 4px);
         height: calc(100% - 4px);
-        border-radius: $border-radius;
         background: $current-background;
         z-index: -1;
     }
