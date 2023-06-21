@@ -1086,7 +1086,7 @@ describe('Combo', () => {
     >(html`<igc-combo
       name="combo"
       .data=${cities}
-      value='["BG01", "BG02"]'
+      .value=${['BG01', 'BG02']}
       value-key="id"
       display-key="name"
     ></igc-combo>`);
@@ -1108,6 +1108,8 @@ describe('Combo', () => {
 
     it('is associated on submit with value-key (single)', async () => {
       spec.element.singleSelect = true;
+      await elementUpdated(spec.element);
+
       spec.element.value = ['BG01', 'BG02'];
       await elementUpdated(spec.element);
 
@@ -1147,6 +1149,9 @@ describe('Combo', () => {
 
     it('is correctly reset on form reset', async () => {
       const initial = spec.element.value;
+
+      spec.element.setAttribute('value', '["BG01", "BG02"]');
+      await elementUpdated(spec.element);
 
       spec.element.value = [];
       await elementUpdated(spec.element);

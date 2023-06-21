@@ -95,7 +95,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * The value of the input.
    * @attr
    */
-  @property({ converter })
+  @property({ converter: converter })
   @blazorTwoWayBind('igcChange', 'detail')
   public get value(): Date | null {
     return this._value;
@@ -124,14 +124,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * The minimum value required for the input to remain valid.
    * @attr min-value
    */
-  @property({ attribute: 'min-value', converter })
+  @property({ attribute: 'min-value', converter: converter })
   public minValue!: Date | null;
 
   /**
    * The maximum value required for the input to remain valid.
    * @attr max-value
    */
-  @property({ attribute: 'max-value', converter })
+  @property({ attribute: 'max-value', converter: converter })
   public maxValue!: Date | null;
 
   /**
