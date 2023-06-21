@@ -4,7 +4,6 @@
 
 $schema: map.get($light-fluent-schema, 'drop-down');
 $theme: digest-schema($schema);
-
 $selected-item-color: var(--selected-item-color, contrast-color(gray, 200)) !default;
 
 :host {

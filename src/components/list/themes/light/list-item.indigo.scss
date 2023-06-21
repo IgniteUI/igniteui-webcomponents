@@ -4,7 +4,6 @@
 
 $schema: map.get($light-indigo-schema, 'list');
 $theme: digest-schema($schema);
-
 $item-color: color(gray, 900) !default;
 $item-hover-bg: var(--item-hover-bg, color(gray, 50)) !default;
 $subtitle-color: color(gray, 800) !default;

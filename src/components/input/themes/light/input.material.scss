@@ -4,7 +4,6 @@
 
 $schema: map.get($light-material-schema, 'input-group');
 $theme: digest-schema($schema);
-
 $idle-color: color(gray, 500) !default;
 $idle-hover-color: color(gray, 800) !default;
 $hover-background: color(gray, 200) !default;

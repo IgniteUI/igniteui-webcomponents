@@ -1,0 +1,24 @@
+@use 'sass:map';
+@use '../shared-calendar' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-indigo-schema, 'calendar');
+$theme: digest-schema($schema);
+
+:host(igc-calendar) {
+    @include border-radius(map.get($theme, 'border-radius')...);
+}
+
+:host([size='large']),
+:host([size='medium']),
+:host([size='small']) {
+    igc-days-view::part(date-inner) {
+        @include border-radius(map.get($theme, 'date-border-radius')...);
+    }
+
+    igc-months-view::part(month-inner),
+    igc-years-view::part(year-inner) {
+        @include border-radius(map.get($theme, 'month-border-radius')...);
+    }
+}

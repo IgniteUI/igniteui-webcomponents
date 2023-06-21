@@ -4,7 +4,6 @@
 
 $schema: map.get($light-bootstrap-schema, 'drop-down');
 $theme: digest-schema($schema);
-
 $border-color: var(--border-color, color(gray, 300)) !default;
 
 [part='base'] {

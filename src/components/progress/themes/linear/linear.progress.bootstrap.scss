@@ -6,7 +6,6 @@
 
 $schema: map.get($light-bootstrap-schema, 'linear-bar');
 $theme: digest-schema($schema);
-
 $stripe-grays: color(gray, 50, .2);
 $stripe-size: rem(5px);
 

@@ -4,7 +4,6 @@
 
 $schema: map.get($light-bootstrap-schema, 'drop-down');
 $theme: digest-schema($schema);
-
 $item-color: var(--item-color, color(gray, 900)) !default;
 $hover-item-color: var(--hover-item-color, contrast-color(gray, 100)) !default;
 

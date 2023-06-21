@@ -4,7 +4,6 @@
 
 $schema: map.get($light-indigo-schema, 'nav-drawer');
 $theme: digest-schema($schema);
-
 $active-background: var(--active-background, color(gray, 600, .8)) !default;
 $text-color: var(--text-color, color(gray, 300, .8)) !default;
 $hover-text-color: var(--hover-text-color, color(gray, 100)) !default;

@@ -1,12 +1,16 @@
-@use '../../../styles/utilities/index' as *;
-@use '../../../styles/common/component';
-@use 'shared-calendar' as *;
-@use 'sass:map';
 @use 'sass:math';
+@use 'sass:map';
+@use 'shared-calendar' as *;
+@use '../../../styles/common/component';
+@use '../../../styles/utilities' as *;
+@use '../../../styles/themes/schemas' as *;
 
-$border-radius: #{calc(var(--size) / 2)};
+$schema: map.get($light-material-schema, 'calendar');
+$theme: digest-schema($schema);
 
 :host(igc-calendar) {
+    @include border-radius(map.get($theme, 'border-radius')...);
+
     --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
 
     display: flex;
@@ -39,7 +43,7 @@ $border-radius: #{calc(var(--size) / 2)};
     }
 
     igc-days-view::part(date-inner) {
-        @include border-radius(calc($border-radius + rem(2px)));
+        @include border-radius(map.get($theme, 'date-border-radius')...);
     }
 
     igc-months-view {
@@ -48,7 +52,7 @@ $border-radius: #{calc(var(--size) / 2)};
         &::part(month-inner) {
             height: var(--size);
 
-            @include border-radius(calc($border-radius + rem(2px)));
+            @include border-radius(map.get($theme, 'month-border-radius')...);
         }
     }
 
@@ -58,7 +62,7 @@ $border-radius: #{calc(var(--size) / 2)};
         &::part(year-inner) {
             height: var(--size);
 
-            @include border-radius(calc($border-radius + rem(2px)));
+            @include border-radius(map.get($theme, 'month-border-radius')...);
         }
     }
 }
@@ -138,12 +142,21 @@ $border-radius: #{calc(var(--size) / 2)};
 }
 
 [part='header'] {
+    border-radius: inherit;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding: rem(16px);
     background: color(secondary, 500);
     color: contrast-color(secondary, 600);
+}
+
+[part='content'] {
+    border-radius: inherit;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
 
 [part='header-date'],

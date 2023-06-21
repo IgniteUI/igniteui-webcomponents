@@ -11,6 +11,7 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
     @include border-radius(map.get($theme, 'border-radius')...);
 
     --lines-clamped: 1;
+    
     color: color(gray, 900);
     background: color(surface, 500);
     width: auto;

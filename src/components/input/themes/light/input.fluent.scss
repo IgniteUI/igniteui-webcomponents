@@ -4,7 +4,6 @@
 
 $schema: map.get($light-fluent-schema, 'input-group');
 $theme: digest-schema($schema);
-
 $container-background: var(--container-background, color(surface, 500)) !default;
 $resting-border-width: rem(1px);
 $focused-border-width: rem(2px);

@@ -4,7 +4,6 @@
 
 $schema: map.get($light-indigo-schema, 'snackbar');
 $theme: digest-schema($schema);
-
 $background-color: var(--background-color, color(gray, 700, .9)) !default;
 $text-color: var(--text-color, contrast-color(gray, 700)) !default;
 

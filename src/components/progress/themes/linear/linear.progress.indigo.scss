@@ -5,7 +5,6 @@
 
 $schema: map.get($light-indigo-schema, 'linear-bar');
 $theme: digest-schema($schema);
-
 $stripe-grays: color(gray, 50, .7);
 $stripe-primary: color(secondary, 500);
 $stripe-size: rem(6px);

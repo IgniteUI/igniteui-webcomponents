@@ -16,7 +16,7 @@ $outlined-theme: digest-schema($outlined-schema);
     @include css-vars($flat-theme);
 
     [part='base'] {
-        @include border-radius(var-get($flat-theme, 'border-radius'));
+        @include border-radius(map.get($flat-theme, 'border-radius')...);
     }
 }
 
@@ -24,7 +24,7 @@ $outlined-theme: digest-schema($outlined-schema);
     @include css-vars($contained-theme);
 
     [part='base'] {
-        @include border-radius(var-get($contained-theme, 'border-radius'));
+        @include border-radius(map.get($contained-theme, 'border-radius')...);
     }
 }
 
@@ -34,7 +34,7 @@ $outlined-theme: digest-schema($outlined-schema);
     [part='base'] {
         border: rem(1px) solid var-get($outlined-theme, 'border-color');
 
-        @include border-radius(var-get($outlined-theme, 'border-radius'));
+        @include border-radius(map.get($outlined-theme, 'border-radius')...);
     }
 }
 
@@ -42,7 +42,7 @@ $outlined-theme: digest-schema($outlined-schema);
     @include css-vars($fab-theme);
 
     [part='base'] {
-        @include border-radius(var-get($fab-theme, 'border-radius'));
+        @include border-radius(map.get($fab-theme, 'border-radius')...);
     }
 }
 
