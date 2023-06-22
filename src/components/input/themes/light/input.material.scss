@@ -1,9 +1,17 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
 $schema: map.get($light-material-schema, 'input-group');
-$theme: digest-schema($schema);
+$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
+$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-border-radius: $border-border-radius,
+        box-border-radius: $box-border-radius,
+    )
+));
 $idle-color: color(gray, 500) !default;
 $idle-hover-color: color(gray, 800) !default;
 $hover-background: color(gray, 200) !default;
@@ -34,6 +42,8 @@ $fs: rem(16px) !default;
 }
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-input');
+
     input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
@@ -134,8 +144,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='start'] {
-    @include border-radius(map.get($theme, 'border-border-radius')...);
-
+    border-radius: var-get($theme, 'border-border-radius');
     border-start-end-radius: 0;
     border-end-end-radius: 0;
     justify-content: flex-start;
@@ -195,8 +204,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
 }
 
 [part='end'] {
-    @include border-radius(map.get($theme, 'border-border-radius')...);
-
+    border-radius: var-get($theme, 'border-border-radius');
     border-start-start-radius: 0;
     border-end-start-radius: 0;
     justify-content: flex-end;
@@ -336,8 +344,7 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 
     [part~='container'] {
-        @include border-radius(map.get($theme, 'box-border-radius')...);
-
+        border-radius: var-get($theme, 'box-border-radius');
         border-end-start-radius: 0;
         border-end-end-radius: 0;
         background: color(gray, 200);

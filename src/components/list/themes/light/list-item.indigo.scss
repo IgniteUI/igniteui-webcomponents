@@ -1,17 +1,24 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
 
 $schema: map.get($light-indigo-schema, 'list');
-$theme: digest-schema($schema);
+$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        item-border-radius: $item-border-radius
+    )
+));
 $item-color: color(gray, 900) !default;
 $item-hover-bg: var(--item-hover-bg, color(gray, 50)) !default;
 $subtitle-color: color(gray, 800) !default;
 
 :host {
-    @include border-radius(map.get($theme, 'item-border-radius')...);
+    @include css-vars-from-theme($theme, 'ig-list');
 
     color: $item-color;
+    border-radius: var-get($theme, 'item-border-radius');
 
     [part='subtitle'] {
         @include type-style('body-2');

@@ -1,13 +1,19 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
 $schema: map.get($light-material-schema, 'list');
-$theme: digest-schema($schema);
+$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        item-border-radius: $item-border-radius
+    )
+));
 
 :host {
-    @include border-radius(map.get($theme, 'item-border-radius')...);
+    @include css-vars-from-theme($theme, 'ig-list');
 
     display: flex;
     align-items: center;
@@ -17,6 +23,7 @@ $theme: digest-schema($schema);
     transition: background .15s ease-out;
     padding-inline: pad-inline(4px, 8px, 16px);
     padding-block: pad-block(2px, 4px, 8px);
+    border-radius: var-get($theme, 'item-border-radius');
 }
 
 :host(:hover),

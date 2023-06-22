@@ -3,12 +3,19 @@
 @use '../vars' as *;
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
 $schema: map.get($light-material-schema, 'linear-bar');
-$theme: digest-schema($schema);
+$track-border-radius: border-radius(map.get($schema, 'track-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        track-border-radius: $track-border-radius
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-linear-bar');
     @extend %host !optional;
 
     display: flex;
@@ -32,8 +39,7 @@ $theme: digest-schema($schema);
 }
 
 [part~='track'] {
-    @include border-radius(map.get($theme, 'track-border-radius')...);
-
+    border-radius: var-get($theme, 'track-border-radius');
     position: relative;
     width: inherit;
     height: var(--track-size);

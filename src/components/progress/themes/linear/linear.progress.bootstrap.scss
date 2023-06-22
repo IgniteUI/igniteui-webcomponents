@@ -2,19 +2,27 @@
 @use '../shared' as *;
 @use '../vars' as *;
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
 $schema: map.get($light-bootstrap-schema, 'linear-bar');
-$theme: digest-schema($schema);
+$track-border-radius: border-radius(map.get($schema, 'track-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        track-border-radius: $track-border-radius
+    )
+));
 $stripe-grays: color(gray, 50, .2);
 $stripe-size: rem(5px);
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-linear-bar');
+
     --track-size: #{rem(16px)};
 }
 
 [part~='track'] {
-    @include border-radius(map.get($theme, 'track-border-radius')...);
+    border-radius: var-get($theme, 'track-border-radius');
 }
 
 [part~='striped'][part~='primary']:not([part~='indeterminate']) {
