@@ -230,7 +230,7 @@ export default class IgcSelectComponent extends FormAssociatedMixin(
     return valid;
   }
 
-  public override async firstUpdated() {
+  protected override async firstUpdated() {
     super.firstUpdated();
     await this.updateComplete;
 
