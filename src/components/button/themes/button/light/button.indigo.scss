@@ -1,36 +1,63 @@
 @use 'sass:map';
 @use '../../../../../styles/utilities' as *;
-@use '../../../../../styles/themes/schemas' as *;
+@use '../../../../../styles/themes/schemas/indigo/light' as *;
 
-$flat-schema: extend((name: 'ig-button'), map.get($light-indigo-schema, 'button', 'flat'));
-$contained-schema: extend((name: 'ig-button'), map.get($light-indigo-schema, 'button', 'raised'));
-$fab-schema: extend((name: 'ig-button'), map.get($light-indigo-schema, 'button', 'fab'));
-$outlined-schema: extend((name: 'ig-button'), map.get($light-indigo-schema, 'button', 'outlined'));
-$flat-theme: digest-schema($flat-schema);
-$contained-theme: digest-schema($contained-schema);
-$fab-theme: digest-schema($fab-schema);
-$outlined-theme: digest-schema($outlined-schema);
+$flat-schema: map.get($light-indigo-schema, 'button', 'flat');
+$flat-border-radius: border-radius(map.get($flat-schema, 'border-radius')...);
+$flat-theme: digest-schema(extend(
+    $flat-schema,
+    (
+        border-radius: $flat-border-radius
+    )
+));
+
+$contained-schema: map.get($light-indigo-schema, 'button', 'raised');
+$contained-border-radius: border-radius(map.get($contained-schema, 'border-radius')...);
+$contained-theme: digest-schema(extend(
+    $contained-schema,
+    (
+        border-radius: $contained-border-radius
+    )
+));
+
+$fab-schema: map.get($light-indigo-schema, 'button', 'fab');
+$fab-border-radius: border-radius(map.get($fab-schema, 'border-radius')...);
+$fab-theme: digest-schema(extend(
+    $fab-schema,
+    (
+        border-radius: $fab-border-radius
+    )
+));
+
+$outlined-schema: map.get($light-indigo-schema, 'button', 'outlined');
+$outlined-border-radius: border-radius(map.get($outlined-schema, 'border-radius')...);
+$outlined-theme: digest-schema(extend(
+    $outlined-schema,
+    (
+        border-radius: $outlined-border-radius
+    )
+));
 
 :host {
     --size: #{sizable(rem(28px), rem(32px), rem(36px))};
 }
 
 :host([variant='flat']) {
-    @include css-vars($flat-theme);
+    @include css-vars-from-theme($flat-theme, 'ig-button');
 }
 
 :host([variant='outlined']) {
-    @include css-vars($outlined-theme);
+    @include css-vars-from-theme($outlined-theme, 'ig-button');
 }
 
 :host([variant='contained']) {
-    @include css-vars($contained-theme);
+    @include css-vars-from-theme($contained-theme, 'ig-button');
 }
 
 :host([variant='fab']) {
     --size: #{sizable(rem(36px), rem(42px), rem(48px))};
 
-    @include css-vars($fab-theme);
+    @include css-vars-from-theme($fab-theme, 'ig-button');
 }
 
 [part='base'] {
@@ -38,19 +65,19 @@ $outlined-theme: digest-schema($outlined-schema);
 }
 
 :host([variant='flat']) [part='base'] {
-    @include border-radius(map.get($flat-theme, 'border-radius')...);
+    border-radius: var-get($flat-theme, 'border-radius');
 }
 
 :host([variant='outlined']) [part='base'] {
-    @include border-radius(map.get($outlined-theme, 'border-radius')...);
+    border-radius: var-get($outlined-theme, 'border-radius');
 }
 
 :host([variant='contained']) [part='base'] {
-    @include border-radius(map.get($contained-theme, 'border-radius')...);
+    border-radius: var-get($contained-theme, 'border-radius');
 }
 
 :host([variant='fab']) [part='base'] {
-    @include border-radius(map.get($fab-theme, 'border-radius')...);
+    border-radius: var-get($fab-theme, 'border-radius');
 }
 
 :host(:not([disabled])[variant='flat']) [part='base'] {

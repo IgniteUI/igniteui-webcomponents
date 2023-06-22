@@ -1,8 +1,8 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
 
-$schema: map.get($light-bootstrap-schema, 'card');
+$schema: map.get($light-indigo-schema, 'card');
 $border-radius: border-radius(map.get($schema, 'border-radius')...);
 $theme: digest-schema(extend(
     $schema,
@@ -15,10 +15,4 @@ $theme: digest-schema(extend(
     @include css-vars-from-theme($theme, 'ig-card');
 
     border-radius: var-get($theme, 'border-radius');
-}
-
-:host([elevated]),
-:host([elevated]:hover),
-:host([elevated]:focus-within) {
-    box-shadow: var(--ig-elevation-2);
 }

@@ -1,13 +1,21 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
 $schema: map.get($light-bootstrap-schema, 'dialog');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 $border-color: var(--border-color, color(gray, 300));
 
 :host {
-    @include border-radius(map.get($theme, 'border-radius')...);
+    @include css-vars-from-theme($theme, 'ig-dialog');
+
+    border-radius: var-get($theme, 'border-radius');
 }
 
 [part='base'] {
