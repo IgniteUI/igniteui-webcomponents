@@ -1,15 +1,24 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
 
 $schema: map.get($light-indigo-schema, 'snackbar');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 $background-color: var(--background-color, color(gray, 700, .9)) !default;
 $text-color: var(--text-color, contrast-color(gray, 700)) !default;
 
-[part~='base'] {
-    @include border-radius(map.get($theme, 'border-radius')...);
+:host {
+    @include css-vars-from-theme($theme, 'ig-snackbar');
+}
 
+[part~='base'] {
+    border-radius: var-get($theme, 'border-radius');
     background: $background-color;
     color: $text-color;
 }

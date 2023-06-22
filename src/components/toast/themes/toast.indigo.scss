@@ -1,14 +1,21 @@
 @use 'sass:map';
 @use '../../../styles/utilities' as *;
-@use '../../../styles/themes/schemas' as *;
+@use '../../../styles/themes/schemas/indigo/light' as *;
 
 $schema: map.get($light-indigo-schema, 'toast');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 
 :host {
-    @include border-radius(map.get($theme, 'border-radius')...);
+    @include css-vars-from-theme($theme, 'ig-toast');
 
     color: contrast-color(gray, 700);
     background: color(gray, 700);
     padding: rem(10px) rem(16px);
+    border-radius: var-get($theme, 'border-radius');
 }

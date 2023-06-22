@@ -1,11 +1,21 @@
 @use 'sass:map';
 @use '../../../../../styles/utilities' as *;
-@use '../../../../../styles/themes/schemas' as *;
+@use '../../../../../styles/themes/schemas/indigo/light' as *;
 
 $schema: map.get($light-indigo-schema, 'stepper');
-$theme: digest-schema($schema);
+$border-radius-step-header: border-radius(map.get($schema, 'border-radius-step-header')...);
+$border-radius-indicator: border-radius(map.get($schema, 'border-radius-indicator')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius-step-header: $border-radius-step-header,
+        border-radius-indicator: $border-radius-indicator
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-stepper');
+
     // header
     --header-color: #{color(gray, 900)};
     --header-background--hover: #{color(gray, 100)};
@@ -48,11 +58,11 @@ $theme: digest-schema($schema);
 }
 
 [part~='header'] {
-    @include border-radius(map.get($theme, 'border-radius-step-header')...);
+    border-radius: var-get($theme, 'border-radius-step-header');
 }
 
 [part~='indicator'] {
     span {
-        @include border-radius(map.get($theme, 'border-radius-indicator')...);
+        border-radius: var-get($theme, 'border-radius-indicator');
     }
 }
