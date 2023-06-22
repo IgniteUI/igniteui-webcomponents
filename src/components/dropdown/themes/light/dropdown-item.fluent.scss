@@ -1,14 +1,21 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/fluent/light' as *;
 
 $schema: map.get($light-fluent-schema, 'drop-down');
-$theme: digest-schema($schema);
+$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        item-border-radius: $item-border-radius
+    )
+));
 $selected-item-color: var(--selected-item-color, contrast-color(gray, 200)) !default;
 
 :host {
-    @include border-radius(map.get($theme, 'item-border-radius')...);
+    @include css-vars-from-theme($theme, 'ig-dropdown');
 
+    border-radius: var-get($theme, 'item-border-radius');
     padding: pad(2px, 4px, 8px);
 }
 

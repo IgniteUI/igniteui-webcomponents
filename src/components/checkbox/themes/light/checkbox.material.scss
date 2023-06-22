@@ -1,10 +1,18 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
 $schema: map.get($light-material-schema, 'checkbox');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius,
+        ripple-radius: $ripple-radius
+    )
+));
 
 :host {
     @include css-vars-from-theme($theme, 'ig-checkbox');
@@ -29,20 +37,18 @@ $theme: digest-schema($schema);
     transition: background .15s ease-in;
 
     &::after {
-        @include border-radius(map.get($theme, 'border-radius')...);
-
+        border-radius: var-get($theme, 'border-radius');
         border: rem(2px) solid var-get($theme, 'empty-color');
     }
 
     &::before {
-        @include border-radius(map.get($theme, 'border-radius-ripple')...);
-
         content: '';
         position: absolute;
         inset-block-start: 0;
         inset-inline-start: 0;
         width: 100%;
         height: 100%;
+        border-radius: var-get($theme, 'ripple-radius');
     }
 }
 

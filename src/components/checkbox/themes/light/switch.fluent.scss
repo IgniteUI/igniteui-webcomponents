@@ -1,10 +1,18 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/fluent/light' as *;
 
 $schema: map.get($light-fluent-schema, 'switch');
-$theme: digest-schema($schema);
+$border-radius-thumb: border-radius(map.get($schema, 'border-radius-thumb')...);
+$border-radius-track: border-radius(map.get($schema, 'border-radius-track')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius-thumb: $border-radius-thumb,
+        border-radius-track: $border-radius-track
+    )
+));
 
 :host {
     --size: #{rem(40px)};
@@ -17,8 +25,7 @@ $theme: digest-schema($schema);
 }
 
 [part~='control'] {
-    @include border-radius(map.get($theme, 'border-radius-track')...);
-
+    border-radius: var-get($theme, 'border-radius-track');
     width: var(--size);
     height: rem(20px);
     background: var-get($theme, 'track-off-color');
@@ -31,8 +38,7 @@ $theme: digest-schema($schema);
 }
 
 [part~='thumb'] {
-    @include border-radius(map.get($theme, 'border-radius-thumb')...);
-
+    border-radius: var-get($theme, 'border-radius-thumb');
     width: var(--thumb-size);
     height: var(--thumb-size);
     min-width: var(--thumb-size);

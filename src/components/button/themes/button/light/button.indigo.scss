@@ -10,7 +10,6 @@ $flat-theme: digest-schema(extend(
         border-radius: $flat-border-radius
     )
 ));
-
 $contained-schema: map.get($light-indigo-schema, 'button', 'raised');
 $contained-border-radius: border-radius(map.get($contained-schema, 'border-radius')...);
 $contained-theme: digest-schema(extend(
@@ -19,7 +18,6 @@ $contained-theme: digest-schema(extend(
         border-radius: $contained-border-radius
     )
 ));
-
 $fab-schema: map.get($light-indigo-schema, 'button', 'fab');
 $fab-border-radius: border-radius(map.get($fab-schema, 'border-radius')...);
 $fab-theme: digest-schema(extend(
@@ -28,7 +26,6 @@ $fab-theme: digest-schema(extend(
         border-radius: $fab-border-radius
     )
 ));
-
 $outlined-schema: map.get($light-indigo-schema, 'button', 'outlined');
 $outlined-border-radius: border-radius(map.get($outlined-schema, 'border-radius')...);
 $outlined-theme: digest-schema(extend(

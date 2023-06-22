@@ -1,10 +1,16 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/fluent/light' as *;
 
 $schema: map.get($light-fluent-schema, 'checkbox');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 $border-color: var-get($theme, 'empty-color');
 $hover-color: var-get($theme, 'tick-color-hover');
 $checked-hover-color: var-get($theme, 'fill-color-hover');
@@ -26,8 +32,7 @@ $disabled-color: var-get($theme, 'disabled-color');
     transform: translate3d(0, 0, 0);
 
     &::after {
-        @include border-radius(map.get($theme, 'border-radius')...);
-
+        border-radius: var-get($theme, 'border-radius');
         background: transparent;
         box-shadow: inset 0 0 0 rem(1px) $border-color;
     }
@@ -79,8 +84,7 @@ $disabled-color: var-get($theme, 'disabled-color');
     }
 
     [part~='control']::before {
-        @include border-radius(map.get($theme, 'border-radius')...);
-
+        border-radius: var-get($theme, 'border-radius');
         display: block;
         width: inherit;
         height: inherit;

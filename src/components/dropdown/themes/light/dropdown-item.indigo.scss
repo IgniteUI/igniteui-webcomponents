@@ -1,13 +1,20 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
 
 $schema: map.get($light-indigo-schema, 'drop-down');
-$theme: digest-schema($schema);
+$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        item-border-radius: $item-border-radius
+    )
+));
 
 :host {
-    @include border-radius(map.get($theme, 'item-border-radius')...);
+    @include css-vars-from-theme($theme, 'ig-dropdown');
 
+    border-radius: var-get($theme, 'item-border-radius');
     color: color(gray, 700);
 }
 

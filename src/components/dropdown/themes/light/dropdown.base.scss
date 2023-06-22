@@ -1,19 +1,26 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
 $schema: map.get($light-material-schema, 'drop-down');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-dropdown');
+
     display: flex;
     font-family: var(--ig-font-family);
 }
 
 [part='base'] {
-    @include border-radius(map.get($theme, 'border-radius')...);
-
+    border-radius: var-get($theme, 'border-radius');
     overflow-y: auto;
     overflow-x: hidden;
     background: color(surface, 500);
