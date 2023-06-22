@@ -2,15 +2,25 @@
 @use '../calendar.base';
 @use '../shared-calendar' as *;
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/fluent/light' as *;
 
 $schema: map.get($light-fluent-schema, 'calendar');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$month-border-radius: border-radius(map.get($schema, 'month-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius,
+        month-border-radius: $month-border-radius
+    )
+));
 $header-bg: var(--header-bg, #{color(primary, 500)});
 $header-color: var(--header-color, #{contrast-color(primary, 600)});
 
 :host(igc-calendar) {
-    @include border-radius(map.get($theme, 'border-radius')...);
+    @include css-vars-from-theme($theme, 'ig-calendar');
+
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host([size='large']),
@@ -22,7 +32,7 @@ $header-color: var(--header-color, #{contrast-color(primary, 600)});
 
     igc-months-view::part(month-inner),
     igc-years-view::part(year-inner) {
-        @include border-radius(map.get($theme, 'month-border-radius')...);
+        border-radius: var-get($theme, 'month-border-radius');
     }
 }
 

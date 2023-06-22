@@ -3,13 +3,23 @@
 @use 'shared-calendar' as *;
 @use '../../../styles/common/component';
 @use '../../../styles/utilities' as *;
-@use '../../../styles/themes/schemas' as *;
+@use '../../../styles/themes/schemas/material/light' as *;
 
 $schema: map.get($light-material-schema, 'calendar');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$date-border-radius: border-radius(map.get($schema, 'date-border-radius')...);
+$month-border-radius: border-radius(map.get($schema, 'month-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius,
+        date-border-radius: $date-border-radius,
+        month-border-radius: $month-border-radius
+    )
+));
 
 :host(igc-calendar) {
-    @include border-radius(map.get($theme, 'border-radius')...);
+    @include css-vars-from-theme($theme, 'ig-calendar');
 
     --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
 
@@ -18,6 +28,7 @@ $theme: digest-schema($schema);
     font-family: var(--ig-font-family);
     background: $calendar-background;
     color: $calendar-foreground;
+    border-radius: var-get($theme, 'border-radius');
 
     > * {
         font-family: var(--ig-font-family);
@@ -43,7 +54,7 @@ $theme: digest-schema($schema);
     }
 
     igc-days-view::part(date-inner) {
-        @include border-radius(map.get($theme, 'date-border-radius')...);
+        border-radius: var-get($theme, 'date-border-radius');
     }
 
     igc-months-view {
@@ -51,8 +62,7 @@ $theme: digest-schema($schema);
 
         &::part(month-inner) {
             height: var(--size);
-
-            @include border-radius(map.get($theme, 'month-border-radius')...);
+            border-radius: var-get($theme, 'month-border-radius');
         }
     }
 
@@ -61,8 +71,7 @@ $theme: digest-schema($schema);
 
         &::part(year-inner) {
             height: var(--size);
-
-            @include border-radius(map.get($theme, 'month-border-radius')...);
+            border-radius: var-get($theme, 'month-border-radius');
         }
     }
 }

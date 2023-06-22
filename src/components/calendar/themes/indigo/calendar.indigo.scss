@@ -1,24 +1,36 @@
 @use 'sass:map';
 @use '../shared-calendar' as *;
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
 
 $schema: map.get($light-indigo-schema, 'calendar');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$date-border-radius: border-radius(map.get($schema, 'date-border-radius')...);
+$month-border-radius: border-radius(map.get($schema, 'month-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius,
+        date-border-radius: $date-border-radius,
+        month-border-radius: $month-border-radius
+    )
+));
 
 :host(igc-calendar) {
-    @include border-radius(map.get($theme, 'border-radius')...);
+    @include css-vars-from-theme($theme, 'ig-calendar');
+
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host([size='large']),
 :host([size='medium']),
 :host([size='small']) {
     igc-days-view::part(date-inner) {
-        @include border-radius(map.get($theme, 'date-border-radius')...);
+        border-radius: var-get($theme, 'date-border-radius');
     }
 
     igc-months-view::part(month-inner),
     igc-years-view::part(year-inner) {
-        @include border-radius(map.get($theme, 'month-border-radius')...);
+        border-radius: var-get($theme, 'month-border-radius');
     }
 }

@@ -3,10 +3,20 @@
 @use '../shared-calendar' as *;
 @use 'vars' as *;
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
 $schema: map.get($light-bootstrap-schema, 'calendar');
-$theme: digest-schema($schema);
+$date-border-radius: border-radius(map.get($schema, 'date-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        date-border-radius: $date-border-radius
+    )
+));
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-calendar');
+}
 
 :host([part='days-view']) {
     overflow: hidden;
@@ -30,7 +40,7 @@ $theme: digest-schema($schema);
 }
 
 [part~='date-inner'] {
-    @include border-radius(map.get($theme, 'date-border-radius')...);
+    border-radius: var-get($theme, 'date-border-radius');
 }
 
 [part~='date-inner'][part~='current'] {
@@ -135,8 +145,7 @@ $theme: digest-schema($schema);
     }
 
     &::after {
-        @include border-radius(map.get($theme, 'date-border-radius')...);
-
+        border-radius: var-get($theme, 'date-border-radius');
         content: '';
         position: absolute;
         width: calc(100% - 4px);
