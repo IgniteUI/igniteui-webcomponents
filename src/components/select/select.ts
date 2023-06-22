@@ -261,7 +261,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     return !this.invalid;
   }
 
-  public override async firstUpdated() {
+  protected override async firstUpdated() {
     super.firstUpdated();
     await this.updateComplete;
 
