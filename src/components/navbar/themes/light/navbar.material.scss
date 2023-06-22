@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities/index' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
 $schema: extend((name: 'ig-navbar'), map.get($light-material-schema, 'navbar'));
 $theme: digest-schema($schema);
