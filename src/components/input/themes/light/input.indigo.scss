@@ -1,5 +1,17 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
 
+$schema: map.get($light-indigo-schema, 'input-group');
+$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
+$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-border-radius: $border-border-radius,
+        box-border-radius: $box-border-radius,
+    )
+));
 $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
 
 %suffix-preffix {
@@ -11,6 +23,8 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
 }
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-input');
+    
     [part='prefix'],
     [part='suffix'] {
         color: color(gray, 600);
@@ -40,6 +54,9 @@ $label-focus-color: var(--label-focus-color, color(primary, 500)) !default;
     }
 
     [part^='container'] {
+        border-radius: var-get($theme, 'box-border-radius');
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
         background: transparent;
         border-bottom: 1px solid color(gray, 500);
         transition: background .25s ease-out;

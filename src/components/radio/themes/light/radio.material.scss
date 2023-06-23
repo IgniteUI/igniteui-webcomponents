@@ -7,8 +7,7 @@ $schema: map.get($light-material-schema, 'radio');
 $theme: digest-schema($schema);
 
 [part~='ripple'] {
-    @include border-radius(var(--size));
-
+    border-radius: var(--size);
     display: block;
     position: absolute;
     top: calc(50% - 1.25rem);
@@ -57,13 +56,12 @@ $theme: digest-schema($schema);
 }
 
 [part~='control'] {
-    @include border-radius(var(--size));
-
+    border-radius: var(--size);
     position: relative;
 
     &::before,
     &::after {
-        @include border-radius(calc(var(--size) / 2));
+        border-radius: calc(var(--size) / 2);
     }
 
     &::after {

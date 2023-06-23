@@ -25,8 +25,7 @@ $theme: digest-schema($schema);
 [part~='control'] {
     --size: #{rem(16px)};
 
-    @include border-radius(var(--size));
-
+    border-radius: var(--size);
     width: var(--size);
     height: var(--size);
     min-width: var(--size);
@@ -36,8 +35,7 @@ $theme: digest-schema($schema);
     &::before,
     &::after {
         transition: none;
-
-        @include border-radius(calc(var(--size) / 2));
+        border-radius: calc(var(--size) / 2);
     }
 
     &::before {
