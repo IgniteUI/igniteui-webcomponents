@@ -1,4 +1,5 @@
 import { html, LitElement, TemplateResult } from 'lit';
+import { styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/combo.base.css.js';
 import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
@@ -30,6 +31,7 @@ import {
   FilteringOptions,
   IgcComboEventMap,
   ComboItemTemplate,
+  ComboRenderFunction,
   Item,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -325,6 +327,18 @@ export default class IgcComboComponent<T extends object>
     return html`${this.groupKey && item[this.groupKey]}`;
   };
 
+  /**
+   * Sets the component's positioning strategy.
+   * @hidden @internal
+   */
+  public positionStrategy: 'absolute' | 'fixed' = 'fixed';
+
+  /**
+   * Whether the dropdown's width should be the same as the target's one.
+   * @hidden @internal
+   */
+  public sameWidth = true;
+
   @state()
   protected dataState: Array<ComboRecord<T>> = [];
 
@@ -519,6 +533,7 @@ export default class IgcComboComponent<T extends object>
   /** Removes focus from the component. */
   public override blur() {
     this.target.blur();
+    super.blur();
   }
 
   protected normalizeSelection(items: Item<T> | Item<T>[] = []): Item<T>[] {
@@ -666,7 +681,7 @@ export default class IgcComboComponent<T extends object>
     this._toggle(false);
   }
 
-  protected itemRenderer = (
+  protected itemRenderer: ComboRenderFunction<T> = (
     item: ComboRecord<T>,
     index: number
   ): TemplateResult => {
@@ -909,6 +924,7 @@ export default class IgcComboComponent<T extends object>
     return html`<div
       @keydown=${this.listKeydownHandler}
       part="list-wrapper"
+      style=${styleMap({ position: this.positionStrategy })}
       ${this.toggleController.toggleDirective}
     >
       ${this.renderSearchInput()}

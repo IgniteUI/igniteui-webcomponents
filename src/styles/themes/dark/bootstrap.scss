@@ -17,6 +17,7 @@
 @use '../../../components/navbar/themes/dark/navbar.bootstrap' as navbar;
 @use '../../../components/checkbox/themes/dark/checkbox.bootstrap' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.bootstrap' as switch;
+@use '../../../components/radio/themes/dark/radio.bootstrap' as radio;
 @include base.root-styles($dark-bootstrap-palette);
 @include dropdown.theme();
 @include input.theme();
@@ -34,3 +35,4 @@
 @include navbar.theme();
 @include checkbox.theme();
 @include switch.theme();
+@include radio.theme();

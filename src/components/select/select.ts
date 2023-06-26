@@ -186,7 +186,14 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   public placeholder!: string;
 
   /**
+   * @deprecated since version 5.0. It will be removed in the next major release.
+   * @hidden @internal
+   */
+  public override positionStrategy: 'absolute' | 'fixed' = 'fixed';
+
+  /**
    * Whether the dropdown's width should be the same as the target's one.
+   * @deprecated since version 5.0. It will be removed in the next major release.
    * @attr same-width
    */
   @property({ type: Boolean, attribute: 'same-width' })
@@ -238,6 +245,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   @alternateName('blurComponent')
   public override blur() {
     this.target.blur();
+    super.blur();
   }
 
   /** Checks the validity of the control and moves the focus to it if it is not valid. */
@@ -253,7 +261,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     return !this.invalid;
   }
 
-  public override async firstUpdated() {
+  protected override async firstUpdated() {
     super.firstUpdated();
     await this.updateComplete;
 

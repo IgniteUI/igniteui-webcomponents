@@ -5,6 +5,7 @@ import {
   elementUpdated,
   unsafeStatic,
   aTimeout,
+  waitUntil,
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcSnackbarComponent } from '../../index.js';
@@ -81,7 +82,7 @@ describe('Snackbar', () => {
       expect(el).dom.to.equal(`<igc-snackbar open></igc-snackbar>`);
 
       el.hide();
-      await elementUpdated(el);
+      await waitUntil(() => !el.open);
       expect(el.open).to.equal(false);
       expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);
     });
@@ -96,6 +97,7 @@ describe('Snackbar', () => {
       await elementUpdated(el);
       expect(el.open).to.equal(true);
       await aTimeout(1000);
+      await waitUntil(() => !el.open);
       expect(el.open).to.equal(false);
     });
 
