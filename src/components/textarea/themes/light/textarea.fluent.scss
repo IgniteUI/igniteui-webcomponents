@@ -1,0 +1,100 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-fluent-schema, 'input-group');
+$theme: digest-schema($schema);
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-textarea');
+    @include type-style('body-2');
+
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+}
+
+:host(:hover) {
+    [part~='container'] {
+        border-color: var-get($theme, 'hover-border-color');
+    }
+}
+
+:host(:focus-within) {
+    [part~='container'] {
+        border-color: var-get($theme, 'focused-border-color');
+        border-width: rem(2px);
+    }
+
+    [part~='prefix'] {
+        margin-inline-start: rem(-1px);
+    }
+
+    [part~='suffix'] {
+        margin-inline-end: rem(-1px);
+    }
+
+    textarea {
+        margin-block: rem(-1px);
+        margin-inline-start: rem(-1px);
+    }
+}
+
+[part~='container'] {
+    min-height: var(--size);
+    border: rem(1px) solid var-get($theme, 'border-color');
+    background: var-get($theme, 'border-background');
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: var-get($theme, 'border-border-radius');
+}
+
+[part~='label'] {
+    display: block;
+    font-size: rem(14px);
+    font-weight: 600;
+    position: static;
+    transform: translateY(0);
+    transform-origin: top left;
+    margin-top: 0;
+    height: auto;
+    margin-block-end: rem(4px);
+    color: var-get($theme, 'idle-secondary-color');
+}
+
+:host([invalid]) {
+    [part~='label'] {
+        color: var-get($theme, 'idle-text-color');
+    }
+}
+
+:host([disabled]) {
+    [part~='label'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+textarea {
+    @include type-style('body-2');
+    padding: pad(rem(4px), rem(6px), rem(8px));
+}
+
+[part~='prefixed'] {
+    [part~='prefix'] {
+        color: var-get($theme, 'input-prefix-color');
+        background: var-get($theme, 'input-prefix-background');
+    }
+}
+
+[part~='suffixed'] {
+    [part~='suffix'] {
+        color: var-get($theme, 'input-suffix-color');
+        background: var-get($theme, 'input-suffix-background');
+    }
+}
+
+[part~='helper-text'] {
+    @include type-style('caption');
+    color: var-get($theme, 'helper-text-color');
+    padding-block-start: rem(5px);
+    padding-inline-start: 0;
+}

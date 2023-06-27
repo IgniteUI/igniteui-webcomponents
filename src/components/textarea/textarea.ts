@@ -7,7 +7,13 @@ import {
 } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './themes/light/textarea.base.css.js';
+import { styles as material } from './themes/light/textarea.material.css.js';
+import { styles as bootstrap } from './themes/light/textarea.bootstrap.css.js';
+import { styles as fluent } from './themes/light/textarea.fluent.css.js';
+import { styles as indigo } from './themes/light/textarea.indigo.css.js';
 import type { ReactiveTheme, ThemeController } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
@@ -44,14 +50,15 @@ export interface IgcTextareaEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes({})
+@themes({ material, bootstrap, fluent, indigo })
 export default class IgcTextareaComponent
-  extends EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(
-    LitElement
+  extends SizableMixin(
+    EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
   )
   implements ReactiveTheme
 {
   public static readonly tagName = 'igc-textarea';
+  public static styles = [styles];
 
   private static readonly increment = createCounter();
   protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
@@ -167,6 +174,7 @@ export default class IgcTextareaComponent
 
   constructor() {
     super();
+    this.size = 'medium';
     this.addEventListener('focus', () => this.emitEvent('igcFocus'));
     this.addEventListener('blur', () => this.emitEvent('igcBlur'));
   }

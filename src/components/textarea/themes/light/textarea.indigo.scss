@@ -1,0 +1,115 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-indigo-schema, 'input-group');
+$theme: digest-schema($schema);
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-textarea');
+    @include type-style('body-1');
+}
+
+:host(:hover) {
+    [part~='container'] {
+        background: var-get($theme, 'box-background-hover');
+    }
+}
+
+:host(:focus-within) {
+    [part~='label'] {
+        color: var-get($theme, 'focused-secondary-color');
+    }
+
+    [part~='container'] {
+        background: var-get($theme, 'box-background-hover');
+
+        &::after {
+            border-block-end-width: rem(2px);
+            border-block-end-color: var-get($theme, 'focused-bottom-line-color');
+        }
+    }
+}
+
+:host([invalid]) {
+    [part~='label'] {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host([disabled]) {
+    [part~='label'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    [part~='container'] {
+        background: transparent;
+    }
+}
+
+[part~='label'] {
+    @include type-style('body-1');
+    display: block;
+    font-size: rem(14px);
+    font-weight: 600;
+    position: static;
+    transform: translateY(0);
+    transform-origin: top left;
+    margin-top: 0;
+    height: auto;
+    margin-block-end: rem(4px);
+    color: var-get($theme, 'idle-secondary-color');
+}
+
+[part~='container'] {
+    transition: background .25s out-cubic;
+    overflow: hidden;
+    padding-inline-start: 0;
+    height: calc(100% - #{rem(2px)});
+    top: rem(1px);
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0%;
+        width: 100%;
+        border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
+        transition: all .25s out-cubic;
+    }
+}
+
+textarea {
+    @include type-style('body-1');
+    padding: pad(rem(4px), rem(6px), rem(8px));
+}
+
+[part~='helper-text'] {
+    @include type-style('caption');
+    color: var-get($theme, 'helper-text-color');
+    padding-block-start: rem(6px);
+    padding-inline-start: rem(12px);
+}
+
+[part~='prefixed'] {
+    [part~='prefix'] {
+        color: var-get($theme, 'input-prefix-color');
+        background: var-get($theme, 'input-prefix-background');
+    }
+}
+
+[part~='suffixed'] {
+    [part~='suffix'] {
+        color: var-get($theme, 'input-suffix-color');
+        background: var-get($theme, 'input-suffix-background');
+    }
+}
+
+[part~='prefixed'] [part~='prefix'],
+[part~='suffixed'] [part~='suffix'] {
+    height: calc(100% - #{rem(1px)});
+}
+
+[part~='prefix'] {
+    min-width: rem(12px);
+}
