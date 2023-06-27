@@ -1031,7 +1031,7 @@ describe('Combo', () => {
     });
 
     it('should display primitive values correctly', async () => {
-      const combo = await fixture<IgcComboComponent<any>>(
+      const combo = await fixture<IgcComboComponent>(
         html`<igc-combo .data=${primitive}></igc-combo>`
       );
 
@@ -1058,7 +1058,7 @@ describe('Combo', () => {
     });
 
     it('should set the initial selection by using the `value` attribute', async () => {
-      const combo = await fixture<IgcComboComponent<any>>(
+      const combo = await fixture<IgcComboComponent>(
         html`<igc-combo
           .data=${primitive}
           .value=${['Sofia', 'Varna']}

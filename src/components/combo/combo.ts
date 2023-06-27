@@ -99,7 +99,7 @@ defineComponents(
 @themes({ material, bootstrap, fluent, indigo })
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
-export default class IgcComboComponent<T extends object>
+export default class IgcComboComponent<T extends object = any>
   extends FormAssociatedMixin(
     EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(LitElement)
   )
@@ -563,7 +563,7 @@ export default class IgcComboComponent<T extends object>
   /**
    * Returns the current selection as an array of objects as provided in the `data` source.
    */
-  public get selection() {
+  public get selection(): Array<T> {
     return Array.from(this.selectionController.selected.values());
   }
 
