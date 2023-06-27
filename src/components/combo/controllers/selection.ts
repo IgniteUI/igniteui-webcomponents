@@ -1,5 +1,11 @@
 import { ReactiveController } from 'lit';
-import { ComboHost, Values, IgcComboChangeEventArgs, Item } from '../types.js';
+import type {
+  ComboHost,
+  ComboValue,
+  IgcComboChangeEventArgs,
+  Item,
+  Values,
+} from '../types.js';
 
 export class SelectionController<T extends object>
   implements ReactiveController
@@ -15,15 +21,9 @@ export class SelectionController<T extends object>
     this.host.resetSearchTerm();
   }
 
-  public getValue(items: T[]) {
-    return items.map((value) => {
-      if (typeof value === 'object' && value !== null) {
-        const key = this.host.valueKey ?? this.host.displayKey;
-        return key ? String(value[key]) : String(value);
-      } else {
-        return String(value);
-      }
-    });
+  public getValue(items: T[]): ComboValue<T>[] {
+    const key = this.host.valueKey ?? this.host.displayKey;
+    return items.map((item) => (key ? item[key] : item));
   }
 
   public getDisplayValue(items: T[]) {

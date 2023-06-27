@@ -76,7 +76,7 @@ describe('Combo', () => {
   let combo: IgcComboComponent<City>;
   let list: IgcComboListComponent;
   let options: IgcComboListComponent;
-  const items = (combo: IgcComboComponent<City>) =>
+  const items = <T extends object>(combo: IgcComboComponent<T>) =>
     [
       ...combo
         .shadowRoot!.querySelector('igc-combo-list')!
@@ -487,6 +487,43 @@ describe('Combo', () => {
 
       expect(eventSpy).calledWith('igcChange');
       expect(combo.value.length).to.equal(2);
+    });
+
+    it('should not stringify values in event', async () => {
+      interface CustomValue {
+        id: number;
+        value: number;
+      }
+
+      const data: CustomValue[] = Array.from({ length: 10 }, (_, idx) => ({
+        id: idx,
+        value: idx,
+      }));
+
+      const combo = await fixture<IgcComboComponent<CustomValue>>(
+        html`<igc-combo .data=${data} value-key="id"></igc-combo>`
+      );
+      const list = combo.shadowRoot!.querySelector(
+        'igc-combo-list'
+      ) as IgcComboListComponent;
+
+      combo.addEventListener(
+        'igcChange',
+        ({ detail }) => {
+          expect(detail.newValue).to.eql([data[0].id]);
+          expect(detail.items).to.deep.equal([data[0]]);
+        },
+        { once: true }
+      );
+
+      combo.show();
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      items(combo)[0].click();
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql([0]);
     });
 
     it('reports validity when required', async () => {

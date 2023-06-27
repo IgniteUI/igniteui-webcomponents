@@ -24,7 +24,7 @@ import { SelectionController } from './controllers/selection.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { DataController } from './controllers/data.js';
 import { IgcToggleComponent } from '../toggle/types.js';
-import {
+import type {
   Keys,
   ComboRecord,
   GroupingDirection,
@@ -33,6 +33,7 @@ import {
   ComboItemTemplate,
   ComboRenderFunction,
   Item,
+  ComboValue,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
@@ -105,7 +106,7 @@ export default class IgcComboComponent<T extends object = any>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
-  private _value: string[] = [];
+  private _value: ComboValue<T>[] = [];
   private _displayValue = '';
   private _filteringOptions: FilteringOptions<T> = {
     filterKey: this.displayKey,
@@ -478,7 +479,7 @@ export default class IgcComboComponent<T extends object = any>
    *  </igc-combo>
    * ```
    */
-  public set value(items: string[]) {
+  public set value(items: ComboValue<T>[]) {
     const oldValue = this._value;
     this._value = items;
     this.requestUpdate('value', oldValue);
