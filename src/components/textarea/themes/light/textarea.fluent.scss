@@ -75,6 +75,7 @@ $theme: digest-schema($schema);
 
 textarea {
     @include type-style('body-2');
+
     padding: pad(rem(4px), rem(6px), rem(8px));
 }
 
@@ -94,6 +95,7 @@ textarea {
 
 [part~='helper-text'] {
     @include type-style('caption');
+
     color: var-get($theme, 'helper-text-color');
     padding-block-start: rem(5px);
     padding-inline-start: 0;

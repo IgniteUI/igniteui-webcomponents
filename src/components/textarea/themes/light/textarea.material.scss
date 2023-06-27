@@ -5,7 +5,6 @@
 
 $schema: map.get($light-material-schema, 'input-group');
 $theme: digest-schema($schema);
-
 $input-top-padding: rem(20px);
 $input-bottom-padding: rem(6px);
 
@@ -165,6 +164,7 @@ textarea {
 
 [part~='helper-text'] {
     @include type-style('caption');
+
     color: var-get($theme, 'helper-text-color');
     padding-block-start: rem(5px);
     padding-inline-start: rem(16px);
