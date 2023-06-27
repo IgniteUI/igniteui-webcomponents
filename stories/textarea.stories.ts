@@ -9,6 +9,11 @@ import { html } from 'lit';
 
 defineComponents(IgcTextareaComponent, IgcIconComponent);
 
+registerIconFromText(
+  'location',
+  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
+);
+
 // region default
 const metadata: Meta<IgcTextareaComponent> = {
   title: 'Textarea',
@@ -84,6 +89,13 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'soft',
     },
+    size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'medium',
+    },
   },
   args: {
     cols: '20',
@@ -92,6 +104,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     outlined: false,
     resize: 'both',
     wrap: 'soft',
+    size: 'medium',
   },
 };
 
@@ -143,11 +156,6 @@ export const Default: Story = {
   },
 };
 
-registerIconFromText(
-  'location',
-  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
-);
-
 export const Projected: Story = {
   args: { cols: 50, rows: 5 },
   parameters: {
@@ -155,9 +163,10 @@ export const Projected: Story = {
       handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'],
     },
   },
-  render: ({ cols, rows, resize }) => {
+  render: ({ cols, rows, resize }, { globals: { direction } }) => {
     return html`
       <igc-textarea
+        dir=${direction}
         spellcheck="false"
         autofocus
         id="feedback"
@@ -167,7 +176,7 @@ export const Projected: Story = {
         .resize=${resize}
       >
         <span slot="prefix">+359</span>
-        <span>Hello world</span>
+        <p>Hello world</p>
         <p>
           Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sed quisquam
           pariatur quaerat, quas fugiat nam doloremque doloribus ut qui? Libero

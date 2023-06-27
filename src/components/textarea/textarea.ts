@@ -14,7 +14,7 @@ import { styles as material } from './themes/light/textarea.material.css.js';
 import { styles as bootstrap } from './themes/light/textarea.bootstrap.css.js';
 import { styles as fluent } from './themes/light/textarea.fluent.css.js';
 import { styles as indigo } from './themes/light/textarea.indigo.css.js';
-import type { ReactiveTheme, ThemeController } from '../../theming/types.js';
+import type { ThemeController } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -51,12 +51,9 @@ export interface IgcTextareaEventMap {
  * @csspart helper-text - The helper text wrapper.
  */
 @themes({ material, bootstrap, fluent, indigo })
-export default class IgcTextareaComponent
-  extends SizableMixin(
-    EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
-  )
-  implements ReactiveTheme
-{
+export default class IgcTextareaComponent extends SizableMixin(
+  EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
+) {
   public static readonly tagName = 'igc-textarea';
   public static styles = [styles];
 
@@ -194,7 +191,7 @@ export default class IgcTextareaComponent
     super.disconnectedCallback();
   }
 
-  public themeAdopted(controller: ThemeController): void {
+  protected themeAdopted(controller: ThemeController) {
     this.themeController = controller;
   }
 
@@ -223,12 +220,13 @@ export default class IgcTextareaComponent
     this.value = this.input.value;
   }
 
+  /* blazorSuppress */
   public override scrollTo(options?: ScrollToOptions | undefined): void;
   public override scrollTo(x: number, y: number): void;
   public override scrollTo(x?: unknown, y?: unknown): void {
-    if (x !== undefined && y !== undefined)
-      this.input.scrollTo(x as number, y as number);
-    else this.input.scrollTo(x as ScrollToOptions);
+    x !== undefined && y !== undefined
+      ? this.input.scrollTo(x as number, y as number)
+      : this.input.scrollTo(x as ScrollToOptions);
   }
 
   protected resolvePartNames(base: string) {
@@ -341,7 +339,7 @@ export default class IgcTextareaComponent
         style=${styleMap(this.resizeStyles)}
         @input=${this.handleInput}
         @change=${this.handleChange}
-        .placeholder=${this.placeholder}
+        placeholder=${this.placeholder}
         .cols=${this.cols}
         .rows=${this.rows}
         .value=${live(this.value)}
