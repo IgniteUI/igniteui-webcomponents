@@ -1,8 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { defineComponents, IgcTextareaComponent } from '../src/index.js';
+import {
+  defineComponents,
+  IgcTextareaComponent,
+  IgcIconComponent,
+} from '../src/index.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { html } from 'lit';
 
-defineComponents(IgcTextareaComponent);
+defineComponents(IgcTextareaComponent, IgcIconComponent);
 
 // region default
 const metadata: Meta<IgcTextareaComponent> = {
@@ -71,8 +76,22 @@ const metadata: Meta<IgcTextareaComponent> = {
         "The maximum number of characters (UTF-16 code units) that the user can enter.\nIf this value isn't specified, the user can enter an unlimited number of characters.",
       control: 'number',
     },
+    size: {
+      type: '"small" | "medium" | "large"',
+      description: 'Determines the size of the component.',
+      options: ['small', 'medium', 'large'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'medium',
+    },
   },
-  args: { cols: '20', rows: '2', value: '', outlined: false, resize: 'both' },
+  args: {
+    cols: '20',
+    rows: '2',
+    value: '',
+    outlined: false,
+    resize: 'both',
+    size: 'medium',
+  },
 };
 
 export default metadata;
@@ -104,6 +123,8 @@ interface IgcTextareaArgs {
    * If this value isn't specified, the user can enter an unlimited number of characters.
    */
   maxLength: number;
+  /** Determines the size of the component. */
+  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcTextareaArgs>;
 
@@ -115,11 +136,17 @@ export const Default: Story = {
     cols: 25,
     rows: 5,
     label: 'Feedback',
+    size: 'medium',
   },
 };
 
+registerIconFromText(
+  'location',
+  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
+);
+
 export const Projected: Story = {
-  args: { cols: 50, rows: 10 },
+  args: { cols: 50, rows: 10, label: 'Label' },
   parameters: {
     actions: {
       handles: ['igcInput', 'igcChange'],
@@ -128,6 +155,7 @@ export const Projected: Story = {
   render: ({ cols, rows, resize }) => {
     return html`
       <igc-textarea autofocus .cols=${cols} .rows=${rows} .resize=${resize}>
+        <span slot="prefix">+359</span>
         <span>Hello world</span>
         <p>
           Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sed quisquam
@@ -135,6 +163,8 @@ export const Projected: Story = {
           architecto necessitatibus sequi vitae obcaecati similique? Temporibus
           quibusdam id suscipit?
         </p>
+        <igc-icon slot="suffix" name="location"></igc-icon>
+        <span slot="helper-text">Helper text</span>
       </igc-textarea>
     `;
   },

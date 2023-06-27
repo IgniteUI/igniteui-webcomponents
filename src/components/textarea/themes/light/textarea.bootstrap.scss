@@ -1,0 +1,124 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($light-bootstrap-schema, 'input-group');
+$theme: digest-schema($schema);
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-textarea');
+    @include type-style('body-1');
+}
+
+[part~='label'] {
+    position: static;
+    display: block;
+    color: var-get($theme, 'idle-secondary-color');
+    padding: 0;
+    line-height: rem(24px);
+    transform: translateY(0);
+    transform-origin: top left;
+    margin-block-start: 0;
+    margin-block-end: rem(4px);
+    height: auto;
+    font-size: rem(16px);
+}
+
+[part~='helper-text'] {
+    @include type-style('body-2');
+    color: var-get($theme, 'helper-text-color');
+    padding-block-start: rem(4px);
+    padding-inline-start: 0;
+}
+
+[part~='prefixed'] {
+    [part~='prefix'] {
+        border-width: rem(1px);
+        border-style: solid;
+        border-color: var-get($theme, 'border-color');
+        overflow: hidden;
+        border-inline-end-width: 0;
+        color: var-get($theme, 'input-prefix-color');
+        background: var-get($theme, 'input-prefix-background');
+        border: {
+            start: {
+                start-radius: border-radius(rem(4px));
+            };
+            end: {
+                start-radius: border-radius(rem(4px));
+            };
+        }
+    }
+
+    textarea {
+        border: {
+            start: {
+                start-radius: 0;
+            };
+            end: {
+                start-radius: 0;
+            };
+        }
+    }
+}
+
+[part~='suffixed'] {
+    [part~='suffix'] {
+        border-width: rem(1px);
+        border-style: solid;
+        border-color: var-get($theme, 'border-color');
+        overflow: hidden;
+        border-inline-start-width: 0;
+        color: var-get($theme, 'input-suffix-color');
+        background: var-get($theme, 'input-suffix-background');
+        border: {
+            start: {
+                end-radius: border-radius(rem(4px));
+            };
+            end: {
+                end-radius: border-radius(rem(4px));
+            };
+        }
+    }
+
+    textarea {
+        border: {
+            start: {
+                end-radius: 0;
+            };
+            end: {
+                end-radius: 0;
+            };
+        }
+    }
+}
+
+textarea {
+    @include type-style('body-1');
+    border: rem(1px) solid var-get($theme, 'border-color');
+    padding-block: pad-inline(4px, 6px, 8px);
+    padding-inline: pad-inline(8px, 12px, 16px);
+    border-radius: border-radius(rem(4px));
+    z-index: 1;
+    font-size: pad(14px, 16px, 20px);
+}
+
+:host(:focus-within) {
+    color: var-get($theme, 'input-prefix-color--focused');
+
+    [part~='prefix'] {
+        color: var-get($theme, 'input-prefix-color--focused');
+        background: var-get($theme, 'input-prefix-background--focused');
+    }
+
+    [part~='suffix'] {
+        color: var-get($theme, 'input-suffix-color--focused');
+        background: var-get($theme, 'input-suffix-background--focused');
+    }
+
+    textarea {
+        border: rem(1px) solid var-get($theme, 'focused-border-color');
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focused-secondary-color');
+    }
+}
