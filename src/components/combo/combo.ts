@@ -495,13 +495,12 @@ export default class IgcComboComponent<T extends object = any>
   }
 
   protected async updateValue() {
-    this._value = this.selectionController.getValue(
-      Array.from(this.selectionController.selected)
-    );
+    const selected = Array.from(this.selectionController.selected);
 
-    this._displayValue = this.selectionController.getDisplayValue(
-      Array.from(this.selectionController.selected)
-    );
+    this._value = this.selectionController.getValue(selected, this.valueKey!);
+    this._displayValue = this.selectionController
+      .getValue(selected, this.displayKey!)
+      .join(', ');
 
     await this.updateComplete;
     this.target.value = this._displayValue;
