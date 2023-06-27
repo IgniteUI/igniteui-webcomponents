@@ -31,6 +31,7 @@ import {
   FilteringOptions,
   IgcComboEventMap,
   ComboItemTemplate,
+  ComboRenderFunction,
   Item,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -96,7 +97,7 @@ defineComponents(
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 // TODO: pressing arrow down should scroll to the selected item
-export default class IgcComboComponent<T extends object>
+export default class IgcComboComponent<T extends object = any>
   extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
     LitElement
   )
@@ -328,13 +329,13 @@ export default class IgcComboComponent<T extends object>
 
   /**
    * Sets the component's positioning strategy.
-   * @hidden @internal
+   * @hidden @internal @private
    */
   public positionStrategy: 'absolute' | 'fixed' = 'fixed';
 
   /**
    * Whether the dropdown's width should be the same as the target's one.
-   * @hidden @internal
+   * @hidden @internal @private
    */
   public sameWidth = true;
 
@@ -532,6 +533,7 @@ export default class IgcComboComponent<T extends object>
   /** Removes focus from the component. */
   public override blur() {
     this.target.blur();
+    super.blur();
   }
 
   protected normalizeSelection(items: Item<T> | Item<T>[] = []): Item<T>[] {
@@ -541,7 +543,7 @@ export default class IgcComboComponent<T extends object>
   /**
    * Returns the current selection as an array of objects as provided in the `data` source.
    */
-  public get selection() {
+  public get selection(): Array<T> {
     return Array.from(this.selectionController.selected.values());
   }
 
@@ -679,7 +681,7 @@ export default class IgcComboComponent<T extends object>
     this._toggle(false);
   }
 
-  protected itemRenderer = (
+  protected itemRenderer: ComboRenderFunction<T> = (
     item: ComboRecord<T>,
     index: number
   ): TemplateResult => {

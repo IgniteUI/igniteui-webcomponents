@@ -721,7 +721,7 @@ describe('Select component', () => {
 
       await elementUpdated(select);
 
-      expect(select.positionStrategy).to.eq('absolute');
+      expect(select.positionStrategy).to.eq('fixed');
       expect(select.placement).to.eq('bottom-start');
       expect(select.open).to.be.true;
 
