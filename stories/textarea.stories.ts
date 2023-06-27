@@ -89,13 +89,6 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'soft',
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     cols: '20',
@@ -104,7 +97,6 @@ const metadata: Meta<IgcTextareaComponent> = {
     outlined: false,
     resize: 'both',
     wrap: 'soft',
-    size: 'medium',
   },
 };
 
@@ -139,8 +131,6 @@ interface IgcTextareaArgs {
   maxLength: number;
   /** Indicates how the control should wrap the value for form submission. */
   wrap: 'hard' | 'soft' | 'off';
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcTextareaArgs>;
 
@@ -152,7 +142,6 @@ export const Default: Story = {
     cols: 25,
     rows: 5,
     label: 'Feedback',
-    size: 'medium',
   },
 };
 

@@ -7,7 +7,6 @@ import {
 } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/textarea.base.css.js';
 import { styles as material } from './themes/light/textarea.material.css.js';
@@ -51,9 +50,10 @@ export interface IgcTextareaEventMap {
  * @csspart helper-text - The helper text wrapper.
  */
 @themes({ material, bootstrap, fluent, indigo })
-export default class IgcTextareaComponent extends SizableMixin(
-  EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
-) {
+export default class IgcTextareaComponent extends EventEmitterMixin<
+  IgcTextareaEventMap,
+  Constructor<LitElement>
+>(LitElement) {
   public static readonly tagName = 'igc-textarea';
   public static styles = [styles];
 
@@ -171,7 +171,6 @@ export default class IgcTextareaComponent extends SizableMixin(
 
   constructor() {
     super();
-    this.size = 'medium';
     this.addEventListener('focus', () => this.emitEvent('igcFocus'));
     this.addEventListener('blur', () => this.emitEvent('igcBlur'));
   }
