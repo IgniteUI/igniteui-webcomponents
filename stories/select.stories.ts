@@ -128,7 +128,7 @@ const metadata: Meta<IgcSelectComponent> = {
       description: "Sets the component's positioning strategy.",
       options: ['absolute', 'fixed'],
       control: { type: 'inline-radio' },
-      defaultValue: 'absolute',
+      defaultValue: 'fixed',
     },
     flip: {
       type: 'boolean',
@@ -169,7 +169,7 @@ const metadata: Meta<IgcSelectComponent> = {
     keepOpenOnOutsideClick: false,
     open: false,
     placement: 'bottom-start',
-    positionStrategy: 'absolute',
+    positionStrategy: 'fixed',
     flip: false,
     distance: '0',
     sameWidth: true,

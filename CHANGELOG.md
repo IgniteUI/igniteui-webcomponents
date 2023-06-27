@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Deprecated
+
+- Select: Removed `sameWidth` and `positinStrategy`. They will be removed in the next major release.
+
 ### Added
 
 - Combo: Added `matchDiacritics` to the filtering options property. Defaults to `false`.

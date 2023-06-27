@@ -601,15 +601,15 @@ export abstract class DateTimeUtil {
 
           if (part.type === DateParts.Hours) {
             part.format.charAt(0) === 'h'
-              ? (options['hour12'] = true)
-              : (options['hour12'] = false);
+              ? (options['hourCycle'] = 'h12')
+              : (options['hourCycle'] = 'h23');
           }
         }
 
         // Need to be set if we have 't' or 'tt'.
         if (part.type === DateParts.AmPm && part.format.length <= 2) {
           options['hour'] = '2-digit';
-          options['hour12'] = true;
+          options['hourCycle'] = 'h12';
         }
       }
     }

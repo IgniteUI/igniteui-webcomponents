@@ -218,7 +218,7 @@ export default class IgcDropdownComponent
     });
   }
 
-  public override async firstUpdated() {
+  protected override async firstUpdated() {
     if (this.targetNodes.length) {
       this.target = this.targetNodes[0];
       this.target.setAttribute('aria-haspopup', 'listbox');

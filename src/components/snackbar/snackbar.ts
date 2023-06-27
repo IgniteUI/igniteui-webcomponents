@@ -79,7 +79,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   @property({ attribute: 'action-text' })
   public actionText!: string;
 
-  public override firstUpdated() {
+  protected override firstUpdated() {
     this.animationPlayer = new AnimationPlayer(this.content);
   }
 
