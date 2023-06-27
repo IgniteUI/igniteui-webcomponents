@@ -128,32 +128,11 @@ const metadata: Meta<IgcSelectComponent> = {
       control: { type: 'select' },
       defaultValue: 'bottom-start',
     },
-    positionStrategy: {
-      type: '"absolute" | "fixed"',
-      description: "Sets the component's positioning strategy.",
-      options: ['absolute', 'fixed'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'fixed',
-    },
-    flip: {
-      type: 'boolean',
-      description:
-        "Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.\nWhen true, once enough space is detected on its preferred side, it will flip back.",
-      control: 'boolean',
-      defaultValue: false,
-    },
     distance: {
       type: 'number',
       description: 'The distance from the target element.',
       control: 'number',
       defaultValue: '0',
-    },
-    sameWidth: {
-      type: 'boolean',
-      description:
-        "Whether the dropdown's width should be the same as the target's one.",
-      control: 'boolean',
-      defaultValue: true,
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -174,10 +153,7 @@ const metadata: Meta<IgcSelectComponent> = {
     keepOpenOnOutsideClick: false,
     open: false,
     placement: 'bottom-start',
-    positionStrategy: 'fixed',
-    flip: false,
     distance: '0',
-    sameWidth: true,
     size: 'medium',
   },
 };
@@ -227,17 +203,8 @@ interface IgcSelectArgs {
     | 'left'
     | 'left-start'
     | 'left-end';
-  /** Sets the component's positioning strategy. */
-  positionStrategy: 'absolute' | 'fixed';
-  /**
-   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
-   * When true, once enough space is detected on its preferred side, it will flip back.
-   */
-  flip: boolean;
   /** The distance from the target element. */
   distance: number;
-  /** Whether the dropdown's width should be the same as the target's one. */
-  sameWidth: boolean;
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
