@@ -90,7 +90,7 @@ export default class IgcTreeItemComponent extends LitElement {
 
   /** @private */
   @query('[role="group"]', true)
-  public group!: HTMLElement;
+  private group!: HTMLElement;
 
   @state()
   private isFocused = false;
