@@ -22,22 +22,11 @@ export class SelectionController<T extends object>
   }
 
   public getValue(items: T[]): ComboValue<T>[] {
-    const key = this.host.valueKey ?? this.host.displayKey;
-    return items.map((item) => (key ? item[key] : item));
+    return items.map((item) => item[this.host.valueKey!] ?? item);
   }
 
   public getDisplayValue(items: T[]) {
-    return items
-      .map((value) => {
-        if (typeof value === 'object' && value !== null) {
-          return this.host.displayKey
-            ? String(value[this.host.displayKey])
-            : String(value);
-        } else {
-          return String(value);
-        }
-      })
-      .join(', ');
+    return items.map((item) => item[this.host.displayKey!] ?? item).join(', ');
   }
 
   private handleChange(detail: IgcComboChangeEventArgs) {

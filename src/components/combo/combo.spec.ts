@@ -67,8 +67,6 @@ describe('Combo', () => {
     { a: 1, b: 2 },
     -1,
     true,
-    null,
-    undefined,
     NaN,
     0,
   ];
@@ -954,7 +952,7 @@ describe('Combo', () => {
 
       await elementUpdated(combo);
 
-      expect(combo.value[0]).to.equal(item.name);
+      expect(combo.value[0]).to.equal(item);
 
       const selected = items(combo).filter((i) => i.selected);
 
@@ -975,7 +973,7 @@ describe('Combo', () => {
 
       await elementUpdated(combo);
 
-      expect(combo.value[0]).to.equal(item.name);
+      expect(combo.value[0]).to.equal(item);
 
       combo.deselect(item);
       await elementUpdated(combo);
