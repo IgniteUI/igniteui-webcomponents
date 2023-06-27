@@ -44,7 +44,7 @@ export default class IgcToastComponent extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
   public keepOpen = false;
 
-  public override firstUpdated() {
+  protected override firstUpdated() {
     this.animationPlayer = new AnimationPlayer(this);
   }
 

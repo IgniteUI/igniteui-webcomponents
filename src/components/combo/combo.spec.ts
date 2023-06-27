@@ -409,7 +409,55 @@ describe('Combo', () => {
       expect(eventSpy).not.calledWith('igcChange');
     });
 
-    it('should fire igcChange event on selection/deselection on mouse click', async () => {
+    it('should fire igcChange selection type event on mouse click', async () => {
+      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const args = {
+        cancelable: true,
+        detail: {
+          newValue: ['BG02'],
+          items: [cities[1]],
+          type: 'selection',
+        },
+      };
+      combo.open = true;
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      items(combo)[0].click();
+      expect(combo.value).to.deep.equal(['BG02']);
+      expect(eventSpy).calledWithExactly('igcChange', args);
+    });
+
+    it('should fire igcChange deselection type event on mouse click', async () => {
+      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const args = {
+        cancelable: true,
+        detail: {
+          newValue: ['BG01', 'BG03'],
+          items: [cities[1]],
+          type: 'deselection',
+        },
+      };
+      combo.select(['BG01', 'BG02', 'BG03']);
+      combo.open = true;
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      expect(combo.value).to.deep.equal(['BG01', 'BG02', 'BG03']);
+
+      items(combo)[0].click();
+      await elementUpdated(combo);
+      expect(combo.value).to.deep.equal(['BG01', 'BG03']);
+
+      expect(eventSpy).calledWithExactly('igcChange', args);
+    });
+
+    it('should be able to cancel the selection event', async () => {
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        event.preventDefault();
+      });
       const eventSpy = sinon.spy(combo, 'emitEvent');
       combo.open = true;
 
@@ -417,7 +465,28 @@ describe('Combo', () => {
       await list.layoutComplete;
 
       items(combo)[0].click();
+      await elementUpdated(combo);
+
       expect(eventSpy).calledWith('igcChange');
+      expect(combo.value.length).to.equal(0);
+    });
+
+    it('should be able to cancel the deselection event', async () => {
+      combo.addEventListener('igcChange', (event: CustomEvent) => {
+        event.preventDefault();
+      });
+      const eventSpy = sinon.spy(combo, 'emitEvent');
+      combo.select(['BG01', 'BG02']);
+      combo.open = true;
+
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      items(combo)[0].click();
+      await elementUpdated(combo);
+
+      expect(eventSpy).calledWith('igcChange');
+      expect(combo.value.length).to.equal(2);
     });
 
     it('reports validity when required', async () => {
@@ -969,7 +1038,7 @@ describe('Combo', () => {
     });
 
     it('should display primitive values correctly', async () => {
-      const combo = await fixture<IgcComboComponent<any>>(
+      const combo = await fixture<IgcComboComponent>(
         html`<igc-combo .data=${primitive}></igc-combo>`
       );
 
@@ -996,7 +1065,7 @@ describe('Combo', () => {
     });
 
     it('should set the initial selection by using the `value` attribute', async () => {
-      const combo = await fixture<IgcComboComponent<any>>(
+      const combo = await fixture<IgcComboComponent>(
         html`<igc-combo
           .data=${primitive}
           .value=${['Sofia', 'Varna']}
