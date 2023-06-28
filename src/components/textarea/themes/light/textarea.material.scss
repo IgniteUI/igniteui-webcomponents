@@ -16,10 +16,9 @@ $input-bottom-padding: rem(6px);
 textarea {
     border: none;
     padding: 0;
-    overflow: hidden;
-    height: calc(100% - #{rem(2px)});
-    top: rem(1px);
-    padding-block-start: $input-top-padding;
+    overflow: auto;
+    height: auto;
+    margin-block-start: $input-top-padding;
     grid-area: 1 / 2 / span 1 / span 2;
     flex-grow: 1;
     position: relative;
@@ -261,6 +260,10 @@ textarea {
                 end-radius: var-get($theme, 'border-border-radius');
             };
         }
+    }
+
+    textarea {
+        bottom: rem(2px);
     }
 }
 
