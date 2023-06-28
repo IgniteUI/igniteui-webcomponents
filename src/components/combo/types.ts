@@ -37,7 +37,7 @@ export interface GroupingOptions<T extends object> {
 
 /* marshalByValue */
 export interface IgcComboChangeEventArgs<T extends object = any> {
-  newValue: ComboValue<T>;
+  newValue: ComboValue<T>[];
   /* primitiveValue */
   items: T[];
   /* blazorAlternateName: changeType */
