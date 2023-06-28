@@ -329,13 +329,13 @@ export default class IgcComboComponent<T extends object = any>
 
   /**
    * Sets the component's positioning strategy.
-   * @hidden @internal
+   * @hidden @internal @private
    */
   public positionStrategy: 'absolute' | 'fixed' = 'fixed';
 
   /**
    * Whether the dropdown's width should be the same as the target's one.
-   * @hidden @internal
+   * @hidden @internal @private
    */
   public sameWidth = true;
 
