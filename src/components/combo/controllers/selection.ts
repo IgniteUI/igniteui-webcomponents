@@ -1,5 +1,12 @@
 import { ReactiveController } from 'lit';
-import { ComboHost, Values, IgcComboChangeEventArgs, Item } from '../types.js';
+import type {
+  ComboHost,
+  ComboValue,
+  IgcComboChangeEventArgs,
+  Item,
+  Keys,
+  Values,
+} from '../types.js';
 
 export class SelectionController<T extends object>
   implements ReactiveController
@@ -15,29 +22,8 @@ export class SelectionController<T extends object>
     this.host.resetSearchTerm();
   }
 
-  public getValue(items: T[]) {
-    return items.map((value) => {
-      if (typeof value === 'object' && value !== null) {
-        const key = this.host.valueKey ?? this.host.displayKey;
-        return key ? String(value[key]) : String(value);
-      } else {
-        return String(value);
-      }
-    });
-  }
-
-  public getDisplayValue(items: T[]) {
-    return items
-      .map((value) => {
-        if (typeof value === 'object' && value !== null) {
-          return this.host.displayKey
-            ? String(value[this.host.displayKey])
-            : String(value);
-        } else {
-          return String(value);
-        }
-      })
-      .join(', ');
+  public getValue(items: T[], key: Keys<T>): ComboValue<T>[] {
+    return items.map((item) => item[key] ?? item);
   }
 
   private handleChange(detail: IgcComboChangeEventArgs) {
@@ -125,7 +111,7 @@ export class SelectionController<T extends object>
     if (
       emit &&
       !this.handleChange({
-        newValue: this.getValue(payload),
+        newValue: this.getValue(payload, this.host.valueKey!),
         items: values as T[],
         type: 'selection',
       })
@@ -171,7 +157,7 @@ export class SelectionController<T extends object>
     if (
       emit &&
       !this.handleChange({
-        newValue: this.getValue(payload),
+        newValue: this.getValue(payload, this.host.valueKey!),
         items: values as T[],
         type: 'deselection',
       })
