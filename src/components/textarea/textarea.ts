@@ -320,12 +320,12 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
         })}
       >
         <div part="start">${this.renderPrefix()}</div>
-        ${this.renderInput()}
         <div part="notch">${this.renderLabel()}</div>
+        ${this.renderInput()}
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
-      <div part="helper-text" .hidden=${this.helperText.length < 0}>
+      <div part="helper-text" .hidden=${this.helperText.length < 1}>
         <slot name="helper-text"></slot>
       </div>
     `;
