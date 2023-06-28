@@ -24,7 +24,7 @@ import { SelectionController } from './controllers/selection.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { DataController } from './controllers/data.js';
 import { IgcToggleComponent } from '../toggle/types.js';
-import {
+import type {
   Keys,
   ComboRecord,
   GroupingDirection,
@@ -33,6 +33,7 @@ import {
   ComboItemTemplate,
   ComboRenderFunction,
   Item,
+  ComboValue,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
@@ -97,7 +98,7 @@ defineComponents(
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 // TODO: pressing arrow down should scroll to the selected item
-export default class IgcComboComponent<T extends object>
+export default class IgcComboComponent<T extends object = any>
   extends EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(
     LitElement
   )
@@ -105,7 +106,7 @@ export default class IgcComboComponent<T extends object>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
-  private _value: string[] = [];
+  private _value: ComboValue<T>[] = [];
   private _displayValue = '';
   private _filteringOptions: FilteringOptions<T> = {
     filterKey: this.displayKey,
@@ -329,13 +330,13 @@ export default class IgcComboComponent<T extends object>
 
   /**
    * Sets the component's positioning strategy.
-   * @hidden @internal
+   * @hidden @internal @private
    */
   public positionStrategy: 'absolute' | 'fixed' = 'fixed';
 
   /**
    * Whether the dropdown's width should be the same as the target's one.
-   * @hidden @internal
+   * @hidden @internal @private
    */
   public sameWidth = true;
 
@@ -478,7 +479,7 @@ export default class IgcComboComponent<T extends object>
    *  </igc-combo>
    * ```
    */
-  public set value(items: string[]) {
+  public set value(items: ComboValue<T>[]) {
     const oldValue = this._value;
     this._value = items;
     this.requestUpdate('value', oldValue);
@@ -494,13 +495,12 @@ export default class IgcComboComponent<T extends object>
   }
 
   protected async updateValue() {
-    this._value = this.selectionController.getValue(
-      Array.from(this.selectionController.selected)
-    );
+    const selected = Array.from(this.selectionController.selected);
 
-    this._displayValue = this.selectionController.getDisplayValue(
-      Array.from(this.selectionController.selected)
-    );
+    this._value = this.selectionController.getValue(selected, this.valueKey!);
+    this._displayValue = this.selectionController
+      .getValue(selected, this.displayKey!)
+      .join(', ');
 
     await this.updateComplete;
     this.target.value = this._displayValue;
@@ -543,7 +543,7 @@ export default class IgcComboComponent<T extends object>
   /**
    * Returns the current selection as an array of objects as provided in the `data` source.
    */
-  public get selection() {
+  public get selection(): Array<T> {
     return Array.from(this.selectionController.selected.values());
   }
 

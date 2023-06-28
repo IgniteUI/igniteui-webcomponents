@@ -2,9 +2,9 @@
 
 # Current Milestone
 
-## Milestone 5 (Due Feb, 2023)
+## Milestone 6 (Due Jun, 2023)
 
-1. Simple Combo component [#411](https://github.com/IgniteUI/igniteui-webcomponents/issues/411)
+1. Data Grid Documentation & Samples improvments
 
 ## Going down the road
 
@@ -14,6 +14,10 @@
 4. Date picker component [#174](https://github.com/IgniteUI/igniteui-webcomponents/issues/174)
 
 # Previous Milestone
+
+## Milestone 5 (Released 31st Jan , 2023)
+
+1. **[DONE]** Simple Combo component [#411](https://github.com/IgniteUI/igniteui-webcomponents/issues/411)
 
 ## Milestone 4 (Released 12th Dec, 2022) [Blog](https://www.infragistics.com/community/blogs/b/infragistics/posts/ignite-ui-december-release-2022)
 

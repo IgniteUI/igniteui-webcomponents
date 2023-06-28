@@ -119,20 +119,6 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    positionStrategy: {
-      type: '"absolute" | "fixed"',
-      description: "Sets the component's positioning strategy.",
-      options: ['absolute', 'fixed'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'fixed',
-    },
-    sameWidth: {
-      type: 'boolean',
-      description:
-        "Whether the dropdown's width should be the same as the target's one.",
-      control: 'boolean',
-      defaultValue: true,
-    },
   },
   args: {
     disabled: false,
@@ -148,8 +134,6 @@ const metadata: Meta<IgcComboComponent> = {
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
-    positionStrategy: 'fixed',
-    sameWidth: true,
   },
 };
 
@@ -189,10 +173,6 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
-  /** Sets the component's positioning strategy. */
-  positionStrategy: 'absolute' | 'fixed';
-  /** Whether the dropdown's width should be the same as the target's one. */
-  sameWidth: boolean;
 }
 type Story = StoryObj<IgcComboArgs>;
 
