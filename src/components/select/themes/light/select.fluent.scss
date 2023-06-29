@@ -1,29 +1,57 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/fluent/light' as *;
 
+$input-schema: map.get($light-fluent-schema, 'input-group');
+$schema: map.get($light-fluent-schema, 'select');
+$input-theme: digest-schema($input-schema);
+$theme: digest-schema($schema);
 $focused-border-width: rem(2px);
 $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
+
+:host {
+    @include css-vars-from-theme($input-theme, 'ig-input');
+    @include css-vars-from-theme($theme, 'ig-select');
+
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+}
 
 [part='helper-text'] {
     margin-top: rem(5px);
 
     ::slotted([slot='helper-text']) {
-        color: color(gray, 700);
+        color: var-get($input-theme, 'helper-text-color');
     }
 }
 
-:host {
-    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
+[part~='toggle-icon'] {
+    background: var-get($theme, 'toggle-button-background');
+    color: var-get($theme, 'toggle-button-foreground');
+
+    igc-icon {
+        color: inherit;
+    }
 }
 
 :host(:focus-within) {
     igc-input[readonly]:not([disabled])::part(container) {
         border-width: #{$focused-border-width};
     }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus');
+        color: var-get($theme, 'toggle-button-foreground-focus');
+
+        igc-icon {
+            color: inherit;
+        }
+    }
 }
 
 :host(:not([invalid]):focus-within) {
     igc-input[readonly]:not([disabled])::part(container) {
-        border-color: color(primary, 500);
+        border-color: var-get($input-theme, 'focused-border-color');
         border-width: #{$focused-border-width};
     }
 
@@ -40,8 +68,18 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 }
 
+:host(:disabled),
 :host([disabled]) {
     [part='helper-text'] ::slotted([slot='helper-text']) {
-        color: color(gray, 500);
+        color: var-get($input-theme, 'disabled-text-color');
+    }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-disabled');
+        color: var-get($theme, 'toggle-button-foreground-disabled');
+
+        igc-icon {
+            color: inherit;
+        }
     }
 }
