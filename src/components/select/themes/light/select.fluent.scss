@@ -40,7 +40,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 
     [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus');
+        background: var-get($theme, 'toggle-button-background-focus--border');
         color: var-get($theme, 'toggle-button-foreground-focus');
 
         igc-icon {
