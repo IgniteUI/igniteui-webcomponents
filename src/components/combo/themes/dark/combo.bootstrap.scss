@@ -1,5 +1,12 @@
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$dark-schema: map.get($dark-bootstrap-schema, 'combo');
+$theme: digest-schema($dark-schema);
+
 @mixin theme() {
-    igc-combo::part(input) {
-        --input-background: transparent;
+    igc-combo {
+        @include css-vars-from-theme($theme, 'ig-combo');
     }
 }

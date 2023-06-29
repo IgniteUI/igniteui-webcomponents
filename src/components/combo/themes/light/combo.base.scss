@@ -21,21 +21,6 @@
     }
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
-        color: color(error, 500);
-    }
-}
-
-:host([disabled]) {
-    pointer-events: none;
-    user-select: none;
-
-    igc-input::part(input)::selection {
-        background: transparent;
-    }
-}
-
 [part='helper-text'] {
     line-height: 1;
 
@@ -59,7 +44,6 @@
     position: absolute;
     width: 100%;
     background: color(surface);
-    color: color(gray, 700);
     box-shadow: elevation(8);
     overflow: hidden;
     outline-style: none;
@@ -111,20 +95,21 @@
     outline-style: none;
 }
 
-[part='case-icon'] {
-    color: color(gray, 600);
-}
-
-[part='case-icon active'] {
-    color: color(gray, 900);
-}
-
 [part='empty'] {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    color: color(gray, 700);
     padding: rem(16px) rem(24px);
     font-size: rem(13px);
+}
+
+:host(:disabled),
+:host([disabled]) {
+    pointer-events: none;
+    user-select: none;
+
+    igc-input::part(input)::selection {
+        background: transparent;
+    }
 }
