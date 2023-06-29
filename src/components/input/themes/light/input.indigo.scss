@@ -113,6 +113,10 @@ $theme: digest-schema($schema);
         color: var-get($theme, 'input-suffix-color--filled');
         background: var-get($theme, 'input-suffix-background--filled');
     }
+
+    [part~='input'] {
+        color: var-get($theme, 'filled-text-color');
+    }
 }
 
 :host(:focus-within) {
