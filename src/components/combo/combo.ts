@@ -809,7 +809,13 @@ export default class IgcComboComponent<T extends object = any>
       this.theme === 'material' ? 'keyboard_arrow_down' : 'arrow_drop_down';
 
     return html`
-      <span slot="suffix" part="toggle-icon">
+      <span
+        slot="suffix"
+        part="${partNameMap({
+          'toggle-icon': true,
+          filled: this.value.length > 0,
+        })}"
+      >
         <slot name="toggle-icon">
           <igc-icon
             name=${this.open ? openIcon : closeIcon}
