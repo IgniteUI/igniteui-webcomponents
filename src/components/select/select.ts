@@ -495,7 +495,6 @@ export default class IgcSelectComponent extends EventEmitterMixin<
               'toggle-icon': true,
               filled: this.value!,
             })}"
-            style="display: flex"
           >
             <slot name="toggle-icon">
               <igc-icon
