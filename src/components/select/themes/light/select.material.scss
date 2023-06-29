@@ -120,11 +120,15 @@ $active-border-width: rem(2px) !default;
         background: var-get($input-theme, 'box-background-focus');
         border-bottom-color: var-get($input-theme, 'focused-bottom-line-color');
     }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus');
+    }
 }
 
 :host(:focus-within) {
     [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus');
+        background: var-get($theme, 'toggle-button-background-focus--border');
         color: var-get($theme, 'toggle-button-foreground-focus');
 
         igc-icon {

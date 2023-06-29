@@ -49,7 +49,7 @@ $theme: digest-schema($schema);
     }
 
     [part~='toggle-icon'] {
-        background: var-get($theme, 'toggle-button-background-focus');
+        background: var-get($theme, 'toggle-button-background-focus--border');
         color: var-get($theme, 'toggle-button-foreground-focus');
 
         igc-icon {
