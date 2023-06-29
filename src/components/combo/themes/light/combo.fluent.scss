@@ -1,7 +1,17 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../select/themes/light/select.fluent';
+@use '../../../../styles/themes/schemas' as *;
+
+$input-schema: extend((name: 'ig-input'), map.get($light-fluent-schema, 'input-group'));
+$combo-schema: extend((name: 'ig-combo'), map.get($light-fluent-schema, 'combo'));
+$input-theme: digest-schema($input-schema);
+$theme: digest-schema($combo-schema);
 
 :host {
+    @include css-vars-from-theme($input-theme, 'ig-input');
+    @include css-vars-from-theme($theme, 'ig-combo');
+
     ::slotted([slot='helper-text']) {
         @include type-style('caption');
 
@@ -12,12 +22,65 @@
     }
 }
 
-:host([disabled]),
-:host(:disabled) {
-    igc-input::part(label),
-    igc-input::part(input)::placeholder,
+[part~='toggle-icon'] {
+    background: var-get($theme, 'toggle-button-background');
+    color: var-get($theme, 'toggle-button-foreground');
+
+    igc-icon {
+        color: inherit;
+    }
+}
+
+[part~='clear-icon'] {
+    background: var-get($theme, 'clear-button-background');
+    color: var-get($theme, 'clear-button-foreground');
+
+    igc-icon {
+        color: inherit;
+    }
+}
+
+[part='filter-input'] {
+    padding: pad(2px, 4px, 8px);
+}
+
+[part='list-wrapper'] {
+    igc-input::part(suffix) {
+        background: transparent;
+    }
+
+    igc-input::part(input) {
+        height: var(--size);
+    }
+}
+
+[part='empty'] {
+    color: var-get($theme, 'empty-list-placeholder-color');
+}
+
+:host(:focus-within) {
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus--border');
+        color: var-get($theme, 'toggle-button-foreground-focus');
+
+        igc-icon {
+            color: inherit;
+        }
+    }
+
+    [part~='clear-icon'] {
+        background: var-get($theme, 'clear-button-background-focus');
+        color: var-get($theme, 'clear-button-foreground-focus');
+
+        igc-icon {
+            color: inherit;
+        }
+    }
+}
+
+:host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: color(gray, 500);
+        color: var-get($input-theme, 'error-secondary-color');
     }
 }
 
@@ -38,16 +101,31 @@
     }
 }
 
-[part='filter-input'] {
-    padding: pad(2px, 4px, 8px);
-}
-
-[part='list-wrapper'] {
-    igc-input::part(suffix) {
-        background: transparent;
+:host(:disabled),
+:host([disabled]) {
+    ::slotted([slot='prefix']),
+    ::slotted([slot='suffix']),
+    igc-input::part(label),
+    igc-input::part(input)::placeholder,
+    ::slotted([slot='helper-text']) {
+        color: color(gray, 500);
     }
 
-    igc-input::part(input) {
-        height: var(--size);
+    [part~='clear-icon'] {
+        background: inherit;
+        color: var-get($input-theme, 'disabled-text-color');
+
+        igc-icon {
+            color: inherit;
+        }
+    }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-disabled');
+        color: var-get($theme, 'toggle-button-foreground-disabled');
+
+        igc-icon {
+            color: inherit;
+        }
     }
 }

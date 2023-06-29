@@ -1,5 +1,5 @@
 @use '../../../dropdown/themes/light/dropdown.base' as *;
-@use '../../../../styles/utilities' as utils;
+@use '../../../../styles/utilities' as *;
 
 :host {
     display: block;
@@ -9,14 +9,7 @@
     outline-style: none;
 }
 
-:host([invalid]) {
-    ::slotted([slot='helper-text']) {
-        color: utils.color(error, 500);
-    }
-}
-
-:host([disabled]),
-:host(:disabled) {
+:host([disabled]) {
     [role='combobox'] {
         pointer-events: none;
     }
@@ -38,7 +31,7 @@ igc-input::part(input) {
     line-height: 1;
 
     ::slotted([slot='helper-text']) {
-        @include utils.type-style('caption');
+        @include type-style('caption');
 
         line-height: inherit;
     }
