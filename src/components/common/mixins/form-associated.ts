@@ -1,12 +1,11 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import type { Constructor } from './constructor';
 import { watch } from '../decorators/watch.js';
+import type { Constructor } from './constructor';
 
 export declare class FormAssociatedElementInterface {
   public static readonly formAssociated: boolean;
 
-  private _internals: ElementInternals;
   protected _disabled: boolean;
   protected _invalid: boolean;
   protected _dirty: boolean;
@@ -80,22 +79,22 @@ export declare class FormAssociatedElementInterface {
   public required: boolean;
 
   /** Returns the HTMLFormElement associated with this element. */
-  public readonly form: HTMLFormElement | null;
+  public get form(): HTMLFormElement | null;
 
   /**
    * Returns a ValidityState object which represents the different validity states
    * the element can be in, with respect to constraint validation.
    */
-  public readonly validity: ValidityState;
+  public get validity(): ValidityState;
 
   /** A string containing the validation message of this element. */
-  public readonly validationMessage: string;
+  public get validationMessage(): string;
 
   /**
    * A boolean value which returns true if the element is a submittable element
    * that is a candidate for constraint validation.
    */
-  public readonly willValidate: boolean;
+  public get willValidate(): boolean;
 
   /** Checks for validity of the control and emits the invalid event if it invalid. */
   public checkValidity(): boolean;
@@ -116,7 +115,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
   class FormAssociatedElement extends superClass {
     public static readonly formAssociated = true;
 
-    protected _internals: ElementInternals;
+    #internals: ElementInternals;
     protected _disabled = false;
     protected _invalid = false;
     protected _dirty = false;
@@ -137,7 +136,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
     /** Returns the HTMLFormElement associated with this element. */
     public get form() {
-      return this._internals.form;
+      return this.#internals.form;
     }
 
     /**
@@ -145,12 +144,12 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      * the element can be in, with respect to constraint validation.
      */
     public get validity() {
-      return this._internals.validity;
+      return this.#internals.validity;
     }
 
     /** A string containing the validation message of this element. */
     public get validationMessage() {
-      return this._internals.validationMessage;
+      return this.#internals.validationMessage;
     }
 
     /**
@@ -158,7 +157,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      * that is a candidate for constraint validation.
      */
     public get willValidate() {
-      return this._internals.willValidate;
+      return this.#internals.willValidate;
     }
 
     /**
@@ -195,7 +194,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
     constructor(...args: any[]) {
       super(args);
-      this._internals = this.attachInternals();
+      this.#internals = this.attachInternals();
       this.addEventListener('invalid', this.handleInvalid);
     }
 
@@ -219,7 +218,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       value: string | File | FormData | null,
       state?: string | File | FormData | null | undefined
     ) {
-      this._internals.setFormValue(value, state || value);
+      this.#internals.setFormValue(value, state || value);
     }
 
     protected setValidity(
@@ -227,7 +226,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       message?: string | undefined,
       anchor?: HTMLElement | undefined
     ) {
-      this._internals.setValidity(flags, message, anchor);
+      this.#internals.setValidity(flags, message, anchor);
     }
 
     protected formResetCallback() {
@@ -284,12 +283,12 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
 
     /** Checks for validity of the control and shows the browser message if it invalid. */
     public reportValidity() {
-      return this._internals.reportValidity();
+      return this.#internals.reportValidity();
     }
 
     /** Checks for validity of the control and emits the invalid event if it invalid. */
     public checkValidity() {
-      return this._internals.checkValidity();
+      return this.#internals.checkValidity();
     }
 
     /**

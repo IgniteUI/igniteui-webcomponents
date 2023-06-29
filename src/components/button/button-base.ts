@@ -23,11 +23,11 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     delegatesFocus: true,
   };
 
+  #internals: ElementInternals;
+
   @query('[part="base"]', true)
   private nativeElement!: HTMLElement;
 
-  private _internals: ElementInternals;
-  private _ariaLabel!: string;
   protected _disabled = false;
 
   /**
@@ -83,29 +83,14 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     this.requestUpdate('disabled', prev);
   }
 
-  public override set ariaLabel(value: string) {
-    const oldVal = this._ariaLabel;
-    this._ariaLabel = value;
-
-    if (this.hasAttribute('aria-label')) {
-      this.removeAttribute('aria-label');
-    }
-    this.requestUpdate('ariaLabel', oldVal);
-  }
-
-  @property({ attribute: 'aria-label' })
-  public override get ariaLabel() {
-    return this._ariaLabel;
-  }
-
   /** Returns the HTMLFormElement associated with this element. */
   public get form() {
-    return this._internals.form;
+    return this.#internals.form;
   }
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
+    this.#internals = this.attachInternals();
   }
 
   /** Sets focus in the button. */
@@ -140,11 +125,9 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   protected handleClick() {
     switch (this.type) {
       case 'submit':
-        this.form?.requestSubmit();
-        break;
+        return this.form?.requestSubmit();
       case 'reset':
-        this.form?.reset();
-        break;
+        return this.form?.reset();
       default:
         return;
     }
@@ -159,7 +142,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     return html`
       <button
         part="base"
-        aria-label=${ifDefined(this.ariaLabel)}
+        .ariaLabel=${this.ariaLabel}
         .disabled=${this.disabled}
         class=${classMap(this.classes)}
         type=${ifDefined(this.type)}
@@ -182,7 +165,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
-        aria-label=${ifDefined(this.ariaLabel)}
+        .ariaLabel=${this.ariaLabel}
         class=${classMap(this.classes)}
         @focus=${!this.disabled && this.handleFocus}
         @blur=${!this.disabled && this.handleBlur}

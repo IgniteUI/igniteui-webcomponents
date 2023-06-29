@@ -75,7 +75,6 @@ const metadata: Meta<IgcIconButtonComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    ariaLabel: { type: 'string', control: 'text' },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -118,7 +117,6 @@ interface IgcIconButtonArgs {
   rel: string;
   /** The disabled state of the component */
   disabled: boolean;
-  ariaLabel: string;
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
