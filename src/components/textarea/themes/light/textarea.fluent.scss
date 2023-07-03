@@ -9,8 +9,6 @@ $theme: digest-schema($schema);
 :host {
     @include css-vars-from-theme($theme, 'ig-textarea');
     @include type-style('body-2');
-
-    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
 }
 
 :host(:hover) {
@@ -25,11 +23,11 @@ $theme: digest-schema($schema);
         border-width: rem(2px);
     }
 
-    [part~='prefix'] {
+    [part~='prefix']:not([hidden]) {
         margin-inline-start: rem(-1px);
     }
 
-    [part~='suffix'] {
+    [part~='suffix']:not([hidden]) {
         margin-inline-end: rem(-1px);
     }
 
@@ -37,10 +35,13 @@ $theme: digest-schema($schema);
         margin-block: rem(-1px);
         margin-inline-start: rem(-1px);
     }
+
+    [part~='prefix']:not([hidden]) ~ textarea {
+        margin-inline: initial;
+    }
 }
 
 [part~='container'] {
-    min-height: var(--size);
     border: rem(1px) solid var-get($theme, 'border-color');
     background: var-get($theme, 'border-background');
     align-items: stretch;

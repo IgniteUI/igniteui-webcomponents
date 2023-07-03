@@ -5,29 +5,29 @@
 
 $schema: map.get($light-material-schema, 'input-group');
 $theme: digest-schema($schema);
+$base-scale-size: (
+    'comfortable': 16px,
+    'cosy': 19px,
+    'compact': 22px
+);
 
 :host {
-    --size: #{sizable(rem(82px, 22px), rem(82px, 19px), rem(82px, 16px))};
+    --size: #{sizable(
+        rem(82px, map.get($base-scale-size, 'compact')),
+        rem(82px, map.get($base-scale-size, 'cosy')),
+        rem(82px, map.get($base-scale-size, 'comfortable'))
+    )};
+    --component-size: var(--ig-size, var(--ig-size-large));
 
     font-family: var(--ig-font-family);
     resize: vertical;
     overflow: hidden;
-}
 
-:host([size='large']) {
-    --component-size: var(--ig-size, var(--ig-size-large));
-}
-
-:host([size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
-
-:host([size='small']) {
-    --component-size: var(--ig-size, var(--ig-size-small));
-}
-
-[part~='label'] {
-    @include ellipsis();
+    [part~='label'] {
+        @include ellipsis();
+    
+        line-height: normal;
+    }
 }
 
 [part~='container'] {
@@ -57,11 +57,12 @@ textarea {
     padding-inline-start: 0;
     width: 100%;
     min-width: 0;
+    max-height: var(--size);
     background: transparent;
     color: var-get($theme, 'filled-text-color');
     outline-style: none;
     box-shadow: none;
-    overflow: hidden;
+    overflow: auto;
     text-overflow: ellipsis;
 
     &::placeholder {

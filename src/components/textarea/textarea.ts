@@ -280,13 +280,13 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
   }
 
   protected renderPrefix() {
-    return html`<div part="prefix">
+    return html`<div part="prefix" .hidden=${this.prefixes.length < 1}>
       <slot name="prefix"></slot>
     </div>`;
   }
 
   protected renderSuffix() {
-    return html`<div part="suffix">
+    return html`<div part="suffix" .hidden=${this.suffixes.length < 1}>
       <slot name="suffix"></slot>
     </div>`;
   }

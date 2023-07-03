@@ -49,8 +49,6 @@ $theme: digest-schema($schema);
 }
 
 [part~='label'] {
-    @include type-style('body-1');
-
     display: block;
     font-size: rem(14px);
     font-weight: 600;
@@ -81,9 +79,8 @@ $theme: digest-schema($schema);
 }
 
 textarea {
-    @include type-style('body-1');
-
-    padding: pad(rem(4px), rem(6px), rem(8px));
+    padding-block: pad(rem(4px), rem(6px), rem(8px));
+    padding-inline: rem(12px);
 }
 
 [part~='helper-text'] {
@@ -111,8 +108,4 @@ textarea {
 [part~='prefixed'] [part~='prefix'],
 [part~='suffixed'] [part~='suffix'] {
     height: calc(100% - #{rem(1px)});
-}
-
-[part~='prefix'] {
-    min-width: rem(12px);
 }

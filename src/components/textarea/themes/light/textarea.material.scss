@@ -17,7 +17,6 @@ textarea {
     border: none;
     padding: 0;
     overflow: auto;
-    height: auto;
     margin-block-start: $input-top-padding;
     grid-area: 1 / 2 / span 1 / span 2;
     flex-grow: 1;
@@ -93,7 +92,6 @@ textarea {
     will-change: transform;
     transform-origin: top left;
     transition: all .25s out-cubic;
-    margin-inline-start: pad-inline(0, rem(-2px), rem(-4px));
     color: var-get($theme, 'idle-secondary-color');
     transform: translateY(0);
     top: calc(#{$input-top-padding} / 4);
@@ -241,7 +239,6 @@ textarea {
         flex-grow: 1;
         height: 100%;
         grid-area: 1 / 4;
-        min-width: rem(12px);
         border: {
             color: var-get($theme, 'border-color');
             style: solid;
@@ -282,10 +279,8 @@ textarea {
     }
 
     [part='start'] {
-        // margin-inline-start: rem(-1px);
         border: {
             color: var-get($theme, 'focused-border-color');
-            style: solid;
             inline: {
                 start-width: rem(2px);
                 end-width: 0;
@@ -298,10 +293,8 @@ textarea {
     }
 
     [part='end'] {
-        // margin-inline-end: rem(-1px);
         border: {
             color: var-get($theme, 'focused-border-color');
-            style: solid;
             inline: {
                 start-width: 0;
                 end-width: rem(2px);
@@ -311,5 +304,13 @@ textarea {
                 end-width: rem(2px);
             };
         }
+    }
+
+    [part~='prefix'] {
+        margin-inline-start: rem(-1px);
+    }
+
+    [part~='suffix'] {
+        margin-inline-end: rem(-1px);
     }
 }
