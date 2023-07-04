@@ -450,9 +450,8 @@ export default class IgcComboComponent<T extends object = any>
       this.selectionController.select(this._value as Item<T>[]);
     }
 
-    if (!this.singleSelect) {
-      this.updateValue();
-    }
+    /// XXX: Review
+    this.singleSelect ? this.setFormValue() : this.updateValue();
   }
 
   /**
@@ -501,10 +500,7 @@ export default class IgcComboComponent<T extends object = any>
       return;
     }
 
-    const key = this.valueKey || this.displayKey;
-    const items = Array.from(this.selectionController.selected).map((item) =>
-      key ? item[key] : item
-    );
+    const items = this._value;
 
     if (items.length < 1) {
       return super.setFormValue(null);
