@@ -37,6 +37,13 @@ $theme: digest-schema(extend(
     }
 }
 
+:host([hide-header]) {
+    [part~='navigation'] {
+        border-start-start-radius: var-get($theme, 'border-radius');
+        border-start-end-radius: var-get($theme, 'border-radius');
+    }
+}
+
 [part~='navigation-button'] {
     color: color(primary, 500);
 
