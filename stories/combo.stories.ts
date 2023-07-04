@@ -266,7 +266,7 @@ const cities: City[] = [
   },
 ];
 
-// const mandzhasgrozde = [0, 'Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true, null, undefined, NaN, 0];
+// const mandzhasgrozde = [0, 'Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true, NaN, 0];
 
 registerIconFromText(
   'location',

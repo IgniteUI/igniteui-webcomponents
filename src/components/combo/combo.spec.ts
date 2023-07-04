@@ -841,6 +841,7 @@ describe('Combo', () => {
       await list.layoutComplete;
 
       expect(items(combo)[0].selected).to.be.true;
+      expect(combo.value).to.deep.equal(['BG02']);
 
       input.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
 
@@ -850,6 +851,8 @@ describe('Combo', () => {
       items(combo).forEach((i) => {
         expect(i.selected).to.be.false;
       });
+
+      expect(combo.value).to.deep.equal([]);
     });
 
     it('Selection API should select nothing in single selection mode if nothing is passed', async () => {
