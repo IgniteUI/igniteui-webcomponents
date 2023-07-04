@@ -3,15 +3,18 @@
 @use '../../../../styles/themes/schemas/fluent/dark' as *;
 
 @mixin theme() {
-    $schema: extend(
+    $schema: map.get($dark-fluent-schema, 'switch');
+    $border-radius-thumb: border-radius(map.get($schema, 'border-radius-thumb')...);
+    $border-radius-track: border-radius(map.get($schema, 'border-radius-track')...);
+    $theme: digest-schema(extend(
+        $schema,
         (
-            name: 'switch'
-        ),
-        map.get($dark-fluent-schema, 'switch')
-    );
-    $theme: digest-schema($schema);
+            border-radius-thumb: $border-radius-thumb,
+            border-radius-track: $border-radius-track
+        )
+    ));
 
     igc-switch {
-        @include css-vars($theme);
+        @include css-vars-from-theme($theme, 'ig-switch');
     }
 }
