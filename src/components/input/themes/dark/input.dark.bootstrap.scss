@@ -1,7 +1,20 @@
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas' as *;
+
+$schema: map.get($dark-bootstrap-schema, 'input-group');
+$theme: digest-schema($schema);
+
 @mixin theme() {
-    igc-input,
-    igc-mask-input,
-    igc-date-time-input {
-        --input-background: transparent;
+    igc-input {
+        @include css-vars-from-theme($theme, 'ig-input');
+    }
+
+    igc-select::part(input) {
+        @include css-vars-from-theme($theme, ig-select);
+    }
+
+    igc-combo::part(input) {
+        @include css-vars-from-theme($theme, ig-combo);
     }
 }

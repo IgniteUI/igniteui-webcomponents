@@ -1,5 +1,4 @@
 # Ignite UI Web Components Changelog
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
@@ -7,16 +6,48 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-### Deprecated
-
-- Select: Removed `sameWidth` and `positinStrategy`. They will be removed in the next major release.
-
 ### Added
-
-- Combo: Added `matchDiacritics` to the filtering options property. Defaults to `false`.
-If set to `true` the filter distinguishes between accented letters and
-their base letters. Otherwise strings are normalized and then matched.
 - Text area component
+
+## [4.3.0] - 2023-06-28
+### Added
+- Combo: Added `matchDiacritics` to the filtering options property. Defaults to `false`.
+  If set to `true` the filter distinguishes between accented letters and
+  their base letters. Otherwise strings are normalized and then matched.
+- Combo: Added `selection` property which returns the current selection as an array of data objects.
+- Card: Support explicit height
+- Dialog: Added animations
+- Snackbar: Added animations
+- Toast: Added animations
+
+### Changed
+- Combo: `value` is no longer readonly and can be explicitly set. The value attribute also supports declarative binding,
+  accepting a valid JSON stringified array.
+- Combo: `value` type changed from `string[]` to `ComboValue<T>[]` where
+  ```ts
+  ComboValue<T> = T | T[keyof T]
+  ```
+- Combo: `igcChange` event object properties are also changed to reflect tee new `value` type:
+  ```typescript
+  interface IgcComboChangeEventArgs<T> {
+  newValue: ComboValue<T>[];
+  items: T[];
+  type: ComboChangeType;
+  }
+  ```
+
+### Deprecated
+- Select: Deprecated `sameWidth`, `positionStrategy` and `flip`. They will be removed in the next major release.
+
+### Fixed
+- Select: prefix/suffix/helper-text slots not being rendered [#722](https://github.com/IgniteUI/igniteui-webcomponents/issues/722)
+- Tabs: Nested tabs selection [#713](https://github.com/IgniteUI/igniteui-webcomponents/issues/713)
+- Dialog: Backdrop doesn't overlay elements [#727](https://github.com/IgniteUI/igniteui-webcomponents/issues/727)
+- Dropdown: Listbox position on initial open state [#723](https://github.com/IgniteUI/igniteui-webcomponents/issues/723)
+- Stepper: Stretch vertically in parent container [#738](https://github.com/IgniteUI/igniteui-webcomponents/issues/738)
+- Navbar: Wrong colors in fluent theme [#719](https://github.com/IgniteUI/igniteui-webcomponents/issues/719)
+- Animation player throws errors when height is unspecified [#793](https://github.com/IgniteUI/igniteui-webcomponents/issues/793)
+- DateTimeInput: Intl.DateTimeFormat issues in Chromium based browsers [#803](https://github.com/IgniteUI/igniteui-webcomponents/issues/803)
 
 ## [4.2.3] - 2023-04-03
 ### Deprecated
@@ -245,6 +276,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.3...4.3.0
 [4.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.2...4.2.3
 [4.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.1...4.2.2
 [4.2.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.0...4.2.1
