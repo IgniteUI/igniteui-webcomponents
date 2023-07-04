@@ -139,6 +139,9 @@ $theme: digest-schema(extend(
     [part='header'] {
         justify-content: flex-start;
         width: rem(140px);
+        border-radius: inherit;
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
     }
 
     [part='header-date'] {

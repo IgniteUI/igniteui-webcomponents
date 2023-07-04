@@ -33,6 +33,7 @@ $theme: digest-schema(extend(
     }
 
     [part='prefix'] {
+        border-start-start-radius: var-get($theme, 'border-border-radius');
         color: var-get($theme, 'input-prefix-color');
         background: var-get($theme, 'input-prefix-background');
         grid-area: 1 / 1;
@@ -43,6 +44,7 @@ $theme: digest-schema(extend(
     }
 
     [part='suffix'] {
+        border-start-end-radius: var-get($theme, 'border-border-radius');
         color: var-get($theme, 'input-suffix-color');
         background: var-get($theme, 'input-suffix-background');
         grid-area: 1 / 3;
