@@ -1,15 +1,18 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
 
-$schema: extend(
+$schema: map.get($light-indigo-schema, 'checkbox');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
+$theme: digest-schema(extend(
+    $schema,
     (
-        name: 'ig-checkbox'
-    ),
-    map.get($light-indigo-schema, 'checkbox')
-);
-$theme: digest-schema($schema);
+        border-radius: $border-radius,
+        ripple-radius: $ripple-radius
+    )
+));
 $fill-color: var-get($theme, 'fill-color');
 $empty-color: var-get($theme, 'empty-color');
 $disabled-color: var-get($theme, 'disabled-color');
@@ -17,7 +20,7 @@ $error-color: var-get($theme, 'error-color');
 $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-checkbox');
 
     font-weight: 600;
 }
@@ -29,15 +32,13 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 [part~='control'] {
-    @include border-radius(var-get($theme, 'border-radius-ripple'));
-
+    border-radius: var-get($theme, 'ripple-radius');
     width: var(--size, rem(20px));
     height: var(--size, rem(20px));
     min-width: var(--size, rem(20px));
 
     &::after {
-        @include border-radius(var-get($theme, 'border-radius'));
-
+        border-radius: var-get($theme, 'border-radius');
         border: rem(2px) solid $empty-color;
     }
 }

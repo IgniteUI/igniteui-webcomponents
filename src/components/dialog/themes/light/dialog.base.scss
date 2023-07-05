@@ -4,7 +4,6 @@
 $content-color: var(--content-color, color(gray, 700));
 
 :host {
-    border-radius: border-radius(2px);
     background: color(surface, 500);
     color: contrast-color(surface, 500);
     border-style: none;

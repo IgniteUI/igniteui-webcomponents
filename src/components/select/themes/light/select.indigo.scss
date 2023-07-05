@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
 
 $input-schema: map.get($light-indigo-schema, 'input-group');
 $schema: map.get($light-indigo-schema, 'select');

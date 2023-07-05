@@ -20,6 +20,7 @@ import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
 import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css.js';
 import { styles } from './themes/calendar.base.css.js';
 import { styles as fluent } from './themes/fluent/calendar.fluent.css.js';
+import { styles as indigo } from './themes/indigo/calendar.indigo.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 
@@ -68,6 +69,7 @@ defineComponents(
 @themes({
   bootstrap,
   fluent,
+  indigo,
 })
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<

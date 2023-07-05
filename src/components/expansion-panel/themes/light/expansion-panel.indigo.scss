@@ -1,4 +1,21 @@
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
+
+$schema: map.get($light-indigo-schema, 'expansion-panel');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-expansion-panel');
+
+    border-radius: var-get($theme, 'border-radius');
+}
 
 [part~='indicator'] {
     color: color(gray, 600);

@@ -1,12 +1,24 @@
+@use 'sass:map';
 @use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas/bootstrap/light' as *;
+
+$schema: map.get($light-bootstrap-schema, 'button', 'icon');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-button');
+
     --size: #{sizable(rem(31px), rem(38px), rem(48px))};
 }
 
 [part='base'] {
-    @include border-radius(rem(4px));
-
+    border-radius: var-get($theme, 'border-radius');
     width: var(--size);
     height: var(--size);
     transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
