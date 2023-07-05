@@ -132,3 +132,28 @@ textarea {
         width: 100%;
     }
 }
+
+:host([required]) {
+    [part~='label'] {
+        &::after {
+            content: '*';
+            font-size: inherit;
+            vertical-align: top;
+            margin-inline-start: rem(2px);
+            display: inline-block;
+        }
+    }
+}
+
+:host([disabled]) {
+    user-select: none;
+
+    [part='prefix'],
+    [part='suffix'] {
+        pointer-events: none;
+    }
+
+    [part~='container'] {
+        cursor: default;
+    }
+}

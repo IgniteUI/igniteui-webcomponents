@@ -101,3 +101,42 @@ textarea {
     padding-block-start: rem(5px);
     padding-inline-start: 0;
 }
+
+:host([required]:not([disabled])) {
+    [part~='label'] {
+        &::after {
+            color: var-get($theme, 'error-secondary-color');
+        }
+    }
+}
+
+:host([disabled]) {
+    color: var-get($theme, 'disabled-text-color');
+
+    [part='prefix'],
+    [part='suffix'] {
+        color: var-get($theme, 'disabled-text-color');
+        background: inherit;
+    }
+
+    [part~='helper-text'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    textarea {
+        color: var-get($theme, 'disabled-text-color');
+
+        &::placeholder {
+            color: var-get($theme, 'disabled-placeholder-color');
+        }
+    }
+
+    [part~='label'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    [part~='container'] {
+        border-color: var-get($theme, 'disabled-border-color');
+        background: var-get($theme, 'border-disabled-background');
+    }
+}

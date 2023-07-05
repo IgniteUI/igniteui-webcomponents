@@ -124,3 +124,33 @@ textarea {
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'focused-secondary-color');
     }
 }
+
+:host([disabled]) {
+    color: var-get($theme, 'disabled-text-color');
+
+    [part='prefix'],
+    [part='suffix'] {
+        background: var-get($theme, 'border-disabled-background');
+        border-color: var-get($theme, 'disabled-border-color');
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    [part~='helper-text'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    textarea {
+        color: var-get($theme, 'disabled-text-color');
+        background: var-get($theme, 'border-disabled-background');
+        border: rem(1px) solid var-get($theme, 'disabled-border-color');
+        box-shadow: none;
+
+        &::placeholder {
+            color: var-get($theme, 'disabled-placeholder-color');
+        }
+    }
+
+    [part~='label'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}

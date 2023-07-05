@@ -58,6 +58,18 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'Makes the control a disabled field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     label: {
       type: 'string',
       description: 'The label for the control.',
@@ -95,6 +107,8 @@ const metadata: Meta<IgcTextareaComponent> = {
     rows: '2',
     value: '',
     outlined: false,
+    required: false,
+    disabled: false,
     resize: 'both',
     wrap: 'soft',
   },
@@ -119,6 +133,10 @@ interface IgcTextareaArgs {
   placeholder: string;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
+  /** Makes the control a required field. */
+  required: boolean;
+  /** Makes the control a disabled field. */
+  disabled: boolean;
   /** The label for the control. */
   label: string;
   resize: 'vertical' | 'horizontal' | 'auto' | 'none' | 'both';
@@ -152,7 +170,10 @@ export const Projected: Story = {
       handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'],
     },
   },
-  render: ({ cols, rows, resize }, { globals: { direction } }) => {
+  render: (
+    { cols, rows, resize, required, disabled },
+    { globals: { direction } }
+  ) => {
     return html`
       <igc-textarea
         dir=${direction}
@@ -163,6 +184,8 @@ export const Projected: Story = {
         .cols=${cols}
         .rows=${rows}
         .resize=${resize}
+        .required=${required}
+        .disabled=${disabled}
       >
         <span slot="prefix">+359</span>
         <p>Hello world</p>

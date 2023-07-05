@@ -131,6 +131,20 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
   public outlined = false;
 
   /**
+   * Makes the control a required field.
+   * @attr
+   */
+  @property({ reflect: true, type: Boolean })
+  public required = false;
+
+  /**
+   * Makes the control a disabled field.
+   * @attr
+   */
+  @property({ reflect: true, type: Boolean })
+  public disabled = false;
+
+  /**
    * The label for the control.
    * @attr
    */
@@ -343,6 +357,8 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
         .rows=${this.rows}
         .value=${live(this.value)}
         .wrap=${this.wrap}
+        ?disabled="${this.disabled}"
+        ?required="${this.required}"
       ></textarea>`;
   }
 

@@ -54,6 +54,43 @@ textarea {
     }
 }
 
+:host([disabled]) {
+    color: var-get($theme, 'disabled-text-color');
+
+    [part='prefix'],
+    [part='suffix'] {
+        color: var-get($theme, 'disabled-text-color');
+        background: inherit;
+    }
+
+    [part~='helper-text'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    textarea {
+        color: var-get($theme, 'disabled-text-color');
+
+        &::placeholder {
+            color: var-get($theme, 'disabled-placeholder-color');
+        }
+    }
+
+    [part~='label'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}
+
+:host([disabled]:not([outlined])) {
+    [part~='container'] {
+        background: var-get($theme, 'box-disabled-background');
+
+        &::after {
+            border-block-end-color: var-get($theme, 'disabled-bottom-line-color');
+            border-block-end-style: dashed;
+        }
+    }
+}
+
 :host(:focus-within) {
     [part~='label'] {
         color: var-get($theme, 'focused-secondary-color');
@@ -312,5 +349,18 @@ textarea {
 
     [part~='suffix'] {
         margin-inline-end: rem(-1px);
+    }
+}
+
+:host([disabled][outlined]) {
+    [part~='container'] {
+        background: var-get($theme, 'border-disabled-background');
+    }
+
+    [part='start'],
+    [part='filler'],
+    [part='notch'],
+    [part='end'] {
+        border-color: var-get($theme, 'disabled-border-color');
     }
 }
