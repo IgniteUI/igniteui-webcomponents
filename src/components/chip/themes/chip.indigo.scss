@@ -1,7 +1,23 @@
+@use 'sass:map';
 @use './chip.base.scss';
 @use '../../../styles/utilities' as *;
+@use '../../../styles/themes/schemas/indigo/light' as *;
+
+$schema: map.get($light-indigo-schema, 'chip');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-chip');
+}
 
 :host button {
+    border-radius: var-get($theme, 'border-radius');
     border: rem(1px) solid color(gray, 400);
     background: color(surface, 500);
     color: color(gray, 700);

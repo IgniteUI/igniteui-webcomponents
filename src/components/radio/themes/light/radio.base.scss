@@ -1,7 +1,6 @@
 @use 'sass:math';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
 
 :host {
     display: inline-flex;

@@ -1,13 +1,27 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
+
+$schema: map.get($light-material-schema, 'list');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-list');
+
     display: flex;
     flex-flow: column nowrap;
     font-family: var(--ig-font-family);
     overflow: hidden auto;
     height: auto;
     background: color(surface, 500);
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host([size='small']) {
