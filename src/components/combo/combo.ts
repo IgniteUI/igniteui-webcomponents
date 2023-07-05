@@ -24,7 +24,7 @@ import { SelectionController } from './controllers/selection.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { DataController } from './controllers/data.js';
 import { IgcToggleComponent } from '../toggle/types.js';
-import {
+import type {
   Keys,
   ComboRecord,
   GroupingDirection,
@@ -33,6 +33,7 @@ import {
   ComboItemTemplate,
   ComboRenderFunction,
   Item,
+  ComboValue,
 } from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { partNameMap } from '../common/util.js';
@@ -105,7 +106,7 @@ export default class IgcComboComponent<T extends object = any>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
-  private _value: string[] = [];
+  private _value: ComboValue<T>[] = [];
   private _displayValue = '';
   private _filteringOptions: FilteringOptions<T> = {
     filterKey: this.displayKey,
@@ -449,7 +450,9 @@ export default class IgcComboComponent<T extends object = any>
       this.selectionController.select(this._value as Item<T>[]);
     }
 
-    this.updateValue();
+    if (!this.singleSelect) {
+      this.updateValue();
+    }
   }
 
   /**
@@ -478,7 +481,7 @@ export default class IgcComboComponent<T extends object = any>
    *  </igc-combo>
    * ```
    */
-  public set value(items: string[]) {
+  public set value(items: ComboValue<T>[]) {
     const oldValue = this._value;
     this._value = items;
     this.requestUpdate('value', oldValue);
@@ -494,13 +497,12 @@ export default class IgcComboComponent<T extends object = any>
   }
 
   protected async updateValue() {
-    this._value = this.selectionController.getValue(
-      Array.from(this.selectionController.selected)
-    );
+    const selected = Array.from(this.selectionController.selected);
 
-    this._displayValue = this.selectionController.getDisplayValue(
-      Array.from(this.selectionController.selected)
-    );
+    this._value = this.selectionController.getValue(selected, this.valueKey!);
+    this._displayValue = this.selectionController
+      .getValue(selected, this.displayKey!)
+      .join(', ');
 
     await this.updateComplete;
     this.target.value = this._displayValue;
@@ -763,6 +765,7 @@ export default class IgcComboComponent<T extends object = any>
     if (selection) {
       const item = this.valueKey ? selection[this.valueKey] : selection;
       this.selectionController.deselect([item], selected.size > 0);
+      this._value = [];
     }
   }
 
@@ -809,7 +812,13 @@ export default class IgcComboComponent<T extends object = any>
       this.theme === 'material' ? 'keyboard_arrow_down' : 'arrow_drop_down';
 
     return html`
-      <span slot="suffix" part="toggle-icon">
+      <span
+        slot="suffix"
+        part="${partNameMap({
+          'toggle-icon': true,
+          filled: this.value.length > 0,
+        })}"
+      >
         <slot name="toggle-icon">
           <igc-icon
             name=${this.open ? openIcon : closeIcon}
