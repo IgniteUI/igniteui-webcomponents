@@ -2,16 +2,11 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas/bootstrap/dark' as *;
 
-$schema: extend(
-    (
-        name: 'ig-avatar'
-    ),
-    map.get($dark-bootstrap-schema, 'avatar')
-);
+$schema: map.get($dark-bootstrap-schema, 'avatar');
 $theme: digest-schema($schema);
 
 @mixin theme() {
     igc-avatar {
-        @include css-vars($theme);
+        @include css-vars-from-theme($theme, 'ig-avatar');
     }
 }

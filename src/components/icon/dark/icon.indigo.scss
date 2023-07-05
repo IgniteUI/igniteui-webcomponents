@@ -3,10 +3,10 @@
 @use '../../../styles/themes/schemas/indigo/dark' as *;
 
 @mixin theme() {
-    $schema: extend((name: 'ig-icon'), map.get($dark-indigo-schema, 'icon'));
+    $schema: map.get($dark-indigo-schema, 'icon');
     $theme: digest-schema($schema);
 
     igc-icon {
-        @include css-vars($theme);
+        @include css-vars-from-theme($theme, 'ig-icon');
     }
 }

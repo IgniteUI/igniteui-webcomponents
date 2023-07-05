@@ -3,10 +3,10 @@
 @use '../../../../styles/themes/schemas/indigo/dark' as *;
 
 @mixin theme() {
-    $schema: extend((name: 'ig-navbar'), map.get($dark-indigo-schema, 'navbar'));
+    $schema: map.get($dark-indigo-schema, 'navbar');
     $theme: digest-schema($schema);
 
     igc-navbar {
-        @include css-vars($theme);
+        @include css-vars-from-theme($theme, 'ig-navbar');
     }
 }

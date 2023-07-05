@@ -3,11 +3,11 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas/indigo/light' as *;
 
-$schema: extend((name: 'ig-navbar'), map.get($light-indigo-schema, 'navbar'));
+$schema: map.get($light-indigo-schema, 'navbar');
 $theme: digest-schema($schema);
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-navbar');
 
     background: var-get($theme, 'background');
     color: var-get($theme, 'text-color');
