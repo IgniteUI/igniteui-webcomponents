@@ -1,7 +1,6 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
 
 :host {
     display: inline-flex;
@@ -81,4 +80,3 @@ input[type='checkbox'] {
         margin-inline-start: var(--thumb-offset);
     }
 }
-

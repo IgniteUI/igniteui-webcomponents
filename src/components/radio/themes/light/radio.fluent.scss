@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/fluent/light' as *;
 
 $schema: map.get($light-fluent-schema, 'radio');
 $theme: digest-schema($schema);
@@ -22,8 +22,7 @@ $theme: digest-schema($schema);
 }
 
 :host [part~='control'] {
-    @include border-radius(var(--size));
-
+    border-radius: var(--size);
     width: var(--size);
     height: var(--size);
     min-width: var(--size);
@@ -33,8 +32,7 @@ $theme: digest-schema($schema);
 
     &::before,
     &::after {
-        @include border-radius(calc(var(--size) / 2));
-
+        border-radius: calc(var(--size) / 2);
         width: var(--size);
         height: var(--size);
         inset-inline-start: 0;
