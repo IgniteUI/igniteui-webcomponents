@@ -450,7 +450,9 @@ export default class IgcComboComponent<T extends object = any>
       this.selectionController.select(this._value as Item<T>[]);
     }
 
-    this.updateValue();
+    if (!this.singleSelect) {
+      this.updateValue();
+    }
   }
 
   /**
@@ -763,6 +765,7 @@ export default class IgcComboComponent<T extends object = any>
     if (selection) {
       const item = this.valueKey ? selection[this.valueKey] : selection;
       this.selectionController.deselect([item], selected.size > 0);
+      this._value = [];
     }
   }
 
