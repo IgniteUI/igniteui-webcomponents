@@ -1,13 +1,13 @@
 @use 'sass:map';
 @use '../../../styles/common/component';
 @use '../../../styles/utilities' as *;
-@use '../../../styles/themes/schemas' as *;
+@use '../../../styles/themes/schemas/indigo/light' as *;
 
-$schema: extend((name: 'ig-icon'), map.get($light-indigo-schema, 'icon'));
+$schema: map.get($light-indigo-schema, 'icon');
 $theme: digest-schema($schema);
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-icon');
 
     color: var-get($theme, 'color');
 }

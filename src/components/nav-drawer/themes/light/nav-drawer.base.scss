@@ -1,11 +1,25 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
+
+$schema: map.get($light-material-schema, 'nav-drawer');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-nav-drawer');
+
     flex-shrink: 0;
     font-family: var(--ig-font-family);
 
     [part='base'] {
+        border-radius: var-get($theme, 'border-radius');
         position: fixed;
         height: 100%;
         min-height: 100%;
@@ -15,7 +29,6 @@
         inset-inline-start: 0;
         z-index: 999;
         background: color(surface, 500);
-        border-radius: 0;
         transition: all ease-out .3s, .3s;
     }
 

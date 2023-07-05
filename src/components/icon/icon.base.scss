@@ -2,9 +2,7 @@
 @use '../../styles/utilities' as *;
 
 :host {
-    // TODO remove the important flag after this issue is fixed
-    // https://github.com/IgniteUI/igniteui-angular/issues/13024
-    --size: #{sizable(rem(16px), rem(20px), rem(24px))} !important;
+    --size: #{sizable(rem(16px), rem(20px), rem(24px))};
 
     display: inline-flex;
     align-items: center;

@@ -1,8 +1,23 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
+$schema: map.get($light-bootstrap-schema, 'drop-down');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 $border-color: var(--border-color, color(gray, 300)) !default;
 
+:host {
+    @include css-vars-from-theme($theme, 'ig-dropdown');
+}
+
 [part='base'] {
+    border-radius: var-get($theme, 'border-radius');
     box-shadow: none;
     border: 1px solid $border-color;
 }

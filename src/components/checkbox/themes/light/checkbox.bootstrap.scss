@@ -1,25 +1,27 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
-$schema: extend(
+$schema: map.get($light-bootstrap-schema, 'checkbox');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
+$theme: digest-schema(extend(
+    $schema,
     (
-        name: 'ig-checkbox'
-    ),
-    map.get($light-bootstrap-schema, 'checkbox')
-);
-$theme: digest-schema($schema);
+        border-radius: $border-radius,
+        ripple-radius: $ripple-radius
+    )
+));
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-checkbox');
 }
 
 [part~='control'] {
-    @include border-radius(var-get($theme, 'border-radius-ripple'));
-
     --size: #{rem(16px)};
 
+    border-radius: var-get($theme, 'ripple-radius');
     width: var(--size);
     height: var(--size);
     min-width: var(--size);
@@ -30,8 +32,7 @@ $theme: digest-schema($schema);
     transform: translate3d(0, 0, 0);
 
     &::after {
-        @include border-radius(var-get($theme, 'border-radius'));
-
+        border-radius: var-get($theme, 'border-radius');
         width: inherit;
         height: inherit;
         min-width: inherit;
