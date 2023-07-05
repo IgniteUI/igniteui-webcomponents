@@ -1,8 +1,19 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
+
+$schema: map.get($light-material-schema, 'card');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 
 :host {
-    @include border-radius(rem(3px));
+    @include css-vars-from-theme($theme, 'ig-card');
 
     display: flex;
     flex-direction: column;
@@ -10,6 +21,7 @@
     overflow: hidden;
     background: color(surface, 500);
     font-family: var(--ig-font-family);
+    border-radius: var-get($theme, 'border-radius');
 
     ::slotted(igc-card-actions:first-child) {
         margin-block-end: auto;

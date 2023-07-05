@@ -1,15 +1,27 @@
+@use 'sass:map';
 @use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas/fluent/light' as *;
 
+$schema: map.get($light-fluent-schema, 'button', 'icon');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 $text-color: var(--text-color, #{contrast-color(primary, 600)}) !default;
 $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
+$outline-btn-indent: rem(2px);
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-button');
+
     --size: #{sizable(rem(24px), rem(32px), rem(38px))};
 }
 
 [part='base'] {
-    @include border-radius(rem(2px));
-
+    border-radius: var-get($theme, 'border-radius');
     background: transparent;
     color: color(primary, 500);
     transition: color .15s ease-out, background .15s ease-out;
@@ -24,8 +36,9 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
         pointer-events: none;
         top: 2px;
         left: 2px;
-        width: calc(100% - 4px);
-        height: calc(100% - 4px);
+        width: calc(100% - (#{$outline-btn-indent} * 2));
+        height: calc(100% - (#{$outline-btn-indent} * 2));
+        border-radius: calc(#{var-get($theme, 'border-radius')} - #{$outline-btn-indent * 2});
     }
 
     &:hover {

@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
 $input-schema: map.get($light-material-schema, 'input-group');
 $combo-schema: map.get($light-material-schema, 'combo');

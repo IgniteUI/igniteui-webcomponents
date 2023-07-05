@@ -1,10 +1,16 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/fluent/light' as *;
 
 $schema: map.get($light-fluent-schema, 'input-group');
-$theme: digest-schema($schema);
+$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-border-radius: $border-border-radius
+    )
+));
 $resting-border-width: rem(1px);
 $focused-border-width: rem(2px);
 $resting-height: calc(var(--size) - #{($resting-border-width * 2)});
@@ -23,9 +29,9 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
 }
 
 :host {
-    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
-
     @include css-vars-from-theme($theme, 'ig-input');
+
+    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
 
     [part='prefix'],
     [part='suffix'] {
@@ -65,8 +71,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 
     [part^='container'] {
-        @include border-radius(2px);
-
+        border-radius: var-get($theme, 'border-border-radius');
         border: #{$resting-border-width} solid var-get($theme, 'border-color');
         transition: none;
         cursor: text;
