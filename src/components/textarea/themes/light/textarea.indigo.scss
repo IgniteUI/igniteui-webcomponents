@@ -115,6 +115,10 @@ textarea {
 
     [part~='container'] {
         background: transparent;
+
+        &::after {
+            border-block-end-color: var-get($theme, 'disabled-bottom-line-color');
+        }
     }
 
     textarea {
@@ -127,12 +131,5 @@ textarea {
 
     [part~='label'] {
         color: var-get($theme, 'disabled-text-color');
-    }
-
-    [part~='container'] {
-        &::after {
-            border-block-end-color: var-get($theme, 'disabled-bottom-line-color');
-        }
-
     }
 }

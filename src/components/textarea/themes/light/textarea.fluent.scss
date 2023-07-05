@@ -68,12 +68,6 @@ $theme: digest-schema($schema);
     }
 }
 
-:host([disabled]) {
-    [part~='label'] {
-        color: var-get($theme, 'disabled-text-color');
-    }
-}
-
 textarea {
     @include type-style('body-2');
 
