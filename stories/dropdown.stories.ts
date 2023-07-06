@@ -92,7 +92,7 @@ const metadata: Meta<IgcDropdownComponent> = {
       type: 'number',
       description: 'The distance from the target element.',
       control: 'number',
-      defaultValue: '0',
+      defaultValue: 0,
     },
     sameWidth: {
       type: 'boolean',
@@ -117,7 +117,7 @@ const metadata: Meta<IgcDropdownComponent> = {
     placement: 'bottom-start',
     positionStrategy: 'absolute',
     flip: false,
-    distance: '0',
+    distance: 0,
     sameWidth: false,
     size: 'large',
   },

@@ -127,7 +127,7 @@ const metadata: Meta<IgcSelectComponent> = {
       type: 'number',
       description: 'The distance from the target element.',
       control: 'number',
-      defaultValue: '0',
+      defaultValue: 0,
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -148,7 +148,7 @@ const metadata: Meta<IgcSelectComponent> = {
     keepOpenOnOutsideClick: false,
     open: false,
     placement: 'bottom-start',
-    distance: '0',
+    distance: 0,
     size: 'medium',
   },
 };
@@ -294,14 +294,15 @@ const Template = (
     <span slot="helper-text">Sample helper text.</span>
     <igc-select-header>Tasks</igc-select-header>
     ${items.map(
-      (item) => html` <igc-select-item
-        value=${item.value}
-        ?disabled=${item.disabled}
-        ?selected=${item.selected}
-      >
-        ${item.text}
-        <igc-icon slot="suffix" name="github"></igc-icon>
-      </igc-select-item>`
+      (item) =>
+        html` <igc-select-item
+          value=${item.value}
+          ?disabled=${item.disabled}
+          ?selected=${item.selected}
+        >
+          ${item.text}
+          <igc-icon slot="suffix" name="github"></igc-icon>
+        </igc-select-item>`
     )}
   </igc-select>
 `;
