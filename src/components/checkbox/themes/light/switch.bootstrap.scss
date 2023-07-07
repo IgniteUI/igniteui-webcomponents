@@ -1,15 +1,18 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
-$schema: extend(
+$schema: map.get($light-bootstrap-schema, 'switch');
+$border-radius-thumb: border-radius(map.get($schema, 'border-radius-thumb')...);
+$border-radius-track: border-radius(map.get($schema, 'border-radius-track')...);
+$theme: digest-schema(extend(
+    $schema,
     (
-        name: 'ig-switch'
-    ),
-    map.get($light-bootstrap-schema, 'switch')
-);
-$theme: digest-schema($schema);
+        border-radius-thumb: $border-radius-thumb,
+        border-radius-track: $border-radius-track
+    )
+));
 
 :host {
     --size: #{rem(32px)};
@@ -18,7 +21,7 @@ $theme: digest-schema($schema);
     --thumb-offset: #{rem(2px)};
     --label-gap: #{rem(8px)};
 
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-switch');
 }
 
 [part~='focused'] {
@@ -37,8 +40,7 @@ $theme: digest-schema($schema);
 }
 
 [part~='control'] {
-    @include border-radius(var-get($theme, 'border-radius-track'));
-
+    border-radius: var-get($theme, 'border-radius-track');
     width: var(--size);
     height: rem(16px);
     border: var(--border-size) solid var-get($theme, 'border-color');
@@ -52,8 +54,7 @@ $theme: digest-schema($schema);
 }
 
 [part~='thumb'] {
-    @include border-radius(var-get($theme, 'border-radius-thumb'));
-
+    border-radius: var-get($theme, 'border-radius-thumb');
     width: var(--thumb-size);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
@@ -92,7 +93,6 @@ $theme: digest-schema($schema);
         color: var-get($theme, 'label-invalid-color');
     }
 }
-
 
 :host([disabled]) {
     [part~='control'] {

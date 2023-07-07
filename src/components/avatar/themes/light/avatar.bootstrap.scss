@@ -1,17 +1,12 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
-$schema: extend(
-    (
-        name: 'ig-avatar'
-    ),
-    map.get($light-bootstrap-schema, 'avatar')
-);
+$schema: map.get($light-bootstrap-schema, 'avatar');
 $theme: digest-schema($schema);
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-avatar');
 }
 
 :host([shape='square']) [part='base'],

@@ -1,9 +1,21 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
 @use '../shared' as *;
 @use '../vars' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
+
+$schema: map.get($light-material-schema, 'linear-bar');
+$track-border-radius: border-radius(map.get($schema, 'track-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        track-border-radius: $track-border-radius
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-linear-bar');
     @extend %host !optional;
 
     display: flex;
@@ -27,12 +39,12 @@
 }
 
 [part~='track'] {
+    border-radius: var-get($theme, 'track-border-radius');
     position: relative;
     width: inherit;
     height: var(--track-size);
     background: $track-color;
     overflow: hidden;
-    border-radius: $track-roundness;
     z-index: 0;
 }
 

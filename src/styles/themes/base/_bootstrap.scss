@@ -5,7 +5,6 @@
 @mixin root-styles($palette) {
     :root {
         --ig-theme: bootstrap;
-        --ig-radius-factor: 1;
         --ig-spacing: 1;
         --ig-spacing-inline: 1;
         --ig-spacing-block: 1;

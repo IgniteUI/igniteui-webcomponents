@@ -1,14 +1,27 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
+$schema: map.get($light-bootstrap-schema, 'list');
+$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        item-border-radius: $item-border-radius
+    )
+));
 $list-bg: contrast-color(gray, 900) !default;
 $separator-color: color(gray, 200) !default;
 $item-color: color(gray, 900) !default;
 $item-hover-bg: color(gray, 100) !default;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-list');
+
     background: $list-bg;
     color: $item-color;
     border-bottom: rem(1px) solid $separator-color;
+    border-radius: var-get($theme, 'item-border-radius');
 }
 
 :host(:hover),
