@@ -1,9 +1,7 @@
-import autoprefixer from 'autoprefixer';
 import { globby } from 'globby';
 import report from './report.js';
-import { sassRender, template } from './sass.mjs';
+import { sassRender, template, postProcessor } from './sass.mjs';
 import path from 'path';
-import postcss from 'postcss';
 import { mkdirSync as makeDir } from 'fs';
 import * as sass from 'sass';
 import { fileURLToPath } from 'url';
@@ -23,7 +21,7 @@ export async function buildThemes() {
       outputStyle: 'compressed',
     });
 
-    let outCss = postcss([autoprefixer]).process(result.css.toString()).css;
+    let outCss = postProcessor.process(result.css).css;
     if (outCss.charCodeAt(0) === 0xfeff) {
       outCss = outCss.substring(1);
     }
