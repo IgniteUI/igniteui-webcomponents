@@ -515,13 +515,14 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
           </span>`
         : ''}
       ${this.generateWeekHeader().map(
-        (weekday) => html`<span
-          role="columnheader"
-          part="label"
-          aria-label=${weekday.ariaLabel}
-        >
-          <span part="label-inner">${this.titleCase(weekday.label)}</span>
-        </span> `
+        (weekday) =>
+          html`<span
+            role="columnheader"
+            part="label"
+            aria-label=${weekday.ariaLabel}
+          >
+            <span part="label-inner">${this.titleCase(weekday.label)}</span>
+          </span> `
       )}
     </div>`;
   }

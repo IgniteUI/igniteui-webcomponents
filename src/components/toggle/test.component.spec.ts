@@ -8,7 +8,10 @@ import type { IgcToggleOptions } from './types';
 export default class PopperTestComponent extends LitElement {
   private toggleDirective: any;
 
-  constructor(target: HTMLElement, private options: IgcToggleOptions) {
+  constructor(
+    target: HTMLElement,
+    private options: IgcToggleOptions
+  ) {
     super();
     this.toggleDirective = igcToggle(target, options);
   }
