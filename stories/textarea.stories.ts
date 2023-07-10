@@ -32,14 +32,14 @@ const metadata: Meta<IgcTextareaComponent> = {
       description:
         'The visible width of the text control, in average character widths. If it is specified, it must be a positive integer.\nIf it is not specified, the default value is 20.',
       control: 'number',
-      defaultValue: '20',
+      defaultValue: 20,
     },
     rows: {
       type: 'number',
       description:
         'The number of visible text lines for the control. If it is specified, it must be a positive integer.\nIf it is not specified, the default value is 2.',
       control: 'number',
-      defaultValue: '2',
+      defaultValue: 2,
     },
     value: {
       type: 'string',
@@ -103,8 +103,8 @@ const metadata: Meta<IgcTextareaComponent> = {
     },
   },
   args: {
-    cols: '20',
-    rows: '2',
+    cols: 20,
+    rows: 2,
     value: '',
     outlined: false,
     required: false,
