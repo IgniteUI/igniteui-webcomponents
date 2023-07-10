@@ -3,7 +3,7 @@ import { TemplateResult } from 'lit';
 import type { FormAssociatedElementInterface } from './mixins/form-associated';
 
 export class FormAssociatedTestBed<
-  T extends FormAssociatedElementInterface & Element
+  T extends FormAssociatedElementInterface & Element,
 > {
   private _element!: T;
   private _form!: HTMLFormElement;

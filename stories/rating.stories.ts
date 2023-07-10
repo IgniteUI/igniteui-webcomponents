@@ -42,12 +42,7 @@ const metadata: Meta<IgcRatingComponent> = {
       description:
         'The minimum value change allowed.\n\nValid values are in the interval between 0 and 1 inclusive.',
       control: 'number',
-      defaultValue: '1',
-    },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control',
-      control: 'text',
+      defaultValue: 1,
     },
     label: {
       type: 'string',
@@ -64,7 +59,7 @@ const metadata: Meta<IgcRatingComponent> = {
       type: 'number',
       description: 'The current value of the component',
       control: 'number',
-      defaultValue: '0',
+      defaultValue: 0,
     },
     hoverPreview: {
       type: 'boolean',

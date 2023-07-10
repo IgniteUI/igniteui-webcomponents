@@ -1119,15 +1119,15 @@ describe('Combo', () => {
   });
 
   describe('Form integration', () => {
-    const spec = new FormAssociatedTestBed<
-      IgcComboComponent<City>
-    >(html`<igc-combo
-      name="combo"
-      .data=${cities}
-      .value=${['BG01', 'BG02']}
-      value-key="id"
-      display-key="name"
-    ></igc-combo>`);
+    const spec = new FormAssociatedTestBed<IgcComboComponent<City>>(
+      html`<igc-combo
+        name="combo"
+        .data=${cities}
+        .value=${['BG01', 'BG02']}
+        value-key="id"
+        display-key="name"
+      ></igc-combo>`
+    );
 
     beforeEach(async () => {
       await spec.setup(IgcComboComponent.tagName);

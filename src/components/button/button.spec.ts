@@ -397,12 +397,14 @@ describe('LinkButton component', () => {
     let button: IgcButtonComponent;
 
     beforeEach(async () => {
-      form = await fixture<HTMLFormElement>(html`<form>
-        <input type="text" name="username" value="John Doe" />
-        <fieldset>
-          <igc-button type="submit">Process</igc-button>
-        </fieldset>
-      </form>`);
+      form = await fixture<HTMLFormElement>(
+        html`<form>
+          <input type="text" name="username" value="John Doe" />
+          <fieldset>
+            <igc-button type="submit">Process</igc-button>
+          </fieldset>
+        </form>`
+      );
       button = form.querySelector(IgcButtonComponent.tagName)!;
     });
 
