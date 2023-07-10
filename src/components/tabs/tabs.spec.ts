@@ -70,15 +70,17 @@ describe('Tabs component', () => {
 
   describe('', () => {
     beforeEach(async () => {
-      element = await fixture<IgcTabsComponent>(html`<igc-tabs>
-        <igc-tab panel="first" disabled>Tab 1</igc-tab>
-        <igc-tab panel="second">Tab 2</igc-tab>
-        <igc-tab panel="third">Tab 3</igc-tab>
-        <igc-tab panel="forth">Tab 4</igc-tab>
-        <igc-tab-panel id="first">Content 1</igc-tab-panel>
-        <igc-tab-panel id="second">Content 2</igc-tab-panel>
-        <igc-tab-panel id="third">Content 2</igc-tab-panel>
-      </igc-tabs>`);
+      element = await fixture<IgcTabsComponent>(
+        html`<igc-tabs>
+          <igc-tab panel="first" disabled>Tab 1</igc-tab>
+          <igc-tab panel="second">Tab 2</igc-tab>
+          <igc-tab panel="third">Tab 3</igc-tab>
+          <igc-tab panel="forth">Tab 4</igc-tab>
+          <igc-tab-panel id="first">Content 1</igc-tab-panel>
+          <igc-tab-panel id="second">Content 2</igc-tab-panel>
+          <igc-tab-panel id="third">Content 2</igc-tab-panel>
+        </igc-tabs>`
+      );
     });
 
     it('is accessible', async () => {
@@ -90,14 +92,16 @@ describe('Tabs component', () => {
     });
 
     it('selects the tab with selected attribute in the template', async () => {
-      const tab = await fixture<IgcTabsComponent>(html`<igc-tabs>
-        <igc-tab panel="first">Tab 1</igc-tab>
-        <igc-tab panel="second" selected>Tab 2</igc-tab>
-        <igc-tab panel="third">Tab 3</igc-tab>
-        <igc-tab-panel id="first">Content 1</igc-tab-panel>
-        <igc-tab-panel id="second">Content 2</igc-tab-panel>
-        <igc-tab-panel id="third">Content 3</igc-tab-panel>
-      </igc-tabs>`);
+      const tab = await fixture<IgcTabsComponent>(
+        html`<igc-tabs>
+          <igc-tab panel="first">Tab 1</igc-tab>
+          <igc-tab panel="second" selected>Tab 2</igc-tab>
+          <igc-tab panel="third">Tab 3</igc-tab>
+          <igc-tab-panel id="first">Content 1</igc-tab-panel>
+          <igc-tab-panel id="second">Content 2</igc-tab-panel>
+          <igc-tab-panel id="third">Content 3</igc-tab-panel>
+        </igc-tabs>`
+      );
       verifySelection(tab, 'second');
       expect(
         (tab as any).panels.map((panel: any) => panel.hasAttribute('hidden'))
