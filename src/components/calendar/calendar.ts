@@ -66,11 +66,14 @@ defineComponents(
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@themes({
-  bootstrap,
-  fluent,
-  indigo,
-}, true)
+@themes(
+  {
+    bootstrap,
+    fluent,
+    indigo,
+  },
+  true
+)
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
