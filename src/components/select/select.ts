@@ -355,11 +355,12 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
     const item = this.allItems
       .filter((i) => !i.disabled)
-      .find((i) =>
-        i.textContent
-          ?.trim()
-          .toLowerCase()
-          .startsWith(this.searchTerm.toLowerCase())
+      .find(
+        (i) =>
+          i.textContent
+            ?.trim()
+            .toLowerCase()
+            .startsWith(this.searchTerm.toLowerCase())
       );
 
     if (item && this.value !== item.value) {

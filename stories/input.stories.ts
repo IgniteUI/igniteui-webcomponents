@@ -83,7 +83,7 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The autocomplete attribute of the control.',
       control: 'text',
     },
-    tabIndex: { type: 'number', control: 'number', defaultValue: '0' },
+    tabIndex: { type: 'number', control: 'number', defaultValue: 0 },
     value: {
       type: 'string',
       description: 'The value of the control.',
@@ -140,7 +140,7 @@ const metadata: Meta<IgcInputComponent> = {
   args: {
     type: 'text',
     invalid: false,
-    tabIndex: '0',
+    tabIndex: 0,
     value: '',
     outlined: false,
     required: false,
