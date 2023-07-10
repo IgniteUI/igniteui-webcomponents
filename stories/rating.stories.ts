@@ -35,7 +35,7 @@ const metadata: Meta<IgcRatingComponent> = {
       description:
         'The maximum value for the rating.\n\nIf there are projected symbols, the maximum value will be resolved\nbased on the number of symbols.',
       control: 'number',
-      defaultValue: '5',
+      defaultValue: 5,
     },
     step: {
       type: 'number',
@@ -43,6 +43,11 @@ const metadata: Meta<IgcRatingComponent> = {
         'The minimum value change allowed.\n\nValid values are in the interval between 0 and 1 inclusive.',
       control: 'number',
       defaultValue: '1',
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control',
+      control: 'text',
     },
     label: {
       type: 'string',
@@ -111,9 +116,9 @@ const metadata: Meta<IgcRatingComponent> = {
     },
   },
   args: {
-    max: '5',
-    step: '1',
-    value: '0',
+    max: 5,
+    step: 1,
+    value: 0,
     hoverPreview: false,
     readonly: false,
     single: false,
@@ -304,14 +309,15 @@ const Template = (
         .valueFormat=${valueFormat}
       >
         ${Array.from(range(5)).map(
-          () => html`<igc-rating-symbol>
-            <igc-icon collection="default" name="bandage"></igc-icon>
-            <igc-icon
-              collection="default"
-              name="bacteria"
-              slot="empty"
-            ></igc-icon>
-          </igc-rating-symbol>`
+          () =>
+            html`<igc-rating-symbol>
+              <igc-icon collection="default" name="bandage"></igc-icon>
+              <igc-icon
+                collection="default"
+                name="bacteria"
+                slot="empty"
+              ></igc-icon>
+            </igc-rating-symbol>`
         )}
       </igc-rating>
     </div>

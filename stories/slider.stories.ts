@@ -103,14 +103,14 @@ const metadata: Meta<IgcSliderComponent> = {
       description:
         'The number of primary ticks. It defaults to 0 which means no primary ticks are displayed.',
       control: 'number',
-      defaultValue: '0',
+      defaultValue: 0,
     },
     secondaryTicks: {
       type: 'number',
       description:
         'The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed.',
       control: 'number',
-      defaultValue: '0',
+      defaultValue: 0,
     },
     tickOrientation: {
       type: '"start" | "end" | "mirror"',
@@ -159,8 +159,8 @@ const metadata: Meta<IgcSliderComponent> = {
     disabled: false,
     discreteTrack: false,
     hideTooltip: false,
-    primaryTicks: '0',
-    secondaryTicks: '0',
+    primaryTicks: 0,
+    secondaryTicks: 0,
     tickOrientation: 'end',
     hidePrimaryLabels: false,
     hideSecondaryLabels: false,

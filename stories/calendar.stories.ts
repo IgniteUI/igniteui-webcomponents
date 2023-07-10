@@ -53,7 +53,7 @@ const metadata: Meta<IgcCalendarComponent> = {
       type: 'number',
       description: 'The number of months displayed in days view.',
       control: 'number',
-      defaultValue: '1',
+      defaultValue: 1,
     },
     activeView: {
       type: '"days" | "months" | "years"',
@@ -122,7 +122,7 @@ const metadata: Meta<IgcCalendarComponent> = {
     hideHeader: false,
     headerOrientation: 'horizontal',
     orientation: 'horizontal',
-    visibleMonths: '1',
+    visibleMonths: 1,
     activeView: 'days',
     size: 'large',
     selection: 'single',

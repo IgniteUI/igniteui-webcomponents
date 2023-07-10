@@ -32,7 +32,7 @@ const replaceIMENumbers = (string: string) => {
         '８': '8',
         '９': '9',
         '０': '0',
-      }[num] as string)
+      })[num] as string
   );
 };
 
