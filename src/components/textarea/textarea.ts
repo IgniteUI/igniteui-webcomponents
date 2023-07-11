@@ -163,7 +163,7 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
    * @attr
    */
   @property()
-  public resize: 'auto' | 'both' | 'vertical' | 'horizontal' | 'none' = 'both';
+  public resize: 'auto' | 'vertical' | 'none' = 'vertical';
 
   /**
    * The minimum number of characters (UTF-16 code units) required that the user should enter.

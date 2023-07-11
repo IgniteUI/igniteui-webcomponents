@@ -82,10 +82,10 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: 'text',
     },
     resize: {
-      type: '"vertical" | "horizontal" | "auto" | "none" | "both"',
-      options: ['vertical', 'horizontal', 'auto', 'none', 'both'],
-      control: { type: 'select' },
-      defaultValue: 'both',
+      type: '"vertical" | "auto" | "none"',
+      options: ['vertical', 'auto', 'none'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'vertical',
     },
     minLength: {
       type: 'number',
@@ -116,7 +116,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     required: false,
     disabled: false,
     invalid: false,
-    resize: 'both',
+    resize: 'vertical',
     wrap: 'soft',
   },
 };
@@ -148,7 +148,7 @@ interface IgcTextareaArgs {
   invalid: boolean;
   /** The label for the control. */
   label: string;
-  resize: 'vertical' | 'horizontal' | 'auto' | 'none' | 'both';
+  resize: 'vertical' | 'auto' | 'none';
   /** The minimum number of characters (UTF-16 code units) required that the user should enter. */
   minLength: number;
   /**
