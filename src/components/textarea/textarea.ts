@@ -145,6 +145,13 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
   public disabled = false;
 
   /**
+   * Controls the validity of the control.
+   * @attr
+   */
+  @property({ reflect: true, type: Boolean })
+  public invalid = false;
+
+  /**
    * The label for the control.
    * @attr
    */
@@ -278,6 +285,10 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
     this.emitEvent('igcChange', { detail: this.value });
   }
 
+  private handleInvalid() {
+    this.invalid = true;
+  }
+
   protected valueSlotChange() {
     const value = extractText(this.projected);
 
@@ -359,6 +370,8 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
         .wrap=${this.wrap}
         ?disabled="${this.disabled}"
         ?required="${this.required}"
+        aria-invalid="${this.invalid ? 'true' : 'false'}"
+        @invalid="${this.handleInvalid}"
       ></textarea>`;
   }
 

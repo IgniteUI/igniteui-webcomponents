@@ -70,6 +70,12 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
+    invalid: {
+      type: 'boolean',
+      description: 'Controls the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     label: {
       type: 'string',
       description: 'The label for the control.',
@@ -109,6 +115,7 @@ const metadata: Meta<IgcTextareaComponent> = {
     outlined: false,
     required: false,
     disabled: false,
+    invalid: false,
     resize: 'both',
     wrap: 'soft',
   },
@@ -137,6 +144,8 @@ interface IgcTextareaArgs {
   required: boolean;
   /** Makes the control a disabled field. */
   disabled: boolean;
+  /** Controls the validity of the control. */
+  invalid: boolean;
   /** The label for the control. */
   label: string;
   resize: 'vertical' | 'horizontal' | 'auto' | 'none' | 'both';

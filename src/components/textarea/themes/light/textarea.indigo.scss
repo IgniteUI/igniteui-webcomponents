@@ -4,7 +4,15 @@
 @use '../../../../styles/themes/schemas' as *;
 
 $schema: map.get($light-indigo-schema, 'input-group');
-$theme: digest-schema($schema);
+$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
+$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-border-radius: $border-border-radius,
+        box-border-radius: $box-border-radius,
+    )
+));
 
 :host {
     @include css-vars-from-theme($theme, 'ig-textarea');
@@ -28,13 +36,8 @@ $theme: digest-schema($schema);
         &::after {
             border-block-end-width: rem(2px);
             border-block-end-color: var-get($theme, 'focused-bottom-line-color');
+            transition: all .25s out-cubic;
         }
-    }
-}
-
-:host([invalid]) {
-    [part~='label'] {
-        color: var-get($theme, 'error-secondary-color');
     }
 }
 
@@ -52,6 +55,8 @@ $theme: digest-schema($schema);
 }
 
 [part~='container'] {
+    border-start-start-radius: var-get($theme, 'box-border-radius');
+    border-start-end-radius: var-get($theme, 'box-border-radius');
     transition: background .25s out-cubic;
     overflow: hidden;
     padding-inline-start: 0;
@@ -85,6 +90,7 @@ textarea {
     [part~='prefix'] {
         color: var-get($theme, 'input-prefix-color');
         background: var-get($theme, 'input-prefix-background');
+        border-start-start-radius: var-get($theme, 'border-border-radius');
     }
 }
 
@@ -92,12 +98,34 @@ textarea {
     [part~='suffix'] {
         color: var-get($theme, 'input-suffix-color');
         background: var-get($theme, 'input-suffix-background');
+        border-start-end-radius: var-get($theme, 'border-border-radius');
     }
 }
 
 [part~='prefixed'] [part~='prefix'],
 [part~='suffixed'] [part~='suffix'] {
     height: calc(100% - #{rem(1px)});
+}
+
+:host([invalid]:not([disabled])) {
+    [part~='label'],
+    [part~='helper-text'] {
+        color: var-get($theme, 'error-secondary-color');
+    }
+
+    [part~='container'] {
+        &::after {
+            border-block-end: rem(1px) solid var-get($theme, 'error-secondary-color');
+        }
+    }
+}
+
+:host([invalid]:not([disabled]):focus-within) {
+    [part~='container'] {
+        &::after {
+            border-block-end-width: rem(2px);
+        }
+    }
 }
 
 :host([disabled]) {

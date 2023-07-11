@@ -1,10 +1,18 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
 $schema: map.get($light-material-schema, 'input-group');
-$theme: digest-schema($schema);
+$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
+$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-border-radius: $border-border-radius,
+        box-border-radius: $box-border-radius,
+    )
+));
 $input-top-padding: rem(20px);
 $input-bottom-padding: rem(6px);
 
@@ -27,9 +35,8 @@ textarea {
 :host(:not([outlined])) {
     [part~='container'] {
         overflow: hidden;
-        border-radius: rem(4px);
-        border-end-start-radius: border-radius(rem(0));
-        border-end-end-radius: border-radius(rem(0));
+        border-start-start-radius: var-get($theme, 'box-border-radius');
+        border-start-end-radius: var-get($theme, 'box-border-radius');
         background: var-get($theme, 'box-background');
 
         &::after {
@@ -91,6 +98,22 @@ textarea {
     }
 }
 
+:host([invalid]:not([disabled])) {
+    [part~='container'] {
+        &::after {
+            border-block-end-color: var-get($theme, 'error-secondary-color');
+        }
+    }
+
+    [part~='label'] {
+        color: var-get($theme, 'error-secondary-color');
+    }
+
+    [part~='helper-text'] {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
 :host(:focus-within) {
     [part~='label'] {
         color: var-get($theme, 'focused-secondary-color');
@@ -117,6 +140,14 @@ textarea {
     [part~='suffix'] {
         color: var-get($theme, 'input-suffix-color--focused');
         background: var-get($theme, 'input-suffix-background--focused');
+    }
+}
+
+:host([invalid]:not([outlined]):focus-within) {
+    [part~='container'] {
+        &::after {
+            border-block-end-color: var-get($theme, 'error-secondary-color');
+        }
     }
 }
 
@@ -349,6 +380,16 @@ textarea {
 
     [part~='suffix'] {
         margin-inline-end: rem(-1px);
+    }
+}
+
+:host([invalid][outlined]:not([disabled])),
+:host([invalid][outlined]:not([disabled]):focus-within) {
+    [part='start'],
+    [part='filler'],
+    [part='notch'],
+    [part='end'] {
+        border-color: var-get($theme, 'error-secondary-color');
     }
 }
 

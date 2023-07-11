@@ -4,7 +4,13 @@
 @use '../../../../styles/themes/schemas' as *;
 
 $schema: map.get($light-fluent-schema, 'input-group');
-$theme: digest-schema($schema);
+$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-border-radius: $border-border-radius
+    )
+));
 
 :host {
     @include css-vars-from-theme($theme, 'ig-textarea');
@@ -101,6 +107,16 @@ textarea {
         &::after {
             color: var-get($theme, 'error-secondary-color');
         }
+    }
+}
+
+:host([invalid]:not([disabled])) {
+    [part~='container'] {
+        border-color: var-get($theme, 'error-secondary-color');
+    }
+
+    [part~='helper-text'] {
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 

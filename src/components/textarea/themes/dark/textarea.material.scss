@@ -1,9 +1,17 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/dark' as *;
 
 $schema: map.get($dark-material-schema, 'input-group');
-$theme: digest-schema($schema);
+$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
+$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-border-radius: $border-border-radius,
+        box-border-radius: $box-border-radius,
+    )
+));
 
 @mixin theme() {
     igc-textarea {

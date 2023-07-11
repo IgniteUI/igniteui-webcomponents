@@ -1,10 +1,16 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
 $schema: map.get($light-bootstrap-schema, 'input-group');
-$theme: digest-schema($schema);
+$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-border-radius: $border-border-radius
+    )
+));
 
 :host {
     @include css-vars-from-theme($theme, 'ig-textarea');
@@ -44,10 +50,10 @@ $theme: digest-schema($schema);
         background: var-get($theme, 'input-prefix-background');
         border: {
             start: {
-                start-radius: border-radius(rem(4px));
+                start-radius: var-get($theme, 'border-border-radius');
             };
             end: {
-                start-radius: border-radius(rem(4px));
+                start-radius: var-get($theme, 'border-border-radius');
             };
         }
     }
@@ -75,10 +81,10 @@ $theme: digest-schema($schema);
         background: var-get($theme, 'input-suffix-background');
         border: {
             start: {
-                end-radius: border-radius(rem(4px));
+                end-radius: var-get($theme, 'border-border-radius');
             };
             end: {
-                end-radius: border-radius(rem(4px));
+                end-radius: var-get($theme, 'border-border-radius');
             };
         }
     }
@@ -101,7 +107,7 @@ textarea {
     border: rem(1px) solid var-get($theme, 'border-color');
     padding-block: pad-inline(4px, 6px, 8px);
     padding-inline: pad-inline(8px, 12px, 16px);
-    border-radius: border-radius(rem(4px));
+    border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;
     font-size: pad(14px, 16px, 20px);
 }
@@ -122,6 +128,17 @@ textarea {
     textarea {
         border: rem(1px) solid var-get($theme, 'focused-border-color');
         box-shadow: 0 0 0 rem(4px) var-get($theme, 'focused-secondary-color');
+    }
+}
+
+:host([invalid]:not([disabled])) {
+    textarea {
+        border: rem(1px) solid var-get($theme, 'error-secondary-color');
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
+    }
+
+    [part~='helper-text'] {
+        color: var-get($theme, 'error-secondary-color');
     }
 }
 
