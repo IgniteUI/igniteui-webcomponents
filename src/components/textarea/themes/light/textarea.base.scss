@@ -48,7 +48,6 @@ $base-scale-size: (
 textarea {
     font: inherit;
     grid-area: 1 / 2 / auto / auto;
-    height: auto;
     position: relative;
     display: block;
     border: none;
@@ -57,7 +56,8 @@ textarea {
     padding-inline-start: 0;
     width: 100%;
     min-width: 0;
-    max-height: var(--size);
+    min-height: var(--size);
+    height: var(--size);
     background: transparent;
     color: var-get($theme, 'filled-text-color');
     outline-style: none;
