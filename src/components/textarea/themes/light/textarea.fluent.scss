@@ -94,6 +94,18 @@ textarea {
     }
 }
 
+[part~='filled'] {
+    [part='prefix'],
+    [part='suffix'] {
+        color: var-get($theme, 'input-prefix-color--filled');
+        background: var-get($theme, 'input-prefix-background--filled');
+    }
+
+    [part~='input'] {
+        color: var-get($theme, 'input-prefix-color--filled');
+    }
+}
+
 [part~='helper-text'] {
     @include type-style('caption');
 
