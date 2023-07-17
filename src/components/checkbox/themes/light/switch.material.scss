@@ -1,31 +1,104 @@
+@use 'sass:math';
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
+$schema: map.get($light-material-schema, 'switch');
+$border-radius-thumb: border-radius(map.get($schema, 'border-radius-thumb')...);
+$border-radius-track: border-radius(map.get($schema, 'border-radius-track')...);
+$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius-thumb: $border-radius-thumb,
+        border-radius-track: $border-radius-track,
+        ripple-radius: $ripple-radius
+    )
+));
 $ripple-size: rem(40px);
 $ripple-radius: calc(#{$ripple-size} / 2);
 
-[part~='control'] {
-    @include border-radius(rem(7px));
+:host {
+    --size: #{rem(36px)};
+    --thumb-size: #{rem(20px)};
+    --thumb-offset: #{rem(-1px)};
+    --label-gap: #{rem(8px)};
 
+    @include css-vars-from-theme($theme, 'ig-switch');
+}
+
+[part~='base'] {
+    &:hover {
+        [part~='thumb'] {
+            &::after {
+                background: var-get($theme, 'track-off-color');
+                opacity: .06;
+            }
+        }
+
+        [part~='thumb'][part~='checked'] {
+            &::after {
+                background: var-get($theme, 'thumb-on-color');
+                opacity: .06;
+            }
+        }
+
+        [part~='control'] {
+            border-color: var-get($theme, 'border-hover-color');
+        }
+
+        [part~='control'][part~='checked'] {
+            border-color: var-get($theme, 'border-on-hover-color');
+        }
+    }
+
+    &:focus-within {
+        [part~='thumb'] {
+            &::after {
+                background: var-get($theme, 'track-off-color');
+                opacity: .12;
+            }
+        }
+
+        [part~='thumb'][part~='checked'] {
+            &::after {
+                background: var-get($theme, 'thumb-on-color');
+                opacity: .12;
+            }
+        }
+    }
+}
+
+[part~='control'] {
+    border-radius: var-get($theme, 'border-radius-track');
     width: var(--size);
     height: rem(14px);
-    background: color(gray, 500);
+    background: var-get($theme, 'track-off-color');
+    border: rem(1px) solid var-get($theme, 'border-color');
+}
+
+[part~='control'][part~='checked'] {
+    background: var-get($theme, 'track-on-color');
+    border-color: var-get($theme, 'border-on-color');
 }
 
 [part~='thumb'] {
+    border-radius: var-get($theme, 'border-radius-thumb');
+    animation-name: thumb-off;
     width: var(--thumb-size);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
-    background: color(gray, 50);
+    background: var-get($theme, 'thumb-off-color');
     box-shadow: var(--ig-elevation-2);
     margin-inline-start: var(--thumb-offset);
 
     &::after {
-        @include border-radius($ripple-radius);
-
+        border-radius: var-get($theme, 'ripple-radius');
         position: absolute;
         content: '';
-        top: calc(50% - #{$ripple-radius});
-        left: calc(50% - #{$ripple-radius});
+        inset-block-start: calc(50% - #{math.div($ripple-size, 2)});
+        inset-inline-start: calc(50% - #{math.div($ripple-size, 2)});
         width: $ripple-size;
         height: $ripple-size;
         overflow: hidden;
@@ -36,67 +109,81 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     }
 }
 
-label {
-    &:hover [part~='thumb'][part~='checked'] {
-        &::after {
-            background: color(secondary, 500, .06);
-        }
-    }
-
-    &:focus-within [part~='thumb'][part~='checked'] {
-        &::after {
-            background: color(secondary, 500, .12);
-        }
-    }
-}
-
-:host([invalid]) label {
-    &:hover [part~='thumb'] {
-        &::after {
-            background: color(error, 500, .06);
-        }
-    }
-
-    &:focus-within [part~='thumb'] {
-        &::after {
-            background: color(error, 500, .12);
-        }
-    }
-}
-
-[part~='control'][part~='checked'] {
-    background: color(secondary, 200);
-}
-
 [part~='thumb'][part~='checked'] {
-    background: color(secondary, 500);
+    background: var-get($theme, 'thumb-on-color');
     margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
     animation-name: thumb-on;
     animation-duration: .2s;
     animation-fill-mode: forwards;
 }
 
-:host([disabled]) {
-    [part~='thumb'] {
-        box-shadow: var(--ig-elevation-1);
-        background: color(gray, 200);
+[part~='label'] {
+    @include type-style('subtitle-1');
+
+    color: var-get($theme, 'label-color');
+    transition: all .2s ease-in-out;
+}
+
+
+:host([invalid]) {
+    [part~='control'] {
+        border-color: var-get($theme, 'track-error-color');
+        background: var-get($theme, 'track-error-color');
     }
 
-    [part~='control'] {
-        background: color(gray, 300);
+    [part~='thumb'] {
+        background: var-get($theme, 'error-color');
     }
 
     [part~='thumb'][part~='checked'] {
-        background: color(secondary, 100);
+        background: var-get($theme, 'thumb-on-error-color');
     }
 
-    [part~='control'][part~='checked'] {
-        background: color(secondary, 50);
+    [part~='thumb'][part~='focused'] {
+        &::after {
+            background: var-get($theme, 'error-color-hover');
+        }
+    }
+
+    &:hover {
+        [part~='thumb'] {
+            &::after {
+                background: var-get($theme, 'error-color-hover');
+            }
+        }
     }
 }
 
 :host(:not([disabled])[invalid]) {
+    [part~='label'] {
+        color: var-get($theme, 'label-invalid-color');
+    }
+
     [part~='control'] {
-        background: color(error, 500, .5);
+        background: var-get($theme, 'track-error-color');
+    }
+}
+
+:host([disabled]) {
+    [part~='control'] {
+        background: var-get($theme, 'track-disabled-color');
+        border-color: var-get($theme, 'border-disabled-color');
+    }
+
+    [part~='control'][part~='checked'] {
+        background: var-get($theme, 'track-on-disabled-color');
+    }
+
+    [part~='thumb'] {
+        box-shadow: var(--ig-elevation-1);
+        background: var-get($theme, 'thumb-disabled-color');
+    }
+
+    [part~='thumb'][part~='checked'] {
+        background: var-get($theme, 'thumb-on-disabled-color');
+    }
+
+    [part~='label'] {
+        color: var-get($theme, 'label-disabled-color');
     }
 }

@@ -1,12 +1,18 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/fluent/dark' as *;
 
 @mixin theme() {
+    $schema: map.get($dark-fluent-schema, 'checkbox');
+    $border-radius: border-radius(map.get($schema, 'border-radius')...);
+    $theme: digest-schema(extend(
+        $schema,
+        (
+            border-radius: $border-radius
+        )
+    ));
+
     igc-checkbox {
-        --border-color: #{color(gray, 700)};
-        --hover-color: #{color(gray, 900)};
-        --checked-hover-color: #{color(primary, 200)};
-        --invalid-color: #{color(error, 200)};
-        --invalid-hover-color: #{color(error, 100)};
-        --disabled-color: #{color(gray, 200)};
+        @include css-vars-from-theme($theme, 'ig-checkbox');
     }
 }

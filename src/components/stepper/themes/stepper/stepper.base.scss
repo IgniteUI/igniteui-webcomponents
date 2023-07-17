@@ -129,7 +129,9 @@
     --header-width-vertical: 100%;
     --hide-horizontal-separator: none;
 
-    display: block;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 
     ::slotted(igc-step) {
         --horizontal-separator-display: none;

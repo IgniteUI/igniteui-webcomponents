@@ -1,10 +1,24 @@
+@use 'sass:map';
 @use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas/indigo/light' as *;
+
+$schema: map.get($light-indigo-schema, 'button', 'icon');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-button');
+
     --size: #{sizable(rem(28px), rem(32px), rem(36px))};
 }
 
 [part='base'] {
+    border-radius: var-get($theme, 'border-radius');
     transition: color .15s ease-in-out, box-shadow .15s ease-in-out, background .15s ease-in-out;
     color: color(gray, 700);
     width: var(--size);
@@ -22,6 +36,10 @@
         background: transparent;
         box-shadow: 0 0 0 rem(3px) color(gray, 300);
     }
+
+    igc-icon {
+        color: color(gray, 700);
+    }
 }
 
 :host([variant='contained']) {
@@ -38,6 +56,10 @@
             background: #{color(primary, 400)};
             box-shadow: 0 0 0 rem(3px) color(primary, 200);
         }
+    }
+
+    igc-icon {
+        color: contrast-color(primary, 600);
     }
 }
 
@@ -72,6 +94,10 @@
         color: color(gray, 400);
         background: transparent;
         box-shadow: none;
+    }
+
+    igc-icon {
+        color: color(gray, 400);
     }
 }
 

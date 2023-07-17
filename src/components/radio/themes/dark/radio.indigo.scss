@@ -1,9 +1,12 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/indigo/dark' as *;
 
 @mixin theme() {
+    $schema: map.get($dark-indigo-schema, 'radio');
+    $theme: digest-schema($schema);
+
     igc-radio {
-        --border-color: #{utils.color(gray, 700)};
-        --checked-color: #{utils.color(gray, 900)};
-        --disabled-color: #{utils.color(gray, 400)};
+        @include css-vars-from-theme($theme, 'ig-radio');
     }
 }

@@ -1,5 +1,6 @@
 import { ReactiveControllerHost, TemplateResult } from 'lit';
 import IgcComboComponent from './combo.js';
+import type { RenderItemFunction } from '@lit-labs/virtualizer/virtualize.js';
 
 export type Keys<T> = keyof T;
 export type Values<T> = T[keyof T];
@@ -16,10 +17,15 @@ export type ComboHost<T extends object> = ReactiveControllerHost &
 
 export type GroupingDirection = 'asc' | 'desc';
 export type ComboChangeType = 'selection' | 'deselection' | 'addition';
+export type ComboRenderFunction<T extends object> = RenderItemFunction<
+  ComboRecord<T>
+>;
+export type ComboValue<T> = T | Values<T>;
 
 export interface FilteringOptions<T extends object> {
   filterKey: Keys<T> | undefined;
   caseSensitive?: boolean;
+  matchDiacritics?: boolean;
 }
 
 export interface GroupingOptions<T extends object> {
@@ -30,10 +36,10 @@ export interface GroupingOptions<T extends object> {
 }
 
 /* marshalByValue */
-export interface IgcComboChangeEventArgs {
-  newValue: string;
+export interface IgcComboChangeEventArgs<T extends object = any> {
+  newValue: ComboValue<T>[];
   /* primitiveValue */
-  items: object;
+  items: T[];
   /* blazorAlternateName: changeType */
   type: ComboChangeType;
 }

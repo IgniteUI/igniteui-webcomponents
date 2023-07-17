@@ -1,17 +1,28 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
 @use '../shared' as *;
 @use '../vars' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
+$schema: map.get($light-bootstrap-schema, 'linear-bar');
+$track-border-radius: border-radius(map.get($schema, 'track-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        track-border-radius: $track-border-radius
+    )
+));
 $stripe-grays: color(gray, 50, .2);
 $stripe-size: rem(5px);
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-linear-bar');
+
     --track-size: #{rem(16px)};
 }
 
 [part~='track'] {
-    @include border-radius(rem(4px));
+    border-radius: var-get($theme, 'track-border-radius');
 }
 
 [part~='striped'][part~='primary']:not([part~='indeterminate']) {

@@ -1,0 +1,15 @@
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+
+$schema: map.get($light-bootstrap-schema, 'avatar');
+$theme: digest-schema($schema);
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-avatar');
+}
+
+:host([shape='square']) [part='base'],
+:host([shape='rounded']) [part='base'] {
+    border-radius: rem(4px);
+}

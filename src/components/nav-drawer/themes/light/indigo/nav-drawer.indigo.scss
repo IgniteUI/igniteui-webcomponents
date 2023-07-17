@@ -1,9 +1,22 @@
-@use '../../../../../styles/utilities/index' as *;
+@use 'sass:map';
+@use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas/indigo/light' as *;
 
+$schema: map.get($light-indigo-schema, 'nav-drawer');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 $background: var(--background, color(gray, 700)) !default;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-nav-drawer');
+
     [part='base'] {
+        border-radius: var-get($theme, 'border-radius');
         background: $background;
         border: none;
         box-shadow: none;

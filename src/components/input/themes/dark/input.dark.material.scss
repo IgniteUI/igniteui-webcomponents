@@ -1,9 +1,28 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/material/dark' as *;
+
+$schema: map.get($dark-material-schema, 'input-group');
+$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
+$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-border-radius: $border-border-radius,
+        box-border-radius: $box-border-radius,
+    )
+));
 
 @mixin theme() {
-    igc-input,
-    igc-mask-input,
-    igc-date-time-input {
-        --focus-background: #{utils.color(gray, 100)};
+    igc-input {
+        @include css-vars-from-theme($theme, 'ig-input');
+    }
+
+    igc-select::part(input) {
+        @include css-vars-from-theme($theme, ig-select);
+    }
+
+    igc-combo::part(input) {
+        @include css-vars-from-theme($theme, ig-combo);
     }
 }

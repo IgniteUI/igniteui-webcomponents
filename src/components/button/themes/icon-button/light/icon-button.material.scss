@@ -1,13 +1,32 @@
+@use 'sass:map';
 @use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas/material/light' as *;
+
+$schema: map.get($light-material-schema, 'button', 'icon');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-button');
+
     --size: #{sizable(rem(24px), rem(30px), rem(36px))};
 }
 
 [part='base'] {
+    border-radius: var-get($theme, 'border-radius');
     width: var(--size);
     height: var(--size);
     padding: pad(6px);
+    color: color(gray, 900);
+
+    igc-icon {
+        color: color(gray, 900);
+    }
 }
 
 :host([variant='contained']) {
@@ -38,6 +57,10 @@
 
 :host([disabled]) {
     [part='base'] {
+        color: color(gray, 500);
+    }
+
+    igc-icon {
         color: color(gray, 500);
     }
 }

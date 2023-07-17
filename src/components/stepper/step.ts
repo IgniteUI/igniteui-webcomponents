@@ -259,6 +259,7 @@ export default class IgcStepComponent extends LitElement {
     );
   }
 
+  /** @hidden @internal */
   public get isAccessible(): boolean {
     return !this.disabled && !this.linearDisabled;
   }

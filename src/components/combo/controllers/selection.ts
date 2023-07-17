@@ -1,5 +1,12 @@
 import { ReactiveController } from 'lit';
-import { ComboHost, Values, IgcComboChangeEventArgs, Item } from '../types.js';
+import type {
+  ComboHost,
+  ComboValue,
+  IgcComboChangeEventArgs,
+  Item,
+  Keys,
+  Values,
+} from '../types.js';
 
 export class SelectionController<T extends object>
   implements ReactiveController
@@ -15,18 +22,8 @@ export class SelectionController<T extends object>
     this.host.resetSearchTerm();
   }
 
-  public getValue(items: T[]) {
-    return items
-      .map((value) => {
-        if (typeof value === 'object' && value !== null) {
-          return this.host.displayKey
-            ? String(value[this.host.displayKey])
-            : String(value);
-        } else {
-          return String(value);
-        }
-      })
-      .join(', ');
+  public getValue(items: T[], key: Keys<T>): ComboValue<T>[] {
+    return items.map((item) => item[key] ?? item);
   }
 
   private handleChange(detail: IgcComboChangeEventArgs) {
@@ -114,7 +111,7 @@ export class SelectionController<T extends object>
     if (
       emit &&
       !this.handleChange({
-        newValue: this.getValue(payload),
+        newValue: this.getValue(payload, this.host.valueKey!),
         items: values as T[],
         type: 'selection',
       })
@@ -138,7 +135,7 @@ export class SelectionController<T extends object>
       if (
         emit &&
         !this.handleChange({
-          newValue: '',
+          newValue: [],
           items: Array.from(this.selected),
           type: 'deselection',
         })
@@ -155,14 +152,12 @@ export class SelectionController<T extends object>
       ? this.getItemsByValueKey(_items as Values<T>[])
       : _items;
     const selected = Array.from(this._selected.values());
-    const payload = structuredClone(selected);
-
-    payload.splice(selected.indexOf(values[0] as T));
+    const payload = selected.filter((item) => item !== values[0]);
 
     if (
       emit &&
       !this.handleChange({
-        newValue: this.getValue(payload),
+        newValue: this.getValue(payload, this.host.valueKey!),
         items: values as T[],
         type: 'deselection',
       })

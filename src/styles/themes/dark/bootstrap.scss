@@ -11,6 +11,13 @@
 @use '../../../components/select/themes/dark/select.bootstrap' as select;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.bootstrap' as nav-drawer-item;
 @use '../../../components/combo/themes/dark/combo.bootstrap' as combo;
+@use '../../../components/avatar/themes/dark/avatar.base.bootstrap' as avatar;
+@use '../../../components/button/themes/button/dark/button.bootstrap' as button;
+@use '../../../components/icon/dark/icon.bootstrap' as icon;
+@use '../../../components/navbar/themes/dark/navbar.bootstrap' as navbar;
+@use '../../../components/checkbox/themes/dark/checkbox.bootstrap' as checkbox;
+@use '../../../components/checkbox/themes/dark/switch.bootstrap' as switch;
+@use '../../../components/radio/themes/dark/radio.bootstrap' as radio;
 @include base.root-styles($dark-bootstrap-palette);
 @include dropdown.theme();
 @include input.theme();
@@ -22,3 +29,10 @@
 @include select.theme();
 @include grid.theme();
 @include combo.theme();
+@include avatar.theme();
+@include button.theme();
+@include icon.theme();
+@include navbar.theme();
+@include checkbox.theme();
+@include switch.theme();
+@include radio.theme();

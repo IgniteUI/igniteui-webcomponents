@@ -1,0 +1,20 @@
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/bootstrap/dark' as *;
+
+@mixin theme() {
+    $schema: map.get($dark-bootstrap-schema, 'switch');
+    $border-radius-thumb: border-radius(map.get($schema, 'border-radius-thumb')...);
+    $border-radius-track: border-radius(map.get($schema, 'border-radius-track')...);
+    $theme: digest-schema(extend(
+        $schema,
+        (
+            border-radius-thumb: $border-radius-thumb,
+            border-radius-track: $border-radius-track
+        )
+    ));
+
+    igc-switch {
+        @include css-vars-from-theme($theme, 'ig-switch');
+    }
+}

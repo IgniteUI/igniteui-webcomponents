@@ -17,6 +17,8 @@
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.fluent' as nav-drawer-item;
 @use '../../../components/combo/themes/dark/combo.fluent' as combo;
+@use '../../../components/icon/dark/icon.fluent' as icon;
+@use '../../../components/navbar/themes/dark/navbar.fluent' as navbar;
 @include base.root-styles($dark-fluent-palette);
 @include button.theme();
 @include icon-button.theme();
@@ -34,3 +36,5 @@
 @include nav-drawer-item.theme();
 @include grid.theme();
 @include combo.theme();
+@include icon.theme();
+@include navbar.theme();

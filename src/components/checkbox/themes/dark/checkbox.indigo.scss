@@ -1,9 +1,20 @@
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/indigo/dark' as *;
 
 @mixin theme() {
+    $schema: map.get($dark-indigo-schema, 'checkbox');
+    $border-radius: border-radius(map.get($schema, 'border-radius')...);
+    $ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
+    $theme: digest-schema(extend(
+        $schema,
+        (
+            border-radius: $border-radius,
+            ripple-radius: $ripple-radius
+        )
+    ));
+
     igc-checkbox {
-        --border-color: #{color(gray, 700)};
-        --checked-color: #{color(gray, 900)};
-        --disabled-color: #{color(gray, 400)};
+        @include css-vars-from-theme($theme, 'ig-checkbox');
     }
 }

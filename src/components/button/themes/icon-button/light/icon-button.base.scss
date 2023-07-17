@@ -30,8 +30,6 @@ $icon-size: rem(18px);
 // }
 
 [part='base'] {
-    @include border-radius(50%);
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -39,7 +37,6 @@ $icon-size: rem(18px);
     outline-style: none;
     background: transparent;
     padding: pad(4px, 5px, 6px);
-    color: color(gray, 900);
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     cursor: pointer;

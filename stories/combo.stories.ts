@@ -119,12 +119,6 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    value: {
-      type: 'string',
-      description:
-        'Returns the current selection as a list of commma separated values,\nrepresented by the display key, when provided.',
-      control: 'text',
-    },
   },
   args: {
     disabled: false,
@@ -179,11 +173,6 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
-  /**
-   * Returns the current selection as a list of commma separated values,
-   * represented by the display key, when provided.
-   */
-  value: string;
 }
 type Story = StoryObj<IgcComboArgs>;
 
@@ -272,7 +261,7 @@ const cities: City[] = [
   },
 ];
 
-// const mandzhasgrozde = [0, 'Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true, null, undefined, NaN, 0];
+// const mandzhasgrozde = [0, 'Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true, NaN, 0];
 
 registerIconFromText(
   'location',
@@ -296,6 +285,8 @@ const Template = (
     singleSelect = false,
     autofocusList,
     groupSorting = 'asc',
+    positionStrategy = 'absolute',
+    sameWidth = false,
   }: IgcComboComponent<City>,
   { globals: { direction } }: Context
 ) => html`
@@ -311,8 +302,11 @@ const Template = (
     dir=${ifDefined(direction)}
     value-key="id"
     display-key="name"
+    value='["BG01", "BG02"]'
     group-key="country"
-    group-sorting="${ifDefined(groupSorting)}"
+    group-sorting=${ifDefined(groupSorting)}
+    position-strategy=${positionStrategy}
+    ?same-width=${sameWidth}
     ?case-sensitive-icon=${caseSensitiveIcon}
     ?disable-filtering=${disableFiltering}
     ?open=${open}
