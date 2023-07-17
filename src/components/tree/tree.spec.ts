@@ -15,6 +15,7 @@ import {
   simpleTree,
   SLOTS,
   TreeTestFunctions,
+  wrappedItemsTree,
 } from './tree-utils.spec.js';
 
 describe('Tree', () => {
@@ -576,6 +577,16 @@ describe('Tree', () => {
       await elementUpdated(tree);
       // child1 has a child item - it and its children (2) should also have been removed
       expect(tree.items.length).to.equal(1);
+    });
+
+    it('Should correctly assign the parent item when child items are wrapped within other elements', async () => {
+      tree = await TreeTestFunctions.createTreeElement(wrappedItemsTree);
+      expect(tree.items[0].parent).to.be.null;
+      expect(tree.items[0].children[0].tagName.toLocaleLowerCase() === 'div');
+      // Should also correctly retrieve the direct children in this case
+      const child1 = tree.items[0].getChildren()[0];
+      expect(child1.label).to.equal('Tree Item 1.1');
+      expect(child1.parent).to.equal(tree.items[0]);
     });
   });
 
