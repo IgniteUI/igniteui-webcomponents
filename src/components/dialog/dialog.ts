@@ -56,9 +56,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   @query('dialog', true)
   private dialog!: HTMLDialogElement;
 
-  @query('[part~="backdrop"]', true)
-  private backdrop!: HTMLElement;
-
   /* blazorSuppress */
   /**
    * Whether the dialog should be closed when pressing the 'ESCAPE' button.
@@ -176,7 +173,6 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   protected async hideWithEvent() {
-    this.backdrop.setAttribute('aria-hidden', 'true');
     if (!this.open) {
       return;
     }
