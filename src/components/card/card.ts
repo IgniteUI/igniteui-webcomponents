@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles as bootstrap } from './themes/light/card.bootstrap.css.js';
 import { styles as fluent } from './themes/light/card.fluent.css.js';
+import { styles as indigo } from './themes/light/card.indigo.css.js';
 import { styles } from './themes/light/card.material.css.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
@@ -26,6 +27,7 @@ defineComponents(
 @themes({
   bootstrap,
   fluent,
+  indigo,
 })
 export default class IgcCardComponent extends LitElement {
   public static readonly tagName = 'igc-card';

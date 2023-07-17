@@ -13,6 +13,7 @@ import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partNameMap } from '../common/util.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
@@ -365,11 +366,12 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
     const item = this.allItems
       .filter((i) => !i.disabled)
-      .find((i) =>
-        i.textContent
-          ?.trim()
-          .toLowerCase()
-          .startsWith(this.searchTerm.toLowerCase())
+      .find(
+        (i) =>
+          i.textContent
+            ?.trim()
+            .toLowerCase()
+            .startsWith(this.searchTerm.toLowerCase())
       );
 
     if (item && this.value !== item.value) {
@@ -488,7 +490,13 @@ export default class IgcSelectComponent extends EventEmitterMixin<
           <span slot=${this.hasSuffixes ? 'suffix' : ''}>
             <slot name="suffix" @slotchange=${this.inputSlotChanged}></slot>
           </span>
-          <span slot="suffix" part="toggle-icon" style="display: flex">
+          <span
+            slot="suffix"
+            part="${partNameMap({
+              'toggle-icon': true,
+              filled: this.value!,
+            })}"
+          >
             <slot name="toggle-icon">
               <igc-icon
                 size=${this.size}

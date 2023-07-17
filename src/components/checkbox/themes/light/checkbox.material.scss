@@ -1,18 +1,21 @@
 @use 'sass:map';
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
-$schema: extend(
+$schema: map.get($light-material-schema, 'checkbox');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
+$theme: digest-schema(extend(
+    $schema,
     (
-        name: 'ig-checkbox'
-    ),
-    map.get($light-material-schema, 'checkbox')
-);
-$theme: digest-schema($schema);
+        border-radius: $border-radius,
+        ripple-radius: $ripple-radius
+    )
+));
 
 :host {
-    @include css-vars($theme);
+    @include css-vars-from-theme($theme, 'ig-checkbox');
 }
 
 [part~='label'] {
@@ -28,28 +31,24 @@ $theme: digest-schema($schema);
 [part~='control'] {
     --size: #{rem(20px)};
 
-
-
     width: calc(var(--size) * 2);
     height: calc(var(--size) * 2);
     min-width: calc(var(--size) * 2);
     transition: background .15s ease-in;
 
     &::after {
-        @include border-radius(var-get($theme, 'border-radius'));
-
+        border-radius: var-get($theme, 'border-radius');
         border: rem(2px) solid var-get($theme, 'empty-color');
     }
 
     &::before {
-        @include border-radius(var-get($theme, 'border-radius-ripple'));
-
         content: '';
         position: absolute;
         inset-block-start: 0;
         inset-inline-start: 0;
         width: 100%;
         height: 100%;
+        border-radius: var-get($theme, 'ripple-radius');
     }
 }
 

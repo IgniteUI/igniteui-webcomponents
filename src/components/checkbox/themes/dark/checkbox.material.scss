@@ -1,17 +1,20 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use '../../../../styles/themes/schemas/material/dark' as *;
 
 @mixin theme() {
-    $schema: extend(
+    $schema: map.get($dark-material-schema, 'checkbox');
+    $border-radius: border-radius(map.get($schema, 'border-radius')...);
+    $ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
+    $theme: digest-schema(extend(
+        $schema,
         (
-            name: 'ig-checkbox'
-        ),
-        map.get($dark-material-schema, 'checkbox')
-    );
-    $theme: digest-schema($schema);
+            border-radius: $border-radius,
+            ripple-radius: $ripple-radius
+        )
+    ));
 
     igc-checkbox {
-        @include css-vars($theme);
+        @include css-vars-from-theme($theme, 'ig-checkbox');
     }
 }

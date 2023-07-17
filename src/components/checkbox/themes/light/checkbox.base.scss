@@ -1,6 +1,5 @@
 @use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
 
 :host {
     display: inline-flex;
@@ -93,4 +92,3 @@ label {
         order: -1;
     }
 }
-

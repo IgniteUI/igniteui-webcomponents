@@ -450,7 +450,9 @@ export default class IgcComboComponent<T extends object = any>
       this.selectionController.select(this._value as Item<T>[]);
     }
 
-    this.updateValue();
+    if (!this.singleSelect) {
+      this.updateValue();
+    }
   }
 
   /**
@@ -763,6 +765,7 @@ export default class IgcComboComponent<T extends object = any>
     if (selection) {
       const item = this.valueKey ? selection[this.valueKey] : selection;
       this.selectionController.deselect([item], selected.size > 0);
+      this._value = [];
     }
   }
 
@@ -809,7 +812,13 @@ export default class IgcComboComponent<T extends object = any>
       this.theme === 'material' ? 'keyboard_arrow_down' : 'arrow_drop_down';
 
     return html`
-      <span slot="suffix" part="toggle-icon">
+      <span
+        slot="suffix"
+        part="${partNameMap({
+          'toggle-icon': true,
+          filled: this.value.length > 0,
+        })}"
+      >
         <slot name="toggle-icon">
           <igc-icon
             name=${this.open ? openIcon : closeIcon}

@@ -1,8 +1,17 @@
+@use 'sass:map';
+@use '../../../../styles/common/component';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
-$input-background: var(--input-background, #fff) !default;
+$input-schema: map.get($light-bootstrap-schema, 'input-group');
+$schema: map.get($light-bootstrap-schema, 'select');
+$input-theme: digest-schema($input-schema);
+$theme: digest-schema($schema);
 
 :host {
+    @include css-vars-from-theme($input-theme, 'ig-input');
+    @include css-vars-from-theme($theme, 'ig-select');
+
     [part='helper-text'] {
         margin-top: rem(4px);
     }
@@ -10,66 +19,61 @@ $input-background: var(--input-background, #fff) !default;
     ::slotted([slot='helper-text']) {
         @include type-style('body-2');
 
-        color: color(gray, 700);
+        color: var-get($input-theme, 'helper-text-color');
+    }
+}
+
+[part~='toggle-icon'] {
+    background: var-get($theme, 'toggle-button-background');
+    color: var-get($theme, 'toggle-button-foreground');
+
+    igc-icon {
+        color: inherit;
     }
 }
 
 :host(:focus-within) {
     igc-input[readonly]:not([disabled])::part(input) {
-        box-shadow: 0 0 0 rem(4px) color(primary, 500, .38);
-        border-color: color(primary, 500);
+        box-shadow: 0 0 0 rem(4px) var-get($input-theme, 'focused-secondary-color');
+        border-color: var-get($input-theme, 'focused-border-color');
+    }
+
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-focus--border');
+        color: var-get($theme, 'toggle-button-foreground-focus');
+
+        igc-icon {
+            color: inherit;
+        }
     }
 }
 
 :host([invalid]),
 :host([invalid]:focus-within) {
     igc-input[readonly]:not([disabled])::part(input) {
-        box-shadow: 0 0 0 rem(4px) color(error, 500, .38);
-        border-color: color(error, 500);
+        box-shadow: 0 0 0 rem(4px) var-get($input-theme, 'error-shadow-color');
+        border-color: var-get($input-theme, 'error-secondary-color');
     }
 }
 
-:host([disabled]) {
+:host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: color(gray, 400);
+        color: var-get($input-theme, 'error-secondary-color');
     }
 }
 
-igc-input[readonly]:not([disabled])::part(prefix),
-igc-input[readonly]:not([disabled])::part(suffix) {
-    color: color(gray, 800);
-    background: color(gray, 300);
-}
+:host([disabled]),
+:host(:disabled) {
+    ::slotted([slot='helper-text']) {
+        color: var-get($input-theme, 'disabled-text-color');
+    }
 
-igc-input[readonly]:not([disabled])::part(prefix),
-igc-input[readonly]:not([disabled])::part(suffix),
-igc-input[readonly]:not([disabled])::part(container) {
-    color: color(gray, 800);
-}
+    [part~='toggle-icon'] {
+        background: var-get($theme, 'toggle-button-background-disabled');
+        color: var-get($theme, 'toggle-button-foreground-disabled');
 
-igc-input[readonly]:not([disabled])::part(container) {
-    background: $input-background;
-}
-
-igc-input[readonly]:not([disabled])::part(prefix),
-igc-input[readonly]:not([disabled])::part(suffix),
-igc-input[readonly]:not([disabled])::part(input) {
-    border-color: color(gray, 400);
-}
-
-igc-input[disabled] {
-    pointer-events: none;
-}
-
-igc-input[disabled]::part(prefix),
-igc-input[disabled]::part(suffix),
-igc-input[disabled]::part(container) {
-    background: color(gray, 100);
-    color: color(gray, 400);
-}
-
-igc-input[disabled]::part(prefix),
-igc-input[disabled]::part(suffix),
-igc-input[disabled]::part(input) {
-    border-color: color(gray, 300);
+        igc-icon {
+            color: inherit;
+        }
+    }
 }

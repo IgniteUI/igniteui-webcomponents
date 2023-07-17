@@ -1,7 +1,19 @@
-@use '../../../../styles/common/component';
+@use 'sass:map';
 @use '../../../../styles/utilities' as *;
+@use '../../../../styles/common/component';
+@use '../../../../styles/themes/schemas/material/light' as *;
+
+$schema: map.get($light-material-schema, 'drop-down');
+$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        item-border-radius: $item-border-radius
+    )
+));
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-dropdown');
     @include type-style('body-2');
 
     display: flex;
@@ -15,6 +27,7 @@
     outline-style: none;
     padding-inline: pad-inline(6px, 12px, 24px);
     padding-block: pad-block(2px, 4px, 8px);
+    border-radius: var-get($theme, 'item-border-radius');
 }
 
 :host(:hover),

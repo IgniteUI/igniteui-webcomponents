@@ -1,10 +1,28 @@
+@use 'sass:map';
 @use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/indigo/light' as *;
 
+$schema: map.get($light-indigo-schema, 'linear-bar');
+$track-border-radius: border-radius(map.get($schema, 'track-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        track-border-radius: $track-border-radius
+    )
+));
 $stripe-grays: color(gray, 50, .7);
 $stripe-primary: color(secondary, 500);
 $stripe-size: rem(6px);
 $stripe-space: rem(14px);
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-linear-bar');
+}
+
+[part~='track'] {
+    border-radius: var-get($theme, 'track-border-radius');
+}
 
 [part~='striped']:not([part~='indeterminate']) {
     /* stylelint-disable */
