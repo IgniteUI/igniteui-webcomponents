@@ -1,6 +1,6 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas/bootstrap/light' as *;
 
 $schema: map.get($light-bootstrap-schema, 'drop-down');
 $border-radius: border-radius(map.get($schema, 'border-radius')...);
@@ -13,11 +13,8 @@ $theme: digest-schema(extend(
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dropdown');
-}
 
-[part='base'] {
-    background: color(surface, 500);
-    border-radius: var-get($theme, 'border-radius');
-    padding: rem(8px) 0;
-    border: rem(1px) solid var(--border-color, color(gray, 300));
+    ::slotted([slot='label']) {
+        color: color(secondary, 500);
+    }
 }

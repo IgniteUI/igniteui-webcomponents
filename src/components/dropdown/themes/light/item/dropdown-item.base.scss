@@ -1,0 +1,49 @@
+@use '../../../../../styles/utilities/index' as *;
+@use '../../../../../styles/common/component';
+
+:host {
+    @include type-style('body-2');
+
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    white-space: nowrap;
+    position: relative;
+    cursor: pointer;
+    outline-style: none;
+    padding-inline: pad-inline(6px, 12px, 24px);
+    padding-block: pad-block(2px, 4px, 8px);
+}
+
+:host([disabled]) {
+    cursor: default;
+    pointer-events: none;
+}
+
+::slotted(*) {
+    font: inherit;
+}
+
+[part='content'] {
+    @include ellipsis();
+
+    display: block;
+    width: 100%;
+    align-items: center;
+}
+
+[part='prefix'],
+[part='suffix'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[name='prefix']::slotted(*) {
+    margin-inline-end: pad(16px);
+}
+
+[name='suffix']::slotted(*) {
+    margin-inline-start: pad(16px);
+}

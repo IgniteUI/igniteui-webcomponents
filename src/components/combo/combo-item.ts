@@ -1,9 +1,9 @@
 import { html, LitElement, nothing } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/item/combo-item.base.css.js';
-import { styles as bootstrap } from '../dropdown/themes/light/dropdown-item.bootstrap.css.js';
-import { styles as fluent } from '../dropdown/themes/light/dropdown-item.fluent.css.js';
-import { styles as indigo } from '../dropdown/themes/light/dropdown-item.indigo.css.js';
+import { styles as bootstrap } from '../dropdown/themes/light/item/dropdown-item.bootstrap.css.js';
+import { styles as fluent } from '../dropdown/themes/light/item/dropdown-item.fluent.css.js';
+import { styles as indigo } from '../dropdown/themes/light/item/dropdown-item.indigo.css.js';
 import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import IgcCheckboxComopnent from '../checkbox/checkbox.js';
