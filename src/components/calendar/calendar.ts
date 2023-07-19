@@ -17,11 +17,11 @@ import {
 } from './common/calendar-base.js';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
-import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css.js';
 import { styles } from './themes/calendar.base.css.js';
+import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css.js';
 import { styles as fluent } from './themes/fluent/calendar.fluent.css.js';
 import { styles as indigo } from './themes/indigo/calendar.indigo.css.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
@@ -29,7 +29,7 @@ import IgcYearsViewComponent from './years-view/years-view.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import IgcIconComponent from '../icon/icon.js';
-import { Theme, ThemeController } from '../../theming/types.js';
+import { Theme } from '../../theming/types.js';
 
 defineComponents(
   IgcIconComponent,
@@ -66,11 +66,14 @@ defineComponents(
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@themes({
-  bootstrap,
-  fluent,
-  indigo,
-})
+@themes(
+  {
+    bootstrap,
+    fluent,
+    indigo,
+  },
+  true
+)
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
@@ -82,8 +85,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
-  protected themeController!: ThemeController;
-  private theme!: Theme;
+  private declare readonly [themeSymbol]: Theme;
 
   @state()
   private rangePreviewDate?: Date;
@@ -141,14 +143,6 @@ export default class IgcCalendarComponent extends SizableMixin(
   @watch('locale')
   protected formattersChange() {
     this.initFormatters();
-  }
-
-  protected themeAdopted(controller: ThemeController) {
-    this.themeController = controller;
-  }
-
-  protected override willUpdate() {
-    this.theme = this.themeController.theme;
   }
 
   constructor() {
@@ -603,9 +597,9 @@ export default class IgcCalendarComponent extends SizableMixin(
     let startYear = undefined;
     let endYear = undefined;
     const prev_icon =
-      this.theme === 'fluent' ? 'arrow_upward' : 'navigate_before';
+      this[themeSymbol] === 'fluent' ? 'arrow_upward' : 'navigate_before';
     const next_icon =
-      this.theme === 'fluent' ? 'arrow_downward' : 'navigate_next';
+      this[themeSymbol] === 'fluent' ? 'arrow_downward' : 'navigate_next';
 
     if (this.activeView === 'years') {
       startYear = calculateYearsRangeStart(activeDate, this.yearPerPage);
