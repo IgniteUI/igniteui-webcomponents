@@ -1,6 +1,6 @@
 import { html, LitElement, TemplateResult } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { themes, themeSymbol } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/combo.base.css.js';
 import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
 import { styles as material } from './themes/light/combo.material.css.js';
@@ -40,7 +40,7 @@ import { live } from 'lit/directives/live.js';
 import { partNameMap } from '../common/util.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
-import type { ThemeController, Theme } from '../../theming/types.js';
+import type { Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
@@ -97,7 +97,7 @@ defineComponents(
  * @csspart footer - The container holding the footer content.
  * @csspart empty - The container holding the empty content.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({ material, bootstrap, fluent, indigo }, true)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<T extends object = any>
@@ -120,8 +120,7 @@ export default class IgcComboComponent<T extends object = any>
   protected selectionController = new SelectionController<T>(this);
   protected dataController = new DataController<T>(this);
   protected toggleController!: IgcToggleController;
-  protected themeController!: ThemeController;
-  protected theme!: Theme;
+  private declare readonly [themeSymbol]: Theme;
 
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
@@ -379,14 +378,6 @@ export default class IgcComboComponent<T extends object = any>
       'keydown',
       this.navigationController.navigateHost.bind(this.navigationController)
     );
-  }
-
-  protected themeAdopted(controller: ThemeController) {
-    this.themeController = controller;
-  }
-
-  protected override willUpdate() {
-    this.theme = this.themeController.theme;
   }
 
   protected override async getUpdateComplete() {
@@ -823,9 +814,11 @@ export default class IgcComboComponent<T extends object = any>
 
   private renderToggleIcon() {
     const openIcon =
-      this.theme === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
+      this[themeSymbol] === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
     const closeIcon =
-      this.theme === 'material' ? 'keyboard_arrow_down' : 'arrow_drop_down';
+      this[themeSymbol] === 'material'
+        ? 'keyboard_arrow_down'
+        : 'arrow_drop_down';
 
     return html`
       <span
@@ -848,7 +841,7 @@ export default class IgcComboComponent<T extends object = any>
 
   private renderClearIcon() {
     const { selected } = this.selectionController;
-    const icon = this.theme === 'material' ? 'chip_cancel' : 'clear';
+    const icon = this[themeSymbol] === 'material' ? 'chip_cancel' : 'clear';
 
     return html`<span
       slot="suffix"
