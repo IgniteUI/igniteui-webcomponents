@@ -7,17 +7,17 @@ import {
 } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/textarea.base.css.js';
 import { styles as material } from './themes/light/textarea.material.css.js';
 import { styles as bootstrap } from './themes/light/textarea.bootstrap.css.js';
 import { styles as fluent } from './themes/light/textarea.fluent.css.js';
 import { styles as indigo } from './themes/light/textarea.indigo.css.js';
-import type { ThemeController } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, extractText, partNameMap } from '../common/util.js';
+import type { Theme } from '../../theming/types.js';
 
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
@@ -49,13 +49,15 @@ export interface IgcTextareaEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({ material, bootstrap, fluent, indigo }, true)
 export default class IgcTextareaComponent extends EventEmitterMixin<
   IgcTextareaEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-textarea';
   public static styles = [styles];
+
+  private declare readonly [themeSymbol]: Theme;
 
   private static readonly increment = createCounter();
   protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
@@ -66,7 +68,6 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
   };
 
   private observer!: ResizeObserver;
-  protected themeController!: ThemeController;
 
   @queryAssignedNodes({ flatten: true })
   private projected!: Array<Node>;
@@ -209,10 +210,6 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
   public override disconnectedCallback(): void {
     this.observer.disconnect();
     super.disconnectedCallback();
-  }
-
-  protected themeAdopted(controller: ThemeController) {
-    this.themeController = controller;
   }
 
   /** Selects all text within the control. */
@@ -368,15 +365,15 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
         .rows=${this.rows}
         .value=${live(this.value)}
         .wrap=${this.wrap}
-        ?disabled="${this.disabled}"
-        ?required="${this.required}"
-        aria-invalid="${this.invalid ? 'true' : 'false'}"
-        @invalid="${this.handleInvalid}"
+        ?disabled=${this.disabled}
+        ?required=${this.required}
+        aria-invalid=${this.invalid ? 'true' : 'false'}
+        @invalid=${this.handleInvalid}
       ></textarea>`;
   }
 
   protected override render() {
-    const isMaterial = this.themeController.theme === 'material';
+    const isMaterial = this[themeSymbol] === 'material';
     return isMaterial ? this.renderMaterial() : this.renderStandard();
   }
 }
