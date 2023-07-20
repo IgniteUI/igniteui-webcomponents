@@ -16,7 +16,7 @@ $theme: digest-schema(extend(
 }
 
 [part='base'] {
-    background: color(surface, 500);
+    background: var-get($theme, 'background-color');
     border-radius: var-get($theme, 'border-radius');
     box-shadow: var(--ig-elevation-8);
     padding: rem(8px) 0;

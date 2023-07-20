@@ -14,7 +14,7 @@ $theme: digest-schema(extend(
 :host {
     @include css-vars-from-theme($theme, 'ig-dropdown');
 
-    color: var(--header-color, color(secondary, 500));
+    color: var-get($theme, 'header-text-color');
     padding-inline: pad-inline(4px, 8px, 16px);
     padding-block: pad-block(2px, 4px, 8px);
 }

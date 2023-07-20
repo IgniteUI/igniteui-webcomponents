@@ -15,6 +15,6 @@ $theme: digest-schema(extend(
     @include css-vars-from-theme($theme, 'ig-dropdown');
 
     ::slotted([slot='label']) {
-        color: color(secondary, 500);
+        color: var-get($theme, 'header-text-color');
     }
 }
