@@ -17,7 +17,7 @@ $selected-item-color: var(--selected-item-color, contrast-color(gray, 200)) !def
 
     border-radius: var-get($theme, 'item-border-radius');
     color: var-get($theme, 'item-text-color');
-    padding: pad(2px, 4px, 8px);
+    padding: pad(rem(2px), rem(4px), rem(8px));
 }
 
 :host([active]),
