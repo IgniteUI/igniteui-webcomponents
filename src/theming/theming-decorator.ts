@@ -1,12 +1,12 @@
 import { ReactiveElement } from 'lit';
 import { updateWhenThemeChanges } from './theming-controller.js';
-import { ReactiveTheme, Themes } from './types.js';
+import type { Themes } from './types.js';
 
 /**
  * Class decorator to enable multiple theme support for a component.
  * The component will re-render on theme changes.
  *
- * See also {@link updateWhenThemeChanges} for the same functionallity
+ * See also {@link updateWhenThemeChanges} for the same functionality
  * without the use of this decorator.
  *
  * Usage:
@@ -24,15 +24,14 @@ import { ReactiveTheme, Themes } from './types.js';
  *  }
  *  ```
  */
-export function themes(themes: Themes) {
+export function themes(themes: Themes, exposeTheme = false) {
   return (clazz: any) => {
-    clazz.addInitializer((instance: ReactiveElement & ReactiveTheme) => {
-      const controller = updateWhenThemeChanges(instance, themes);
-
-      if ('themeAdopted' in instance) {
-        instance.themeAdopted(controller);
-      }
+    clazz.addInitializer((instance: ReactiveElement) => {
+      updateWhenThemeChanges(instance, themes, exposeTheme);
     });
+
     return clazz;
   };
 }
+
+export { themeSymbol } from './theming-controller.js';
