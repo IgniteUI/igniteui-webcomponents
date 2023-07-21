@@ -16,6 +16,6 @@ $theme: digest-schema(extend(
 
     ::slotted([slot='label']) {
         color: var-get($theme, 'header-text-color');
-        padding: pad(2px, 4px, 8px);
+        padding: pad(rem(2px), rem(4px), (8px));
     }
 }
