@@ -45,5 +45,5 @@
 }
 
 [name='suffix']::slotted(*) {
-    margin-inline-start: pad(16px);
+    margin-inline-start: pad(rem(16px));
 }
