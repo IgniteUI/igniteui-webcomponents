@@ -12,8 +12,8 @@
     position: relative;
     cursor: pointer;
     outline-style: none;
-    padding-inline: pad-inline(6px, 12px, 24px);
-    padding-block: pad-block(2px, 4px, 8px);
+    padding-inline: pad-inline(rem(6px), rem(12px), rem(24px));
+    padding-block: pad-block(rem(2px), rem(4px), rem(8px));
 }
 
 :host([disabled]) {
