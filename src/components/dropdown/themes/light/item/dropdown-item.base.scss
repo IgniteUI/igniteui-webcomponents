@@ -41,7 +41,7 @@
 }
 
 [name='prefix']::slotted(*) {
-    margin-inline-end: pad(16px);
+    margin-inline-end: pad(rem(16px));
 }
 
 [name='suffix']::slotted(*) {
