@@ -10,7 +10,6 @@ $theme: digest-schema(extend(
         item-border-radius: $item-border-radius
     )
 ));
-$hover-item-color: var(--hover-item-color, contrast-color(gray, 100)) !default;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dropdown');
