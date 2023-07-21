@@ -1,7 +1,12 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/indigo/dark' as *;
+
+$schema: map.get($dark-indigo-schema, 'drop-down');
+$theme: digest-schema($schema);
 
 @mixin theme() {
-    igc-dropdown-header {
-        --header-color: #{utils.contrast-color(surface, 500)};
+    igc-dropdown {
+        @include css-vars-from-theme($theme, 'ig-dropdown');
     }
 }

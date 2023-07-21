@@ -1,12 +1,12 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/bootstrap/dark' as *;
+
+$schema: map.get($dark-bootstrap-schema, 'drop-down');
+$theme: digest-schema($schema);
 
 @mixin theme() {
     igc-dropdown {
-        --border-color: #{utils.color(gray, 100)};
-    }
-
-    igc-dropdown-item {
-        --item-color: #{utils.contrast-color(surface, 500)};
-        --hover-item-color: #{utils.contrast-color(surface, 500)};
+        @include css-vars-from-theme($theme, 'ig-dropdown');
     }
 }
