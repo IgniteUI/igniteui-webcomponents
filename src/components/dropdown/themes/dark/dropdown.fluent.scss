@@ -3,7 +3,16 @@
 @use '../../../../styles/themes/schemas/fluent/dark' as *;
 
 $schema: map.get($dark-fluent-schema, 'drop-down');
-$theme: digest-schema($schema);
+$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        item-border-radius: $item-border-radius,
+        border-radius: $border-radius
+    )
+));
+
 
 @mixin theme() {
     igc-dropdown {
