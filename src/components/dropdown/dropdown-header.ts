@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/header/dropdown-header.base.css';
+import { styles } from './themes/light/header/dropdown-header.base.css.js';
 import { styles as bootstrap } from './themes/light/header/dropdown-header.bootstrap.css.js';
 import { styles as fluent } from './themes/light/header/dropdown-header.fluent.css.js';
 import { styles as indigo } from './themes/light/header/dropdown-header.indigo.css.js';
