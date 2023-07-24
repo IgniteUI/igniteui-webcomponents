@@ -1,8 +1,8 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/dark' as *;
+@use '../../../../styles/themes/schemas/material/dark' as *;
 
-$schema: map.get($dark-indigo-schema, 'drop-down');
+$schema: map.get($dark-material-schema, 'drop-down');
 $item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
 $border-radius: border-radius(map.get($schema, 'border-radius')...);
 $theme: digest-schema(extend(

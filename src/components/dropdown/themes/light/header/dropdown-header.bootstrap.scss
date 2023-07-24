@@ -1,0 +1,20 @@
+@use 'sass:map';
+@use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas/bootstrap/light' as *;
+
+$schema: map.get($light-bootstrap-schema, 'drop-down');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-dropdown');
+
+    color: var-get($theme, 'header-text-color');
+    padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
+    padding-block: pad-block(rem(2px), rem(4px), rem(8px));
+}

@@ -1,8 +1,8 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/header/combo-header.base.css.js';
-import { styles as bootstrap } from '../dropdown/themes/light/dropdown-header.bootstrap.css.js';
-import { styles as fluent } from '../dropdown/themes/light/dropdown-header.fluent.css.js';
+import { styles as bootstrap } from '../dropdown/themes/light/header/dropdown-header.bootstrap.css.js';
+import { styles as fluent } from '../dropdown/themes/light/header/dropdown-header.fluent.css.js';
 
 /* blazorSuppress */
 @themes({ bootstrap, fluent })

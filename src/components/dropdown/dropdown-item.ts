@@ -2,10 +2,11 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
-import { styles } from './themes/light/dropdown-item.base.css.js';
-import { styles as bootstrap } from './themes/light/dropdown-item.bootstrap.css.js';
-import { styles as fluent } from './themes/light/dropdown-item.fluent.css.js';
-import { styles as indigo } from './themes/light/dropdown-item.indigo.css.js';
+import { styles } from './themes/light/item/dropdown-item.base.css.js';
+import { styles as bootstrap } from './themes/light/item/dropdown-item.bootstrap.css.js';
+import { styles as fluent } from './themes/light/item/dropdown-item.fluent.css.js';
+import { styles as indigo } from './themes/light/item/dropdown-item.indigo.css.js';
+import { styles as material } from './themes/light/item/dropdown-item.material.css.js';
 
 /**
  * Represents an item in a dropdown list.
@@ -20,7 +21,7 @@ import { styles as indigo } from './themes/light/dropdown-item.indigo.css.js';
  * @csspart content - The main content wrapper.
  * @csspart suffix - The suffix wrapper.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({ bootstrap, fluent, indigo, material })
 export default class IgcDropdownItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-item';
 
