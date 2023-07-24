@@ -1,6 +1,6 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/fluent/light' as *;
+@use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas/fluent/light' as *;
 
 $schema: map.get($light-fluent-schema, 'drop-down');
 $border-radius: border-radius(map.get($schema, 'border-radius')...);
@@ -13,10 +13,7 @@ $theme: digest-schema(extend(
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dropdown');
-}
 
-[part='base'] {
-    background: var-get($theme, 'background-color');
-    border-radius: var-get($theme, 'border-radius');
-    box-shadow: var(--ig-elevation-4);
+    color: var-get($theme, 'header-text-color');
+    padding: pad(rem(2px), rem(4px), rem(8px));
 }

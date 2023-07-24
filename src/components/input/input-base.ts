@@ -1,7 +1,7 @@
 import { html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import type { ReactiveTheme, ThemeController } from '../../theming/types.js';
+import { themes, themeSymbol } from '../../theming/theming-decorator.js';
+import type { Theme } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
@@ -25,14 +25,13 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes({ bootstrap, material, fluent, indigo })
+@themes({ bootstrap, material, fluent, indigo }, true)
 @blazorDeepImport
-export abstract class IgcInputBaseComponent
-  extends SizableMixin(
-    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
-  )
-  implements ReactiveTheme
-{
+export abstract class IgcInputBaseComponent extends SizableMixin(
+  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
+) {
+  private declare readonly [themeSymbol]: Theme;
+
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
@@ -57,8 +56,6 @@ export abstract class IgcInputBaseComponent
 
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
-
-  protected themeController!: ThemeController;
 
   /**
    * The direction attribute of the control.
@@ -125,10 +122,6 @@ export abstract class IgcInputBaseComponent
   public override connectedCallback() {
     super.connectedCallback();
     this.shadowRoot!.addEventListener('slotchange', () => this.requestUpdate());
-  }
-
-  public themeAdopted(controller: ThemeController): void {
-    this.themeController = controller;
   }
 
   /** Sets focus on the control. */
@@ -230,7 +223,7 @@ export abstract class IgcInputBaseComponent
   }
 
   protected override render() {
-    return html`${this.themeController.theme === 'material'
+    return html`${this[themeSymbol] === 'material'
       ? this.renderMaterial()
       : this.renderStandard()}`;
   }

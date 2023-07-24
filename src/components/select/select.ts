@@ -1,4 +1,4 @@
-import { html, PropertyValueMap } from 'lit';
+import { html } from 'lit';
 import {
   property,
   query,
@@ -7,7 +7,7 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/index.js';
+import { themes, themeSymbol } from '../../theming/index.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
@@ -23,7 +23,7 @@ import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
-import type { ThemeController, Theme } from '../../theming/types.js';
+import type { Theme } from '../../theming/types.js';
 import { styles } from './themes/light/select.base.css.js';
 import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
@@ -44,7 +44,7 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes({ bootstrap, material, fluent, indigo })
+@themes({ bootstrap, material, fluent, indigo }, true)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
@@ -84,8 +84,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   public static styles = styles;
   private searchTerm = '';
   private lastKeyTime = Date.now();
-  protected themeController!: ThemeController;
-  protected theme!: Theme;
+  private declare readonly [themeSymbol]: Theme;
 
   private readonly targetKeyHandlers: Map<string, Function> = new Map(
     Object.entries({
@@ -226,16 +225,6 @@ export default class IgcSelectComponent extends EventEmitterMixin<
     this.addEventListener('igcChange', () => {
       if (this.open) this.target.focus();
     });
-  }
-
-  protected themeAdopted(controller: ThemeController) {
-    this.themeController = controller;
-  }
-
-  protected override willUpdate(changes: PropertyValueMap<any>) {
-    super.willUpdate(changes);
-
-    this.theme = this.themeController.theme;
   }
 
   /** Override the dropdown target focusout behavior to prevent the focus from
@@ -451,9 +440,11 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
   protected override render() {
     const openIcon =
-      this.theme === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
+      this[themeSymbol] === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
     const closeIcon =
-      this.theme === 'material' ? 'keyboard_arrow_down' : 'arrow_drop_down';
+      this[themeSymbol] === 'material'
+        ? 'keyboard_arrow_down'
+        : 'arrow_drop_down';
 
     return html`
       <div

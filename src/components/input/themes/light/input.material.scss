@@ -183,6 +183,15 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host([readonly]:not([outlined]):focus-within) {
+    :not([part~='filled']) {
+        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+            transform: translate(0);
+            font-size: initial;
+        }
+    }
+}
+
 :host(:not([outlined])) {
     [part='prefix'],
     [part='suffix'] {
@@ -352,7 +361,28 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
+:host([readonly][outlined]:focus-within) {
+    :not([part~='filled']) {
+        input:not(:placeholder-shown) + [part='notch'] [part='label'] {
+            transform: translate(0);
+            font-size: initial;
+        }
+
+        input:not(:placeholder-shown) + [part='notch'] {
+            border: {
+                width: $active-border-width;
+                color: var-get($theme, 'focused-border-color');
+            }
+        }
+    }
+}
+
+
 :host([outlined]:focus-within) {
+    [part='label'] {
+        margin-block-start: calc(#{$active-border-width} / 2);
+    }
+
     [part='start'] {
         border: {
             color: var-get($theme, 'focused-border-color');
