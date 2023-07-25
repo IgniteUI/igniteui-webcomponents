@@ -25,7 +25,7 @@ $theme: digest-schema(extend(
     color: var-get($theme, 'hover-item-text-color');
 }
 
-:host(:focus) {
+:host([avtive]) {
     background: var-get($theme, 'focused-item-background');
     color: var-get($theme, 'focused-item-text-color');
 }
