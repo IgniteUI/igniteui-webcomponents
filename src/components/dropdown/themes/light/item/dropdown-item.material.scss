@@ -1,0 +1,48 @@
+@use 'sass:map';
+@use '../../../../../styles/utilities/index' as *;
+@use '../../../../../styles/themes/schemas/material/light' as *;
+
+$schema: map.get($light-material-schema, 'drop-down');
+$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        item-border-radius: $item-border-radius
+    )
+));
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-dropdown');
+
+    border-radius: var-get($theme, 'item-border-radius');
+    color: var-get($theme, 'item-text-color');
+}
+
+:host([active]),
+:host(:hover) {
+    background: var-get($theme, 'hover-item-background');
+    color: var-get($theme, 'hover-item-text-color');
+}
+
+:host(:focus) {
+    background: var-get($theme, 'focused-item-background');
+    color: var-get($theme, 'focused-item-text-color');
+}
+
+:host([selected]) {
+    background: var-get($theme, 'selected-item-background');
+    color: var-get($theme, 'selected-item-text-color');
+}
+
+:host([selected]:hover),
+:host([selected][active]) {
+    background: var-get($theme, 'selected-hover-item-background');
+    color: var-get($theme, 'selected-hover-item-text-color');
+}
+
+:host([disabled]) {
+    background: var-get($theme, 'disabled-item-background');
+    color: var-get($theme, 'disabled-item-text-color');
+}
+
+

@@ -379,6 +379,10 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 
 :host([outlined]:focus-within) {
+    [part='label'] {
+        margin-block-start: calc(#{$active-border-width} / 2);
+    }
+
     [part='start'] {
         border: {
             color: var-get($theme, 'focused-border-color');
