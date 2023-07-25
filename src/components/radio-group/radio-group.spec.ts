@@ -51,7 +51,7 @@ describe('Radio Group Component', () => {
       );
     });
 
-    it.only('should be able to navigate radios using arrow keys', async () => {
+    it('should be able to navigate radios using arrow keys', async () => {
       const radio1 = sinon.spy(radios[0], 'emitEvent');
       const radio2 = sinon.spy(radios[1], 'emitEvent');
       const [first, second, _] = radios;
