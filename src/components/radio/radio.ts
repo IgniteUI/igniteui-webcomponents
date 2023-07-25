@@ -22,6 +22,7 @@ import { styles as indigo } from './themes/light/radio.indigo.css.js';
 import { styles as material } from './themes/light/radio.material.css.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import messages from '../common/localization/validation-en.js';
+import { Validator } from '../common/validators.js';
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<boolean>;
@@ -69,6 +70,17 @@ export default class IgcRadioComponent extends FormAssociatedMixin(
   protected static styles = styles;
   private static readonly increment = createCounter();
 
+  protected override validators: Validator<this>[] = [
+    {
+      key: 'valueMissing',
+      message: messages.required,
+      isValid: () => {
+        const { radios } = this.radioGroup;
+        return any(radios, 'required') ? any(radios, 'checked') : true;
+      },
+    },
+  ];
+
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
 
@@ -91,11 +103,28 @@ export default class IgcRadioComponent extends FormAssociatedMixin(
     const radios: IgcRadioComponent[] = Array.from(
       document.querySelectorAll(`${this.tagName}[name='${this.name}']`)
     );
-    return {
-      radios,
-      nonDisabled: radios.filter((r) => !r.disabled),
-      siblings: radios.filter((r) => !r.isSameNode(this)),
-    };
+    const nonDisabled = [];
+    const siblings = [];
+
+    for (const radio of radios) {
+      if (!radio.disabled) {
+        nonDisabled.push(radio);
+      }
+      if (!radio.isSameNode(this)) {
+        siblings.push(radio);
+      }
+    }
+
+    return { radios, nonDisabled, siblings };
+  }
+
+  protected override setDefaultValue(): void {
+    const firstChecked = this.radioGroup.radios.find((r) => r.checked);
+    if (firstChecked && firstChecked.isSameNode(this)) {
+      this._defaultValue = true;
+    } else {
+      this._defaultValue = false;
+    }
   }
 
   /**
@@ -193,38 +222,6 @@ export default class IgcRadioComponent extends FormAssociatedMixin(
     }
     this.updateValidity();
     this.setInvalidState();
-  }
-
-  protected override handleFormReset(): void {
-    const { radios } = this.radioGroup;
-    const defaultChecked = radios.find((r) => r.hasAttribute('checked'));
-    if (defaultChecked) {
-      defaultChecked.checked = true;
-    } else {
-      for (const radio of radios) {
-        radio.checked = false;
-        radio._tabIndex = 0;
-        radio.updateValidity();
-      }
-    }
-  }
-
-  protected override updateValidity(message = ''): void {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-    const { radios } = this.radioGroup;
-
-    if (any(radios, 'required') && !any(radios, 'checked')) {
-      flags.valueMissing = true;
-      msg = messages.required;
-    }
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
   }
 
   protected handleMouseDown(event: PointerEvent) {

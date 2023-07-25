@@ -45,6 +45,7 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import messages from '../common/localization/validation-en.js';
+import type { Validator } from '../common/validators.js';
 
 defineComponents(
   IgcIconComponent,
@@ -115,6 +116,17 @@ export default class IgcComboComponent<T extends object = any>
     caseSensitive: false,
     matchDiacritics: false,
   };
+
+  protected override validators: Validator<this>[] = [
+    {
+      key: 'valueMissing',
+      message: messages.required,
+      isValid: () =>
+        this.required
+          ? Array.isArray(this.value) && this.value.length > 0
+          : true,
+    },
+  ];
 
   protected navigationController = new NavigationController<T>(this);
   protected selectionController = new SelectionController<T>(this);
@@ -405,31 +417,6 @@ export default class IgcComboComponent<T extends object = any>
 
     this.updateValidity();
     this.invalid = !this.checkValidity();
-  }
-
-  protected override handleFormReset(): void {
-    const value = this.getAttribute('value');
-    this.value = value ? JSON.parse(value) : [];
-  }
-
-  protected override updateValidity(message = ''): void {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-
-    if (
-      this.required &&
-      !(Array.isArray(this.value) && this.value.length > 0)
-    ) {
-      flags.valueMissing = true;
-      msg = messages.required;
-    }
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
   }
 
   @watch('value')

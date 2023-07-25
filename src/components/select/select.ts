@@ -13,7 +13,6 @@ import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import messages from '../common/localization/validation-en.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
@@ -33,6 +32,7 @@ import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
+import { requiredValidator, Validator } from '../common/validators.js';
 
 defineComponents(
   IgcIconComponent,
@@ -87,6 +87,8 @@ export default class IgcSelectComponent extends FormAssociatedMixin(
   public static styles = styles;
   private searchTerm = '';
   private lastKeyTime = Date.now();
+
+  protected override validators: Validator<this>[] = [requiredValidator];
   private declare readonly [themeSymbol]: Theme;
 
   private readonly targetKeyHandlers: Map<string, Function> = new Map(
@@ -129,8 +131,8 @@ export default class IgcSelectComponent extends FormAssociatedMixin(
    * The value attribute of the control.
    * @attr
    */
-  @property({ reflect: false, type: String })
-  public value?: string | undefined;
+  @property({ reflect: false })
+  public value?: string;
 
   /**
    * The outlined attribute of the control.
@@ -280,27 +282,6 @@ export default class IgcSelectComponent extends FormAssociatedMixin(
     this.setFormValue(this.value!);
     this.updateValidity();
     this.setInvalidState();
-  }
-
-  protected override handleFormReset(): void {
-    this.value = this.getAttribute('value') ?? '';
-  }
-
-  protected override updateValidity(message = ''): void {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-
-    if (this.required && !this.value) {
-      flags.valueMissing = true;
-      msg = messages.required;
-    }
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
   }
 
   protected selectNext() {

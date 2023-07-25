@@ -84,23 +84,6 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
     return this._ariaLabel;
   }
 
-  protected override handleFormReset(): void {
-    const value = parseFloat(this.getAttribute('value')!);
-    this.value = !isNaN(value) ? value : 0;
-  }
-
-  protected override updateValidity(message: string): void {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
-  }
-
   protected override get activeValue(): number {
     return this.value;
   }

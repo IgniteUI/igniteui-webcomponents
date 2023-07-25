@@ -2,13 +2,28 @@ import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { watch } from '../decorators/watch.js';
 import type { Constructor } from './constructor';
+import type { Validator } from '../validators.js';
 
 export declare class FormAssociatedElementInterface {
   public static readonly formAssociated: boolean;
 
+  #internals: ElementInternals;
+  protected validators: Validator[];
   protected _disabled: boolean;
   protected _invalid: boolean;
   protected _dirty: boolean;
+
+  /**
+   * The default value of the control at "creation" time.
+   *
+   * @remarks
+   * This is set by default on `connectedCallback` through the `setDefaultValue` call.
+   * It expects the component to have either a `checked` or a `value` property and binds it to the initial value of the
+   * respective property.
+   *
+   * In use-cases where additional customization is required, make sure to override the `setDefaultValue` method.
+   */
+  protected _defaultValue: unknown;
 
   /**
    * Applies the {@link FormAssociatedElementInterface.invalid | `invalid`} attribute on the control and the associated styles
@@ -19,23 +34,25 @@ export declare class FormAssociatedElementInterface {
   protected setInvalidState(): void;
 
   /**
-   * Implement all validation logic for the given component here.
-   *
-   * @remarks
-   * This method **has to be** overridden in extended classes.
+   * Executes the component validators and updates the internal validity state.
    */
-  protected updateValidity(message: string): void;
-
-  /**
-   * Hook called during the formResetCallback() which should reset the component
-   * value to some initial state.
-   *
-   * @remarks
-   * This method **has to be** overridden in extended classes.
-   */
-  protected handleFormReset(): void;
+  protected updateValidity(message?: string): void;
 
   protected requiredChange(): void;
+
+  /**
+   * Saves the initial value/checked state of the control.
+   *
+   * Called on connectedCallback.
+   */
+  protected setDefaultValue(): void;
+
+  /**
+   * Called when the parent form is reset.
+   *
+   * Restores the initially bound value/checked state of the control.
+   */
+  protected restoreDefaultValue(): void;
 
   protected setFormValue(
     value: string | File | FormData | null,
@@ -116,9 +133,22 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     public static readonly formAssociated = true;
 
     #internals: ElementInternals;
+    protected validators: Validator[] = [];
     protected _disabled = false;
     protected _invalid = false;
     protected _dirty = false;
+
+    /**
+     * The default value of the control at "creation" time.
+     *
+     * @remarks
+     * This is set by default on `connectedCallback` through the `setDefaultValue` call.
+     * It expects the component to have either a `checked` or a `value` property and binds it to the initial value of the
+     * respective property.
+     *
+     * In use-cases where additional customization is required, make sure to override the `setDefaultValue` method.
+     */
+    protected _defaultValue: unknown;
 
     /**
      * The name attribute of the control.
@@ -201,6 +231,33 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     public override connectedCallback(): void {
       super.connectedCallback();
       this._dirty = false;
+      this.setDefaultValue();
+    }
+
+    /**
+     * Saves the initial value/checked state of the control.
+     *
+     * Called on connectedCallback.
+     */
+    protected setDefaultValue() {
+      if ('checked' in this) {
+        this._defaultValue = this.checked;
+      } else if ('value' in this) {
+        this._defaultValue = this.value;
+      }
+    }
+
+    /**
+     * Called when the parent form is reset.
+     *
+     * Restores the initially bound value/checked state of the control.
+     */
+    protected restoreDefaultValue() {
+      if ('checked' in this) {
+        this.checked = this._defaultValue;
+      } else if ('value' in this) {
+        this.value = this._defaultValue;
+      }
     }
 
     protected handleInvalid = (event: Event) => {
@@ -230,7 +287,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     }
 
     protected formResetCallback() {
-      this.handleFormReset();
+      this.restoreDefaultValue();
       this._dirty = false;
 
       // Apply any changes happening during form reset synchronously
@@ -245,28 +302,29 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     }
 
     /**
-     * Hook called during the formResetCallback() which should reset the component
-     * value to some initial state.
-     *
-     * @remarks
-     * This method **has to be** overridden in extended classes.
+     * Executes the component validators and updates the internal validity state.
      */
-    protected handleFormReset() {
-      throw new Error(
-        '`handleFormReset()` must be overridden in extension classes'
-      );
-    }
+    protected updateValidity(message?: string) {
+      const validity: ValidityStateFlags = {};
+      let validationMessage = message ?? '';
 
-    /**
-     * Implement all validation logic for the given component here.
-     *
-     * @remarks
-     * This method **has to be** overridden in extended classes.
-     */
-    protected updateValidity(_message = '') {
-      throw new Error(
-        '`updateValidity()` must be overridden in extension classes'
-      );
+      if (message) {
+        validity.customError = true;
+      }
+
+      for (const validator of this.validators) {
+        const isValid = validator.isValid(this);
+
+        validity[validator.key] = !isValid;
+        if (!validationMessage) {
+          validationMessage =
+            typeof validator.message === 'function'
+              ? validator.message(this)
+              : validator.message;
+        }
+      }
+
+      this.#internals.setValidity(validity, validationMessage);
     }
 
     /**

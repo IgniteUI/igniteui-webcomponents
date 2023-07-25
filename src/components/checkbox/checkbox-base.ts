@@ -8,7 +8,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 
-import messages from '../common/localization/validation-en.js';
+import { Validator, requiredBooleanValidator } from '../common/validators.js';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;
@@ -20,6 +20,8 @@ export interface IgcCheckboxEventMap {
 export class IgcCheckboxBaseComponent extends FormAssociatedMixin(
   EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  protected override validators: Validator<this>[] = [requiredBooleanValidator];
+
   @query('input[type="checkbox"]', true)
   protected input!: HTMLInputElement;
 
@@ -75,27 +77,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedMixin(
   @watch('indeterminate', { waitUntilFirstUpdate: true })
   protected handleChange() {
     this.invalid = !this.checkValidity();
-  }
-
-  protected override updateValidity(message = '') {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-
-    if (this.required && !this.checked) {
-      flags.valueMissing = true;
-      msg = messages.required;
-    }
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
-  }
-
-  protected override handleFormReset() {
-    this.checked = this.getAttribute('checked') !== null;
   }
 
   /** Simulates a click on the control. */

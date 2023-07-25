@@ -13,12 +13,12 @@ import { styles } from './rating.base.css.js';
 import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
 import { styles as indigo } from './rating.indigo.css.js';
-import messages from '../common/localization/validation-en.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import IgcIconComponent from '../icon/icon.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import { Validator, requiredNumberValidator } from '../common/validators.js';
 
 defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
 
@@ -58,6 +58,15 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 ) {
   public static readonly tagName = 'igc-rating';
   public static styles = [styles];
+  protected override validators: Validator<this>[] = [
+    {
+      ...requiredNumberValidator,
+      isValid: () =>
+        this.required
+          ? requiredNumberValidator.isValid(this) && this.value > 0
+          : true,
+    },
+  ];
 
   protected ratingSymbols: Array<IgcRatingSymbolComponent> = [];
 
@@ -274,27 +283,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     }
 
     this.requestUpdate();
-  }
-
-  protected override updateValidity(message = ''): void {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-
-    if (this.required && !this.value) {
-      flags.valueMissing = true;
-      msg = messages.required;
-    }
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
-  }
-
-  protected override handleFormReset() {
-    this.value = parseFloat(this.getAttribute('value')!);
   }
 
   protected calcNewValue(x: number) {

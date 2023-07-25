@@ -77,6 +77,14 @@ export function format(template: string, ...params: string[]): string {
 
 /**
  * Parse the passed `value` as a number or return the `fallback` if it can't be done.
+ *
+ * @example
+ * ```typescript
+ * asNumber('5'); // 5
+ * asNumber('3.14'); // 3.14
+ * asNumber('five'); // 0
+ * asNUmber('five', 5); // 5
+ * ```
  */
 export function asNumber(value: unknown, fallback = 0) {
   const parsed = parseFloat(value as string);
@@ -88,6 +96,13 @@ export function asNumber(value: unknown, fallback = 0) {
  *
  * If the value is greater than max, returns the min and vice-versa.
  * If the value is between the bounds, it is returned unchanged.
+ *
+ * @example
+ * ```typescript
+ * wrap(1, 4, 2); // 2
+ * wrap(1, 4, 5); // 1
+ * wrap(1, 4, -1); // 4
+ * ```
  */
 export function wrap(min: number, max: number, value: number) {
   if (value < min) {

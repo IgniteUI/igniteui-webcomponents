@@ -20,6 +20,7 @@ import { IgcInputEventMap } from '../input/input-base.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { AbstractConstructor } from '../common/mixins/constructor.js';
 import messages from '../common/localization/validation-en.js';
+import { Validator } from '../common/validators.js';
 
 export interface IgcDateTimeInputEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {
@@ -59,6 +60,40 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   AbstractConstructor<IgcMaskInputBaseComponent>
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
+
+  protected override validators: Validator<this>[] = [
+    {
+      key: 'valueMissing',
+      message: messages.required,
+      isValid: () => (this.required ? !!this.value : true),
+    },
+    {
+      key: 'rangeUnderflow',
+      message: () => format(messages.min, `${this.minValue}`),
+      isValid: () =>
+        this.minValue
+          ? !DateTimeUtil.lessThanMinValue(
+              this.value || new Date(),
+              this.minValue,
+              this.hasTimeParts,
+              this.hasDateParts
+            )
+          : true,
+    },
+    {
+      key: 'rangeOverflow',
+      message: () => format(messages.max, `${this.maxValue}`),
+      isValid: () =>
+        this.maxValue
+          ? !DateTimeUtil.greaterThanMaxValue(
+              this.value || new Date(),
+              this.maxValue,
+              this.hasTimeParts,
+              this.hasDateParts
+            )
+          : true,
+    },
+  ];
 
   protected _defaultMask!: string;
   protected _value: Date | null = null;
@@ -298,53 +333,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   public clear(): void {
     this.maskedValue = '';
     this.value = null;
-  }
-
-  protected override handleFormReset(): void {
-    this.value = converter.fromAttribute!(this.getAttribute('value'));
-  }
-
-  protected override updateValidity(message = ''): void {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-
-    if (this.required && !this.value) {
-      flags.valueMissing = true;
-      msg = messages.required;
-    }
-
-    if (
-      this.minValue &&
-      DateTimeUtil.lessThanMinValue(
-        this.value || new Date(),
-        this.minValue,
-        this.hasTimeParts,
-        this.hasDateParts
-      )
-    ) {
-      flags.rangeUnderflow = true;
-      msg = format(messages.min, `${this.minValue}`);
-    }
-
-    if (
-      this.maxValue &&
-      DateTimeUtil.greaterThanMaxValue(
-        this.value || new Date(),
-        this.maxValue,
-        this.hasTimeParts,
-        this.hasDateParts
-      )
-    ) {
-      flags.rangeOverflow = true;
-      msg = format(messages.max, `${this.maxValue}`);
-    }
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
   }
 
   protected updateMask() {

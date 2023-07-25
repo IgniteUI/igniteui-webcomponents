@@ -6,9 +6,19 @@ import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
-import { partNameMap, format, asNumber, isDefined } from '../common/util.js';
+import { partNameMap } from '../common/util.js';
 import { IgcInputBaseComponent } from './input-base.js';
-import messages from '../common/localization/validation-en.js';
+import {
+  Validator,
+  maxLengthValidator,
+  maxValidator,
+  minLengthValidator,
+  minValidator,
+  patternValidator,
+  requiredNumberValidator,
+  requiredValidator,
+  stepValidator,
+} from '../common/validators.js';
 
 /**
  * @element igc-input
@@ -31,6 +41,47 @@ import messages from '../common/localization/validation-en.js';
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
+
+  private get isStringType() {
+    return this.type !== 'number';
+  }
+
+  protected override validators: Validator<this>[] = [
+    {
+      ...requiredValidator,
+      isValid: () =>
+        this.isStringType
+          ? requiredValidator.isValid(this)
+          : requiredNumberValidator.isValid(this),
+    },
+    {
+      ...minLengthValidator,
+      isValid: () =>
+        this.isStringType ? minLengthValidator.isValid(this) : true,
+    },
+    {
+      ...maxLengthValidator,
+      isValid: () =>
+        this.isStringType ? maxLengthValidator.isValid(this) : true,
+    },
+    {
+      ...minValidator,
+      isValid: () => (this.isStringType ? true : minValidator.isValid(this)),
+    },
+    {
+      ...maxValidator,
+      isValid: () => (this.isStringType ? true : maxValidator.isValid(this)),
+    },
+    {
+      ...stepValidator,
+      isValid: () => (this.isStringType ? true : stepValidator.isValid(this)),
+    },
+    {
+      ...patternValidator,
+      isValid: () =>
+        this.isStringType ? patternValidator.isValid(this) : true,
+    },
+  ];
 
   /**
    * The value of the control.
@@ -145,87 +196,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.setFormValue(value, value);
     this.updateValidity();
     this.setInvalidState();
-  }
-
-  private numberValidation(message: string) {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-
-    const hasValue = isDefined(this.value);
-    const valueAsNumber = asNumber(this.value);
-
-    if (this.required && !hasValue) {
-      flags.valueMissing = true;
-      msg = messages.required;
-    }
-
-    if (isDefined(this.min) && hasValue && valueAsNumber < asNumber(this.min)) {
-      flags.rangeUnderflow = true;
-      msg = format(messages.min, `${this.min}`);
-    }
-
-    if (isDefined(this.max) && hasValue && valueAsNumber > asNumber(this.max)) {
-      flags.rangeOverflow = true;
-      msg = format(messages.max, `${this.max}`);
-    }
-
-    if (
-      isDefined(this.step) &&
-      hasValue &&
-      (valueAsNumber - asNumber(this.min)) % asNumber(this.step, 1) !== 0
-    ) {
-      flags.stepMismatch = true;
-      msg = `Value does not conform to step constrain`;
-    }
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
-  }
-
-  private stringValidation(message: string) {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-
-    if (this.required && !this.value) {
-      flags.valueMissing = true;
-      msg = messages.required;
-    }
-
-    if (this.minlength && this.value?.length < this.minlength) {
-      flags.tooShort = true;
-      msg = format(messages.minLength, `${this.minlength}`);
-    }
-
-    if (this.maxlength && this.value?.length > this.maxlength) {
-      flags.tooLong = true;
-      msg = format(messages.maxLength, `${this.maxlength}`);
-    }
-
-    if (this.pattern && !new RegExp(this.pattern, 'u').test(this.value)) {
-      flags.patternMismatch = true;
-      msg = messages.pattern;
-    }
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
-  }
-
-  protected override updateValidity(message = '') {
-    this.type === 'number'
-      ? this.numberValidation(message)
-      : this.stringValidation(message);
-  }
-
-  protected override handleFormReset() {
-    this.value = this.getAttribute('value') ?? '';
   }
 
   /** Replaces the selected text in the input. */

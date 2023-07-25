@@ -7,6 +7,7 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { partNameMap } from '../common/util.js';
 import { IgcMaskInputBaseComponent, MaskRange } from './mask-input-base.js';
 import messages from '../common/localization/validation-en.js';
+import { Validator, requiredValidator } from '../common/validators.js';
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -32,6 +33,18 @@ import messages from '../common/localization/validation-en.js';
  */
 export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
+
+  protected override validators: Validator<this>[] = [
+    {
+      ...requiredValidator,
+      isValid: () => (this.required ? !!this._value : true),
+    },
+    {
+      key: 'badInput',
+      message: messages.mask,
+      isValid: () => this.parser.isValidString(this.maskedValue),
+    },
+  ];
 
   protected _value = '';
 
@@ -92,33 +105,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
       : this.setFormValue(this.maskedValue || null, this.maskedValue);
     this.updateValidity();
     this.setInvalidState();
-  }
-
-  protected override updateValidity(message = '') {
-    const flags: ValidityStateFlags = {};
-    let msg = '';
-
-    if (this.required && !this._value) {
-      flags.valueMissing = true;
-      msg = messages.required;
-    }
-
-    if (!this.parser.isValidString(this.maskedValue)) {
-      flags.badInput = true;
-      msg = messages.mask;
-    }
-
-    if (message) {
-      flags.customError = true;
-      msg = message;
-    }
-
-    this.setValidity(flags, msg);
-  }
-
-  protected override handleFormReset() {
-    this.value = this.getAttribute('value') ?? '';
-    this.updateMaskedValue();
   }
 
   @watch('prompt')
