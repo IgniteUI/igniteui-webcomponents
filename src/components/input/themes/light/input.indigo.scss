@@ -24,7 +24,7 @@ $theme: digest-schema(extend(
 
 :host {
     @include css-vars-from-theme($theme, 'ig-input');
-    
+
     [part='prefix'],
     [part='suffix'] {
         ::slotted(*) {
@@ -92,6 +92,11 @@ $theme: digest-schema(extend(
         padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
         border: none;
         grid-area: 1 / 2;
+    }
+
+    [part~='input'],
+    [part^='container'] {
+        height: var-get($theme, 'size');
     }
 
     [part*='input prefixed'] {
