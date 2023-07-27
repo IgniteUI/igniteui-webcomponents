@@ -1,8 +1,8 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
-$schema: map.get($light-indigo-schema, 'drop-down');
+$schema: map.get($light-material-schema, 'drop-down');
 $border-radius: border-radius(map.get($schema, 'border-radius')...);
 $theme: digest-schema(extend(
     $schema,
@@ -18,5 +18,6 @@ $theme: digest-schema(extend(
 [part='base'] {
     background: var-get($theme, 'background-color');
     border-radius: var-get($theme, 'border-radius');
-    box-shadow: var(--ig-elevation-3);
+    box-shadow: var(--ig-elevation-8);
+    padding: rem(8px) 0;
 }

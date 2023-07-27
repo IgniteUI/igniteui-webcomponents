@@ -15,6 +15,10 @@ $theme: digest-schema(extend(
     @include css-vars-from-theme($theme, 'ig-button');
 
     --size: #{sizable(rem(31px), rem(38px), rem(48px))};
+
+    ::slotted(igc-ripple) {
+        border-radius: var-get($theme, 'border-radius');
+    }
 }
 
 [part='base'] {
