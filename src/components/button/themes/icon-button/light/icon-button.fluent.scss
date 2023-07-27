@@ -18,6 +18,10 @@ $outline-btn-indent: rem(2px);
     @include css-vars-from-theme($theme, 'ig-button');
 
     --size: #{sizable(rem(24px), rem(32px), rem(38px))};
+
+    ::slotted(igc-ripple) {
+        border-radius: var-get($theme, 'border-radius');
+    }
 }
 
 [part='base'] {
