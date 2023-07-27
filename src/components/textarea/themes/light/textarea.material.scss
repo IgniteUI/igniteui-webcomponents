@@ -30,6 +30,7 @@ textarea {
     flex-grow: 1;
     position: relative;
     max-width: inherit;
+    padding-inline: rem(4px);
 }
 
 :host(:not([outlined])) {
@@ -170,7 +171,7 @@ textarea {
 [part='end'] {
     display: flex;
     align-items: center;
-    min-width: rem(12px);
+    min-width: pad(rem(10px), rem(12px), rem(14px));
     min-height: 100%;
     overflow: hidden;
 }
@@ -187,6 +188,7 @@ textarea {
     height: 100%;
     position: relative;
     grid-area: 1 / 2;
+    padding-inline: rem(4px);
 }
 
 [part='filler'] {

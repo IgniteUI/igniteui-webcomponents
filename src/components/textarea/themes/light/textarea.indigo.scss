@@ -74,8 +74,16 @@ $theme: digest-schema(extend(
 }
 
 textarea {
-    padding-block: pad(rem(4px), rem(6px), rem(8px));
-    padding-inline: rem(12px);
+    padding-block: rem(8px);
+    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+}
+
+[part~='prefixed'] textarea {
+    padding-inline-start: rem(4px);
+}
+
+[part~='suffixed'] textarea {
+    padding-inline-end: rem(4px);
 }
 
 [part~='helper-text'] {
