@@ -23,6 +23,7 @@ $theme: digest-schema(extend(
     background: color(gray, 200);
     color: color(gray, 700);
     outline: none;
+    height: var-get($theme, 'size');
 
     &:hover {
         color: contrast-color(gray, 200);

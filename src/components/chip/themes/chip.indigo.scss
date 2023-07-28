@@ -21,6 +21,7 @@ $theme: digest-schema(extend(
     border: rem(1px) solid color(gray, 400);
     background: color(surface, 500);
     color: color(gray, 700);
+    height: var-get($theme, 'size');
 
     &:hover {
         background: color(gray, 200);

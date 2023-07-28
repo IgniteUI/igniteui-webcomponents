@@ -20,6 +20,7 @@ $theme: digest-schema(extend(
     border-radius: var-get($theme, 'border-radius');
     background: color(gray, 200);
     color: contrast-color(gray, 200);
+    height: var-get($theme, 'size');
 
     &:hover {
         background: color(gray, 400);
