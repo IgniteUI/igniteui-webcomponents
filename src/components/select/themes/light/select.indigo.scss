@@ -5,7 +5,6 @@
 
 $dropdown-schema: map.get($light-indigo-schema, 'drop-down');
 $dropdown-theme: digest-schema($dropdown-schema);
-
 $input-schema: map.get($light-indigo-schema, 'input-group');
 $schema: map.get($light-indigo-schema, 'select');
 $input-theme: digest-schema($input-schema);
