@@ -11,7 +11,7 @@ $theme: digest-schema(extend(
     )
 ));
 $text-color: var(--text-color, #{contrast-color(primary, 600)}) !default;
-$hover-background: var(--hover-background, #{color(primary, 600)}) !default;
+$hover-contained-background: var(--hover-contained-background, color(primary, 600)) !default;
 $outline-btn-indent: rem(2px);
 
 :host {
@@ -69,8 +69,10 @@ $outline-btn-indent: rem(2px);
         color: $text-color;
         background: color(primary, 500);
 
-        &:hover {
-            background: $hover-background;
+        &:hover,
+        &:focus,
+        &:focus-visible {
+            background: $hover-contained-background;
         }
 
         &:active {
@@ -98,17 +100,18 @@ $outline-btn-indent: rem(2px);
         }
 
         &:hover,
-        &:focus:hover {
-            background: color(gray, 100);
-        }
-
+        &:focus:hover,
         &:focus:active {
             background: color(gray, 200);
+        }
+
+        &:focus-visible::after {
+            box-shadow: 0 0 0 rem(1px) color(gray, 900);
         }
     }
 
     igc-icon {
-        color: color(gray, 900);
+        color: color(gray, 900);    
     }
 }
 
@@ -120,16 +123,5 @@ $outline-btn-indent: rem(2px);
 
     igc-icon {
         color: color(gray, 400);
-    }
-}
-
-:host([disabled][variant='contained']),
-:host([disabled][variant='outlined']) {
-    [part='base'] {
-        color: color(gray, 500);
-    }
-
-    igc-icon {
-        color: color(gray, 500);
     }
 }
