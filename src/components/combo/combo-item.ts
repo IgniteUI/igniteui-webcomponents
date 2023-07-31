@@ -4,6 +4,7 @@ import { styles } from './themes/light/item/combo-item.base.css.js';
 import { styles as bootstrap } from '../dropdown/themes/light/item/dropdown-item.bootstrap.css.js';
 import { styles as fluent } from '../dropdown/themes/light/item/dropdown-item.fluent.css.js';
 import { styles as indigo } from '../dropdown/themes/light/item/dropdown-item.indigo.css.js';
+import { styles as material } from '../dropdown/themes/light/item/dropdown-item.material.css.js';
 import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
 import IgcCheckboxComopnent from '../checkbox/checkbox.js';
@@ -11,7 +12,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 
 defineComponents(IgcCheckboxComopnent);
 /* blazorSuppress */
-@themes({ bootstrap, fluent, indigo })
+@themes({ bootstrap, fluent, indigo, material })
 export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';
   public static override styles = styles;
