@@ -5,12 +5,15 @@
 
 $input-schema: map.get($light-material-schema, 'input-group');
 $combo-schema: map.get($light-material-schema, 'combo');
+$dropdown-schema: extend((name: 'ig-dropdown'), map.get($light-material-schema, 'drop-down'));
 $input-theme: digest-schema($input-schema);
 $theme: digest-schema($combo-schema);
+$dropdown-theme: digest-schema($dropdown-schema);
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-combo');
+    @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
 
     [part='helper-text'] {
         margin-top: rem(5px);

@@ -3,6 +3,8 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas/bootstrap/light' as *;
 
+$dropdown-schema: map.get($light-bootstrap-schema, 'drop-down');
+$dropdown-theme: digest-schema($dropdown-schema);
 $input-schema: map.get($light-bootstrap-schema, 'input-group');
 $schema: map.get($light-bootstrap-schema, 'select');
 $input-theme: digest-schema($input-schema);
@@ -11,6 +13,7 @@ $theme: digest-schema($schema);
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-select');
+    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
 
     [part='helper-text'] {
         margin-top: rem(4px);
@@ -21,6 +24,13 @@ $theme: digest-schema($schema);
 
         color: var-get($input-theme, 'helper-text-color');
     }
+}
+
+[part='base'] {
+    background: var-get($dropdown-theme, 'background-color');
+    border-radius: var-get($dropdown-theme, 'border-radius');
+    padding: rem(8px) 0;
+    border: rem(1px) solid var-get($dropdown-theme, 'border-color');
 }
 
 [part~='toggle-icon'] {
