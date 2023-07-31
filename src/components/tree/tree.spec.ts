@@ -1,4 +1,4 @@
-import { aTimeout, elementUpdated, expect } from '@open-wc/testing';
+import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents } from '../../index.js';
 import type { IgcCheckboxComponent, IgcTreeItemComponent } from '../../index';
@@ -15,6 +15,7 @@ import {
   simpleTree,
   SLOTS,
   TreeTestFunctions,
+  wrappedItemsTree,
 } from './tree-utils.spec.js';
 
 describe('Tree', () => {
@@ -214,13 +215,13 @@ describe('Tree', () => {
       expect(topLevelItems[0].expanded).to.be.false; // collapsed by default
       expect(topLevelItems[1].expanded).to.be.true;
 
-      const slots1 = topLevelItems[0].shadowRoot!.querySelectorAll('slot');
-      const childrenSlot1 = Array.from(slots1).filter((s) => s.name === '');
-      expect((childrenSlot1[0] as HTMLSlotElement).hidden).to.be.true;
+      const content1 =
+        topLevelItems[0].shadowRoot!.querySelector('div[role="group"]');
+      expect(content1?.ariaHidden).to.equal('true');
 
-      const slots2 = topLevelItems[1].shadowRoot!.querySelectorAll('slot');
-      const childrenSlot2 = Array.from(slots2).filter((s) => s.name === '');
-      expect((childrenSlot2[0] as HTMLSlotElement).hidden).to.be.false;
+      const content2 =
+        topLevelItems[1].shadowRoot!.querySelector('div[role="group"]');
+      expect(content2?.ariaHidden).to.equal('false');
     });
 
     it('Should not render expand indicator if an item has no children', async () => {
@@ -577,6 +578,16 @@ describe('Tree', () => {
       // child1 has a child item - it and its children (2) should also have been removed
       expect(tree.items.length).to.equal(1);
     });
+
+    it('Should correctly assign the parent item when child items are wrapped within other elements', async () => {
+      tree = await TreeTestFunctions.createTreeElement(wrappedItemsTree);
+      expect(tree.items[0].parent).to.be.null;
+      expect(tree.items[0].children[0].tagName.toLocaleLowerCase() === 'div');
+      // Should also correctly retrieve the direct children in this case
+      const child1 = tree.items[0].getChildren()[0];
+      expect(child1.label).to.equal('Tree Item 1.1');
+      expect(child1.parent).to.equal(tree.items[0]);
+    });
   });
 
   describe('Expand/Collapse', async () => {
@@ -644,7 +655,7 @@ describe('Tree', () => {
       );
 
       item2IndSlot?.dispatchEvent(new MouseEvent('click'));
-      await elementUpdated(tree);
+      await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[1], false);
 
@@ -689,7 +700,7 @@ describe('Tree', () => {
       );
 
       item1IndSlot?.dispatchEvent(new MouseEvent('click'));
-      await elementUpdated(tree);
+      await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
 
@@ -1292,7 +1303,7 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.setFocusAndTriggerKeydown(item2, tree, 'ArrowRight');
-      await elementUpdated(tree);
+      await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
 
       expect(item2.expanded).to.be.false;
 
@@ -1320,7 +1331,7 @@ describe('Tree', () => {
       await elementUpdated(tree);
 
       TreeTestFunctions.setFocusAndTriggerKeydown(item1, tree, 'ArrowLeft');
-      await elementUpdated(tree);
+      await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
 
       expect(item1.expanded).to.be.true;
 
