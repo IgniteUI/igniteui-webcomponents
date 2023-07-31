@@ -241,10 +241,9 @@ export default class IgcTreeItemComponent extends LitElement {
   public override connectedCallback(): void {
     super.connectedCallback();
     this.tree = this.closest('igc-tree') as IgcTreeComponent;
-    this.parent =
-      this.parentElement?.tagName.toLowerCase() === 'igc-tree-item'
-        ? (this.parentElement as IgcTreeItemComponent)
-        : null;
+    this.parent = this.parentElement?.closest(
+      'igc-tree-item'
+    ) as IgcTreeItemComponent | null;
     this.level = this.parent ? this.parent.level + 1 : 0;
     this.setAttribute('role', 'treeitem');
     this.addEventListener('blur', this.onBlur);
@@ -285,8 +284,11 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private get directChildren(): Array<IgcTreeItemComponent> {
-    return Array.from(this.children).filter(
-      (x) => x.tagName.toLowerCase() === 'igc-tree-item'
+    return this.allChildren.filter(
+      (x) =>
+        (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(
+          this
+        )
     ) as IgcTreeItemComponent[];
   }
 
