@@ -294,3 +294,13 @@ export const navigationTree = `<igc-tree selection='none' style="height: 400px;"
                                        </igc-tree-item>
                                        <igc-tree-item label="Tree Item 4"></igc-tree-item>
                                      </igc-tree>`;
+
+export const wrappedItemsTree = `<igc-tree selection='none' style="height: 400px;">
+                                    <igc-tree-item label="Tree Item 1" expanded>
+                                      <div>
+                                        <igc-tree-item label="Tree Item 1.1" expanded>
+                                          <igc-tree-item label="Tree Item 1.1.1"></igc-tree-item>
+                                        </igc-tree-item>
+                                      </div>
+                                    <igc-tree-item label="Tree Item 2"></igc-tree-item>
+                                  </igc-tree>`;
