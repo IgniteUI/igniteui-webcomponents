@@ -5,7 +5,6 @@
 
 $schema: map.get($light-fluent-schema, 'tree');
 $theme: digest-schema($schema);
-
 $selected-background: var(--selected-background, color(gray, 200)) !default;
 $selected-color: var(--selected-color, contrast-color(gray, 200)) !default;
 $active-background: var(--active-background, color(gray, 200)) !default;

@@ -5,7 +5,6 @@
 
 $schema: map.get($light-indigo-schema, 'tree');
 $theme: digest-schema($schema);
-
 $selected-background: var(--selected-background, color(primary, 500)) !default;
 $selected-color: var(--selected-color, contrast-color(primary, 600)) !default;
 $active-background: var(--active-background, color(surface)) !default;
