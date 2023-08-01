@@ -88,7 +88,6 @@
 // LAST STEP
 ::slotted(igc-step:last-of-type) {
     --vertical-body-disply--last-of-type: none;
-    // --vertical-body-disply--last-of-type: 0;
     --horizontal-separator-display--last-of-type: none;
 }
 
@@ -125,7 +124,6 @@
 :host(:not([orientation='horizontal'])) {
     --vertical-header-z-index: 2;
     --vertical-body-disply: block;
-    // --vertical-body-disply: auto;
     --header-width-vertical: 100%;
     --hide-horizontal-separator: none;
 
