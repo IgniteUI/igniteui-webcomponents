@@ -3,16 +3,24 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas/fluent/light' as *;
 
+$dropdown-schema: map.get($light-fluent-schema, 'drop-down');
+$dropdown-theme: digest-schema($dropdown-schema);
 $input-schema: map.get($light-fluent-schema, 'input-group');
 $schema: map.get($light-fluent-schema, 'select');
 $input-theme: digest-schema($input-schema);
 $theme: digest-schema($schema);
 $focused-border-width: rem(2px);
-$focused-height: calc(var-get($input-theme, 'size') - #{($focused-border-width * 2)});
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-select');
+    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
+}
+
+[part='base'] {
+    background: var-get($dropdown-theme, 'background-color');
+    border-radius: var-get($dropdown-theme, 'border-radius');
+    box-shadow: var(--ig-elevation-4);
 }
 
 [part='helper-text'] {
@@ -59,10 +67,6 @@ $focused-height: calc(var-get($input-theme, 'size') - #{($focused-border-width *
 
     igc-input[readonly]:not([disabled])::part(suffix) {
         margin-inline-end: rem(-1px);
-    }
-
-    igc-input[readonly]:not([disabled])::part(input) {
-        height: $focused-height;
     }
 }
 
