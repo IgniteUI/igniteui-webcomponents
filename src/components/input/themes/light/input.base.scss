@@ -34,7 +34,6 @@
 
 [part~='input'] {
     width: 100%;
-    // height: var(--size);
     border: none;
     outline-style: none;
     font-family: var(--ig-font-family);
@@ -44,7 +43,6 @@
 [part^='container'] {
     position: relative;
     display: grid;
-    // height: var(--size);
 }
 
 [part='prefix'],
