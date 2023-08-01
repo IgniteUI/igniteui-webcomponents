@@ -3,21 +3,17 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
-import {
-  AnimationPlayer,
-  growVerIn,
-  growVerOut,
-  fadeIn,
-  fadeOut,
-  EaseOut,
-} from '../../animations/index.js';
+import { AnimationPlayer, EaseOut } from '../../animations/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/step/light/step.base.css.js';
 import { styles as bootstrap } from './themes/step/light/step.bootstrap.css.js';
 import { styles as indigo } from './themes/step/light/step.indigo.css.js';
 import { styles as fluent } from './themes/step/light/step.fluent.css.js';
 import { styles as material } from './themes/step/light/step.material.css.js';
-import { animation } from '../../animations/types.js';
+import {
+  animation,
+  AnimationReferenceMetadata,
+} from '../../animations/types.js';
 
 /**
  * The step component is used within the `igc-stepper` element and it holds the content of each step.
@@ -56,6 +52,7 @@ export default class IgcStepComponent extends LitElement {
   /** @private */
   public static override styles = styles;
   private animationPlayer!: AnimationPlayer;
+  private animationType!: AnimationReferenceMetadata;
 
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;
@@ -74,13 +71,6 @@ export default class IgcStepComponent extends LitElement {
   /* blazorSuppress */
   @query('[part~="content"]')
   public content!: HTMLElement;
-
-  /**
-   * Determines the stepper animation duration in ms.
-   * @attr duration
-   */
-  @property({ type: Number, attribute: 'animation-duration' })
-  public animationDuration = 320;
 
   /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
@@ -130,6 +120,10 @@ export default class IgcStepComponent extends LitElement {
 
   /** @private */
   @property({ attribute: false })
+  public animationDuration = 320;
+
+  /** @private */
+  @property({ attribute: false })
   public verticalAnimation: 'grow' | 'fade' | 'none' = 'grow';
 
   /** @private */
@@ -167,6 +161,16 @@ export default class IgcStepComponent extends LitElement {
       { opacity: 1, transform: 'translateX(0)' },
     ];
 
+    const growVerInFrames: Keyframe[] = [
+      { opacity: 0, height: 0 },
+      { opacity: 1, height: 'auto' },
+    ];
+
+    const growVerOutFrames: Keyframe[] = [
+      { opacity: 1, height: 'auto' },
+      { opacity: 0, height: 0 },
+    ];
+
     const opts: KeyframeAnimationOptions = {
       duration: this.animationDuration,
       easing: EaseOut.Quad,
@@ -174,54 +178,68 @@ export default class IgcStepComponent extends LitElement {
 
     const customSlideInLeft = animation(slideInLeftFrames, opts);
     const customSlideInRight = animation(slideInRightFrames, opts);
-
-    let customAnimation =
+    const customSlideAnimation =
       dir === 'open' ? customSlideInLeft : customSlideInRight;
+
+    const customGrowVerIn = animation(growVerInFrames, opts);
+    const customGrowVerOut = animation(growVerOutFrames, opts);
+    const customGrowAnimation =
+      dir === 'open' ? customGrowVerIn : customGrowVerOut;
+
+    const fadeInFrames: Keyframe[] = [{ opacity: 0 }, { opacity: 1 }];
+
+    const fadeOpts: KeyframeAnimationOptions = {
+      duration: this.animationDuration,
+      easing: EaseOut.Sine,
+    };
+
+    const customFadeAnimation = animation(fadeInFrames, fadeOpts);
 
     if (this.orientation == 'vertical') {
       switch (this.verticalAnimation) {
-        case 'grow':
-          customAnimation = dir === 'open' ? growVerIn : growVerOut;
-          break;
         case 'fade':
-          customAnimation = dir === 'open' ? fadeIn : fadeOut;
+          this.animationType = customFadeAnimation;
           break;
         case 'none':
-          this.animationDuration = 0;
-          break;
+          return;
+        default:
+          this.animationType = customGrowAnimation;
       }
     }
 
     if (this.orientation == 'horizontal') {
       switch (this.horizontalAnimation) {
-        case 'slide':
-          customAnimation =
-            dir === 'open' ? customSlideInLeft : customSlideInRight;
-          break;
         case 'fade':
-          customAnimation = dir === 'open' ? fadeIn : fadeOut;
+          this.animationType = customFadeAnimation;
           break;
         case 'none':
-          this.animationDuration = 0;
-          break;
+          return;
+        default:
+          this.animationType = customSlideAnimation;
       }
     }
 
     const [_, event] = await Promise.all([
       this.animationPlayer.stopAll(),
-      this.animationPlayer.play(customAnimation),
+      this.animationPlayer.play(this.animationType),
     ]);
 
     return event.type === 'finish';
   }
 
   @watch('active', { waitUntilFirstUpdate: true })
-  protected activeChange() {
+  protected async activeChange() {
     if (this.active) {
-      this.toggleAnimation('open');
-      this.dispatchEvent(
-        new CustomEvent('stepActiveChanged', { bubbles: true, detail: false })
-      );
+      if (
+        (await this.toggleAnimation('open')) ||
+        this.verticalAnimation == 'none' ||
+        this.horizontalAnimation == 'none'
+      ) {
+        this.dispatchEvent(
+          new CustomEvent('stepActiveChanged', { bubbles: true, detail: false })
+        );
+        console.log('ready');
+      }
     }
   }
 

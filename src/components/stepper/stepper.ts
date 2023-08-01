@@ -104,16 +104,66 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * @remarks
    * The default value is undefined.
    * When the stepper is horizontally orientated the title is positioned below the indicator.
-   * When the stepper is horizontally orientated the title is positioned on the right side of the indicator.
+   * When the stepper is vertically orientated the title is positioned on the right side of the indicator.
    */
   @property({ reflect: false, attribute: 'title-position' })
   public titlePosition?: 'bottom' | 'top' | 'end' | 'start';
+
+  /**
+   * Determines the stepper animation duration in ms.
+   * @remarks
+   * Default value is `320ms`.
+   */
+  @property({ type: Number, attribute: 'animation-duration' })
+  public animationDuration = 320;
+
+  /**
+   * Get/Set the vertical animation of the stepper.
+   *
+   * @remarks
+   * Default value is `grow`.
+   */
+  @property({ attribute: false })
+  public verticalAnimation: 'grow' | 'fade' | 'none' = 'grow';
+
+  /**
+   * Get/Set the horizontal animation of the stepper.
+   *
+   * @remarks
+   * Default value is `slide`.
+   */
+  @property({ attribute: false })
+  public horizontalAnimation: 'slide' | 'fade' | 'none' = 'slide';
 
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {
     this.setAttribute('aria-orientation', this.orientation);
     this.steps.forEach(
       (step: IgcStepComponent) => (step.orientation = this.orientation)
+    );
+  }
+
+  @watch('animationDuration', { waitUntilFirstUpdate: true })
+  protected animationDurationChange(): void {
+    this.steps.forEach(
+      (step: IgcStepComponent) =>
+        (step.animationDuration = this.animationDuration)
+    );
+  }
+
+  @watch('verticalAnimation', { waitUntilFirstUpdate: true })
+  protected verticalAnimationChange(): void {
+    this.steps.forEach(
+      (step: IgcStepComponent) =>
+        (step.verticalAnimation = this.verticalAnimation)
+    );
+  }
+
+  @watch('horizontalAnimation', { waitUntilFirstUpdate: true })
+  protected horizontalAnimationChange(): void {
+    this.steps.forEach(
+      (step: IgcStepComponent) =>
+        (step.horizontalAnimation = this.horizontalAnimation)
     );
   }
 
@@ -382,6 +432,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   private syncProperties(): void {
     this.steps.forEach((step: IgcStepComponent, index: number) => {
       step.orientation = this.orientation;
+      step.animationDuration = this.animationDuration;
+      step.horizontalAnimation = this.horizontalAnimation;
+      step.verticalAnimation = this.verticalAnimation;
       step.stepType = this.stepType;
       step.titlePosition = this.titlePosition;
       step.contentTop = this.contentTop;

@@ -197,9 +197,9 @@
         height: 0;
     }
 
-    display: var(--horizontal-content-disply, none);
-    height: 100%;
-    overflow: auto;
+    // display: var(--horizontal-content-disply, none);
+    // height: 100%;
+    // overflow: auto;
 }
 
 [part~='top'] {

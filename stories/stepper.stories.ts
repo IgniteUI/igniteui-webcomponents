@@ -54,12 +54,35 @@ const metadata: Meta<IgcStepperComponent> = {
       options: ['start', 'end', 'top', 'bottom', 'undefined'],
       control: { type: 'select' },
     },
+    animationDuration: {
+      type: 'number',
+      description: 'Determines the stepper animation duration in ms.',
+      control: 'number',
+      defaultValue: 320,
+    },
+    verticalAnimation: {
+      type: '"none" | "grow" | "fade"',
+      description: 'Get/Set the vertical animation of the stepper.',
+      options: ['none', 'grow', 'fade'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'grow',
+    },
+    horizontalAnimation: {
+      type: '"none" | "fade" | "slide"',
+      description: 'Get/Set the horizontal animation of the stepper.',
+      options: ['none', 'fade', 'slide'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'slide',
+    },
   },
   args: {
     orientation: 'horizontal',
     stepType: 'full',
     linear: false,
     contentTop: false,
+    animationDuration: 320,
+    verticalAnimation: 'grow',
+    horizontalAnimation: 'slide',
   },
 };
 
@@ -76,12 +99,27 @@ interface IgcStepperArgs {
   contentTop: boolean;
   /** Get/Set the position of the steps title. */
   titlePosition: 'start' | 'end' | 'top' | 'bottom' | undefined;
+  /** Determines the stepper animation duration in ms. */
+  animationDuration: number;
+  /** Get/Set the vertical animation of the stepper. */
+  verticalAnimation: 'none' | 'grow' | 'fade';
+  /** Get/Set the horizontal animation of the stepper. */
+  horizontalAnimation: 'none' | 'fade' | 'slide';
 }
 type Story = StoryObj<IgcStepperArgs>;
 
 // endregion
 const BasicTemplate = (
-  { orientation, stepType, titlePosition, linear, contentTop }: IgcStepperArgs,
+  {
+    orientation,
+    stepType,
+    titlePosition,
+    linear,
+    contentTop,
+    animationDuration,
+    horizontalAnimation,
+    verticalAnimation,
+  }: IgcStepperArgs,
   { globals: { direction } }: Context
 ) => {
   const next = () => {
@@ -105,6 +143,9 @@ const BasicTemplate = (
       .linear=${linear}
       .contentTop=${contentTop}
       .dir=${direction}
+      .animationDuration=${animationDuration}
+      .horizontalAnimation=${horizontalAnimation}
+      .verticalAnimation=${verticalAnimation}
     >
       <igc-step>
         <span slot="title">Step1</span>
