@@ -238,7 +238,6 @@ export default class IgcStepComponent extends LitElement {
         this.dispatchEvent(
           new CustomEvent('stepActiveChanged', { bubbles: true, detail: false })
         );
-        console.log('ready');
       }
     }
   }
