@@ -3,6 +3,8 @@
 @use '../../../../styles/utilities' as *;
 @use '../../../../styles/themes/schemas/indigo/light' as *;
 
+$dropdown-schema: map.get($light-indigo-schema, 'drop-down');
+$dropdown-theme: digest-schema($dropdown-schema);
 $input-schema: map.get($light-indigo-schema, 'input-group');
 $schema: map.get($light-indigo-schema, 'select');
 $input-theme: digest-schema($input-schema);
@@ -11,6 +13,7 @@ $theme: digest-schema($schema);
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-select');
+    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
 
     ::slotted([slot='helper-text']) {
         color: var-get($input-theme, 'helper-text-color');
@@ -24,6 +27,12 @@ $theme: digest-schema($schema);
         margin-top: rem(6px);
         padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
     }
+}
+
+[part='base'] {
+    background: var-get($dropdown-theme, 'background-color');
+    border-radius: var-get($dropdown-theme, 'border-radius');
+    box-shadow: var(--ig-elevation-3);
 }
 
 [part~='toggle-icon'] {

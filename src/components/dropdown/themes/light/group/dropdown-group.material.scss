@@ -1,0 +1,20 @@
+@use 'sass:map';
+@use '../../../../../styles/utilities' as *;
+@use '../../../../../styles/themes/schemas/material/light' as *;
+
+$schema: map.get($light-material-schema, 'drop-down');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-dropdown');
+
+    ::slotted([slot='label']) {
+        color: var-get($theme, 'header-text-color');
+    }
+}

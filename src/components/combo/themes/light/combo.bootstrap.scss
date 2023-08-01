@@ -6,11 +6,14 @@
 $input-schema: extend((name: 'ig-input'), map.get($light-bootstrap-schema, 'input-group'));
 $combo-schema: extend((name: 'ig-combo'), map.get($light-bootstrap-schema, 'combo'));
 $input-theme: digest-schema($input-schema);
+$dropdown-schema: extend((name: 'ig-dropdown'), map.get($light-bootstrap-schema, 'drop-down'));
+$dropdown-theme: digest-schema($dropdown-schema);
 $theme: digest-schema($combo-schema);
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-combo');
+    @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
 }
 
 [part='helper-text'] {

@@ -4,8 +4,11 @@ import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { SizableInterface } from '../common/mixins/sizable.js';
 import type IgcDropdownItemComponent from './dropdown-item';
-import { styles } from './themes/light/dropdown-group.base.css.js';
-import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
+import { styles } from './themes/light/group/dropdown-group.base.css.js';
+import { styles as fluent } from './themes/light/group/dropdown-group.fluent.css.js';
+import { styles as bootstrap } from './themes/light/group/dropdown-group.bootstrap.css.js';
+import { styles as indigo } from './themes/light/group/dropdown-group.indigo.css.js';
+import { styles as material } from './themes/light/group/dropdown-group.material.css.js';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
@@ -15,7 +18,7 @@ import { styles as fluent } from './themes/light/dropdown-group.fluent.css.js';
  *
  * @csspart label - The native label element.
  */
-@themes({ fluent })
+@themes({ fluent, bootstrap, indigo, material })
 export default class IgcDropdownGroupComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-group';
 
