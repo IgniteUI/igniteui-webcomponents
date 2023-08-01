@@ -1,0 +1,18 @@
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/fluent/dark' as *;
+
+$schema: map.get($dark-fluent-schema, 'avatar');
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
+
+@mixin theme() {
+    igc-avatar {
+        @include css-vars-from-theme($theme, 'ig-avatar');
+    }
+}
