@@ -481,23 +481,21 @@ describe('Tree', () => {
       tree = await TreeTestFunctions.createTreeElement(selectedItemsTree);
       expect(tree.items[13].active).to.be.true;
 
-      aTimeout(1000).then(async () => {
-        const treeRect = tree.getBoundingClientRect();
-        const itemRect = tree.items[13].getBoundingClientRect();
-        const item1Rect = tree.items[0].getBoundingClientRect();
+      await aTimeout(200);
+      const treeRect = tree.getBoundingClientRect();
+      const itemRect = tree.items[13].getBoundingClientRect();
+      const item1Rect = tree.items[0].getBoundingClientRect();
 
-        expect(
-          treeRect.top <= item1Rect.top && treeRect.bottom >= item1Rect.bottom
-        ).to.be.false;
-        expect(
-          treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom
-        ).to.be.true;
-      });
+      expect(
+        treeRect.top <= item1Rect.top && treeRect.bottom >= item1Rect.bottom
+      ).to.be.false;
+      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
+        .to.be.true;
     });
 
     it('Should scroll bottom to top to active item (when set through API) if the tree has scrollbar and item is out of view', async () => {
       tree = await TreeTestFunctions.createTreeElement(selectedItemsTree);
-      await aTimeout(1000);
+      await aTimeout(200);
 
       let treeRect = tree.getBoundingClientRect();
       let itemRect = tree.items[0].getBoundingClientRect();
@@ -507,15 +505,13 @@ describe('Tree', () => {
 
       tree.items[0].active = true;
       await elementUpdated(tree);
+      await aTimeout(200);
 
-      aTimeout(1000).then(() => {
-        treeRect = tree.getBoundingClientRect();
-        itemRect = tree.items[0].getBoundingClientRect();
+      treeRect = tree.getBoundingClientRect();
+      itemRect = tree.items[0].getBoundingClientRect();
 
-        expect(
-          treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom
-        ).to.be.true;
-      });
+      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
+        .to.be.true;
     });
 
     it('Should scroll top to bottom to active item (when set through API) if the tree has scrollbar and item is out of view', async () => {
@@ -537,13 +533,11 @@ describe('Tree', () => {
       targetItem.active = true;
       await elementUpdated(tree);
 
-      aTimeout(1000).then(async () => {
-        treeRect = tree.getBoundingClientRect();
-        itemRect = targetItem.getBoundingClientRect();
-        expect(
-          treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom
-        ).to.be.true;
-      });
+      await aTimeout(200);
+      treeRect = tree.getBoundingClientRect();
+      itemRect = targetItem.getBoundingClientRect();
+      expect(treeRect.top <= itemRect.top && treeRect.bottom >= itemRect.bottom)
+        .to.be.true;
     });
 
     it('When an item is added/deleted the visible tree items collection should be calculated properly', async () => {

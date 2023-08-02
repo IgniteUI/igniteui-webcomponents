@@ -458,6 +458,9 @@ export default class IgcComboComponent<T extends object = any>
    *  </igc-combo>
    * ```
    */
+  /* blazorPrimitiveValue */
+  /* blazorByValueArray */
+  /* @tsTwoWayProperty (true, "Change", "Detail.NewValue", false) */
   public set value(items: ComboValue<T>[]) {
     const oldValue = this._value;
     this._value = items;
