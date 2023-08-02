@@ -873,25 +873,38 @@ describe('Combo', () => {
       expect(combo.value.length).to.equal(0);
     });
 
-    it('Selection API should deselect nothing in single selection mode if nothing is passed', async () => {
+    it('Selection API should deselect everything in single selection mode if nothing is passed', async () => {
+      const selection = 'BG01';
+
       combo.singleSelect = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
-      await list.layoutComplete;
-
-      const selection = 'BG01';
       combo.select(selection);
-
       await elementUpdated(combo);
 
-      expect(combo.value[0]).to.equal(selection);
+      expect(combo.value).to.eql([selection]);
 
       combo.deselect();
       await elementUpdated(combo);
 
-      expect(combo.value[0]).to.equal(selection);
+      expect(combo.value).to.eql([]);
+    });
+
+    it('Selection API should not deselect current value in single selection mode with wrong valueKey passed', async () => {
+      const selection = 'BG01';
+
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+
+      combo.select(selection);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql([selection]);
+
+      combo.deselect('US01');
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql([selection]);
     });
 
     it('should select a single item using valueKey as argument with the Selection API', async () => {
@@ -1182,7 +1195,7 @@ describe('Combo', () => {
       expect(spec.submit()?.getAll(spec.element.name).length).to.eql(2);
     });
 
-    it('is correctly reset on form reset', async () => {
+    it('is correctly reset on form reset (multiple)', async () => {
       const initial = spec.element.value;
 
       spec.element.setAttribute('value', '["BG01", "BG02"]');
@@ -1190,6 +1203,22 @@ describe('Combo', () => {
 
       spec.element.value = [];
       await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.eql(initial);
+    });
+
+    it('is correctly reset on form reset (single)', async () => {
+      // Initial value is a multiple array. The combo defaults to the first item
+      const initial = [spec.element.value[0]];
+
+      spec.element.singleSelect = true;
+      await elementUpdated(spec.element);
+
+      spec.element.value = ['US01'];
+      await elementUpdated(spec.element);
+
+      expect(spec.element.value).to.eql(['US01']);
 
       spec.reset();
       expect(spec.element.value).to.eql(initial);

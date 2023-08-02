@@ -109,8 +109,12 @@ export default class IgcComboComponent<T extends object = any>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
+
   private _value: ComboValue<T>[] = [];
+
+  @state()
   private _displayValue = '';
+
   private _filteringOptions: FilteringOptions<T> = {
     filterKey: this.displayKey,
     caseSensitive: false,
@@ -378,7 +382,7 @@ export default class IgcComboComponent<T extends object = any>
       const { selected } = this.selectionController;
 
       if (selected.size === 0) {
-        this.target.value = '';
+        this._displayValue = '';
         this.resetSearchTerm();
       }
 
@@ -428,8 +432,7 @@ export default class IgcComboComponent<T extends object = any>
       this.selectionController.select(this._value as Item<T>[]);
     }
 
-    /// XXX: Review
-    this.singleSelect ? this.setFormValue() : this.updateValue();
+    this.updateValue();
   }
 
   /**
@@ -513,7 +516,6 @@ export default class IgcComboComponent<T extends object = any>
     this.setInvalidState();
 
     await this.updateComplete;
-    this.target.value = this._displayValue;
     this.list.requestUpdate();
   }
 
@@ -875,6 +877,7 @@ export default class IgcComboComponent<T extends object = any>
       @igcBlur=${(e: Event) => e.stopPropagation()}
       @igcInput=${this.handleMainInput}
       @keydown=${this.handleMainInputKeydown}
+      .value=${this._displayValue}
       .disabled=${this.disabled}
       .required=${this.required}
       .invalid=${live(this.invalid)}
