@@ -99,12 +99,12 @@ $theme: digest-schema(extend(
         height: var-get($theme, 'size');
     }
 
-    [part*='input prefixed'] {
-        padding-inline-start: 0;
+    [part~='prefixed'] {
+        padding-inline-start: rem(4px);
     }
 
-    [part*='input suffixed'] {
-        padding-inline-end: 0;
+    [part~='suffixed'] {
+        padding-inline-end: rem(4px);
     }
 
     [part='helper-text'] {
