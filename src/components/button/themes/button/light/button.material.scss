@@ -239,6 +239,7 @@ $outlined-theme: digest-schema(extend(
     }
 }
 
+/* stylelint-disable */
 :host([variant='flat']) [part='base'] {
     border-radius: var-get($flat-theme, 'border-radius');
 }
@@ -254,6 +255,7 @@ $outlined-theme: digest-schema(extend(
 :host([variant='fab']) [part='base'] {
     border-radius: var-get($fab-theme, 'border-radius');
 }
+/* stylelint-enable */
 
 :host([disabled][variant='flat']) [part='base'] {
     color: var-get($flat-theme, 'disabled-foreground');
