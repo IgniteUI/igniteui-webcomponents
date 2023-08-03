@@ -188,40 +188,57 @@ export default class IgcRadioComponent extends FormAssociatedMixin(
 
     for (const radio of radios) {
       radio.updateValidity(message);
-      radio.invalid = !radio.checkValidity();
+      radio.setInvalidState();
     }
   }
 
   @watch('required', { waitUntilFirstUpdate: true })
   protected override requiredChange(): void {
     const { radios } = this.radioGroup;
+
     for (const radio of radios) {
       radio.updateValidity();
-      radio.invalid = !this.checkValidity();
+      radio.setInvalidState();
+    }
+  }
+
+  private _updateCheckedState() {
+    const siblings = this.radioGroup.siblings;
+
+    this.setFormValue(this.value || 'on');
+    this.updateValidity();
+    this.setInvalidState();
+
+    this._tabIndex = 0;
+    this.input?.focus();
+
+    for (const radio of siblings) {
+      radio.checked = false;
+      radio._tabIndex = -1;
+      radio.updateValidity();
+      radio.setInvalidState();
+    }
+  }
+
+  private _updateUncheckedState() {
+    const siblings = this.radioGroup.siblings;
+
+    this.setFormValue(null);
+    this.updateValidity();
+    this.setInvalidState();
+
+    if (this.hasUpdated) {
+      this._tabIndex = -1;
+    }
+
+    for (const radio of siblings) {
+      radio.updateValidity();
     }
   }
 
   @watch('checked')
   protected checkedChanged() {
-    if (this.checked) {
-      const { siblings } = this.radioGroup;
-      for (const radio of siblings) {
-        radio.checked = false;
-        radio._tabIndex = -1;
-        radio.updateValidity();
-        radio.setInvalidState();
-      }
-      this.setFormValue(this.value || 'on');
-      this.input?.focus();
-      this._tabIndex = 0;
-    } else {
-      if (this.hasUpdated) {
-        this._tabIndex = -1;
-      }
-      this.setFormValue(null);
-    }
-    this.updateValidity();
-    this.setInvalidState();
+    this.checked ? this._updateCheckedState() : this._updateUncheckedState();
   }
 
   protected handleMouseDown(event: PointerEvent) {
