@@ -1,5 +1,5 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use '../../../../../styles/common/component';
+@use '../../../../../styles/utilities/index' as *;
 
 :host {
     pointer-events: auto;
@@ -11,9 +11,8 @@
         display: block;
         white-space: nowrap;
         position: relative;
-        color: color(secondary, 500);
         pointer-events: none;
-        padding-inline: pad-inline(4px, 8px, 16px);
-        padding-block: pad-block(2px, 4px, 8px);
+        padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
+        padding-block: pad-block(rem(2px), rem(4px), rem(8px));
     }
 }

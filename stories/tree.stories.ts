@@ -61,6 +61,17 @@ type Story = StoryObj<IgcTreeArgs>;
 
 // endregion
 
+Object.assign(metadata.parameters!, {
+  actions: {
+    handles: [
+      'igcItemExpanding',
+      'igcItemExpanded',
+      'igcItemCollapsing',
+      'igcItemCollapsed',
+    ],
+  },
+});
+
 const handleEvent = (ev: any) => {
   // const treeItem = document.getElementById('asd1') as IgcTreeItemComponent;
   // const treeItem1 = document.getElementById('parent') as IgcTreeItemComponent;

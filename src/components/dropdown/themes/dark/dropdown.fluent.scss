@@ -1,11 +1,21 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use '../../../../styles/utilities' as *;
+@use '../../../../styles/themes/schemas/fluent/dark' as *;
+
+$schema: map.get($dark-fluent-schema, 'drop-down');
+$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        item-border-radius: $item-border-radius,
+        border-radius: $border-radius
+    )
+));
+
 
 @mixin theme() {
-    igc-dropdown-item {
-        --selected-item-color: #{utils.contrast-color(surface, 500)};
-    }
-
-    igc-dropdown-header {
-        --header-color: #{utils.contrast-color(surface, 500)};
+    igc-dropdown {
+        @include css-vars-from-theme($theme, 'ig-dropdown');
     }
 }
