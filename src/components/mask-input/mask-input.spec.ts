@@ -634,6 +634,28 @@ describe('Masked input', () => {
       expect(spec.element.value).to.equal('');
     });
 
+    it('is correctly reset on form reset with value formatting enabled', async () => {
+      const bed = new FormAssociatedTestBed<IgcMaskInputComponent>(
+        html`<igc-mask-input
+          name="formatted-mask"
+          mask="(CCC) (CCC)"
+          value-mode="withFormatting"
+          value="123456"
+        ></igc-mask-input>`
+      );
+      await bed.setup(IgcMaskInputComponent.tagName);
+
+      expect(bed.element.value).to.eql('(123) (456)');
+
+      bed.element.value = '111';
+      await elementUpdated(bed.element);
+
+      expect(bed.element.value).to.eql('(111) (___)');
+
+      bed.reset();
+      expect(bed.element.value).to.eql('(123) (456)');
+    });
+
     it('reflects disabled ancestor state', async () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

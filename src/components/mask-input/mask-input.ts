@@ -99,6 +99,10 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     this.updateValidity();
   }
 
+  protected override setDefaultValue(): void {
+    this._defaultValue = this._value;
+  }
+
   protected updateFormValue() {
     this.valueMode === 'raw'
       ? this.setFormValue(this.value || null, this.value)

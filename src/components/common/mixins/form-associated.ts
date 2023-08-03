@@ -306,22 +306,24 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      */
     protected updateValidity(message?: string) {
       const validity: ValidityStateFlags = {};
-      let validationMessage = message ?? '';
-
-      if (message) {
-        validity.customError = true;
-      }
+      let validationMessage = '';
 
       for (const validator of this.validators) {
         const isValid = validator.isValid(this);
 
         validity[validator.key] = !isValid;
-        if (!validationMessage) {
+
+        if (!isValid) {
           validationMessage =
             typeof validator.message === 'function'
               ? validator.message(this)
               : validator.message;
         }
+      }
+
+      if (message) {
+        validity.customError = true;
+        validationMessage = message;
       }
 
       this.#internals.setValidity(validity, validationMessage);
