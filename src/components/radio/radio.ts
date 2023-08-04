@@ -84,7 +84,7 @@ export default class IgcRadioComponent extends FormAssociatedMixin(
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
 
-  @query('input[type="radio"]', true)
+  @query('input[type="radio"]')
   protected input!: HTMLInputElement;
 
   @queryAssignedNodes({ flatten: true })

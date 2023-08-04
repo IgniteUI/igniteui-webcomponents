@@ -98,15 +98,17 @@ export const Form: Story = {
             <igc-radio name="scattered-fruit" value="orange">Orange</igc-radio>
           </igc-radio-group>
           <p>...</p>
-          <div>
+          <igc-radio-group
+            dir=${ifDefined(ctx.globals.direction)}
+            alignment=${ifDefined(args.alignment)}
+          >
             <igc-radio name="scattered-fruit" disabled value="tomato"
               >Tomato</igc-radio
             >
-            <hr />
             <igc-radio name="scattered-fruit" value="strawberry"
               >Strawberry</igc-radio
             >
-          </div>
+          </igc-radio-group>
         </fieldset>
         <fieldset>
           <legend>Initial value</legend>

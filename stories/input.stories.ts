@@ -311,7 +311,6 @@ export const Form: Story = {
         ></igc-input>
       </fieldset>
       ${formControls()}
-      <igc-icon-button name="github" type="submit"></igc-icon-button>
     </form> `;
   },
 };
