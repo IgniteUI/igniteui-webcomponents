@@ -916,6 +916,28 @@ describe('Select component', () => {
       expect(spec.element.value).to.equal(undefined);
     });
 
+    it('is correctly reset of form reset with selection through attribute on item', async () => {
+      const bed = new FormAssociatedTestBed<IgcSelectComponent>(
+        html`<igc-select name="with-item-selection">
+          <igc-select-item value="1">1</igc-select-item>
+          <igc-select-item value="2">2</igc-select-item>
+          <igc-select-item value="3" selected>3</igc-select-item>
+        </igc-select>`
+      );
+
+      await bed.setup(IgcSelectComponent.tagName);
+
+      expect(bed.element.value).to.eq('3');
+
+      bed.element.value = '1';
+      await elementUpdated(bed.element);
+
+      expect(bed.element.value).to.eq('1');
+
+      bed.reset();
+      expect(bed.element.value).to.eq('3');
+    });
+
     it('reflects disabled ancestor state', async () => {
       spec.setAncestorDisabledState(true);
       expect(spec.element.disabled).to.be.true;

@@ -239,6 +239,8 @@ export default class IgcSelectComponent extends FormAssociatedMixin(
 
     if (!this.selectedItem && this.value) {
       this.updateSelected();
+    } else if (this.selectedItem && !this.value) {
+      this._defaultValue = this.selectedItem.value;
     }
 
     if (this.autofocus) {
