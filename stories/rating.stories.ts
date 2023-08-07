@@ -89,12 +89,6 @@ const metadata: Meta<IgcRatingComponent> = {
       description: 'The name attribute of the control.',
       control: 'text',
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in form context.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     disabled: {
       type: 'boolean',
       description: 'The disabled state of the component',
@@ -122,7 +116,6 @@ const metadata: Meta<IgcRatingComponent> = {
     hoverPreview: false,
     readonly: false,
     single: false,
-    required: false,
     disabled: false,
     invalid: false,
     size: 'large',
@@ -164,8 +157,6 @@ interface IgcRatingArgs {
   single: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** Makes the control a required field in form context. */
-  required: boolean;
   /** The disabled state of the component */
   disabled: boolean;
   /** Control the validity of the control. */
@@ -397,14 +388,6 @@ export const Form: Story = {
             name="disabled-rating"
             value="2"
             label="Disabled"
-          ></igc-rating>
-        </fieldset>
-        <fieldset>
-          <igc-rating
-            id="req"
-            name="required-rating"
-            required
-            label="Required"
           ></igc-rating>
         </fieldset>
         ${formControls()}

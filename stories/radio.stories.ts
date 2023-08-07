@@ -35,16 +35,16 @@ const metadata: Meta<IgcRadioComponent> = {
       description: 'Sets the aria-labelledby attribute for the radio control.',
       control: 'text',
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
       control: 'text',
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in form context.',
-      control: 'boolean',
-      defaultValue: false,
     },
     disabled: {
       type: 'boolean',
@@ -79,10 +79,10 @@ interface IgcRadioArgs {
   labelPosition: 'before' | 'after';
   /** Sets the aria-labelledby attribute for the radio control. */
   ariaLabelledby: string;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** Makes the control a required field in form context. */
-  required: boolean;
   /** The disabled state of the component */
   disabled: boolean;
   /** Control the validity of the control. */

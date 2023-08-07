@@ -18,7 +18,6 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import IgcIconComponent from '../icon/icon.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
-import { Validator, requiredNumberValidator } from '../common/validators.js';
 
 defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
 
@@ -58,15 +57,6 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 ) {
   public static readonly tagName = 'igc-rating';
   public static styles = [styles];
-  protected override validators: Validator<this>[] = [
-    {
-      ...requiredNumberValidator,
-      isValid: () =>
-        this.required
-          ? requiredNumberValidator.isValid(this) && this.value > 0
-          : true,
-    },
-  ];
 
   protected ratingSymbols: Array<IgcRatingSymbolComponent> = [];
 

@@ -39,12 +39,6 @@ const metadata: Meta<IgcSliderComponent> = {
       description: 'The name attribute of the control.',
       control: 'text',
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in form context.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
@@ -154,7 +148,6 @@ const metadata: Meta<IgcSliderComponent> = {
     },
   },
   args: {
-    required: false,
     invalid: false,
     disabled: false,
     discreteTrack: false,
@@ -178,8 +171,6 @@ interface IgcSliderArgs {
   ariaLabel: string;
   /** The name attribute of the control. */
   name: string;
-  /** Makes the control a required field in form context. */
-  required: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
   /** The minimum value of the slider scale. Defaults to 0. */

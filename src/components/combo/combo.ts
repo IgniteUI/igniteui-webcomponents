@@ -43,7 +43,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import type { Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import messages from '../common/localization/validation-en.js';
 import type { Validator } from '../common/validators.js';
 
@@ -102,7 +102,7 @@ defineComponents(
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<T extends object = any>
-  extends FormAssociatedMixin(
+  extends FormAssociatedRequiredMixin(
     EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(LitElement)
   )
   implements Partial<IgcToggleComponent>

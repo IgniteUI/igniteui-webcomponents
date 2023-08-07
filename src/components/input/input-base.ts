@@ -15,7 +15,7 @@ import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
 import { styles as fluent } from './themes/light/input.fluent.css.js';
 import { styles as indigo } from './themes/light/input.indigo.css.js';
 import { styles as material } from './themes/light/input.material.css.js';
-import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
@@ -28,7 +28,7 @@ export interface IgcInputEventMap {
 
 @themes({ bootstrap, material, fluent, indigo }, true)
 @blazorDeepImport
-export abstract class IgcInputBaseComponent extends FormAssociatedMixin(
+export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   SizableMixin(
     EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
   )

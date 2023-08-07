@@ -1,6 +1,5 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { watch } from '../decorators/watch.js';
 import type { Constructor } from './constructor';
 import type { Validator } from '../validators.js';
 
@@ -37,8 +36,6 @@ export declare class FormAssociatedElementInterface {
    * Executes the component validators and updates the internal validity state.
    */
   protected updateValidity(message?: string): void;
-
-  protected requiredChange(): void;
 
   /**
    * Saves the initial value/checked state of the control.
@@ -89,12 +86,6 @@ export declare class FormAssociatedElementInterface {
    */
   public name: string;
 
-  /**
-   * Makes the control a required field in a form context.
-   * @attr
-   */
-  public required: boolean;
-
   /** Returns the HTMLFormElement associated with this element. */
   public get form(): HTMLFormElement | null;
 
@@ -126,6 +117,9 @@ export declare class FormAssociatedElementInterface {
   public setCustomValidity(message: string): void;
 }
 
+/**
+ * Turns the passed class element into a Form Associated Custom Element.
+ */
 export function FormAssociatedMixin<T extends Constructor<LitElement>>(
   superClass: T
 ) {
@@ -156,13 +150,6 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      */
     @property()
     public name!: string;
-
-    /**
-     * Makes the control a required field in form context.
-     * @attr
-     */
-    @property({ type: Boolean, reflect: true })
-    public required = false;
 
     /** Returns the HTMLFormElement associated with this element. */
     public get form() {
@@ -264,12 +251,6 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
       event.preventDefault();
       this.invalid = true;
     };
-
-    @watch('required', { waitUntilFirstUpdate: true })
-    protected requiredChange() {
-      this.updateValidity();
-      this.invalid = !this.checkValidity();
-    }
 
     protected setFormValue(
       value: string | File | FormData | null,

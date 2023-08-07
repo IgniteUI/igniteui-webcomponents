@@ -6,9 +6,9 @@ import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 
 import { Validator, requiredBooleanValidator } from '../common/validators.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;
@@ -17,7 +17,7 @@ export interface IgcCheckboxEventMap {
 }
 
 @blazorDeepImport
-export class IgcCheckboxBaseComponent extends FormAssociatedMixin(
+export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(LitElement)
 ) {
   protected override validators: Validator<this>[] = [requiredBooleanValidator];

@@ -101,16 +101,16 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
       control: 'text',
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in form context.',
-      control: 'boolean',
-      defaultValue: false,
     },
     disabled: {
       type: 'boolean',
@@ -170,10 +170,10 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** Makes the control a required field in form context. */
-  required: boolean;
   /** The disabled state of the component */
   disabled: boolean;
   /** Control the validity of the control. */

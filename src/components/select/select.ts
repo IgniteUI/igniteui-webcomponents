@@ -16,7 +16,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
-import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
@@ -78,7 +78,7 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcSelectComponent extends FormAssociatedMixin(
+export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcSelectEventMap, Constructor<IgcDropdownComponent>>(
     IgcDropdownComponent
   )
