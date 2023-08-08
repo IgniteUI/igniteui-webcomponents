@@ -27,8 +27,7 @@ export class SelectionController<T extends object>
   }
 
   private handleChange(detail: IgcComboChangeEventArgs) {
-    // TODO: Investigate
-    // this.host.requestUpdate('value');
+    this.host.requestUpdate('value');
     return this.host.emitEvent('igcChange', { cancelable: true, detail });
   }
 
