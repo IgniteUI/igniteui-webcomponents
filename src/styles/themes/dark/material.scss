@@ -13,6 +13,7 @@
 @use '../../../components/navbar/themes/dark/navbar.material' as navbar;
 @use '../../../components/checkbox/themes/dark/checkbox.material' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.material' as switch;
+@use '../../../components/avatar/themes/dark/avatar.material' as avatar;
 @include base.root-styles($dark-material-palette);
 @include radio.theme();
 @include input.theme();
@@ -26,3 +27,4 @@
 @include navbar.theme();
 @include checkbox.theme();
 @include switch.theme();
+@include avatar.theme();
