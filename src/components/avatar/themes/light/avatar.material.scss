@@ -1,8 +1,8 @@
 @use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use '../../../../styles/themes/schemas/material/light' as *;
 
-$schema: map.get($light-bootstrap-schema, 'avatar');
+$schema: map.get($light-material-schema, 'avatar');
 $border-radius: border-radius(map.get($schema, 'border-radius')...);
 $theme: digest-schema(extend(
     $schema,
@@ -34,4 +34,3 @@ $theme: digest-schema(extend(
 :host([shape='circle']) [part='base'] {
     border-radius: calc(var-get($theme, 'size') / 2);
 }
-

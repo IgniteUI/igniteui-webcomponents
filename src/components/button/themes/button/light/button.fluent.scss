@@ -40,6 +40,7 @@ $outline-btn-indent: rem(2px);
     @include css-vars-from-theme($flat-theme, 'ig-button');
 
     [part='base'] {
+        height: var-get($flat-theme, 'size');
         border-radius: var-get($flat-theme, 'border-radius');
     }
 }
@@ -48,6 +49,7 @@ $outline-btn-indent: rem(2px);
     @include css-vars-from-theme($outlined-theme, 'ig-button');
 
     [part='base'] {
+        height: var-get($outlined-theme, 'size');
         border-radius: var-get($outlined-theme, 'border-radius');
 
         &::after {
@@ -60,6 +62,7 @@ $outline-btn-indent: rem(2px);
     @include css-vars-from-theme($contained-theme, 'ig-button');
 
     [part='base'] {
+        height: var-get($contained-theme, 'size');
         border-radius: var-get($contained-theme, 'border-radius');
 
         &::after {
@@ -69,21 +72,16 @@ $outline-btn-indent: rem(2px);
 }
 
 :host([variant='fab']) {
-    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
-
     @include css-vars-from-theme($fab-theme, 'ig-button');
 
     [part='base'] {
+        height: var-get($fab-theme, 'size');
         border-radius: var-get($fab-theme, 'border-radius');
 
         &::after {
             border-radius: calc(#{var-get($fab-theme, 'border-radius')} - #{$outline-btn-indent * 2});
         }
     }
-}
-
-:host {
-    --size: #{sizable(rem(24px), rem(32px), rem(38px))};
 }
 
 [part='base'] {
