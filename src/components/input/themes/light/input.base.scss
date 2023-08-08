@@ -7,8 +7,6 @@
 }
 
 :host {
-    --size: #{sizable(rem(40px), rem(48px), rem(56px))};
-
     position: relative;
     display: block;
     font-family: var(--ig-font-family);
@@ -36,7 +34,6 @@
 
 [part~='input'] {
     width: 100%;
-    height: var(--size);
     border: none;
     outline-style: none;
     font-family: var(--ig-font-family);
@@ -46,7 +43,6 @@
 [part^='container'] {
     position: relative;
     display: grid;
-    height: var(--size);
 }
 
 [part='prefix'],

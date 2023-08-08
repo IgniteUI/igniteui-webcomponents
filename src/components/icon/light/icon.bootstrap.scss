@@ -15,3 +15,9 @@ $theme: digest-schema($schema);
 svg {
     fill: currentcolor;
 }
+
+:host,
+svg {
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
+}

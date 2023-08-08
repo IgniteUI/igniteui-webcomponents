@@ -39,6 +39,7 @@ $outlined-theme: digest-schema(extend(
     @include css-vars-from-theme($flat-theme, 'ig-button');
 
     [part='base'] {
+        height: var-get($flat-theme, 'size');
         border-radius: var-get($flat-theme, 'border-radius');
     }
 }
@@ -47,6 +48,7 @@ $outlined-theme: digest-schema(extend(
     @include css-vars-from-theme($contained-theme, 'ig-button');
 
     [part='base'] {
+        height: var-get($contained-theme, 'size');
         border-radius: var-get($contained-theme, 'border-radius');
     }
 }
@@ -55,6 +57,7 @@ $outlined-theme: digest-schema(extend(
     @include css-vars-from-theme($outlined-theme, 'ig-button');
 
     [part='base'] {
+        height: var-get($outlined-theme, 'size');
         border: rem(1px) solid var-get($outlined-theme, 'border-color');
         border-radius: var-get($outlined-theme, 'border-radius');
     }
@@ -64,12 +67,9 @@ $outlined-theme: digest-schema(extend(
     @include css-vars-from-theme($fab-theme, 'ig-button');
 
     [part='base'] {
+        height: var-get($fab-theme, 'size');
         border-radius: var-get($fab-theme, 'border-radius');
     }
-}
-
-:host {
-    --size: #{sizable(rem(31px), rem(38px), rem(48px))};
 }
 
 :host [part='base'] {
