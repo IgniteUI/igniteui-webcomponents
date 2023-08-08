@@ -256,7 +256,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     }
   }
 
-  private activateStep(step: IgcStepComponent, shouldEmit = true) {
+  private async activateStep(step: IgcStepComponent, shouldEmit = true) {
     if (step === this.activeStep) {
       return;
     }
@@ -270,6 +270,27 @@ export default class IgcStepperComponent extends EventEmitterMixin<
         },
         cancelable: true,
       };
+
+      if (
+        this.orientation == 'horizontal' &&
+        this.horizontalAnimation == 'slide'
+      ) {
+        if (step.index < this.activeStep.index) {
+          await this.activeStep.toggleAnimation('close');
+          step.toggleAnimation('close');
+        } else {
+          await this.activeStep.toggleAnimation('open');
+          step.toggleAnimation('open');
+        }
+      } else if (
+        this.orientation == 'vertical' &&
+        this.verticalAnimation == 'grow'
+      ) {
+        this.activeStep.toggleAnimation('close');
+        step.toggleAnimation('open');
+      } else {
+        step.toggleAnimation('open');
+      }
 
       const allowed = this.emitEvent('igcActiveStepChanging', args);
 

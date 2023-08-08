@@ -150,15 +150,15 @@ export default class IgcStepComponent extends LitElement {
     this.animationPlayer = new AnimationPlayer(this.content);
   }
 
-  private async toggleAnimation(dir: 'open' | 'close') {
+  public async toggleAnimation(dir: 'open' | 'close') {
     const slideInLeftFrames: Keyframe[] = [
-      { opacity: 0, transform: 'translateX(-500px)' },
-      { opacity: 1, transform: 'translateX(0)' },
+      { opacity: 1, transform: 'translateX(-100%)' },
+      { opacity: 1, transform: 'translateX(0%)' },
     ];
 
     const slideInRightFrames: Keyframe[] = [
-      { opacity: 0, transform: 'translateX(500px)' },
-      { opacity: 1, transform: 'translateX(0)' },
+      { opacity: 1, transform: 'translateX(0%)' },
+      { opacity: 1, transform: 'translateX(-100%)' },
     ];
 
     const growVerInFrames: Keyframe[] = [
@@ -179,7 +179,7 @@ export default class IgcStepComponent extends LitElement {
     const customSlideInLeft = animation(slideInLeftFrames, opts);
     const customSlideInRight = animation(slideInRightFrames, opts);
     const customSlideAnimation =
-      dir === 'open' ? customSlideInLeft : customSlideInRight;
+      dir === 'open' ? customSlideInRight : customSlideInLeft;
 
     const customGrowVerIn = animation(growVerInFrames, opts);
     const customGrowVerOut = animation(growVerOutFrames, opts);
@@ -230,15 +230,9 @@ export default class IgcStepComponent extends LitElement {
   @watch('active', { waitUntilFirstUpdate: true })
   protected async activeChange() {
     if (this.active) {
-      if (
-        (await this.toggleAnimation('open')) ||
-        this.verticalAnimation == 'none' ||
-        this.horizontalAnimation == 'none'
-      ) {
-        this.dispatchEvent(
-          new CustomEvent('stepActiveChanged', { bubbles: true, detail: false })
-        );
-      }
+      this.dispatchEvent(
+        new CustomEvent('stepActiveChanged', { bubbles: true, detail: false })
+      );
     }
   }
 
