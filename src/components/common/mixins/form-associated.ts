@@ -148,7 +148,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      * The name attribute of the control.
      * @attr
      */
-    @property()
+    @property({ reflect: true })
     public name!: string;
 
     /** Returns the HTMLFormElement associated with this element. */
