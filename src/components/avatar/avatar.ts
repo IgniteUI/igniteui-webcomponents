@@ -5,8 +5,11 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './themes/light/avatar.base.css.js';
+import { styles } from './themes/avatar.base.css.js';
+import { styles as material } from './themes/light/avatar.material.css.js';
 import { styles as bootstrap } from './themes/light/avatar.bootstrap.css.js';
+import { styles as fluent } from './themes/light/avatar.fluent.css.js';
+import { styles as indigo } from './themes/light/avatar.indigo.css.js';
 
 /**
  * An avatar component is used as a representation of a user identity
@@ -21,7 +24,7 @@ import { styles as bootstrap } from './themes/light/avatar.bootstrap.css.js';
  * @csspart image - The image wrapper of the avatar.
  * @csspart icon - The icon wrapper of the avatar.
  */
-@themes({ bootstrap })
+@themes({ bootstrap, material, fluent, indigo })
 export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-avatar';
   public static override styles = styles;

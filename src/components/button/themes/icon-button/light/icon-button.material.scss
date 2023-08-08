@@ -14,8 +14,6 @@ $theme: digest-schema(extend(
 :host {
     @include css-vars-from-theme($theme, 'ig-button');
 
-    --size: #{sizable(rem(24px), rem(30px), rem(36px))};
-
     ::slotted(igc-ripple) {
         border-radius: var-get($theme, 'border-radius');
     }
@@ -23,8 +21,8 @@ $theme: digest-schema(extend(
 
 [part='base'] {
     border-radius: var-get($theme, 'border-radius');
-    width: var(--size);
-    height: var(--size);
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
     padding: pad(6px);
     color: color(gray, 900);
 
