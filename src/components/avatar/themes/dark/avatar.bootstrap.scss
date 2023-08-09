@@ -3,7 +3,13 @@
 @use '../../../../styles/themes/schemas/bootstrap/dark' as *;
 
 $schema: map.get($dark-bootstrap-schema, 'avatar');
-$theme: digest-schema($schema);
+$border-radius: border-radius(map.get($schema, 'border-radius')...);
+$theme: digest-schema(extend(
+    $schema,
+    (
+        border-radius: $border-radius
+    )
+));
 
 @mixin theme() {
     igc-avatar {

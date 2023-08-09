@@ -10,6 +10,7 @@ import { styles } from './themes/light/tree-item.base.css.js';
 import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
 import { styles as indigo } from './themes/light/tree-item.indigo.css.js';
+import { styles as material } from './themes/light/tree-item.material.css.js';
 import type IgcTreeComponent from './tree.js';
 import { watch } from '../common/decorators/watch.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
@@ -59,7 +60,7 @@ const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({ bootstrap, fluent, indigo, material })
 export default class IgcTreeItemComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-tree-item';

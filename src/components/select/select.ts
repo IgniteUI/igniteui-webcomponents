@@ -6,14 +6,17 @@ import {
   state,
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes, themeSymbol } from '../../theming/index.js';
+import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { partNameMap } from '../common/util.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
@@ -29,7 +32,7 @@ import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
-import { alternateName } from '../common/decorators/alternateName.js';
+import { requiredValidator, Validator } from '../common/validators.js';
 
 defineComponents(
   IgcIconComponent,
@@ -75,15 +78,17 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcSelectComponent extends EventEmitterMixin<
-  IgcSelectEventMap,
-  Constructor<IgcDropdownComponent>
->(IgcDropdownComponent) {
-  /** @private */
+export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
+  EventEmitterMixin<IgcSelectEventMap, Constructor<IgcDropdownComponent>>(
+    IgcDropdownComponent
+  )
+) {
   public static readonly tagName = 'igc-select';
   public static styles = styles;
   private searchTerm = '';
   private lastKeyTime = Date.now();
+
+  protected override validators: Validator<this>[] = [requiredValidator];
   private declare readonly [themeSymbol]: Theme;
 
   private readonly targetKeyHandlers: Map<string, Function> = new Map(
@@ -126,36 +131,8 @@ export default class IgcSelectComponent extends EventEmitterMixin<
    * The value attribute of the control.
    * @attr
    */
-  @property({ reflect: false, type: String })
-  public value?: string | undefined;
-
-  /**
-   * The name attribute of the control.
-   * @attr
-   */
-  @property()
-  public name!: string;
-
-  /**
-   * The disabled attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
-
-  /**
-   * The required attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public required = false;
-
-  /**
-   * The invalid attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public invalid = false;
+  @property({ reflect: false })
+  public value?: string;
 
   /**
    * The outlined attribute of the control.
@@ -250,16 +227,10 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   }
 
   /** Checks the validity of the control and moves the focus to it if it is not valid. */
-  public reportValidity() {
-    const valid = this.checkValidity();
+  public override reportValidity() {
+    const valid = super.reportValidity();
     if (!valid) this.target.focus();
     return valid;
-  }
-
-  /** Checks the validity of the control. */
-  public checkValidity() {
-    this.invalid = this.required && !this.value;
-    return !this.invalid;
   }
 
   protected override async firstUpdated() {
@@ -268,11 +239,15 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
     if (!this.selectedItem && this.value) {
       this.updateSelected();
+    } else if (this.selectedItem && !this.value) {
+      this._defaultValue = this.selectedItem.value;
     }
 
     if (this.autofocus) {
       this.target.focus();
     }
+
+    this.updateValidity();
   }
 
   @watch('selectedItem')
@@ -282,7 +257,12 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
   @watch('value')
   protected updateSelected() {
-    if (this.allItems.length === 0) return;
+    if (this.allItems.length === 0) {
+      this.setFormValue(null);
+      this.updateValidity();
+      this.setInvalidState();
+      return;
+    }
 
     if (this.selectedItem?.value !== this.value) {
       const matches = this.allItems.filter((i) => i.value === this.value);
@@ -293,16 +273,17 @@ export default class IgcSelectComponent extends EventEmitterMixin<
       if (index === -1) {
         this.value = undefined;
         this.clearSelection();
+        this.setFormValue(null);
+        this.updateValidity();
+        this.setInvalidState();
         return;
       }
 
       this.select(index);
     }
-  }
-
-  @watch('value')
-  protected validate() {
-    this.updateComplete.then(() => this.reportValidity());
+    this.setFormValue(this.value!);
+    this.updateValidity();
+    this.setInvalidState();
   }
 
   protected selectNext() {
@@ -369,11 +350,13 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   }
 
   protected handleFocus() {
+    this._dirty = true;
     if (this.open) return;
     this.emitEvent('igcFocus');
   }
 
   protected handleBlur() {
+    this.setInvalidState();
     if (this.open) return;
     this.emitEvent('igcBlur');
   }
@@ -468,9 +451,9 @@ export default class IgcSelectComponent extends EventEmitterMixin<
           size=${this.size}
           dir=${this.dir}
           tabindex="-1"
-          .disabled="${this.disabled}"
+          .disabled=${this.disabled}
           .required=${this.required}
-          .invalid=${this.invalid}
+          .invalid=${live(this.invalid)}
           .outlined=${this.outlined}
           @igcBlur=${(e: Event) => e.stopPropagation()}
           @igcFocus=${(e: Event) => e.stopPropagation()}

@@ -14,8 +14,6 @@ $theme: digest-schema(extend(
 :host {
     @include css-vars-from-theme($theme, 'ig-button');
 
-    --size: #{sizable(rem(31px), rem(38px), rem(48px))};
-
     ::slotted(igc-ripple) {
         border-radius: var-get($theme, 'border-radius');
     }
@@ -23,8 +21,8 @@ $theme: digest-schema(extend(
 
 [part='base'] {
     border-radius: var-get($theme, 'border-radius');
-    width: var(--size);
-    height: var(--size);
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
     transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
     color: #{color(primary, 500)};
     padding: pad(7.5px, 9px, 12px);
@@ -96,7 +94,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: #{color(primary, 100)};
         background: transparent;
@@ -107,7 +106,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled][variant='contained']) {
+:host([disabled][variant='contained']),
+:host(:disabled[variant='contained']) {
     [part='base'] {
         background: #{color(primary, 100)};
         color: #{color(primary, 300)};
@@ -118,7 +118,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled][variant='outlined']) {
+:host([disabled][variant='outlined']),
+:host(:disabled[variant='outlined']) {
     [part='base'] {
         color: #{color(primary, 100)};
         box-shadow: 0 0 0 rem(1px) color(primary, 100);

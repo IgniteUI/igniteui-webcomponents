@@ -14,8 +14,6 @@ $theme: digest-schema(extend(
 :host {
     @include css-vars-from-theme($theme, 'ig-button');
 
-    --size: #{sizable(rem(24px), rem(30px), rem(36px))};
-
     ::slotted(igc-ripple) {
         border-radius: var-get($theme, 'border-radius');
     }
@@ -23,8 +21,8 @@ $theme: digest-schema(extend(
 
 [part='base'] {
     border-radius: var-get($theme, 'border-radius');
-    width: var(--size);
-    height: var(--size);
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
     padding: pad(6px);
     color: color(gray, 900);
 
@@ -59,7 +57,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: color(gray, 500);
     }
@@ -69,12 +68,14 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled][variant='contained']) {
+:host([disabled][variant='contained']),
+:host(:disabled[variant='contained']) {
     [part='base'] {
         background: color(gray, 100);
     }
 }
 
+:host(:disabled[variant='outlined']),
 :host([disabled][variant='outlined']) {
     [part='base'] {
         background: color(gray, 100);

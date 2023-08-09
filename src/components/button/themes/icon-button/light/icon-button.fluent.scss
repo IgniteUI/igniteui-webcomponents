@@ -17,8 +17,6 @@ $outline-btn-indent: rem(2px);
 :host {
     @include css-vars-from-theme($theme, 'ig-button');
 
-    --size: #{sizable(rem(24px), rem(32px), rem(38px))};
-
     ::slotted(igc-ripple) {
         border-radius: var-get($theme, 'border-radius');
     }
@@ -30,8 +28,8 @@ $outline-btn-indent: rem(2px);
     color: color(primary, 500);
     transition: color .15s ease-out, background .15s ease-out;
     box-shadow: none;
-    width: var(--size);
-    height: var(--size);
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
     padding: pad(4px, 6px, 7px);
 
     &::after {
@@ -115,7 +113,8 @@ $outline-btn-indent: rem(2px);
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: color(gray, 400);
         background: color(gray, 100);

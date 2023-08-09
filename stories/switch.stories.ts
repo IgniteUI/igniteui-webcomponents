@@ -1,5 +1,10 @@
 import { html } from 'lit';
-import { Context } from './story.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcSwitchComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
@@ -19,37 +24,14 @@ const metadata: Meta<IgcSwitchComponent> = {
     },
   },
   argTypes: {
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
     value: {
       type: 'string',
       description: 'The value attribute of the control.',
       control: 'text',
     },
-    disabled: {
-      type: 'boolean',
-      description: 'Disables the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     checked: {
       type: 'boolean',
       description: 'The checked state of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -65,35 +47,58 @@ const metadata: Meta<IgcSwitchComponent> = {
       description: 'Sets the aria-labelledby attribute for the control.',
       control: 'text',
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
   },
   args: {
-    disabled: false,
     checked: false,
-    required: false,
-    invalid: false,
     labelPosition: 'after',
+    required: false,
+    disabled: false,
+    invalid: false,
   },
 };
 
 export default metadata;
 
 interface IgcSwitchArgs {
-  /** The name attribute of the control. */
-  name: string;
   /** The value attribute of the control. */
   value: string;
-  /** Disables the control. */
-  disabled: boolean;
   /** The checked state of the control. */
   checked: boolean;
-  /** Makes the control a required field. */
-  required: boolean;
-  /** Controls the validity of the control. */
-  invalid: boolean;
   /** The label position of the control. */
   labelPosition: 'before' | 'after';
   /** Sets the aria-labelledby attribute for the control. */
   ariaLabelledby: string;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
 }
 type Story = StoryObj<IgcSwitchArgs>;
 
@@ -116,3 +121,28 @@ const Template = (
 };
 
 export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    return html`
+      <form action="" @submit=${formSubmitHandler}>
+        <fieldset>
+          <legend>Default section</legend>
+          <igc-switch name="switch">Switch 1</igc-switch>
+        </fieldset>
+        <fieldset>
+          <legend>Required section</legend>
+          <igc-switch required name="required-switch"
+            >Required switch</igc-switch
+          >
+        </fieldset>
+        <fieldset disabled>
+          <legend>Disabled section</legend>
+          <igc-switch name="switch-disabled">Switch 2</igc-switch>
+        </fieldset>
+        ${formControls()}
+      </form>
+    `;
+  },
+};

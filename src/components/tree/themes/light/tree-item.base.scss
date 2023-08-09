@@ -16,7 +16,6 @@ $focused-border-color: color(secondary, 500);
 $toggle-icon-size: rem(24px);
 
 :host {
-    --size: #{sizable(rem(32px), rem(40px), rem(50px))};
     --igc-tree-indentation-size: 24px;
 
     display: flex;
@@ -51,7 +50,6 @@ $toggle-icon-size: rem(24px);
     position: relative;
     background: $background;
     color: $color;
-    min-height: var(--size);
     padding: 0 pad(12px, 16px, 24px);
 
     &::after {
@@ -114,7 +112,6 @@ $toggle-icon-size: rem(24px);
     @include type-style('body-2');
 
     display: block;
-    max-height: var(--size);
     margin: 0;
 
     ::slotted(*) {
