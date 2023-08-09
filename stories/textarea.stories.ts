@@ -6,6 +6,11 @@ import {
 } from '../src/index.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { html } from 'lit';
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcTextareaComponent, IgcIconComponent);
 
@@ -47,6 +52,12 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: 'text',
       defaultValue: '',
     },
+    readOnly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -55,24 +66,6 @@ const metadata: Meta<IgcTextareaComponent> = {
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Makes the control a disabled field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -107,17 +100,41 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'soft',
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
   },
   args: {
     cols: 20,
     rows: 2,
     value: '',
+    readOnly: false,
     outlined: false,
+    resize: 'vertical',
+    wrap: 'soft',
     required: false,
     disabled: false,
     invalid: false,
-    resize: 'vertical',
-    wrap: 'soft',
   },
 };
 
@@ -136,16 +153,12 @@ interface IgcTextareaArgs {
   rows: number;
   /** The value of the component */
   value: string;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a required field. */
-  required: boolean;
-  /** Makes the control a disabled field. */
-  disabled: boolean;
-  /** Controls the validity of the control. */
-  invalid: boolean;
   /** The label for the control. */
   label: string;
   resize: 'vertical' | 'auto' | 'none';
@@ -158,6 +171,14 @@ interface IgcTextareaArgs {
   maxLength: number;
   /** Indicates how the control should wrap the value for form submission. */
   wrap: 'hard' | 'soft' | 'off';
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
 }
 type Story = StoryObj<IgcTextareaArgs>;
 
@@ -207,6 +228,65 @@ export const Projected: Story = {
         <igc-icon slot="suffix" name="location"></igc-icon>
         <span slot="helper-text">Helper text</span>
       </igc-textarea>
+    `;
+  },
+};
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    return html`
+      <form action="" @submit=${formSubmitHandler}>
+        <fieldset>
+          <igc-textarea name="textarea-default" label="Default"></igc-textarea>
+        </fieldset>
+        <fieldset>
+          <igc-textarea
+            name="textarea-initial-value"
+            label="Initial value (binding)"
+            value="Hello world!"
+          ></igc-textarea>
+          <igc-textarea
+            name="textarea-initial-projected"
+            label="Initial value (slot)"
+          >
+            Hello world!
+          </igc-textarea>
+        </fieldset>
+        <fieldset disabled>
+          <igc-textarea
+            name="textarea-disabled"
+            value="No!"
+            label="Disabled"
+          ></igc-textarea>
+        </fieldset>
+        <fieldset>
+          <igc-textarea
+            name="textarea-readonly"
+            value="Can't edit this..."
+            readonly
+            label="Readonly"
+          ></igc-textarea>
+        </fieldset>
+        <fieldset>
+          <igc-textarea
+            name="textarea-required"
+            label="Required"
+            required
+          ></igc-textarea>
+          <igc-textarea
+            name="textarea-min-length"
+            label="Minimum length (3)"
+            minlength="3"
+          ></igc-textarea>
+          <igc-textarea
+            name="textarea-max-length"
+            label="Maximum length (8)"
+            minlength="8"
+          ></igc-textarea>
+        </fieldset>
+        ${formControls()}
+      </form>
     `;
   },
 };

@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcTextareaComponent from './textarea.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Textarea component', () => {
   before(() => defineComponents(IgcTextareaComponent));
@@ -159,6 +160,87 @@ describe('Textarea component', () => {
   });
 
   describe('Form integration', () => {
-    // Once #726 is merged
+    const spec = new FormAssociatedTestBed<IgcTextareaComponent>(
+      html`<igc-textarea name="textarea"></igc-textarea>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcTextareaComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is not associated on submit if no value', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is associated on submit', async () => {
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal('');
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils min length constraint', async () => {
+      spec.element.minLength = 4;
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+
+      spec.submitFails();
+
+      spec.element.value = 'abcd';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils max length constraint', async () => {
+      spec.element.maxLength = 3;
+      spec.element.value = 'abcd';
+      await elementUpdated(spec.element);
+
+      spec.submitFails();
+
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
+    });
   });
 });

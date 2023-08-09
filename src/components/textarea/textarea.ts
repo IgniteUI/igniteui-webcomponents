@@ -18,6 +18,13 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, extractText, partNameMap } from '../common/util.js';
 import type { Theme } from '../../theming/types.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import {
+  Validator,
+  // maxLengthValidator,
+  // minLengthValidator,
+  requiredValidator,
+} from '../common/validators.js';
 
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
@@ -50,14 +57,18 @@ export interface IgcTextareaEventMap {
  * @csspart helper-text - The helper text wrapper.
  */
 @themes({ material, bootstrap, fluent, indigo }, true)
-export default class IgcTextareaComponent extends EventEmitterMixin<
-  IgcTextareaEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
+  EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
+) {
   public static readonly tagName = 'igc-textarea';
   public static styles = [styles];
 
   private declare readonly [themeSymbol]: Theme;
+  protected override validators: Validator<this>[] = [
+    requiredValidator,
+    // minLengthValidator,
+    // maxLengthValidator,
+  ];
 
   private static readonly increment = createCounter();
   protected inputId = `textarea-${IgcTextareaComponent.increment()}`;
@@ -81,7 +92,7 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
 
-  @query('textarea', true)
+  @query('textarea')
   private input!: HTMLTextAreaElement;
 
   private get resizeStyles(): StyleInfo {
@@ -117,6 +128,14 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
   public value = '';
 
   /**
+   * Makes the control a readonly field.
+   *
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public readOnly = false;
+
+  /**
    * The placeholder attribute of the control.
    *
    * @attr
@@ -130,27 +149,6 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
    */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
-
-  /**
-   * Makes the control a required field.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public required = false;
-
-  /**
-   * Makes the control a disabled field.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
-
-  /**
-   * Controls the validity of the control.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public invalid = false;
 
   /**
    * The label for the control.
@@ -193,8 +191,15 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
 
   constructor() {
     super();
-    this.addEventListener('focus', () => this.emitEvent('igcFocus'));
-    this.addEventListener('blur', () => this.emitEvent('igcBlur'));
+    this.addEventListener('focus', () => {
+      this._dirty = true;
+      this.emitEvent('igcFocus');
+    });
+    this.addEventListener('blur', () => {
+      this.updateValidity();
+      this.setInvalidState();
+      this.emitEvent('igcBlur');
+    });
   }
 
   public override async connectedCallback() {
@@ -255,8 +260,16 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
     };
   }
 
-  @watch('value', { waitUntilFirstUpdate: true })
+  protected override async firstUpdated() {
+    await this.updateComplete;
+    this._defaultValue = this.value;
+  }
+
+  @watch('value')
   protected async valueChanged() {
+    this.value ? this.setFormValue(this.value) : this.setFormValue(null);
+    this.updateValidity();
+    this.setInvalidState();
     await this.updateComplete;
     this.setAreaHeight();
   }
@@ -280,10 +293,6 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
   protected handleChange() {
     this.value = this.input.value;
     this.emitEvent('igcChange', { detail: this.value });
-  }
-
-  private handleInvalid() {
-    this.invalid = true;
   }
 
   protected valueSlotChange() {
@@ -367,8 +376,8 @@ export default class IgcTextareaComponent extends EventEmitterMixin<
         .wrap=${this.wrap}
         ?disabled=${this.disabled}
         ?required=${this.required}
+        ?readonly=${this.readOnly}
         aria-invalid=${this.invalid ? 'true' : 'false'}
-        @invalid=${this.handleInvalid}
       ></textarea>`;
   }
 
