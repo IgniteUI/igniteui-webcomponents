@@ -20,6 +20,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Deprecated
  - IgcForm component is deprecated
+ - Input component:
+    - `minlength` property is deprecated and will be removed in the next major version. Use `minLength` instead.
+    - `maxlength` property is deprecated and will be removed in the next major version. Use `maxLength` instead.
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+- Mask input component:
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+- DateTime input component:
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+- Rating component:
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
 
 ## [4.3.1] - 2023-08-02
 ### Added

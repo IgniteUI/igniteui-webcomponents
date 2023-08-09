@@ -190,7 +190,7 @@ function setDefaultValue(props) {
  * @returns
  */
 function buildComment(description) {
-  if (!description) return '';
+  if (!description || description.includes('@deprecated')) return '';
   const parts = description.split('\n');
   return parts.length > 1
     ? ['/**', ...parts.map((part) => `* ${part}`), '*/\n'].join('\n')

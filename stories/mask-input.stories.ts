@@ -61,11 +61,16 @@ const metadata: Meta<IgcMaskInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
       defaultValue: false,
+    },
+    readonly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
     },
     placeholder: {
       type: 'string',
@@ -111,7 +116,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
   args: {
     valueMode: 'raw',
     outlined: false,
-    readonly: false,
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -141,6 +146,8 @@ interface IgcMaskInputArgs {
   value: string;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** Makes the control a readonly field. */
   readonly: boolean;
   /** The placeholder attribute of the control. */

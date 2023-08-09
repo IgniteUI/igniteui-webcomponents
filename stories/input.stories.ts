@@ -47,9 +47,19 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The pattern attribute of the control.',
       control: 'text',
     },
+    minLength: {
+      type: 'number',
+      description: 'The minimum string length required by the control.',
+      control: 'number',
+    },
     minlength: {
       type: 'number',
       description: 'The minlength attribute of the control.',
+      control: 'number',
+    },
+    maxLength: {
+      type: 'number',
+      description: 'The maximum string length of the control.',
       control: 'number',
     },
     maxlength: {
@@ -95,11 +105,16 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
       defaultValue: false,
+    },
+    readonly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
     },
     placeholder: {
       type: 'string',
@@ -147,7 +162,7 @@ const metadata: Meta<IgcInputComponent> = {
     tabIndex: 0,
     value: '',
     outlined: false,
-    readonly: false,
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -172,8 +187,12 @@ interface IgcInputArgs {
     | 'decimal';
   /** The pattern attribute of the control. */
   pattern: string;
+  /** The minimum string length required by the control. */
+  minLength: number;
   /** The minlength attribute of the control. */
   minlength: number;
+  /** The maximum string length of the control. */
+  maxLength: number;
   /** The maxlength attribute of the control. */
   maxlength: number;
   /** The min attribute of the control. */
@@ -191,6 +210,8 @@ interface IgcInputArgs {
   value: string;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** Makes the control a readonly field. */
   readonly: boolean;
   /** The placeholder attribute of the control. */

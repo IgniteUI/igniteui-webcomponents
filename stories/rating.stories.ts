@@ -72,11 +72,16 @@ const metadata: Meta<IgcRatingComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
+    readOnly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     readonly: {
       type: 'boolean',
       description: 'Sets the readonly state of the component',
       control: 'boolean',
-      defaultValue: false,
     },
     single: {
       type: 'boolean',
@@ -114,7 +119,7 @@ const metadata: Meta<IgcRatingComponent> = {
     step: 1,
     value: 0,
     hoverPreview: false,
-    readonly: false,
+    readOnly: false,
     single: false,
     disabled: false,
     invalid: false,
@@ -151,6 +156,8 @@ interface IgcRatingArgs {
   value: number;
   /** Sets hover preview behavior for the component */
   hoverPreview: boolean;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** Sets the readonly state of the component */
   readonly: boolean;
   /** Toggles single selection visual mode. */

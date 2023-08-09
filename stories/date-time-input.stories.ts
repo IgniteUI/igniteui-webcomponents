@@ -78,11 +78,16 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
       defaultValue: false,
+    },
+    readonly: {
+      type: 'boolean',
+      description: 'Makes the control a readonly field.',
+      control: 'boolean',
     },
     placeholder: {
       type: 'string',
@@ -129,7 +134,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     spinLoop: true,
     locale: 'en',
     outlined: false,
-    readonly: false,
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -161,6 +166,8 @@ interface IgcDateTimeInputArgs {
   value: Date | null;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** Makes the control a readonly field. */
   readonly: boolean;
   /** The placeholder attribute of the control. */
