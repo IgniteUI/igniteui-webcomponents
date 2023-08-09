@@ -17,15 +17,18 @@ export interface IgcButtonEventMap {
 export abstract class IgcButtonBaseComponent extends SizableMixin(
   EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
 ) {
+  public static readonly formAssociated = true;
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
 
+  #internals: ElementInternals;
+
   @query('[part="base"]', true)
   private nativeElement!: HTMLElement;
 
-  private _ariaLabel!: string;
+  protected _disabled = false;
 
   /**
    * The type of the button. Defaults to undefined.
@@ -65,31 +68,40 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   public rel!: string;
 
   /**
-   * Determines whether the button is disabled.
-   * @attr
+   * The disabled state of the component
+   * @attr [disabled=false]
    */
   @property({ type: Boolean, reflect: true })
-  public disabled = false;
-
-  public override set ariaLabel(value: string) {
-    const oldVal = this._ariaLabel;
-    this._ariaLabel = value;
-
-    if (this.hasAttribute('aria-label')) {
-      this.removeAttribute('aria-label');
-    }
-    this.requestUpdate('ariaLabel', oldVal);
+  public get disabled() {
+    return this._disabled;
   }
 
-  @property({ attribute: 'aria-label' })
-  public override get ariaLabel() {
-    return this._ariaLabel;
+  public set disabled(value: boolean) {
+    const prev = this._disabled;
+    this._disabled = value;
+    this.toggleAttribute('disabled', Boolean(this._disabled));
+    this.requestUpdate('disabled', prev);
+  }
+
+  /** Returns the HTMLFormElement associated with this element. */
+  public get form() {
+    return this.#internals.form;
+  }
+
+  constructor() {
+    super();
+    this.#internals = this.attachInternals();
   }
 
   /** Sets focus in the button. */
   @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.nativeElement.focus(options);
+  }
+
+  /** Simulates a mouse click on the element */
+  public override click() {
+    this.nativeElement.click();
   }
 
   /** Removes focus from the button. */
@@ -110,14 +122,31 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     return {};
   }
 
+  protected handleClick() {
+    switch (this.type) {
+      case 'submit':
+        return this.form?.requestSubmit();
+      case 'reset':
+        return this.form?.reset();
+      default:
+        return;
+    }
+  }
+
+  protected formDisabledCallback(state: boolean) {
+    this._disabled = state;
+    this.requestUpdate();
+  }
+
   private renderButton() {
     return html`
       <button
         part="base"
-        aria-label=${ifDefined(this.ariaLabel)}
+        .ariaLabel=${this.ariaLabel}
         .disabled=${this.disabled}
         class=${classMap(this.classes)}
         type=${ifDefined(this.type)}
+        @click=${this.handleClick}
         @focus=${this.handleFocus}
         @blur=${this.handleBlur}
       >
@@ -136,7 +165,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
-        aria-label=${ifDefined(this.ariaLabel)}
+        .ariaLabel=${this.ariaLabel}
         class=${classMap(this.classes)}
         @focus=${!this.disabled && this.handleFocus}
         @blur=${!this.disabled && this.handleBlur}

@@ -27,7 +27,6 @@ export class SelectionController<T extends object>
   }
 
   private handleChange(detail: IgcComboChangeEventArgs) {
-    this.host.requestUpdate('value');
     return this.host.emitEvent('igcChange', { cancelable: true, detail });
   }
 
@@ -129,8 +128,6 @@ export class SelectionController<T extends object>
   }
 
   public async deselect(items?: Item<T>[], emit = false) {
-    const { singleSelect } = this.host;
-
     if (!items || items.length === 0) {
       if (
         emit &&
@@ -143,7 +140,7 @@ export class SelectionController<T extends object>
         return;
       }
 
-      !singleSelect && this.deselectAll();
+      this.deselectAll();
       return;
     }
 

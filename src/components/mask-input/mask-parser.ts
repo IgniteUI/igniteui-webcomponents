@@ -46,7 +46,7 @@ export class MaskParser {
   }
 
   protected literals = new Map<number, string>();
-  protected _escapedMask!: string;
+  protected _escapedMask = '';
 
   public get literalPositions() {
     this.getMaskLiterals();

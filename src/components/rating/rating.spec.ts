@@ -12,6 +12,7 @@ import {
   IgcRatingComponent,
   IgcRatingSymbolComponent,
 } from '../../index.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Rating component', () => {
   before(() => {
@@ -416,6 +417,48 @@ describe('Rating component', () => {
 
       await elementUpdated(el);
       expect(el.step).to.equal(1);
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcRatingComponent>(
+      html`<igc-rating name="rating" value="3"></igc-rating>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcRatingComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is associated on submit', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.equal('3');
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.value = 4;
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal(3);
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils custom constraints', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });

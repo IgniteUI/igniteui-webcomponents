@@ -50,10 +50,12 @@
     min-width: rem(88px);
 }
 
-:host(:not([disabled])) [part='base']:hover {
+:host(:not([disabled])) [part='base']:hover,
+:host(:not(:disabled)) [part='base']:hover {
     cursor: pointer;
 }
 
+:host(:disabled),
 :host([disabled]) {
     pointer-events: none;
 }

@@ -70,7 +70,8 @@ $theme: digest-schema($schema);
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }
