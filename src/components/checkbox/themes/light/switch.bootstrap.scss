@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'switch-themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'switch');
-$border-radius-thumb: border-radius(map.get($schema, 'border-radius-thumb')...);
-$border-radius-track: border-radius(map.get($schema, 'border-radius-track')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius-thumb: $border-radius-thumb,
-        border-radius-track: $border-radius-track
-    )
-));
+$theme: $bootstrap;
 
 :host {
     --size: #{rem(32px)};
