@@ -1,18 +1,14 @@
-@use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$dropdown-schema: map.get($light-material-schema, 'drop-down');
-$dropdown-theme: digest-schema($dropdown-schema);
-$input-schema: map.get($light-material-schema, 'input-group');
-$schema: map.get($light-material-schema, 'select');
-$input-theme: digest-schema($input-schema);
-$theme: digest-schema($schema);
+$theme: $select-material;
+$dropdown-theme: $drop-down-material;
+$input-theme: $input-group-material;
 $active-color: var-get($input-theme, 'focused-border-color');
 $error-color: var-get($input-theme, 'error-secondary-color');
 $idle-border-width: rem(1px) !default;
 $active-border-width: rem(2px) !default;
+
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
@@ -195,7 +191,6 @@ $active-border-width: rem(2px) !default;
     }
 
     [part='helper-text'] {
-        color: var-get($input-schema, 'disabled-text-color');
+        color: var-get($input-theme, 'disabled-text-color');
     }
 }
-

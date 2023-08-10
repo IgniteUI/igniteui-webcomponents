@@ -1,12 +1,8 @@
-@use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/dark' as *;
-
-$schema: map.get($dark-indigo-schema, 'select');
-$theme: digest-schema($schema);
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
     igc-select {
-        @include css-vars-from-theme($theme, 'ig-select');
+        @include css-vars-from-theme($indigo, 'ig-select');
     }
 }

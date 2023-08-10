@@ -1,12 +1,8 @@
-@use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/dark' as *;
-
-$input-schema: map.get($dark-bootstrap-schema, 'input-group');
-$input-theme: digest-schema($input-schema);
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
     igc-select {
-        @include css-vars-from-theme($input-theme, 'ig-select');
+        @include css-vars-from-theme($input-group-bootstrap, 'ig-select');
     }
 }

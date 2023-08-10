@@ -1,14 +1,9 @@
-@use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$dropdown-schema: map.get($light-indigo-schema, 'drop-down');
-$dropdown-theme: digest-schema($dropdown-schema);
-$input-schema: map.get($light-indigo-schema, 'input-group');
-$schema: map.get($light-indigo-schema, 'select');
-$input-theme: digest-schema($input-schema);
-$theme: digest-schema($schema);
+$theme: $select-indigo;
+$dropdown-theme: $drop-down-indigo;
+$input-theme: $input-group-indigo;
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');

@@ -1,0 +1,18 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/select' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/drop-down' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/input-group' as *;
+
+$select-material: digest-schema($light-select);
+$select-bootstrap: digest-schema($bootstrap-select);
+$select-fluent: digest-schema($fluent-select);
+$select-indigo: digest-schema($indigo-select);
+$drop-down-material: digest-schema($light-drop-down);
+$drop-down-bootstrap: digest-schema($bootstrap-drop-down);
+$drop-down-fluent: digest-schema($fluent-drop-down);
+$drop-down-indigo: digest-schema($indigo-drop-down);
+$input-group-material: digest-schema($light-input-group);
+$input-group-bootstrap: digest-schema($bootstrap-input-group);
+$input-group-fluent: digest-schema($fluent-input-group);
+$input-group-indigo: digest-schema($indigo-input-group);
