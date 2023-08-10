@@ -1,39 +1,11 @@
 @use 'sass:map';
-@use '../../../../../styles/utilities' as *;
-@use '../../../../../styles/themes/schemas/fluent/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$flat-schema: map.get($light-fluent-schema, 'button', 'flat');
-$flat-border-radius: border-radius(map.get($flat-schema, 'border-radius')...);
-$flat-theme: digest-schema(extend(
-    $flat-schema,
-    (
-        border-radius: $flat-border-radius
-    )
-));
-$contained-schema: map.get($light-fluent-schema, 'button', 'raised');
-$contained-border-radius: border-radius(map.get($contained-schema, 'border-radius')...);
-$contained-theme: digest-schema(extend(
-    $contained-schema,
-    (
-        border-radius: $contained-border-radius
-    )
-));
-$fab-schema: map.get($light-fluent-schema, 'button', 'fab');
-$fab-border-radius: border-radius(map.get($fab-schema, 'border-radius')...);
-$fab-theme: digest-schema(extend(
-    $fab-schema,
-    (
-        border-radius: $fab-border-radius
-    )
-));
-$outlined-schema: map.get($light-fluent-schema, 'button', 'outlined');
-$outlined-border-radius: border-radius(map.get($outlined-schema, 'border-radius')...);
-$outlined-theme: digest-schema(extend(
-    $outlined-schema,
-    (
-        border-radius: $outlined-border-radius
-    )
-));
+$flat-theme: $fluent-flat;
+$contained-theme: $fluent-contained;
+$fab-theme: $fluent-fab;
+$outlined-theme: $fluent-outlined;
 $outline-btn-indent: rem(2px);
 
 :host([variant='flat']) {

@@ -1,0 +1,28 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/avatar' as *;
+
+$material: map.merge(
+    digest-schema($dark-avatar),
+    (
+        border-radius: border-radius(map.get($dark-avatar, 'border-radius')...)
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($dark-bootstrap-avatar),
+    (
+        border-radius: border-radius(map.get($dark-bootstrap-avatar, 'border-radius')...)
+    )
+);
+$fluent: map.merge(
+    digest-schema($dark-fluent-avatar),
+    (
+        border-radius: border-radius(map.get($dark-fluent-avatar, 'border-radius')...)
+    )
+);
+$indigo: map.merge(
+    digest-schema($dark-indigo-avatar),
+    (
+        border-radius: border-radius(map.get($dark-indigo-avatar, 'border-radius')...)
+    )
+);
