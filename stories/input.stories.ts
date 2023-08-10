@@ -52,19 +52,9 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The minimum string length required by the control.',
       control: 'number',
     },
-    minlength: {
-      type: 'number',
-      description: 'The minlength attribute of the control.',
-      control: 'number',
-    },
     maxLength: {
       type: 'number',
       description: 'The maximum string length of the control.',
-      control: 'number',
-    },
-    maxlength: {
-      type: 'number',
-      description: 'The maxlength attribute of the control.',
       control: 'number',
     },
     min: {
@@ -110,11 +100,6 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'Makes the control a readonly field.',
       control: 'boolean',
       defaultValue: false,
-    },
-    readonly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
     },
     placeholder: {
       type: 'string',
@@ -189,12 +174,8 @@ interface IgcInputArgs {
   pattern: string;
   /** The minimum string length required by the control. */
   minLength: number;
-  /** The minlength attribute of the control. */
-  minlength: number;
   /** The maximum string length of the control. */
   maxLength: number;
-  /** The maxlength attribute of the control. */
-  maxlength: number;
   /** The min attribute of the control. */
   min: string | number;
   /** The max attribute of the control. */
@@ -212,8 +193,6 @@ interface IgcInputArgs {
   outlined: boolean;
   /** Makes the control a readonly field. */
   readOnly: boolean;
-  /** Makes the control a readonly field. */
-  readonly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -241,12 +220,12 @@ const Template = (
     outlined,
     autofocus,
     autocomplete,
-    minlength,
-    maxlength,
+    minLength,
+    maxLength,
     step,
     value,
     placeholder,
-    readonly,
+    readOnly,
     required,
     disabled,
     min,
@@ -261,8 +240,8 @@ const Template = (
     size=${ifDefined(size)}
     placeholder=${ifDefined(placeholder)}
     dir=${direction}
-    minlength=${ifDefined(minlength)}
-    maxlength=${ifDefined(maxlength)}
+    minlength=${ifDefined(minLength)}
+    maxlength=${ifDefined(maxLength)}
     step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
     min=${ifDefined(min)}
@@ -270,7 +249,7 @@ const Template = (
     .value=${value}
     ?autofocus=${autofocus}
     ?invalid=${invalid}
-    .readonly=${readonly}
+    .readOnly=${readOnly}
     .outlined=${outlined}
     .required=${required}
     .disabled=${disabled}

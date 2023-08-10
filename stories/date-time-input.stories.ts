@@ -84,11 +84,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -168,8 +163,6 @@ interface IgcDateTimeInputArgs {
   outlined: boolean;
   /** Makes the control a readonly field. */
   readOnly: boolean;
-  /** Makes the control a readonly field. */
-  readonly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -235,7 +228,7 @@ const Template = (
   {
     inputFormat,
     prompt,
-    readonly,
+    readOnly,
     disabled,
     required,
     outlined,
@@ -270,7 +263,7 @@ const Template = (
     prompt=${ifDefined(prompt)}
     placeholder=${ifDefined(placeholder)}
     ?spin-loop=${spinLoop}
-    .readonly=${readonly}
+    .readOnly=${readOnly}
     .outlined=${outlined}
     .required=${required}
     .disabled=${disabled}

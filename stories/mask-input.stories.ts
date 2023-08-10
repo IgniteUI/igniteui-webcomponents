@@ -67,11 +67,6 @@ const metadata: Meta<IgcMaskInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
-      type: 'boolean',
-      description: 'Makes the control a readonly field.',
-      control: 'boolean',
-    },
     placeholder: {
       type: 'string',
       description: 'The placeholder attribute of the control.',
@@ -148,8 +143,6 @@ interface IgcMaskInputArgs {
   outlined: boolean;
   /** Makes the control a readonly field. */
   readOnly: boolean;
-  /** Makes the control a readonly field. */
-  readonly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -178,7 +171,7 @@ Object.assign(metadata.parameters!, {
 const Template = (
   {
     name,
-    readonly,
+    readOnly,
     disabled,
     required,
     outlined,
@@ -202,7 +195,7 @@ const Template = (
     label=${ifDefined(label)}
     size=${ifDefined(size)}
     value-mode=${ifDefined(valueMode)}
-    ?readonly=${ifDefined(readonly)}
+    ?readonly=${ifDefined(readOnly)}
     ?outlined=${ifDefined(outlined)}
     ?required=${ifDefined(required)}
     ?disabled=${ifDefined(disabled)}

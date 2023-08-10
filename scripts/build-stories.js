@@ -115,6 +115,7 @@ async function processFileMeta(path) {
 function isSupportedType(prop) {
   return (
     (prop.type &&
+      !prop.deprecatedMessage &&
       SUPPORTED_TYPES.some(
         (type) => prop.type === type || prop.type.startsWith(`${type} `)
       )) ||
@@ -190,7 +191,7 @@ function setDefaultValue(props) {
  * @returns
  */
 function buildComment(description) {
-  if (!description || description.includes('@deprecated')) return '';
+  if (!description) return '';
   const parts = description.split('\n');
   return parts.length > 1
     ? ['/**', ...parts.map((part) => `* ${part}`), '*/\n'].join('\n')

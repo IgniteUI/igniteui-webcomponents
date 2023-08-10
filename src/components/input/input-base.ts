@@ -88,7 +88,7 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
    * @attr
    *
    * @deprecated - since v4.4.0
-   * Use the `readOnly` property.
+   * Use the `readOnly` property instead.
    */
   @property({ attribute: false })
   public get readonly() {

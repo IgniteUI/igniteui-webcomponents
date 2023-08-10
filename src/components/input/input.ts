@@ -141,7 +141,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * @attr
    *
    * @deprecated - since v4.4.0
-   * Use the `minLength` property
+   * Use the `minLength` property instead.
    */
   @property({ attribute: false })
   public get minlength() {
@@ -164,7 +164,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * @attr
    *
    * @deprecated - since v4.4.0
-   * Use the `maxLength` property
+   * Use the `maxLength` property instead.
    */
   @property({ attribute: false })
   public get maxlength() {
