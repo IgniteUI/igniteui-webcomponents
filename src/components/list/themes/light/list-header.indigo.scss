@@ -1,5 +1,7 @@
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
+$theme: $indigo;
 $header-color: color(primary, 500) !default;
 
 :host {

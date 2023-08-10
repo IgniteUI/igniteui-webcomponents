@@ -1,0 +1,32 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/list' as *;
+
+$material: map.merge(
+    digest-schema($dark-list),
+    (
+        border-radius: border-radius(map.get($dark-list, 'border-radius')...),
+        item-border-radius: border-radius(map.get($dark-list, 'item-border-radius')...)
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($dark-bootstrap-list),
+    (
+        border-radius: border-radius(map.get($dark-bootstrap-list, 'border-radius')...),
+        item-border-radius: border-radius(map.get($dark-bootstrap-list, 'item-border-radius')...)
+    )
+);
+$fluent: map.merge(
+    digest-schema($dark-fluent-list),
+    (
+        border-radius: border-radius(map.get($dark-fluent-list, 'border-radius')...),
+        item-border-radius: border-radius(map.get($dark-fluent-list, 'item-border-radius')...)
+    )
+);
+$indigo: map.merge(
+    digest-schema($dark-indigo-list),
+    (
+        border-radius: border-radius(map.get($dark-indigo-list, 'border-radius')...),
+        item-border-radius: border-radius(map.get($dark-indigo-list, 'item-border-radius')...)
+    )
+);
