@@ -1,0 +1,28 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/progress' as *;
+
+$material: map.merge(
+    digest-schema($light-progress-linear),
+    (
+        track-border-radius: border-radius(map.get($light-progress-linear, 'track-border-radius')...),
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($bootstrap-progress-linear),
+    (
+        track-border-radius: border-radius(map.get($bootstrap-navdrawer, 'track-border-radius')...),
+    )
+);
+$fluent: map.merge(
+    digest-schema($fluent-progress-linear),
+    (
+        track-border-radius: border-radius(map.get($fluent-progress-linear, 'track-border-radius')...),
+    )
+);
+$indigo: map.merge(
+    digest-schema($fluent-progress-linear),
+    (
+        track-border-radius: border-radius(map.get($fluent-progress-linear, 'track-border-radius')...),
+    )
+);
