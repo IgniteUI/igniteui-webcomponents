@@ -23,6 +23,7 @@ const renderSass = sass.compile;
 async function sassToCss(sassFile) {
   const result = renderSass(sassFile, {
     outputStyle: 'compressed',
+    loadPaths: ['node_modules', 'src']
   });
 
   let cssStr = postProcessor.process(result.css).css;

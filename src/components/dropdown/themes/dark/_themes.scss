@@ -1,6 +1,6 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../../node_modules/igniteui-theming/sass/themes/schemas/components/dark/drop-down' as *;
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/drop-down' as *;
 
 $material: map.merge(
     digest-schema($dark-drop-down),

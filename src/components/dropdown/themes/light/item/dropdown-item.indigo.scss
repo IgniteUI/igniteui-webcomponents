@@ -1,6 +1,6 @@
 @use 'sass:map';
-@use '../../../../../styles/utilities/index' as *;
-@use '../resolved' as *;
+@use 'styles/utilities/index' as *;
+@use '../themes' as *;
 
 $theme: $indigo;
 
