@@ -1,4 +1,7 @@
-@use '../../../../../styles/utilities/index' as *;
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $indigo;
 
 :host {
     @include type-style('caption');

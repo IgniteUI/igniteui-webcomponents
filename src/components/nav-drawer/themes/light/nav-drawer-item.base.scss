@@ -1,16 +1,7 @@
-@use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-material-schema, 'nav-drawer');
-$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        item-border-radius: $item-border-radius
-    )
-));
+$theme: $material;
 $active-text-color: var(--active-text-color, color(primary, 500)) !default;
 $active-background: var(--active-background, color(primary, 500, .12)) !default;
 $hover-background: var(--hover-background, color(gray, 200, .8)) !default;

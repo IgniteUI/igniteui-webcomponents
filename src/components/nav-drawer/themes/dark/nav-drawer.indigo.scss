@@ -1,7 +1,10 @@
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
     igc-nav-drawer {
+        @include css-vars-from-theme($indigo, 'ig-navdrawer');
+
         --background: #{color(gray, 500)};
     }
 }
