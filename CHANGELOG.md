@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rating component:
     - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
 
+### Removed
+- Removed our own `dir` attribute which shadowed the default one. This is a **non-breaking change**.
+
 ## [4.3.1] - 2023-08-02
 ### Added
 - Tree - component animations [#846](https://github.com/IgniteUI/igniteui-webcomponents/issues/846)

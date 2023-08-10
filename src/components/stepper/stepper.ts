@@ -5,13 +5,13 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { IgcStepperEventMap } from './stepper.common.js';
 import IgcStepComponent from './step.js';
-import { Direction } from '../common/types.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
 import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
 import { styles as indigo } from './themes/stepper/stepper.indigo.css.js';
 import { watch } from '../common/decorators/watch.js';
+import { isLTR } from '../common/util.js';
 
 defineComponents(IgcStepComponent);
 
@@ -93,10 +93,6 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    */
   @property({ reflect: true, type: Boolean, attribute: 'content-top' })
   public contentTop = false;
-
-  /** The direction attribute of the control. */
-  @property({ reflect: true })
-  public override dir: Direction = 'auto';
 
   /**
    * Get/Set the position of the steps title.
@@ -306,7 +302,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   }
 
   private onArrowRightKeyDown(focusedStep: IgcStepComponent) {
-    if (this.dir === 'rtl' && this.orientation === 'horizontal') {
+    if (!isLTR(this) && this.orientation === 'horizontal') {
       this.getPreviousStep(focusedStep)?.header?.focus();
     } else {
       this.getNextStep(focusedStep)?.header?.focus();
@@ -314,7 +310,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   }
 
   private onArrowLeftKeyDown(focusedStep: IgcStepComponent) {
-    if (this.dir === 'rtl' && this.orientation === 'horizontal') {
+    if (!isLTR(this) && this.orientation === 'horizontal') {
       this.getNextStep(focusedStep)?.header?.focus();
     } else {
       this.getPreviousStep(focusedStep)?.header?.focus();

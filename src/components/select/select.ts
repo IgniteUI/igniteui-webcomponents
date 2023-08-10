@@ -187,13 +187,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @property({ type: Boolean })
   public override flip = true;
 
-  /**
-   * The direction attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true })
-  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
-
   constructor() {
     super();
     this.size = 'medium';
@@ -449,7 +442,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
           placeholder=${ifDefined(this.placeholder)}
           label=${ifDefined(this.label)}
           size=${this.size}
-          dir=${this.dir}
           tabindex="-1"
           .disabled=${this.disabled}
           .required=${this.required}

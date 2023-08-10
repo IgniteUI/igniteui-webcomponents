@@ -8,7 +8,6 @@ import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { Direction } from '../common/types.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/input.base.css.js';
 import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
@@ -60,14 +59,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
-
-  /**
-   * The direction attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true })
-  @blazorSuppress()
-  public override dir: Direction = 'auto';
 
   /**
    * Whether the control will have outlined appearance.
