@@ -2,6 +2,7 @@
 @use 'themes' as *;
 
 $theme: $indigo;
+
 :host {
     @include css-vars-from-theme($theme, 'ig-stepper');
 
