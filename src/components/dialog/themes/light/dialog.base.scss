@@ -1,5 +1,5 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 $content-color: var(--content-color, color(gray, 700));
 
