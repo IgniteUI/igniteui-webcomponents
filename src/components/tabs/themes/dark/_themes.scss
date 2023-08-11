@@ -14,13 +14,13 @@ $bootstrap: map.merge(
         border-radius: border-radius(map.get($dark-bootstrap-tabs, 'border-radius')...)
     )
 );
-$dark-fluent: map.merge(
+$fluent: map.merge(
     digest-schema($dark-fluent-tabs),
     (
         border-radius: border-radius(map.get($dark-fluent-tabs, 'border-radius')...)
     )
 );
-$dark-indigo: map.merge(
+$indigo: map.merge(
     digest-schema($dark-indigo-tabs),
     (
         border-radius: border-radius(map.get($dark-indigo-tabs, 'border-radius')...)
