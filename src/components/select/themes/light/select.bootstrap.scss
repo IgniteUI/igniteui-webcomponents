@@ -1,9 +1,11 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../../../dropdown/themes/light/themes' as dropdown-theme;
+@use '../../../input/themes/light/themes' as input-theme;
 
-$theme: $select-bootstrap;
-$dropdown-theme: $drop-down-bootstrap;
-$input-theme: $input-group-bootstrap;
+$theme: $bootstrap;
+$dropdown-theme: dropdown-theme.$bootstrap;
+$input-theme: input-theme.$bootstrap;
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
