@@ -53,6 +53,7 @@ export default class IgcStepComponent extends LitElement {
   public static override styles = styles;
   private animationPlayer!: AnimationPlayer;
   private animationType!: AnimationReferenceMetadata;
+  public direction = -1;
 
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;
@@ -151,14 +152,17 @@ export default class IgcStepComponent extends LitElement {
   }
 
   public async toggleAnimation(dir: 'open' | 'close') {
+    const position = 100 * this.direction;
+    // const endPosition = 100 * this.direction;
+
     const slideInLeftFrames: Keyframe[] = [
-      { opacity: 1, transform: 'translateX(-100%)' },
+      { opacity: 1, transform: `translateX(${position}%)` },
       { opacity: 1, transform: 'translateX(0%)' },
     ];
 
     const slideInRightFrames: Keyframe[] = [
       { opacity: 1, transform: 'translateX(0%)' },
-      { opacity: 1, transform: 'translateX(-100%)' },
+      { opacity: 1, transform: `translateX(${position}%)` },
     ];
 
     const growVerInFrames: Keyframe[] = [

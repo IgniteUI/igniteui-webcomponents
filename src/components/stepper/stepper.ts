@@ -276,11 +276,25 @@ export default class IgcStepperComponent extends EventEmitterMixin<
         this.horizontalAnimation == 'slide'
       ) {
         if (step.index < this.activeStep.index) {
-          await this.activeStep.toggleAnimation('close');
+          // this.activeStep.direction = 1;
+          // this.activeStep.toggleAnimation('open');
           step.toggleAnimation('close');
+          console.log(
+            'previous step',
+            `next: ${step.index}`,
+            `active: ${this.activeStep.index}`
+          );
+          // this.activeStep.direction = -1;
         } else {
-          await this.activeStep.toggleAnimation('open');
-          step.toggleAnimation('open');
+          this.activeStep.toggleAnimation('open'); // right to left
+          console.log(
+            'next step',
+            `next: ${step.index}`,
+            `active: ${this.activeStep.index}`
+          );
+          // step.direction = 1;
+          await step.toggleAnimation('close');
+          // step.direction = -1;
         }
       } else if (
         this.orientation == 'vertical' &&
