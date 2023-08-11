@@ -1,10 +1,9 @@
 @use 'sass:map';
-@use '../../../styles/utilities' as *;
-@use '../../../styles/themes/schemas/bootstrap/dark' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
-    $schema: map.get($dark-bootstrap-schema, 'icon');
-    $theme: digest-schema($schema);
+    $theme: $bootstrap;
 
     igc-icon {
         @include css-vars-from-theme($theme, 'ig-icon');

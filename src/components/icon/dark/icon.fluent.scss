@@ -1,10 +1,8 @@
 @use 'sass:map';
-@use '../../../styles/utilities' as *;
-@use '../../../styles/themes/schemas/fluent/dark' as *;
+@use 'themes' as *;
 
 @mixin theme() {
-    $schema: map.get($dark-fluent-schema, 'icon');
-    $theme: digest-schema($schema);
+    $theme: $fluent;
 
     igc-icon {
         @include css-vars-from-theme($theme, 'ig-icon');
