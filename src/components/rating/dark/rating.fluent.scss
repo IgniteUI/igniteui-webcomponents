@@ -1,0 +1,15 @@
+@use '../../../styles/utilities' as *;
+
+@mixin theme() {
+    igc-rating {
+        --symbol-full-color: #{color(gray, 800)};
+        --symbol-empty-color: #{color(gray, 400)};
+    }
+
+    igc-rating[disabled],
+    igc-rating:disabled {
+        --symbol-full-color: #{color(warn, 900)};
+        --symbol-empty-color: #{color(warn, 900)};
+    }
+}
+

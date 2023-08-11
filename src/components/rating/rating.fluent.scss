@@ -1,11 +1,10 @@
 @use '../../styles/utilities' as *;
 
-$disabled-color: color(gray, 200) !default;
-$disabled-selected-color: color(gray, 500) !default;
+$disabled-color: color(warn, 100) !default;
 $disabled-label-color: color(gray, 400) !default;
 
 :host {
-    --symbol-full-color: #{color(gray, 900)};
+    --symbol-full-color: #{color(warn, 900)};
     --symbol-empty-color: #{color(gray, 700)};
 }
 
@@ -38,6 +37,6 @@ $disabled-label-color: color(gray, 400) !default;
     }
 
     [part='symbols-wrapper selected'] {
-        color: $disabled-selected-color;
+        color: $disabled-color;
     }
 }
