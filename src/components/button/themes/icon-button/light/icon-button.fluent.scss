@@ -113,7 +113,8 @@ $outline-btn-indent: rem(2px);
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: color(gray, 400);
         background: color(gray, 100);

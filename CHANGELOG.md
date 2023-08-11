@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- The following components are now Form Associated Custom Elements and support native form element:
+    - Checkbox
+    - Combo
+    - DateTime input
+    - Input
+    - Masked input
+    - Radio
+    - Rating
+    - Single slider
+    - Select
+    - Switch
+
+### Deprecated
+ - IgcForm component is deprecated
+
 ## [4.3.1] - 2023-08-02
 ### Added
 - Tree - component animations [#846](https://github.com/IgniteUI/igniteui-webcomponents/issues/846)

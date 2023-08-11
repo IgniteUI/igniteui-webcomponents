@@ -127,7 +127,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }
@@ -157,7 +158,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled])[invalid][indeterminate]) {
+:host(:not([disabled])[invalid][indeterminate]),
+:host(:not(:disabled)[invalid][indeterminate]) {
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');
@@ -178,7 +180,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='label'] {
         color: var-get($theme, 'disabled-color-label');
     }
@@ -196,7 +199,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled][indeterminate]) {
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
     [part~='control'] {
         &::after {
             background: var-get($theme, 'disabled-indeterminate-color');

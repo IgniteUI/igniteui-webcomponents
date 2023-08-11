@@ -81,7 +81,8 @@ $border-width: rem(1px);
     transition: all .2s ease-in-out;
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='control'] {
         background: var-get($theme, 'track-error-color');
     }
@@ -111,7 +112,8 @@ $border-width: rem(1px);
     }
 }
 
-:host([disabled]){
+:host([disabled]),
+:host(:disabled) {
     [part~='control'] {
         border-color: var-get($theme, 'border-disabled-color');
         background: var-get($theme, 'track-disabled-color');

@@ -51,7 +51,8 @@ $thumb-radius: math.div($thumb-size, 2);
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='thumb'],
     [part='fill'],
     [part='inactive'] {
