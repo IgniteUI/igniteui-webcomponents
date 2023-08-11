@@ -1,25 +1,13 @@
-@use '../../../../node_modules/igniteui-theming' as *;
-@use '../../../../node_modules/igniteui-theming/sass/typography/presets' as *;
-@use '../../../../node_modules/igniteui-theming/sass/elevations/presets' as *;
+@use 'theme' as *;
+@use 'igniteui-theming' as *;
+@use 'igniteui-theming/sass/typography/presets/indigo' as *;
+@use 'igniteui-theming/sass/elevations/presets' as *;
 
 @mixin root-styles($palette) {
     :root {
-        --ig-theme: indigo;
-        --ig-spacing: 1;
-        --ig-spacing-inline: 1;
-        --ig-spacing-block: 1;
-        --ig-size-small: 1;
-        --ig-size-medium: 2;
-        --ig-size-large: 3;
-        --ig-scrollbar-size: #{rem(16px)};
         --ig-scrollbar-thumb-background: #{color($color: gray, $variant: 400)};
         --ig-scrollbar-track-background: #{color($color: gray, $variant: 200)};
-
-        @include palette($palette);
-        @include elevations($material-elevations);
-        @include typography(
-            $font-family: $indigo-typeface,
-            $type-scale: $indigo-type-scale
-        );
     }
+
+    @include theme($palette, $material-elevations, $typeface, $type-scale);
 }
