@@ -1,9 +1,8 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/dark' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$dark-schema: map.get($dark-bootstrap-schema, 'combo');
-$theme: digest-schema($dark-schema);
+$theme: $bootstrap;
 
 @mixin theme() {
     igc-combo {

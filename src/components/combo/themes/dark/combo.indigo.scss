@@ -1,9 +1,8 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/dark' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$dark-schema: map.get($dark-indigo-schema, 'combo');
-$theme: digest-schema($dark-schema);
+$theme: $indigo;
 
 @mixin theme() {
     igc-combo {
