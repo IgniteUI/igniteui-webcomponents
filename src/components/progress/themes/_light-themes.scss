@@ -11,7 +11,7 @@ $material: map.merge(
 $bootstrap: map.merge(
     digest-schema($bootstrap-progress-linear),
     (
-        track-border-radius: border-radius(map.get($bootstrap-navdrawer, 'track-border-radius')...),
+        track-border-radius: border-radius(map.get($bootstrap-progress-linear, 'track-border-radius')...),
     )
 );
 $fluent: map.merge(
