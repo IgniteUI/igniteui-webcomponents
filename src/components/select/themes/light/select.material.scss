@@ -199,3 +199,10 @@ $active-border-width: rem(2px) !default;
     }
 }
 
+:host(:disabled[outlined]),
+:host([outlined][disabled]),
+:host([outlined][invalid]) {
+    igc-input::part(notch) {
+        border-top-color: transparent;
+    }
+}

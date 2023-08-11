@@ -458,12 +458,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border-color: var-get($theme, 'error-secondary-color');
     }
 
+    input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
-    }
-
-    [part='notch'] {
-        border-top: $idle-border-width solid transparent;
     }
 }
 
@@ -492,8 +489,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border-color: var-get($theme, 'disabled-border-color');
     }
 
-    [part='notch'] {
-        border-top-color: transparent;
+    input:placeholder-shown + [part='notch'],
+    [part~='filled'] + [part='notch'] {
+        @extend %floated-styles;
     }
 }
 
