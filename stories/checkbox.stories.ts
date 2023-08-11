@@ -2,6 +2,11 @@ import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcCheckboxComponent } from '../src/index.js';
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcCheckboxComponent);
 
@@ -24,37 +29,14 @@ const metadata: Meta<IgcCheckboxComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
     value: {
       type: 'string',
       description: 'The value attribute of the control.',
       control: 'text',
     },
-    disabled: {
-      type: 'boolean',
-      description: 'Disables the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     checked: {
       type: 'boolean',
       description: 'The checked state of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -70,14 +52,37 @@ const metadata: Meta<IgcCheckboxComponent> = {
       description: 'Sets the aria-labelledby attribute for the control.',
       control: 'text',
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
   },
   args: {
     indeterminate: false,
-    disabled: false,
     checked: false,
-    required: false,
-    invalid: false,
     labelPosition: 'after',
+    required: false,
+    disabled: false,
+    invalid: false,
   },
 };
 
@@ -86,22 +91,22 @@ export default metadata;
 interface IgcCheckboxArgs {
   /** Draws the checkbox in indeterminate state. */
   indeterminate: boolean;
-  /** The name attribute of the control. */
-  name: string;
   /** The value attribute of the control. */
   value: string;
-  /** Disables the control. */
-  disabled: boolean;
   /** The checked state of the control. */
   checked: boolean;
-  /** Makes the control a required field. */
-  required: boolean;
-  /** Controls the validity of the control. */
-  invalid: boolean;
   /** The label position of the control. */
   labelPosition: 'before' | 'after';
   /** Sets the aria-labelledby attribute for the control. */
   ariaLabelledby: string;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
 }
 type Story = StoryObj<IgcCheckboxArgs>;
 
@@ -129,3 +134,28 @@ const Template = (
 };
 
 export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    return html`
+      <form action="" @submit=${formSubmitHandler}>
+        <fieldset>
+          <legend>Default section</legend>
+          <igc-checkbox name="checkbox">Checkbox 1</igc-checkbox>
+        </fieldset>
+        <fieldset>
+          <legend>Required section</legend>
+          <igc-checkbox required name="required-checkbox"
+            >Required checkbox</igc-checkbox
+          >
+        </fieldset>
+        <fieldset disabled>
+          <legend>Disabled section</legend>
+          <igc-checkbox name="checkbox-disabled">Checkbox 2</igc-checkbox>
+        </fieldset>
+        ${formControls()}
+      </form>
+    `;
+  },
+};

@@ -91,7 +91,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: color(gray, 400);
         background: transparent;
@@ -103,7 +104,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled][variant='contained']) {
+:host([disabled][variant='contained']),
+:host(:disabled[variant='contained']) {
     [part='base'] {
         background: color(gray, 100);
         color: color(gray, 400);

@@ -62,7 +62,8 @@ $disabled-color: var(--disabled-color, color(gray, 300)) !default;
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }

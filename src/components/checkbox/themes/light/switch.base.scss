@@ -49,7 +49,8 @@ input[type='checkbox'] {
     word-wrap: break-word;
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     user-select: none;
     pointer-events: none;
     cursor: initial;

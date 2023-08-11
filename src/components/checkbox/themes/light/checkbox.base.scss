@@ -81,7 +81,8 @@ label {
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     user-select: none;
     cursor: initial;
     pointer-events: none;

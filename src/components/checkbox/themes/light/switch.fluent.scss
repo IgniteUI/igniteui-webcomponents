@@ -75,7 +75,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled]):hover)  {
+:host(:not([disabled]):hover),
+:host(:not(:disabled):hover)  {
     [part~='control'] {
         border-color: var-get($theme, 'border-hover-color');
     }
@@ -94,7 +95,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='control'][part~='checked'] {
         background: var-get($theme, 'track-error-color');
     }
@@ -123,7 +125,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='label'] {
         color: var-get($theme, 'label-disabled-color');
     }
