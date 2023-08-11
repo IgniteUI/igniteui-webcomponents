@@ -1,18 +1,7 @@
-@use 'sass:map';
-@use '../../../../../styles/utilities' as *;
-@use '../../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-indigo-schema, 'stepper');
-$border-radius-step-header: border-radius(map.get($schema, 'border-radius-step-header')...);
-$border-radius-indicator: border-radius(map.get($schema, 'border-radius-indicator')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius-step-header: $border-radius-step-header,
-        border-radius-indicator: $border-radius-indicator
-    )
-));
-
+$theme: $indigo;
 :host {
     @include css-vars-from-theme($theme, 'ig-stepper');
 
