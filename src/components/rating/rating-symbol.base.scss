@@ -47,7 +47,7 @@
 }
 
 ::slotted(igc-icon) {
-    --size: var(--symbol-size);
+    --size: var(--symbol-size) !important;
 }
 
 slot:not([name])::slotted(:not(igc-icon)) {
