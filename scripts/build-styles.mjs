@@ -54,6 +54,6 @@ export async function buildThemes() {
   }
 
   report.success(
-    `Styles generated in ${Math.round((Date.now() - startTime))}ms`
+    `Styles generated in ${Math.round((Date.now() - startTime) / 1000)}s`
   );
 })();
