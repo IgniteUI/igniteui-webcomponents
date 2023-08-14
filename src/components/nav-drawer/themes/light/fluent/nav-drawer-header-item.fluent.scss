@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../themes' as *;
 
-$theme: $indigo;
+$theme: $fluent;
 
 :host {
     @include type-style('caption');
