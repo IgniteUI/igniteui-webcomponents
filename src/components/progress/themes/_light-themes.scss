@@ -21,7 +21,7 @@ $fluent: map.merge(
     )
 );
 $indigo: map.merge(
-    digest-schema($fluent-progress-linear),
+    digest-schema($indigo-progress-linear),
     (
         track-border-radius: border-radius(map.get($indigo-progress-linear, 'track-border-radius')...),
     )
