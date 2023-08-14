@@ -12,7 +12,7 @@ $dropdown-theme: dropdown-theme.$fluent;
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-combo');
-    @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
+    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
 
     ::slotted([slot='helper-text']) {
         @include type-style('caption');
@@ -47,6 +47,8 @@ $dropdown-theme: dropdown-theme.$fluent;
 }
 
 [part='list-wrapper'] {
+    border-radius: var-get($dropdown-theme, 'border-radius');
+
     igc-input::part(suffix) {
         background: transparent;
     }

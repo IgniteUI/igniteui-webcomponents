@@ -12,7 +12,7 @@ $dropdown-theme: dropdown-theme.$material;
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-combo');
-    @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
+    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
 
     [part='helper-text'] {
         margin-top: rem(5px);
@@ -45,6 +45,8 @@ $dropdown-theme: dropdown-theme.$material;
 }
 
 [part='list-wrapper'] {
+    border-radius: var-get($dropdown-theme, 'border-radius');
+
     igc-input::part(container) {
         background: transparent;
         border-inline-end-color: transparent;

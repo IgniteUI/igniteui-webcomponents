@@ -12,7 +12,7 @@ $dropdown-theme: dropdown-theme.$indigo;
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-combo');
-    @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
+    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
 
 
     igc-input::part(container) {
@@ -50,6 +50,8 @@ $dropdown-theme: dropdown-theme.$indigo;
 }
 
 [part='list-wrapper'] {
+    border-radius: var-get($dropdown-theme, 'border-radius');
+
     igc-input::part(container) {
         background: transparent;
         border-inline-end-color: transparent;

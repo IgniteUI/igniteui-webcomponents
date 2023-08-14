@@ -12,7 +12,7 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-combo');
-    @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
+    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
 }
 
 [part='helper-text'] {
@@ -20,6 +20,8 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 }
 
 [part='list-wrapper'] {
+    border-radius: var-get($dropdown-theme, 'border-radius');
+
     igc-input::part(input) {
         border-inline-end: 0;
     }

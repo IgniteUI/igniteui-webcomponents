@@ -1,11 +1,17 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
+@use '../../../dropdown/themes/dark/themes' as dropdown-theme;
+@use '../../../input/themes/dark/themes' as input-theme;
 
 $theme: $fluent;
+$dropdown-theme: dropdown-theme.$fluent;
+$input-theme: input-theme.$fluent;
 
 @mixin theme() {
     igc-combo {
         @include css-vars-from-theme($theme, 'ig-combo');
+        @include css-vars-from-theme($input-theme, 'ig-input');
+        @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
     }
 }
