@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { styles } from './rating-symbol.base.css';
+import { styles } from './rating-symbol.base.css.js';
 
 /**
  *
