@@ -17,7 +17,5 @@ $theme: $material;
 }
 
 [part~='indicator'] {
-    span {
-        border-radius: var-get($theme, 'border-radius-indicator');
-    }
+    border-radius: var-get($theme, 'border-radius-indicator');
 }
