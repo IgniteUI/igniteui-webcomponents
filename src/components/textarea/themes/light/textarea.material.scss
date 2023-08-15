@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use '../../../input/themes/light/themes' as *;
 
-$schema: map.get($light-material-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius,
-        box-border-radius: $box-border-radius,
-    )
-));
+$theme: $material;
 $input-top-padding: rem(20px);
 $input-bottom-padding: rem(6px);
 
@@ -62,6 +53,7 @@ textarea {
     }
 }
 
+:host(:disabled),
 :host([disabled]) {
     color: var-get($theme, 'disabled-text-color');
 
@@ -88,6 +80,7 @@ textarea {
     }
 }
 
+:host(:disabled:not([outlined])),
 :host([disabled]:not([outlined])) {
     [part~='container'] {
         background: var-get($theme, 'box-disabled-background');
@@ -99,6 +92,7 @@ textarea {
     }
 }
 
+:host([invalid]:not(:disabled)),
 :host([invalid]:not([disabled])) {
     [part~='container'] {
         &::after {
@@ -385,6 +379,8 @@ textarea {
     }
 }
 
+:host([invalid][outlined]:not(:disabled)),
+:host([invalid][outlined]:not(:disabled):focus-within),
 :host([invalid][outlined]:not([disabled])),
 :host([invalid][outlined]:not([disabled]):focus-within) {
     [part='start'],
@@ -395,6 +391,7 @@ textarea {
     }
 }
 
+:host(:disabled[outlined]),
 :host([disabled][outlined]) {
     [part~='container'] {
         background: var-get($theme, 'border-disabled-background');

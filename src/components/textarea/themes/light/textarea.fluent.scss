@@ -1,16 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use '../../../input/themes/light/themes' as *;
 
-$schema: map.get($light-fluent-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius
-    )
-));
+$theme: $fluent;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-textarea');
@@ -114,6 +107,7 @@ textarea {
     padding-inline-start: 0;
 }
 
+:host([required]:not(:disabled)),
 :host([required]:not([disabled])) {
     [part~='label'] {
         &::after {
@@ -122,6 +116,7 @@ textarea {
     }
 }
 
+:host([invalid]:not(:disabled)),
 :host([invalid]:not([disabled])) {
     [part~='container'] {
         border-color: var-get($theme, 'error-secondary-color');
@@ -132,6 +127,7 @@ textarea {
     }
 }
 
+:host(:disabled),
 :host([disabled]) {
     color: var-get($theme, 'disabled-text-color');
 

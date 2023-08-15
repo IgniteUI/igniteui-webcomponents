@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use '../../../input/themes/light/themes' as *;
 
-$schema: map.get($light-indigo-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius,
-        box-border-radius: $box-border-radius,
-    )
-));
+$theme: $indigo;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-textarea');
@@ -127,6 +118,7 @@ textarea {
     }
 }
 
+:host([invalid]:not(:disabled)),
 :host([invalid]:not([disabled])) {
     [part~='label'],
     [part~='helper-text'] {
@@ -140,6 +132,7 @@ textarea {
     }
 }
 
+:host([invalid]:not(:disabled):focus-within),
 :host([invalid]:not([disabled]):focus-within) {
     [part~='container'] {
         &::after {
@@ -148,6 +141,7 @@ textarea {
     }
 }
 
+:host(:disabled),
 :host([disabled]) {
     color: var-get($theme, 'disabled-text-color');
 
