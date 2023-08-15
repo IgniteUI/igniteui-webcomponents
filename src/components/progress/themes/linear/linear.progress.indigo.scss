@@ -1,16 +1,8 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/utilities' as *;
+@use '../light-themes' as *;
 
-$schema: map.get($light-indigo-schema, 'linear-bar');
-$track-border-radius: border-radius(map.get($schema, 'track-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        track-border-radius: $track-border-radius
-    )
-));
+$theme: $indigo;
 $stripe-grays: color(gray, 50, .7);
 $stripe-primary: color(secondary, 500);
 $stripe-size: rem(6px);

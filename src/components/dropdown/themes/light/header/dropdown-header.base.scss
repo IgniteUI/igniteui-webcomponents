@@ -1,5 +1,5 @@
-@use '../../../../../styles/common/component';
-@use '../../../../../styles/utilities/index' as *;
+@use 'styles/common/component';
+@use 'styles/utilities/index' as *;
 
 :host {
     @include type-style('overline');

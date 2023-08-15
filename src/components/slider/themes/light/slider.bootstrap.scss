@@ -1,4 +1,4 @@
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
 
 $inactive-background: var(--inactive-background, color(secondary, 500, .24)) !default;
 $thumb-size: rem(16px);

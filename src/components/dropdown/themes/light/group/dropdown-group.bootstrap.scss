@@ -1,15 +1,8 @@
 @use 'sass:map';
-@use '../../../../../styles/utilities' as *;
-@use '../../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/utilities' as *;
+@use '../themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'drop-down');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius
-    )
-));
+$theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dropdown');

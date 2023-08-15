@@ -1,10 +1,7 @@
-@use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-indigo-schema, 'radio');
-$theme: digest-schema($schema);
+$theme: $indigo;
 $border-color: var(--border-color, color(gray, 600)) !default;
 $checked-color: var(--checked-color, color(secondary, 500)) !default;
 $disabled-color: var(--disabled-color, color(gray, 300)) !default;

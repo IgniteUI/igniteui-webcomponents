@@ -1,4 +1,7 @@
-@use '../../../../../styles/utilities/index' as *;
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $fluent;
 
 :host {
     @include type-style('caption');

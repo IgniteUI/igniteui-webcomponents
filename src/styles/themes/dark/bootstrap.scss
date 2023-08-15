@@ -1,4 +1,4 @@
-@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
+@use 'igniteui-theming/sass/color/presets/dark/bootstrap' as *;
 @use '../base/bootstrap' as base;
 @use '../base/scrollbars';
 @use '../third-party/grid/bootstrap.dark' as grid;
@@ -18,7 +18,7 @@
 @use '../../../components/checkbox/themes/dark/checkbox.bootstrap' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.bootstrap' as switch;
 @use '../../../components/radio/themes/dark/radio.bootstrap' as radio;
-@include base.root-styles($dark-bootstrap-palette);
+@include base.root-styles($palette);
 @include dropdown.theme();
 @include input.theme();
 @include slider.theme();

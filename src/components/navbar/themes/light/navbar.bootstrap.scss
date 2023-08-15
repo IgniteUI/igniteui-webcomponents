@@ -1,17 +1,15 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'navbar');
-$theme: digest-schema($schema);
+$theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-navbar');
 
     background: var-get($theme, 'background');
     color: var-get($theme, 'text-color');
-    box-shadow: elevation(map.get($schema, 'elevation'));
+    box-shadow: var(--ig-elevation-0);
     padding: 0 rem(8px);
 }
 

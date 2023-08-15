@@ -1,19 +1,10 @@
 @use 'sass:map';
 @use '../calendar.base';
 @use '../shared-calendar' as *;
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/fluent/light' as *;
+@use 'styles/utilities' as *;
+@use '../light-themes' as *;
 
-$schema: map.get($light-fluent-schema, 'calendar');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$month-border-radius: border-radius(map.get($schema, 'month-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius,
-        month-border-radius: $month-border-radius
-    )
-));
+$theme: $fluent;
 $header-bg: var(--header-bg, #{color(primary, 500)});
 $header-color: var(--header-color, #{contrast-color(primary, 600)});
 

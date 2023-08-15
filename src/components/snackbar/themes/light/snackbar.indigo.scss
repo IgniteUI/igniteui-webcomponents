@@ -1,15 +1,8 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-indigo-schema, 'snackbar');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius
-    )
-));
+$theme: $indigo;
 $background-color: var(--background-color, color(gray, 700, .9)) !default;
 $text-color: var(--text-color, contrast-color(gray, 700)) !default;
 

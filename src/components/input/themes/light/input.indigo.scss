@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-indigo-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius,
-        box-border-radius: $box-border-radius,
-    )
-));
+$theme: $indigo;
 
 %suffix-preffix {
     display: inline-flex;
