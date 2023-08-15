@@ -157,3 +157,11 @@ $dropdown-theme: dropdown-theme.$material;
         }
     }
 }
+
+:host(:disabled[outlined]),
+:host([outlined][disabled]),
+:host([outlined][invalid]) {
+    igc-input::part(filled) + igc-input::part(notch) {
+        border-top-color: transparent;
+    }
+}
