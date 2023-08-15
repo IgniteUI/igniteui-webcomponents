@@ -1,6 +1,6 @@
 @use 'sass:map';
-@use '../../../../../styles/common/component';
-@use '../../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
     --gap: #{sizable(rem(4px), rem(8px), rem(12px))};

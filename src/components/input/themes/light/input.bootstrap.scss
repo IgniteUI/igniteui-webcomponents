@@ -1,16 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/common/component';
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/utilities' as *;
+@use 'styles/common/component';
+@use 'themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius
-    )
-));
+$theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-input');

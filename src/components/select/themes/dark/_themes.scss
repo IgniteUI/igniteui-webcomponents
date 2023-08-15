@@ -1,0 +1,8 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/select' as *;
+
+$material: digest-schema($dark-select);
+$indigo: digest-schema($dark-indigo-select);
+$fluent: digest-schema($dark-fluent-select);
+$bootstrap: digest-schema($dark-bootstrap-select);

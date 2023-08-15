@@ -1,6 +1,11 @@
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
+    igc-nav-drawer {
+        @include css-vars-from-theme($indigo, 'ig-navdrawer');
+    }
+
     igc-nav-drawer-item {
         --text-color: #{color(gray, 100)};
         --hover-text-color: #{color(gray, 50)};

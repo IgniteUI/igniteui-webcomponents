@@ -1,15 +1,8 @@
 @use 'sass:map';
-@use '../../../../../styles/utilities' as *;
-@use '../../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/utilities' as *;
+@use '../../button/light/themes' as *;
 
-$schema: map.get($light-material-schema, 'button', 'icon');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius
-    )
-));
+$theme: $material-icon;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-button');

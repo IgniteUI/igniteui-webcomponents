@@ -1,10 +1,7 @@
-@use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-material-schema, 'radio');
-$theme: digest-schema($schema);
+$theme: $material;
 
 [part~='ripple'] {
     border-radius: var(--size);

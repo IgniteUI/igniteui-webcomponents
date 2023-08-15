@@ -2,17 +2,10 @@
 @use 'sass:math';
 @use '../shared-calendar' as *;
 @use 'vars' as *;
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/utilities' as *;
+@use '../light-themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'calendar');
-$date-border-radius: border-radius(map.get($schema, 'date-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        date-border-radius: $date-border-radius
-    )
-));
+$theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-calendar');

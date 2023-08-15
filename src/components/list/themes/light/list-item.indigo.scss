@@ -1,15 +1,7 @@
-@use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-indigo-schema, 'list');
-$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        item-border-radius: $item-border-radius
-    )
-));
+$theme: $indigo;
 $item-color: color(gray, 900) !default;
 $item-hover-bg: var(--item-hover-bg, color(gray, 50)) !default;
 $subtitle-color: color(gray, 800) !default;

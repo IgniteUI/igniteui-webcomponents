@@ -1,18 +1,10 @@
-@use 'sass:map';
 @use '../shared' as *;
 @use '../vars' as *;
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use '../light-themes' as *;
 
-$schema: map.get($light-material-schema, 'linear-bar');
-$track-border-radius: border-radius(map.get($schema, 'track-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        track-border-radius: $track-border-radius
-    )
-));
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-linear-bar');

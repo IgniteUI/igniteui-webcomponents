@@ -1,0 +1,28 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/dialog' as *;
+
+$material: map.merge(
+    digest-schema($light-dialog), 
+    (
+        border-radius: border-radius(map.get($light-dialog, 'border-radius')...)
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($bootstrap-dialog), 
+    (
+        border-radius: border-radius(map.get($bootstrap-dialog, 'border-radius')...)
+    )
+);
+$fluent: map.merge(
+    digest-schema($fluent-dialog), 
+    (
+        border-radius: border-radius(map.get($fluent-dialog, 'border-radius')...)
+    )
+);
+$indigo: map.merge(
+    digest-schema($indigo-dialog), 
+    (
+        border-radius: border-radius(map.get($indigo-dialog, 'border-radius')...)
+    )
+);

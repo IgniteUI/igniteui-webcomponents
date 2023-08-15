@@ -1,23 +1,16 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-material-schema, 'expansion-panel');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius
-    )
-));
+$theme: $material;
 $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-expansion-panel');
 
     --lines-clamped: 1;
-    
+
     color: color(gray, 900);
     background: color(surface, 500);
     width: auto;

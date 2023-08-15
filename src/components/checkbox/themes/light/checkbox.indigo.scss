@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'checkbox-themes' as *;
 
-$schema: map.get($light-indigo-schema, 'checkbox');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius,
-        ripple-radius: $ripple-radius
-    )
-));
+$theme: $indigo;
 $fill-color: var-get($theme, 'fill-color');
 $empty-color: var-get($theme, 'empty-color');
 $disabled-color: var-get($theme, 'disabled-color');
