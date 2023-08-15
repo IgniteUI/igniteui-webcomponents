@@ -382,7 +382,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-
 :host([outlined]:focus-within) {
     [part='label'] {
         margin-block-start: calc(#{$active-border-width} / 2);
@@ -467,6 +466,17 @@ input:placeholder-shown + [part='notch'] [part='label'],
 :host([outlined][invalid]:focus-within) {
     [part='notch'] {
         border-top: $idle-border-width solid transparent;
+    }
+}
+
+:host([outlined][invalid]:focus-within),
+:host([readonly][outlined][invalid]:focus-within) {
+    input:not(:placeholder-shown) + [part='notch'] {
+        border: {
+            width: $active-border-width;
+            color: var-get($theme, 'error-secondary-color');
+            top: $active-border-width solid var-get($theme, 'error-secondary-color');
+        }
     }
 }
 

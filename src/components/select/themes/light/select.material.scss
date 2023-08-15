@@ -41,14 +41,6 @@ $active-border-width: rem(2px) !default;
         }
     }
 
-    igc-input[readonly]:not([disabled])::part(notch) {
-        border: {
-            width: $active-border-width;
-            color: $active-color;
-            top: $idle-border-width solid transparent;
-        }
-    }
-
     igc-input[readonly]:not([disabled])::part(filler) {
         border: {
             width: $active-border-width;
@@ -89,14 +81,6 @@ $active-border-width: rem(2px) !default;
                 start-width: $active-border-width;
                 end-width: $active-border-width;
             }
-        }
-    }
-
-    igc-input[readonly]:not([disabled])::part(notch) {
-        border: {
-            width: $active-border-width;
-            color: $error-color;
-            top: $idle-border-width solid transparent;
         }
     }
 
@@ -202,7 +186,7 @@ $active-border-width: rem(2px) !default;
 :host(:disabled[outlined]),
 :host([outlined][disabled]),
 :host([outlined][invalid]) {
-    igc-input::part(notch) {
+    igc-input::part(filled) + igc-input::part(notch) {
         border-top-color: transparent;
     }
 }

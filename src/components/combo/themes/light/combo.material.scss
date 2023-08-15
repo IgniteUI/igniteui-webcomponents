@@ -160,7 +160,7 @@ $dropdown-theme: digest-schema($dropdown-schema);
 :host(:disabled[outlined]),
 :host([outlined][disabled]),
 :host([outlined][invalid]) {
-    igc-input::part(notch) {
+    igc-input::part(filled) + igc-input::part(notch) {
         border-top-color: transparent;
     }
 }
