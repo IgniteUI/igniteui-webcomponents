@@ -1,4 +1,4 @@
-@use '../../../node_modules/igniteui-theming/sass/color/functions' as theming;
+@use 'igniteui-theming/sass/color/functions' as theming;
 
 @function color(
     $color: primary,

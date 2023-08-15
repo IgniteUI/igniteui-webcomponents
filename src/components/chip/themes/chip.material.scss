@@ -1,16 +1,9 @@
 @use 'sass:map';
 @use './chip.base.scss';
-@use '../../../styles/utilities' as *;
-@use '../../../styles/themes/schemas/material/light' as *;
+@use 'styles/utilities' as *;
+@use 'light-themes' as *;
 
-$schema: map.get($light-material-schema, 'chip');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius
-    )
-));
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-chip');

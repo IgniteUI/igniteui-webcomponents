@@ -1,15 +1,8 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/fluent/dark' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($dark-fluent-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius
-    )
-));
+$theme: $fluent;
 
 @mixin theme() {
     igc-input {

@@ -1,21 +1,10 @@
 @use 'sass:math';
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'switch-themes' as *;
 
-$schema: map.get($light-material-schema, 'switch');
-$border-radius-thumb: border-radius(map.get($schema, 'border-radius-thumb')...);
-$border-radius-track: border-radius(map.get($schema, 'border-radius-track')...);
-$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius-thumb: $border-radius-thumb,
-        border-radius-track: $border-radius-track,
-        ripple-radius: $ripple-radius
-    )
-));
+$theme: $material;
 $ripple-size: rem(40px);
 $ripple-radius: calc(#{$ripple-size} / 2);
 

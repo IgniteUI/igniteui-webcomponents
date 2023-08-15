@@ -1,12 +1,16 @@
-@use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/dark' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+@use '../../../dropdown/themes/dark/themes' as dropdown-theme;
+@use '../../../input/themes/dark/themes' as input-theme;
 
-$schema: map.get($dark-indigo-schema, 'select');
-$theme: digest-schema($schema);
+$theme: $indigo;
+$dropdown-theme: dropdown-theme.$indigo;
+$input-theme: input-theme.$indigo;
 
 @mixin theme() {
     igc-select {
         @include css-vars-from-theme($theme, 'ig-select');
+        @include css-vars-from-theme($input-theme, 'ig-input');
+        @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
     }
 }

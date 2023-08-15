@@ -1,5 +1,5 @@
-@use './card.header.material.scss';
-@use '../../../../styles/utilities' as *;
+@use 'card.header.material.scss';
+@use 'styles/utilities' as *;
 
 ::slotted([slot='title']) {
     color: color(gray, 900);

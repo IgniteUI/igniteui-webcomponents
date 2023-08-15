@@ -1,5 +1,5 @@
 @use 'sass:math';
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
 
 $ripple-size: rem(40px);
 $ripple-radius: math.div($ripple-size, 2);

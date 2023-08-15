@@ -1,10 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'tree');
-$theme: digest-schema($schema);
+$theme: $bootstrap;
 $selected-background: var(--selected-background, color(primary, 500)) !default;
 $selected-color: var(--selected-color, contrast-color(primary, 600)) !default;
 $active-background: var(--active-background, color(gray, 200)) !default;

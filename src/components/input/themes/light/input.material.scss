@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-material-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius,
-        box-border-radius: $box-border-radius,
-    )
-));
+$theme: $material;
 $idle-border-width: rem(1px) !default;
 $active-border-width: rem(2px) !default;
 $fs: rem(16px) !default;
@@ -382,7 +373,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     }
 }
 
-
 :host([outlined]:focus-within) {
     [part='label'] {
         margin-block-start: calc(#{$active-border-width} / 2);
@@ -458,18 +448,26 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border-color: var-get($theme, 'error-secondary-color');
     }
 
+    input:placeholder-shown + [part='notch'],
     [part~='filled'] + [part='notch'] {
         @extend %floated-styles;
-    }
-
-    [part='notch'] {
-        border-top: $idle-border-width solid transparent;
     }
 }
 
 :host([outlined][invalid]:focus-within) {
     [part='notch'] {
         border-top: $idle-border-width solid transparent;
+    }
+}
+
+:host([outlined][invalid]:focus-within),
+:host([readonly][outlined][invalid]:focus-within) {
+    input:not(:placeholder-shown) + [part='notch'] {
+        border: {
+            width: $active-border-width;
+            color: var-get($theme, 'error-secondary-color');
+            top: $active-border-width solid var-get($theme, 'error-secondary-color');
+        }
     }
 }
 
@@ -492,8 +490,9 @@ input:placeholder-shown + [part='notch'] [part='label'],
         border-color: var-get($theme, 'disabled-border-color');
     }
 
-    [part='notch'] {
-        border-top-color: transparent;
+    input:placeholder-shown + [part='notch'],
+    [part~='filled'] + [part='notch'] {
+        @extend %floated-styles;
     }
 }
 
