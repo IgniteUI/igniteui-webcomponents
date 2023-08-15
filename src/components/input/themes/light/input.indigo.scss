@@ -19,6 +19,7 @@ $theme: $indigo;
     [part='prefix'],
     [part='suffix'] {
         ::slotted(*) {
+            height: 100%;
             color: inherit;
         }
     }
@@ -56,9 +57,10 @@ $theme: $indigo;
         border-radius: var-get($theme, 'box-border-radius');
         border-end-start-radius: 0;
         border-end-end-radius: 0;
-        border-bottom: 1px solid var-get($theme, 'idle-bottom-line-color');
+        border-bottom: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
         transition: background .25s ease-out;
         grid-template-columns: auto 1fr auto;
+        height: var-get($theme, 'size');
 
         &::after {
             position: absolute;
@@ -83,11 +85,7 @@ $theme: $indigo;
         padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
         border: none;
         grid-area: 1 / 2;
-    }
-
-    [part~='input'],
-    [part^='container'] {
-        height: var-get($theme, 'size');
+        height: 100%;
     }
 
     [part~='prefixed'] {
