@@ -109,15 +109,6 @@ $transition-duration: .25s;
     }
 }
 
-:host(:focus-within) {
-    [part='prefix'],
-    [part='suffix'] {
-        // transition-duration is needed here because of a bug in safari
-        // https://github.com/IgniteUI/igniteui-webcomponents/pull/881
-        transition-duration: $transition-duration;
-    }
-}
-
 :host(:focus-within),
 :host(:hover) {
     [part^='container'] {
@@ -142,6 +133,13 @@ $transition-duration: .25s;
 }
 
 :host(:focus-within) {
+    [part='prefix'],
+    [part='suffix'] {
+        // transition-duration is needed here because of a bug in safari
+        // https://github.com/IgniteUI/igniteui-webcomponents/pull/881
+        transition-duration: $transition-duration;
+    }
+
     [part^='container'] {
         &::after {
             transform: scaleY(1);
