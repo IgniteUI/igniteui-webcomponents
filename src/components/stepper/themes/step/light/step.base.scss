@@ -2,50 +2,6 @@
 @use 'styles/utilities' as *;
 
 :host {
-    // text
-
-    // separator
-    --separator-color: #{color(gray, 300)};
-    --separator-color--completed: #{color(gray, 900)};
-
-    // header
-    --header-color: #{contrast-color(gray, 50)};
-    --header-background--hover: #{color(gray, 200)};
-    --header-background--focus: #{color(gray, 100)};
-    --header-shadow: #{color(gray, 50, 0)};
-
-    // uncompleted
-    --indicator-color: #{color(gray, 900)};
-    --indicator-background: #{color(gray, 400)};
-    --indicator-shadow: var(--indicator-background);
-
-    // optional
-    --optional-indicator-color: var(--indicator-color);
-    --optional-indicator-background: var(--indicator-background);
-    --optional-indicator-shadow: var(--indicator-shadow);
-
-    // completed
-    --completed-indicator-color: var(--indicator-color);
-    --completed-indicator-background: var(--indicator-background);
-    --completed-indicator-shadow: var(--indicator-shadow);
-
-    // active
-    --active-indicator-color: #{contrast-color(primary, 800)};
-    --active-indicator-background: #{color(primary, 500)};
-    --active-indicator-shadow: var(--active-indicator-background);
-    --active-title-color: var(--title-color);
-    --active-subtitle-color: var(--subtitle-color);
-
-    // error
-    --error-color: #{contrast-color(error, 800)};
-    --error-background: #{color(error, 500)};
-    --error-shadow: var(--error-background);
-
-    // disabled
-    --disabled-color: #{color(gray, 500)};
-    --disabled-background: #{color(gray, 100)};
-    --disabled-shadow: var(--disabled-background);
-
     align-items: flex-start;
 }
 
@@ -105,7 +61,6 @@
         content: '';
         flex: 1;
         border-block-start-width: var(--separator-size);
-        border-block-start-style:  var(--separator-type);
         height: var(--separator-size);
         min-width: var(--separator-min-width--header);
         width: calc(50% - (var(--indicator-size) / 2) - var(--header-padding));
@@ -313,5 +268,11 @@
     [part='content'] {
         display: var(--horizontal-content-disply, block);
         pointer-events: all;
+    }
+}
+
+[part~='disabled'] {
+    [part='header'] {
+        cursor: default;
     }
 }

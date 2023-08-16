@@ -16,11 +16,12 @@ $theme: $material;
 }
 
 [part~='header'] {
+    background: var-get($theme, 'step-background');
     border-radius: var-get($theme, 'border-radius-step-header');
-    color: var(--header-color);
 
     &::before,
     &::after {
+        border-block-start-style: var-get($theme, 'step-separator-style');
         border-block-start-color: var-get($theme, 'step-separator-color');
     }
 
@@ -34,7 +35,6 @@ $theme: $material;
     &:active {
         background: var-get($theme, 'step-focus-background');
         color: var-get($theme, 'title-focus-color');
-        // box-shadow: inset 0 0 0 rem(1px) var(--header-shadow);
     }
 }
 
@@ -47,8 +47,6 @@ $theme: $material;
 }
 
 [part~='body'] {
-    // color: color(gray, 900);
-
     &::before {
         border-inline-start-color: var-get($theme, 'step-separator-color');
     }
@@ -59,7 +57,6 @@ $theme: $material;
     background: var-get($theme, 'indicator-background');
     color: var-get($theme, 'indicator-color');
     box-shadow: 0 0 0 rem(1px) var-get($theme, 'indicator-outline');
-    // box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'indicator-outline');
 }
 
 [part~='complete-start'] {
@@ -79,7 +76,6 @@ $theme: $material;
         background: var-get($theme, 'complete-indicator-background');
         color: var-get($theme, 'complete-indicator-color');
         box-shadow: 0 0 0 rem(1px) var-get($theme, 'complete-indicator-outline');
-        // box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'complete-indicator-outline');
     }
 
     [part~='title'] {
@@ -132,7 +128,6 @@ $theme: $material;
         background: var-get($theme, 'current-indicator-background');
         color: var-get($theme, 'current-indicator-color');
         box-shadow: 0 0 0 rem(1px) var-get($theme, 'current-indicator-outline');
-        // box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'current-indicator-putline');
     }
 
     [part~='title'] {
@@ -146,19 +141,13 @@ $theme: $material;
 }
 
 [part~='disabled'] {
-    [part='header'] {
-        background: color(gray, 50, 0);
-    }
-
     &:focus,
     &:focus-visible,
     &:focus-within,
     &:active,
     &:hover {
         [part='header'] {
-            background: color(gray, 50, 0);
-            cursor: default;
-            box-shadow: inset 0 0 0 rem(1px) color(gray, 50, 0);
+            background: var-get($theme, 'step-background');
         }
     }
 
@@ -166,11 +155,13 @@ $theme: $material;
         color: var-get($theme, 'disabled-indicator-color');
         background: var-get($theme, 'disabled-indicator-background');
         box-shadow: 0 0 0 rem(1px) var-get($theme, 'disabled-indicator-outline');
-        // box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var-get($theme, 'disabled-indicator-outline');
     }
 
-    [part~='title'],
+    [part~='title'] {
+        color: var-get($theme, 'disabled-title-color');
+    }
+
     [part~='subtitle'] {
-        color: var(--disabled-color);
+        color: var-get($theme, 'disabled-subtitle-color');
     }
 }

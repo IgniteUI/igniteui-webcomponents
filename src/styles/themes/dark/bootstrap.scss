@@ -18,6 +18,7 @@
 @use '../../../components/checkbox/themes/dark/checkbox.bootstrap' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.bootstrap' as switch;
 @use '../../../components/radio/themes/dark/radio.bootstrap' as radio;
+@use '../../../components/stepper/themes/step/dark/step.bootstrap' as stepper;
 @include base.root-styles($palette);
 @include dropdown.theme();
 @include input.theme();
@@ -36,3 +37,4 @@
 @include checkbox.theme();
 @include switch.theme();
 @include radio.theme();
+@include stepper.theme();
