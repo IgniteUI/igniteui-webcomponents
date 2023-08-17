@@ -39,7 +39,6 @@ $theme: $material;
 
 :host([position='start']) [part='mini'],
 :host([position='end']) [part='mini'] {
-    box-shadow: var(--ig-elevation-16);
     position: fixed;
     top: 0;
     bottom: 0;
@@ -130,7 +129,6 @@ $theme: $material;
     [part='base'] {
         border-inline-end-style: solid;
         border-inline-end-width: rem(1px);
-        box-shadow: var(--ig-elevation-16);
     }
 }
 

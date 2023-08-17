@@ -5,6 +5,7 @@ $theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-nav-drawer');
+    @include css-vars-from-theme($overlay-bootstrap, 'ig-nav-drawer');
 }
 
 [part~='base'] {
@@ -15,6 +16,14 @@ $theme: $bootstrap;
     &:focus-within {
         background: var-get($theme, 'item-hover-background');
         color: var-get($theme, 'item-hover-text-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-hover-icon-color');
+        }
+    }
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-icon-color');
     }
 }
 
@@ -26,5 +35,9 @@ $theme: $bootstrap;
     [part~='base'] {
         background: var-get($theme, 'item-active-background');
         color: var-get($theme, 'item-active-text-color');
+
+        ::slotted(igc-icon) {
+            color: var-get($theme, 'item-active-icon-color');
+        }
     }
 }

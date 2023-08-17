@@ -15,37 +15,42 @@ $background: var-get($theme, 'background') !default;
     }
 
     [part='overlay'] {
-        background: color(gray, 500, .54);
+        background: var-get($overlay-material, 'background-color');
     }
+}
+
+[part='mini'] {
+    background: $background;
 }
 
 :host([position='start']) [part='mini'],
 :host([position='end']) [part='mini'] {
-    background: $background;
+    box-shadow: var-get($theme, 'elevation');
 }
 
 :host([position='start']) [part='mini'] {
-    border-inline-end-color: color(gray, 900, .14);
+    border-inline-end-color: var-get($theme, 'border-color');
 }
 
 :host([position='end']) [part='mini'] {
-    border-inline-start-color: color(gray, 900, .14);
+    border-inline-start-color: var-get($theme, 'border-color');
 }
 
 :host([open][position='end']) {
     [part='base'] {
-        border-inline-start-color: color(gray, 900, .14);
+        border-inline-start-color: var-get($theme, 'border-color');
     }
 }
 
 :host([position='relative']) {
     [part='base'] {
-        border-inline-end-color: color(gray, 300);
+        border-inline-end-color: var-get($theme, 'border-color');
     }
 }
 
 :host([open]:not([position='relative'])) {
     [part='base'] {
-        border-inline-end-color: color(gray, 900, .14);
+        border-inline-end-color: var-get($theme, 'border-color');
+        box-shadow: var-get($theme, 'elevation');
     }
 }
