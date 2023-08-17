@@ -21,6 +21,7 @@
 @use '../../../components/navbar/themes/dark/navbar.fluent' as navbar;
 @use '../../../components/avatar/themes/dark/avatar.fluent' as avatar;
 @use '../../../components/rating/dark/rating.fluent' as rating;
+@use '../../../components/stepper/themes/step/dark/step.fluent' as stepper;
 @include base.root-styles($palette);
 @include button.theme();
 @include icon-button.theme();
@@ -42,3 +43,4 @@
 @include navbar.theme();
 @include avatar.theme();
 @include rating.theme();
+@include stepper.theme();

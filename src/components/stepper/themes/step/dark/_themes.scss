@@ -1,0 +1,33 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/stepper' as *;
+
+$material: map.merge(
+    digest-schema($dark-stepper),
+    (
+        border-radius-step-header: border-radius(map.get($dark-stepper, 'border-radius-step-header')...),
+        border-radius-indicator: border-radius(map.get($dark-stepper, 'border-radius-indicator')...)
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($dark-bootstrap-stepper),
+    (
+        border-radius-step-header: border-radius(map.get($dark-bootstrap-stepper, 'border-radius-step-header')...),
+        border-radius-indicator: border-radius(map.get($dark-bootstrap-stepper, 'border-radius-indicator')...)
+    )
+);
+$fluent: map.merge(
+    digest-schema($dark-fluent-stepper),
+    (
+        border-radius-step-header: border-radius(map.get($dark-fluent-stepper, 'border-radius-step-header')...),
+        border-radius-indicator: border-radius(map.get($dark-fluent-stepper, 'border-radius-indicator')...)
+    )
+);
+$indigo: map.merge(
+    digest-schema($dark-indigo-stepper),
+    (
+        border-radius-step-header: border-radius(map.get($dark-indigo-stepper, 'border-radius-step-header')...),
+        border-radius-indicator: border-radius(map.get($dark-indigo-stepper, 'border-radius-indicator')...)
+    )
+);
+
