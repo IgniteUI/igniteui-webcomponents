@@ -6,7 +6,6 @@
 @use '../../../components/input/themes/dark/input.dark.material' as input;
 @use '../../../components/select/themes/dark/select.material' as select;
 @use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
-@use '../../../components/nav-drawer/themes/dark/nav-drawer-item.base.scss' as nav-drawer-item;
 @use '../../../components/combo/themes/dark/combo.material' as combo;
 @use '../../../components/button/themes/button/dark/button.material' as button;
 @use '../../../components/icon/dark/icon.material' as icon;
@@ -15,12 +14,12 @@
 @use '../../../components/checkbox/themes/dark/switch.material' as switch;
 @use '../../../components/avatar/themes/dark/avatar.material' as avatar;
 @use '../../../components/stepper/themes/step/dark/step.material' as stepper;
+@use '../../../components/nav-drawer/themes/dark/nav-drawer.material' as nav-drawer;
 @include base.root-styles($palette);
 @include radio.theme();
 @include input.theme();
 @include select.theme();
 @include tab.theme();
-@include nav-drawer-item.theme();
 @include grid.theme();
 @include combo.theme();
 @include button.theme();
@@ -30,3 +29,4 @@
 @include switch.theme();
 @include avatar.theme();
 @include stepper.theme();
+@include nav-drawer.theme();

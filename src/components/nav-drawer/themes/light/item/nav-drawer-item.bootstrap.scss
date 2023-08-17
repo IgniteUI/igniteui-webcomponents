@@ -1,0 +1,30 @@
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-nav-drawer');
+}
+
+[part~='base'] {
+    border-radius: var-get($theme, 'item-border-radius');
+    color: var-get($theme, 'item-text-color');
+
+    &:hover,
+    &:focus-within {
+        background: var-get($theme, 'item-hover-background');
+        color: var-get($theme, 'item-hover-text-color');
+    }
+}
+
+[part='content'] {
+    @include type-style('subtitle-2');
+}
+
+:host([active]) {
+    [part~='base'] {
+        background: var-get($theme, 'item-active-background');
+        color: var-get($theme, 'item-active-text-color');
+    }
+}

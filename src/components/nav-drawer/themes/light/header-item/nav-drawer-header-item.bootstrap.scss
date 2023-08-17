@@ -1,8 +1,10 @@
 @use 'styles/utilities' as *;
 @use '../themes' as *;
 
-$theme: $fluent;
+$theme: $bootstrap;
 
 :host {
     @include type-style('caption');
+
+    color: var-get($theme, 'item-header-text-color');
 }
