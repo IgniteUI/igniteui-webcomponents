@@ -1,5 +1,6 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { AnimationPlayer, EaseInOut } from '../../animations/index.js';
 import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
@@ -9,6 +10,7 @@ import { styles as bootstrap } from './themes/step/light/step.bootstrap.css.js';
 import { styles as indigo } from './themes/step/light/step.indigo.css.js';
 import { styles as fluent } from './themes/step/light/step.fluent.css.js';
 import { styles as material } from './themes/step/light/step.material.css.js';
+import { animation } from '../../animations/types.js';
 
 /**
  * The step component is used within the `igc-stepper` element and it holds the content of each step.
@@ -47,6 +49,8 @@ export default class IgcStepComponent extends LitElement {
   /** @private */
   public static override styles = styles;
 
+  private animationPlayer!: AnimationPlayer;
+
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;
 
@@ -60,6 +64,10 @@ export default class IgcStepComponent extends LitElement {
   /* blazorSuppress */
   @query('[part~="body"]')
   public contentBody!: HTMLElement;
+
+  /* blazorSuppress */
+  @query('[part~="body"]')
+  public body!: HTMLElement;
 
   /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
@@ -122,6 +130,41 @@ export default class IgcStepComponent extends LitElement {
   /** @private */
   @property({ attribute: false })
   public visited = false;
+
+  public override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.body);
+  }
+
+  public async toggleAnimation(
+    type: 'in' | 'out',
+    direction: 'normal' | 'reverse' = 'normal'
+  ) {
+    const enter: Keyframe[] = [
+      { transform: `translateX(100%)`, opacity: 0 },
+      { transform: `translateX(0)`, opacity: 1 },
+    ];
+
+    const depart: Keyframe[] = [
+      { transform: `translateX(0)`, opacity: 1 },
+      { transform: `translateX(-100%)`, opacity: 0 },
+    ];
+
+    const animationType = type === 'in' ? enter : depart;
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(
+        animation(animationType, {
+          duration: 350,
+          easing: EaseInOut.Quad,
+          direction,
+          fill: 'forwards',
+        })
+      ),
+    ]);
+
+    return event.type;
+  }
 
   @watch('active', { waitUntilFirstUpdate: true })
   protected activeChange() {
