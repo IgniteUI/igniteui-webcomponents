@@ -141,7 +141,7 @@ export default class IgcStepComponent extends LitElement {
   ) {
     let animation;
     const horizontalAnimation: 'slide' | 'fade' = 'slide';
-    const verticalAnimation: 'grow' | 'fade' = 'fade';
+    const verticalAnimation: 'grow' | 'fade' = 'grow';
 
     if (this.orientation === 'horizontal') {
       animation = horizontalAnimations.get(horizontalAnimation)!.get(type)!;
@@ -153,7 +153,6 @@ export default class IgcStepComponent extends LitElement {
       duration: 350,
       easing: EaseInOut.Quad,
       direction,
-      fill: 'forwards',
     };
 
     const [_, event] = await Promise.all([

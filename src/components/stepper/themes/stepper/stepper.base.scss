@@ -117,6 +117,7 @@
 :host(:not([orientation='horizontal'])) {
     --vertical-header-z-index: 2;
     --vertical-body-disply: block;
+    --vertical-body-height: 0;
     --header-width-vertical: 100%;
     --hide-horizontal-separator: none;
 
