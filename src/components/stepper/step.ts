@@ -1,6 +1,7 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { AnimationPlayer, EaseInOut } from '../../animations/index.js';
+import { horizontalAnimations, verticalAnimations } from './animations.js';
 import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
@@ -10,7 +11,6 @@ import { styles as bootstrap } from './themes/step/light/step.bootstrap.css.js';
 import { styles as indigo } from './themes/step/light/step.indigo.css.js';
 import { styles as fluent } from './themes/step/light/step.fluent.css.js';
 import { styles as material } from './themes/step/light/step.material.css.js';
-import { animation } from '../../animations/types.js';
 
 /**
  * The step component is used within the `igc-stepper` element and it holds the content of each step.
@@ -139,28 +139,26 @@ export default class IgcStepComponent extends LitElement {
     type: 'in' | 'out',
     direction: 'normal' | 'reverse' = 'normal'
   ) {
-    const enter: Keyframe[] = [
-      { transform: `translateX(100%)`, opacity: 0 },
-      { transform: `translateX(0)`, opacity: 1 },
-    ];
+    let animation;
+    const horizontalAnimation: 'slide' | 'fade' = 'slide';
+    const verticalAnimation: 'grow' | 'fade' = 'fade';
 
-    const depart: Keyframe[] = [
-      { transform: `translateX(0)`, opacity: 1 },
-      { transform: `translateX(-100%)`, opacity: 0 },
-    ];
+    if (this.orientation === 'horizontal') {
+      animation = horizontalAnimations.get(horizontalAnimation)!.get(type)!;
+    } else {
+      animation = verticalAnimations.get(verticalAnimation)!.get(type)!;
+    }
 
-    const animationType = type === 'in' ? enter : depart;
+    const options: KeyframeAnimationOptions = {
+      duration: 350,
+      easing: EaseInOut.Quad,
+      direction,
+      fill: 'forwards',
+    };
 
     const [_, event] = await Promise.all([
       this.animationPlayer.stopAll(),
-      this.animationPlayer.play(
-        animation(animationType, {
-          duration: 350,
-          easing: EaseInOut.Quad,
-          direction,
-          fill: 'forwards',
-        })
-      ),
+      this.animationPlayer.play(animation(options)),
     ]);
 
     return event.type;
