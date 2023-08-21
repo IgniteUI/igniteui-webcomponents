@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/dark' as *;
+@use 'styles/utilities' as *;
+@use 'checkbox-themes' as *;
 
 @mixin theme() {
-    $schema: map.get($dark-bootstrap-schema, 'checkbox');
-    $border-radius: border-radius(map.get($schema, 'border-radius')...);
-    $ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
-    $theme: digest-schema(extend(
-        $schema,
-        (
-            border-radius: $border-radius,
-            ripple-radius: $ripple-radius
-        )
-    ));
+    $theme: $bootstrap;
 
     igc-checkbox {
         @include css-vars-from-theme($theme, 'ig-checkbox');

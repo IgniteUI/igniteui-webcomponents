@@ -1,4 +1,4 @@
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
 
 :host([shape='square']),
 :host([outlined][shape='square']) [part='base'] {

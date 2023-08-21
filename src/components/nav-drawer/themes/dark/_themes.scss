@@ -1,0 +1,33 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/navdrawer' as *;
+
+$material: map.merge(
+    digest-schema($dark-navdrawer),
+    (
+        border-radius: border-radius(map.get($dark-navdrawer, 'border-radius')...),
+        item-border-radius: border-radius(map.get($dark-navdrawer, 'item-border-radius')...),
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($dark-bootstrap-navdrawer),
+    (
+        border-radius: border-radius(map.get($dark-bootstrap-navdrawer, 'border-radius')...),
+        item-border-radius: border-radius(map.get($dark-bootstrap-navdrawer, 'item-border-radius')...),
+    )
+);
+$fluent: map.merge(
+    digest-schema($dark-fluent-navdrawer),
+    (
+        border-radius: border-radius(map.get($dark-fluent-navdrawer, 'border-radius')...),
+        item-border-radius: border-radius(map.get($dark-fluent-navdrawer, 'item-border-radius')...),
+    )
+);
+$indigo: map.merge(
+    digest-schema($dark-indigo-navdrawer),
+    (
+        border-radius: border-radius(map.get($dark-indigo-navdrawer, 'border-radius')...),
+        item-border-radius: border-radius(map.get($dark-indigo-navdrawer, 'item-border-radius')...),
+    )
+);
+

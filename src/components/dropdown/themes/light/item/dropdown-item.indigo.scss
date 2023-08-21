@@ -1,15 +1,8 @@
 @use 'sass:map';
-@use '../../../../../styles/utilities/index' as *;
-@use '../../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/utilities/index' as *;
+@use '../themes' as *;
 
-$schema: map.get($light-indigo-schema, 'drop-down');
-$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        item-border-radius: $item-border-radius
-    )
-));
+$theme: $indigo;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dropdown');

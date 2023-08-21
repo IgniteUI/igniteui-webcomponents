@@ -1,16 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/fluent/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-fluent-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius
-    )
-));
+$theme: $fluent;
 $resting-border-width: rem(1px);
 $focused-border-width: rem(2px);
 $resting-height: calc(var-get($theme, 'size') - #{($resting-border-width * 2)});
