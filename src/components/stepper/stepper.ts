@@ -116,7 +116,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * The animation duration in either vertical or horizontal mode.
    * @attr animation-duration
    */
-  @property({ attribute: 'animation-duration' })
+  @property({ attribute: 'animation-duration', type: Number })
   public animationDuration = 350;
 
   /**
