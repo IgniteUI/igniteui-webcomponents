@@ -3,6 +3,7 @@ import IgcAccordionComponent from '../../accordion/accordion.js';
 import IgcBadgeComponent from '../../badge/badge.js';
 import IgcButtonComponent from '../../button/button.js';
 import IgcIconButtonComponent from '../../button/icon-button.js';
+import IgcToggleButtonComponent from '../../button-group/toggle-button.js';
 import IgcCalendarComponent from '../../calendar/calendar.js';
 import IgcCardComponent from '../../card/card.js';
 import IgcCardActionsComponent from '../../card/card.actions.js';
@@ -63,6 +64,7 @@ const allComponents: CustomElementConstructor[] = [
   IgcBadgeComponent,
   IgcButtonComponent,
   IgcIconButtonComponent,
+  IgcToggleButtonComponent,
   IgcCalendarComponent,
   IgcCardActionsComponent,
   IgcCardContentComponent,
