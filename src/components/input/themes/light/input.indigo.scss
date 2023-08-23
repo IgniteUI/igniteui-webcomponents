@@ -4,6 +4,7 @@
 @use 'themes' as *;
 
 $theme: $indigo;
+$transition-duration: .25s;
 
 %suffix-preffix {
     display: inline-flex;
@@ -18,8 +19,14 @@ $theme: $indigo;
 
     [part='prefix'],
     [part='suffix'] {
+        // transition-duration is needed here because of a bug in safari
+        // https://github.com/IgniteUI/igniteui-webcomponents/pull/881
+        transition-duration: 0ms;
+
         ::slotted(*) {
+            height: 100%;
             color: inherit;
+            transition-duration: 0ms;
         }
     }
 
@@ -56,9 +63,10 @@ $theme: $indigo;
         border-radius: var-get($theme, 'box-border-radius');
         border-end-start-radius: 0;
         border-end-end-radius: 0;
-        border-bottom: 1px solid var-get($theme, 'idle-bottom-line-color');
-        transition: background .25s ease-out;
+        border-bottom: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
+        transition: background $transition-duration ease-out;
         grid-template-columns: auto 1fr auto;
+        height: var-get($theme, 'size');
 
         &::after {
             position: absolute;
@@ -83,11 +91,7 @@ $theme: $indigo;
         padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
         border: none;
         grid-area: 1 / 2;
-    }
-
-    [part~='input'],
-    [part^='container'] {
-        height: var-get($theme, 'size');
+        height: 100%;
     }
 
     [part~='prefixed'] {
@@ -129,6 +133,13 @@ $theme: $indigo;
 }
 
 :host(:focus-within) {
+    [part='prefix'],
+    [part='suffix'] {
+        // transition-duration is needed here because of a bug in safari
+        // https://github.com/IgniteUI/igniteui-webcomponents/pull/881
+        transition-duration: $transition-duration;
+    }
+
     [part^='container'] {
         &::after {
             transform: scaleY(1);

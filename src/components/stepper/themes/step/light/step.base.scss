@@ -2,52 +2,6 @@
 @use 'styles/utilities' as *;
 
 :host {
-    // text
-    --title-color: #{contrast-color(gray, 50)};
-    --subtitle-color: #{color(gray, 700)};
-
-    // separator
-    --separator-color: #{color(gray, 300)};
-    --separator-color--completed: #{color(gray, 900)};
-
-    // header
-    --header-color: #{contrast-color(gray, 50)};
-    --header-background--hover: #{color(gray, 200)};
-    --header-background--focus: #{color(gray, 100)};
-    --header-shadow: #{color(gray, 50, 0)};
-
-    // uncompleted
-    --indicator-color: #{color(gray, 900)};
-    --indicator-background: #{color(gray, 400)};
-    --indicator-shadow: var(--indicator-background);
-
-    // optional
-    --optional-indicator-color: var(--indicator-color);
-    --optional-indicator-background: var(--indicator-background);
-    --optional-indicator-shadow: var(--indicator-shadow);
-
-    // completed
-    --completed-indicator-color: var(--indicator-color);
-    --completed-indicator-background: var(--indicator-background);
-    --completed-indicator-shadow: var(--indicator-shadow);
-
-    // active
-    --active-indicator-color: #{contrast-color(primary, 800)};
-    --active-indicator-background: #{color(primary, 500)};
-    --active-indicator-shadow: var(--active-indicator-background);
-    --active-title-color: var(--title-color);
-    --active-subtitle-color: var(--subtitle-color);
-
-    // error
-    --error-color: #{contrast-color(error, 800)};
-    --error-background: #{color(error, 500)};
-    --error-shadow: var(--error-background);
-
-    // disabled
-    --disabled-color: #{color(gray, 500)};
-    --disabled-background: #{color(gray, 100)};
-    --disabled-shadow: var(--disabled-background);
-
     align-items: flex-start;
 }
 
@@ -59,7 +13,7 @@
         content: '';
         width: auto;
         flex: 1;
-        border-block-start: var(--separator-size) var(--separator-type) var(--separator-color);
+        border-block-start-width: var(--separator-size);
         height: var(--separator-size);
         position: relative;
     }
@@ -100,14 +54,13 @@
     padding: var(--header-padding);
     justify-content: flex-start;
     gap: var(--header-gap);
-    color: var(--header-color);
     z-index: var(--vertical-header-z-index);
 
     &::before,
     &::after {
         content: '';
         flex: 1;
-        border-block-start: var(--separator-size) var(--separator-type) var(--separator-color);
+        border-block-start-width: var(--separator-size);
         height: var(--separator-size);
         min-width: var(--separator-min-width--header);
         width: calc(50% - (var(--indicator-size) / 2) - var(--header-padding));
@@ -140,8 +93,6 @@
         &::after {
             visibility: var(--header-separator-visibility--hover);
         }
-
-        background: var(--header-background--hover);
     }
 
     &:focus,
@@ -151,9 +102,6 @@
         &::after {
             visibility: var(--header-separator-visibility--hover);
         }
-
-        background: var(--header-background--focus);
-        box-shadow: inset 0 0 0 rem(1px) var(--header-shadow);
     }
 }
 
@@ -168,7 +116,6 @@
     padding-block-end: var(--horizontal-body-padding, var(--vertical-body-padding));
     z-index: 1;
     position: relative;
-    color: color(gray, 900);
     overflow: auto;
 
     // Thous two lines here are on purpose, they make sure that step body content
@@ -184,7 +131,8 @@
         inset-inline-start: calc((var(--separator-size) / 2) * -1);
         height: 100%;
         inset-block-start: 0 !important;
-        border-inline-start: var(--separator-size) var(--separator-type) var(--separator-color);
+        border-inline-start-style: var(--separator-type);
+        border-inline-start-width: var(--separator-size);
     }
 }
 
@@ -268,9 +216,6 @@
     min-width: var(--indicator-size);
     height: var(--indicator-size);
     position: relative;
-    background: var(--indicator-background);
-    color: var(--indicator-color);
-    box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var(--indicator-shadow);
 }
 
 [part~='indicator'],
@@ -299,82 +244,14 @@
 
 [part~='title'] {
     @include type-style('body-2');
-
-    color: var(--title-color);
 }
 
 [part~='subtitle'] {
     @include type-style('caption');
-
-    color: var(--subtitle-color);
 }
 
 [part~='empty'] {
     display: none;
-}
-
-[part~='optional'] {
-    [part~='indicator'] {
-        color: var(--optional-indicator-color);
-        background: var(--optional-indicator-background);
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var(--optional-indicator-shadow);
-    }
-}
-
-[part~='complete-start'] {
-    &::after {
-        border-block-start-style: var(--separator-type--completed);
-        border-block-start-color: var(--separator-color--completed);
-    }
-
-    [part~='header'] {
-        &::after {
-            border-block-start-style: var(--separator-type--completed);
-            border-block-start-color: var(--separator-color--completed);
-        }
-    }
-
-    [part~='indicator'] {
-        background: var(--completed-indicator-background);
-        color: var(--completed-indicator-color);
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var(--completed-indicator-shadow);
-    }
-}
-
-:host([complete]) {
-    [part~='body'] {
-        &::before {
-            border-inline-start-style: var(--separator-type--completed);
-            border-inline-start-color: var(--separator-color--completed);
-        }
-    }
-}
-
-[part~='complete-end'] {
-    &::before {
-        border-block-start-style: var(--separator-type--completed);
-        border-block-start-color: var(--separator-color--completed);
-    }
-
-    [part~='header'] {
-        &::before {
-            border-block-start-style: var(--separator-type--completed);
-            border-block-start-color: var(--separator-color--completed);
-        }
-    }
-}
-
-[part~='invalid'] {
-    [part~='indicator'] {
-        color: var(--error-color);
-        background: var(--error-background);
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var(--error-shadow);
-    }
-
-    [part~='title'],
-    [part~='subtitle'] {
-        color: var(--error-background);
-    }
 }
 
 :host([active]) {
@@ -392,48 +269,10 @@
         display: var(--horizontal-content-disply, block);
         pointer-events: all;
     }
-
-    [part~='indicator'] {
-        background: var(--active-indicator-background);
-        color: var(--active-indicator-color);
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var(--active-indicator-shadow);
-    }
-
-    [part~='title'] {
-        color: var(--active-title-color);
-        font-weight: 600;
-    }
-
-    [part~='subtitle'] {
-        color: var(--active-subtitle-color);
-    }
 }
 
 [part~='disabled'] {
     [part='header'] {
-        background: color(gray, 50, 0);
-    }
-
-    &:focus,
-    &:focus-visible,
-    &:focus-within,
-    &:active,
-    &:hover {
-        [part='header'] {
-            background: color(gray, 50, 0);
-            cursor: default;
-            box-shadow: inset 0 0 0 rem(1px) color(gray, 50, 0);
-        }
-    }
-
-    [part~='indicator'] {
-        color: var(--disabled-color);
-        background: var(--disabled-background);
-        box-shadow: inset 0 0 0 var(--indicator-box-shadow-size) var(--disabled-shadow);
-    }
-
-    [part~='title'],
-    [part~='subtitle'] {
-        color: var(--disabled-color);
+        cursor: default;
     }
 }
