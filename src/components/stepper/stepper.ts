@@ -117,7 +117,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
    * @attr animation-duration
    */
   @property({ attribute: 'animation-duration', type: Number })
-  public animationDuration = 350;
+  public animationDuration = 320;
 
   /**
    * Get/Set the position of the steps title.

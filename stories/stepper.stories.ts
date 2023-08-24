@@ -67,7 +67,7 @@ const metadata: Meta<IgcStepperComponent> = {
       description:
         'The animation duration in either vertical or horizontal mode.',
       control: 'number',
-      defaultValue: 350,
+      defaultValue: 320,
     },
     titlePosition: {
       type: '"start" | "end" | "top" | "bottom" | undefined',
@@ -83,7 +83,7 @@ const metadata: Meta<IgcStepperComponent> = {
     contentTop: false,
     verticalAnimation: 'grow',
     horizontalAnimation: 'slide',
-    animationDuration: 350,
+    animationDuration: 320,
   },
 };
 
