@@ -11,7 +11,7 @@ $base-scale-size: (
 );
 
 :host {
-    --size: #{sizable(
+    --textarea-height: #{sizable(
         rem(82px, map.get($base-scale-size, 'compact')),
         rem(82px, map.get($base-scale-size, 'cosy')),
         rem(82px, map.get($base-scale-size, 'comfortable'))
@@ -37,7 +37,7 @@ $base-scale-size: (
     position: relative;
     max-width: 100%;
     font-size: rem(16px);
-    min-height: var(--size);
+    min-height: var(--textarea-height);
 
     &:hover {
         cursor: pointer;
@@ -55,8 +55,8 @@ textarea {
     padding-inline-start: 0;
     width: 100%;
     min-width: 0;
-    min-height: var(--size);
-    height: var(--size);
+    min-height: var(--textarea-height);
+    height: var(--textarea-height);
     background: transparent;
     color: var-get($theme, 'filled-text-color');
     outline-style: none;
