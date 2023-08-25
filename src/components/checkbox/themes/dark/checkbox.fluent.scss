@@ -1,12 +1,11 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'checkbox-themes' as *;
 
 @mixin theme() {
+    $theme: $fluent;
+
     igc-checkbox {
-        --border-color: #{color(gray, 700)};
-        --hover-color: #{color(gray, 900)};
-        --checked-hover-color: #{color(primary, 200)};
-        --invalid-color: #{color(error, 200)};
-        --invalid-hover-color: #{color(error, 100)};
-        --disabled-color: #{color(gray, 200)};
+        @include css-vars-from-theme($theme, 'ig-checkbox');
     }
 }

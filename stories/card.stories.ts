@@ -1,10 +1,38 @@
+import {
+  facebook,
+  instagram,
+  twitter,
+} from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { Story } from './story';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
+import {
+  defineComponents,
+  IgcAvatarComponent,
+  IgcCardComponent,
+  IgcIconButtonComponent,
+} from '../src/index.js';
+
+defineComponents(IgcAvatarComponent, IgcCardComponent, IgcIconButtonComponent);
+
+const icons = [facebook, instagram, twitter];
+
+icons.forEach((icon) => {
+  registerIconFromText(icon.name, icon.value);
+});
 
 // region default
-const metadata = {
+const metadata: Meta<IgcCardComponent> = {
   title: 'Card',
   component: 'igc-card',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A container which wraps different elements related to a single subject',
+      },
+    },
+  },
   argTypes: {
     elevated: {
       type: 'boolean',
@@ -13,18 +41,24 @@ const metadata = {
       defaultValue: false,
     },
   },
+  args: { elevated: false },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcCardArgs {
+  /** Sets card elevated style, otherwise card looks outlined. */
   elevated: boolean;
 }
+type Story = StoryObj<IgcCardArgs>;
+
 // endregion
 interface Context {
   globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
 }
 
-const Template: Story<ArgTypes, Context> = (
-  { elevated = false }: ArgTypes,
+const Template = (
+  { elevated = false }: IgcCardArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -58,7 +92,11 @@ const Template: Story<ArgTypes, Context> = (
           <igc-card-actions>
             <igc-button slot="start">Like</igc-button>
             <igc-button slot="start">Learn More</igc-button>
-            <igc-icon-button slot="end" name="home"></igc-icon-button>
+            <igc-icon-button
+              slot="end"
+              name="star_border"
+              collection="internal"
+            ></igc-icon-button>
           </igc-card-actions>
         </igc-card>
       </div>
@@ -162,4 +200,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

@@ -1,14 +1,23 @@
-@use '../../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use '../../button/light/themes' as *;
+
+$theme: $indigo-icon;
 
 :host {
-    --size: #{sizable(rem(28px), rem(32px), rem(36px))};
+    @include css-vars-from-theme($theme, 'ig-button');
+
+    ::slotted(igc-ripple) {
+        border-radius: var-get($theme, 'border-radius');
+    }
 }
 
 [part='base'] {
+    border-radius: var-get($theme, 'border-radius');
     transition: color .15s ease-in-out, box-shadow .15s ease-in-out, background .15s ease-in-out;
     color: color(gray, 700);
-    width: var(--size);
-    height: var(--size);
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
     padding: pad(6px);
 
     &:hover {
@@ -21,6 +30,10 @@
         color: color(gray, 900);
         background: transparent;
         box-shadow: 0 0 0 rem(3px) color(gray, 300);
+    }
+
+    igc-icon {
+        color: color(gray, 700);
     }
 }
 
@@ -38,6 +51,10 @@
             background: #{color(primary, 400)};
             box-shadow: 0 0 0 rem(3px) color(primary, 200);
         }
+    }
+
+    igc-icon {
+        color: contrast-color(primary, 600);
     }
 }
 
@@ -67,15 +84,21 @@
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: color(gray, 400);
         background: transparent;
         box-shadow: none;
     }
+
+    igc-icon {
+        color: color(gray, 400);
+    }
 }
 
-:host([disabled][variant='contained']) {
+:host([disabled][variant='contained']),
+:host(:disabled[variant='contained']) {
     [part='base'] {
         background: color(gray, 100);
         color: color(gray, 400);

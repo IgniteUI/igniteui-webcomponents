@@ -1,17 +1,65 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
+import {
+  defineComponents,
+  IgcAvatarComponent,
+  IgcNavbarComponent,
+  IgcInputComponent,
+  IgcIconComponent,
+  IgcButtonComponent,
+  IgcDropdownComponent,
+} from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(
+  IgcNavbarComponent,
+  IgcAvatarComponent,
+  IgcInputComponent,
+  IgcIconComponent,
+  IgcButtonComponent,
+  IgcDropdownComponent
+);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcNavbarComponent> = {
   title: 'Navbar',
   component: 'igc-navbar',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A navigation bar component is used to facilitate navigation through\na series of hierarchical screens within an app.',
+      },
+    },
+  },
   argTypes: {},
+  args: {},
 };
+
 export default metadata;
 
+type Story = StoryObj;
+
 // endregion
+
+interface NavbarStoryArgs {
+  content: string;
+}
+
+type EnhancedStory = StoryObj<NavbarStoryArgs>;
+
+Object.assign(metadata.argTypes!, {
+  content: {
+    type: 'string',
+    control: 'text',
+  },
+});
+
+Object.assign(metadata.args!, {
+  content: 'Title',
+});
 
 registerIcon(
   'home',
@@ -23,8 +71,8 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg'
 );
 
-const Template: Story<any, Context> = (
-  { content = 'Title' }: any,
+const Template = (
+  { content }: NavbarStoryArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -42,16 +90,20 @@ const Template: Story<any, Context> = (
         <igc-icon name="search" slot="suffix"></igc-icon>
       </igc-input>
       <igc-icon slot="end" name="favorite"></igc-icon>
-      <igc-avatar
-        slot="end"
-        size="small"
-        shape="circle"
-        src="https://i.pravatar.cc/200"
-        >MP</igc-avatar
-      >
-      <igc-button slot="end" name="search">Login</igc-button>
+      <igc-dropdown slot="end">
+        <igc-avatar
+          slot="target"
+          size="small"
+          shape="circle"
+          src="https://i.pravatar.cc/200"
+          >MP</igc-avatar
+        >
+        <igc-dropdown-item>Settings</igc-dropdown-item>
+        <igc-dropdown-item>Help</igc-dropdown-item>
+        <igc-dropdown-item>Log Out</igc-dropdown-item>
+      </igc-dropdown>
     </igc-navbar>
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story & EnhancedStory = Template.bind({});

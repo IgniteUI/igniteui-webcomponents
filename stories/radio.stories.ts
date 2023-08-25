@@ -1,27 +1,21 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { defineComponents, IgcRadioComponent } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcRadioComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcRadioComponent> = {
   title: 'Radio',
   component: 'igc-radio',
+  parameters: { docs: { description: {} } },
   argTypes: {
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
     value: {
       type: 'string',
       description: 'The value attribute of the control.',
       control: 'text',
-    },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
     },
     checked: {
       type: 'boolean',
@@ -29,25 +23,11 @@ const metadata = {
       control: 'boolean',
       defaultValue: false,
     },
-    disabled: {
-      type: 'boolean',
-      description: 'Disables the radio control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     labelPosition: {
       type: '"before" | "after"',
       description: 'The label position of the radio control.',
       options: ['before', 'after'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'after',
     },
     ariaLabelledby: {
@@ -55,23 +35,65 @@ const metadata = {
       description: 'Sets the aria-labelledby attribute for the radio control.',
       control: 'text',
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+  },
+  args: {
+    checked: false,
+    labelPosition: 'after',
+    required: false,
+    disabled: false,
+    invalid: false,
   },
 };
+
 export default metadata;
-interface ArgTypes {
-  name: string;
+
+interface IgcRadioArgs {
+  /** The value attribute of the control. */
   value: string;
-  required: boolean;
+  /** The checked state of the control. */
   checked: boolean;
-  disabled: boolean;
-  invalid: boolean;
+  /** The label position of the radio control. */
   labelPosition: 'before' | 'after';
+  /** Sets the aria-labelledby attribute for the radio control. */
   ariaLabelledby: string;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
 }
+type Story = StoryObj<IgcRadioArgs>;
+
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
-  { labelPosition, checked, disabled, required, invalid }: ArgTypes,
+const Template = (
+  { labelPosition, checked, disabled, required, invalid }: IgcRadioArgs,
   { globals: { direction } }: Context
 ) => html`
   <igc-radio
@@ -86,4 +108,4 @@ const Template: Story<ArgTypes, Context> = (
   </igc-radio>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

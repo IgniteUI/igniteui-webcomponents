@@ -1,9 +1,26 @@
-@use '../../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
-    igc-button {
-        --text-color: #{utils.color(surface, 500)};
-        --hover-background: #{utils.color(primary, 300)};
-        --active-background: #{utils.color(primary, 100)};
+    $flat-theme: $fluent-flat;
+    $contained-theme: $fluent-contained;
+    $fab-theme: $fluent-fab;
+    $outlined-theme: $fluent-outlined;
+
+    igc-button[variant='flat'] {
+        @include css-vars-from-theme($flat-theme, 'ig-button');
+    }
+
+    igc-button[variant='outlined'] {
+        @include css-vars-from-theme($outlined-theme, 'ig-button');
+    }
+
+    igc-button[variant='contained'] {
+        @include css-vars-from-theme($contained-theme, 'ig-button');
+    }
+
+    igc-button[variant='fab'] {
+        @include css-vars-from-theme($fab-theme, 'ig-button');
     }
 }

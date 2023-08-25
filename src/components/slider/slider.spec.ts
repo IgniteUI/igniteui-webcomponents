@@ -12,6 +12,7 @@ import {
   IgcSliderComponent,
 } from '../../index.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Slider component', () => {
   const getTrack = (el: IgcSliderComponent) =>
@@ -483,9 +484,7 @@ describe('Slider component', () => {
         expect(style.marginInlineStart).to.eq('0px');
         expect(style.marginBlock).to.eq('-9px');
         expect(style.writingMode).to.eq('vertical-rl');
-        expect(style.transform).to.eq(
-          'matrix(-1, 1.22465e-16, -1.22465e-16, -1, 0, 0)'
-        );
+        expect(style.transform).to.eq('matrix(-1, 0, 0, -1, 0, 0)');
       }
     });
 
@@ -992,6 +991,53 @@ describe('Slider component', () => {
       expect(upperThumb.ariaLabel).to.eq('Price To');
 
       await expect(slider).to.be.accessible();
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcSliderComponent>(
+      html`<igc-slider name="slider" value="3"></igc-slider>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcSliderComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is associated on submit', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.equal('3');
+
+      spec.element.value = 66;
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal('66');
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.value = 4;
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal(3);
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils custom constraints', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });

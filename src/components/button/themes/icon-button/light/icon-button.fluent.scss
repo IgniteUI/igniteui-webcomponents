@@ -1,21 +1,28 @@
-@use '../../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use '../../button/light/themes' as *;
 
+$theme: $fluent-icon;
 $text-color: var(--text-color, #{contrast-color(primary, 600)}) !default;
-$hover-background: var(--hover-background, #{color(primary, 600)}) !default;
+$hover-contained-background: var(--hover-contained-background, color(primary, 600)) !default;
+$outline-btn-indent: rem(2px);
 
 :host {
-    --size: #{sizable(rem(24px), rem(32px), rem(38px))};
+    @include css-vars-from-theme($theme, 'ig-button');
+
+    ::slotted(igc-ripple) {
+        border-radius: var-get($theme, 'border-radius');
+    }
 }
 
 [part='base'] {
-    @include border-radius(rem(2px));
-
+    border-radius: var-get($theme, 'border-radius');
     background: transparent;
     color: color(primary, 500);
     transition: color .15s ease-out, background .15s ease-out;
     box-shadow: none;
-    width: var(--size);
-    height: var(--size);
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
     padding: pad(4px, 6px, 7px);
 
     &::after {
@@ -24,8 +31,9 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
         pointer-events: none;
         top: 2px;
         left: 2px;
-        width: calc(100% - 4px);
-        height: calc(100% - 4px);
+        width: calc(100% - (#{$outline-btn-indent} * 2));
+        height: calc(100% - (#{$outline-btn-indent} * 2));
+        border-radius: calc(#{var-get($theme, 'border-radius')} - #{$outline-btn-indent * 2});
     }
 
     &:hover {
@@ -41,6 +49,10 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
     &:focus-visible::after {
         box-shadow: 0 0 0 rem(1px) color(gray, 500);
     }
+
+    igc-icon {
+        color: color(primary, 500);
+    }
 }
 
 :host([variant='contained']) {
@@ -48,8 +60,10 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
         color: $text-color;
         background: color(primary, 500);
 
-        &:hover {
-            background: $hover-background;
+        &:hover,
+        &:focus,
+        &:focus-visible {
+            background: $hover-contained-background;
         }
 
         &:active {
@@ -60,6 +74,10 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
         &:focus-visible::after {
             box-shadow: 0 0 0 rem(1px) contrast-color(primary, 600);
         }
+    }
+
+    igc-icon {
+        color: $text-color;
     }
 }
 
@@ -73,26 +91,29 @@ $hover-background: var(--hover-background, #{color(primary, 600)}) !default;
         }
 
         &:hover,
-        &:focus:hover {
-            background: color(gray, 100);
-        }
-
+        &:focus:hover,
         &:focus:active {
             background: color(gray, 200);
         }
+
+        &:focus-visible::after {
+            box-shadow: 0 0 0 rem(1px) color(gray, 900);
+        }
+    }
+
+    igc-icon {
+        color: color(gray, 900);
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
         color: color(gray, 400);
         background: color(gray, 100);
     }
-}
 
-:host([disabled][variant='contained']),
-:host([disabled][variant='outlined']) {
-    [part='base'] {
-        color: color(gray, 500);
+    igc-icon {
+        color: color(gray, 400);
     }
 }

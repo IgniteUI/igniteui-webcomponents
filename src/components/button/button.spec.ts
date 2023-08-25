@@ -151,17 +151,13 @@ describe('Button component', () => {
     });
 
     it('renders the prefix, content and suffix slots successfully', async () => {
-      expect(el).shadowDom.to.equal(`<button class="${classValue(
-        'contained medium'
-      )}" part="base">
-      <span part="prefix">
-        <slot name="prefix"></slot>
-      </span>
-      <slot></slot>
-      <span part="suffix">
-        <slot name="suffix"></slot>
-      </span>
-      </button>`);
+      expect(el).shadowDom.to.equal(
+        `<button class="${classValue('contained medium')}" part="base">
+         <slot name="prefix"></slot>
+         <slot></slot>
+         <slot name="suffix"></slot>
+         </button>`
+      );
     });
 
     it('sets type property successfully', async () => {
@@ -269,14 +265,16 @@ describe('LinkButton component', () => {
     });
 
     it('renders the prefix, content and suffix slots successfully', async () => {
-      expect(el).shadowDom.to.equal(`<a aria-disabled="false"
+      expect(el).shadowDom.to.equal(
+        `<a aria-disabled="false"
         class="${classValue(
           `contained medium`
         )}" href="/" part="base" role="button">
-        <span part="prefix"><slot name="prefix"></slot>
-        </span><slot></slot>
-        <span part="suffix"><slot name="suffix"></slot></span>
-      </a>`);
+        <slot name="prefix"></slot>
+        <slot></slot>
+        <slot name="suffix"></slot>
+      </a>`
+      );
     });
 
     it('is created with the proper default values', async () => {
@@ -393,4 +391,61 @@ describe('LinkButton component', () => {
   ) => {
     return fixture<IgcButtonComponent>(html`${unsafeStatic(template)}`);
   };
+
+  describe('Form integration', () => {
+    let form: HTMLFormElement;
+    let button: IgcButtonComponent;
+
+    beforeEach(async () => {
+      form = await fixture<HTMLFormElement>(
+        html`<form>
+          <input type="text" name="username" value="John Doe" />
+          <fieldset>
+            <igc-button type="submit">Process</igc-button>
+          </fieldset>
+        </form>`
+      );
+      button = form.querySelector(IgcButtonComponent.tagName)!;
+    });
+
+    it('is form associated', async () => {
+      expect(button.form).to.equal(form);
+    });
+
+    it('submits the associated form', async () => {
+      let data: FormData;
+      form.addEventListener(
+        'submit',
+        (e) => {
+          e.preventDefault();
+          data = new FormData(form);
+        },
+        { once: true }
+      );
+
+      button.click();
+      expect(data!.get('username')).to.equal('John Doe');
+    });
+
+    it('resets the associated form', async () => {
+      const input = form.querySelector('input')!;
+      input.value = '';
+
+      button.type = 'reset';
+      await elementUpdated(button);
+
+      button.click();
+      expect(input.value).to.equal('John Doe');
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      const fieldset = form.querySelector('fieldset')!;
+
+      fieldset.toggleAttribute('disabled');
+      expect(button.disabled).to.be.true;
+
+      fieldset.toggleAttribute('disabled');
+      expect(button.disabled).to.be.false;
+    });
+  });
 });

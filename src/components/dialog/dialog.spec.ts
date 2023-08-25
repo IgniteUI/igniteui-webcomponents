@@ -4,6 +4,7 @@ import {
   fixture,
   html,
   unsafeStatic,
+  waitUntil,
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcDialogComponent } from '../../index.js';
@@ -154,7 +155,7 @@ describe('Dialog component', () => {
       await elementUpdated(dialog);
 
       dialog.hide();
-      await elementUpdated(dialog);
+      await waitUntil(() => !dialog.open);
       expect(dialog.open).to.eq(false);
     });
 
@@ -163,7 +164,7 @@ describe('Dialog component', () => {
       await elementUpdated(dialog);
 
       dialog.toggle();
-      await elementUpdated(dialog);
+      await waitUntil(() => !dialog.open);
       expect(dialog.open).to.eq(false);
 
       dialog.open = false;
@@ -175,7 +176,7 @@ describe('Dialog component', () => {
     });
 
     it('is created with the proper default values', async () => {
-      expect(dialog.closeOnEscape).to.equal(true);
+      expect(dialog.keepOpenOnEscape).to.equal(false);
       expect(dialog.closeOnOutsideClick).to.equal(false);
       expect(dialog.title).to.be.undefined;
       expect(dialog.open).to.equal(false);
@@ -205,7 +206,7 @@ describe('Dialog component', () => {
       expect(spy.callCount).to.equal(0);
 
       dialog.hide();
-      await elementUpdated(dialog);
+      await waitUntil(() => !dialog.open);
 
       expect(dialog.open).to.be.false;
       expect(spy.callCount).to.equal(0);
@@ -229,7 +230,7 @@ describe('Dialog component', () => {
       await elementUpdated(dialog);
 
       dialog.shadowRoot!.querySelector('igc-button')!.click();
-      await elementUpdated(dialog);
+      await waitUntil(() => !dialog.open);
 
       expect(spy.callCount).to.equal(2);
       expect(spy.firstCall).calledWith('igcClosing');
@@ -314,7 +315,9 @@ describe('Dialog component', () => {
           clientY: y - 1,
         })
       );
-      await elementUpdated(dialog);
+
+      const eventSpy = sinon.spy(dialog, 'emitEvent');
+      await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(dialog.open).to.be.false;
     });
@@ -334,7 +337,7 @@ describe('Dialog component', () => {
 
       const form = document.getElementById('form');
       form?.dispatchEvent(new Event('igcSubmit'));
-      await elementUpdated(dialog);
+      await waitUntil(() => !dialog.open);
 
       expect(dialog.open).to.eq(false);
     });

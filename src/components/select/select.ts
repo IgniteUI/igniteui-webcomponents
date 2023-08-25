@@ -6,13 +6,17 @@ import {
   state,
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/index.js';
+import { themes, themeSymbol } from '../../theming/index.js';
+import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { partNameMap } from '../common/util.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
@@ -22,11 +26,13 @@ import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
+import type { Theme } from '../../theming/types.js';
 import { styles } from './themes/light/select.base.css.js';
 import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
+import { requiredValidator, Validator } from '../common/validators.js';
 
 defineComponents(
   IgcIconComponent,
@@ -41,7 +47,7 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes({ bootstrap, material, fluent, indigo })
+@themes({ bootstrap, material, fluent, indigo }, true)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )
@@ -72,15 +78,18 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-export default class IgcSelectComponent extends EventEmitterMixin<
-  IgcSelectEventMap,
-  Constructor<IgcDropdownComponent>
->(IgcDropdownComponent) {
-  /** @private */
+export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
+  EventEmitterMixin<IgcSelectEventMap, Constructor<IgcDropdownComponent>>(
+    IgcDropdownComponent
+  )
+) {
   public static readonly tagName = 'igc-select';
   public static styles = styles;
   private searchTerm = '';
   private lastKeyTime = Date.now();
+
+  protected override validators: Validator<this>[] = [requiredValidator];
+  private declare readonly [themeSymbol]: Theme;
 
   private readonly targetKeyHandlers: Map<string, Function> = new Map(
     Object.entries({
@@ -118,47 +127,70 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   @query('div[role="combobox"]')
   protected override target!: IgcInputComponent;
 
-  /** The value attribute of the control. */
-  @property({ reflect: false, type: String })
-  public value?: string | undefined;
+  /**
+   * The value attribute of the control.
+   * @attr
+   */
+  @property({ reflect: false })
+  public value?: string;
 
-  /** The name attribute of the control. */
-  @property()
-  public name!: string;
-
-  /** The disabled attribute of the control. */
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
-
-  /** The required attribute of the control. */
-  @property({ reflect: true, type: Boolean })
-  public required = false;
-
-  /** The invalid attribute of the control. */
-  @property({ reflect: true, type: Boolean })
-  public invalid = false;
-
-  /** The outlined attribute of the control. */
+  /**
+   * The outlined attribute of the control.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
 
-  /** The autofocus attribute of the control. */
+  /**
+   * The autofocus attribute of the control.
+   * @attr
+   */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
-  /** The label attribute of the control. */
-  @property({ type: String })
+  /**
+   * The label attribute of the control.
+   * @attr
+   */
+  @property()
   public label!: string;
 
-  /** The placeholder attribute of the control. */
-  @property({ type: String })
+  /**
+   * The placeholder attribute of the control.
+   * @attr
+   */
+  @property()
   public placeholder!: string;
 
-  /** Whether the dropdown's width should be the same as the target's one. */
+  /**
+   * @deprecated since version 5.0. It will be removed in the next major release.
+   * @hidden @internal @private
+   */
+  public override positionStrategy: 'absolute' | 'fixed' = 'fixed';
+
+  /**
+   * Whether the dropdown's width should be the same as the target's one.
+   * @deprecated since version 5.0. It will be removed in the next major release.
+   * @hidden @internal @private
+   * @attr same-width
+   */
   @property({ type: Boolean, attribute: 'same-width' })
   public override sameWidth = true;
 
-  /** The direction attribute of the control. */
+  /**
+   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
+   * When true, once enough space is detected on its preferred side, it will flip back.
+   * @deprecated since version 5.0. It will be removed in the next major release.
+   * @hidden @internal @private
+   * @attr
+   */
+  @property({ type: Boolean })
+  public override flip = true;
+
+  /**
+   * The direction attribute of the control.
+   * @attr
+   */
   @property({ reflect: true })
   public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
@@ -176,39 +208,46 @@ export default class IgcSelectComponent extends EventEmitterMixin<
    * being returned to the target element when the select loses focus. */
   protected override handleFocusout() {}
 
+  /** Monitor input slot changes and request update */
+  protected inputSlotChanged() {
+    this.requestUpdate();
+  }
+
   /** Sets focus on the component. */
+  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
     this.target.focus(options);
   }
 
   /** Removes focus from the component. */
+  @alternateName('blurComponent')
   public override blur() {
     this.target.blur();
+    super.blur();
   }
 
-  /** Checks the validity of the control. */
-  public reportValidity() {
-    this.invalid = this.required && !this.value;
-    if (this.invalid) this.target.focus();
-    return !this.invalid;
+  /** Checks the validity of the control and moves the focus to it if it is not valid. */
+  public override reportValidity() {
+    const valid = super.reportValidity();
+    if (!valid) this.target.focus();
+    return valid;
   }
 
-  /** A wrapper around the custom reportValidity method to comply with the native select API. */
-  public checkValidity() {
-    return this.reportValidity();
-  }
-
-  public override async firstUpdated() {
+  protected override async firstUpdated() {
     super.firstUpdated();
     await this.updateComplete;
 
     if (!this.selectedItem && this.value) {
       this.updateSelected();
+    } else if (this.selectedItem && !this.value) {
+      this._defaultValue = this.selectedItem.value;
     }
 
     if (this.autofocus) {
       this.target.focus();
     }
+
+    this.updateValidity();
   }
 
   @watch('selectedItem')
@@ -218,7 +257,12 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
   @watch('value')
   protected updateSelected() {
-    if (this.allItems.length === 0) return;
+    if (this.allItems.length === 0) {
+      this.setFormValue(null);
+      this.updateValidity();
+      this.setInvalidState();
+      return;
+    }
 
     if (this.selectedItem?.value !== this.value) {
       const matches = this.allItems.filter((i) => i.value === this.value);
@@ -229,16 +273,17 @@ export default class IgcSelectComponent extends EventEmitterMixin<
       if (index === -1) {
         this.value = undefined;
         this.clearSelection();
+        this.setFormValue(null);
+        this.updateValidity();
+        this.setInvalidState();
         return;
       }
 
       this.select(index);
     }
-  }
-
-  @watch('value')
-  protected validate() {
-    this.updateComplete.then(() => this.reportValidity());
+    this.setFormValue(this.value!);
+    this.updateValidity();
+    this.setInvalidState();
   }
 
   protected selectNext() {
@@ -291,11 +336,12 @@ export default class IgcSelectComponent extends EventEmitterMixin<
 
     const item = this.allItems
       .filter((i) => !i.disabled)
-      .find((i) =>
-        i.textContent
-          ?.trim()
-          .toLowerCase()
-          .startsWith(this.searchTerm.toLowerCase())
+      .find(
+        (i) =>
+          i.textContent
+            ?.trim()
+            .toLowerCase()
+            .startsWith(this.searchTerm.toLowerCase())
       );
 
     if (item && this.value !== item.value) {
@@ -304,11 +350,13 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   }
 
   protected handleFocus() {
+    this._dirty = true;
     if (this.open) return;
     this.emitEvent('igcFocus');
   }
 
   protected handleBlur() {
+    this.setInvalidState();
     if (this.open) return;
     this.emitEvent('igcBlur');
   }
@@ -374,11 +422,18 @@ export default class IgcSelectComponent extends EventEmitterMixin<
   }
 
   protected override render() {
+    const openIcon =
+      this[themeSymbol] === 'material' ? 'keyboard_arrow_up' : 'arrow_drop_up';
+    const closeIcon =
+      this[themeSymbol] === 'material'
+        ? 'keyboard_arrow_down'
+        : 'arrow_drop_down';
+
     return html`
       <div
         role="combobox"
         tabindex=${this.disabled ? -1 : 0}
-        aria-owns="dropdown"
+        aria-controls="dropdown"
         aria-describedby="helper-text"
         aria-disabled=${this.disabled}
         @focusin=${this.handleFocus}
@@ -396,24 +451,30 @@ export default class IgcSelectComponent extends EventEmitterMixin<
           size=${this.size}
           dir=${this.dir}
           tabindex="-1"
-          .disabled="${this.disabled}"
+          .disabled=${this.disabled}
           .required=${this.required}
-          .invalid=${this.invalid}
+          .invalid=${live(this.invalid)}
           .outlined=${this.outlined}
           @igcBlur=${(e: Event) => e.stopPropagation()}
           @igcFocus=${(e: Event) => e.stopPropagation()}
         >
           <span slot=${this.hasPrefixes ? 'prefix' : ''}>
-            <slot name="prefix"></slot>
+            <slot name="prefix" @slotchange=${this.inputSlotChanged}></slot>
           </span>
           <span slot=${this.hasSuffixes ? 'suffix' : ''}>
-            <slot name="suffix"></slot>
+            <slot name="suffix" @slotchange=${this.inputSlotChanged}></slot>
           </span>
-          <span slot="suffix" part="toggle-icon" style="display: flex">
+          <span
+            slot="suffix"
+            part="${partNameMap({
+              'toggle-icon': true,
+              filled: this.value!,
+            })}"
+          >
             <slot name="toggle-icon">
               <igc-icon
                 size=${this.size}
-                name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                name=${this.open ? openIcon : closeIcon}
                 collection="internal"
                 aria-hidden="true"
               ></igc-icon>
@@ -426,7 +487,7 @@ export default class IgcSelectComponent extends EventEmitterMixin<
         part="helper-text"
         ?hidden="${this.helperText.length === 0}"
       >
-        <slot name="helper-text"></slot>
+        <slot name="helper-text" @slotchange="${this.inputSlotChanged}"></slot>
       </div>
       <div
         part="base"

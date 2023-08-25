@@ -1,7 +1,12 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
-    overflow: hidden;
-    flex-grow: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+:host(:not([hidden])) {
+    display: block;
 }

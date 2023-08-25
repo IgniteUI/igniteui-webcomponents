@@ -1,7 +1,7 @@
 import { html, LitElement, nothing, TemplateResult } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import type { ReactiveTheme, ThemeController } from '../../theming/types.js';
+import { themes, themeSymbol } from '../../theming/theming-decorator.js';
+import type { Theme } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
@@ -15,6 +15,7 @@ import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
 import { styles as fluent } from './themes/light/input.fluent.css.js';
 import { styles as indigo } from './themes/light/input.indigo.css.js';
 import { styles as material } from './themes/light/input.material.css.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
@@ -25,18 +26,20 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes({ bootstrap, material, fluent, indigo })
+@themes({ bootstrap, material, fluent, indigo }, true)
 @blazorDeepImport
-export abstract class IgcInputBaseComponent
-  extends SizableMixin(
+export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
+  SizableMixin(
     EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
   )
-  implements ReactiveTheme
-{
+) {
+  private declare readonly [themeSymbol]: Theme;
+
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
+
   public static styles = styles;
   private static readonly increment = createCounter();
 
@@ -46,7 +49,7 @@ export abstract class IgcInputBaseComponent
   @blazorSuppress()
   public abstract value: string | Date | null;
 
-  @query('input', true)
+  @query('input')
   protected input!: HTMLInputElement;
 
   @queryAssignedElements({ slot: 'prefix' })
@@ -58,37 +61,39 @@ export abstract class IgcInputBaseComponent
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
 
-  protected themeController!: ThemeController;
-
-  /** The direction attribute of the control. */
+  /**
+   * The direction attribute of the control.
+   * @attr
+   */
   @property({ reflect: true })
   @blazorSuppress()
   public override dir: Direction = 'auto';
 
-  /** The name attribute of the control. */
-  @property()
-  public name!: string;
-
+  /**
+   * Whether the control will have outlined appearance.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public outlined = false;
 
-  /** Makes the control a required field. */
-  @property({ reflect: true, type: Boolean })
-  public required = false;
-
-  /** Makes the control a disabled field. */
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
-
-  /** Makes the control a readonly field. */
+  /**
+   * Makes the control a readonly field.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public readonly = false;
 
-  /** The placeholder attribute of the control. */
+  /**
+   * The placeholder attribute of the control.
+   * @attr
+   */
   @property({ type: String })
   public placeholder!: string;
 
-  /** The label for the control. */
+  /**
+   * The label for the control.
+   * @attr
+   */
   @property({ type: String })
   public label!: string;
 
@@ -99,11 +104,12 @@ export abstract class IgcInputBaseComponent
 
   public override connectedCallback() {
     super.connectedCallback();
-    this.shadowRoot!.addEventListener('slotchange', () => this.requestUpdate());
+    this.shadowRoot!.addEventListener('slotchange', this.handleSlotChange);
   }
 
-  public themeAdopted(controller: ThemeController): void {
-    this.themeController = controller;
+  public override disconnectedCallback() {
+    this.shadowRoot!.removeEventListener('slotchange', this.handleSlotChange);
+    super.disconnectedCallback();
   }
 
   /** Sets focus on the control. */
@@ -119,6 +125,7 @@ export abstract class IgcInputBaseComponent
   }
 
   protected abstract renderInput(): TemplateResult;
+  protected handleSlotChange = () => this.requestUpdate();
 
   protected resolvePartNames(base: string) {
     return {
@@ -136,11 +143,6 @@ export abstract class IgcInputBaseComponent
   protected handleBlur() {
     this.emitEvent('igcBlur');
   }
-
-  // protected handleChange() {
-  //   this.value = this.input.value;
-  //   this.emitEvent('igcChange', { detail: this.value });
-  // }
 
   /** Sets the text selection range of the control */
   public setSelectionRange(
@@ -210,7 +212,7 @@ export abstract class IgcInputBaseComponent
   }
 
   protected override render() {
-    return html`${this.themeController.theme === 'material'
+    return html`${this[themeSymbol] === 'material'
       ? this.renderMaterial()
       : this.renderStandard()}`;
   }

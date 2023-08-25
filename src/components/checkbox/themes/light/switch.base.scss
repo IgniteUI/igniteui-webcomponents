@@ -1,36 +1,22 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
     display: inline-flex;
     font-family: var(--ig-font-family);
-
-    --size: #{rem(36px)};
-    --thumb-size: #{rem(20px)};
-    --thumb-offset: #{rem(-1px)};
 }
 
 input[type='checkbox'] {
     @include hide-default();
 }
 
-label {
+[part~='base'] {
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
     cursor: pointer;
-
-    &:hover [part~='thumb'] {
-        &::after {
-            background: color(gray, 600, .06);
-        }
-    }
-
-    &:focus-within [part~='thumb'] {
-        &::after {
-            background: color(gray, 600, .12);
-        }
-    }
+    gap: var(--label-gap);
 }
 
 [part~='control'] {
@@ -38,66 +24,41 @@ label {
     flex-shrink: 0;
     align-items: center;
     user-select: none;
-    transition: all .2s ease-in-out;
 }
 
 [part~='thumb'] {
-    @include border-radius(rem(10px));
-
     position: relative;
-    animation-name: thumb-off;
     animation-duration: .2s;
     animation-fill-mode: none;
+}
+
+[part~='control'],
+[part~='thumb'] {
     transition: all .2s ease-in-out;
 }
 
 [part~='thumb'][part~='checked'] {
-    animation-name: thumb-on;
     animation-duration: .2s;
     animation-fill-mode: forwards;
 }
 
 [part~='label'] {
-    @include type-style('subtitle-1');
-
     display: inline-block;
-    color: color(gray, 900);
     cursor: pointer;
     user-select: none;
-    word-wrap: break-all;
-    transition: all .2s ease-in-out;
+    word-wrap: break-word;
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     user-select: none;
     pointer-events: none;
     cursor: initial;
-
-    [part~='label'] {
-        color: color(gray, 400);
-    }
-}
-
-:host(:not([disabled])[invalid]) {
-    [part~='label'] {
-        color: color(error, 500);
-    }
-
-    [part~='thumb'] {
-        background: color(error, 500);
-    }
-}
-
-:host([label-position='after']) {
-    [part~='label'] {
-        margin-inline-start: rem(8px);
-    }
 }
 
 :host([label-position='before']) {
     [part~='label'] {
         order: -1;
-        margin-inline-end: rem(8px);
     }
 }
 
@@ -107,13 +68,13 @@ label {
     }
 
     to {
-        margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
+        margin-inline-start: calc(var(--size) - var(--thumb-size));
     }
 }
 
 @keyframes thumb-off {
     from {
-        margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset));
+        margin-inline-start: calc(var(--size) - var(--thumb-size));
     }
 
     to {

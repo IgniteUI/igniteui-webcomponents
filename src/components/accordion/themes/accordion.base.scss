@@ -1,8 +1,10 @@
-@use '../../../styles/utilities/index' as *;
+@use 'styles/utilities/index' as *;
 
 :host {
     ::slotted(igc-expansion-panel) {
         --lines-clamped: 4;
+
+        transition: margin 350ms ease-out;
     }
 
     ::slotted(igc-expansion-panel[open]) {
@@ -15,5 +17,11 @@
 
     ::slotted(igc-expansion-panel:last-of-type) {
         margin-bottom: 0;
+    }
+
+    @media (prefers-reduced-motion) {
+        ::slotted(igc-expansion-panel) {
+            transition: none;
+        }
     }
 }

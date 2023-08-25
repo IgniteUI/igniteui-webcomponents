@@ -1,7 +1,14 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $fluent;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-tabs');
+
     color: color(gray, 900);
+    border-radius: var-get($theme, 'border-radius');
 
     ::slotted(igc-icon) {
         color: color(gray, 700);

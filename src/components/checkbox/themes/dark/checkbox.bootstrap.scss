@@ -1,0 +1,11 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'checkbox-themes' as *;
+
+@mixin theme() {
+    $theme: $bootstrap;
+
+    igc-checkbox {
+        @include css-vars-from-theme($theme, 'ig-checkbox');
+    }
+}

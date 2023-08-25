@@ -1,14 +1,25 @@
 import { html } from 'lit';
-import { Context, Story } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineAllComponents, IgcToastComponent } from '../src/index.js';
+import {
+  defineComponents,
+  IgcButtonComponent,
+  IgcToastComponent,
+} from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
 
-defineAllComponents();
+defineComponents(IgcToastComponent, IgcButtonComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcToastComponent> = {
   title: 'Toast',
   component: 'igc-toast',
+  parameters: {
+    docs: {
+      description: {
+        component: 'A toast component is used to show a notification',
+      },
+    },
+  },
   argTypes: {
     open: {
       type: 'boolean',
@@ -20,7 +31,7 @@ const metadata = {
       type: 'number',
       description: 'Determines the time after which the toast will close',
       control: 'number',
-      defaultValue: '4000',
+      defaultValue: 4000,
     },
     keepOpen: {
       type: 'boolean',
@@ -30,13 +41,21 @@ const metadata = {
       defaultValue: false,
     },
   },
+  args: { open: false, displayTime: 4000, keepOpen: false },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcToastArgs {
+  /** Determines whether the toast is opened. */
   open: boolean;
+  /** Determines the time after which the toast will close */
   displayTime: number;
+  /** Determines whether the toast is closed automatically or not. */
   keepOpen: boolean;
 }
+type Story = StoryObj<IgcToastArgs>;
+
 // endregion
 const handleShow = () => {
   const toast = document.querySelector('igc-toast') as IgcToastComponent;
@@ -53,11 +72,11 @@ const handleToggle = () => {
   toast?.toggle();
 };
 
-const Template: Story<ArgTypes, Context> = ({
+const Template = ({
   open = false,
   displayTime = 4000,
   keepOpen = false,
-}: ArgTypes) => html`
+}: IgcToastArgs) => html`
   <igc-button @click=${handleShow}>Show Toast</igc-button>
   <igc-button @click=${handleHide}>Hide Toast</igc-button>
   <igc-button @click=${handleToggle}>Toggle Toast</igc-button>
@@ -70,4 +89,4 @@ const Template: Story<ArgTypes, Context> = ({
   </igc-toast>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

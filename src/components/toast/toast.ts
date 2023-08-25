@@ -5,6 +5,7 @@ import { styles } from './themes/toast.base.css.js';
 import { styles as bootstrap } from './themes/toast.bootstrap.css.js';
 import { styles as fluent } from './themes/toast.fluent.css.js';
 import { styles as indigo } from './themes/toast.indigo.css.js';
+import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
 
 /**
  * A toast component is used to show a notification
@@ -16,29 +17,52 @@ import { styles as indigo } from './themes/toast.indigo.css.js';
 
 @themes({ bootstrap, fluent, indigo })
 export default class IgcToastComponent extends LitElement {
-  /** @private */
-  public static tagName = 'igc-toast';
-
-  /** @private */
+  public static readonly tagName = 'igc-toast';
   public static override styles = [styles];
 
-  private displayTimeout: any;
+  private displayTimeout!: ReturnType<typeof setTimeout>;
+  private animationPlayer!: AnimationPlayer;
 
-  /** Determines whether the toast is opened. */
+  /**
+   * Determines whether the toast is opened.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  /** Determines the time after which the toast will close */
+  /**
+   * Determines the time after which the toast will close
+   * @attr display-time
+   */
   @property({ type: Number, reflect: false, attribute: 'display-time' })
   public displayTime = 4000;
 
-  /** Determines whether the toast is closed automatically or not. */
+  /**
+   * Determines whether the toast is closed automatically or not.
+   * @attr keep-open
+   */
   @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
   public keepOpen = false;
 
+  protected override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this);
+  }
+
+  private async toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? fadeIn : fadeOut;
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(animation),
+    ]);
+
+    return event.type === 'finish';
+  }
+
   /** Closes the toast. */
-  public hide() {
+  public async hide() {
     if (this.open) {
+      await this.toggleAnimation('close');
       this.open = false;
     }
   }
@@ -48,11 +72,13 @@ export default class IgcToastComponent extends LitElement {
     window.clearTimeout(this.displayTimeout);
 
     if (!this.open) {
+      this.toggleAnimation('open');
       this.open = true;
     }
 
     if (this.keepOpen === false) {
-      this.displayTimeout = setTimeout(() => {
+      this.displayTimeout = setTimeout(async () => {
+        await this.toggleAnimation('close');
         this.open = false;
       }, this.displayTime);
     }

@@ -1,11 +1,9 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
-    igc-dropdown-item {
-        --selected-item-color: #{utils.contrast-color(surface, 500)};
-    }
-
-    igc-dropdown-header {
-        --header-color: #{utils.contrast-color(surface, 500)};
+    igc-dropdown {
+        @include css-vars-from-theme($fluent, 'ig-dropdown');
     }
 }

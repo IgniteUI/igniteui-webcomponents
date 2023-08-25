@@ -6,7 +6,10 @@ import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './themes/avatar.base.css.js';
-import { styles as bootstrap } from './themes/avatar.bootstrap.css.js';
+import { styles as material } from './themes/light/avatar.material.css.js';
+import { styles as bootstrap } from './themes/light/avatar.bootstrap.css.js';
+import { styles as fluent } from './themes/light/avatar.fluent.css.js';
+import { styles as indigo } from './themes/light/avatar.indigo.css.js';
 
 /**
  * An avatar component is used as a representation of a user identity
@@ -21,27 +24,39 @@ import { styles as bootstrap } from './themes/avatar.bootstrap.css.js';
  * @csspart image - The image wrapper of the avatar.
  * @csspart icon - The icon wrapper of the avatar.
  */
-@themes({ bootstrap })
+@themes({ bootstrap, material, fluent, indigo })
 export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-avatar';
   public static override styles = styles;
 
-  /** The image source to use. */
+  /**
+   * The image source to use.
+   * @attr
+   */
   @property()
   public src!: string;
 
   @state()
   private hasError = false;
 
-  /** Alternative text for the image. */
+  /**
+   * Alternative text for the image.
+   * @attr
+   */
   @property()
   public alt!: string;
 
-  /** Initials to use as a fallback when no image is available. */
+  /**
+   * Initials to use as a fallback when no image is available.
+   * @attr
+   */
   @property()
   public initials!: string;
 
-  /** The shape of the avatar. */
+  /**
+   * The shape of the avatar.
+   * @attr
+   */
   @property({ reflect: true })
   public shape: 'circle' | 'rounded' | 'square' = 'square';
 

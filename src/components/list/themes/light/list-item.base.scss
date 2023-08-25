@@ -1,7 +1,11 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-list');
+
     display: flex;
     align-items: center;
     position: relative;
@@ -10,6 +14,7 @@
     transition: background .15s ease-out;
     padding-inline: pad-inline(4px, 8px, 16px);
     padding-block: pad-block(2px, 4px, 8px);
+    border-radius: var-get($theme, 'item-border-radius');
 }
 
 :host(:hover),

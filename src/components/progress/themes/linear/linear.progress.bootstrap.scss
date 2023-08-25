@@ -1,17 +1,21 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
 @use '../shared' as *;
 @use '../vars' as *;
+@use '../light-themes' as *;
 
+$theme: $bootstrap;
 $stripe-grays: color(gray, 50, .2);
 $stripe-size: rem(5px);
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-linear-bar');
+
     --track-size: #{rem(16px)};
 }
 
 [part~='track'] {
-    @include border-radius(rem(4px));
+    border-radius: var-get($theme, 'track-border-radius');
 }
 
 [part~='striped'][part~='primary']:not([part~='indeterminate']) {

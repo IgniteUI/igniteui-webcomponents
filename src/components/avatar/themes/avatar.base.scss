@@ -1,10 +1,10 @@
-@use '../../../styles/common/component';
-@use '../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
-    --size: #{sizable(rem(40px), rem(64px), rem(88px))};
-
-    display: inline-block;
+    display: inline-flex;
+    width: fit-content;
+    height: fit-content;
 }
 
 [part='base'] {
@@ -13,20 +13,10 @@
     justify-content: center;
     align-items: center;
     user-select: none;
-    color: color(gray, 800);
-    background: color(gray, 400);
-    border-radius: 0;
     outline-style: none;
     flex-shrink: 0;
     overflow: hidden;
     font-family: var(--ig-font-family);
-    width: var(--size);
-    height: var(--size);
-
-    [part='initials'] {
-        font-size: calc(var(--size) / 2);
-        line-height: calc(var(--size) / 2);
-    }
 }
 
 img {
@@ -54,10 +44,6 @@ img {
     --component-size: var(--ig-size, var(--ig-size-small));
 }
 
-:host([shape='rounded']) [part='base'] {
-    border-radius: rem(8px);
-}
-
-:host([shape='circle']) [part='base'] {
-    border-radius: calc(var(--size) / 2);
+:host([shape='square']) [part='base'] {
+    border-radius: 0;
 }

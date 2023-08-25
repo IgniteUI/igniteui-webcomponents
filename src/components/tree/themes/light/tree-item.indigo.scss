@@ -1,6 +1,9 @@
-@use '../../../../styles/utilities/index' as *;
 @use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
+$theme: $indigo;
 $selected-background: var(--selected-background, color(primary, 500)) !default;
 $selected-color: var(--selected-color, contrast-color(primary, 600)) !default;
 $active-background: var(--active-background, color(surface)) !default;
@@ -8,6 +11,18 @@ $active-color: var(--active-color, color(primary)) !default;
 $active-selected-background: var(--active-selected-background, color(primary, 400)) !default;
 $active-selected-color: var(--active-selected-color, contrast-color(primary, 400)) !default;
 $focused-border-color: var(--focused-border-color, color(primary, 300)) !default;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-tree');
+}
+
+[part~='wrapper'] {
+    min-height: var-get($theme, 'size');
+}
+
+[part~='label'] {
+    max-height: var-get($theme, 'size');
+}
 
 [part~='active'] {
     background: $active-background;

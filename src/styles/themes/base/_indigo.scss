@@ -1,29 +1,13 @@
-@use '../../../../node_modules/igniteui-theming' as *;
-@use '../../../../node_modules/igniteui-theming/sass/typography/presets' as *;
-@use '../../../../node_modules/igniteui-theming/sass/elevations/presets' as *;
-
-.ig-scrollbar {
-    --scrolbar-size: #{rem(16px)};
-    --ig-scrollbar-track-color: #{color(null, gray, 200)};
-    --ig-scrollbar-thumb-color: #{color(null, gray, 400)};
-}
+@use 'theme' as *;
+@use 'igniteui-theming' as *;
+@use 'igniteui-theming/sass/typography/presets/indigo' as *;
+@use 'igniteui-theming/sass/elevations/presets' as *;
 
 @mixin root-styles($palette) {
     :root {
-        --ig-theme: indigo;
-        --ig-radius-factor: 1;
-        --ig-spacing: 1;
-        --ig-spacing-inline: 1;
-        --ig-spacing-block: 1;
-        --ig-size-small: 1;
-        --ig-size-medium: 2;
-        --ig-size-large: 3;
-
-        @include palette($palette);
-        @include elevations($material-elevations);
-        @include typography(
-            $font-family: $indigo-typeface,
-            $type-scale: $indigo-type-scale
-        );
+        --ig-scrollbar-thumb-background: #{color($color: gray, $variant: 400)};
+        --ig-scrollbar-track-background: #{color($color: gray, $variant: 200)};
     }
+
+    @include theme($palette, $material-elevations, $typeface, $type-scale);
 }

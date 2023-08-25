@@ -1,14 +1,13 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
     display: flex;
     flex-flow: row wrap;
-    flex: 1 1 auto;
     align-items: center;
     align-content: flex-start;
     width: 100%;
-    color: contrast-color(surface, 500);
+    color: color(gray, 900);
     padding: rem(16px);
     box-sizing: border-box;
 }
@@ -28,14 +27,12 @@ header {
 
 ::slotted([slot='title']) {
     @include type-style('h6');
-
-    opacity: .87;
 }
 
 ::slotted([slot='subtitle']) {
     @include type-style('subtitle-2');
 
-    opacity: .6;
+    color: color(gray, 700);
 }
 
 ::slotted([slot='thumbnail']) {

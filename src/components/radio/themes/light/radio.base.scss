@@ -1,10 +1,16 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'sass:math';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
     display: inline-flex;
-    color: color(gray, 900);
     font-family: var(--ig-font-family);
+}
+
+:host([label-position='before']) {
+    [part~='label'] {
+        order: -1;
+    }
 }
 
 input[type='radio'] {
@@ -16,10 +22,6 @@ input[type='radio'] {
     align-items: center;
     cursor: pointer;
     transition: color .15s ease-in;
-
-    &:focus-within [part='control'] {
-        background: color(gray, 600, .12);
-    }
 }
 
 [part~='label'] {
@@ -27,8 +29,6 @@ input[type='radio'] {
 }
 
 [part~='control'] {
-    @include border-radius(var(--size));
-
     --size: #{rem(20px)};
 
     position: relative;
@@ -41,8 +41,6 @@ input[type='radio'] {
 
     &::before,
     &::after {
-        @include border-radius(calc(var(--size) / 2));
-
         position: absolute;
         content: '';
         width: var(--size);
@@ -59,67 +57,16 @@ input[type='radio'] {
         transform-origin: center;
         z-index: 1;
     }
-
-    &::after {
-        border: calc(var(--size) / 10) solid color(gray, 600);
-    }
 }
 
 [part='control checked'] {
     &::before {
-        border-color: color(secondary, 500);
-        background: color(secondary, 500);
         transform: translate(-50%, -50%) scale(.5);
     }
-
-    &::after {
-        border-color: color(secondary, 500);
-    }
 }
 
-:host(:not([disabled])[invalid]) {
-    [part~='label'] {
-        color: color(error, 500);
-    }
-
-    [part~='control'] {
-        &::after {
-            border-color: color(error, 500);
-        }
-    }
-}
-
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     pointer-events: none;
     user-select: none;
-
-    [part~='label'] {
-        color: color(gray, 400);
-    }
-
-    [part~='control'] {
-        &::after {
-            border-color: color(gray, 400);
-        }
-    }
-
-    [part='control checked'] {
-        &::before {
-            background: color(gray, 400);
-            border-color: transparent;
-        }
-    }
-}
-
-:host([label-position='after']) {
-    [part~='label'] {
-        margin-inline-start: rem(8px);
-    }
-}
-
-:host([label-position='before']) {
-    [part~='label'] {
-        order: -1;
-        margin-inline-end: rem(8px);
-    }
 }

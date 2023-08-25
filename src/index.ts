@@ -13,6 +13,7 @@ export { default as IgcCheckboxComponent } from './components/checkbox/checkbox.
 export { default as IgcCircularProgressComponent } from './components/progress/circular-progress.js';
 export { default as IgcCircularGradientComponent } from './components/progress/circular-gradient.js';
 export { default as IgcChipComponent } from './components/chip/chip.js';
+export { default as IgcComboComponent } from './components/combo/combo.js';
 export { default as IgcDateTimeInputComponent } from './components/date-time-input/date-time-input.js';
 export { default as IgcDialogComponent } from './components/dialog/dialog.js';
 export { default as IgcDropdownComponent } from './components/dropdown/dropdown.js';
@@ -53,6 +54,8 @@ export { default as IgcToastComponent } from './components/toast/toast.js';
 export { default as IgcSwitchComponent } from './components/checkbox/switch.js';
 export { default as IgcTreeComponent } from './components/tree/tree.js';
 export { default as IgcTreeItemComponent } from './components/tree/tree-item.js';
+export { default as IgcStepperComponent } from './components/stepper/stepper.js';
+export { default as IgcStepComponent } from './components/stepper/step.js';
 
 // definitions
 export { defineComponents } from './components/common/definitions/defineComponents.js';
@@ -68,7 +71,7 @@ export {
 export { configureTheme } from './theming/config.js';
 
 // localization objects
-export { IgcCalendarResourceStrings } from './components/common/i18n/calendar.resources.js';
+export { IgcCalendarResourceStringEN } from './components/common/i18n/calendar.resources.js';
 
 // Types
 export type { DateRangeDescriptor } from './components/calendar/common/calendar.model.js';
@@ -78,3 +81,8 @@ export type {
   DatePartDeltas,
 } from './components/date-time-input/date-util.js';
 export type { IgcRangeSliderValue } from './components/slider/range-slider.js';
+export type {
+  IgcActiveStepChangingArgs,
+  IgcActiveStepChangedArgs,
+} from './components/stepper/stepper.common.js';
+export type { ComboItemTemplate } from './components/combo/types.js';

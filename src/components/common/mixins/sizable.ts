@@ -1,6 +1,6 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { Constructor } from './constructor';
+import type { Constructor } from './constructor';
 
 export declare class SizableInterface {
   /**
@@ -16,6 +16,7 @@ export const SizableMixin = <T extends Constructor<LitElement>>(
   class SizableElement extends superClass {
     /**
      * Determines the size of the component.
+     * @attr
      * @type {"small" | "medium" | "large"}
      */
     @property({ reflect: true })

@@ -1,11 +1,22 @@
+@use 'sass:map';
 @use './chip.base.scss';
-@use '../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'light-themes' as *;
+
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-chip');
+}
 
 :host button {
     @include type-style('subtitle-2');
 
+    border-radius: var-get($theme, 'border-radius');
     background: color(gray, 200);
     color: color(gray, 700);
+    outline: none;
+    height: var-get($theme, 'size');
 
     &:hover {
         color: contrast-color(gray, 200);

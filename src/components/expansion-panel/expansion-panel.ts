@@ -11,6 +11,11 @@ import { createCounter } from '../common/util.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
+import {
+  AnimationPlayer,
+  growVerIn,
+  growVerOut,
+} from '../../animations/index.js';
 
 defineComponents(IgcIconComponent);
 
@@ -28,6 +33,7 @@ export interface IgcExpansionPanelComponentEventMap {
  *
  * @element igc-expansion-panel
  *
+ * @slot - renders the default content of the panel
  * @slot title - renders the title of the panel's header
  * @slot subtitle - renders the subtitle of the panel's header
  * @slot indicator - renders the expand/collapsed indicator
@@ -51,21 +57,34 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-expansion-panel';
   public static styles = styles;
   private static readonly increment = createCounter();
+  private animationPlayer!: AnimationPlayer;
 
-  /** Indicates whether the contents of the control should be visible. */
+  /**
+   * Indicates whether the contents of the control should be visible.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public open = false;
 
-  /** Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions. */
+  /**
+   * Get/Set whether the expansion panel is disabled. Disabled panels are ignored for user interactions.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
-  /** The indicator position of the expansion panel. */
+  /**
+   * The indicator position of the expansion panel.
+   * @attr indicator-position
+   */
   @property({ reflect: true, attribute: 'indicator-position' })
   public indicatorPosition: 'start' | 'end' | 'none' = 'start';
 
   @query('[part~="header"]', true)
   protected panelHeader!: HTMLElement;
+
+  @query('[part~="content"]', true)
+  protected panelContent!: HTMLElement;
 
   private panelId!: string;
 
@@ -74,6 +93,10 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this.panelId =
       this.getAttribute('id') ||
       `igc-expansion-panel-${IgcExpansionPanelComponent.increment()}`;
+  }
+
+  protected override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.panelContent);
   }
 
   private handleClicked() {
@@ -111,11 +134,22 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
   }
 
+  private async toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? growVerIn : growVerOut;
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(animation),
+    ]);
+
+    return event.type === 'finish';
+  }
+
   /**
    * @private
    * Opens the panel.
    */
-  private openWithEvent() {
+  private async openWithEvent() {
     if (this.open) {
       return;
     }
@@ -132,14 +166,17 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
 
     this.open = true;
-    this.emitEvent('igcOpened', { detail: this });
+
+    if (await this.toggleAnimation('open')) {
+      this.emitEvent('igcOpened', { detail: this });
+    }
   }
 
   /**
    * @private
    * Closes the panel.
    */
-  private closeWithEvent() {
+  private async closeWithEvent() {
     if (!this.open) {
       return;
     }
@@ -156,21 +193,32 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
 
     this.open = false;
-    this.emitEvent('igcClosed', { detail: this });
+
+    if (await this.toggleAnimation('close')) {
+      this.emitEvent('igcClosed', { detail: this });
+    }
   }
 
   /** Toggles panel open state. */
   public toggle(): void {
-    this.open = !this.open;
+    this.open ? this.hide() : this.show();
   }
 
   /** Hides the panel content. */
   public hide(): void {
+    if (this.open) {
+      this.toggleAnimation('close');
+    }
+
     this.open = false;
   }
 
   /** Shows the panel content. */
   public show(): void {
+    if (!this.open) {
+      this.toggleAnimation('open');
+    }
+
     this.open = true;
   }
 
@@ -217,8 +265,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         role="region"
         id="${this.panelId!}-content"
         aria-labelledby="${this.panelId!}-header"
+        aria-hidden=${!this.open}
       >
-        <slot ?hidden=${!this.open}></slot>
+        <slot></slot>
       </div>
     `;
   }

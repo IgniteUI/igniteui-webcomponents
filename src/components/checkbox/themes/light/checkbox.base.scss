@@ -1,5 +1,5 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
     display: inline-flex;
@@ -20,8 +20,6 @@ $mark-length: 24;
     user-select: none;
 
     &::after {
-        @include border-radius(rem(2px));
-
         position: absolute;
         content: '';
         left: 50%;
@@ -29,14 +27,12 @@ $mark-length: 24;
         transform: translate(-50%, -50%);
         width: var(--size);
         height: var(--size);
-        border: rem(2px) solid color(gray, 600);
         transition: all .15s ease-in;
     }
 }
 
 [part~='label'] {
     display: inline-block;
-    color: color(gray, 900);
     cursor: pointer;
     user-select: none;
     word-wrap: break-all;
@@ -46,10 +42,7 @@ $mark-length: 24;
 [part~='indicator'] {
     display: flex;
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    inset: 0;
     stroke-linecap: square;
     stroke-width: 3;
     stroke-dasharray: $mark-length;
@@ -71,19 +64,7 @@ label {
     align-items: center;
     cursor: pointer;
     flex-flow: row nowrap;
-
-    &:hover [part='control checked'] {
-        background: color(secondary, 500, .06);
-    }
-
-    &:focus-within [part='control checked'] {
-        background: color(secondary, 500, .12);
-    }
-}
-
-[part='control checked']::after {
-    border-color: color(secondary, 500);
-    background: color(secondary, 500);
+    gap: rem(8px);
 }
 
 [part='indicator checked'] {
@@ -93,21 +74,6 @@ label {
 }
 
 :host([indeterminate]) {
-    [part~='base'] {
-        &:hover [part~='control'] {
-            background: color(secondary, 500, .06);
-        }
-
-        &:focus-within [part~='control'] {
-            background: color(secondary, 500, .12);
-        }
-    }
-
-    [part~='control']::after {
-        border-color: color(secondary, 500);
-        background: color(secondary, 500);
-    }
-
     [part~='indicator'] {
         stroke-dashoffset: 41;
         opacity: 1;
@@ -115,55 +81,15 @@ label {
     }
 }
 
-:host(:not([disabled])[invalid]) {
-    [part~='label'] {
-        color: color(error, 500);
-    }
-
-    [part~='control'] {
-        &::after {
-            border-color: color(error, 500);
-        }
-    }
-
-    [part='control checked'] {
-        &::after {
-            background: color(error, 500);
-        }
-    }
-}
-
-:host(:not([disabled])[invalid][indeterminate]) {
-    [part~='control'] {
-        &::after {
-            background: color(error, 500);
-        }
-    }
-}
-
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     user-select: none;
     cursor: initial;
     pointer-events: none;
 }
 
-:host([disabled][indeterminate]) {
-    [part~='control'] {
-        &::after {
-            background: color(gray, 300);
-        }
-    }
-}
-
-:host([label-position='after']) {
-    [part~='label'] {
-        margin-inline-start: rem(8px);
-    }
-}
-
 :host([label-position='before']) {
     [part~='label'] {
         order: -1;
-        margin-inline-end: rem(8px);
     }
 }

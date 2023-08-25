@@ -1,11 +1,11 @@
 import { html, LitElement, nothing } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter } from '../common/util.js';
+import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/dialog.base.css.js';
 import { styles as bootstrap } from './themes/light/dialog.bootstrap.css.js';
 import { styles as fluent } from './themes/light/dialog.fluent.css.js';
@@ -14,6 +14,7 @@ import { styles as material } from './themes/light/dialog.material.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcButtonComponent from '../button/button.js';
+import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
 
 defineComponents(IgcButtonComponent);
 
@@ -50,15 +51,36 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private titleId = `title-${IgcDialogComponent.increment()}`;
+  private animationPlayer!: AnimationPlayer;
 
   @query('dialog', true)
   private dialog!: HTMLDialogElement;
 
-  /** Whether the dialog should be closed when pressing the 'ESCAPE' button.  */
+  /* blazorSuppress */
+  /**
+   * Whether the dialog should be closed when pressing the 'ESCAPE' button.
+   * @deprecated since version 4.2.3. Use `keepOpenOnEscape` instead.
+   * @attr close-on-escape
+   */
   @property({ type: Boolean, attribute: 'close-on-escape' })
-  public closeOnEscape = true;
+  public set closeOnEscape(value: boolean) {
+    this.keepOpenOnEscape = !value;
+  }
+  public get closeOnEscape(): boolean {
+    return !this.keepOpenOnEscape;
+  }
 
-  /** Whether the dialog should be closed when clicking outside of it.  */
+  /**
+   * Whether the dialog should be kept open when pressing the 'ESCAPE' button.
+   * @attr keep-open-on-escape
+   */
+  @property({ type: Boolean, attribute: 'keep-open-on-escape' })
+  public keepOpenOnEscape = false;
+
+  /**
+   * Whether the dialog should be closed when clicking outside of it.
+   * @attr close-on-outside-click
+   */
   @property({ type: Boolean, attribute: 'close-on-outside-click' })
   public closeOnOutsideClick = false;
 
@@ -67,15 +89,29 @@ export default class IgcDialogComponent extends EventEmitterMixin<
    *
    * When there is projected content in the `footer` slot this property
    * has no effect.
+   * @attr hide-default-action
    */
   @property({ type: Boolean, attribute: 'hide-default-action' })
   public hideDefaultAction = false;
 
-  /** Whether the dialog is opened. */
+  /**
+   * Whether the dialog is opened.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  /** Sets the title of the dialog.  */
+  /**
+   * Backdrop animation helper.
+   * @hidden @internal
+   */
+  @state()
+  private animating = false;
+
+  /**
+   * Sets the title of the dialog.
+   * @attr
+   */
   @property()
   public override title!: string;
 
@@ -89,10 +125,22 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   }
 
   protected override async firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.dialog);
     await this.updateComplete;
     if (this.open) {
       this.dialog.showModal();
     }
+  }
+
+  private async toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? fadeIn : fadeOut;
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(animation),
+    ]);
+
+    return event.type === 'finish';
   }
 
   /** Opens the dialog. */
@@ -101,16 +149,22 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       return;
     }
 
+    this.toggleAnimation('open');
     this.open = true;
   }
 
   /** Closes the dialog. */
-  public hide() {
+  public async hide() {
     if (!this.open) {
       return;
     }
 
-    this.open = false;
+    this.animating = true;
+
+    if (await this.toggleAnimation('close')) {
+      this.animating = false;
+      this.open = false;
+    }
   }
 
   /** Toggles the open state of the dialog. */
@@ -127,15 +181,21 @@ export default class IgcDialogComponent extends EventEmitterMixin<
       return;
     }
 
-    this.open = false;
+    this.animating = true;
+
+    if (await this.toggleAnimation('close')) {
+      this.open = false;
+      this.animating = false;
+      this.emitEvent('igcClosed');
+    }
+
     await this.updateComplete;
-    this.emitEvent('igcClosed');
   }
 
   private handleCancel(event: Event) {
     event.preventDefault();
 
-    if (this.closeOnEscape) {
+    if (!this.keepOpenOnEscape) {
       this.hideWithEvent();
     }
   }
@@ -178,9 +238,13 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   protected override render() {
     const label = this.ariaLabel ? this.ariaLabel : undefined;
     const labelledby = label ? undefined : this.titleId;
+    const backdropParts = partNameMap({
+      backdrop: true,
+      animating: this.animating,
+    });
 
     return html`
-      <div part="backdrop" aria-hidden="true" ?hidden=${!this.open}></div>
+      <div part=${backdropParts} aria-hidden=${!this.open}></div>
       <dialog
         part="base"
         role="dialog"

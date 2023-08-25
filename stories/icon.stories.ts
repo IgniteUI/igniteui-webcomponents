@@ -1,18 +1,24 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story';
+import type { Context } from './story';
 import {
   registerIcon,
   registerIconFromText,
 } from '../src/components/icon/icon.registry';
+import { defineComponents, IgcIconComponent } from '../src/index.js';
+
+defineComponents(IgcIconComponent);
+
 import { all } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
 
 const icons = all.map((icon) => icon.name);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcIconComponent> = {
   title: 'Icon',
   component: 'igc-icon',
+  parameters: { docs: { description: {} } },
   argTypes: {
     name: {
       type: 'string',
@@ -37,26 +43,40 @@ const metadata = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'medium',
     },
   },
+  args: { name: '', collection: 'default', mirrored: false, size: 'medium' },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcIconArgs {
+  /** The name of the icon glyph to draw. */
   name: string;
+  /**
+   * The name of the registered collection for look up of icons.
+   * Defaults to `default`.
+   */
   collection: string;
+  /** Whether to flip the icon. Useful for RTL layouts. */
   mirrored: boolean;
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcIconArgs>;
+
 // endregion
 
-(metadata.argTypes.name as any).control = {
-  type: 'select',
+Object.assign(metadata.argTypes!.name!, {
+  control: 'select',
   options: icons,
-};
+});
+
+Object.assign(metadata.args!, {
+  name: 'biking',
+});
 
 all.forEach((icon) => {
   registerIconFromText(icon.name, icon.value);
@@ -78,15 +98,13 @@ const registerIconClick = () => {
   );
 };
 
-metadata.argTypes.name.defaultValue = 'biking';
-
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     name = 'biking',
     collection = 'default',
     size = 'medium',
     mirrored = false,
-  }: ArgTypes,
+  }: IgcIconArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -105,4 +123,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

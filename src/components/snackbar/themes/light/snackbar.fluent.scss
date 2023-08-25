@@ -1,7 +1,15 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-snackbar');
+}
 
 [part~='base'] {
-    @include border-radius(rem(2px));
+    border-radius: var-get($theme, 'border-radius');
 }
 
 [part~='message'] {

@@ -1,6 +1,6 @@
 @use 'sass:math';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 $thumb-size: rem(20px);
 $thumb-radius: math.div($thumb-size, 2);
@@ -193,7 +193,8 @@ slot {
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     user-select: none;
     pointer-events: none;
     cursor: initial;

@@ -1,9 +1,14 @@
-@use '../../../../../styles/utilities/index' as *;
+@use 'styles/utilities' as *;
+@use '../themes' as *;
 
+$theme: $indigo;
 $background: var(--background, color(gray, 700)) !default;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-nav-drawer');
+
     [part='base'] {
+        border-radius: var-get($theme, 'border-radius');
         background: $background;
         border: none;
         box-shadow: none;

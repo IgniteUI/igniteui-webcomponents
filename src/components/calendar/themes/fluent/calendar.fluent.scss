@@ -1,14 +1,49 @@
-@use 'sass:math';
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
 @use '../calendar.base';
 @use '../shared-calendar' as *;
+@use 'styles/utilities' as *;
+@use '../light-themes' as *;
 
-:host(igc-calendar[size='large']),
-:host(igc-calendar[size='medium']),
-:host(igc-calendar[size='small']) {
-    igc-days-view::part(date-inner),
-    igc-months-view::part(month-inner),
-    igc-years-view::part(year-inner) {
+$theme: $fluent;
+$header-bg: var(--header-bg, #{color(primary, 500)});
+$header-color: var(--header-color, #{contrast-color(primary, 600)});
+
+:host(igc-calendar) {
+    @include css-vars-from-theme($theme, 'ig-calendar');
+
+    border-radius: var-get($theme, 'border-radius');
+}
+
+:host([size='large']),
+:host([size='medium']),
+:host([size='small']) {
+    igc-days-view::part(date-inner) {
         border-radius: 0;
     }
+
+    igc-months-view::part(month-inner),
+    igc-years-view::part(year-inner) {
+        border-radius: var-get($theme, 'month-border-radius');
+    }
+}
+
+[part='header'] {
+    background: $header-bg;
+    color: $header-color;
+}
+
+[part~='navigation-buttons'] {
+    gap: rem(8px);
+}
+
+[part~='navigation-button'][part~='vertical'] {
+    transform: none;
+}
+
+[part='months-navigation'],
+[part='years-navigation'],
+[part='years-range'] {
+    @include type-style('subtitle-2');
+
+    color: color(gray, 900);
 }

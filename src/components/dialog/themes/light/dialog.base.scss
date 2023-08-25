@@ -1,10 +1,9 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 $content-color: var(--content-color, color(gray, 700));
 
 :host {
-    border-radius: border-radius(2px);
     background: color(surface, 500);
     color: contrast-color(surface, 500);
     border-style: none;
@@ -19,11 +18,10 @@ $content-color: var(--content-color, color(gray, 700));
     border: inherit;
     border-radius: inherit;
     min-width: inherit;
-    box-shadow: var(--igc-elevation-24);
+    box-shadow: var(--ig-elevation-24);
 }
 
 [part='content'] {
-    max-width: 40ch;
     color: $content-color;
 
     @include type-style('body-1') {
@@ -63,11 +61,19 @@ slot[name='footer'] {
 }
 
 dialog::backdrop {
-    background: none;
+    opacity: 0;
 }
 
-[part='backdrop'] {
+[part~='backdrop'] {
     position: fixed;
     inset: 0;
     background: color(gray, 500, .54);
+    z-index: 10005;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 350ms ease-out;
+}
+
+:host([open]) [part='backdrop'] {
+    opacity: 1;
 }

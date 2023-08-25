@@ -1,5 +1,6 @@
-@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
+@use 'igniteui-theming/sass/color/presets/dark/indigo' as *;
 @use '../base/indigo' as base;
+@use '../base/scrollbars';
 @use '../third-party/grid/indigo.dark' as grid;
 @use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
@@ -13,7 +14,13 @@
 @use '../../../components/nav-drawer/themes/dark/nav-drawer-item.indigo' as nav-drawer-item;
 @use '../../../components/select/themes/dark/select.indigo' as select;
 @use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
-@include base.root-styles($dark-indigo-palette);
+@use '../../../components/combo/themes/dark/combo.indigo' as combo;
+@use '../../../components/button/themes/button/dark/button.indigo' as button;
+@use '../../../components/icon/dark/icon.indigo' as icon;
+@use '../../../components/navbar/themes/dark/navbar.indigo' as navbar;
+@use '../../../components/avatar/themes/dark/avatar.indigo' as avatar;
+@use '../../../components/stepper/themes/step/dark/step.indigo' as stepper;
+@include base.root-styles($palette);
 @include checkbox.theme();
 @include switch.theme();
 @include input.theme();
@@ -27,3 +34,9 @@
 @include select.theme();
 @include snackbar.theme();
 @include grid.theme();
+@include combo.theme();
+@include button.theme();
+@include icon.theme();
+@include navbar.theme();
+@include avatar.theme();
+@include stepper.theme();

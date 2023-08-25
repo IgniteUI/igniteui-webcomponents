@@ -2,7 +2,6 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/light/switch.base.css.js';
@@ -35,16 +34,6 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
 
   private inputId = `switch-${IgcSwitchComponent.increment()}`;
   private labelId = `switch-label-${this.inputId}`;
-
-  private handleClick() {
-    this.checked = !this.checked;
-    this.emitEvent('igcChange', { detail: this.checked });
-  }
-
-  @watch('checked', { waitUntilFirstUpdate: true })
-  protected handleChange() {
-    this.invalid = !this.input.checkValidity();
-  }
 
   protected override render() {
     return html`
@@ -82,10 +71,11 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           ></span>
         </span>
         <span
+          .hidden=${this.hideLabel}
           part=${partNameMap({ label: true, checked: this.checked })}
           id=${this.labelId}
         >
-          <slot></slot>
+          <slot @slotchange=${this.handleSlotChange}></slot>
         </span>
       </label>
     `;

@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -8,18 +8,46 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter, partNameMap } from '../common/util.js';
+import {
+  any,
+  createCounter,
+  isLTR,
+  partNameMap,
+  wrap,
+} from '../common/util.js';
 import { styles } from './themes/light/radio.base.css.js';
 import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
 import { styles as fluent } from './themes/light/radio.fluent.css.js';
 import { styles as indigo } from './themes/light/radio.indigo.css.js';
 import { styles as material } from './themes/light/radio.material.css.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import messages from '../common/localization/validation-en.js';
+import { Validator } from '../common/validators.js';
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<boolean>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
+
+const arrowKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+const arrowKeyDelta = new Map(
+  Object.entries({
+    ArrowUp: () => -1,
+    ArrowLeft: (ltr?: boolean) => (ltr ? -1 : 1),
+    ArrowRight: (ltr?: boolean) => (ltr ? 1 : -1),
+    ArrowDown: () => 1,
+  })
+);
+
+type RadioQueryResult = {
+  /** All the radio components under the same name */
+  radios: IgcRadioComponent[];
+  /** All the radio components under the same name which are not disabled */
+  nonDisabled: IgcRadioComponent[];
+  /** All the radio components under the same name except the caller */
+  siblings: IgcRadioComponent[];
+};
 
 /**
  * @element igc-radio
@@ -35,19 +63,32 @@ export interface IgcRadioEventMap {
  * @csspart label - The radio control label.
  */
 @themes({ material, bootstrap, fluent, indigo })
-export default class IgcRadioComponent extends EventEmitterMixin<
-  IgcRadioEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
+  EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
+) {
   public static readonly tagName = 'igc-radio';
   protected static styles = styles;
   private static readonly increment = createCounter();
 
+  protected override validators: Validator<this>[] = [
+    {
+      key: 'valueMissing',
+      message: messages.required,
+      isValid: () => {
+        const { radios } = this.radioGroup;
+        return any(radios, 'required') ? any(radios, 'checked') : true;
+      },
+    },
+  ];
+
   private inputId = `radio-${IgcRadioComponent.increment()}`;
   private labelId = `radio-label-${this.inputId}`;
 
-  @query('input[type="radio"]', true)
+  @query('input[type="radio"]')
   protected input!: HTMLInputElement;
+
+  @queryAssignedNodes({ flatten: true })
+  protected label!: Array<Node>;
 
   @state()
   private _tabIndex = 0;
@@ -55,57 +96,75 @@ export default class IgcRadioComponent extends EventEmitterMixin<
   @state()
   private focused = false;
 
-  /** The name attribute of the control. */
-  @property()
-  public name!: string;
+  @state()
+  protected hideLabel = false;
 
-  /** The value attribute of the control. */
+  private get radioGroup(): RadioQueryResult {
+    const radios: IgcRadioComponent[] = Array.from(
+      document.querySelectorAll(`${this.tagName}[name='${this.name}']`)
+    );
+    const nonDisabled = [];
+    const siblings = [];
+
+    for (const radio of radios) {
+      if (!radio.disabled) {
+        nonDisabled.push(radio);
+      }
+      if (!radio.isSameNode(this)) {
+        siblings.push(radio);
+      }
+    }
+
+    return { radios, nonDisabled, siblings };
+  }
+
+  protected override setDefaultValue(): void {
+    const firstChecked = this.radioGroup.radios.find((r) => r.checked);
+    if (firstChecked && firstChecked.isSameNode(this)) {
+      this._defaultValue = true;
+    } else {
+      this._defaultValue = false;
+    }
+  }
+
+  /**
+   * The value attribute of the control.
+   * @attr
+   */
   @property()
   public value!: string;
 
-  /** Makes the control a required field. */
-  @property({ type: Boolean, reflect: true })
-  public required = false;
-
-  /** The checked state of the control. */
+  /**
+   * The checked state of the control.
+   * @attr
+   */
   @property({ type: Boolean })
   @blazorTwoWayBind('igcChange', 'detail')
   public checked = false;
 
-  /** Disables the radio control. */
-  @property({ type: Boolean, reflect: true })
-  public disabled = false;
-
-  /** Controls the validity of the control. */
-  @property({ type: Boolean, reflect: true })
-  public invalid = false;
-
-  /** The label position of the radio control. */
+  /**
+   * The label position of the radio control.
+   * @attr label-position
+   */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
 
-  /** Sets the aria-labelledby attribute for the radio control. */
+  /**
+   * Sets the aria-labelledby attribute for the radio control.
+   * @attr
+   */
   @property({ reflect: true, attribute: 'aria-labelledby' })
   public ariaLabelledby!: string;
+
+  constructor() {
+    super();
+    this.addEventListener('keyup', this.handleKeyUp);
+    this.addEventListener('keydown', this.handleKeyDown);
+  }
 
   /** Simulates a click on the radio control. */
   public override click() {
     this.input.click();
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener('keyup', this.handleKeyUp);
-  }
-
-  public override disconnectedCallback() {
-    this.removeEventListener('keyup', this.handleKeyUp);
-  }
-
-  protected handleKeyUp() {
-    if (!this.focused) {
-      this.focused = true;
-    }
   }
 
   /** Sets focus on the radio control. */
@@ -120,23 +179,66 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     this.input.blur();
   }
 
-  /** Checks for validity of the control and shows the browser message if it invalid. */
-  public reportValidity() {
-    return this.input.reportValidity();
-  }
-
-  /** Checks for validity of the control and emits the invalid event if it invalid. */
-  public checkValidity() {
-    return this.input.checkValidity();
-  }
-
   /**
    * Sets a custom validation message for the control.
    * As long as `message` is not empty, the control is considered invalid.
    */
-  public setCustomValidity(message: string) {
-    this.input.setCustomValidity(message);
-    this.invalid = !this.input.checkValidity();
+  public override setCustomValidity(message: string): void {
+    const { radios } = this.radioGroup;
+
+    for (const radio of radios) {
+      radio.updateValidity(message);
+      radio.setInvalidState();
+    }
+  }
+
+  @watch('required', { waitUntilFirstUpdate: true })
+  protected override requiredChange(): void {
+    const { radios } = this.radioGroup;
+
+    for (const radio of radios) {
+      radio.updateValidity();
+      radio.setInvalidState();
+    }
+  }
+
+  private _updateCheckedState() {
+    const siblings = this.radioGroup.siblings;
+
+    this.setFormValue(this.value || 'on');
+    this.updateValidity();
+    this.setInvalidState();
+
+    this._tabIndex = 0;
+    this.input?.focus();
+
+    for (const radio of siblings) {
+      radio.checked = false;
+      radio._tabIndex = -1;
+      radio.updateValidity();
+      radio.setInvalidState();
+    }
+  }
+
+  private _updateUncheckedState() {
+    const siblings = this.radioGroup.siblings;
+
+    this.setFormValue(null);
+    this.updateValidity();
+    this.setInvalidState();
+
+    if (this.hasUpdated) {
+      this._tabIndex = -1;
+    }
+
+    for (const radio of siblings) {
+      radio.updateValidity();
+    }
+  }
+
+  @watch('checked')
+  protected checkedChanged() {
+    this.checked ? this._updateCheckedState() : this._updateUncheckedState();
   }
 
   protected handleMouseDown(event: PointerEvent) {
@@ -147,6 +249,7 @@ export default class IgcRadioComponent extends EventEmitterMixin<
 
   protected handleClick() {
     this.checked = true;
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   protected handleBlur() {
@@ -158,74 +261,76 @@ export default class IgcRadioComponent extends EventEmitterMixin<
     this.emitEvent('igcFocus');
   }
 
-  @watch('checked', { waitUntilFirstUpdate: true })
-  protected handleChange() {
-    if (this.checked) {
-      this.getSiblings().forEach((radio) => {
-        radio.checked = false;
-        radio._tabIndex = -1;
-      });
-      this.input.focus();
-      this._tabIndex = 0;
-      this.emitEvent('igcChange', { detail: this.checked });
-    } else {
-      if (this.required) {
-        this.required = false;
-        this.getAllInGroup()[0].required = true;
-      }
+  protected handleKeyUp() {
+    if (!this.focused) {
+      this.focused = true;
     }
   }
 
-  protected getSiblings() {
-    return this.getAllInGroup().filter(
-      (radio) => radio.name === this.name && radio !== this
+  protected handleKeyDown(event: KeyboardEvent) {
+    if (!arrowKeys.has(event.key)) return;
+
+    event.preventDefault();
+
+    const { nonDisabled } = this.radioGroup;
+    const LTR = isLTR(this);
+    const idx = wrap(
+      0,
+      nonDisabled.length - 1,
+      nonDisabled.indexOf(this) + arrowKeyDelta.get(event.key)!(LTR)
     );
+
+    const target = nonDisabled[idx];
+    target.focus();
+    target.checked = true;
+    target.emitEvent('igcChange', { detail: target.checked });
   }
 
-  protected getAllInGroup() {
-    const group = this.closest('igc-radio-group');
-    if (!group) return [];
-
-    return Array.from<IgcRadioComponent>(group.querySelectorAll('igc-radio'));
+  protected handleSlotChange() {
+    this.hideLabel = this.label.length < 1;
   }
 
   protected override render() {
     return html`
       <label
-        part="${partNameMap({
+        part=${partNameMap({
           base: true,
           checked: this.checked,
           focused: this.focused,
-        })}"
-        for="${this.inputId}"
-        @pointerdown="${this.handleMouseDown}"
+        })}
+        for=${this.inputId}
+        @pointerdown=${this.handleMouseDown}
       >
         <input
-          id="${this.inputId}"
+          id=${this.inputId}
           type="radio"
-          name="${ifDefined(this.name)}"
-          value="${ifDefined(this.value)}"
-          .required="${this.required}"
-          .disabled="${this.disabled}"
-          .checked="${live(this.checked)}"
+          name=${ifDefined(this.name)}
+          value=${ifDefined(this.value)}
+          .required=${this.required}
+          .disabled=${this.disabled}
+          .checked=${live(this.checked)}
           tabindex=${this._tabIndex}
-          aria-checked="${this.checked ? 'true' : 'false'}"
-          aria-disabled="${this.disabled ? 'true' : 'false'}"
-          aria-labelledby="${this.ariaLabelledby
+          aria-checked=${this.checked ? 'true' : 'false'}
+          aria-disabled=${this.disabled ? 'true' : 'false'}
+          aria-labelledby=${this.ariaLabelledby
             ? this.ariaLabelledby
-            : this.labelId}"
-          @click="${this.handleClick}"
-          @blur="${this.handleBlur}"
-          @focus="${this.handleFocus}"
+            : this.labelId}
+          @click=${this.handleClick}
+          @blur=${this.handleBlur}
+          @focus=${this.handleFocus}
         />
+        <span part=${partNameMap({ control: true, checked: this.checked })}>
+          <span
+            .hidden=${this.disabled}
+            part=${partNameMap({ ripple: true, checked: this.checked })}
+          ></span>
+        </span>
         <span
-          part="${partNameMap({ control: true, checked: this.checked })}"
-        ></span>
-        <span
-          part="${partNameMap({ label: true, checked: this.checked })}"
-          id="${this.labelId}"
+          .hidden=${this.hideLabel}
+          part=${partNameMap({ label: true, checked: this.checked })}
+          id=${this.labelId}
         >
-          <slot></slot>
+          <slot @slotchange=${this.handleSlotChange}></slot>
         </span>
       </label>
     `;

@@ -30,7 +30,9 @@
     "circular progress",
     "checkbox",
     "chip",
+    "combo",
     "date input",
+    "dialog",
     "dropdown",
     "expansion panel",
     "form",
@@ -47,6 +49,7 @@
     "radio",
     "rating",
     "snackbar",
+    "stepper",
     "switch",
     "slider",
     "tabs",
@@ -54,7 +57,8 @@
     "tree"
   ],
   "dependencies": {
-    "@floating-ui/dom": "^1.0.2",
-    "lit": "^2.3.1"
+    "@floating-ui/dom": "^1.5.1",
+    "@lit-labs/virtualizer": "^2.0.4",
+    "lit": "^2.7.6"
   }
 }

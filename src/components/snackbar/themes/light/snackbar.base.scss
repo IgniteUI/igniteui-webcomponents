@@ -1,7 +1,13 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-snackbar');
+
     font-family: var(--ig-font-family);
     position: fixed;
     bottom: 0;
@@ -10,8 +16,7 @@
 }
 
 [part~='base'] {
-    @include border-radius(rem(4px));
-
+    border-radius: var-get($theme, 'border-radius');
     display: flex;
     flex-wrap: row nowrap;
     align-items: center;

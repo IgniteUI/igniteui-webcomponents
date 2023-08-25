@@ -1,7 +1,19 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $indigo;
 
 @mixin theme() {
     igc-input {
-        --label-focus-color: #{utils.color(gray, 800)};
+        @include css-vars-from-theme($theme, 'ig-input');
+    }
+
+    igc-select::part(input) {
+        @include css-vars-from-theme($theme, ig-select);
+    }
+
+    igc-combo::part(input) {
+        @include css-vars-from-theme($theme, ig-combo);
     }
 }

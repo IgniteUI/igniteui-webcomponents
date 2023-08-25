@@ -1,0 +1,13 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $indigo;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-dropdown');
+
+    ::slotted([slot='label']) {
+        color: var-get($theme, 'header-text-color');
+    }
+}

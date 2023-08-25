@@ -3,14 +3,21 @@ import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
+import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './icon.material.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './icon.base.css.js';
+import { styles as material } from './light/icon.material.css.js';
+import { styles as bootstrap } from './light/icon.bootstrap.css.js';
+import { styles as fluent } from './light/icon.fluent.css.js';
+import { styles as indigo } from './light/icon.indigo.css.js';
 import {
   IconsRegistry,
   registerIcon as registerIcon_impl,
   registerIconFromText as registerIconFromText_impl,
 } from './icon.registry.js';
 
+@themes({ material, bootstrap, fluent, indigo })
 /**
  * Icon component
  *
@@ -25,48 +32,25 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   @state() private svg = '';
 
-  private _name = '';
-
-  private _collection = 'default';
-
-  @property()
-  @alternateName('iconName')
-  public set name(value: string) {
-    if (this._name !== value) {
-      this._name = value;
-      this.getIcon();
-    }
-  }
-
   /**
    * The name of the icon glyph to draw.
-   *
-   * @attr [name=""]
+   * @attr
    */
-  public get name(): string {
-    return this._name;
-  }
-
-  public set collection(value: string) {
-    if (this._collection !== value) {
-      this._collection = value;
-      this.getIcon();
-    }
-  }
+  @property()
+  @alternateName('iconName')
+  public name = '';
 
   /**
    * The name of the registered collection for look up of icons.
    * Defaults to `default`.
-   *
-   * @attr [collection=default]
+   * @attr
    */
   @property()
-  public get collection(): string {
-    return this._collection;
-  }
+  public collection = 'default';
 
   /**
    * Whether to flip the icon. Useful for RTL layouts.
+   * @attr
    */
   @property({ type: Boolean, reflect: true })
   public mirrored = false;
@@ -85,8 +69,16 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
   }
 
   public override disconnectedCallback() {
-    super.disconnectedCallback();
     IconsRegistry.instance().unsubscribe(this.iconLoaded);
+    super.disconnectedCallback();
+  }
+
+  @watch('name')
+  @watch('collection')
+  protected iconChanged(prev: string, curr: string) {
+    if (prev !== curr) {
+      this.getIcon();
+    }
   }
 
   private iconLoaded = (name: string, collection: string) => {
@@ -97,8 +89,8 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   private getIcon() {
     const svg =
-      this._name && this._collection
-        ? IconsRegistry.instance().getIcon(this._name, this._collection)
+      this.name && this.collection
+        ? IconsRegistry.instance().getIcon(this.name, this.collection)
         : '';
     this.svg = svg ?? '';
   }

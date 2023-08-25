@@ -1,0 +1,28 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+@mixin theme() {
+    igc-radio {
+        @include css-vars-from-theme($material, 'ig-radio');
+
+        &:hover {
+            &::part(ripple) {
+                opacity: .12;
+            }
+
+            &::part(ripple checked) {
+                opacity: .12;
+            }
+        }
+
+        &:focus-within {
+            &::part(ripple) {
+                opacity: .24;
+            }
+
+            &::part(ripple checked) {
+                opacity: .24;
+            }
+        }
+    }
+}

@@ -1,38 +1,51 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
+import {
+  defineComponents,
+  IgcCircularProgressComponent,
+} from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcCircularProgressComponent);
 
 // region default
-const metadata = {
-  title: 'Circular Progress',
+const metadata: Meta<IgcCircularProgressComponent> = {
+  title: 'CircularProgress',
   component: 'igc-circular-progress',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A circular progress indicator used to express unspecified wait time or display\nthe length of a process.',
+      },
+    },
+  },
   argTypes: {
     max: {
       type: 'number',
       description: 'Maximum value of the control.',
       control: 'number',
-      defaultValue: '100',
+      defaultValue: 100,
     },
     value: {
       type: 'number',
       description: 'The value of the control.',
       control: 'number',
-      defaultValue: '0',
+      defaultValue: 0,
     },
     variant: {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
       description: 'The variant of the control.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'primary',
     },
     animationDuration: {
       type: 'number',
       description: 'Animation duration in milliseconds.',
       control: 'number',
-      defaultValue: '500',
+      defaultValue: 500,
     },
     indeterminate: {
       type: 'boolean',
@@ -53,20 +66,44 @@ const metadata = {
       control: 'text',
     },
   },
+  args: {
+    max: 100,
+    value: 0,
+    variant: 'primary',
+    animationDuration: 500,
+    indeterminate: false,
+    hideLabel: false,
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcCircularProgressArgs {
+  /** Maximum value of the control. */
   max: number;
+  /** The value of the control. */
   value: number;
+  /** The variant of the control. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
+  /** Animation duration in milliseconds. */
   animationDuration: number;
+  /** The indeterminate state of the control. */
   indeterminate: boolean;
+  /** Shows/hides the label of the control. */
   hideLabel: boolean;
+  /**
+   * Format string for the default label of the control.
+   * Placeholders:
+   *  {0} - current value of the control.
+   *  {1} - max value of the control.
+   */
   labelFormat: string;
 }
+type Story = StoryObj<IgcCircularProgressArgs>;
+
 // endregion
 
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     variant,
     hideLabel,
@@ -75,8 +112,8 @@ const Template: Story<ArgTypes, Context> = (
     animationDuration,
     indeterminate,
     labelFormat,
-  },
-  { globals: { direction } }
+  }: IgcCircularProgressArgs,
+  { globals: { direction } }: Context
 ) => html`
   <div style="display: flex; align-items: center; gap: 16px">
     <igc-circular-progress
@@ -122,4 +159,4 @@ const Template: Story<ArgTypes, Context> = (
   </div>
 `;
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

@@ -32,7 +32,7 @@ const replaceIMENumbers = (string: string) => {
         '８': '8',
         '９': '9',
         '０': '0',
-      }[num] as string)
+      })[num] as string
   );
 };
 
@@ -46,9 +46,9 @@ export class MaskParser {
   }
 
   protected literals = new Map<number, string>();
-  protected _escapedMask!: string;
+  protected _escapedMask = '';
 
-  protected get literalPositions() {
+  public get literalPositions() {
     this.getMaskLiterals();
     return Array.from(this.literals.keys());
   }
@@ -123,6 +123,22 @@ export class MaskParser {
         REQUIRED.has(char) && !positions.includes(pos) ? pos : -1
       )
       .filter((pos) => pos > -1);
+  }
+
+  public getPreviousNonLiteralPosition(start: number) {
+    const positions = this.literalPositions;
+    for (let i = start; i > 0; i--) {
+      if (!positions.includes(i)) return i;
+    }
+    return start;
+  }
+
+  public getNextNonLiteralPosition(start: number) {
+    const positions = this.literalPositions;
+    for (let i = start; i < this._escapedMask.length; i++) {
+      if (!positions.includes(i)) return i;
+    }
+    return start;
   }
 
   public replace(masked = '', value: string, start: number, end: number) {

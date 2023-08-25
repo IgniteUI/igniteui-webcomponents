@@ -64,6 +64,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   /**
    * The minimum value of the slider scale. Defaults to 0.
+   * @attr
    */
   @property({ type: Number })
   public get min() {
@@ -84,6 +85,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   /**
    * The maximum value of the slider scale. Defaults to 100.
+   * @attr
    */
   @property({ type: Number })
   public get max() {
@@ -103,6 +105,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   /**
    * The lower bound of the slider value. If not set, the `min` value is applied.
+   * @attr lower-bound
    */
   @property({ type: Number, attribute: 'lower-bound' })
   public get lowerBound(): number | undefined {
@@ -122,6 +125,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   /**
    * The upper bound of the slider value. If not set, the `max` value is applied.
+   * @attr upper-bound
    */
   @property({ type: Number, attribute: 'upper-bound' })
   public get upperBound(): number | undefined {
@@ -130,6 +134,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   /**
    * Disables the UI interactions of the slider.
+   * @attr
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
@@ -137,12 +142,14 @@ export class IgcSliderBaseComponent extends LitElement {
   /**
    * Marks the slider track as discrete so it displays the steps.
    * If the `step` is 0, the slider will remain continuos even if `discreteTrack` is `true`.
+   * @attr discrete-track
    */
   @property({ type: Boolean, attribute: 'discrete-track' })
   public discreteTrack = false;
 
   /**
    * Hides the thumb tooltip.
+   * @attr hide-tooltip
    */
   @property({ type: Boolean, attribute: 'hide-tooltip' })
   public hideTooltip = false;
@@ -156,6 +163,7 @@ export class IgcSliderBaseComponent extends LitElement {
   /**
    * Specifies the granularity that the value must adhere to.
    * If set to 0 no stepping is implied and any value in the range is allowed.
+   * @attr
    */
   @property({ type: Number })
   public get step() {
@@ -164,42 +172,49 @@ export class IgcSliderBaseComponent extends LitElement {
 
   /**
    * The number of primary ticks. It defaults to 0 which means no primary ticks are displayed.
+   * @attr primary-ticks
    */
   @property({ type: Number, attribute: 'primary-ticks' })
   public primaryTicks = 0;
 
   /**
    * The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed.
+   * @attr secondary-ticks
    */
   @property({ type: Number, attribute: 'secondary-ticks' })
   public secondaryTicks = 0;
 
   /**
    * Changes the orientation of the ticks.
+   * @attr tick-orientation
    */
   @property({ attribute: 'tick-orientation' })
   public tickOrientation: 'mirror' | 'start' | 'end' = 'end';
 
   /**
    * Hides the primary tick labels.
+   * @attr hide-primary-labels
    */
   @property({ type: Boolean, attribute: 'hide-primary-labels' })
   public hidePrimaryLabels = false;
 
   /**
    * Hides the secondary tick labels.
+   * @attr hide-secondary-labels
    */
   @property({ type: Boolean, attribute: 'hide-secondary-labels' })
   public hideSecondaryLabels = false;
 
   /**
    * The locale used to format the thumb and tick label values in the slider.
+   * @attr
    */
   @property()
   public locale = 'en';
 
   /**
    * String format used for the thumb and tick label values in the slider.
+   * @attr value-format
    */
   @property({ attribute: 'value-format' })
   public valueFormat?: string;
@@ -207,11 +222,13 @@ export class IgcSliderBaseComponent extends LitElement {
   /**
    * Number format options used for the thumb and tick label values in the slider.
    */
+  /* blazorSuppress */
   @property({ attribute: false })
   public valueFormatOptions?: Intl.NumberFormatOptions;
 
   /**
    * The degrees for the rotation of the tick labels. Defaults to 0.
+   * @attr tick-label-rotation
    */
   @property({ type: Number, reflect: true, attribute: 'tick-label-rotation' })
   @blazorTypeOverride('TickLabelRotation', true)
@@ -251,6 +268,7 @@ export class IgcSliderBaseComponent extends LitElement {
 
   public override disconnectedCallback() {
     this.removeEventListener('keyup', this.handleKeyUp);
+    super.disconnectedCallback();
   }
 
   protected handleKeyUp() {

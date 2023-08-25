@@ -1,12 +1,10 @@
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
 
-:host {
-    --size: #{rem(18px)};
-    --ig-subtitle-1-font-size: #{rem(12px)};
-
-    font-weight: 700;
+:host([shape='square']),
+:host([outlined][shape='square']) [part='base'] {
+    border-radius: rem(4px);
 }
 
-:host([outlined]) span {
+:host([outlined]) [part='base'] {
     box-shadow: inset 0 0 0 rem(1px) color(gray, 50);
 }

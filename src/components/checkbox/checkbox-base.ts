@@ -1,10 +1,14 @@
 import { LitElement } from 'lit';
-import { property, query, state } from 'lit/decorators.js';
+import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { alternateName } from '../common/decorators/alternateName.js';
+import { watch } from '../common/decorators/watch.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+
+import { Validator, requiredBooleanValidator } from '../common/validators.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;
@@ -13,48 +17,67 @@ export interface IgcCheckboxEventMap {
 }
 
 @blazorDeepImport
-export class IgcCheckboxBaseComponent extends EventEmitterMixin<
-  IgcCheckboxEventMap,
-  Constructor<LitElement>
->(LitElement) {
+export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
+  EventEmitterMixin<IgcCheckboxEventMap, Constructor<LitElement>>(LitElement)
+) {
+  protected override validators: Validator<this>[] = [requiredBooleanValidator];
+
   @query('input[type="checkbox"]', true)
   protected input!: HTMLInputElement;
+
+  @queryAssignedNodes({ flatten: true })
+  protected label!: Array<Node>;
 
   @state()
   protected focused = false;
 
-  /** The name attribute of the control. */
-  @property()
-  public name!: string;
+  @state()
+  protected hideLabel = false;
 
-  /** The value attribute of the control. */
+  /**
+   * The value attribute of the control.
+   * @attr
+   */
   @property()
   public value!: string;
 
-  /** Disables the control. */
-  @property({ type: Boolean, reflect: true })
-  public disabled = false;
-
-  /** The checked state of the control. */
+  /**
+   * The checked state of the control.
+   * @attr
+   */
   @property({ type: Boolean })
   @blazorTwoWayBind('igcChange', 'detail')
   public checked = false;
 
-  /** Makes the control a required field. */
-  @property({ type: Boolean, reflect: true })
-  public required = false;
-
-  /** Controls the validity of the control. */
-  @property({ type: Boolean, reflect: true })
-  public invalid = false;
-
-  /** The label position of the control. */
+  /**
+   * The label position of the control.
+   * @attr label-position
+   */
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
 
   /** Sets the aria-labelledby attribute for the control. */
   @property({ reflect: true, attribute: 'aria-labelledby' })
   public ariaLabelledby!: string;
+
+  constructor() {
+    super();
+    this.addEventListener('keyup', this.handleKeyUp);
+  }
+
+  @watch('checked')
+  protected checkedChanged() {
+    const value = this.value || 'on';
+    this.checked ? this.setFormValue(value, value) : this.setFormValue(null);
+    this.updateValidity();
+    this.setInvalidState();
+  }
+
+  @watch('focused', { waitUntilFirstUpdate: true })
+  @watch('indeterminate', { waitUntilFirstUpdate: true })
+  protected handleChange() {
+    this.invalid = !this.checkValidity();
+  }
 
   /** Simulates a click on the control. */
   public override click() {
@@ -73,23 +96,9 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
     this.input.blur();
   }
 
-  /** Checks for validity of the control and shows the browser message if it invalid. */
-  public reportValidity() {
-    return this.input.reportValidity();
-  }
-
-  /** Checks for validity of the control and emits the invalid event if it invalid. */
-  public checkValidity() {
-    return this.input.checkValidity();
-  }
-
-  /**
-   * Sets a custom validation message for the control.
-   * As long as `message` is not empty, the control is considered invalid.
-   */
-  public setCustomValidity(message: string) {
-    this.input.setCustomValidity(message);
-    this.invalid = !this.input.checkValidity();
+  protected handleClick() {
+    this.checked = !this.checked;
+    this.emitEvent('igcChange', { detail: this.checked });
   }
 
   protected handleBlur() {
@@ -98,6 +107,7 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
   }
 
   protected handleFocus() {
+    this._dirty = true;
     this.emitEvent('igcFocus');
   }
 
@@ -107,18 +117,13 @@ export class IgcCheckboxBaseComponent extends EventEmitterMixin<
     this.focused = false;
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener('keyup', this.handleKeyUp);
-  }
-
-  public override disconnectedCallback() {
-    this.removeEventListener('keyup', this.handleKeyUp);
-  }
-
   protected handleKeyUp() {
     if (!this.focused) {
       this.focused = true;
     }
+  }
+
+  protected handleSlotChange() {
+    this.hideLabel = this.label.length < 1;
   }
 }

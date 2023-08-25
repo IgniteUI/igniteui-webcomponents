@@ -1,6 +1,15 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-snackbar');
+}
 
 [part~='base'] {
+    border-radius: var-get($theme, 'border-radius');
     background: color(surface, 500);
     color: contrast-color(surface, 500);
     box-shadow: var(--ig-elevation-10);

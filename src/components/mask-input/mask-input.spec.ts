@@ -3,8 +3,9 @@ import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents } from '../../index.js';
 import { MaskParser } from './mask-parser.js';
-import IgcMaskInputComponent from './mask-input';
-import IgcFormComponent from '../form/form';
+import IgcMaskInputComponent from './mask-input.js';
+import IgcFormComponent from '../form/form.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Masked input', () => {
   before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
@@ -379,6 +380,28 @@ describe('Masked input', () => {
       expect(input().value).to.equal(parser.apply(masked.value));
     });
 
+    it('Delete key behavior - skip literals', async () => {
+      masked.mask = 'CC--CCC---CC';
+      masked.value = '1234567';
+      // value: 12--345---67
+      await elementUpdated(masked);
+
+      // value: 12--345---67
+      masked.setSelectionRange(1, 1);
+      fireKeyboardEvent(input(), 'keydown', { key: 'Delete' });
+      fireInputEvent(input(), 'deleteContentForward');
+      // value: 1_--345---67
+      await elementUpdated(masked);
+
+      fireKeyboardEvent(input(), 'keydown', { key: 'Delete' });
+      fireInputEvent(input(), 'deleteContentForward');
+      // value: 1_--_45---67
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal('1_--_45---67');
+      expect(masked.value).to.equal('14567');
+    });
+
     it('Backspace key behavior', async () => {
       masked.value = '1234';
       await elementUpdated(masked);
@@ -390,6 +413,30 @@ describe('Masked input', () => {
 
       expect(masked.value).to.equal('234');
       expect(input().value).to.equal(parser.apply(input().value));
+    });
+
+    it('Backspace key behavior - skip literals', async () => {
+      masked.mask = 'CC--CCC---CC';
+      masked.value = '1234567';
+      // value: 12--345---67
+      await elementUpdated(masked);
+
+      masked.setSelectionRange(4, 5);
+      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
+      fireInputEvent(input(), 'deleteContentBackward');
+      // value: 12--_45---67
+      await elementUpdated(masked);
+
+      // Emulate range shift on multiple backspace presses as
+      // it is not correctly reflected in test environment
+      masked.setSelectionRange(3, 4);
+      fireKeyboardEvent(input(), 'keydown', { key: 'Backspace' });
+      fireInputEvent(input(), 'deleteContentBackward');
+      // value: 1_--_45---67
+      await elementUpdated(masked);
+
+      expect(input().value).to.equal('1_--_45---67');
+      expect(masked.value).to.equal('14567');
     });
 
     it('Backspace key behavior with composition', async () => {
@@ -502,6 +549,7 @@ describe('Masked input', () => {
     });
   });
 
+  // TODO: Remove after igc-form removal
   describe('igc-form interaction', async () => {
     let form: IgcFormComponent;
 
@@ -537,6 +585,116 @@ describe('Masked input', () => {
 
       expect(form.submit()).to.equal(false);
       expect(masked.invalid).to.equal(true);
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcMaskInputComponent>(
+      html`<igc-mask-input name="mask"></igc-mask-input>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcMaskInputComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is not associated on submit if no value', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is associated on submit', async () => {
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
+    it('is associated on submit with value formatting enabled', async () => {
+      spec.element.valueMode = 'withFormatting';
+      spec.element.mask = 'C - C - C';
+      spec.element.value = 'A';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+      expect(spec.element.value).to.equal('A - _ - _');
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal('');
+    });
+
+    it('is correctly reset on form reset with value formatting enabled', async () => {
+      const bed = new FormAssociatedTestBed<IgcMaskInputComponent>(
+        html`<igc-mask-input
+          name="formatted-mask"
+          mask="(CCC) (CCC)"
+          value-mode="withFormatting"
+          value="123456"
+        ></igc-mask-input>`
+      );
+      await bed.setup(IgcMaskInputComponent.tagName);
+
+      expect(bed.element.value).to.eql('(123) (456)');
+
+      bed.element.value = '111';
+      await elementUpdated(bed.element);
+
+      expect(bed.element.value).to.eql('(111) (___)');
+
+      bed.reset();
+      expect(bed.element.value).to.eql('(123) (456)');
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils mask pattern constraint', async () => {
+      spec.element.mask = '00 99';
+      spec.element.value = '1';
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'aa';
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = '11';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });

@@ -20,6 +20,9 @@ export interface IgcFormEventMap {
  *
  * @fires igcSubmit - Emitted when the form is submitted.
  * @fires igcReset - Emitted when the form is reset.
+ *
+ * @deprecated - since version 5.0. It will be removed in the next major version of the package.
+ * Use the native `<form>` element.
  */
 export default class IgcFormComponent extends EventEmitterMixin<
   IgcFormEventMap,
@@ -47,6 +50,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
     'textarea',
     'igc-rating',
     'igc-select',
+    'igc-combo',
     'igc-date-time-input',
   ];
   private _controlsThatSubmit = [

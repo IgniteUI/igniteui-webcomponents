@@ -1,7 +1,13 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
 
 :host {
-    @include border-radius(rem(4px));
+    @include css-vars-from-theme($theme, 'ig-card');
+
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host([elevated]),

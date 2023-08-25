@@ -1,4 +1,14 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-dialog');
+
+    border-radius: var-get($theme, 'border-radius');
+}
 
 [part='title'] {
     padding: rem(24px);
@@ -16,5 +26,5 @@
 }
 
 [part='backdrop'] {
-    background: rgb(255 255 255 / 40%);
+    background: color(gray, 900, .4);
 }

@@ -1,12 +1,12 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
-import IgcButtonComponent from '../button/button';
-import { defineComponents } from '../common/definitions/defineComponents';
-import IgcDropdownComponent from './dropdown';
-import IgcDropdownGroupComponent from './dropdown-group';
-import IgcDropdownHeaderComponent from './dropdown-header';
-import IgcDropdownItemComponent from './dropdown-item';
+import IgcButtonComponent from '../button/button.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import IgcDropdownComponent from './dropdown.js';
+import IgcDropdownGroupComponent from './dropdown-group.js';
+import IgcDropdownHeaderComponent from './dropdown-header.js';
+import IgcDropdownItemComponent from './dropdown-item.js';
 
 describe('Dropdown component', () => {
   before(() => {
@@ -42,18 +42,20 @@ describe('Dropdown component', () => {
 
   describe('', () => {
     beforeEach(async () => {
-      dropdown = await fixture<IgcDropdownComponent>(html` <igc-dropdown>
-        <input
-          type="button"
-          slot="target"
-          value="Dropdown"
-          aria-label="dropdownButton"
-        />
-        <igc-dropdown-header>Tasks</igc-dropdown-header>
-        ${items.map(
-          (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-        )}
-      </igc-dropdown>`);
+      dropdown = await fixture<IgcDropdownComponent>(
+        html` <igc-dropdown>
+          <input
+            type="button"
+            slot="target"
+            value="Dropdown"
+            aria-label="dropdownButton"
+          />
+          <igc-dropdown-header>Tasks</igc-dropdown-header>
+          ${items.map(
+            (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
+          )}
+        </igc-dropdown>`
+      );
     });
 
     it('handles initial selection', async () => {
@@ -784,6 +786,35 @@ describe('Dropdown component', () => {
 
         expect(dropdown.open).to.be.true;
       });
+
+      it('the list renders at the proper position relative to the target element when `open` is initially set', async () => {
+        dropdown = await fixture<IgcDropdownComponent>(html`
+          <igc-dropdown open>
+            <input
+              type="button"
+              slot="target"
+              value="Dropdown"
+              aria-label="dropdownButton"
+            />
+            <igc-dropdown-header>Languages</igc-dropdown-header>
+            <igc-dropdown-item selected>JavaScript</igc-dropdown-item>
+            <igc-dropdown-item selected>TypeScript</igc-dropdown-item>
+            <igc-dropdown-item>SCSS</igc-dropdown-item>
+          </igc-dropdown>
+        `);
+        await elementUpdated(dropdown);
+
+        expect(dropdown.open).to.be.true;
+        expect(dropdown.positionStrategy).to.eq('absolute');
+        expect(dropdown.placement).to.eq('bottom-start');
+        expect(dropdown.distance).to.eq(0);
+
+        const listRect = ddListWrapper(dropdown).getBoundingClientRect();
+        const targetRect = target(dropdown).getBoundingClientRect();
+
+        expect(listRect.x).to.eq(targetRect.x);
+        expect(listRect.y).to.eq(targetRect.bottom);
+      });
     });
   });
 
@@ -792,32 +823,34 @@ describe('Dropdown component', () => {
       [...el.querySelectorAll('igc-dropdown-group')] as HTMLElement[];
     let groups: HTMLElement[];
     beforeEach(async () => {
-      dropdown = await fixture<IgcDropdownComponent>(html`<igc-dropdown>
-        <input type="button" slot="target" value="Dropdown" />
-        <igc-dropdown-group>
-          <h3 slot="label">Research & Development</h3>
-          ${items
-            .slice(0, 3)
-            .map(
-              (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-            )}
-        </igc-dropdown-group>
-        <igc-dropdown-group>
-          <h3 slot="label">Product Guidance</h3>
-          ${items
-            .slice(3, 5)
-            .map(
-              (item) =>
-                html`<igc-dropdown-item .disabled=${true}
-                  >${item}</igc-dropdown-item
-                >`
-            )}
-        </igc-dropdown-group>
-        <igc-dropdown-group>
-          <h3 slot="label">Release Engineering</h3>
-          <igc-dropdown-item>${items[5]}</igc-dropdown-item>
-        </igc-dropdown-group>
-      </igc-dropdown>`);
+      dropdown = await fixture<IgcDropdownComponent>(
+        html`<igc-dropdown>
+          <input type="button" slot="target" value="Dropdown" />
+          <igc-dropdown-group>
+            <h3 slot="label">Research & Development</h3>
+            ${items
+              .slice(0, 3)
+              .map(
+                (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
+              )}
+          </igc-dropdown-group>
+          <igc-dropdown-group>
+            <h3 slot="label">Product Guidance</h3>
+            ${items
+              .slice(3, 5)
+              .map(
+                (item) =>
+                  html`<igc-dropdown-item .disabled=${true}
+                    >${item}</igc-dropdown-item
+                  >`
+              )}
+          </igc-dropdown-group>
+          <igc-dropdown-group>
+            <h3 slot="label">Release Engineering</h3>
+            <igc-dropdown-item>${items[5]}</igc-dropdown-item>
+          </igc-dropdown-group>
+        </igc-dropdown>`
+      );
 
       dropdown.open = true;
       await elementUpdated(dropdown);

@@ -1,8 +1,13 @@
-@use '../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-toast');
     @include type-style('body-2');
-    @include border-radius(rem(26px));
 
     display: inline-flex;
     font-family: var(--ig-font-family);
@@ -10,13 +15,14 @@
     position: fixed;
     bottom: 0;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     background: color(gray, 700);
     color: contrast-color(gray, 700);
     padding: rem(16px) rem(24px);
     margin: rem(42px) auto;
     min-width: rem(52px);
     backdrop-filter: blur(10px);
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host(:not([open])) {

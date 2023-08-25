@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/light/checkbox.base.css.js';
@@ -37,21 +36,16 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   private inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
   private labelId = `checkbox-label-${this.inputId}`;
 
-  /** Draws the checkbox in indeterminate state. */
+  /**
+   * Draws the checkbox in indeterminate state.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public indeterminate = false;
 
-  protected handleClick() {
-    this.checked = !this.checked;
+  protected override handleClick() {
     this.indeterminate = false;
-    this.emitEvent('igcChange', { detail: this.checked });
-  }
-
-  @watch('checked', { waitUntilFirstUpdate: true })
-  @watch('focused', { waitUntilFirstUpdate: true })
-  @watch('indeterminate', { waitUntilFirstUpdate: true })
-  protected handleChange() {
-    this.invalid = !this.input.checkValidity();
+    super.handleClick();
   }
 
   protected override render() {
@@ -93,10 +87,11 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
           </span>
         </span>
         <span
+          .hidden=${this.hideLabel}
           part=${partNameMap({ label: true, checked: this.checked })}
           id=${this.labelId}
         >
-          <slot></slot>
+          <slot @slotchange=${this.handleSlotChange}></slot>
         </span>
       </label>
     `;

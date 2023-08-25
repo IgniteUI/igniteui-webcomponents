@@ -1,19 +1,27 @@
-@use '../../../../../styles/common/component';
-@use '../../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+
+$icon-size: rem(18px);
 
 :host {
-    --icon-size: #{sizable(rem(16px), rem(20px), rem(24px))};
+    --icon-size: #{$icon-size};
 
     display: inline-flex;
     vertical-align: middle;
+    width: fit-content;
+    height: fit-content;
 }
 
 ::slotted(:not(igc-ripple)) {
-    --icon-size: #{sizable(rem(16px), rem(20px), rem(24px))};
+    --icon-size: #{$icon-size};
 
     font-size: var(--icon-size) !important;
     vertical-align: middle;
     pointer-events: none;
+}
+
+[part='icon'] {
+    --size: #{$icon-size};
 }
 
 // This prevents the igc-ripple from working.
@@ -22,8 +30,6 @@
 // }
 
 [part='base'] {
-    @include border-radius(50%);
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -31,7 +37,6 @@
     outline-style: none;
     background: transparent;
     padding: pad(4px, 5px, 6px);
-    color: color(gray, 900);
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     cursor: pointer;
@@ -53,6 +58,7 @@
     --component-size: var(--ig-size, var(--ig-size-large));
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     pointer-events: none;
 }

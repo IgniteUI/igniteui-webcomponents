@@ -6,10 +6,11 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents';
-import { MaskParser } from '../mask-input/mask-parser';
-import IgcDateTimeInputComponent from './date-time-input';
-import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { MaskParser } from '../mask-input/mask-parser.js';
+import IgcDateTimeInputComponent from './date-time-input.js';
+import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Date Time Input component', () => {
   before(() => defineComponents(IgcDateTimeInputComponent));
@@ -31,7 +32,7 @@ describe('Date Time Input component', () => {
     });
 
     it('should set default values correctly', async () => {
-      expect(el.value).to.be.undefined;
+      expect(el.value).to.be.null;
       expect(el.prompt).to.equal(defaultPrompt);
       expect(el.inputFormat).to.equal(defaultFormat);
       expect(input.placeholder).to.equal(defaultFormat);
@@ -338,7 +339,7 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      el.dispatchEvent(
+      input.dispatchEvent(
         new WheelEvent('wheel', { deltaY: -125, bubbles: true })
       );
 
@@ -348,7 +349,9 @@ describe('Date Time Input component', () => {
 
       el.setSelectionRange(0, 0);
 
-      el.dispatchEvent(new WheelEvent('wheel', { deltaY: 125, bubbles: true }));
+      input.dispatchEvent(
+        new WheelEvent('wheel', { deltaY: 125, bubbles: true })
+      );
 
       await elementUpdated(el);
 
@@ -360,10 +363,23 @@ describe('Date Time Input component', () => {
       el.value = value;
       await elementUpdated(el);
 
-      el.dispatchEvent(
+      input.dispatchEvent(
         new WheelEvent('wheel', { deltaY: -125, bubbles: true })
       );
 
+      await elementUpdated(el);
+
+      expect(el.value.getFullYear()).to.equal(value.getFullYear());
+    });
+
+    it('mouse wheel readonly', async () => {
+      const value = new Date(2020, 2, 3);
+      el.value = value;
+      el.readonly = true;
+      el.focus();
+      await elementUpdated(el);
+
+      input.dispatchEvent(new WheelEvent('wheel', { deltaY: -125 }));
       await elementUpdated(el);
 
       expect(el.value.getFullYear()).to.equal(value.getFullYear());
@@ -399,6 +415,19 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
 
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
+    });
+
+    it('Up/Down arrow readonly', async () => {
+      const value = new Date(2020, 2, 3);
+      el.readonly = true;
+      el.value = value;
+      el.focus();
+      await elementUpdated(el);
+
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      await elementUpdated(el);
+
+      expect(el.value.getFullYear()).to.equal(value.getFullYear());
     });
 
     it('ArrowLeft/Right should navigate to the beginning/end of date section', async () => {
@@ -551,7 +580,7 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      expect(el.value).to.be.undefined;
+      expect(el.value).to.be.null;
 
       input.dispatchEvent(
         new KeyboardEvent('keydown', { key: ';', bubbles: true, ctrlKey: true })
@@ -715,7 +744,7 @@ describe('Date Time Input component', () => {
       expect(eventSpy).calledWith('igcInput');
       eventSpy.resetHistory();
 
-      el.dispatchEvent(
+      input.dispatchEvent(
         new WheelEvent('wheel', { deltaY: -125, bubbles: true })
       );
       await elementUpdated(el);
@@ -769,4 +798,90 @@ describe('Date Time Input component', () => {
   ) => {
     return fixture<IgcDateTimeInputComponent>(html`${unsafeStatic(template)}`);
   };
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcDateTimeInputComponent>(
+      html`<igc-date-time-input name="dt"></igc-date-time-input>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcDateTimeInputComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is not associated on submit if no value', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is associated on submit', async () => {
+      spec.element.value = new Date(Date.now());
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value.toISOString()
+      );
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.value = new Date(Date.now());
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.be.null;
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = new Date(Date.now());
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils min value constraint', async () => {
+      spec.element.minValue = new Date(2025, 0, 1);
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = new Date(2022, 0, 1);
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = new Date(2025, 0, 2);
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils max value constraint', async () => {
+      spec.element.maxValue = new Date(2020, 0, 1);
+      spec.element.value = new Date(Date.now());
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = new Date(2020, 0, 1);
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
+    });
+  });
 });

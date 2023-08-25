@@ -5,7 +5,9 @@ import { live } from 'lit/directives/live.js';
 import { watch } from '../common/decorators/watch.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { partNameMap } from '../common/util.js';
-import { IgcMaskInputBaseComponent } from './mask-input-base.js';
+import { IgcMaskInputBaseComponent, MaskRange } from './mask-input-base.js';
+import messages from '../common/localization/validation-en.js';
+import { Validator, requiredValidator } from '../common/validators.js';
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,
@@ -32,6 +34,18 @@ import { IgcMaskInputBaseComponent } from './mask-input-base.js';
 export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
 
+  protected override validators: Validator<this>[] = [
+    {
+      ...requiredValidator,
+      isValid: () => (this.required ? !!this._value : true),
+    },
+    {
+      key: 'badInput',
+      message: messages.mask,
+      isValid: () => this.parser.isValidString(this.maskedValue),
+    },
+  ];
+
   protected _value = '';
 
   /**
@@ -39,7 +53,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    *
    * - `raw` will return the clean user input.
    * - `withFormatting` will return the value with all literals and prompts.
-   *
+   * @attr value-mode
    */
   @property({ attribute: 'value-mode' })
   public valueMode: 'raw' | 'withFormatting' = 'raw';
@@ -48,32 +62,53 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    * The value of the input.
    *
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
-   *
+   * @attr
    */
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
   public get value() {
-    return this._value
-      ? this.valueMode !== 'raw'
-        ? this.maskedValue
-        : this._value
-      : this._value;
+    return this.valueMode !== 'raw' ? this.maskedValue : this._value;
   }
 
   public set value(string: string) {
     this._value = string ?? '';
     this.maskedValue = this.parser.apply(this._value);
+    this.updateFormValue();
   }
 
-  /** The mask pattern to apply on the input. */
+  /**
+   * The mask pattern to apply on the input.
+   * @attr
+   */
   @property()
   public get mask() {
     return this._mask;
   }
 
   /** The mask pattern to apply on the input. */
-  public set mask(val: string) {
-    this._mask = val;
+  public set mask(value: string) {
+    this._mask = value;
+    this.parser.mask = value;
+    if (this.value) {
+      this.maskedValue = this.parser.apply(this._value);
+    }
+  }
+
+  public override connectedCallback(): void {
+    super.connectedCallback();
+    this.updateValidity();
+  }
+
+  protected override setDefaultValue(): void {
+    this._defaultValue = this._value;
+  }
+
+  protected updateFormValue() {
+    this.valueMode === 'raw'
+      ? this.setFormValue(this.value || null, this.value)
+      : this.setFormValue(this.maskedValue || null, this.maskedValue);
+    this.updateValidity();
+    this.setInvalidState();
   }
 
   @watch('prompt')
@@ -84,59 +119,42 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
   }
 
-  @watch('_mask')
-  protected maskChange() {
-    this.parser.mask = this.mask;
-    if (this.value) {
-      this.maskedValue = this.parser.apply(this._value);
-    }
-  }
-
-  @watch('required', { waitUntilFirstUpdate: true })
-  @watch('disabled', { waitUntilFirstUpdate: true })
-  @watch('value', { waitUntilFirstUpdate: true })
-  protected handleInvalidState() {
-    this.updateComplete.then(() => (this.invalid = !this.checkValidity()));
-  }
-
-  public override connectedCallback() {
-    super.connectedCallback();
-
-    this.mask = this.mask || this.parser.mask;
-    this.prompt = this.prompt || this.parser.prompt;
-  }
-
-  protected updateInput(part: string, start: number, finish: number) {
+  protected async updateInput(string: string, range: MaskRange) {
     const { value, end } = this.parser.replace(
       this.maskedValue,
-      part,
-      start,
-      finish
+      string,
+      range.start,
+      range.end
     );
+
     this.maskedValue = value;
     this._value = this.parser.parse(value);
 
+    this.updateFormValue();
     this.requestUpdate();
-    if (start !== this.mask.length) {
+
+    if (range.start !== this.mask.length) {
       this.emitEvent('igcInput', { detail: this.value });
     }
-    this.updateComplete.then(() => this.input.setSelectionRange(end, end));
+    await this.updateComplete;
+
+    this.input.setSelectionRange(end, end);
   }
 
   protected handleDragEnter() {
-    if (!this.hasFocus && !this._value) {
-      this.maskedValue = this.parser.apply();
+    if (!this.focused && !this._value) {
+      this.maskedValue = this.emptyMask;
     }
   }
 
   protected handleDragLeave() {
-    if (!this.hasFocus) {
+    if (!this.focused) {
       this.updateMaskedValue();
     }
   }
 
-  protected override handleFocus() {
-    this.hasFocus = true;
+  protected override async handleFocus() {
+    this.focused = true;
     super.handleFocus();
 
     if (this.readonly) {
@@ -144,39 +162,32 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     }
 
     if (!this._value) {
-      this.maskedValue = this.parser.apply();
       // In case of empty value, select the whole mask
-      this.updateComplete.then(() => this.select());
+      this.maskedValue = this.emptyMask;
+
+      await this.updateComplete;
+      this.select();
     }
   }
 
   protected override handleBlur() {
-    this.hasFocus = false;
+    this.focused = false;
     this.updateMaskedValue();
+    this.invalid = !this.checkValidity();
     super.handleBlur();
   }
 
   protected handleChange() {
     this.emitEvent('igcChange', { detail: this.value });
-    this.invalid = !this.checkValidity();
-  }
-
-  protected handleClick() {
-    // Clicking at the end of the input field will select the entire mask
-    if (
-      this.input.selectionStart === this.input.selectionEnd &&
-      this.input.selectionStart === this.maskedValue.length
-    ) {
-      this.select();
-    }
   }
 
   protected updateMaskedValue() {
-    if (this.maskedValue === this.parser.apply()) {
+    if (this.maskedValue === this.emptyMask) {
       this.maskedValue = '';
     }
   }
 
+  /* blazorSuppress */
   /** Replaces the selected text in the control and re-applies the mask */
   public override setRangeText(
     replacement: string,
@@ -184,38 +195,14 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
     end: number,
     _selectMode: 'select' | 'start' | 'end' | 'preserve' = 'preserve'
   ) {
-    this.input.value = this.parser.replace(
-      this.input.value,
+    const { value } = this.parser.replace(
+      this.maskedValue || this.emptyMask,
       replacement,
       start,
       end
-    ).value;
-    this.maskedValue = this.parser.apply(this.parser.parse(this.input.value));
-    this._value = this.parser.parse(this.maskedValue);
-  }
-
-  /** Checks for validity of the control and shows the browser message if it's invalid. */
-  public reportValidity() {
-    const state = this._value
-      ? this.parser.isValidString(this.input.value)
-      : this.input.reportValidity();
-    this.invalid = !state;
-    return state;
-  }
-
-  /** Check for validity of the control */
-  public checkValidity() {
-    if (this.disabled) {
-      return this.input.checkValidity();
-    }
-
-    if (!this._value) {
-      return !this.required;
-    }
-
-    return (
-      this.input.checkValidity() && this.parser.isValidString(this.input.value)
     );
+    this.maskedValue = this.parser.apply(this.parser.parse(value));
+    this.value = this.parser.parse(this.maskedValue);
   }
 
   protected override renderInput() {
@@ -228,7 +215,6 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
         .placeholder=${live(this.placeholder ?? this.parser.escapedMask)}
         ?readonly=${this.readonly}
         ?disabled=${this.disabled}
-        ?required=${this.required}
         @dragenter=${this.handleDragEnter}
         @dragleave=${this.handleDragLeave}
         @dragstart=${this.handleDragStart}
@@ -240,8 +226,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
         @input=${this.handleInput}
-        aria-invalid="${this.invalid ? 'true' : 'false'}"
-        @invalid="${this.handleInvalid}"
+        aria-invalid=${this.invalid ? 'true' : 'false'}
         @keydown=${this.handleKeydown}
       />
     `;

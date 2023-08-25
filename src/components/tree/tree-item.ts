@@ -10,12 +10,18 @@ import { styles } from './themes/light/tree-item.base.css.js';
 import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
 import { styles as indigo } from './themes/light/tree-item.indigo.css.js';
+import { styles as material } from './themes/light/tree-item.material.css.js';
 import type IgcTreeComponent from './tree.js';
 import { watch } from '../common/decorators/watch.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import {
+  AnimationPlayer,
+  growVerIn,
+  growVerOut,
+} from '../../animations/index.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -54,7 +60,7 @@ const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({ bootstrap, fluent, indigo, material })
 export default class IgcTreeItemComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-tree-item';
@@ -63,6 +69,7 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private tabbableEl?: HTMLElement[];
   private focusedProgrammatically = false;
+  private animationPlayer!: AnimationPlayer;
 
   /** A reference to the tree the item is a part of. */
   @blazorSuppress()
@@ -82,6 +89,10 @@ export default class IgcTreeItemComponent extends LitElement {
   @blazorSuppress()
   public wrapper!: HTMLElement;
 
+  /** @private */
+  @query('[role="group"]', true)
+  private group!: HTMLElement;
+
   @state()
   private isFocused = false;
 
@@ -99,36 +110,70 @@ export default class IgcTreeItemComponent extends LitElement {
   @blazorSuppress()
   public indeterminate = false;
 
-  /** The tree item label. */
+  /**
+   * The tree item label.
+   * @attr
+   */
   @property()
   public label = '';
 
-  /** The tree item expansion state. */
+  /**
+   * The tree item expansion state.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public expanded = false;
 
-  /** Marks the item as the tree's active item. */
+  /**
+   * Marks the item as the tree's active item.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public active = false;
 
-  /** Get/Set whether the tree item is disabled. Disabled items are ignored for user interactions. */
+  /**
+   * Get/Set whether the tree item is disabled. Disabled items are ignored for user interactions.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public disabled = false;
 
-  /** The tree item selection state. */
+  /**
+   * The tree item selection state.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public selected = false;
 
-  /** To be used for load-on-demand scenarios in order to specify whether the item is loading data. */
+  /**
+   * To be used for load-on-demand scenarios in order to specify whether the item is loading data.
+   * @attr
+   */
   @property({ reflect: true, type: Boolean })
   public loading = false;
 
   /**
    * The value entry that the tree item is visualizing. Required for searching through items.
    * @type any
+   * @attr
    */
   @property({ attribute: true })
   public value: any = undefined;
+
+  public override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.group);
+  }
+
+  private async toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? growVerIn : growVerOut;
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(animation),
+    ]);
+
+    return event.type === 'finish';
+  }
 
   @watch('expanded', { waitUntilFirstUpdate: true })
   @watch('hasChildren', { waitUntilFirstUpdate: true })
@@ -197,10 +242,9 @@ export default class IgcTreeItemComponent extends LitElement {
   public override connectedCallback(): void {
     super.connectedCallback();
     this.tree = this.closest('igc-tree') as IgcTreeComponent;
-    this.parent =
-      this.parentElement?.tagName.toLowerCase() === 'igc-tree-item'
-        ? (this.parentElement as IgcTreeItemComponent)
-        : null;
+    this.parent = this.parentElement?.closest(
+      'igc-tree-item'
+    ) as IgcTreeItemComponent | null;
     this.level = this.parent ? this.parent.level + 1 : 0;
     this.setAttribute('role', 'treeitem');
     this.addEventListener('blur', this.onBlur);
@@ -241,8 +285,11 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private get directChildren(): Array<IgcTreeItemComponent> {
-    return Array.from(this.children).filter(
-      (x) => x.tagName.toLowerCase() === 'igc-tree-item'
+    return this.allChildren.filter(
+      (x) =>
+        (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(
+          this
+        )
     ) as IgcTreeItemComponent[];
   }
 
@@ -395,7 +442,7 @@ export default class IgcTreeItemComponent extends LitElement {
    * @private
    * Expands the tree item.
    */
-  public expandWithEvent(): void {
+  public async expandWithEvent() {
     if (this.expanded) {
       return;
     }
@@ -420,14 +467,16 @@ export default class IgcTreeItemComponent extends LitElement {
     }
 
     this.expanded = true;
-    this.tree?.emitEvent('igcItemExpanded', { detail: this });
+    if (await this.toggleAnimation('open')) {
+      this.tree?.emitEvent('igcItemExpanded', { detail: this });
+    }
   }
 
   /**
    * @private
    * Collapses the tree item.
    */
-  public collapseWithEvent(): void {
+  public async collapseWithEvent() {
     if (!this.expanded) {
       return;
     }
@@ -441,8 +490,11 @@ export default class IgcTreeItemComponent extends LitElement {
     if (!allowed) {
       return;
     }
+
     this.expanded = false;
-    this.tree?.emitEvent('igcItemCollapsed', { detail: this });
+    if (await this.toggleAnimation('close')) {
+      this.tree?.emitEvent('igcItemCollapsed', { detail: this });
+    }
   }
 
   /** Toggles tree item expansion state. */
@@ -525,8 +577,8 @@ export default class IgcTreeItemComponent extends LitElement {
           </slot>
         </div>
       </div>
-      <div role="group">
-        <slot @slotchange=${this.handleChange} ?hidden=${!this.expanded}></slot>
+      <div role="group" aria-hidden=${!this.expanded}>
+        <slot @slotchange=${this.handleChange}></slot>
       </div>
     `;
   }

@@ -1,12 +1,15 @@
-@use '../../../styles/utilities/index' as *;
-@use '../../../styles/common/component';
-@use 'shared-calendar' as *;
-@use 'sass:map';
 @use 'sass:math';
+@use 'sass:map';
+@use 'shared-calendar' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'light-themes' as *;
 
-$border-radius: #{calc(var(--size) / 2)};
+$theme: $material;
 
 :host(igc-calendar) {
+    @include css-vars-from-theme($theme, 'ig-calendar');
+
     --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
 
     display: flex;
@@ -14,6 +17,7 @@ $border-radius: #{calc(var(--size) / 2)};
     font-family: var(--ig-font-family);
     background: $calendar-background;
     color: $calendar-foreground;
+    border-radius: var-get($theme, 'border-radius');
 
     > * {
         font-family: var(--ig-font-family);
@@ -39,7 +43,7 @@ $border-radius: #{calc(var(--size) / 2)};
     }
 
     igc-days-view::part(date-inner) {
-        @include border-radius(calc($border-radius + rem(2px)));
+        border-radius: var-get($theme, 'date-border-radius');
     }
 
     igc-months-view {
@@ -47,8 +51,7 @@ $border-radius: #{calc(var(--size) / 2)};
 
         &::part(month-inner) {
             height: var(--size);
-
-            @include border-radius(calc($border-radius + rem(2px)));
+            border-radius: var-get($theme, 'month-border-radius');
         }
     }
 
@@ -57,8 +60,7 @@ $border-radius: #{calc(var(--size) / 2)};
 
         &::part(year-inner) {
             height: var(--size);
-
-            @include border-radius(calc($border-radius + rem(2px)));
+            border-radius: var-get($theme, 'month-border-radius');
         }
     }
 }
@@ -109,8 +111,6 @@ $border-radius: #{calc(var(--size) / 2)};
 }
 
 [part~='navigation-button'] {
-    margin-inline-start: rem(24px);
-
     &[part~='vertical'] {
         transform: rotate(90deg);
     }
@@ -119,6 +119,7 @@ $border-radius: #{calc(var(--size) / 2)};
 [part='navigation-buttons'] {
     display: flex;
     align-items: center;
+    gap: rem(24px);
 }
 
 :host(igc-calendar[header-orientation='vertical']) {
@@ -127,6 +128,9 @@ $border-radius: #{calc(var(--size) / 2)};
     [part='header'] {
         justify-content: flex-start;
         width: rem(140px);
+        border-radius: inherit;
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
     }
 
     [part='header-date'] {
@@ -139,12 +143,21 @@ $border-radius: #{calc(var(--size) / 2)};
 }
 
 [part='header'] {
+    border-radius: inherit;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding: rem(16px);
     background: color(secondary, 500);
     color: contrast-color(secondary, 600);
+}
+
+[part='content'] {
+    border-radius: inherit;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
 
 [part='header-date'],

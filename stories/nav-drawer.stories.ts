@@ -1,24 +1,35 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
 import {
+  defineComponents,
+  IgcIconComponent,
   IgcNavDrawerComponent,
   IgcNavDrawerItemComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 
 // region default
-const metadata = {
-  title: 'Nav Drawer',
+const metadata: Meta<IgcNavDrawerComponent> = {
+  title: 'NavDrawer',
   component: 'igc-nav-drawer',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Represents a side navigation container that provides\nquick access between views.',
+      },
+    },
+  },
   argTypes: {
     position: {
       type: '"start" | "end" | "top" | "bottom" | "relative"',
       description: 'The position of the drawer.',
       options: ['start', 'end', 'top', 'bottom', 'relative'],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'start',
     },
     open: {
@@ -28,12 +39,19 @@ const metadata = {
       defaultValue: false,
     },
   },
+  args: { position: 'start', open: false },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcNavDrawerArgs {
+  /** The position of the drawer. */
   position: 'start' | 'end' | 'top' | 'bottom' | 'relative';
+  /** Determines whether the drawer is opened. */
   open: boolean;
 }
+type Story = StoryObj<IgcNavDrawerArgs>;
+
 // endregion
 
 registerIcon(
@@ -171,8 +189,8 @@ const navbarItems = [
   },
 ];
 
-const Template: Story<ArgTypes, Context> = (
-  { open = false, position }: ArgTypes,
+const Template = (
+  { open = false, position }: IgcNavDrawerArgs,
   { globals: { direction } }: Context
 ) => {
   return html`
@@ -218,4 +236,4 @@ const Template: Story<ArgTypes, Context> = (
   `;
 };
 
-export const Basic = Template.bind({});
+export const Basic: Story = Template.bind({});

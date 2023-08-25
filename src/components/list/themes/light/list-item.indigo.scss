@@ -1,11 +1,16 @@
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
+$theme: $indigo;
 $item-color: color(gray, 900) !default;
 $item-hover-bg: var(--item-hover-bg, color(gray, 50)) !default;
 $subtitle-color: color(gray, 800) !default;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-list');
+
     color: $item-color;
+    border-radius: var-get($theme, 'item-border-radius');
 
     [part='subtitle'] {
         @include type-style('body-2');

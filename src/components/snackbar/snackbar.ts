@@ -1,5 +1,5 @@
 import { html, LitElement, nothing } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming/theming-decorator.js';
 
@@ -12,6 +12,7 @@ import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcButtonComponent from '../button/button.js';
+import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
 
 defineComponents(IgcButtonComponent);
 
@@ -45,22 +46,53 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   public static styles = styles;
 
   private autoHideTimeout!: number;
+  private animationPlayer!: AnimationPlayer;
 
-  /** Determines whether the snackbar is opened. */
+  @query('[part~="base"]', true)
+  protected content!: HTMLElement;
+
+  /**
+   * Determines whether the snackbar is opened.
+   * @attr
+   */
   @property({ type: Boolean, reflect: true })
   public open = false;
 
-  /** Determines the duration in ms in which the snackbar will be visible. */
+  /**
+   * Determines the duration in ms in which the snackbar will be visible.
+   * @attr display-time
+   */
   @property({ type: Number, attribute: 'display-time' })
   public displayTime = 4000;
 
-  /** Determines whether the snackbar should close after the displayTime is over. */
+  /**
+   * Determines whether the snackbar should close after the displayTime is over.
+   * @attr keep-open
+   */
   @property({ type: Boolean, attribute: 'keep-open' })
   public keepOpen = false;
 
-  /** The snackbar action button. */
+  /**
+   * The snackbar action button.
+   * @attr action-text
+   */
   @property({ attribute: 'action-text' })
   public actionText!: string;
+
+  protected override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.content);
+  }
+
+  private async toggleAnimation(dir: 'open' | 'close') {
+    const animation = dir === 'open' ? fadeIn : fadeOut;
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(animation),
+    ]);
+
+    return event.type === 'finish';
+  }
 
   /** Opens the snackbar. */
   public show() {
@@ -68,6 +100,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
       return;
     }
 
+    this.toggleAnimation('open');
     this.open = true;
 
     clearTimeout(this.autoHideTimeout);
@@ -80,11 +113,12 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   }
 
   /** Closes the snackbar. */
-  public hide() {
+  public async hide() {
     if (!this.open) {
       return;
     }
 
+    await this.toggleAnimation('close');
     this.open = false;
     clearTimeout(this.autoHideTimeout);
   }

@@ -1,91 +1,92 @@
 import { html } from 'lit';
-import { Story } from './story';
+import { range } from 'lit/directives/range.js';
+import type { Meta, StoryObj } from '@storybook/web-components';
+import { defineComponents, IgcAccordionComponent } from '../src/index.js';
+
+defineComponents(IgcAccordionComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcAccordionComponent> = {
   title: 'Accordion',
   component: 'igc-accordion',
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The Accordion is a container-based component that can house multiple expansion panels\nand offers keyboard navigation.',
+      },
+    },
+  },
   argTypes: {
     singleExpand: {
       type: 'boolean',
+      description: 'Allows only one panel to be expanded at a time.',
       control: 'boolean',
       defaultValue: false,
     },
   },
+  args: { singleExpand: false },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcAccordionArgs {
+  /** Allows only one panel to be expanded at a time. */
   singleExpand: boolean;
 }
+type Story = StoryObj<IgcAccordionArgs>;
+
 // endregion
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
 
-const handleOpening = (ev: any) => {
-  console.log(ev);
-};
+Object.assign(metadata.parameters!, {
+  actions: {
+    handles: ['igcOpening', 'igcOpened', 'igcClosing', 'igcClosed'],
+  },
+});
 
-const handleOpened = (ev: any) => {
-  console.log(ev);
-};
-
-const handleClosing = (ev: any) => {
-  console.log(ev);
-};
-
-const handleClosed = (ev: any) => {
-  console.log(ev);
-};
-
-const Template: Story<ArgTypes, Context> = (
-  { singleExpand = false }: ArgTypes,
-  { globals: { direction } }: Context
-) => {
-  return html`
-    <igc-accordion
-      .singleExpand="${singleExpand}"
-      .dir="${direction}"
-      @igcOpening=${handleOpening}
-      @igcOpened=${handleOpened}
-      @igcClosing=${handleClosing}
-      @igcClosed=${handleClosed}
-    >
+export const Default: Story = {
+  render: (args, { globals: { direction } }) => html`
+    <igc-accordion ?single-expand=${args.singleExpand} .dir=${direction}>
+      ${Array.from(range(1, 4)).map(
+        (i) =>
+          html` <igc-expansion-panel>
+            <h1 slot="title">Title ${i}</h1>
+            <h2 slot="subtitle">Subtitle ${i}</h2>
+            <p>
+              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Sequi
+              adipisci, ratione ut praesentium qui, similique molestiae
+              voluptate at excepturi, a animi quam blanditiis. Tenetur tempore
+              explicabo blanditiis harum ut delectus!
+            </p>
+          </igc-expansion-panel>`
+      )}
       <igc-expansion-panel>
-        <div slot="title">Expansion panel 1 title</div>
-        <div slot="subtitle">Expansion panel 1 subtitle</div>
-        <p>Sample content 1</p>
-      </igc-expansion-panel>
-      <igc-expansion-panel>
-        <div slot="title">Expansion panel 2 title</div>
-        <div slot="subtitle">Expansion panel 2 subtitle</div>
-        <p>Sample content 2</p>
-      </igc-expansion-panel>
-      <igc-expansion-panel>
-        <div slot="title">Expansion panel 3 title</div>
-        <div slot="subtitle">Expansion panel 3 subtitle</div>
-        <p>Sample content 3</p>
-        <input />
-      </igc-expansion-panel>
-      <igc-expansion-panel>
-        <div slot="title">Expansion panel 4 title (nested accordion)</div>
-        <div slot="subtitle">Expansion panel 4 subtitle</div>
-        <igc-accordion .dir="${direction}">
+        <h1 slot="title">Title 4</h1>
+        <h2 slot="subtitle">Subtitle 4</h2>
+        <igc-accordion>
           <igc-expansion-panel>
-            <h1 slot="title">Expansion panel 4.1 title</h1>
-            <h2 slot="subtitle">Expansion panel 4.1 subtitle</h2>
-            <p>Sample content 4.1</p>
+            <h1 slot="title">Title 4.1 title</h1>
+            <h2 slot="subtitle">Subtitle 4.1 subtitle</h2>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum quia
+              placeat natus illo voluptatum, praesentium similique excepturi
+              corporis sequi at earum labore provident asperiores dolorem fugit
+              explicabo ipsa distinctio doloremque?
+            </p>
           </igc-expansion-panel>
           <igc-expansion-panel>
-            <h1 slot="title">Expansion panel 4.2 title</h1>
-            <h2 slot="subtitle">Expansion panel 4.2 subtitle</h2>
-            <p>Sample content 4.2</p>
-            <input />
+            <h1 slot="title">Title 4.2</h1>
+            <h2 slot="subtitle">Subtitle 4.2</h2>
+            <igc-input placeholder="Your feedback"></igc-input>
+            <p>
+              Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+              Similique modi, cumque consequuntur omnis quis odio id facere
+              placeat amet velit quos natus ipsam quasi, consequatur qui impedit
+              ullam officiis earum.
+            </p>
           </igc-expansion-panel>
         </igc-accordion>
       </igc-expansion-panel>
     </igc-accordion>
-  `;
+  `,
 };
-
-export const Basic = Template.bind({});

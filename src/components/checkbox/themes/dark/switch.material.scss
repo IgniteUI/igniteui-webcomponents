@@ -1,0 +1,39 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'switch-themes' as *;
+
+@mixin theme() {
+    $theme: $material;
+
+    igc-switch {
+        @include css-vars-from-theme($theme, 'ig-switch');
+
+        &:hover {
+            &::part(thumb) {
+                &::after {
+                    opacity: .12;
+                }
+            }
+
+            &::part(thumb checked) {
+                &::after {
+                    opacity: .12;
+                }
+            }
+        }
+
+        &:focus-within {
+            &::part(thumb) {
+                &::after {
+                    opacity: .24;
+                }
+            }
+
+            &::part(thumb checked) {
+                &::after {
+                    opacity: .24;
+                }
+            }
+        }
+    }
+}

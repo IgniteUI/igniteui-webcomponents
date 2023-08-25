@@ -1,10 +1,18 @@
-import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+import {
+  elementUpdated,
+  expect,
+  fixture,
+  fixtureCleanup,
+  html,
+} from '@open-wc/testing';
+import { nothing } from 'lit';
 import sinon from 'sinon';
 import {
   defineComponents,
   IgcRatingComponent,
   IgcRatingSymbolComponent,
 } from '../../index.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Rating component', () => {
   before(() => {
@@ -17,7 +25,7 @@ describe('Rating component', () => {
     ) as NodeListOf<IgcRatingSymbolComponent>;
   const getProjectedSymbols = (el: IgcRatingComponent) => {
     const slot = el.shadowRoot!.querySelector(
-      'slot:not([name])'
+      'slot[name="symbol"]'
     ) as HTMLSlotElement;
     return slot
       .assignedElements()
@@ -164,6 +172,51 @@ describe('Rating component', () => {
       expect(getRatingWrapper(el).getAttribute('aria-valuetext')).to.equal(
         'Selected 5.2 of 9'
       );
+    });
+
+    it('correctly renders default symbols', async () => {
+      const rating = await fixture<IgcRatingComponent>(
+        html`<igc-rating max="10"></igc-rating>`
+      );
+      const symbols = getRatingSymbols(rating);
+
+      expect(symbols.length).to.equal(10);
+
+      symbols.forEach((symbol) => {
+        // in lieu of actual rendered check or more comprehensive symbol checks:
+        expect(symbol.offsetParent).to.be.ok;
+        expect(symbol.getClientRects()).to.not.be.empty;
+      });
+    });
+
+    it('correctly renders either default or projected symbols', async () => {
+      const renderCustomSymbols = () => html`
+        <igc-rating-symbol>🐝</igc-rating-symbol>
+        <igc-rating-symbol>🐝</igc-rating-symbol>
+        <igc-rating-symbol>🐝</igc-rating-symbol>
+      `;
+      const renderRating = (custom = false) => html`
+        <igc-rating> ${custom ? renderCustomSymbols() : nothing} </igc-rating>
+      `;
+      let rating = await fixture<IgcRatingComponent>(renderRating());
+
+      expect(getProjectedSymbols(rating)).to.be.empty;
+      const symbols = getRatingSymbols(rating);
+
+      expect(symbols).to.have.lengthOf(rating.max);
+      symbols.forEach((symbol) => {
+        expect(symbol.offsetParent).to.be.ok;
+        expect(symbol.getClientRects()).to.not.be.empty;
+      });
+
+      fixtureCleanup();
+      rating = await fixture<IgcRatingComponent>(renderRating(true));
+
+      expect(getProjectedSymbols(rating)).to.have.lengthOf(3);
+      getRatingSymbols(rating).forEach((symbol) => {
+        expect(symbol.offsetParent).to.be.null;
+        expect(symbol.getClientRects()).to.be.empty;
+      });
     });
 
     it('correctly renders symbols passed through igc-rating-symbol', async () => {
@@ -364,6 +417,48 @@ describe('Rating component', () => {
 
       await elementUpdated(el);
       expect(el.step).to.equal(1);
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcRatingComponent>(
+      html`<igc-rating name="rating" value="3"></igc-rating>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcRatingComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is associated on submit', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.equal('3');
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.value = 4;
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal(3);
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils custom constraints', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });

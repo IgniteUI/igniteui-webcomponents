@@ -1,0 +1,11 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'switch-themes' as *;
+
+@mixin theme() {
+    $theme: $bootstrap;
+
+    igc-switch {
+        @include css-vars-from-theme($theme, 'ig-switch');
+    }
+}

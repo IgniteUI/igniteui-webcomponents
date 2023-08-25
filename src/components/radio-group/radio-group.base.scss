@@ -1,5 +1,5 @@
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
     display: flex;
@@ -7,16 +7,10 @@
 
 :host([alignment='vertical']) {
     flex-direction: column;
-
-    ::slotted(igc-radio:not(:first-of-type)) {
-        margin-block-start: rem(8px);
-    }
+    gap: rem(8px);
 }
 
 :host([alignment='horizontal']) {
     flex-direction: row;
-
-    ::slotted(igc-radio:not(:first-of-type)) {
-        margin-inline-start: rem(8px);
-    }
+    gap: rem(8px);
 }

@@ -8,6 +8,17 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
 import { IgcInputBaseComponent } from './input-base.js';
+import {
+  Validator,
+  maxLengthValidator,
+  maxValidator,
+  minLengthValidator,
+  minValidator,
+  patternValidator,
+  requiredNumberValidator,
+  requiredValidator,
+  stepValidator,
+} from '../common/validators.js';
 
 /**
  * @element igc-input
@@ -31,11 +42,59 @@ import { IgcInputBaseComponent } from './input-base.js';
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
 
+  private get isStringType() {
+    return this.type !== 'number';
+  }
+
+  protected override validators: Validator<this>[] = [
+    {
+      ...requiredValidator,
+      isValid: () =>
+        this.isStringType
+          ? requiredValidator.isValid(this)
+          : requiredNumberValidator.isValid(this),
+    },
+    {
+      ...minLengthValidator,
+      isValid: () =>
+        this.isStringType ? minLengthValidator.isValid(this) : true,
+    },
+    {
+      ...maxLengthValidator,
+      isValid: () =>
+        this.isStringType ? maxLengthValidator.isValid(this) : true,
+    },
+    {
+      ...minValidator,
+      isValid: () => (this.isStringType ? true : minValidator.isValid(this)),
+    },
+    {
+      ...maxValidator,
+      isValid: () => (this.isStringType ? true : maxValidator.isValid(this)),
+    },
+    {
+      ...stepValidator,
+      isValid: () => (this.isStringType ? true : stepValidator.isValid(this)),
+    },
+    {
+      ...patternValidator,
+      isValid: () =>
+        this.isStringType ? patternValidator.isValid(this) : true,
+    },
+  ];
+
+  /**
+   * The value of the control.
+   * @attr
+   */
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
   public value = '';
 
-  /** The type attribute of the control. */
+  /**
+   * The type attribute of the control.
+   * @attr
+   */
   @alternateName('displayType')
   @property({ reflect: true })
   public type:
@@ -47,7 +106,10 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'text'
     | 'url' = 'text';
 
-  /** The input mode attribute of the control. */
+  /**
+   * The input mode attribute of the control.
+   * @attr
+   */
   @property()
   public inputmode!:
     | 'none'
@@ -59,53 +121,81 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'email'
     | 'url';
 
-  /** The pattern attribute of the control. */
+  /**
+   * The pattern attribute of the control.
+   * @attr
+   */
   @property({ type: String })
   public pattern!: string;
 
-  /** Controls the validity of the control. */
-  @property({ reflect: true, type: Boolean })
-  public invalid = false;
-
-  /** The minlength attribute of the control. */
+  /**
+   * The minlength attribute of the control.
+   * @attr
+   */
   @property({ type: Number })
   public minlength!: number;
 
-  /** The maxlength attribute of the control. */
+  /**
+   * The maxlength attribute of the control.
+   * @attr
+   */
   @property({ type: Number })
   public maxlength!: number;
 
-  /** The min attribute of the control. */
+  /**
+   * The min attribute of the control.
+   * @attr
+   */
   @property()
   public min!: number | string;
 
-  /** The max attribute of the control. */
+  /**
+   * The max attribute of the control.
+   * @attr
+   */
   @property()
   public max!: number | string;
 
-  /** The step attribute of the control. */
+  /**
+   * The step attribute of the control.
+   * @attr
+   */
   @property({ type: Number })
   public step!: number;
 
-  /** The autofocus attribute of the control. */
+  /**
+   * The autofocus attribute of the control.
+   * @attr
+   */
   @property({ type: Boolean })
   public override autofocus!: boolean;
 
-  /** The autocomplete attribute of the control. */
+  /**
+   * The autocomplete attribute of the control.
+   * @attr
+   */
   @property()
   public autocomplete!: string;
 
   @property({ type: Number })
   public override tabIndex = 0;
 
-  /** Checks for validity of the control and shows the browser message if it's invalid. */
-  public reportValidity() {
-    return this.input.reportValidity();
+  @watch('min', { waitUntilFirstUpdate: true })
+  @watch('max', { waitUntilFirstUpdate: true })
+  @watch('minlength', { waitUntilFirstUpdate: true })
+  @watch('maxlength', { waitUntilFirstUpdate: true })
+  @watch('pattern', { waitUntilFirstUpdate: true })
+  @watch('step', { waitUntilFirstUpdate: true })
+  protected constraintsChanged() {
+    this.updateValidity();
   }
 
-  /** Checks for validity of the control and emits the invalid event if it invalid. */
-  public checkValidity() {
-    return this.input.checkValidity();
+  @watch('value')
+  protected valueChange() {
+    const value = this.value ? this.value : null;
+    this.setFormValue(value, value);
+    this.updateValidity();
+    this.setInvalidState();
   }
 
   /** Replaces the selected text in the input. */
@@ -120,15 +210,6 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.value = this.input.value;
   }
 
-  /**
-   * Sets a custom validation message for the control.
-   * As long as `message` is not empty, the control is considered invalid.
-   */
-  public setCustomValidity(message: string) {
-    this.input.setCustomValidity(message);
-    this.invalid = !this.input.checkValidity();
-  }
-
   /** Selects all text within the input. */
   public select() {
     return this.input.select();
@@ -137,17 +218,13 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   /** Increments the numeric value of the input by one or more steps. */
   public stepUp(n?: number) {
     this.input.stepUp(n);
-    this.handleChange();
+    this.value = this.input.value;
   }
 
   /** Decrements the numeric value of the input by one or more steps. */
   public stepDown(n?: number) {
     this.input.stepDown(n);
-    this.handleChange();
-  }
-
-  private handleInvalid() {
-    this.invalid = true;
+    this.value = this.input.value;
   }
 
   private handleInput() {
@@ -160,41 +237,43 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     this.emitEvent('igcChange', { detail: this.value });
   }
 
-  @watch('value', { waitUntilFirstUpdate: true })
-  protected handleValueChange() {
-    this.updateComplete.then(
-      () => (this.invalid = !this.input.checkValidity())
-    );
+  protected override handleFocus(): void {
+    this._dirty = true;
+    super.handleFocus();
+  }
+
+  protected override handleBlur(): void {
+    this.invalid = !this.checkValidity();
+    super.handleBlur();
   }
 
   protected renderInput() {
     return html`
       <input
-        id="${this.inputId}"
-        part="${partNameMap(this.resolvePartNames('input'))}"
-        name="${ifDefined(this.name)}"
-        type="${ifDefined(this.type)}"
-        pattern="${ifDefined(this.pattern)}"
-        placeholder="${ifDefined(this.placeholder)}"
-        .value="${live(this.value)}"
-        ?readonly="${this.readonly}"
-        ?disabled="${this.disabled}"
-        ?required="${this.required}"
-        ?autofocus="${this.autofocus}"
+        id=${this.inputId}
+        part=${partNameMap(this.resolvePartNames('input'))}
+        name=${ifDefined(this.name)}
+        type=${ifDefined(this.type)}
+        pattern=${ifDefined(this.pattern)}
+        placeholder=${ifDefined(this.placeholder)}
+        .value=${live(this.value)}
+        ?readonly=${this.readonly}
+        ?disabled=${this.disabled}
+        ?required=${this.required}
+        ?autofocus=${this.autofocus}
         tabindex=${this.tabIndex}
-        autocomplete="${ifDefined(this.autocomplete as any)}"
-        inputmode="${ifDefined(this.inputmode)}"
-        min="${ifDefined(this.min)}"
-        max="${ifDefined(this.max)}"
-        minlength="${ifDefined(this.minlength)}"
-        maxlength="${ifDefined(this.maxlength)}"
-        step="${ifDefined(this.step)}"
-        aria-invalid="${this.invalid ? 'true' : 'false'}"
-        @invalid="${this.handleInvalid}"
-        @change="${this.handleChange}"
-        @input="${this.handleInput}"
-        @focus="${this.handleFocus}"
-        @blur="${this.handleBlur}"
+        autocomplete=${ifDefined(this.autocomplete as any)}
+        inputmode=${ifDefined(this.inputmode)}
+        min=${ifDefined(this.min)}
+        max=${ifDefined(this.max)}
+        minlength=${ifDefined(this.minlength)}
+        maxlength=${ifDefined(this.maxlength)}
+        step=${ifDefined(this.step)}
+        aria-invalid=${this.invalid ? 'true' : 'false'}
+        @change=${this.handleChange}
+        @input=${this.handleInput}
+        @focus=${this.handleFocus}
+        @blur=${this.handleBlur}
       />
     `;
   }

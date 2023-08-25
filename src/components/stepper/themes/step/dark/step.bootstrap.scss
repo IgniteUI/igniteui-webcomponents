@@ -1,0 +1,9 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+@mixin theme() {
+    igc-step {
+        @include css-vars-from-theme($bootstrap, 'ig-stepper');
+    }
+}
+

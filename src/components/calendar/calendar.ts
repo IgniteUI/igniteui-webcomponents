@@ -17,10 +17,11 @@ import {
 } from './common/calendar-base.js';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
-import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css.js';
 import { styles } from './themes/calendar.base.css.js';
+import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css.js';
 import { styles as fluent } from './themes/fluent/calendar.fluent.css.js';
-import { themes } from '../../theming/theming-decorator.js';
+import { styles as indigo } from './themes/indigo/calendar.indigo.css.js';
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
@@ -28,6 +29,7 @@ import IgcYearsViewComponent from './years-view/years-view.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import IgcIconComponent from '../icon/icon.js';
+import { Theme } from '../../theming/types.js';
 
 defineComponents(
   IgcIconComponent,
@@ -64,10 +66,14 @@ defineComponents(
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@themes({
-  bootstrap,
-  fluent,
-})
+@themes(
+  {
+    bootstrap,
+    fluent,
+    indigo,
+  },
+  true
+)
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
@@ -79,6 +85,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;
+  private declare readonly [themeSymbol]: Theme;
 
   @state()
   private rangePreviewDate?: Date;
@@ -129,7 +136,8 @@ export default class IgcCalendarComponent extends SizableMixin(
 
   /** The resource strings. */
   @property({ attribute: false })
-  public resourceStrings: IgcCalendarResourceStrings = IgcCalendarResourceStringEN;
+  public resourceStrings: IgcCalendarResourceStrings =
+    IgcCalendarResourceStringEN;
 
   @watch('formatOptions')
   @watch('locale')
@@ -588,6 +596,10 @@ export default class IgcCalendarComponent extends SizableMixin(
 
     let startYear = undefined;
     let endYear = undefined;
+    const prev_icon =
+      this[themeSymbol] === 'fluent' ? 'arrow_upward' : 'navigate_before';
+    const next_icon =
+      this[themeSymbol] === 'fluent' ? 'arrow_downward' : 'navigate_next';
 
     if (this.activeView === 'years') {
       startYear = calculateYearsRangeStart(activeDate, this.yearPerPage);
@@ -640,7 +652,7 @@ export default class IgcCalendarComponent extends SizableMixin(
             >
               <igc-icon
                 aria-hidden="true"
-                name="navigate_before"
+                name=${prev_icon}
                 collection="internal"
               ></igc-icon>
             </button>
@@ -654,7 +666,7 @@ export default class IgcCalendarComponent extends SizableMixin(
             >
               <igc-icon
                 aria-hidden="true"
-                name="navigate_next"
+                name=${next_icon}
                 collection="internal"
               ></igc-icon>
             </button>
@@ -738,42 +750,43 @@ export default class IgcCalendarComponent extends SizableMixin(
       >
         ${this.activeView === 'days'
           ? activeDates.map(
-              (activeDate, i) => html`<div part="days-view-container">
-                ${this.renderNavigation(
-                  activeDate,
-                  this.orientation === 'horizontal'
-                    ? i === activeDates.length - 1
-                    : i === 0,
-                  i
-                )}
-                <igc-days-view
-                  part="days-view"
-                  .active=${this.activeDaysViewIndex === i}
-                  .activeDate=${activeDate}
-                  .weekStart=${this.weekStart}
-                  .weekDayFormat=${this.formatOptions.weekday as
-                    | 'long'
-                    | 'short'
-                    | 'narrow'
-                    | undefined}
-                  .locale=${this.locale}
-                  .selection=${this.selection}
-                  .value=${this.value}
-                  .values=${this.values}
-                  .hideLeadingDays=${this.hideOutsideDays || i !== 0}
-                  .hideTrailingDays=${this.hideOutsideDays ||
-                  i !== activeDates.length - 1}
-                  .showWeekNumbers=${this.showWeekNumbers}
-                  .disabledDates=${this.disabledDates}
-                  .specialDates=${this.specialDates}
-                  .rangePreviewDate=${this.rangePreviewDate}
-                  .resourceStrings=${this.resourceStrings}
-                  exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
-                  @igcChange=${this.changeValue}
-                  @igcActiveDateChange=${this.activeDateChanged}
-                  @igcRangePreviewDateChange=${this.rangePreviewDateChange}
-                ></igc-days-view>
-              </div>`
+              (activeDate, i) =>
+                html`<div part="days-view-container">
+                  ${this.renderNavigation(
+                    activeDate,
+                    this.orientation === 'horizontal'
+                      ? i === activeDates.length - 1
+                      : i === 0,
+                    i
+                  )}
+                  <igc-days-view
+                    part="days-view"
+                    .active=${this.activeDaysViewIndex === i}
+                    .activeDate=${activeDate}
+                    .weekStart=${this.weekStart}
+                    .weekDayFormat=${this.formatOptions.weekday as
+                      | 'long'
+                      | 'short'
+                      | 'narrow'
+                      | undefined}
+                    .locale=${this.locale}
+                    .selection=${this.selection}
+                    .value=${this.value}
+                    .values=${this.values}
+                    .hideLeadingDays=${this.hideOutsideDays || i !== 0}
+                    .hideTrailingDays=${this.hideOutsideDays ||
+                    i !== activeDates.length - 1}
+                    .showWeekNumbers=${this.showWeekNumbers}
+                    .disabledDates=${this.disabledDates}
+                    .specialDates=${this.specialDates}
+                    .rangePreviewDate=${this.rangePreviewDate}
+                    .resourceStrings=${this.resourceStrings}
+                    exportparts="days-row, label, date-inner, week-number-inner, week-number, date, first, last, selected, inactive, hidden, current, weekend, range, special, disabled, single, preview"
+                    @igcChange=${this.changeValue}
+                    @igcActiveDateChange=${this.activeDateChanged}
+                    @igcRangePreviewDateChange=${this.rangePreviewDateChange}
+                  ></igc-days-view>
+                </div>`
             )
           : ''}
         ${this.activeView === 'months'

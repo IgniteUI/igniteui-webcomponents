@@ -1,14 +1,20 @@
 @use 'sass:math';
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
 @use 'vars' as *;
+@use 'styles/utilities' as *;
+@use '../light-themes' as *;
+
+$theme: $bootstrap;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-calendar');
+
     padding-block-start: rem(16px);
 }
 
 [part~='month-inner'],
 [part~='year-inner'] {
-    border-radius: $border-radius;
+    border-radius: var-get($theme, 'month-border-radius');
 }
 
 [part~='month-inner'][part~='selected'],

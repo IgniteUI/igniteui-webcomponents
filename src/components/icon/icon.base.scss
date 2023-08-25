@@ -1,0 +1,24 @@
+@use '../../styles/common/component';
+@use '../../styles/utilities' as *;
+
+:host {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+:host([size='small']) {
+    --component-size: var(--ig-size, var(--ig-size-small));
+}
+
+:host([size='medium']) {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+}
+
+:host([size='large']) {
+    --component-size: var(--ig-size, var(--ig-size-large));
+}
+
+:host([mirrored]) {
+    transform: scaleX(-1);
+}

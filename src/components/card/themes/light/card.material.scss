@@ -1,8 +1,12 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
-    @include border-radius(rem(3px));
+    @include css-vars-from-theme($theme, 'ig-card');
 
     display: flex;
     flex-direction: column;
@@ -10,6 +14,19 @@
     overflow: hidden;
     background: color(surface, 500);
     font-family: var(--ig-font-family);
+    border-radius: var-get($theme, 'border-radius');
+
+    ::slotted(igc-card-actions:first-child) {
+        margin-block-end: auto;
+    }
+
+    ::slotted(igc-card-actions:last-child) {
+        margin-block-start: auto;
+    }
+
+    ::slotted(igc-card-actions[orientation='vertical']) {
+        margin-block: initial;
+    }
 }
 
 :host([elevated]) {

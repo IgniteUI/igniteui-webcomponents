@@ -1,13 +1,27 @@
-@use '../../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use '../../button/light/themes' as *;
+
+$theme: $material-icon;
 
 :host {
-    --size: #{sizable(rem(24px), rem(30px), rem(36px))};
+    @include css-vars-from-theme($theme, 'ig-button');
+
+    ::slotted(igc-ripple) {
+        border-radius: var-get($theme, 'border-radius');
+    }
 }
 
 [part='base'] {
-    width: var(--size);
-    height: var(--size);
+    border-radius: var-get($theme, 'border-radius');
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
     padding: pad(6px);
+    color: color(gray, 900);
+
+    igc-icon {
+        color: color(gray, 900);
+    }
 }
 
 :host([variant='contained']) {
@@ -36,18 +50,25 @@
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part='base'] {
+        color: color(gray, 500);
+    }
+
+    igc-icon {
         color: color(gray, 500);
     }
 }
 
-:host([disabled][variant='contained']) {
+:host([disabled][variant='contained']),
+:host(:disabled[variant='contained']) {
     [part='base'] {
         background: color(gray, 100);
     }
 }
 
+:host(:disabled[variant='outlined']),
 :host([disabled][variant='outlined']) {
     [part='base'] {
         background: color(gray, 100);

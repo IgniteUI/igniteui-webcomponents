@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "exclude": [
+    "../vite.config.ts",
     "../**/*.spec.ts",
     "../stories"
   ],

@@ -1,11 +1,17 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
+$theme: $indigo;
 $background-color: var(--background-color, color(gray, 700, .9)) !default;
 $text-color: var(--text-color, contrast-color(gray, 700)) !default;
 
-[part~='base'] {
-    @include border-radius(rem(6px));
+:host {
+    @include css-vars-from-theme($theme, 'ig-snackbar');
+}
 
+[part~='base'] {
+    border-radius: var-get($theme, 'border-radius');
     background: $background-color;
     color: $text-color;
 }

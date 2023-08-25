@@ -1,18 +1,30 @@
+import { github, whiteHouse1 } from '@igniteui/material-icons-extended';
 import { html } from 'lit';
-import { Context, Story } from './story.js';
+import { Context } from './story.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
   defineComponents,
   IgcDropdownComponent,
   IgcDropdownItemComponent,
   IgcInputComponent,
 } from '../src/index.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+
+const icons = [github, whiteHouse1];
+
+icons.forEach((icon) => {
+  registerIconFromText(icon.name, icon.value);
+});
 
 defineComponents(IgcDropdownComponent, IgcInputComponent);
 
 // region default
-const metadata = {
+const metadata: Meta<IgcDropdownComponent> = {
   title: 'Dropdown',
   component: 'igc-dropdown',
+  parameters: {
+    docs: { description: { component: 'Represents a DropDown component.' } },
+  },
   argTypes: {
     keepOpenOnSelect: {
       type: 'boolean',
@@ -25,9 +37,7 @@ const metadata = {
       description:
         'Determines the behavior of the component during scrolling the container.',
       options: ['scroll', 'block', 'close'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'scroll',
     },
     keepOpenOnOutsideClick: {
@@ -61,18 +71,14 @@ const metadata = {
         'left-start',
         'left-end',
       ],
-      control: {
-        type: 'select',
-      },
+      control: { type: 'select' },
       defaultValue: 'bottom-start',
     },
     positionStrategy: {
       type: '"absolute" | "fixed"',
       description: "Sets the component's positioning strategy.",
       options: ['absolute', 'fixed'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'absolute',
     },
     flip: {
@@ -86,7 +92,7 @@ const metadata = {
       type: 'number',
       description: 'The distance from the target element.',
       control: 'number',
-      defaultValue: '0',
+      defaultValue: 0,
     },
     sameWidth: {
       type: 'boolean',
@@ -99,19 +105,36 @@ const metadata = {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
       options: ['small', 'medium', 'large'],
-      control: {
-        type: 'inline-radio',
-      },
+      control: { type: 'inline-radio' },
       defaultValue: 'large',
     },
   },
+  args: {
+    keepOpenOnSelect: false,
+    scrollStrategy: 'scroll',
+    keepOpenOnOutsideClick: false,
+    open: false,
+    placement: 'bottom-start',
+    positionStrategy: 'absolute',
+    flip: false,
+    distance: 0,
+    sameWidth: false,
+    size: 'large',
+  },
 };
+
 export default metadata;
-interface ArgTypes {
+
+interface IgcDropdownArgs {
+  /** Whether the dropdown should be kept open on selection. */
   keepOpenOnSelect: boolean;
+  /** Determines the behavior of the component during scrolling the container. */
   scrollStrategy: 'scroll' | 'block' | 'close';
+  /** Whether the component should be kept open on clicking outside of it. */
   keepOpenOnOutsideClick: boolean;
+  /** Sets the open state of the component. */
   open: boolean;
+  /** The preferred placement of the component around the target element. */
   placement:
     | 'top'
     | 'top-start'
@@ -125,15 +148,25 @@ interface ArgTypes {
     | 'left'
     | 'left-start'
     | 'left-end';
+  /** Sets the component's positioning strategy. */
   positionStrategy: 'absolute' | 'fixed';
+  /**
+   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
+   * When true, once enough space is detected on its preferred side, it will flip back.
+   */
   flip: boolean;
+  /** The distance from the target element. */
   distance: number;
+  /** Whether the dropdown's width should be the same as the target's one. */
   sameWidth: boolean;
+  /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
+type Story = StoryObj<IgcDropdownArgs>;
+
 // endregion
 
-(metadata as any).parameters = {
+Object.assign(metadata.parameters!, {
   actions: {
     handles: [
       'igcChange',
@@ -143,7 +176,7 @@ interface ArgTypes {
       'igcClosed',
     ],
   },
-};
+});
 
 const toggleDDL = (ev: Event, ddlId: string) => {
   const ddl = document.getElementById(ddlId) as IgcDropdownComponent;
@@ -165,7 +198,7 @@ const items = [
   'Documentation',
   'Builds',
 ];
-const Template: Story<ArgTypes, Context> = (
+const Template = (
   {
     size = 'large',
     open = false,
@@ -177,7 +210,7 @@ const Template: Story<ArgTypes, Context> = (
     keepOpenOnSelect = false,
     sameWidth = false,
     distance = 0,
-  }: ArgTypes,
+  }: IgcDropdownArgs,
   { globals: { direction } }: Context
 ) => html`
   <div
@@ -207,35 +240,25 @@ const Template: Story<ArgTypes, Context> = (
         .map(
           (item) =>
             html`<igc-dropdown-item
-              ><igc-icon slot="prefix" name="home"></igc-icon>${item}<igc-icon
-                name="github"
-                slot="suffix"
-              ></igc-icon
+              ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+              >${item}<igc-icon name="github" slot="suffix"></igc-icon
             ></igc-dropdown-item>`
         )}
       ${html`<igc-dropdown-item disabled
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[2]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
+        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+        >${items[2]}<igc-icon name="github" slot="suffix"></igc-icon
       ></igc-dropdown-item>`}
       ${html`<igc-dropdown-item
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[3]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
+        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+        >${items[3]}<igc-icon name="github" slot="suffix"></igc-icon
       ></igc-dropdown-item>`}
       ${html`<igc-dropdown-item
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[4]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
+        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+        >${items[4]}<igc-icon name="github" slot="suffix"></igc-icon
       ></igc-dropdown-item>`}
       ${html`<igc-dropdown-item disabled
-        ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<igc-icon
-          name="github"
-          slot="suffix"
-        ></igc-icon
+        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
+        >${items[5]}<igc-icon name="github" slot="suffix"></igc-icon
       ></igc-dropdown-item>`}
     </igc-dropdown>
 
@@ -364,7 +387,7 @@ const Template: Story<ArgTypes, Context> = (
   </div>
 `;
 
-const FormTemplate: Story<null, null> = () => checkoutForm;
+const FormTemplate = () => checkoutForm;
 const countries = [
   'Bulgaria',
   'United Kingdom',
@@ -425,5 +448,5 @@ const checkoutForm = html`
   <!-- </div> -->
 `;
 
-export const Basic = Template.bind({});
-export const Form = FormTemplate.bind({});
+export const Basic: Story = Template.bind({});
+export const Form: Story = FormTemplate.bind({});

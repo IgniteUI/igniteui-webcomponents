@@ -1,7 +1,7 @@
 @use '../utilities/mixins' as *;
-@use '../../../node_modules/igniteui-theming/sass/themes/mixins' as *;
-@use '../../../node_modules/igniteui-theming/sass/color/functions' as *;
-@use '../../../node_modules/igniteui-theming/sass/typography/functions' as *;
+@use 'igniteui-theming/sass/themes/mixins' as *;
+@use 'igniteui-theming/sass/color/functions' as *;
+@use 'igniteui-theming/sass/typography/functions' as *;
 
 :host {
     @include sizable();
@@ -16,12 +16,13 @@
     }
 
     @include ig-scrollbar(
-        var(--scrolbar-size, rem(14px)),
-        var(--ig-scrollbar-track-color, color(null, gray, 200)),
-        var(--ig-scrollbar-thumb-color, color(null, gray, 400))
+        var(--ig-scrollbar-size),
+        var(--ig-scrollbar-track-background),
+        var(--ig-scrollbar-thumb-background)
     );
 }
 
+:host([hidden]),
 [hidden] {
     display: none !important;
 }

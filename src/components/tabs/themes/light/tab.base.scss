@@ -1,9 +1,14 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
+$theme: $material;
 $hover-background: var(--hover-background, color(gray, 200)) !default;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-tabs');
+
     display: inline-flex;
     flex-shrink: 0;
     justify-content: center;
@@ -19,6 +24,7 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     user-select: none;
     background: color(surface, 500);
     color: color(gray, 700);
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host(:hover),
@@ -63,13 +69,10 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     flex-direction: column;
     text-align: center;
     outline-style: none;
+    gap: rem(8px);
 
     ::slotted(*) {
         @include line-clamp(2, true, true);
-    }
-
-    ::slotted(igc-icon:not(:only-child)) {
-        margin-bottom: rem(8px);
     }
 }
 

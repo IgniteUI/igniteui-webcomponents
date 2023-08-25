@@ -1,8 +1,11 @@
 @use '../../styles/utilities' as *;
 
-$disabled-color: color(gray, 200) !default;
-$disabled-selected-color: color(gray, 500) !default;
 $disabled-label-color: color(gray, 400) !default;
+
+:host {
+    --symbol-full-color: #{color(warn, 900)};
+    --symbol-empty-color: #{color(gray, 700)};
+}
 
 [part='base'],
 :host {
@@ -21,17 +24,13 @@ $disabled-label-color: color(gray, 400) !default;
     color: color(gray, 900);
 }
 
-:host([disabled]) {
-    [part~='symbols-wrapper'] {
-        color: $disabled-color;
-    }
+:host([disabled]),
+:host(:disabled) {
+    --symbol-full-color: #{color(warn, 100)};
+    --symbol-empty-color: #{color(warn, 100)};
 
     [part~='value-label'],
     [part~='label'] {
         color: $disabled-label-color;
-    }
-
-    [part='symbols-wrapper selected'] {
-        color: $disabled-selected-color;
     }
 }

@@ -12,6 +12,7 @@ import IgcCardMediaComponent from '../../card/card.media.js';
 import IgcCheckboxComponent from '../../checkbox/checkbox.js';
 import IgcChipComponent from '../../chip/chip.js';
 import IgcCircularProgressComponent from '../../progress/circular-progress.js';
+import IgcComboComponent from '../../combo/combo.js';
 import IgcDropdownComponent from '../../dropdown/dropdown.js';
 import IgcDropdownGroupComponent from '../../dropdown/dropdown-group.js';
 import IgcDropdownHeaderComponent from '../../dropdown/dropdown-header.js';
@@ -48,6 +49,13 @@ import IgcMaskInputComponent from '../../mask-input/mask-input.js';
 import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel.js';
 import IgcTreeComponent from '../../tree/tree.js';
 import IgcTreeItemComponent from '../../tree/tree-item.js';
+import IgcStepperComponent from '../../stepper/stepper.js';
+import IgcStepComponent from '../../stepper/step.js';
+import IgcDialogComponent from '../../dialog/dialog.js';
+import IgcSelectComponent from '../../select/select.js';
+import IgcSelectGroupComponent from '../../select/select-group.js';
+import IgcSelectHeaderComponent from '../../select/select-header.js';
+import IgcSelectItemComponent from '../../select/select-item.js';
 
 const allComponents: CustomElementConstructor[] = [
   IgcAvatarComponent,
@@ -63,10 +71,12 @@ const allComponents: CustomElementConstructor[] = [
   IgcCardComponent,
   IgcCheckboxComponent,
   IgcChipComponent,
+  IgcComboComponent,
   IgcDropdownComponent,
   IgcDropdownGroupComponent,
   IgcDropdownHeaderComponent,
   IgcDropdownItemComponent,
+  IgcDialogComponent,
   IgcSwitchComponent,
   IgcExpansionPanelComponent,
   IgcFormComponent,
@@ -85,6 +95,10 @@ const allComponents: CustomElementConstructor[] = [
   IgcRatingComponent,
   IgcRatingSymbolComponent,
   IgcRippleComponent,
+  IgcSelectGroupComponent,
+  IgcSelectHeaderComponent,
+  IgcSelectItemComponent,
+  IgcSelectComponent,
   IgcTreeComponent,
   IgcTreeItemComponent,
   IgcSliderComponent,
@@ -99,6 +113,8 @@ const allComponents: CustomElementConstructor[] = [
   IgcCircularGradientComponent,
   IgcSnackbarComponent,
   IgcDateTimeInputComponent,
+  IgcStepperComponent,
+  IgcStepComponent,
 ];
 
 export const defineAllComponents = () => {

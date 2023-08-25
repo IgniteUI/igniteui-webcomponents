@@ -1,0 +1,22 @@
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-icon');
+
+    color: var-get($theme, 'color');
+}
+
+svg {
+    fill: currentcolor;
+}
+
+:host,
+svg {
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
+}
