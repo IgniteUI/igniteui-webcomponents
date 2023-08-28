@@ -206,11 +206,6 @@ export default class IgcDropdownComponent
     this.toggleController.update();
   }
 
-  @watch('size')
-  protected sizeChange() {
-    this.groups.forEach((g) => g.requestUpdate());
-  }
-
   constructor() {
     super();
     this.toggleController = new IgcToggleController(this, {
@@ -512,6 +507,11 @@ export default class IgcDropdownComponent
 
   protected override render() {
     return html`
+      <style>
+        :host {
+          --component-size: var(--ig-size, var(--ig-size-${this.size}));
+        }
+      </style>
       <slot
         id="igcDDLTarget"
         name="target"
