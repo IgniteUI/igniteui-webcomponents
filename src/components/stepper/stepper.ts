@@ -99,6 +99,27 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   public override dir: Direction = 'auto';
 
   /**
+   * The animation type when in vertical mode.
+   * @attr vertical-animation
+   */
+  @property({ attribute: 'vertical-animation' })
+  public verticalAnimation: 'grow' | 'fade' | 'none' = 'grow';
+
+  /**
+   * The animation type when in horizontal mode.
+   * @attr horizontal-animation
+   */
+  @property({ attribute: 'horizontal-animation' })
+  public horizontalAnimation: 'slide' | 'fade' | 'none' = 'slide';
+
+  /**
+   * The animation duration in either vertical or horizontal mode.
+   * @attr animation-duration
+   */
+  @property({ attribute: 'animation-duration', type: Number })
+  public animationDuration = 320;
+
+  /**
    * Get/Set the position of the steps title.
    *
    * @remarks
@@ -112,9 +133,10 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   @watch('orientation', { waitUntilFirstUpdate: true })
   protected orientationChange(): void {
     this.setAttribute('aria-orientation', this.orientation);
-    this.steps.forEach(
-      (step: IgcStepComponent) => (step.orientation = this.orientation)
-    );
+    this.steps.forEach((step: IgcStepComponent) => {
+      step.orientation = this.orientation;
+      this.updateAnimation(step);
+    });
   }
 
   @watch('stepType', { waitUntilFirstUpdate: true })
@@ -162,6 +184,21 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     }
   }
 
+  @watch('verticalAnimation', { waitUntilFirstUpdate: true })
+  @watch('horizontalAnimation', { waitUntilFirstUpdate: true })
+  protected animationTypeChange() {
+    this.steps.forEach((step: IgcStepComponent) => {
+      this.updateAnimation(step);
+    });
+  }
+
+  @watch('animationDuration', { waitUntilFirstUpdate: true })
+  protected animationDurationChange() {
+    this.steps.forEach((step: IgcStepComponent) => {
+      step.animationDuration = this.animationDuration;
+    });
+  }
+
   constructor() {
     super();
 
@@ -206,7 +243,22 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     }
   }
 
-  private activateStep(step: IgcStepComponent, shouldEmit = true) {
+  private animateSteps(
+    nextStep: IgcStepComponent,
+    currentStep: IgcStepComponent
+  ) {
+    if (nextStep.index > currentStep.index) {
+      // Animate steps in ascending/next direction
+      currentStep.toggleAnimation('out');
+      nextStep.toggleAnimation('in');
+    } else {
+      // Animate steps in descending/previous direction
+      currentStep.toggleAnimation('in', 'reverse');
+      nextStep.toggleAnimation('out', 'reverse');
+    }
+  }
+
+  private async activateStep(step: IgcStepComponent, shouldEmit = true) {
     if (step === this.activeStep) {
       return;
     }
@@ -220,6 +272,8 @@ export default class IgcStepperComponent extends EventEmitterMixin<
         },
         cancelable: true,
       };
+
+      this.animateSteps(step, this.activeStep);
 
       const allowed = this.emitEvent('igcActiveStepChanging', args);
 
@@ -258,7 +312,9 @@ export default class IgcStepperComponent extends EventEmitterMixin<
       (step: IgcStepComponent, i: number) =>
         i > activeStepIndex && step.isAccessible
     );
+
     if (nextStep) {
+      this.animateSteps(nextStep, this.activeStep);
       this.activateStep(nextStep, false);
     }
   }
@@ -379,6 +435,16 @@ export default class IgcStepperComponent extends EventEmitterMixin<
     }
   }
 
+  private updateAnimation(step: IgcStepComponent) {
+    if (this.orientation === 'horizontal') {
+      step.animation = this.horizontalAnimation;
+    }
+
+    if (this.orientation === 'vertical') {
+      step.animation = this.verticalAnimation;
+    }
+  }
+
   private syncProperties(): void {
     this.steps.forEach((step: IgcStepComponent, index: number) => {
       step.orientation = this.orientation;
@@ -394,6 +460,8 @@ export default class IgcStepperComponent extends EventEmitterMixin<
       if (index > 0) {
         step.previousComplete = this.steps[index - 1].complete;
       }
+      step.animationDuration = this.animationDuration;
+      this.updateAnimation(step);
     });
   }
 
