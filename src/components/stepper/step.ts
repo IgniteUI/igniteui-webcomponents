@@ -1,5 +1,7 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
+import { AnimationPlayer, EaseInOut } from '../../animations/index.js';
+import { Animation, animations } from './animations.js';
 import { when } from 'lit/directives/when.js';
 import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
@@ -47,6 +49,8 @@ export default class IgcStepComponent extends LitElement {
   /** @private */
   public static override styles = styles;
 
+  private animationPlayer!: AnimationPlayer;
+
   @queryAssignedElements({ slot: 'title' })
   private _titleChildren!: Array<HTMLElement>;
 
@@ -60,6 +64,10 @@ export default class IgcStepComponent extends LitElement {
   /* blazorSuppress */
   @query('[part~="body"]')
   public contentBody!: HTMLElement;
+
+  /* blazorSuppress */
+  @query('[part~="body"]')
+  public body!: HTMLElement;
 
   /** Gets/sets whether the step is invalid. */
   @property({ reflect: true, type: Boolean })
@@ -91,37 +99,69 @@ export default class IgcStepComponent extends LitElement {
   @property({ reflect: true, type: Boolean })
   public complete = false;
 
-  /** @private */
+  /** @hidden @internal @private */
   @property({ attribute: false })
   public previousComplete = false;
 
-  /** @private */
+  /** @hidden @internal @private */
   @property({ attribute: false })
   public stepType: 'indicator' | 'title' | 'full' = 'full';
 
-  /** @private */
+  /** @hidden @internal @private */
   @property({ attribute: false })
   public titlePosition?: 'bottom' | 'top' | 'end' | 'start';
 
-  /** @private */
+  /** @hidden @internal @private */
   @property({ attribute: false })
   public orientation: 'horizontal' | 'vertical' = 'horizontal';
 
-  /** @private */
+  /** @hidden @internal @private */
   @property({ attribute: false })
   public index = -1;
 
-  /** @private */
+  /** @hidden @internal @private */
   @property({ attribute: false })
   public contentTop = false;
 
-  /** @private */
+  /** @hidden @internal @private */
   @property({ attribute: false })
   public linearDisabled = false;
 
-  /** @private */
+  /** @hidden @internal @private */
   @property({ attribute: false })
   public visited = false;
+
+  /** @hidden @intrnal @private */
+  @property({ attribute: false })
+  public animation: Animation = 'fade';
+
+  /** @hidden @internal @private */
+  @property({ attribute: false })
+  public animationDuration = 350;
+
+  public override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.body);
+  }
+
+  public async toggleAnimation(
+    type: 'in' | 'out',
+    direction: 'normal' | 'reverse' = 'normal'
+  ) {
+    const animation = animations.get(this.animation)!.get(type)!;
+
+    const options: KeyframeAnimationOptions = {
+      duration: this.animationDuration,
+      easing: EaseInOut.Quad,
+      direction,
+    };
+
+    const [_, event] = await Promise.all([
+      this.animationPlayer.stopAll(),
+      this.animationPlayer.play(animation(options)),
+    ]);
+
+    return event.type;
+  }
 
   @watch('active', { waitUntilFirstUpdate: true })
   protected activeChange() {
