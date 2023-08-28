@@ -106,29 +106,27 @@
 }
 
 [part~='body'] {
-    display: var(--vertical-body-disply--last-of-type, var(--vertical-body-disply, none));
+    display: block;
+    opacity: 0;
     grid-row-start: var(--body-top, 2);
-    grid-column: span var(--steps-count);
-    margin-inline-start: calc(var(--body-indent--vertical) / 2);
-    padding-inline-start: var(--horizontal-body-padding, #{calc(var(--body-indent--vertical) / 2)});
-    padding-inline-end: var(--horizontal-body-padding, var(--vertical-body-padding));
-    padding-block-start: var(--horizontal-body-padding, var(--vertical-body-padding));
-    padding-block-end: var(--horizontal-body-padding, var(--vertical-body-padding));
+    grid-column: 1 / span var(--steps-count);
+    padding-inline-start: calc(var(--body-indent--vertical) / 2);
     z-index: 1;
     position: relative;
-    overflow: auto;
+    overflow: hidden;
 
     // Thous two lines here are on purpose, they make sure that step body content
     // does not get involved in grid width calculation. They fix a very weird bug.
     // https://stackoverflow.com/questions/73856035/css-grid-columns-changing-size-with-long-content/73858982#73858982
     width: 0;
+    height: var(--vertical-body-height, auto);
     min-width: 100%;
 
     &::before {
         display: var(--hide-last-separator, var(--hide-first-separator, var(--vertical-separator-visibility)));
         content: '';
         position: absolute;
-        inset-inline-start: calc((var(--separator-size) / 2) * -1);
+        inset-inline-start: calc(var(--body-indent--vertical) / 2 - (var(--separator-size) / 2));
         height: 100%;
         inset-block-start: 0 !important;
         border-inline-start-style: var(--separator-type);
@@ -137,9 +135,17 @@
 }
 
 [part='content'] {
-    display: var(--horizontal-content-disply, none);
-    height: 100%;
+    display: block;
+    height: auto;
     overflow: auto;
+
+    > slot {
+        display: block;
+        padding-inline-start: var(--horizontal-body-padding, #{calc(var(--body-indent--vertical) / 2)});
+        padding-inline-end: var(--horizontal-body-padding, var(--vertical-body-padding));
+        padding-block-start: var(--horizontal-body-padding, var(--vertical-body-padding));
+        padding-block-end: var(--horizontal-body-padding, var(--vertical-body-padding));
+    }
 }
 
 [part~='top'] {
@@ -256,7 +262,8 @@
 
 :host([active]) {
     [part~='body'] {
-        display: var(--vertical-body-disply, block);
+        height: 100%;
+        opacity: 1;
     }
 
     [part~='body bottom'] {
@@ -266,7 +273,6 @@
     }
 
     [part='content'] {
-        display: var(--horizontal-content-disply, block);
         pointer-events: all;
     }
 }
