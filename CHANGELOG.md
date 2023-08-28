@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - Select
     - Switch
 
+### Fixed
+- DateTime Input - `spinUp/spinDown` calls moving the caret when the input is focused [#859](https://github.com/IgniteUI/igniteui-webcomponents/issues/859)
 ### Deprecated
  - IgcForm component is deprecated
  - Input component:

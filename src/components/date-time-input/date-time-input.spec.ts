@@ -430,6 +430,35 @@ describe('Date Time Input component', () => {
       expect(el.value.getFullYear()).to.equal(value.getFullYear());
     });
 
+    it('should not move input selection (caret) from a focused part when stepUp/stepDown are invoked', async () => {
+      el.inputFormat = 'yyyy/MM/dd';
+      el.value = new Date(2023, 5, 1);
+      el.focus();
+      await elementUpdated(el);
+
+      // Year part
+      el.setSelectionRange(0, 1);
+
+      let start = input.selectionStart,
+        end = input.selectionEnd;
+
+      el.stepDown();
+      await elementUpdated(el);
+
+      expect(el.value.getFullYear()).to.eq(2022);
+      expect(input.selectionStart).to.eq(start);
+      expect(input.selectionEnd).to.eq(end);
+
+      // Month part
+      el.setSelectionRange(5, 6);
+      (start = input.selectionStart), (end = input.selectionEnd);
+
+      el.stepUp();
+      expect(el.value.getMonth()).to.eq(6);
+      expect(input.selectionStart).to.eq(start);
+      expect(input.selectionEnd).to.eq(end);
+    });
+
     it('ArrowLeft/Right should navigate to the beginning/end of date section', async () => {
       const value = new Date(2020, 2, 3);
       el.value = value;

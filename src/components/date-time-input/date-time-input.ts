@@ -345,8 +345,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       return;
     }
 
+    const { start, end } = this.inputSelection;
     const newValue = this.trySpinValue(targetPart, delta);
     this.value = newValue;
+    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
   /** Decrements a date/time portion. */
@@ -357,8 +359,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       return;
     }
 
+    const { start, end } = this.inputSelection;
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue;
+    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
   /** Clears the input element of user input. */

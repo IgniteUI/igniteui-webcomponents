@@ -1,10 +1,7 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import {
-  DatePart,
-  DatePartDeltas,
-} from '../src/components/date-time-input/date-util.js';
+import { DatePartDeltas } from '../src/components/date-time-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { IgcDateTimeInputComponent, defineComponents } from '../src/index.js';
 import {
@@ -197,27 +194,6 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/navigation/svg/production/ic_arrow_drop_down_24px.svg'
 );
 
-const handleIncrement = () => {
-  const input = document.querySelector(
-    'igc-date-time-input'
-  ) as IgcDateTimeInputComponent;
-  input!.stepUp(DatePart.Date);
-};
-
-const handleDecrement = () => {
-  const input = document.querySelector(
-    'igc-date-time-input'
-  ) as IgcDateTimeInputComponent;
-  input!.stepDown();
-};
-
-const handleClear = () => {
-  const input = document.querySelector(
-    'igc-date-time-input'
-  ) as IgcDateTimeInputComponent;
-  input!.clear();
-};
-
 Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcChange', 'igcInput'],
@@ -251,6 +227,7 @@ const Template = (
   };
 
   return html`<igc-date-time-input
+    id="editor"
     dir=${direction}
     size=${ifDefined(size)}
     label=${label}
@@ -270,9 +247,9 @@ const Template = (
     .spinDelta=${spinDelta}
     .invalid=${invalid}
   >
-    <igc-icon name="clear" slot="prefix" @click=${handleClear}></igc-icon>
-    <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
-    <igc-icon name="down" slot="suffix" @click=${handleDecrement}></igc-icon>
+    <igc-icon name="clear" slot="prefix" onclick="editor.clear()"></igc-icon>
+    <igc-icon name="up" slot="suffix" onclick="editor.stepUp()"></igc-icon>
+    <igc-icon name="down" slot="suffix" onclick="editor.stepDown()"></igc-icon>
     <span slot="helper-text">This is some helper text</span>
   </igc-date-time-input>`;
 };
