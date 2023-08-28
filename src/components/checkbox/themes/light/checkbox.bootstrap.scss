@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'checkbox-themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'checkbox');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius,
-        ripple-radius: $ripple-radius
-    )
-));
+$theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-checkbox');

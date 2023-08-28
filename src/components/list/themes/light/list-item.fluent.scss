@@ -1,15 +1,7 @@
-@use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/fluent/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-fluent-schema, 'list');
-$item-border-radius: border-radius(map.get($schema, 'item-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        item-border-radius: $item-border-radius
-    )
-));
+$theme: $fluent;
 $separator-color: color(gray, 100) !default;
 $item-hover-bg: var(--item-hover-bg, color(gray, 200)) !default;
 

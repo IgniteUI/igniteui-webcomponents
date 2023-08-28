@@ -1,9 +1,8 @@
-@use '../../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
     igc-step {
-        --header-background--hover: #{color(gray, 100, .3)};
-        --header-background--focus: #{color(gray, 100, .5)};
-        --header-separator-visibility--hover: hidden;
+        @include css-vars-from-theme($indigo, 'ig-stepper');
     }
 }

@@ -1,12 +1,8 @@
-@use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/fluent/dark' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
-    $schema: map.get($dark-fluent-schema, 'radio');
-    $theme: digest-schema($schema);
-
     igc-radio {
-        @include css-vars-from-theme($theme, 'ig-radio');
+        @include css-vars-from-theme($fluent, 'ig-radio');
     }
 }

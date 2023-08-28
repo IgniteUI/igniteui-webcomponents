@@ -2,7 +2,7 @@ import autoprefixer from 'autoprefixer';
 import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import postcss from 'postcss';
-import * as sass from 'sass';
+import * as sass from 'sass-embedded';
 
 const stripComments = () => {
   return {
@@ -18,11 +18,12 @@ stripComments.postcss = true;
 export const template = path.resolve(process.argv[1], '../styles.tmpl');
 export const postProcessor = postcss([autoprefixer, stripComments]);
 
-const renderSass = sass.compile;
+const renderSass = sass.compileAsync;
 
 async function sassToCss(sassFile) {
-  const result = renderSass(sassFile, {
+  const result = await renderSass(sassFile, {
     outputStyle: 'compressed',
+    loadPaths: ['node_modules', 'src']
   });
 
   let cssStr = postProcessor.process(result.css).css;

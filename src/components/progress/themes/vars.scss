@@ -1,4 +1,4 @@
-@use '../../../styles/utilities/index' as *;
+@use 'styles/utilities' as *;
 
 $danger-color: color(error, 500);
 $warning-color: color(warn, 500);

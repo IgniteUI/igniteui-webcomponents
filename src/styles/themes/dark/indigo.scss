@@ -1,4 +1,4 @@
-@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
+@use 'igniteui-theming/sass/color/presets/dark/indigo' as *;
 @use '../base/indigo' as base;
 @use '../base/scrollbars';
 @use '../third-party/grid/indigo.dark' as grid;
@@ -19,7 +19,8 @@
 @use '../../../components/icon/dark/icon.indigo' as icon;
 @use '../../../components/navbar/themes/dark/navbar.indigo' as navbar;
 @use '../../../components/avatar/themes/dark/avatar.indigo' as avatar;
-@include base.root-styles($dark-indigo-palette);
+@use '../../../components/stepper/themes/step/dark/step.indigo' as stepper;
+@include base.root-styles($palette);
 @include checkbox.theme();
 @include switch.theme();
 @include input.theme();
@@ -38,3 +39,4 @@
 @include icon.theme();
 @include navbar.theme();
 @include avatar.theme();
+@include stepper.theme();

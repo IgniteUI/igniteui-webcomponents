@@ -1,0 +1,28 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/tabs' as *;
+
+$material: map.merge(
+    digest-schema($dark-tabs),
+    (
+        border-radius: border-radius(map.get($dark-tabs, 'border-radius')...)
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($dark-bootstrap-tabs),
+    (
+        border-radius: border-radius(map.get($dark-bootstrap-tabs, 'border-radius')...)
+    )
+);
+$fluent: map.merge(
+    digest-schema($dark-fluent-tabs),
+    (
+        border-radius: border-radius(map.get($dark-fluent-tabs, 'border-radius')...)
+    )
+);
+$indigo: map.merge(
+    digest-schema($dark-indigo-tabs),
+    (
+        border-radius: border-radius(map.get($dark-indigo-tabs, 'border-radius')...)
+    )
+);
