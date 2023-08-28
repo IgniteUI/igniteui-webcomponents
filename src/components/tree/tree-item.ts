@@ -516,10 +516,7 @@ export default class IgcTreeItemComponent extends LitElement {
     const size = this.level * (this.tree ? sizeMultiplier[this.tree!.size] : 1);
 
     return html`
-      <div
-        id="wrapper"
-        part="wrapper ${this.tree?.size} ${partNameMap(this.parts)}"
-      >
+      <div id="wrapper" part="wrapper ${partNameMap(this.parts)}">
         <div
           style="width: calc(${size} * var(--igc-tree-indentation-size))"
           part="indentation"

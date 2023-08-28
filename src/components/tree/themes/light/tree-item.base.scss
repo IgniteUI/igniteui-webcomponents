@@ -21,6 +21,10 @@ $toggle-icon-size: rem(24px);
     display: flex;
     flex-direction: column;
     font-family: inherit;
+    
+    igc-circular-progress {
+        --diameter: #{sizable(rem(18px), rem(20px), rem(24px))};
+    }
 }
 
 :host(:focus-within) {
@@ -137,23 +141,5 @@ $toggle-icon-size: rem(24px);
         &::part(label) {
             display: none;
         }
-    }
-}
-
-[part~='large'] {
-    igc-circular-progress {
-        --diameter: #{rem(24px)};
-    }
-}
-
-[part~='medium'] {
-    igc-circular-progress {
-        --diameter: #{rem(20px)};
-    }
-}
-
-[part~='small'] {
-    igc-circular-progress {
-        --diameter: #{rem(18px)};
     }
 }

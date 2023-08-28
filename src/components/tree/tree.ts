@@ -209,7 +209,12 @@ export default class IgcTreeComponent extends SizableMixin(
   }
 
   protected override render() {
-    return html`<slot></slot>`;
+    return html` <style>
+        :host {
+          --component-size: var(--ig-size, var(--ig-size-${this.size}));
+        }
+      </style>
+      <slot></slot>`;
   }
 }
 
