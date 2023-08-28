@@ -34,13 +34,13 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The date format to apply on the input.',
       control: 'text',
     },
-    minValue: {
-      type: 'Date | null',
+    min: {
+      type: 'Date',
       description: 'The minimum value required for the input to remain valid.',
       control: 'date',
     },
-    maxValue: {
-      type: 'Date | null',
+    max: {
+      type: 'Date',
       description: 'The maximum value required for the input to remain valid.',
       control: 'date',
     },
@@ -143,9 +143,9 @@ interface IgcDateTimeInputArgs {
   /** The date format to apply on the input. */
   inputFormat: string;
   /** The minimum value required for the input to remain valid. */
-  minValue: Date | null;
+  min: Date;
   /** The maximum value required for the input to remain valid. */
-  maxValue: Date | null;
+  max: Date;
   /**
    * Format to display the value in when not editing.
    * Defaults to the input format if not set.
@@ -234,8 +234,8 @@ const Template = (
     outlined,
     placeholder,
     displayFormat,
-    minValue,
-    maxValue,
+    min,
+    max,
     size,
     locale,
     spinLoop,
@@ -257,8 +257,8 @@ const Template = (
     .value=${value ? new Date(value as Date) : null}
     .inputFormat=${inputFormat}
     .displayFormat=${displayFormat}
-    .minValue=${minValue ? new Date(minValue as Date) : null}
-    .maxValue=${maxValue ? new Date(maxValue as Date) : null}
+    .min=${min ? new Date(min as Date) : null}
+    .max=${max ? new Date(max as Date) : null}
     locale=${ifDefined(locale)}
     prompt=${ifDefined(prompt)}
     placeholder=${ifDefined(placeholder)}
@@ -318,13 +318,13 @@ export const Form: Story = {
           <igc-date-time-input
             name="datetime-min"
             label="Minimum constraint (2023-03-17)"
-            min-value="2023-03-17"
+            min="2023-03-17"
             value="2020-01-01"
           ></igc-date-time-input>
           <igc-date-time-input
             name="datetime-max"
             label="Maximum constraint (2023-04-17)"
-            max-value="2023-04-17"
+            max="2023-04-17"
             value="2024-03-17"
           ></igc-date-time-input>
         </fieldset>

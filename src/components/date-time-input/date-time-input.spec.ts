@@ -375,7 +375,7 @@ describe('Date Time Input component', () => {
     it('mouse wheel readonly', async () => {
       const value = new Date(2020, 2, 3);
       el.value = value;
-      el.readonly = true;
+      el.readOnly = true;
       el.focus();
       await elementUpdated(el);
 
@@ -419,7 +419,7 @@ describe('Date Time Input component', () => {
 
     it('Up/Down arrow readonly', async () => {
       const value = new Date(2020, 2, 3);
-      el.readonly = true;
+      el.readOnly = true;
       el.value = value;
       el.focus();
       await elementUpdated(el);
@@ -656,8 +656,8 @@ describe('Date Time Input component', () => {
       expect(input.value).to.equal('10/10/2020');
     });
 
-    it('should respect minValue', async () => {
-      el.minValue = new Date(2020, 2, 3);
+    it('should respect min attribute', async () => {
+      el.min = new Date(2020, 2, 3);
       el.value = new Date(2020, 1, 3);
       await elementUpdated(el);
       expect(el.checkValidity()).to.be.false;
@@ -669,8 +669,8 @@ describe('Date Time Input component', () => {
       expect(el.invalid).to.be.false;
     });
 
-    it('should respect maxValue', async () => {
-      el.maxValue = new Date(2020, 2, 3);
+    it('should respect max attribute', async () => {
+      el.max = new Date(2020, 2, 3);
       el.value = new Date(2020, 3, 3);
       await elementUpdated(el);
 
@@ -852,7 +852,7 @@ describe('Date Time Input component', () => {
     });
 
     it('fulfils min value constraint', async () => {
-      spec.element.minValue = new Date(2025, 0, 1);
+      spec.element.min = new Date(2025, 0, 1);
       await elementUpdated(spec.element);
       spec.submitFails();
 
@@ -866,7 +866,7 @@ describe('Date Time Input component', () => {
     });
 
     it('fulfils max value constraint', async () => {
-      spec.element.maxValue = new Date(2020, 0, 1);
+      spec.element.max = new Date(2020, 0, 1);
       spec.element.value = new Date(Date.now());
       await elementUpdated(spec.element);
       spec.submitFails();

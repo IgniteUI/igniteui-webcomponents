@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
 - DateTime input component:
     - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+    - `minValue` property is deprecated and will be removed in the next major version. Use `min` instead.
+    - `maxValue` property is deprecated and will be removed in the next major version. Use `max` instead.
 - Rating component:
     - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
 
