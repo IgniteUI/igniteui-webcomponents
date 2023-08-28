@@ -88,7 +88,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
 
     const [_, event] = await Promise.all([
       this.animationPlayer.stopAll(),
-      this.animationPlayer.play(animation),
+      this.animationPlayer.play(animation()),
     ]);
 
     return event.type === 'finish';

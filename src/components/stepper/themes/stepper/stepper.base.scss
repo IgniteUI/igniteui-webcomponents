@@ -4,6 +4,7 @@
 // STEPPER
 :host {
     font-family: var(--ig-font-family);
+    overflow: hidden;
 
     --margin: #{rem(16px)};
     --body-padding: #{rem(16px)};
@@ -116,6 +117,7 @@
 :host(:not([orientation='horizontal'])) {
     --vertical-header-z-index: 2;
     --vertical-body-disply: block;
+    --vertical-body-height: 0;
     --header-width-vertical: 100%;
     --hide-horizontal-separator: none;
 
