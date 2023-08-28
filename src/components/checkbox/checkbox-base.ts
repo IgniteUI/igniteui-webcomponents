@@ -56,10 +56,6 @@ export class IgcCheckboxBaseComponent extends FormAssociatedRequiredMixin(
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
 
-  /** Sets the aria-labelledby attribute for the control. */
-  @property({ reflect: true, attribute: 'aria-labelledby' })
-  public ariaLabelledby!: string;
-
   constructor() {
     super();
     this.addEventListener('keyup', this.handleKeyUp);

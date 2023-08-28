@@ -33,7 +33,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 - Removed our own `dir` attribute which shadowed the default one. This is a **non-breaking change**.
-- Slider - `ariaLabel` shadowed property. This is a **non-breaking-change**.
+- Slider - `ariaLabel` shadowed property. This is a **non-breaking change**.
+- Checkbox - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
+- Switch - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
 
 ## [4.3.1] - 2023-08-02
 ### Added
