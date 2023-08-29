@@ -212,8 +212,13 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return html`${this[themeSymbol] === 'material'
-      ? this.renderMaterial()
-      : this.renderStandard()}`;
+    return html` <style>
+        :host {
+          --component-size: var(--ig-size, var(--ig-size-${this.size}));
+        }
+      </style>
+      ${this[themeSymbol] === 'material'
+        ? this.renderMaterial()
+        : this.renderStandard()}`;
   }
 }
