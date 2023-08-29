@@ -105,6 +105,11 @@ export default class IgcChipComponent extends SizableMixin(
 
   protected override render() {
     return html`
+      <style>
+        :host {
+          --component-size: var(--ig-size, var(--ig-size-${this.size}));
+        }
+      </style>
       <button
         part="base"
         .disabled="${this.disabled}"
