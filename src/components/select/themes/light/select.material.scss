@@ -46,6 +46,13 @@ $active-border-width: rem(2px) !default;
         }
     }
 
+    igc-input:not([invalid])::part(notch) {
+        border-bottom: {
+            width: $active-border-width;
+            color: $active-color;
+        }
+    }
+
     igc-input[readonly]:not([disabled])::part(end) {
         border: {
             color: $active-color;
