@@ -25,7 +25,7 @@ export default class IgcToggleButtonComponent extends LitElement {
    * @attr
    */
   @property({ type: String, reflect: true })
-  public value?: string | undefined;
+  public value!: string;
 
   /**
    * Determines whether the button is selected.
@@ -77,10 +77,6 @@ export default class IgcToggleButtonComponent extends LitElement {
     this.nativeElement.click();
   }
 
-  private handleClick() {
-    this.selected = !this.selected;
-  }
-
   protected override render() {
     return html`
       <button
@@ -91,7 +87,6 @@ export default class IgcToggleButtonComponent extends LitElement {
         aria-label=${ifDefined(this.ariaLabel)}
         aria-pressed=${this.selected}
         aria-disabled=${this.disabled}
-        @click=${this.handleClick}
       >
         <slot></slot>
       </button>

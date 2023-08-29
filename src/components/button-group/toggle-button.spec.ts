@@ -138,6 +138,10 @@ describe('Toggle Button', () => {
     it('should simulate a mouse click when the click method is called', async () => {
       expect(button.selected).to.be.false;
 
+      button.addEventListener('click', () => {
+        button.selected = true;
+      });
+
       button.click();
       await elementUpdated(button);
 
