@@ -62,6 +62,11 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
 
   protected renderContent() {
     return html`
+      <style>
+        :host {
+          --component-size: var(--ig-size, var(--ig-size-${this.size}));
+        }
+      </style>
       ${this.name || this.mirrored
         ? html`
             <igc-icon

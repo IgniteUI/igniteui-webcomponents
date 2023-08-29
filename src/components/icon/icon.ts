@@ -96,7 +96,14 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
   }
 
   protected override render() {
-    return html` ${unsafeSVG(this.svg)} `;
+    return html`
+      <style>
+        :host {
+          --component-size: var(--ig-size, var(--ig-size-${this.size}));
+        }
+      </style>
+      ${unsafeSVG(this.svg)}
+    `;
   }
 
   @blazorInclude()
