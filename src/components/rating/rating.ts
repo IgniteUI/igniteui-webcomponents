@@ -385,6 +385,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     ];
 
     return html`
+      <style>
+        :host {
+          --component-size: var(--ig-size, var(--ig-size-${this.size}));
+        }
+      </style>
       <label part="label" id="rating-label" ?hidden=${!this.label}
         >${this.label}</label
       >
