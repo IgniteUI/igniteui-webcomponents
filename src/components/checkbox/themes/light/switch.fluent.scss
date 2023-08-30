@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/fluent/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'switch-themes' as *;
 
-$schema: map.get($light-fluent-schema, 'switch');
-$border-radius-thumb: border-radius(map.get($schema, 'border-radius-thumb')...);
-$border-radius-track: border-radius(map.get($schema, 'border-radius-track')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius-thumb: $border-radius-thumb,
-        border-radius-track: $border-radius-track
-    )
-));
+$theme: $fluent;
 
 :host {
     --size: #{rem(40px)};
@@ -75,7 +66,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled]):hover)  {
+:host(:not([disabled]):hover),
+:host(:not(:disabled):hover)  {
     [part~='control'] {
         border-color: var-get($theme, 'border-hover-color');
     }
@@ -94,7 +86,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='control'][part~='checked'] {
         background: var-get($theme, 'track-error-color');
     }
@@ -123,7 +116,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='label'] {
         color: var-get($theme, 'label-disabled-color');
     }

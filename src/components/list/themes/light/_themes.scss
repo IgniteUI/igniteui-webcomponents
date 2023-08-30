@@ -1,0 +1,33 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/list' as *;
+
+$material: map.merge(
+    digest-schema($light-list),
+    (
+        border-radius: border-radius(map.get($light-list, 'border-radius')...),
+        item-border-radius: border-radius(map.get($light-list, 'item-border-radius')...)
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($bootstrap-list),
+    (
+        border-radius: border-radius(map.get($bootstrap-list, 'border-radius')...),
+        item-border-radius: border-radius(map.get($bootstrap-list, 'item-border-radius')...)
+    )
+);
+$fluent: map.merge(
+    digest-schema($fluent-list),
+    (
+        border-radius: border-radius(map.get($fluent-list, 'border-radius')...),
+        item-border-radius: border-radius(map.get($fluent-list, 'item-border-radius')...)
+    )
+);
+$indigo: map.merge(
+    digest-schema($indigo-list),
+    (
+        border-radius: border-radius(map.get($indigo-list, 'border-radius')...),
+        item-border-radius: border-radius(map.get($indigo-list, 'item-border-radius')...)
+    )
+);
+

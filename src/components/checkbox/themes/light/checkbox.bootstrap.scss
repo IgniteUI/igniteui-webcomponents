@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'checkbox-themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'checkbox');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius,
-        ripple-radius: $ripple-radius
-    )
-));
+$theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-checkbox');
@@ -73,7 +64,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }
@@ -100,7 +92,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled])[invalid][indeterminate]) {
+:host(:not([disabled])[invalid][indeterminate]),
+:host(:not(:disabled)[invalid][indeterminate]) {
     [part~='control'] {
         &::after {
             background: var-get($theme, 'error-color');
@@ -118,13 +111,23 @@ $theme: digest-schema(extend(
 }
 
 :host(:focus-within:not([disabled])[invalid]) [part~='control'],
-:host(:not([disabled])[invalid]) [part~='focused'] [part~='control'] {
+:host(:focus-within:not(:disabled)[invalid]) [part~='control'],
+:host(:not([disabled])[invalid]) [part~='focused'] [part~='control'],
+:host(:not(:disabled)[invalid]) [part~='focused'] [part~='control'] {
     box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-color-hover');
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='label'] {
         color: var-get($theme, 'disabled-color-label');
+    }
+
+    [part~='control'] {
+        &::after {
+            box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'disabled-color-label');
+            border-color: var-get($theme, 'disabled-color-label');
+        }
     }
 
     [part='control checked']::after {
@@ -133,7 +136,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled][indeterminate]) {
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
     [part='control']::after {
         background: var-get($theme, 'disabled-color');
         box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'disabled-color');

@@ -8,7 +8,7 @@ import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { clamp, isLTR } from '../common/util.js';
+import { clamp, format, isLTR } from '../common/util.js';
 import { styles } from './rating.base.css.js';
 import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
@@ -17,6 +17,7 @@ import { styles as indigo } from './rating.indigo.css.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import IgcIconComponent from '../icon/icon.js';
+import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 
 defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
 
@@ -49,11 +50,12 @@ export interface IgcRatingEventMap {
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
 @themes({ fluent, bootstrap, indigo })
-export default class IgcRatingComponent extends SizableMixin(
-  EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
+export default class IgcRatingComponent extends FormAssociatedMixin(
+  SizableMixin(
+    EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
+  )
 ) {
   public static readonly tagName = 'igc-rating';
-
   public static styles = [styles];
 
   protected ratingSymbols: Array<IgcRatingSymbolComponent> = [];
@@ -81,11 +83,8 @@ export default class IgcRatingComponent extends SizableMixin(
   protected get valueText() {
     // Skip IEEE 754 representation for screen readers
     const value = this.round(this.value);
-
     return this.valueFormat
-      ? this.valueFormat
-          .replace(/\{0\}/gm, `${value}`)
-          .replace(/\{1\}/gm, `${this.max}`)
+      ? format(this.valueFormat, `${value}`, `${this.max}`)
       : `${value} of ${this.max}`;
   }
 
@@ -107,13 +106,6 @@ export default class IgcRatingComponent extends SizableMixin(
    */
   @property({ type: Number })
   public step = 1;
-
-  /**
-   * The name attribute of the control
-   * @attr
-   */
-  @property()
-  public name!: string;
 
   /**
    * The label of the control.
@@ -140,13 +132,6 @@ export default class IgcRatingComponent extends SizableMixin(
   public value = 0;
 
   /**
-   * Sets the disabled state of the component
-   * @attr
-   */
-  @property({ type: Boolean, reflect: true })
-  public disabled = false;
-
-  /**
    * Sets hover preview behavior for the component
    * @attr
    */
@@ -154,11 +139,27 @@ export default class IgcRatingComponent extends SizableMixin(
   public hoverPreview = false;
 
   /**
-   * Sets the readonly state of the component
+   * Makes the control a readonly field.
    * @attr
    */
   @property({ type: Boolean, reflect: true })
-  public readonly = false;
+  public readOnly = false;
+
+  /**
+   * Sets the readonly state of the component
+   * @attr
+   *
+   * @deprecated - since v4.4.0
+   * Use the `readOnly` property instead.
+   */
+  @property({ attribute: false })
+  public get readonly() {
+    return this.readOnly;
+  }
+
+  public set readonly(value: boolean) {
+    this.readOnly = value;
+  }
 
   /**
    * Toggles single selection visual mode.
@@ -179,7 +180,10 @@ export default class IgcRatingComponent extends SizableMixin(
 
   @watch('value')
   protected handleValueChange() {
-    this.value = clamp(this.value, 0, this.max);
+    this.value = clamp(isNaN(this.value) ? 0 : this.value, 0, this.max);
+    this.setFormValue(`${this.value}`, `${this.value}`);
+    this.updateValidity();
+    this.setInvalidState();
   }
 
   @watch('step')

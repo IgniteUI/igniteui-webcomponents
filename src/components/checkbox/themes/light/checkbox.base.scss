@@ -1,5 +1,5 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
     display: inline-flex;
@@ -81,7 +81,8 @@ label {
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     user-select: none;
     cursor: initial;
     pointer-events: none;

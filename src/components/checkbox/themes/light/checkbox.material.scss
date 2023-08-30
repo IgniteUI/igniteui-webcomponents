@@ -1,18 +1,9 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/material/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'checkbox-themes' as *;
 
-$schema: map.get($light-material-schema, 'checkbox');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$ripple-radius: border-radius(map.get($schema, 'border-radius-ripple')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius,
-        ripple-radius: $ripple-radius
-    )
-));
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-checkbox');
@@ -127,7 +118,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled])[invalid]) {
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='label'] {
         color: var-get($theme, 'error-color');
     }
@@ -157,7 +149,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host(:not([disabled])[invalid][indeterminate]) {
+:host(:not([disabled])[invalid][indeterminate]),
+:host(:not(:disabled)[invalid][indeterminate]) {
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');
@@ -178,7 +171,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='label'] {
         color: var-get($theme, 'disabled-color-label');
     }
@@ -196,7 +190,8 @@ $theme: digest-schema(extend(
     }
 }
 
-:host([disabled][indeterminate]) {
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
     [part~='control'] {
         &::after {
             background: var-get($theme, 'disabled-indeterminate-color');

@@ -1,18 +1,10 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-indigo-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$box-border-radius: border-radius(map.get($schema, 'box-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius,
-        box-border-radius: $box-border-radius,
-    )
-));
+$theme: $indigo;
+$transition-duration: .25s;
 
 %suffix-preffix {
     display: inline-flex;
@@ -24,11 +16,17 @@ $theme: digest-schema(extend(
 
 :host {
     @include css-vars-from-theme($theme, 'ig-input');
-    
+
     [part='prefix'],
     [part='suffix'] {
+        // transition-duration is needed here because of a bug in safari
+        // https://github.com/IgniteUI/igniteui-webcomponents/pull/881
+        transition-duration: 0ms;
+
         ::slotted(*) {
+            height: 100%;
             color: inherit;
+            transition-duration: 0ms;
         }
     }
 
@@ -65,9 +63,10 @@ $theme: digest-schema(extend(
         border-radius: var-get($theme, 'box-border-radius');
         border-end-start-radius: 0;
         border-end-end-radius: 0;
-        border-bottom: 1px solid var-get($theme, 'idle-bottom-line-color');
-        transition: background .25s ease-out;
+        border-bottom: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
+        transition: background $transition-duration ease-out;
         grid-template-columns: auto 1fr auto;
+        height: var-get($theme, 'size');
 
         &::after {
             position: absolute;
@@ -92,14 +91,15 @@ $theme: digest-schema(extend(
         padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
         border: none;
         grid-area: 1 / 2;
+        height: 100%;
     }
 
-    [part*='input prefixed'] {
-        padding-inline-start: 0;
+    [part~='prefixed'] {
+        padding-inline-start: rem(4px);
     }
 
-    [part*='input suffixed'] {
-        padding-inline-end: 0;
+    [part~='suffixed'] {
+        padding-inline-end: rem(4px);
     }
 
     [part='helper-text'] {
@@ -133,6 +133,13 @@ $theme: digest-schema(extend(
 }
 
 :host(:focus-within) {
+    [part='prefix'],
+    [part='suffix'] {
+        // transition-duration is needed here because of a bug in safari
+        // https://github.com/IgniteUI/igniteui-webcomponents/pull/881
+        transition-duration: $transition-duration;
+    }
+
     [part^='container'] {
         &::after {
             transform: scaleY(1);

@@ -1,37 +1,16 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/fluent/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-fluent-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius
-    )
-));
+$theme: $fluent;
 $resting-border-width: rem(1px);
 $focused-border-width: rem(2px);
-$resting-height: calc(var(--size) - #{($resting-border-width * 2)});
-$focused-height: calc(var(--size) - #{($focused-border-width * 2)});
-
-:host([size='large']) {
-    --component-size: var(--ig-size, var(--ig-size-large));
-}
-
-:host([size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
-
-:host([size='small']) {
-    --component-size: var(--ig-size, var(--ig-size-small));
-}
+$resting-height: calc(var-get($theme, 'size') - #{($resting-border-width * 2)});
+$focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
 
 :host {
     @include css-vars-from-theme($theme, 'ig-input');
-
-    --size: #{sizable(rem(32px), rem(40px), rem(48px))};
 
     [part='prefix'],
     [part='suffix'] {
@@ -71,13 +50,13 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
     }
 
     [part^='container'] {
+        height: var-get($theme, 'size');
         border-radius: var-get($theme, 'border-border-radius');
         border: #{$resting-border-width} solid var-get($theme, 'border-color');
         transition: none;
         cursor: text;
         grid-template-columns: auto 1fr auto;
         overflow: hidden;
-        height: var(--size);
     }
 
     [part~='input'] {
@@ -85,7 +64,7 @@ $focused-height: calc(var(--size) - #{($focused-border-width * 2)});
         height: $resting-height;
         background: initial;
         font-size: rem(14px);
-        padding: rem(8px);
+        padding-inline: rem(8px);
         max-height: 100%;
         border: none;
         grid-area: 1 / 2;

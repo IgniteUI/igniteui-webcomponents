@@ -4,6 +4,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- The following components are now Form Associated Custom Elements and support native form element:
+    - Checkbox
+    - Combo
+    - DateTime input
+    - Input
+    - Masked input
+    - Radio
+    - Rating
+    - Single slider
+    - Select
+    - Switch
+
+### Fixed
+- DateTime Input - `spinUp/spinDown` calls moving the caret when the input is focused [#859](https://github.com/IgniteUI/igniteui-webcomponents/issues/859)
+### Deprecated
+ - IgcForm component is deprecated
+ - Input component:
+    - `minlength` property is deprecated and will be removed in the next major version. Use `minLength` instead.
+    - `maxlength` property is deprecated and will be removed in the next major version. Use `maxLength` instead.
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+- Mask input component:
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+- DateTime input component:
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+    - `minValue` property is deprecated and will be removed in the next major version. Use `min` instead.
+    - `maxValue` property is deprecated and will be removed in the next major version. Use `max` instead.
+- Rating component:
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+
+### Removed
+- Removed our own `dir` attribute which shadowed the default one. This is a **non-breaking change**.
+- Slider - `ariaLabel` shadowed property. This is a **non-breaking change**.
+- Checkbox - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
+- Switch - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
+- Radio - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
+
+## [4.3.1] - 2023-08-02
+### Added
+- Tree - component animations [#846](https://github.com/IgniteUI/igniteui-webcomponents/issues/846)
+- Components border radius is consumed from their schemas [#805](https://github.com/IgniteUI/igniteui-webcomponents/issues/805)
+
+### Changed
+- Combo, Input, Select - schema colors [#767](https://github.com/IgniteUI/igniteui-webcomponents/issues/767)
+- Dropdown - schema colors [#828](https://github.com/IgniteUI/igniteui-webcomponents/issues/828)
+- Icon - updated theming styles and size [#813](https://github.com/IgniteUI/igniteui-webcomponents/issues/813)
+
+### Fixed
+- Combo - single selection not working in certain scenarios [#816](https://github.com/IgniteUI/igniteui-webcomponents/issues/816)
+- Dropdown - various styling fixes [#841](https://github.com/IgniteUI/igniteui-webcomponents/issues/841) [#848](https://github.com/IgniteUI/igniteui-webcomponents/issues/848)
+- Icon button - border radius with ripple [#839](https://github.com/IgniteUI/igniteui-webcomponents/issues/839)
+- Icon button - fixed wrong color in Fluent theme [#845](https://github.com/IgniteUI/igniteui-webcomponents/issues/845)
+- Input - various styling fixes [#818](https://github.com/IgniteUI/igniteui-webcomponents/issues/818) [#832](https://github.com/IgniteUI/igniteui-webcomponents/issues/832) [#844](https://github.com/IgniteUI/igniteui-webcomponents/pull/844)
+- Tree Item - assign closest *igc-tree-item* ancestor as a parent [#829](https://github.com/IgniteUI/igniteui-webcomponents/issues/829)
+- Tabs - internal **hidden** styles and custom display property [#851](https://github.com/IgniteUI/igniteui-webcomponents/issues/851)
+
 ## [4.3.0] - 2023-06-28
 ### Added
 - Combo: Added `matchDiacritics` to the filtering options property. Defaults to `false`.
@@ -271,6 +328,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.3.0...4.3.1
 [4.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.3...4.3.0
 [4.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.2...4.2.3
 [4.2.2]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.1...4.2.2

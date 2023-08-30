@@ -8,13 +8,13 @@ import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { Direction } from '../common/types.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/input.base.css.js';
 import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
 import { styles as fluent } from './themes/light/input.fluent.css.js';
 import { styles as indigo } from './themes/light/input.indigo.css.js';
 import { styles as material } from './themes/light/input.material.css.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
@@ -27,8 +27,10 @@ export interface IgcInputEventMap {
 
 @themes({ bootstrap, material, fluent, indigo }, true)
 @blazorDeepImport
-export abstract class IgcInputBaseComponent extends SizableMixin(
-  EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
+export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
+  SizableMixin(
+    EventEmitterMixin<IgcInputEventMap, Constructor<LitElement>>(LitElement)
+  )
 ) {
   private declare readonly [themeSymbol]: Theme;
 
@@ -36,6 +38,7 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
+
   public static styles = styles;
   private static readonly increment = createCounter();
 
@@ -58,21 +61,6 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
   protected helperText!: Array<HTMLElement>;
 
   /**
-   * The direction attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true })
-  @blazorSuppress()
-  public override dir: Direction = 'auto';
-
-  /**
-   * The name attribute of the control.
-   * @attr
-   */
-  @property()
-  public name!: string;
-
-  /**
    * Whether the control will have outlined appearance.
    * @attr
    */
@@ -80,25 +68,27 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
   public outlined = false;
 
   /**
-   * Makes the control a required field.
+   * Makes the control a readonly field.
    * @attr
    */
-  @property({ reflect: true, type: Boolean })
-  public required = false;
-
-  /**
-   * Makes the control a disabled field.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public disabled = false;
+  @property({ type: Boolean, reflect: true })
+  public readOnly = false;
 
   /**
    * Makes the control a readonly field.
    * @attr
+   *
+   * @deprecated - since v4.4.0
+   * Use the `readOnly` property instead.
    */
-  @property({ reflect: true, type: Boolean })
-  public readonly = false;
+  @property({ attribute: false })
+  public get readonly() {
+    return this.readOnly;
+  }
+
+  public set readonly(value: boolean) {
+    this.readOnly = value;
+  }
 
   /**
    * The placeholder attribute of the control.
@@ -121,7 +111,12 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
 
   public override connectedCallback() {
     super.connectedCallback();
-    this.shadowRoot!.addEventListener('slotchange', () => this.requestUpdate());
+    this.shadowRoot!.addEventListener('slotchange', this.handleSlotChange);
+  }
+
+  public override disconnectedCallback() {
+    this.shadowRoot!.removeEventListener('slotchange', this.handleSlotChange);
+    super.disconnectedCallback();
   }
 
   /** Sets focus on the control. */
@@ -137,6 +132,7 @@ export abstract class IgcInputBaseComponent extends SizableMixin(
   }
 
   protected abstract renderInput(): TemplateResult;
+  protected handleSlotChange = () => this.requestUpdate();
 
   protected resolvePartNames(base: string) {
     return {

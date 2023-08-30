@@ -1,12 +1,8 @@
-@use 'sass:map';
 @use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/dark' as *;
+@use 'themes' as *;
 
 @mixin theme() {
-    $schema: map.get($dark-bootstrap-schema, 'radio');
-    $theme: digest-schema($schema);
-
     igc-radio {
-        @include css-vars-from-theme($theme, 'ig-radio');
+        @include css-vars-from-theme($bootstrap, 'ig-radio');
     }
 }

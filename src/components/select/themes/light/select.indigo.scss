@@ -1,14 +1,11 @@
-@use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+@use '../../../dropdown/themes/light/themes' as dropdown-theme;
+@use '../../../input/themes/light/themes' as input-theme;
 
-$dropdown-schema: map.get($light-indigo-schema, 'drop-down');
-$dropdown-theme: digest-schema($dropdown-schema);
-$input-schema: map.get($light-indigo-schema, 'input-group');
-$schema: map.get($light-indigo-schema, 'select');
-$input-theme: digest-schema($input-schema);
-$theme: digest-schema($schema);
+$theme: $indigo;
+$dropdown-theme: dropdown-theme.$indigo;
+$input-theme: input-theme.$indigo;
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
@@ -21,6 +18,10 @@ $theme: digest-schema($schema);
 
     igc-input::part(input) {
         color: var-get($input-theme, 'filled-text-color');
+    }
+
+    igc-input::part(container) {
+        padding-inline: 0;
     }
 
     [part='helper-text'] {

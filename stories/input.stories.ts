@@ -1,10 +1,15 @@
-import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
-import { defineComponents, IgcInputComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { registerIconFromText } from '../src/components/icon/icon.registry';
+import { IgcInputComponent, defineComponents } from '../src/index.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcInputComponent);
 registerIconFromText(github.name, github.value);
@@ -42,20 +47,14 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The pattern attribute of the control.',
       control: 'text',
     },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    minlength: {
+    minLength: {
       type: 'number',
-      description: 'The minlength attribute of the control.',
+      description: 'The minimum string length required by the control.',
       control: 'number',
     },
-    maxlength: {
+    maxLength: {
       type: 'number',
-      description: 'The maxlength attribute of the control.',
+      description: 'The maximum string length of the control.',
       control: 'number',
     },
     min: {
@@ -90,30 +89,13 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'text',
       defaultValue: '',
     },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
       defaultValue: false,
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Makes the control a disabled field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
@@ -129,6 +111,29 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -139,13 +144,13 @@ const metadata: Meta<IgcInputComponent> = {
   },
   args: {
     type: 'text',
-    invalid: false,
     tabIndex: 0,
     value: '',
     outlined: false,
+    readOnly: false,
     required: false,
     disabled: false,
-    readonly: false,
+    invalid: false,
     size: 'medium',
   },
 };
@@ -167,12 +172,10 @@ interface IgcInputArgs {
     | 'decimal';
   /** The pattern attribute of the control. */
   pattern: string;
-  /** Controls the validity of the control. */
-  invalid: boolean;
-  /** The minlength attribute of the control. */
-  minlength: number;
-  /** The maxlength attribute of the control. */
-  maxlength: number;
+  /** The minimum string length required by the control. */
+  minLength: number;
+  /** The maximum string length of the control. */
+  maxLength: number;
   /** The min attribute of the control. */
   min: string | number;
   /** The max attribute of the control. */
@@ -186,20 +189,22 @@ interface IgcInputArgs {
   tabIndex: number;
   /** The value of the control. */
   value: string;
-  /** The name attribute of the control. */
-  name: string;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a required field. */
-  required: boolean;
-  /** Makes the control a disabled field. */
-  disabled: boolean;
   /** Makes the control a readonly field. */
-  readonly: boolean;
+  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
@@ -215,12 +220,12 @@ const Template = (
     outlined,
     autofocus,
     autocomplete,
-    minlength,
-    maxlength,
+    minLength,
+    maxLength,
     step,
     value,
     placeholder,
-    readonly,
+    readOnly,
     required,
     disabled,
     min,
@@ -235,8 +240,8 @@ const Template = (
     size=${ifDefined(size)}
     placeholder=${ifDefined(placeholder)}
     dir=${direction}
-    minlength=${ifDefined(minlength)}
-    maxlength=${ifDefined(maxlength)}
+    minlength=${ifDefined(minLength)}
+    maxlength=${ifDefined(maxLength)}
     step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
     min=${ifDefined(min)}
@@ -244,7 +249,7 @@ const Template = (
     .value=${value}
     ?autofocus=${autofocus}
     ?invalid=${invalid}
-    .readonly=${readonly}
+    .readOnly=${readOnly}
     .outlined=${outlined}
     .required=${required}
     .disabled=${disabled}
@@ -256,3 +261,56 @@ const Template = (
 `;
 
 export const Basic: Story = Template.bind({});
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    return html`<form action="" @submit=${formSubmitHandler}>
+      <fieldset>
+        <igc-input name="input" label="Default" label="Username"></igc-input>
+        <igc-input
+          name="input-default"
+          label="Initial value"
+          value="Jane Doe"
+        ></igc-input>
+      </fieldset>
+      <fieldset disabled>
+        <igc-input
+          name="input-disabled"
+          label="Username"
+          value="John Doe"
+        ></igc-input>
+      </fieldset>
+      <fieldset>
+        <igc-input name="input-required" label="Required" required></igc-input>
+        <igc-input
+          name="input-minlength"
+          label="Minimum length (3 characters)"
+          minlength="3"
+        ></igc-input>
+        <igc-input
+          name="input-maximum"
+          label="Maximum length (3 characters)"
+          maxlength="3"
+        ></igc-input>
+        <igc-input
+          type="number"
+          name="input-min"
+          label="Minimum number (3)"
+          min="3"
+        ></igc-input>
+        <igc-input
+          type="number"
+          name="input-max"
+          label="Maximum number (17)"
+          max="17"
+        ></igc-input>
+        <igc-input
+          name="input-pattern"
+          pattern="[0-9]{3}"
+          label="Pattern [0-9]{3}"
+        ></igc-input>
+      </fieldset>
+      ${formControls()}
+    </form> `;
+  },
+};

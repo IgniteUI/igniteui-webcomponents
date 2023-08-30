@@ -1,5 +1,5 @@
 @use 'sass:math';
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
 
 $inactive-background: var(--inactive-background, color(gray, 400)) !default;
 $inactive-hover-background: var(--inactive-hover-background, color(gray, 500)) !default;
@@ -51,7 +51,8 @@ $thumb-radius: math.div($thumb-size, 2);
     }
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     [part~='thumb'],
     [part='fill'],
     [part='inactive'] {

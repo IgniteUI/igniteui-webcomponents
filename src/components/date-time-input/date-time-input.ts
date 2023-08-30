@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { ComplexAttributeConverter, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { live } from 'lit/directives/live.js';
 import {
@@ -15,15 +15,23 @@ import {
   IgcMaskInputBaseComponent,
   MaskRange,
 } from '../mask-input/mask-input-base.js';
-import { partNameMap } from '../common/util.js';
+import { format, partNameMap } from '../common/util.js';
 import { IgcInputEventMap } from '../input/input-base.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { AbstractConstructor } from '../common/mixins/constructor.js';
+import messages from '../common/localization/validation-en.js';
+import { Validator } from '../common/validators.js';
 
 export interface IgcDateTimeInputEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {
   igcChange: CustomEvent<Date | null>;
 }
+
+const converter: ComplexAttributeConverter<Date | null> = {
+  fromAttribute: (value: string) =>
+    !value ? null : DateTimeUtil.parseIsoDate(value),
+  toAttribute: (value: Date) => value.toISOString(),
+};
 
 /**
  * A date time input is an input field that lets you set and edit the date and time in a chosen input element
@@ -53,8 +61,42 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
 
+  protected override validators: Validator<this>[] = [
+    {
+      key: 'valueMissing',
+      message: messages.required,
+      isValid: () => (this.required ? !!this.value : true),
+    },
+    {
+      key: 'rangeUnderflow',
+      message: () => format(messages.min, `${this.min}`),
+      isValid: () =>
+        this.min
+          ? !DateTimeUtil.lessThanMinValue(
+              this.value || new Date(),
+              this.min,
+              this.hasTimeParts,
+              this.hasDateParts
+            )
+          : true,
+    },
+    {
+      key: 'rangeOverflow',
+      message: () => format(messages.max, `${this.max}`),
+      isValid: () =>
+        this.max
+          ? !DateTimeUtil.greaterThanMaxValue(
+              this.value || new Date(),
+              this.max,
+              this.hasTimeParts,
+              this.hasDateParts
+            )
+          : true,
+    },
+  ];
+
   protected _defaultMask!: string;
-  protected _value!: Date | null;
+  protected _value: Date | null = null;
 
   private _oldValue: Date | null = null;
   private _inputDateParts!: DatePartInfo[];
@@ -88,13 +130,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * The value of the input.
    * @attr
    */
-  @property({
-    converter: {
-      fromAttribute: (value: string) =>
-        !value ? null : DateTimeUtil.parseIsoDate(value),
-      toAttribute: (value: Date) => value.toISOString(),
-    },
-  })
+  @property({ converter: converter })
   @blazorTwoWayBind('igcChange', 'detail')
   public get value(): Date | null {
     return this._value;
@@ -108,36 +144,62 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       : null;
 
     this.updateMask();
-    this.validate();
+    this.updateFormValue();
+    this.updateValidity();
+    this.setInvalidState();
+  }
+
+  protected updateFormValue() {
+    this._value
+      ? this.setFormValue(this._value.toISOString())
+      : this.setFormValue(null);
   }
 
   /**
    * The minimum value required for the input to remain valid.
-   * @attr min-value
+   * @attr
    */
-  @property({
-    attribute: 'min-value',
-    converter: {
-      fromAttribute: (value: string) =>
-        !value ? null : DateTimeUtil.parseIsoDate(value),
-      toAttribute: (value: Date) => value.toISOString(),
-    },
-  })
-  public minValue!: Date | null;
+  @property({ converter: converter })
+  public min!: Date;
+
+  /**
+   * The maximum value required for the input to remain valid.
+   * @attr
+   */
+  @property({ converter: converter })
+  public max!: Date;
+
+  /**
+   * The minimum value required for the input to remain valid.
+   * @attr min-value
+   *
+   * @deprecated - since v4.4.0
+   * Use the `min` property instead.
+   */
+  @property({ attribute: 'min-value', converter: converter })
+  public get minValue() {
+    return this.min;
+  }
+
+  public set minValue(value: Date) {
+    this.min = value;
+  }
 
   /**
    * The maximum value required for the input to remain valid.
    * @attr max-value
+   *
+   * @deprecated - since v4.4.0
+   * Use the `max` property instead.
    */
-  @property({
-    attribute: 'max-value',
-    converter: {
-      fromAttribute: (value: string) =>
-        !value ? null : DateTimeUtil.parseIsoDate(value),
-      toAttribute: (value: Date) => value.toISOString(),
-    },
-  })
-  public maxValue!: Date | null;
+  @property({ attribute: 'max-value', converter: converter })
+  public get maxValue() {
+    return this.max;
+  }
+
+  public set maxValue(value: Date) {
+    this.max = value;
+  }
 
   /**
    * Format to display the value in when not editing.
@@ -203,41 +265,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  @watch('required', { waitUntilFirstUpdate: true })
-  @watch('disabled', { waitUntilFirstUpdate: true })
-  @watch('value', { waitUntilFirstUpdate: true })
-  protected handleInvalidState(): void {
-    this.updateComplete.then(
-      () => (this.invalid = !this.input.checkValidity())
-    );
-  }
-
-  @watch('maxValue')
-  @watch('minValue')
-  protected validate() {
-    if (!this.value) {
-      return null;
-    }
-
-    let errors = {};
-
-    if (this.minValue || this.maxValue) {
-      errors = DateTimeUtil.validateMinMax(
-        this.value,
-        this.minValue!,
-        this.maxValue!,
-        this.hasTimeParts,
-        this.hasDateParts
-      );
-
-      if (Object.keys(errors).length > 0) {
-        this.invalid = true;
-      } else {
-        this.invalid = false;
-      }
-    }
-
-    return errors;
+  @watch('min', { waitUntilFirstUpdate: true })
+  @watch('max', { waitUntilFirstUpdate: true })
+  protected constraintChange() {
+    this.updateValidity();
   }
 
   private get hasDateParts(): boolean {
@@ -268,7 +299,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   private get targetDatePart(): DatePart | undefined {
     let result;
 
-    if (this.hasFocus) {
+    if (this.focused) {
       const partType = this._inputDateParts.find(
         (p) =>
           p.start <= this.inputSelection.start &&
@@ -296,43 +327,14 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return Object.assign({}, this._datePartDeltas, this.spinDelta);
   }
 
-  constructor() {
-    super();
-    this.addEventListener('wheel', this.onWheel);
-  }
-
   public override connectedCallback() {
     super.connectedCallback();
     this.updateDefaultMask();
     this.setMask(this.inputFormat);
+    this.updateValidity();
     if (this.value) {
       this.updateMask();
     }
-  }
-
-  /** Checks for validity of the control and shows the browser message if it's invalid. */
-  public reportValidity() {
-    const state = this._value
-      ? Object.keys(this.validate()!).length === 0
-      : this.input.reportValidity();
-
-    this.invalid = !state;
-    return state;
-  }
-
-  /** Check for validity of the control */
-  public checkValidity() {
-    if (this.disabled) {
-      return this.input.checkValidity();
-    }
-
-    if (!this._value) {
-      return !this.required;
-    }
-
-    return (
-      this.input.checkValidity() && Object.keys(this.validate()!).length === 0
-    );
   }
 
   /** Increments a date/time portion. */
@@ -343,9 +345,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       return;
     }
 
+    const { start, end } = this.inputSelection;
     const newValue = this.trySpinValue(targetPart, delta);
     this.value = newValue;
-    this.handleInput();
+    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
   /** Decrements a date/time portion. */
@@ -356,9 +359,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       return;
     }
 
+    const { start, end } = this.inputSelection;
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue;
-    this.handleInput();
+    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
   /** Clears the input element of user input. */
@@ -368,10 +372,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected updateMask() {
-    if (this.hasFocus) {
+    if (this.focused) {
       this.maskedValue = this.getMaskedValue();
     } else {
-      if (!this.value || !DateTimeUtil.isValidDate(this.value)) {
+      if (!DateTimeUtil.isValidDate(this.value)) {
         this.maskedValue = '';
         return;
       }
@@ -399,7 +403,6 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   protected handleChange() {
     this.emitEvent('igcChange', { detail: this.value });
-    this.invalid = !this.checkValidity();
   }
 
   protected override handleInput() {
@@ -407,13 +410,13 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   protected handleDragLeave() {
-    if (!this.hasFocus) {
+    if (!this.focused) {
       this.updateMask();
     }
   }
 
   protected handleDragEnter() {
-    if (!this.hasFocus) {
+    if (!this.focused) {
       this.maskedValue = this.getMaskedValue();
     }
   }
@@ -432,7 +435,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.requestUpdate();
 
     if (range.start !== this.inputFormat.length) {
-      this.emitEvent('igcInput', { detail: this.value?.toString() });
+      this.handleInput();
     }
     await this.updateComplete;
     this.input.setSelectionRange(end, end);
@@ -495,25 +498,20 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return newDate;
   }
 
-  private onWheel(event: WheelEvent) {
-    if (!this.hasFocus) {
+  private async onWheel(event: WheelEvent) {
+    if (!this.focused || this.readonly) {
       return;
     }
-
-    this.selection = this.inputSelection;
 
     event.preventDefault();
     event.stopPropagation();
 
-    if (event.deltaY > 0) {
-      this.stepDown();
-    } else {
-      this.stepUp();
-    }
+    const { start, end } = this.inputSelection;
+    event.deltaY > 0 ? this.stepDown() : this.stepUp();
+    this.handleInput();
 
-    this.updateComplete.then(() =>
-      this.setSelectionRange(this.selection.start, this.selection.end)
-    );
+    await this.updateComplete;
+    this.setSelectionRange(start, end);
   }
 
   private updateDefaultMask(): void {
@@ -624,15 +622,26 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  protected override handleFocus() {
-    this.hasFocus = true;
-    this._oldValue = this.value;
+  protected override async handleFocus() {
+    this.focused = true;
     this.updateMask();
-    this.emitEvent('igcFocus');
+    super.handleFocus();
+
+    if (this.readOnly) {
+      return;
+    }
+
+    this._oldValue = this.value;
+
+    if (!this._value) {
+      this.maskedValue = this.emptyMask;
+      await this.updateComplete;
+      this.select();
+    }
   }
 
   protected override handleBlur() {
-    this.hasFocus = false;
+    this.focused = false;
 
     if (!this.isComplete() && this.maskedValue !== this.emptyMask) {
       const parse = this.parseDate(this.maskedValue);
@@ -650,42 +659,52 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     if (this._oldValue !== this.value) {
       this.handleChange();
     }
-
-    this.emitEvent('igcBlur');
+    this.checkValidity();
+    super.handleBlur();
   }
 
-  protected override handleKeydown(e: KeyboardEvent) {
-    super.handleKeydown(e);
-
-    const key = e.key;
-
-    switch (key) {
-      case 'ArrowLeft':
-      case 'ArrowRight':
-        if (e.ctrlKey) {
-          e.preventDefault();
-          const value = (e.target as HTMLInputElement).value;
-          const dir = key === 'ArrowRight' ? 1 : 0;
-          const pos = this.getNewPosition(value, dir);
-
-          this.setSelectionRange(pos, pos);
-        }
-        break;
-      case 'ArrowUp':
-      case 'ArrowDown':
-        e.preventDefault();
-        key === 'ArrowUp' ? this.stepUp() : this.stepDown();
-
-        this.updateComplete.then(() =>
-          this.setSelectionRange(this.selection.start, this.selection.end)
-        );
-        break;
-      case ';':
-        if (e.ctrlKey) {
-          this.value = new Date();
-        }
-        break;
+  protected handleHorizontalArrows(event: KeyboardEvent) {
+    if (event.ctrlKey) {
+      event.preventDefault();
     }
+    const position = this.getNewPosition(
+      this.input.value,
+      event.key === 'ArrowRight' ? 1 : 0
+    );
+    this.setSelectionRange(position, position);
+  }
+
+  protected async handleVerticalArrows(event: KeyboardEvent) {
+    event.preventDefault();
+    event.key === 'ArrowUp' ? this.stepUp() : this.stepDown();
+    this.handleInput();
+    await this.updateComplete;
+    this.setSelectionRange(this.selection.start, this.selection.end);
+  }
+
+  protected handleSemicolon(event: KeyboardEvent) {
+    if (event.ctrlKey) {
+      this.value = new Date();
+    }
+  }
+
+  protected keyMap = new Map(
+    Object.entries({
+      ArrowLeft: this.handleHorizontalArrows,
+      ArrowRight: this.handleHorizontalArrows,
+      ArrowUp: this.handleVerticalArrows,
+      ArrowDown: this.handleVerticalArrows,
+      ';': this.handleSemicolon,
+    })
+  );
+
+  protected override async handleKeydown(e: KeyboardEvent) {
+    if (this.readOnly) {
+      return;
+    }
+
+    super.handleKeydown(e);
+    this.keyMap.get(e.key)?.call(this, e);
   }
 
   protected override renderInput() {
@@ -696,15 +715,16 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder || this.emptyMask)}
-        ?readonly=${this.readonly}
+        ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
-        ?required=${this.required}
-        @invalid="${this.handleInvalid}"
         @blur=${this.handleBlur}
         @focus=${this.handleFocus}
         @input=${super.handleInput}
+        @wheel=${this.onWheel}
         @keydown=${this.handleKeydown}
+        @click=${this.handleClick}
         @cut=${this.handleCut}
+        @change=${this.handleChange}
         @compositionstart=${this.handleCompositionStart}
         @compositionend=${this.handleCompositionEnd}
         @dragenter=${this.handleDragEnter}

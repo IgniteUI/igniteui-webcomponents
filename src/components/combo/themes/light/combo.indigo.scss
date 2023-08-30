@@ -1,20 +1,23 @@
 @use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+@use '../../../input/themes/light/themes' as input-theme;
+@use '../../../dropdown/themes/light/themes' as dropdown-theme;
 
-$input-schema: map.get($light-indigo-schema, 'input-group');
-$combo-schema: map.get($light-indigo-schema, 'combo');
-$input-theme: digest-schema($input-schema);
-$dropdown-schema: extend((name: 'ig-dropdown'), map.get($light-indigo-schema, 'drop-down'));
-$dropdown-theme: digest-schema($dropdown-schema);
-$theme: digest-schema($combo-schema);
+$theme: $indigo;
+$input-theme: input-theme.$indigo;
+$dropdown-theme: dropdown-theme.$indigo;
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
     @include css-vars-from-theme($theme, 'ig-combo');
-    @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
+    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
 
+
+    igc-input::part(container) {
+        padding-inline: 0;
+    }
 
     [part='helper-text'] {
         margin-top: rem(6px);
@@ -47,6 +50,8 @@ $theme: digest-schema($combo-schema);
 }
 
 [part='list-wrapper'] {
+    border-radius: var-get($dropdown-theme, 'border-radius');
+
     igc-input::part(container) {
         background: transparent;
         border-inline-end-color: transparent;

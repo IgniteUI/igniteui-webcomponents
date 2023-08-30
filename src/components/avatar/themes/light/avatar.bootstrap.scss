@@ -1,15 +1,30 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'avatar');
-$theme: digest-schema($schema);
+$theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-avatar');
 }
 
-:host([shape='square']) [part='base'],
-:host([shape='rounded']) [part='base'] {
-    border-radius: rem(4px);
+[part='base'] {
+    color: var-get($theme, 'color');
+    background: var-get($theme, 'background');
+    width: var-get($theme, 'size');
+    height: var-get($theme, 'size');
+
+    [part='initials'] {
+        font-size: calc(var-get($theme, 'size') / 2);
+        line-height: calc(var-get($theme, 'size') / 2);
+    }
 }
+
+:host([shape='rounded']) [part='base'] {
+    border-radius: var-get($theme, 'border-radius');
+}
+
+:host([shape='circle']) [part='base'] {
+    border-radius: calc(var-get($theme, 'size') / 2);
+}
+

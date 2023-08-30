@@ -1,22 +1,11 @@
 @use 'sass:math';
 @use 'sass:map';
 @use 'shared-calendar' as *;
-@use '../../../styles/common/component';
-@use '../../../styles/utilities' as *;
-@use '../../../styles/themes/schemas/material/light' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'light-themes' as *;
 
-$schema: map.get($light-material-schema, 'calendar');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$date-border-radius: border-radius(map.get($schema, 'date-border-radius')...);
-$month-border-radius: border-radius(map.get($schema, 'month-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius,
-        date-border-radius: $date-border-radius,
-        month-border-radius: $month-border-radius
-    )
-));
+$theme: $material;
 
 :host(igc-calendar) {
     @include css-vars-from-theme($theme, 'ig-calendar');

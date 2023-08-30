@@ -6,6 +6,7 @@ import IgcInputComponent from '../input/input.js';
 import IgcComboComponent from './combo.js';
 import IgcComboListComponent from './combo-list.js';
 import IgcComboItemComponent from './combo-item.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Combo', () => {
   interface City {
@@ -137,7 +138,6 @@ describe('Combo', () => {
       expect(combo.placeholder).to.be.undefined;
       expect(combo.placeholderSearch).to.equal('Search');
       expect(combo.outlined).to.be.false;
-      expect(combo.dir).to.equal('auto');
       expect(combo.flip).to.be.true;
       expect(combo.valueKey).to.equal('id');
       expect(combo.displayKey).to.equal('name');
@@ -525,38 +525,30 @@ describe('Combo', () => {
     });
 
     it('reports validity when required', async () => {
-      const validity = sinon.spy(combo, 'reportValidity');
-
       combo.required = true;
       await elementUpdated(combo);
 
-      combo.checkValidity();
-      expect(validity).to.have.returned(false);
+      expect(combo.checkValidity()).to.be.false;
       expect(combo.invalid).to.be.true;
 
       combo.select();
       await elementUpdated(combo);
-      combo.checkValidity();
 
-      expect(validity).to.have.returned(true);
+      expect(combo.checkValidity()).to.be.true;
       expect(combo.invalid).to.be.false;
     });
 
     it('reports validity when not required', async () => {
-      const validity = sinon.spy(combo, 'reportValidity');
-
       combo.required = false;
       await elementUpdated(combo);
 
-      combo.checkValidity();
-      expect(validity).to.have.returned(true);
+      expect(combo.checkValidity()).to.be.true;
       expect(combo.invalid).to.be.false;
 
       combo.deselect();
       await elementUpdated(combo);
-      combo.checkValidity();
 
-      expect(validity).to.have.returned(true);
+      expect(combo.checkValidity()).to.be.true;
       expect(combo.invalid).to.be.false;
     });
 
@@ -880,25 +872,38 @@ describe('Combo', () => {
       expect(combo.value.length).to.equal(0);
     });
 
-    it('Selection API should deselect nothing in single selection mode if nothing is passed', async () => {
+    it('Selection API should deselect everything in single selection mode if nothing is passed', async () => {
+      const selection = 'BG01';
+
       combo.singleSelect = true;
       await elementUpdated(combo);
 
-      combo.show();
-      await elementUpdated(combo);
-      await list.layoutComplete;
-
-      const selection = 'BG01';
       combo.select(selection);
-
       await elementUpdated(combo);
 
-      expect(combo.value[0]).to.equal(selection);
+      expect(combo.value).to.eql([selection]);
 
       combo.deselect();
       await elementUpdated(combo);
 
-      expect(combo.value[0]).to.equal(selection);
+      expect(combo.value).to.eql([]);
+    });
+
+    it('Selection API should not deselect current value in single selection mode with wrong valueKey passed', async () => {
+      const selection = 'BG01';
+
+      combo.singleSelect = true;
+      await elementUpdated(combo);
+
+      combo.select(selection);
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql([selection]);
+
+      combo.deselect('US01');
+      await elementUpdated(combo);
+
+      expect(combo.value).to.eql([selection]);
     });
 
     it('should select a single item using valueKey as argument with the Selection API', async () => {
@@ -1122,6 +1127,127 @@ describe('Combo', () => {
 
       expect(combo.selection[0]).to.equal(cities[3]);
       expect(combo.selection[1]).to.equal(cities[4]);
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcComboComponent<City>>(
+      html`<igc-combo
+        name="combo"
+        .data=${cities}
+        .value=${['BG01', 'BG02']}
+        value-key="id"
+        display-key="name"
+      ></igc-combo>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcComboComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is not associated on submit if no value', async () => {
+      spec.element.value = [];
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is associated on submit with value-key (single)', async () => {
+      spec.element.singleSelect = true;
+      await elementUpdated(spec.element);
+
+      spec.element.value = ['BG01', 'BG02'];
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal('BG01');
+    });
+
+    it('is associated on submit with value-key (multiple)', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.equal('BG01');
+      expect(spec.submit()?.getAll(spec.element.name)).to.eql(['BG01', 'BG02']);
+    });
+
+    it('is associated on submit without value-key (single)', async () => {
+      const [first, second, _] = cities;
+
+      spec.element.valueKey = undefined;
+      spec.element.singleSelect = true;
+      await elementUpdated(spec.element);
+      spec.element.select([first, second]);
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).not.to.be.null;
+    });
+
+    it('is associated on submit without value-key (multiple)', async () => {
+      const [first, second, _] = cities;
+
+      spec.element.valueKey = undefined;
+      spec.element.select([first, second]);
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).not.to.be.null;
+      expect(spec.submit()?.getAll(spec.element.name).length).to.eql(2);
+    });
+
+    it('is correctly reset on form reset (multiple)', async () => {
+      const initial = spec.element.value;
+
+      spec.element.setAttribute('value', '["BG01", "BG02"]');
+      await elementUpdated(spec.element);
+
+      spec.element.value = [];
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.eql(initial);
+    });
+
+    it('is correctly reset on form reset (single)', async () => {
+      // Initial value is a multiple array. The combo defaults to the first item
+      const initial = [spec.element.value[0]];
+
+      spec.element.singleSelect = true;
+      await elementUpdated(spec.element);
+
+      spec.element.value = ['US01'];
+      await elementUpdated(spec.element);
+
+      expect(spec.element.value).to.eql(['US01']);
+
+      spec.reset();
+      expect(spec.element.value).to.eql(initial);
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.value = [];
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = ['BG01', 'BG02'];
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });

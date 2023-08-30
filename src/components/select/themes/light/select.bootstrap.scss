@@ -1,14 +1,11 @@
-@use 'sass:map';
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+@use '../../../dropdown/themes/light/themes' as dropdown-theme;
+@use '../../../input/themes/light/themes' as input-theme;
 
-$dropdown-schema: map.get($light-bootstrap-schema, 'drop-down');
-$dropdown-theme: digest-schema($dropdown-schema);
-$input-schema: map.get($light-bootstrap-schema, 'input-group');
-$schema: map.get($light-bootstrap-schema, 'select');
-$input-theme: digest-schema($input-schema);
-$theme: digest-schema($schema);
+$theme: $bootstrap;
+$dropdown-theme: dropdown-theme.$bootstrap;
+$input-theme: input-theme.$bootstrap;
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');

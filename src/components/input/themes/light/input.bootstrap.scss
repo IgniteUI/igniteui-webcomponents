@@ -1,33 +1,13 @@
 @use 'sass:map';
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/common/component';
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/utilities' as *;
+@use 'styles/common/component';
+@use 'themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'input-group');
-$border-border-radius: border-radius(map.get($schema, 'border-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-border-radius: $border-border-radius
-    )
-));
-
-:host([size='large']) {
-    --component-size: var(--ig-size, var(--ig-size-large));
-}
-
-:host([size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
-
-:host([size='small']) {
-    --component-size: var(--ig-size, var(--ig-size-small));
-}
+$theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-input');
 
-    --size: #{sizable(rem(31px), rem(38px), rem(48px))};
     --font: #{sizable(rem(14px), rem(16px), rem(20px))};
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
 }
@@ -36,7 +16,6 @@ $theme: digest-schema(extend(
     border-radius: var-get($theme, 'border-border-radius');
     border-style: none;
     grid-template-columns: auto 1fr auto;
-    height: var(--size);
 
     &::after {
         display: none;
@@ -45,7 +24,6 @@ $theme: digest-schema(extend(
 
 [part~='input'] {
     border-radius: var-get($theme, 'border-border-radius');
-    height: var(--size);
     font-size: var(--input-font);
     padding-inline: pad-inline(8px, 12px, 16px);
     padding-block: pad-block(4px, 6px, 8px);
@@ -57,6 +35,11 @@ $theme: digest-schema(extend(
     transition: box-shadow .15s ease-out, border .15s ease-out;
     grid-area: 1 / 2;
     background-clip: padding-box;
+}
+
+[part~='input'],
+[part~='container'] {
+    height: var-get($theme, 'size');
 }
 
 [part*='input prefixed'] {

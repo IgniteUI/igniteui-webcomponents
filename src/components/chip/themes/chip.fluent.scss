@@ -1,16 +1,9 @@
 @use 'sass:map';
 @use './chip.base.scss';
-@use '../../../styles/utilities' as *;
-@use '../../../styles/themes/schemas/fluent/light' as *;
+@use 'styles/utilities' as *;
+@use 'light-themes' as *;
 
-$schema: map.get($light-fluent-schema, 'chip');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius
-    )
-));
+$theme: $fluent;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-chip');
@@ -23,6 +16,7 @@ $theme: digest-schema(extend(
     background: color(gray, 200);
     color: color(gray, 700);
     outline: none;
+    height: var-get($theme, 'size');
 
     &:hover {
         color: contrast-color(gray, 200);

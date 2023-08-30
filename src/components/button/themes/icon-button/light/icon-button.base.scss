@@ -1,5 +1,5 @@
-@use '../../../../../styles/common/component';
-@use '../../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 $icon-size: rem(18px);
 
@@ -58,6 +58,7 @@ $icon-size: rem(18px);
     --component-size: var(--ig-size, var(--ig-size-large));
 }
 
-:host([disabled]) {
+:host([disabled]),
+:host(:disabled) {
     pointer-events: none;
 }

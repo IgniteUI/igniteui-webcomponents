@@ -1,16 +1,9 @@
 @use 'sass:map';
 @use './chip.base.scss';
-@use '../../../styles/utilities' as *;
-@use '../../../styles/themes/schemas/indigo/light' as *;
+@use 'styles/utilities' as *;
+@use 'light-themes' as *;
 
-$schema: map.get($light-indigo-schema, 'chip');
-$border-radius: border-radius(map.get($schema, 'border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        border-radius: $border-radius
-    )
-));
+$theme: $indigo;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-chip');
@@ -21,6 +14,7 @@ $theme: digest-schema(extend(
     border: rem(1px) solid color(gray, 400);
     background: color(surface, 500);
     color: color(gray, 700);
+    height: var-get($theme, 'size');
 
     &:hover {
         background: color(gray, 200);

@@ -1,4 +1,4 @@
-@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
+@use 'igniteui-theming/sass/color/presets/dark/material' as *;
 @use '../base/material' as base;
 @use '../base/scrollbars';
 @use '../third-party/grid/material.dark' as grid;
@@ -13,7 +13,9 @@
 @use '../../../components/navbar/themes/dark/navbar.material' as navbar;
 @use '../../../components/checkbox/themes/dark/checkbox.material' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.material' as switch;
-@include base.root-styles($dark-material-palette);
+@use '../../../components/avatar/themes/dark/avatar.material' as avatar;
+@use '../../../components/stepper/themes/step/dark/step.material' as stepper;
+@include base.root-styles($palette);
 @include radio.theme();
 @include input.theme();
 @include select.theme();
@@ -26,3 +28,5 @@
 @include navbar.theme();
 @include checkbox.theme();
 @include switch.theme();
+@include avatar.theme();
+@include stepper.theme();

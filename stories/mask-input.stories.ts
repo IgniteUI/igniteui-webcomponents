@@ -1,14 +1,19 @@
-import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
-import { Context } from './story.js';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
-  defineComponents,
-  IgcMaskInputComponent,
   IgcIconComponent,
+  IgcMaskInputComponent,
+  defineComponents,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcMaskInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -44,21 +49,10 @@ const metadata: Meta<IgcMaskInputComponent> = {
       description: 'The prompt symbol to use for unfilled parts of the mask.',
       control: 'text',
     },
-    invalid: {
-      type: 'boolean',
-      description: 'Controls the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     value: {
       type: 'string',
       description:
         'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
-      control: 'text',
-    },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
       control: 'text',
     },
     outlined: {
@@ -67,19 +61,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Makes the control a disabled field.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
@@ -95,6 +77,29 @@ const metadata: Meta<IgcMaskInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
+    },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -105,11 +110,11 @@ const metadata: Meta<IgcMaskInputComponent> = {
   },
   args: {
     valueMode: 'raw',
-    invalid: false,
     outlined: false,
+    readOnly: false,
     required: false,
     disabled: false,
-    readonly: false,
+    invalid: false,
     size: 'medium',
   },
 };
@@ -128,28 +133,28 @@ interface IgcMaskInputArgs {
   mask: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
-  /** Controls the validity of the control. */
-  invalid: boolean;
   /**
    * The value of the input.
    *
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
    */
   value: string;
-  /** The name attribute of the control. */
-  name: string;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
-  /** Makes the control a required field. */
-  required: boolean;
-  /** Makes the control a disabled field. */
-  disabled: boolean;
   /** Makes the control a readonly field. */
-  readonly: boolean;
+  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
   label: string;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
@@ -166,7 +171,7 @@ Object.assign(metadata.parameters!, {
 const Template = (
   {
     name,
-    readonly,
+    readOnly,
     disabled,
     required,
     outlined,
@@ -190,7 +195,7 @@ const Template = (
     label=${ifDefined(label)}
     size=${ifDefined(size)}
     value-mode=${ifDefined(valueMode)}
-    ?readonly=${ifDefined(readonly)}
+    ?readonly=${ifDefined(readOnly)}
     ?outlined=${ifDefined(outlined)}
     ?required=${ifDefined(required)}
     ?disabled=${ifDefined(disabled)}
@@ -202,3 +207,51 @@ const Template = (
 };
 
 export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    return html`<form action="" @submit=${formSubmitHandler}>
+      <fieldset>
+        <legend>Default masked input</legend>
+        <igc-mask-input
+          name="mask"
+          value="XYZ"
+          label="Default"
+        ></igc-mask-input>
+      </fieldset>
+      <fieldset>
+        <legend>Formatted value mode</legend>
+        <igc-mask-input
+          required
+          label="Formatted value mode"
+          name="mask-formatted-value"
+          mask="(CCC) (CCC)"
+          value-mode="withFormatting"
+          value="123456"
+        ></igc-mask-input>
+      </fieldset>
+      <fieldset disabled>
+        <legend>Disabled masked input</legend>
+        <igc-mask-input
+          name="mask-disabled"
+          label="Disabled mask"
+        ></igc-mask-input>
+      </fieldset>
+      <fieldset>
+        <legend>Masked constraints</legend>
+        <igc-mask-input
+          name="mask-required"
+          label="Required"
+          required
+        ></igc-mask-input>
+        <igc-mask-input
+          name="required-mask-pattern"
+          label="Mask pattern validation"
+          mask="(+35\\9) 000-000-000"
+        ></igc-mask-input>
+      </fieldset>
+      ${formControls()}
+    </form>`;
+  },
+};

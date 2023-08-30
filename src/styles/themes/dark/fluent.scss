@@ -1,4 +1,4 @@
-@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
+@use 'igniteui-theming/sass/color/presets/dark/fluent' as *;
 @use '../base/fluent' as base;
 @use '../base/scrollbars';
 @use '../third-party/grid/fluent.dark' as grid;
@@ -19,7 +19,10 @@
 @use '../../../components/combo/themes/dark/combo.fluent' as combo;
 @use '../../../components/icon/dark/icon.fluent' as icon;
 @use '../../../components/navbar/themes/dark/navbar.fluent' as navbar;
-@include base.root-styles($dark-fluent-palette);
+@use '../../../components/avatar/themes/dark/avatar.fluent' as avatar;
+@use '../../../components/rating/dark/rating.fluent' as rating;
+@use '../../../components/stepper/themes/step/dark/step.fluent' as stepper;
+@include base.root-styles($palette);
 @include button.theme();
 @include icon-button.theme();
 @include calendar.theme();
@@ -38,3 +41,6 @@
 @include combo.theme();
 @include icon.theme();
 @include navbar.theme();
+@include avatar.theme();
+@include rating.theme();
+@include stepper.theme();

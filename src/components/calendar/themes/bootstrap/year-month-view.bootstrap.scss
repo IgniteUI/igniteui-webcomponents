@@ -1,17 +1,10 @@
 @use 'sass:math';
 @use 'sass:map';
 @use 'vars' as *;
-@use '../../../../styles/utilities' as *;
-@use '../../../../styles/themes/schemas/bootstrap/light' as *;
+@use 'styles/utilities' as *;
+@use '../light-themes' as *;
 
-$schema: map.get($light-bootstrap-schema, 'calendar');
-$month-border-radius: border-radius(map.get($schema, 'month-border-radius')...);
-$theme: digest-schema(extend(
-    $schema,
-    (
-        month-border-radius: $month-border-radius
-    )
-));
+$theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-calendar');
