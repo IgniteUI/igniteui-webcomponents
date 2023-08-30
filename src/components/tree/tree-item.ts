@@ -34,12 +34,6 @@ defineComponents(
   IgcCircularProgressComponent
 );
 
-const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
-  small: 1 / 2,
-  medium: 2 / 3,
-  large: 1,
-};
-
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
  *
@@ -513,12 +507,10 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   protected override render() {
-    const size = this.level * (this.tree ? sizeMultiplier[this.tree!.size] : 1);
-
     return html`
       <div id="wrapper" part="wrapper ${partNameMap(this.parts)}">
         <div
-          style="width: calc(${size} * var(--igc-tree-indentation-size))"
+          style="width: calc(${this.level} * var(--igc-tree-indentation-size))"
           part="indentation"
           aria-hidden="true"
         >

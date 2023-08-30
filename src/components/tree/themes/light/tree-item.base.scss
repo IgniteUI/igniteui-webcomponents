@@ -16,7 +16,7 @@ $focused-border-color: color(secondary, 500);
 $toggle-icon-size: rem(24px);
 
 :host {
-    --igc-tree-indentation-size: 24px;
+    --igc-tree-indentation-size: #{sizable(rem(12px), rem(16px), rem(24px))};
 
     display: flex;
     flex-direction: column;

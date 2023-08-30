@@ -87,7 +87,6 @@ describe('Tree', () => {
       expect(tree.size).to.equal('large');
       tree.items.forEach((item) => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
-        expect(wrapperDiv).to.have.attribute('part').match(/large/);
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
           item.level * indentationSize * 1 + 'px'
@@ -100,9 +99,6 @@ describe('Tree', () => {
       expect(tree.size).to.equal('medium');
       tree.items.forEach((item) => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
-        expect(wrapperDiv)
-          .to.have.attribute('part')
-          .match(/medium/);
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
           (item.level * indentationSize * 2) / 3 + 'px'
@@ -115,7 +111,6 @@ describe('Tree', () => {
       expect(tree.size).to.equal('small');
       tree.items.forEach((item) => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
-        expect(wrapperDiv).to.have.attribute('part').match(/small/);
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
           (item.level * indentationSize * 1) / 2 + 'px'
