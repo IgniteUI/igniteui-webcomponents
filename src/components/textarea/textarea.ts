@@ -21,8 +21,8 @@ import type { Theme } from '../../theming/types.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import {
   Validator,
-  // maxLengthValidator,
-  // minLengthValidator,
+  maxLengthValidator,
+  minLengthValidator,
   requiredValidator,
 } from '../common/validators.js';
 
@@ -66,8 +66,8 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   private declare readonly [themeSymbol]: Theme;
   protected override validators: Validator<this>[] = [
     requiredValidator,
-    // minLengthValidator,
-    // maxLengthValidator,
+    minLengthValidator,
+    maxLengthValidator,
   ];
 
   private static readonly increment = createCounter();
