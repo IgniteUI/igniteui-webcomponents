@@ -22,6 +22,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - DateTime Input - `spinUp/spinDown` calls moving the caret when the input is focused [#859](https://github.com/IgniteUI/igniteui-webcomponents/issues/859)
 ### Deprecated
  - IgcForm component is deprecated
+ - Input component:
+    - `minlength` property is deprecated and will be removed in the next major version. Use `minLength` instead.
+    - `maxlength` property is deprecated and will be removed in the next major version. Use `maxLength` instead.
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+- Mask input component:
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+- DateTime input component:
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+    - `minValue` property is deprecated and will be removed in the next major version. Use `min` instead.
+    - `maxValue` property is deprecated and will be removed in the next major version. Use `max` instead.
+- Rating component:
+    - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+
+### Removed
+- Removed our own `dir` attribute which shadowed the default one. This is a **non-breaking change**.
+- Slider - `ariaLabel` shadowed property. This is a **non-breaking change**.
+- Checkbox - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
+- Switch - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
+- Radio - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
 
 ## [4.3.1] - 2023-08-02
 ### Added

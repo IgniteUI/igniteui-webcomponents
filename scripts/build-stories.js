@@ -115,6 +115,7 @@ async function processFileMeta(path) {
 function isSupportedType(prop) {
   return (
     (prop.type &&
+      !prop.deprecatedMessage &&
       SUPPORTED_TYPES.some(
         (type) => prop.type === type || prop.type.startsWith(`${type} `)
       )) ||

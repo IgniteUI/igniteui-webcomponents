@@ -31,13 +31,13 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The date format to apply on the input.',
       control: 'text',
     },
-    minValue: {
-      type: 'Date | null',
+    min: {
+      type: 'Date',
       description: 'The minimum value required for the input to remain valid.',
       control: 'date',
     },
-    maxValue: {
-      type: 'Date | null',
+    max: {
+      type: 'Date',
       description: 'The maximum value required for the input to remain valid.',
       control: 'date',
     },
@@ -75,7 +75,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
@@ -126,7 +126,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     spinLoop: true,
     locale: 'en',
     outlined: false,
-    readonly: false,
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -140,9 +140,9 @@ interface IgcDateTimeInputArgs {
   /** The date format to apply on the input. */
   inputFormat: string;
   /** The minimum value required for the input to remain valid. */
-  minValue: Date | null;
+  min: Date;
   /** The maximum value required for the input to remain valid. */
-  maxValue: Date | null;
+  max: Date;
   /**
    * Format to display the value in when not editing.
    * Defaults to the input format if not set.
@@ -159,7 +159,7 @@ interface IgcDateTimeInputArgs {
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
   /** Makes the control a readonly field. */
-  readonly: boolean;
+  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -204,14 +204,14 @@ const Template = (
   {
     inputFormat,
     prompt,
-    readonly,
+    readOnly,
     disabled,
     required,
     outlined,
     placeholder,
     displayFormat,
-    minValue,
-    maxValue,
+    min,
+    max,
     size,
     locale,
     spinLoop,
@@ -234,13 +234,13 @@ const Template = (
     .value=${value ? new Date(value as Date) : null}
     .inputFormat=${inputFormat}
     .displayFormat=${displayFormat}
-    .minValue=${minValue ? new Date(minValue as Date) : null}
-    .maxValue=${maxValue ? new Date(maxValue as Date) : null}
+    .min=${min ? new Date(min as Date) : null}
+    .max=${max ? new Date(max as Date) : null}
     locale=${ifDefined(locale)}
     prompt=${ifDefined(prompt)}
     placeholder=${ifDefined(placeholder)}
     ?spin-loop=${spinLoop}
-    .readonly=${readonly}
+    .readOnly=${readOnly}
     .outlined=${outlined}
     .required=${required}
     .disabled=${disabled}
@@ -295,13 +295,13 @@ export const Form: Story = {
           <igc-date-time-input
             name="datetime-min"
             label="Minimum constraint (2023-03-17)"
-            min-value="2023-03-17"
+            min="2023-03-17"
             value="2020-01-01"
           ></igc-date-time-input>
           <igc-date-time-input
             name="datetime-max"
             label="Maximum constraint (2023-04-17)"
-            max-value="2023-04-17"
+            max="2023-04-17"
             value="2024-03-17"
           ></igc-date-time-input>
         </fieldset>

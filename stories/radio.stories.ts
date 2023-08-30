@@ -30,11 +30,6 @@ const metadata: Meta<IgcRadioComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'after',
     },
-    ariaLabelledby: {
-      type: 'string',
-      description: 'Sets the aria-labelledby attribute for the radio control.',
-      control: 'text',
-    },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
@@ -77,8 +72,6 @@ interface IgcRadioArgs {
   checked: boolean;
   /** The label position of the radio control. */
   labelPosition: 'before' | 'after';
-  /** Sets the aria-labelledby attribute for the radio control. */
-  ariaLabelledby: string;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */

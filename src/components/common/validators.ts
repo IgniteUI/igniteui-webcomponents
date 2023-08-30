@@ -38,25 +38,25 @@ export const requiredBooleanValidator: Validator<{
 };
 
 export const minLengthValidator: Validator<{
-  minlength: number;
+  minLength: number;
   value: string;
 }> = {
   key: 'tooShort',
-  message: ({ minlength }) =>
-    format(validatorMessages.minLength, `${minlength}`),
-  isValid: ({ minlength, value }) =>
-    minlength ? value.length >= minlength : true,
+  message: ({ minLength }) =>
+    format(validatorMessages.minLength, `${minLength}`),
+  isValid: ({ minLength, value }) =>
+    minLength ? value.length >= minLength : true,
 };
 
 export const maxLengthValidator: Validator<{
-  maxlength: number;
+  maxLength: number;
   value: string;
 }> = {
   key: 'tooLong',
-  message: ({ maxlength }) =>
-    format(validatorMessages.maxLength, `${maxlength}`),
-  isValid: ({ maxlength, value }) =>
-    maxlength ? value.length <= maxlength : true,
+  message: ({ maxLength }) =>
+    format(validatorMessages.maxLength, `${maxLength}`),
+  isValid: ({ maxLength, value }) =>
+    maxLength ? value.length <= maxLength : true,
 };
 
 export const patternValidator: Validator<{ pattern: string; value: string }> = {

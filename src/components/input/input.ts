@@ -106,6 +106,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
     | 'text'
     | 'url' = 'text';
 
+  // TODO: Deprecate
   /**
    * The input mode attribute of the control.
    * @attr
@@ -129,18 +130,50 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   public pattern!: string;
 
   /**
-   * The minlength attribute of the control.
+   * The minimum string length required by the control.
    * @attr
    */
   @property({ type: Number })
-  public minlength!: number;
+  public minLength!: number;
+
+  /**
+   * The minlength attribute of the control.
+   * @attr
+   *
+   * @deprecated - since v4.4.0
+   * Use the `minLength` property instead.
+   */
+  @property({ attribute: false })
+  public get minlength() {
+    return this.minLength;
+  }
+
+  public set minlength(value: number) {
+    this.minLength = value;
+  }
+
+  /**
+   * The maximum string length of the control.
+   * @attr
+   */
+  @property({ type: Number })
+  public maxLength!: number;
 
   /**
    * The maxlength attribute of the control.
    * @attr
+   *
+   * @deprecated - since v4.4.0
+   * Use the `maxLength` property instead.
    */
-  @property({ type: Number })
-  public maxlength!: number;
+  @property({ attribute: false })
+  public get maxlength() {
+    return this.maxLength;
+  }
+
+  public set maxlength(value: number) {
+    this.maxLength = value;
+  }
 
   /**
    * The min attribute of the control.
@@ -182,8 +215,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   @watch('min', { waitUntilFirstUpdate: true })
   @watch('max', { waitUntilFirstUpdate: true })
-  @watch('minlength', { waitUntilFirstUpdate: true })
-  @watch('maxlength', { waitUntilFirstUpdate: true })
+  @watch('minLength', { waitUntilFirstUpdate: true })
+  @watch('maxLength', { waitUntilFirstUpdate: true })
   @watch('pattern', { waitUntilFirstUpdate: true })
   @watch('step', { waitUntilFirstUpdate: true })
   protected constraintsChanged() {
@@ -257,7 +290,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         pattern=${ifDefined(this.pattern)}
         placeholder=${ifDefined(this.placeholder)}
         .value=${live(this.value)}
-        ?readonly=${this.readonly}
+        ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?autofocus=${this.autofocus}
@@ -266,8 +299,8 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
         inputmode=${ifDefined(this.inputmode)}
         min=${ifDefined(this.min)}
         max=${ifDefined(this.max)}
-        minlength=${ifDefined(this.minlength)}
-        maxlength=${ifDefined(this.maxlength)}
+        minlength=${ifDefined(this.minLength)}
+        maxlength=${ifDefined(this.maxLength)}
         step=${ifDefined(this.step)}
         aria-invalid=${this.invalid ? 'true' : 'false'}
         @change=${this.handleChange}
