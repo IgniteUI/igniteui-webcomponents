@@ -65,18 +65,6 @@ $theme: $material;
     }
 }
 
-:host(igc-calendar[size='large']) {
-    --component-size: var(--ig-size, var(--ig-size-large));
-}
-
-:host(igc-calendar[size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
-
-:host(igc-calendar[size='small']) {
-    --component-size: var(--ig-size, var(--ig-size-small));
-}
-
 [part='navigation'] {
     position: relative;
     display: flex;
