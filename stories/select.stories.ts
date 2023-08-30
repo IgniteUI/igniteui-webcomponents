@@ -359,6 +359,8 @@ function groupBy(objectArray: any, property: string) {
   }, {});
 }
 
+export const Basic: Story = Template.bind({});
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
@@ -470,5 +472,3 @@ export const Form: Story = {
     `;
   },
 };
-
-export const Basic: Story = Template.bind({});
