@@ -204,7 +204,7 @@ describe('Radio Component', () => {
       );
       const input = radio.renderRoot.querySelector('input') as HTMLInputElement;
 
-      expect(radio.ariaLabelledby).to.equal(labelId);
+      expect(radio.getAttribute('aria-labelledby')).to.equal(labelId);
       expect(input.getAttribute('aria-labelledby')).to.equal(labelId);
     });
   });

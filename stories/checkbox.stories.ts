@@ -47,11 +47,6 @@ const metadata: Meta<IgcCheckboxComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'after',
     },
-    ariaLabelledby: {
-      type: 'string',
-      description: 'Sets the aria-labelledby attribute for the control.',
-      control: 'text',
-    },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
@@ -97,8 +92,6 @@ interface IgcCheckboxArgs {
   checked: boolean;
   /** The label position of the control. */
   labelPosition: 'before' | 'after';
-  /** Sets the aria-labelledby attribute for the control. */
-  ariaLabelledby: string;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */

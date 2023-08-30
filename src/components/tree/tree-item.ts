@@ -5,7 +5,7 @@ import {
   state,
 } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
-import { partNameMap } from '../common/util.js';
+import { isLTR, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/tree-item.base.css.js';
 import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
@@ -507,6 +507,8 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   protected override render() {
+    const ltr = this.tree ? isLTR(this.tree) : true;
+
     return html`
       <div id="wrapper" part="wrapper ${partNameMap(this.parts)}">
         <div
@@ -530,7 +532,7 @@ export default class IgcTreeItemComponent extends LitElement {
                         <igc-icon
                           name=${this.expanded
                             ? 'keyboard_arrow_down'
-                            : this.tree?.dir === 'rtl'
+                            : !ltr
                             ? 'navigate_before'
                             : 'keyboard_arrow_right'}
                           collection="internal"

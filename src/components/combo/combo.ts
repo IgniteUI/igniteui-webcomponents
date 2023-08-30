@@ -211,13 +211,6 @@ export default class IgcComboComponent<T extends object = any>
   public placeholderSearch = 'Search';
 
   /**
-   * The direction attribute of the control.
-   * @attr dir
-   */
-  @property({ reflect: true })
-  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
-
-  /**
    * Sets the open state of the component.
    * @attr open
    */
@@ -865,7 +858,6 @@ export default class IgcComboComponent<T extends object = any>
       }}
       placeholder=${ifDefined(this.placeholder)}
       label=${ifDefined(this.label)}
-      dir=${this.dir}
       @igcChange=${(e: Event) => e.stopPropagation()}
       @igcFocus=${(e: Event) => {
         e.stopPropagation();
@@ -909,7 +901,6 @@ export default class IgcComboComponent<T extends object = any>
         @igcBlur=${(e: Event) => e.stopPropagation()}
         @igcInput=${this.handleSearchInput}
         @keydown=${this.handleSearchInputKeydown}
-        dir=${this.dir}
       >
         <igc-icon
           slot=${this.caseSensitiveIcon && 'suffix'}

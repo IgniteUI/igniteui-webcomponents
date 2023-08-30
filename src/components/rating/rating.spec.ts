@@ -353,7 +353,7 @@ describe('Rating component', () => {
 
     it('does nothing on click if readonly', async () => {
       const eventSpy = sinon.spy(el, 'emitEvent');
-      el.readonly = true;
+      el.readOnly = true;
       await elementUpdated(el);
 
       getRatingSymbols(el).item(3).click();
