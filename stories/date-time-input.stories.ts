@@ -1,10 +1,7 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import {
-  DatePart,
-  DatePartDeltas,
-} from '../src/components/date-time-input/date-util.js';
+import { DatePartDeltas } from '../src/components/date-time-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { IgcDateTimeInputComponent, defineComponents } from '../src/index.js';
 import {
@@ -34,13 +31,13 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The date format to apply on the input.',
       control: 'text',
     },
-    minValue: {
-      type: 'Date | null',
+    min: {
+      type: 'Date',
       description: 'The minimum value required for the input to remain valid.',
       control: 'date',
     },
-    maxValue: {
-      type: 'Date | null',
+    max: {
+      type: 'Date',
       description: 'The maximum value required for the input to remain valid.',
       control: 'date',
     },
@@ -78,7 +75,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
@@ -129,7 +126,7 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     spinLoop: true,
     locale: 'en',
     outlined: false,
-    readonly: false,
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -143,9 +140,9 @@ interface IgcDateTimeInputArgs {
   /** The date format to apply on the input. */
   inputFormat: string;
   /** The minimum value required for the input to remain valid. */
-  minValue: Date | null;
+  min: Date;
   /** The maximum value required for the input to remain valid. */
-  maxValue: Date | null;
+  max: Date;
   /**
    * Format to display the value in when not editing.
    * Defaults to the input format if not set.
@@ -162,7 +159,7 @@ interface IgcDateTimeInputArgs {
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
   /** Makes the control a readonly field. */
-  readonly: boolean;
+  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -197,27 +194,6 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/navigation/svg/production/ic_arrow_drop_down_24px.svg'
 );
 
-const handleIncrement = () => {
-  const input = document.querySelector(
-    'igc-date-time-input'
-  ) as IgcDateTimeInputComponent;
-  input!.stepUp(DatePart.Date);
-};
-
-const handleDecrement = () => {
-  const input = document.querySelector(
-    'igc-date-time-input'
-  ) as IgcDateTimeInputComponent;
-  input!.stepDown();
-};
-
-const handleClear = () => {
-  const input = document.querySelector(
-    'igc-date-time-input'
-  ) as IgcDateTimeInputComponent;
-  input!.clear();
-};
-
 Object.assign(metadata.parameters!, {
   actions: {
     handles: ['igcChange', 'igcInput'],
@@ -228,14 +204,14 @@ const Template = (
   {
     inputFormat,
     prompt,
-    readonly,
+    readOnly,
     disabled,
     required,
     outlined,
     placeholder,
     displayFormat,
-    minValue,
-    maxValue,
+    min,
+    max,
     size,
     locale,
     spinLoop,
@@ -251,28 +227,29 @@ const Template = (
   };
 
   return html`<igc-date-time-input
+    id="editor"
     dir=${direction}
     size=${ifDefined(size)}
     label=${label}
     .value=${value ? new Date(value as Date) : null}
     .inputFormat=${inputFormat}
     .displayFormat=${displayFormat}
-    .minValue=${minValue ? new Date(minValue as Date) : null}
-    .maxValue=${maxValue ? new Date(maxValue as Date) : null}
+    .min=${min ? new Date(min as Date) : null}
+    .max=${max ? new Date(max as Date) : null}
     locale=${ifDefined(locale)}
     prompt=${ifDefined(prompt)}
     placeholder=${ifDefined(placeholder)}
     ?spin-loop=${spinLoop}
-    .readonly=${readonly}
+    .readOnly=${readOnly}
     .outlined=${outlined}
     .required=${required}
     .disabled=${disabled}
     .spinDelta=${spinDelta}
     .invalid=${invalid}
   >
-    <igc-icon name="clear" slot="prefix" @click=${handleClear}></igc-icon>
-    <igc-icon name="up" slot="suffix" @click=${handleIncrement}></igc-icon>
-    <igc-icon name="down" slot="suffix" @click=${handleDecrement}></igc-icon>
+    <igc-icon name="clear" slot="prefix" onclick="editor.clear()"></igc-icon>
+    <igc-icon name="up" slot="suffix" onclick="editor.stepUp()"></igc-icon>
+    <igc-icon name="down" slot="suffix" onclick="editor.stepDown()"></igc-icon>
     <span slot="helper-text">This is some helper text</span>
   </igc-date-time-input>`;
 };
@@ -318,13 +295,13 @@ export const Form: Story = {
           <igc-date-time-input
             name="datetime-min"
             label="Minimum constraint (2023-03-17)"
-            min-value="2023-03-17"
+            min="2023-03-17"
             value="2020-01-01"
           ></igc-date-time-input>
           <igc-date-time-input
             name="datetime-max"
             label="Maximum constraint (2023-04-17)"
-            max-value="2023-04-17"
+            max="2023-04-17"
             value="2024-03-17"
           ></igc-date-time-input>
         </fieldset>
