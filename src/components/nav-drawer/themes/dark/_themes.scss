@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/navdrawer' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/overlay' as *;
 
 $material: map.merge(
     digest-schema($dark-navdrawer),
@@ -30,4 +31,8 @@ $indigo: map.merge(
         item-border-radius: border-radius(map.get($dark-indigo-navdrawer, 'item-border-radius')...),
     )
 );
+$material-overlay: digest-schema($dark-overlay);
+$fluent-overlay: digest-schema($dark-fluent-overlay);
+$bootstrap-overlay: digest-schema($dark-bootstrap-overlay);
+$indigo-overlay: digest-schema($dark-indigo-overlay);
 
