@@ -11,7 +11,6 @@ $theme: $material;
     font-family: var(--ig-font-family);
 
     [part='base'] {
-        border-radius: var-get($theme, 'border-radius');
         position: fixed;
         height: 100%;
         min-height: 100%;
@@ -20,7 +19,6 @@ $theme: $material;
         bottom: 0;
         inset-inline-start: 0;
         z-index: 999;
-        background: color(surface, 500);
         transition: all ease-out .3s, .3s;
     }
 
@@ -33,7 +31,6 @@ $theme: $material;
     }
 
     [part='overlay'] {
-        background: color(gray, 500, .54);
         position: fixed;
         inset: 0;
         z-index: 2;
@@ -42,20 +39,20 @@ $theme: $material;
 
 :host([position='start']) [part='mini'],
 :host([position='end']) [part='mini'] {
-    background: color(surface, 500);
-    box-shadow: var(--ig-elevation-16);
     position: fixed;
     top: 0;
     bottom: 0;
 }
 
 :host([position='start']) [part='mini'] {
-    border-inline-end: 1px solid color(gray, 900, .14);
+    border-inline-end-style: solid;
+    border-inline-end-width: rem(1px);
     inset-inline-start: 0;
 }
 
 :host([position='end']) [part='mini'] {
-    border-inline-start: 1px solid color(gray, 900, .14);
+    border-inline-start-style: solid;
+    border-inline-start-width: rem(1px);
     inset-inline-end: 0;
 }
 
@@ -100,7 +97,8 @@ $theme: $material;
 :host([open][position='end']) {
     [part='base'] {
         border-inline-end: none;
-        border-inline-start: 1px solid color(gray, 900, .14);
+        border-inline-start-style: solid;
+        border-inline-start-width: rem(1px);
         inset-inline-start: auto;
         inset-inline-end: 0;
     }
@@ -112,7 +110,8 @@ $theme: $material;
         width: fit-content;
         box-shadow: none;
         z-index: initial;
-        border-inline-end: 1px solid color(gray, 300);
+        border-inline-end-style: solid ;
+        border-inline-end-width: rem(1px);
     }
 
     [part='overlay'] {
@@ -128,8 +127,8 @@ $theme: $material;
 
 :host([open]:not([position='relative'])) {
     [part='base'] {
-        border-inline-end: 1px solid color(gray, 900, .14);
-        box-shadow: var(--ig-elevation-16);
+        border-inline-end-style: solid;
+        border-inline-end-width: rem(1px);
     }
 }
 

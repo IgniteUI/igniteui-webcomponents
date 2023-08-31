@@ -5,6 +5,6 @@
     igc-nav-drawer,
     igc-nav-drawer-item,
     igc-nav-drawer-header-item {
-        @include css-vars-from-theme($indigo, 'ig-navdrawer');
+        @include css-vars-from-theme($fluent, 'ig-navdrawer');
     }
 }
