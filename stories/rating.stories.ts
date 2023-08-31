@@ -72,9 +72,9 @@ const metadata: Meta<IgcRatingComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
+    readOnly: {
       type: 'boolean',
-      description: 'Sets the readonly state of the component',
+      description: 'Makes the control a readonly field.',
       control: 'boolean',
       defaultValue: false,
     },
@@ -114,7 +114,7 @@ const metadata: Meta<IgcRatingComponent> = {
     step: 1,
     value: 0,
     hoverPreview: false,
-    readonly: false,
+    readOnly: false,
     single: false,
     disabled: false,
     invalid: false,
@@ -151,8 +151,8 @@ interface IgcRatingArgs {
   value: number;
   /** Sets hover preview behavior for the component */
   hoverPreview: boolean;
-  /** Sets the readonly state of the component */
-  readonly: boolean;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
   /** Toggles single selection visual mode. */
   single: boolean;
   /** The name attribute of the control. */
@@ -218,7 +218,7 @@ const Template = (
     step,
     max,
     disabled,
-    readonly,
+    readOnly,
     label = 'Default',
     value,
     valueFormat,
@@ -250,7 +250,7 @@ const Template = (
         size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
-        ?readonly=${readonly}
+        ?readonly=${readOnly}
         ?single=${single}
         .step=${Number(step)}
         .value=${value}
@@ -269,7 +269,7 @@ const Template = (
         size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
-        ?readonly=${readonly}
+        ?readonly=${readOnly}
         .step=${Number(step)}
         .valueFormat=${valueFormat}
         max="5"
@@ -292,7 +292,7 @@ const Template = (
         size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
-        ?readonly=${readonly}
+        ?readonly=${readOnly}
         ?single=${single}
         .step=${Number(step)}
         .value=${value}
@@ -319,7 +319,7 @@ const Template = (
         size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
-        ?readonly=${readonly}
+        ?readonly=${readOnly}
         ?single=${single}
         .step=${Number(step)}
         .value=${value}

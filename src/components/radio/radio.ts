@@ -149,13 +149,6 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   @property({ reflect: true, attribute: 'label-position' })
   public labelPosition: 'before' | 'after' = 'after';
 
-  /**
-   * Sets the aria-labelledby attribute for the radio control.
-   * @attr
-   */
-  @property({ reflect: true, attribute: 'aria-labelledby' })
-  public ariaLabelledby!: string;
-
   constructor() {
     super();
     this.addEventListener('keyup', this.handleKeyUp);
@@ -291,6 +284,8 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
+    const labelledBy = this.getAttribute('aria-labelledby');
+
     return html`
       <label
         part=${partNameMap({
@@ -312,9 +307,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
           tabindex=${this._tabIndex}
           aria-checked=${this.checked ? 'true' : 'false'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-labelledby=${this.ariaLabelledby
-            ? this.ariaLabelledby
-            : this.labelId}
+          aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
           @focus=${this.handleFocus}

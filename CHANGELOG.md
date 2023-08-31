@@ -4,24 +4,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.4.0] - 2023-08-30
 ### Added
-- The following components are now Form Associated Custom Elements and support native form element:
-    - Checkbox
-    - Combo
-    - DateTime input
-    - Input
-    - Masked input
-    - Radio
-    - Rating
-    - Single slider
-    - Select
-    - Switch
+- The following components are now Form Associated Custom Elements. They are automatically associated with a parent `<form>`
+  and behave like a browser-provided control:
+  - Button & Icon button
+  - Checkbox
+  - Combo
+  - DateTime input
+  - Input
+  - Masked input
+  - Radio
+  - Rating
+  - Single slider
+  - Select
+  - Switch
+- Stepper now supports animations [#861](https://github.com/IgniteUI/igniteui-webcomponents/issues/861)
+
+### Changed
+- Rating fluent theme colors [#481](https://github.com/IgniteUI/igniteui-webcomponents/issues/481)
+- Stepper indicator styles and color schemas [#766](https://github.com/IgniteUI/igniteui-webcomponents/issues/766) [#868](https://github.com/IgniteUI/igniteui-webcomponents/issues/868)
+
+### Deprecated
+- IgcForm component is deprecated
+- Input component:
+  - `minlength` property is deprecated and will be removed in the next major version. Use `minLength` instead.
+  - `maxlength` property is deprecated and will be removed in the next major version. Use `maxLength` instead.
+  - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+- Mask input component:
+  - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+- DateTime input component:
+  - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+  - `minValue` property is deprecated and will be removed in the next major version. Use `min` instead.
+  - `maxValue` property is deprecated and will be removed in the next major version. Use `max` instead.
+- Rating component:
+  - `readonly` property is deprecated and will be removed in the next major version. Use `readOnly` instead.
+
+### Removed
+- Removed our own `dir` attribute which shadowed the default one. This is a **non-breaking change**.
+- Slider - `ariaLabel` shadowed property. This is a **non-breaking change**.
+- Checkbox - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
+- Switch - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
+- Radio - `ariaLabelledBy` shadowed attribute. This is a **non-breaking change**.
 
 ### Fixed
+- Input - outlined variant styling issues [#875](https://github.com/IgniteUI/igniteui-webcomponents/issues/875) and indigo theme issues [#879](https://github.com/IgniteUI/igniteui-webcomponents/issues/879)
+- Select - outlined variant styling issues [#880](https://github.com/IgniteUI/igniteui-webcomponents/issues/880)
 - DateTime Input - `spinUp/spinDown` calls moving the caret when the input is focused [#859](https://github.com/IgniteUI/igniteui-webcomponents/issues/859)
-### Deprecated
- - IgcForm component is deprecated
 
 ## [4.3.1] - 2023-08-02
 ### Added
@@ -309,6 +338,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.3.1...4.4.0
 [4.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.3.0...4.3.1
 [4.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.3...4.3.0
 [4.2.3]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.2...4.2.3

@@ -66,13 +66,6 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'text',
       defaultValue: 'Search',
     },
-    dir: {
-      type: '"ltr" | "rtl" | "auto"',
-      description: 'The direction attribute of the control.',
-      options: ['ltr', 'rtl', 'auto'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'auto',
-    },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the component.',
@@ -130,7 +123,6 @@ const metadata: Meta<IgcComboComponent> = {
     singleSelect: false,
     autofocusList: false,
     placeholderSearch: 'Search',
-    dir: 'auto',
     open: false,
     flip: true,
     groupSorting: 'asc',
@@ -159,8 +151,6 @@ interface IgcComboArgs {
   placeholder: string;
   /** The placeholder attribute of the search input. */
   placeholderSearch: string;
-  /** The direction attribute of the control. */
-  dir: 'ltr' | 'rtl' | 'auto';
   /** Sets the open state of the component. */
   open: boolean;
   flip: boolean;

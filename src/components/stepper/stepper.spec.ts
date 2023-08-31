@@ -315,9 +315,8 @@ describe('Stepper', () => {
     });
 
     it('Should determine the steps that are disabled in linear mode based on the validity of the active step', async () => {
-      stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepper
-      );
+      stepper =
+        await StepperTestFunctions.createStepperElement(linearModeStepper);
       const step0 = stepper.steps[0];
       const step1 = stepper.steps[1];
       const step2 = stepper.steps[2];
@@ -343,9 +342,8 @@ describe('Stepper', () => {
     });
 
     it('Should not allow moving forward to the next step in linear mode if the previous step is invalid', async () => {
-      stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepper
-      );
+      stepper =
+        await StepperTestFunctions.createStepperElement(linearModeStepper);
       const step0 = stepper.steps[0];
       const step1 = stepper.steps[1];
       const step2 = stepper.steps[2];
@@ -367,9 +365,8 @@ describe('Stepper', () => {
     });
 
     it('Should set a step to be accessible in linear mode if the previous accessible step is being disabled', async () => {
-      stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepper
-      );
+      stepper =
+        await StepperTestFunctions.createStepperElement(linearModeStepper);
 
       stepper.steps[0].invalid = false;
       await elementUpdated(stepper);
@@ -384,9 +381,8 @@ describe('Stepper', () => {
     });
 
     it('Should set a step to be not accessible in linear mode if before it is inserted a new invalid step', async () => {
-      stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepper
-      );
+      stepper =
+        await StepperTestFunctions.createStepperElement(linearModeStepper);
 
       const step0 = stepper.steps[0];
       const step1 = stepper.steps[1];
@@ -408,9 +404,8 @@ describe('Stepper', () => {
     });
 
     it('Should properly set the linear disabled steps when the active step is removed from the DOM', async () => {
-      stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepper
-      );
+      stepper =
+        await StepperTestFunctions.createStepperElement(linearModeStepper);
 
       const step0 = stepper.steps[0];
       const step1 = stepper.steps[1];
@@ -430,9 +425,8 @@ describe('Stepper', () => {
     });
 
     it('Should set a step to be accessible if the previous one is being removed from the DOM and was accessible before that', async () => {
-      stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepper
-      );
+      stepper =
+        await StepperTestFunctions.createStepperElement(linearModeStepper);
 
       const step0 = stepper.steps[0];
       const step1 = stepper.steps[1];
@@ -451,9 +445,8 @@ describe('Stepper', () => {
     });
 
     it('Should set a newly added step to be accessible if is inserted before the active step', async () => {
-      stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepper
-      );
+      stepper =
+        await StepperTestFunctions.createStepperElement(linearModeStepper);
 
       const newStep = document.createElement(IgcStepComponent.tagName);
       await elementUpdated(stepper);
@@ -464,9 +457,8 @@ describe('Stepper', () => {
     });
 
     it("Should not set previous steps to be accessible if a linear disabled step's invalid or disabled states are changed through API", async () => {
-      stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepper
-      );
+      stepper =
+        await StepperTestFunctions.createStepperElement(linearModeStepper);
 
       // the optional state is set to true initially
       stepper.steps[0].optional = false;
@@ -490,9 +482,8 @@ describe('Stepper', () => {
     });
 
     it('Should set a step to be accessible in linear mode if the previous one is accessible and optional', async () => {
-      stepper = await StepperTestFunctions.createStepperElement(
-        linearModeStepper
-      );
+      stepper =
+        await StepperTestFunctions.createStepperElement(linearModeStepper);
       // the step at index 0 is set to be invalid and optional initially
       expect(stepper.steps[1].isAccessible).to.be.true;
 
