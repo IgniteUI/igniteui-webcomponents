@@ -47,14 +47,14 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The pattern attribute of the control.',
       control: 'text',
     },
-    minlength: {
+    minLength: {
       type: 'number',
-      description: 'The minlength attribute of the control.',
+      description: 'The minimum string length required by the control.',
       control: 'number',
     },
-    maxlength: {
+    maxLength: {
       type: 'number',
-      description: 'The maxlength attribute of the control.',
+      description: 'The maximum string length of the control.',
       control: 'number',
     },
     min: {
@@ -95,7 +95,7 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
@@ -147,7 +147,7 @@ const metadata: Meta<IgcInputComponent> = {
     tabIndex: 0,
     value: '',
     outlined: false,
-    readonly: false,
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
@@ -172,10 +172,10 @@ interface IgcInputArgs {
     | 'decimal';
   /** The pattern attribute of the control. */
   pattern: string;
-  /** The minlength attribute of the control. */
-  minlength: number;
-  /** The maxlength attribute of the control. */
-  maxlength: number;
+  /** The minimum string length required by the control. */
+  minLength: number;
+  /** The maximum string length of the control. */
+  maxLength: number;
   /** The min attribute of the control. */
   min: string | number;
   /** The max attribute of the control. */
@@ -192,7 +192,7 @@ interface IgcInputArgs {
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
   /** Makes the control a readonly field. */
-  readonly: boolean;
+  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -220,12 +220,12 @@ const Template = (
     outlined,
     autofocus,
     autocomplete,
-    minlength,
-    maxlength,
+    minLength,
+    maxLength,
     step,
     value,
     placeholder,
-    readonly,
+    readOnly,
     required,
     disabled,
     min,
@@ -240,8 +240,8 @@ const Template = (
     size=${ifDefined(size)}
     placeholder=${ifDefined(placeholder)}
     dir=${direction}
-    minlength=${ifDefined(minlength)}
-    maxlength=${ifDefined(maxlength)}
+    minlength=${ifDefined(minLength)}
+    maxlength=${ifDefined(maxLength)}
     step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
     min=${ifDefined(min)}
@@ -249,7 +249,7 @@ const Template = (
     .value=${value}
     ?autofocus=${autofocus}
     ?invalid=${invalid}
-    .readonly=${readonly}
+    .readOnly=${readOnly}
     .outlined=${outlined}
     .required=${required}
     .disabled=${disabled}

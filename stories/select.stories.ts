@@ -50,13 +50,6 @@ const metadata: Meta<IgcSelectComponent> = {
       description: 'The placeholder attribute of the control.',
       control: 'text',
     },
-    dir: {
-      type: '"ltr" | "rtl" | "auto"',
-      description: 'The direction attribute of the control.',
-      options: ['ltr', 'rtl', 'auto'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'auto',
-    },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
@@ -144,7 +137,6 @@ const metadata: Meta<IgcSelectComponent> = {
   },
   args: {
     outlined: false,
-    dir: 'auto',
     required: false,
     disabled: false,
     invalid: false,
@@ -171,8 +163,6 @@ interface IgcSelectArgs {
   label: string;
   /** The placeholder attribute of the control. */
   placeholder: string;
-  /** The direction attribute of the control. */
-  dir: 'ltr' | 'rtl' | 'auto';
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -369,6 +359,8 @@ function groupBy(objectArray: any, property: string) {
   }, {});
 }
 
+export const Basic: Story = Template.bind({});
+
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
   render: () => {
@@ -480,5 +472,3 @@ export const Form: Story = {
     `;
   },
 };
-
-export const Basic: Story = Template.bind({});

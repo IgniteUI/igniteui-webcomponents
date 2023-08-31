@@ -26,13 +26,9 @@ const metadata: Meta<IgcSliderComponent> = {
   argTypes: {
     value: {
       type: 'number',
-      description: 'The current value of the slider.',
+      description: 'The current value of the component.',
       control: 'number',
-    },
-    ariaLabel: {
-      type: 'string',
-      description: 'The aria label of the slider thumb.',
-      control: 'text',
+      defaultValue: 0,
     },
     name: {
       type: 'string',
@@ -148,6 +144,7 @@ const metadata: Meta<IgcSliderComponent> = {
     },
   },
   args: {
+    value: 0,
     invalid: false,
     disabled: false,
     discreteTrack: false,
@@ -165,10 +162,8 @@ const metadata: Meta<IgcSliderComponent> = {
 export default metadata;
 
 interface IgcSliderArgs {
-  /** The current value of the slider. */
+  /** The current value of the component. */
   value: number;
-  /** The aria label of the slider thumb. */
-  ariaLabel: string;
   /** The name attribute of the control. */
   name: string;
   /** Control the validity of the control. */
@@ -239,7 +234,6 @@ const Template = (
     hideSecondaryLabels = false,
     tickOrientation = 'end',
     tickLabelRotation = 0,
-    ariaLabel,
     locale = 'en',
   }: IgcSliderArgs,
   { globals: { direction } }: Context
@@ -253,7 +247,6 @@ const Template = (
     .value=${value}
     min=${min}
     max=${max}
-    aria-label=${ifDefined(ariaLabel)}
     locale=${locale}
     .lowerBound=${lowerBound}
     .upperBound=${upperBound}

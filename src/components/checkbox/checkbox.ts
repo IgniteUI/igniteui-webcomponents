@@ -49,6 +49,8 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   }
 
   protected override render() {
+    const labelledBy = this.getAttribute('aria-labelledby');
+
     return html`
       <label
         part=${partNameMap({
@@ -72,9 +74,7 @@ export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
             ? 'mixed'
             : this.checked}
           aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-labelledby=${this.ariaLabelledby
-            ? this.ariaLabelledby
-            : this.labelId}
+          aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
           @focus=${this.handleFocus}

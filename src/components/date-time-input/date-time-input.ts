@@ -69,12 +69,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     },
     {
       key: 'rangeUnderflow',
-      message: () => format(messages.min, `${this.minValue}`),
+      message: () => format(messages.min, `${this.min}`),
       isValid: () =>
-        this.minValue
+        this.min
           ? !DateTimeUtil.lessThanMinValue(
               this.value || new Date(),
-              this.minValue,
+              this.min,
               this.hasTimeParts,
               this.hasDateParts
             )
@@ -82,12 +82,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     },
     {
       key: 'rangeOverflow',
-      message: () => format(messages.max, `${this.maxValue}`),
+      message: () => format(messages.max, `${this.max}`),
       isValid: () =>
-        this.maxValue
+        this.max
           ? !DateTimeUtil.greaterThanMaxValue(
               this.value || new Date(),
-              this.maxValue,
+              this.max,
               this.hasTimeParts,
               this.hasDateParts
             )
@@ -157,17 +157,49 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 
   /**
    * The minimum value required for the input to remain valid.
+   * @attr
+   */
+  @property({ converter: converter })
+  public min!: Date;
+
+  /**
+   * The maximum value required for the input to remain valid.
+   * @attr
+   */
+  @property({ converter: converter })
+  public max!: Date;
+
+  /**
+   * The minimum value required for the input to remain valid.
    * @attr min-value
+   *
+   * @deprecated - since v4.4.0
+   * Use the `min` property instead.
    */
   @property({ attribute: 'min-value', converter: converter })
-  public minValue!: Date | null;
+  public get minValue() {
+    return this.min;
+  }
+
+  public set minValue(value: Date) {
+    this.min = value;
+  }
 
   /**
    * The maximum value required for the input to remain valid.
    * @attr max-value
+   *
+   * @deprecated - since v4.4.0
+   * Use the `max` property instead.
    */
   @property({ attribute: 'max-value', converter: converter })
-  public maxValue!: Date | null;
+  public get maxValue() {
+    return this.max;
+  }
+
+  public set maxValue(value: Date) {
+    this.max = value;
+  }
 
   /**
    * Format to display the value in when not editing.
@@ -233,8 +265,8 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     }
   }
 
-  @watch('maxValue', { waitUntilFirstUpdate: true })
-  @watch('minValue', { waitUntilFirstUpdate: true })
+  @watch('min', { waitUntilFirstUpdate: true })
+  @watch('max', { waitUntilFirstUpdate: true })
   protected constraintChange() {
     this.updateValidity();
   }
@@ -313,8 +345,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       return;
     }
 
+    const { start, end } = this.inputSelection;
     const newValue = this.trySpinValue(targetPart, delta);
     this.value = newValue;
+    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
   /** Decrements a date/time portion. */
@@ -325,8 +359,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
       return;
     }
 
+    const { start, end } = this.inputSelection;
     const newValue = this.trySpinValue(targetPart, delta, true);
     this.value = newValue;
+    this.updateComplete.then(() => this.input.setSelectionRange(start, end));
   }
 
   /** Clears the input element of user input. */
@@ -591,7 +627,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     this.updateMask();
     super.handleFocus();
 
-    if (this.readonly) {
+    if (this.readOnly) {
       return;
     }
 
@@ -663,7 +699,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   );
 
   protected override async handleKeydown(e: KeyboardEvent) {
-    if (this.readonly) {
+    if (this.readOnly) {
       return;
     }
 
@@ -679,7 +715,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         name=${ifDefined(this.name)}
         .value=${live(this.maskedValue)}
         .placeholder=${live(this.placeholder || this.emptyMask)}
-        ?readonly=${this.readonly}
+        ?readonly=${this.readOnly}
         ?disabled=${this.disabled}
         @blur=${this.handleBlur}
         @focus=${this.handleFocus}

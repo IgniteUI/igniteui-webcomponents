@@ -113,12 +113,12 @@ describe('Input component', () => {
 
     it('sets the minlength and maxlength properties successfully', async () => {
       el.type = 'number';
-      el.minlength = 5;
-      el.maxlength = 20;
+      el.minLength = 5;
+      el.maxLength = 20;
 
       await elementUpdated(el);
-      expect(input.minLength).to.equal(el.minlength);
-      expect(input.maxLength).to.equal(el.maxlength);
+      expect(input.minLength).to.equal(el.minLength);
+      expect(input.maxLength).to.equal(el.maxLength);
     });
 
     it('sets the pattern property successfully', async () => {
@@ -357,7 +357,7 @@ describe('Input component', () => {
     });
 
     it('fulfils minimum length constraint', async () => {
-      spec.element.minlength = 3;
+      spec.element.minLength = 3;
       await elementUpdated(spec.element);
       spec.submitFails();
 
@@ -368,7 +368,7 @@ describe('Input component', () => {
 
     it('fulfils maximum length constraint', async () => {
       spec.element.value = 'abcd';
-      spec.element.maxlength = 3;
+      spec.element.maxLength = 3;
       await elementUpdated(spec.element);
       spec.submitFails();
 
