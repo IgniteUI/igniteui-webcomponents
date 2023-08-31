@@ -98,6 +98,7 @@
     "stylelint": "^15.10.3",
     "stylelint-config-standard-scss": "^10.0.0",
     "stylelint-scss": "^5.1.0",
+    "stylelint-prettier": "^4.0.2",
     "ts-lit-plugin": "^1.2.1",
     "tslib": "^2.6.2",
     "typedoc": "^0.23.21",
