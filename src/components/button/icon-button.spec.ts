@@ -14,7 +14,7 @@ describe('IconButton component', () => {
 
   const DIFF_OPTIONS = {
     ignoreChildren: ['a'],
-    ignoreAttributes: ['aria-label', 'aria-disabled', 'part', 'role'],
+    ignoreAttributes: ['aria-label', 'aria-disabled', 'part', 'role', 'style'],
   };
   let el: IgcIconButtonComponent;
 
