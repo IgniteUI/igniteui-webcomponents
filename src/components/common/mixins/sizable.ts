@@ -1,6 +1,7 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import type { Constructor } from './constructor';
+import { watch } from '../decorators/watch.js';
 
 export declare class SizableInterface {
   /**
@@ -18,9 +19,20 @@ export const SizableMixin = <T extends Constructor<LitElement>>(
      * Determines the size of the component.
      * @attr
      * @type {"small" | "medium" | "large"}
+     *
+     * @deprecated - since v4.5.0
+     * Use the `--ig-size` CSS custom property instead.
      */
     @property({ reflect: true })
     public size: 'small' | 'medium' | 'large' = 'large';
+
+    @watch('size')
+    protected updateSize() {
+      this.style.setProperty(
+        '--component-size',
+        `var(--ig-size, var(--ig-size-${this.size}))`
+      );
+    }
   }
   return SizableElement as Constructor<SizableInterface> & T;
 };

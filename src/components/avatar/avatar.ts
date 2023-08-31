@@ -82,11 +82,6 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
 
   protected override render() {
     return html`
-      <style>
-        :host {
-          --component-size: var(--ig-size, var(--ig-size-${this.size}));
-        }
-      </style>
       <div
         part="base"
         role="img"

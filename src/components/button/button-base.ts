@@ -140,11 +140,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   private renderButton() {
     return html`
-      <style>
-        :host {
-          --component-size: var(--ig-size, var(--ig-size-${this.size}));
-        }
-      </style>
       <button
         part="base"
         .ariaLabel=${this.ariaLabel}
@@ -162,11 +157,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   private renderLinkButton() {
     return html`
-      <style>
-        :host {
-          --component-size: var(--ig-size, var(--ig-size-${this.size}));
-        }
-      </style>
       <a
         part="base"
         role="button"

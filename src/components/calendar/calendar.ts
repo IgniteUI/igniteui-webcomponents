@@ -733,11 +733,6 @@ export default class IgcCalendarComponent extends SizableMixin(
     }
 
     return html`
-      <style>
-        :host {
-          --component-size: var(--ig-size, var(--ig-size-${this.size}));
-        }
-      </style>
       ${this.renderHeader()}
       <div
         part="content"

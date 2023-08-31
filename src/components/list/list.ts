@@ -32,12 +32,7 @@ export default class IgcListComponent extends SizableMixin(LitElement) {
   }
 
   protected override render() {
-    return html` <style>
-        :host {
-          --component-size: var(--ig-size, var(--ig-size-${this.size}));
-        }
-      </style>
-      <slot></slot>`;
+    return html`<slot></slot>`;
   }
 }
 
