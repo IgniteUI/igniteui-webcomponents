@@ -86,7 +86,7 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
         part="base"
         role="img"
         aria-label="avatar"
-        aria-roledescription=${this.size + ' ' + this.shape}
+        aria-roledescription=${this.shape}
         class=${classMap(this.classes)}
       >
         ${this.initials
