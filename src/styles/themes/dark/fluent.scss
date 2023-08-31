@@ -15,13 +15,13 @@
 @use '../../../components/select/themes/dark/select.fluent' as select;
 @use '../../../components/tabs/themes/dark/tab.dark.base' as tab;
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
-@use '../../../components/nav-drawer/themes/dark/nav-drawer-item.fluent' as nav-drawer-item;
 @use '../../../components/combo/themes/dark/combo.fluent' as combo;
 @use '../../../components/icon/dark/icon.fluent' as icon;
 @use '../../../components/navbar/themes/dark/navbar.fluent' as navbar;
 @use '../../../components/avatar/themes/dark/avatar.fluent' as avatar;
 @use '../../../components/rating/dark/rating.fluent' as rating;
 @use '../../../components/stepper/themes/step/dark/step.fluent' as stepper;
+@use '../../../components/nav-drawer/themes/dark/nav-drawer.fluent' as nav-drawer;
 @include base.root-styles($palette);
 @include button.theme();
 @include icon-button.theme();
@@ -36,7 +36,6 @@
 @include tab.theme();
 @include select.theme();
 @include tree-item.theme();
-@include nav-drawer-item.theme();
 @include grid.theme();
 @include combo.theme();
 @include icon.theme();
@@ -44,3 +43,4 @@
 @include avatar.theme();
 @include rating.theme();
 @include stepper.theme();
+@include nav-drawer.theme();
