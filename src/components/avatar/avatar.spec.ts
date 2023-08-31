@@ -70,14 +70,14 @@ describe('Avatar', () => {
 
     expect(el.src).to.be.undefined;
     expect(el).shadowDom.to.equal(
-      `<div part="base" role="img" aria-label="avatar" aria-roledescription="small square" class="square small">
+      `<div part="base" role="img" aria-label="avatar" aria-roledescription="square" class="square">
       <span part="initials">ab</span>
       </div>`
     );
 
     el.setAttribute('src', 'abs');
     expect(el).shadowDom.to.equal(
-      `<div part="base" role="img" aria-label="avatar" aria-roledescription="small square" class="square small">
+      `<div part="base" role="img" aria-label="avatar" aria-roledescription="square" class="square">
       <span part="initials">ab</span>
       </div>`
     );
