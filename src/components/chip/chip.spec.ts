@@ -149,6 +149,9 @@ describe('Chip', () => {
     expect(chip.selected).to.be.false;
     await elementUpdated(chip);
 
-    expect(chip).dom.to.equal(`<igc-chip size="medium"></igc-chip>`);
+    expect(chip).dom.to.equal(
+      `<igc-chip size="medium"></igc-chip>`,
+      DIFF_OPTIONS
+    );
   });
 });

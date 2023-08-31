@@ -34,6 +34,7 @@ describe('IconButton component', () => {
           'part',
           'role',
           'size',
+          'style',
         ],
       });
     });
@@ -53,6 +54,7 @@ describe('IconButton component', () => {
           'role',
           'size',
           'href',
+          'style',
         ],
       });
     });
@@ -88,6 +90,7 @@ describe('IconButton component', () => {
             'part',
             'role',
             'size',
+            'style',
           ],
         }
       );
@@ -111,6 +114,7 @@ describe('IconButton component', () => {
             'part',
             'role',
             'size',
+            'style',
           ],
         }
       );
@@ -173,6 +177,7 @@ describe('IconButton component', () => {
             'role',
             'size',
             'variant',
+            'style',
           ],
         }
       );

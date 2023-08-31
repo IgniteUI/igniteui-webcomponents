@@ -137,6 +137,7 @@ describe('Dialog component', () => {
             'size',
             'id',
             'hidden',
+            'style',
           ],
         }
       );

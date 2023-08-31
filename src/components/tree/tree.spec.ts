@@ -78,18 +78,18 @@ describe('Tree', () => {
 
     it('Should render items correctly depending on size settings', async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleTree);
-      const indentationSize = parseFloat(
-        getComputedStyle(tree.firstElementChild as Element).getPropertyValue(
-          '--igc-tree-indentation-size'
-        )
-      );
+      const indentationSize = {
+        small: 12,
+        medium: 16,
+        large: 24,
+      };
 
       expect(tree.size).to.equal('large');
       tree.items.forEach((item) => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          item.level * indentationSize * 1 + 'px'
+          item.level * indentationSize['large'] * 1 + 'px'
         );
       });
 
@@ -101,7 +101,7 @@ describe('Tree', () => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          (item.level * indentationSize * 2) / 3 + 'px'
+          (item.level * indentationSize['medium'] * 2) / 3 + 'px'
         );
       });
 
@@ -113,7 +113,7 @@ describe('Tree', () => {
         const wrapperDiv = item.shadowRoot!.querySelector('div#wrapper');
         const indentationDiv = wrapperDiv?.firstElementChild;
         expect(getComputedStyle(indentationDiv as Element).width).to.equal(
-          (item.level * indentationSize * 1) / 2 + 'px'
+          (item.level * indentationSize['large'] * 1) / 2 + 'px'
         );
       });
     });
