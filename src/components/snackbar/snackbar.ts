@@ -10,11 +10,9 @@ import { styles as bootstrap } from './themes/light/snackbar.bootstrap.css.js';
 import { styles as fluent } from './themes/light/snackbar.fluent.css.js';
 import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcButtonComponent from '../button/button.js';
 import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
-
-defineComponents(IgcButtonComponent);
+import IgcButtonComponent from '../button/button.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
@@ -39,11 +37,12 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
-  public static tagName = 'igc-snackbar';
-
-  /** @private */
+  public static readonly tagName = 'igc-snackbar';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, IgcButtonComponent);
+  }
 
   private autoHideTimeout!: number;
   private animationPlayer!: AnimationPlayer;

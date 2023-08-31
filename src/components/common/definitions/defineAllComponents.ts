@@ -57,7 +57,9 @@ import IgcSelectGroupComponent from '../../select/select-group.js';
 import IgcSelectHeaderComponent from '../../select/select-header.js';
 import IgcSelectItemComponent from '../../select/select-item.js';
 
-const allComponents: CustomElementConstructor[] = [
+import type { IgniteComponent } from './register.js';
+
+const allComponents: IgniteComponent[] = [
   IgcAvatarComponent,
   IgcAccordionComponent,
   IgcBadgeComponent,
@@ -117,6 +119,6 @@ const allComponents: CustomElementConstructor[] = [
   IgcStepComponent,
 ];
 
-export const defineAllComponents = () => {
+export function defineAllComponents() {
   defineComponents(...allComponents);
-};
+}

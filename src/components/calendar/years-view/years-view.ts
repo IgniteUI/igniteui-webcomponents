@@ -4,6 +4,7 @@ import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { watch } from '../../common/decorators/watch.js';
+import { registerComponent } from '../../common/definitions/register.js';
 import { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partNameMap } from '../../common/util.js';
@@ -37,6 +38,10 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-years-view';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private years!: Date[][];
 

@@ -2,9 +2,11 @@ import { html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
+import IgcSliderLabelComponent from './slider-label.js';
 
 /* blazorSuppress */
 export interface IgcRangeSliderValue {
@@ -51,6 +53,10 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   Constructor<IgcSliderBaseComponent>
 >(IgcSliderBaseComponent) {
   public static readonly tagName = 'igc-range-slider';
+
+  public static register() {
+    registerComponent(this, IgcSliderLabelComponent);
+  }
 
   @query(`#thumbFrom`)
   private thumbFrom!: HTMLElement;

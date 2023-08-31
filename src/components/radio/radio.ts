@@ -6,8 +6,11 @@ import { themes } from '../../theming/theming-decorator.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import messages from '../common/localization/validation-en.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import {
   any,
   createCounter,
@@ -15,14 +18,12 @@ import {
   partNameMap,
   wrap,
 } from '../common/util.js';
+import { Validator } from '../common/validators.js';
 import { styles } from './themes/light/radio.base.css.js';
 import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
 import { styles as fluent } from './themes/light/radio.fluent.css.js';
 import { styles as indigo } from './themes/light/radio.indigo.css.js';
 import { styles as material } from './themes/light/radio.material.css.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import messages from '../common/localization/validation-en.js';
-import { Validator } from '../common/validators.js';
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<boolean>;
@@ -68,6 +69,11 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
 ) {
   public static readonly tagName = 'igc-radio';
   protected static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
+
   private static readonly increment = createCounter();
 
   protected override validators: Validator<this>[] = [

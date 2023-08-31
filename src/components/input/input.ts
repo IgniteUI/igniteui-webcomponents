@@ -6,8 +6,8 @@ import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import { IgcInputBaseComponent } from './input-base.js';
 import {
   Validator,
   maxLengthValidator,
@@ -19,6 +19,7 @@ import {
   requiredValidator,
   stepValidator,
 } from '../common/validators.js';
+import { IgcInputBaseComponent } from './input-base.js';
 
 /**
  * @element igc-input
@@ -41,6 +42,10 @@ import {
  */
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private get isStringType() {
     return this.type !== 'number';

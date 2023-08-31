@@ -8,15 +8,17 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes, themeSymbol } from '../../theming/index.js';
+import { themeSymbol, themes } from '../../theming/index.js';
+import type { Theme } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { partNameMap } from '../common/util.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { partNameMap } from '../common/util.js';
+import { Validator, requiredValidator } from '../common/validators.js';
 import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 import IgcDropdownComponent, {
   IgcDropdownEventMap,
@@ -26,21 +28,11 @@ import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
-import type { Theme } from '../../theming/types.js';
 import { styles } from './themes/light/select.base.css.js';
 import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
-import { requiredValidator, Validator } from '../common/validators.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcInputComponent,
-  IgcSelectGroupComponent,
-  IgcSelectHeaderComponent,
-  IgcSelectItemComponent
-);
 
 export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
@@ -85,6 +77,18 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 ) {
   public static readonly tagName = 'igc-select';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcIconComponent,
+      IgcInputComponent,
+      IgcSelectGroupComponent,
+      IgcSelectHeaderComponent,
+      IgcSelectItemComponent
+    );
+  }
+
   private searchTerm = '';
   private lastKeyTime = Date.now();
 

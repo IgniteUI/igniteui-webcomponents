@@ -4,11 +4,9 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './themes/light/list.base.css.js';
 import { styles as bootstrap } from './themes/light/list.bootstrap.css.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { registerComponent } from '../common/definitions/register.js';
 import IgcListHeaderComponent from './list-header.js';
 import IgcListItemComponent from './list-item.js';
-
-defineComponents(IgcListItemComponent, IgcListHeaderComponent);
 
 /**
  * Displays a collection of data items in a templatable list format.
@@ -22,8 +20,8 @@ export default class IgcListComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-list';
   public static override styles = styles;
 
-  constructor() {
-    super();
+  public static register() {
+    registerComponent(this, IgcListItemComponent, IgcListHeaderComponent);
   }
 
   public override connectedCallback() {

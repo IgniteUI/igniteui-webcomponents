@@ -1,21 +1,22 @@
 import { html, LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './icon.base.css.js';
-import { styles as material } from './light/icon.material.css.js';
-import { styles as bootstrap } from './light/icon.bootstrap.css.js';
-import { styles as fluent } from './light/icon.fluent.css.js';
-import { styles as indigo } from './light/icon.indigo.css.js';
 import {
   IconsRegistry,
   registerIcon as registerIcon_impl,
   registerIconFromText as registerIconFromText_impl,
 } from './icon.registry.js';
+import { styles as bootstrap } from './light/icon.bootstrap.css.js';
+import { styles as fluent } from './light/icon.fluent.css.js';
+import { styles as indigo } from './light/icon.indigo.css.js';
+import { styles as material } from './light/icon.material.css.js';
 
 @themes({ material, bootstrap, fluent, indigo })
 /**
@@ -27,8 +28,11 @@ import {
  */
 export default class IgcIconComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-icon';
-
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   @state() private svg = '';
 

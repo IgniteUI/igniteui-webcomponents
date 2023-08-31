@@ -20,21 +20,15 @@ import type {
   IgcToggleEventMap,
 } from '../toggle/types';
 import { styles } from './themes/light/dropdown.base.css.js';
-import { styles as material } from './themes/light/dropdown.material.css.js';
 import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
 import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
 import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
+import { styles as material } from './themes/light/dropdown.material.css.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { registerComponent } from '../common/definitions/register.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
-
-defineComponents(
-  IgcDropdownGroupComponent,
-  IgcDropdownHeaderComponent,
-  IgcDropdownItemComponent
-);
 
 export interface IgcDropdownEventMap extends IgcToggleEventMap {
   igcChange: CustomEvent<IgcDropdownItemComponent>;
@@ -67,10 +61,17 @@ export default class IgcDropdownComponent
   )
   implements IgcToggleComponent
 {
-  /** @private */
-  public static readonly tagName: string = 'igc-dropdown';
-
+  public static readonly tagName = 'igc-dropdown';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcDropdownGroupComponent,
+      IgcDropdownHeaderComponent,
+      IgcDropdownItemComponent
+    );
+  }
 
   protected toggleController!: IgcToggleController;
   protected selectedItem!: IgcDropdownItemComponent | null;

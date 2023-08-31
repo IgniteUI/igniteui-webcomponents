@@ -1,9 +1,7 @@
-export const defineComponents = (...components: CustomElementConstructor[]) => {
-  for (const component of components) {
-    const tagName = (component as any).tagName;
+import { IgniteComponent } from './register.js';
 
-    if (tagName && !window.customElements.get(tagName)) {
-      window.customElements.define(tagName, component);
-    }
+export function defineComponents(...components: IgniteComponent[]) {
+  for (const component of components) {
+    component.register();
   }
-};
+}
