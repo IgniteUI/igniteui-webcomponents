@@ -1,6 +1,5 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 
 /**
@@ -15,7 +14,10 @@ import { alternateName } from '../common/decorators/alternateName.js';
 export default class IgcToggleButtonComponent extends LitElement {
   public static readonly tagName = 'igc-toggle-button';
 
-  private _ariaLabel!: string;
+  public static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
 
   @query('[part="base"]', true)
   private nativeElement!: HTMLElement;
@@ -24,7 +26,7 @@ export default class IgcToggleButtonComponent extends LitElement {
    * The value attribute of the control.
    * @attr
    */
-  @property({ type: String, reflect: true })
+  @property()
   public value!: string;
 
   /**
@@ -40,25 +42,6 @@ export default class IgcToggleButtonComponent extends LitElement {
    */
   @property({ type: Boolean, reflect: true })
   public disabled = false;
-
-  /**
-   * The aria label of the control.
-   * @attr
-   */
-  @property({ attribute: 'aria-label' })
-  public override get ariaLabel() {
-    return this._ariaLabel;
-  }
-
-  public override set ariaLabel(value: string) {
-    const oldVal = this._ariaLabel;
-    this._ariaLabel = value;
-
-    if (this.hasAttribute('aria-label')) {
-      this.removeAttribute('aria-label');
-    }
-    this.requestUpdate('ariaLabel', oldVal);
-  }
 
   /** Sets focus on the button. */
   @alternateName('focusComponent')
@@ -81,10 +64,9 @@ export default class IgcToggleButtonComponent extends LitElement {
     return html`
       <button
         part="base"
-        role="button"
         type="button"
         .disabled=${this.disabled}
-        aria-label=${ifDefined(this.ariaLabel)}
+        .ariaLabel=${this.ariaLabel}
         aria-pressed=${this.selected}
         aria-disabled=${this.disabled}
       >

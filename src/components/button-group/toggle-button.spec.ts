@@ -14,7 +14,7 @@ describe('Toggle Button', () => {
 
   const DIFF_OPTIONS = {
     ignoreChildren: ['button'],
-    ignoreAttributes: ['part', 'role', 'type', 'aria-pressed', 'aria-disabled'],
+    ignoreAttributes: ['part', 'type', 'aria-pressed', 'aria-disabled'],
   };
 
   let button: IgcToggleButtonComponent;
@@ -40,39 +40,32 @@ describe('Toggle Button', () => {
       expect(button.value).to.be.undefined;
       expect(button.selected).to.be.false;
       expect(button.disabled).to.be.false;
-      expect(button.ariaLabel).to.be.undefined;
+      expect(button.ariaLabel).to.be.null;
       expect(button.dir).to.be.empty;
     });
 
-    it('should render proper role and attributes', () => {
+    it('should render proper attributes', () => {
       const buttonElement = button.shadowRoot?.querySelector('button');
 
       expect(buttonElement).not.to.be.null;
       expect(buttonElement).to.have.attribute('part', 'base');
-      expect(buttonElement).to.have.attribute('role', 'button');
       expect(buttonElement).to.have.attribute('type', 'button');
       expect(buttonElement).to.have.attribute('aria-pressed', 'false');
       expect(buttonElement).to.have.attribute('aria-disabled', 'false');
     });
 
-    it('sets value property successfully', async () => {
-      button.value = 'button-1';
-      await elementUpdated(button);
+    it('sets `value` property successfully', async () => {
+      button = await createButtonComponent(`
+        <igc-toggle-button value="button-1">Click</igc-toggle-button>`);
 
       expect(button.value).to.equal('button-1');
-      expect(button).dom.to.equal(
-        `<igc-toggle-button value="button-1">Click</igc-toggle-button>`
-      );
     });
 
-    it('sets selected property successfully', async () => {
-      button.selected = true;
-      await elementUpdated(button);
+    it('sets `selected` property successfully', async () => {
+      button = await createButtonComponent(`
+        <igc-toggle-button selected>Click</igc-toggle-button>`);
 
       expect(button.selected).to.be.true;
-      expect(button).dom.to.equal(
-        `<igc-toggle-button selected>Click</igc-toggle-button>`
-      );
 
       button.selected = false;
       await elementUpdated(button);
@@ -81,16 +74,21 @@ describe('Toggle Button', () => {
       expect(button).dom.to.equal(
         `<igc-toggle-button>Click</igc-toggle-button>`
       );
-    });
 
-    it('sets disabled property successfully', async () => {
-      button.disabled = true;
+      button.selected = true;
       await elementUpdated(button);
 
-      expect(button.disabled).to.be.true;
+      expect(button.selected).to.be.true;
       expect(button).dom.to.equal(
-        `<igc-toggle-button disabled>Click</igc-toggle-button>`
+        `<igc-toggle-button selected>Click</igc-toggle-button>`
       );
+    });
+
+    it('sets `disabled` property successfully', async () => {
+      button = await createButtonComponent(`
+        <igc-toggle-button disabled>Click</igc-toggle-button>`);
+
+      expect(button.disabled).to.be.true;
       expect(button).shadowDom.to.equal(`<button disabled />`, DIFF_OPTIONS);
 
       button.disabled = false;
@@ -101,11 +99,20 @@ describe('Toggle Button', () => {
         `<igc-toggle-button>Click</igc-toggle-button>`
       );
       expect(button).shadowDom.to.equal(`<button />`, DIFF_OPTIONS);
+
+      button.disabled = true;
+      await elementUpdated(button);
+
+      expect(button.disabled).to.be.true;
+      expect(button).dom.to.equal(
+        `<igc-toggle-button disabled>Click</igc-toggle-button>`
+      );
+      expect(button).shadowDom.to.equal(`<button disabled />`, DIFF_OPTIONS);
     });
 
-    it('sets ariaLabel property successfully', async () => {
-      button.ariaLabel = 'button-1';
-      await elementUpdated(button);
+    it('sets `aria-label` successfully', async () => {
+      button = await createButtonComponent(`
+        <igc-toggle-button aria-label="button-1">Click</igc-toggle-button>`);
 
       expect(button.ariaLabel).to.equal('button-1');
       expect(button).shadowDom.to.equal(
