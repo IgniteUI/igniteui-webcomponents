@@ -282,7 +282,7 @@ export const Form: Story = {
           <igc-textarea
             name="textarea-max-length"
             label="Maximum length (8)"
-            minlength="8"
+            maxlength="8"
           ></igc-textarea>
         </fieldset>
         ${formControls()}
