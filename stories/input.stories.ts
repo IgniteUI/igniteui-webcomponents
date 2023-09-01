@@ -134,13 +134,6 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     type: 'text',
@@ -151,7 +144,6 @@ const metadata: Meta<IgcInputComponent> = {
     required: false,
     disabled: false,
     invalid: false,
-    size: 'medium',
   },
 };
 
@@ -205,8 +197,6 @@ interface IgcInputArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcInputArgs>;
 
@@ -215,7 +205,6 @@ type Story = StoryObj<IgcInputArgs>;
 const Template = (
   {
     type,
-    size,
     label = 'Sample Label',
     outlined,
     autofocus,
@@ -237,7 +226,6 @@ const Template = (
   <igc-input
     type=${type}
     label=${label}
-    size=${ifDefined(size)}
     placeholder=${ifDefined(placeholder)}
     dir=${direction}
     minlength=${ifDefined(minLength)}
@@ -254,8 +242,8 @@ const Template = (
     .required=${required}
     .disabled=${disabled}
   >
-    <igc-icon name="github" slot="prefix" size=${size}></igc-icon>
-    <igc-icon name="github" slot="suffix" size=${size}></igc-icon>
+    <igc-icon name="github" slot="prefix"></igc-icon>
+    <igc-icon name="github" slot="suffix"></igc-icon>
     <span slot="helper-text">This is some helper text</span>
   </igc-input>
 `;

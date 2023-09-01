@@ -101,13 +101,6 @@ const metadata: Meta<IgcDropdownComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
   },
   args: {
     keepOpenOnSelect: false,
@@ -119,7 +112,6 @@ const metadata: Meta<IgcDropdownComponent> = {
     flip: false,
     distance: 0,
     sameWidth: false,
-    size: 'large',
   },
 };
 
@@ -159,8 +151,6 @@ interface IgcDropdownArgs {
   distance: number;
   /** Whether the dropdown's width should be the same as the target's one. */
   sameWidth: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcDropdownArgs>;
 
@@ -200,7 +190,6 @@ const items = [
 ];
 const Template = (
   {
-    size = 'large',
     open = false,
     flip = false,
     keepOpenOnOutsideClick = false,
@@ -218,7 +207,6 @@ const Template = (
   >
     <igc-dropdown
       id="ddl1"
-      size=${size}
       ?open=${open}
       ?flip=${flip}
       ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
@@ -282,7 +270,6 @@ const Template = (
         >
         <igc-dropdown
           id="ddl2"
-          size=${size}
           .open=${open}
           .flip=${flip}
           .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -325,7 +312,6 @@ const Template = (
       id="ddl3"
       style="align-self: center;"
       distance=${distance}
-      size=${size}
       .open=${open}
       .flip=${flip}
       .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -344,7 +330,6 @@ const Template = (
     <igc-dropdown
       style="position: absolute; bottom: 10px; left: 0px"
       id="ddl4"
-      size=${size}
       .open=${open}
       .flip=${flip}
       .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -368,7 +353,6 @@ const Template = (
     <igc-dropdown
       style="position: fixed; bottom: 0px; right: 0px"
       id="ddl5"
-      size=${size}
       .open=${open}
       .flip=${true}
       .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}

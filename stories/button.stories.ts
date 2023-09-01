@@ -62,15 +62,8 @@ const metadata: Meta<IgcButtonComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
-  args: { variant: 'contained', disabled: false, size: 'medium' },
+  args: { variant: 'contained', disabled: false },
 };
 
 export default metadata;
@@ -93,8 +86,6 @@ interface IgcButtonArgs {
   rel: string;
   /** The disabled state of the component */
   disabled: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcButtonArgs>;
 
@@ -107,7 +98,7 @@ Object.assign(metadata.parameters!, {
 });
 
 const ButtonTemplate = (
-  { disabled = false, size, variant, type }: IgcButtonArgs,
+  { disabled = false, variant, type }: IgcButtonArgs,
   { globals: { direction } }: Context
 ) => {
   const handleClick = () => {
@@ -118,7 +109,6 @@ const ButtonTemplate = (
     <igc-button
       @click=${handleClick}
       .disabled=${disabled}
-      .size=${size}
       .variant=${variant}
       .type=${type}
       dir=${ifDefined(direction)}
@@ -133,7 +123,6 @@ const ButtonTemplate = (
 const LinkTemplate = (
   {
     disabled = false,
-    size,
     variant,
     href = 'http://www.infragistics.com',
     download,
@@ -144,7 +133,6 @@ const LinkTemplate = (
 ) => html`
   <igc-button
     .disabled=${disabled}
-    .size=${size}
     .variant=${variant}
     .href=${href}
     .download=${download}

@@ -22,25 +22,13 @@ const metadata: Meta<IgcListComponent> = {
       },
     },
   },
-  argTypes: {
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
-  },
-  args: { size: 'large' },
+  argTypes: {},
+  args: {},
 };
 
 export default metadata;
 
-interface IgcListArgs {
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
-}
-type Story = StoryObj<IgcListArgs>;
+type Story = StoryObj;
 
 // endregion
 
@@ -65,14 +53,11 @@ const employeeData = [
   },
 ];
 
-const BasicTemplate = (
-  { size }: IgcListArgs,
-  { globals: { direction } }: Context
-) => {
+const BasicTemplate = ({ globals: { direction } }: Context) => {
   const employees = new Array(48);
 
   return html`
-    <igc-list .size="${size}" dir=${direction}>
+    <igc-list dir=${direction}>
       <igc-list-header>
         <h1>Job Positions</h1>
       </igc-list-header>

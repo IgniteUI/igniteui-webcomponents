@@ -79,20 +79,8 @@ const metadata: Meta<IgcIconButtonComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
   },
-  args: {
-    mirrored: false,
-    variant: 'contained',
-    disabled: false,
-    size: 'large',
-  },
+  args: { mirrored: false, variant: 'contained', disabled: false },
 };
 
 export default metadata;
@@ -121,8 +109,6 @@ interface IgcIconButtonArgs {
   rel: string;
   /** The disabled state of the component */
   disabled: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcIconButtonArgs>;
 
@@ -152,7 +138,6 @@ const Template = (
     mirrored,
     href,
     download,
-    size,
     target,
     rel,
     variant,
@@ -171,7 +156,6 @@ const Template = (
       dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
       .disabled=${ifDefined(disabled)}
     >
       <igc-ripple></igc-ripple>
@@ -191,7 +175,6 @@ const Template = (
       dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
       .disabled=${ifDefined(disabled)}
     >
       <igc-ripple></igc-ripple>
@@ -204,7 +187,6 @@ const Template = (
       dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
       .disabled=${ifDefined(disabled)}
     >
       <span class="material-icons">favorite</span>
@@ -216,7 +198,6 @@ const Template = (
       dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
       .disabled=${ifDefined(disabled)}
     >
       <i class="fa-solid fa-droplet"></i>
