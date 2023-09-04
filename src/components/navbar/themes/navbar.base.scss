@@ -9,6 +9,10 @@
     padding: 0 rem(16px);
     font-family: var(--ig-font-family);
     z-index: 4;
+
+    ::slotted(igc-icon) {
+        --ig-size: 3;
+    }
 }
 
 [part='base'] {
