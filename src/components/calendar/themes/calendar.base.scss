@@ -122,6 +122,13 @@ $theme: $material;
     gap: rem(24px);
 }
 
+[dir='rtl'] igc-calendar,
+:host(igc-calendar[dir='rtl']) {
+    [part~="navigation-button"] {
+        transform: rotate(180deg);
+    }
+}
+
 :host(igc-calendar[header-orientation='vertical']) {
     flex-direction: row;
 
