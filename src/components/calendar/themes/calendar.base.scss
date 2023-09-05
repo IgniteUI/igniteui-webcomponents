@@ -110,12 +110,6 @@ $theme: $material;
     }
 }
 
-[part~='navigation-button'] {
-    &[part~='vertical'] {
-        transform: rotate(90deg);
-    }
-}
-
 [part='navigation-buttons'] {
     display: flex;
     align-items: center;
