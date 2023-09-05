@@ -110,6 +110,12 @@ $theme: $material;
     }
 }
 
+[part~='navigation-button'] {
+    &[part~='vertical'] {
+        transform: rotate(90deg);
+    }
+}
+
 [part='navigation-buttons'] {
     display: flex;
     align-items: center;
@@ -120,6 +126,10 @@ $theme: $material;
 :host(igc-calendar[dir='rtl']) {
     [part~="navigation-button"] {
         transform: rotate(180deg);
+
+        &[part~='vertical'] {
+            transform: rotate(90deg);
+        }
     }
 }
 
