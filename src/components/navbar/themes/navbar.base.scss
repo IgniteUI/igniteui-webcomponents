@@ -16,6 +16,8 @@
 }
 
 [part='base'] {
+    --ig-size: 1;
+
     display: inherit;
     position: relative;
     flex-flow: row nowrap;
@@ -51,18 +53,8 @@
     margin-inline-end: rem(1px);
 }
 
-::slotted(igc-avatar[part='base']) {
-    max-width: rem(32px);
-    max-height: rem(32px);
-    min-height: 0;
-    min-width: 0;
-}
-
 ::slotted(igc-icon) {
     cursor: pointer;
-    width: rem(32px);
-    height: rem(32px);
-    font-size: rem(32px);
     transition: color .15s cubic-bezier(.25, .46, .45, .94);
 }
 
