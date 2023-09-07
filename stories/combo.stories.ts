@@ -1,15 +1,18 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import {
+  ComboItemTemplate,
+  IgcComboComponent,
+  defineComponents,
+  registerIconFromText,
+} from '../src/index.js';
 import {
   Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { ComboItemTemplate } from '../src/index.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
-import { defineComponents, IgcComboComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcComboComponent);
 

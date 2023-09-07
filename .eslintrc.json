@@ -11,19 +11,15 @@
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": [
-    "import",
-    "@typescript-eslint"
-  ],
+  "plugins": ["import", "@typescript-eslint"],
   "env": {
     "browser": true
   },
   "rules": {
     "import/extensions": [
       "error",
-      "always",
       {
-        "ignorePackages": true
+        "js": "always"
       }
     ],
     "no-prototype-builtins": "off",
@@ -52,10 +48,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "rollup.config.js",
-        "web-test-runner.config.js"
-      ],
+      "files": ["rollup.config.js", "web-test-runner.config.js"],
       "env": {
         "node": true
       }
