@@ -4,7 +4,7 @@ import { styles as fluent } from './themes/light/header-item/nav-drawer-header-i
 import { styles as indigo } from './themes/light/header-item/nav-drawer-header-item.indigo.css.js';
 import { styles as bootstrap } from './themes/light/header-item/nav-drawer-header-item.indigo.css.js';
 import { styles as material } from './themes/light/header-item/nav-drawer-header-item.indigo.css.js';
-import { styles } from './themes/light/header-item/nav-drawer-header-item.base.css';
+import { styles } from './themes/light/header-item/nav-drawer-header-item.base.css.js';
 
 /**
  * A wrapper for navigation drawer's header.

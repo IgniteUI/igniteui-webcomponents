@@ -1,16 +1,16 @@
-import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import type { Context } from './story';
-import {
-  registerIcon,
-  registerIconFromText,
-} from '../src/components/icon/icon.registry';
-import { defineComponents, IgcIconComponent } from '../src/index.js';
-
-defineComponents(IgcIconComponent);
-
 import { all } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import {
+  defineComponents,
+  IgcIconComponent,
+  registerIcon,
+  registerIconFromText,
+} from '../src/index.js';
+import type { Context } from './story';
+
+defineComponents(IgcIconComponent);
 
 const icons = all.map((icon) => icon.name);
 
