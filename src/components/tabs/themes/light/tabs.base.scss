@@ -92,6 +92,7 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     padding: 0;
     min-width: rem(48px);
     width: rem(48px);
+    height: inherit;
     cursor: pointer;
     position: relative;
     background: color(surface, 500);
