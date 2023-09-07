@@ -1,19 +1,19 @@
-import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import {
+  IgcIconComponent,
+  IgcSelectComponent,
+  defineComponents,
+  registerIconFromText,
+} from '../src/index.js';
 import {
   Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
-import {
-  defineComponents,
-  IgcSelectComponent,
-  IgcIconComponent,
-} from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcSelectComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);

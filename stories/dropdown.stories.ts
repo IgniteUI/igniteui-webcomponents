@@ -1,14 +1,14 @@
 import { github, whiteHouse1 } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { Context } from './story.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
-  defineComponents,
   IgcDropdownComponent,
   IgcDropdownItemComponent,
   IgcInputComponent,
+  defineComponents,
+  registerIconFromText,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+import { Context } from './story.js';
 
 const icons = [github, whiteHouse1];
 
