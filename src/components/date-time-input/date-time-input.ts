@@ -21,6 +21,14 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { AbstractConstructor } from '../common/mixins/constructor.js';
 import messages from '../common/localization/validation-en.js';
 import { Validator } from '../common/validators.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  ctrlKey,
+} from '../common/controllers/key-bindings.js';
 
 export interface IgcDateTimeInputEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {
@@ -327,6 +335,20 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     return Object.assign({}, this._datePartDeltas, this.spinDelta);
   }
 
+  constructor() {
+    super();
+
+    addKeybindings(this, {
+      skip: () => this.readOnly,
+      bindingDefaults: { preventDefault: true },
+    })
+      .set([ctrlKey, ';'], () => (this.value = new Date()))
+      .set(arrowUp, this.keyboardSpin.bind(this, 'up'))
+      .set(arrowDown, this.keyboardSpin.bind(this, 'down'))
+      .set([ctrlKey, arrowLeft], this.navigateParts.bind(this, 0))
+      .set([ctrlKey, arrowRight], this.navigateParts.bind(this, 1));
+  }
+
   public override connectedCallback() {
     super.connectedCallback();
     this.updateDefaultMask();
@@ -499,7 +521,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   }
 
   private async onWheel(event: WheelEvent) {
-    if (!this.focused || this.readonly) {
+    if (!this.focused || this.readOnly) {
       return;
     }
 
@@ -663,48 +685,16 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
     super.handleBlur();
   }
 
-  protected handleHorizontalArrows(event: KeyboardEvent) {
-    if (event.ctrlKey) {
-      event.preventDefault();
-    }
-    const position = this.getNewPosition(
-      this.input.value,
-      event.key === 'ArrowRight' ? 1 : 0
-    );
+  protected navigateParts(delta: number) {
+    const position = this.getNewPosition(this.input.value, delta);
     this.setSelectionRange(position, position);
   }
 
-  protected async handleVerticalArrows(event: KeyboardEvent) {
-    event.preventDefault();
-    event.key === 'ArrowUp' ? this.stepUp() : this.stepDown();
+  protected async keyboardSpin(direction: 'up' | 'down') {
+    direction === 'up' ? this.stepUp() : this.stepDown();
     this.handleInput();
     await this.updateComplete;
     this.setSelectionRange(this.selection.start, this.selection.end);
-  }
-
-  protected handleSemicolon(event: KeyboardEvent) {
-    if (event.ctrlKey) {
-      this.value = new Date();
-    }
-  }
-
-  protected keyMap = new Map(
-    Object.entries({
-      ArrowLeft: this.handleHorizontalArrows,
-      ArrowRight: this.handleHorizontalArrows,
-      ArrowUp: this.handleVerticalArrows,
-      ArrowDown: this.handleVerticalArrows,
-      ';': this.handleSemicolon,
-    })
-  );
-
-  protected override async handleKeydown(e: KeyboardEvent) {
-    if (this.readOnly) {
-      return;
-    }
-
-    super.handleKeydown(e);
-    this.keyMap.get(e.key)?.call(this, e);
   }
 
   protected override renderInput() {
@@ -721,7 +711,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
         @focus=${this.handleFocus}
         @input=${super.handleInput}
         @wheel=${this.onWheel}
-        @keydown=${this.handleKeydown}
+        @keydown=${super.handleKeydown}
         @click=${this.handleClick}
         @cut=${this.handleCut}
         @change=${this.handleChange}
