@@ -1,5 +1,6 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import { TemplateResult } from 'lit';
+import { parseKeys } from './controllers/key-bindings.js';
 import type { FormAssociatedElementInterface } from './mixins/form-associated';
 
 export class FormAssociatedTestBed<
@@ -78,5 +79,48 @@ export class FormAssociatedTestBed<
   public submitFails(msg?: string) {
     expect(this.submit(), msg).to.be.undefined;
     expect(this.valid).to.be.false;
+  }
+}
+
+/**
+ * Simulates keyboard interaction on a given element node.
+ *
+ * @param node - the target element
+ * @param key - the key(s) to simulate
+ * @param times - how many times to simulate keydown with the passed key(s). Defaults to 1.
+ */
+export function simulateKeyboard(
+  node: Element,
+  key: string | string[],
+  times = 1
+) {
+  const { keys, modifiers } = parseKeys(key);
+  const eventOptions = modifiers.reduce(
+    (acc, m) => Object.assign(acc, { [`${m}Key`]: true }),
+    {}
+  );
+
+  for (const k of keys) {
+    for (let i = 0; i < times; i++) {
+      node.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: k,
+          bubbles: true,
+          composed: true,
+          ...eventOptions,
+        })
+      );
+    }
+  }
+
+  for (const k of keys) {
+    node.dispatchEvent(
+      new KeyboardEvent('keyup', {
+        key: k,
+        bubbles: true,
+        composed: true,
+        ...eventOptions,
+      })
+    );
   }
 }
