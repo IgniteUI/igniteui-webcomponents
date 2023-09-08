@@ -8,6 +8,14 @@ import {
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
+import { simulateKeyboard } from '../common/utils.spec.js';
+import {
+  altKey,
+  arrowDown,
+  arrowUp,
+  enterKey,
+  spaceBar,
+} from '../common/controllers/key-bindings.js';
 
 const SLOTS = {
   indicator: 'slot[name="indicator"]',
@@ -327,8 +335,8 @@ describe('Expansion Panel', () => {
     });
 
     it('Should get expanded/collapsed on arrowdown/arrowup', async () => {
-      const header = panel.shadowRoot?.querySelector(PARTS.header);
-      triggerKeydown(header as HTMLElement, 'arrowdown');
+      const header = panel.shadowRoot!.querySelector(PARTS.header)!;
+      simulateKeyboard(header, [altKey, arrowDown]);
       await waitUntil(() => eventSpy.calledWith('igcOpened'));
 
       expect(panel.open).to.be.true;
@@ -349,7 +357,7 @@ describe('Expansion Panel', () => {
 
       eventSpy.resetHistory();
 
-      triggerKeydown(header as HTMLElement, 'arrowup');
+      simulateKeyboard(header, [altKey, arrowUp]);
       await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(panel.open).to.be.false;
@@ -368,8 +376,8 @@ describe('Expansion Panel', () => {
     });
 
     it('Should get expanded/collapsed on space/enter', async () => {
-      const header = panel.shadowRoot?.querySelector(PARTS.header);
-      triggerKeydown(header as HTMLElement, ' ', false);
+      const header = panel.shadowRoot!.querySelector(PARTS.header)!;
+      simulateKeyboard(header, spaceBar);
       await waitUntil(() => eventSpy.calledWith('igcOpened'));
 
       expect(panel.open).to.be.true;
@@ -390,7 +398,7 @@ describe('Expansion Panel', () => {
 
       eventSpy.resetHistory();
 
-      triggerKeydown(header as HTMLElement, 'enter', false);
+      simulateKeyboard(header, enterKey);
       await waitUntil(() => eventSpy.calledWith('igcClosed'));
 
       expect(panel.open).to.be.false;
@@ -409,7 +417,7 @@ describe('Expansion Panel', () => {
     });
 
     it('Should not get expanded/collapsed when disabled', async () => {
-      const header = panel.shadowRoot?.querySelector(
+      const header = panel.shadowRoot!.querySelector(
         PARTS.header
       ) as HTMLElement;
 
@@ -420,8 +428,9 @@ describe('Expansion Panel', () => {
       const style = getComputedStyle(header);
       expect(style.pointerEvents).to.equal('none');
 
-      //arrodown keypress
-      triggerKeydown(header as HTMLElement, 'arrowdown');
+      // arrow down keypress
+      simulateKeyboard(header, arrowDown);
+
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
@@ -429,8 +438,8 @@ describe('Expansion Panel', () => {
       // Verify events are called
       expect(eventSpy.callCount).to.equal(0);
 
-      //enter keypress
-      triggerKeydown(header as HTMLElement, 'enter');
+      // enter keypress
+      simulateKeyboard(header, enterKey);
       await elementUpdated(panel);
 
       expect(panel.open).to.be.false;
@@ -440,7 +449,7 @@ describe('Expansion Panel', () => {
     });
 
     it('Should not get expanded/collapsed when ing events are canceled', async () => {
-      //cancel opening event
+      // cancel opening event
       const header = panel.shadowRoot?.querySelector(PARTS.header);
 
       expect(panel.open).to.be.false;
@@ -493,21 +502,6 @@ describe('Expansion Panel', () => {
     };
   });
 });
-
-const triggerKeydown = (
-  header: HTMLElement,
-  eventKey: string,
-  altKeyFlag = true
-): void => {
-  header.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      key: eventKey,
-      bubbles: true,
-      altKey: altKeyFlag,
-      cancelable: true,
-    })
-  );
-};
 
 const getDefaultSlot = (panel: IgcExpansionPanelComponent): HTMLSlotElement => {
   const slots = panel.shadowRoot!.querySelectorAll('slot');

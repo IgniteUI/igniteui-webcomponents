@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+import { Ref, createRef, ref } from 'lit/directives/ref.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -16,6 +17,12 @@ import {
   growVerIn,
   growVerOut,
 } from '../../animations/index.js';
+import {
+  addKeybindings,
+  altKey,
+  arrowDown,
+  arrowUp,
+} from '../common/controllers/key-bindings.js';
 
 defineComponents(IgcIconComponent);
 
@@ -80,13 +87,24 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   @property({ reflect: true, attribute: 'indicator-position' })
   public indicatorPosition: 'start' | 'end' | 'none' = 'start';
 
-  @query('[part~="header"]', true)
-  protected panelHeader!: HTMLElement;
-
   @query('[part~="content"]', true)
   protected panelContent!: HTMLElement;
 
   private panelId!: string;
+
+  private headerRef: Ref<HTMLDivElement> = createRef();
+
+  constructor() {
+    super();
+
+    addKeybindings(this, {
+      ref: this.headerRef,
+      bindingDefaults: { preventDefault: true },
+    })
+      .setActivateHandler(this.toggleWithEvent)
+      .set([altKey, arrowDown], this.openWithEvent)
+      .set([altKey, arrowUp], this.closeWithEvent);
+  }
 
   public override connectedCallback() {
     super.connectedCallback();
@@ -100,38 +118,13 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   }
 
   private handleClicked() {
-    this.panelHeader!.focus();
-
-    if (this.open) {
-      this.closeWithEvent();
-    } else {
-      this.openWithEvent();
-    }
+    this.headerRef.value!.focus();
+    this.toggleWithEvent();
   }
 
-  private handleKeydown(event: KeyboardEvent) {
-    if (this.disabled) {
-      return;
-    }
-
-    switch (event.key.toLowerCase()) {
-      case 'arrowdown':
-      case 'down':
-        if (event.altKey) {
-          this.openWithEvent();
-        }
-        break;
-      case 'arrowup':
-      case 'up':
-        if (event.altKey) {
-          this.closeWithEvent();
-        }
-        break;
-      case 'enter':
-      case ' ':
-        this.open ? this.closeWithEvent() : this.openWithEvent();
-        break;
-    }
+  private toggleWithEvent() {
+    if (this.disabled) return;
+    this.open ? this.closeWithEvent() : this.openWithEvent();
   }
 
   private async toggleAnimation(dir: 'open' | 'close') {
@@ -145,23 +138,11 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     return event.type === 'finish';
   }
 
-  /**
-   * @private
-   * Opens the panel.
-   */
   private async openWithEvent() {
-    if (this.open) {
-      return;
-    }
-
-    const args = {
-      cancelable: true,
-      detail: this,
-    };
-
-    const allowed = this.emitEvent('igcOpening', args);
-
-    if (!allowed) {
+    if (
+      this.open ||
+      !this.emitEvent('igcOpening', { cancelable: true, detail: this })
+    ) {
       return;
     }
 
@@ -172,23 +153,11 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     }
   }
 
-  /**
-   * @private
-   * Closes the panel.
-   */
   private async closeWithEvent() {
-    if (!this.open) {
-      return;
-    }
-
-    const args = {
-      cancelable: true,
-      detail: this,
-    };
-
-    const allowed = this.emitEvent('igcClosing', args);
-
-    if (!allowed) {
+    if (
+      !this.open ||
+      !this.emitEvent('igcClosing', { cancelable: true, detail: this })
+    ) {
       return;
     }
 
@@ -239,6 +208,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   private headerTemplate() {
     return html`
       <div
+        ${ref(this.headerRef)}
         part="header"
         id="${this.panelId!}-header"
         role="button"
@@ -247,7 +217,6 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         aria-controls="${this.panelId!}-content"
         tabindex=${this.disabled ? '-1' : '0'}
         @click=${this.handleClicked}
-        @keydown=${this.handleKeydown}
       >
         ${this.indicatorTemplate()}
         <div>
@@ -265,6 +234,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
         role="region"
         id="${this.panelId!}-content"
         aria-labelledby="${this.panelId!}-header"
+        .inert=${!this.open}
         aria-hidden=${!this.open}
       >
         <slot></slot>
@@ -273,7 +243,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   }
 
   protected override render() {
-    return html` ${this.headerTemplate()} ${this.contentTemplate()}`;
+    return html`${this.headerTemplate()}${this.contentTemplate()}`;
   }
 }
 
