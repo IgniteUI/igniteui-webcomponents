@@ -23,22 +23,19 @@ import { styles as material } from './themes/light/radio.material.css.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import messages from '../common/localization/validation-en.js';
 import { Validator } from '../common/validators.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+} from '../common/controllers/key-bindings.js';
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<boolean>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
-
-const arrowKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
-const arrowKeyDelta = new Map(
-  Object.entries({
-    ArrowUp: () => -1,
-    ArrowLeft: (ltr?: boolean) => (ltr ? -1 : 1),
-    ArrowRight: (ltr?: boolean) => (ltr ? 1 : -1),
-    ArrowDown: () => 1,
-  })
-);
 
 type RadioQueryResult = {
   /** All the radio components under the same name */
@@ -152,7 +149,15 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   constructor() {
     super();
     this.addEventListener('keyup', this.handleKeyUp);
-    this.addEventListener('keydown', this.handleKeyDown);
+
+    addKeybindings(this, {
+      skip: [],
+      bindingDefaults: { preventDefault: true, triggers: ['keydownExclusive'] },
+    })
+      .set(arrowLeft, () => this.navigate(isLTR(this) ? -1 : 1))
+      .set(arrowRight, () => this.navigate(isLTR(this) ? 1 : -1))
+      .set(arrowUp, () => this.navigate(-1))
+      .set(arrowDown, () => this.navigate(1));
   }
 
   /** Simulates a click on the radio control. */
@@ -260,20 +265,11 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     }
   }
 
-  protected handleKeyDown(event: KeyboardEvent) {
-    if (!arrowKeys.has(event.key)) return;
+  protected navigate(idx: number) {
+    const radios = this.radioGroup.nonDisabled;
+    const next = wrap(0, radios.length - 1, radios.indexOf(this) + idx);
+    const target = radios[next];
 
-    event.preventDefault();
-
-    const { nonDisabled } = this.radioGroup;
-    const LTR = isLTR(this);
-    const idx = wrap(
-      0,
-      nonDisabled.length - 1,
-      nonDisabled.indexOf(this) + arrowKeyDelta.get(event.key)!(LTR)
-    );
-
-    const target = nonDisabled[idx];
     target.focus();
     target.checked = true;
     target.emitEvent('igcChange', { detail: target.checked });

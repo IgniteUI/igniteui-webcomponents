@@ -5,6 +5,13 @@ import {
   IgcRadioComponent,
   IgcRadioGroupComponent,
 } from '../../index.js';
+import { simulateKeyboard } from '../common/utils.spec.js';
+import {
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+} from '../common/controllers/key-bindings.js';
 
 describe('Radio Group Component', () => {
   before(() => {
@@ -62,29 +69,28 @@ describe('Radio Group Component', () => {
       expect(radio1).to.be.calledWith('igcFocus');
       expect(radio1).to.be.calledWith('igcChange');
 
-      first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-
+      simulateKeyboard(first, arrowDown);
       await elementUpdated(first);
       await elementUpdated(second);
       expect(radio1).to.be.calledWith('igcBlur');
       expect(radio2).to.be.calledWith('igcFocus');
       expect(radio2).to.be.calledWith('igcChange');
 
-      second.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+      simulateKeyboard(second, arrowUp);
       await elementUpdated(first);
       await elementUpdated(second);
       expect(radio2).to.be.calledWith('igcBlur');
       expect(radio1).to.be.calledWith('igcFocus');
       expect(radio1).to.be.calledWith('igcChange');
 
-      first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+      simulateKeyboard(first, arrowRight);
       await elementUpdated(first);
       await elementUpdated(second);
       expect(radio1).to.be.calledWith('igcBlur');
       expect(radio2).to.be.calledWith('igcFocus');
       expect(radio2).to.be.calledWith('igcChange');
 
-      second.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+      simulateKeyboard(second, arrowLeft);
       await elementUpdated(first);
       await elementUpdated(second);
       expect(radio2).to.be.calledWith('igcBlur');
@@ -103,9 +109,7 @@ describe('Radio Group Component', () => {
       radios[1].disabled = true;
       await elementUpdated(radios[1]);
 
-      radios[0].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown' })
-      );
+      simulateKeyboard(radios[0], arrowDown);
 
       await elementUpdated(radios[0]);
       await elementUpdated(radios[1]);
