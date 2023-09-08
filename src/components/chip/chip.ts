@@ -11,8 +11,10 @@ import { styles as fluent } from './themes/chip.fluent.css.js';
 import { styles as indigo } from './themes/chip.indigo.css.js';
 import { styles as material } from './themes/chip.material.css.js';
 
+import { createRef, Ref, ref } from 'lit/directives/ref.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
+import { addKeybindings } from '../common/controllers/key-bindings.js';
 
 defineComponents(IgcIconComponent);
 
@@ -43,6 +45,8 @@ export default class IgcChipComponent extends SizableMixin(
   public static readonly tagName = 'igc-chip';
 
   public static styles = styles;
+
+  private _removePartRef: Ref<HTMLSlotElement> = createRef();
 
   /**
    * Sets the disabled state for the chip.
@@ -83,6 +87,11 @@ export default class IgcChipComponent extends SizableMixin(
   constructor() {
     super();
     this.size = 'medium';
+
+    addKeybindings(this, {
+      ref: this._removePartRef,
+      bindingDefaults: { triggers: ['keyup'] },
+    }).setActivateHandler(this.handleRemove);
   }
 
   protected handleSelect() {
@@ -95,12 +104,6 @@ export default class IgcChipComponent extends SizableMixin(
   protected handleRemove(e: Event) {
     this.emitEvent('igcRemove');
     e.stopPropagation();
-  }
-
-  protected handleKeyup(e: KeyboardEvent) {
-    if (/\s|enter/i.test(e.key)) {
-      this.handleRemove(e);
-    }
   }
 
   protected override render() {
@@ -131,9 +134,9 @@ export default class IgcChipComponent extends SizableMixin(
           <slot name="suffix"></slot>
           ${this.removable && !this.disabled
             ? html`<slot
+                ${ref(this._removePartRef)}
                 @slotchange=${this.slotChanges}
                 @click=${this.handleRemove}
-                @keyup=${this.handleKeyup}
                 name="remove"
               >
                 <igc-icon
