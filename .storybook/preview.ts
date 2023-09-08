@@ -75,9 +75,20 @@ export const globalTypes = {
   },
 };
 
+const parser = new DOMParser();
+
 export const parameters = {
   backgrounds: {
     disable: true,
+  },
+  docs: {
+    source: {
+      // Strip theme styles payload from the code preview
+      transform: (code: string) =>
+        parser.parseFromString(code, 'text/html').body.innerHTML,
+      format: 'html',
+      language: 'html',
+    },
   },
 };
 
