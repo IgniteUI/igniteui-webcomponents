@@ -12,7 +12,18 @@ import {
   IgcRatingComponent,
   IgcRatingSymbolComponent,
 } from '../../index.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
+import {
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  homeKey,
+} from '../common/controllers/key-bindings.js';
 
 describe('Rating component', () => {
   before(() => {
@@ -33,8 +44,6 @@ describe('Rating component', () => {
   };
   const getRatingWrapper = (el: IgcRatingComponent) =>
     el.shadowRoot!.querySelector(`[part='base']`) as HTMLElement;
-  const fireKeyboardEvent = (key: string) =>
-    new KeyboardEvent('keydown', { key, bubbles: true, composed: true });
   const fireMouseEvent = (type: string, opts: MouseEventInit) =>
     new MouseEvent(type, opts);
   const getBoundingRect = (el: Element) => el.getBoundingClientRect();
@@ -357,7 +366,21 @@ describe('Rating component', () => {
       await elementUpdated(el);
 
       getRatingSymbols(el).item(3).click();
-      expect(eventSpy).to.not.called;
+      await elementUpdated(el);
+
+      expect(eventSpy).to.not.be.called;
+      expect(el.value).to.equal(0);
+    });
+
+    it('does nothing on keyboard interaction if readonly', async () => {
+      const eventSpy = sinon.spy(el, 'emitEvent');
+      el.readOnly = true;
+      await elementUpdated(el);
+
+      simulateKeyboard(el, arrowRight);
+      await elementUpdated(el);
+
+      expect(eventSpy).to.not.be.called;
       expect(el.value).to.equal(0);
     });
 
@@ -365,13 +388,13 @@ describe('Rating component', () => {
       el.value = 3;
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
+      simulateKeyboard(el, arrowRight);
       expect(el.value).to.equal(4);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowUp'));
+      simulateKeyboard(el, arrowUp);
       expect(el.value).to.equal(5);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
+      simulateKeyboard(el, arrowRight);
       expect(el.value).to.equal(5);
     });
 
@@ -379,13 +402,13 @@ describe('Rating component', () => {
       el.value = 2;
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
+      simulateKeyboard(el, arrowLeft);
       expect(el.value).to.equal(1);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowDown'));
+      simulateKeyboard(el, arrowDown);
       expect(el.value).to.equal(0);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
+      simulateKeyboard(el, arrowLeft);
       expect(el.value).to.equal(0);
     });
 
@@ -394,10 +417,10 @@ describe('Rating component', () => {
       el.value = 5;
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('Home'));
+      simulateKeyboard(el, homeKey);
       expect(el.value).to.equal(1);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('End'));
+      simulateKeyboard(el, endKey);
       expect(el.value).to.equal(10);
     });
 
@@ -407,7 +430,7 @@ describe('Rating component', () => {
 
       await elementUpdated(el);
 
-      getRatingWrapper(el).dispatchEvent(fireKeyboardEvent('ArrowRight'));
+      simulateKeyboard(el, arrowRight);
       expect(eventSpy).to.not.be.calledOnce;
     });
 
