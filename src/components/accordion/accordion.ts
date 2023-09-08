@@ -5,6 +5,15 @@ import { styles } from './themes/accordion.base.css.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import {
+  addKeybindings,
+  altKey,
+  arrowDown,
+  arrowUp,
+  endKey,
+  homeKey,
+  shiftKey,
+} from '../common/controllers/key-bindings.js';
 
 defineComponents(IgcExpansionPanelComponent);
 
@@ -20,8 +29,15 @@ export default class IgcAccordionComponent extends LitElement {
   public static readonly tagName = 'igc-accordion';
   public static override styles = styles;
 
-  private get _enabledPanels(): Array<IgcExpansionPanelComponent> {
-    return this.panels.filter((p) => !p.disabled);
+  @queryAssignedElements({ selector: 'igc-expansion-panel:not([disabled])' })
+  private enabledPanels!: Array<IgcExpansionPanelComponent>;
+
+  private get firstEnabled() {
+    return this.enabledPanels[0];
+  }
+
+  private get lastEnabled() {
+    return this.enabledPanels[this.enabledPanels.length - 1];
   }
 
   /**
@@ -38,8 +54,72 @@ export default class IgcAccordionComponent extends LitElement {
 
   constructor() {
     super();
-    this.addEventListener('keydown', this.handleKeydown, { capture: true });
+
     this.addEventListener('igcOpening', this.handlePanelOpening);
+
+    addKeybindings(this, {
+      skip: this.skipKeybinding,
+      bindingDefaults: { preventDefault: true },
+    })
+      .set(homeKey, () => this.getPanelHeader(this.firstEnabled).focus())
+      .set(endKey, () => this.getPanelHeader(this.lastEnabled).focus())
+      .set(arrowUp, this.navigatePrev)
+      .set(arrowDown, this.navigateNext)
+      .set([shiftKey, altKey, arrowDown], this.expandAll)
+      .set([shiftKey, altKey, arrowUp], this.collapseAll);
+  }
+
+  private skipKeybinding(target: Element) {
+    return !(
+      target.matches(IgcExpansionPanelComponent.tagName) &&
+      this.enabledPanels.includes(target as IgcExpansionPanelComponent)
+    );
+  }
+
+  private navigatePrev(event: KeyboardEvent) {
+    const current = event.target as IgcExpansionPanelComponent;
+    const next = this.getNextPanel(current, -1);
+
+    if (event.altKey || next.isSameNode(current)) {
+      return;
+    }
+
+    this.getPanelHeader(next).focus();
+  }
+
+  private navigateNext(event: KeyboardEvent) {
+    const current = event.target as IgcExpansionPanelComponent;
+    const next = this.getNextPanel(current, 1);
+
+    if (event.altKey || next.isSameNode(current)) {
+      return;
+    }
+
+    this.getPanelHeader(next).focus();
+  }
+
+  private collapseAll() {
+    const panels = this.enabledPanels;
+    for (const panel of panels) {
+      this.closePanel(panel);
+    }
+  }
+
+  private expandAll(event: KeyboardEvent) {
+    const current = event.target as IgcExpansionPanelComponent;
+    const panels = this.enabledPanels;
+
+    if (this.singleExpand) {
+      for (const panel of panels) {
+        current.isSameNode(panel)
+          ? this.openPanel(panel)
+          : this.closePanel(panel);
+      }
+    } else {
+      for (const panel of panels) {
+        this.openPanel(panel);
+      }
+    }
   }
 
   private handlePanelOpening(event: Event) {
@@ -47,67 +127,16 @@ export default class IgcAccordionComponent extends LitElement {
     if (!this.singleExpand || !this.panels.includes(panel)) {
       return;
     }
-    this._enabledPanels.forEach((p) => {
+    this.enabledPanels.forEach((p) => {
       if (p.open && p !== panel) {
         this.closePanel(p);
       }
     });
   }
 
-  private handleKeydown = (event: KeyboardEvent) => {
-    if (
-      (event.target as HTMLElement).tagName.toLowerCase() !==
-        'igc-expansion-panel' ||
-      !this._enabledPanels.includes(event.target as IgcExpansionPanelComponent)
-    ) {
-      return;
-    }
-    switch (event.key.toLowerCase()) {
-      case 'home':
-        this.getPanelHeader(this._enabledPanels.at(0)!).focus();
-        break;
-      case 'end':
-        this.getPanelHeader(this._enabledPanels.at(-1)!).focus();
-        break;
-      case 'arrowup':
-      case 'up':
-        this.handleUpDownArrow(true, event);
-        break;
-      case 'arrowdown':
-      case 'down':
-        this.handleUpDownArrow(false, event);
-        break;
-    }
-  };
-
-  private handleUpDownArrow(isUp: boolean, event: KeyboardEvent) {
-    const focusedPanel = event.target as IgcExpansionPanelComponent;
-    if (!event.altKey) {
-      const next = this.getNextPanel(focusedPanel, isUp ? -1 : 1);
-      if (next === focusedPanel) {
-        return;
-      }
-      this.getPanelHeader(next).focus();
-    }
-    if (event.shiftKey && event.altKey) {
-      if (this.singleExpand && !isUp) {
-        this._enabledPanels.forEach((p) =>
-          p !== focusedPanel ? this.closePanel(p) : this.openPanel(p)
-        );
-        return;
-      }
-
-      if (isUp) {
-        this._enabledPanels.forEach((p) => this.closePanel(p));
-      } else {
-        this._enabledPanels.forEach((p) => this.openPanel(p));
-      }
-    }
-  }
-
   private getNextPanel(panel: IgcExpansionPanelComponent, dir: 1 | -1 = 1) {
-    const panelIndex = this._enabledPanels.indexOf(panel);
-    return this._enabledPanels[panelIndex + dir] || panel;
+    const idx = this.enabledPanels.indexOf(panel);
+    return this.enabledPanels[idx + dir] || panel;
   }
 
   private getPanelHeader(panel: IgcExpansionPanelComponent) {
