@@ -16,7 +16,12 @@ import { styles as indigo } from './themes/light/textarea.indigo.css.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter, extractText, partNameMap } from '../common/util.js';
+import {
+  asNumber,
+  createCounter,
+  extractText,
+  partNameMap,
+} from '../common/util.js';
 import type { Theme } from '../../theming/types.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import {
@@ -279,10 +284,19 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   protected setAreaHeight() {
     if (this.resize === 'auto') {
       this.input.style.height = 'auto';
-      this.input.style.height = `${this.input.scrollHeight}px`;
+      this.input.style.height = `${this.setAutoHeight()}px`;
     } else {
       Object.assign(this.input.style, { height: undefined });
     }
+  }
+
+  private setAutoHeight() {
+    const borderHeight = asNumber(
+      getComputedStyle(this.input).getPropertyValue('border-bottom-width')
+    );
+    return borderHeight
+      ? this.input.scrollHeight + borderHeight + 1
+      : this.input.scrollHeight;
   }
 
   protected handleInput() {
