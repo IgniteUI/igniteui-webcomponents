@@ -291,12 +291,12 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   private setAutoHeight() {
-    const borderHeight = asNumber(
-      getComputedStyle(this.input).getPropertyValue('border-bottom-width')
-    );
-    return borderHeight
-      ? this.input.scrollHeight + borderHeight + 1
-      : this.input.scrollHeight;
+    const computed = getComputedStyle(this.input);
+    const [top, bottom] = [
+      asNumber(computed.getPropertyValue('border-top-width')),
+      asNumber(computed.getPropertyValue('border-bottom-width')),
+    ];
+    return this.input.scrollHeight + top + bottom;
   }
 
   protected handleInput() {

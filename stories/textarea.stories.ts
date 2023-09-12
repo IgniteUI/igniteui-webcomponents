@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import {
-  defineComponents,
-  IgcTextareaComponent,
-  IgcIconComponent,
-} from '../src/index.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
 import { html } from 'lit';
+import { registerIconFromText } from '../src/components/icon/icon.registry.js';
+import {
+  IgcIconComponent,
+  IgcTextareaComponent,
+  defineComponents,
+} from '../src/index.js';
 import {
   disableStoryControls,
   formControls,
