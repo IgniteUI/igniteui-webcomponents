@@ -1,14 +1,14 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Context } from './story.js';
 import {
   defineComponents,
   IgcIconComponent,
   IgcNavDrawerComponent,
   IgcNavDrawerItemComponent,
+  registerIcon,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+import { Context } from './story.js';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 

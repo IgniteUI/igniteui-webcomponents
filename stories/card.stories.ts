@@ -5,12 +5,12 @@ import {
 } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
-  defineComponents,
   IgcAvatarComponent,
   IgcCardComponent,
   IgcIconButtonComponent,
+  defineComponents,
+  registerIconFromText,
 } from '../src/index.js';
 
 defineComponents(IgcAvatarComponent, IgcCardComponent, IgcIconButtonComponent);
