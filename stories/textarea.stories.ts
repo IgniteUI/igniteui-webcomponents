@@ -1,3 +1,4 @@
+import { sourceCode } from '@igniteui/material-icons-extended';
 import type { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { registerIconFromText } from '../src/components/icon/icon.registry.js';
@@ -13,11 +14,7 @@ import {
 } from './story.js';
 
 defineComponents(IgcTextareaComponent, IgcIconComponent);
-
-registerIconFromText(
-  'location',
-  '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
-);
+registerIconFromText('source-code', sourceCode.value);
 
 // region default
 const metadata: Meta<IgcTextareaComponent> = {
@@ -32,13 +29,6 @@ const metadata: Meta<IgcTextareaComponent> = {
     },
   },
   argTypes: {
-    cols: {
-      type: 'number',
-      description:
-        'The visible width of the text control, in average character widths. If it is specified, it must be a positive integer.\nIf it is not specified, the default value is 20.',
-      control: 'number',
-      defaultValue: 20,
-    },
     rows: {
       type: 'number',
       description:
@@ -125,7 +115,6 @@ const metadata: Meta<IgcTextareaComponent> = {
     },
   },
   args: {
-    cols: 20,
     rows: 2,
     value: '',
     readOnly: false,
@@ -141,11 +130,6 @@ const metadata: Meta<IgcTextareaComponent> = {
 export default metadata;
 
 interface IgcTextareaArgs {
-  /**
-   * The visible width of the text control, in average character widths. If it is specified, it must be a positive integer.
-   * If it is not specified, the default value is 20.
-   */
-  cols: number;
   /**
    * The number of visible text lines for the control. If it is specified, it must be a positive integer.
    * If it is not specified, the default value is 2.
@@ -185,47 +169,38 @@ type Story = StoryObj<IgcTextareaArgs>;
 // endregion
 
 export const Default: Story = {
-  args: {
-    placeholder: 'Please type in...',
-    cols: 25,
-    rows: 5,
-    label: 'Feedback',
+  args: { label: 'Your feedback' },
+  parameters: {
+    actions: {
+      handles: ['igcBlur', 'igcChange', 'igcInput', 'igcFocus'],
+    },
   },
 };
 
-export const Projected: Story = {
-  args: { cols: 50, rows: 5 },
-  parameters: {
-    actions: {
-      handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'],
-    },
-  },
+export const ProjectContent: Story = {
   render: (
-    { cols, rows, resize, required, disabled },
+    { rows, resize, required, disabled, outlined },
     { globals: { direction } }
   ) => {
     return html`
       <igc-textarea
+        id="comment"
         dir=${direction}
         spellcheck="false"
+        .outlined=${outlined}
         autofocus
-        id="feedback"
-        label="Your opinion matters"
-        .cols=${cols}
+        label="Leave your comment"
         .rows=${rows}
         .resize=${resize}
         .required=${required}
         .disabled=${disabled}
       >
-        <span slot="prefix">+359</span>
-        <p>Hello world</p>
-        <p>
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sed quisquam
-          pariatur quaerat, quas fugiat nam doloremque doloribus ut qui? Libero
-          architecto necessitatibus sequi vitae obcaecati similique? Temporibus
-          quibusdam id suscipit?
-        </p>
-        <igc-icon slot="suffix" name="location"></igc-icon>
+        <igc-icon
+          name="source-code"
+          aria-hidden="true"
+          slot="prefix"
+        ></igc-icon>
+        <p>Hello world!</p>
         <span slot="helper-text">Helper text</span>
       </igc-textarea>
     `;
@@ -256,14 +231,14 @@ export const Form: Story = {
         <fieldset disabled>
           <igc-textarea
             name="textarea-disabled"
-            value="No!"
+            value="I'm disabled"
             label="Disabled"
           ></igc-textarea>
         </fieldset>
         <fieldset>
           <igc-textarea
             name="textarea-readonly"
-            value="Can't edit this..."
+            value="Can't edit me..."
             readonly
             label="Readonly"
           ></igc-textarea>

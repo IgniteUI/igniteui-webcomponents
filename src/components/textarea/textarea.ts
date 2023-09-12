@@ -8,28 +8,28 @@ import {
 import { live } from 'lit/directives/live.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/textarea.base.css.js';
-import { styles as material } from './themes/light/textarea.material.css.js';
-import { styles as bootstrap } from './themes/light/textarea.bootstrap.css.js';
-import { styles as fluent } from './themes/light/textarea.fluent.css.js';
-import { styles as indigo } from './themes/light/textarea.indigo.css.js';
+import type { Theme } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import {
   asNumber,
   createCounter,
   extractText,
   partNameMap,
 } from '../common/util.js';
-import type { Theme } from '../../theming/types.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import {
   Validator,
   maxLengthValidator,
   minLengthValidator,
   requiredValidator,
 } from '../common/validators.js';
+import { styles } from './themes/light/textarea.base.css.js';
+import { styles as bootstrap } from './themes/light/textarea.bootstrap.css.js';
+import { styles as fluent } from './themes/light/textarea.fluent.css.js';
+import { styles as indigo } from './themes/light/textarea.indigo.css.js';
+import { styles as material } from './themes/light/textarea.material.css.js';
 
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
@@ -97,7 +97,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
 
-  @query('textarea')
+  @query('textarea', true)
   private input!: HTMLTextAreaElement;
 
   private get resizeStyles(): StyleInfo {
@@ -105,15 +105,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       resize: this.resize === 'auto' ? 'none' : this.resize,
     };
   }
-
-  /**
-   * The visible width of the text control, in average character widths. If it is specified, it must be a positive integer.
-   * If it is not specified, the default value is 20.
-   *
-   * @attr
-   */
-  @property({ type: Number })
-  public cols = 20;
 
   /**
    * The number of visible text lines for the control. If it is specified, it must be a positive integer.
@@ -275,6 +266,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     this.value ? this.setFormValue(this.value) : this.setFormValue(null);
     this.updateValidity();
     this.setInvalidState();
+
     await this.updateComplete;
     this.setAreaHeight();
   }
@@ -384,7 +376,6 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         @input=${this.handleInput}
         @change=${this.handleChange}
         placeholder=${this.placeholder}
-        .cols=${this.cols}
         .rows=${this.rows}
         .value=${live(this.value)}
         .wrap=${this.wrap}

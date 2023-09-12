@@ -1,8 +1,8 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcTextareaComponent from './textarea.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import IgcTextareaComponent from './textarea.js';
 
 describe('Textarea component', () => {
   before(() => defineComponents(IgcTextareaComponent));
@@ -35,7 +35,7 @@ describe('Textarea component', () => {
       expect(element.value).to.equal(value);
     });
 
-    it('reflects on slotchange state', async () => {
+    it('reflects on slot change state', async () => {
       const additional = ['...', 'Goodbye world!'];
 
       element = await fixture<IgcTextareaComponent>(
