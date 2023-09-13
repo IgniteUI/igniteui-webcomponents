@@ -1,12 +1,16 @@
 import { all } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
+import {
+  IgcIconButtonComponent,
+  IgcRippleComponent,
+  defineComponents,
+  registerIconFromText,
+} from '../src/index.js';
 import type { Context } from './story';
-import { defineComponents, IgcIconButtonComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
-defineComponents(IgcIconButtonComponent);
+defineComponents(IgcIconButtonComponent, IgcRippleComponent);
 
 const icons = all.map((icon) => icon.name);
 
@@ -71,11 +75,10 @@ const metadata: Meta<IgcIconButtonComponent> = {
     },
     disabled: {
       type: 'boolean',
-      description: 'Determines whether the button is disabled.',
+      description: 'The disabled state of the component',
       control: 'boolean',
       defaultValue: false,
     },
-    ariaLabel: { type: 'string', control: 'text' },
     size: {
       type: '"small" | "medium" | "large"',
       description: 'Determines the size of the component.',
@@ -116,9 +119,8 @@ interface IgcIconButtonArgs {
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
    */
   rel: string;
-  /** Determines whether the button is disabled. */
+  /** The disabled state of the component */
   disabled: boolean;
-  ariaLabel: string;
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }

@@ -1,7 +1,19 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $fluent;
+
 @mixin theme() {
-    igc-input,
-    igc-mask-input,
-    igc-date-time-input {
-        --container-background: transparent;
+    igc-input {
+        @include css-vars-from-theme($theme, 'ig-input');
+    }
+
+    igc-select::part(input) {
+        @include css-vars-from-theme($theme, ig-select);
+    }
+
+    igc-combo::part(input) {
+        @include css-vars-from-theme($theme, ig-combo);
     }
 }

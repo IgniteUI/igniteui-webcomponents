@@ -115,6 +115,7 @@ async function processFileMeta(path) {
 function isSupportedType(prop) {
   return (
     (prop.type &&
+      !prop.deprecatedMessage &&
       SUPPORTED_TYPES.some(
         (type) => prop.type === type || prop.type.startsWith(`${type} `)
       )) ||
@@ -130,6 +131,8 @@ function fixDefaultValue(prop) {
   switch (prop.type) {
     case 'boolean':
       return prop.default === 'true' ? true : false;
+    case 'number':
+      return parseFloat(prop.default);
     case 'Date':
       return undefined;
     default:
@@ -231,11 +234,11 @@ ${buildTypes(componentName, meta)}
 
 /**
  *
- * @param {Buffer} story
+ * @param {string} story
  * @param {object} meta
  * @returns
  */
-function buildStoryMeta(story, meta) {
+async function buildStoryMeta(story, meta) {
   const storyMeta = {
     title: storyTitle(meta.component.replace(VENDOR_PREFIX, '')),
     component: meta.component,
@@ -249,10 +252,10 @@ function buildStoryMeta(story, meta) {
     storyMeta.argTypes[name] = config;
   });
 
-  const payload = prettier.format(buildStorySource(meta.component, storyMeta), {
-    singleQuote: true,
-    parser: 'babel',
-  });
+  const payload = await prettier.format(
+    buildStorySource(meta.component, storyMeta),
+    { singleQuote: true, parser: 'typescript' }
+  );
 
   return story.toString().replace(REPLACE_REGEX, payload.trim());
 }
@@ -268,7 +271,7 @@ async function buildStories() {
 
     try {
       const story = await readFile(outFile, 'utf8');
-      await writeFile(outFile, buildStoryMeta(story, meta), 'utf8');
+      await writeFile(outFile, await buildStoryMeta(story, meta), 'utf8');
     } catch (e) {
       if (e.code === 'ENOENT') {
         missing.push(`\t${storyName}`);

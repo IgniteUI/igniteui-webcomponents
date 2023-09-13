@@ -1,11 +1,16 @@
-@use '../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
 
 :host {
-    @include border-radius(rem(4px));
+    @include css-vars-from-theme($theme, 'ig-toast');
 
     color: contrast-color(surface);
     background: color(surface);
     outline: 1px solid color(gray, 300);
     padding: rem(11px);
     box-shadow: var(--ig-elevation-10);
+    border-radius: var-get($theme, 'border-radius');
 }

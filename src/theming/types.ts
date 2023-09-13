@@ -7,7 +7,7 @@ export type Themes = {
 };
 
 /**
- * A controller responsible for adopting various comopnent themes;
+ * A controller responsible for adopting various component themes;
  * See also {@link updateWhenThemeChanges}.
  */
 export interface ThemeController {
@@ -15,13 +15,4 @@ export interface ThemeController {
    * The name of the currently adopted theme. See {@link Theme}.
    */
   theme: Theme;
-}
-
-export interface ReactiveTheme {
-  /**
-   *  Provides the attached ThemeController to the component instance.
-   *  Can be used to get the currently adopted theme name.
-   *  See also {@link ThemeController}
-   */
-  themeAdopted(controller: ThemeController): void;
 }

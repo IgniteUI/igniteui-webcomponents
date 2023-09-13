@@ -1,8 +1,8 @@
-import { html } from 'lit';
-import { Context } from './story.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineComponents, IgcRadioGroupComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { IgcRadioGroupComponent, defineComponents } from '../src/index.js';
+import { Context, formControls, formSubmitHandler } from './story.js';
 
 defineComponents(IgcRadioGroupComponent);
 
@@ -33,11 +33,19 @@ type Story = StoryObj<IgcRadioGroupArgs>;
 
 // endregion
 
+Object.assign(metadata.parameters!, {
+  actions: {
+    handles: ['igcChange', 'igcFocus', 'igcBlur'],
+  },
+});
+
+const radios = ['apple', 'orange', 'mango', 'banana'];
+const titleCase = (s: string) => s.replace(/^\w/, (c) => c.toUpperCase());
+
 const Template = (
   { alignment }: IgcRadioGroupArgs,
   { globals: { direction } }: Context
 ) => {
-  const radios = ['apple', 'orange', 'mango', 'banana'];
   return html`
     <igc-radio-group
       dir="${ifDefined(direction)}"
@@ -45,12 +53,110 @@ const Template = (
     >
       ${radios.map(
         (v) =>
-          html`<igc-radio name="fruit" value=${v}
-            >${v.replace(/^\w/, (c) => c.toUpperCase())}</igc-radio
-          > `
+          html`<igc-radio name="fruit" value=${v}>${titleCase(v)}</igc-radio> `
       )}
     </igc-radio-group>
   `;
 };
 
 export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  render: (args, ctx) => {
+    return html`
+      <form action="" @submit=${formSubmitHandler}>
+        <fieldset>
+          <legend>Default</legend>
+          <igc-radio-group
+            dir=${ifDefined(ctx.globals.direction)}
+            alignment=${ifDefined(args.alignment)}
+          >
+            ${radios.map(
+              (e) =>
+                html`<igc-radio name="default-fruit" value=${e}
+                  >${titleCase(e)}</igc-radio
+                >`
+            )}
+          </igc-radio-group>
+        </fieldset>
+        <fieldset>
+          <legend>Same name scattered outside of group</legend>
+          <igc-radio name="scattered-fruit" value="apple">Apple</igc-radio>
+          <igc-radio-group
+            dir=${ifDefined(ctx.globals.direction)}
+            alignment=${ifDefined(args.alignment)}
+          >
+            <p>
+              Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolore
+              dolorum, corporis exercitationem laborum dignissimos sunt itaque
+              ducimus, soluta blanditiis inventore est quae provident dolores,
+              labore asperiores totam voluptate et minima.
+            </p>
+            <igc-radio name="scattered-fruit" value="banana">Banana</igc-radio>
+            <igc-radio name="scattered-fruit" value="lemon">Lemon</igc-radio>
+            <igc-input label="Search..."></igc-input>
+            <igc-radio name="scattered-fruit" value="orange">Orange</igc-radio>
+          </igc-radio-group>
+          <p>...</p>
+          <igc-radio-group
+            dir=${ifDefined(ctx.globals.direction)}
+            alignment=${ifDefined(args.alignment)}
+          >
+            <igc-radio name="scattered-fruit" disabled value="tomato"
+              >Tomato</igc-radio
+            >
+            <igc-radio name="scattered-fruit" value="strawberry"
+              >Strawberry</igc-radio
+            >
+          </igc-radio-group>
+        </fieldset>
+        <fieldset>
+          <legend>Initial value</legend>
+          <igc-radio-group
+            dir=${ifDefined(ctx.globals.direction)}
+            alignment=${ifDefined(args.alignment)}
+          >
+            ${radios.map(
+              (e) =>
+                html`<igc-radio name="initial-fruit" checked value=${e}
+                  >${titleCase(e)}</igc-radio
+                >`
+            )}
+          </igc-radio-group>
+        </fieldset>
+        <fieldset disabled>
+          <legend>Disabled</legend>
+          <igc-radio-group
+            dir=${ifDefined(ctx.globals.direction)}
+            alignment=${ifDefined(args.alignment)}
+          >
+            ${radios.map(
+              (e) =>
+                html`<igc-radio name="default-fruit" value=${e}
+                  >${titleCase(e)}</igc-radio
+                >`
+            )}
+          </igc-radio-group>
+        </fieldset>
+        <fieldset>
+          <legend>Required</legend>
+          <igc-radio-group
+            dir=${ifDefined(ctx.globals.direction)}
+            alignment=${ifDefined(args.alignment)}
+          >
+            ${radios.map(
+              (e) =>
+                html`<igc-radio name="required-fruit" required value=${e}
+                  >${titleCase(e)}</igc-radio
+                >`
+            )}
+            <igc-radio name="required-fruit" disabled value="tomato"
+              >Tomato</igc-radio
+            >
+          </igc-radio-group>
+        </fieldset>
+        ${formControls()}
+      </form>
+    `;
+  },
+};

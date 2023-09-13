@@ -1,7 +1,12 @@
-@use '../../../../styles/utilities' as utils;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
+    igc-list {
+        @include css-vars-from-theme($fluent, 'ig-list');
+    }
+
     igc-list-item {
-        --item-hover-bg: #{utils.color(gray, 100)};
+        --item-hover-bg: #{color(gray, 100)};
     }
 }

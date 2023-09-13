@@ -48,16 +48,17 @@ export const Default: Story = {
   render: (args, { globals: { direction } }) => html`
     <igc-accordion ?single-expand=${args.singleExpand} .dir=${direction}>
       ${Array.from(range(1, 4)).map(
-        (i) => html` <igc-expansion-panel>
-          <h1 slot="title">Title ${i}</h1>
-          <h2 slot="subtitle">Subtitle ${i}</h2>
-          <p>
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Sequi
-            adipisci, ratione ut praesentium qui, similique molestiae voluptate
-            at excepturi, a animi quam blanditiis. Tenetur tempore explicabo
-            blanditiis harum ut delectus!
-          </p>
-        </igc-expansion-panel>`
+        (i) =>
+          html` <igc-expansion-panel>
+            <h1 slot="title">Title ${i}</h1>
+            <h2 slot="subtitle">Subtitle ${i}</h2>
+            <p>
+              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Sequi
+              adipisci, ratione ut praesentium qui, similique molestiae
+              voluptate at excepturi, a animi quam blanditiis. Tenetur tempore
+              explicabo blanditiis harum ut delectus!
+            </p>
+          </igc-expansion-panel>`
       )}
       <igc-expansion-panel>
         <h1 slot="title">Title 4</h1>

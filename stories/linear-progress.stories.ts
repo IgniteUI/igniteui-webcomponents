@@ -43,13 +43,13 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       type: 'number',
       description: 'Maximum value of the control.',
       control: 'number',
-      defaultValue: '100',
+      defaultValue: 100,
     },
     value: {
       type: 'number',
       description: 'The value of the control.',
       control: 'number',
-      defaultValue: '0',
+      defaultValue: 0,
     },
     variant: {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
@@ -62,7 +62,7 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       type: 'number',
       description: 'Animation duration in milliseconds.',
       control: 'number',
-      defaultValue: '500',
+      defaultValue: 500,
     },
     indeterminate: {
       type: 'boolean',
@@ -86,10 +86,10 @@ const metadata: Meta<IgcLinearProgressComponent> = {
   args: {
     striped: false,
     labelAlign: 'top-start',
-    max: '100',
-    value: '0',
+    max: 100,
+    value: 0,
     variant: 'primary',
-    animationDuration: '500',
+    animationDuration: 500,
     indeterminate: false,
     hideLabel: false,
   },

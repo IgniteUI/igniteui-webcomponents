@@ -1,0 +1,131 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/button' as *;
+
+// Material Themes
+$material-flat: map.merge(
+    digest-schema($material-flat-button),
+    (
+        border-radius: border-radius(map.get($material-flat-button, 'border-radius')...)
+    )
+);
+$material-contained: map.merge(
+    digest-schema($material-raised-button),
+    (
+        border-radius: border-radius(map.get($material-raised-button, 'border-radius')...)
+    )
+);
+$material-outlined: map.merge(
+    digest-schema($material-outlined-button),
+    (
+        border-radius: border-radius(map.get($material-outlined-button, 'border-radius')...)
+    )
+);
+$material-fab: map.merge(
+    digest-schema($material-fab-button),
+    (
+        border-radius: border-radius(map.get($material-fab-button, 'border-radius')...)
+    )
+);
+$material-icon: map.merge(
+    digest-schema($material-icon-button),
+    (
+        border-radius: border-radius(map.get($material-icon-button, 'border-radius')...)
+    )
+);
+
+// Fluent Themes
+$fluent-flat: map.merge(
+    digest-schema($fluent-flat-button),
+    (
+        border-radius: border-radius(map.get($fluent-flat-button, 'border-radius')...)
+    )
+);
+$fluent-contained: map.merge(
+    digest-schema($fluent-raised-button),
+    (
+        border-radius: border-radius(map.get($fluent-raised-button, 'border-radius')...)
+    )
+);
+$fluent-outlined: map.merge(
+    digest-schema($fluent-outlined-button),
+    (
+        border-radius: border-radius(map.get($fluent-outlined-button, 'border-radius')...)
+    )
+);
+$fluent-fab: map.merge(
+    digest-schema($fluent-fab-button),
+    (
+        border-radius: border-radius(map.get($fluent-fab-button, 'border-radius')...)
+    )
+);
+$fluent-icon: map.merge(
+    digest-schema($fluent-icon-button),
+    (
+        border-radius: border-radius(map.get($fluent-icon-button, 'border-radius')...)
+    )
+);
+
+// Bootstrap Themes
+$bootstrap-flat: map.merge(
+    digest-schema($bootstrap-flat-button),
+    (
+        border-radius: border-radius(map.get($bootstrap-flat-button, 'border-radius')...)
+    )
+);
+$bootstrap-contained: map.merge(
+    digest-schema($bootstrap-raised-button),
+    (
+        border-radius: border-radius(map.get($bootstrap-raised-button, 'border-radius')...)
+    )
+);
+$bootstrap-outlined: map.merge(
+    digest-schema($bootstrap-outlined-button),
+    (
+        border-radius: border-radius(map.get($bootstrap-outlined-button, 'border-radius')...)
+    )
+);
+$bootstrap-fab: map.merge(
+    digest-schema($bootstrap-fab-button),
+    (
+        border-radius: border-radius(map.get($bootstrap-fab-button, 'border-radius')...)
+    )
+);
+$bootstrap-icon: map.merge(
+    digest-schema($bootstrap-icon-button),
+    (
+        border-radius: border-radius(map.get($bootstrap-icon-button, 'border-radius')...)
+    )
+);
+
+// Indigo Themes
+$indigo-flat: map.merge(
+    digest-schema($indigo-flat-button),
+    (
+        border-radius: border-radius(map.get($indigo-flat-button, 'border-radius')...)
+    )
+);
+$indigo-contained: map.merge(
+    digest-schema($indigo-raised-button),
+    (
+        border-radius: border-radius(map.get($indigo-raised-button, 'border-radius')...)
+    )
+);
+$indigo-outlined: map.merge(
+    digest-schema($indigo-outlined-button),
+    (
+        border-radius: border-radius(map.get($indigo-outlined-button, 'border-radius')...)
+    )
+);
+$indigo-fab: map.merge(
+    digest-schema($indigo-fab-button),
+    (
+        border-radius: border-radius(map.get($indigo-fab-button, 'border-radius')...)
+    )
+);
+$indigo-icon: map.merge(
+    digest-schema($indigo-icon-button),
+    (
+        border-radius: border-radius(map.get($indigo-icon-button, 'border-radius')...)
+    )
+);

@@ -1,10 +1,9 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 $content-color: var(--content-color, color(gray, 700));
 
 :host {
-    border-radius: border-radius(2px);
     background: color(surface, 500);
     color: contrast-color(surface, 500);
     border-style: none;
@@ -61,9 +60,20 @@ slot[name='footer'] {
     }
 }
 
-[part='backdrop'] {
+dialog::backdrop {
+    opacity: 0;
+}
+
+[part~='backdrop'] {
     position: fixed;
     inset: 0;
     background: color(gray, 500, .54);
     z-index: 10005;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 350ms ease-out;
+}
+
+:host([open]) [part='backdrop'] {
+    opacity: 1;
 }

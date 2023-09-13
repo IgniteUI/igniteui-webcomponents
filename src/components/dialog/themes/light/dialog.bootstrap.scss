@@ -1,9 +1,14 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
+$theme: $bootstrap;
 $border-color: var(--border-color, color(gray, 300));
 
 :host {
-    border-radius: border-radius(4px);
+    @include css-vars-from-theme($theme, 'ig-dialog');
+
+    border-radius: var-get($theme, 'border-radius');
 }
 
 [part='base'] {

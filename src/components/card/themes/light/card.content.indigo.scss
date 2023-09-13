@@ -1,5 +1,5 @@
-@use './card.content.material.scss';
-@use '../../../../styles/utilities' as *;
+@use 'card.content.material.scss';
+@use 'styles/utilities' as *;
 
 :host {
     color: color(gray, 700);

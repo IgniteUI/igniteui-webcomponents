@@ -1,6 +1,5 @@
-@use 'sass:map';
-@use '../../styles/common/component';
-@use '../../styles/utilities' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
 
 :host {
     --symbol-size: #{sizable(rem(18px), rem(24px), rem(36px))};
@@ -47,7 +46,7 @@
 }
 
 ::slotted(igc-icon) {
-    --size: var(--symbol-size);
+    --size: var(--symbol-size) !important;
 }
 
 slot:not([name])::slotted(:not(igc-icon)) {

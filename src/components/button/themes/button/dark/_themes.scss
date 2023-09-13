@@ -1,0 +1,131 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/dark/button' as *;
+
+// Material Themes
+$material-flat: map.merge(
+    digest-schema(map.get($dark-button, 'flat')),
+    (
+        border-radius: border-radius(map.get($dark-button, 'flat', 'border-radius')...)
+    )
+);
+$material-contained: map.merge(
+    digest-schema(map.get($dark-button, 'raised')),
+    (
+        border-radius: border-radius(map.get($dark-button, 'raised', 'border-radius')...)
+    )
+);
+$material-outlined: map.merge(
+    digest-schema(map.get($dark-button, 'outlined')),
+    (
+        border-radius: border-radius(map.get($dark-button, 'outlined', 'border-radius')...)
+    )
+);
+$material-fab: map.merge(
+    digest-schema(map.get($dark-button, 'fab')),
+    (
+        border-radius: border-radius(map.get($dark-button, 'fab', 'border-radius')...)
+    )
+);
+$material-icon: map.merge(
+    digest-schema(map.get($dark-button, 'icon')),
+    (
+        border-radius: border-radius(map.get($dark-button, 'icon', 'border-radius')...)
+    )
+);
+
+// Bootstrap Themes
+$bootstrap-flat: map.merge(
+    digest-schema(map.get($dark-bootstrap-button, 'flat')),
+    (
+        border-radius: border-radius(map.get($dark-bootstrap-button, 'flat', 'border-radius')...)
+    )
+);
+$bootstrap-contained: map.merge(
+    digest-schema(map.get($dark-bootstrap-button, 'raised')),
+    (
+        border-radius: border-radius(map.get($dark-bootstrap-button, 'raised', 'border-radius')...)
+    )
+);
+$bootstrap-outlined: map.merge(
+    digest-schema(map.get($dark-bootstrap-button, 'outlined')),
+    (
+        border-radius: border-radius(map.get($dark-bootstrap-button, 'outlined', 'border-radius')...)
+    )
+);
+$bootstrap-fab: map.merge(
+    digest-schema(map.get($dark-bootstrap-button, 'fab')),
+    (
+        border-radius: border-radius(map.get($dark-bootstrap-button, 'fab', 'border-radius')...)
+    )
+);
+$bootstrap-icon: map.merge(
+    digest-schema(map.get($dark-bootstrap-button, 'icon')),
+    (
+        border-radius: border-radius(map.get($dark-bootstrap-button, 'icon', 'border-radius')...)
+    )
+);
+
+// Fluent Themes
+$fluent-flat: map.merge(
+    digest-schema(map.get($dark-fluent-button, 'flat')),
+    (
+        border-radius: border-radius(map.get($dark-fluent-button, 'flat', 'border-radius')...)
+    )
+);
+$fluent-contained: map.merge(
+    digest-schema(map.get($dark-fluent-button, 'raised')),
+    (
+        border-radius: border-radius(map.get($dark-fluent-button, 'raised', 'border-radius')...)
+    )
+);
+$fluent-outlined: map.merge(
+    digest-schema(map.get($dark-fluent-button, 'outlined')),
+    (
+        border-radius: border-radius(map.get($dark-fluent-button, 'outlined', 'border-radius')...)
+    )
+);
+$fluent-fab: map.merge(
+    digest-schema(map.get($dark-fluent-button, 'fab')),
+    (
+        border-radius: border-radius(map.get($dark-fluent-button, 'fab', 'border-radius')...)
+    )
+);
+$fluent-icon: map.merge(
+    digest-schema(map.get($dark-fluent-button, 'icon')),
+    (
+        border-radius: border-radius(map.get($dark-fluent-button, 'icon', 'border-radius')...)
+    )
+);
+
+// Indigo Themes
+$indigo-flat: map.merge(
+    digest-schema(map.get($dark-indigo-button, 'flat')),
+    (
+        border-radius: border-radius(map.get($dark-indigo-button, 'flat', 'border-radius')...)
+    )
+);
+$indigo-contained: map.merge(
+    digest-schema(map.get($dark-indigo-button, 'raised')),
+    (
+        border-radius: border-radius(map.get($dark-indigo-button, 'raised', 'border-radius')...)
+    )
+);
+$indigo-outlined: map.merge(
+    digest-schema(map.get($dark-indigo-button, 'outlined')),
+    (
+        border-radius: border-radius(map.get($dark-indigo-button, 'outlined', 'border-radius')...)
+    )
+);
+$indigo-fab: map.merge(
+    digest-schema(map.get($dark-indigo-button, 'fab')),
+    (
+        border-radius: border-radius(map.get($dark-indigo-button, 'fab', 'border-radius')...)
+    )
+);
+$indigo-icon: map.merge(
+    digest-schema(map.get($dark-indigo-button, 'icon')),
+    (
+        border-radius: border-radius(map.get($dark-indigo-button, 'icon', 'border-radius')...)
+    )
+);

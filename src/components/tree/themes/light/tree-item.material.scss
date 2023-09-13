@@ -1,0 +1,18 @@
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-tree');
+}
+
+[part~='wrapper'] {
+    min-height: var-get($theme, 'size');
+}
+
+[part~='label'] {
+    max-height: var-get($theme, 'size');
+}

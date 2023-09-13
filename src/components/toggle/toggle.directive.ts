@@ -5,6 +5,8 @@ import {
   shift,
   size,
   Middleware,
+  autoUpdate,
+  ComputePositionConfig,
 } from '@floating-ui/dom';
 import {
   directive,
@@ -20,31 +22,72 @@ import type { IgcToggleController } from './toggle.controller.js';
 /* blazorSuppressComponent */
 export class IgcToggleDirective extends Directive {
   private part: PartInfo;
-  private shiftOptions? = {
-    mainAxis: true,
-  };
 
-  private floatingElement!: HTMLElement;
+  private _floatingElement!: HTMLElement;
+  private _dispose!: Function;
 
-  private updatePosition(
-    target: HTMLElement,
-    options: IgcToggleOptions,
-    controller?: IgcToggleController
-  ) {
-    this.floatingElement = this.createFloatingElement(options.open);
+  private target!: HTMLElement;
+  private options!: IgcToggleOptions;
+  private controller?: IgcToggleController;
 
-    if (!target) {
-      if (controller) {
-        controller.rendered = Promise.resolve();
-      }
+  private get floatingElement() {
+    if (!this._floatingElement) {
+      this._floatingElement = (this.part as ElementPart).element as HTMLElement;
+    }
+
+    Object.assign(this._floatingElement.style, {
+      display: this.options.open ? '' : 'none',
+    });
+
+    return this._floatingElement;
+  }
+
+  private dispose() {
+    if (this._dispose) {
+      this._dispose();
+    }
+  }
+
+  private notifyController(promise: Promise<void>) {
+    if (this.controller) {
+      this.controller.rendered = promise;
+    }
+  }
+
+  private updatePosition() {
+    this.dispose();
+
+    if (!this.floatingElement || !this.target || !this.options.open) {
       return noChange;
     }
 
-    const promise = computePosition(target, this.floatingElement, {
-      placement: options.placement ?? 'bottom-start',
-      strategy: options.positionStrategy ?? 'absolute',
-      middleware: this.createMiddleware(options),
-    }).then(({ x, y }) => {
+    this._dispose = autoUpdate(
+      this.target,
+      this.floatingElement,
+      this.reposition
+    );
+
+    return noChange;
+  }
+
+  private reposition = () => {
+    if (!this.target) {
+      this.dispose();
+      this.notifyController(Promise.resolve());
+      return noChange;
+    }
+
+    const config: Partial<ComputePositionConfig> = {
+      placement: this.options.placement ?? 'bottom-start',
+      strategy: this.options.positionStrategy ?? 'absolute',
+      middleware: this.createMiddleware(this.options),
+    };
+
+    const promise = computePosition(
+      this.target,
+      this.floatingElement,
+      config
+    ).then(({ x, y }) => {
       Object.assign(this.floatingElement.style, {
         left: 0,
         top: 0,
@@ -52,25 +95,13 @@ export class IgcToggleDirective extends Directive {
       });
     });
 
-    if (controller) {
-      controller.rendered = promise;
-    }
-
+    this.notifyController(promise);
     return noChange;
-  }
-
-  private createFloatingElement(open = false) {
-    if (!this.floatingElement) {
-      this.floatingElement = (this.part as ElementPart).element as HTMLElement;
-    }
-
-    this.floatingElement.style.display = open ? '' : 'none';
-
-    return this.floatingElement;
-  }
+  };
 
   private createMiddleware(options: IgcToggleOptions) {
     const middleware: Middleware[] = [];
+    const { style: floatingStyles } = this._floatingElement;
 
     if (options.distance) {
       middleware.push(
@@ -84,25 +115,25 @@ export class IgcToggleDirective extends Directive {
       middleware.push(flip());
     }
 
-    if (this.shiftOptions) {
-      middleware.push(shift(this.shiftOptions));
-    }
-
-    // Toggling `sameWidth` does not reset the applied style on the floater element
-    Object.assign(this.floatingElement.style, { width: '' });
+    middleware.push(
+      shift({
+        mainAxis: true,
+      })
+    );
 
     if (options.sameWidth) {
-      const floatingElement = this.floatingElement;
       middleware.push(
         size({
-          apply: (args) => {
-            const { rects } = args;
-            Object.assign(floatingElement.style, {
+          apply: ({ rects }) => {
+            Object.assign(floatingStyles, {
               width: `${rects.reference.width}px`,
             });
           },
         })
       );
+    } else {
+      // Reset previously applied `same-width` styles
+      Object.assign(floatingStyles, { width: '' });
     }
 
     return middleware;
@@ -123,7 +154,8 @@ export class IgcToggleDirective extends Directive {
     options: IgcToggleOptions,
     controller?: IgcToggleController
   ) {
-    return this.updatePosition(target, options, controller);
+    Object.assign(this, { target, options, controller });
+    return this.updatePosition();
   }
 }
 

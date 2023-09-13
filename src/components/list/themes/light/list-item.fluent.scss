@@ -1,5 +1,7 @@
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
+$theme: $fluent;
 $separator-color: color(gray, 100) !default;
 $item-hover-bg: var(--item-hover-bg, color(gray, 200)) !default;
 
@@ -8,7 +10,10 @@ $item-hover-bg: var(--item-hover-bg, color(gray, 200)) !default;
 }
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-list');
+
     border-bottom: rem(1px) solid $separator-color;
+    border-radius: var-get($theme, 'item-border-radius');
 }
 
 :host(:hover),

@@ -11,4 +11,11 @@ export default defineConfig({
       external: /^lit/,
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        includePaths: ['node_modules', 'src'],
+      },
+    },
+  },
 });

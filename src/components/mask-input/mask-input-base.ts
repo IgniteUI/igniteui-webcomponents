@@ -16,7 +16,7 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   protected compositionStart = 0;
 
   @state()
-  protected hasFocus = false;
+  protected focused = false;
 
   @state()
   protected maskedValue = '';
@@ -27,10 +27,6 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
   /** The prompt symbol to use for unfilled parts of the mask. */
   @property()
   public prompt!: string;
-
-  /** Controls the validity of the control. */
-  @property({ reflect: true, type: Boolean })
-  public invalid = false;
 
   protected get inputSelection(): MaskRange {
     return {
@@ -48,15 +44,6 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
 
     this._mask = this._mask || this.parser.mask;
     this.prompt = this.prompt || this.parser.prompt;
-  }
-
-  /**
-   * Sets a custom validation message for the control.
-   * As long as `message` is not empty, the control is considered invalid.
-   */
-  public setCustomValidity(message: string) {
-    this.input.setCustomValidity(message);
-    this.invalid = !this.input.checkValidity();
   }
 
   /** Selects all text within the input. */
@@ -138,8 +125,13 @@ export abstract class IgcMaskInputBaseComponent extends IgcInputBaseComponent {
     });
   }
 
-  protected handleInvalid() {
-    this.invalid = true;
+  protected handleClick() {
+    const { selectionStart: start, selectionEnd: end } = this.input;
+
+    // Clicking at the end of the input field will select the entire mask
+    if (start === end && start === this.maskedValue.length) {
+      this.select();
+    }
   }
 
   @blazorSuppress()

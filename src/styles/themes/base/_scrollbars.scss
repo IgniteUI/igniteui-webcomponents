@@ -1,4 +1,4 @@
-@use '../../../../node_modules/igniteui-theming' as *;
+@use 'igniteui-theming' as *;
 
 .ig-scrollbar {
     --size: var(--ig-scrollbar-size, #{rem(16px)});

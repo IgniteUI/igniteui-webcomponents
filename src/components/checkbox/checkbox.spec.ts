@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcCheckboxComponent } from '../../index.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Checkbox', () => {
   before(() => {
@@ -240,5 +241,76 @@ describe('Checkbox', () => {
     ) => {
       return fixture<IgcCheckboxComponent>(html`${unsafeStatic(template)}`);
     };
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcCheckboxComponent>(
+      html`<igc-checkbox name="checkbox"
+        >I have reviewed ToC and I agree</igc-checkbox
+      >`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcCheckboxComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is associated on submit with default value "on"', async () => {
+      spec.element.checked = true;
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal('on');
+    });
+
+    it('is associated on submit with passed value', async () => {
+      spec.element.checked = true;
+      spec.element.value = 'accepted';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
+    it('is not associated on submit if not checked', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.checked = true;
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.checked).to.be.false;
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.checked = true;
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
+    });
   });
 });

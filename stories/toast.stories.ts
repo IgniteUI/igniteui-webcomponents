@@ -31,7 +31,7 @@ const metadata: Meta<IgcToastComponent> = {
       type: 'number',
       description: 'Determines the time after which the toast will close',
       control: 'number',
-      defaultValue: '4000',
+      defaultValue: 4000,
     },
     keepOpen: {
       type: 'boolean',
@@ -41,7 +41,7 @@ const metadata: Meta<IgcToastComponent> = {
       defaultValue: false,
     },
   },
-  args: { open: false, displayTime: '4000', keepOpen: false },
+  args: { open: false, displayTime: 4000, keepOpen: false },
 };
 
 export default metadata;

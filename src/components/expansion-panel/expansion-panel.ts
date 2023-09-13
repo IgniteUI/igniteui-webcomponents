@@ -95,7 +95,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
       `igc-expansion-panel-${IgcExpansionPanelComponent.increment()}`;
   }
 
-  public override firstUpdated() {
+  protected override firstUpdated() {
     this.animationPlayer = new AnimationPlayer(this.panelContent);
   }
 
@@ -139,7 +139,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
     const [_, event] = await Promise.all([
       this.animationPlayer.stopAll(),
-      this.animationPlayer.play(animation),
+      this.animationPlayer.play(animation()),
     ]);
 
     return event.type === 'finish';

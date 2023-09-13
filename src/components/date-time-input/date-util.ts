@@ -197,8 +197,7 @@ export abstract class DateTimeUtil {
     regex = /^\d{2}/g;
     if (regex.test(value)) {
       const dateNow = new Date().toISOString();
-      // eslint-disable-next-line prefer-const
-      let [datePart, _timePart] = dateNow.split(timeLiteral);
+      const [datePart, _timePart] = dateNow.split(timeLiteral);
       return new Date(`${datePart}T${value}`);
     }
 
@@ -601,15 +600,15 @@ export abstract class DateTimeUtil {
 
           if (part.type === DateParts.Hours) {
             part.format.charAt(0) === 'h'
-              ? (options['hour12'] = true)
-              : (options['hour12'] = false);
+              ? (options['hourCycle'] = 'h12')
+              : (options['hourCycle'] = 'h23');
           }
         }
 
         // Need to be set if we have 't' or 'tt'.
         if (part.type === DateParts.AmPm && part.format.length <= 2) {
           options['hour'] = '2-digit';
-          options['hour12'] = true;
+          options['hourCycle'] = 'h12';
         }
       }
     }
@@ -816,8 +815,15 @@ export abstract class DateTimeUtil {
     );
   }
 
+  private static escapeRegExp(string: string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   private static trimEmptyPlaceholders(value: string, prompt?: string): string {
-    const result = value.replace(new RegExp(prompt || '_', 'g'), '');
+    const result = value.replace(
+      new RegExp(this.escapeRegExp(prompt ?? '_'), 'g'),
+      ''
+    );
     return result;
   }
 
@@ -835,7 +841,10 @@ export abstract class DateTimeUtil {
 
   private static toTwelveHourFormat(value: string): number {
     let hour = parseInt(
-      value.replace(new RegExp(this._parser.prompt, 'g'), '0'),
+      value.replace(
+        new RegExp(this.escapeRegExp(this._parser.prompt), 'g'),
+        '0'
+      ),
       10
     );
     if (hour > 12) {

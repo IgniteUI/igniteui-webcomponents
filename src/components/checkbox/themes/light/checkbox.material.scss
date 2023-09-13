@@ -1,68 +1,201 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'checkbox-themes' as *;
 
-label {
-    &:hover [part='control'] {
-        background: color(gray, 600, .06);
-    }
+$theme: $material;
 
-    &:focus-within [part='control'] {
-        background: color(gray, 600, .12);
-    }
+:host {
+    @include css-vars-from-theme($theme, 'ig-checkbox');
 }
 
 [part~='label'] {
     @include type-style('subtitle-1');
+
+    color: var-get($theme, 'label-color');
 }
 
 [part~='indicator'] {
-    stroke: color(surface, 500);
+    stroke: var-get($theme, 'tick-color');
 }
 
 [part~='control'] {
     --size: #{rem(20px)};
 
-    @include border-radius(calc(var(--size)));
-
     width: calc(var(--size) * 2);
     height: calc(var(--size) * 2);
     min-width: calc(var(--size) * 2);
     transition: background .15s ease-in;
-}
 
-:host([invalid]) label,
-:host([invalid][indeterminate]) label {
-    &:hover [part~='control'] {
-        background: color(error, 500, .06);
+    &::after {
+        border-radius: var-get($theme, 'border-radius');
+        border: rem(2px) solid var-get($theme, 'empty-color');
     }
 
-    &:focus-within [part~='control'] {
-        background: color(error, 500, .12);
+    &::before {
+        content: '';
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline-start: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: var-get($theme, 'ripple-radius');
     }
 }
 
-:host([disabled]) {
+[part='control checked'] {
+    &::after {
+        border-color: var-get($theme, 'fill-color');
+        background: var-get($theme, 'fill-color');
+    }
+}
+
+[part~='base'] {
+    &:hover {
+        [part~='control'] {
+            &::before {
+                background: var-get($theme, 'empty-color');
+                opacity: .06;
+            }
+        }
+    }
+}
+
+[part='base checked'] {
+    &:hover {
+        [part~='control'] {
+            &::before {
+                background: var-get($theme, 'fill-color');
+                opacity: .06;
+            }
+        }
+    }
+}
+
+[part='base']:focus-within,
+[part='base focused'] {
+    &:hover [part~='control'],
+    [part~='control'] {
+        &::before {
+            background: var-get($theme, 'empty-color');
+            opacity: .12;
+        }
+    }
+}
+
+[part='base checked']:focus-within,
+[part='base checked focused'] {
+    &:hover [part~='control'],
+    [part~='control'] {
+        &::before {
+            background: var-get($theme, 'fill-color');
+            opacity: .12;
+        }
+    }
+}
+
+:host([indeterminate]) {
+    [part~='control'] {
+        &::after {
+            border-color: var-get($theme, 'fill-color');
+            background: var-get($theme, 'fill-color');
+        }
+    }
+
+    [part='base']:hover {
+        [part~='control']::before {
+            background: var-get($theme, 'fill-color');
+            opacity: .12;
+        }
+    }
+
+    [part='base']:focus-within,
+    [part='base focused'] {
+        [part~='control']::before {
+            background: var-get($theme, 'fill-color');
+            opacity: .12;
+        }
+    }
+}
+
+:host(:not([disabled])[invalid]),
+:host(:not(:disabled)[invalid]) {
     [part~='label'] {
-        color: color(gray, 400);
+        color: var-get($theme, 'error-color');
     }
 
     [part~='control'] {
         &::after {
-            border-color: color(gray, 400);
+            border-color: var-get($theme, 'error-color');
         }
     }
 
     [part='control checked'] {
         &::after {
-            background: color(gray, 400);
+            background: var-get($theme, 'error-color');
+        }
+    }
+
+    [part~='base']:hover {
+        [part~='control']::before {
+            background: var-get($theme, 'error-color-hover');
+        }
+    }
+
+    [part='base focused'] {
+        [part~='control']::before {
+            background: var-get($theme, 'error-color-hover');
         }
     }
 }
 
-:host([disabled][indeterminate]) {
+:host(:not([disabled])[invalid][indeterminate]),
+:host(:not(:disabled)[invalid][indeterminate]) {
     [part~='control'] {
         &::after {
-            background: color(secondary, 100);
-            border-color: transparent;
+            border-color: var-get($theme, 'error-color');
+            background: var-get($theme, 'error-color');
+        }
+    }
+
+    [part~='base']:hover {
+        [part~='control']::before {
+            background: var-get($theme, 'error-color-hover');
+        }
+    }
+
+    [part='base focused'] {
+        [part~='control']::before {
+            background: var-get($theme, 'error-color-hover');
+        }
+    }
+}
+
+:host([disabled]),
+:host(:disabled) {
+    [part~='label'] {
+        color: var-get($theme, 'disabled-color-label');
+    }
+
+    [part~='control'] {
+        &::after {
+            border-color: var-get($theme, 'disabled-color');
+        }
+    }
+
+    [part='control checked'] {
+        &::after {
+            background: var-get($theme, 'disabled-color');
+        }
+    }
+}
+
+:host([disabled][indeterminate]),
+:host(:disabled[indeterminate]) {
+    [part~='control'] {
+        &::after {
+            background: var-get($theme, 'disabled-indeterminate-color');
+            border-color: var-get($theme, 'disabled-indeterminate-color');
         }
     }
 }

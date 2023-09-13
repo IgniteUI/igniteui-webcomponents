@@ -1,8 +1,13 @@
-@use '../../../../styles/utilities' as utils;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
+    igc-list {
+        @include css-vars-from-theme($bootstrap, 'ig-list');
+    }
+
     igc-list,
     igc-list-item {
-        --separator-color: #{utils.color(gray, 100)};
+        --separator-color: #{color(gray, 100)};
     }
 }

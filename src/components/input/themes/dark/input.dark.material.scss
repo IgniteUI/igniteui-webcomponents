@@ -1,9 +1,19 @@
-@use '../../../../styles/utilities' as utils;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 @mixin theme() {
-    igc-input,
-    igc-mask-input,
-    igc-date-time-input {
-        --focus-background: #{utils.color(gray, 100)};
+    igc-input {
+        @include css-vars-from-theme($theme, 'ig-input');
+    }
+
+    igc-select::part(input) {
+        @include css-vars-from-theme($theme, ig-select);
+    }
+
+    igc-combo::part(input) {
+        @include css-vars-from-theme($theme, ig-combo);
     }
 }

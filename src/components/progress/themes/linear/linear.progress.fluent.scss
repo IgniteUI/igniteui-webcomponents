@@ -1,14 +1,20 @@
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
 @use '../vars' as *;
+@use '../light-themes' as *;
 
+$theme: $fluent;
 $track-color: color(gray, 200);
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-linear-bar');
+
     --track-size: #{rem(2px)};
     --linear-animation-duration: 3000ms;
 }
 
 [part~='track'] {
+    border-radius: var-get($theme, 'track-border-radius');
     background: $track-color;
     margin: rem(8px) 0;
 }

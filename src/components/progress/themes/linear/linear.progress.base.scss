@@ -1,9 +1,13 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
 @use '../shared' as *;
 @use '../vars' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use '../light-themes' as *;
+
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-linear-bar');
     @extend %host !optional;
 
     display: flex;
@@ -27,12 +31,12 @@
 }
 
 [part~='track'] {
+    border-radius: var-get($theme, 'track-border-radius');
     position: relative;
     width: inherit;
     height: var(--track-size);
     background: $track-color;
     overflow: hidden;
-    border-radius: $track-roundness;
     z-index: 0;
 }
 

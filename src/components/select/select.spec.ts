@@ -7,6 +7,7 @@ import IgcSelectComponent from './select.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Select component', () => {
   let select: IgcSelectComponent;
@@ -61,19 +62,21 @@ describe('Select component', () => {
 
   describe('', () => {
     beforeEach(async () => {
-      select = await fixture<IgcSelectComponent>(html`<igc-select>
-        ${items.map(
-          (item) =>
-            html`<igc-select-item
-              value=${item.value}
-              ?disabled=${item.disabled}
-            >
-              <span slot="prefix">FR</span>
-              ${item.text}
-              <span slot="suffix">FR</span>
-            </igc-select-item>`
-        )}
-      </igc-select>`);
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select>
+          ${items.map(
+            (item) =>
+              html`<igc-select-item
+                value=${item.value}
+                ?disabled=${item.disabled}
+              >
+                <span slot="prefix">FR</span>
+                ${item.text}
+                <span slot="suffix">FR</span>
+              </igc-select-item>`
+          )}
+        </igc-select>`
+      );
 
       input = select.shadowRoot!.querySelector(
         'igc-input'
@@ -409,8 +412,8 @@ describe('Select component', () => {
       });
 
       await elementUpdated(select);
-      const item = selectOpts(select).find((i) =>
-        i.textContent?.toLocaleLowerCase()?.startsWith(term)
+      const item = selectOpts(select).find(
+        (i) => i.textContent?.toLocaleLowerCase()?.startsWith(term)
       );
       expect(item?.selected).to.be.true;
     });
@@ -423,8 +426,8 @@ describe('Select component', () => {
       });
 
       await elementUpdated(select);
-      let item = selectOpts(select).find((i) =>
-        i.textContent?.toLocaleLowerCase()?.startsWith(term)
+      let item = selectOpts(select).find(
+        (i) => i.textContent?.toLocaleLowerCase()?.startsWith(term)
       );
 
       expect(item?.selected).to.be.true;
@@ -439,8 +442,8 @@ describe('Select component', () => {
       });
 
       await elementUpdated(select);
-      item = selectOpts(select).find((i) =>
-        i.textContent?.toLocaleLowerCase()?.startsWith(term)
+      item = selectOpts(select).find(
+        (i) => i.textContent?.toLocaleLowerCase()?.startsWith(term)
       );
 
       expect(item?.selected).to.be.true;
@@ -704,24 +707,26 @@ describe('Select component', () => {
     });
 
     it('displays the list of options at the proper position when `open` is initially set', async () => {
-      select = await fixture<IgcSelectComponent>(html`<igc-select open>
-        ${items.map(
-          (item) =>
-            html`<igc-select-item
-              value=${item.value}
-              ?disabled=${item.disabled}
-            >
-              <span slot="prefix">FR</span>
-              ${item.text}
-              <span slot="suffix">FR</span>
-            </igc-select-item>`
-        )}
-        <span slot="helper-text">This is helper text</span>
-      </igc-select>`);
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select open>
+          ${items.map(
+            (item) =>
+              html`<igc-select-item
+                value=${item.value}
+                ?disabled=${item.disabled}
+              >
+                <span slot="prefix">FR</span>
+                ${item.text}
+                <span slot="suffix">FR</span>
+              </igc-select-item>`
+          )}
+          <span slot="helper-text">This is helper text</span>
+        </igc-select>`
+      );
 
       await elementUpdated(select);
 
-      expect(select.positionStrategy).to.eq('absolute');
+      expect(select.positionStrategy).to.eq('fixed');
       expect(select.placement).to.eq('bottom-start');
       expect(select.open).to.be.true;
 
@@ -758,46 +763,48 @@ describe('Select component', () => {
     let groups: IgcSelectGroupComponent[];
 
     beforeEach(async () => {
-      select = await fixture<IgcSelectComponent>(html`<igc-select>
-        <igc-select-group>
-          <igc-select-header slot="label"
-            >Research & Development</igc-select-header
-          >
-          ${items
-            .slice(0, 3)
-            .map(
-              (item) =>
-                html`<igc-select-item
-                  value=${item.value}
-                  .disabled=${item.disabled}
-                  >${item.text}</igc-select-item
-                >`
-            )}
-        </igc-select-group>
-        <igc-select-group>
-          <igc-select-header slot="label">Product Guidance</igc-select-header>
-          ${items
-            .slice(3, 5)
-            .map(
-              (item) =>
-                html`<igc-select-item
-                  value=${item.value}
-                  .disabled=${item.disabled}
-                  >${item.text}</igc-select-item
-                >`
-            )}
-        </igc-select-group>
-        <igc-select-group>
-          <igc-select-header slot="label"
-            >Release Engineering</igc-select-header
-          >
-          <igc-select-item
-            value=${items[5].value}
-            .disabled=${items[5].disabled}
-            >${items[5].text}</igc-select-item
-          >
-        </igc-select-group>
-      </igc-select>`);
+      select = await fixture<IgcSelectComponent>(
+        html`<igc-select>
+          <igc-select-group>
+            <igc-select-header slot="label"
+              >Research & Development</igc-select-header
+            >
+            ${items
+              .slice(0, 3)
+              .map(
+                (item) =>
+                  html`<igc-select-item
+                    value=${item.value}
+                    .disabled=${item.disabled}
+                    >${item.text}</igc-select-item
+                  >`
+              )}
+          </igc-select-group>
+          <igc-select-group>
+            <igc-select-header slot="label">Product Guidance</igc-select-header>
+            ${items
+              .slice(3, 5)
+              .map(
+                (item) =>
+                  html`<igc-select-item
+                    value=${item.value}
+                    .disabled=${item.disabled}
+                    >${item.text}</igc-select-item
+                  >`
+              )}
+          </igc-select-group>
+          <igc-select-group>
+            <igc-select-header slot="label"
+              >Release Engineering</igc-select-header
+            >
+            <igc-select-item
+              value=${items[5].value}
+              .disabled=${items[5].disabled}
+              >${items[5].text}</igc-select-item
+            >
+          </igc-select-group>
+        </igc-select>`
+      );
 
       select.open = true;
       await elementUpdated(select);
@@ -862,6 +869,99 @@ describe('Select component', () => {
       await elementUpdated(select);
 
       groups[0].items.forEach((i) => expect(i.disabled).to.be.true);
+    });
+  });
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcSelectComponent>(html`
+      <igc-select name="select"
+        >${items.map(
+          (item) =>
+            html`<igc-select-item
+              value=${item.value}
+              ?disabled=${item.disabled}
+            >
+              ${item.text}
+            </igc-select-item>`
+        )}</igc-select
+      >
+    `);
+
+    beforeEach(async () => {
+      await spec.setup(IgcSelectComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.eql(spec.form);
+    });
+
+    it('is not associated on submit if no value', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is associated on submit', async () => {
+      spec.element.value = 'spec';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
+    it('is correctly reset of form reset', async () => {
+      spec.element.value = 'spec';
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal(undefined);
+    });
+
+    it('is correctly reset of form reset with selection through attribute on item', async () => {
+      const bed = new FormAssociatedTestBed<IgcSelectComponent>(
+        html`<igc-select name="with-item-selection">
+          <igc-select-item value="1">1</igc-select-item>
+          <igc-select-item value="2">2</igc-select-item>
+          <igc-select-item value="3" selected>3</igc-select-item>
+        </igc-select>`
+      );
+
+      await bed.setup(IgcSelectComponent.tagName);
+
+      expect(bed.element.value).to.eq('3');
+
+      bed.element.value = '1';
+      await elementUpdated(bed.element);
+
+      expect(bed.element.value).to.eq('1');
+
+      bed.reset();
+      expect(bed.element.value).to.eq('3');
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'spec';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
     });
   });
 });

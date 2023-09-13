@@ -1,4 +1,14 @@
-@use '../../../../styles/utilities/index' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-expansion-panel');
+
+    border-radius: var-get($theme, 'border-radius');
+}
 
 [part='title']::slotted(*) {
     @include type-style('subtitle-1');

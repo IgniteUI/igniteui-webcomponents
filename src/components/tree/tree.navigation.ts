@@ -1,6 +1,7 @@
 import IgcTreeComponent from './tree.js';
 import IgcTreeItemComponent from './tree-item.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
+import { isLTR } from '../common/util.js';
 
 export const NAVIGATION_KEYS = new Set([
   'down',
@@ -192,7 +193,7 @@ export class IgcTreeNavigationService {
         break;
       case 'arrowleft':
       case 'left':
-        if (this.tree.dir === 'rtl') {
+        if (!isLTR(this.tree)) {
           this.handleArrowRight();
         } else {
           this.handleArrowLeft();
@@ -200,7 +201,7 @@ export class IgcTreeNavigationService {
         break;
       case 'arrowright':
       case 'right':
-        if (this.tree.dir === 'rtl') {
+        if (!isLTR(this.tree)) {
           this.handleArrowLeft();
         } else {
           this.handleArrowRight();

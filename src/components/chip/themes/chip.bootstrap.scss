@@ -1,11 +1,19 @@
+@use 'sass:map';
 @use './chip.base.scss';
-@use '../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'light-themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-chip');
+}
 
 :host button {
-    @include border-radius(rem(4px));
-
+    border-radius: var-get($theme, 'border-radius');
     background: color(gray, 200);
     color: contrast-color(gray, 200);
+    height: var-get($theme, 'size');
 
     &:hover {
         background: color(gray, 400);

@@ -1,14 +1,19 @@
-import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
-import {
-  defineComponents,
-  IgcSelectComponent,
-  IgcIconComponent,
-} from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import {
+  IgcIconComponent,
+  IgcSelectComponent,
+  defineComponents,
+  registerIconFromText,
+} from '../src/index.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcSelectComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -23,29 +28,6 @@ const metadata: Meta<IgcSelectComponent> = {
       type: 'string | undefined',
       description: 'The value attribute of the control.',
       control: 'text',
-    },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled attribute of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'The required attribute of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'The invalid attribute of the control.',
-      control: 'boolean',
-      defaultValue: false,
     },
     outlined: {
       type: 'boolean',
@@ -68,12 +50,28 @@ const metadata: Meta<IgcSelectComponent> = {
       description: 'The placeholder attribute of the control.',
       control: 'text',
     },
-    dir: {
-      type: '"ltr" | "rtl" | "auto"',
-      description: 'The direction attribute of the control.',
-      options: ['ltr', 'rtl', 'auto'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'auto',
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
     },
     keepOpenOnSelect: {
       type: 'boolean',
@@ -123,32 +121,11 @@ const metadata: Meta<IgcSelectComponent> = {
       control: { type: 'select' },
       defaultValue: 'bottom-start',
     },
-    positionStrategy: {
-      type: '"absolute" | "fixed"',
-      description: "Sets the component's positioning strategy.",
-      options: ['absolute', 'fixed'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'absolute',
-    },
-    flip: {
-      type: 'boolean',
-      description:
-        "Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.\nWhen true, once enough space is detected on its preferred side, it will flip back.",
-      control: 'boolean',
-      defaultValue: false,
-    },
     distance: {
       type: 'number',
       description: 'The distance from the target element.',
       control: 'number',
-      defaultValue: '0',
-    },
-    sameWidth: {
-      type: 'boolean',
-      description:
-        "Whether the dropdown's width should be the same as the target's one.",
-      control: 'boolean',
-      defaultValue: true,
+      defaultValue: 0,
     },
     size: {
       type: '"small" | "medium" | "large"',
@@ -159,20 +136,16 @@ const metadata: Meta<IgcSelectComponent> = {
     },
   },
   args: {
-    disabled: false,
-    required: false,
-    invalid: false,
     outlined: false,
-    dir: 'auto',
+    required: false,
+    disabled: false,
+    invalid: false,
     keepOpenOnSelect: false,
     scrollStrategy: 'scroll',
     keepOpenOnOutsideClick: false,
     open: false,
     placement: 'bottom-start',
-    positionStrategy: 'absolute',
-    flip: false,
-    distance: '0',
-    sameWidth: true,
+    distance: 0,
     size: 'medium',
   },
 };
@@ -182,14 +155,6 @@ export default metadata;
 interface IgcSelectArgs {
   /** The value attribute of the control. */
   value: string | undefined;
-  /** The name attribute of the control. */
-  name: string;
-  /** The disabled attribute of the control. */
-  disabled: boolean;
-  /** The required attribute of the control. */
-  required: boolean;
-  /** The invalid attribute of the control. */
-  invalid: boolean;
   /** The outlined attribute of the control. */
   outlined: boolean;
   /** The autofocus attribute of the control. */
@@ -198,8 +163,14 @@ interface IgcSelectArgs {
   label: string;
   /** The placeholder attribute of the control. */
   placeholder: string;
-  /** The direction attribute of the control. */
-  dir: 'ltr' | 'rtl' | 'auto';
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
   /** Whether the dropdown should be kept open on selection. */
   keepOpenOnSelect: boolean;
   /** Determines the behavior of the component during scrolling the container. */
@@ -222,17 +193,8 @@ interface IgcSelectArgs {
     | 'left'
     | 'left-start'
     | 'left-end';
-  /** Sets the component's positioning strategy. */
-  positionStrategy: 'absolute' | 'fixed';
-  /**
-   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
-   * When true, once enough space is detected on its preferred side, it will flip back.
-   */
-  flip: boolean;
   /** The distance from the target element. */
   distance: number;
-  /** Whether the dropdown's width should be the same as the target's one. */
-  sameWidth: boolean;
   /** Determines the size of the component. */
   size: 'small' | 'medium' | 'large';
 }
@@ -327,19 +289,19 @@ const Template = (
     <span slot="helper-text">Sample helper text.</span>
     <igc-select-header>Tasks</igc-select-header>
     ${items.map(
-      (item) => html` <igc-select-item
-        value=${item.value}
-        ?disabled=${item.disabled}
-        ?selected=${item.selected}
-      >
-        ${item.text}
-        <igc-icon slot="suffix" name="github"></igc-icon>
-      </igc-select-item>`
+      (item) =>
+        html` <igc-select-item
+          value=${item.value}
+          ?disabled=${item.disabled}
+          ?selected=${item.selected}
+        >
+          ${item.text}
+          <igc-icon slot="suffix" name="github"></igc-icon>
+        </igc-select-item>`
     )}
   </igc-select>
 `;
 
-const FormTemplate = () => checkoutForm;
 const countries = [
   {
     continent: 'Europe',
@@ -397,30 +359,116 @@ function groupBy(objectArray: any, property: string) {
   }, {});
 }
 
-const checkoutForm = html`
-  <igc-form>
-    <igc-select label="Sample Label">
-      ${Object.entries(groupBy(countries, 'continent')).map(
-        ([continent, countries]) => html`
-          <igc-select-group>
-            <igc-select-header slot="label">${continent}</igc-select-header>
-            ${(countries as any).map(
-              (item: any) => html`
-                <igc-select-item
-                  value=${item.value}
-                  ?disabled=${item.disabled}
-                  ?selected=${item.selected}
-                  >${item.country}</igc-select-item
-                >
+export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    return html`
+      <form @submit=${formSubmitHandler}>
+        <fieldset>
+          <legend>Default select</legend>
+          <igc-select
+            value="bg"
+            name="default-select"
+            label="Countries (value through attribute)"
+          >
+            ${Object.entries(groupBy(countries, 'continent')).map(
+              ([continent, countries]) => html`
+                <igc-select-group>
+                  <igc-select-header slot="label"
+                    >${continent}</igc-select-header
+                  >
+                  ${(countries as any).map(
+                    (item: any) => html`
+                      <igc-select-item
+                        value=${item.value}
+                        ?disabled=${item.disabled}
+                        >${item.country}</igc-select-item
+                      >
+                    `
+                  )}
+                </igc-select-group>
               `
             )}
-          </igc-select-group>
-        `
-      )}
-      <span slot="helper-text">Sample helper text.</span>
-    </igc-select>
-  </igc-form>
-`;
-
-export const Basic: Story = Template.bind({});
-export const Form: Story = FormTemplate.bind({});
+            <span slot="helper-text">Sample helper text.</span>
+          </igc-select>
+          <igc-select
+            name="default-select-2"
+            label="Countries (value through selected item)"
+          >
+            ${Object.entries(groupBy(countries, 'continent')).map(
+              ([continent, countries]) => html`
+                <igc-select-group>
+                  <igc-select-header slot="label"
+                    >${continent}</igc-select-header
+                  >
+                  ${(countries as any).map(
+                    (item: any) => html`
+                      <igc-select-item
+                        value=${item.value}
+                        ?selected=${item.selected}
+                        ?disabled=${item.disabled}
+                        >${item.country}</igc-select-item
+                      >
+                    `
+                  )}
+                </igc-select-group>
+              `
+            )}
+            <span slot="helper-text">Sample helper text.</span>
+          </igc-select>
+        </fieldset>
+        <fieldset>
+          <legend>Required select</legend>
+          <igc-select name="required-select" label="Countries" required>
+            ${Object.entries(groupBy(countries, 'continent')).map(
+              ([continent, countries]) => html`
+                <igc-select-group>
+                  <igc-select-header slot="label"
+                    >${continent}</igc-select-header
+                  >
+                  ${(countries as any).map(
+                    (item: any) => html`
+                      <igc-select-item
+                        value=${item.value}
+                        ?disabled=${item.disabled}
+                        >${item.country}</igc-select-item
+                      >
+                    `
+                  )}
+                </igc-select-group>
+              `
+            )}
+            <span slot="helper-text">Sample helper text.</span>
+          </igc-select>
+        </fieldset>
+        <fieldset disabled>
+          <legend>Disabled form group</legend>
+          <igc-select label="Countries">
+            ${Object.entries(groupBy(countries, 'continent')).map(
+              ([continent, countries]) => html`
+                <igc-select-group>
+                  <igc-select-header slot="label"
+                    >${continent}</igc-select-header
+                  >
+                  ${(countries as any).map(
+                    (item: any) => html`
+                      <igc-select-item
+                        value=${item.value}
+                        ?disabled=${item.disabled}
+                        >${item.country}</igc-select-item
+                      >
+                    `
+                  )}
+                </igc-select-group>
+              `
+            )}
+            <span slot="helper-text">Sample helper text.</span>
+          </igc-select>
+        </fieldset>
+        ${formControls()}
+      </form>
+    `;
+  },
+};

@@ -1,18 +1,9 @@
-@use '../../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
 @mixin theme() {
     igc-step {
-        // Header
-        --header-background--hover: #{color(gray, 100, .3)};
-        --header-background--focus: #{color(gray, 100, .5)};
-        --header-shadow: #{color(gray, 400)};
-
-        // inactive
-        --title-color: #{color(gray, 900)};
-        --color: #{color(gray, 700)};
-
-        // disabled
-        --disabled-background: #{color(gray, 50, 0)};
-        --disabled-shadow: #{color(gray, 300)};
+        @include css-vars-from-theme($bootstrap, 'ig-stepper');
     }
 }
+

@@ -1,4 +1,15 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-dialog');
+
+    border-radius: var-get($theme, 'border-radius');
+}
 
 [part='title'] {
     padding-inline: rem(24px);

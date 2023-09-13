@@ -1,8 +1,16 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$border-color: var(--border-color, color(gray, 300)) !default;
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-dropdown');
+}
 
 [part='base'] {
-    box-shadow: none;
-    border: 1px solid $border-color;
+    background: var-get($theme, 'background-color');
+    border-radius: var-get($theme, 'border-radius');
+    padding: rem(8px) 0;
+    border: rem(1px) solid var-get($theme, 'border-color');
 }

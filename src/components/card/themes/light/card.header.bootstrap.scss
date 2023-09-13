@@ -1,5 +1,5 @@
-@use './card.header.material.scss';
-@use '../../../../styles/utilities' as *;
+@use 'card.header.material.scss';
+@use 'styles/utilities' as *;
 
 ::slotted([slot='title']) {
     @include type-style('h5');

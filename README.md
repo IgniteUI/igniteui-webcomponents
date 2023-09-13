@@ -78,6 +78,8 @@ The Ignite UI for Web Components Data Grid and Table are both lightweight and de
 
 ### Dock Manager - EXCLUSIVE FEATURE
 
+![Dock Manager](https://github.com/IgniteUI/igniteui-webcomponents/assets/52001020/a9643f17-f1c2-4554-87aa-96c9daea13b0)
+
 Provide a complete windowing experience, splitting complex layouts into smaller, easier-to-manage panes. 
 
 In order to use the Ignite UI Web Components in your application you should install the `igniteui-webcomponents` package:

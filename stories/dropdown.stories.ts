@@ -1,14 +1,14 @@
 import { github, whiteHouse1 } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { Context } from './story.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
-  defineComponents,
   IgcDropdownComponent,
   IgcDropdownItemComponent,
   IgcInputComponent,
+  defineComponents,
+  registerIconFromText,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+import { Context } from './story.js';
 
 const icons = [github, whiteHouse1];
 
@@ -92,7 +92,7 @@ const metadata: Meta<IgcDropdownComponent> = {
       type: 'number',
       description: 'The distance from the target element.',
       control: 'number',
-      defaultValue: '0',
+      defaultValue: 0,
     },
     sameWidth: {
       type: 'boolean',
@@ -117,7 +117,7 @@ const metadata: Meta<IgcDropdownComponent> = {
     placement: 'bottom-start',
     positionStrategy: 'absolute',
     flip: false,
-    distance: '0',
+    distance: 0,
     sameWidth: false,
     size: 'large',
   },

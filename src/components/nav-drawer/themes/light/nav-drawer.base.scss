@@ -1,7 +1,12 @@
-@use '../../../../styles/common/component';
-@use '../../../../styles/utilities/index' as *;
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-nav-drawer');
+
     flex-shrink: 0;
     font-family: var(--ig-font-family);
 
@@ -14,8 +19,6 @@
         bottom: 0;
         inset-inline-start: 0;
         z-index: 999;
-        background: color(surface, 500);
-        border-radius: 0;
         transition: all ease-out .3s, .3s;
     }
 
@@ -28,7 +31,6 @@
     }
 
     [part='overlay'] {
-        background: color(gray, 500, .54);
         position: fixed;
         inset: 0;
         z-index: 2;
@@ -37,20 +39,20 @@
 
 :host([position='start']) [part='mini'],
 :host([position='end']) [part='mini'] {
-    background: color(surface, 500);
-    box-shadow: var(--ig-elevation-16);
     position: fixed;
     top: 0;
     bottom: 0;
 }
 
 :host([position='start']) [part='mini'] {
-    border-inline-end: 1px solid color(gray, 900, .14);
+    border-inline-end-style: solid;
+    border-inline-end-width: rem(1px);
     inset-inline-start: 0;
 }
 
 :host([position='end']) [part='mini'] {
-    border-inline-start: 1px solid color(gray, 900, .14);
+    border-inline-start-style: solid;
+    border-inline-start-width: rem(1px);
     inset-inline-end: 0;
 }
 
@@ -95,7 +97,8 @@
 :host([open][position='end']) {
     [part='base'] {
         border-inline-end: none;
-        border-inline-start: 1px solid color(gray, 900, .14);
+        border-inline-start-style: solid;
+        border-inline-start-width: rem(1px);
         inset-inline-start: auto;
         inset-inline-end: 0;
     }
@@ -107,7 +110,8 @@
         width: fit-content;
         box-shadow: none;
         z-index: initial;
-        border-inline-end: 1px solid color(gray, 300);
+        border-inline-end-style: solid ;
+        border-inline-end-width: rem(1px);
     }
 
     [part='overlay'] {
@@ -123,8 +127,8 @@
 
 :host([open]:not([position='relative'])) {
     [part='base'] {
-        border-inline-end: 1px solid color(gray, 900, .14);
-        box-shadow: var(--ig-elevation-16);
+        border-inline-end-style: solid;
+        border-inline-end-width: rem(1px);
     }
 }
 

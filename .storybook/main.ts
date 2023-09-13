@@ -1,7 +1,8 @@
 import type { StorybookConfig } from '@storybook/web-components-vite';
+import { mergeConfig } from 'vite';
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.mdx', '../stories/**/*.stories.@(js|jsx|ts|tsx)'],
+  stories: ['../stories/**/*.stories.@(js|jsx|ts|tsx)'],
   addons: [
     '@storybook/addon-a11y',
     '@storybook/addon-links',
@@ -16,6 +17,24 @@ const config: StorybookConfig = {
   },
   docs: {
     autodocs: true,
+  },
+  viteFinal: (config, options) => {
+    if (options.configType === 'PRODUCTION') {
+      return mergeConfig(config, {
+        build: {
+          rollupOptions: {
+            output: {
+              chunkFileNames: ({ name }) =>
+                /^_/.test(name)
+                  ? `assets/${name.replace(/^_/, '')}.[hash].js`
+                  : 'assets/[name].[hash].js',
+            },
+          },
+        },
+      });
+    }
+
+    return config;
   },
 };
 

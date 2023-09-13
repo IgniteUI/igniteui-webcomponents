@@ -1,4 +1,4 @@
-@use '../../../../styles/utilities/index' as *;
+@use 'styles/utilities/index' as *;
 @use '../year-month-view.base';
 
 $current-bg: var(--current-month-year-bg, #{color(gray, 200)});

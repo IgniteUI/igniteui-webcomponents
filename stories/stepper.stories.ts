@@ -48,6 +48,27 @@ const metadata: Meta<IgcStepperComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
+    verticalAnimation: {
+      type: '"none" | "grow" | "fade"',
+      description: 'The animation type when in vertical mode.',
+      options: ['none', 'grow', 'fade'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'grow',
+    },
+    horizontalAnimation: {
+      type: '"none" | "fade" | "slide"',
+      description: 'The animation type when in horizontal mode.',
+      options: ['none', 'fade', 'slide'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'slide',
+    },
+    animationDuration: {
+      type: 'number',
+      description:
+        'The animation duration in either vertical or horizontal mode.',
+      control: 'number',
+      defaultValue: 320,
+    },
     titlePosition: {
       type: '"start" | "end" | "top" | "bottom" | undefined',
       description: 'Get/Set the position of the steps title.',
@@ -60,6 +81,9 @@ const metadata: Meta<IgcStepperComponent> = {
     stepType: 'full',
     linear: false,
     contentTop: false,
+    verticalAnimation: 'grow',
+    horizontalAnimation: 'slide',
+    animationDuration: 320,
   },
 };
 
@@ -74,6 +98,12 @@ interface IgcStepperArgs {
   linear: boolean;
   /** Get/Set whether the content is displayed above the steps. */
   contentTop: boolean;
+  /** The animation type when in vertical mode. */
+  verticalAnimation: 'none' | 'grow' | 'fade';
+  /** The animation type when in horizontal mode. */
+  horizontalAnimation: 'none' | 'fade' | 'slide';
+  /** The animation duration in either vertical or horizontal mode. */
+  animationDuration: number;
   /** Get/Set the position of the steps title. */
   titlePosition: 'start' | 'end' | 'top' | 'bottom' | undefined;
 }
@@ -81,7 +111,16 @@ type Story = StoryObj<IgcStepperArgs>;
 
 // endregion
 const BasicTemplate = (
-  { orientation, stepType, titlePosition, linear, contentTop }: IgcStepperArgs,
+  {
+    orientation,
+    stepType,
+    titlePosition,
+    linear,
+    contentTop,
+    animationDuration,
+    verticalAnimation,
+    horizontalAnimation,
+  }: IgcStepperArgs,
   { globals: { direction } }: Context
 ) => {
   const next = () => {
@@ -105,6 +144,9 @@ const BasicTemplate = (
       .linear=${linear}
       .contentTop=${contentTop}
       .dir=${direction}
+      .animationDuration=${animationDuration}
+      .verticalAnimation=${verticalAnimation}
+      .horizontalAnimation=${horizontalAnimation}
     >
       <igc-step>
         <span slot="title">Step1</span>

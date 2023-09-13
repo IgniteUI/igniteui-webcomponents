@@ -1,0 +1,28 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/avatar' as *;
+
+$material: map.merge(
+    digest-schema($light-avatar), 
+    (
+        border-radius: border-radius(map.get($light-avatar, 'border-radius')...)
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($bootstrap-avatar), 
+    (
+        border-radius: border-radius(map.get($bootstrap-avatar, 'border-radius')...)
+    )
+);
+$fluent: map.merge(
+    digest-schema($fluent-avatar), 
+    (
+        border-radius: border-radius(map.get($fluent-avatar, 'border-radius')...)
+    )
+);
+$indigo: map.merge(
+    digest-schema($indigo-avatar), 
+    (
+        border-radius: border-radius(map.get($indigo-avatar, 'border-radius')...)
+    )
+);

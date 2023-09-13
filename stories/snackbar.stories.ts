@@ -34,7 +34,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
       description:
         'Determines the duration in ms in which the snackbar will be visible.',
       control: 'number',
-      defaultValue: '4000',
+      defaultValue: 4000,
     },
     keepOpen: {
       type: 'boolean',
@@ -49,7 +49,7 @@ const metadata: Meta<IgcSnackbarComponent> = {
       control: 'text',
     },
   },
-  args: { open: false, displayTime: '4000', keepOpen: false },
+  args: { open: false, displayTime: 4000, keepOpen: false },
 };
 
 export default metadata;

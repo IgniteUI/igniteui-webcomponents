@@ -1,7 +1,9 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
 
 export interface IgcSliderEventMap {
@@ -38,47 +40,24 @@ export interface IgcSliderEventMap {
  * @csspart inactive - The inactive element of the track.
  * @csspart fill - The filled part of the track.
  */
-export default class IgcSliderComponent extends EventEmitterMixin<
-  IgcSliderEventMap,
-  Constructor<IgcSliderBaseComponent>
->(IgcSliderBaseComponent) {
+export default class IgcSliderComponent extends FormAssociatedMixin(
+  EventEmitterMixin<IgcSliderEventMap, Constructor<IgcSliderBaseComponent>>(
+    IgcSliderBaseComponent
+  )
+) {
   public static readonly tagName = 'igc-slider';
 
-  private _value = 0;
-  private _ariaLabel!: string;
-
-  public set value(val: number) {
-    const oldVal = this._value;
-    this._value = this.validateValue(val);
-    this.requestUpdate('value', oldVal);
-  }
-
   /**
-   * The current value of the slider.
+   * The current value of the component.
    * @attr
    */
   @property({ type: Number })
-  public get value() {
-    return this._value;
-  }
+  public value = 0;
 
-  public override set ariaLabel(value: string) {
-    const oldVal = this._ariaLabel;
-    this._ariaLabel = value;
-
-    if (this.hasAttribute('aria-label')) {
-      this.removeAttribute('aria-label');
-    }
-    this.requestUpdate('ariaLabel', oldVal);
-  }
-
-  /**
-   * The aria label of the slider thumb.
-   * @attr
-   */
-  @property({ attribute: 'aria-label' })
-  public override get ariaLabel() {
-    return this._ariaLabel;
+  @watch('value')
+  protected valueChanged() {
+    this.value = this.validateValue(this.value);
+    this.setFormValue(`${this.value}`);
   }
 
   protected override get activeValue(): number {
@@ -86,7 +65,7 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   protected override normalizeValue(): void {
-    this._value = this.validateValue(this._value);
+    this.value = this.validateValue(this.value);
   }
 
   protected override getTrackStyle() {
@@ -136,7 +115,11 @@ export default class IgcSliderComponent extends EventEmitterMixin<
   }
 
   protected override renderThumbs() {
-    return html`${this.renderThumb(this.value, this.ariaLabel)}`;
+    const ariaLabel = this.getAttribute('aria-label');
+    if (ariaLabel) {
+      this.removeAttribute('aria-label');
+    }
+    return html`${this.renderThumb(this.value, ariaLabel!)}`;
   }
 }
 

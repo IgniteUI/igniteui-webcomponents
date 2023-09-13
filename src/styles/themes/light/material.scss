@@ -1,4 +1,4 @@
-@use '../../../../node_modules/igniteui-theming/sass/color/presets/' as *;
+@use 'igniteui-theming/sass/color/presets/light/material' as *;
 @use '../base/material' as base;
 @use '../base/scrollbars';
-@include base.root-styles($light-material-palette);
+@include base.root-styles($palette);

@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $indigo;
+
+:host {
+    @include type-style('subtitle-1');
+
+    color: var-get($theme, 'item-header-text-color');
+}

@@ -34,7 +34,7 @@ export default class GroupDataOperation<T extends object> {
     return this.orderBy.get(direction)! * this.compareValues(a, b);
   }
 
-  public apply(data: T[], controller: DataController<T>) {
+  public apply(data: ComboRecord<T>[], controller: DataController<T>) {
     const {
       groupingOptions: { groupKey, valueKey, displayKey, direction },
     } = controller;
@@ -43,18 +43,21 @@ export default class GroupDataOperation<T extends object> {
 
     const groups = new Map();
 
-    data.forEach((item: T) => {
+    data.forEach((item: ComboRecord<T>) => {
       if (typeof item !== 'object' || item === null) return;
 
-      const key = item[groupKey!] ?? 'Other';
-      const group = groups.get(key) ?? <ComboRecord<T>>[];
+      const key = item.value[groupKey!] ?? 'Other';
+      const group: ComboRecord<T>[] = groups.get(key) ?? [];
 
       if (group.length === 0) {
         group.push({
-          [valueKey as Keys<T>]: key,
-          [displayKey as Keys<T>]: key,
-          [groupKey as Keys<T>]: key,
+          value: {
+            [valueKey as Keys<T>]: key,
+            [displayKey as Keys<T>]: key,
+            [groupKey as Keys<T>]: key,
+          } as T,
           header: true,
+          dataIndex: -1,
         });
       }
 
@@ -65,7 +68,7 @@ export default class GroupDataOperation<T extends object> {
     groups.forEach((group) => {
       group.sort((a: ComboRecord<T>, b: ComboRecord<T>) => {
         if (a.header || b.header) return;
-        return this.compareObjects(a, b, displayKey!, direction);
+        return this.compareObjects(a.value, b.value, displayKey!, direction);
       });
     });
 

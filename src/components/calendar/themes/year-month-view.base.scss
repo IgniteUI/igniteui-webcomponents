@@ -1,5 +1,5 @@
-@use '../../../styles/utilities/index' as *;
 @use 'sass:math';
+@use 'styles/utilities' as *;
 
 :host {
     display: flex;

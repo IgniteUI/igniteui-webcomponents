@@ -10,6 +10,30 @@ import { getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
 import type { Theme, ThemeController, Themes } from './types.js';
 
+class ThemeEventListeners {
+  private readonly listeners = new Set<Function>();
+
+  public add(listener: Function) {
+    window.addEventListener(CHANGE_THEME_EVENT, this);
+    this.listeners.add(listener);
+  }
+
+  public remove(listener: Function) {
+    this.listeners.delete(listener);
+    if (this.listeners.size < 1) {
+      window.removeEventListener(CHANGE_THEME_EVENT, this);
+    }
+  }
+
+  public handleEvent = () => {
+    for (const listener of this.listeners) {
+      listener();
+    }
+  };
+}
+
+const _themingEventListeners = new ThemeEventListeners();
+
 class ThemingController implements ReactiveController, ThemeController {
   private themes: Themes;
   private host: ReactiveControllerHost & ReactiveElement;
@@ -20,66 +44,57 @@ class ThemingController implements ReactiveController, ThemeController {
     this.themes = themes;
   }
 
-  private readonly __themingEventHandler = () => {
-    this.adoptStyles();
-    this.host.requestUpdate();
-  };
-
   public hostConnected() {
     this.adoptStyles();
-    window.addEventListener(CHANGE_THEME_EVENT, this.__themingEventHandler);
+    _themingEventListeners.add(this.themeChanged);
   }
 
   public hostDisconnected() {
-    window.removeEventListener(CHANGE_THEME_EVENT, this.__themingEventHandler);
+    _themingEventListeners.remove(this.themeChanged);
   }
 
   protected adoptStyles() {
     this.theme = getTheme();
     const ctor = this.host.constructor as typeof LitElement;
-    const supportsAdoptingStyleSheets =
-      window.ShadowRoot &&
-      'adoptedStyleSheets' in Document.prototype &&
-      'replace' in CSSStyleSheet.prototype;
 
-    let styleSheet = css``;
-
-    const [theme] = Object.entries(this.themes).filter(
-      ([name]) => name === this.theme
-    );
-
-    if (theme) {
-      const [_, cssResult] = theme;
-      styleSheet = cssResult;
-    }
-
-    // Firefox and Safari don't support the adoptedStyleSheets API yet,
-    // and the lit framework appends the resolved stylesheets indiscriminately
-    // when using the adoptStyles API below. Hence, we need to remove all previously
-    // defined style tags in the shadow root as changing the themes at runtime just
-    // keeps stacking the resolved styles one over the other, resulting in broken themes.
-    if (!supportsAdoptingStyleSheets) {
-      [...this.host!.renderRoot.querySelectorAll('style')]
-        .slice(1)
-        .forEach((tag) => tag.remove());
-    }
+    const [_, cssResult] =
+      Object.entries(this.themes).find(([name]) => name === this.theme) ?? [];
 
     adoptStyles(this.host.shadowRoot as ShadowRoot, [
       ...ctor.elementStyles,
-      styleSheet,
+      cssResult ?? css``,
     ]);
   }
+
+  private themeChanged = () => {
+    this.adoptStyles();
+    this.host.requestUpdate();
+  };
 }
 
 const _updateWhenThemeChanges = (
   host: ReactiveControllerHost & ReactiveElement,
-  themes: Themes
+  themes: Themes,
+  exposeTheme?: boolean
 ) => {
   const controller = new ThemingController(host, themes);
   host.addController(controller);
+
+  if (exposeTheme) {
+    Object.defineProperty(host, themeSymbol, {
+      get() {
+        return controller.theme;
+      },
+      configurable: true,
+      enumerable: false,
+    });
+  }
+
   return controller;
 };
 
 export const updateWhenThemeChanges: typeof _updateWhenThemeChanges & {
   _THEMING_CONTROLLER_FN_?: never;
 } = _updateWhenThemeChanges;
+
+export const themeSymbol = Symbol('Current active theme');

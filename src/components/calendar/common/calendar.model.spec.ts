@@ -7,7 +7,7 @@ import {
   TimeDeltaInterval,
   weekDay,
   WEEKDAYS,
-} from './calendar.model';
+} from './calendar.model.js';
 
 describe('Calendar model', () => {
   const calendarModel = new Calendar();

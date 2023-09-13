@@ -1,6 +1,9 @@
-@use '../../../../styles/utilities/index' as *;
 @use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
 
+$theme: $bootstrap;
 $selected-background: var(--selected-background, color(primary, 500)) !default;
 $selected-color: var(--selected-color, contrast-color(primary, 600)) !default;
 $active-background: var(--active-background, color(gray, 200)) !default;
@@ -8,6 +11,18 @@ $active-color: var(--active-color, contrast-color(gray, 200)) !default;
 $active-selected-background: var(--active-selected-background, color(primary, 600)) !default;
 $active-selected-color: var(--active-selected-color, contrast-color(primary, 600)) !default;
 $focused-border-color: var(--focused-border-color, color(primary, 200)) !default;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-tree');
+}
+
+[part~='wrapper'] {
+    min-height: var-get($theme, 'size');
+}
+
+[part~='label'] {
+    max-height: var-get($theme, 'size');
+}
 
 [part~='active'] {
     background: $active-background;
@@ -31,5 +46,5 @@ $focused-border-color: var(--focused-border-color, color(primary, 200)) !default
 }
 
 [part~='focused'] {
-    box-shadow: inset 0 0 0 1px $focused-border-color;
+    box-shadow: inset 0 0 0 rem(1px) $focused-border-color;
 }

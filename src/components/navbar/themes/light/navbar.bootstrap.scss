@@ -1,14 +1,24 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-navbar');
+
+    background: var-get($theme, 'background');
+    color: var-get($theme, 'text-color');
+    box-shadow: var(--ig-elevation-0);
     padding: 0 rem(8px);
-    background: color(surface, 500);
-    color: contrast-color(surface, 500);
-    box-shadow: none;
 }
 
 ::slotted(igc-icon) {
-    color: contrast-color(surface, 500);
+    color: var-get($theme, 'idle-icon-color');
+}
+
+::slotted(igc-icon:hover) {
+    color: var-get($theme, 'hover-icon-color');
 }
 
 [part='base'] {

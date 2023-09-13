@@ -1,10 +1,18 @@
-import { html } from 'lit';
-import { Context } from './story.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { ComboItemTemplate } from '../src/index.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
-import { defineComponents, IgcComboComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import {
+  ComboItemTemplate,
+  IgcComboComponent,
+  defineComponents,
+  registerIconFromText,
+} from '../src/index.js';
+import {
+  Context,
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 
 defineComponents(IgcComboComponent);
 
@@ -21,29 +29,6 @@ const metadata: Meta<IgcComboComponent> = {
   component: 'igc-combo',
   parameters: { docs: { description: {} } },
   argTypes: {
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled attribute of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    required: {
-      type: 'boolean',
-      description: 'The required attribute of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'The invalid attribute of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     outlined: {
       type: 'boolean',
       description: 'The outlined attribute of the control.',
@@ -84,13 +69,6 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'text',
       defaultValue: 'Search',
     },
-    dir: {
-      type: '"ltr" | "rtl" | "auto"',
-      description: 'The direction attribute of the control.',
-      options: ['ltr', 'rtl', 'auto'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'auto',
-    },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the component.',
@@ -119,41 +97,49 @@ const metadata: Meta<IgcComboComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    value: {
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    name: {
       type: 'string',
-      description:
-        'Returns the current selection as a list of commma separated values,\nrepresented by the display key, when provided.',
+      description: 'The name attribute of the control.',
       control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      defaultValue: false,
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      defaultValue: false,
     },
   },
   args: {
-    disabled: false,
-    required: false,
-    invalid: false,
     outlined: false,
     singleSelect: false,
     autofocusList: false,
     placeholderSearch: 'Search',
-    dir: 'auto',
     open: false,
     flip: true,
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
+    required: false,
+    disabled: false,
+    invalid: false,
   },
 };
 
 export default metadata;
 
 interface IgcComboArgs {
-  /** The name attribute of the control. */
-  name: string;
-  /** The disabled attribute of the control. */
-  disabled: boolean;
-  /** The required attribute of the control. */
-  required: boolean;
-  /** The invalid attribute of the control. */
-  invalid: boolean;
   /** The outlined attribute of the control. */
   outlined: boolean;
   /** Enables single selection mode and moves item filtering to the main input. */
@@ -168,8 +154,6 @@ interface IgcComboArgs {
   placeholder: string;
   /** The placeholder attribute of the search input. */
   placeholderSearch: string;
-  /** The direction attribute of the control. */
-  dir: 'ltr' | 'rtl' | 'auto';
   /** Sets the open state of the component. */
   open: boolean;
   flip: boolean;
@@ -179,11 +163,14 @@ interface IgcComboArgs {
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */
   disableFiltering: boolean;
-  /**
-   * Returns the current selection as a list of commma separated values,
-   * represented by the display key, when provided.
-   */
-  value: string;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
 }
 type Story = StoryObj<IgcComboArgs>;
 
@@ -272,7 +259,7 @@ const cities: City[] = [
   },
 ];
 
-// const mandzhasgrozde = [0, 'Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true, null, undefined, NaN, 0];
+// const mandzhasgrozde = [0, 'Sofia', 4, 'Varna', 'varna', false, { a: 1, b: 2 }, -1, true, NaN, 0];
 
 registerIconFromText(
   'location',
@@ -296,6 +283,8 @@ const Template = (
     singleSelect = false,
     autofocusList,
     groupSorting = 'asc',
+    positionStrategy = 'absolute',
+    sameWidth = false,
   }: IgcComboComponent<City>,
   { globals: { direction } }: Context
 ) => html`
@@ -311,8 +300,11 @@ const Template = (
     dir=${ifDefined(direction)}
     value-key="id"
     display-key="name"
+    value='["BG01", "BG02"]'
     group-key="country"
-    group-sorting="${ifDefined(groupSorting)}"
+    group-sorting=${ifDefined(groupSorting)}
+    position-strategy=${positionStrategy}
+    ?same-width=${sameWidth}
     ?case-sensitive-icon=${caseSensitiveIcon}
     ?disable-filtering=${disableFiltering}
     ?open=${open}
@@ -330,3 +322,74 @@ const Template = (
 `;
 
 export const Basic: Story = Template.bind({});
+
+export const Form: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => {
+    const primitive = [1, 2, 3, 4, 5, 'one', 'two', 'three', 'four', 'five'];
+    return html`
+      <form @submit=${formSubmitHandler}>
+        <fieldset>
+          <igc-combo
+            label="Default"
+            name="combo"
+            .data=${cities}
+            value-key="id"
+            display-key="name"
+          ></igc-combo>
+          <igc-combo
+            label="Initial value"
+            .data=${cities}
+            name="combo-initial"
+            value='["BG01", "BG02"]'
+            value-key="id"
+            display-key="name"
+          ></igc-combo>
+          <igc-combo
+            label="No value key"
+            .data=${cities}
+            name="combo-not-key"
+            display-key="name"
+          ></igc-combo>
+          <igc-combo
+            .data=${cities}
+            single-select
+            label="Single selection"
+            name="combo-single"
+            display-key="name"
+            value-key="id"
+          ></igc-combo>
+        </fieldset>
+        <fieldset>
+          <igc-combo
+            name="combo-primitive"
+            .value=${[1, 'one']}
+            .data=${primitive}
+            label="Primitives binding"
+          ></igc-combo>
+        </fieldset>
+        <fieldset disabled="disabled">
+          <igc-combo
+            label="Disabled"
+            name="combo-disabled"
+            .data=${cities}
+            value-key="id"
+            display-key="name"
+          ></igc-combo>
+        </fieldset>
+        <fieldset>
+          <igc-combo
+            label="Required"
+            name="combo-required"
+            .data=${cities}
+            value-key="id"
+            display-key="name"
+            required
+          ></igc-combo>
+        </fieldset>
+
+        ${formControls()}
+      </form>
+    `;
+  },
+};

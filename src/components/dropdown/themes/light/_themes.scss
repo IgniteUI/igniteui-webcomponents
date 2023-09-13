@@ -1,0 +1,32 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/drop-down' as *;
+
+$material: map.merge(
+    digest-schema($light-drop-down),
+    (
+        border-radius: border-radius(map.get($light-drop-down, 'border-radius')...),
+        item-border-radius: border-radius(map.get($light-drop-down, 'item-border-radius')...)
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($bootstrap-drop-down),
+    (
+        border-radius: border-radius(map.get($bootstrap-drop-down, 'border-radius')...),
+        item-border-radius: border-radius(map.get($bootstrap-drop-down, 'item-border-radius')...)
+    )
+);
+$fluent: map.merge(
+    digest-schema($fluent-drop-down),
+    (
+        border-radius: border-radius(map.get($fluent-drop-down, 'border-radius')...),
+        item-border-radius: border-radius(map.get($fluent-drop-down, 'item-border-radius')...)
+    )
+);
+$indigo: map.merge(
+    digest-schema($indigo-drop-down),
+    (
+        border-radius: border-radius(map.get($indigo-drop-down, 'border-radius')...),
+        item-border-radius: border-radius(map.get($indigo-drop-down, 'item-border-radius')...)
+    )
+);

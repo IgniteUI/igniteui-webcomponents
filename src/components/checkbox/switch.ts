@@ -2,7 +2,6 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/light/switch.base.css.js';
@@ -36,17 +35,9 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   private inputId = `switch-${IgcSwitchComponent.increment()}`;
   private labelId = `switch-label-${this.inputId}`;
 
-  private handleClick() {
-    this.checked = !this.checked;
-    this.emitEvent('igcChange', { detail: this.checked });
-  }
-
-  @watch('checked', { waitUntilFirstUpdate: true })
-  protected handleChange() {
-    this.invalid = !this.input.checkValidity();
-  }
-
   protected override render() {
+    const labelledBy = this.getAttribute('aria-labelledby');
+
     return html`
       <label
         part=${partNameMap({ base: true, checked: this.checked })}
@@ -63,9 +54,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           .checked=${live(this.checked)}
           aria-checked=${this.checked ? 'true' : 'false'}
           aria-disabled=${this.disabled ? 'true' : 'false'}
-          aria-labelledby=${this.ariaLabelledby
-            ? this.ariaLabelledby
-            : this.labelId}
+          aria-labelledby=${labelledBy ? labelledBy : this.labelId}
           @click=${this.handleClick}
           @blur=${this.handleBlur}
           @focus=${this.handleFocus}
@@ -82,11 +71,11 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
           ></span>
         </span>
         <span
-          .hidden="${this.hideLabel}"
+          .hidden=${this.hideLabel}
           part=${partNameMap({ label: true, checked: this.checked })}
           id=${this.labelId}
         >
-          <slot></slot>
+          <slot @slotchange=${this.handleSlotChange}></slot>
         </span>
       </label>
     `;

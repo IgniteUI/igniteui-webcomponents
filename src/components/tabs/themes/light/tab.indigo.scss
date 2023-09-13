@@ -1,7 +1,14 @@
-@use '../../../../styles/utilities' as *;
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $indigo;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-tabs');
+
     background: transparent;
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host(:hover),

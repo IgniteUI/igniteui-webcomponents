@@ -5,13 +5,19 @@ import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './icon.material.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './icon.base.css.js';
+import { styles as material } from './light/icon.material.css.js';
+import { styles as bootstrap } from './light/icon.bootstrap.css.js';
+import { styles as fluent } from './light/icon.fluent.css.js';
+import { styles as indigo } from './light/icon.indigo.css.js';
 import {
   IconsRegistry,
   registerIcon as registerIcon_impl,
   registerIconFromText as registerIconFromText_impl,
 } from './icon.registry.js';
 
+@themes({ material, bootstrap, fluent, indigo })
 /**
  * Icon component
  *

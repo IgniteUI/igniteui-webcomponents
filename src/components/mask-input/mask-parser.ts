@@ -32,7 +32,7 @@ const replaceIMENumbers = (string: string) => {
         '８': '8',
         '９': '9',
         '０': '0',
-      }[num] as string)
+      })[num] as string
   );
 };
 
@@ -46,7 +46,7 @@ export class MaskParser {
   }
 
   protected literals = new Map<number, string>();
-  protected _escapedMask!: string;
+  protected _escapedMask = '';
 
   public get literalPositions() {
     this.getMaskLiterals();

@@ -20,6 +20,7 @@ import type {
   IgcToggleEventMap,
 } from '../toggle/types';
 import { styles } from './themes/light/dropdown.base.css.js';
+import { styles as material } from './themes/light/dropdown.material.css.js';
 import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
 import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
 import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
@@ -56,7 +57,7 @@ export interface IgcDropdownEventMap extends IgcToggleEventMap {
  * @csspart base - The dropdown list wrapper.
  * @csspart list - The dropdown list.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({ bootstrap, fluent, indigo, material })
 @blazorAdditionalDependencies(
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )
@@ -218,7 +219,7 @@ export default class IgcDropdownComponent
     });
   }
 
-  public override async firstUpdated() {
+  protected override async firstUpdated() {
     if (this.targetNodes.length) {
       this.target = this.targetNodes[0];
       this.target.setAttribute('aria-haspopup', 'listbox');

@@ -1,0 +1,12 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-dropdown');
+
+    color: var-get($theme, 'header-text-color');
+    padding: pad(rem(2px), rem(4px), rem(8px));
+}

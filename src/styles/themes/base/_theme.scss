@@ -1,0 +1,23 @@
+@use 'sass:map';
+@use 'igniteui-theming' as *;
+
+@mixin theme($palette, $elevations, $typeface, $type-scale) {
+    :root {
+        --ig-theme: #{map.get($palette, '_meta', 'variant')};
+        --ig-spacing: 1;
+        --ig-spacing-inline: 1;
+        --ig-spacing-block: 1;
+        --ig-size-small: 1;
+        --ig-size-medium: 2;
+        --ig-size-large: 3;
+        --ig-scrollbar-size: #{rem(16px)};
+    }
+
+    @include palette($palette);
+    @include elevations($elevations);
+    @include typography(
+        $font-family: $typeface,
+        $type-scale: $type-scale
+    );
+}
+

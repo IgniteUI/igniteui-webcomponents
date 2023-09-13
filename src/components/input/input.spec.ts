@@ -7,6 +7,7 @@ import {
 } from '@open-wc/testing';
 import sinon from 'sinon';
 import { defineComponents, IgcInputComponent } from '../../index.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Input component', () => {
   before(() => {
@@ -112,12 +113,12 @@ describe('Input component', () => {
 
     it('sets the minlength and maxlength properties successfully', async () => {
       el.type = 'number';
-      el.minlength = 5;
-      el.maxlength = 20;
+      el.minLength = 5;
+      el.maxLength = 20;
 
       await elementUpdated(el);
-      expect(input.minLength).to.equal(el.minlength);
-      expect(input.maxLength).to.equal(el.maxlength);
+      expect(input.minLength).to.equal(el.minLength);
+      expect(input.maxLength).to.equal(el.maxLength);
     });
 
     it('sets the pattern property successfully', async () => {
@@ -267,4 +268,132 @@ describe('Input component', () => {
   const createInputComponent = (template = '<igc-input></igc-input>') => {
     return fixture<IgcInputComponent>(html`${unsafeStatic(template)}`);
   };
+
+  describe('Form integration', () => {
+    const spec = new FormAssociatedTestBed<IgcInputComponent>(
+      html`<igc-input name="input"></igc-input>`
+    );
+
+    beforeEach(async () => {
+      await spec.setup(IgcInputComponent.tagName);
+    });
+
+    it('is form associated', async () => {
+      expect(spec.element.form).to.equal(spec.form);
+    });
+
+    it('is not associated on submit if no value', async () => {
+      expect(spec.submit()?.get(spec.element.name)).to.be.null;
+    });
+
+    it('is associated on submit', async () => {
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+
+      expect(spec.submit()?.get(spec.element.name)).to.equal(
+        spec.element.value
+      );
+    });
+
+    it('is correctly reset on form reset', async () => {
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+
+      spec.reset();
+      expect(spec.element.value).to.equal('');
+    });
+
+    it('reflects disabled ancestor state', async () => {
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
+
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
+    });
+
+    it('fulfils required constraint', async () => {
+      spec.element.required = true;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils min value constraint', async () => {
+      spec.element.type = 'number';
+      spec.element.min = 3;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = '5';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils max value constraint', async () => {
+      spec.element.type = 'number';
+      spec.element.max = 7;
+      spec.element.value = '17';
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = '5';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils step constraint', async () => {
+      spec.element.type = 'number';
+      spec.element.step = 3;
+      spec.element.value = '4';
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = '9';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils minimum length constraint', async () => {
+      spec.element.minLength = 3;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils maximum length constraint', async () => {
+      spec.element.value = 'abcd';
+      spec.element.maxLength = 3;
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = 'abc';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils pattern constraint', async () => {
+      spec.element.value = 'abc';
+      spec.element.pattern = '[0-9]{3}';
+      await elementUpdated(spec.element);
+      spec.submitFails();
+
+      spec.element.value = '111';
+      await elementUpdated(spec.element);
+      spec.submitValidates();
+    });
+
+    it('fulfils custom constraint', async () => {
+      spec.element.setCustomValidity('invalid');
+      spec.submitFails();
+
+      spec.element.setCustomValidity('');
+      spec.submitValidates();
+    });
+  });
 });
