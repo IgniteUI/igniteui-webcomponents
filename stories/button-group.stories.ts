@@ -1,9 +1,14 @@
 import { html } from 'lit';
 import { Context } from './story.js';
-import { defineComponents, IgcButtonGroupComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
+import {
+  defineComponents,
+  IgcButtonGroupComponent,
+  IgcIconComponent,
+  registerIcon,
+} from '../src/index.js';
 
-defineComponents(IgcButtonGroupComponent);
+defineComponents(IgcButtonGroupComponent, IgcIconComponent);
 
 // region default
 const metadata: Meta<IgcButtonGroupComponent> = {
@@ -13,17 +18,11 @@ const metadata: Meta<IgcButtonGroupComponent> = {
     docs: {
       description: {
         component:
-          'The `igc-button-group` groups a series of buttons together, exposing features such as layout and selection.\nThe component makes use of `igc-toggle-button`.',
+          'The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.',
       },
     },
   },
   argTypes: {
-    multiple: {
-      type: 'boolean',
-      description: 'Enables selection of multiple buttons.',
-      control: 'boolean',
-      defaultValue: false,
-    },
     disabled: {
       type: 'boolean',
       description: 'Disables all buttons inside the group.',
@@ -37,19 +36,26 @@ const metadata: Meta<IgcButtonGroupComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'horizontal',
     },
+    selection: {
+      type: '"single" | "single-required" | "multiple"',
+      description: 'Controls the mode of selection for the button group.',
+      options: ['single', 'single-required', 'multiple'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'single',
+    },
   },
-  args: { multiple: false, disabled: false, alignment: 'horizontal' },
+  args: { disabled: false, alignment: 'horizontal', selection: 'single' },
 };
 
 export default metadata;
 
 interface IgcButtonGroupArgs {
-  /** Enables selection of multiple buttons. */
-  multiple: boolean;
   /** Disables all buttons inside the group. */
   disabled: boolean;
   /** Sets the orientation of the buttons in the group. */
   alignment: 'horizontal' | 'vertical';
+  /** Controls the mode of selection for the button group. */
+  selection: 'single' | 'single-required' | 'multiple';
 }
 type Story = StoryObj<IgcButtonGroupArgs>;
 
@@ -57,48 +63,55 @@ type Story = StoryObj<IgcButtonGroupArgs>;
 
 Object.assign(metadata.parameters!, {
   actions: {
-    handles: ['igcSelect'],
+    handles: ['igcSelect', 'igcDeselect'],
   },
 });
 
-const Template = (
+const icons = [
   {
-    multiple = false,
+    name: 'bold',
+    url: 'https://unpkg.com/material-design-icons@3.0.1/editor/svg/production/ic_format_bold_24px.svg',
+  },
+  {
+    name: 'italic',
+    url: 'https://unpkg.com/material-design-icons@3.0.1/editor/svg/production/ic_format_italic_24px.svg',
+  },
+  {
+    name: 'underline',
+    url: 'https://unpkg.com/material-design-icons@3.0.1/editor/svg/production/ic_format_underlined_24px.svg',
+  },
+];
+
+icons.forEach((icon) => {
+  registerIcon(icon.name, icon.url, 'material');
+});
+
+const BasicTemplate = (
+  {
+    selection = 'single',
     disabled = false,
     alignment = 'horizontal',
   }: IgcButtonGroupArgs,
   { globals: { direction } }: Context
 ) => {
-  let buttonGroup: IgcButtonGroupComponent;
-
-  const getSelection = () => {
-    buttonGroup = document.getElementById(
-      'igc-button-group-1'
-    ) as IgcButtonGroupComponent;
-
-    console.log(buttonGroup.selection);
-  };
-
-  const setSelection = () => {
-    buttonGroup = document.getElementById(
-      'igc-button-group-1'
-    ) as IgcButtonGroupComponent;
-
-    buttonGroup.selection = ['top', 'bottom'];
-  };
-
   const igcSelect = (e) => {
     console.log('igcSelect');
     console.log(e.detail);
   };
 
+  const igcDeselect = (e) => {
+    console.log('igcDeselect');
+    console.log(e.detail);
+  };
+
   return html`
     <igc-button-group
-      .multiple=${multiple}
+      .selection=${selection}
       .disabled=${disabled}
       .alignment=${alignment}
       .dir=${direction}
       @igcSelect=${igcSelect}
+      @igcDeselect=${igcDeselect}
     >
       <igc-toggle-button value="left">Left</igc-toggle-button>
       <igc-toggle-button value="center">Center</igc-toggle-button>
@@ -106,11 +119,36 @@ const Template = (
       <igc-toggle-button value="top">Top</igc-toggle-button>
       <igc-toggle-button value="bottom">Bottom</igc-toggle-button>
     </igc-button-group>
-
-    <hr />
-    <button @click=${getSelection}>Get selection</button>
-    <button @click=${setSelection}>Set selection</button>
   `;
 };
 
-export const Basic: Story = Template.bind({});
+const SlottedContentTemplate = (
+  {
+    selection = 'multiple',
+    disabled = false,
+    alignment = 'horizontal',
+  }: IgcButtonGroupArgs,
+  { globals: { direction } }: Context
+) => html`
+  <igc-button-group
+    .selection=${selection}
+    .disabled=${disabled}
+    .alignment=${alignment}
+    .dir=${direction}
+  >
+    <igc-toggle-button aria-label="Bold" value="bold">
+      <igc-icon name="bold" collection="material"></igc-icon>
+    </igc-toggle-button>
+
+    <igc-toggle-button aria-label="Italic" value="italic">
+      <igc-icon name="italic" collection="material"></igc-icon>
+    </igc-toggle-button>
+
+    <igc-toggle-button aria-label="Underline" value="underline">
+      <igc-icon name="underline" collection="material"></igc-icon>
+    </igc-toggle-button>
+  </igc-button-group>
+`;
+
+export const Basic: Story = BasicTemplate.bind({});
+export const SlottedContent: Story = SlottedContentTemplate.bind({});
