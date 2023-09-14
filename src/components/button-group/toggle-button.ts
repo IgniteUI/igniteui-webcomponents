@@ -4,6 +4,7 @@ import { alternateName } from '../common/decorators/alternateName.js';
 
 /**
  * The `igc-toggle-button` wraps a native button element and exposes additional `value` and `selected` properties.
+ * It is used in the context of an `igc-button-group` to facilitate the creation of group/toolbar like UX behaviors.
  *
  * @element igc-toggle-button
  *
