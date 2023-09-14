@@ -10,24 +10,20 @@ import IgcToggleButtonComponent from './toggle-button.js';
 
 defineComponents(IgcToggleButtonComponent);
 
-export interface IgcButtonGroupSelectionEventArgs {
-  button: IgcToggleButtonComponent;
-  value: string | undefined;
-}
-
 export interface IgcButtonGroupComponentEventMap {
-  igcSelect: CustomEvent<IgcButtonGroupSelectionEventArgs>;
+  igcSelect: CustomEvent<string | undefined>;
+  igcDeselect: CustomEvent<string | undefined>;
 }
 
 /**
- * The `igc-button-group` groups a series of buttons together, exposing features such as layout and selection.
- * The component makes use of `igc-toggle-button`.
+ * The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.
  *
  * @element igc-button-group
  *
- * @slot - renders the default content
+ * @slot - Renders `igc-toggle-button` component.
  *
- * @fires igcSelect - Emitted when the selection state of the underlying buttons is changing, before the selection completes.
+ * @fires igcSelect - Emitted when a button is selected through user interaction.
+ * @fires igcDeselect - Emitted when a button is deselected through user interaction.
  *
  */
 export default class IgcButtonGroupComponent extends EventEmitterMixin<
@@ -39,8 +35,14 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
 
+  private _selectedItems: string[] = [];
+
   private mutationObserver!: MutationObserver;
-  private _selection: string[] = [];
+  private observerConfig: MutationObserverInit = {
+    attributeFilter: ['selected'],
+    childList: true,
+    subtree: true,
+  };
 
   private get _selectedButtons(): Array<IgcToggleButtonComponent> {
     return this.toggleButtons.filter((b) => b.selected);
@@ -48,13 +50,6 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   @queryAssignedElements({ selector: 'igc-toggle-button' })
   private toggleButtons!: Array<IgcToggleButtonComponent>;
-
-  /**
-   * Enables selection of multiple buttons.
-   * @attr
-   */
-  @property({ type: Boolean, reflect: true })
-  public multiple = false;
 
   /**
    * Disables all buttons inside the group.
@@ -71,17 +66,24 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   public alignment: 'horizontal' | 'vertical' = 'horizontal';
 
   /**
+   * Controls the mode of selection for the button group.
+   * @attr
+   */
+  @property({ reflect: false })
+  public selection: 'single' | 'single-required' | 'multiple' = 'single';
+
+  /**
    * Gets/Sets the currently selected buttons (their values).
    * @attr
    */
-  @property({ type: Array, reflect: false })
-  public get selection() {
+  @property({ attribute: 'selected-items', type: Array, reflect: false })
+  public get selectedItems() {
     return this._selectedButtons.map((b) => b.value).filter((v) => v);
   }
 
-  public set selection(values: string[]) {
+  public set selectedItems(values: string[]) {
     if (values && values.length) {
-      this._selection = values;
+      this._selectedItems = values;
       this.setSelection(values);
     }
   }
@@ -91,34 +93,37 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     this.toggleButtons.forEach((b) => (b.disabled = this.disabled));
   }
 
-  @watch('multiple', { waitUntilFirstUpdate: true })
-  protected updateMultipleState() {
+  @watch('selection', { waitUntilFirstUpdate: true })
+  protected updateSelectionState() {
     if (this._selectedButtons.length) {
       this.toggleButtons.forEach((b) => (b.selected = false));
     }
   }
 
-  public override connectedCallback(): void {
+  public override connectedCallback() {
     super.connectedCallback();
     this.id =
       this.getAttribute('id') ||
       `igc-button-group-${IgcButtonGroupComponent.increment()}`;
   }
 
-  public override disconnectedCallback(): void {
+  public override disconnectedCallback() {
     super.disconnectedCallback();
     this.mutationObserver.disconnect();
   }
 
-  protected override firstUpdated(): void {
+  protected override firstUpdated() {
     if (this.disabled) {
       this.updateDisabledState();
     }
 
-    // Button level selection has higher priority
-    if (this._selection.length && !this._selectedButtons.length) {
-      this.setSelection(this._selection);
-    } else if (!this.multiple && this._selectedButtons.length > 1) {
+    // Button level selection takes priority
+    if (this._selectedItems.length && !this._selectedButtons.length) {
+      this.setSelection(this._selectedItems);
+    } else if (
+      this.selection !== 'multiple' &&
+      this._selectedButtons.length > 1
+    ) {
       const index = this._selectedButtons.indexOf(
         this._selectedButtons.at(-1) as IgcToggleButtonComponent
       );
@@ -139,21 +144,65 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       ) as IgcToggleButtonComponent;
 
     if (button) {
-      const args: IgcButtonGroupSelectionEventArgs = {
-        button: button,
-        value: button.value,
-      };
-
-      const allowed = this.emitEvent('igcSelect', {
-        cancelable: true,
-        detail: args,
-      });
-
-      if (allowed) {
-        button.selected = !button.selected;
+      switch (this.selection) {
+        case 'single':
+          this.handleSingleSelection(button);
+          break;
+        case 'single-required':
+          this.handleSingleSelection(button, true);
+          break;
+        case 'multiple':
+          this.handleMultipleSelection(button);
+          break;
       }
     }
   };
+
+  private handleSingleSelection(
+    button: IgcToggleButtonComponent,
+    required = false
+  ) {
+    const selectedButton = this._selectedButtons[0];
+
+    if (selectedButton) {
+      if (required && selectedButton.value === button.value) return;
+
+      this.emitDeselectEvent(selectedButton);
+    }
+
+    if (!required && selectedButton && selectedButton.value === button.value)
+      return;
+
+    this.emitSelectEvent(button);
+  }
+
+  private handleMultipleSelection(button: IgcToggleButtonComponent) {
+    button.selected
+      ? this.emitDeselectEvent(button)
+      : this.emitSelectEvent(button);
+  }
+
+  private emitSelectEvent(button: IgcToggleButtonComponent) {
+    const select = this.emitEvent('igcSelect', {
+      cancelable: true,
+      detail: button.value,
+    });
+
+    if (select) {
+      button.selected = true;
+    }
+  }
+
+  private emitDeselectEvent(button: IgcToggleButtonComponent) {
+    const deselect = this.emitEvent('igcDeselect', {
+      cancelable: true,
+      detail: button.value,
+    });
+
+    if (deselect) {
+      button.selected = false;
+    }
+  }
 
   private setSelection(values: string[]) {
     values = values.filter(
@@ -165,7 +214,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     );
 
     if (buttons.length) {
-      if (this.multiple) {
+      if (this.selection === 'multiple') {
         buttons.forEach((b) => (b.selected = true));
       } else {
         buttons.find((b) => b.value === values.at(-1))!.selected = true;
@@ -174,39 +223,49 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   private setMutationsObserver() {
-    this.mutationObserver = new MutationObserver(
-      async (mutations, observer) => {
-        // Stop observing while handling changes
-        observer.disconnect();
+    this.mutationObserver = new MutationObserver(async (records, observer) => {
+      // Stop observing while handling changes
+      observer.disconnect();
 
-        const button = mutations[0].target as IgcToggleButtonComponent;
+      if (this.selection !== 'multiple' && this._selectedButtons.length > 1) {
+        const added = this.getAddedButtons(records);
+
+        const button = added.buttons.length
+          ? (added.buttons.at(-1) as IgcToggleButtonComponent)
+          : (records.at(-1)?.target as IgcToggleButtonComponent);
+
         const index = this.toggleButtons.indexOf(button);
 
-        if (!this.multiple && this._selectedButtons.length > 1) {
-          this.toggleButtons.forEach((b, i) => {
-            if (b.selected && i !== index) {
-              b.selected = false;
-            }
-          });
-        }
-
-        // Watch for changes again
-        await this.updateComplete;
-        this.toggleButtons.forEach((b) => {
-          observer.observe(b, {
-            attributes: true,
-            attributeFilter: ['selected'],
-          });
+        this.toggleButtons.forEach((b, i) => {
+          if (b.selected && i !== index) {
+            b.selected = false;
+          }
         });
       }
-    );
 
-    this.toggleButtons.forEach((b) => {
-      this.mutationObserver.observe(b, {
-        attributes: true,
-        attributeFilter: ['selected'],
-      });
+      // Watch for changes again
+      await this.updateComplete;
+      observer.observe(this, this.observerConfig);
     });
+
+    this.mutationObserver.observe(this, this.observerConfig);
+  }
+
+  private getAddedButtons(records: MutationRecord[]) {
+    const added: { buttons: IgcToggleButtonComponent[] } = { buttons: [] };
+
+    records
+      .filter((x) => x.type === 'childList')
+      .reduce((prev, curr) => {
+        prev.buttons = prev.buttons.concat(
+          Array.from(curr.addedNodes).map(
+            (node) => node as IgcToggleButtonComponent
+          )
+        );
+        return prev;
+      }, added);
+
+    return added;
   }
 
   protected override render() {
