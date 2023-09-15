@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- Button group [#827](https://github.com/IgniteUI/igniteui-webcomponents/issues/827) and toggle button [#877](https://github.com/IgniteUI/igniteui-webcomponents/issues/877)
+
 ## [4.4.0] - 2023-08-30
 ### Added
 - The following components are now Form Associated Custom Elements. They are automatically associated with a parent `<form>`
