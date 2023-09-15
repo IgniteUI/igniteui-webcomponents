@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { defineComponents, IgcExpansionPanelComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
-import { Context } from './story.js';
 
 defineComponents(IgcExpansionPanelComponent);
 
@@ -63,20 +62,16 @@ Object.assign(metadata.parameters!, {
   },
 });
 
-const Template = (
-  {
-    open = false,
-    disabled = false,
-    indicatorPosition = 'start',
-  }: IgcExpansionPanelArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  open = false,
+  disabled = false,
+  indicatorPosition = 'start',
+}: IgcExpansionPanelArgs) => {
   return html`
     <igc-expansion-panel
       indicator-position="${indicatorPosition}"
       .open="${open}"
       .disabled="${disabled}"
-      .dir="${direction}"
     >
       <h1 slot="title">The Expendables</h1>
       <h3 slot="subtitle">Action, Adventure, Thriller</h3>

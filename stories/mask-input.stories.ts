@@ -9,7 +9,6 @@ import {
   registerIconFromText,
 } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -168,25 +167,21 @@ Object.assign(metadata.parameters!, {
   },
 });
 
-const Template = (
-  {
-    name,
-    readOnly,
-    disabled,
-    required,
-    outlined,
-    valueMode,
-    label,
-    value,
-    placeholder,
-    mask,
-    prompt,
-    size,
-  }: IgcMaskInputArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  name,
+  readOnly,
+  disabled,
+  required,
+  outlined,
+  valueMode,
+  label,
+  value,
+  placeholder,
+  mask,
+  prompt,
+  size,
+}: IgcMaskInputArgs) => {
   return html`<igc-mask-input
-    dir=${direction}
     name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
     value=${ifDefined(value)}
