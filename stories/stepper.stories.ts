@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { Context } from './story.js';
 import {
   defineComponents,
   IgcButtonComponent,
@@ -110,19 +109,16 @@ interface IgcStepperArgs {
 type Story = StoryObj<IgcStepperArgs>;
 
 // endregion
-const BasicTemplate = (
-  {
-    orientation,
-    stepType,
-    titlePosition,
-    linear,
-    contentTop,
-    animationDuration,
-    verticalAnimation,
-    horizontalAnimation,
-  }: IgcStepperArgs,
-  { globals: { direction } }: Context
-) => {
+const BasicTemplate = ({
+  orientation,
+  stepType,
+  titlePosition,
+  linear,
+  contentTop,
+  animationDuration,
+  verticalAnimation,
+  horizontalAnimation,
+}: IgcStepperArgs) => {
   const next = () => {
     const stepper = document.getElementById('stepper') as IgcStepperComponent;
     stepper.next();
@@ -143,7 +139,6 @@ const BasicTemplate = (
       .titlePosition=${titlePosition}
       .linear=${linear}
       .contentTop=${contentTop}
-      .dir=${direction}
       .animationDuration=${animationDuration}
       .verticalAnimation=${verticalAnimation}
       .horizontalAnimation=${horizontalAnimation}
