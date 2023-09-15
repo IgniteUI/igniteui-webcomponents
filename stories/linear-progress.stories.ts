@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
 import { defineComponents, IgcLinearProgressComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
 
@@ -132,20 +131,17 @@ type Story = StoryObj<IgcLinearProgressArgs>;
 
 // endregion
 
-const Template = (
-  {
-    striped,
-    variant,
-    hideLabel,
-    value,
-    max,
-    animationDuration,
-    indeterminate,
-    labelAlign,
-    labelFormat,
-  }: IgcLinearProgressArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  striped,
+  variant,
+  hideLabel,
+  value,
+  max,
+  animationDuration,
+  indeterminate,
+  labelAlign,
+  labelFormat,
+}: IgcLinearProgressArgs) => html`
   <div
     style="display: flex; flex-direction: column; justify-content: center; gap: 16px"
   >
@@ -153,7 +149,6 @@ const Template = (
       ?striped=${striped}
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
-      dir=${direction}
       value=${ifDefined(value)}
       max=${ifDefined(max)}
       animation-duration=${ifDefined(animationDuration)}

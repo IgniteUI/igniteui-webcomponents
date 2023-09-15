@@ -9,7 +9,6 @@ import {
   registerIconFromText,
 } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -254,22 +253,19 @@ const items = [
     selected: false,
   },
 ];
-const Template = (
-  {
-    label = 'Sample Label',
-    placeholder,
-    name,
-    value = 'docs',
-    size = 'medium',
-    open = false,
-    disabled = false,
-    outlined = false,
-    invalid = false,
-    required = false,
-    autofocus = false,
-  }: IgcSelectArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  label = 'Sample Label',
+  placeholder,
+  name,
+  value = 'docs',
+  size = 'medium',
+  open = false,
+  disabled = false,
+  outlined = false,
+  invalid = false,
+  required = false,
+  autofocus = false,
+}: IgcSelectArgs) => html`
   <igc-select
     value=${value}
     label=${ifDefined(label)}
@@ -282,7 +278,6 @@ const Template = (
     ?required=${required}
     ?disabled=${disabled}
     ?invalid=${invalid}
-    .dir=${direction}
   >
     <header slot="header">Sample Header</header>
     <footer slot="footer">Sample Footer</footer>

@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcRadioComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
@@ -85,17 +84,19 @@ type Story = StoryObj<IgcRadioArgs>;
 
 // endregion
 
-const Template = (
-  { labelPosition, checked, disabled, required, invalid }: IgcRadioArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  labelPosition,
+  checked,
+  disabled,
+  required,
+  invalid,
+}: IgcRadioArgs) => html`
   <igc-radio
     label-position="${ifDefined(labelPosition)}"
     .disabled="${disabled}"
     .checked="${checked}"
     .required=${required}
     .invalid="${invalid}"
-    dir=${ifDefined(direction)}
   >
     Label
   </igc-radio>

@@ -105,21 +105,18 @@ type Story = StoryObj<IgcCheckboxArgs>;
 
 // endregion
 
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
-
-const Template = (
-  { labelPosition, checked, indeterminate, disabled }: IgcCheckboxArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  labelPosition,
+  checked,
+  indeterminate,
+  disabled,
+}: IgcCheckboxArgs) => {
   return html`
     <igc-checkbox
       label-position=${ifDefined(labelPosition)}
       .checked=${checked}
       .indeterminate=${indeterminate}
       .disabled=${disabled}
-      dir=${ifDefined(direction)}
     >
       Label
     </igc-checkbox>

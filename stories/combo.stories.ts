@@ -8,7 +8,6 @@ import {
   registerIconFromText,
 } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -266,38 +265,33 @@ registerIconFromText(
   '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'
 );
 
-const Template = (
-  {
-    name,
-    disableFiltering,
-    caseSensitiveIcon,
-    label = 'Location(s)',
-    placeholder = 'Cities of interest',
-    placeholderSearch = 'Search',
-    open = false,
-    disabled = false,
-    outlined = false,
-    invalid = false,
-    required = false,
-    autofocus = false,
-    singleSelect = false,
-    autofocusList,
-    groupSorting = 'asc',
-    positionStrategy = 'absolute',
-    sameWidth = false,
-  }: IgcComboComponent<City>,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  name,
+  disableFiltering,
+  caseSensitiveIcon,
+  label = 'Location(s)',
+  placeholder = 'Cities of interest',
+  placeholderSearch = 'Search',
+  open = false,
+  disabled = false,
+  outlined = false,
+  invalid = false,
+  required = false,
+  autofocus = false,
+  singleSelect = false,
+  autofocusList,
+  groupSorting = 'asc',
+  positionStrategy = 'absolute',
+  sameWidth = false,
+}: IgcComboComponent<City>) => html`
   <igc-combo
     .data=${cities}
-    .dir=${direction}
     .itemTemplate=${itemTemplate}
     .groupHeaderTemplate=${groupHeaderTemplate}
     label=${ifDefined(label)}
     name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
     placeholder-search=${ifDefined(placeholderSearch)}
-    dir=${ifDefined(direction)}
     value-key="id"
     display-key="name"
     value='["BG01", "BG02"]'
