@@ -45,7 +45,6 @@ describe('Button Group', () => {
       });
 
       it('is correctly initialized with its default component state', () => {
-        expect(buttonGroup.id).to.contain('igc-button-group-');
         expect(buttonGroup.disabled).to.be.false;
         expect(buttonGroup.alignment).to.equal('horizontal');
         expect(buttonGroup.selection).to.equal('single');

@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { Context } from './story.js';
 import { Meta, StoryObj } from '@storybook/web-components';
 import {
   defineComponents,
@@ -86,14 +85,11 @@ icons.forEach((icon) => {
   registerIcon(icon.name, icon.url, 'material');
 });
 
-const BasicTemplate = (
-  {
-    selection = 'single',
-    disabled = false,
-    alignment = 'horizontal',
-  }: IgcButtonGroupArgs,
-  { globals: { direction } }: Context
-) => {
+const BasicTemplate = ({
+  selection,
+  disabled,
+  alignment,
+}: IgcButtonGroupArgs) => {
   const igcSelect = (e) => {
     console.log('igcSelect');
     console.log(e.detail);
@@ -109,7 +105,6 @@ const BasicTemplate = (
       .selection=${selection}
       .disabled=${disabled}
       .alignment=${alignment}
-      .dir=${direction}
       @igcSelect=${igcSelect}
       @igcDeselect=${igcDeselect}
     >
@@ -122,33 +117,23 @@ const BasicTemplate = (
   `;
 };
 
-const SlottedContentTemplate = (
-  {
-    selection = 'multiple',
-    disabled = false,
-    alignment = 'horizontal',
-  }: IgcButtonGroupArgs,
-  { globals: { direction } }: Context
-) => html`
-  <igc-button-group
-    .selection=${selection}
-    .disabled=${disabled}
-    .alignment=${alignment}
-    .dir=${direction}
-  >
-    <igc-toggle-button aria-label="Bold" value="bold">
-      <igc-icon name="bold" collection="material"></igc-icon>
-    </igc-toggle-button>
+const SlottedContentTemplate = () => {
+  return html`
+    <igc-button-group selection="multiple">
+      <igc-toggle-button aria-label="Bold" value="bold">
+        <igc-icon name="bold" collection="material"></igc-icon>
+      </igc-toggle-button>
 
-    <igc-toggle-button aria-label="Italic" value="italic">
-      <igc-icon name="italic" collection="material"></igc-icon>
-    </igc-toggle-button>
+      <igc-toggle-button aria-label="Italic" value="italic">
+        <igc-icon name="italic" collection="material"></igc-icon>
+      </igc-toggle-button>
 
-    <igc-toggle-button aria-label="Underline" value="underline">
-      <igc-icon name="underline" collection="material"></igc-icon>
-    </igc-toggle-button>
-  </igc-button-group>
-`;
+      <igc-toggle-button aria-label="Underline" value="underline">
+        <igc-icon name="underline" collection="material"></igc-icon>
+      </igc-toggle-button>
+    </igc-button-group>
+  `;
+};
 
 export const Basic: Story = BasicTemplate.bind({});
 export const SlottedContent: Story = SlottedContentTemplate.bind({});

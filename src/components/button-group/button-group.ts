@@ -3,7 +3,6 @@ import { property, queryAssignedElements } from 'lit/decorators.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { watch } from '../common/decorators/watch.js';
-import { createCounter } from '../common/util.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { styles } from './themes/light/button-group.base.css.js';
 import IgcToggleButtonComponent from './toggle-button.js';
@@ -33,11 +32,9 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-button-group';
   public static styles = styles;
 
-  private static readonly increment = createCounter();
+  private _selectedItems: Set<string> = new Set();
 
-  private _selectedItems: string[] = [];
-
-  private mutationObserver!: MutationObserver;
+  private mutationObserver: MutationObserver = this.setMutationsObserver();
   private observerConfig: MutationObserverInit = {
     attributeFilter: ['selected'],
     childList: true,
@@ -83,8 +80,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   public set selectedItems(values: string[]) {
     if (values && values.length) {
-      this._selectedItems = values;
-      this.setSelection(values);
+      this._selectedItems = new Set(values);
+      this.setSelection(this._selectedItems);
     }
   }
 
@@ -102,14 +99,12 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
 
   public override connectedCallback() {
     super.connectedCallback();
-    this.id =
-      this.getAttribute('id') ||
-      `igc-button-group-${IgcButtonGroupComponent.increment()}`;
+    this.mutationObserver.observe(this, this.observerConfig);
   }
 
   public override disconnectedCallback() {
-    super.disconnectedCallback();
     this.mutationObserver.disconnect();
+    super.disconnectedCallback();
   }
 
   protected override firstUpdated() {
@@ -117,26 +112,22 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       this.updateDisabledState();
     }
 
-    // Button level selection takes priority
-    if (this._selectedItems.length && !this._selectedButtons.length) {
-      this.setSelection(this._selectedItems);
-    } else if (
-      this.selection !== 'multiple' &&
-      this._selectedButtons.length > 1
-    ) {
-      const index = this._selectedButtons.indexOf(
-        this._selectedButtons.at(-1) as IgcToggleButtonComponent
-      );
+    const buttons = this._selectedButtons;
 
-      for (let i = 0; i < index; i++) {
-        this._selectedButtons[i].selected = false;
+    if (buttons.length) {
+      if (this.selection !== 'multiple') {
+        const index = buttons.indexOf(buttons.at(-1)!);
+
+        for (let i = 0; i < index; i++) {
+          buttons[i].selected = false;
+        }
       }
+    } else {
+      this.setSelection(this._selectedItems);
     }
-
-    this.setMutationsObserver();
   }
 
-  private handleClick = (event: MouseEvent) => {
+  private handleClick(event: MouseEvent) {
     const button = event
       .composedPath()
       .find(
@@ -144,35 +135,22 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       ) as IgcToggleButtonComponent;
 
     if (button) {
-      switch (this.selection) {
-        case 'single':
-          this.handleSingleSelection(button);
-          break;
-        case 'single-required':
-          this.handleSingleSelection(button, true);
-          break;
-        case 'multiple':
-          this.handleMultipleSelection(button);
-          break;
-      }
+      this.selection === 'multiple'
+        ? this.handleMultipleSelection(button)
+        : this.handleSingleSelection(button);
     }
-  };
+  }
 
-  private handleSingleSelection(
-    button: IgcToggleButtonComponent,
-    required = false
-  ) {
-    const selectedButton = this._selectedButtons[0];
+  private handleSingleSelection(button: IgcToggleButtonComponent) {
+    const singleRequired = this.selection === 'single-required';
+    const selectedButton = this._selectedButtons.at(0);
+    const isSame = selectedButton && selectedButton.value === button.value;
 
     if (selectedButton) {
-      if (required && selectedButton.value === button.value) return;
-
+      if (singleRequired && isSame) return;
       this.emitDeselectEvent(selectedButton);
     }
-
-    if (!required && selectedButton && selectedButton.value === button.value)
-      return;
-
+    if (isSame) return;
     this.emitSelectEvent(button);
   }
 
@@ -204,26 +182,19 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     }
   }
 
-  private setSelection(values: string[]) {
-    values = values.filter(
-      (v) => this.toggleButtons.map((b) => b.value).indexOf(v) !== -1
-    );
-
-    const buttons = this.toggleButtons.filter(
-      (b) => values.indexOf(b.value) !== -1
-    );
-
-    if (buttons.length) {
-      if (this.selection === 'multiple') {
-        buttons.forEach((b) => (b.selected = true));
-      } else {
-        buttons.find((b) => b.value === values.at(-1))!.selected = true;
+  private setSelection(values: Set<string>) {
+    for (const button of this.toggleButtons) {
+      if (values.has(button.value)) {
+        button.selected = true;
+        if (this.selection !== 'multiple') {
+          break;
+        }
       }
     }
   }
 
   private setMutationsObserver() {
-    this.mutationObserver = new MutationObserver(async (records, observer) => {
+    return new MutationObserver((records, observer) => {
       // Stop observing while handling changes
       observer.disconnect();
 
@@ -244,11 +215,8 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       }
 
       // Watch for changes again
-      await this.updateComplete;
       observer.observe(this, this.observerConfig);
     });
-
-    this.mutationObserver.observe(this, this.observerConfig);
   }
 
   private getAddedButtons(records: MutationRecord[]) {
