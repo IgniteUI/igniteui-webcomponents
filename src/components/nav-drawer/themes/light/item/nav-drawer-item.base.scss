@@ -19,6 +19,8 @@
     transition: background .15s ease-out;
 
     ::slotted(igc-icon) {
+        --ig-size: 3;
+
         display: flex;
         font: inherit;
     }

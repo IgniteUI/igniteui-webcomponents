@@ -4,6 +4,10 @@
 @use 'sass:math';
 @use 'vars' as *;
 
+:host {
+    --date-size: #{sizable(rem(12px), rem(14px), rem(16px))};
+}
+
 [part~='date-inner'] {
     &:focus,
     &:hover {
@@ -185,58 +189,14 @@
 [part~='date'][part~='first'][part~='selected'][part~='range'] {
     &::before {
         border-inline-end-color: transparent;
+        inset-inline-start: calc(50% - var(--date-size));
     }
 }
 
 [part~='date'][part~='last'][part~='selected'][part~='range'] {
     &::before {
         border-inline-start-color: transparent;
-    }
-}
-
-// LARGE SIZE
-:host(igc-calendar[size='large']) {
-    igc-days-view::part(date first selected range) {
-        &::before {
-            margin: 0;
-            inset-inline-start: calc(50% - #{math.div($date-size-large, 2)});
-        }
-    }
-
-    igc-days-view::part(date last selected range) {
-        &::before {
-            inset-inline-end: calc(50% - #{math.div($date-size-large, 2)});
-        }
-    }
-}
-
-// MEDIUM SIZE
-:host(igc-calendar[size='medium']) {
-    igc-days-view::part(date first selected range) {
-        &::before {
-            inset-inline-start: calc(50% - #{math.div($date-size-medium, 2)});
-        }
-    }
-
-    igc-days-view::part(date last selected range) {
-        &::before {
-            inset-inline-end: calc(50% - #{math.div($date-size-medium, 2)});
-        }
-    }
-}
-
-// SMALL SIZE
-:host(igc-calendar[size='small']) {
-    igc-days-view::part(date first selected range) {
-        &::before {
-            inset-inline-start: calc(50% - #{math.div($date-size-small, 2)});
-        }
-    }
-
-    igc-days-view::part(date last selected range) {
-        &::before {
-            inset-inline-end: calc(50% - #{math.div($date-size-small, 2)});
-        }
+        inset-inline-end: calc(50% - var(--date-size));
     }
 }
 
