@@ -8,7 +8,6 @@ import {
   registerIconFromText,
 } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -215,34 +214,30 @@ type Story = StoryObj<IgcInputArgs>;
 
 // endregion
 
-const Template = (
-  {
-    type,
-    size,
-    label = 'Sample Label',
-    outlined,
-    autofocus,
-    autocomplete,
-    minLength,
-    maxLength,
-    step,
-    value,
-    placeholder,
-    readOnly,
-    required,
-    disabled,
-    min,
-    max,
-    invalid,
-  }: IgcInputArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  type,
+  size,
+  label = 'Sample Label',
+  outlined,
+  autofocus,
+  autocomplete,
+  minLength,
+  maxLength,
+  step,
+  value,
+  placeholder,
+  readOnly,
+  required,
+  disabled,
+  min,
+  max,
+  invalid,
+}: IgcInputArgs) => html`
   <igc-input
     type=${type}
     label=${label}
     size=${ifDefined(size)}
     placeholder=${ifDefined(placeholder)}
-    dir=${direction}
     minlength=${ifDefined(minLength)}
     maxlength=${ifDefined(maxLength)}
     step=${ifDefined(step)}

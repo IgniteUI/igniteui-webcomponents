@@ -83,9 +83,10 @@ export const parameters = {
   },
   docs: {
     source: {
-      // Strip theme styles payload from the code preview
+      // Strip theme styles and wrapping container from the code preview
       transform: (code: string) =>
-        parser.parseFromString(code, 'text/html').body.innerHTML,
+        parser.parseFromString(code, 'text/html').querySelector('#igc-story')
+          ?.innerHTML,
       format: 'html',
       language: 'html',
     },
@@ -112,7 +113,12 @@ const themeProvider: Decorator = (Story, context) => {
     ${getSize(context.globals.size)}
   </style>`;
 
-  return html`${styles}${Story()}`;
+  return html`
+    ${styles}
+    <div id="igc-story" dir=${context.globals.direction ?? 'auto'}>
+      ${Story()}
+    </div>
+  `;
 };
 
 export const decorators = [themeProvider, withActions];

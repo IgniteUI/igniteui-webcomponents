@@ -2,7 +2,6 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcBadgeComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
-import { Context } from './story.js';
 
 defineComponents(IgcBadgeComponent);
 
@@ -57,10 +56,7 @@ type Story = StoryObj<IgcBadgeArgs>;
 
 // endregion
 
-const Template = (
-  { outlined = false, shape, variant }: IgcBadgeArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ outlined = false, shape, variant }: IgcBadgeArgs) => {
   return html`
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -70,14 +66,12 @@ const Template = (
       ?outlined=${outlined}
       shape=${ifDefined(shape)}
       variant=${ifDefined(variant)}
-      dir=${ifDefined(direction)}
     >
     </igc-badge>
     <igc-badge
       ?outlined=${outlined}
       shape=${ifDefined(shape)}
       variant=${ifDefined(variant)}
-      dir=${ifDefined(direction)}
     >
       <span>1</span>
     </igc-badge>
@@ -85,7 +79,6 @@ const Template = (
       ?outlined=${outlined}
       shape=${ifDefined(shape)}
       variant=${ifDefined(variant)}
-      dir=${ifDefined(direction)}
     >
       <span>99</span>
     </igc-badge>
@@ -93,7 +86,6 @@ const Template = (
       ?outlined=${outlined}
       shape=${ifDefined(shape)}
       variant="success"
-      dir=${ifDefined(direction)}
     >
       <span>online</span>
     </igc-badge>
@@ -101,7 +93,6 @@ const Template = (
       ?outlined=${outlined}
       shape=${ifDefined(shape)}
       variant=${ifDefined(variant)}
-      dir=${ifDefined(direction)}
     >
       <igc-icon name="star" collection="internal"></igc-icon>
     </igc-badge>
@@ -109,7 +100,6 @@ const Template = (
       ?outlined=${outlined}
       shape=${ifDefined(shape)}
       variant="warning"
-      dir=${ifDefined(direction)}
     >
       <span class="material-icons">wifi</span>
     </igc-badge>

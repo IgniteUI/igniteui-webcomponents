@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { Context } from './story.js';
 import {
   defineComponents,
   IgcTreeComponent,
@@ -195,17 +194,17 @@ const log4 = () => {
   );
 };
 
-const BasicTemplate = (
-  { size, singleBranchExpand, selection }: IgcTreeArgs,
-  { globals: { direction } }: Context
-) => {
+const BasicTemplate = ({
+  size,
+  singleBranchExpand,
+  selection,
+}: IgcTreeArgs) => {
   return html`
       <igc-tree style="height: 250px"
         id="tree"
         .size=${size}
         .selection=${selection}
         .singleBranchExpand=${singleBranchExpand}
-        .dir=${direction}
         @igcSelection=${handleEvent}
         @igcActiveItem=${handleActive}
         @igcItemExpanding=${handleExpanding}

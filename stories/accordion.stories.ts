@@ -45,8 +45,8 @@ Object.assign(metadata.parameters!, {
 });
 
 export const Default: Story = {
-  render: (args, { globals: { direction } }) => html`
-    <igc-accordion ?single-expand=${args.singleExpand} .dir=${direction}>
+  render: (args) => html`
+    <igc-accordion ?single-expand=${args.singleExpand}>
       ${Array.from(range(1, 4)).map(
         (i) =>
           html` <igc-expansion-panel>
