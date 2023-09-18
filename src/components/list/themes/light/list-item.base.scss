@@ -15,6 +15,10 @@ $theme: $material;
     padding-inline: pad-inline(4px, 8px, 16px);
     padding-block: pad-block(2px, 4px, 8px);
     border-radius: var-get($theme, 'item-border-radius');
+
+    ::slotted(igc-avatar) {
+        --ig-size: 1;
+    }
 }
 
 :host(:hover),
