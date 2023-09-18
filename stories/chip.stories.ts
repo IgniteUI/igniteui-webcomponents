@@ -49,20 +49,12 @@ const metadata: Meta<IgcChipComponent> = {
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     disabled: false,
     removable: false,
     selectable: false,
     selected: false,
-    size: 'medium',
   },
 };
 
@@ -79,8 +71,6 @@ interface IgcChipArgs {
   selected: boolean;
   /** A property that sets the color variant of the chip component. */
   variant: 'primary' | 'info' | 'success' | 'warning' | 'danger';
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcChipArgs>;
 
@@ -95,7 +85,6 @@ const ChipTemplate = ({
   removable,
   selectable,
   selected,
-  size = 'medium',
   variant,
 }: IgcChipArgs) => html`
   <igc-chip
@@ -103,7 +92,6 @@ const ChipTemplate = ({
     .removable=${removable}
     .selectable=${selectable}
     .selected=${selected}
-    .size=${size}
     variant=${ifDefined(variant)}
     @igcRemove=${handleRemove}
   >

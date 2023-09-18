@@ -56,7 +56,7 @@ const Template = ({ alignment }: IgcRadioGroupArgs) => {
 export const Basic: Story = Template.bind({});
 
 export const Form: Story = {
-  render: (args, ctx) => {
+  render: (args) => {
     return html`
       <form action="" @submit=${formSubmitHandler}>
         <fieldset>

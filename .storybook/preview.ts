@@ -22,8 +22,8 @@ const getTheme = async ({ theme, variant }) => {
   return stylesheet.default;
 };
 
-const getSize = (size: 'small' | 'medium' | 'large' | 'attribute') => {
-  if (size === 'attribute') {
+const getSize = (size: 'small' | 'medium' | 'large' | 'default') => {
+  if (size === 'default') {
     return;
   }
 
@@ -66,10 +66,10 @@ export const globalTypes = {
   size: {
     name: 'Size',
     description: 'Component size',
-    defaultValue: 'attribute',
+    defaultValue: 'default',
     toolbar: {
       icon: 'grow',
-      items: ['attribute', 'small', 'medium', 'large'],
+      items: ['default', 'small', 'medium', 'large'],
       title: 'Size',
     },
   },

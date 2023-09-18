@@ -13,14 +13,17 @@ $active-color: contrast-color(gray, 200);
 $active-selected-background: color(secondary, 300);
 $active-selected-color: contrast-color(secondary, 300);
 $focused-border-color: color(secondary, 500);
-$toggle-icon-size: rem(24px);
 
 :host {
-    --igc-tree-indentation-size: 24px;
+    --igc-tree-indentation-size: #{sizable(rem(12px), rem(16px), rem(24px))};
 
     display: flex;
     flex-direction: column;
     font-family: inherit;
+    
+    igc-circular-progress {
+        --diameter: #{sizable(rem(18px), rem(20px), rem(24px))};
+    }
 }
 
 :host(:focus-within) {
@@ -99,12 +102,10 @@ $toggle-icon-size: rem(24px);
     cursor: pointer;
     user-select: none;
     margin-inline-end: rem(4px);
-    min-width: $toggle-icon-size;
+    min-width: rem(24px);
 
     igc-icon {
-        width: $toggle-icon-size;
-        height: $toggle-icon-size;
-        font-size: $toggle-icon-size;
+        --ig-size: 3;
     }
 }
 
@@ -137,23 +138,5 @@ $toggle-icon-size: rem(24px);
         &::part(label) {
             display: none;
         }
-    }
-}
-
-[part~='large'] {
-    igc-circular-progress {
-        --diameter: #{rem(24px)};
-    }
-}
-
-[part~='medium'] {
-    igc-circular-progress {
-        --diameter: #{rem(20px)};
-    }
-}
-
-[part~='small'] {
-    igc-circular-progress {
-        --diameter: #{rem(18px)};
     }
 }
