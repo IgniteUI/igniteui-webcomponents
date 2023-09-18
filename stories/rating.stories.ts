@@ -100,13 +100,6 @@ const metadata: Meta<IgcRatingComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
   },
   args: {
     max: 5,
@@ -117,7 +110,6 @@ const metadata: Meta<IgcRatingComponent> = {
     single: false,
     disabled: false,
     invalid: false,
-    size: 'large',
   },
 };
 
@@ -160,8 +152,6 @@ interface IgcRatingArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcRatingArgs>;
 
@@ -211,7 +201,6 @@ height="100%"
 </svg>`;
 
 const Template = ({
-  size,
   hoverPreview,
   step,
   max,
@@ -242,7 +231,6 @@ const Template = ({
     <div>
       <igc-rating
         label=${ifDefined(label)}
-        size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}
@@ -260,7 +248,6 @@ const Template = ({
         label="Custom symbols with single selection enabled"
         @igcChange=${hoverHandler}
         @igcHover=${hoverHandler}
-        size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}
@@ -282,7 +269,6 @@ const Template = ({
     <div>
       <igc-rating
         label="With custom igc-icon(s)"
-        size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}
@@ -308,7 +294,6 @@ const Template = ({
     <div>
       <igc-rating
         label="With custom SVG"
-        size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}

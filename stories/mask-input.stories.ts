@@ -99,13 +99,6 @@ const metadata: Meta<IgcMaskInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     valueMode: 'raw',
@@ -114,7 +107,6 @@ const metadata: Meta<IgcMaskInputComponent> = {
     required: false,
     disabled: false,
     invalid: false,
-    size: 'medium',
   },
 };
 
@@ -154,8 +146,6 @@ interface IgcMaskInputArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcMaskInputArgs>;
 
@@ -179,7 +169,6 @@ const Template = ({
   placeholder,
   mask,
   prompt,
-  size,
 }: IgcMaskInputArgs) => {
   return html`<igc-mask-input
     name=${ifDefined(name)}
@@ -188,7 +177,6 @@ const Template = ({
     mask=${ifDefined(mask)}
     prompt=${ifDefined(prompt)}
     label=${ifDefined(label)}
-    size=${ifDefined(size)}
     value-mode=${ifDefined(valueMode)}
     ?readonly=${ifDefined(readOnly)}
     ?outlined=${ifDefined(outlined)}

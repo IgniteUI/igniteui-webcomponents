@@ -4,6 +4,10 @@ import type IgcDaysViewComponent from './days-view/days-view';
 import type IgcMonthsViewComponent from './months-view/months-view';
 
 describe('Calendar Rendering', () => {
+  const DIFF_OPTIONS = {
+    ignoreAttributes: ['size', 'style'],
+  };
+
   before(() => {
     defineComponents(IgcCalendarComponent);
   });
@@ -135,7 +139,7 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar header-orientation="horizontal"></igc-calendar>
       `,
-        { ignoreAttributes: ['size'] }
+        DIFF_OPTIONS
       );
 
       el.headerOrientation = 'vertical';
@@ -147,7 +151,7 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar header-orientation="vertical"></igc-calendar>
       `,
-        { ignoreAttributes: ['size'] }
+        DIFF_OPTIONS
       );
     });
 
@@ -156,7 +160,12 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar size="large"></igc-calendar>
       `,
-        { ignoreAttributes: ['header-orientation'] }
+        {
+          ignoreAttributes: [
+            'header-orientation',
+            ...DIFF_OPTIONS.ignoreAttributes,
+          ],
+        }
       );
 
       el.size = 'medium';
@@ -168,7 +177,12 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar size="medium"></igc-calendar>
       `,
-        { ignoreAttributes: ['header-orientation'] }
+        {
+          ignoreAttributes: [
+            'header-orientation',
+            ...DIFF_OPTIONS.ignoreAttributes,
+          ],
+        }
       );
 
       el.size = 'small';
@@ -180,7 +194,12 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar size="small"></igc-calendar>
       `,
-        { ignoreAttributes: ['header-orientation'] }
+        {
+          ignoreAttributes: [
+            'header-orientation',
+            ...DIFF_OPTIONS.ignoreAttributes,
+          ],
+        }
       );
     });
 
@@ -386,7 +405,13 @@ describe('Calendar Rendering', () => {
         `
       <igc-calendar title="New Title"></igc-calendar>
       `,
-        { ignoreAttributes: ['header-orientation', 'size'] }
+        {
+          ignoreAttributes: [
+            'header-orientation',
+            'size',
+            ...DIFF_OPTIONS.ignoreAttributes,
+          ],
+        }
       );
     });
 

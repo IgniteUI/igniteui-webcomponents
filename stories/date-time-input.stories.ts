@@ -113,13 +113,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     spinLoop: true,
@@ -129,7 +122,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     required: false,
     disabled: false,
     invalid: false,
-    size: 'medium',
   },
 };
 
@@ -171,8 +163,6 @@ interface IgcDateTimeInputArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcDateTimeInputArgs>;
 
@@ -210,7 +200,6 @@ const Template = ({
   displayFormat,
   min,
   max,
-  size,
   locale,
   spinLoop,
   value,
@@ -224,7 +213,6 @@ const Template = ({
 
   return html`<igc-date-time-input
     id="editor"
-    size=${ifDefined(size)}
     label=${label}
     .value=${value ? new Date(value as Date) : null}
     .inputFormat=${inputFormat}

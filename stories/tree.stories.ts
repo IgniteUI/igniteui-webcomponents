@@ -35,15 +35,8 @@ const metadata: Meta<IgcTreeComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'none',
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
   },
-  args: { singleBranchExpand: false, selection: 'none', size: 'large' },
+  args: { singleBranchExpand: false, selection: 'none' },
 };
 
 export default metadata;
@@ -53,8 +46,6 @@ interface IgcTreeArgs {
   singleBranchExpand: boolean;
   /** The selection state of the tree. */
   selection: 'multiple' | 'none' | 'cascade';
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcTreeArgs>;
 
@@ -194,15 +185,10 @@ const log4 = () => {
   );
 };
 
-const BasicTemplate = ({
-  size,
-  singleBranchExpand,
-  selection,
-}: IgcTreeArgs) => {
+const BasicTemplate = ({ singleBranchExpand, selection }: IgcTreeArgs) => {
   return html`
       <igc-tree style="height: 250px"
         id="tree"
-        .size=${size}
         .selection=${selection}
         .singleBranchExpand=${singleBranchExpand}
         @igcSelection=${handleEvent}

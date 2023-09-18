@@ -83,10 +83,10 @@ $disabled-color: var(--disabled-color, color(gray, 500)) !default;
 
 [part~='indicator'] {
     color: color(gray, 800);
-}
 
-[part~='indicator'] igc-icon {
-    --size: #{rem(24px)};
+    igc-icon {
+        --ig-size: 3;
+    }
 }
 
 :host([indicator-position='start']) [part~='indicator'] {
