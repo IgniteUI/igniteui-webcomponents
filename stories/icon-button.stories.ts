@@ -8,7 +8,6 @@ import {
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
-import type { Context } from './story';
 
 defineComponents(IgcIconButtonComponent, IgcRippleComponent);
 
@@ -131,20 +130,17 @@ icons.push('biking');
 icons.push('search');
 icons.sort();
 
-const Template = (
-  {
-    name = 'biking',
-    collection = 'default',
-    mirrored,
-    href,
-    download,
-    target,
-    rel,
-    variant,
-    disabled,
-  }: IgcIconButtonArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  name = 'biking',
+  collection = 'default',
+  mirrored,
+  href,
+  download,
+  target,
+  rel,
+  variant,
+  disabled,
+}: IgcIconButtonArgs) => {
   return html`
     <igc-icon-button
       .name=${name}
@@ -153,7 +149,6 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
       .disabled=${ifDefined(disabled)}
@@ -172,7 +167,6 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
       .disabled=${ifDefined(disabled)}
@@ -184,7 +178,6 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
       .disabled=${ifDefined(disabled)}
@@ -195,7 +188,6 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
       .disabled=${ifDefined(disabled)}

@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { DateRangeDescriptor } from '../src/components/calendar/common/calendar.model.js';
 import { defineComponents, IgcCalendarComponent } from '../src/index.js';
@@ -211,27 +210,24 @@ Object.assign(metadata.args!, {
   monthFormat: 'long',
 });
 
-const Template = (
-  {
-    showWeekNumbers,
-    hideOutsideDays,
-    weekStart,
-    locale,
-    weekDayFormat,
-    monthFormat,
-    selection,
-    activeView,
-    hideHeader = false,
-    headerOrientation,
-    orientation,
-    title,
-    visibleMonths,
-    value,
-    values,
-    activeDate,
-  }: IgcCalendarArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  showWeekNumbers,
+  hideOutsideDays,
+  weekStart,
+  locale,
+  weekDayFormat,
+  monthFormat,
+  selection,
+  activeView,
+  hideHeader = false,
+  headerOrientation,
+  orientation,
+  title,
+  visibleMonths,
+  value,
+  values,
+  activeDate,
+}: IgcCalendarArgs) => {
   const formatOptions: Intl.DateTimeFormatOptions = {
     month: monthFormat,
     weekday: weekDayFormat,
@@ -269,7 +265,6 @@ const Template = (
       .value=${value ? new Date(value as Date) : undefined}
       values=${ifDefined(values)}
       visible-months=${ifDefined(visibleMonths)}
-      dir=${ifDefined(direction)}
       @igcChange=${(ev: Event) => {
         console.log(ev);
       }}

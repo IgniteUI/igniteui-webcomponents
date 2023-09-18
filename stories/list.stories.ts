@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { Context } from './story.js';
 import {
   defineComponents,
   IgcListComponent,
@@ -53,11 +52,11 @@ const employeeData = [
   },
 ];
 
-const BasicTemplate = ({ globals: { direction } }: Context) => {
+const BasicTemplate = () => {
   const employees = new Array(48);
 
   return html`
-    <igc-list dir=${direction}>
+    <igc-list>
       <igc-list-header>
         <h1>Job Positions</h1>
       </igc-list-header>

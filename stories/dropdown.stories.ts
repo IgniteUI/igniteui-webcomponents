@@ -8,7 +8,6 @@ import {
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
-import { Context } from './story.js';
 
 const icons = [github, whiteHouse1];
 
@@ -188,20 +187,17 @@ const items = [
   'Documentation',
   'Builds',
 ];
-const Template = (
-  {
-    open = false,
-    flip = false,
-    keepOpenOnOutsideClick = false,
-    positionStrategy = 'absolute',
-    placement = 'bottom-start',
-    scrollStrategy = 'block',
-    keepOpenOnSelect = false,
-    sameWidth = false,
-    distance = 0,
-  }: IgcDropdownArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  open = false,
+  flip = false,
+  keepOpenOnOutsideClick = false,
+  positionStrategy = 'absolute',
+  placement = 'bottom-start',
+  scrollStrategy = 'block',
+  keepOpenOnSelect = false,
+  sameWidth = false,
+  distance = 0,
+}: IgcDropdownArgs) => html`
   <div
     style="display: flex; align-items: flex-start; position: relative; height: 400px"
   >
@@ -211,7 +207,6 @@ const Template = (
       ?flip=${flip}
       ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
       placement=${placement}
-      .dir=${direction}
       scroll-strategy=${scrollStrategy}
       distance=${distance}
       .sameWidth=${sameWidth}
@@ -277,7 +272,6 @@ const Template = (
           .scrollStrategy=${scrollStrategy}
           .sameWidth=${sameWidth}
           .positionStrategy=${positionStrategy}
-          .dir=${direction}
         >
           <igc-dropdown-group>
             <h3 slot="label">Research & Development</h3>
@@ -319,7 +313,6 @@ const Template = (
       .scrollStrategy=${scrollStrategy}
       .sameWidth=${sameWidth}
       .positionStrategy=${positionStrategy}
-      .dir=${direction}
     >
       <igc-button slot="target">Dropdown 3</igc-button>
       ${items.map(
@@ -337,7 +330,6 @@ const Template = (
       .scrollStrategy=${scrollStrategy}
       .sameWidth=${sameWidth}
       .positionStrategy=${positionStrategy}
-      .dir=${direction}
     >
       <input
         type="button"
@@ -360,7 +352,6 @@ const Template = (
       .positionStrategy=${positionStrategy}
       .scrollStrategy=${scrollStrategy}
       .sameWidth=${sameWidth}
-      .dir=${direction}
     >
       <input slot="target" style="width: 150px" />
       <!-- ${items.slice(0, 5).map((item) => html`<h4>${item}</h4>`)} -->
@@ -399,7 +390,6 @@ const checkoutForm = html`
           type="text"
           label="Country"
           id="txtCountry"
-          size="small"
           style="width: 150px"
         ></igc-input>
         <igc-dropdown-group>

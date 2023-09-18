@@ -1,6 +1,4 @@
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
 import { defineComponents, IgcButtonComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
 
@@ -97,10 +95,7 @@ Object.assign(metadata.parameters!, {
   },
 });
 
-const ButtonTemplate = (
-  { disabled = false, variant, type }: IgcButtonArgs,
-  { globals: { direction } }: Context
-) => {
+const ButtonTemplate = ({ disabled = false, variant, type }: IgcButtonArgs) => {
   const handleClick = () => {
     console.log('the button was clicked');
   };
@@ -111,7 +106,6 @@ const ButtonTemplate = (
       .disabled=${disabled}
       .variant=${variant}
       .type=${type}
-      dir=${ifDefined(direction)}
     >
       <span slot="prefix">+</span>
       Click
@@ -120,17 +114,14 @@ const ButtonTemplate = (
   `;
 };
 
-const LinkTemplate = (
-  {
-    disabled = false,
-    variant,
-    href = 'http://www.infragistics.com',
-    download,
-    rel,
-    target,
-  }: IgcButtonArgs,
-  { globals: { direction } }: Context
-) => html`
+const LinkTemplate = ({
+  disabled = false,
+  variant,
+  href = 'http://www.infragistics.com',
+  download,
+  rel,
+  target,
+}: IgcButtonArgs) => html`
   <igc-button
     .disabled=${disabled}
     .variant=${variant}
@@ -138,7 +129,6 @@ const LinkTemplate = (
     .download=${download}
     .rel=${rel}
     .target=${target}
-    dir=${ifDefined(direction)}
   >
     Click me
   </igc-button>

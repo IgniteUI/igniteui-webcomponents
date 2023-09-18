@@ -10,7 +10,6 @@ import {
   registerIconFromText,
 } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -201,20 +200,17 @@ height="100%"
 </g>
 </svg>`;
 
-const Template = (
-  {
-    hoverPreview,
-    step,
-    max,
-    disabled,
-    readOnly,
-    label = 'Default',
-    value,
-    valueFormat,
-    single,
-  }: IgcRatingArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  hoverPreview,
+  step,
+  max,
+  disabled,
+  readOnly,
+  label = 'Default',
+  value,
+  valueFormat,
+  single,
+}: IgcRatingArgs) => {
   const emoji = ['😣', '😔', '😐', '🙂', '😆'];
 
   const hoverHandler = (e: CustomEvent) => {
@@ -235,7 +231,6 @@ const Template = (
     <div>
       <igc-rating
         label=${ifDefined(label)}
-        dir=${ifDefined(direction)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}
@@ -253,7 +248,6 @@ const Template = (
         label="Custom symbols with single selection enabled"
         @igcChange=${hoverHandler}
         @igcHover=${hoverHandler}
-        dir=${ifDefined(direction)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}
@@ -275,7 +269,6 @@ const Template = (
     <div>
       <igc-rating
         label="With custom igc-icon(s)"
-        dir=${ifDefined(direction)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}
@@ -301,7 +294,6 @@ const Template = (
     <div>
       <igc-rating
         label="With custom SVG"
-        dir=${ifDefined(direction)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}

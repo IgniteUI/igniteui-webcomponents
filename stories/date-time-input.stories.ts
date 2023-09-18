@@ -5,7 +5,6 @@ import { DatePartDeltas } from '../src/components/date-time-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { IgcDateTimeInputComponent, defineComponents } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -190,26 +189,23 @@ Object.assign(metadata.parameters!, {
   },
 });
 
-const Template = (
-  {
-    inputFormat,
-    prompt,
-    readOnly,
-    disabled,
-    required,
-    outlined,
-    placeholder,
-    displayFormat,
-    min,
-    max,
-    locale,
-    spinLoop,
-    value,
-    label,
-    invalid,
-  }: IgcDateTimeInputArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  inputFormat,
+  prompt,
+  readOnly,
+  disabled,
+  required,
+  outlined,
+  placeholder,
+  displayFormat,
+  min,
+  max,
+  locale,
+  spinLoop,
+  value,
+  label,
+  invalid,
+}: IgcDateTimeInputArgs) => {
   const spinDelta: DatePartDeltas = {
     date: 2,
     year: 10,
@@ -217,7 +213,6 @@ const Template = (
 
   return html`<igc-date-time-input
     id="editor"
-    dir=${direction}
     label=${label}
     .value=${value ? new Date(value as Date) : null}
     .inputFormat=${inputFormat}
