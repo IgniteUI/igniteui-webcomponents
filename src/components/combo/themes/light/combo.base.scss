@@ -104,6 +104,12 @@
     font-size: rem(13px);
 }
 
+[part~='group-header'],
+[part~='item'] {
+    // Fix a bug in safari: https://github.com/IgniteUI/igniteui-webcomponents/issues/892
+    inset-inline-start: 0;
+}
+
 :host(:disabled),
 :host([disabled]) {
     pointer-events: none;

@@ -2,7 +2,6 @@ import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
-import { Context } from './story.js';
 import {
   defineComponents,
   IgcTabsComponent,
@@ -115,19 +114,15 @@ const tabs = Array.from(
   )
 );
 
-const Template = (
-  { activation, alignment }: IgcTabsArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({ activation, alignment }: IgcTabsArgs) => html`
   <igc-tabs
-    dir="${ifDefined(direction)}"
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >
     ${tabs}
   </igc-tabs>
 
-  <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
+  <igc-tabs alignment="${ifDefined(alignment)}">
     <igc-tab panel="first">
       <igc-icon name="home"></igc-icon>
     </igc-tab>
@@ -141,7 +136,7 @@ const Template = (
     <igc-tab-panel id="second">Content 2</igc-tab-panel>
   </igc-tabs>
 
-  <igc-tabs dir="${ifDefined(direction)}" alignment="${ifDefined(alignment)}">
+  <igc-tabs alignment="${ifDefined(alignment)}">
     <igc-tab panel="first">
       <igc-icon name="home"></igc-icon>
       <input />
@@ -169,12 +164,8 @@ const Template = (
   </igc-tabs>
 `;
 
-const TabStrip = (
-  { activation, alignment }: IgcTabsArgs,
-  { globals: { direction } }: Context
-) => html`
+const TabStrip = ({ activation, alignment }: IgcTabsArgs) => html`
   <igc-tabs
-    dir="${ifDefined(direction)}"
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >
@@ -182,12 +173,8 @@ const TabStrip = (
   </igc-tabs>
 `;
 
-const RemovableTabs = (
-  { activation, alignment }: IgcTabsArgs,
-  { globals: { direction } }: Context
-) => html`
+const RemovableTabs = ({ activation, alignment }: IgcTabsArgs) => html`
   <igc-tabs
-    dir="${ifDefined(direction)}"
     alignment="${ifDefined(alignment)}"
     activation="${ifDefined(activation)}"
   >

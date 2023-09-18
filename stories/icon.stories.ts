@@ -1,14 +1,12 @@
 import { all } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   defineComponents,
   IgcIconComponent,
   registerIcon,
   registerIconFromText,
 } from '../src/index.js';
-import type { Context } from './story';
 
 defineComponents(IgcIconComponent);
 
@@ -98,15 +96,12 @@ const registerIconClick = () => {
   );
 };
 
-const Template = (
-  {
-    name = 'biking',
-    collection = 'default',
-    size = 'medium',
-    mirrored = false,
-  }: IgcIconArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  name = 'biking',
+  collection = 'default',
+  size = 'medium',
+  mirrored = false,
+}: IgcIconArgs) => {
   return html`
     <div style="display: flex;">
       <igc-icon
@@ -114,7 +109,6 @@ const Template = (
         .collection=${collection}
         .size=${size}
         .mirrored=${mirrored}
-        dir=${ifDefined(direction)}
       >
       </igc-icon>
 

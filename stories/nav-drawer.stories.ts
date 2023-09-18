@@ -1,6 +1,5 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   defineComponents,
   IgcIconComponent,
@@ -8,7 +7,6 @@ import {
   IgcNavDrawerItemComponent,
   registerIcon,
 } from '../src/index.js';
-import { Context } from './story.js';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 
@@ -189,17 +187,13 @@ const navbarItems = [
   },
 ];
 
-const Template = (
-  { open = false, position }: IgcNavDrawerArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
   return html`
     <div
       class="ig-scrollbar"
       style="display: flex; margin-top: -8px; margin-left: -8px; height: 100vh;"
     >
       <igc-nav-drawer
-        dir=${ifDefined(direction)}
         .open=${open}
         .position=${position}
         @click="${handleClick}"
