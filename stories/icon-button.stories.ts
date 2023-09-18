@@ -8,7 +8,6 @@ import {
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
-import type { Context } from './story';
 
 defineComponents(IgcIconButtonComponent, IgcRippleComponent);
 
@@ -79,20 +78,8 @@ const metadata: Meta<IgcIconButtonComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
   },
-  args: {
-    mirrored: false,
-    variant: 'contained',
-    disabled: false,
-    size: 'large',
-  },
+  args: { mirrored: false, variant: 'contained', disabled: false },
 };
 
 export default metadata;
@@ -121,8 +108,6 @@ interface IgcIconButtonArgs {
   rel: string;
   /** The disabled state of the component */
   disabled: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcIconButtonArgs>;
 
@@ -145,21 +130,17 @@ icons.push('biking');
 icons.push('search');
 icons.sort();
 
-const Template = (
-  {
-    name = 'biking',
-    collection = 'default',
-    mirrored,
-    href,
-    download,
-    size,
-    target,
-    rel,
-    variant,
-    disabled,
-  }: IgcIconButtonArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  name = 'biking',
+  collection = 'default',
+  mirrored,
+  href,
+  download,
+  target,
+  rel,
+  variant,
+  disabled,
+}: IgcIconButtonArgs) => {
   return html`
     <igc-icon-button
       .name=${name}
@@ -168,10 +149,8 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
       .disabled=${ifDefined(disabled)}
     >
       <igc-ripple></igc-ripple>
@@ -188,10 +167,8 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
       .disabled=${ifDefined(disabled)}
     >
       <igc-ripple></igc-ripple>
@@ -201,10 +178,8 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
       .disabled=${ifDefined(disabled)}
     >
       <span class="material-icons">favorite</span>
@@ -213,10 +188,8 @@ const Template = (
       href=${ifDefined(href)}
       target=${ifDefined(target)}
       rel=${ifDefined(rel)}
-      dir=${ifDefined(direction)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .size=${size}
       .disabled=${ifDefined(disabled)}
     >
       <i class="fa-solid fa-droplet"></i>

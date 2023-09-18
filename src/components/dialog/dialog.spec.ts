@@ -67,6 +67,7 @@ describe('Dialog component', () => {
             'id',
             'hidden',
             'open',
+            'style',
           ],
         }
       );
@@ -86,7 +87,7 @@ describe('Dialog component', () => {
           </slot>
         </footer>`,
         {
-          ignoreAttributes: ['part', 'variant', 'size'],
+          ignoreAttributes: ['part', 'variant', 'size', 'style'],
         }
       );
 
@@ -99,7 +100,7 @@ describe('Dialog component', () => {
           </slot>
         </footer>`,
         {
-          ignoreAttributes: ['part'],
+          ignoreAttributes: ['part', 'style'],
         }
       );
     });
@@ -136,6 +137,7 @@ describe('Dialog component', () => {
             'size',
             'id',
             'hidden',
+            'style',
           ],
         }
       );

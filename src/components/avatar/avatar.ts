@@ -66,15 +66,12 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public shape: 'circle' | 'rounded' | 'square' = 'square';
 
   private get classes() {
-    const { size, shape } = this;
+    const { shape } = this;
 
     return {
       circle: shape === 'circle',
       rounded: shape === 'rounded',
       square: shape === 'square',
-      small: size === 'small',
-      medium: size === 'medium',
-      large: size === 'large',
     };
   }
 
@@ -94,7 +91,7 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
         part="base"
         role="img"
         aria-label="avatar"
-        aria-roledescription=${this.size + ' ' + this.shape}
+        aria-roledescription=${this.shape}
         class=${classMap(this.classes)}
       >
         ${this.initials

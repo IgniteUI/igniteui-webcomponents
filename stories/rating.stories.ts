@@ -10,7 +10,6 @@ import {
   registerIconFromText,
 } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -101,13 +100,6 @@ const metadata: Meta<IgcRatingComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
   },
   args: {
     max: 5,
@@ -118,7 +110,6 @@ const metadata: Meta<IgcRatingComponent> = {
     single: false,
     disabled: false,
     invalid: false,
-    size: 'large',
   },
 };
 
@@ -161,8 +152,6 @@ interface IgcRatingArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcRatingArgs>;
 
@@ -211,21 +200,17 @@ height="100%"
 </g>
 </svg>`;
 
-const Template = (
-  {
-    size,
-    hoverPreview,
-    step,
-    max,
-    disabled,
-    readOnly,
-    label = 'Default',
-    value,
-    valueFormat,
-    single,
-  }: IgcRatingArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  hoverPreview,
+  step,
+  max,
+  disabled,
+  readOnly,
+  label = 'Default',
+  value,
+  valueFormat,
+  single,
+}: IgcRatingArgs) => {
   const emoji = ['😣', '😔', '😐', '🙂', '😆'];
 
   const hoverHandler = (e: CustomEvent) => {
@@ -246,8 +231,6 @@ const Template = (
     <div>
       <igc-rating
         label=${ifDefined(label)}
-        dir=${ifDefined(direction)}
-        size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}
@@ -265,8 +248,6 @@ const Template = (
         label="Custom symbols with single selection enabled"
         @igcChange=${hoverHandler}
         @igcHover=${hoverHandler}
-        dir=${ifDefined(direction)}
-        size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}
@@ -288,8 +269,6 @@ const Template = (
     <div>
       <igc-rating
         label="With custom igc-icon(s)"
-        dir=${ifDefined(direction)}
-        size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}
@@ -315,8 +294,6 @@ const Template = (
     <div>
       <igc-rating
         label="With custom SVG"
-        dir=${ifDefined(direction)}
-        size=${ifDefined(size)}
         ?disabled=${disabled}
         ?hover-preview=${hoverPreview}
         ?readonly=${readOnly}

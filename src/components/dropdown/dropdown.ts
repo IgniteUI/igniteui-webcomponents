@@ -207,11 +207,6 @@ export default class IgcDropdownComponent
     this.toggleController.update();
   }
 
-  @watch('size')
-  protected sizeChange() {
-    this.groups.forEach((g) => g.requestUpdate());
-  }
-
   constructor() {
     super();
     this.toggleController = new IgcToggleController(this, {

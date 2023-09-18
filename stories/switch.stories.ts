@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -97,16 +96,12 @@ type Story = StoryObj<IgcSwitchArgs>;
 
 // endregion
 
-const Template = (
-  { labelPosition, checked, disabled }: IgcSwitchArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ labelPosition, checked, disabled }: IgcSwitchArgs) => {
   return html`
     <igc-switch
       label-position=${ifDefined(labelPosition)}
       .checked=${checked}
       .disabled=${disabled}
-      dir=${ifDefined(direction)}
     >
       Label
     </igc-switch>

@@ -47,8 +47,6 @@ export default class IgcDropdownGroupComponent extends LitElement {
   }
 
   protected override render() {
-    this.setAttribute('size', this.parent?.size ?? 'large');
-
     return html`
       <label part="label"><slot name="label"></slot></label>
       <slot></slot>

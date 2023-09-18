@@ -48,16 +48,13 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
   }
 
   protected override get classes() {
-    const { size, variant } = this;
+    const { variant } = this;
 
     return {
       flat: variant === 'flat',
       outlined: variant === 'outlined',
       contained: variant === 'contained',
       fab: variant === 'fab',
-      small: size === 'small',
-      medium: size === 'medium',
-      large: size === 'large',
       disabled: this.disabled,
     };
   }

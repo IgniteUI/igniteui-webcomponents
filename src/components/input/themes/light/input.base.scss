@@ -13,18 +13,6 @@
     outline-style: none;
 }
 
-:host([size='large']) {
-    --component-size: var(--ig-size, var(--ig-size-large));
-}
-
-:host([size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
-
-:host([size='small']) {
-    --component-size: var(--ig-size, var(--ig-size-small));
-}
-
 [part='label'] {
     display: inline-block;
     white-space: nowrap;

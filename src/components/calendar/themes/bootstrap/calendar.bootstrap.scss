@@ -11,11 +11,7 @@ $theme: $bootstrap;
 
     border: rem(1px) solid $border-color;
     border-radius: var-get($theme, 'border-radius');
-}
 
-:host(igc-calendar[size='large']),
-:host(igc-calendar[size='medium']),
-:host(igc-calendar[size='small']) {
     igc-days-view::part(date-inner) {
         border-radius: var-get($theme, 'date-border-radius');
     }

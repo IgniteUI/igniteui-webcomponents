@@ -5,7 +5,6 @@ import { DatePartDeltas } from '../src/components/date-time-input/date-util.js';
 import { registerIcon } from '../src/components/icon/icon.registry.js';
 import { IgcDateTimeInputComponent, defineComponents } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -114,13 +113,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     spinLoop: true,
@@ -130,7 +122,6 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
     required: false,
     disabled: false,
     invalid: false,
-    size: 'medium',
   },
 };
 
@@ -172,8 +163,6 @@ interface IgcDateTimeInputArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcDateTimeInputArgs>;
 
@@ -200,27 +189,23 @@ Object.assign(metadata.parameters!, {
   },
 });
 
-const Template = (
-  {
-    inputFormat,
-    prompt,
-    readOnly,
-    disabled,
-    required,
-    outlined,
-    placeholder,
-    displayFormat,
-    min,
-    max,
-    size,
-    locale,
-    spinLoop,
-    value,
-    label,
-    invalid,
-  }: IgcDateTimeInputArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  inputFormat,
+  prompt,
+  readOnly,
+  disabled,
+  required,
+  outlined,
+  placeholder,
+  displayFormat,
+  min,
+  max,
+  locale,
+  spinLoop,
+  value,
+  label,
+  invalid,
+}: IgcDateTimeInputArgs) => {
   const spinDelta: DatePartDeltas = {
     date: 2,
     year: 10,
@@ -228,8 +213,6 @@ const Template = (
 
   return html`<igc-date-time-input
     id="editor"
-    dir=${direction}
-    size=${ifDefined(size)}
     label=${label}
     .value=${value ? new Date(value as Date) : null}
     .inputFormat=${inputFormat}

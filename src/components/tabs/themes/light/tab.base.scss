@@ -25,6 +25,10 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     background: color(surface, 500);
     color: color(gray, 700);
     border-radius: var-get($theme, 'border-radius');
+
+    ::slotted(igc-icon) {
+        --ig-size: 3;
+    }
 }
 
 :host(:hover),
@@ -74,8 +78,4 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     ::slotted(*) {
         @include line-clamp(2, true, true);
     }
-}
-
-::slotted(igc-icon) {
-    --size: #{rem(24px)};
 }
