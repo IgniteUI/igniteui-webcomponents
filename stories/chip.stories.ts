@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcChipComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
@@ -91,24 +90,20 @@ const handleRemove = (e: Event) => {
   console.log(e);
 };
 
-const ChipTemplate = (
-  {
-    disabled,
-    removable,
-    selectable,
-    selected,
-    size = 'medium',
-    variant,
-  }: IgcChipArgs,
-  { globals: { direction } }: Context
-) => html`
+const ChipTemplate = ({
+  disabled,
+  removable,
+  selectable,
+  selected,
+  size = 'medium',
+  variant,
+}: IgcChipArgs) => html`
   <igc-chip
     .disabled="${disabled}"
     .removable=${removable}
     .selectable=${selectable}
     .selected=${selected}
     .size=${size}
-    dir=${direction}
     variant=${ifDefined(variant)}
     @igcRemove=${handleRemove}
   >

@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
 import { defineComponents, IgcDialogComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
 
@@ -103,16 +102,13 @@ const authSelected = (ev: CustomEvent) => {
     ev.detail.value;
 };
 
-const Template = (
-  {
-    keepOpenOnEscape,
-    closeOnOutsideClick,
-    title,
-    open,
-    hideDefaultAction,
-  }: IgcDialogComponent,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  keepOpenOnEscape,
+  closeOnOutsideClick,
+  title,
+  open,
+  hideDefaultAction,
+}: IgcDialogComponent) => {
   return html`
     <div
       style="display: flex; align-items: flex-start; position: relative; height: 400px; gap: 1rem"
@@ -133,7 +129,6 @@ const Template = (
         ?hide-default-action=${hideDefaultAction}
         .open=${open}
         title=${ifDefined(title)}
-        dir=${ifDefined(direction)}
       >
         Lorem ipsum dolor sit, amet consectetur adipisicing elit. Possimus rerum
         enim, incidunt magni ea asperiores laudantium, ducimus itaque quisquam
@@ -143,7 +138,6 @@ const Template = (
 
       <igc-dialog
         id="projected"
-        dir=${ifDefined(direction)}
         ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
       >
@@ -161,7 +155,6 @@ const Template = (
 
       <igc-dialog
         id="with-form"
-        dir=${ifDefined(direction)}
         hide-default-action
         ?keep-open-on-escape=${keepOpenOnEscape}
         ?close-on-outside-click=${closeOnOutsideClick}
