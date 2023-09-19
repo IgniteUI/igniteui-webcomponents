@@ -110,8 +110,8 @@ $theme: $material;
     gap: rem(24px);
 }
 
-[dir='rtl'] igc-calendar,
-:host(igc-calendar[dir='rtl']) {
+:host-context([dir='rtl']),
+:host([dir='rtl']) {
     [part~="navigation-button"] {
         transform: rotate(180deg);
 
