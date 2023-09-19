@@ -1,0 +1,35 @@
+@use 'sass:map';
+@use 'sass:list';
+@use 'styles/utilities' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/button-group' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/button' as *;
+@use '../../../button/themes/button/light/themes' as *;
+
+$material-flat-btn-size: map.get($material-flat, 'size');
+$bootstrap-flat-btn-size: map.get($bootstrap-flat, 'size');
+$fluent-flat-btn-size: map.get($fluent-flat, 'size');
+$indigo-flat-btn-size: map.get($indigo-flat, 'size');
+$material: map.merge(
+    digest-schema($light-button-group),
+    (
+        border-radius: border-radius(map.get($light-button-group, 'border-radius')...),
+    )
+);
+$bootstrap: map.merge(
+    digest-schema($bootstrap-button-group),
+    (
+        border-radius: border-radius(map.get($bootstrap-button-group, 'border-radius')...)
+    )
+);
+$fluent: map.merge(
+    digest-schema($fluent-button-group),
+    (
+        border-radius: border-radius(map.get($fluent-button-group, 'border-radius')...)
+    )
+);
+$indigo: map.merge(
+    digest-schema($indigo-button-group),
+    (
+        border-radius: border-radius(map.get($indigo-button-group, 'border-radius')...)
+    )
+);

@@ -1,22 +1,23 @@
 import { html } from 'lit';
 import { Context } from './story.js';
-import { defineComponents, IgcButtonGroupComponent } from '../src/index.js';
+import {
+  defineComponents,
+  IgcButtonGroupComponent,
+  registerIconFromText,
+} from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { github, amazon, google } from '@igniteui/material-icons-extended';
 
 defineComponents(IgcButtonGroupComponent);
+registerIconFromText(github.name, github.value);
+registerIconFromText(amazon.name, github.value);
+registerIconFromText(google.name, github.value);
 
 // region default
 const metadata: Meta<IgcButtonGroupComponent> = {
   title: 'ButtonGroup',
   component: 'igc-button-group',
-  parameters: {
-    docs: {
-      description: {
-        component:
-          'The `igc-button-group` groups a series of buttons together, exposing features such as layout and selection.\nThe component makes use of `igc-toggle-button`.',
-      },
-    },
-  },
+  parameters: { docs: { description: {} } },
   argTypes: {
     multiple: {
       type: 'boolean',
@@ -93,23 +94,75 @@ const Template = (
   };
 
   return html`
-    <igc-button-group
-      .multiple=${multiple}
-      .disabled=${disabled}
-      .alignment=${alignment}
-      .dir=${direction}
-      @igcSelect=${igcSelect}
-    >
-      <igc-toggle-button value="left">Left</igc-toggle-button>
-      <igc-toggle-button value="center">Center</igc-toggle-button>
-      <igc-toggle-button value="right">Right</igc-toggle-button>
-      <igc-toggle-button value="top">Top</igc-toggle-button>
-      <igc-toggle-button value="bottom">Bottom</igc-toggle-button>
-    </igc-button-group>
+    <div style="display: flex; flex-direction: column; gap: 24px">
+      <igc-button-group
+        .multiple=${multiple}
+        .disabled=${disabled}
+        .alignment=${alignment}
+        .dir=${direction}
+        @igcSelect=${igcSelect}
+      >
+        <igc-toggle-button value="left"> Left </igc-toggle-button>
+        <igc-toggle-button value="center">Center</igc-toggle-button>
+        <igc-toggle-button value="right">
+          <span
+            >Right (Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+            Praesentium, reiciendis.)</span
+          >
+        </igc-toggle-button>
+        <igc-toggle-button value="top">Top</igc-toggle-button>
+        <igc-toggle-button value="bottom">Bottom</igc-toggle-button>
+      </igc-button-group>
 
-    <hr />
-    <button @click=${getSelection}>Get selection</button>
-    <button @click=${setSelection}>Set selection</button>
+      <div style="display: flex;">
+        <igc-button-group
+          .multiple=${multiple}
+          .disabled=${disabled}
+          .alignment=${alignment}
+          .dir=${direction}
+          @igcSelect=${igcSelect}
+        >
+          <igc-toggle-button value="left">
+            <igc-icon name="github"></igc-icon>
+            <span>left icon</span>
+          </igc-toggle-button>
+          <igc-toggle-button value="center">
+            <span>right icon</span>
+            <igc-icon name="github"></igc-icon>
+          </igc-toggle-button>
+          <igc-toggle-button value="right">
+            <igc-icon name="github"></igc-icon>
+            <span>both sides</span>
+            <igc-icon name="github"></igc-icon>
+          </igc-toggle-button>
+        </igc-button-group>
+      </div>
+
+      <div style="display: flex;">
+        <igc-button-group
+          .multiple=${multiple}
+          .disabled=${disabled}
+          .alignment=${alignment}
+          .dir=${direction}
+          @igcSelect=${igcSelect}
+        >
+          <igc-toggle-button value="left">
+            <igc-icon name="github"></igc-icon>
+          </igc-toggle-button>
+          <igc-toggle-button value="center">
+            <igc-icon name="github"></igc-icon>
+          </igc-toggle-button>
+          <igc-toggle-button value="right">
+            <igc-icon name="github"></igc-icon>
+          </igc-toggle-button>
+        </igc-button-group>
+      </div>
+
+      <div>
+        <button @click=${getSelection}>Get selection</button>
+        <button @click=${setSelection}>Set selection</button>
+      </div>
+    </div>
   `;
 };
 
