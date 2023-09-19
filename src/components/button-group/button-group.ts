@@ -20,6 +20,7 @@ export interface IgcButtonGroupComponentEventMap {
 }
 
 @themes({ bootstrap, material, fluent, indigo })
+@themes({ bootstrap, material, fluent, indigo })
 
 /**
  * The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.
