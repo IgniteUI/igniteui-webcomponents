@@ -103,11 +103,11 @@ const BasicTemplate = ({
 
   return html`
     <igc-button-group
-      .selection="${selection}"
-      .disabled="${disabled}"
-      .alignment="${alignment}"
-      @igcSelect="${igcSelect}"
-      @igcDeselect="${igcDeselect}"
+      .selection=${selection}
+      .disabled=${disabled}
+      .alignment=${alignment}
+      @igcSelect=${igcSelect}
+      @igcDeselect=${igcDeselect}
     >
       <igc-toggle-button value="left">Left</igc-toggle-button>
       <igc-toggle-button value="center">Center</igc-toggle-button>
