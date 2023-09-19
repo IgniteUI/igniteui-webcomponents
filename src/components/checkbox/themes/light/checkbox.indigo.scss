@@ -5,8 +5,11 @@
 
 $theme: $indigo;
 $fill-color: var-get($theme, 'fill-color');
+$fill-color-hover: var-get($theme, 'fill-color-hover');
 $empty-color: var-get($theme, 'empty-color');
 $disabled-color: var-get($theme, 'disabled-color');
+$disabled-indeterminate-color: var-get($theme, 'disabled-indeterminate-color');
+$disabled-color-label: var-get($theme, 'disabled-color-label');
 $error-color: var-get($theme, 'error-color');
 $error-color-hover: var-get($theme, 'error-color-hover');
 
@@ -44,6 +47,15 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     transform: scale(.8);
 }
 
+:host(:hover) {
+    [part='control checked'] {
+        &::after {
+            background: $fill-color-hover;
+            border-color: $fill-color-hover;
+        }
+    }
+}
+
 :host(:focus-within) {
     [part~='control'] {
         box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');
@@ -70,7 +82,11 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host([indeterminate]:hover) {
     [part~='control'] {
-        box-shadow: 0 0 0 rem(4px) color(secondary, 100, .87);
+        background: $fill-color-hover;
+
+        &::after {
+            border-color: $fill-color-hover;
+        }
     }
 }
 
@@ -151,18 +167,19 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 
     [part='control checked']::after {
-        background: $disabled-color;
+        background: $disabled-indeterminate-color;
+        border-color: $disabled-indeterminate-color;
     }
 
     [part~='label'] {
-        color: $disabled-color;
+        color: $disabled-color-label;
     }
 }
 
 :host([disabled][indeterminate]),
 :host(:disabled[indeterminate]) {
     [part~='control']::after {
-        background: $disabled-color;
-        border-color: $disabled-color;
+        background: $disabled-indeterminate-color;
+        border-color: $disabled-indeterminate-color;
     }
 }

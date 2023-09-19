@@ -126,13 +126,6 @@ const metadata: Meta<IgcSelectComponent> = {
       control: 'number',
       defaultValue: 0,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     outlined: false,
@@ -145,7 +138,6 @@ const metadata: Meta<IgcSelectComponent> = {
     open: false,
     placement: 'bottom-start',
     distance: 0,
-    size: 'medium',
   },
 };
 
@@ -194,8 +186,6 @@ interface IgcSelectArgs {
     | 'left-end';
   /** The distance from the target element. */
   distance: number;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcSelectArgs>;
 
@@ -258,7 +248,6 @@ const Template = ({
   placeholder,
   name,
   value = 'docs',
-  size = 'medium',
   open = false,
   disabled = false,
   outlined = false,
@@ -271,7 +260,6 @@ const Template = ({
     label=${ifDefined(label)}
     name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
-    size=${size}
     ?open=${open}
     ?autofocus=${autofocus}
     ?outlined=${outlined}
