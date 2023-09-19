@@ -3,7 +3,6 @@
 
 :host {
     --component-size: var(--ig-size, var(--ig-size-large));
-    --_toggle-button-border-size: #{rem(1px)};
 
     max-width: 100%;
 }

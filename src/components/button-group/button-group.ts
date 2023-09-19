@@ -18,8 +18,6 @@ export interface IgcButtonGroupComponentEventMap {
   igcSelect: CustomEvent<string | undefined>;
   igcDeselect: CustomEvent<string | undefined>;
 }
-
-@themes({ bootstrap, material, fluent, indigo })
 @themes({ bootstrap, material, fluent, indigo })
 
 /**
