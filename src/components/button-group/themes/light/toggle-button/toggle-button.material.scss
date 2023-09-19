@@ -44,6 +44,8 @@ $theme: $material;
     }
 }
 
+:host([disabled]),
+:host(:disabled),
 :host-context([disabled]),
 :host-context(:disabled) {
     button {
