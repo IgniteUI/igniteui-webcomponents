@@ -86,4 +86,7 @@ export type {
   IgcActiveStepChangingArgs,
   IgcActiveStepChangedArgs,
 } from './components/stepper/stepper.common.js';
-export type { ComboItemTemplate } from './components/combo/types.js';
+export type {
+  ComboItemTemplate,
+  IgcComboChangeEventArgs,
+} from './components/combo/types.js';
