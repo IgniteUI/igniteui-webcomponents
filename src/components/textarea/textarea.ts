@@ -46,6 +46,7 @@ export interface IgcTextareaEventMap {
  *
  * @element igc-textarea
  *
+ * @slot - Text content from the default slot will be used as the value of the component.
  * @slot prefix - Renders content before the input.
  * @slot suffix - Renders content after input.
  * @slot helper-text - Renders content below the input.
