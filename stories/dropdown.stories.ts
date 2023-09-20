@@ -1,14 +1,13 @@
 import { github, whiteHouse1 } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { Context } from './story.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
-  defineComponents,
   IgcDropdownComponent,
   IgcDropdownItemComponent,
   IgcInputComponent,
+  defineComponents,
+  registerIconFromText,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 const icons = [github, whiteHouse1];
 
@@ -101,13 +100,6 @@ const metadata: Meta<IgcDropdownComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
   },
   args: {
     keepOpenOnSelect: false,
@@ -119,7 +111,6 @@ const metadata: Meta<IgcDropdownComponent> = {
     flip: false,
     distance: 0,
     sameWidth: false,
-    size: 'large',
   },
 };
 
@@ -159,8 +150,6 @@ interface IgcDropdownArgs {
   distance: number;
   /** Whether the dropdown's width should be the same as the target's one. */
   sameWidth: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcDropdownArgs>;
 
@@ -198,32 +187,26 @@ const items = [
   'Documentation',
   'Builds',
 ];
-const Template = (
-  {
-    size = 'large',
-    open = false,
-    flip = false,
-    keepOpenOnOutsideClick = false,
-    positionStrategy = 'absolute',
-    placement = 'bottom-start',
-    scrollStrategy = 'block',
-    keepOpenOnSelect = false,
-    sameWidth = false,
-    distance = 0,
-  }: IgcDropdownArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  open = false,
+  flip = false,
+  keepOpenOnOutsideClick = false,
+  positionStrategy = 'absolute',
+  placement = 'bottom-start',
+  scrollStrategy = 'block',
+  keepOpenOnSelect = false,
+  sameWidth = false,
+  distance = 0,
+}: IgcDropdownArgs) => html`
   <div
     style="display: flex; align-items: flex-start; position: relative; height: 400px"
   >
     <igc-dropdown
       id="ddl1"
-      size=${size}
       ?open=${open}
       ?flip=${flip}
       ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
       placement=${placement}
-      .dir=${direction}
       scroll-strategy=${scrollStrategy}
       distance=${distance}
       .sameWidth=${sameWidth}
@@ -282,7 +265,6 @@ const Template = (
         >
         <igc-dropdown
           id="ddl2"
-          size=${size}
           .open=${open}
           .flip=${flip}
           .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -290,7 +272,6 @@ const Template = (
           .scrollStrategy=${scrollStrategy}
           .sameWidth=${sameWidth}
           .positionStrategy=${positionStrategy}
-          .dir=${direction}
         >
           <igc-dropdown-group>
             <h3 slot="label">Research & Development</h3>
@@ -325,7 +306,6 @@ const Template = (
       id="ddl3"
       style="align-self: center;"
       distance=${distance}
-      size=${size}
       .open=${open}
       .flip=${flip}
       .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -333,7 +313,6 @@ const Template = (
       .scrollStrategy=${scrollStrategy}
       .sameWidth=${sameWidth}
       .positionStrategy=${positionStrategy}
-      .dir=${direction}
     >
       <igc-button slot="target">Dropdown 3</igc-button>
       ${items.map(
@@ -344,7 +323,6 @@ const Template = (
     <igc-dropdown
       style="position: absolute; bottom: 10px; left: 0px"
       id="ddl4"
-      size=${size}
       .open=${open}
       .flip=${flip}
       .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -352,7 +330,6 @@ const Template = (
       .scrollStrategy=${scrollStrategy}
       .sameWidth=${sameWidth}
       .positionStrategy=${positionStrategy}
-      .dir=${direction}
     >
       <input
         type="button"
@@ -368,7 +345,6 @@ const Template = (
     <igc-dropdown
       style="position: fixed; bottom: 0px; right: 0px"
       id="ddl5"
-      size=${size}
       .open=${open}
       .flip=${true}
       .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
@@ -376,7 +352,6 @@ const Template = (
       .positionStrategy=${positionStrategy}
       .scrollStrategy=${scrollStrategy}
       .sameWidth=${sameWidth}
-      .dir=${direction}
     >
       <input slot="target" style="width: 150px" />
       <!-- ${items.slice(0, 5).map((item) => html`<h4>${item}</h4>`)} -->
@@ -415,7 +390,6 @@ const checkoutForm = html`
           type="text"
           label="Country"
           id="txtCountry"
-          size="small"
           style="width: 150px"
         ></igc-input>
         <igc-dropdown-group>

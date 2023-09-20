@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import { Meta, StoryObj } from '@storybook/web-components';
-import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
   defineComponents,
@@ -82,16 +81,17 @@ const handleHide = () => {
   snackbar?.hide();
 };
 
-const Template = (
-  { open, keepOpen, displayTime, actionText = 'Close' }: IgcSnackbarArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  open,
+  keepOpen,
+  displayTime,
+  actionText = 'Close',
+}: IgcSnackbarArgs) => html`
   <igc-snackbar
     .open=${open}
     ?keep-open=${keepOpen}
     display-time=${ifDefined(displayTime)}
     action-text=${ifDefined(actionText)}
-    dir=${ifDefined(direction)}
   >
     Snackbar Message
   </igc-snackbar>

@@ -38,15 +38,8 @@ const metadata: Meta<IgcAvatarComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'square',
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'small',
-    },
   },
-  args: { shape: 'square', size: 'small' },
+  args: { shape: 'square' },
 };
 
 export default metadata;
@@ -60,8 +53,6 @@ interface IgcAvatarArgs {
   initials: string;
   /** The shape of the avatar. */
   shape: 'circle' | 'rounded' | 'square';
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcAvatarArgs>;
 

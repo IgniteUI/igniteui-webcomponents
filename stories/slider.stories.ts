@@ -1,7 +1,5 @@
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -217,27 +215,24 @@ Object.assign(metadata.parameters!, {
   },
 });
 
-const Template = (
-  {
-    disabled = false,
-    discreteTrack = false,
-    hideTooltip = false,
-    step = 2,
-    value = 0,
-    min = 0,
-    max = 100,
-    lowerBound,
-    upperBound,
-    primaryTicks = 3,
-    secondaryTicks = 2,
-    hidePrimaryLabels = false,
-    hideSecondaryLabels = false,
-    tickOrientation = 'end',
-    tickLabelRotation = 0,
-    locale = 'en',
-  }: IgcSliderArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  disabled = false,
+  discreteTrack = false,
+  hideTooltip = false,
+  step = 2,
+  value = 0,
+  min = 0,
+  max = 100,
+  lowerBound,
+  upperBound,
+  primaryTicks = 3,
+  secondaryTicks = 2,
+  hidePrimaryLabels = false,
+  hideSecondaryLabels = false,
+  tickOrientation = 'end',
+  tickLabelRotation = 0,
+  locale = 'en',
+}: IgcSliderArgs) => html`
   <igc-slider
     style="margin: 60px;"
     ?disabled=${disabled}
@@ -256,14 +251,10 @@ const Template = (
     .hideSecondaryLabels=${hideSecondaryLabels}
     .tickOrientation=${tickOrientation}
     .tickLabelRotation=${tickLabelRotation}
-    dir=${ifDefined(direction)}
   ></igc-slider>
 `;
 
-const ValueFormatTemplate = (
-  _args: IgcSliderArgs,
-  { globals: { direction } }: Context
-) => html`
+const ValueFormatTemplate = (_args: IgcSliderArgs) => html`
   <igc-slider
     style="padding: 60px;"
     primary-ticks="3"
@@ -273,7 +264,6 @@ const ValueFormatTemplate = (
       currency: 'USD',
       minimumFractionDigits: 2,
     }}
-    dir=${ifDefined(direction)}
   ></igc-slider>
   <igc-slider
     style="padding: 60px; overflow: hidden"
@@ -284,20 +274,15 @@ const ValueFormatTemplate = (
       unit: 'kilometer',
       minimumFractionDigits: 2,
     }}
-    dir=${ifDefined(direction)}
   ></igc-slider>
 `;
 
-const LabelsTemplate = (
-  _args: IgcSliderArgs,
-  { globals: { direction } }: Context
-) => html`
+const LabelsTemplate = (_args: IgcSliderArgs) => html`
   <igc-slider
     style="margin: 40px 20px; width: 200px;"
     primary-ticks="3"
     discrete-track
     aria-label="Priority"
-    dir=${ifDefined(direction)}
   >
     <igc-slider-label>Low</igc-slider-label>
     <igc-slider-label>Medium</igc-slider-label>

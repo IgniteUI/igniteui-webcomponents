@@ -1,14 +1,12 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Context } from './story.js';
 import {
   defineComponents,
   IgcIconComponent,
   IgcNavDrawerComponent,
   IgcNavDrawerItemComponent,
+  registerIcon,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcIconComponent, IgcNavDrawerComponent);
 
@@ -189,17 +187,13 @@ const navbarItems = [
   },
 ];
 
-const Template = (
-  { open = false, position }: IgcNavDrawerArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
   return html`
     <div
       class="ig-scrollbar"
       style="display: flex; margin-top: -8px; margin-left: -8px; height: 100vh;"
     >
       <igc-nav-drawer
-        dir=${ifDefined(direction)}
         .open=${open}
         .position=${position}
         @click="${handleClick}"

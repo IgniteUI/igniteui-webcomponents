@@ -2,11 +2,9 @@
 @use 'themes' as *;
 
 @mixin theme() {
-    igc-nav-drawer {
+    igc-nav-drawer,
+    igc-nav-drawer-item,
+    igc-nav-drawer-header-item {
         @include css-vars-from-theme($bootstrap, 'ig-navdrawer');
-    }
-
-    igc-nav-drawer-item {
-        --hover-background: #{color(gray, 100)};
     }
 }

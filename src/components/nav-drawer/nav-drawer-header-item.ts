@@ -1,8 +1,10 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles as fluent } from './themes/light/fluent/nav-drawer-header-item.fluent.css.js';
-import { styles as indigo } from './themes/light/indigo/nav-drawer-header-item.indigo.css.js';
-import { styles } from './themes/light/nav-drawer-header-item.base.css.js';
+import { styles as fluent } from './themes/light/header-item/nav-drawer-header-item.fluent.css.js';
+import { styles as indigo } from './themes/light/header-item/nav-drawer-header-item.indigo.css.js';
+import { styles as bootstrap } from './themes/light/header-item/nav-drawer-header-item.indigo.css.js';
+import { styles as material } from './themes/light/header-item/nav-drawer-header-item.indigo.css.js';
+import { styles } from './themes/light/header-item/nav-drawer-header-item.base.css.js';
 
 /**
  * A wrapper for navigation drawer's header.
@@ -10,7 +12,7 @@ import { styles } from './themes/light/nav-drawer-header-item.base.css.js';
  *
  * @slot - Renders the header content
  */
-@themes({ fluent, indigo })
+@themes({ fluent, indigo, bootstrap, material })
 export default class IgcNavDrawerHeaderItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-header-item';
   public static override styles = styles;

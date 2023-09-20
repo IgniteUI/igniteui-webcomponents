@@ -15,8 +15,7 @@ svg {
     fill: currentcolor;
 }
 
-:host,
+igc-icon,
 svg {
-    width: var-get($theme, 'size');
-    height: var-get($theme, 'size');
+    font-size: var-get($theme, 'size');
 }

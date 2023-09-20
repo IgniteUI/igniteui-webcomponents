@@ -15,15 +15,3 @@ $theme: $material;
     background: color(surface, 500);
     border-radius: var-get($theme, 'border-radius');
 }
-
-:host([size='small']) {
-    --component-size: var(--ig-size, var(--ig-size-small));
-}
-
-:host([size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
-
-:host([size='large']) {
-    --component-size: var(--ig-size, var(--ig-size-large));
-}

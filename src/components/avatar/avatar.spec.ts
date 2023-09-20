@@ -2,6 +2,10 @@ import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
 import { defineComponents, IgcAvatarComponent } from '../../index.js';
 
 describe('Avatar', () => {
+  const DIFF_OPTIONS = {
+    ignoreAttributes: ['style'],
+  };
+
   before(() => {
     defineComponents(IgcAvatarComponent);
   });
@@ -33,13 +37,15 @@ describe('Avatar', () => {
     el.size = 'medium';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="medium" shape="square"></igc-avatar>`
+      `<igc-avatar size="medium" shape="square"></igc-avatar>`,
+      DIFF_OPTIONS
     );
 
     el.size = 'large';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="large" shape="square"></igc-avatar>`
+      `<igc-avatar size="large" shape="square"></igc-avatar>`,
+      DIFF_OPTIONS
     );
   });
 
@@ -53,13 +59,15 @@ describe('Avatar', () => {
     el.shape = 'rounded';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="small" shape="rounded"></igc-avatar>`
+      `<igc-avatar size="small" shape="rounded"></igc-avatar>`,
+      DIFF_OPTIONS
     );
 
     el.shape = 'circle';
     await elementUpdated(el);
     expect(el).dom.to.equal(
-      `<igc-avatar size="small" shape="circle"></igc-avatar>`
+      `<igc-avatar size="small" shape="circle"></igc-avatar>`,
+      DIFF_OPTIONS
     );
   });
 
@@ -70,14 +78,14 @@ describe('Avatar', () => {
 
     expect(el.src).to.be.undefined;
     expect(el).shadowDom.to.equal(
-      `<div part="base" role="img" aria-label="avatar" aria-roledescription="small square" class="square small">
+      `<div part="base" role="img" aria-label="avatar" aria-roledescription="square" class="square">
       <span part="initials">ab</span>
       </div>`
     );
 
     el.setAttribute('src', 'abs');
     expect(el).shadowDom.to.equal(
-      `<div part="base" role="img" aria-label="avatar" aria-roledescription="small square" class="square small">
+      `<div part="base" role="img" aria-label="avatar" aria-roledescription="square" class="square">
       <span part="initials">ab</span>
       </div>`
     );
