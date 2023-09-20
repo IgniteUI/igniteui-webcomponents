@@ -23,7 +23,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     delegatesFocus: true,
   };
 
-  #internals: ElementInternals;
+  private __internals: ElementInternals;
 
   @query('[part="base"]', true)
   private nativeElement!: HTMLElement;
@@ -85,12 +85,12 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   /** Returns the HTMLFormElement associated with this element. */
   public get form() {
-    return this.#internals.form;
+    return this.__internals.form;
   }
 
   constructor() {
     super();
-    this.#internals = this.attachInternals();
+    this.__internals = this.attachInternals();
   }
 
   /** Sets focus in the button. */
