@@ -5,6 +5,7 @@ import {
   queryAssignedElements,
   queryAssignedNodes,
 } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
@@ -107,6 +108,108 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   /**
+   * Specifies what if any permission the browser has to provide for automated assistance in filling out form field values,
+   * as well as guidance to the browser as to the type of information expected in the field.
+   * Refer to [this page](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) for additional information.
+   *
+   * @attr
+   */
+  @property()
+  public autocomplete!: string;
+
+  /**
+   * Controls whether and how text input is automatically capitalized as it is entered/edited by the user.
+   *
+   * [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/autocapitalize).
+   *
+   * @attr
+   */
+  @property()
+  public override autocapitalize!:
+    | 'off'
+    | 'none'
+    | 'on'
+    | 'sentences'
+    | 'words'
+    | 'characters';
+
+  /**
+   * Hints at the type of data that might be entered by the user while editing the element or its contents.
+   * This allows a browser to display an appropriate virtual keyboard.
+   *
+   * [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
+   *
+   * @attr
+   */
+  @property()
+  public override inputMode!:
+    | 'none'
+    | 'text'
+    | 'decimal'
+    | 'numeric'
+    | 'tel'
+    | 'search'
+    | 'email'
+    | 'url';
+
+  /**
+   * The label for the control.
+   *
+   * @attr
+   */
+  @property()
+  public label!: string;
+
+  /**
+   * The maximum number of characters (UTF-16 code units) that the user can enter.
+   * If this value isn't specified, the user can enter an unlimited number of characters.
+   *
+   * @attr
+   */
+  @property({ type: Number })
+  public maxLength!: number;
+
+  /**
+   * The minimum number of characters (UTF-16 code units) required that the user should enter.
+   *
+   * @attr
+   */
+  @property({ type: Number })
+  public minLength!: number;
+
+  /**
+   * Whether the control will have outlined appearance.
+   * @attr
+   */
+  @property({ reflect: true, type: Boolean })
+  public outlined = false;
+
+  /**
+   * The placeholder attribute of the control.
+   *
+   * @attr
+   */
+  @property()
+  public placeholder!: string;
+
+  /**
+   * Makes the control a readonly field.
+   *
+   * @attr
+   */
+  @property({ type: Boolean, reflect: true })
+  public readOnly = false;
+
+  /**
+   * Controls whether the control can be resized.
+   * When `auto` is set, the control will try to expand and fit its content.
+   *
+   * @attr
+   */
+  @property()
+  public resize: 'auto' | 'vertical' | 'none' = 'vertical';
+
+  /**
    * The number of visible text lines for the control. If it is specified, it must be a positive integer.
    * If it is not specified, the default value is 2.
    *
@@ -124,61 +227,23 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public value = '';
 
   /**
-   * Makes the control a readonly field.
+   * Controls whether the element may be checked for spelling errors.
    *
    * @attr
    */
-  @property({ type: Boolean, reflect: true })
-  public readOnly = false;
-
-  /**
-   * The placeholder attribute of the control.
-   *
-   * @attr
-   */
-  @property()
-  public placeholder!: string;
-
-  /**
-   * Whether the control will have outlined appearance.
-   * @attr
-   */
-  @property({ reflect: true, type: Boolean })
-  public outlined = false;
-
-  /**
-   * The label for the control.
-   * @attr
-   */
-  @property()
-  public label!: string;
-
-  /**
-   *
-   * @attr
-   */
-  @property()
-  public resize: 'auto' | 'vertical' | 'none' = 'vertical';
-
-  /**
-   * The minimum number of characters (UTF-16 code units) required that the user should enter.
-   *
-   * @attr
-   */
-  @property({ type: Number })
-  public minLength!: number;
-
-  /**
-   * The maximum number of characters (UTF-16 code units) that the user can enter.
-   * If this value isn't specified, the user can enter an unlimited number of characters.
-   *
-   * @attr
-   */
-  @property({ type: Number })
-  public maxLength!: number;
+  @property({
+    type: Boolean,
+    converter: {
+      fromAttribute: (value) => (!value || value === 'false' ? false : true),
+      toAttribute: (value) => (value ? 'true' : 'false'),
+    },
+  })
+  public override spellcheck = true;
 
   /**
    * Indicates how the control should wrap the value for form submission.
+   * Refer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)
+   * for explanation of the available values.
    *
    * @attr
    */
@@ -375,10 +440,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         style=${styleMap(this.resizeStyles)}
         @input=${this.handleInput}
         @change=${this.handleChange}
-        placeholder=${this.placeholder}
+        placeholder=${ifDefined(this.placeholder)}
         .rows=${this.rows}
         .value=${live(this.value)}
         .wrap=${this.wrap}
+        autocomplete=${ifDefined(this.autocomplete as any)}
+        autocapitalize=${ifDefined(this.autocapitalize)}
+        inputmode=${ifDefined(this.inputMode)}
+        spellcheck=${ifDefined(this.spellcheck)}
         ?disabled=${this.disabled}
         ?required=${this.required}
         ?readonly=${this.readOnly}
