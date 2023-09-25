@@ -56,6 +56,7 @@ interface IgcButtonGroupArgs {
   /** Controls the mode of selection for the button group. */
   selection: 'single' | 'single-required' | 'multiple';
 }
+
 type Story = StoryObj<IgcButtonGroupArgs>;
 
 // endregion

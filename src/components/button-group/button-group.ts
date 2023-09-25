@@ -4,8 +4,13 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { styles } from './themes/light/button-group.base.css.js';
 import IgcToggleButtonComponent from './toggle-button.js';
+import { themes } from '../../theming';
+import { styles } from '../button-group/themes/light/button-group.base.css.js';
+import { styles as bootstrap } from '../button-group/themes/light/button-group.bootstrap.css.js';
+import { styles as material } from '../button-group/themes/light/button-group.material.css.js';
+import { styles as fluent } from '../button-group/themes/light/button-group.fluent.css.js';
+import { styles as indigo } from '../button-group/themes/light/button-group.indigo.css.js';
 
 defineComponents(IgcToggleButtonComponent);
 
@@ -13,6 +18,7 @@ export interface IgcButtonGroupComponentEventMap {
   igcSelect: CustomEvent<string | undefined>;
   igcDeselect: CustomEvent<string | undefined>;
 }
+@themes({ bootstrap, material, fluent, indigo })
 
 /**
  * The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.
@@ -239,6 +245,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   protected override render() {
     return html`
       <div
+        part="group"
         role="group"
         aria-disabled=${this.disabled}
         @click=${this.handleClick}

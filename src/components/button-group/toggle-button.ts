@@ -1,7 +1,13 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { alternateName } from '../common/decorators/alternateName.js';
-
+import { themes } from '../../theming';
+import { styles } from '../button-group/themes/light/toggle-button/toggle-button.base.css.js';
+import { styles as bootstrap } from '../button-group/themes/light/toggle-button/toggle-button.bootstrap.css.js';
+import { styles as material } from '../button-group/themes/light/toggle-button/toggle-button.material.css.js';
+import { styles as fluent } from '../button-group/themes/light/toggle-button/toggle-button.fluent.css.js';
+import { styles as indigo } from '../button-group/themes/light/toggle-button/toggle-button.indigo.css.js';
+@themes({ bootstrap, material, fluent, indigo })
 /**
  * The `igc-toggle-button` wraps a native button element and exposes additional `value` and `selected` properties.
  * It is used in the context of an `igc-button-group` to facilitate the creation of group/toolbar like UX behaviors.
@@ -13,6 +19,8 @@ import { alternateName } from '../common/decorators/alternateName.js';
  * @csspart base - The native button element.
  */
 export default class IgcToggleButtonComponent extends LitElement {
+  public static override styles = styles;
+
   public static readonly tagName = 'igc-toggle-button';
 
   public static override shadowRootOptions = {
@@ -20,7 +28,7 @@ export default class IgcToggleButtonComponent extends LitElement {
     delegatesFocus: true,
   };
 
-  @query('[part="base"]', true)
+  @query('[part="toggle"]', true)
   private nativeElement!: HTMLElement;
 
   /**
@@ -64,7 +72,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   protected override render() {
     return html`
       <button
-        part="base"
+        part="toggle"
         type="button"
         .disabled=${this.disabled}
         .ariaLabel=${this.ariaLabel}

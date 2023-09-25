@@ -1,0 +1,56 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $material;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-button-group');
+
+    button {
+        --ig-icon-size: #{rem(18px)};
+
+        min-height: $material-flat-btn-size;
+        color: var-get($theme, 'item-text-color');
+        background: var-get($theme, 'item-background');
+        padding-inline: rem(16px);
+        padding-block: pad-block(rem(1px), rem(4px), rem(6px));
+        border-color: var-get($theme, 'item-border-color');
+        gap: rem(4px);
+    }
+}
+
+:host(:hover),
+:host(:focus) {
+    button {
+        color: var-get($theme, 'item-hover-text-color');
+        background: var-get($theme, 'item-hover-background');
+    }
+}
+
+:host([selected]) {
+    button {
+        color: var-get($theme, 'item-selected-text-color');
+        background: var-get($theme, 'item-selected-background');
+        border-color: var-get($theme, 'item-selected-border-color');
+    }
+}
+
+:host([selected]:hover),
+:host([selected]:focus) {
+    button {
+        color: var-get($theme, 'item-selected-text-color');
+        background: var-get($theme, 'item-selected-hover-background');
+    }
+}
+
+:host([disabled]),
+:host(:disabled),
+:host-context([disabled]),
+:host-context(:disabled) {
+    button {
+        color: var-get($theme, 'disabled-text-color');
+        background: var-get($theme, 'disabled-background-color');
+        border-color: var-get($theme, 'item-disabled-border');
+    }
+}
