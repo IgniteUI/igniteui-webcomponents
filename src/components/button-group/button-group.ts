@@ -18,7 +18,6 @@ export interface IgcButtonGroupComponentEventMap {
   igcSelect: CustomEvent<string | undefined>;
   igcDeselect: CustomEvent<string | undefined>;
 }
-@themes({ bootstrap, material, fluent, indigo })
 
 /**
  * The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.
@@ -30,7 +29,9 @@ export interface IgcButtonGroupComponentEventMap {
  * @fires igcSelect - Emitted when a button is selected through user interaction.
  * @fires igcDeselect - Emitted when a button is deselected through user interaction.
  *
+ * @csspart group
  */
+@themes({ bootstrap, material, fluent, indigo })
 export default class IgcButtonGroupComponent extends EventEmitterMixin<
   IgcButtonGroupComponentEventMap,
   Constructor<LitElement>

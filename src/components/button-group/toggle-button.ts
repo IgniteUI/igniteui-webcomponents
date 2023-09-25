@@ -7,7 +7,7 @@ import { styles as bootstrap } from '../button-group/themes/light/toggle-button/
 import { styles as material } from '../button-group/themes/light/toggle-button/toggle-button.material.css.js';
 import { styles as fluent } from '../button-group/themes/light/toggle-button/toggle-button.fluent.css.js';
 import { styles as indigo } from '../button-group/themes/light/toggle-button/toggle-button.indigo.css.js';
-@themes({ bootstrap, material, fluent, indigo })
+
 /**
  * The `igc-toggle-button` wraps a native button element and exposes additional `value` and `selected` properties.
  * It is used in the context of an `igc-button-group` to facilitate the creation of group/toolbar like UX behaviors.
@@ -16,8 +16,9 @@ import { styles as indigo } from '../button-group/themes/light/toggle-button/tog
  *
  * @slot Renders the label/content of the button.
  *
- * @csspart base - The native button element.
+ * @csspart toggle
  */
+@themes({ bootstrap, material, fluent, indigo })
 export default class IgcToggleButtonComponent extends LitElement {
   public static override styles = styles;
 
