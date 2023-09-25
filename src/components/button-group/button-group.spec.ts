@@ -56,6 +56,7 @@ describe('Button Group', () => {
         const buttonGroupElement = buttonGroup.shadowRoot?.querySelector('div');
 
         expect(buttonGroupElement).not.to.be.null;
+        expect(buttonGroupElement).to.have.attribute('part', 'group');
         expect(buttonGroupElement).to.have.attribute('role', 'group');
         expect(buttonGroupElement).to.have.attribute('aria-disabled', 'false');
       });
@@ -563,8 +564,10 @@ describe('Button Group', () => {
         const buttonGroupElement = buttonGroup.shadowRoot?.querySelector('div');
         expect(buttonGroupElement).to.have.attribute('aria-disabled', 'true');
 
-        const style = getComputedStyle(buttonGroup);
-        expect(style.pointerEvents).to.equal('none');
+        buttons.forEach((button) => {
+          const style = getComputedStyle(button);
+          expect(style.pointerEvents).to.equal('none');
+        });
       });
 
       it('should emit `igcSelect` event on select', async () => {

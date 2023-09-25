@@ -48,7 +48,7 @@ describe('Toggle Button', () => {
       const buttonElement = button.shadowRoot?.querySelector('button');
 
       expect(buttonElement).not.to.be.null;
-      expect(buttonElement).to.have.attribute('part', 'base');
+      expect(buttonElement).to.have.attribute('part', 'toggle');
       expect(buttonElement).to.have.attribute('type', 'button');
       expect(buttonElement).to.have.attribute('aria-pressed', 'false');
       expect(buttonElement).to.have.attribute('aria-disabled', 'false');
