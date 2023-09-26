@@ -18,9 +18,8 @@ $base-scale-size: (
     )};
     --component-size: var(--ig-size, var(--ig-size-large));
 
+    display: block;
     font-family: var(--ig-font-family);
-    resize: vertical;
-    overflow: hidden;
 
     [part~='label'] {
         @include ellipsis();
