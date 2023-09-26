@@ -16,7 +16,7 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
     text-decoration: none;
     user-select: none;
 
-    button {
+    [part~='toggle'] {
         @include type-style(button);
         @include ellipsis();
 
@@ -34,6 +34,7 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
         transition: $transition;
         position: relative;
         z-index: 0;
+        gap: sizable(rem(4px), rem(8px), rem(12px));
 
         ::slotted(*) {
             max-width: 100%;
@@ -45,7 +46,6 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
     }
 }
 
-
 :host-context(:disabled),
 :host-context([disabled]),
 :host(:disabled),
@@ -56,7 +56,7 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
 
 :host([selected]:disabled),
 :host([selected][disabled]) {
-    button {
+    [part~='toggle'] {
         &::before {
             position: absolute;
             content: '';
@@ -71,13 +71,13 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
 
 :host(:focus-within),
 :host(:focus) {
-    button {
+    [part~='toggle'] {
         outline: none;
     }
 }
 
 :host([selected]) {
-    button {
+    [part~='toggle'] {
         z-index: 1;
     }
 }
@@ -88,7 +88,7 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 
 :host(:not(:first-child) :not(:last-child)) {
-    button {
+    [part~='toggle'] {
         border-radius: 0;
     }
 }
@@ -96,7 +96,7 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
 // Radius variables are coming from the individual themes inside the button-group since they relay on the
 // alignment of the group
 :host(:first-child) {
-    button {
+    [part~='toggle'] {
         // Top left radius
         // depending on which mode is selected it will use the horizontal or vertical radius
         border-start-start-radius: var(--vertical-radius, var(--horizontal-radius, 0));
@@ -110,7 +110,7 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 
 :host(:last-child) {
-    button {
+    [part~='toggle'] {
         // Top right radius (only in horizontal mode) else it is 0
         border-start-end-radius: var(--horizontal-radius, 0);
 

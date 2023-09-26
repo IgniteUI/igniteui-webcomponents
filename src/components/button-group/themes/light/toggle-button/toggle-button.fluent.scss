@@ -8,7 +8,7 @@ $group-item-border-thickness: rem(1px);
 :host {
     @include css-vars-from-theme($theme, 'ig-button-group');
 
-    button {
+    [part~='toggle'] {
         --ig-icon-size: #{rem(16px)};
 
         min-height: $fluent-flat-btn-size;
@@ -18,20 +18,19 @@ $group-item-border-thickness: rem(1px);
         background: var-get($theme, 'item-background');
         padding-inline: pad-inline(rem(16px));
         padding-block: pad-block(rem(7px));
-        gap: rem(4px);
     }
 }
 
 :host(:hover),
 :host(:focus) {
-    button {
+    [part~='toggle'] {
         color: var-get($theme, 'item-hover-text-color');
         background: var-get($theme, 'item-hover-background');
     }
 }
 
 :host([selected]) {
-    button {
+    [part~='toggle'] {
         color: var-get($theme, 'item-selected-text-color');
         background: var-get($theme, 'item-selected-background');
         border-color: var-get($theme, 'item-selected-border-color');
@@ -40,7 +39,7 @@ $group-item-border-thickness: rem(1px);
 
 :host([selected]:hover),
 :host([selected]:focus) {
-    button {
+    [part~='toggle'] {
         color: var-get($theme, 'item-selected-text-color');
         background: var-get($theme, 'item-selected-hover-background');
     }
@@ -48,7 +47,7 @@ $group-item-border-thickness: rem(1px);
 
 :host([disabled]),
 :host(:disabled) {
-    button {
+    [part~='toggle'] {
         color: var-get($theme, 'disabled-text-color');
         background: var-get($theme, 'disabled-background-color');
         border-color: var-get($theme, 'item-disabled-border');

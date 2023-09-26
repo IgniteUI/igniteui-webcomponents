@@ -7,7 +7,7 @@ $theme: $material;
 :host {
     @include css-vars-from-theme($theme, 'ig-button-group');
 
-    button {
+    [part~='toggle'] {
         --ig-icon-size: #{rem(18px)};
 
         min-height: $material-flat-btn-size;
@@ -22,14 +22,14 @@ $theme: $material;
 
 :host(:hover),
 :host(:focus) {
-    button {
+    [part~='toggle'] {
         color: var-get($theme, 'item-hover-text-color');
         background: var-get($theme, 'item-hover-background');
     }
 }
 
 :host([selected]) {
-    button {
+    [part~='toggle'] {
         color: var-get($theme, 'item-selected-text-color');
         background: var-get($theme, 'item-selected-background');
         border-color: var-get($theme, 'item-selected-border-color');
@@ -38,7 +38,7 @@ $theme: $material;
 
 :host([selected]:hover),
 :host([selected]:focus) {
-    button {
+    [part~='toggle'] {
         color: var-get($theme, 'item-selected-text-color');
         background: var-get($theme, 'item-selected-hover-background');
     }
@@ -48,7 +48,7 @@ $theme: $material;
 :host(:disabled),
 :host-context([disabled]),
 :host-context(:disabled) {
-    button {
+    [part~='toggle'] {
         color: var-get($theme, 'disabled-text-color');
         background: var-get($theme, 'disabled-background-color');
         border-color: var-get($theme, 'item-disabled-border');
