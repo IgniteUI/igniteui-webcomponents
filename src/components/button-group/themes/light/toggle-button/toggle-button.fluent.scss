@@ -9,7 +9,7 @@ $group-item-border-thickness: rem(1px);
     @include css-vars-from-theme($theme, 'ig-button-group');
 
     button {
-        --ig-icon-size: #{rem(18px)};
+        --ig-icon-size: #{rem(16px)};
 
         min-height: $fluent-flat-btn-size;
         border-width: $group-item-border-thickness;

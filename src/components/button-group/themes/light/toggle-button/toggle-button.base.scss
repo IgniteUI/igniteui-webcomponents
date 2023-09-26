@@ -7,6 +7,8 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
 :host {
     @include type-style(button);
 
+    --_toggle-button-border-size: #{rem(1px)};
+
     display: flex;
     flex: 1 0 0%;
     justify-content: center;
@@ -83,11 +85,6 @@ $transition: all 140ms cubic-bezier(0.455, 0.03, 0.515, 0.955);
 :host(:not(:first-child)) {
     margin-inline-start: var(--_negative-margin-horizontal, 0);
     margin-block-start: var(--_negative-margin-vertical, 0);
-
-    button {
-        margin-inline-start: var(--_negative-margin-horizontal, 0);
-        margin-block-start: var(--_negative-margin-vertical, 0);
-    }
 }
 
 :host(:not(:first-child) :not(:last-child)) {
