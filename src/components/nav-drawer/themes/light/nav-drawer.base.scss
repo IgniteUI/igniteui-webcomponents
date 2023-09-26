@@ -7,53 +7,60 @@ $theme: $material;
 :host {
     @include css-vars-from-theme($theme, 'ig-nav-drawer');
 
+    --menu-full-width: #{rem(256px)};
+    --menu-mini-width: #{rem(60px)};
+
+    display: flex;
     flex-shrink: 0;
     font-family: var(--ig-font-family);
 
-    [part='base'] {
+    [part='base'],
+    [part~='mini'] {
         position: fixed;
         height: 100%;
         min-height: 100%;
         overflow-x: hidden;
-        top: 0;
-        bottom: 0;
-        inset-inline-start: 0;
+        inset-block: 0;
         z-index: 999;
-        transition: all ease-out .3s, .3s;
+        transition: transform ease-out .3s, .3s;
+    }
+
+    [part~='mini'] {
+        min-width: var(--menu-mini-width);
     }
 
     [part='main'] {
-        width: rem(256px);
-    }
-
-    [part='mini'] {
-        width: rem(60px);
+        width: var(--menu-full-width);
     }
 
     [part='overlay'] {
         position: fixed;
         inset: 0;
         z-index: 2;
+        opacity: 1;
+        transition: transform ease-out .3s, .3s;
     }
 }
 
-:host([position='start']) [part='mini'],
-:host([position='end']) [part='mini'] {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-}
+:host([position='relative']) {
+    [part='base'] {
+        position: relative;
+        width: var(--menu-full-width);
+        box-shadow: none;
+        z-index: initial;
+        border-inline-end-style: solid ;
+        border-inline-end-width: rem(1px);
+    }
 
-:host([position='start']) [part='mini'] {
-    border-inline-end-style: solid;
-    border-inline-end-width: rem(1px);
-    inset-inline-start: 0;
-}
+    [part~='mini'] {
+        position: relative;
+        border-inline-end-style: solid;
+        border-inline-end-width: rem(1px);
+    }
 
-:host([position='end']) [part='mini'] {
-    border-inline-start-style: solid;
-    border-inline-start-width: rem(1px);
-    inset-inline-end: 0;
+    [part='overlay'] {
+        display: none;
+    }
 }
 
 :host([position='top']),
@@ -65,22 +72,63 @@ $theme: $material;
     [part='base'] {
         height: 50vh;
         min-height: initial;
-        top: auto;
         width: 100%;
+        inset-inline: 0;
     }
 }
 
-:host([position='top']) {
+:host([position='top']) [part='base'] {
+    top: 0;
+    bottom: auto;
+}
+
+:host([position='bottom']) [part='base'] {
+    top: auto;
+    bottom: 0;
+}
+
+:host([position='start']) {
+    [part='base'],
+    [part~='mini'] {
+        inset-inline-start: 0;
+        border-inline-end-style: solid;
+        border-inline-end-width: rem(1px);
+    }
+}
+
+:host([position='end']) {
+    [part='base'],
+    [part~='mini'] {
+        inset-inline-end: 0;
+        border-inline-start-style: solid;
+        border-inline-start-width: rem(1px);
+    }
+}
+
+:host-context([dir='rtl']):host(:not([open])[position='end']),
+:host(:not([open])[position='start']) {
     [part='base'] {
-        top: 0;
-        bottom: auto;
+        transform: translateX(-100%);
+    }
+}
+
+:host-context([dir='rtl']):host(:not([open])[position='start']),
+:host(:not([open])[position='end']) {
+    [part='base'] {
+        transform: translateX(100%);
+    }
+}
+
+:host(:not([open])[position='relative']) {
+    [part='base'] {
+        margin-inline-start: calc(var(--menu-full-width) * -1);
     }
 }
 
 :host(:not([open])[position='top']),
 :host(:not([open])[position='bottom']) {
     [part='base'] {
-        transform: translate3d(0, -60vh, 0);
+        transform: translateY(-60vh);
     }
 
     [part='mini'] {
@@ -90,7 +138,7 @@ $theme: $material;
 
 :host(:not([open])[position='bottom']) {
     [part='base'] {
-        transform: translate3d(0, 60vh, 0);
+        transform: translateY(60vh);
     }
 }
 
@@ -99,23 +147,6 @@ $theme: $material;
         border-inline-end: none;
         border-inline-start-style: solid;
         border-inline-start-width: rem(1px);
-        inset-inline-start: auto;
-        inset-inline-end: 0;
-    }
-}
-
-:host([position='relative']) {
-    [part='base'] {
-        position: relative;
-        width: fit-content;
-        box-shadow: none;
-        z-index: initial;
-        border-inline-end-style: solid ;
-        border-inline-end-width: rem(1px);
-    }
-
-    [part='overlay'] {
-        display: none;
     }
 }
 
@@ -133,11 +164,8 @@ $theme: $material;
 }
 
 :host(:not([open])) {
-    [part='main'] {
-        display: none;
-    }
-
     [part='overlay'] {
-        display: none;
+        pointer-events: none;
+        opacity: 0;
     }
 }
