@@ -29,7 +29,7 @@ export interface IgcButtonGroupComponentEventMap {
  * @fires igcSelect - Emitted when a button is selected through user interaction.
  * @fires igcDeselect - Emitted when a button is deselected through user interaction.
  *
- * @csspart group
+ * @csspart group - The button group container.
  */
 @themes({ bootstrap, material, fluent, indigo })
 export default class IgcButtonGroupComponent extends EventEmitterMixin<

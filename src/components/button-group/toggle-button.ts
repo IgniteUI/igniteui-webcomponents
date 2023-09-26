@@ -16,7 +16,7 @@ import { styles as indigo } from '../button-group/themes/light/toggle-button/tog
  *
  * @slot Renders the label/content of the button.
  *
- * @csspart toggle
+ * @csspart toggle - The native button element.
  */
 @themes({ bootstrap, material, fluent, indigo })
 export default class IgcToggleButtonComponent extends LitElement {
