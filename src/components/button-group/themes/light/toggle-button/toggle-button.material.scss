@@ -8,7 +8,10 @@ $theme: $material;
     @include css-vars-from-theme($theme, 'ig-button-group');
 
     [part~='toggle'] {
-        --ig-icon-size: #{rem(18px)};
+        $icon-size: rem(18px);
+
+        --ig-icon-size: #{$icon-size};
+        --igx-icon-size: #{$icon-size};
 
         min-height: $material-flat-btn-size;
         color: var-get($theme, 'item-text-color');
@@ -16,7 +19,6 @@ $theme: $material;
         padding-inline: rem(16px);
         padding-block: pad-block(rem(1px), rem(4px), rem(6px));
         border-color: var-get($theme, 'item-border-color');
-        gap: rem(4px);
     }
 }
 

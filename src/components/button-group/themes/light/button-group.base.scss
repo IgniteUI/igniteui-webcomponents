@@ -2,8 +2,6 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --component-size: var(--ig-size, var(--ig-size-large));
-
     max-width: 100%;
 }
 

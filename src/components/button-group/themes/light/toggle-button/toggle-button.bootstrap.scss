@@ -11,7 +11,10 @@ $group-item-border-thickness: rem(1px);
     min-width: var(--button-min-width);
 
     [part~='toggle'] {
-        --ig-icon-size: #{rem(18px)};
+        $icon-size: rem(18px);
+
+        --ig-icon-size: #{$icon-size};
+        --igx-icon-size: #{$icon-size};
 
         min-height: $bootstrap-flat-btn-size;
         border-width: $group-item-border-thickness;
