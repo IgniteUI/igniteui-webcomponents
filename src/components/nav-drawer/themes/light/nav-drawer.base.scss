@@ -16,6 +16,8 @@ $theme: $material;
 
     [part='base'],
     [part~='mini'] {
+        --ig-scrollbar-size: rem(8px);
+
         position: fixed;
         height: 100%;
         min-height: 100%;
@@ -105,17 +107,25 @@ $theme: $material;
     }
 }
 
-:host-context([dir='rtl']):host(:not([open])[position='end']),
-:host(:not([open])[position='start']) {
-    [part='base'] {
-        transform: translateX(-100%);
-    }
+:host(:not([open])[position='start']),
+:host([dir='rtl']:not([open])[position='end']) {
+    --dir: -1;
 }
 
-:host-context([dir='rtl']):host(:not([open])[position='start']),
-:host(:not([open])[position='end']) {
-    [part='base'] {
-        transform: translateX(100%);
+:host(:not([open])[position='end']),
+:host([dir='rtl']:not([open])[position='start']) {
+    --dir: 1;
+}
+
+// Sets direction based on direction of parent element.
+// Currently only supported in Chrome;
+:host-context([dir='rtl']) {
+    &:host(:not([open])[position='end']) {
+        --dir: -1;
+    }
+
+    &:host(:not([open])[position='start']) {
+        --dir: 1;
     }
 }
 
@@ -164,6 +174,10 @@ $theme: $material;
 }
 
 :host(:not([open])) {
+    [part='base'] {
+        transform: translateX(calc(100% * var(--dir)));
+    }
+
     [part='overlay'] {
         pointer-events: none;
         opacity: 0;
