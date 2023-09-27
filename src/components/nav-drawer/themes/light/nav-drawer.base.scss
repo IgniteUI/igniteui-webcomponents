@@ -40,7 +40,7 @@ $theme: $material;
         inset: 0;
         z-index: 2;
         opacity: 1;
-        transition: transform ease-out .3s, .3s;
+        transition: opacity ease-out .3s, .3s;
     }
 }
 
@@ -109,24 +109,12 @@ $theme: $material;
 
 :host(:not([open])[position='start']),
 :host([dir='rtl']:not([open])[position='end']) {
-    --dir: -1;
+    --dir: #{direction($rtl: true)};
 }
 
 :host(:not([open])[position='end']),
 :host([dir='rtl']:not([open])[position='start']) {
-    --dir: 1;
-}
-
-// Sets direction based on direction of parent element.
-// Currently only supported in Chrome;
-:host-context([dir='rtl']) {
-    &:host(:not([open])[position='end']) {
-        --dir: -1;
-    }
-
-    &:host(:not([open])[position='start']) {
-        --dir: 1;
-    }
+    --dir: #{direction($rtl: false)};
 }
 
 :host(:not([open])[position='relative']) {
