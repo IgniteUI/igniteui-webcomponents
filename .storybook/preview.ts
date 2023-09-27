@@ -109,6 +109,10 @@ const themeProvider: Decorator = (Story, context) => {
         color: ${context.globals.variant === 'light' ? '#000' : '#fff'};
     }
 
+    #igc-story[dir='rtl'] {
+      --ig-dir: -1;
+    }
+
     ${context.loaded.theme}
     ${getSize(context.globals.size)}
   </style>`;
