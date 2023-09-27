@@ -140,9 +140,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    *
    * [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
    *
-   * @attr
+   * @attr inputmode
    */
-  @property()
+  @property({ attribute: 'inputmode' })
   public override inputMode!:
     | 'none'
     | 'text'
@@ -165,17 +165,17 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
    * The maximum number of characters (UTF-16 code units) that the user can enter.
    * If this value isn't specified, the user can enter an unlimited number of characters.
    *
-   * @attr
+   * @attr maxlength
    */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'maxlength' })
   public maxLength!: number;
 
   /**
    * The minimum number of characters (UTF-16 code units) required that the user should enter.
    *
-   * @attr
+   * @attr minlength
    */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'minlength' })
   public minLength!: number;
 
   /**
@@ -196,9 +196,9 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   /**
    * Makes the control a readonly field.
    *
-   * @attr
+   * @attr readonly
    */
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
   /**
