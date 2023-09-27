@@ -189,10 +189,21 @@ const navbarItems = [
 
 const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
   return html`
-    <div
-      class="ig-scrollbar"
-      style="display: flex; margin-top: -8px; margin-left: -8px; height: 100vh;"
-    >
+    <style>
+      .main {
+        display: flex;
+        margin: -1rem;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .content {
+        padding-inline-start: 20px;
+        font-family: var(--ig-font-family);
+      }
+    </style>
+
+    <div class="ig-scrollbar main">
       <igc-nav-drawer
         .open=${open}
         .position=${position}
@@ -220,12 +231,12 @@ const Template = ({ open = false, position }: IgcNavDrawerArgs) => {
         </div>
       </igc-nav-drawer>
 
-      <div style="padding-left: 20px;">
+      <section class="content">
         <p>Sample page content</p>
         <igc-button @click="${handleOpen}">Open</igc-button>
         <igc-button @click="${handleClose}">Close</igc-button>
         <igc-button @click="${handleToggle}">Toggle</igc-button>
-      </div>
+      </section>
     </div>
   `;
 };

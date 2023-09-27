@@ -13,6 +13,10 @@
         --ig-scrollbar-size: #{rem(16px)};
     }
 
+    body[dir='rtl'] {
+        --ig-dir: -1;
+    }
+
     @include palette($palette);
     @include elevations($elevations);
     @include typography(
