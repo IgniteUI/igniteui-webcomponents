@@ -2,35 +2,7 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/switch' as *;
 
-$material: map.merge(
-    digest-schema($light-switch),
-    (
-        border-radius-thumb: border-radius(map.get($light-switch, 'border-radius-thumb')...),
-        border-radius-track: border-radius(map.get($light-switch, 'border-radius-track')...),
-        ripple-radius: border-radius(map.get($light-switch, 'border-radius-ripple')...)
-    )
-);
-$bootstrap: map.merge(
-    digest-schema($bootstrap-switch),
-    (
-        border-radius-thumb: border-radius(map.get($bootstrap-switch, 'border-radius-thumb')...),
-        border-radius-track: border-radius(map.get($bootstrap-switch, 'border-radius-track')...),
-        ripple-radius: border-radius(map.get($bootstrap-switch, 'border-radius-ripple')...)
-    )
-);
-$fluent: map.merge(
-    digest-schema($fluent-switch),
-    (
-        border-radius-thumb: border-radius(map.get($fluent-switch, 'border-radius-thumb')...),
-        border-radius-track: border-radius(map.get($fluent-switch, 'border-radius-track')...),
-        ripple-radius: border-radius(map.get($fluent-switch, 'border-radius-ripple')...)
-    )
-);
-$indigo: map.merge(
-    digest-schema($indigo-switch),
-    (
-        border-radius-thumb: border-radius(map.get($indigo-switch, 'border-radius-thumb')...),
-        border-radius-track: border-radius(map.get($indigo-switch, 'border-radius-track')...),
-        ripple-radius: border-radius(map.get($indigo-switch, 'border-radius-ripple')...)
-    )
-);
+$material: digest-schema($light-switch);
+$bootstrap: digest-schema($bootstrap-switch);
+$fluent: digest-schema($fluent-switch);
+$indigo: digest-schema($indigo-switch);

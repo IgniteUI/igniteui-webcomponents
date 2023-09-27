@@ -39,7 +39,7 @@ $theme: $material;
         inset-inline-start: 0;
         width: 100%;
         height: 100%;
-        border-radius: var-get($theme, 'ripple-radius');
+        border-radius: var-get($theme, 'border-radius-ripple');
     }
 }
 
