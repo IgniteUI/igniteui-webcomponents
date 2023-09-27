@@ -12,7 +12,7 @@ $theme: $bootstrap;
 [part~='control'] {
     --size: #{rem(16px)};
 
-    border-radius: var-get($theme, 'ripple-radius');
+    border-radius: var-get($theme, 'border-radius-ripple');
     width: var(--size);
     height: var(--size);
     min-width: var(--size);
