@@ -7,7 +7,7 @@ export type Themes = {
   light: {
     [K in Theme]?: CSSResult;
   };
-  dark?: {
+  dark: {
     [K in Theme]?: CSSResult;
   };
 };

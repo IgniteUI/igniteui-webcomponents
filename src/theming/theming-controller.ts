@@ -60,10 +60,11 @@ class ThemingController implements ReactiveController, ThemeController {
     this.themeVariant = themeVariant;
 
     const ctor = this.host.constructor as typeof LitElement;
-    const themes = this.themes[themeVariant] ?? [];
 
     const [_, cssResult] =
-      Object.entries(themes).find(([name]) => name === this.theme) ?? [];
+      Object.entries(this.themes[themeVariant]).find(
+        ([name]) => name === this.theme
+      ) ?? [];
 
     adoptStyles(this.host.shadowRoot as ShadowRoot, [
       ...ctor.elementStyles,
