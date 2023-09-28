@@ -18,7 +18,6 @@
 @use '../../../components/combo/themes/dark/combo.fluent' as combo;
 @use '../../../components/icon/dark/icon.fluent' as icon;
 @use '../../../components/navbar/themes/dark/navbar.fluent' as navbar;
-@use '../../../components/avatar/themes/dark/avatar.fluent' as avatar;
 @use '../../../components/rating/dark/rating.fluent' as rating;
 @use '../../../components/stepper/themes/step/dark/step.fluent' as stepper;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.fluent' as nav-drawer;
@@ -40,7 +39,6 @@
 @include combo.theme();
 @include icon.theme();
 @include navbar.theme();
-@include avatar.theme();
 @include rating.theme();
 @include stepper.theme();
 @include nav-drawer.theme();

@@ -49,7 +49,10 @@ export interface IgcExpansionPanelComponentEventMap {
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({
+  light: { bootstrap, fluent, indigo },
+  dark: { bootstrap, fluent, indigo },
+})
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>

@@ -53,7 +53,7 @@ export const setTheme = (value: Theme, variant: ThemeVariant) => {
  *  configureTheme('material', 'light');
  *  ```
  */
-export const configureTheme = (t: Theme, v: ThemeVariant) => {
+export const configureTheme = (t: Theme, v: ThemeVariant = 'light') => {
   if (isOfTypeTheme(t) && isOfTypeThemeVariant(v)) {
     setTheme(t, v);
   }

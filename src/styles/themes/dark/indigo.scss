@@ -16,7 +16,6 @@
 @use '../../../components/button/themes/button/dark/button.indigo' as button;
 @use '../../../components/icon/dark/icon.indigo' as icon;
 @use '../../../components/navbar/themes/dark/navbar.indigo' as navbar;
-@use '../../../components/avatar/themes/dark/avatar.indigo' as avatar;
 @use '../../../components/stepper/themes/step/dark/step.indigo' as stepper;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.indigo' as nav-drawer;
 @include base.root-styles($palette, 'dark');
@@ -35,6 +34,5 @@
 @include button.theme();
 @include icon.theme();
 @include navbar.theme();
-@include avatar.theme();
 @include stepper.theme();
 @include nav-drawer.theme();

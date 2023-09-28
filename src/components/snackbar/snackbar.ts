@@ -34,7 +34,10 @@ export interface IgcSnackbarEventMap {
  * @csspart message - The snackbar message.
  * @csspart action - The snackbar action button.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({
+  light: { bootstrap, fluent, indigo },
+  dark: { bootstrap, fluent, indigo },
+})
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,
   Constructor<LitElement>

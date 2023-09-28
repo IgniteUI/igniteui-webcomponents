@@ -15,7 +15,10 @@ import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
  * @csspart base - The base wrapper of the toast.
  */
 
-@themes({ bootstrap, fluent, indigo })
+@themes({
+  light: { bootstrap, fluent, indigo },
+  dark: { bootstrap, fluent, indigo },
+})
 export default class IgcToastComponent extends LitElement {
   public static readonly tagName = 'igc-toast';
   public static override styles = [styles];

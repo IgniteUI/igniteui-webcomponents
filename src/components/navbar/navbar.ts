@@ -21,7 +21,10 @@ import { styles as material } from './themes/light/navbar.material.css.js';
  * @csspart middle - The navigation bar title container.
  * @csspart end - The right aligned action icons container.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 export default class IgcNavbarComponent extends LitElement {
   public static readonly tagName = 'igc-navbar';
   public static override styles = styles;

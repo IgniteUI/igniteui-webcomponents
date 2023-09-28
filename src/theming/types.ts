@@ -4,7 +4,12 @@ export type Theme = 'material' | 'bootstrap' | 'indigo' | 'fluent';
 export type ThemeVariant = 'light' | 'dark';
 
 export type Themes = {
-  [K in Theme]?: CSSResult;
+  light: {
+    [K in Theme]?: CSSResult;
+  };
+  dark?: {
+    [K in Theme]?: CSSResult;
+  };
 };
 
 /**

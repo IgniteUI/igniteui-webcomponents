@@ -25,9 +25,16 @@ defineComponents(
  * @slot - Renders card content
  */
 @themes({
-  bootstrap,
-  fluent,
-  indigo,
+  light: {
+    bootstrap,
+    fluent,
+    indigo,
+  },
+  dark: {
+    bootstrap,
+    fluent,
+    indigo,
+  },
 })
 export default class IgcCardComponent extends LitElement {
   public static readonly tagName = 'igc-card';

@@ -54,7 +54,10 @@ defineComponents(
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes({ bootstrap, fluent, indigo, material })
+@themes({
+  light: { bootstrap, fluent, indigo, material },
+  dark: { bootstrap, fluent, indigo, material },
+})
 export default class IgcTreeItemComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-tree-item';

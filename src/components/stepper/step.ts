@@ -42,7 +42,10 @@ import { styles as material } from './themes/step/light/step.material.css.js';
  * @csspart body - Wrapper of the step's `content`.
  * @csspart content - The steps `content`.
  */
-@themes({ bootstrap, indigo, fluent, material })
+@themes({
+  light: { bootstrap, indigo, fluent, material },
+  dark: { bootstrap, indigo, fluent, material },
+})
 export default class IgcStepComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-step';

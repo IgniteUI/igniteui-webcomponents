@@ -25,7 +25,13 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes({ bootstrap, material, fluent, indigo }, true)
+@themes(
+  {
+    light: { bootstrap, material, fluent, indigo },
+    dark: { bootstrap, material, fluent, indigo },
+  },
+  true
+)
 @blazorDeepImport
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   SizableMixin(
