@@ -83,7 +83,7 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     margin-inline-start: var(--thumb-offset);
 
     &::after {
-        border-radius: var-get($theme, 'ripple-radius');
+        border-radius: var-get($theme, 'border-radius-ripple');
         position: absolute;
         content: '';
         inset-block-start: calc(50% - #{math.div($ripple-size, 2)});
