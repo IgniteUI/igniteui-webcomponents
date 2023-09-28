@@ -19,7 +19,7 @@
 @use '../../../components/radio/themes/dark/radio.bootstrap' as radio;
 @use '../../../components/stepper/themes/step/dark/step.bootstrap' as stepper;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.bootstrap' as nav-drawer;
-@include base.root-styles($palette);
+@include base.root-styles($palette, 'dark');
 @include dropdown.theme();
 @include input.theme();
 @include slider.theme();

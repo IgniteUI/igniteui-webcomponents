@@ -19,7 +19,7 @@
 @use '../../../components/avatar/themes/dark/avatar.indigo' as avatar;
 @use '../../../components/stepper/themes/step/dark/step.indigo' as stepper;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.indigo' as nav-drawer;
-@include base.root-styles($palette);
+@include base.root-styles($palette, 'dark');
 @include checkbox.theme();
 @include switch.theme();
 @include input.theme();

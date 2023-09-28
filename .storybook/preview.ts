@@ -100,24 +100,23 @@ export const loaders = [
 ];
 
 const themeProvider: Decorator = (Story, context) => {
-  configureTheme(context.globals.theme);
+  const { theme, variant, direction, size } = context.globals;
+  configureTheme(theme, variant);
 
   const styles = html`<style>
     .docs-story,
     .sb-main-padded {
-        background: ${context.globals.variant === 'light' ? '#fff' : '#000'};
-        color: ${context.globals.variant === 'light' ? '#000' : '#fff'};
+        background: ${variant === 'light' ? '#fff' : '#000'};
+        color: ${variant === 'light' ? '#000' : '#fff'};
     }
 
     ${context.loaded.theme}
-    ${getSize(context.globals.size)}
+    ${getSize(size)}
   </style>`;
 
   return html`
     ${styles}
-    <div id="igc-story" dir=${context.globals.direction ?? 'auto'}>
-      ${Story()}
-    </div>
+    <div id="igc-story" dir=${direction ?? 'auto'}>${Story()}</div>
   `;
 };
 

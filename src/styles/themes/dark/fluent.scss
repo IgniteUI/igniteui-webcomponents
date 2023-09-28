@@ -22,7 +22,7 @@
 @use '../../../components/rating/dark/rating.fluent' as rating;
 @use '../../../components/stepper/themes/step/dark/step.fluent' as stepper;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.fluent' as nav-drawer;
-@include base.root-styles($palette);
+@include base.root-styles($palette, 'dark');
 @include button.theme();
 @include icon-button.theme();
 @include calendar.theme();

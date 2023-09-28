@@ -15,7 +15,7 @@
 @use '../../../components/avatar/themes/dark/avatar.material' as avatar;
 @use '../../../components/stepper/themes/step/dark/step.material' as stepper;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.material' as nav-drawer;
-@include base.root-styles($palette);
+@include base.root-styles($palette, 'dark');
 @include radio.theme();
 @include input.theme();
 @include select.theme();

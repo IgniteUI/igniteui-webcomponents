@@ -1,8 +1,9 @@
 import { ChangeThemeEventDetail, CHANGE_THEME_EVENT } from './theming-event.js';
-import type { Theme } from './types.js';
+import type { Theme, ThemeVariant } from './types.js';
 import { getAllCSSVariables } from './utils.js';
 
 let theme: Theme;
+let themeVariant: ThemeVariant;
 
 /**
  * Dispatch an "igc-change-theme" event to `window` with the given detail.
@@ -15,19 +16,31 @@ function isOfTypeTheme(theme: string): theme is Theme {
   return ['bootstrap', 'material', 'indigo', 'fluent'].includes(theme);
 }
 
-export const getTheme: () => Theme = () => {
-  if (!theme) {
-    const [_, t] =
-      Object.entries(getAllCSSVariables()).find(([v]) => v === 'igTheme') || [];
+function isOfTypeThemeVariant(variant: string): variant is ThemeVariant {
+  return ['light', 'dark'].includes(variant);
+}
 
-    theme = t && isOfTypeTheme(t) ? (t as Theme) : 'bootstrap';
+export const getTheme: () => {
+  theme: Theme;
+  themeVariant: ThemeVariant;
+} = () => {
+  if (!theme || !themeVariant) {
+    const [t, v] =
+      Object.entries(getAllCSSVariables()).filter(
+        ([v]) => v === 'igTheme' || v === 'igThemeVariant'
+      ) || [];
+
+    theme = t[1] && isOfTypeTheme(t[1]) ? (t[1] as Theme) : 'bootstrap';
+    themeVariant =
+      v[1] && isOfTypeThemeVariant(v[1]) ? (v[1] as ThemeVariant) : 'light';
   }
 
-  return theme;
+  return { theme, themeVariant };
 };
 
-export const setTheme = (value: Theme) => {
+export const setTheme = (value: Theme, variant: ThemeVariant) => {
   theme = value;
+  themeVariant = variant;
 };
 
 /**
@@ -37,13 +50,13 @@ export const setTheme = (value: Theme) => {
  *  ```ts
  *  import { configureTheme } from 'igniteui-webcomponents';
  *
- *  configureTheme({ theme: 'material' });
+ *  configureTheme('material', 'light');
  *  ```
  */
-export const configureTheme = (t: Theme) => {
-  if (isOfTypeTheme(t)) {
-    setTheme(t);
+export const configureTheme = (t: Theme, v: ThemeVariant) => {
+  if (isOfTypeTheme(t) && isOfTypeThemeVariant(v)) {
+    setTheme(t, v);
   }
 
-  dispatchThemingEvent({ theme });
+  dispatchThemingEvent({ theme, themeVariant });
 };
