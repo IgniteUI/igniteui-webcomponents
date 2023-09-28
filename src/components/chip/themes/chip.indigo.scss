@@ -11,36 +11,37 @@ $theme: $indigo;
 
 :host button {
     border-radius: var-get($theme, 'border-radius');
-    border: rem(1px) solid color(gray, 400);
-    background: color(surface, 500);
-    color: color(gray, 700);
+    border: rem(1px) solid var-get($theme, 'border-color');
+    background: var-get($theme, 'background');
+    color: var-get($theme, 'text-color');
     height: var-get($theme, 'size');
 
     &:hover {
-        background: color(gray, 200);
+        background: var-get($theme, 'hover-background');
     }
 
     &:focus {
-        outline: rem(3px) solid color(gray, 300);
+        outline: rem(3px) solid var-get($theme, 'focus-outline-color');
     }
 
     &[disabled] {
-        border-color: color(gray, 200);
-        color: color(gray, 500);
+        border-color: var-get($theme, 'disabled-border-color');
+        background: var-get($theme, 'disabled-background');
+        color: var-get($theme, 'disabled-text-color');
     }
 }
 
 :host([selected]) button:not([disabled]) {
     border-color: transparent;
-    background: color(primary, 500);
-    color: contrast-color(primary, 700);
+    background: var-get($theme, 'selected-background');
+    color: var-get($theme, 'selected-text-color');
 
     &:hover {
-        background: color(primary, 600);
+        background: var-get($theme, 'hover-selected-background');
     }
 
     &:focus {
-        outline: rem(3px) solid color(primary, 200);
+        outline: rem(3px) solid var-get($theme, 'focus-selected-outline-color');
     }
 }
 
@@ -56,7 +57,7 @@ $theme: $indigo;
     &:focus {
         background: color(primary, 500);
         color: contrast-color(primary, 500);
-        outline: rem(3px) solid color(primary, 200);
+        outline: rem(3px) solid var-get($theme, 'focus-selected-outline-color');
     }
 }
 

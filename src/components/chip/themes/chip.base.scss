@@ -24,7 +24,6 @@
 
     &[disabled] {
         pointer-events: none;
-        color: color(gray, 500);
     }
 }
 
@@ -125,14 +124,4 @@
 
 ::slotted(*) {
     display: flex;
-}
-
-:host([variant='primary']),
-:host([variant='info']),
-:host([variant='success']),
-:host([variant='warning']),
-:host([variant='danger']) {
-    button[disabled] {
-        color: color(gray, 500);
-    }
 }

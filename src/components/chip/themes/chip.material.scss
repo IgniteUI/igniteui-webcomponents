@@ -11,22 +11,23 @@ $theme: $material;
 
 :host button {
     border-radius: var-get($theme, 'border-radius');
-    background: color(gray, 300);
-    color: contrast-color(gray, 300);
+    background: var-get($theme, 'background');
+    color: var-get($theme, 'text-color');
     outline: none;
     height: var-get($theme, 'size');
 
     &:hover {
-        background: color(gray, 400);
-        color: contrast-color(gray, 400);
+        background: var-get($theme, 'hover-background');
+        color: var-get($theme, 'hover-text-color');
     }
 
     &:focus {
-        background: color(gray, 500);
-        color: contrast-color(gray, 500);
+        background: var-get($theme, 'focus-background');
+        color: var-get($theme, 'focus-text-color');
     }
 
     &[disabled] {
-        background: color(gray, 200);
+        background: var-get($theme, 'disabled-background');
+        color: var-get($theme, 'disabled-text-color');
     }
 }
