@@ -1,13 +1,18 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-card');
+
     display: flex;
     flex-flow: row wrap;
     align-items: center;
     align-content: flex-start;
     width: 100%;
-    color: color(gray, 900);
+    color: var-get($theme, 'header-text-color');
     padding: rem(16px);
     box-sizing: border-box;
 }
@@ -32,7 +37,7 @@ header {
 ::slotted([slot='subtitle']) {
     @include type-style('subtitle-2');
 
-    color: color(gray, 700);
+    color: var-get($theme, 'subtitle-text-color');
 }
 
 ::slotted([slot='thumbnail']) {

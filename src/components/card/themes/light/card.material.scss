@@ -10,9 +10,9 @@ $theme: $material;
 
     display: flex;
     flex-direction: column;
-    border: rem(1px) solid color(gray, 400);
+    border: rem(1px) solid var-get($theme, 'outline-color');
     overflow: hidden;
-    background: color(surface, 500);
+    background: var-get($theme, 'background');
     font-family: var(--ig-font-family);
     border-radius: var-get($theme, 'border-radius');
 

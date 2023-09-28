@@ -10,6 +10,7 @@
 @use '../../../components/button/themes/button/dark/button.material' as button;
 @use '../../../components/icon/dark/icon.material' as icon;
 @use '../../../components/navbar/themes/dark/navbar.material' as navbar;
+@use '../../../components/card/themes/dark/card.material' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.material' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.material' as switch;
 @use '../../../components/avatar/themes/dark/avatar.material' as avatar;
@@ -25,6 +26,7 @@
 @include button.theme();
 @include icon.theme();
 @include navbar.theme();
+@include card.theme();
 @include checkbox.theme();
 @include switch.theme();
 @include avatar.theme();

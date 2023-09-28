@@ -1,12 +1,17 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-card');
+
     display: block;
     width: 100%;
     overflow: auto;
     padding: rem(16px);
-    color: color(gray, 700);
+    color: var-get($theme, 'content-text-color');
 }
 
 ::slotted(*) {
