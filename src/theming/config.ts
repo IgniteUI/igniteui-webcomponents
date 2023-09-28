@@ -25,14 +25,20 @@ export const getTheme: () => {
   themeVariant: ThemeVariant;
 } = () => {
   if (!theme || !themeVariant) {
-    const [t, v] =
+    const [_theme, _variant] =
       Object.entries(getAllCSSVariables()).filter(
         ([v]) => v === 'igTheme' || v === 'igThemeVariant'
       ) || [];
 
-    theme = t[1] && isOfTypeTheme(t[1]) ? (t[1] as Theme) : 'bootstrap';
+    theme =
+      _theme && _theme[1] && isOfTypeTheme(_theme[1])
+        ? (_theme[1] as Theme)
+        : 'bootstrap';
+
     themeVariant =
-      v[1] && isOfTypeThemeVariant(v[1]) ? (v[1] as ThemeVariant) : 'light';
+      _variant && _variant[1] && isOfTypeThemeVariant(_variant[1])
+        ? (_variant[1] as ThemeVariant)
+        : 'light';
   }
 
   return { theme, themeVariant };
