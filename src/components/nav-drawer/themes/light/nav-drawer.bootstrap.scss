@@ -6,6 +6,7 @@ $background: var-get($theme, 'background') !default;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-nav-drawer');
+    @include css-vars-from-theme($overlay-bootstrap, 'ig-nav-drawer');
 
     [part='base'] {
         border-radius: var-get($theme, 'border-radius');
@@ -43,7 +44,8 @@ $background: var-get($theme, 'background') !default;
 }
 
 :host([position='relative']) {
-    [part='base'] {
+    [part='base'],
+    [part~='mini'] {
         border-inline-end-color: var-get($theme, 'border-color');
     }
 }
