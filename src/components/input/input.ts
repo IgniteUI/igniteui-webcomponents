@@ -126,19 +126,19 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
    * The pattern attribute of the control.
    * @attr
    */
-  @property({ type: String })
+  @property()
   public pattern!: string;
 
   /**
    * The minimum string length required by the control.
-   * @attr
+   * @attr minlength
    */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'minlength' })
   public minLength!: number;
 
   /**
    * The minlength attribute of the control.
-   * @attr
+   * @prop
    *
    * @deprecated - since v4.4.0
    * Use the `minLength` property instead.
@@ -154,14 +154,14 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
 
   /**
    * The maximum string length of the control.
-   * @attr
+   * @attr maxlength
    */
-  @property({ type: Number })
+  @property({ type: Number, attribute: 'maxlength' })
   public maxLength!: number;
 
   /**
    * The maxlength attribute of the control.
-   * @attr
+   * @prop
    *
    * @deprecated - since v4.4.0
    * Use the `maxLength` property instead.

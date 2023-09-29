@@ -75,14 +75,14 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   /**
    * Makes the control a readonly field.
-   * @attr
+   * @attr readonly
    */
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
   /**
    * Makes the control a readonly field.
-   * @attr
+   * @prop
    *
    * @deprecated - since v4.4.0
    * Use the `readOnly` property instead.
@@ -100,14 +100,14 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
    * The placeholder attribute of the control.
    * @attr
    */
-  @property({ type: String })
+  @property()
   public placeholder!: string;
 
   /**
    * The label for the control.
    * @attr
    */
-  @property({ type: String })
+  @property()
   public label!: string;
 
   constructor() {

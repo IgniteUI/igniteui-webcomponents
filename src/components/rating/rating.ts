@@ -136,21 +136,21 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   /**
    * Sets hover preview behavior for the component
-   * @attr
+   * @attr hover-preview
    */
   @property({ type: Boolean, reflect: true, attribute: 'hover-preview' })
   public hoverPreview = false;
 
   /**
    * Makes the control a readonly field.
-   * @attr
+   * @attr readonly
    */
-  @property({ type: Boolean, reflect: true })
+  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
   public readOnly = false;
 
   /**
    * Sets the readonly state of the component
-   * @attr
+   * @prop
    *
    * @deprecated - since v4.4.0
    * Use the `readOnly` property instead.
