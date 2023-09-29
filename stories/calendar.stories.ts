@@ -34,17 +34,17 @@ const metadata: Meta<IgcCalendarComponent> = {
       defaultValue: false,
     },
     headerOrientation: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description: 'The orientation of the header.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       defaultValue: 'horizontal',
     },
     orientation: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description:
         'The orientation of the multiple months displayed in days view.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       defaultValue: 'horizontal',
     },
@@ -131,9 +131,9 @@ interface IgcCalendarArgs {
   /** Determines whether the calendar hides its header. Even if set to false, the header is not displayed for `multiple` selection. */
   hideHeader: boolean;
   /** The orientation of the header. */
-  headerOrientation: 'vertical' | 'horizontal';
+  headerOrientation: 'horizontal' | 'vertical';
   /** The orientation of the multiple months displayed in days view. */
-  orientation: 'vertical' | 'horizontal';
+  orientation: 'horizontal' | 'vertical';
   /** The number of months displayed in days view. */
   visibleMonths: number;
   /** The active view. */

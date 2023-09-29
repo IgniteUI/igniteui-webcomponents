@@ -18,7 +18,10 @@ import { styles as indigo } from '../button-group/themes/light/toggle-button/tog
  *
  * @csspart toggle - The native button element.
  */
-@themes({ bootstrap, material, fluent, indigo })
+@themes({
+  light: { bootstrap, material, fluent, indigo },
+  dark: { bootstrap, material, fluent, indigo },
+})
 export default class IgcToggleButtonComponent extends LitElement {
   public static override styles = styles;
 
