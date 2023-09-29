@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Button group [#827](https://github.com/IgniteUI/igniteui-webcomponents/issues/827) and toggle button [#877](https://github.com/IgniteUI/igniteui-webcomponents/issues/877)
+
 ### Deprecated
   - The `size` property and attribute have been deprecated for all components. Use the `--ig-size` CSS custom property instead.
     The following example sets the size of the avatar component to small:
