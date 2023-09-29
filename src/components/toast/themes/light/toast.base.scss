@@ -16,13 +16,9 @@ $theme: $material;
     bottom: 0;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: color(gray, 700);
-    color: contrast-color(gray, 700);
-    padding: rem(16px) rem(24px);
     margin: rem(42px) auto;
     min-width: rem(52px);
     backdrop-filter: blur(10px);
-    border-radius: var-get($theme, 'border-radius');
 }
 
 :host(:not([open])) {
