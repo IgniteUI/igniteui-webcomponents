@@ -7,10 +7,10 @@ $theme: $bootstrap;
 :host {
     @include css-vars-from-theme($theme, 'ig-toast');
 
-    color: contrast-color(surface);
-    background: color(surface);
-    outline: 1px solid color(gray, 300);
     padding: rem(11px);
-    box-shadow: var(--ig-elevation-10);
+    color: var-get($theme, 'text-color');
+    background: var-get($theme, 'background');
+    outline: #{rem(1px)} solid var-get($theme, 'border-color');
+    box-shadow: var-get($theme, 'elevation');
     border-radius: var-get($theme, 'border-radius');
 }
