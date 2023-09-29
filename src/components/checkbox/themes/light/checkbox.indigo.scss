@@ -26,14 +26,16 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 [part~='control'] {
-    border-radius: var-get($theme, 'ripple-radius');
+    border-radius: var-get($theme, 'border-radius-ripple');
     width: var(--size, rem(20px));
     height: var(--size, rem(20px));
     min-width: var(--size, rem(20px));
+    transition: background .15s ease-in;
 
     &::after {
         border-radius: var-get($theme, 'border-radius');
         border: rem(2px) solid $empty-color;
+        transition: border-color .15s ease-in;
     }
 }
 
@@ -45,6 +47,10 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 [part~='indicator'] {
     stroke: var-get($theme, 'tick-color');
     transform: scale(.8);
+}
+
+[part='indicator checked'] {
+    transition-duration: .15s;
 }
 
 :host(:hover) {
