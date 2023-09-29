@@ -69,10 +69,9 @@ describe('Navigation Drawer', () => {
           <div part="main">
             <slot></slot>
           </div>
-
-          <div part="mini hidden">
-            <slot name="mini"></slot>
-          </div>
+        </div>
+        <div part="mini hidden">
+          <slot name="mini"></slot>
         </div>
       `);
     });
