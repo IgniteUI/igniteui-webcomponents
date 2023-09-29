@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -7,20 +6,24 @@ $theme: $fluent;
 :host {
     @include css-vars-from-theme($theme, 'ig-dialog');
 
+    background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
 }
 
 [part='title'] {
+    color: var-get($theme, 'title-color');
     padding: rem(24px);
     padding-block-start: rem(16px);
 }
 
 [part='content'] {
+    color: var-get($theme, 'message-color');
     padding-inline: rem(24px);
     padding-block-end: rem(20px);
 }
 
 [part='footer'] {
+    color: var-get($theme, 'title-color');
     padding: rem(24px);
     padding-block-start: 0;
 }

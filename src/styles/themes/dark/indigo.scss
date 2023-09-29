@@ -10,6 +10,7 @@
 @use '../../../components/slider/themes/dark/slider.indigo' as slider;
 @use '../../../components/list/themes/dark/list.indigo' as list;
 @use '../../../components/tree/themes/dark/tree-item.indigo' as tree-item;
+@use '../../../components/dialog/themes/dark/dialog.indigo' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
 @use '../../../components/select/themes/dark/select.indigo' as select;
 @use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
@@ -29,6 +30,7 @@
 @include slider.theme();
 @include list.theme();
 @include tree-item.theme();
+@include dialog.theme();
 @include dropdown.theme();
 @include select.theme();
 @include snackbar.theme();

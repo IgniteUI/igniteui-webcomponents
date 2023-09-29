@@ -7,6 +7,7 @@
 @use '../../../components/calendar/themes/fluent/dark/index' as calendar;
 @use '../../../components/card/themes/dark/card.fluent' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.fluent' as checkbox;
+@use '../../../components/dialog/themes/dark/dialog.fluent' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.fluent' as dropdown;
 @use '../../../components/checkbox/themes/dark/switch.fluent' as switch;
 @use '../../../components/input/themes/dark/input.dark.fluent' as input;
@@ -30,6 +31,7 @@
 @include card.theme();
 @include checkbox.theme();
 @include dropdown.theme();
+@include dialog.theme();
 @include switch.theme();
 @include input.theme();
 @include radio.theme();

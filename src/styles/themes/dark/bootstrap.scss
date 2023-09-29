@@ -3,6 +3,7 @@
 @use '../base/scrollbars';
 @use '../third-party/grid/bootstrap.dark' as grid;
 @use '../../../components/card/themes/dark/card.bootstrap' as card;
+@use '../../../components/dialog/themes/dark/dialog.bootstrap' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.bootstrap' as dropdown;
 @use '../../../components/input/themes/dark/input.dark.bootstrap' as input;
 @use '../../../components/slider/themes/dark/slider.bootstrap' as slider;
@@ -22,6 +23,7 @@
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.bootstrap' as nav-drawer;
 @include base.root-styles($palette);
 @include card.theme();
+@include dialog.theme();
 @include dropdown.theme();
 @include input.theme();
 @include slider.theme();
