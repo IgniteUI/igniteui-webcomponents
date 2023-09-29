@@ -1,8 +1,7 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-$theme: $indigo;
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-expansion-panel');
@@ -21,10 +20,6 @@ $theme: $indigo;
     }
 }
 
-[part~='indicator'] {
-    color: var-get($theme, 'header-icon-color');
-}
-
 [part='title'] {
     color: var-get($theme, 'header-title-color');
 }
@@ -33,14 +28,14 @@ $theme: $indigo;
     color: var-get($theme, 'header-description-color');
 }
 
-:host([open]) [part~='content'] {
-    @include type-style('body-1');
+[part~='indicator'] {
+    color: var-get($theme, 'header-icon-color');
 }
 
 :host([disabled]) {
-    [part~='indicator'],
     [part='title'],
-    [part='subtitle'] {
+    [part='subtitle'],
+    [part~='indicator'] {
         color: var-get($theme, 'disabled-color');
     }
 }

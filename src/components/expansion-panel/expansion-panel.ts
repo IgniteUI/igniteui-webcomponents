@@ -4,6 +4,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/light/expansion-panel.base.css.js';
+import { styles as material } from './themes/light/expansion-panel.material.css.js';
 import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
 import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
 import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
@@ -49,7 +50,7 @@ export interface IgcExpansionPanelComponentEventMap {
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({ material, bootstrap, fluent, indigo })
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>
