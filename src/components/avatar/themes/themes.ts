@@ -19,33 +19,34 @@ import { styles as bootstrapDark } from './dark/avatar.bootstrap.css.js';
 import { styles as fluentDark } from './dark/avatar.fluent.css.js';
 import { styles as indigoDark } from './dark/avatar.indigo.css.js';
 
-export const paint: Themes = {
-  light: {
-    bootstrap: css`
-      ${bootstrap} ${bootstrapLight}
-    `,
-    material: css`
-      ${material} ${materialLight}
-    `,
-    fluent: css`
-      ${fluent} ${fluentLight}
-    `,
-    indigo: css`
-      ${indigo} ${indigoLight}
-    `,
-  },
-  dark: {
-    bootstrap: css`
-      ${bootstrapDark} ${bootstrap}
-    `,
-    material: css`
-      ${material} ${materialDark}
-    `,
-    fluent: css`
-      ${fluent} ${fluentDark}
-    `,
-    indigo: css`
-      ${indigo} ${indigoDark}
-    `,
-  },
+const light = {
+  bootstrap: css`
+    ${bootstrap} ${bootstrapLight}
+  `,
+  material: css`
+    ${material} ${materialLight}
+  `,
+  fluent: css`
+    ${fluent} ${fluentLight}
+  `,
+  indigo: css`
+    ${indigo} ${indigoLight}
+  `,
 };
+
+const dark = {
+  bootstrap: css`
+    ${bootstrap} ${bootstrapDark}
+  `,
+  material: css`
+    ${material} ${materialDark}
+  `,
+  fluent: css`
+    ${fluent} ${fluentDark}
+  `,
+  indigo: css`
+    ${indigo} ${indigoDark}
+  `,
+};
+
+export const all: Themes = { light, dark };

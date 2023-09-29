@@ -6,7 +6,7 @@ import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { styles } from './themes/avatar.base.css.js';
-import { paint } from './themes/themes.js';
+import { all } from './themes/themes.js';
 
 /**
  * An avatar component is used as a representation of a user identity
@@ -21,7 +21,7 @@ import { paint } from './themes/themes.js';
  * @csspart image - The image wrapper of the avatar.
  * @csspart icon - The icon wrapper of the avatar.
  */
-@themes(paint)
+@themes(all)
 export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-avatar';
   public static override styles = styles;
