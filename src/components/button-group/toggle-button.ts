@@ -1,12 +1,13 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { themes } from '../../theming';
 import { styles } from '../button-group/themes/light/toggle-button/toggle-button.base.css.js';
 import { styles as bootstrap } from '../button-group/themes/light/toggle-button/toggle-button.bootstrap.css.js';
-import { styles as material } from '../button-group/themes/light/toggle-button/toggle-button.material.css.js';
 import { styles as fluent } from '../button-group/themes/light/toggle-button/toggle-button.fluent.css.js';
 import { styles as indigo } from '../button-group/themes/light/toggle-button/toggle-button.indigo.css.js';
+import { styles as material } from '../button-group/themes/light/toggle-button/toggle-button.material.css.js';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * The `igc-toggle-button` wraps a native button element and exposes additional `value` and `selected` properties.
@@ -28,6 +29,10 @@ export default class IgcToggleButtonComponent extends LitElement {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
+
+  public static register() {
+    registerComponent(this);
+  }
 
   @query('[part="toggle"]', true)
   private nativeElement!: HTMLElement;
