@@ -4,6 +4,6 @@
 
 $theme: $material;
 
-:host {
+igc-toast {
     @include css-vars-from-theme($theme, 'ig-toast');
 }
