@@ -17,7 +17,10 @@ import {
   registerIconFromText as registerIconFromText_impl,
 } from './icon.registry.js';
 
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 /**
  * Icon component
  *

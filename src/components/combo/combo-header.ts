@@ -7,7 +7,10 @@ import { styles as indigo } from '../dropdown/themes/light/header/dropdown-heade
 import { styles as material } from '../dropdown/themes/light/header/dropdown-header.material.css.js';
 
 /* blazorSuppress */
-@themes({ bootstrap, fluent, indigo, material })
+@themes({
+  light: { bootstrap, fluent, indigo, material },
+  dark: { bootstrap, fluent, indigo, material },
+})
 export default class IgcComboHeaderComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-header';
   public static override styles = styles;

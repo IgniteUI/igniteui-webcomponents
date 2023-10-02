@@ -22,9 +22,9 @@ const metadata: Meta<IgcStepperComponent> = {
   },
   argTypes: {
     orientation: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description: 'Gets/Sets the orientation of the stepper.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       defaultValue: 'horizontal',
     },
@@ -90,7 +90,7 @@ export default metadata;
 
 interface IgcStepperArgs {
   /** Gets/Sets the orientation of the stepper. */
-  orientation: 'vertical' | 'horizontal';
+  orientation: 'horizontal' | 'vertical';
   /** Get/Set the type of the steps. */
   stepType: 'indicator' | 'title' | 'full';
   /** Get/Set whether the stepper is linear. */

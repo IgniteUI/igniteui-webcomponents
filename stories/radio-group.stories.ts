@@ -13,9 +13,9 @@ const metadata: Meta<IgcRadioGroupComponent> = {
   parameters: { docs: { description: {} } },
   argTypes: {
     alignment: {
-      type: '"vertical" | "horizontal"',
+      type: '"horizontal" | "vertical"',
       description: 'Alignment of the radio controls inside this group.',
-      options: ['vertical', 'horizontal'],
+      options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
       defaultValue: 'vertical',
     },
@@ -27,7 +27,7 @@ export default metadata;
 
 interface IgcRadioGroupArgs {
   /** Alignment of the radio controls inside this group. */
-  alignment: 'vertical' | 'horizontal';
+  alignment: 'horizontal' | 'vertical';
 }
 type Story = StoryObj<IgcRadioGroupArgs>;
 

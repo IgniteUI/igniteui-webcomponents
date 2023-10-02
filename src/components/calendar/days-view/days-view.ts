@@ -48,8 +48,14 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
 @blazorSuppressComponent
 @blazorIndirectRender
 @themes({
-  bootstrap,
-  fluent,
+  light: {
+    bootstrap,
+    fluent,
+  },
+  dark: {
+    bootstrap,
+    fluent,
+  },
 })
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,

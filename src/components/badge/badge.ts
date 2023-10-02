@@ -14,7 +14,7 @@ import { styles as bootstrap } from './themes/light/badge.bootstrap.css.js';
  *
  * @csspart base - The base wrapper of the badge.
  */
-@themes({ bootstrap })
+@themes({ light: { bootstrap }, dark: { bootstrap } })
 export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
   public static override styles = styles;

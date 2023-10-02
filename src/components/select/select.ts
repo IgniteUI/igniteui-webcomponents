@@ -47,7 +47,13 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes({ bootstrap, material, fluent, indigo }, true)
+@themes(
+  {
+    light: { bootstrap, material, fluent, indigo },
+    dark: { bootstrap, material, fluent, indigo },
+  },
+  true
+)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )

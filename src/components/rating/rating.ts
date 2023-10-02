@@ -49,7 +49,10 @@ export interface IgcRatingEventMap {
  * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
-@themes({ fluent, bootstrap, indigo })
+@themes({
+  light: { fluent, bootstrap, indigo },
+  dark: { fluent, bootstrap, indigo },
+})
 export default class IgcRatingComponent extends FormAssociatedMixin(
   SizableMixin(
     EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)

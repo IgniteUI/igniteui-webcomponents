@@ -10,7 +10,6 @@
 @use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
 @use '../../../components/select/themes/dark/select.bootstrap' as select;
 @use '../../../components/combo/themes/dark/combo.bootstrap' as combo;
-@use '../../../components/avatar/themes/dark/avatar.bootstrap' as avatar;
 @use '../../../components/button/themes/button/dark/button.bootstrap' as button;
 @use '../../../components/icon/dark/icon.bootstrap' as icon;
 @use '../../../components/navbar/themes/dark/navbar.bootstrap' as navbar;
@@ -21,7 +20,7 @@
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.bootstrap' as nav-drawer;
 @use '../../../components/button-group/themes/dark/button-group-bootstrap' as button-group;
 @use '../../../components/button-group/themes/dark/toggle-button/toggle-button-bootstrap' as toggle-button;
-@include base.root-styles($palette);
+@include base.root-styles($palette, 'dark');
 @include dropdown.theme();
 @include input.theme();
 @include slider.theme();
@@ -31,7 +30,6 @@
 @include select.theme();
 @include grid.theme();
 @include combo.theme();
-@include avatar.theme();
 @include button.theme();
 @include icon.theme();
 @include navbar.theme();

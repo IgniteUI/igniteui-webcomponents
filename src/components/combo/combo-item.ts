@@ -12,7 +12,10 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 
 defineComponents(IgcCheckboxComopnent);
 /* blazorSuppress */
-@themes({ bootstrap, fluent, indigo, material })
+@themes({
+  light: { bootstrap, fluent, indigo, material },
+  dark: { bootstrap, fluent, indigo, material },
+})
 export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';
   public static override styles = styles;
