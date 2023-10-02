@@ -20,7 +20,10 @@ import { styles as indigo } from './themes/light/tab.indigo.css.js';
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({
+  light: { bootstrap, fluent, indigo },
+  dark: { bootstrap, fluent, indigo },
+})
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
 

@@ -26,7 +26,10 @@ defineComponents(IgcIconComponent);
  * @csspart base - The wrapping element.
  * @csspart icon - The icon element.
  */
-@themes({ bootstrap, material, fluent, indigo })
+@themes({
+  light: { bootstrap, material, fluent, indigo },
+  dark: { bootstrap, material, fluent, indigo },
+})
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
   protected static styles = styles;

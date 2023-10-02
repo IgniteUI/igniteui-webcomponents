@@ -27,7 +27,10 @@ import { styles as material } from './themes/light/checkbox.material.css.js';
  * @csspart label - The checkbox label.
  * @csspart indicator - The checkbox icon.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
   protected static styles = styles;

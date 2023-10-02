@@ -4,8 +4,6 @@
 
 $theme: $bootstrap;
 
-@mixin theme() {
-    igc-avatar {
-        @include css-vars-from-theme($theme, 'ig-avatar');
-    }
+:host {
+    @include css-vars-from-theme($theme, 'ig-avatar');
 }

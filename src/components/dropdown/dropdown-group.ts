@@ -18,7 +18,10 @@ import { styles as material } from './themes/light/group/dropdown-group.material
  *
  * @csspart label - The native label element.
  */
-@themes({ fluent, bootstrap, indigo, material })
+@themes({
+  light: { fluent, bootstrap, indigo, material },
+  dark: { fluent, bootstrap, indigo, material },
+})
 export default class IgcDropdownGroupComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-group';
 

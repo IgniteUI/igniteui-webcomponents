@@ -25,7 +25,10 @@ import { styles as indigo } from './themes/light/list-item.indigo.css.js';
  * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';
 

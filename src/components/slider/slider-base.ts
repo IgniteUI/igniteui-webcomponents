@@ -23,7 +23,10 @@ import { isLTR } from '../common/util.js';
 
 defineComponents(IgcSliderLabelComponent);
 
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;

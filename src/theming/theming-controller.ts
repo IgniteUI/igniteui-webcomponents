@@ -8,7 +8,7 @@ import {
 } from 'lit';
 import { getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
-import type { Theme, ThemeController, Themes } from './types.js';
+import type { Theme, ThemeController, Themes, ThemeVariant } from './types.js';
 
 class ThemeEventListeners {
   private readonly listeners = new Set<Function>();
@@ -38,6 +38,7 @@ class ThemingController implements ReactiveController, ThemeController {
   private themes: Themes;
   private host: ReactiveControllerHost & ReactiveElement;
   public theme!: Theme;
+  public themeVariant!: ThemeVariant;
 
   constructor(host: ReactiveControllerHost & ReactiveElement, themes: Themes) {
     this.host = host;
@@ -54,11 +55,16 @@ class ThemingController implements ReactiveController, ThemeController {
   }
 
   protected adoptStyles() {
-    this.theme = getTheme();
+    const { theme, themeVariant } = getTheme();
+    this.theme = theme;
+    this.themeVariant = themeVariant;
+
     const ctor = this.host.constructor as typeof LitElement;
 
     const [_, cssResult] =
-      Object.entries(this.themes).find(([name]) => name === this.theme) ?? [];
+      Object.entries(this.themes[themeVariant]).find(
+        ([name]) => name === this.theme
+      ) ?? [];
 
     adoptStyles(this.host.shadowRoot as ShadowRoot, [
       ...ctor.elementStyles,
