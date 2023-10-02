@@ -31,7 +31,10 @@ export interface IgcButtonGroupComponentEventMap {
  *
  * @csspart group - The button group container.
  */
-@themes({ bootstrap, material, fluent, indigo })
+@themes({
+  light: { bootstrap, material, fluent, indigo },
+  dark: { bootstrap, material, fluent, indigo },
+})
 export default class IgcButtonGroupComponent extends EventEmitterMixin<
   IgcButtonGroupComponentEventMap,
   Constructor<LitElement>

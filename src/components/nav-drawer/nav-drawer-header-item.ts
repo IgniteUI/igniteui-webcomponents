@@ -12,7 +12,10 @@ import { styles } from './themes/light/header-item/nav-drawer-header-item.base.c
  *
  * @slot - Renders the header content
  */
-@themes({ fluent, indigo, bootstrap, material })
+@themes({
+  light: { fluent, indigo, bootstrap, material },
+  dark: { fluent, indigo, bootstrap, material },
+})
 export default class IgcNavDrawerHeaderItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-header-item';
   public static override styles = styles;

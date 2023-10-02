@@ -17,7 +17,7 @@ defineComponents(IgcListItemComponent, IgcListHeaderComponent);
  *
  * @slot - Renders the list items and list headers inside default slot.
  */
-@themes({ bootstrap })
+@themes({ light: { bootstrap }, dark: { bootstrap } })
 export default class IgcListComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-list';
   public static override styles = styles;

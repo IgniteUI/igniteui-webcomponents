@@ -11,7 +11,7 @@ import { styles } from './themes/light/card.actions.material.css.js';
  * @slot - Renders items at the middle of actions area
  * @slot end - Renders items at the end of actions area
  */
-@themes({ bootstrap })
+@themes({ light: { bootstrap }, dark: { bootstrap } })
 export default class IgcCardActionsComponent extends LitElement {
   public static readonly tagName = 'igc-card-actions';
   public static override styles = styles;

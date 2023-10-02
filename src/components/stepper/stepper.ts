@@ -29,7 +29,10 @@ defineComponents(IgcStepComponent);
  * @fires igcActiveStepChanging - Emitted when the active step is about to change.
  * @fires igcActiveStepChanged - Emitted when the active step is changed.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({
+  light: { bootstrap, fluent, indigo },
+  dark: { bootstrap, fluent, indigo },
+})
 export default class IgcStepperComponent extends EventEmitterMixin<
   IgcStepperEventMap,
   Constructor<LitElement>

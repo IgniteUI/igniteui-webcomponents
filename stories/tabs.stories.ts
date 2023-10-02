@@ -32,10 +32,10 @@ const metadata: Meta<IgcTabsComponent> = {
       defaultValue: 'start',
     },
     activation: {
-      type: '"auto" | "manual"',
+      type: '"manual" | "auto"',
       description:
         'Determines the tab activation. When set to auto,\nthe tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys\nand the corresponding panel is displayed.\nWhen set to manual, the tab is only focused. The selection happens after pressing Space or Enter.',
-      options: ['auto', 'manual'],
+      options: ['manual', 'auto'],
       control: { type: 'inline-radio' },
       defaultValue: 'auto',
     },
@@ -56,7 +56,7 @@ interface IgcTabsArgs {
    * and the corresponding panel is displayed.
    * When set to manual, the tab is only focused. The selection happens after pressing Space or Enter.
    */
-  activation: 'auto' | 'manual';
+  activation: 'manual' | 'auto';
 }
 type Story = StoryObj<IgcTabsArgs>;
 
