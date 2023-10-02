@@ -3,7 +3,6 @@
 @use 'themes' as *;
 
 $theme: $fluent;
-
 $thumb-size: rem(16px);
 $thumb-radius: math.div($thumb-size, 2);
 
