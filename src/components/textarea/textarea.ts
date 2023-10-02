@@ -63,7 +63,13 @@ export interface IgcTextareaEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes({ material, bootstrap, fluent, indigo }, true)
+@themes(
+  {
+    light: { material, bootstrap, fluent, indigo },
+    dark: { material, bootstrap, fluent, indigo },
+  },
+  true
+)
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
 ) {
