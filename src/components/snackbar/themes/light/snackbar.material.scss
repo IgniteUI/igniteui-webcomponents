@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-$theme: $fluent;
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-snackbar');
@@ -12,17 +12,4 @@ $theme: $fluent;
     color: var-get($theme, 'text-color');
     background: var-get($theme, 'background');
     box-shadow: var-get($theme, 'elevation');
-}
-
-[part~='message'] {
-    @include type-style('caption');
-}
-
-igc-button::part(base),
-igc-button::part(base):hover {
-    color: var-get($theme, 'button-color');
-}
-
-igc-button::part(base):focus-visible::after {
-    display: none;
 }
