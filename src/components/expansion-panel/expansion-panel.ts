@@ -1,28 +1,24 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { AnimationPlayer } from '../../animations/player.js';
+import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/expansion-panel.base.css.js';
-import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
-import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
-import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
-import { createCounter } from '../common/util.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcIconComponent from '../icon/icon.js';
-import {
-  AnimationPlayer,
-  growVerIn,
-  growVerOut,
-} from '../../animations/index.js';
 import {
   addKeybindings,
   altKey,
   arrowDown,
   arrowUp,
 } from '../common/controllers/key-bindings.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { createCounter } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
+import { styles } from './themes/light/expansion-panel.base.css.js';
+import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
+import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
+import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
 
 defineComponents(IgcIconComponent);
 
@@ -56,7 +52,10 @@ export interface IgcExpansionPanelComponentEventMap {
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({
+  light: { bootstrap, fluent, indigo },
+  dark: { bootstrap, fluent, indigo },
+})
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>

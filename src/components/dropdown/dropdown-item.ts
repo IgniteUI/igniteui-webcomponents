@@ -21,7 +21,10 @@ import { styles as material } from './themes/light/item/dropdown-item.material.c
  * @csspart content - The main content wrapper.
  * @csspart suffix - The suffix wrapper.
  */
-@themes({ bootstrap, fluent, indigo, material })
+@themes({
+  light: { bootstrap, fluent, indigo, material },
+  dark: { bootstrap, fluent, indigo, material },
+})
 export default class IgcDropdownItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-item';
 

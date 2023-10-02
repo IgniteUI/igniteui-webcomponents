@@ -9,7 +9,7 @@ import { themes } from '../../theming/theming-decorator.js';
 
 defineComponents(IgcRadioComponent);
 
-@themes({ material, fluent })
+@themes({ light: { material, fluent }, dark: { material, fluent } })
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
 

@@ -68,9 +68,16 @@ defineComponents(
  */
 @themes(
   {
-    bootstrap,
-    fluent,
-    indigo,
+    light: {
+      bootstrap,
+      fluent,
+      indigo,
+    },
+    dark: {
+      bootstrap,
+      fluent,
+      indigo,
+    },
   },
   true
 )

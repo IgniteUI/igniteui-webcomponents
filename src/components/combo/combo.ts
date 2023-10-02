@@ -98,7 +98,13 @@ defineComponents(
  * @csspart footer - The container holding the footer content.
  * @csspart empty - The container holding the empty content.
  */
-@themes({ material, bootstrap, fluent, indigo }, true)
+@themes(
+  {
+    light: { material, bootstrap, fluent, indigo },
+    dark: { material, bootstrap, fluent, indigo },
+  },
+  true
+)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<T extends object = any>
