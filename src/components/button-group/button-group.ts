@@ -5,7 +5,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { watch } from '../common/decorators/watch.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcToggleButtonComponent from './toggle-button.js';
-import { themes } from '../../theming';
+import { themes } from '../../theming/theming-decorator.js';
 import { styles } from '../button-group/themes/light/button-group.base.css.js';
 import { styles as bootstrap } from '../button-group/themes/light/button-group.bootstrap.css.js';
 import { styles as material } from '../button-group/themes/light/button-group.material.css.js';
