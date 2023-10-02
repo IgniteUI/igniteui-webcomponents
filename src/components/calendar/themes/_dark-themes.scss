@@ -2,36 +2,7 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/calendar' as *;
 
-$material: map.merge(
-    digest-schema($dark-calendar),
-    (
-        border-radius: border-radius(map.get($dark-calendar, 'border-radius')...),
-        date-border-radius: border-radius(map.get($dark-calendar, 'date-border-radius')...),
-        month-border-radius: border-radius(map.get($dark-calendar, 'month-border-radius')...)
-    )
-);
-$bootstrap: map.merge(
-    digest-schema($dark-bootstrap-calendar),
-    (
-        border-radius: border-radius(map.get($dark-bootstrap-calendar, 'border-radius')...),
-        date-border-radius: border-radius(map.get($dark-bootstrap-calendar, 'date-border-radius')...),
-        month-border-radius: border-radius(map.get($dark-bootstrap-calendar, 'month-border-radius')...)
-    )
-);
-$fluent: map.merge(
-    digest-schema($dark-fluent-calendar),
-    (
-        border-radius: border-radius(map.get($dark-fluent-calendar, 'border-radius')...),
-        date-border-radius: border-radius(map.get($dark-fluent-calendar, 'date-border-radius')...),
-        month-border-radius: border-radius(map.get($dark-fluent-calendar, 'month-border-radius')...)
-    )
-);
-$indigo: map.merge(
-    digest-schema($dark-indigo-calendar),
-    (
-        border-radius: border-radius(map.get($dark-indigo-calendar, 'border-radius')...),
-        date-border-radius: border-radius(map.get($dark-indigo-calendar, 'date-border-radius')...),
-        month-border-radius: border-radius(map.get($dark-indigo-calendar, 'month-border-radius')...)
-    )
-);
-
+$material: digest-schema($dark-calendar);
+$bootstrap: digest-schema($dark-bootstrap-calendar);
+$fluent: digest-schema($dark-fluent-calendar);
+$indigo: digest-schema($dark-indigo-calendar);

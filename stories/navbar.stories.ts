@@ -1,17 +1,15 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIcon } from '../src/components/icon/icon.registry.js';
-import { Context } from './story.js';
 import {
-  defineComponents,
   IgcAvatarComponent,
-  IgcNavbarComponent,
-  IgcInputComponent,
-  IgcIconComponent,
   IgcButtonComponent,
   IgcDropdownComponent,
+  IgcIconComponent,
+  IgcInputComponent,
+  IgcNavbarComponent,
+  defineComponents,
+  registerIcon,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(
   IgcNavbarComponent,
@@ -71,12 +69,9 @@ registerIcon(
   'https://unpkg.com/material-design-icons@3.0.1/action/svg/production/ic_favorite_24px.svg'
 );
 
-const Template = (
-  { content }: NavbarStoryArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ content }: NavbarStoryArgs) => {
   return html`
-    <igc-navbar dir=${ifDefined(direction)} style="height:30px">
+    <igc-navbar style="height:30px">
       <igc-icon slot="start" name="home"></igc-icon>
       <h2>${content}</h2>
       <igc-input

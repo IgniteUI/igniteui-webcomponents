@@ -22,8 +22,8 @@ const getTheme = async ({ theme, variant }) => {
   return stylesheet.default;
 };
 
-const getSize = (size: 'small' | 'medium' | 'large' | 'attribute') => {
-  if (size === 'attribute') {
+const getSize = (size: 'small' | 'medium' | 'large' | 'default') => {
+  if (size === 'default') {
     return;
   }
 
@@ -66,18 +66,30 @@ export const globalTypes = {
   size: {
     name: 'Size',
     description: 'Component size',
-    defaultValue: 'attribute',
+    defaultValue: 'default',
     toolbar: {
       icon: 'grow',
-      items: ['attribute', 'small', 'medium', 'large'],
+      items: ['default', 'small', 'medium', 'large'],
       title: 'Size',
     },
   },
 };
 
+const parser = new DOMParser();
+
 export const parameters = {
   backgrounds: {
     disable: true,
+  },
+  docs: {
+    source: {
+      // Strip theme styles and wrapping container from the code preview
+      transform: (code: string) =>
+        parser.parseFromString(code, 'text/html').querySelector('#igc-story')
+          ?.innerHTML,
+      format: 'html',
+      language: 'html',
+    },
   },
 };
 
@@ -97,11 +109,20 @@ const themeProvider: Decorator = (Story, context) => {
         color: ${context.globals.variant === 'light' ? '#000' : '#fff'};
     }
 
+    #igc-story[dir='rtl'] {
+      --ig-dir: -1;
+    }
+
     ${context.loaded.theme}
     ${getSize(context.globals.size)}
   </style>`;
 
-  return html`${styles}${Story()}`;
+  return html`
+    ${styles}
+    <div id="igc-story" dir=${context.globals.direction ?? 'auto'}>
+      ${Story()}
+    </div>
+  `;
 };
 
 export const decorators = [themeProvider, withActions];

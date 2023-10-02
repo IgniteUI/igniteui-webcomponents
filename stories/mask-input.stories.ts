@@ -2,14 +2,13 @@ import { github } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
   IgcIconComponent,
   IgcMaskInputComponent,
   defineComponents,
+  registerIconFromText,
 } from '../src/index.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -61,7 +60,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
@@ -100,22 +99,14 @@ const metadata: Meta<IgcMaskInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     valueMode: 'raw',
     outlined: false,
-    readonly: false,
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
-    size: 'medium',
   },
 };
 
@@ -142,7 +133,7 @@ interface IgcMaskInputArgs {
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
   /** Makes the control a readonly field. */
-  readonly: boolean;
+  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -155,8 +146,6 @@ interface IgcMaskInputArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcMaskInputArgs>;
 
@@ -168,34 +157,28 @@ Object.assign(metadata.parameters!, {
   },
 });
 
-const Template = (
-  {
-    name,
-    readonly,
-    disabled,
-    required,
-    outlined,
-    valueMode,
-    label,
-    value,
-    placeholder,
-    mask,
-    prompt,
-    size,
-  }: IgcMaskInputArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  name,
+  readOnly,
+  disabled,
+  required,
+  outlined,
+  valueMode,
+  label,
+  value,
+  placeholder,
+  mask,
+  prompt,
+}: IgcMaskInputArgs) => {
   return html`<igc-mask-input
-    dir=${direction}
     name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
     value=${ifDefined(value)}
     mask=${ifDefined(mask)}
     prompt=${ifDefined(prompt)}
     label=${ifDefined(label)}
-    size=${ifDefined(size)}
     value-mode=${ifDefined(valueMode)}
-    ?readonly=${ifDefined(readonly)}
+    ?readonly=${ifDefined(readOnly)}
     ?outlined=${ifDefined(outlined)}
     ?required=${ifDefined(required)}
     ?disabled=${ifDefined(disabled)}

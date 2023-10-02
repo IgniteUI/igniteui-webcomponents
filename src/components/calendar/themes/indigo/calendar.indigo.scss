@@ -9,11 +9,7 @@ $theme: $indigo;
     @include css-vars-from-theme($theme, 'ig-calendar');
 
     border-radius: var-get($theme, 'border-radius');
-}
 
-:host([size='large']),
-:host([size='medium']),
-:host([size='small']) {
     igc-days-view::part(date-inner) {
         border-radius: var-get($theme, 'date-border-radius');
     }

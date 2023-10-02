@@ -1,6 +1,4 @@
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
 import { defineComponents, IgcButtonComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
 
@@ -62,15 +60,8 @@ const metadata: Meta<IgcButtonComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
-  args: { variant: 'contained', disabled: false, size: 'medium' },
+  args: { variant: 'contained', disabled: false },
 };
 
 export default metadata;
@@ -93,8 +84,6 @@ interface IgcButtonArgs {
   rel: string;
   /** The disabled state of the component */
   disabled: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcButtonArgs>;
 
@@ -106,10 +95,7 @@ Object.assign(metadata.parameters!, {
   },
 });
 
-const ButtonTemplate = (
-  { disabled = false, size, variant, type }: IgcButtonArgs,
-  { globals: { direction } }: Context
-) => {
+const ButtonTemplate = ({ disabled = false, variant, type }: IgcButtonArgs) => {
   const handleClick = () => {
     console.log('the button was clicked');
   };
@@ -118,10 +104,8 @@ const ButtonTemplate = (
     <igc-button
       @click=${handleClick}
       .disabled=${disabled}
-      .size=${size}
       .variant=${variant}
       .type=${type}
-      dir=${ifDefined(direction)}
     >
       <span slot="prefix">+</span>
       Click
@@ -130,27 +114,21 @@ const ButtonTemplate = (
   `;
 };
 
-const LinkTemplate = (
-  {
-    disabled = false,
-    size,
-    variant,
-    href = 'http://www.infragistics.com',
-    download,
-    rel,
-    target,
-  }: IgcButtonArgs,
-  { globals: { direction } }: Context
-) => html`
+const LinkTemplate = ({
+  disabled = false,
+  variant,
+  href = 'http://www.infragistics.com',
+  download,
+  rel,
+  target,
+}: IgcButtonArgs) => html`
   <igc-button
     .disabled=${disabled}
-    .size=${size}
     .variant=${variant}
     .href=${href}
     .download=${download}
     .rel=${rel}
     .target=${target}
-    dir=${ifDefined(direction)}
   >
     Click me
   </igc-button>

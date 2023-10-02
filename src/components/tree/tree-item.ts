@@ -5,7 +5,7 @@ import {
   state,
 } from 'lit/decorators.js';
 import { html, LitElement } from 'lit';
-import { partNameMap } from '../common/util.js';
+import { isLTR, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/tree-item.base.css.js';
 import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
@@ -33,12 +33,6 @@ defineComponents(
   IgcCheckboxComponent,
   IgcCircularProgressComponent
 );
-
-const sizeMultiplier: Record<'small' | 'medium' | 'large', number> = {
-  small: 1 / 2,
-  medium: 2 / 3,
-  large: 1,
-};
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -169,7 +163,7 @@ export default class IgcTreeItemComponent extends LitElement {
 
     const [_, event] = await Promise.all([
       this.animationPlayer.stopAll(),
-      this.animationPlayer.play(animation),
+      this.animationPlayer.play(animation()),
     ]);
 
     return event.type === 'finish';
@@ -513,15 +507,12 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   protected override render() {
-    const size = this.level * (this.tree ? sizeMultiplier[this.tree!.size] : 1);
+    const ltr = this.tree ? isLTR(this.tree) : true;
 
     return html`
-      <div
-        id="wrapper"
-        part="wrapper ${this.tree?.size} ${partNameMap(this.parts)}"
-      >
+      <div id="wrapper" part="wrapper ${partNameMap(this.parts)}">
         <div
-          style="width: calc(${size} * var(--igc-tree-indentation-size))"
+          style="width: calc(${this.level} * var(--igc-tree-indentation-size))"
           part="indentation"
           aria-hidden="true"
         >
@@ -541,7 +532,7 @@ export default class IgcTreeItemComponent extends LitElement {
                         <igc-icon
                           name=${this.expanded
                             ? 'keyboard_arrow_down'
-                            : this.tree?.dir === 'rtl'
+                            : !ltr
                             ? 'navigate_before'
                             : 'keyboard_arrow_right'}
                           collection="internal"

@@ -5,12 +5,12 @@ import {
 } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
 import {
-  defineComponents,
   IgcAvatarComponent,
   IgcCardComponent,
   IgcIconButtonComponent,
+  defineComponents,
+  registerIconFromText,
 } from '../src/index.js';
 
 defineComponents(IgcAvatarComponent, IgcCardComponent, IgcIconButtonComponent);
@@ -53,18 +53,12 @@ interface IgcCardArgs {
 type Story = StoryObj<IgcCardArgs>;
 
 // endregion
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
 
-const Template = (
-  { elevated = false }: IgcCardArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ elevated = false }: IgcCardArgs) => {
   return html`
     <div style="display:flex; margin:16px">
       <div style="max-width: 344px; margin-right: 16px">
-        <igc-card ?elevated=${elevated} dir=${direction}>
+        <igc-card ?elevated=${elevated}>
           <igc-card-media style="max-height: 194px">
             <img
               src="https://images.unsplash.com/photo-1518235506717-e1ed3306a89b?ixlib=rb-1.2.1&auto=format&fit=crop&w=320&q=180"
@@ -101,7 +95,7 @@ const Template = (
         </igc-card>
       </div>
       <div style="max-width: 344px">
-        <igc-card dir=${direction} ?elevated=${elevated}>
+        <igc-card ?elevated=${elevated}>
           <igc-card-header>
             <igc-avatar
               slot="thumbnail"
@@ -122,7 +116,7 @@ const Template = (
             <p>
               New York City comprises 5 boroughs sitting where the Hudson River
               meets the Atlantic Ocean. At its core is Manhattan, a densely
-              populated borough that’s among the world’s major commercial,
+              populated borough that's among the world's major commercial,
               financial and cultural centers.
             </p>
           </igc-card-content>
@@ -152,7 +146,7 @@ const Template = (
               <h5 slot="subtitle">Under the Grave (2016)</h5>
             </igc-card-header>
             <igc-card-content>
-              As I have always said: I write what’s real and what’s true, even
+              As I have always said: I write what's real and what's true, even
               if it means throwing myself under the bus.
             </igc-card-content>
           </div>

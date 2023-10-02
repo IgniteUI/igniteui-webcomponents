@@ -163,14 +163,14 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public placeholder!: string;
 
   /**
-   * @deprecated since version 5.0. It will be removed in the next major release.
+   * @deprecated since version 4.3.0
    * @hidden @internal @private
    */
   public override positionStrategy: 'absolute' | 'fixed' = 'fixed';
 
   /**
    * Whether the dropdown's width should be the same as the target's one.
-   * @deprecated since version 5.0. It will be removed in the next major release.
+   * @deprecated since version 4.3.0
    * @hidden @internal @private
    * @attr same-width
    */
@@ -180,19 +180,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
    * When true, once enough space is detected on its preferred side, it will flip back.
-   * @deprecated since version 5.0. It will be removed in the next major release.
+   * @deprecated since version 4.3.0
    * @hidden @internal @private
    * @attr
    */
   @property({ type: Boolean })
   public override flip = true;
-
-  /**
-   * The direction attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true })
-  public override dir: 'ltr' | 'rtl' | 'auto' = 'auto';
 
   constructor() {
     super();
@@ -449,7 +442,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
           placeholder=${ifDefined(this.placeholder)}
           label=${ifDefined(this.label)}
           size=${this.size}
-          dir=${this.dir}
           tabindex="-1"
           .disabled=${this.disabled}
           .required=${this.required}

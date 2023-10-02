@@ -5,8 +5,11 @@
 
 $theme: $indigo;
 $fill-color: var-get($theme, 'fill-color');
+$fill-color-hover: var-get($theme, 'fill-color-hover');
 $empty-color: var-get($theme, 'empty-color');
 $disabled-color: var-get($theme, 'disabled-color');
+$disabled-indeterminate-color: var-get($theme, 'disabled-indeterminate-color');
+$disabled-color-label: var-get($theme, 'disabled-color-label');
 $error-color: var-get($theme, 'error-color');
 $error-color-hover: var-get($theme, 'error-color-hover');
 
@@ -23,14 +26,16 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 }
 
 [part~='control'] {
-    border-radius: var-get($theme, 'ripple-radius');
+    border-radius: var-get($theme, 'border-radius-ripple');
     width: var(--size, rem(20px));
     height: var(--size, rem(20px));
     min-width: var(--size, rem(20px));
+    transition: background .15s ease-in;
 
     &::after {
         border-radius: var-get($theme, 'border-radius');
         border: rem(2px) solid $empty-color;
+        transition: border-color .15s ease-in;
     }
 }
 
@@ -42,6 +47,19 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 [part~='indicator'] {
     stroke: var-get($theme, 'tick-color');
     transform: scale(.8);
+}
+
+[part='indicator checked'] {
+    transition-duration: .15s;
+}
+
+:host(:hover) {
+    [part='control checked'] {
+        &::after {
+            background: $fill-color-hover;
+            border-color: $fill-color-hover;
+        }
+    }
 }
 
 :host(:focus-within) {
@@ -70,7 +88,11 @@ $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host([indeterminate]:hover) {
     [part~='control'] {
-        box-shadow: 0 0 0 rem(4px) color(secondary, 100, .87);
+        background: $fill-color-hover;
+
+        &::after {
+            border-color: $fill-color-hover;
+        }
     }
 }
 
@@ -151,18 +173,19 @@ $error-color-hover: var-get($theme, 'error-color-hover');
     }
 
     [part='control checked']::after {
-        background: $disabled-color;
+        background: $disabled-indeterminate-color;
+        border-color: $disabled-indeterminate-color;
     }
 
     [part~='label'] {
-        color: $disabled-color;
+        color: $disabled-color-label;
     }
 }
 
 :host([disabled][indeterminate]),
 :host(:disabled[indeterminate]) {
     [part~='control']::after {
-        background: $disabled-color;
-        border-color: $disabled-color;
+        background: $disabled-indeterminate-color;
+        border-color: $disabled-indeterminate-color;
     }
 }

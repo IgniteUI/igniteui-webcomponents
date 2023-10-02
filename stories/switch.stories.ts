@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -41,11 +40,6 @@ const metadata: Meta<IgcSwitchComponent> = {
       options: ['before', 'after'],
       control: { type: 'inline-radio' },
       defaultValue: 'after',
-    },
-    ariaLabelledby: {
-      type: 'string',
-      description: 'Sets the aria-labelledby attribute for the control.',
-      control: 'text',
     },
     required: {
       type: 'boolean',
@@ -89,8 +83,6 @@ interface IgcSwitchArgs {
   checked: boolean;
   /** The label position of the control. */
   labelPosition: 'before' | 'after';
-  /** Sets the aria-labelledby attribute for the control. */
-  ariaLabelledby: string;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -104,16 +96,12 @@ type Story = StoryObj<IgcSwitchArgs>;
 
 // endregion
 
-const Template = (
-  { labelPosition, checked, disabled }: IgcSwitchArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({ labelPosition, checked, disabled }: IgcSwitchArgs) => {
   return html`
     <igc-switch
       label-position=${ifDefined(labelPosition)}
       .checked=${checked}
       .disabled=${disabled}
-      dir=${ifDefined(direction)}
     >
       Label
     </igc-switch>

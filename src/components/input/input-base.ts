@@ -8,7 +8,6 @@ import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { Direction } from '../common/types.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/input.base.css.js';
 import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
@@ -62,14 +61,6 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   protected helperText!: Array<HTMLElement>;
 
   /**
-   * The direction attribute of the control.
-   * @attr
-   */
-  @property({ reflect: true })
-  @blazorSuppress()
-  public override dir: Direction = 'auto';
-
-  /**
    * Whether the control will have outlined appearance.
    * @attr
    */
@@ -78,23 +69,39 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
 
   /**
    * Makes the control a readonly field.
-   * @attr
+   * @attr readonly
    */
-  @property({ reflect: true, type: Boolean })
-  public readonly = false;
+  @property({ type: Boolean, reflect: true, attribute: 'readonly' })
+  public readOnly = false;
+
+  /**
+   * Makes the control a readonly field.
+   * @prop
+   *
+   * @deprecated - since v4.4.0
+   * Use the `readOnly` property instead.
+   */
+  @property({ attribute: false })
+  public get readonly() {
+    return this.readOnly;
+  }
+
+  public set readonly(value: boolean) {
+    this.readOnly = value;
+  }
 
   /**
    * The placeholder attribute of the control.
    * @attr
    */
-  @property({ type: String })
+  @property()
   public placeholder!: string;
 
   /**
    * The label for the control.
    * @attr
    */
-  @property({ type: String })
+  @property()
   public label!: string;
 
   constructor() {
@@ -212,8 +219,10 @@ export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   }
 
   protected override render() {
-    return html`${this[themeSymbol] === 'material'
-      ? this.renderMaterial()
-      : this.renderStandard()}`;
+    return html`
+      ${this[themeSymbol] === 'material'
+        ? this.renderMaterial()
+        : this.renderStandard()}
+    `;
   }
 }

@@ -1,7 +1,5 @@
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import {
-  Context,
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -26,13 +24,9 @@ const metadata: Meta<IgcSliderComponent> = {
   argTypes: {
     value: {
       type: 'number',
-      description: 'The current value of the slider.',
+      description: 'The current value of the component.',
       control: 'number',
-    },
-    ariaLabel: {
-      type: 'string',
-      description: 'The aria label of the slider thumb.',
-      control: 'text',
+      defaultValue: 0,
     },
     name: {
       type: 'string',
@@ -148,6 +142,7 @@ const metadata: Meta<IgcSliderComponent> = {
     },
   },
   args: {
+    value: 0,
     invalid: false,
     disabled: false,
     discreteTrack: false,
@@ -165,10 +160,8 @@ const metadata: Meta<IgcSliderComponent> = {
 export default metadata;
 
 interface IgcSliderArgs {
-  /** The current value of the slider. */
+  /** The current value of the component. */
   value: number;
-  /** The aria label of the slider thumb. */
-  ariaLabel: string;
   /** The name attribute of the control. */
   name: string;
   /** Control the validity of the control. */
@@ -222,28 +215,24 @@ Object.assign(metadata.parameters!, {
   },
 });
 
-const Template = (
-  {
-    disabled = false,
-    discreteTrack = false,
-    hideTooltip = false,
-    step = 2,
-    value = 0,
-    min = 0,
-    max = 100,
-    lowerBound,
-    upperBound,
-    primaryTicks = 3,
-    secondaryTicks = 2,
-    hidePrimaryLabels = false,
-    hideSecondaryLabels = false,
-    tickOrientation = 'end',
-    tickLabelRotation = 0,
-    ariaLabel,
-    locale = 'en',
-  }: IgcSliderArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  disabled = false,
+  discreteTrack = false,
+  hideTooltip = false,
+  step = 2,
+  value = 0,
+  min = 0,
+  max = 100,
+  lowerBound,
+  upperBound,
+  primaryTicks = 3,
+  secondaryTicks = 2,
+  hidePrimaryLabels = false,
+  hideSecondaryLabels = false,
+  tickOrientation = 'end',
+  tickLabelRotation = 0,
+  locale = 'en',
+}: IgcSliderArgs) => html`
   <igc-slider
     style="margin: 60px;"
     ?disabled=${disabled}
@@ -253,7 +242,6 @@ const Template = (
     .value=${value}
     min=${min}
     max=${max}
-    aria-label=${ifDefined(ariaLabel)}
     locale=${locale}
     .lowerBound=${lowerBound}
     .upperBound=${upperBound}
@@ -263,14 +251,10 @@ const Template = (
     .hideSecondaryLabels=${hideSecondaryLabels}
     .tickOrientation=${tickOrientation}
     .tickLabelRotation=${tickLabelRotation}
-    dir=${ifDefined(direction)}
   ></igc-slider>
 `;
 
-const ValueFormatTemplate = (
-  _args: IgcSliderArgs,
-  { globals: { direction } }: Context
-) => html`
+const ValueFormatTemplate = (_args: IgcSliderArgs) => html`
   <igc-slider
     style="padding: 60px;"
     primary-ticks="3"
@@ -280,7 +264,6 @@ const ValueFormatTemplate = (
       currency: 'USD',
       minimumFractionDigits: 2,
     }}
-    dir=${ifDefined(direction)}
   ></igc-slider>
   <igc-slider
     style="padding: 60px; overflow: hidden"
@@ -291,20 +274,15 @@ const ValueFormatTemplate = (
       unit: 'kilometer',
       minimumFractionDigits: 2,
     }}
-    dir=${ifDefined(direction)}
   ></igc-slider>
 `;
 
-const LabelsTemplate = (
-  _args: IgcSliderArgs,
-  { globals: { direction } }: Context
-) => html`
+const LabelsTemplate = (_args: IgcSliderArgs) => html`
   <igc-slider
     style="margin: 40px 20px; width: 200px;"
     primary-ticks="3"
     discrete-track
     aria-label="Priority"
-    dir=${ifDefined(direction)}
   >
     <igc-slider-label>Low</igc-slider-label>
     <igc-slider-label>Medium</igc-slider-label>

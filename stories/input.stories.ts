@@ -2,10 +2,12 @@ import { github } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
-import { IgcInputComponent, defineComponents } from '../src/index.js';
 import {
-  Context,
+  IgcInputComponent,
+  defineComponents,
+  registerIconFromText,
+} from '../src/index.js';
+import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
@@ -47,14 +49,14 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The pattern attribute of the control.',
       control: 'text',
     },
-    minlength: {
+    minLength: {
       type: 'number',
-      description: 'The minlength attribute of the control.',
+      description: 'The minimum string length required by the control.',
       control: 'number',
     },
-    maxlength: {
+    maxLength: {
       type: 'number',
-      description: 'The maxlength attribute of the control.',
+      description: 'The maximum string length of the control.',
       control: 'number',
     },
     min: {
@@ -95,7 +97,7 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    readonly: {
+    readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
@@ -134,24 +136,16 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     type: 'text',
     tabIndex: 0,
     value: '',
     outlined: false,
-    readonly: false,
+    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
-    size: 'medium',
   },
 };
 
@@ -172,10 +166,10 @@ interface IgcInputArgs {
     | 'decimal';
   /** The pattern attribute of the control. */
   pattern: string;
-  /** The minlength attribute of the control. */
-  minlength: number;
-  /** The maxlength attribute of the control. */
-  maxlength: number;
+  /** The minimum string length required by the control. */
+  minLength: number;
+  /** The maximum string length of the control. */
+  maxLength: number;
   /** The min attribute of the control. */
   min: string | number;
   /** The max attribute of the control. */
@@ -192,7 +186,7 @@ interface IgcInputArgs {
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
   /** Makes the control a readonly field. */
-  readonly: boolean;
+  readOnly: boolean;
   /** The placeholder attribute of the control. */
   placeholder: string;
   /** The label for the control. */
@@ -205,43 +199,35 @@ interface IgcInputArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcInputArgs>;
 
 // endregion
 
-const Template = (
-  {
-    type,
-    size,
-    label = 'Sample Label',
-    outlined,
-    autofocus,
-    autocomplete,
-    minlength,
-    maxlength,
-    step,
-    value,
-    placeholder,
-    readonly,
-    required,
-    disabled,
-    min,
-    max,
-    invalid,
-  }: IgcInputArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  type,
+  label = 'Sample Label',
+  outlined,
+  autofocus,
+  autocomplete,
+  minLength,
+  maxLength,
+  step,
+  value,
+  placeholder,
+  readOnly,
+  required,
+  disabled,
+  min,
+  max,
+  invalid,
+}: IgcInputArgs) => html`
   <igc-input
     type=${type}
     label=${label}
-    size=${ifDefined(size)}
     placeholder=${ifDefined(placeholder)}
-    dir=${direction}
-    minlength=${ifDefined(minlength)}
-    maxlength=${ifDefined(maxlength)}
+    minlength=${ifDefined(minLength)}
+    maxlength=${ifDefined(maxLength)}
     step=${ifDefined(step)}
     autocomplete=${ifDefined(autocomplete)}
     min=${ifDefined(min)}
@@ -249,13 +235,13 @@ const Template = (
     .value=${value}
     ?autofocus=${autofocus}
     ?invalid=${invalid}
-    .readonly=${readonly}
+    .readOnly=${readOnly}
     .outlined=${outlined}
     .required=${required}
     .disabled=${disabled}
   >
-    <igc-icon name="github" slot="prefix" size=${size}></igc-icon>
-    <igc-icon name="github" slot="suffix" size=${size}></igc-icon>
+    <igc-icon name="github" slot="prefix"></igc-icon>
+    <igc-icon name="github" slot="suffix"></igc-icon>
     <span slot="helper-text">This is some helper text</span>
   </igc-input>
 `;

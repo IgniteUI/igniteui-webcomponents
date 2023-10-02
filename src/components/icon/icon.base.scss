@@ -7,6 +7,12 @@
     justify-content: center;
 }
 
+igc-icon,
+svg {
+    width: 1em;
+    height: 1em;
+}
+
 :host([size='small']) {
     --component-size: var(--ig-size, var(--ig-size-small));
 }

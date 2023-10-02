@@ -46,18 +46,6 @@ $icon-size: rem(18px);
     line-height: 1;
 }
 
-:host([size='small']) {
-    --component-size: var(--ig-size, var(--ig-size-small));
-}
-
-:host([size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
-
-:host([size='large']) {
-    --component-size: var(--ig-size, var(--ig-size-large));
-}
-
 :host([disabled]),
 :host(:disabled) {
     pointer-events: none;

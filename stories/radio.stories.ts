@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { defineComponents, IgcRadioComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
@@ -29,11 +28,6 @@ const metadata: Meta<IgcRadioComponent> = {
       options: ['before', 'after'],
       control: { type: 'inline-radio' },
       defaultValue: 'after',
-    },
-    ariaLabelledby: {
-      type: 'string',
-      description: 'Sets the aria-labelledby attribute for the radio control.',
-      control: 'text',
     },
     required: {
       type: 'boolean',
@@ -77,8 +71,6 @@ interface IgcRadioArgs {
   checked: boolean;
   /** The label position of the radio control. */
   labelPosition: 'before' | 'after';
-  /** Sets the aria-labelledby attribute for the radio control. */
-  ariaLabelledby: string;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -92,17 +84,19 @@ type Story = StoryObj<IgcRadioArgs>;
 
 // endregion
 
-const Template = (
-  { labelPosition, checked, disabled, required, invalid }: IgcRadioArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  labelPosition,
+  checked,
+  disabled,
+  required,
+  invalid,
+}: IgcRadioArgs) => html`
   <igc-radio
     label-position="${ifDefined(labelPosition)}"
     .disabled="${disabled}"
     .checked="${checked}"
     .required=${required}
     .invalid="${invalid}"
-    dir=${ifDefined(direction)}
   >
     Label
   </igc-radio>

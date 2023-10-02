@@ -47,11 +47,6 @@ const metadata: Meta<IgcCheckboxComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'after',
     },
-    ariaLabelledby: {
-      type: 'string',
-      description: 'Sets the aria-labelledby attribute for the control.',
-      control: 'text',
-    },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
@@ -97,8 +92,6 @@ interface IgcCheckboxArgs {
   checked: boolean;
   /** The label position of the control. */
   labelPosition: 'before' | 'after';
-  /** Sets the aria-labelledby attribute for the control. */
-  ariaLabelledby: string;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -112,21 +105,18 @@ type Story = StoryObj<IgcCheckboxArgs>;
 
 // endregion
 
-interface Context {
-  globals: { theme: string; direction: 'ltr' | 'rtl' | 'auto' };
-}
-
-const Template = (
-  { labelPosition, checked, indeterminate, disabled }: IgcCheckboxArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  labelPosition,
+  checked,
+  indeterminate,
+  disabled,
+}: IgcCheckboxArgs) => {
   return html`
     <igc-checkbox
       label-position=${ifDefined(labelPosition)}
       .checked=${checked}
       .indeterminate=${indeterminate}
       .disabled=${disabled}
-      dir=${ifDefined(direction)}
     >
       Label
     </igc-checkbox>

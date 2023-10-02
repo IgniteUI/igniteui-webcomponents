@@ -1,32 +1,15 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/navdrawer' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/overlay' as *;
 
-$material: map.merge(
-    digest-schema($light-navdrawer),
-    (
-        border-radius: border-radius(map.get($light-navdrawer, 'border-radius')...),
-        item-border-radius: border-radius(map.get($light-navdrawer, 'item-border-radius')...)
-    )
-);
-$bootstrap: map.merge(
-    digest-schema($bootstrap-navdrawer),
-    (
-        border-radius: border-radius(map.get($bootstrap-navdrawer, 'border-radius')...),
-        item-border-radius: border-radius(map.get($bootstrap-navdrawer, 'item-border-radius')...)
-    )
-);
-$fluent: map.merge(
-    digest-schema($fluent-navdrawer),
-    (
-        border-radius: border-radius(map.get($fluent-navdrawer, 'border-radius')...),
-        item-border-radius: border-radius(map.get($fluent-navdrawer, 'item-border-radius')...)
-    )
-);
-$indigo: map.merge(
-    digest-schema($indigo-navdrawer),
-    (
-        border-radius: border-radius(map.get($indigo-navdrawer, 'border-radius')...),
-        item-border-radius: border-radius(map.get($indigo-navdrawer, 'item-border-radius')...)
-    )
-);
+$material: digest-schema($light-navdrawer);
+$bootstrap: digest-schema($bootstrap-navdrawer);
+$fluent: digest-schema($fluent-navdrawer);
+$indigo: digest-schema($indigo-navdrawer);
+
+// Light Overlay Schemas
+$overlay-material: digest-schema($light-overlay);
+$overlay-fluent: digest-schema($fluent-overlay);
+$overlay-bootstrap: digest-schema($bootstrap-overlay);
+$overlay-indigo: digest-schema($indigo-overlay);

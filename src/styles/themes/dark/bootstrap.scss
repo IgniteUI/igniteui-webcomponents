@@ -9,7 +9,6 @@
 @use '../../../components/tabs/themes/dark/tab.dark.bootstrap' as tab;
 @use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
 @use '../../../components/select/themes/dark/select.bootstrap' as select;
-@use '../../../components/nav-drawer/themes/dark/nav-drawer-item.bootstrap' as nav-drawer-item;
 @use '../../../components/combo/themes/dark/combo.bootstrap' as combo;
 @use '../../../components/avatar/themes/dark/avatar.bootstrap' as avatar;
 @use '../../../components/button/themes/button/dark/button.bootstrap' as button;
@@ -19,6 +18,9 @@
 @use '../../../components/checkbox/themes/dark/switch.bootstrap' as switch;
 @use '../../../components/radio/themes/dark/radio.bootstrap' as radio;
 @use '../../../components/stepper/themes/step/dark/step.bootstrap' as stepper;
+@use '../../../components/nav-drawer/themes/dark/nav-drawer.bootstrap' as nav-drawer;
+@use '../../../components/button-group/themes/dark/button-group-bootstrap' as button-group;
+@use '../../../components/button-group/themes/dark/toggle-button/toggle-button-bootstrap' as toggle-button;
 @include base.root-styles($palette);
 @include dropdown.theme();
 @include input.theme();
@@ -26,7 +28,6 @@
 @include list.theme();
 @include tab.theme();
 @include tree-item.theme();
-@include nav-drawer-item.theme();
 @include select.theme();
 @include grid.theme();
 @include combo.theme();
@@ -38,3 +39,6 @@
 @include switch.theme();
 @include radio.theme();
 @include stepper.theme();
+@include nav-drawer.theme();
+@include button-group.theme();
+@include toggle-button.theme();

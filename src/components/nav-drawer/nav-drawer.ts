@@ -2,9 +2,11 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { partNameMap } from '../common/util.js';
-import { styles as indigo } from './themes/light/indigo/nav-drawer.indigo.css.js';
 import { styles } from './themes/light/nav-drawer.base.css.js';
-
+import { styles as indigo } from './themes/light/nav-drawer.indigo.css.js';
+import { styles as material } from './themes/light/nav-drawer.material.css.js';
+import { styles as fluent } from './themes/light/nav-drawer.fluent.css.js';
+import { styles as bootstrap } from './themes/light/nav-drawer.bootstrap.css.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
@@ -24,7 +26,7 @@ defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
  * @csspart main - The main container.
  * @csspart mini - The mini container.
  */
-@themes({ indigo })
+@themes({ indigo, material, fluent, bootstrap })
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
   public static override styles = styles;
@@ -83,14 +85,15 @@ export default class IgcNavDrawerComponent extends LitElement {
   protected override render() {
     return html`
       <div part="overlay" @click=${this.hide}></div>
+
       <div part="base">
         <div part="main">
           <slot></slot>
         </div>
+      </div>
 
-        <div part="${partNameMap(this.resolvePartNames('mini'))}">
-          <slot name="mini"></slot>
-        </div>
+      <div part="${partNameMap(this.resolvePartNames('mini'))}">
+        <slot name="mini"></slot>
       </div>
     `;
   }

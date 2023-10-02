@@ -1,0 +1,26 @@
+@use 'sass:map';
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-toast');
+    @include type-style('body-2');
+
+    display: inline-flex;
+    font-family: var(--ig-font-family);
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: rem(42px) auto;
+    min-width: rem(52px);
+    backdrop-filter: blur(10px);
+}
+
+:host(:not([open])) {
+    display: none;
+}

@@ -1,6 +1,5 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { Context } from './story.js';
 import {
   defineComponents,
   IgcCircularProgressComponent,
@@ -103,23 +102,19 @@ type Story = StoryObj<IgcCircularProgressArgs>;
 
 // endregion
 
-const Template = (
-  {
-    variant,
-    hideLabel,
-    value,
-    max,
-    animationDuration,
-    indeterminate,
-    labelFormat,
-  }: IgcCircularProgressArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  variant,
+  hideLabel,
+  value,
+  max,
+  animationDuration,
+  indeterminate,
+  labelFormat,
+}: IgcCircularProgressArgs) => html`
   <div style="display: flex; align-items: center; gap: 16px">
     <igc-circular-progress
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
-      dir=${direction}
       value=${ifDefined(value)}
       max=${ifDefined(max)}
       animation-duration=${ifDefined(animationDuration)}
@@ -129,7 +124,6 @@ const Template = (
     <igc-circular-progress
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
-      dir=${direction}
       value=${ifDefined(value)}
       max=${ifDefined(max)}
       animation-duration=${ifDefined(animationDuration)}
@@ -148,7 +142,6 @@ const Template = (
       style="--diameter: 72px; --stroke-thickness: 12px;"
       ?indeterminate=${indeterminate}
       ?hide-label=${hideLabel}
-      dir=${direction}
       value=${ifDefined(value)}
       max=${ifDefined(max)}
       animation-duration=${ifDefined(animationDuration)}

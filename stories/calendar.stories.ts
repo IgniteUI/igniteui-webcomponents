@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { Context } from './story.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { DateRangeDescriptor } from '../src/components/calendar/common/calendar.model.js';
 import { defineComponents, IgcCalendarComponent } from '../src/index.js';
@@ -62,13 +61,6 @@ const metadata: Meta<IgcCalendarComponent> = {
       control: { type: 'inline-radio' },
       defaultValue: 'days',
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'large',
-    },
     value: {
       type: 'Date | undefined',
       description:
@@ -124,7 +116,6 @@ const metadata: Meta<IgcCalendarComponent> = {
     orientation: 'horizontal',
     visibleMonths: 1,
     activeView: 'days',
-    size: 'large',
     selection: 'single',
     showWeekNumbers: false,
     weekStart: 'sunday',
@@ -147,8 +138,6 @@ interface IgcCalendarArgs {
   visibleMonths: number;
   /** The active view. */
   activeView: 'days' | 'months' | 'years';
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
   /**
    * The current value of the calendar.
    * Used when selection is set to single.
@@ -221,28 +210,24 @@ Object.assign(metadata.args!, {
   monthFormat: 'long',
 });
 
-const Template = (
-  {
-    showWeekNumbers,
-    hideOutsideDays,
-    weekStart,
-    locale,
-    weekDayFormat,
-    monthFormat,
-    selection,
-    activeView,
-    size,
-    hideHeader = false,
-    headerOrientation,
-    orientation,
-    title,
-    visibleMonths,
-    value,
-    values,
-    activeDate,
-  }: IgcCalendarArgs,
-  { globals: { direction } }: Context
-) => {
+const Template = ({
+  showWeekNumbers,
+  hideOutsideDays,
+  weekStart,
+  locale,
+  weekDayFormat,
+  monthFormat,
+  selection,
+  activeView,
+  hideHeader = false,
+  headerOrientation,
+  orientation,
+  title,
+  visibleMonths,
+  value,
+  values,
+  activeDate,
+}: IgcCalendarArgs) => {
   const formatOptions: Intl.DateTimeFormatOptions = {
     month: monthFormat,
     weekday: weekDayFormat,
@@ -279,9 +264,7 @@ const Template = (
       .activeDate=${activeDate ? new Date(activeDate) : new Date()}
       .value=${value ? new Date(value as Date) : undefined}
       values=${ifDefined(values)}
-      size=${ifDefined(size)}
       visible-months=${ifDefined(visibleMonths)}
-      dir=${ifDefined(direction)}
       @igcChange=${(ev: Event) => {
         console.log(ev);
       }}

@@ -1,19 +1,18 @@
-import { html } from 'lit';
 import { github } from '@igniteui/material-icons-extended';
+import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import {
-  Context,
+  IgcIconComponent,
+  IgcSelectComponent,
+  defineComponents,
+  registerIconFromText,
+} from '../src/index.js';
+import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { registerIconFromText } from '../src/components/icon/icon.registry';
-import {
-  defineComponents,
-  IgcSelectComponent,
-  IgcIconComponent,
-} from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcSelectComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -49,13 +48,6 @@ const metadata: Meta<IgcSelectComponent> = {
       type: 'string',
       description: 'The placeholder attribute of the control.',
       control: 'text',
-    },
-    dir: {
-      type: '"ltr" | "rtl" | "auto"',
-      description: 'The direction attribute of the control.',
-      options: ['ltr', 'rtl', 'auto'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'auto',
     },
     required: {
       type: 'boolean',
@@ -134,17 +126,9 @@ const metadata: Meta<IgcSelectComponent> = {
       control: 'number',
       defaultValue: 0,
     },
-    size: {
-      type: '"small" | "medium" | "large"',
-      description: 'Determines the size of the component.',
-      options: ['small', 'medium', 'large'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'medium',
-    },
   },
   args: {
     outlined: false,
-    dir: 'auto',
     required: false,
     disabled: false,
     invalid: false,
@@ -154,7 +138,6 @@ const metadata: Meta<IgcSelectComponent> = {
     open: false,
     placement: 'bottom-start',
     distance: 0,
-    size: 'medium',
   },
 };
 
@@ -171,8 +154,6 @@ interface IgcSelectArgs {
   label: string;
   /** The placeholder attribute of the control. */
   placeholder: string;
-  /** The direction attribute of the control. */
-  dir: 'ltr' | 'rtl' | 'auto';
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -205,8 +186,6 @@ interface IgcSelectArgs {
     | 'left-end';
   /** The distance from the target element. */
   distance: number;
-  /** Determines the size of the component. */
-  size: 'small' | 'medium' | 'large';
 }
 type Story = StoryObj<IgcSelectArgs>;
 
@@ -264,35 +243,29 @@ const items = [
     selected: false,
   },
 ];
-const Template = (
-  {
-    label = 'Sample Label',
-    placeholder,
-    name,
-    value = 'docs',
-    size = 'medium',
-    open = false,
-    disabled = false,
-    outlined = false,
-    invalid = false,
-    required = false,
-    autofocus = false,
-  }: IgcSelectArgs,
-  { globals: { direction } }: Context
-) => html`
+const Template = ({
+  label = 'Sample Label',
+  placeholder,
+  name,
+  value = 'docs',
+  open = false,
+  disabled = false,
+  outlined = false,
+  invalid = false,
+  required = false,
+  autofocus = false,
+}: IgcSelectArgs) => html`
   <igc-select
     value=${value}
     label=${ifDefined(label)}
     name=${ifDefined(name)}
     placeholder=${ifDefined(placeholder)}
-    size=${size}
     ?open=${open}
     ?autofocus=${autofocus}
     ?outlined=${outlined}
     ?required=${required}
     ?disabled=${disabled}
     ?invalid=${invalid}
-    .dir=${direction}
   >
     <header slot="header">Sample Header</header>
     <footer slot="footer">Sample Footer</footer>
@@ -368,6 +341,8 @@ function groupBy(objectArray: any, property: string) {
     return acc;
   }, {});
 }
+
+export const Basic: Story = Template.bind({});
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
@@ -480,5 +455,3 @@ export const Form: Story = {
     `;
   },
 };
-
-export const Basic: Story = Template.bind({});
