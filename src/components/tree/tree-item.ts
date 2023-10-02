@@ -1,10 +1,15 @@
+import { LitElement, html } from 'lit';
 import {
   property,
   query,
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { html, LitElement } from 'lit';
+import { AnimationPlayer } from '../../animations/player.js';
+import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { watch } from '../common/decorators/watch.js';
 import { isLTR, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/tree-item.base.css.js';
 import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
@@ -12,20 +17,12 @@ import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
 import { styles as indigo } from './themes/light/tree-item.indigo.css.js';
 import { styles as material } from './themes/light/tree-item.material.css.js';
 import type IgcTreeComponent from './tree.js';
-import { watch } from '../common/decorators/watch.js';
-import { IgcTreeSelectionService } from './tree.selection.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import {
-  AnimationPlayer,
-  growVerIn,
-  growVerOut,
-} from '../../animations/index.js';
+import { IgcTreeSelectionService } from './tree.selection.js';
 
+import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
-import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
 
 defineComponents(
