@@ -1,24 +1,23 @@
 @use 'sass:math';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$inactive-background: var(--inactive-background, color(gray, 600)) !default;
-$inactive-disabled-background: var(--inactive-disabled-background, color(gray, 100)) !default;
-$fill-background: var(--fill-background, color(gray, 800)) !default;
-$fill-hover-background: var(--fill-hover-background, color(primary, 500)) !default;
-$fill-disabled-background: var(--fill-disabled-background, color(gray, 500)) !default;
-$thumb-border: var(--thumb-border, color(gray, 700)) !default;
-$thumb-hover-border: var(--thumb-hover-border, color(primary, 700)) !default;
-$thumb-disabled-border: var(--thumb-disabled-border, color(gray, 400)) !default;
+$theme: $fluent;
+
 $thumb-size: rem(16px);
 $thumb-radius: math.div($thumb-size, 2);
 
+:host {
+    @include css-vars-from-theme($theme, 'ig-slider');
+}
+
 :host(:hover) {
     [part='fill'] {
-        background: $fill-hover-background;
+        background: var-get($theme, 'track-hover-color');
     }
 
     [part~='thumb'] {
-        border-color: $thumb-hover-border;
+        border-color: var-get($theme, 'thumb-focus-color');
     }
 }
 
@@ -30,7 +29,7 @@ $thumb-radius: math.div($thumb-size, 2);
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 0 rem(1px) color(gray, 700);
+    box-shadow: 0 0 0 rem(1px) var-get($theme, 'thumb-border-focus-color');
     width: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
     height: calc(($thumb-size) + (#{$focus-outline-offset} * 2));
 }
@@ -42,17 +41,29 @@ $thumb-radius: math.div($thumb-size, 2);
 }
 
 [part='inactive'] {
-    background: $inactive-background;
+    background: var-get($theme, 'base-track-color');
     top: initial;
 }
 
 [part='fill'] {
-    background: $fill-background;
+    background: var-get($theme, 'track-color');
+}
+
+[part='steps'] {
+    color: var-get($theme, 'track-step-color');
+}
+
+[part='tick'] {
+    background: var-get($theme, 'tick-color');
+}
+
+[part='tick-label'] {
+    color: var-get($theme, 'tick-label-color');
 }
 
 [part~='thumb'] {
-    background: color(surface, 500);
-    border: rem(2px) solid $thumb-border;
+    background: var-get($theme, 'thumb-color');
+    border: rem(2px) solid var-get($theme, 'thumb-border-color');
     width: $thumb-size;
     height: $thumb-size;
     top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
@@ -60,25 +71,30 @@ $thumb-radius: math.div($thumb-size, 2);
 }
 
 [part='thumb-label-inner'] {
-    background: $fill-hover-background;
+    background: var-get($theme, 'label-background-color');
+    color: var-get($theme, 'label-text-color');
 
     &::after {
-        border-top: rem(10px) solid $fill-hover-background;
+        border-top: rem(10px) solid var-get($theme, 'label-background-color');
     }
 }
 
 :host([disabled]),
 :host(:disabled) {
     [part='inactive'] {
-        background: $inactive-disabled-background;
+        background: var-get($theme, 'disabled-base-track-color');
     }
 
     [part='fill'] {
-        background: $fill-disabled-background;
+        background: var-get($theme, 'disabled-fill-track-color');
     }
 
     [part~='thumb'] {
-        background: color(surface, 500);
-        border-color: $thumb-disabled-border;
+        background: var-get($theme, 'disabled-thumb-color');
+        border-color: var-get($theme, 'thumb-disabled-border-color');
+    }
+
+    [part='tick-label'] {
+        color: var-get($theme, 'disabled-fill-track-color');
     }
 }

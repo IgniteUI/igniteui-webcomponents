@@ -37,7 +37,6 @@ slot {
 
 [part='fill'] {
     position: absolute;
-    background: color(secondary, 500);
     border-radius: inherit;
 }
 
@@ -45,7 +44,6 @@ slot {
     position: absolute;
     width: 100%;
     top: rem(1px);
-    background: color(secondary, 500, .24);
     transition: background .2s ease-out;
     border-radius: inherit;
 }
@@ -58,7 +56,6 @@ slot {
     transition: opacity .2s ease-out;
     top: 50%;
     transform: translateY(-50%);
-    color: white;
 
     svg {
         clip-path: inset(0 rem(3px) 0 rem(3px));
@@ -102,7 +99,6 @@ slot {
 }
 
 [part='tick'] {
-    background: color(gray, 500);
     height: rem(8px);
     width: rem(2px);
 }
@@ -112,7 +108,6 @@ slot {
 }
 
 [part='tick-label'] {
-    color: color(gray, 500);
     position: absolute;
     top: rem(24px);
     line-height: .7;
@@ -144,7 +139,6 @@ slot {
     flex-direction: column;
     outline-style: none;
     transition: transform .1s ease-out, border-radius .1s ease-out;
-    background: color(secondary, 500);
 }
 
 [part='thumb-label'] {
@@ -166,8 +160,6 @@ slot {
     white-space: nowrap;
     margin-inline-start: -50%;
     padding: 0 rem(2px);
-    color: contrast-color(gray, 700);
-    background: color(gray, 700);
 
     &::after {
         content: '';
@@ -175,7 +167,6 @@ slot {
         top: 85%;
         border-left: rem(10px) solid transparent;
         border-right: rem(10px) solid transparent;
-        border-top: rem(10px) solid color(gray, 700);
     }
 }
 
@@ -198,35 +189,4 @@ slot {
     user-select: none;
     pointer-events: none;
     cursor: initial;
-
-    [part='inactive'] {
-        background: color(gray, 200);
-    }
-
-    [part='fill'],
-    [part='tick'] {
-        background: color(gray, 400);
-    }
-
-    [part='tick-label'] {
-        color: color(gray, 400);
-    }
-
-    [part~='thumb'] {
-        background: color(gray, 400);
-
-        &:focus::after {
-            transform: scale(0);
-        }
-    }
-
-    &:hover {
-        [part='inactive'] {
-            background: color(gray, 400);
-        }
-
-        [part~='thumb'] {
-            border-color: color(gray, 400);
-        }
-    }
 }

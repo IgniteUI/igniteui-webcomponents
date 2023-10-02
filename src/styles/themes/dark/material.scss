@@ -15,6 +15,7 @@
 @use '../../../components/navbar/themes/dark/navbar.material' as navbar;
 @use '../../../components/card/themes/dark/card.material' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.material' as checkbox;
+@use '../../../components/slider/themes/dark/slider.material' as slider;
 @use '../../../components/checkbox/themes/dark/switch.material' as switch;
 @use '../../../components/avatar/themes/dark/avatar.material' as avatar;
 @use '../../../components/stepper/themes/step/dark/step.material' as stepper;
@@ -36,6 +37,7 @@
 @include navbar.theme();
 @include card.theme();
 @include checkbox.theme();
+@include slider.theme();
 @include switch.theme();
 @include avatar.theme();
 @include stepper.theme();

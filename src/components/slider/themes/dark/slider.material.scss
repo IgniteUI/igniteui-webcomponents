@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-$theme: $bootstrap;
+$theme: $material;
 
 @mixin theme() {
     igc-slider {
