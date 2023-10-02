@@ -33,7 +33,10 @@ export interface IgcChipEventMap {
  * @csspart prefix - The prefix container of the chip.
  * @csspart suffix - The suffix container of the chip.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 export default class IgcChipComponent extends SizableMixin(
   EventEmitterMixin<IgcChipEventMap, Constructor<LitElement>>(LitElement)
 ) {

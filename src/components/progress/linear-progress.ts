@@ -30,7 +30,10 @@ import { styles as indigo } from './themes/linear/linear.progress.indigo.css.js'
  * @csspart info
  * @csspart success
  */
-@themes({ bootstrap, indigo, fluent })
+@themes({
+  light: { bootstrap, indigo, fluent },
+  dark: { bootstrap, indigo, fluent },
+})
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
   public static override styles = styles;

@@ -8,7 +8,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themeSymbol, themes } from '../../theming/index.js';
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
@@ -34,12 +34,26 @@ import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
 
+defineComponents(
+  IgcIconComponent,
+  IgcInputComponent,
+  IgcSelectGroupComponent,
+  IgcSelectHeaderComponent,
+  IgcSelectItemComponent
+);
+
 export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
 
-@themes({ bootstrap, material, fluent, indigo }, true)
+@themes(
+  {
+    light: { bootstrap, material, fluent, indigo },
+    dark: { bootstrap, material, fluent, indigo },
+  },
+  true
+)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )

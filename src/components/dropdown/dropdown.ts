@@ -51,7 +51,10 @@ export interface IgcDropdownEventMap extends IgcToggleEventMap {
  * @csspart base - The dropdown list wrapper.
  * @csspart list - The dropdown list.
  */
-@themes({ bootstrap, fluent, indigo, material })
+@themes({
+  light: { bootstrap, fluent, indigo, material },
+  dark: { bootstrap, fluent, indigo, material },
+})
 @blazorAdditionalDependencies(
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )

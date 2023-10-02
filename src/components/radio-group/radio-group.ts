@@ -7,7 +7,7 @@ import { styles } from './radio-group.base.css.js';
 import { styles as fluent } from './radio-group.fluent.css.js';
 import { styles as material } from './radio-group.material.css.js';
 
-@themes({ material, fluent })
+@themes({ light: { material, fluent }, dark: { material, fluent } })
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';
   public static override styles = styles;

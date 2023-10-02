@@ -36,7 +36,7 @@ import IgcCircularGradientComponent from './circular-gradient.js';
  * @csspart success
  */
 
-@themes({ bootstrap, fluent })
+@themes({ light: { bootstrap, fluent }, dark: { bootstrap, fluent } })
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';
   public static override styles = styles;

@@ -7,8 +7,10 @@ $theme: $indigo;
 :host {
     @include css-vars-from-theme($theme, 'ig-toast');
 
-    color: contrast-color(gray, 700);
-    background: color(gray, 700);
     padding: rem(10px) rem(16px);
+    color: var-get($theme, 'text-color');
+    background: var-get($theme, 'background');
+    outline: #{rem(1px)} solid var-get($theme, 'border-color');
+    box-shadow: var-get($theme, 'elevation');
     border-radius: var-get($theme, 'border-radius');
 }

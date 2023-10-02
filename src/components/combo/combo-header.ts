@@ -10,7 +10,10 @@ import {
 import { styles } from './themes/light/header/combo-header.base.css.js';
 
 /* blazorSuppress */
-@themes({ bootstrap, fluent, indigo, material })
+@themes({
+  light: { bootstrap, fluent, indigo, material },
+  dark: { bootstrap, fluent, indigo, material },
+})
 export default class IgcComboHeaderComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-header';
   public static override styles = styles;

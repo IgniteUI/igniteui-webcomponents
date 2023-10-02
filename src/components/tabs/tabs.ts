@@ -50,7 +50,10 @@ export interface IgcTabsEventMap {
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart content - The container for the tabs content.
  */
-@themes({ bootstrap, fluent, indigo })
+@themes({
+  light: { bootstrap, fluent, indigo },
+  dark: { bootstrap, fluent, indigo },
+})
 @blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,

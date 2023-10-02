@@ -61,9 +61,16 @@ import IgcYearsViewComponent from './years-view/years-view.js';
  */
 @themes(
   {
-    bootstrap,
-    fluent,
-    indigo,
+    light: {
+      bootstrap,
+      fluent,
+      indigo,
+    },
+    dark: {
+      bootstrap,
+      fluent,
+      indigo,
+    },
   },
   true
 )

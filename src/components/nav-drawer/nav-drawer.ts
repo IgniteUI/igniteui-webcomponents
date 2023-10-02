@@ -24,7 +24,10 @@ import { styles as material } from './themes/light/nav-drawer.material.css.js';
  * @csspart main - The main container.
  * @csspart mini - The mini container.
  */
-@themes({ indigo, material, fluent, bootstrap })
+@themes({
+  light: { indigo, material, fluent, bootstrap },
+  dark: { indigo, material, fluent, bootstrap },
+})
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
   public static override styles = styles;

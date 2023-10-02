@@ -27,7 +27,10 @@ import { styles as material } from './themes/light/switch.material.css.js';
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
   public static styles = styles;

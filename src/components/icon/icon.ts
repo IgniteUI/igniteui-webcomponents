@@ -18,7 +18,10 @@ import { styles as fluent } from './light/icon.fluent.css.js';
 import { styles as indigo } from './light/icon.indigo.css.js';
 import { styles as material } from './light/icon.material.css.js';
 
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 /**
  * Icon component
  *

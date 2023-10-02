@@ -19,7 +19,12 @@ import { styles as material } from './themes/light/slider.material.css.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { isLTR } from '../common/util.js';
 
-@themes({ material, bootstrap, fluent, indigo })
+defineComponents(IgcSliderLabelComponent);
+
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;

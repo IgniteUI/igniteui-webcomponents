@@ -30,8 +30,14 @@ import { styles } from '../themes/year-month-view.base.css.js';
 @blazorIndirectRender
 @blazorSuppressComponent
 @themes({
-  bootstrap,
-  fluent,
+  light: {
+    bootstrap,
+    fluent,
+  },
+  dark: {
+    bootstrap,
+    fluent,
+  },
 })
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,

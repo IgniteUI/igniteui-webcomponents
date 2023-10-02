@@ -11,7 +11,10 @@ import { styles as material } from '../dropdown/themes/light/item/dropdown-item.
 import { styles } from './themes/light/item/combo-item.base.css.js';
 
 /* blazorSuppress */
-@themes({ bootstrap, fluent, indigo, material })
+@themes({
+  light: { bootstrap, fluent, indigo, material },
+  dark: { bootstrap, fluent, indigo, material },
+})
 export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';
   public static override styles = styles;

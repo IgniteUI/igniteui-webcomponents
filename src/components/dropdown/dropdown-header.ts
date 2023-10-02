@@ -12,7 +12,10 @@ import { styles as material } from './themes/light/header/dropdown-header.materi
  *
  * @slot - Renders the header.
  */
-@themes({ bootstrap, fluent, indigo, material })
+@themes({
+  light: { bootstrap, fluent, indigo, material },
+  dark: { bootstrap, fluent, indigo, material },
+})
 export default class IgcDropdownHeaderComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-header';
   public static override styles = styles;

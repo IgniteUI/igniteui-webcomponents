@@ -26,7 +26,10 @@ import { styles as material } from './themes/button/light/button.material.css.js
  * @csspart prefix - The prefix container.
  * @csspart suffix - The suffix container.
  */
-@themes({ bootstrap, indigo, fluent, material })
+@themes({
+  light: { bootstrap, indigo, fluent, material },
+  dark: { bootstrap, indigo, fluent, material },
+})
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
   protected static styles = styles;

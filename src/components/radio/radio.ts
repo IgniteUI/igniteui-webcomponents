@@ -63,7 +63,10 @@ type RadioQueryResult = {
  * @csspart control - The radio control.
  * @csspart label - The radio control label.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
 ) {

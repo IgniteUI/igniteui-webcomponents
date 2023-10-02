@@ -17,9 +17,16 @@ import { styles } from './themes/light/card.header.material.css.js';
  * @csspart header - The card header container
  */
 @themes({
-  bootstrap,
-  fluent,
-  indigo,
+  light: {
+    bootstrap,
+    fluent,
+    indigo,
+  },
+  dark: {
+    bootstrap,
+    fluent,
+    indigo,
+  },
 })
 export default class IgcCardHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-card-header';

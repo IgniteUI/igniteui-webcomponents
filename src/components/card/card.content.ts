@@ -9,7 +9,7 @@ import { styles } from './themes/light/card.content.material.css.js';
  *
  * @slot - Renders the card text content
  */
-@themes({ bootstrap })
+@themes({ light: { bootstrap }, dark: { bootstrap } })
 export default class IgcCardContentComponent extends LitElement {
   public static readonly tagName = 'igc-card-content';
   public static override styles = styles;

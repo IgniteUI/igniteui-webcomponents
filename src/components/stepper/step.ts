@@ -1,7 +1,8 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
-import { AnimationPlayer, EaseInOut } from '../../animations/index.js';
+import { EaseInOut } from '../../animations/easings.js';
+import { AnimationPlayer } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -43,7 +44,10 @@ import { styles as material } from './themes/step/light/step.material.css.js';
  * @csspart body - Wrapper of the step's `content`.
  * @csspart content - The steps `content`.
  */
-@themes({ bootstrap, indigo, fluent, material })
+@themes({
+  light: { bootstrap, indigo, fluent, material },
+  dark: { bootstrap, indigo, fluent, material },
+})
 export default class IgcStepComponent extends LitElement {
   public static readonly tagName = 'igc-step';
   public static override styles = styles;

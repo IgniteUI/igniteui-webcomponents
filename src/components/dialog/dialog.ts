@@ -1,12 +1,13 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { AnimationPlayer, fadeIn, fadeOut } from '../../animations/index.js';
+import { AnimationPlayer } from '../../animations/player.js';
+import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, partNameMap } from '../common/util.js';
@@ -15,6 +16,8 @@ import { styles as bootstrap } from './themes/light/dialog.bootstrap.css.js';
 import { styles as fluent } from './themes/light/dialog.fluent.css.js';
 import { styles as indigo } from './themes/light/dialog.indigo.css.js';
 import { styles as material } from './themes/light/dialog.material.css.js';
+
+defineComponents(IgcButtonComponent);
 
 export interface IgcDialogEventMap {
   igcClosing: CustomEvent<void>;
@@ -38,7 +41,10 @@ export interface IgcDialogEventMap {
  * @csspart footer - The footer container.
  * @csspart overlay - The overlay.
  */
-@themes({ bootstrap, material, fluent, indigo })
+@themes({
+  light: { bootstrap, material, fluent, indigo },
+  dark: { bootstrap, material, fluent, indigo },
+})
 @blazorAdditionalDependencies('IgcButtonComponent')
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogEventMap,

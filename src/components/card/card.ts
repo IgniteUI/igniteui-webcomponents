@@ -18,9 +18,16 @@ import IgcCardMediaComponent from './card.media.js';
  * @slot - Renders card content
  */
 @themes({
-  bootstrap,
-  fluent,
-  indigo,
+  light: {
+    bootstrap,
+    fluent,
+    indigo,
+  },
+  dark: {
+    bootstrap,
+    fluent,
+    indigo,
+  },
 })
 export default class IgcCardComponent extends LitElement {
   public static readonly tagName = 'igc-card';

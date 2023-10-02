@@ -5,11 +5,8 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import {
-  AnimationPlayer,
-  growVerIn,
-  growVerOut,
-} from '../../animations/index.js';
+import { AnimationPlayer } from '../../animations/player.js';
+import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
@@ -24,7 +21,7 @@ import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
 
@@ -48,7 +45,10 @@ import IgcCircularProgressComponent from '../progress/circular-progress.js';
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes({ bootstrap, fluent, indigo, material })
+@themes({
+  light: { bootstrap, fluent, indigo, material },
+  dark: { bootstrap, fluent, indigo, material },
+})
 export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
   public static override styles = styles;
