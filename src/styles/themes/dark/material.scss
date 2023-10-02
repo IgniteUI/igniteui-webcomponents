@@ -11,6 +11,7 @@
 @use '../../../components/combo/themes/dark/combo.material' as combo;
 @use '../../../components/button/themes/button/dark/button.material' as button;
 @use '../../../components/icon/dark/icon.material' as icon;
+@use '../../../components/list/themes/dark/list-item.material' as list-item;
 @use '../../../components/navbar/themes/dark/navbar.material' as navbar;
 @use '../../../components/card/themes/dark/card.material' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.material' as checkbox;
@@ -31,6 +32,7 @@
 @include expansion-panel.theme();
 @include button.theme();
 @include icon.theme();
+@include list-item.theme();
 @include navbar.theme();
 @include card.theme();
 @include checkbox.theme();

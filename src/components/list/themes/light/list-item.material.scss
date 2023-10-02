@@ -1,14 +1,14 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-$theme: $indigo;
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-list');
 
+    border-radius: var-get($theme, 'item-border-radius');
     color: var-get($theme, 'item-text-color');
     background: var-get($theme, 'item-background');
-    border-radius: var-get($theme, 'item-border-radius');
 }
 
 :host(:hover),
@@ -21,7 +21,5 @@ $theme: $indigo;
 }
 
 [part='subtitle'] {
-    @include type-style('body-2');
-
     color: var-get($theme, 'item-subtitle-color');
 }

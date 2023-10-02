@@ -2,25 +2,31 @@
 @use 'themes' as *;
 
 $theme: $fluent;
-$separator-color: color(gray, 100) !default;
-$item-hover-bg: var(--item-hover-bg, color(gray, 200)) !default;
-
-[part='title'] {
-    @include type-style('caption');
-}
 
 :host {
     @include css-vars-from-theme($theme, 'ig-list');
 
-    border-bottom: rem(1px) solid $separator-color;
+    color: var-get($theme, 'item-text-color');
+    background: var-get($theme, 'item-background');
+    border-bottom: rem(1px) solid var-get($theme, 'border-color');
     border-radius: var-get($theme, 'item-border-radius');
 }
 
 :host(:hover),
 :host(:focus-within) {
-    background: $item-hover-bg;
+    background: var-get($theme, 'item-background-hover');
 }
 
 :host(:last-of-type) {
     border-bottom: none;
+}
+
+[part='title'] {
+    @include type-style('caption');
+
+    color: var-get($theme, 'item-title-color');
+}
+
+[part='subtitle'] {
+    color: var-get($theme, 'item-subtitle-color');
 }
