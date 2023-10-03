@@ -7,9 +7,6 @@ $theme: $material;
 :host(igc-calendar) {
     @include css-vars-from-theme($theme, 'ig-calendar');
 
-    --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
-
-
     background: color(surface);
     color: contrast-color(surface);
     border-radius: var-get($theme, 'border-radius');

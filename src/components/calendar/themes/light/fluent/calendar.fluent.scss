@@ -14,10 +14,6 @@ $header-color: var(--header-color, #{contrast-color(primary, 600)});
 
     igc-days-view::part(date-inner) {
         border-radius: 0;
-
-        // TODO SWITCH TO THIS WHEN CONSUME COLORS FROM SCHEMAS
-        // border-radius: var-get($theme, 'date-border-radius');
-
     }
 
     igc-months-view {
