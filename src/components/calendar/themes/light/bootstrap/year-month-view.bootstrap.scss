@@ -1,8 +1,6 @@
-@use 'sass:math';
-@use 'sass:map';
 @use 'vars' as *;
 @use 'styles/utilities' as *;
-@use '../light-themes' as *;
+@use '../themes' as *;
 
 $theme: $bootstrap;
 
@@ -10,11 +8,6 @@ $theme: $bootstrap;
     @include css-vars-from-theme($theme, 'ig-calendar');
 
     padding-block-start: rem(16px);
-}
-
-[part~='month-inner'],
-[part~='year-inner'] {
-    border-radius: var-get($theme, 'month-border-radius');
 }
 
 [part~='month-inner'][part~='selected'],
@@ -39,6 +32,20 @@ $theme: $bootstrap;
     &:focus {
         background: $current-background;
         color: $current-color;
+    }
+}
+
+[part~='month-inner'],
+[part~='year-inner'] {
+    border-radius: var-get($theme, 'month-border-radius');
+
+    &:hover,
+    &:focus {
+        background: color(gray, 200);
+    }
+
+    &:hover {
+        background: color(gray, 200);
     }
 }
 

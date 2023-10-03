@@ -1,11 +1,14 @@
-@use 'sass:map';
-@use 'sass:math';
-@use '../shared-calendar' as *;
 @use 'vars' as *;
 @use 'styles/utilities' as *;
-@use '../light-themes' as *;
+@use '../themes' as *;
 
 $theme: $bootstrap;
+$border-width: rem(1px);
+$week-number-bg: color(gray, 200);
+$week-number-color: color(gray, 500);
+$week-number-radius: rem(4px);
+$border-radius: border-radius(rem(4px));
+$row-gap: rem(6px);
 
 :host {
     @include css-vars-from-theme($theme, 'ig-calendar');
@@ -32,8 +35,33 @@ $theme: $bootstrap;
     color: color(info, 300);
 }
 
+[part~='date'],
+[part~='week-number'] {
+    color: color(gray, 800);
+    border-top: $border-width solid transparent;
+    border-bottom: $border-width solid transparent;
+}
+
+[part='week-number-inner first'] {
+    border-top-left-radius: $border-radius;
+    border-top-right-radius: $border-radius;
+}
+
+[part='week-number-inner last'] {
+    border-bottom-left-radius: $border-radius;
+    border-bottom-right-radius: $border-radius;
+}
+
 [part~='date-inner'] {
+    border: $border-width solid transparent;
     border-radius: var-get($theme, 'date-border-radius');
+
+    &:hover,
+    &:focus {
+        background: color(secondary, 100);
+        color: contrast-color(secondary, 100);
+        border-color: color(secondary, 100);
+    }
 }
 
 [part~='date-inner'][part~='current'] {
@@ -47,6 +75,14 @@ $theme: $bootstrap;
         color: $current-color;
         background: $current-background;
         border-color: $current-background;
+    }
+}
+
+[part~='date-inner'][part~='weekend'],
+[part~='date-inner'][part~='inactive'] {
+    &:hover,
+    &:focus {
+        color: contrast-color(secondary, 100);
     }
 }
 
@@ -64,6 +100,34 @@ $theme: $bootstrap;
         border-color: $selected-background;
         color: $selected-color;
     }
+}
+
+[part~='date-inner'][part~='selected'][part~='range'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='last'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='weekend'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='weekend'][part~='last'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='inactive'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='inactive'][part~='last'] {
+    color: contrast-color(secondary, 700);
+}
+
+[part~='date-inner'][part~='selected'][part~='range'][part~='first'],
+[part~='date-inner'][part~='selected'][part~='range'][part~='last'] {
+    background: color(secondary, 500);
+    border-color: color(secondary, 500);
+
+    &:hover,
+    &:focus {
+        background: color(secondary, 700);
+        border-color: color(secondary, 700);
+        color: contrast-color(secondary, 700);
+    }
+}
+
+[part~='date-inner'][part~='selected'][part~='weekend']:not([part~='range']),
+[part~='date-inner'][part~='selected'][part~='inactive']:not([part~='range']),
+[part~='date-inner'][part~='selected']:not([part~='range']) {
+    color: contrast-color(secondary, 700);
 }
 
 [part~='date-inner'][part~='first'][part~='last'][part~='selected'],
@@ -92,6 +156,10 @@ $theme: $bootstrap;
     }
 }
 
+[part~='date'][part~='range'] {
+    background: color(secondary, 50);
+}
+
 [part~='date'][part~='range'],
 [part~='date'][part~='range'][part~='preview'] {
     border-top-style: solid;
@@ -114,13 +182,31 @@ $theme: $bootstrap;
 }
 
 [part~='date'][part~='first'][part~='selected'][part~='range'],
-[part~='date'][part~='first'][part~='range'][part~='preview'],
+[part~='date'][part~='range'][part~='preview'][part~='first'],
 [part~='date'][part~='last'][part~='selected'][part~='range'],
-[part~='date'][part~='last'][part~='range'][part~='preview'] {
+[part~='date'][part~='range'][part~='preview'][part~='last'] {
     &::after {
         background: $range-preview-background;
         border-color: $range-preview-background;
     }
+}
+
+[part~='date'][part~='range'][part~='first'],
+[part~='date'][part~='range'][part~='last'] {
+    background: transparent;
+
+    &::after {
+        background: color(secondary, 50);
+        border-top: $border-width solid color(secondary, 50);
+        border-bottom: $border-width solid color(secondary, 50);
+    }
+}
+
+[part~='date'][part~='range'][part~='preview'][part~='first'],
+[part~='date'][part~='range'][part~='preview'][part~='last'] {
+    background: transparent;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
 }
 
 [part~='date-inner'][part~='current'][part~='selected'],
@@ -250,10 +336,30 @@ $theme: $bootstrap;
     background: $special-background;
     border-color: $special-background;
     color: $special-color;
+    font-weight: 900;
+
+    &:hover,
+    &:focus {
+        background: color(secondary, 100);
+        border-color: color(secondary, 100);
+    }
 }
 
 [part~='date-inner'][part~='special'][part~='selected'] {
     background: $selected-background;
     border-color: $selected-background;
     color: $selected-color;
+}
+
+[part~='date-inner'][part~='special'][part~='range'] {
+    background: color(gray, 100);
+    border-color: color(gray, 100);
+    color: color(gray, 900);
+
+
+    &:hover,
+    &:focus {
+        background: color(secondary, 100);
+        border-color: color(secondary, 100);
+    }
 }

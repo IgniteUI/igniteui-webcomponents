@@ -18,9 +18,10 @@ import {
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
 import { styles } from './themes/calendar.base.css.js';
-import { styles as bootstrap } from './themes/bootstrap/calendar.bootstrap.css.js';
-import { styles as fluent } from './themes/fluent/calendar.fluent.css.js';
-import { styles as indigo } from './themes/indigo/calendar.indigo.css.js';
+import { styles as bootstrap } from './themes/light/bootstrap/calendar.bootstrap.css.js';
+import { styles as fluent } from './themes/light/fluent/calendar.fluent.css.js';
+import { styles as indigo } from './themes/light/indigo/calendar.indigo.css.js';
+import { styles as material } from './themes/light/material/calendar.material.css.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 

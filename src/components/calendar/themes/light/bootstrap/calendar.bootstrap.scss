@@ -1,24 +1,31 @@
-@use '../shared-calendar' as *;
 @use 'vars' as *;
-@use 'sass:map';
 @use 'styles/utilities' as *;
-@use '../light-themes' as *;
+@use '../themes' as *;
 
 $theme: $bootstrap;
 
 :host(igc-calendar) {
     @include css-vars-from-theme($theme, 'ig-calendar');
 
-    border: rem(1px) solid $border-color;
+    background: color(surface);
+    color: contrast-color(surface);
     border-radius: var-get($theme, 'border-radius');
+    border: rem(1px) solid $border-color;
 
     igc-days-view::part(date-inner) {
         border-radius: var-get($theme, 'date-border-radius');
     }
 
-    igc-months-view::part(month-inner),
-    igc-years-view::part(year-inner) {
-        border-radius: var-get($theme, 'month-border-radius');
+    igc-months-view {
+        &::part(month-inner) {
+            border-radius: var-get($theme, 'month-border-radius');
+        }
+    }
+
+    igc-years-view {
+        &::part(year-inner) {
+            border-radius: var-get($theme, 'month-border-radius');
+        }
     }
 }
 
@@ -30,11 +37,23 @@ $theme: $bootstrap;
 }
 
 [part~='navigation-button'] {
+    background: transparent;
     color: color(primary, 500);
 
     &:hover,
     &:focus {
         color: color(primary, 600);
+    }
+}
+
+[part='months-navigation'],
+[part='years-navigation'] {
+    background: transparent;
+    color: color(gray, 800);
+
+    &:hover,
+    &:focus {
+        color: color(secondary, 500);
     }
 }
 
@@ -47,3 +66,10 @@ $theme: $bootstrap;
 [part='header-title'] {
     @include type-style('subtitle-1');
 }
+
+[part='header'] {
+    background: color(secondary, 50, .2);
+    color: contrast-color(gray, 50);
+}
+
+
