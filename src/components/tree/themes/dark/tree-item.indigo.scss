@@ -1,7 +1,10 @@
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $indigo;
 
 @mixin theme() {
     igc-tree-item {
-        --hover-color: #{color(primary, 200, .5)};
+        @include css-vars-from-theme($theme, 'ig-tree');
     }
 }

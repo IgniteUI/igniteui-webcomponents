@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-$theme: $fluent;
+$theme: $material;
 
 @mixin theme() {
     igc-tree-item {
