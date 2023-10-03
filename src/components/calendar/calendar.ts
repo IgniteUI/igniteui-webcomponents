@@ -73,11 +73,13 @@ defineComponents(
       bootstrap,
       fluent,
       indigo,
+      material,
     },
     dark: {
       bootstrap,
       fluent,
       indigo,
+      material,
     },
   },
   true
