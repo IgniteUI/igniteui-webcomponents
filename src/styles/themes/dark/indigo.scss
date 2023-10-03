@@ -17,6 +17,7 @@
 @use '../../../components/expansion-panel/themes/dark/expansion-panel.indigo' as expansion-panel;
 @use '../../../components/select/themes/dark/select.indigo' as select;
 @use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
+@use '../../../components/tabs/themes/dark/tab.indigo' as tab;
 @use '../../../components/combo/themes/dark/combo.indigo' as combo;
 @use '../../../components/button/themes/button/dark/button.indigo' as button;
 @use '../../../components/icon/dark/icon.indigo' as icon;
@@ -41,6 +42,7 @@
 @include expansion-panel.theme();
 @include select.theme();
 @include snackbar.theme();
+@include tab.theme();
 @include grid.theme();
 @include combo.theme();
 @include button.theme();

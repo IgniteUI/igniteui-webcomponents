@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-$theme: $fluent;
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-tabs');
@@ -9,10 +9,6 @@ $theme: $fluent;
     background: var-get($theme, 'item-background');
     color: var-get($theme, 'item-text-color');
     border-radius: var-get($theme, 'border-radius');
-
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-icon-color');
-    }
 }
 
 :host(:hover),
@@ -36,8 +32,4 @@ $theme: $fluent;
 
 :host([disabled]) {
     color: var-get($theme, 'item-disabled-color');
-
-    ::slotted(igc-icon) {
-        color: var-get($theme, 'item-disabled-icon-color');
-    }
 }
