@@ -50,6 +50,13 @@ export default class IgcToastComponent extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
   public keepOpen = false;
 
+  /**
+   * Determines whether the toast is closed automatically or not.
+   * @attr keep-open
+   */
+  @property({ reflect: true, attribute: 'position' })
+  public position: 'bottom' | 'middle' | 'top' = 'bottom';
+
   protected override firstUpdated() {
     this.animationPlayer = new AnimationPlayer(this);
   }

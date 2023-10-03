@@ -40,8 +40,16 @@ const metadata: Meta<IgcToastComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
+    position: {
+      type: '"top" | "bottom" | "middle"',
+      description:
+        'Determines whether the toast is closed automatically or not.',
+      options: ['top', 'bottom', 'middle'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'bottom',
+    },
   },
-  args: { open: false, displayTime: 4000, keepOpen: false },
+  args: { open: false, displayTime: 4000, keepOpen: false, position: 'bottom' },
 };
 
 export default metadata;
@@ -53,6 +61,8 @@ interface IgcToastArgs {
   displayTime: number;
   /** Determines whether the toast is closed automatically or not. */
   keepOpen: boolean;
+  /** Determines whether the toast is closed automatically or not. */
+  position: 'top' | 'bottom' | 'middle';
 }
 type Story = StoryObj<IgcToastArgs>;
 
@@ -76,6 +86,7 @@ const Template = ({
   open = false,
   displayTime = 4000,
   keepOpen = false,
+  position = 'bottom',
 }: IgcToastArgs) => html`
   <igc-button @click=${handleShow}>Show Toast</igc-button>
   <igc-button @click=${handleHide}>Hide Toast</igc-button>
@@ -84,6 +95,7 @@ const Template = ({
     .open=${open}
     display-time=${ifDefined(displayTime)}
     ?keep-open=${keepOpen}
+    .position=${position}
   >
     Toast Message
   </igc-toast>
