@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use '../../../input/themes/light/themes' as *;
@@ -115,6 +114,13 @@ textarea {
     border-radius: var-get($theme, 'border-border-radius');
     z-index: 1;
     font-size: pad(rem(14px), rem(16px), rem(20px));
+    background: transparent;
+    color: var-get($theme, 'filled-text-color');
+    transition: box-shadow .15s ease-out, border .15s ease-out;
+
+    &::placeholder {
+        color: var-get($theme, 'placeholder-color');
+    }
 }
 
 :host(:focus-within) {

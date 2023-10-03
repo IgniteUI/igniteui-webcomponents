@@ -1,9 +1,8 @@
 @use 'sass:map';
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use '../../../input/themes/light/themes' as *;
+@use 'igniteui-theming/sass/animations/easings' as *;
 
-$theme: $material;
 $base-scale-size: (
     'large': rem(16px),
     'medium': rem(19px),
@@ -56,15 +55,12 @@ textarea {
     min-width: 0;
     min-height: var(--textarea-height);
     height: auto;
-    background: transparent;
-    color: var-get($theme, 'filled-text-color');
     outline-style: none;
     box-shadow: none;
     overflow: auto;
     text-overflow: ellipsis;
 
     &::placeholder {
-        color: var-get($theme, 'placeholder-color');
         opacity: 1;
         line-height: normal;
     }
@@ -86,6 +82,7 @@ textarea {
     align-items: center;
     height: 100%;
     padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+    transition: color .25s $out-cubic, background .25s $out-cubic;
 
     igc-icon {
         width: sizable(rem(18px), rem(20px), rem(24px)) ;

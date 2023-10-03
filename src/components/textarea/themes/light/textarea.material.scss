@@ -1,7 +1,7 @@
-@use 'sass:map';
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use '../../../input/themes/light/themes' as *;
+@use 'igniteui-theming/sass/animations/easings' as *;
 
 $theme: $material;
 $input-top-padding: rem(20px);
@@ -22,6 +22,12 @@ textarea {
     position: relative;
     max-width: inherit;
     padding-inline: rem(4px);
+    background: transparent;
+    color: var-get($theme, 'filled-text-color');
+
+    &::placeholder {
+        color: var-get($theme, 'placeholder-color');
+    }
 }
 
 :host(:not([outlined])) {
@@ -37,7 +43,7 @@ textarea {
             bottom: 0%;
             width: 100%;
             border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
-            transition: all .25s out-cubic;
+            transition: all .25s $out-cubic;
         }
     }
 }
@@ -154,7 +160,6 @@ textarea {
     backface-visibility: hidden;
     will-change: transform;
     transform-origin: top left;
-    transition: all .25s out-cubic;
     color: var-get($theme, 'idle-secondary-color');
     transform: translateY(0);
     top: calc(#{$input-top-padding} / 4);

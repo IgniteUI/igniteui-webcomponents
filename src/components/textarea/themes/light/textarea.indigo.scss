@@ -1,7 +1,7 @@
-@use 'sass:map';
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use '../../../input/themes/light/themes' as *;
+@use 'igniteui-theming/sass/animations/easings' as *;
 
 $theme: $indigo;
 
@@ -27,7 +27,7 @@ $theme: $indigo;
         &::after {
             border-block-end-width: rem(2px);
             border-block-end-color: var-get($theme, 'focused-bottom-line-color');
-            transition: all .25s out-cubic;
+            transition: all .25s $out-cubic;
         }
     }
 }
@@ -48,7 +48,7 @@ $theme: $indigo;
 [part~='container'] {
     border-start-start-radius: var-get($theme, 'box-border-radius');
     border-start-end-radius: var-get($theme, 'box-border-radius');
-    transition: background .25s out-cubic;
+    transition: background .25s $out-cubic;
     overflow: hidden;
     padding-inline-start: 0;
     height: calc(100% - #{rem(2px)});
@@ -60,13 +60,19 @@ $theme: $indigo;
         bottom: 0%;
         width: 100%;
         border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
-        transition: all .25s out-cubic;
+        transition: all .25s $out-cubic;
     }
 }
 
 textarea {
     padding-block: rem(8px);
     padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+    background: transparent;
+    color: var-get($theme, 'filled-text-color');
+
+    &::placeholder {
+        color: var-get($theme, 'placeholder-color');
+    }
 }
 
 [part~='prefixed'] textarea {
