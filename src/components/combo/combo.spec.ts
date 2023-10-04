@@ -1128,6 +1128,23 @@ describe('Combo', () => {
       expect(combo.selection[0]).to.equal(cities[3]);
       expect(combo.selection[1]).to.equal(cities[4]);
     });
+
+    it('should preserve value and set selection even when data assignment is delayed', async () => {
+      combo.data = [];
+      combo.value = ['US01', 'US02'];
+      await elementUpdated(combo);
+
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          combo.data = cities;
+          resolve('done');
+        }, 200);
+      });
+
+      await elementUpdated(combo);
+      expect(combo.selection[0]).to.equal(cities[3]);
+      expect(combo.selection[1]).to.equal(cities[4]);
+    });
   });
 
   describe('Form integration', () => {
