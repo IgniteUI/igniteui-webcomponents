@@ -1,7 +1,5 @@
-@use 'sass:map';
-@use './chip.base.scss';
 @use 'styles/utilities' as *;
-@use 'light-themes' as *;
+@use 'themes' as *;
 
 $theme: $indigo;
 
@@ -18,9 +16,12 @@ $theme: $indigo;
 
     &:hover {
         background: var-get($theme, 'hover-background');
+        color: var-get($theme, 'hover-text-color');
     }
 
     &:focus {
+        background: var-get($theme, 'focus-background');
+        color: var-get($theme, 'focus-text-color');
         outline: rem(3px) solid var-get($theme, 'focus-outline-color');
     }
 

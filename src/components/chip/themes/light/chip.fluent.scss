@@ -1,7 +1,5 @@
-@use 'sass:map';
-@use './chip.base.scss';
 @use 'styles/utilities' as *;
-@use 'light-themes' as *;
+@use 'themes' as *;
 
 $theme: $fluent;
 
@@ -19,6 +17,7 @@ $theme: $fluent;
     height: var-get($theme, 'size');
 
     &:hover {
+        background: var-get($theme, 'hover-background');
         color: var-get($theme, 'hover-text-color');
     }
 

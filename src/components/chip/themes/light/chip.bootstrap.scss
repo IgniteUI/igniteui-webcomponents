@@ -1,7 +1,5 @@
-@use 'sass:map';
-@use './chip.base.scss';
 @use 'styles/utilities' as *;
-@use 'light-themes' as *;
+@use 'themes' as *;
 
 $theme: $bootstrap;
 

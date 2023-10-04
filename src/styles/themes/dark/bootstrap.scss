@@ -4,6 +4,7 @@
 @use '../third-party/grid/bootstrap.dark' as grid;
 @use '../../../components/badge/themes/dark/badge.bootstrap' as badge;
 @use '../../../components/card/themes/dark/card.bootstrap' as card;
+@use '../../../components/chip/themes/dark/chip.bootstrap' as chip;
 @use '../../../components/dialog/themes/dark/dialog.bootstrap' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.bootstrap' as dropdown;
 @use '../../../components/expansion-panel/themes/dark/expansion-panel.bootstrap' as expansion-panel;
@@ -29,6 +30,7 @@
 @include base.root-styles($palette, 'dark');
 @include badge.theme();
 @include card.theme();
+@include chip.theme();
 @include dialog.theme();
 @include dropdown.theme();
 @include expansion-panel.theme();

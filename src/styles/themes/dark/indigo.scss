@@ -4,6 +4,7 @@
 @use '../third-party/grid/indigo.dark' as grid;
 @use '../../../components/card/themes/dark/card.indigo' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
+@use '../../../components/chip/themes/dark/chip.indigo' as chip;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
 @use '../../../components/input/themes/dark/input.dark.indigo' as input;
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
@@ -29,6 +30,7 @@
 @include base.root-styles($palette, 'dark');
 @include card.theme();
 @include checkbox.theme();
+@include chip.theme();
 @include switch.theme();
 @include input.theme();
 @include radio.theme();
