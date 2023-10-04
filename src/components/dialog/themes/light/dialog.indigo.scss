@@ -10,6 +10,10 @@ $theme: $indigo;
     border-radius: var-get($theme, 'border-radius');
 }
 
+[part~='backdrop'] {
+    background: var-get($theme, 'backdrop');
+}
+
 [part='base'] {
     box-shadow: var-get($theme, 'elevation');
 }

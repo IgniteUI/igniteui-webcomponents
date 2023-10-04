@@ -10,6 +10,10 @@ $theme: $bootstrap;
     border-radius: var-get($theme, 'border-radius');
 }
 
+[part~='backdrop'] {
+    background: var-get($theme, 'backdrop');
+}
+
 [part='base'] {
     min-width: rem(288px);
     border: 1px solid var-get($theme, 'border-color');

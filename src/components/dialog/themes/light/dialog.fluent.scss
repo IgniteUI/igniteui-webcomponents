@@ -32,6 +32,6 @@ $theme: $fluent;
     padding-block-start: 0;
 }
 
-[part='backdrop'] {
-    background: color(gray, 900, .4);
+[part~='backdrop'] {
+    background: var-get($theme, 'backdrop');
 }
