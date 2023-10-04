@@ -21,6 +21,10 @@ $theme: $fluent;
     border-bottom: none;
 }
 
+::slotted(igc-icon) {
+    color: var-get($theme, 'item-action-color');
+}
+
 [part='title'] {
     @include type-style('caption');
 

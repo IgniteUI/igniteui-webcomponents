@@ -16,6 +16,10 @@ $theme: $indigo;
     background: var-get($theme, 'item-background-hover');
 }
 
+::slotted(igc-icon) {
+    color: var-get($theme, 'item-action-color');
+}
+
 [part='title'] {
     color: var-get($theme, 'item-title-color');
 }

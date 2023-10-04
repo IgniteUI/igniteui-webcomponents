@@ -11,6 +11,10 @@ $theme: $material;
     background: var-get($theme, 'item-background');
 }
 
+::slotted(igc-icon) {
+    color: var-get($theme, 'item-action-color');
+}
+
 :host(:hover),
 :host(:focus-within) {
     background: var-get($theme, 'item-background-hover');
