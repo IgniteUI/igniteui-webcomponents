@@ -75,6 +75,13 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   public keepOpen = false;
 
   /**
+   * Sets the position of the snackbar.
+   * @attr position
+   */
+  @property({ reflect: true, attribute: 'position' })
+  public position: 'bottom' | 'middle' | 'top' = 'bottom';
+
+  /**
    * The snackbar action button.
    * @attr action-text
    */

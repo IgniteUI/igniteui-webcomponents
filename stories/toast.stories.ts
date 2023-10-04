@@ -42,8 +42,7 @@ const metadata: Meta<IgcToastComponent> = {
     },
     position: {
       type: '"top" | "bottom" | "middle"',
-      description:
-        'Determines whether the toast is closed automatically or not.',
+      description: 'Sets the position of the toast.',
       options: ['top', 'bottom', 'middle'],
       control: { type: 'inline-radio' },
       defaultValue: 'bottom',
@@ -61,7 +60,7 @@ interface IgcToastArgs {
   displayTime: number;
   /** Determines whether the toast is closed automatically or not. */
   keepOpen: boolean;
-  /** Determines whether the toast is closed automatically or not. */
+  /** Sets the position of the toast. */
   position: 'top' | 'bottom' | 'middle';
 }
 type Story = StoryObj<IgcToastArgs>;

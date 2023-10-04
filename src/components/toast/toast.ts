@@ -51,8 +51,8 @@ export default class IgcToastComponent extends LitElement {
   public keepOpen = false;
 
   /**
-   * Determines whether the toast is closed automatically or not.
-   * @attr keep-open
+   * Sets the position of the toast.
+   * @attr position
    */
   @property({ reflect: true, attribute: 'position' })
   public position: 'bottom' | 'middle' | 'top' = 'bottom';

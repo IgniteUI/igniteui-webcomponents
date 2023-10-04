@@ -8,15 +8,27 @@ $theme: $material;
 :host {
     @include css-vars-from-theme($theme, 'ig-snackbar');
 
-    font-family: var(--ig-font-family);
     position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    font-family: var(--ig-font-family);
+    inset-inline: 50% auto;
+    transform: translateX(calc(-50% + .5px));
+}
+
+:host([position='bottom']) {
+    inset-block: auto 0;
+}
+
+:host([position='middle']) {
+    inset-block: 50% auto;
+    transform: translate(calc(-50% + .5px), calc(-50% + .5px));
+    margin: auto;
+}
+
+:host([position='top']) {
+    inset-block: 0 auto;
 }
 
 [part~='base'] {
-    border-radius: var-get($theme, 'border-radius');
     display: flex;
     flex-wrap: row nowrap;
     align-items: center;
@@ -28,6 +40,7 @@ $theme: $material;
     color: contrast-color(gray, 900);
     background: color(gray, 900, .9);
     box-shadow: var(--ig-elevation-4);
+    border-radius: var-get($theme, 'border-radius');
     backface-visibility: hidden;
     backdrop-filter: blur(8px);
 }
