@@ -30,6 +30,10 @@ $theme: $material;
     font-weight: inherit;
 }
 
+::slotted(igc-icon) {
+    color: var-get($theme, 'icon-color');
+}
+
 ::slotted(*) {
     --size: calc(var(--_badge-size) / 2);
 

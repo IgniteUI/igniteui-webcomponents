@@ -1,5 +1,3 @@
-@use 'sass:map';
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -8,35 +6,16 @@ $theme: $material;
 :host {
     @include css-vars-from-theme($theme, 'ig-card');
 
-    display: flex;
-    flex-direction: column;
     border: rem(1px) solid var-get($theme, 'outline-color');
-    overflow: hidden;
     background: var-get($theme, 'background');
-    font-family: var(--ig-font-family);
     border-radius: var-get($theme, 'border-radius');
-
-    ::slotted(igc-card-actions:first-child) {
-        margin-block-end: auto;
-    }
-
-    ::slotted(igc-card-actions:last-child) {
-        margin-block-start: auto;
-    }
-
-    ::slotted(igc-card-actions[orientation='vertical']) {
-        margin-block: initial;
-    }
 }
 
 :host([elevated]) {
-    border: none;
-    box-shadow: var(--ig-elevation-4);
-    backface-visibility: hidden;
-    transition: box-shadow .1s ease-out;
+    box-shadow: var-get($theme, 'resting-elevation');
 }
 
 :host([elevated]:hover),
 :host([elevated]:focus-within) {
-    box-shadow: var(--ig-elevation-6);
+    box-shadow: var-get($theme, 'hover-elevation');
 }

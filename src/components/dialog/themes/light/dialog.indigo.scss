@@ -10,6 +10,10 @@ $theme: $indigo;
     border-radius: var-get($theme, 'border-radius');
 }
 
+[part='base'] {
+    box-shadow: var-get($theme, 'elevation');
+}
+
 [part='title'] {
     color: var-get($theme, 'title-color');
     padding: rem(16px) rem(24px);

@@ -4,7 +4,7 @@
 $theme: $bootstrap;
 
 @mixin theme() {
-    igc-card {
-        @include css-vars-from-theme($theme, 'ig-card');
+    igc-badge {
+        @include css-vars-from-theme($theme, 'ig-badge');
     }
 }

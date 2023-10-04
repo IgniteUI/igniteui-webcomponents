@@ -7,6 +7,10 @@ $theme: $bootstrap;
     @include css-vars-from-theme($theme, 'ig-badge');
 }
 
+::slotted(igc-icon) {
+    color: var-get($theme, 'icon-color');
+}
+
 :host([shape='square']),
 :host([outlined][shape='square']) [part='base'] {
     border-radius: var-get($theme, 'border-radius');
