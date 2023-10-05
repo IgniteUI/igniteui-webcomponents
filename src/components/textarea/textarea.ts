@@ -381,6 +381,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     }
   }
 
+  protected slotChange() {
+    this.requestUpdate();
+  }
+
   protected renderValueSlot() {
     return html`<slot
       style="display: none"
@@ -390,13 +394,13 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 
   protected renderPrefix() {
     return html`<div part="prefix" .hidden=${this.prefixes.length < 1}>
-      <slot name="prefix"></slot>
+      <slot name="prefix" @slotchange=${this.slotChange}></slot>
     </div>`;
   }
 
   protected renderSuffix() {
     return html`<div part="suffix" .hidden=${this.suffixes.length < 1}>
-      <slot name="suffix"></slot>
+      <slot name="suffix" @slotchange=${this.slotChange}></slot>
     </div>`;
   }
 
