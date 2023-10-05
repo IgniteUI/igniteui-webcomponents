@@ -4,8 +4,5 @@
 @mixin theme() {
     igc-snackbar {
         @include css-vars-from-theme($indigo, 'ig-snackbar');
-
-        --background-color: #{color(gray, 300)};
-        --text-color: #{contrast-color(gray, 200)};
     }
 }

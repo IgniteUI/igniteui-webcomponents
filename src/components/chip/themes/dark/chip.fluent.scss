@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $fluent;
+
+@mixin theme() {
+    igc-chip {
+        @include css-vars-from-theme($theme, 'ig-chip');
+    }
+}

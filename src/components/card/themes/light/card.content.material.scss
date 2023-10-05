@@ -1,16 +1,10 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
-    display: block;
-    width: 100%;
-    overflow: auto;
-    padding: rem(16px);
-    color: color(gray, 700);
-}
+    @include css-vars-from-theme($theme, 'ig-card');
 
-::slotted(*) {
-    @include type-style('body-2');
-
-    margin: 0;
+    color: var-get($theme, 'content-text-color');
 }

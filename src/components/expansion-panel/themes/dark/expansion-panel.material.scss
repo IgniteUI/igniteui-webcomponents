@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
+
+@mixin theme() {
+    igc-expansion-panel {
+        @include css-vars-from-theme($theme, 'igc-expansion-panel');
+    }
+}

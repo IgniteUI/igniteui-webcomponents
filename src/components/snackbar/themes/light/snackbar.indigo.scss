@@ -1,10 +1,7 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
 $theme: $indigo;
-$background-color: var(--background-color, color(gray, 700, .9)) !default;
-$text-color: var(--text-color, contrast-color(gray, 700)) !default;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-snackbar');
@@ -12,11 +9,12 @@ $text-color: var(--text-color, contrast-color(gray, 700)) !default;
 
 [part~='base'] {
     border-radius: var-get($theme, 'border-radius');
-    background: $background-color;
-    color: $text-color;
+    color: var-get($theme, 'text-color');
+    background: var-get($theme, 'background');
+    box-shadow: var-get($theme, 'elevation');
 }
 
 igc-button::part(base),
 igc-button::part(base):hover {
-    color: $text-color;
+    color: var-get($theme, 'button-color');
 }

@@ -9,6 +9,7 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { styles } from './themes/light/snackbar.base.css.js';
+import { styles as material } from './themes/light/snackbar.material.css.js';
 import { styles as bootstrap } from './themes/light/snackbar.bootstrap.css.js';
 import { styles as fluent } from './themes/light/snackbar.fluent.css.js';
 import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
@@ -34,8 +35,8 @@ export interface IgcSnackbarEventMap {
  * @csspart action - The snackbar action button.
  */
 @themes({
-  light: { bootstrap, fluent, indigo },
-  dark: { bootstrap, fluent, indigo },
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
 })
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,

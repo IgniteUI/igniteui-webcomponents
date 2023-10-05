@@ -1,0 +1,15 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-snackbar');
+}
+
+[part~='base'] {
+    border-radius: var-get($theme, 'border-radius');
+    color: var-get($theme, 'text-color');
+    background: var-get($theme, 'background');
+    box-shadow: var-get($theme, 'elevation');
+}

@@ -1,16 +1,8 @@
-@use 'sass:map';
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
 $theme: $bootstrap;
-$selected-background: var(--selected-background, color(primary, 500)) !default;
-$selected-color: var(--selected-color, contrast-color(primary, 600)) !default;
-$active-background: var(--active-background, color(gray, 200)) !default;
-$active-color: var(--active-color, contrast-color(gray, 200)) !default;
-$active-selected-background: var(--active-selected-background, color(primary, 600)) !default;
-$active-selected-color: var(--active-selected-color, contrast-color(primary, 600)) !default;
-$focused-border-color: var(--focused-border-color, color(primary, 200)) !default;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-tree');
@@ -18,6 +10,18 @@ $focused-border-color: var(--focused-border-color, color(primary, 200)) !default
 
 [part~='wrapper'] {
     min-height: var-get($theme, 'size');
+    background: var-get($theme, 'background');
+    color: var-get($theme, 'foreground');
+
+    &::after {
+        background: transparent;
+    }
+
+    &:hover {
+        &::after {
+            background: var-get($theme, 'hover-color');
+        }
+    }
 }
 
 [part~='label'] {
@@ -25,20 +29,20 @@ $focused-border-color: var(--focused-border-color, color(primary, 200)) !default
 }
 
 [part~='active'] {
-    background: $active-background;
-    color: $active-color;
+    background: var-get($theme, 'background-active');
+    color: var-get($theme, 'foreground-active');
 }
 
 [part~='selected'] {
-    background: $selected-background;
-    color: $selected-color;
+    background: var-get($theme, 'background-selected');
+    color: var-get($theme, 'foreground-selected');
 }
 
 [part~='selected'][part~='focused'][part~='active'],
 [part~='selected'][part~='focused'],
 [part~='selected'][part~='active'] {
-    background: $active-selected-background;
-    color: $active-selected-color;
+    background: var-get($theme, 'background-active-selected');
+    color: var-get($theme, 'foreground-active-selected');
 }
 
 [part~='select'] {
@@ -46,5 +50,12 @@ $focused-border-color: var(--focused-border-color, color(primary, 200)) !default
 }
 
 [part~='focused'] {
-    box-shadow: inset 0 0 0 rem(1px) $focused-border-color;
+    box-shadow: inset 0 0 0 1px var-get($theme, 'border-color');
+}
+
+:host([disabled]) {
+    [part~='label'] {
+        color: var-get($theme, 'foreground-disabled');
+        background: var-get($theme, 'background-disabled');
+    }
 }

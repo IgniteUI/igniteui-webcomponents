@@ -1,13 +1,7 @@
-@use 'sass:map';
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'themes' as *;
-
-$theme: $material;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-snackbar');
-
     position: fixed;
     font-family: var(--ig-font-family);
     inset-inline: 50% auto;
@@ -37,10 +31,6 @@ $theme: $material;
     padding: rem(7px) rem(24px);
     margin: rem(8px);
     gap: rem(24px);
-    color: contrast-color(gray, 900);
-    background: color(gray, 900, .9);
-    box-shadow: var(--ig-elevation-4);
-    border-radius: var-get($theme, 'border-radius');
     backface-visibility: hidden;
     backdrop-filter: blur(8px);
 }

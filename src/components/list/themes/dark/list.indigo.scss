@@ -1,12 +1,10 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
+$theme: $indigo;
+
 @mixin theme() {
     igc-list {
-        @include css-vars-from-theme($indigo, 'ig-list');
-    }
-
-    igc-list-item {
-        --item-hover-bg: #{color(primary, 500, .5)};
+        @include css-vars-from-theme($theme, 'ig-list');
     }
 }

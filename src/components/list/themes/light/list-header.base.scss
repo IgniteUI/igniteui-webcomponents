@@ -1,15 +1,19 @@
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-list');
+    @include type-style('overline');
+
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    color: color(secondary, 500);
-    background: inherit;
+    color: var-get($theme, 'header-text-color');
+    background: var-get($theme, 'header-background');
     padding-inline: pad-inline(4px, 8px, 16px);
     padding-block: pad-block(2px, 4px, 8px);
-
-    @include type-style('overline');
 }
 
 ::slotted(*) {
