@@ -30,16 +30,24 @@ $row-gap: rem(6px);
     border-bottom: $header-border-width solid $border-color;
 }
 
+[part~='date'],
+[part~='week-number'] {
+    border-top: $border-width solid transparent;
+    border-bottom: $border-width solid transparent;
+}
+
+[part~='date'] {
+    color: color(gray, 800);
+}
+
+[part~='week-number'] {
+    color: color(gray, 500);
+
+}
+
 [part~='label'] {
     font-style: italic;
     color: color(info, 300);
-}
-
-[part~='date'],
-[part~='week-number'] {
-    color: color(gray, 800);
-    border-top: $border-width solid transparent;
-    border-bottom: $border-width solid transparent;
 }
 
 [part='week-number-inner first'] {
