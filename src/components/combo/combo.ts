@@ -329,11 +329,14 @@ export default class IgcComboComponent<T extends object = any>
 
   @watch('data')
   protected dataChanged() {
+    if (this.data.length === 0) return;
     this.dataState = structuredClone(this.data) as ComboRecord<T>[];
 
     if (this.hasUpdated) {
       this.pipeline();
     }
+
+    this.requestUpdate('value');
   }
 
   @watch('valueKey')
@@ -506,6 +509,7 @@ export default class IgcComboComponent<T extends object = any>
   }
 
   protected async updateValue() {
+    if (this.data.length === 0) return;
     const selected = Array.from(this.selectionController.selected);
 
     this._value = this.selectionController.getValue(selected, this.valueKey!);
