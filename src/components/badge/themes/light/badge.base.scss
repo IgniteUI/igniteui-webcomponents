@@ -35,7 +35,7 @@ $theme: $material;
 }
 
 ::slotted(*) {
-    --size: calc(var(--_badge-size) / 2);
+    --size: calc(var(--_badge-size) / 2) !important;
 
     font-size: calc(var(--_badge-size) / 2) !important;
 }
