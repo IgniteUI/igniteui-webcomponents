@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -7,27 +6,48 @@ $theme: $fluent;
 :host {
     @include css-vars-from-theme($theme, 'ig-expansion-panel');
 
+    color: var-get($theme, 'body-color');
+    background: var-get($theme, 'body-background');
     border-radius: var-get($theme, 'border-radius');
 }
 
-[part='title']::slotted(*) {
-    @include type-style('subtitle-1');
+[part='header'] {
+    background: var-get($theme, 'header-background');
+
+    &:focus,
+    &:active {
+        background: var-get($theme, 'header-focus-background');
+    }
 }
 
-[part='subtitle']::slotted(*) {
-    @include type-style('body-2');
+[part~='indicator'] {
+    color: var-get($theme, 'header-icon-color');
+}
+
+[part='title'] {
+    color: var-get($theme, 'header-title-color');
+
+    &::slotted(*) {
+        @include type-style('subtitle-1');
+    }
+}
+
+[part='subtitle'] {
+    color: var-get($theme, 'header-description-color');
+
+    &::slotted(*) {
+        @include type-style('body-2');
+    }
 }
 
 :host([open]) [part~='content'] {
     @include type-style('caption');
-
-    color: color(gray, 700);
 }
 
 :host([disabled]) {
     [part~='indicator'],
     [part='title'],
     [part='subtitle'] {
-        color: color(gray, 400);
+        color: var-get($theme, 'disabled-color');
     }
 }

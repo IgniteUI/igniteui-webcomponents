@@ -12,6 +12,6 @@ $theme: $material;
     font-family: var(--ig-font-family);
     overflow: hidden auto;
     height: auto;
-    background: color(surface, 500);
+    background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
 }

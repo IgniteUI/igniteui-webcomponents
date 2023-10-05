@@ -7,15 +7,30 @@ $theme: $indigo;
 :host {
     @include css-vars-from-theme($theme, 'ig-expansion-panel');
 
+    color: var-get($theme, 'body-color');
+    background: var-get($theme, 'body-background');
     border-radius: var-get($theme, 'border-radius');
 }
 
+[part='header'] {
+    background: var-get($theme, 'header-background');
+
+    &:focus,
+    &:active {
+        background: var-get($theme, 'header-focus-background');
+    }
+}
+
 [part~='indicator'] {
-    color: color(gray, 600);
+    color: var-get($theme, 'header-icon-color');
+}
+
+[part='title'] {
+    color: var-get($theme, 'header-title-color');
 }
 
 [part='subtitle'] {
-    color: color(gray, 500);
+    color: var-get($theme, 'header-description-color');
 }
 
 :host([open]) [part~='content'] {
@@ -26,6 +41,6 @@ $theme: $indigo;
     [part~='indicator'],
     [part='title'],
     [part='subtitle'] {
-        color: color(gray, 300);
+        color: var-get($theme, 'disabled-color');
     }
 }

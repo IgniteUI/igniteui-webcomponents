@@ -1,19 +1,39 @@
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $indigo;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-tabs');
+}
 
 [part='headers'] {
-    background: transparent;
+    background: var-get($theme, 'item-background');
 }
 
 [part='start-scroll-button'],
 [part='end-scroll-button'] {
-    background: transparent;
+    background: var-get($theme, 'button-background');
 
     &:hover,
     &:focus {
-        background: transparent;
+        background: var-get($theme, 'button-hover-background');
     }
 }
 
 [part='selected-indicator'] {
-    background: color(primary, 400);
+    background: var-get($theme, 'indicator-color');
+}
+
+igc-icon-button::part(base) {
+    color: var-get($theme, 'button-color');
+
+    &:hover,
+    &:focus-within {
+        color: var-get($theme, 'button-hover-color');
+    }
+}
+
+igc-icon-button[disabled]::part(base) {
+    color: var-get($theme, 'button-disabled-color');
 }
