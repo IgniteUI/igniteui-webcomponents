@@ -1,5 +1,13 @@
-@use 'card.header.material.scss';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-card');
+
+    color: var-get($theme, 'header-text-color');
+}
 
 ::slotted([slot='title']) {
     @include type-style('subtitle-1');
@@ -7,4 +15,6 @@
 
 ::slotted([slot='subtitle']) {
     @include type-style('body-2');
+
+    color: var-get($theme, 'subtitle-text-color');
 }

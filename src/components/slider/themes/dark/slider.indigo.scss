@@ -1,8 +1,10 @@
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $indigo;
 
 @mixin theme() {
     igc-slider {
-        --inactive-background: #{color(gray, 200)};
-        --inactive-hover-background: #{color(gray, 400)};
+        @include css-vars-from-theme($theme, 'ig-slider');
     }
 }

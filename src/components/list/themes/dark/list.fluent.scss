@@ -1,12 +1,10 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
+$theme: $fluent;
+
 @mixin theme() {
     igc-list {
-        @include css-vars-from-theme($fluent, 'ig-list');
-    }
-
-    igc-list-item {
-        --item-hover-bg: #{color(gray, 100)};
+        @include css-vars-from-theme($theme, 'ig-list');
     }
 }

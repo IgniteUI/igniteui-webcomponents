@@ -1,19 +1,6 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-$disabled-color: color(gray, 500);
-$disabled-background: color(surface);
-$background: color(surface);
-$color: contrast-color(surface);
-$hover-color: var(--hover-color, color(gray, 900, .1)) !default;
-$selected-background: color(secondary, 200);
-$selected-color: contrast-color(secondary, 200);
-$active-background: color(gray, 200);
-$active-color: contrast-color(gray, 200);
-$active-selected-background: color(secondary, 300);
-$active-selected-color: contrast-color(secondary, 300);
-$focused-border-color: color(secondary, 500);
-
 :host {
     --igc-tree-indentation-size: #{sizable(rem(12px), rem(16px), rem(24px))};
 
@@ -28,11 +15,6 @@ $focused-border-color: color(secondary, 500);
 
 :host(:focus-within) {
     outline: none;
-}
-
-:host([disabled]) {
-    color: $disabled-color;
-    background: $disabled-background;
 }
 
 [role~='group'] {
@@ -51,8 +33,6 @@ $focused-border-color: color(secondary, 500);
     display: flex;
     align-items: center;
     position: relative;
-    background: $background;
-    color: $color;
     padding: 0 pad(12px, 16px, 24px);
 
     &::after {
@@ -63,35 +43,7 @@ $focused-border-color: color(secondary, 500);
         width: 100%;
         height: 100%;
         z-index: 0;
-        background: transparent;
     }
-
-    &:hover {
-        &::after {
-            background: $hover-color;
-        }
-    }
-}
-
-[part~='active'] {
-    background: $active-background;
-    color: $active-color;
-}
-
-[part~='selected'] {
-    background: $selected-background;
-    color: $selected-color;
-}
-
-[part~='selected'][part~='focused'][part~='active'],
-[part~='selected'][part~='focused'],
-[part~='selected'][part~='active'] {
-    background: $active-selected-background;
-    color: $active-selected-color;
-}
-
-[part~='focused'] {
-    box-shadow: inset 0 0 0 1px $focused-border-color;
 }
 
 [part~='indicator'] {
@@ -139,4 +91,8 @@ $focused-border-color: color(secondary, 500);
             display: none;
         }
     }
+}
+
+:host([disabled]) {
+    pointer-events: none;
 }

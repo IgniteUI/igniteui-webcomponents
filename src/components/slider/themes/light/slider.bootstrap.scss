@@ -1,6 +1,12 @@
 @use 'styles/utilities' as *;
+@use 'themes' as *;
 
-$inactive-background: var(--inactive-background, color(secondary, 500, .24)) !default;
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-slider');
+}
+
 $thumb-size: rem(16px);
 $thumb-radius: calc(#{$thumb-size} / 2);
 
@@ -14,18 +20,55 @@ $thumb-radius: calc(#{$thumb-size} / 2);
 }
 
 [part='inactive'] {
-    background: $inactive-background;
+    background: var-get($theme, 'base-track-color');
+}
+
+[part='steps'] {
+    color: var-get($theme, 'track-step-color');
 }
 
 [part~='thumb'] {
     width: $thumb-size;
     height: $thumb-size;
-    background: color(primary, 500);
+    background: var-get($theme, 'thumb-color');
     top: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
     margin-inline-start: calc((#{$thumb-size} - #{$thumb-radius}) * -1);
 
     &:focus {
-        border: rem(1px) solid color(surface, 500);
-        box-shadow: 0 0 0 rem(3px) color(primary, 200);
+        border: rem(1px) solid var-get($theme, 'thumb-border-focus-color');
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'thumb-focus-color');
+    }
+}
+
+[part='tick'] {
+    background: var-get($theme, 'tick-color');
+}
+
+[part='tick-label'] {
+    color: var-get($theme, 'tick-label-color');
+}
+
+[part='thumb-label-inner'] {
+    color: var-get($theme, 'label-text-color');
+    background: var-get($theme, 'label-background-color');
+
+    &::after {
+        border-top: rem(10px) solid var-get($theme, 'label-background-color');
+    }
+}
+
+:host([disabled]),
+:host(:disabled) {
+    [part='inactive'],
+    [part='tick'] {
+        background: var-get($theme, 'disabled-base-track-color');
+    }
+
+    [part~='thumb'] {
+        background: var-get($theme, 'disabled-thumb-color');
+    }
+
+    [part='tick-label'] {
+        color: var-get($theme, 'disabled-base-track-color');
     }
 }

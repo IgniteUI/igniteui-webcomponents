@@ -1,13 +1,10 @@
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $fluent;
 
 @mixin theme() {
     igc-tree-item {
-        --hover-color: #{color(gray, 200, .5)};
-        --selected-background: #{color(gray, 100)};
-        --selected-color: #{contrast-color(gray, 100)};
-        --active-background: #{color(gray, 100)};
-        --active-color: #{contrast-color(gray, 100)};
-        --active-selected-background: #{color(gray, 200)};
-        --active-selected-color: #{contrast-color(gray, 200)};
+        @include css-vars-from-theme($theme, 'ig-tree');
     }
 }

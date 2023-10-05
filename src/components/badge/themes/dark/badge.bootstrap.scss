@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
+
+@mixin theme() {
+    igc-badge {
+        @include css-vars-from-theme($theme, 'ig-badge');
+    }
+}

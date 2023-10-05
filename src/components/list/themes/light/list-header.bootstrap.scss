@@ -1,0 +1,11 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-list');
+
+    background: var-get($theme, 'header-background');
+    color: var-get($theme, 'header-text-color');
+}
