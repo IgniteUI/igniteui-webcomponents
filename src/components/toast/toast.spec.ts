@@ -55,6 +55,16 @@ describe('Toast', () => {
       expect(toast).dom.to.not.have.attribute('keep-open');
     });
 
+    it('should change the toast position option correctly.', async () => {
+      for (const position of ['bottom', 'middle', 'top']) {
+        toast.position = position as any;
+        await elementUpdated(toast);
+
+        expect(toast.position).to.equal(position);
+        expect(toast).dom.to.have.attribute('position', position);
+      }
+    });
+
     it('show method should open the toast', async () => {
       toast.open = false;
       await elementUpdated(toast);

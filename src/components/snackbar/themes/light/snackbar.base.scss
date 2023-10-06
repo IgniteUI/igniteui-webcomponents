@@ -2,11 +2,24 @@
 @use 'styles/utilities' as *;
 
 :host {
-    font-family: var(--ig-font-family);
     position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    font-family: var(--ig-font-family);
+    inset-inline: 50% auto;
+    transform: translateX(calc(-50% + .5px));
+}
+
+:host([position='bottom']) {
+    inset-block: auto 0;
+}
+
+:host([position='middle']) {
+    inset-block: 50% auto;
+    transform: translate(calc(-50% + .5px), calc(-50% + .5px));
+    margin: auto;
+}
+
+:host([position='top']) {
+    inset-block: 0 auto;
 }
 
 [part~='base'] {
