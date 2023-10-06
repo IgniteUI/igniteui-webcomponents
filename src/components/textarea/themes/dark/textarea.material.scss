@@ -1,0 +1,11 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use '../../../input/themes/dark/themes' as *;
+
+$theme: $material;
+
+@mixin theme() {
+    igc-textarea {
+        @include css-vars-from-theme($theme, 'ig-textarea');
+    }
+}
