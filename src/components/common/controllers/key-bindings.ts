@@ -10,6 +10,8 @@ export const enterKey = 'Enter' as const;
 export const spaceBar = ' ' as const;
 export const homeKey = 'Home' as const;
 export const endKey = 'End' as const;
+export const pageUpKey = 'PageUp' as const;
+export const pageDownKey = 'PageDown' as const;
 export const tabKey = 'Tab' as const;
 
 /* Modifiers */

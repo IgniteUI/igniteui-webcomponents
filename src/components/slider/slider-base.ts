@@ -20,6 +20,17 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcSliderLabelComponent from './slider-label.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { isLTR } from '../common/util.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  homeKey,
+  pageDownKey,
+  pageUpKey,
+} from '../common/controllers/key-bindings.js';
 
 defineComponents(IgcSliderLabelComponent);
 
@@ -260,18 +271,53 @@ export class IgcSliderBaseComponent extends LitElement {
     this.addEventListener('pointerdown', this.pointerDown);
     this.addEventListener('pointermove', this.pointerMove);
     this.addEventListener('lostpointercapture', this.lostPointerCapture);
-    this.addEventListener('keydown', this.handleKeydown);
+    this.addEventListener('keyup', this.handleKeyUp);
+
+    addKeybindings(this, {
+      skip: () => this.disabled,
+      bindingDefaults: { preventDefault: true },
+    })
+      .set(arrowLeft, () => this.handleArrowKeys(isLTR(this) ? -1 : 1))
+      .set(arrowRight, () => this.handleArrowKeys(isLTR(this) ? 1 : -1))
+      .set(arrowUp, () => this.handleArrowKeys(1))
+      .set(arrowDown, () => this.handleArrowKeys(-1))
+      .set(homeKey, () =>
+        this.handleKeyboardIncrement(this.actualMin - this.activeValue)
+      )
+      .set(endKey, () =>
+        this.handleKeyboardIncrement(this.actualMax - this.activeValue)
+      )
+      .set(pageUpKey, () => this.handlePageKeys(1))
+      .set(pageDownKey, () => this.handlePageKeys(-1));
+  }
+
+  private handleArrowKeys(delta: -1 | 1) {
+    const step = this.step ? this.step : 1;
+    this.handleKeyboardIncrement(step * delta);
+  }
+
+  private handlePageKeys(delta: -1 | 1) {
+    const step = this.step ? this.step : 1;
+    this.handleKeyboardIncrement(
+      delta * Math.max((this.actualMax - this.actualMin) / 10, step)
+    );
+  }
+
+  private handleKeyboardIncrement(increment: number) {
+    if (increment) {
+      const updated = this.updateValue(increment);
+      this.showThumbLabels();
+      this.hideThumbLabels();
+
+      if (updated) {
+        this.emitChangeEvent();
+      }
+    }
   }
 
   public override connectedCallback() {
     super.connectedCallback();
     this.normalizeValue();
-    this.addEventListener('keyup', this.handleKeyUp);
-  }
-
-  public override disconnectedCallback() {
-    this.removeEventListener('keyup', this.handleKeyUp);
-    super.disconnectedCallback();
   }
 
   protected handleKeyUp() {
@@ -484,58 +530,6 @@ export class IgcSliderBaseComponent extends LitElement {
       this.emitChangeEvent();
     }
     this.startValue = undefined;
-  };
-
-  private handleKeydown = (event: KeyboardEvent) => {
-    if (this.disabled) {
-      return;
-    }
-
-    const { key } = event;
-
-    let increment = 0;
-    const value = this.activeValue;
-    const step = this.step ? this.step : 1;
-    const ltr = isLTR(this);
-
-    switch (key) {
-      case 'ArrowLeft':
-        increment += ltr ? -step : step;
-        break;
-      case 'ArrowRight':
-        increment += ltr ? step : -step;
-        break;
-      case 'ArrowUp':
-        increment = step;
-        break;
-      case 'ArrowDown':
-        increment = -step;
-        break;
-      case 'Home':
-        increment = this.actualMin - value;
-        break;
-      case 'End':
-        increment = this.actualMax - value;
-        break;
-      case 'PageUp':
-        increment = Math.max((this.actualMax - this.actualMin) / 10, step);
-        break;
-      case 'PageDown':
-        increment = -Math.max((this.actualMax - this.actualMin) / 10, step);
-        break;
-      default:
-        return;
-    }
-
-    if (increment) {
-      const updated = this.updateValue(increment);
-      this.showThumbLabels();
-      this.hideThumbLabels();
-
-      if (updated) {
-        this.emitChangeEvent();
-      }
-    }
   };
 
   protected handleThumbPointerEnter = () => {
