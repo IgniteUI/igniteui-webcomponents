@@ -14,7 +14,6 @@
 @use '../../../components/tree/themes/dark/tree-item.indigo' as tree-item;
 @use '../../../components/dialog/themes/dark/dialog.indigo' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
-@use '../../../components/expansion-panel/themes/dark/expansion-panel.indigo' as expansion-panel;
 @use '../../../components/select/themes/dark/select.indigo' as select;
 @use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
 @use '../../../components/tabs/themes/dark/tab.indigo' as tab;
@@ -39,7 +38,6 @@
 @include tree-item.theme();
 @include dialog.theme();
 @include dropdown.theme();
-@include expansion-panel.theme();
 @include select.theme();
 @include snackbar.theme();
 @include tab.theme();

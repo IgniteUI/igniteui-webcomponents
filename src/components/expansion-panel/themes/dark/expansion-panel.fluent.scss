@@ -3,8 +3,6 @@
 
 $theme: $fluent;
 
-@mixin theme() {
-    igc-expansion-panel {
-        @include css-vars-from-theme($theme, 'igc-expansion-panel');
-    }
+:host {
+    @include css-vars-from-theme($theme, 'igc-expansion-panel');
 }
