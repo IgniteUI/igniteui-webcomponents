@@ -9,6 +9,10 @@ $theme: $bootstrap;
         @include css-vars-from-theme($theme, 'ig-input');
     }
 
+    igc-textarea {
+        @include css-vars-from-theme($theme, 'ig-textarea');
+    }
+
     igc-select::part(input) {
         @include css-vars-from-theme($theme, ig-select);
     }
