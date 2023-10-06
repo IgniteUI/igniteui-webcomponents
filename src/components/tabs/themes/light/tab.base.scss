@@ -1,14 +1,7 @@
-@use 'sass:map';
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'themes' as *;
-
-$theme: $material;
-$hover-background: var(--hover-background, color(gray, 200)) !default;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-tabs');
-
     display: inline-flex;
     flex-shrink: 0;
     justify-content: center;
@@ -22,38 +15,15 @@ $hover-background: var(--hover-background, color(gray, 200)) !default;
     position: relative;
     transition: all .3s cubic-bezier(.35, 0, .25, 1);
     user-select: none;
-    background: color(surface, 500);
-    color: color(gray, 700);
-    border-radius: var-get($theme, 'border-radius');
 
     ::slotted(igc-icon) {
         --ig-size: 3;
     }
 }
 
-:host(:hover),
-:host(:focus-within) {
-    background: $hover-background;
-    color: color(gray, 700);
-}
-
-:host([selected]) {
-    color: color(primary, 500);
-
-    ::slotted(igc-icon) {
-        color: color(primary, 500);
-    }
-}
-
-:host([selected]:hover),
-:host([selected]:focus-within) {
-    color: color(primary, 500);
-}
-
 :host([disabled]) {
     pointer-events: none;
     cursor: initial;
-    color: color(gray, 500);
 }
 
 [part='base'] {

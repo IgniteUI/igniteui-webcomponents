@@ -1,11 +1,7 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-$content-color: var(--content-color, color(gray, 700));
-
 :host {
-    background: color(surface, 500);
-    color: contrast-color(surface, 500);
     border-style: none;
     padding: unset;
 }
@@ -18,12 +14,9 @@ $content-color: var(--content-color, color(gray, 700));
     border: inherit;
     border-radius: inherit;
     min-width: inherit;
-    box-shadow: var(--ig-elevation-24);
 }
 
 [part='content'] {
-    color: $content-color;
-
     @include type-style('body-1') {
         margin: 0;
     }
@@ -33,7 +26,6 @@ $content-color: var(--content-color, color(gray, 700));
 [part='footer'] {
     display: flex;
     align-items: center;
-    color: color(gray, 900);
 
     @include type-style('h6') {
         margin: 0;
@@ -67,7 +59,6 @@ dialog::backdrop {
 [part~='backdrop'] {
     position: fixed;
     inset: 0;
-    background: color(gray, 500, .54);
     z-index: 10005;
     pointer-events: none;
     opacity: 0;

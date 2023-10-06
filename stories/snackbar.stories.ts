@@ -42,13 +42,20 @@ const metadata: Meta<IgcSnackbarComponent> = {
       control: 'boolean',
       defaultValue: false,
     },
+    position: {
+      type: '"top" | "bottom" | "middle"',
+      description: 'Sets the position of the snackbar.',
+      options: ['top', 'bottom', 'middle'],
+      control: { type: 'inline-radio' },
+      defaultValue: 'bottom',
+    },
     actionText: {
       type: 'string',
       description: 'The snackbar action button.',
       control: 'text',
     },
   },
-  args: { open: false, displayTime: 4000, keepOpen: false },
+  args: { open: false, displayTime: 4000, keepOpen: false, position: 'bottom' },
 };
 
 export default metadata;
@@ -60,6 +67,8 @@ interface IgcSnackbarArgs {
   displayTime: number;
   /** Determines whether the snackbar should close after the displayTime is over. */
   keepOpen: boolean;
+  /** Sets the position of the snackbar. */
+  position: 'top' | 'bottom' | 'middle';
   /** The snackbar action button. */
   actionText: string;
 }
@@ -86,12 +95,14 @@ const Template = ({
   keepOpen,
   displayTime,
   actionText = 'Close',
+  position = 'bottom',
 }: IgcSnackbarArgs) => html`
   <igc-snackbar
     .open=${open}
     ?keep-open=${keepOpen}
     display-time=${ifDefined(displayTime)}
     action-text=${ifDefined(actionText)}
+    .position=${position}
   >
     Snackbar Message
   </igc-snackbar>

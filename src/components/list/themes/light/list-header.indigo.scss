@@ -2,8 +2,10 @@
 @use 'themes' as *;
 
 $theme: $indigo;
-$header-color: color(primary, 500) !default;
 
 :host {
-    color: $header-color;
+    @include css-vars-from-theme($theme, 'ig-list');
+
+    background: var-get($theme, 'header-background');
+    color: var-get($theme, 'header-text-color');
 }

@@ -1,7 +1,0 @@
-@use 'styles/utilities' as *;
-
-@mixin theme() {
-    igc-tab {
-        --hover-background: #{color(gray, 100, .5)};
-    }
-}

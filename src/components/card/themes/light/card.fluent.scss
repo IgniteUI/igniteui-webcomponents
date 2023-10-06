@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -7,19 +6,26 @@ $theme: $fluent;
 :host {
     @include css-vars-from-theme($theme, 'ig-card');
 
-    border: rem(1px) solid color(gray, 100);
+    border: rem(1px) solid var-get($theme, 'outline-color');
+    background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
+}
+
+:host([elevated]) {
+    box-shadow: var-get($theme, 'resting-elevation');
 }
 
 :host([elevated]:hover),
 :host([elevated]:focus-within) {
+    box-shadow: var-get($theme, 'hover-elevation');
+
     &::after {
         position: absolute;
         content: '';
         width: 100%;
         height: 100%;
         transition: box-shadow .1s ease-out;
-        box-shadow: inset 0 0 0 rem(2px) color(gray, 300);
+        box-shadow: inset 0 0 0 rem(2px) var-get($theme, 'outline-color');
         pointer-events: none;
     }
 }

@@ -1,6 +1,10 @@
-@use 'card.content.material.scss';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $indigo;
 
 :host {
-    color: color(gray, 700);
+    @include css-vars-from-theme($theme, 'ig-card');
+
+    color: var-get($theme, 'content-text-color');
 }

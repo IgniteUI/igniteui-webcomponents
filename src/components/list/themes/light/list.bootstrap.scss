@@ -2,13 +2,11 @@
 @use 'themes' as *;
 
 $theme: $bootstrap;
-$list-bg: contrast-color(gray, 900) !default;
-$separator-color: color(gray, 300) !default;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-list');
 
-    background: $list-bg;
-    border: rem(1px) solid $separator-color;
+    background: var-get($theme, 'background');
+    border: rem(1px) solid var-get($theme, 'border-color');
     border-radius: var-get($theme, 'border-radius');
 }

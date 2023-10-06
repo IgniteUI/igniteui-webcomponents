@@ -1,20 +1,23 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
 $theme: $bootstrap;
-$border-color: var(--border-color, color(gray, 300));
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dialog');
 
+    background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
+}
+
+[part~='backdrop'] {
+    background: var-get($theme, 'backdrop');
 }
 
 [part='base'] {
     min-width: rem(288px);
-    border: 1px solid $border-color;
-    box-shadow: none;
+    border: 1px solid var-get($theme, 'border-color');
+    box-shadow: var-get($theme, 'elevation');
 }
 
 [part='title'],
@@ -23,17 +26,19 @@ $border-color: var(--border-color, color(gray, 300));
         margin: 0;
     }
 
+    color: var-get($theme, 'title-color');
     padding: rem(16px);
 }
 
 [part='content'] {
+    color: var-get($theme, 'message-color');
     padding: rem(16px);
 }
 
 [part='title'] {
-    border-block-end: 1px solid $border-color;
+    border-block-end: 1px solid var-get($theme, 'border-color');
 }
 
 [part='footer'] {
-    border-block-start: 1px solid $border-color;
+    border-block-start: 1px solid var-get($theme, 'border-color');
 }

@@ -1,10 +1,13 @@
-@use 'card.content.material.scss';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-card');
     @include type-style('body-1');
 
-    color: color(gray, 800);
+    color: var-get($theme, 'content-text-color');
 }
 
 ::slotted(*) {

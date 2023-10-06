@@ -10,7 +10,7 @@ $theme: $bootstrap;
     padding: rem(11px);
     color: var-get($theme, 'text-color');
     background: var-get($theme, 'background');
-    outline: #{rem(1px)} solid var-get($theme, 'border-color');
+    border: #{rem(1px)} solid var-get($theme, 'border-color');
     box-shadow: var-get($theme, 'elevation');
     border-radius: var-get($theme, 'border-radius');
 }

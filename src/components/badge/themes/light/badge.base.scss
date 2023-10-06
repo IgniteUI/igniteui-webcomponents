@@ -1,7 +1,12 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-badge');
+
     --size: #{rem(22px)};
     --_badge-size: var(--size);
 
@@ -25,8 +30,12 @@
     font-weight: inherit;
 }
 
+::slotted(igc-icon) {
+    color: var-get($theme, 'icon-color');
+}
+
 ::slotted(*) {
-    --size: calc(var(--_badge-size) / 2);
+    --size: calc(var(--_badge-size) / 2) !important;
 
     font-size: calc(var(--_badge-size) / 2) !important;
 }
@@ -36,8 +45,8 @@
 }
 
 :host([variant='primary']) {
-    background: color(primary, 500);
-    color: contrast-color(primary, 500);
+    background: var-get($theme, 'background-color');
+    color: var-get($theme, 'text-color');
 }
 
 :host([variant='info']) {
@@ -67,9 +76,9 @@
 
 :host([shape='square']),
 :host([outlined][shape='square']) [part='base'] {
-    border-radius: 0;
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host([outlined]) [part='base'] {
-    box-shadow: inset 0 0 0 rem(2px) color(gray, 50);
+    box-shadow: inset 0 0 0 rem(2px) var-get($theme, 'border-color');
 }

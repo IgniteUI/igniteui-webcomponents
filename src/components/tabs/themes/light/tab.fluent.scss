@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -7,23 +6,38 @@ $theme: $fluent;
 :host {
     @include css-vars-from-theme($theme, 'ig-tabs');
 
-    color: color(gray, 900);
+    background: var-get($theme, 'item-background');
+    color: var-get($theme, 'item-text-color');
     border-radius: var-get($theme, 'border-radius');
 
     ::slotted(igc-icon) {
-        color: color(gray, 700);
+        color: var-get($theme, 'item-icon-color');
     }
 }
 
 :host(:hover),
 :host(:focus-within) {
-    color: color(gray, 900);
+    background: var-get($theme, 'item-hover-background');
+    color: var-get($theme, 'item-hover-color');
+}
+
+:host([selected]) {
+    color: var-get($theme, 'item-active-color');
+
+    ::slotted(igc-icon) {
+        color: var-get($theme, 'item-active-icon-color');
+    }
+}
+
+:host([selected]:hover),
+:host([selected]:focus-within) {
+    color: var-get($theme, 'item-active-color');
 }
 
 :host([disabled]) {
-    color: color(gray, 400);
+    color: var-get($theme, 'item-disabled-color');
 
     ::slotted(igc-icon) {
-        color: color(gray, 400);
+        color: var-get($theme, 'item-disabled-icon-color');
     }
 }

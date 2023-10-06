@@ -1,7 +1,10 @@
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
 
 @mixin theme() {
     igc-slider {
-        --inactive-background: #{color(secondary, 500, .48)};
+        @include css-vars-from-theme($theme, 'ig-slider');
     }
 }

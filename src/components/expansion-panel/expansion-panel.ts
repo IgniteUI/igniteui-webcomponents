@@ -16,6 +16,7 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import { styles } from './themes/light/expansion-panel.base.css.js';
+import { styles as material } from './themes/light/expansion-panel.material.css.js';
 import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
 import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
 import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
@@ -52,9 +53,10 @@ export interface IgcExpansionPanelComponentEventMap {
  * @csspart indicator - The indicator container.
  * @csspart content - The expansion panel's content wrapper.
  */
+
 @themes({
-  light: { bootstrap, fluent, indigo },
-  dark: { bootstrap, fluent, indigo },
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
 })
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
