@@ -11,7 +11,8 @@ import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import {
@@ -75,6 +76,10 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
 ) {
   public static readonly tagName = 'igc-textarea';
   public static styles = [styles];
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private declare readonly [themeSymbol]: Theme;
   protected override validators: Validator<this>[] = [
