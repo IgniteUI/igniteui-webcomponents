@@ -2,16 +2,13 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 @use '../../../dropdown/themes/dark/themes' as dropdown-theme;
-@use '../../../input/themes/dark/themes' as input-theme;
 
 $theme: $bootstrap;
 $dropdown-theme: dropdown-theme.$bootstrap;
-$input-theme: input-theme.$bootstrap;
 
 @mixin theme() {
     igc-combo {
         @include css-vars-from-theme($theme, 'ig-combo');
-        @include css-vars-from-theme($input-theme, 'ig-input');
         @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
     }
 }

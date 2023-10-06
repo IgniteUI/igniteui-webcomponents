@@ -12,7 +12,6 @@
 @use '../../../components/dropdown/themes/dark/dropdown.fluent' as dropdown;
 @use '../../../components/expansion-panel/themes/dark/expansion-panel.fluent' as expansion-panel;
 @use '../../../components/checkbox/themes/dark/switch.fluent' as switch;
-@use '../../../components/input/themes/dark/input.dark.fluent' as input;
 @use '../../../components/radio/themes/dark/radio.fluent' as radio;
 @use '../../../components/slider/themes/dark/slider.fluent.scss' as slider;
 @use '../../../components/list/themes/dark/list.fluent' as list;
@@ -39,7 +38,6 @@
 @include dialog.theme();
 @include expansion-panel.theme();
 @include switch.theme();
-@include input.theme();
 @include radio.theme();
 @include slider.theme();
 @include list.theme();

@@ -6,7 +6,6 @@
 @use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
 @use '../../../components/chip/themes/dark/chip.indigo' as chip;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
-@use '../../../components/input/themes/dark/input.dark.indigo' as input;
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
 @use '../../../components/slider/themes/dark/slider.indigo' as slider;
 @use '../../../components/list/themes/dark/list.indigo' as list;
@@ -32,7 +31,6 @@
 @include checkbox.theme();
 @include chip.theme();
 @include switch.theme();
-@include input.theme();
 @include radio.theme();
 @include slider.theme();
 @include list.theme();
