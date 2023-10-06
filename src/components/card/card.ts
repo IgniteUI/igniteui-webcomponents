@@ -1,10 +1,11 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { styles } from './themes/light/card.base.css.js';
+import { styles as material } from './themes/light/card.material.css.js';
 import { styles as bootstrap } from './themes/light/card.bootstrap.css.js';
 import { styles as fluent } from './themes/light/card.fluent.css.js';
 import { styles as indigo } from './themes/light/card.indigo.css.js';
-import { styles } from './themes/light/card.material.css.js';
 
 import { registerComponent } from '../common/definitions/register.js';
 import IgcCardActionsComponent from './card.actions.js';
@@ -19,11 +20,13 @@ import IgcCardMediaComponent from './card.media.js';
  */
 @themes({
   light: {
+    material,
     bootstrap,
     fluent,
     indigo,
   },
   dark: {
+    material,
     bootstrap,
     fluent,
     indigo,

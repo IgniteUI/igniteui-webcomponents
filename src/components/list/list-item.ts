@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/light/list-item.base.css.js';
+import { styles as material } from './themes/light/list-item.material.css.js';
 import { styles as bootstrap } from './themes/light/list-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/list-item.fluent.css.js';
 import { styles as indigo } from './themes/light/list-item.indigo.css.js';
@@ -26,8 +27,8 @@ import { styles as indigo } from './themes/light/list-item.indigo.css.js';
  * @csspart subtitle - The subtitle container.
  */
 @themes({
-  light: { bootstrap, fluent, indigo },
-  dark: { bootstrap, fluent, indigo },
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
 })
 export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';

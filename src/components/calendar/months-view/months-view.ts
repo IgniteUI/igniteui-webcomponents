@@ -14,9 +14,11 @@ import {
 } from '../common/calendar-base.js';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model.js';
 import { setDateSafe } from '../common/utils.js';
-import { styles as bootstrap } from '../themes/bootstrap/year-month-view.bootstrap.css.js';
-import { styles as fluent } from '../themes/fluent/year-month-view.fluent.css.js';
 import { styles } from '../themes/year-month-view.base.css.js';
+import { styles as bootstrap } from '../themes/light/bootstrap/year-month-view.bootstrap.css.js';
+import { styles as fluent } from '../themes/light/fluent/year-month-view.fluent.css.js';
+import { styles as material } from '../themes/light/material/year-month-view.material.css.js';
+import { styles as indigo } from '../themes/light/indigo/year-month-view.indigo.css.js';
 
 /**
  * Instantiate a months view as a separate component in the calendar.
@@ -33,10 +35,14 @@ import { styles } from '../themes/year-month-view.base.css.js';
   light: {
     bootstrap,
     fluent,
+    material,
+    indigo,
   },
   dark: {
     bootstrap,
     fluent,
+    material,
+    indigo,
   },
 })
 export default class IgcMonthsViewComponent extends EventEmitterMixin<

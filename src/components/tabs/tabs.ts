@@ -13,6 +13,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, getOffset, isLTR } from '../common/util.js';
 import { styles } from './themes/light/tabs.base.css.js';
+import { styles as material } from './themes/light/tabs.material.css.js';
 import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tabs.fluent.css.js';
 import { styles as indigo } from './themes/light/tabs.indigo.css.js';
@@ -51,8 +52,8 @@ export interface IgcTabsEventMap {
  * @csspart content - The container for the tabs content.
  */
 @themes({
-  light: { bootstrap, fluent, indigo },
-  dark: { bootstrap, fluent, indigo },
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
 })
 @blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<

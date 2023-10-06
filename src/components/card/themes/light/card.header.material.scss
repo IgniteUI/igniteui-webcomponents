@@ -1,42 +1,14 @@
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $material;
 
 :host {
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-    align-content: flex-start;
-    width: 100%;
-    color: color(gray, 900);
-    padding: rem(16px);
-    box-sizing: border-box;
-}
+    @include css-vars-from-theme($theme, 'ig-card');
 
-::slotted(*) {
-    margin: 0;
-    font: inherit;
-    opacity: inherit;
-}
-
-header {
-    display: flex;
-    flex-flow: column nowrap;
-    overflow: hidden;
-    flex: 1 1 auto;
-}
-
-::slotted([slot='title']) {
-    @include type-style('h6');
+    color: var-get($theme, 'header-text-color');
 }
 
 ::slotted([slot='subtitle']) {
-    @include type-style('subtitle-2');
-
-    color: color(gray, 700);
-}
-
-::slotted([slot='thumbnail']) {
-    display: flex;
-    align-self: flex-start;
-    margin-inline-end: rem(16px);
+    color: var-get($theme, 'subtitle-text-color');
 }

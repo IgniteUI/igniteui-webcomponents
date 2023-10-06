@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $indigo;
+
+@mixin theme() {
+    igc-card {
+        @include css-vars-from-theme($theme, 'ig-card');
+    }
+}

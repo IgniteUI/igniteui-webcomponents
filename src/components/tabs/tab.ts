@@ -4,6 +4,7 @@ import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
 import { styles } from './themes/light/tab.base.css.js';
+import { styles as material } from './themes/light/tab.material.css.js';
 import { styles as bootstrap } from './themes/light/tab.bootstrap.css.js';
 import { styles as fluent } from './themes/light/tab.fluent.css.js';
 import { styles as indigo } from './themes/light/tab.indigo.css.js';
@@ -22,8 +23,8 @@ import { styles as indigo } from './themes/light/tab.indigo.css.js';
  * @csspart suffix - The suffix wrapper.
  */
 @themes({
-  light: { bootstrap, fluent, indigo },
-  dark: { bootstrap, fluent, indigo },
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
 })
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';

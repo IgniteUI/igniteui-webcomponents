@@ -3,7 +3,7 @@ import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles as bootstrap } from './themes/light/card.actions.bootstrap.css.js';
-import { styles } from './themes/light/card.actions.material.css.js';
+import { styles } from './themes/light/card.actions.base.css.js';
 
 /** A container for card action items like buttons
  * @element igc-card-actions

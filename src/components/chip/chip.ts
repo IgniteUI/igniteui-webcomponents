@@ -7,11 +7,11 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import IgcIconComponent from '../icon/icon.js';
-import { styles } from './themes/chip.base.css.js';
-import { styles as bootstrap } from './themes/chip.bootstrap.css.js';
-import { styles as fluent } from './themes/chip.fluent.css.js';
-import { styles as indigo } from './themes/chip.indigo.css.js';
-import { styles as material } from './themes/chip.material.css.js';
+import { styles } from './themes/light/chip.base.css.js';
+import { styles as material } from './themes/light/chip.material.css.js';
+import { styles as bootstrap } from './themes/light/chip.bootstrap.css.js';
+import { styles as fluent } from './themes/light/chip.fluent.css.js';
+import { styles as indigo } from './themes/light/chip.indigo.css.js';
 
 export interface IgcChipEventMap {
   igcRemove: CustomEvent<boolean>;

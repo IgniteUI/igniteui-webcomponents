@@ -9,6 +9,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { styles } from './themes/light/snackbar.base.css.js';
+import { styles as material } from './themes/light/snackbar.material.css.js';
 import { styles as bootstrap } from './themes/light/snackbar.bootstrap.css.js';
 import { styles as fluent } from './themes/light/snackbar.fluent.css.js';
 import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
@@ -32,8 +33,8 @@ export interface IgcSnackbarEventMap {
  * @csspart action - The snackbar action button.
  */
 @themes({
-  light: { bootstrap, fluent, indigo },
-  dark: { bootstrap, fluent, indigo },
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
 })
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,
@@ -72,6 +73,13 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
    */
   @property({ type: Boolean, attribute: 'keep-open' })
   public keepOpen = false;
+
+  /**
+   * Sets the position of the snackbar.
+   * @attr position
+   */
+  @property({ reflect: true, attribute: 'position' })
+  public position: 'bottom' | 'middle' | 'top' = 'bottom';
 
   /**
    * The snackbar action button.

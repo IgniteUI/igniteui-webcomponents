@@ -1,7 +1,0 @@
-@use 'styles/utilities' as *;
-
-@mixin theme() {
-    igc-tab {
-        --hover-color: #{color(primary, 400)};
-    }
-}

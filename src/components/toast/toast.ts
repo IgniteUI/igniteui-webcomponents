@@ -55,6 +55,13 @@ export default class IgcToastComponent extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'keep-open' })
   public keepOpen = false;
 
+  /**
+   * Sets the position of the toast.
+   * @attr position
+   */
+  @property({ reflect: true, attribute: 'position' })
+  public position: 'bottom' | 'middle' | 'top' = 'bottom';
+
   protected override firstUpdated() {
     this.animationPlayer = new AnimationPlayer(this);
   }

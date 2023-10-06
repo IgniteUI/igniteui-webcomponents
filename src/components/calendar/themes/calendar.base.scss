@@ -1,23 +1,16 @@
 @use 'sass:math';
 @use 'sass:map';
-@use 'shared-calendar' as *;
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'light-themes' as *;
 
-$theme: $material;
+// TODO Remove theme and commented colors and radius
 
 :host(igc-calendar) {
-    @include css-vars-from-theme($theme, 'ig-calendar');
-
     --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
 
     display: flex;
     flex-direction: column;
     font-family: var(--ig-font-family);
-    background: $calendar-background;
-    color: $calendar-foreground;
-    border-radius: var-get($theme, 'border-radius');
 
     > * {
         font-family: var(--ig-font-family);
@@ -42,16 +35,11 @@ $theme: $material;
         height: var(--size);
     }
 
-    igc-days-view::part(date-inner) {
-        border-radius: var-get($theme, 'date-border-radius');
-    }
-
     igc-months-view {
         grid-template-rows: repeat(4, minmax(var(--size), 1fr));
 
         &::part(month-inner) {
             height: var(--size);
-            border-radius: var-get($theme, 'month-border-radius');
         }
     }
 
@@ -60,7 +48,6 @@ $theme: $material;
 
         &::part(year-inner) {
             height: var(--size);
-            border-radius: var-get($theme, 'month-border-radius');
         }
     }
 }
@@ -80,16 +67,13 @@ $theme: $material;
 [part~='navigation-button'] {
     display: inline-flex;
     user-select: none;
-    background: transparent;
     border: none;
-    color: color(gray, 800);
     font-size: rem(16px);
     padding: 0;
     transition: color 150ms ease-in-out;
 
     &:hover,
     &:focus {
-        color: color(secondary, 500);
         cursor: pointer;
     }
 
@@ -149,8 +133,6 @@ $theme: $material;
     flex-direction: column;
     justify-content: space-between;
     padding: rem(16px);
-    background: color(secondary, 500);
-    color: contrast-color(secondary, 600);
 }
 
 [part='content'] {
