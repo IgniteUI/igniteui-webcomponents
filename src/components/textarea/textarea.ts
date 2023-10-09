@@ -392,6 +392,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     ></slot>`;
   }
 
+  protected renderHelperText() {
+    return html`
+      <div part="helper-text" .hidden=${this.helperText.length < 1}>
+        <slot name="helper-text" @slotchange=${this.slotChange}></slot>
+      </div>
+    `;
+  }
+
   protected renderPrefix() {
     return html`<div part="prefix" .hidden=${this.prefixes.length < 1}>
       <slot name="prefix" @slotchange=${this.slotChange}></slot>
@@ -418,9 +426,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
       <div part=${partNameMap(this.resolvePartNames('container'))}>
         ${this.renderPrefix()} ${this.renderInput()} ${this.renderSuffix()}
       </div>
-      <div part="helper-text" .hidden=${this.helperText.length < 1}>
-        <slot name="helper-text"></slot>
-      </div>
+      ${this.renderHelperText()}
     `;
   }
 
@@ -438,9 +444,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
         <div part="filler"></div>
         <div part="end">${this.renderSuffix()}</div>
       </div>
-      <div part="helper-text" .hidden=${this.helperText.length < 1}>
-        <slot name="helper-text"></slot>
-      </div>
+      ${this.renderHelperText()}
     `;
   }
 
