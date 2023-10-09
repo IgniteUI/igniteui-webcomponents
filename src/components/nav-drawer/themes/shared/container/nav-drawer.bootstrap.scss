@@ -1,13 +1,10 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../../light/themes' as *;
 
-$theme: $fluent;
+$theme: $bootstrap;
 $background: var-get($theme, 'background') !default;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-nav-drawer');
-    @include css-vars-from-theme($overlay-fluent, 'ig-nav-drawer');
-
     [part='base'] {
         border-radius: var-get($theme, 'border-radius');
         background: $background;
@@ -16,7 +13,7 @@ $background: var-get($theme, 'background') !default;
     }
 
     [part='overlay'] {
-        background: var-get($overlay-fluent, 'background-color');
+        background: var-get($overlay-bootstrap, 'background-color');
     }
 }
 

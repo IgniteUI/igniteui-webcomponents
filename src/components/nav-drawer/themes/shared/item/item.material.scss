@@ -1,12 +1,7 @@
 @use 'styles/utilities' as *;
-@use '../themes' as *;
+@use '../../light/themes' as *;
 
 $theme: $material;
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-nav-drawer');
-    @include css-vars-from-theme($overlay-material, 'ig-nav-drawer');
-}
 
 [part~='base'] {
     border-radius: var-get($theme, 'item-border-radius');
