@@ -7,10 +7,8 @@
 @use '../../../components/chip/themes/dark/chip.bootstrap' as chip;
 @use '../../../components/dialog/themes/dark/dialog.bootstrap' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.bootstrap' as dropdown;
-@use '../../../components/slider/themes/dark/slider.bootstrap' as slider;
 @use '../../../components/tabs/themes/dark/tab.bootstrap' as tab;
 @use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
-@use '../../../components/select/themes/dark/select.bootstrap' as select;
 @use '../../../components/combo/themes/dark/combo.bootstrap' as combo;
 @use '../../../components/button/themes/button/dark/button.bootstrap' as button;
 @use '../../../components/navbar/themes/dark/navbar.bootstrap' as navbar;
@@ -27,10 +25,8 @@
 @include chip.theme();
 @include dialog.theme();
 @include dropdown.theme();
-@include slider.theme();
 @include tab.theme();
 @include tree-item.theme();
-@include select.theme();
 @include grid.theme();
 @include combo.theme();
 @include button.theme();

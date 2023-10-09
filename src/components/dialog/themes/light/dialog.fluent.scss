@@ -33,5 +33,5 @@ $theme: $fluent;
 }
 
 [part~='backdrop'] {
-    background: var-get($theme, 'backdrop');
+    // background: var-get($theme, 'backdrop');
 }

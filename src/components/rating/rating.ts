@@ -9,11 +9,8 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { clamp, format, isLTR } from '../common/util.js';
-import { styles } from './rating.base.css.js';
-import { styles as bootstrap } from './rating.bootstrap.css.js';
-import { styles as fluent } from './rating.fluent.css.js';
-import { styles as indigo } from './rating.indigo.css.js';
-
+import { styles } from './themes/rating.base.css.js';
+import { all } from './themes/themes.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -49,10 +46,7 @@ export interface IgcRatingEventMap {
  * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
-@themes({
-  light: { fluent, bootstrap, indigo },
-  dark: { fluent, bootstrap, indigo },
-})
+@themes(all, true)
 export default class IgcRatingComponent extends FormAssociatedMixin(
   SizableMixin(
     EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)

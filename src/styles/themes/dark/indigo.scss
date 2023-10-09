@@ -7,11 +7,9 @@
 @use '../../../components/chip/themes/dark/chip.indigo' as chip;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
-@use '../../../components/slider/themes/dark/slider.indigo' as slider;
 @use '../../../components/tree/themes/dark/tree-item.indigo' as tree-item;
 @use '../../../components/dialog/themes/dark/dialog.indigo' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
-@use '../../../components/select/themes/dark/select.indigo' as select;
 @use '../../../components/snackbar/themes/dark/snackbar.indigo' as snackbar;
 @use '../../../components/tabs/themes/dark/tab.indigo' as tab;
 @use '../../../components/combo/themes/dark/combo.indigo' as combo;
@@ -27,11 +25,9 @@
 @include chip.theme();
 @include switch.theme();
 @include radio.theme();
-@include slider.theme();
 @include tree-item.theme();
 @include dialog.theme();
 @include dropdown.theme();
-@include select.theme();
 @include snackbar.theme();
 @include tab.theme();
 @include grid.theme();

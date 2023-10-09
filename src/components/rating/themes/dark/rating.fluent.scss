@@ -4,5 +4,5 @@
 $theme: $fluent;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-slider');
+    @include css-vars-from-theme($theme, 'ig-rating');
 }

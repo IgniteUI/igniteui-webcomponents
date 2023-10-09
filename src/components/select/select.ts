@@ -28,11 +28,8 @@ import IgcInputComponent from '../input/input.js';
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
 import IgcSelectItemComponent from './select-item.js';
-import { styles } from './themes/light/select.base.css.js';
-import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
-import { styles as fluent } from './themes/light/select.fluent.css.js';
-import { styles as indigo } from './themes/light/select.indigo.css.js';
-import { styles as material } from './themes/light/select.material.css.js';
+import { styles } from './themes/select.base.css.js';
+import { all } from './themes/themes.js';
 
 defineComponents(
   IgcIconComponent,
@@ -47,13 +44,7 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes(
-  {
-    light: { bootstrap, material, fluent, indigo },
-    dark: { bootstrap, material, fluent, indigo },
-  },
-  true
-)
+@themes(all, true)
 @blazorAdditionalDependencies(
   'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
 )

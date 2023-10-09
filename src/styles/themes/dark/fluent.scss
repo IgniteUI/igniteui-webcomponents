@@ -12,13 +12,10 @@
 @use '../../../components/dropdown/themes/dark/dropdown.fluent' as dropdown;
 @use '../../../components/checkbox/themes/dark/switch.fluent' as switch;
 @use '../../../components/radio/themes/dark/radio.fluent' as radio;
-@use '../../../components/slider/themes/dark/slider.fluent.scss' as slider;
-@use '../../../components/select/themes/dark/select.fluent' as select;
 @use '../../../components/tabs/themes/dark/tab.fluent' as tab;
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 @use '../../../components/combo/themes/dark/combo.fluent' as combo;
 @use '../../../components/navbar/themes/dark/navbar.fluent' as navbar;
-@use '../../../components/rating/dark/rating.fluent' as rating;
 @use '../../../components/stepper/themes/step/dark/step.fluent' as stepper;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.fluent' as nav-drawer;
 @use '../../../components/button-group/themes/dark/button-group-fluent' as button-group;
@@ -34,14 +31,11 @@
 @include dialog.theme();
 @include switch.theme();
 @include radio.theme();
-@include slider.theme();
 @include tab.theme();
-@include select.theme();
 @include tree-item.theme();
 @include grid.theme();
 @include combo.theme();
 @include navbar.theme();
-@include rating.theme();
 @include stepper.theme();
 @include nav-drawer.theme();
 @include button-group.theme();
