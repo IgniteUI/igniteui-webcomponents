@@ -1,13 +1,9 @@
-@use 'sass:map';
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../light/themes' as *;
 
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-icon');
-
     color: var-get($theme, 'color');
 }
 

@@ -16,7 +16,6 @@
 @use '../../../components/select/themes/dark/select.bootstrap' as select;
 @use '../../../components/combo/themes/dark/combo.bootstrap' as combo;
 @use '../../../components/button/themes/button/dark/button.bootstrap' as button;
-@use '../../../components/icon/dark/icon.bootstrap' as icon;
 @use '../../../components/navbar/themes/dark/navbar.bootstrap' as navbar;
 @use '../../../components/checkbox/themes/dark/checkbox.bootstrap' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.bootstrap' as switch;
@@ -41,7 +40,6 @@
 @include grid.theme();
 @include combo.theme();
 @include button.theme();
-@include icon.theme();
 @include navbar.theme();
 @include checkbox.theme();
 @include switch.theme();

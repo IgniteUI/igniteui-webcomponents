@@ -19,7 +19,6 @@
 @use '../../../components/tabs/themes/dark/tab.fluent' as tab;
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 @use '../../../components/combo/themes/dark/combo.fluent' as combo;
-@use '../../../components/icon/dark/icon.fluent' as icon;
 @use '../../../components/navbar/themes/dark/navbar.fluent' as navbar;
 @use '../../../components/rating/dark/rating.fluent' as rating;
 @use '../../../components/stepper/themes/step/dark/step.fluent' as stepper;
@@ -45,7 +44,6 @@
 @include tree-item.theme();
 @include grid.theme();
 @include combo.theme();
-@include icon.theme();
 @include navbar.theme();
 @include rating.theme();
 @include stepper.theme();
