@@ -1,17 +1,15 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import { styles } from './themes/light/nav-drawer.base.css.js';
-import { styles as indigo } from './themes/light/nav-drawer.indigo.css.js';
-import { styles as material } from './themes/light/nav-drawer.material.css.js';
-import { styles as fluent } from './themes/light/nav-drawer.fluent.css.js';
-import { styles as bootstrap } from './themes/light/nav-drawer.bootstrap.css.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
-
-defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
+import { styles } from './themes/light/nav-drawer.base.css.js';
+import { styles as bootstrap } from './themes/light/nav-drawer.bootstrap.css.js';
+import { styles as fluent } from './themes/light/nav-drawer.fluent.css.js';
+import { styles as indigo } from './themes/light/nav-drawer.indigo.css.js';
+import { styles as material } from './themes/light/nav-drawer.material.css.js';
 
 /**
  * Represents a side navigation container that provides
@@ -33,6 +31,14 @@ defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcNavDrawerHeaderItemComponent,
+      IgcNavDrawerItemComponent
+    );
+  }
 
   /**
    * The position of the drawer.

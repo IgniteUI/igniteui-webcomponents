@@ -1,8 +1,8 @@
 import { html, LitElement, nothing } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { guard } from 'lit/directives/guard.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
@@ -14,12 +14,10 @@ import { styles as bootstrap } from './rating.bootstrap.css.js';
 import { styles as fluent } from './rating.fluent.css.js';
 import { styles as indigo } from './rating.indigo.css.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcRatingSymbolComponent from './rating-symbol.js';
-import IgcIconComponent from '../icon/icon.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
-
-defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
+import IgcIconComponent from '../icon/icon.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -60,6 +58,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 ) {
   public static readonly tagName = 'igc-rating';
   public static styles = [styles];
+
+  public static register() {
+    registerComponent(this, IgcIconComponent, IgcRatingSymbolComponent);
+  }
 
   protected ratingSymbols: Array<IgcRatingSymbolComponent> = [];
 

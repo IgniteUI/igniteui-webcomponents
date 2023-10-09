@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/light/item/dropdown-item.base.css.js';
 import { styles as bootstrap } from './themes/light/item/dropdown-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/item/dropdown-item.fluent.css.js';
@@ -27,8 +28,11 @@ import { styles as material } from './themes/light/item/dropdown-item.material.c
 })
 export default class IgcDropdownItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-item';
-
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private _value!: string;
 

@@ -1,20 +1,18 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
-import { styles } from './themes/light/tree.base.css.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
+import { styles } from './themes/light/tree.base.css.js';
 import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
-import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
+import { registerComponent } from '../common/definitions/register.js';
 import IgcTreeItemComponent from './tree-item.js';
-
-defineComponents(IgcTreeItemComponent);
 
 /**
  * The tree allows users to represent hierarchical data in a tree-view structure,
@@ -35,10 +33,12 @@ defineComponents(IgcTreeItemComponent);
 export default class IgcTreeComponent extends SizableMixin(
   EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
 ) {
-  /** @private */
   public static readonly tagName = 'igc-tree';
-  /** @private */
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, IgcTreeItemComponent);
+  }
 
   /** @private */
   @blazorSuppress()

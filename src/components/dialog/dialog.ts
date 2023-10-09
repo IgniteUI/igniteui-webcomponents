@@ -7,8 +7,8 @@ import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { styles } from './themes/light/dialog.base.css.js';
@@ -16,8 +16,6 @@ import { styles as bootstrap } from './themes/light/dialog.bootstrap.css.js';
 import { styles as fluent } from './themes/light/dialog.fluent.css.js';
 import { styles as indigo } from './themes/light/dialog.indigo.css.js';
 import { styles as material } from './themes/light/dialog.material.css.js';
-
-defineComponents(IgcButtonComponent);
 
 export interface IgcDialogEventMap {
   igcClosing: CustomEvent<void>;
@@ -52,6 +50,10 @@ export default class IgcDialogComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-dialog';
   public static styles = [styles];
+
+  public static register() {
+    registerComponent(this, IgcButtonComponent);
+  }
 
   private static readonly increment = createCounter();
   private titleId = `title-${IgcDialogComponent.increment()}`;

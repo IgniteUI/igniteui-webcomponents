@@ -13,8 +13,8 @@ import type { Theme } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { watch } from '../common/decorators/watch.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { partNameMap } from '../common/util.js';
@@ -33,14 +33,6 @@ import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
 import { styles as fluent } from './themes/light/select.fluent.css.js';
 import { styles as indigo } from './themes/light/select.indigo.css.js';
 import { styles as material } from './themes/light/select.material.css.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcInputComponent,
-  IgcSelectGroupComponent,
-  IgcSelectHeaderComponent,
-  IgcSelectItemComponent
-);
 
 export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
@@ -91,6 +83,18 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 ) {
   public static readonly tagName = 'igc-select';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcIconComponent,
+      IgcInputComponent,
+      IgcSelectGroupComponent,
+      IgcSelectHeaderComponent,
+      IgcSelectItemComponent
+    );
+  }
+
   private searchTerm = '';
   private lastKeyTime = Date.now();
 

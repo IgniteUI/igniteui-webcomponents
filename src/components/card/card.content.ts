@@ -1,10 +1,11 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/light/card.content.base.css.js';
-import { styles as material } from './themes/light/card.content.material.css.js';
 import { styles as bootstrap } from './themes/light/card.content.bootstrap.css.js';
 import { styles as fluent } from './themes/light/card.content.fluent.css.js';
 import { styles as indigo } from './themes/light/card.content.indigo.css.js';
+import { styles as material } from './themes/light/card.content.material.css.js';
 
 /** A container for card's text content
  * @element igc-card-content
@@ -28,6 +29,10 @@ import { styles as indigo } from './themes/light/card.content.indigo.css.js';
 export default class IgcCardContentComponent extends LitElement {
   public static readonly tagName = 'igc-card-content';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   protected override render() {
     return html` <slot></slot> `;

@@ -3,8 +3,8 @@ import { property, query } from 'lit/decorators.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -13,8 +13,6 @@ import { styles as material } from './themes/light/expansion-panel.material.css.
 import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
 import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
 import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
-
-defineComponents(IgcIconComponent);
 
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;
@@ -57,6 +55,11 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 >(LitElement) {
   public static readonly tagName = 'igc-expansion-panel';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, IgcIconComponent);
+  }
+
   private static readonly increment = createCounter();
   private animationPlayer!: AnimationPlayer;
 

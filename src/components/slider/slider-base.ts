@@ -8,20 +8,15 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTypeOverride } from '../common/decorators/blazorTypeOverride.js';
 import { watch } from '../common/decorators/watch.js';
+import { isLTR } from '../common/util.js';
 import { styles } from './themes/light/slider.base.css.js';
 import { styles as bootstrap } from './themes/light/slider.bootstrap.css.js';
 import { styles as fluent } from './themes/light/slider.fluent.css.js';
 import { styles as indigo } from './themes/light/slider.indigo.css.js';
 import { styles as material } from './themes/light/slider.material.css.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcSliderLabelComponent from './slider-label.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { isLTR } from '../common/util.js';
-
-defineComponents(IgcSliderLabelComponent);
 
 @themes({
   light: { material, bootstrap, fluent, indigo },
