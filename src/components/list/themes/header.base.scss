@@ -1,10 +1,9 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use './light/themes' as *;
 
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-list');
     @include type-style('overline');
 
     display: flex;
@@ -12,8 +11,8 @@ $theme: $material;
     justify-content: flex-start;
     color: var-get($theme, 'header-text-color');
     background: var-get($theme, 'header-background');
-    padding-inline: pad-inline(4px, 8px, 16px);
-    padding-block: pad-block(2px, 4px, 8px);
+    padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
+    padding-block: pad-block(rem(2px), rem(4px), rem(8px));
 }
 
 ::slotted(*) {

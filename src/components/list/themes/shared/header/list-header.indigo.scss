@@ -1,11 +1,9 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../../light/themes' as *;
 
-$theme: $bootstrap;
+$theme: $indigo;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-list');
-
     background: var-get($theme, 'header-background');
     color: var-get($theme, 'header-text-color');
 }

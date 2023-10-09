@@ -1,8 +1,8 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './themes/light/list.base.css.js';
-import { styles as bootstrap } from './themes/light/list.bootstrap.css.js';
+import { styles } from './themes/container.base.css.js';
+import { all } from './themes/container.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcListHeaderComponent from './list-header.js';
@@ -17,7 +17,7 @@ defineComponents(IgcListItemComponent, IgcListHeaderComponent);
  *
  * @slot - Renders the list items and list headers inside default slot.
  */
-@themes({ light: { bootstrap }, dark: { bootstrap } })
+@themes(all)
 export default class IgcListComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-list';
   public static override styles = styles;

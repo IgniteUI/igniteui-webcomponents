@@ -1,11 +1,9 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../../light/themes' as *;
 
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-list');
-
     color: var-get($theme, 'item-text-color');
     background: var-get($theme, 'item-background');
     border-bottom: rem(1px) solid var-get($theme, 'border-color');

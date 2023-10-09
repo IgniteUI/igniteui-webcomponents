@@ -1,8 +1,7 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/list-header.base.css.js';
-import { styles as bootstrap } from './themes/light/list-header.bootstrap.css.js';
-import { styles as indigo } from './themes/light/list-header.indigo.css.js';
+import { styles } from './themes/header.base.css.js';
+import { all } from './themes/header.js';
 
 /**
  * Header list item.
@@ -11,7 +10,7 @@ import { styles as indigo } from './themes/light/list-header.indigo.css.js';
  *
  * @slot - Renders header list item's content.
  */
-@themes({ light: { bootstrap, indigo }, dark: { bootstrap, indigo } })
+@themes(all)
 export default class IgcListHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-list-header';
 

@@ -8,9 +8,6 @@
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
 @use '../../../components/slider/themes/dark/slider.indigo' as slider;
-@use '../../../components/list/themes/dark/list.indigo' as list;
-@use '../../../components/list/themes/dark/list-header.indigo' as list-header;
-@use '../../../components/list/themes/dark/list-item.indigo' as list-item;
 @use '../../../components/tree/themes/dark/tree-item.indigo' as tree-item;
 @use '../../../components/dialog/themes/dark/dialog.indigo' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
@@ -31,9 +28,6 @@
 @include switch.theme();
 @include radio.theme();
 @include slider.theme();
-@include list.theme();
-@include list-header.theme();
-@include list-item.theme();
 @include tree-item.theme();
 @include dialog.theme();
 @include dropdown.theme();
