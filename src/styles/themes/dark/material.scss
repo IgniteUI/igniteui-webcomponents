@@ -13,7 +13,6 @@
 @use '../../../components/navbar/themes/dark/navbar.material' as navbar;
 @use '../../../components/card/themes/dark/card.material' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.material' as checkbox;
-@use '../../../components/slider/themes/dark/slider.material' as slider;
 @use '../../../components/checkbox/themes/dark/switch.material' as switch;
 @use '../../../components/stepper/themes/step/dark/step.material' as stepper;
 @use '../../../components/nav-drawer/themes/dark/nav-drawer.material' as nav-drawer;
@@ -33,7 +32,6 @@
 @include navbar.theme();
 @include card.theme();
 @include checkbox.theme();
-@include slider.theme();
 @include switch.theme();
 @include stepper.theme();
 @include nav-drawer.theme();

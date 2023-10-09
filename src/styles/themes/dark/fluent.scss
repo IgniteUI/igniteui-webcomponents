@@ -12,7 +12,6 @@
 @use '../../../components/dropdown/themes/dark/dropdown.fluent' as dropdown;
 @use '../../../components/checkbox/themes/dark/switch.fluent' as switch;
 @use '../../../components/radio/themes/dark/radio.fluent' as radio;
-@use '../../../components/slider/themes/dark/slider.fluent.scss' as slider;
 @use '../../../components/list/themes/dark/list.fluent' as list;
 @use '../../../components/list/themes/dark/list-item.fluent' as list-item;
 @use '../../../components/tabs/themes/dark/tab.fluent' as tab;
@@ -35,7 +34,6 @@
 @include dialog.theme();
 @include switch.theme();
 @include radio.theme();
-@include slider.theme();
 @include list.theme();
 @include list-item.theme();
 @include tab.theme();

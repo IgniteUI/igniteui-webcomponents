@@ -7,7 +7,6 @@
 @use '../../../components/chip/themes/dark/chip.indigo' as chip;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
 @use '../../../components/radio/themes/dark/radio.indigo' as radio;
-@use '../../../components/slider/themes/dark/slider.indigo' as slider;
 @use '../../../components/list/themes/dark/list.indigo' as list;
 @use '../../../components/list/themes/dark/list-header.indigo' as list-header;
 @use '../../../components/list/themes/dark/list-item.indigo' as list-item;
@@ -30,7 +29,6 @@
 @include chip.theme();
 @include switch.theme();
 @include radio.theme();
-@include slider.theme();
 @include list.theme();
 @include list-header.theme();
 @include list-item.theme();

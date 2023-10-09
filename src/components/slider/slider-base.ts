@@ -10,11 +10,8 @@ import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorTypeOverride } from '../common/decorators/blazorTypeOverride.js';
 import { watch } from '../common/decorators/watch.js';
-import { styles } from './themes/light/slider.base.css.js';
-import { styles as bootstrap } from './themes/light/slider.bootstrap.css.js';
-import { styles as fluent } from './themes/light/slider.fluent.css.js';
-import { styles as indigo } from './themes/light/slider.indigo.css.js';
-import { styles as material } from './themes/light/slider.material.css.js';
+import { styles } from './themes/slider.base.css.js';
+import { all } from './themes/themes.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcSliderLabelComponent from './slider-label.js';
@@ -23,10 +20,7 @@ import { isLTR } from '../common/util.js';
 
 defineComponents(IgcSliderLabelComponent);
 
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all, true)
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;
