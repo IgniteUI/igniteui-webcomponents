@@ -11,7 +11,7 @@ $theme: $bootstrap;
 }
 
 [part~='backdrop'] {
-    background: var-get($theme, 'backdrop');
+    // background: var-get($theme, 'backdrop');
 }
 
 [part='base'] {

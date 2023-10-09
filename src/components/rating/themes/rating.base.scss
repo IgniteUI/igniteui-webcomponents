@@ -2,14 +2,10 @@
 @use 'styles/utilities' as *;
 
 :host {
-    --symbol-full-color: #{color(warn)};
-    --symbol-empty-color: #{color(gray, 600)};
-
     display: inline-flex;
     font-family: var(--ig-font-family);
     align-items: flex-start;
     flex-direction: column;
-    gap: rem(4px);
 }
 
 [part='base'] {
@@ -18,7 +14,6 @@
     align-items: center;
     user-select: none;
     flex-wrap: wrap;
-    gap: rem(4px);
 }
 
 [part~='symbols'] {
@@ -31,16 +26,7 @@
     inset-inline-start: 0;
 }
 
-[part~='value-label'] {
-    @include type-style('subtitle-1');
-
-    color: color(gray, 900);
-}
-
 [part~='label'] {
-    @include type-style('caption');
-
-    color: color(gray, 700);
     padding-inline-start: rem(4px);
     height: auto;
     width: auto;
@@ -57,16 +43,6 @@
 
 :host([disabled]),
 :host(:disabled) {
-    [part~='value-label'],
-    [part~='label'] {
-        color: color(gray, 400);
-    }
-
-    --symbol-full-color: #{color(warn, 200)};
-    --symbol-empty-color: #{color(gray, 400)};
-    --symbol-full-filter: grayscale(50%);
-    --symbol-empty-filter: grayscale(100%) opacity(50%);
-
     [part~='symbols'] {
         cursor: initial;
     }

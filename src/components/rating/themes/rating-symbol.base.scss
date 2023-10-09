@@ -50,9 +50,10 @@
 }
 
 slot:not([name])::slotted(:not(igc-icon)) {
-    filter: var(--symbol-full-filter, grayscale(0));
+    filter: var(--disabled-symbol-full-filter, grayscale(0));
 }
 
 [name='empty']::slotted(:not(igc-icon)) {
-    filter: var(--symbol-empty-filter, grayscale(1));
+    filter: var(--disabled-symbol-empty-filter, grayscale(1));
 }
+
