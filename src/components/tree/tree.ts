@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
-import { styles } from './themes/light/tree.base.css.js';
+import { styles } from './themes/tree.base.css.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
@@ -13,7 +13,6 @@ import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditio
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcTreeItemComponent from './tree-item.js';
-
 defineComponents(IgcTreeItemComponent);
 
 /**

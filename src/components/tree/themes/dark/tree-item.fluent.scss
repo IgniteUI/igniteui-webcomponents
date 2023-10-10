@@ -3,8 +3,6 @@
 
 $theme: $fluent;
 
-@mixin theme() {
-    igc-tree-item {
-        @include css-vars-from-theme($theme, 'ig-tree');
-    }
+:host {
+    @include css-vars-from-theme($theme, 'ig-tree');
 }

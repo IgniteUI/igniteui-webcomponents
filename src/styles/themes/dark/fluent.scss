@@ -11,7 +11,6 @@
 @use '../../../components/dropdown/themes/dark/dropdown.fluent' as dropdown;
 @use '../../../components/checkbox/themes/dark/switch.fluent' as switch;
 @use '../../../components/radio/themes/dark/radio.fluent' as radio;
-@use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 @use '../../../components/combo/themes/dark/combo.fluent' as combo;
 @use '../../../components/navbar/themes/dark/navbar.fluent' as navbar;
 @use '../../../components/button-group/themes/dark/button-group-fluent' as button-group;
@@ -26,7 +25,6 @@
 @include dialog.theme();
 @include switch.theme();
 @include radio.theme();
-@include tree-item.theme();
 @include grid.theme();
 @include combo.theme();
 @include navbar.theme();

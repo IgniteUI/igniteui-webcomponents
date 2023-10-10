@@ -6,7 +6,6 @@
 @use '../../../components/chip/themes/dark/chip.bootstrap' as chip;
 @use '../../../components/dialog/themes/dark/dialog.bootstrap' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.bootstrap' as dropdown;
-@use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
 @use '../../../components/combo/themes/dark/combo.bootstrap' as combo;
 @use '../../../components/navbar/themes/dark/navbar.bootstrap' as navbar;
 @use '../../../components/checkbox/themes/dark/checkbox.bootstrap' as checkbox;
@@ -19,7 +18,6 @@
 @include chip.theme();
 @include dialog.theme();
 @include dropdown.theme();
-@include tree-item.theme();
 @include grid.theme();
 @include combo.theme();
 @include navbar.theme();
