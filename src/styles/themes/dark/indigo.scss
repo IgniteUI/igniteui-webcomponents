@@ -14,7 +14,6 @@
 @use '../../../components/tabs/themes/dark/tab.indigo' as tab;
 @use '../../../components/combo/themes/dark/combo.indigo' as combo;
 @use '../../../components/button/themes/button/dark/button.indigo' as button;
-@use '../../../components/navbar/themes/dark/navbar.indigo' as navbar;
 @use '../../../components/stepper/themes/step/dark/step.indigo' as stepper;
 @use '../../../components/button-group/themes/dark/button-group-indigo' as button-group;
 @use '../../../components/button-group/themes/dark/toggle-button/toggle-button-indigo' as toggle-button;
@@ -32,7 +31,6 @@
 @include grid.theme();
 @include combo.theme();
 @include button.theme();
-@include navbar.theme();
 @include stepper.theme();
 @include button-group.theme();
 @include toggle-button.theme();
