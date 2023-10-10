@@ -15,11 +15,8 @@ import {
   partNameMap,
   wrap,
 } from '../common/util.js';
-import { styles } from './themes/light/radio.base.css.js';
-import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
-import { styles as fluent } from './themes/light/radio.fluent.css.js';
-import { styles as indigo } from './themes/light/radio.indigo.css.js';
-import { styles as material } from './themes/light/radio.material.css.js';
+import { styles } from './themes/radio.base.css.js';
+import { all } from './themes/themes.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import messages from '../common/localization/validation-en.js';
 import { Validator } from '../common/validators.js';
@@ -62,10 +59,7 @@ type RadioQueryResult = {
  * @csspart control - The radio control.
  * @csspart label - The radio control label.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all)
 export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
 ) {

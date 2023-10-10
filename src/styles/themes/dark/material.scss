@@ -3,7 +3,6 @@
 @use '../base/scrollbars';
 @use '../third-party/grid/material.dark' as grid;
 @use '../../../components/dialog/themes/dark/dialog.material' as dialog;
-@use '../../../components/radio/themes/dark/radio.material' as radio;
 @use '../../../components/tabs/themes/dark/tab.material' as tab;
 @use '../../../components/chip/themes/dark/chip.material' as chip;
 @use '../../../components/combo/themes/dark/combo.material' as combo;
@@ -17,7 +16,6 @@
 @use '../../../components/tree/themes/dark/tree-item.material' as tree-item;
 @include base.root-styles($palette, 'dark');
 @include dialog.theme();
-@include radio.theme();
 @include tab.theme();
 @include grid.theme();
 @include chip.theme();

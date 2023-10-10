@@ -1,8 +1,6 @@
-@use '../../../../styles/utilities' as *;
+@use 'styles/utilities' as *;
 @use 'themes' as *;
 
-@mixin theme() {
-    igc-radio {
-        @include css-vars-from-theme($bootstrap, 'ig-radio');
-    }
+:host {
+    @include css-vars-from-theme($bootstrap, 'ig-radio');
 }
