@@ -3,10 +3,6 @@
 
 $theme: $bootstrap;
 
-:host {
-    @include css-vars-from-theme($theme, 'ig-stepper');
-}
-
 [part~='title'] {
     color: var-get($theme, 'title-color');
 }

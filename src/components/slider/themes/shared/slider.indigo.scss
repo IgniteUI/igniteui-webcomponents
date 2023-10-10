@@ -3,11 +3,6 @@
 @use '../light/themes' as *;
 
 $theme: $indigo;
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-slider');
-}
-
 $thumb-size: rem(14px);
 $thumb-radius: math.div($thumb-size, 2);
 

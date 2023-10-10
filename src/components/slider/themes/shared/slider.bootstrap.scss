@@ -2,11 +2,6 @@
 @use '../light/themes' as *;
 
 $theme: $bootstrap;
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-slider');
-}
-
 $thumb-size: rem(16px);
 $thumb-radius: calc(#{$thumb-size} / 2);
 

@@ -3,11 +3,6 @@
 @use '../light/themes' as *;
 
 $theme: $material;
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-slider');
-}
-
 $ripple-size: rem(40px);
 $ripple-radius: math.div($ripple-size, 2);
 $thumb-size: rem(20px);
