@@ -3,10 +3,6 @@
 
 $theme: $fluent;
 
-:host {
-    @include css-vars-from-theme($theme, 'ig-tabs');
-}
-
 [part='headers'] {
     background: var-get($theme, 'item-background');
 }
