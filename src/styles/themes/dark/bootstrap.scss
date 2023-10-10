@@ -8,7 +8,6 @@
 @use '../../../components/dropdown/themes/dark/dropdown.bootstrap' as dropdown;
 @use '../../../components/tree/themes/dark/tree-item.bootstrap' as tree-item;
 @use '../../../components/combo/themes/dark/combo.bootstrap' as combo;
-@use '../../../components/button/themes/button/dark/button.bootstrap' as button;
 @use '../../../components/navbar/themes/dark/navbar.bootstrap' as navbar;
 @use '../../../components/checkbox/themes/dark/checkbox.bootstrap' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.bootstrap' as switch;
@@ -23,7 +22,6 @@
 @include tree-item.theme();
 @include grid.theme();
 @include combo.theme();
-@include button.theme();
 @include navbar.theme();
 @include checkbox.theme();
 @include switch.theme();

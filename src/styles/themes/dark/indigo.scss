@@ -11,7 +11,6 @@
 @use '../../../components/dialog/themes/dark/dialog.indigo' as dialog;
 @use '../../../components/dropdown/themes/dark/dropdown.indigo' as dropdown;
 @use '../../../components/combo/themes/dark/combo.indigo' as combo;
-@use '../../../components/button/themes/button/dark/button.indigo' as button;
 @use '../../../components/navbar/themes/dark/navbar.indigo' as navbar;
 @use '../../../components/button-group/themes/dark/button-group-indigo' as button-group;
 @use '../../../components/button-group/themes/dark/toggle-button/toggle-button-indigo' as toggle-button;
@@ -26,7 +25,6 @@
 @include dropdown.theme();
 @include grid.theme();
 @include combo.theme();
-@include button.theme();
 @include navbar.theme();
 @include button-group.theme();
 @include toggle-button.theme();
