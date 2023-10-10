@@ -1,0 +1,14 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include type-style('body-1');
+
+    color: var-get($theme, 'content-text-color');
+}
+
+::slotted(*) {
+    @include type-style('body-1');
+}

@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../themes' as *;
 
-$theme: $fluent;
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-card');
@@ -9,12 +9,6 @@ $theme: $fluent;
     color: var-get($theme, 'header-text-color');
 }
 
-::slotted([slot='title']) {
-    @include type-style('subtitle-1');
-}
-
 ::slotted([slot='subtitle']) {
-    @include type-style('body-2');
-
     color: var-get($theme, 'subtitle-text-color');
 }
