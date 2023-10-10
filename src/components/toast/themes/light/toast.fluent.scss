@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -6,12 +5,4 @@ $theme: $fluent;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-toast');
-    @include type-style('caption');
-
-    padding: rem(8px) rem(12px);
-    color: var-get($theme, 'text-color');
-    background: var-get($theme, 'background');
-    border: #{rem(1px)} solid var-get($theme, 'border-color');
-    box-shadow: var-get($theme, 'elevation');
-    border-radius: var-get($theme, 'border-radius');
 }
