@@ -3,8 +3,6 @@
 
 $theme: $material;
 
-@mixin theme() {
-    igc-tab {
-        @include css-vars-from-theme($theme, 'ig-tabs');
-    }
+:host {
+    @include css-vars-from-theme($theme, 'ig-tabs');
 }

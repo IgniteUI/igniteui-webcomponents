@@ -9,11 +9,8 @@ import {
 import { watch } from '../common/decorators/watch.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/tabs.base.css.js';
-import { styles as material } from './themes/light/tabs.material.css.js';
-import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
-import { styles as fluent } from './themes/light/tabs.fluent.css.js';
-import { styles as indigo } from './themes/light/tabs.indigo.css.js';
+import { styles } from './themes/tabs.base.css.js';
+import { all } from './themes/tabs-themes.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { createCounter, getOffset, isLTR } from '../common/util.js';
@@ -53,10 +50,7 @@ export interface IgcTabsEventMap {
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart content - The container for the tabs content.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all, true)
 @blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,

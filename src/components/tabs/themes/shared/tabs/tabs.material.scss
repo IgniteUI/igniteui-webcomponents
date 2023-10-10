@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../../light/themes' as *;
 
-$theme: $bootstrap;
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-tabs');
@@ -11,17 +11,8 @@ $theme: $bootstrap;
     background: var-get($theme, 'item-background');
 }
 
-[part='headers-wrapper'] {
-    &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        inset-inline-start: 0;
-        width: 100%;
-        height: rem(1px);
-        background: var-get($theme, 'border-color');
-        z-index: 0;
-    }
+[part='selected-indicator'] {
+    background: var-get($theme, 'indicator-color');
 }
 
 [part='start-scroll-button'],
@@ -45,8 +36,4 @@ igc-icon-button::part(base) {
 
 igc-icon-button[disabled]::part(base) {
     color: var-get($theme, 'button-disabled-color');
-}
-
-[part='selected-indicator'] {
-    display: none;
 }

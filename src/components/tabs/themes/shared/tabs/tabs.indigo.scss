@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../../light/themes' as *;
 
-$theme: $material;
+$theme: $indigo;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-tabs');
@@ -9,10 +9,6 @@ $theme: $material;
 
 [part='headers'] {
     background: var-get($theme, 'item-background');
-}
-
-[part='selected-indicator'] {
-    background: var-get($theme, 'indicator-color');
 }
 
 [part='start-scroll-button'],
@@ -23,6 +19,10 @@ $theme: $material;
     &:focus {
         background: var-get($theme, 'button-hover-background');
     }
+}
+
+[part='selected-indicator'] {
+    background: var-get($theme, 'indicator-color');
 }
 
 igc-icon-button::part(base) {
