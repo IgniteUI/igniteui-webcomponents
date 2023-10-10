@@ -12,7 +12,6 @@
 @use '../../../components/card/themes/dark/card.material' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.material' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.material' as switch;
-@use '../../../components/stepper/themes/step/dark/step.material' as stepper;
 @use '../../../components/button-group/themes/dark/button-group-material' as button-group;
 @use '../../../components/button-group/themes/dark/toggle-button/toggle-button-material' as toggle-button;
 @use '../../../components/tree/themes/dark/tree-item.material' as tree-item;
@@ -28,7 +27,6 @@
 @include card.theme();
 @include checkbox.theme();
 @include switch.theme();
-@include stepper.theme();
 @include button-group.theme();
 @include toggle-button.theme();
 @include tree-item.theme();

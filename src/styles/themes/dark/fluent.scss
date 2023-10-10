@@ -16,7 +16,6 @@
 @use '../../../components/tree/themes/dark/tree-item.fluent' as tree-item;
 @use '../../../components/combo/themes/dark/combo.fluent' as combo;
 @use '../../../components/navbar/themes/dark/navbar.fluent' as navbar;
-@use '../../../components/stepper/themes/step/dark/step.fluent' as stepper;
 @use '../../../components/button-group/themes/dark/button-group-fluent' as button-group;
 @use '../../../components/button-group/themes/dark/toggle-button/toggle-button-fluent' as toggle-button;
 @include base.root-styles($palette, 'dark');
@@ -35,6 +34,5 @@
 @include grid.theme();
 @include combo.theme();
 @include navbar.theme();
-@include stepper.theme();
 @include button-group.theme();
 @include toggle-button.theme();
