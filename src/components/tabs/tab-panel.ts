@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { createCounter } from '../common/util.js';
-import { styles } from './themes/light/tab-panel.base.css.js';
+import { styles } from './themes/tab-panel.base.css.js';
 
 /**
  * Represents the content of a tab

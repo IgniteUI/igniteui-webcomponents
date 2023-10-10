@@ -6,10 +6,6 @@ $theme: $fluent;
 $thumb-size: rem(16px);
 $thumb-radius: math.div($thumb-size, 2);
 
-:host {
-    @include css-vars-from-theme($theme, 'ig-slider');
-}
-
 :host(:hover) {
     [part='fill'] {
         background: var-get($theme, 'track-hover-color');

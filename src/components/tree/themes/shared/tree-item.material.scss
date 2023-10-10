@@ -1,0 +1,53 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $material;
+
+[part~='wrapper'] {
+    min-height: var-get($theme, 'size');
+    background: var-get($theme, 'background');
+    color: var-get($theme, 'foreground');
+
+    &::after {
+        background: transparent;
+    }
+
+    &:hover {
+        &::after {
+            background: var-get($theme, 'hover-color');
+        }
+    }
+}
+
+[part~='label'] {
+    max-height: var-get($theme, 'size');
+}
+
+[part~='active'] {
+    background: var-get($theme, 'background-active');
+    color: var-get($theme, 'foreground-active');
+}
+
+[part~='selected'] {
+    background: var-get($theme, 'background-selected');
+    color: var-get($theme, 'foreground-selected');
+}
+
+[part~='selected'][part~='focused'][part~='active'],
+[part~='selected'][part~='focused'],
+[part~='selected'][part~='active'] {
+    background: var-get($theme, 'background-active-selected');
+    color: var-get($theme, 'foreground-active-selected');
+}
+
+[part~='focused'] {
+    box-shadow: inset 0 0 0 1px var-get($theme, 'border-color');
+}
+
+:host([disabled]) {
+    [part~='label'] {
+        color: var-get($theme, 'foreground-disabled');
+        background: var-get($theme, 'background-disabled');
+    }
+}

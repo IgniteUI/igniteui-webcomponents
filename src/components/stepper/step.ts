@@ -7,11 +7,8 @@ import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { partNameMap } from '../common/util.js';
 import { Animation, animations } from './animations.js';
-import { styles } from './themes/step/light/step.base.css.js';
-import { styles as bootstrap } from './themes/step/light/step.bootstrap.css.js';
-import { styles as fluent } from './themes/step/light/step.fluent.css.js';
-import { styles as indigo } from './themes/step/light/step.indigo.css.js';
-import { styles as material } from './themes/step/light/step.material.css.js';
+import { styles } from './themes/step/step.base.css.js';
+import { all } from './themes/step/themes.js';
 
 /**
  * The step component is used within the `igc-stepper` element and it holds the content of each step.
@@ -43,10 +40,7 @@ import { styles as material } from './themes/step/light/step.material.css.js';
  * @csspart body - Wrapper of the step's `content`.
  * @csspart content - The steps `content`.
  */
-@themes({
-  light: { bootstrap, indigo, fluent, material },
-  dark: { bootstrap, indigo, fluent, material },
-})
+@themes(all, true)
 export default class IgcStepComponent extends LitElement {
   /** @private */
   public static readonly tagName = 'igc-step';

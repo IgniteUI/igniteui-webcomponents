@@ -11,10 +11,8 @@ $error-color: var-get($input-theme, 'error-secondary-color');
 $idle-border-width: rem(1px) !default;
 $active-border-width: rem(2px) !default;
 
-
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
-    @include css-vars-from-theme($theme, 'ig-select');
     @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
 }
 

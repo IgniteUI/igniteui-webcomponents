@@ -1,0 +1,24 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $fluent;
+
+[part~='base'] {
+    border-radius: var-get($theme, 'border-radius');
+    color: var-get($theme, 'text-color');
+    background: var-get($theme, 'background');
+    box-shadow: var-get($theme, 'elevation');
+}
+
+[part~='message'] {
+    @include type-style('caption');
+}
+
+igc-button::part(base),
+igc-button::part(base):hover {
+    color: var-get($theme, 'button-color');
+}
+
+igc-button::part(base):focus-visible::after {
+    display: none;
+}

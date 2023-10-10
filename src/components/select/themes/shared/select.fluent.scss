@@ -10,7 +10,6 @@ $focused-border-width: rem(2px);
 
 :host {
     @include css-vars-from-theme($input-theme, 'ig-input');
-    @include css-vars-from-theme($theme, 'ig-select');
     @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
 }
 

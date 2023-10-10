@@ -8,11 +8,8 @@ import IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { styles } from './themes/light/snackbar.base.css.js';
-import { styles as material } from './themes/light/snackbar.material.css.js';
-import { styles as bootstrap } from './themes/light/snackbar.bootstrap.css.js';
-import { styles as fluent } from './themes/light/snackbar.fluent.css.js';
-import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
+import { styles } from './themes/snackbar.base.css.js';
+import { all } from './themes/themes.js';
 
 defineComponents(IgcButtonComponent);
 
@@ -20,6 +17,7 @@ export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
 }
 
+@themes(all, true)
 /**
  * A snackbar component is used to provide feedback about an operation
  * by showing a brief message at the bottom of the screen.
@@ -34,10 +32,6 @@ export interface IgcSnackbarEventMap {
  * @csspart message - The snackbar message.
  * @csspart action - The snackbar action button.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,
   Constructor<LitElement>

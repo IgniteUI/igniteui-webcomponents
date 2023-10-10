@@ -1,11 +1,7 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../../light/themes' as *;
 
 $theme: $bootstrap;
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-tabs');
-}
 
 [part='headers'] {
     background: var-get($theme, 'item-background');

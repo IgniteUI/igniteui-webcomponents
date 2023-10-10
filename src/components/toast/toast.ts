@@ -3,13 +3,8 @@ import { property } from 'lit/decorators.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/toast.base.css.js';
-import { styles as bootstrap } from './themes/light/toast.bootstrap.css.js';
-import { styles as fluent } from './themes/light/toast.fluent.css.js';
-import {
-  styles as indigo,
-  styles as material,
-} from './themes/light/toast.indigo.css.js';
+import { styles } from './themes/toast.base.css.js';
+import { all } from './themes/themes.js';
 
 /**
  * A toast component is used to show a notification
@@ -18,10 +13,7 @@ import {
  *
  * @csspart base - The base wrapper of the toast.
  */
-@themes({
-  light: { bootstrap, fluent, indigo, material },
-  dark: { bootstrap, fluent, indigo, material },
-})
+@themes(all, true)
 export default class IgcToastComponent extends LitElement {
   public static readonly tagName = 'igc-toast';
   public static override styles = [styles];

@@ -1,11 +1,7 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../../light/themes' as *;
 
-$theme: $material;
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-tabs');
-}
+$theme: $fluent;
 
 [part='headers'] {
     background: var-get($theme, 'item-background');
@@ -28,6 +24,10 @@ $theme: $material;
 igc-icon-button::part(base) {
     color: var-get($theme, 'button-color');
 
+    igc-icon {
+        color: var-get($theme, 'button-color');
+    }
+
     &:hover,
     &:focus-within {
         color: var-get($theme, 'button-hover-color');
@@ -36,4 +36,5 @@ igc-icon-button::part(base) {
 
 igc-icon-button[disabled]::part(base) {
     color: var-get($theme, 'button-disabled-color');
+    background: inherit;
 }

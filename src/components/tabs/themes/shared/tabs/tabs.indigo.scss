@@ -1,18 +1,10 @@
 @use 'styles/utilities' as *;
-@use 'themes' as *;
+@use '../../light/themes' as *;
 
-$theme: $fluent;
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-tabs');
-}
+$theme: $indigo;
 
 [part='headers'] {
     background: var-get($theme, 'item-background');
-}
-
-[part='selected-indicator'] {
-    background: var-get($theme, 'indicator-color');
 }
 
 [part='start-scroll-button'],
@@ -25,12 +17,12 @@ $theme: $fluent;
     }
 }
 
+[part='selected-indicator'] {
+    background: var-get($theme, 'indicator-color');
+}
+
 igc-icon-button::part(base) {
     color: var-get($theme, 'button-color');
-
-    igc-icon {
-        color: var-get($theme, 'button-color');
-    }
 
     &:hover,
     &:focus-within {
@@ -40,5 +32,4 @@ igc-icon-button::part(base) {
 
 igc-icon-button[disabled]::part(base) {
     color: var-get($theme, 'button-disabled-color');
-    background: inherit;
 }

@@ -1,9 +1,8 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
 $theme: $bootstrap;
 
-igc-toast {
+:host {
     @include css-vars-from-theme($theme, 'ig-toast');
 }
