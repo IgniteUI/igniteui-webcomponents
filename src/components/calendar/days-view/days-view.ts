@@ -4,6 +4,7 @@ import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { watch } from '../../common/decorators/watch.js';
+import { registerComponent } from '../../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
   IgcCalendarResourceStrings,
@@ -18,8 +19,8 @@ import {
 import {
   DateRangeType,
   ICalendarDate,
-  isDateInRanges,
   TimeDeltaInterval,
+  isDateInRanges,
 } from '../common/calendar.model.js';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
 import { styles } from '../themes/days-view.base.css.js';
@@ -69,6 +70,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-days-view';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
+
   private labelFormatter!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];

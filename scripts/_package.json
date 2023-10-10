@@ -25,6 +25,7 @@
     "avatar",
     "badge",
     "button",
+    "button group",
     "calendar",
     "card",
     "circular progress",
@@ -53,6 +54,7 @@
     "switch",
     "slider",
     "tabs",
+    "textarea",
     "toast",
     "tree"
   ],

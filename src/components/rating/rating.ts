@@ -6,24 +6,10 @@ import {
   queryAssignedNodes,
   state,
 } from 'lit/decorators.js';
+import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { guard } from 'lit/directives/guard.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
-import { clamp, format, isLTR } from '../common/util.js';
-import { styles } from './rating.base.css.js';
-import { styles as bootstrap } from './rating.bootstrap.css.js';
-import { styles as fluent } from './rating.fluent.css.js';
-import { styles as indigo } from './rating.indigo.css.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcRatingSymbolComponent from './rating-symbol.js';
-import IgcIconComponent from '../icon/icon.js';
-import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import {
   addKeybindings,
   arrowDown,
@@ -33,8 +19,19 @@ import {
   endKey,
   homeKey,
 } from '../common/controllers/key-bindings.js';
-
-defineComponents(IgcRatingSymbolComponent, IgcIconComponent);
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { clamp, format, isLTR } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
+import IgcRatingSymbolComponent from './rating-symbol.js';
+import { styles } from './rating.base.css.js';
+import { styles as bootstrap } from './rating.bootstrap.css.js';
+import { styles as fluent } from './rating.fluent.css.js';
+import { styles as indigo } from './rating.indigo.css.js';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;
@@ -75,6 +72,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 ) {
   public static readonly tagName = 'igc-rating';
   public static styles = [styles];
+
+  public static register() {
+    registerComponent(this, IgcIconComponent, IgcRatingSymbolComponent);
+  }
 
   @queryAssignedElements({
     selector: IgcRatingSymbolComponent.tagName,

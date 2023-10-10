@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/light/toast.base.css.js';
 import { styles as bootstrap } from './themes/light/toast.bootstrap.css.js';
 import { styles as fluent } from './themes/light/toast.fluent.css.js';
@@ -25,6 +26,10 @@ import {
 export default class IgcToastComponent extends LitElement {
   public static readonly tagName = 'igc-toast';
   public static override styles = [styles];
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private displayTimeout!: ReturnType<typeof setTimeout>;
   private animationPlayer!: AnimationPlayer;

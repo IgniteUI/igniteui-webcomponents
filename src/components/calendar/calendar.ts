@@ -1,14 +1,19 @@
 import { html } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
+import type { Theme } from '../../theming/types.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
   IgcCalendarResourceStrings,
 } from '../common/i18n/calendar.resources.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
 import {
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
@@ -17,27 +22,14 @@ import {
 } from './common/calendar-base.js';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import IgcMonthsViewComponent from './months-view/months-view.js';
 import { styles } from './themes/calendar.base.css.js';
 import { styles as bootstrap } from './themes/light/bootstrap/calendar.bootstrap.css.js';
 import { styles as fluent } from './themes/light/fluent/calendar.fluent.css.js';
 import { styles as indigo } from './themes/light/indigo/calendar.indigo.css.js';
 import { styles as material } from './themes/light/material/calendar.material.css.js';
-import { themeSymbol, themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
-import IgcDaysViewComponent from './days-view/days-view.js';
-import IgcMonthsViewComponent from './months-view/months-view.js';
-import IgcIconComponent from '../icon/icon.js';
-import { Theme } from '../../theming/types.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcDaysViewComponent,
-  IgcMonthsViewComponent,
-  IgcYearsViewComponent
-);
 
 /**
  * Represents a calendar that lets users
@@ -90,8 +82,19 @@ export default class IgcCalendarComponent extends SizableMixin(
     Constructor<IgcCalendarBaseComponent>
   >(IgcCalendarBaseComponent)
 ) {
-  public static styles = styles;
   public static readonly tagName = 'igc-calendar';
+  public static styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcIconComponent,
+      IgcDaysViewComponent,
+      IgcMonthsViewComponent,
+      IgcYearsViewComponent
+    );
+  }
+
   private formatterMonth!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private formatterMonthDay!: Intl.DateTimeFormat;

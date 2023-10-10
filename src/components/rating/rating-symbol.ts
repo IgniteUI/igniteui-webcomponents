@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './rating-symbol.base.css.js';
 
 /**
@@ -17,6 +18,10 @@ import { styles } from './rating-symbol.base.css.js';
 export default class IgcRatingSymbolComponent extends LitElement {
   public static readonly tagName = 'igc-rating-symbol';
   public static override styles = [styles];
+
+  public static register() {
+    registerComponent(this);
+  }
 
   public override connectedCallback() {
     super.connectedCallback();

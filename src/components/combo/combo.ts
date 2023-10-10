@@ -1,59 +1,51 @@
 import { html, LitElement, TemplateResult } from 'lit';
-import { styleMap } from 'lit/directives/style-map.js';
-import { themes, themeSymbol } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/combo.base.css.js';
-import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
-import { styles as material } from './themes/light/combo.material.css.js';
-import { styles as fluent } from './themes/light/combo.fluent.css.js';
-import { styles as indigo } from './themes/light/combo.indigo.css.js';
 import {
   property,
   query,
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { watch } from '../common/decorators/watch.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcComboListComponent from './combo-list.js';
-import IgcComboItemComponent from './combo-item.js';
-import IgcComboHeaderComponent from './combo-header.js';
-import IgcInputComponent from '../input/input.js';
-import IgcIconComponent from '../icon/icon.js';
-import { NavigationController } from './controllers/navigation.js';
-import { SelectionController } from './controllers/selection.js';
-import { IgcToggleController } from '../toggle/toggle.controller.js';
-import { DataController } from './controllers/data.js';
-import { IgcToggleComponent } from '../toggle/types.js';
-import type {
-  Keys,
-  ComboRecord,
-  GroupingDirection,
-  FilteringOptions,
-  IgcComboEventMap,
-  ComboItemTemplate,
-  ComboRenderFunction,
-  Item,
-  ComboValue,
-} from './types.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { partNameMap } from '../common/util.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { styleMap } from 'lit/directives/style-map.js';
+import { themes, themeSymbol } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { partNameMap } from '../common/util.js';
 import type { Validator } from '../common/validators.js';
-
-defineComponents(
-  IgcIconComponent,
-  IgcComboListComponent,
-  IgcComboItemComponent,
-  IgcComboHeaderComponent,
-  IgcInputComponent
-);
+import IgcIconComponent from '../icon/icon.js';
+import IgcInputComponent from '../input/input.js';
+import { IgcToggleController } from '../toggle/toggle.controller.js';
+import { IgcToggleComponent } from '../toggle/types.js';
+import IgcComboHeaderComponent from './combo-header.js';
+import IgcComboItemComponent from './combo-item.js';
+import IgcComboListComponent from './combo-list.js';
+import { DataController } from './controllers/data.js';
+import { NavigationController } from './controllers/navigation.js';
+import { SelectionController } from './controllers/selection.js';
+import { styles } from './themes/light/combo.base.css.js';
+import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
+import { styles as fluent } from './themes/light/combo.fluent.css.js';
+import { styles as indigo } from './themes/light/combo.indigo.css.js';
+import { styles as material } from './themes/light/combo.material.css.js';
+import type {
+  ComboItemTemplate,
+  ComboRecord,
+  ComboRenderFunction,
+  ComboValue,
+  FilteringOptions,
+  GroupingDirection,
+  IgcComboEventMap,
+  Item,
+  Keys,
+} from './types.js';
 
 /* blazorSupportsVisualChildren */
 /**
@@ -115,6 +107,17 @@ export default class IgcComboComponent<T extends object = any>
 {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcIconComponent,
+      IgcComboListComponent,
+      IgcComboItemComponent,
+      IgcComboHeaderComponent,
+      IgcInputComponent
+    );
+  }
 
   private _value: ComboValue<T>[] = [];
 

@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
 import { styles } from './themes/light/tab.base.css.js';
 import { styles as material } from './themes/light/tab.material.css.js';
@@ -27,8 +28,11 @@ import { styles as indigo } from './themes/light/tab.indigo.css.js';
 })
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
-
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private static readonly increment = createCounter();
 

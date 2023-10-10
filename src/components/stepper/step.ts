@@ -5,6 +5,7 @@ import { EaseInOut } from '../../animations/easings.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
 import { Animation, animations } from './animations.js';
 import { styles } from './themes/step/light/step.base.css.js';
@@ -48,10 +49,12 @@ import { styles as material } from './themes/step/light/step.material.css.js';
   dark: { bootstrap, indigo, fluent, material },
 })
 export default class IgcStepComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-step';
-  /** @private */
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private animationPlayer!: AnimationPlayer;
 
