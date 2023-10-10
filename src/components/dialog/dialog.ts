@@ -11,11 +11,8 @@ import { defineComponents } from '../common/definitions/defineComponents.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, partNameMap } from '../common/util.js';
-import { styles } from './themes/light/dialog.base.css.js';
-import { styles as bootstrap } from './themes/light/dialog.bootstrap.css.js';
-import { styles as fluent } from './themes/light/dialog.fluent.css.js';
-import { styles as indigo } from './themes/light/dialog.indigo.css.js';
-import { styles as material } from './themes/light/dialog.material.css.js';
+import { styles } from './themes/dialog.base.css.js';
+import { all } from './themes/themes.js';
 
 defineComponents(IgcButtonComponent);
 
@@ -41,10 +38,7 @@ export interface IgcDialogEventMap {
  * @csspart footer - The footer container.
  * @csspart overlay - The overlay.
  */
-@themes({
-  light: { bootstrap, material, fluent, indigo },
-  dark: { bootstrap, material, fluent, indigo },
-})
+@themes(all)
 @blazorAdditionalDependencies('IgcButtonComponent')
 export default class IgcDialogComponent extends EventEmitterMixin<
   IgcDialogEventMap,
