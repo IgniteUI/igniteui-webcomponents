@@ -36,7 +36,12 @@
         "allowSeparatedGroups": true
       }
     ],
-    "import/no-unresolved": "error",
+    "import/no-unresolved": [
+      "error",
+      {
+        "ignore": ["\\.css.js$"]
+      }
+    ],
     "import/order": [
       "error",
       {
