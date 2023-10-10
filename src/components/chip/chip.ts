@@ -5,11 +5,8 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './themes/light/chip.base.css.js';
-import { styles as material } from './themes/light/chip.material.css.js';
-import { styles as bootstrap } from './themes/light/chip.bootstrap.css.js';
-import { styles as fluent } from './themes/light/chip.fluent.css.js';
-import { styles as indigo } from './themes/light/chip.indigo.css.js';
+import { styles } from './themes/chip.base.css.js';
+import { all } from './themes/themes.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -36,10 +33,7 @@ export interface IgcChipEventMap {
  * @csspart prefix - The prefix container of the chip.
  * @csspart suffix - The suffix container of the chip.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all)
 export default class IgcChipComponent extends SizableMixin(
   EventEmitterMixin<IgcChipEventMap, Constructor<LitElement>>(LitElement)
 ) {

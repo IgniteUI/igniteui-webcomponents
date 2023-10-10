@@ -3,8 +3,6 @@
 
 $theme: $bootstrap;
 
-@mixin theme() {
-    igc-chip {
-        @include css-vars-from-theme($theme, 'ig-chip');
-    }
+:host {
+    @include css-vars-from-theme($theme, 'ig-chip');
 }
