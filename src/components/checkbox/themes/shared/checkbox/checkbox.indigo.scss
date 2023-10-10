@@ -1,7 +1,5 @@
-@use 'sass:map';
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'checkbox-themes' as *;
+@use '../../light/checkbox/themes' as *;
 
 $theme: $indigo;
 $fill-color: var-get($theme, 'fill-color');
@@ -14,8 +12,6 @@ $error-color: var-get($theme, 'error-color');
 $error-color-hover: var-get($theme, 'error-color-hover');
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-checkbox');
-
     font-weight: 600;
 }
 

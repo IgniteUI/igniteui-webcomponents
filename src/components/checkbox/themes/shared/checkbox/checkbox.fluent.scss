@@ -1,7 +1,5 @@
-@use 'sass:map';
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'checkbox-themes' as *;
+@use '../../light/checkbox/themes' as *;
 
 $theme: $fluent;
 $border-color: var-get($theme, 'empty-color');
@@ -10,10 +8,6 @@ $checked-hover-color: var-get($theme, 'fill-color-hover');
 $invalid-color: var-get($theme, 'error-color');
 $invalid-hover-color: var-get($theme, 'error-color-hover');
 $disabled-color: var-get($theme, 'disabled-color');
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-checkbox');
-}
 
 [part~='control'] {
     width: var(--size, rem(20px));

@@ -4,11 +4,8 @@ import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
-import { styles } from './themes/light/switch.base.css.js';
-import { styles as bootstrap } from './themes/light/switch.bootstrap.css.js';
-import { styles as fluent } from './themes/light/switch.fluent.css.js';
-import { styles as indigo } from './themes/light/switch.indigo.css.js';
-import { styles as material } from './themes/light/switch.material.css.js';
+import { styles } from './themes/switch.base.css.js';
+import { all } from './themes/switch-themes.js';
 
 /**
  * Similar to a checkbox, a switch controls the state of a single setting on or off.
@@ -26,10 +23,7 @@ import { styles as material } from './themes/light/switch.material.css.js';
  * @csspart thumb - The position indicator of the switch.
  * @csspart label - The switch label.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all)
 export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
   public static styles = styles;

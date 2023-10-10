@@ -1,51 +1,43 @@
-@use 'sass:map';
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'switch-themes' as *;
+@use '../../light/switch/themes' as *;
 
-$theme: $indigo;
-$checked-color: var-get($theme, 'track-on-color') !default;
-$border-width: rem(1px);
+$theme: $bootstrap;
 
 :host {
-    --size: #{rem(34px)};
-    --thumb-size: #{rem(8px)};
+    --size: #{rem(32px)};
+    --thumb-size: #{rem(10px)};
     --border-size: #{rem(1px)};
     --thumb-offset: #{rem(2px)};
     --label-gap: #{rem(8px)};
-
-    @include css-vars-from-theme($theme, 'ig-switch');
-
-    font-weight: 600;
 }
 
-[part~='base'] {
-    &:hover {
-        [part~='control'][part~='checked'] {
-            border-color: var-get($theme, 'border-on-hover-color');
-        }
+[part~='focused'] {
+    [part~='thumb']:not([part~='checked']) {
+        background: var-get($theme, 'focus-fill-color');
     }
 }
 
-[part~='control'][part~='focused'] {
-    box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color');
+[part~='focused'][part~='control'] {
+    box-shadow: 0 0 0 rem(2px) color(primary, 100);
+    border-color: var-get($theme, 'focus-fill-color')
 }
 
-[part~='control'][part~='checked'][part~='focused'] {
-    box-shadow: 0 0 0 rem(3px) var-get($theme, 'focus-outline-color-focused');
+[part~='focused'][part~='control'][part~='checked'] {
+    box-shadow: 0 0 0 rem(2px) color(primary, 200);
 }
 
 [part~='control'] {
     border-radius: var-get($theme, 'border-radius-track');
     width: var(--size);
     height: rem(16px);
-    border: rem(2px) solid var-get($theme, 'border-color');
+    border: var(--border-size) solid var-get($theme, 'border-color');
     background: var-get($theme, 'track-off-color');
+    transition: all .2s ease-in-out;
 }
 
 [part~='control'][part~='checked'] {
+    background: var-get($theme, 'track-on-color');
     border-color: var-get($theme, 'border-on-color');
-    background: $checked-color;
 }
 
 [part~='thumb'] {
@@ -53,49 +45,36 @@ $border-width: rem(1px);
     width: var(--thumb-size);
     height: var(--thumb-size);
     min-width: var(--thumb-size);
-    background: var-get($theme, 'thumb-off-color');
-}
-
-[part~='thumb']:not([part~='checked']) {
     margin-inline-start: var(--thumb-offset);
+    background: color(gray, 400);
 }
 
 [part~='thumb'][part~='checked'] {
     background: var-get($theme, 'thumb-on-color');
-    margin-inline-start: calc(100% - var(--thumb-size) - var(--thumb-offset));
+    margin-inline-start: calc(var(--size) - var(--thumb-size) - var(--thumb-offset) - (var(--border-size) * 2));
 }
 
 [part~='label'] {
     @include type-style('subtitle-1');
 
-    color: var-get($theme, 'label-color');
-    transition: all .2s ease-in-out;
+    color: color(gray, 900);
 }
 
 :host(:not([disabled])[invalid]),
 :host(:not(:disabled)[invalid]) {
-    [part~='control'] {
-        background: var-get($theme, 'track-error-color');
-    }
-
     [part~='control'],
     [part~='control'][part~='checked'] {
         border-color: var-get($theme, 'error-color');
     }
 
     [part~='control'][part~='checked'],
-    [part~='thumb'] {
+    [part~='thumb']:not([part~='checked']) {
         background: var-get($theme, 'error-color');
     }
 
-    [part~='control'][part~='focused'],
-    [part~='control'][part~='checked'][part~='focused'] {
+    [part='focused'][part~='control'],
+    [part='focused'][part~='control'][part~='checked'] {
         box-shadow: 0 0 0 rem(2px) var-get($theme, 'error-color-hover');
-    }
-
-
-    [part~='thumb'][part~='checked'] {
-        background: var-get($theme, 'thumb-on-error-color');
     }
 
     [part~='label'] {
@@ -103,16 +82,15 @@ $border-width: rem(1px);
     }
 }
 
-:host([disabled]),
-:host(:disabled) {
+:host([disabled]) {
     [part~='control'] {
-        border-color: var-get($theme, 'border-disabled-color');
         background: var-get($theme, 'track-disabled-color');
+        border-color: var-get($theme, 'border-disabled-color');
     }
 
     [part~='control'][part~='checked'] {
-        border-color: var-get($theme, 'border-disabled-color');
         background: var-get($theme, 'track-on-disabled-color');
+        border-color: var-get($theme, 'track-on-disabled-color');
     }
 
     [part~='thumb'] {
@@ -127,5 +105,3 @@ $border-width: rem(1px);
         color: var-get($theme, 'label-disabled-color');
     }
 }
-
-

@@ -1,8 +1,6 @@
 @use 'sass:math';
-@use 'sass:map';
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'switch-themes' as *;
+@use '../../light/switch/themes' as *;
 
 $theme: $material;
 $ripple-size: rem(40px);
@@ -13,8 +11,6 @@ $ripple-radius: calc(#{$ripple-size} / 2);
     --thumb-size: #{rem(20px)};
     --thumb-offset: #{rem(-1px)};
     --label-gap: #{rem(8px)};
-
-    @include css-vars-from-theme($theme, 'ig-switch');
 }
 
 [part~='base'] {

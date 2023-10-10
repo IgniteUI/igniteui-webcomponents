@@ -1,13 +1,7 @@
-@use 'sass:map';
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'checkbox-themes' as *;
+@use '../../light/checkbox/themes' as *;
 
 $theme: $material;
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-checkbox');
-}
 
 [part~='label'] {
     @include type-style('subtitle-1');

@@ -1,13 +1,7 @@
-@use 'sass:map';
-@use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use 'checkbox-themes' as *;
+@use '../../light/checkbox/themes' as *;
 
 $theme: $bootstrap;
-
-:host {
-    @include css-vars-from-theme($theme, 'ig-checkbox');
-}
 
 [part~='control'] {
     --size: #{rem(16px)};
