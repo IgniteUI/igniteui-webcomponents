@@ -7,7 +7,6 @@
 @use '../../../components/chip/themes/dark/chip.material' as chip;
 @use '../../../components/combo/themes/dark/combo.material' as combo;
 @use '../../../components/navbar/themes/dark/navbar.material' as navbar;
-@use '../../../components/card/themes/dark/card.material' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.material' as checkbox;
 @use '../../../components/checkbox/themes/dark/switch.material' as switch;
 @use '../../../components/button-group/themes/dark/button-group-material' as button-group;
@@ -19,7 +18,6 @@
 @include chip.theme();
 @include combo.theme();
 @include navbar.theme();
-@include card.theme();
 @include checkbox.theme();
 @include switch.theme();
 @include button-group.theme();

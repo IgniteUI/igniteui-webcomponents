@@ -2,7 +2,6 @@
 @use '../base/indigo' as base;
 @use '../base/scrollbars';
 @use '../third-party/grid/indigo.dark' as grid;
-@use '../../../components/card/themes/dark/card.indigo' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.indigo' as checkbox;
 @use '../../../components/chip/themes/dark/chip.indigo' as chip;
 @use '../../../components/checkbox/themes/dark/switch.indigo' as switch;
@@ -14,7 +13,6 @@
 @use '../../../components/button-group/themes/dark/button-group-indigo' as button-group;
 @use '../../../components/button-group/themes/dark/toggle-button/toggle-button-indigo' as toggle-button;
 @include base.root-styles($palette, 'dark');
-@include card.theme();
 @include checkbox.theme();
 @include chip.theme();
 @include switch.theme();

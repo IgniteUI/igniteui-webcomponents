@@ -4,7 +4,6 @@
 @use '../third-party/grid/fluent.dark' as grid;
 @use '../../../components/button/themes/icon-button/dark/icon-button.fluent' as icon-button;
 @use '../../../components/calendar/themes/dark/fluent/index' as calendar;
-@use '../../../components/card/themes/dark/card.fluent' as card;
 @use '../../../components/checkbox/themes/dark/checkbox.fluent' as checkbox;
 @use '../../../components/chip/themes/dark/chip.fluent' as chip;
 @use '../../../components/dialog/themes/dark/dialog.fluent' as dialog;
@@ -18,7 +17,6 @@
 @include base.root-styles($palette, 'dark');
 @include icon-button.theme();
 @include calendar.theme();
-@include card.theme();
 @include checkbox.theme();
 @include chip.theme();
 @include dropdown.theme();
