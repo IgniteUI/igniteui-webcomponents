@@ -1,0 +1,15 @@
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-card');
+    @include type-style('body-1');
+
+    color: var-get($theme, 'content-text-color');
+}
+
+::slotted(*) {
+    @include type-style('body-1');
+}

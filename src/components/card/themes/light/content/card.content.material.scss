@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $material;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-card');
+
+    color: var-get($theme, 'content-text-color');
+}

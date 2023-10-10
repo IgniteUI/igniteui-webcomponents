@@ -8,8 +8,6 @@ $outlined-theme: $fluent-outlined;
 $outline-btn-indent: rem(2px);
 
 :host([variant='flat']) {
-    @include css-vars-from-theme($flat-theme, 'ig-button');
-
     [part='base'] {
         height: var-get($flat-theme, 'size');
         border-radius: var-get($flat-theme, 'border-radius');
@@ -17,8 +15,6 @@ $outline-btn-indent: rem(2px);
 }
 
 :host([variant='outlined']) {
-    @include css-vars-from-theme($outlined-theme, 'ig-button');
-
     [part='base'] {
         height: var-get($outlined-theme, 'size');
         border-radius: var-get($outlined-theme, 'border-radius');
@@ -30,8 +26,6 @@ $outline-btn-indent: rem(2px);
 }
 
 :host([variant='contained']) {
-    @include css-vars-from-theme($contained-theme, 'ig-button');
-
     [part='base'] {
         height: var-get($contained-theme, 'size');
         border-radius: var-get($contained-theme, 'border-radius');
@@ -43,8 +37,6 @@ $outline-btn-indent: rem(2px);
 }
 
 :host([variant='fab']) {
-    @include css-vars-from-theme($fab-theme, 'ig-button');
-
     [part='base'] {
         height: var-get($fab-theme, 'size');
         border-radius: var-get($fab-theme, 'border-radius');
