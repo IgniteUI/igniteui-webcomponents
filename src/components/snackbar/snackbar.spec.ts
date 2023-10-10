@@ -1,14 +1,15 @@
 import {
-  html,
-  fixture,
-  expect,
-  elementUpdated,
-  unsafeStatic,
   aTimeout,
+  elementUpdated,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
   waitUntil,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcSnackbarComponent } from '../../index.js';
+
+import { IgcSnackbarComponent, defineComponents } from '../../index.js';
 import type IgcButtonComponent from '../button/button.js';
 
 describe('Snackbar', () => {

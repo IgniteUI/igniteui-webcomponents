@@ -5,6 +5,7 @@ import {
 } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import {
   IgcAvatarComponent,
   IgcCardComponent,

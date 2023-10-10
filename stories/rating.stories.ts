@@ -1,19 +1,20 @@
 import { bacteria, bandage } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html, svg } from 'lit';
-import { range } from 'lit-html/directives/range.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { range } from 'lit-html/directives/range.js';
+
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import {
   IgcIconComponent,
   IgcRatingComponent,
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
-import {
-  disableStoryControls,
-  formControls,
-  formSubmitHandler,
-} from './story.js';
 
 defineComponents(IgcRatingComponent, IgcIconComponent);
 const icons = [bacteria, bandage];

@@ -1,8 +1,9 @@
 import { queryAssignedNodes } from 'lit/decorators.js';
+
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 import { extractText } from '../common/util.js';
+import IgcDropdownItemComponent from '../dropdown/dropdown-item.js';
 
 /**
  * Represents an item in a select list.

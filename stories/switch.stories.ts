@@ -1,12 +1,13 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineComponents, IgcSwitchComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+import { IgcSwitchComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcSwitchComponent);
 

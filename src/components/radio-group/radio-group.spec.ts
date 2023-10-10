@@ -1,9 +1,10 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
+
 import {
-  defineComponents,
   IgcRadioComponent,
   IgcRadioGroupComponent,
+  defineComponents,
 } from '../../index.js';
 
 describe('Radio Group Component', () => {

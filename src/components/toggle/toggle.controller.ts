@@ -1,6 +1,7 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
-import { igcToggle, IgcToggleDirective } from './toggle.directive.js';
 import type { DirectiveResult } from 'lit/directive';
+
+import { IgcToggleDirective, igcToggle } from './toggle.directive.js';
 import type { IgcToggleComponent } from './types.js';
 
 type ToggleHost = ReactiveControllerHost & IgcToggleComponent & HTMLElement;

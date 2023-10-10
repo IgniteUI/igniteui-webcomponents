@@ -6,6 +6,7 @@ import {
   nextFrame,
 } from '@open-wc/testing';
 import { LitElement } from 'lit';
+
 import PopperTestComponent from './test.component.spec.js';
 import type { IgcToggleOptions } from './types';
 

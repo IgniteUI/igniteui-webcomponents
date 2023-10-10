@@ -1,5 +1,6 @@
-import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcChipComponent } from '../../index.js';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+
+import { IgcChipComponent, defineComponents } from '../../index.js';
 
 describe('Chip', () => {
   const DIFF_OPTIONS = {

@@ -1,5 +1,7 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+
+import { styles } from './themes/light/item/combo-item.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { watch } from '../common/decorators/watch.js';
@@ -8,7 +10,6 @@ import { styles as bootstrap } from '../dropdown/themes/light/item/dropdown-item
 import { styles as fluent } from '../dropdown/themes/light/item/dropdown-item.fluent.css.js';
 import { styles as indigo } from '../dropdown/themes/light/item/dropdown-item.indigo.css.js';
 import { styles as material } from '../dropdown/themes/light/item/dropdown-item.material.css.js';
-import { styles } from './themes/light/item/combo-item.base.css.js';
 
 /* blazorSuppress */
 @themes({

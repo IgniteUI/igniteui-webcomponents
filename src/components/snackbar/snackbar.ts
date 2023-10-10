@@ -1,6 +1,12 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
+import { styles } from './themes/light/snackbar.base.css.js';
+import { styles as bootstrap } from './themes/light/snackbar.bootstrap.css.js';
+import { styles as fluent } from './themes/light/snackbar.fluent.css.js';
+import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
+import { styles as material } from './themes/light/snackbar.material.css.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -8,11 +14,6 @@ import IgcButtonComponent from '../button/button.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { styles } from './themes/light/snackbar.base.css.js';
-import { styles as material } from './themes/light/snackbar.material.css.js';
-import { styles as bootstrap } from './themes/light/snackbar.bootstrap.css.js';
-import { styles as fluent } from './themes/light/snackbar.fluent.css.js';
-import { styles as indigo } from './themes/light/snackbar.indigo.css.js';
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;

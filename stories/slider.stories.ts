@@ -1,11 +1,12 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { defineComponents, IgcSliderComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+import { IgcSliderComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcSliderComponent);
 

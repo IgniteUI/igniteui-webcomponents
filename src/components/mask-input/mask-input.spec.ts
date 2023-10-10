@@ -1,11 +1,12 @@
-import { html } from 'lit';
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
+import { html } from 'lit';
 import sinon from 'sinon';
-import { defineComponents } from '../../index.js';
-import { MaskParser } from './mask-parser.js';
+
 import IgcMaskInputComponent from './mask-input.js';
-import IgcFormComponent from '../form/form.js';
+import { MaskParser } from './mask-parser.js';
+import { defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import IgcFormComponent from '../form/form.js';
 
 describe('Masked input', () => {
   before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
