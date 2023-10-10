@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
@@ -23,4 +22,3 @@ $theme: $indigo;
 :host([shape='circle']) [part='base'] {
     border-radius: calc(var-get($theme, 'size') / 2);
 }
-
