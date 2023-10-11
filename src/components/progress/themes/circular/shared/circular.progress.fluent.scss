@@ -1,7 +1,5 @@
 @use 'styles/utilities' as *;
-@use '../../vars' as *;
 @use '../light/themes' as *;
-@use '../../animations' as *;
 
 // TODO If possible make the animation the same as the MS fluent
 
@@ -26,20 +24,20 @@ $theme: $fluent;
 
 :host([variant='danger']) [part~='gradient_start'],
 :host([variant='danger']) [part~='gradient_end'] {
-    stop-color: $danger-color;
+    stop-color: color(error, 500);
 }
 
 :host([variant='warning']) [part~='gradient_start'],
 :host([variant='warning']) [part~='gradient_end'] {
-    stop-color: $warning-color;
+    stop-color: color(warn, 500);
 }
 
 :host([variant='info']) [part~='gradient_start'],
 :host([variant='info']) [part~='gradient_end'] {
-    stop-color: $info-color;
+    stop-color: color(info, 500);
 }
 
 :host([variant='success']) [part~='gradient_start'],
 :host([variant='success']) [part~='gradient_end'] {
-    stop-color: $success-color;
+    stop-color: color(success, 500);
 }

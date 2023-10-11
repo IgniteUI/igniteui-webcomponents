@@ -1,7 +1,7 @@
-@use '../animations' as *;
-@use '../vars' as *;
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use '../animations' as *;
+@use '../vars' as *;
 
 :host {
     @extend %host !optional;
