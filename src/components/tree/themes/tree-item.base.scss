@@ -33,6 +33,7 @@
     align-items: center;
     position: relative;
     padding: 0 pad(12px, 16px, 24px);
+    cursor: pointer;
 
     &::after {
         content: '';

@@ -4,10 +4,15 @@
 
 $theme: $bootstrap;
 
+:host {
+    background: var(--node-disabled-background, var-get($theme, 'background'));
+    color: var(--node-disabled-foreground, var-get($theme, 'foreground'));
+}
+
 [part~='wrapper'] {
     min-height: var-get($theme, 'size');
-    background: var-get($theme, 'background');
-    color: var-get($theme, 'foreground');
+    background: inherit;
+    color: inherit;
 
     &::after {
         background: transparent;
@@ -24,21 +29,27 @@ $theme: $bootstrap;
     max-height: var-get($theme, 'size');
 }
 
-[part~='active'] {
-    background: var-get($theme, 'background-active');
-    color: var-get($theme, 'foreground-active');
+:host(:not([disabled])[active]) {
+    background: var(--node-disabled-background, var-get($theme, 'background-active'));
+    color: var(--node-disabled-foreground, var-get($theme, 'foreground-active'));
 }
 
-[part~='selected'] {
-    background: var-get($theme, 'background-selected');
-    color: var-get($theme, 'foreground-selected');
+:host(:not([disabled])[selected]) {
+    background: var(--node-disabled-background, var-get($theme, 'background-selected'));
+    color: var(--node-disabled-foreground, var-get($theme, 'foreground-selected'));
 }
 
-[part~='selected'][part~='focused'][part~='active'],
-[part~='selected'][part~='focused'],
-[part~='selected'][part~='active'] {
-    background: var-get($theme, 'background-active-selected');
-    color: var-get($theme, 'foreground-active-selected');
+:host(:not([disabled])[selected][active]) {
+    background: var(--node-disabled-background, var-get($theme, 'background-active-selected'));
+    color: var(--node-disabled-foreground, var-get($theme, 'foreground-active-selected'));
+}
+
+:host(:not([disabled])[selected]),
+:host(:not([disabled])[selected][active]) {
+    [part~='focused'] {
+        background: var(--node-disabled-background, var-get($theme, 'background-active-selected'));
+        color: var(--node-disabled-foreground, var-get($theme, 'foreground-active-selected'));
+    }
 }
 
 [part~='select'] {
@@ -50,8 +61,9 @@ $theme: $bootstrap;
 }
 
 :host([disabled]) {
-    [part~='label'] {
-        color: var-get($theme, 'foreground-disabled');
-        background: var-get($theme, 'background-disabled');
-    }
+    --node-disabled-foreground: #{var-get($theme, 'foreground-disabled')};
+    --node-disabled-background: #{var-get($theme, 'background-disabled')};
+
+    color: var(--node-disabled-foreground);
+    background: var(--node-disabled-background);
 }
