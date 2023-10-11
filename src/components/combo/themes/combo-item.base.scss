@@ -1,5 +1,5 @@
 @use 'styles/utilities' as *;
-@use '../../dropdown/themes/light/item/dropdown-item.base' as *;
+@use '../../dropdown/themes/dropdown-item.base' as *;
 
 :host {
     --component-size: var(--ig-size, var(--ig-size-medium));

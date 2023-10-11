@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use '../themes' as *;
 
@@ -6,8 +5,4 @@ $theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dropdown');
-
-    color: var-get($theme, 'header-text-color');
-    padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
-    padding-block: pad-block(rem(2px), rem(4px), rem(8px));
 }
