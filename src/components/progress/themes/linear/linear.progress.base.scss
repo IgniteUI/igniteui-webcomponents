@@ -1,13 +1,9 @@
-@use '../shared' as *;
+@use '../animations' as *;
 @use '../vars' as *;
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use '../light-themes' as *;
-
-$theme: $material;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-linear-bar');
     @extend %host !optional;
 
     display: flex;
@@ -31,11 +27,9 @@ $theme: $material;
 }
 
 [part~='track'] {
-    border-radius: var-get($theme, 'track-border-radius');
     position: relative;
     width: inherit;
     height: var(--track-size);
-    background: $track-color;
     overflow: hidden;
     z-index: 0;
 }
@@ -87,113 +81,13 @@ $theme: $material;
 
 [part~='value'] {
     margin: 0;
-    color: $text-color;
     font-size: em(14px);
     font-weight: 600;
-}
-
-// Colors
-[part~='primary']:not([part~='indeterminate']) {
-    background-color: $primary-color;
-}
-
-[part~='primary'] {
-    &::after {
-        background-color: $primary-color;
-    }
 }
 
 [part~='striped'][part~='primary']:not([part~='indeterminate']) {
     width: 100%;
     height: 100%;
-
-    @include stripe-colors($primary-color, $stripe-grays, $stripe-size, -45deg);
-}
-
-[part~='striped'][part~='primary'] {
-    &::after {
-        @include stripe-colors($primary-color, $stripe-grays, $stripe-size, -45deg);
-    }
-}
-
-[part~='danger']:not([part~='indeterminate']) {
-    background-color: $danger-color;
-}
-
-[part~='danger'] {
-    &::after {
-        background-color: $danger-color;
-    }
-}
-
-[part~='striped'][part~='danger']:not([part~='indeterminate']) {
-    @include stripe-colors($danger-color, $stripe-grays, $stripe-size, -45deg);
-}
-
-[part~='striped'][part~='danger'] {
-    &::after {
-        @include stripe-colors($danger-color, $stripe-grays, $stripe-size, -45deg);
-    }
-}
-
-[part~='warning']:not([part~='indeterminate']) {
-    background-color: $warning-color;
-}
-
-[part~='warning'] {
-    &::after {
-        background-color: $warning-color;
-    }
-}
-
-[part~='striped'][part~='warning']:not([part~='indeterminate']) {
-    @include stripe-colors($warning-color, $stripe-grays, $stripe-size, -45deg);
-}
-
-[part~='striped'][part~='warning'] {
-    &::after {
-        @include stripe-colors($warning-color, $stripe-grays, $stripe-size, -45deg);
-    }
-}
-
-[part~='info']:not([part~='indeterminate']) {
-    background-color: $info-color;
-}
-
-[part~='info'] {
-    &::after {
-        background-color: $info-color;
-    }
-}
-
-[part~='striped'][part~='info']:not([part~='indeterminate']) {
-    @include stripe-colors($info-color, $stripe-grays, $stripe-size, -45deg);
-}
-
-[part~='striped'][part~='info'] {
-    &::after {
-        @include stripe-colors($info-color, $stripe-grays, $stripe-size, -45deg);
-    }
-}
-
-[part~='success']:not([part~='indeterminate']) {
-    background-color: $success-color;
-}
-
-[part~='success'] {
-    &::after {
-        background-color: $success-color;
-    }
-}
-
-[part~='striped'][part~='success']:not([part~='indeterminate']) {
-    @include stripe-colors($success-color, $stripe-grays, $stripe-size, -45deg);
-}
-
-[part~='striped'][part~='success'] {
-    &::after {
-        @include stripe-colors($success-color, $stripe-grays, $stripe-size, -45deg);
-    }
 }
 
 // Label Positions

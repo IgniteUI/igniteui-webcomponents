@@ -1,21 +1,33 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
-@use '../shared' as *;
-@use '../vars' as *;
-@use '../light-themes' as *;
+@use '../../vars' as *;
+@use '../light/themes' as *;
+@use '../../animations' as *;
 
 $theme: $bootstrap;
 $stripe-grays: color(gray, 50, .2);
 $stripe-size: rem(5px);
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-linear-bar');
-
     --track-size: #{rem(16px)};
 }
 
 [part~='track'] {
+    background: $track-color;
     border-radius: var-get($theme, 'track-border-radius');
+}
+
+[part~='value'] {
+    color: $text-color;
+}
+
+[part~='primary']:not([part~='indeterminate']) {
+    background-color: $primary-color;
+}
+
+[part~='primary'] {
+    &::after {
+        background-color: $primary-color;
+    }
 }
 
 [part~='striped'][part~='primary']:not([part~='indeterminate']) {
@@ -25,6 +37,16 @@ $stripe-size: rem(5px);
 [part~='striped'][part~='primary'] {
     &::after {
         @include stripe-colors($primary-color, $stripe-grays, $stripe-size, 45deg);
+    }
+}
+
+[part~='danger']:not([part~='indeterminate']) {
+    background-color: $danger-color;
+}
+
+[part~='danger'] {
+    &::after {
+        background-color: $danger-color;
     }
 }
 
@@ -38,6 +60,16 @@ $stripe-size: rem(5px);
     }
 }
 
+[part~='warning']:not([part~='indeterminate']) {
+    background-color: $warning-color;
+}
+
+[part~='warning'] {
+    &::after {
+        background-color: $warning-color;
+    }
+}
+
 [part~='striped'][part~='warning']:not([part~='indeterminate']) {
     @include stripe-colors($warning-color, $stripe-grays, $stripe-size, 45deg);
 }
@@ -48,6 +80,16 @@ $stripe-size: rem(5px);
     }
 }
 
+[part~='info']:not([part~='indeterminate']) {
+    background-color: $info-color;
+}
+
+[part~='info'] {
+    &::after {
+        background-color: $info-color;
+    }
+}
+
 [part~='striped'][part~='info']:not([part~='indeterminate']) {
     @include stripe-colors($info-color, $stripe-grays, $stripe-size, 45deg);
 }
@@ -55,6 +97,16 @@ $stripe-size: rem(5px);
 [part~='striped'][part~='info'] {
     &::after {
         @include stripe-colors($info-color, $stripe-grays, $stripe-size, 45deg);
+    }
+}
+
+[part~='success']:not([part~='indeterminate']) {
+    background-color: $success-color;
+}
+
+[part~='success'] {
+    &::after {
+        background-color: $success-color;
     }
 }
 

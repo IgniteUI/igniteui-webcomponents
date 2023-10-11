@@ -1,0 +1,40 @@
+@use 'styles/utilities' as *;
+@use '../../vars' as *;
+@use '../light/themes' as *;
+@use '../../animations' as *;
+
+$theme: $indigo;
+
+[part~='label'] {
+    fill: var-get($theme, 'text-color');
+}
+
+[part~='track'] {
+    stroke: var-get($theme, 'base-circle-color');
+}
+
+[part~='gradient_start'],
+[part~='gradient_end'] {
+    stop-color: var-get($theme, 'progress-circle-color');
+}
+
+:host([variant='danger']) [part~='gradient_start'],
+:host([variant='danger']) [part~='gradient_end'] {
+    stop-color: $danger-color;
+}
+
+:host([variant='warning']) [part~='gradient_start'],
+:host([variant='warning']) [part~='gradient_end'] {
+    stop-color: $warning-color;
+}
+
+:host([variant='info']) [part~='gradient_start'],
+:host([variant='info']) [part~='gradient_end'] {
+    stop-color: $info-color;
+}
+
+:host([variant='success']) [part~='gradient_start'],
+:host([variant='success']) [part~='gradient_end'] {
+    stop-color: $success-color;
+}
+
