@@ -2,12 +2,10 @@
 @use '../../vars' as *;
 @use '../light/themes' as *;
 @use '../../animations' as *;
+
 // TODO If possible make the animation the same as the MS fluent
 
 $theme: $fluent;
-
-// TODO check angular and update this in the schema in necesery
-$track-color: color(primary, 50, .3);
 
 :host {
     --stroke-thickness: 1.5px;
