@@ -1,11 +1,8 @@
 import { html, LitElement, TemplateResult } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { themes, themeSymbol } from '../../theming/theming-decorator.js';
-import { styles } from './themes/light/combo.base.css.js';
-import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
-import { styles as material } from './themes/light/combo.material.css.js';
-import { styles as fluent } from './themes/light/combo.fluent.css.js';
-import { styles as indigo } from './themes/light/combo.indigo.css.js';
+import { styles } from './themes/combo.base.css.js';
+import { all } from './themes/themes.js';
 import {
   property,
   query,
@@ -98,13 +95,7 @@ defineComponents(
  * @csspart footer - The container holding the footer content.
  * @csspart empty - The container holding the empty content.
  */
-@themes(
-  {
-    light: { material, bootstrap, fluent, indigo },
-    dark: { material, bootstrap, fluent, indigo },
-  },
-  true
-)
+@themes(all)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<T extends object = any>
