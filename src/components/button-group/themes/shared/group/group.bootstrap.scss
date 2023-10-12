@@ -1,0 +1,23 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-button-group');
+
+    --button-min-width: #{rem(42px)};
+}
+
+[part~='group'] {
+    box-shadow: var-get($theme, 'elevation');
+    border-radius: var-get($theme, 'border-radius');
+}
+
+:host([alignment='horizontal']) {
+    --horizontal-radius: #{var-get($theme, 'border-radius')}
+}
+
+:host([alignment='vertical']) {
+    --vertical-radius: #{var-get($theme, 'border-radius')}
+}

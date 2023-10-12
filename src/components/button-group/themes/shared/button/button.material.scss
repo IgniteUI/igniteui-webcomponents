@@ -1,26 +1,24 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
-@use '../themes' as *;
+@use '../../light/themes' as *;
 
-$theme: $fluent;
-$group-item-border-thickness: rem(1px);
+$theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-button-group');
 
     [part~='toggle'] {
-        $icon-size: rem(16px);
+        $icon-size: rem(18px);
 
         --ig-icon-size: #{$icon-size};
         --igx-icon-size: #{$icon-size};
 
-        min-height: $fluent-flat-btn-size;
-        border-width: $group-item-border-thickness;
-        border-color: var-get($theme, 'item-border-color');
+        min-height: $material-flat-btn-size;
         color: var-get($theme, 'item-text-color');
         background: var-get($theme, 'item-background');
-        padding-inline: pad-inline(rem(16px));
-        padding-block: pad-block(rem(7px));
+        padding-inline: rem(16px);
+        padding-block: pad-block(rem(1px), rem(4px), rem(6px));
+        border-color: var-get($theme, 'item-border-color');
     }
 }
 
@@ -49,11 +47,12 @@ $group-item-border-thickness: rem(1px);
 }
 
 :host([disabled]),
-:host(:disabled) {
+:host(:disabled),
+:host-context([disabled]),
+:host-context(:disabled) {
     [part~='toggle'] {
         color: var-get($theme, 'disabled-text-color');
         background: var-get($theme, 'disabled-background-color');
         border-color: var-get($theme, 'item-disabled-border');
     }
 }
-

@@ -1,29 +1,26 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
-@use '../themes' as *;
+@use '../../light/themes' as *;
 
-$theme: $bootstrap;
+$theme: $fluent;
 $group-item-border-thickness: rem(1px);
 
 :host {
     @include css-vars-from-theme($theme, 'ig-button-group');
 
-    min-width: var(--button-min-width);
-
     [part~='toggle'] {
-        $icon-size: rem(18px);
+        $icon-size: rem(16px);
 
         --ig-icon-size: #{$icon-size};
         --igx-icon-size: #{$icon-size};
 
-        min-height: $bootstrap-flat-btn-size;
+        min-height: $fluent-flat-btn-size;
         border-width: $group-item-border-thickness;
         border-color: var-get($theme, 'item-border-color');
         color: var-get($theme, 'item-text-color');
         background: var-get($theme, 'item-background');
-        padding-inline: pad-inline(rem(8px), rem(10px), rem(12px));
-        padding-block: pad-block(rem(2px), rem(4px), rem(7px));
-        min-width: var(--button-min-width);
+        padding-inline: pad-inline(rem(16px));
+        padding-block: pad-block(rem(7px));
     }
 }
 
@@ -32,13 +29,6 @@ $group-item-border-thickness: rem(1px);
     [part~='toggle'] {
         color: var-get($theme, 'item-hover-text-color');
         background: var-get($theme, 'item-hover-background');
-        border-color: var-get($theme, 'item-border-color');
-    }
-}
-
-:host(:focus) {
-    [part~='toggle'] {
-        box-shadow: 0 0 0 rem(3px) var-get($theme, 'idle-shadow-color');
     }
 }
 
@@ -66,3 +56,4 @@ $group-item-border-thickness: rem(1px);
         border-color: var-get($theme, 'item-disabled-border');
     }
 }
+

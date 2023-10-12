@@ -1,8 +1,9 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
-@use '../themes' as *;
+@use '../../light/themes' as *;
 
-$theme: $material;
+$theme: $indigo;
+$group-item-border-thickness: rem(1px);
 
 :host {
     @include css-vars-from-theme($theme, 'ig-button-group');
@@ -13,12 +14,13 @@ $theme: $material;
         --ig-icon-size: #{$icon-size};
         --igx-icon-size: #{$icon-size};
 
-        min-height: $material-flat-btn-size;
+        min-height: $indigo-flat-btn-size;
+        border-width: $group-item-border-thickness;
+        border-color: var-get($theme, 'item-border-color');
         color: var-get($theme, 'item-text-color');
         background: var-get($theme, 'item-background');
-        padding-inline: rem(16px);
-        padding-block: pad-block(rem(1px), rem(4px), rem(6px));
-        border-color: var-get($theme, 'item-border-color');
+        padding-inline: pad-inline(rem(8px), rem(12px), rem(12px));
+        padding-block: pad-block(rem(1px), rem(2px), rem(3px));
     }
 }
 
@@ -27,6 +29,14 @@ $theme: $material;
     [part~='toggle'] {
         color: var-get($theme, 'item-hover-text-color');
         background: var-get($theme, 'item-hover-background');
+    }
+}
+
+:host(:focus) {
+    z-index: 2;
+
+    [part~='toggle'] {
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'idle-shadow-color');
     }
 }
 
@@ -46,13 +56,20 @@ $theme: $material;
     }
 }
 
+:host([selected]:focus) {
+    [part~='toggle'] {
+        box-shadow: 0 0 0 rem(3px) var-get($theme, 'selected-shadow-color');
+    }
+}
+
 :host([disabled]),
-:host(:disabled),
-:host-context([disabled]),
-:host-context(:disabled) {
+:host(:disabled) {
     [part~='toggle'] {
         color: var-get($theme, 'disabled-text-color');
         background: var-get($theme, 'disabled-background-color');
         border-color: var-get($theme, 'item-disabled-border');
     }
 }
+
+
+
