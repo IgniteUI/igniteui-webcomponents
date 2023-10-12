@@ -1,8 +1,6 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-$theme: $fluent;
-
 :host {
-    @include css-vars-from-theme($theme, 'ig-tree');
+    @include css-vars-from-theme($fluent, 'ig-tree');
 }

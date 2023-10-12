@@ -12,12 +12,6 @@ $theme: $fluent;
 
 [part~='wrapper'] {
     min-height: var-get($theme, 'size');
-    background: inherit;
-    color: inherit;
-
-    &::after {
-        background: transparent;
-    }
 
     &:hover {
         &::after {
