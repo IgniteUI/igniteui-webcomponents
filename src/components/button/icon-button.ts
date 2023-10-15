@@ -9,11 +9,8 @@ import {
   registerIconFromText as registerIconFromText_impl,
 } from '../icon/icon.registry.js';
 import { IgcButtonBaseComponent } from './button-base.js';
-import { styles } from './themes/icon-button/light/icon-button.base.css.js';
-import { styles as bootstrap } from './themes/icon-button/light/icon-button.bootstrap.css.js';
-import { styles as fluent } from './themes/icon-button/light/icon-button.fluent.css.js';
-import { styles as indigo } from './themes/icon-button/light/icon-button.indigo.css.js';
-import { styles as material } from './themes/icon-button/light/icon-button.material.css.js';
+import { styles } from './themes/icon-button/icon-button.base.css.js';
+import { all } from './themes/icon-button/themes.js';
 
 import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
@@ -26,10 +23,7 @@ defineComponents(IgcIconComponent);
  * @csspart base - The wrapping element.
  * @csspart icon - The icon element.
  */
-@themes({
-  light: { bootstrap, material, fluent, indigo },
-  dark: { bootstrap, material, fluent, indigo },
-})
+@themes(all)
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
   protected static styles = styles;
