@@ -458,6 +458,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     return html`${this.renderValueSlot()}
       <textarea
         id=${this.id || this.inputId}
+        part="input"
         style=${styleMap(this.resizeStyles)}
         @input=${this.handleInput}
         @change=${this.handleChange}
