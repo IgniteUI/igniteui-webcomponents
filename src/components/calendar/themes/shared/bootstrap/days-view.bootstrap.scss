@@ -1,6 +1,6 @@
 @use 'vars' as *;
 @use 'styles/utilities' as *;
-@use '../themes' as *;
+@use '../../light/themes' as *;
 
 $theme: $bootstrap;
 $border-width: rem(1px);

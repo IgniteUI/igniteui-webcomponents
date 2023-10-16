@@ -1,5 +1,5 @@
 @use 'styles/utilities/index' as *;
-@use '../themes' as *;
+@use '../../light/themes' as *;
 
 $theme: $fluent;
 $current-bg: var(--current-month-year-bg, #{color(gray, 200)});

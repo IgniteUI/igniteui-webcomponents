@@ -17,11 +17,8 @@ import {
 } from './common/calendar-base.js';
 import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
 import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
+import { all } from './themes/calendar.js';
 import { styles } from './themes/calendar.base.css.js';
-import { styles as bootstrap } from './themes/light/bootstrap/calendar.bootstrap.css.js';
-import { styles as fluent } from './themes/light/fluent/calendar.fluent.css.js';
-import { styles as indigo } from './themes/light/indigo/calendar.indigo.css.js';
-import { styles as material } from './themes/light/material/calendar.material.css.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 
@@ -67,23 +64,7 @@ defineComponents(
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@themes(
-  {
-    light: {
-      bootstrap,
-      fluent,
-      indigo,
-      material,
-    },
-    dark: {
-      bootstrap,
-      fluent,
-      indigo,
-      material,
-    },
-  },
-  true
-)
+@themes(all)
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
