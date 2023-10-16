@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -10,11 +9,11 @@ $theme: $bootstrap;
 
 [part~='base'] {
     border-radius: var-get($theme, 'border-radius');
-    background: color(surface, 500);
-    color: contrast-color(surface, 500);
-    box-shadow: var(--ig-elevation-10);
+    color: var-get($theme, 'text-color');
+    background: var-get($theme, 'background');
+    box-shadow: var-get($theme, 'elevation');
 }
 
 igc-button::part(base):hover {
-    color: color(primary, 500);
+    color: var-get($theme, 'button-color');
 }

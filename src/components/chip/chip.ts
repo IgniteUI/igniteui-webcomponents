@@ -2,19 +2,16 @@ import { html, LitElement, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './themes/chip.base.css.js';
-import { styles as bootstrap } from './themes/chip.bootstrap.css.js';
-import { styles as fluent } from './themes/chip.fluent.css.js';
-import { styles as indigo } from './themes/chip.indigo.css.js';
-import { styles as material } from './themes/chip.material.css.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcIconComponent from '../icon/icon.js';
-
-defineComponents(IgcIconComponent);
+import { styles } from './themes/light/chip.base.css.js';
+import { styles as material } from './themes/light/chip.material.css.js';
+import { styles as bootstrap } from './themes/light/chip.bootstrap.css.js';
+import { styles as fluent } from './themes/light/chip.fluent.css.js';
+import { styles as indigo } from './themes/light/chip.indigo.css.js';
 
 export interface IgcChipEventMap {
   igcRemove: CustomEvent<boolean>;
@@ -36,13 +33,19 @@ export interface IgcChipEventMap {
  * @csspart prefix - The prefix container of the chip.
  * @csspart suffix - The suffix container of the chip.
  */
-@themes({ material, bootstrap, fluent, indigo })
+@themes({
+  light: { material, bootstrap, fluent, indigo },
+  dark: { material, bootstrap, fluent, indigo },
+})
 export default class IgcChipComponent extends SizableMixin(
   EventEmitterMixin<IgcChipEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-chip';
-
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, IgcIconComponent);
+  }
 
   /**
    * Sets the disabled state for the chip.

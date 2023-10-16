@@ -2,11 +2,12 @@ import { html, LitElement } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { SizableInterface } from '../common/mixins/sizable.js';
 import type IgcDropdownItemComponent from './dropdown-item';
 import { styles } from './themes/light/group/dropdown-group.base.css.js';
-import { styles as fluent } from './themes/light/group/dropdown-group.fluent.css.js';
 import { styles as bootstrap } from './themes/light/group/dropdown-group.bootstrap.css.js';
+import { styles as fluent } from './themes/light/group/dropdown-group.fluent.css.js';
 import { styles as indigo } from './themes/light/group/dropdown-group.indigo.css.js';
 import { styles as material } from './themes/light/group/dropdown-group.material.css.js';
 
@@ -18,11 +19,18 @@ import { styles as material } from './themes/light/group/dropdown-group.material
  *
  * @csspart label - The native label element.
  */
-@themes({ fluent, bootstrap, indigo, material })
+@themes({
+  light: { fluent, bootstrap, indigo, material },
+  dark: { fluent, bootstrap, indigo, material },
+})
 export default class IgcDropdownGroupComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-group';
-
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
+
   protected parent!: SizableInterface;
 
   /** All child `igc-dropdown-item`s. */

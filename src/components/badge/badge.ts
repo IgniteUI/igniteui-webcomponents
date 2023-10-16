@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/light/badge.base.css.js';
 import { styles as bootstrap } from './themes/light/badge.bootstrap.css.js';
 
@@ -14,10 +15,14 @@ import { styles as bootstrap } from './themes/light/badge.bootstrap.css.js';
  *
  * @csspart base - The base wrapper of the badge.
  */
-@themes({ bootstrap })
+@themes({ light: { bootstrap }, dark: { bootstrap } })
 export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   /**
    * The type of badge.

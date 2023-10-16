@@ -43,7 +43,6 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     display: flex;
     overflow: hidden;
     min-height: rem(42px);
-    background: color(surface, 500);
     flex: none;
 }
 
@@ -78,7 +77,6 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     transform: translateX(0);
     height: rem(2px);
     min-width: rem(90px);
-    background: color(primary, 500);
     transition: transform .3s $tabs-animation-function, width .2s $tabs-animation-function;
 }
 
@@ -95,12 +93,6 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
     height: inherit;
     cursor: pointer;
     position: relative;
-    background: color(surface, 500);
-
-    &:hover,
-    &:focus {
-        background: color(gray, 100);
-    }
 
     ::slotted(*) {
         box-shadow: none;
@@ -108,18 +100,11 @@ $tabs-animation-function: cubic-bezier(.35, 0, .25, 1);
 }
 
 igc-icon-button::part(base) {
-    color: color(gray, 700);
-
     &:hover,
     &:focus-within {
-        color: color(gray, 900);
         background: transparent;
         box-shadow: none;
     }
-}
-
-igc-icon-button[disabled]::part(base) {
-    color: color(gray, 500);
 }
 
 :host([dir='rtl']) {

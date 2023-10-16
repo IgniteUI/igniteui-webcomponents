@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
 import { styles } from './themes/light/tab-panel.base.css.js';
 
@@ -11,8 +12,11 @@ import { styles } from './themes/light/tab-panel.base.css.js';
  */
 export default class IgcTabPanelComponent extends LitElement {
   public static readonly tagName = 'igc-tab-panel';
-
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private static readonly increment = createCounter();
 

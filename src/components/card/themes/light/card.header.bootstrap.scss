@@ -1,14 +1,20 @@
-@use 'card.header.material.scss';
 @use 'styles/utilities' as *;
+@use 'themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-card');
+
+    color: var-get($theme, 'header-text-color');
+}
 
 ::slotted([slot='title']) {
     @include type-style('h5');
-
-    color: color(gray, 900);
 }
 
 ::slotted([slot='subtitle']) {
     @include type-style('body-1');
 
-    color: color(gray, 800);
+    color: var-get($theme, 'subtitle-text-color');
 }

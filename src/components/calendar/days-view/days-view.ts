@@ -4,6 +4,7 @@ import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
 import { watch } from '../../common/decorators/watch.js';
+import { registerComponent } from '../../common/definitions/register.js';
 import {
   IgcCalendarResourceStringEN,
   IgcCalendarResourceStrings,
@@ -18,13 +19,15 @@ import {
 import {
   DateRangeType,
   ICalendarDate,
-  isDateInRanges,
   TimeDeltaInterval,
+  isDateInRanges,
 } from '../common/calendar.model.js';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
-import { styles as bootstrap } from '../themes/bootstrap/days-view.bootstrap.css.js';
 import { styles } from '../themes/days-view.base.css.js';
-import { styles as fluent } from '../themes/fluent/days-view.fluent.css.js';
+import { styles as bootstrap } from '../themes/light/bootstrap/days-view.bootstrap.css.js';
+import { styles as fluent } from '../themes/light/fluent/days-view.fluent.css.js';
+import { styles as material } from '../themes/light/material/days-view.material.css.js';
+import { styles as indigo } from '../themes/light/indigo/days-view.indigo.css.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
@@ -48,8 +51,18 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
 @blazorSuppressComponent
 @blazorIndirectRender
 @themes({
-  bootstrap,
-  fluent,
+  light: {
+    bootstrap,
+    fluent,
+    material,
+    indigo,
+  },
+  dark: {
+    bootstrap,
+    fluent,
+    material,
+    indigo,
+  },
 })
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
@@ -57,6 +70,11 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 >(IgcCalendarBaseComponent) {
   public static readonly tagName = 'igc-days-view';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
+
   private labelFormatter!: Intl.DateTimeFormat;
   private formatterWeekday!: Intl.DateTimeFormat;
   private dates!: ICalendarDate[][];

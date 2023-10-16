@@ -1,28 +1,7 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/snackbar' as *;
 
-$material: map.merge(
-    digest-schema($dark-snackbar),
-    (
-        border-radius: border-radius(map.get($dark-snackbar, 'border-radius')...),
-    )
-);
-$bootstrap: map.merge(
-    digest-schema($dark-bootstrap-snackbar),
-    (
-        border-radius: border-radius(map.get($dark-bootstrap-snackbar, 'border-radius')...),
-    )
-);
-$fluent: map.merge(
-    digest-schema($dark-fluent-snackbar),
-    (
-        border-radius: border-radius(map.get($dark-fluent-snackbar, 'border-radius')...),
-    )
-);
-$indigo: map.merge(
-    digest-schema($dark-indigo-snackbar),
-    (
-        border-radius: border-radius(map.get($dark-indigo-snackbar, 'border-radius')...),
-    )
-);
+$material: digest-schema($dark-snackbar);
+$bootstrap: digest-schema($dark-bootstrap-snackbar);
+$fluent: digest-schema($dark-fluent-snackbar);
+$indigo: digest-schema($dark-indigo-snackbar);

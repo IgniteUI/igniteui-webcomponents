@@ -1,17 +1,15 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import { styles } from './themes/light/nav-drawer.base.css.js';
-import { styles as indigo } from './themes/light/nav-drawer.indigo.css.js';
-import { styles as material } from './themes/light/nav-drawer.material.css.js';
-import { styles as fluent } from './themes/light/nav-drawer.fluent.css.js';
-import { styles as bootstrap } from './themes/light/nav-drawer.bootstrap.css.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
-
-defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
+import { styles } from './themes/light/nav-drawer.base.css.js';
+import { styles as bootstrap } from './themes/light/nav-drawer.bootstrap.css.js';
+import { styles as fluent } from './themes/light/nav-drawer.fluent.css.js';
+import { styles as indigo } from './themes/light/nav-drawer.indigo.css.js';
+import { styles as material } from './themes/light/nav-drawer.material.css.js';
 
 /**
  * Represents a side navigation container that provides
@@ -26,10 +24,21 @@ defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
  * @csspart main - The main container.
  * @csspart mini - The mini container.
  */
-@themes({ indigo, material, fluent, bootstrap })
+@themes({
+  light: { indigo, material, fluent, bootstrap },
+  dark: { indigo, material, fluent, bootstrap },
+})
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcNavDrawerHeaderItemComponent,
+      IgcNavDrawerItemComponent
+    );
+  }
 
   /**
    * The position of the drawer.
@@ -85,14 +94,15 @@ export default class IgcNavDrawerComponent extends LitElement {
   protected override render() {
     return html`
       <div part="overlay" @click=${this.hide}></div>
+
       <div part="base">
         <div part="main">
           <slot></slot>
         </div>
+      </div>
 
-        <div part="${partNameMap(this.resolvePartNames('mini'))}">
-          <slot name="mini"></slot>
-        </div>
+      <div part="${partNameMap(this.resolvePartNames('mini'))}">
+        <slot name="mini"></slot>
       </div>
     `;
   }

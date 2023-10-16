@@ -1,10 +1,12 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import { IgcSliderBaseComponent } from './slider-base.js';
+import IgcSliderLabelComponent from './slider-label.js';
 
 export interface IgcSliderEventMap {
   /**
@@ -46,6 +48,10 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
   )
 ) {
   public static readonly tagName = 'igc-slider';
+
+  public static register() {
+    registerComponent(this, IgcSliderLabelComponent);
+  }
 
   /**
    * The current value of the component.

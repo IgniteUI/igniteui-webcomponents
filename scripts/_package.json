@@ -25,6 +25,7 @@
     "avatar",
     "badge",
     "button",
+    "button group",
     "calendar",
     "card",
     "circular progress",
@@ -53,11 +54,12 @@
     "switch",
     "slider",
     "tabs",
+    "textarea",
     "toast",
     "tree"
   ],
   "dependencies": {
-    "@floating-ui/dom": "^1.5.2",
+    "@floating-ui/dom": "^1.5.3",
     "@lit-labs/virtualizer": "^2.0.7",
     "lit": "^2.8.0"
   }

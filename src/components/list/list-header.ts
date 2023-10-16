@@ -1,6 +1,8 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/light/list-header.base.css.js';
+import { styles as bootstrap } from './themes/light/list-header.bootstrap.css.js';
 import { styles as indigo } from './themes/light/list-header.indigo.css.js';
 
 /**
@@ -10,14 +12,13 @@ import { styles as indigo } from './themes/light/list-header.indigo.css.js';
  *
  * @slot - Renders header list item's content.
  */
-@themes({ indigo })
+@themes({ light: { bootstrap, indigo }, dark: { bootstrap, indigo } })
 export default class IgcListHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-list-header';
-
   public static override styles = styles;
 
-  constructor() {
-    super();
+  public static register() {
+    registerComponent(this);
   }
 
   public override connectedCallback() {

@@ -41,50 +41,46 @@ describe('Snackbar', () => {
     });
 
     it('should set the snackbar displayTime property successfully', async () => {
-      expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);
+      expect(el).dom.to.not.have.attribute('display-time');
 
       el.setAttribute('display-time', '10000');
       await elementUpdated(el);
       expect(el.displayTime).to.eq(10000);
-      expect(el).dom.to.equal(
-        `<igc-snackbar display-time='10000'></igc-snackbar>`
-      );
+      expect(el).dom.to.have.attribute('display-time', '10000');
     });
 
     it('should set the snackbar actionText property successfully', async () => {
       expect(el.actionText).to.be.undefined;
-      expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);
+      expect(el).dom.to.not.have.attribute('action-text');
 
       el.setAttribute('action-text', 'Dismiss');
       await elementUpdated(el);
       expect(el.actionText).to.eq('Dismiss');
-      expect(el).dom.to.equal(
-        `<igc-snackbar action-text='Dismiss'></igc-snackbar>`
-      );
+      expect(el).dom.to.have.attribute('action-text', 'Dismiss');
     });
 
     it('should open the snackbar successfully', async () => {
       el.open = false;
       await elementUpdated(el);
       expect(el.open).to.equal(false);
-      expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);
+      expect(el).dom.to.not.have.attribute('open');
 
       el.show();
       await elementUpdated(el);
       expect(el.open).to.equal(true);
-      expect(el).dom.to.equal(`<igc-snackbar open></igc-snackbar>`);
+      expect(el).dom.to.have.attribute('open');
     });
 
     it('should hide the snackbar successfully', async () => {
       el.open = true;
       await elementUpdated(el);
       expect(el.open).to.equal(true);
-      expect(el).dom.to.equal(`<igc-snackbar open></igc-snackbar>`);
+      expect(el).dom.to.have.attribute('open');
 
       el.hide();
       await waitUntil(() => !el.open);
       expect(el.open).to.equal(false);
-      expect(el).dom.to.equal(`<igc-snackbar></igc-snackbar>`);
+      expect(el).dom.to.not.have.attribute('open');
     });
 
     it('should hide the snackbar automatically after the display time is over', async () => {
@@ -114,6 +110,16 @@ describe('Snackbar', () => {
       expect(el.keepOpen).to.equal(true);
       await aTimeout(1000);
       expect(el.open).to.equal(true);
+    });
+
+    it('should change the snackbar position option correctly.', async () => {
+      for (const position of ['bottom', 'middle', 'top']) {
+        el.position = position as any;
+        await elementUpdated(el);
+
+        expect(el.position).to.equal(position);
+        expect(el).dom.to.have.attribute('position', position);
+      }
     });
 
     it('should emit event when the snackbar action button is clicked', async () => {
