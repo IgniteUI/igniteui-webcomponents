@@ -1,26 +1,27 @@
 import { ComplexAttributeConverter, html } from 'lit';
 import { property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import {
-  DatePartDeltas,
-  DatePartInfo,
-  DateParts,
-  DatePart,
-  DateTimeUtil,
-} from './date-util.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import { registerComponent } from '../common/definitions/register.js';
+import messages from '../common/localization/validation-en.js';
+import { AbstractConstructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { format, partNameMap } from '../common/util.js';
+import { Validator } from '../common/validators.js';
+import { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
   MaskRange,
 } from '../mask-input/mask-input-base.js';
-import { format, partNameMap } from '../common/util.js';
-import { IgcInputEventMap } from '../input/input-base.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { AbstractConstructor } from '../common/mixins/constructor.js';
-import messages from '../common/localization/validation-en.js';
-import { Validator } from '../common/validators.js';
+import {
+  DatePart,
+  DatePartDeltas,
+  DatePartInfo,
+  DateParts,
+  DateTimeUtil,
+} from './date-util.js';
 
 export interface IgcDateTimeInputEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {
@@ -60,6 +61,10 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
   AbstractConstructor<IgcMaskInputBaseComponent>
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
+
+  public static register() {
+    registerComponent(this);
+  }
 
   protected override validators: Validator<this>[] = [
     {

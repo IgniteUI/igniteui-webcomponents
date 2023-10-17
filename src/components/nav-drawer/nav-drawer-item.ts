@@ -6,6 +6,7 @@ import {
   state,
 } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
@@ -26,6 +27,10 @@ import { all } from './themes/item.js';
 export default class IgcNavDrawerItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-item';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   /**
    * Determines whether the drawer is disabled.

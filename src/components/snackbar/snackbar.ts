@@ -5,13 +5,11 @@ import { AnimationPlayer } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import { registerComponent } from '../common/definitions/register.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { styles } from './themes/snackbar.base.css.js';
 import { all } from './themes/themes.js';
-
-defineComponents(IgcButtonComponent);
 
 export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
@@ -36,11 +34,12 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,
   Constructor<LitElement>
 >(LitElement) {
-  /** @private */
-  public static tagName = 'igc-snackbar';
-
-  /** @private */
+  public static readonly tagName = 'igc-snackbar';
   public static styles = styles;
+
+  public static register() {
+    registerComponent(this, IgcButtonComponent);
+  }
 
   private autoHideTimeout!: number;
   private animationPlayer!: AnimationPlayer;

@@ -1,11 +1,12 @@
 import { html, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import { styleMap } from 'lit/directives/style-map.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { asPercent, partNameMap } from '../common/util.js';
 import { IgcProgressBaseComponent } from './base.js';
-import { themes } from '../../theming/theming-decorator.js';
 import { styles } from './themes/linear/linear.progress.base.css.js';
 import { all } from './themes/linear/themes.js';
-import { styleMap } from 'lit/directives/style-map.js';
 
 /**
  * A linear progress indicator used to express unspecified wait time or display
@@ -31,6 +32,10 @@ import { styleMap } from 'lit/directives/style-map.js';
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   /**
    * Sets the striped look of the control.

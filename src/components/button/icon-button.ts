@@ -4,6 +4,8 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
+import { registerComponent } from '../common/definitions/register.js';
+import IgcIconComponent from '../icon/icon.js';
 import {
   registerIcon as registerIcon_impl,
   registerIconFromText as registerIconFromText_impl,
@@ -11,11 +13,6 @@ import {
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/icon-button/icon-button.base.css.js';
 import { all } from './themes/icon-button/themes.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcIconComponent from '../icon/icon.js';
-
-defineComponents(IgcIconComponent);
 
 /**
  * @element igc-icon-button
@@ -27,6 +24,10 @@ defineComponents(IgcIconComponent);
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
   protected static styles = styles;
+
+  public static register() {
+    registerComponent(this, IgcIconComponent);
+  }
 
   /**
    * The name of the icon.

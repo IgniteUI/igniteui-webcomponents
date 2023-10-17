@@ -6,26 +6,24 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { watch } from '../common/decorators/watch.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { watch } from '../common/decorators/watch.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { createCounter, getOffset, isLTR } from '../common/util.js';
 import { styles } from './themes/tabs.base.css.js';
 import { all } from './themes/tabs-themes.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { createCounter, getOffset, isLTR } from '../common/util.js';
 import {
   getAttributesForTags,
   getNodesForTags,
   observerConfig,
 } from './utils.js';
 
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcTabComponent from './tab.js';
-import IgcTabPanelComponent from './tab-panel.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
-
-defineComponents(IgcTabComponent, IgcTabPanelComponent, IgcIconButtonComponent);
+import { registerComponent } from '../common/definitions/register.js';
+import IgcTabPanelComponent from './tab-panel.js';
+import IgcTabComponent from './tab.js';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -57,8 +55,17 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tabs';
-
   public static styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcTabComponent,
+      IgcTabPanelComponent,
+      IgcIconButtonComponent
+    );
+  }
+
   private static readonly increment = createCounter();
 
   @queryAssignedElements({ selector: 'igc-tab' })

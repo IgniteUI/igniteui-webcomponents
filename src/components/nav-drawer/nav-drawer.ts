@@ -1,14 +1,12 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import { styles } from './themes/container.base.css.js';
-import { all } from './themes/container.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
-
-defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
+import { styles } from './themes/container.base.css.js';
+import { all } from './themes/container.js';
 
 /**
  * Represents a side navigation container that provides
@@ -27,6 +25,14 @@ defineComponents(IgcNavDrawerHeaderItemComponent, IgcNavDrawerItemComponent);
 export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcNavDrawerHeaderItemComponent,
+      IgcNavDrawerItemComponent
+    );
+  }
 
   /**
    * The position of the drawer.

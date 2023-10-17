@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/header.base.css.js';
 import { all } from './themes/header.js';
 
@@ -13,11 +14,10 @@ import { all } from './themes/header.js';
 @themes(all)
 export default class IgcListHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-list-header';
-
   public static override styles = styles;
 
-  constructor() {
-    super();
+  public static register() {
+    registerComponent(this);
   }
 
   public override connectedCallback() {

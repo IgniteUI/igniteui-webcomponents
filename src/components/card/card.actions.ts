@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/card.actions.base.css.js';
 import { all } from './themes/actions.js';
 
@@ -15,6 +16,10 @@ import { all } from './themes/actions.js';
 export default class IgcCardActionsComponent extends LitElement {
   public static readonly tagName = 'igc-card-actions';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   /**
    * The orientation of the actions.

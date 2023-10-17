@@ -49,6 +49,7 @@ import IgcCircularGradientComponent from '../../progress/circular-gradient.js';
 import IgcDateTimeInputComponent from '../../date-time-input/date-time-input.js';
 import IgcMaskInputComponent from '../../mask-input/mask-input.js';
 import IgcExpansionPanelComponent from '../../expansion-panel/expansion-panel.js';
+import IgcTextareaComponent from '../../textarea/textarea.js';
 import IgcTreeComponent from '../../tree/tree.js';
 import IgcTreeItemComponent from '../../tree/tree-item.js';
 import IgcStepperComponent from '../../stepper/stepper.js';
@@ -59,7 +60,9 @@ import IgcSelectGroupComponent from '../../select/select-group.js';
 import IgcSelectHeaderComponent from '../../select/select-header.js';
 import IgcSelectItemComponent from '../../select/select-item.js';
 
-const allComponents: CustomElementConstructor[] = [
+import type { IgniteComponent } from './register.js';
+
+const allComponents: IgniteComponent[] = [
   IgcAvatarComponent,
   IgcAccordionComponent,
   IgcBadgeComponent,
@@ -119,8 +122,9 @@ const allComponents: CustomElementConstructor[] = [
   IgcDateTimeInputComponent,
   IgcStepperComponent,
   IgcStepComponent,
+  IgcTextareaComponent,
 ];
 
-export const defineAllComponents = () => {
+export function defineAllComponents() {
   defineComponents(...allComponents);
-};
+}

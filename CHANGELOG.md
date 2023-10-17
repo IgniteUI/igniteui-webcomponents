@@ -4,18 +4,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.5.0] - 2023-10-09
 ### Added
-- Button group [#827](https://github.com/IgniteUI/igniteui-webcomponents/issues/827) and toggle button [#877](https://github.com/IgniteUI/igniteui-webcomponents/issues/877)
+- Text area component [#764](https://github.com/IgniteUI/igniteui-webcomponents/issues/764)
+- Button group component [#827](https://github.com/IgniteUI/igniteui-webcomponents/issues/827)
+- Toggle button component [#877](https://github.com/IgniteUI/igniteui-webcomponents/issues/877)
+- Navigation drawer now supports CSS transitions [#922](https://github.com/IgniteUI/igniteui-webcomponents/pull/922)
+- Position attribute for toast and snackbar [#934](https://github.com/IgniteUI/igniteui-webcomponents/pull/934)
 
 ### Deprecated
-  - The `size` property and attribute have been deprecated for all components. Use the `--ig-size` CSS custom property instead.
-    The following example sets the size of the avatar component to small:
-    ```css
-      igc-avatar {
-        --ig-size: var(--ig-size-small);
-      }
-    ```
+- The `size` property and attribute have been deprecated for all components. Use the `--ig-size` CSS custom property instead.
+  The following example sets the size of the avatar component to small:
+  ```css
+    igc-avatar {
+      --ig-size: var(--ig-size-small);
+    }
+  ```
+
+### Fixed
+- Combo items position in Safari [#903](https://github.com/IgniteUI/igniteui-webcomponents/pull/903)
+- Calendar navigation buttons in RTL context [#915](https://github.com/IgniteUI/igniteui-webcomponents/pull/915)
+- Export `IgcComboChangeEventArgs` type [#917](https://github.com/IgniteUI/igniteui-webcomponents/pull/917)
+- Combo value and selection states with lazy data binding [#937](https://github.com/IgniteUI/igniteui-webcomponents/pull/937)
+- Various style and theming fixes and adjustments
 
 ## [4.4.0] - 2023-08-30
 ### Added
@@ -351,6 +362,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.4.0...4.5.0
 [4.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.3.1...4.4.0
 [4.3.1]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.3.0...4.3.1
 [4.3.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.2.3...4.3.0

@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './themes/header-item.base.css.js';
 import { all } from './themes/header-item.js';
 
@@ -13,6 +14,10 @@ import { all } from './themes/header-item.js';
 export default class IgcNavDrawerHeaderItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-header-item';
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   protected override render() {
     return html`<slot></slot>`;

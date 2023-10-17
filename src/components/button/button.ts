@@ -1,6 +1,7 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/button/button.base.css.js';
 import { all } from './themes/button/themes.js';
@@ -25,8 +26,11 @@ import { all } from './themes/button/themes.js';
 @themes(all)
 export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
-
   protected static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   /**
    * Sets the variant of the button.

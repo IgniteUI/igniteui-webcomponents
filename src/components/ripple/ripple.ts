@@ -1,4 +1,5 @@
 import { html, LitElement } from 'lit';
+import { registerComponent } from '../common/definitions/register.js';
 import { styles } from './ripple.material.css.js';
 
 /**
@@ -9,8 +10,11 @@ import { styles } from './ripple.material.css.js';
  */
 export default class IgcRippleComponent extends LitElement {
   public static readonly tagName = 'igc-ripple';
-
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   constructor() {
     super();

@@ -7,27 +7,19 @@ import {
 } from 'lit/decorators.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
+import { themes } from '../../theming/theming-decorator.js';
+import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { isLTR, partNameMap } from '../common/util.js';
+import IgcIconComponent from '../icon/icon.js';
+import IgcCircularProgressComponent from '../progress/circular-progress.js';
 import { styles } from './themes/tree-item.base.css.js';
-
+import { all } from './themes/themes';
 import type IgcTreeComponent from './tree.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
-
-import IgcCheckboxComponent from '../checkbox/checkbox.js';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcIconComponent from '../icon/icon.js';
-import IgcCircularProgressComponent from '../progress/circular-progress.js';
-import { themes } from '../../theming/theming-decorator';
-import { all } from './themes/themes';
-
-defineComponents(
-  IgcIconComponent,
-  IgcCheckboxComponent,
-  IgcCircularProgressComponent
-);
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -51,10 +43,17 @@ defineComponents(
  */
 @themes(all, true)
 export default class IgcTreeItemComponent extends LitElement {
-  /** @private */
   public static readonly tagName = 'igc-tree-item';
-  /** @private */
   public static override styles = styles;
+
+  public static register() {
+    registerComponent(
+      this,
+      IgcIconComponent,
+      IgcCheckboxComponent,
+      IgcCircularProgressComponent
+    );
+  }
 
   private tabbableEl?: HTMLElement[];
   private focusedProgrammatically = false;

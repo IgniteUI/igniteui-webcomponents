@@ -8,17 +8,12 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTypeOverride } from '../common/decorators/blazorTypeOverride.js';
 import { watch } from '../common/decorators/watch.js';
+import { isLTR } from '../common/util.js';
 import { styles } from './themes/slider.base.css.js';
 import { all } from './themes/themes.js';
-
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcSliderLabelComponent from './slider-label.js';
-import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { isLTR } from '../common/util.js';
-
-defineComponents(IgcSliderLabelComponent);
 
 @themes(all, true)
 @blazorDeepImport

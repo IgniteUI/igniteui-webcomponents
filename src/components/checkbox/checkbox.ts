@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, partNameMap } from '../common/util.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/checkbox.base.css.js';
@@ -28,6 +29,10 @@ import { all } from './themes/checkbox-themes.js';
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
   protected static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
 
   private static readonly increment = createCounter();
   private inputId = `checkbox-${IgcCheckboxComponent.increment()}`;
