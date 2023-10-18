@@ -48,8 +48,7 @@ textarea {
     position: relative;
     display: block;
     border: none;
-    padding-block-start: rem(20px);
-    padding-block-end: rem(6px);
+    padding-block: rem(20px) rem(6px);
     padding-inline-start: 0;
     width: 100%;
     min-width: 0;
