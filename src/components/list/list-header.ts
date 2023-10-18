@@ -1,9 +1,10 @@
-import { html, LitElement } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { LitElement, html } from 'lit';
+
 import { styles } from './themes/light/list-header.base.css.js';
 import { styles as bootstrap } from './themes/light/list-header.bootstrap.css.js';
 import { styles as indigo } from './themes/light/list-header.indigo.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * Header list item.

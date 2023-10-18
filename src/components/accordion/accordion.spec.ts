@@ -1,12 +1,13 @@
 import {
-  html,
-  fixture,
-  expect,
-  unsafeStatic,
   elementUpdated,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
 } from '@open-wc/testing';
-import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
+
 import IgcAccordionComponent from './accordion.js';
+import { IgcExpansionPanelComponent, defineComponents } from '../../index.js';
 
 describe('Accordion', () => {
   before(() => {

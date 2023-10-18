@@ -1,10 +1,11 @@
-import { html } from 'lit';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
-  defineComponents,
   IgcButtonComponent,
   IgcSnackbarComponent,
+  defineComponents,
 } from '../src/index.js';
 
 defineComponents(IgcSnackbarComponent, IgcButtonComponent);

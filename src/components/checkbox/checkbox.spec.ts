@@ -6,7 +6,8 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcCheckboxComponent } from '../../index.js';
+
+import { IgcCheckboxComponent, defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Checkbox', () => {

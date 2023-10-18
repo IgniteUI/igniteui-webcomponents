@@ -1,20 +1,21 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import { DatePart } from '../src/components/date-time-input/date-util.js';
 import {
-  defineComponents,
-  IgcFormComponent,
   IgcButtonComponent,
-  IgcInputComponent,
-  IgcDateTimeInputComponent,
-  IgcMaskInputComponent,
-  IgcSelectComponent,
-  IgcComboComponent,
   IgcCheckboxComponent,
-  IgcRadioGroupComponent,
-  IgcSwitchComponent,
+  IgcComboComponent,
+  IgcDateTimeInputComponent,
+  IgcFormComponent,
   IgcIconComponent,
+  IgcInputComponent,
+  IgcMaskInputComponent,
+  IgcRadioGroupComponent,
+  IgcSelectComponent,
+  IgcSwitchComponent,
+  defineComponents,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(
   IgcFormComponent,

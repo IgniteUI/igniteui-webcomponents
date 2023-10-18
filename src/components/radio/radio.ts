@@ -1,7 +1,13 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+
+import { styles } from './themes/light/radio.base.css.js';
+import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
+import { styles as fluent } from './themes/light/radio.fluent.css.js';
+import { styles as indigo } from './themes/light/radio.indigo.css.js';
+import { styles as material } from './themes/light/radio.material.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
@@ -19,11 +25,6 @@ import {
   wrap,
 } from '../common/util.js';
 import { Validator } from '../common/validators.js';
-import { styles } from './themes/light/radio.base.css.js';
-import { styles as bootstrap } from './themes/light/radio.bootstrap.css.js';
-import { styles as fluent } from './themes/light/radio.fluent.css.js';
-import { styles as indigo } from './themes/light/radio.indigo.css.js';
-import { styles as material } from './themes/light/radio.material.css.js';
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<boolean>;

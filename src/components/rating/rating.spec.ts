@@ -7,10 +7,11 @@ import {
 } from '@open-wc/testing';
 import { nothing } from 'lit';
 import sinon from 'sinon';
+
 import {
-  defineComponents,
   IgcRatingComponent,
   IgcRatingSymbolComponent,
+  defineComponents,
 } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
 

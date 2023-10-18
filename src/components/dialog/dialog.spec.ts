@@ -7,7 +7,8 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcDialogComponent } from '../../index.js';
+
+import { IgcDialogComponent, defineComponents } from '../../index.js';
 
 describe('Dialog component', () => {
   const fireMouseEvent = (type: string, opts: MouseEventInit) =>

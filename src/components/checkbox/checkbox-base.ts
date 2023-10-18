@@ -1,14 +1,14 @@
 import { LitElement } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+
 import { alternateName } from '../common/decorators/alternateName.js';
-import { watch } from '../common/decorators/watch.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
+import { watch } from '../common/decorators/watch.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-
-import { Validator, requiredBooleanValidator } from '../common/validators.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
+import { Validator, requiredBooleanValidator } from '../common/validators.js';
 
 export interface IgcCheckboxEventMap {
   igcChange: CustomEvent<boolean>;

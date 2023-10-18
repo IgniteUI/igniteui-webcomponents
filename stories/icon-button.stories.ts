@@ -2,6 +2,7 @@ import { all } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
   IgcIconButtonComponent,
   IgcRippleComponent,

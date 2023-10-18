@@ -1,15 +1,16 @@
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { createCounter, partNameMap } from '../common/util.js';
+
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { styles } from './themes/light/switch.base.css.js';
 import { styles as bootstrap } from './themes/light/switch.bootstrap.css.js';
 import { styles as fluent } from './themes/light/switch.fluent.css.js';
 import { styles as indigo } from './themes/light/switch.indigo.css.js';
 import { styles as material } from './themes/light/switch.material.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { createCounter, partNameMap } from '../common/util.js';
 
 /**
  * Similar to a checkbox, a switch controls the state of a single setting on or off.

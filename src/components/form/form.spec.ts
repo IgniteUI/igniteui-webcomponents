@@ -1,18 +1,19 @@
 import {
-  html,
-  fixture,
-  expect,
   elementUpdated,
+  expect,
+  fixture,
+  html,
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
+
 import {
-  defineAllComponents,
-  IgcFormComponent,
-  IgcRadioComponent,
-  IgcMaskInputComponent,
-  IgcRatingComponent,
   IgcDateTimeInputComponent,
+  IgcFormComponent,
+  IgcMaskInputComponent,
+  IgcRadioComponent,
+  IgcRatingComponent,
+  defineAllComponents,
 } from '../../index.js';
 
 describe('Form', () => {

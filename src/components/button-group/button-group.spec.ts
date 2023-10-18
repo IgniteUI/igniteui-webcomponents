@@ -5,12 +5,13 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
+import sinon from 'sinon';
+
 import {
-  defineComponents,
   IgcButtonGroupComponent,
   IgcToggleButtonComponent,
+  defineComponents,
 } from '../../index.js';
-import sinon from 'sinon';
 
 describe('Button Group', () => {
   before(() => {

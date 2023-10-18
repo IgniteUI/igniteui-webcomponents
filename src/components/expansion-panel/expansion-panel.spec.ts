@@ -1,13 +1,14 @@
 import {
-  html,
-  fixture,
-  expect,
-  unsafeStatic,
   elementUpdated,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
   waitUntil,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
+
+import { IgcExpansionPanelComponent, defineComponents } from '../../index.js';
 
 const SLOTS = {
   indicator: 'slot[name="indicator"]',

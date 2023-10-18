@@ -2,6 +2,8 @@ import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+
+import { IgcInputBaseComponent } from './input-base.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
@@ -19,7 +21,6 @@ import {
   requiredValidator,
   stepValidator,
 } from '../common/validators.js';
-import { IgcInputBaseComponent } from './input-base.js';
 
 /**
  * @element igc-input

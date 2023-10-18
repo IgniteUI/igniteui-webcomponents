@@ -1,6 +1,7 @@
-import { html } from 'lit';
-import { defineComponents, IgcButtonComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
+
+import { IgcButtonComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcButtonComponent);
 

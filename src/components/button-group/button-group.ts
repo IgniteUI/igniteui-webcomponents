@@ -1,5 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
+
+import IgcToggleButtonComponent from './toggle-button.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from '../button-group/themes/light/button-group.base.css.js';
 import { styles as bootstrap } from '../button-group/themes/light/button-group.bootstrap.css.js';
@@ -10,7 +12,6 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import IgcToggleButtonComponent from './toggle-button.js';
 
 export interface IgcButtonGroupComponentEventMap {
   igcSelect: CustomEvent<string | undefined>;

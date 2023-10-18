@@ -1,8 +1,9 @@
 import { property, state } from 'lit/decorators.js';
+
+import { MaskParser } from './mask-parser.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { IgcInputBaseComponent } from '../input/input-base.js';
-import { MaskParser } from './mask-parser.js';
 
 export type MaskRange = {
   start: number;

@@ -1,4 +1,6 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
+
+import { styles } from './themes/light/header/combo-header.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles as bootstrap } from '../dropdown/themes/light/header/dropdown-header.bootstrap.css.js';
@@ -7,7 +9,6 @@ import {
   styles as indigo,
   styles as material,
 } from '../dropdown/themes/light/header/dropdown-header.material.css.js';
-import { styles } from './themes/light/header/combo-header.base.css.js';
 
 /* blazorSuppress */
 @themes({
