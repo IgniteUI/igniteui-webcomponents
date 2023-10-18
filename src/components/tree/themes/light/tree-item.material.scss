@@ -6,10 +6,6 @@ $theme: $material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-tree');
-
-    background: var(--node-disabled-background, var-get($theme, 'background'));
-    color: var(--node-disabled-foreground, var-get($theme, 'foreground'));
-
 }
 
 [part~='wrapper'] {
@@ -22,27 +18,25 @@ $theme: $material;
     }
 }
 
-:host(:not([disabled])[active]) {
+[part~='label'] {
+    max-height: var-get($theme, 'size');
+}
+
+[part~='active'] {
     background: var-get($theme, 'background-active');
     color: var-get($theme, 'foreground-active');
 }
 
-:host(:not([disabled])[selected]) {
+[part~='selected'] {
     background: var-get($theme, 'background-selected');
     color: var-get($theme, 'foreground-selected');
 }
 
-:host(:not([disabled])[selected][active]) {
-    background: var(--node-disabled-background, var-get($theme, 'background-active-selected'));
-    color: var(--node-disabled-foreground, var-get($theme, 'foreground-active-selected'));
-}
-
-:host(:not([disabled])[selected]),
-:host(:not([disabled])[selected][active]) {
-    [part~='focused'] {
-        background: var(--node-disabled-background, var-get($theme, 'background-active-selected'));
-        color: var(--node-disabled-foreground, var-get($theme, 'foreground-active-selected'));
-    }
+[part~='selected'][part~='focused'][part~='active'],
+[part~='selected'][part~='focused'],
+[part~='selected'][part~='active'] {
+    background: var-get($theme, 'background-active-selected');
+    color: var-get($theme, 'foreground-active-selected');
 }
 
 [part~='focused'] {
@@ -50,10 +44,9 @@ $theme: $material;
 }
 
 :host([disabled]) {
-    --node-disabled-foreground: #{var-get($theme, 'foreground-disabled')};
-    --node-disabled-background: #{var-get($theme, 'background-disabled')};
-
-    color: var(--node-disabled-foreground);
-    background: var(--node-disabled-background);
+    [part~='wrapper'] {
+        color: var-get($theme, 'foreground-disabled');
+        background: var-get($theme, 'background-disabled');
+    }
 }
 
