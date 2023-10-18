@@ -39,7 +39,7 @@
     "lint:prettier": "prettier \"**/*.ts\" --check --ignore-path .gitignore",
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "format": "eslint --ext .ts . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
-    "release": "changelog",
+    "release": "node scripts/gen-changelog.mjs",
     "test": "npm run build && wtr --coverage",
     "test:watch": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-ts\" \"wtr --watch\"",
     "storybook": "npm run build && concurrently -k -r \"npm:watch-scss\" \"npm:watch-meta\" \"storybook dev -p 8000\"",
