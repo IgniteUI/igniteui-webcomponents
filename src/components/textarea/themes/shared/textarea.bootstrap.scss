@@ -1,0 +1,184 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include type-style('body-1');
+}
+
+[part~='label'] {
+    position: static;
+    display: block;
+    color: var-get($theme, 'idle-secondary-color');
+    padding: 0;
+    line-height: rem(24px);
+    transform: translateY(0);
+    transform-origin: top left;
+    margin-block-start: 0;
+    margin-block-end: rem(4px);
+    height: auto;
+    font-size: rem(16px);
+}
+
+[part~='helper-text'] {
+    @include type-style('body-2');
+
+    color: var-get($theme, 'helper-text-color');
+    padding-block-start: rem(4px);
+    padding-inline-start: 0;
+}
+
+[part~='prefixed'] {
+    [part~='prefix'] {
+        border-width: rem(1px);
+        border-style: solid;
+        border-color: var-get($theme, 'border-color');
+        overflow: hidden;
+        border-inline-end-width: 0;
+        color: var-get($theme, 'input-prefix-color');
+        background: var-get($theme, 'input-prefix-background');
+        border: {
+            start: {
+                start-radius: var-get($theme, 'border-border-radius');
+            };
+            end: {
+                start-radius: var-get($theme, 'border-border-radius');
+            };
+        }
+    }
+
+    textarea {
+        border: {
+            start: {
+                start-radius: 0;
+            };
+            end: {
+                start-radius: 0;
+            };
+        }
+    }
+}
+
+[part~='suffixed'] {
+    [part~='suffix'] {
+        border-width: rem(1px);
+        border-style: solid;
+        border-color: var-get($theme, 'border-color');
+        overflow: hidden;
+        border-inline-start-width: 0;
+        color: var-get($theme, 'input-suffix-color');
+        background: var-get($theme, 'input-suffix-background');
+        border: {
+            start: {
+                end-radius: var-get($theme, 'border-border-radius');
+            };
+            end: {
+                end-radius: var-get($theme, 'border-border-radius');
+            };
+        }
+    }
+
+    textarea {
+        border: {
+            start: {
+                end-radius: 0;
+            };
+            end: {
+                end-radius: 0;
+            };
+        }
+    }
+}
+
+[part~='filled'] {
+    [part='prefix'],
+    [part='suffix'] {
+        color: var-get($theme, 'input-prefix-color--filled');
+        background: var-get($theme, 'input-prefix-background--filled');
+    }
+
+    [part~='input'] {
+        color: var-get($theme, 'input-prefix-color--filled');
+    }
+}
+
+textarea {
+    @include type-style('body-1');
+
+    border: rem(1px) solid var-get($theme, 'border-color');
+    padding-block: pad-inline(rem(4px), rem(6px), rem(8px));
+    padding-inline: pad-inline(rem(8px), rem(12px), rem(16px));
+    border-radius: var-get($theme, 'border-border-radius');
+    z-index: 1;
+    font-size: pad(rem(14px), rem(16px), rem(20px));
+    background: transparent;
+    color: var-get($theme, 'filled-text-color');
+    transition: box-shadow .15s ease-out, border .15s ease-out;
+
+    &::placeholder {
+        color: var-get($theme, 'placeholder-color');
+    }
+}
+
+:host(:focus-within) {
+    color: var-get($theme, 'input-prefix-color--focused');
+
+    [part~='prefix'] {
+        color: var-get($theme, 'input-prefix-color--focused');
+        background: var-get($theme, 'input-prefix-background--focused');
+    }
+
+    [part~='suffix'] {
+        color: var-get($theme, 'input-suffix-color--focused');
+        background: var-get($theme, 'input-suffix-background--focused');
+    }
+
+    textarea {
+        border: rem(1px) solid var-get($theme, 'focused-border-color');
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'focused-secondary-color');
+    }
+}
+
+:host([invalid]:not(:disabled)),
+:host([invalid]:not([disabled])) {
+    textarea {
+        border: rem(1px) solid var-get($theme, 'error-secondary-color');
+        box-shadow: 0 0 0 rem(4px) var-get($theme, 'error-shadow-color');
+    }
+
+    [part~='helper-text'] {
+        color: var-get($theme, 'error-secondary-color');
+    }
+}
+
+:host(:disabled),
+:host([disabled]) {
+    color: var-get($theme, 'disabled-text-color');
+
+    [part='prefix'],
+    [part='suffix'] {
+        background: var-get($theme, 'border-disabled-background');
+        border-color: var-get($theme, 'disabled-border-color');
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    [part~='helper-text'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+
+    textarea {
+        color: var-get($theme, 'disabled-text-color');
+        background: var-get($theme, 'border-disabled-background');
+        border: rem(1px) solid var-get($theme, 'disabled-border-color');
+        box-shadow: none;
+
+        &::placeholder {
+            color: var-get($theme, 'disabled-placeholder-color');
+        }
+    }
+
+    [part~='label'] {
+        color: var-get($theme, 'disabled-text-color');
+    }
+}

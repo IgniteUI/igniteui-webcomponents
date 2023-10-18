@@ -27,11 +27,8 @@ import {
   minLengthValidator,
   requiredValidator,
 } from '../common/validators.js';
-import { styles } from './themes/light/textarea.base.css.js';
-import { styles as bootstrap } from './themes/light/textarea.bootstrap.css.js';
-import { styles as fluent } from './themes/light/textarea.fluent.css.js';
-import { styles as indigo } from './themes/light/textarea.indigo.css.js';
-import { styles as material } from './themes/light/textarea.material.css.js';
+import { styles } from './themes/textarea.base.css.js';
+import { all } from './themes/themes.js';
 
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
@@ -64,13 +61,7 @@ export interface IgcTextareaEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes(
-  {
-    light: { material, bootstrap, fluent, indigo },
-    dark: { material, bootstrap, fluent, indigo },
-  },
-  true
-)
+@themes(all, true)
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
 ) {
