@@ -1,13 +1,13 @@
 import {
-  html,
-  fixture,
-  expect,
-  unsafeStatic,
   elementUpdated,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
 } from '@open-wc/testing';
-import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
+
 import IgcAccordionComponent from './accordion.js';
-import { simulateKeyboard } from '../common/utils.spec.js';
+import { IgcExpansionPanelComponent, defineComponents } from '../../index.js';
 import {
   altKey,
   arrowDown,
@@ -16,6 +16,7 @@ import {
   homeKey,
   shiftKey,
 } from '../common/controllers/key-bindings.js';
+import { simulateKeyboard } from '../common/utils.spec.js';
 
 describe('Accordion', () => {
   before(() => {

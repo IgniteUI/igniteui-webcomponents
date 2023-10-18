@@ -2,6 +2,7 @@ import { ComplexAttributeConverter, html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+
 import {
   addKeybindings,
   arrowDown,
@@ -23,13 +24,6 @@ import {
   IgcMaskInputBaseComponent,
   MaskRange,
 } from '../mask-input/mask-input-base.js';
-import {
-  DatePart,
-  DatePartDeltas,
-  DatePartInfo,
-  DateParts,
-  DateTimeUtil,
-} from './date-util.js';
 
 export interface IgcDateTimeInputEventMap
   extends Omit<IgcInputEventMap, 'igcChange'> {

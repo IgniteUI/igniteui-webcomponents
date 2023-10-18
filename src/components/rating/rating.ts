@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -9,6 +9,12 @@ import {
 import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
+
+import IgcRatingSymbolComponent from './rating-symbol.js';
+import { styles } from './rating.base.css.js';
+import { styles as bootstrap } from './rating.bootstrap.css.js';
+import { styles as fluent } from './rating.fluent.css.js';
+import { styles as indigo } from './rating.indigo.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
@@ -27,11 +33,6 @@ import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { clamp, format, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
-import IgcRatingSymbolComponent from './rating-symbol.js';
-import { styles } from './rating.base.css.js';
-import { styles as bootstrap } from './rating.bootstrap.css.js';
-import { styles as fluent } from './rating.fluent.css.js';
-import { styles as indigo } from './rating.indigo.css.js';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;

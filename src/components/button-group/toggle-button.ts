@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+
 import { themes } from '../../theming/theming-decorator.js';
 import { styles } from '../button-group/themes/light/toggle-button/toggle-button.base.css.js';
 import { styles as bootstrap } from '../button-group/themes/light/toggle-button/toggle-button.bootstrap.css.js';

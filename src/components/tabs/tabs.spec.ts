@@ -7,12 +7,13 @@ import {
 } from '@open-wc/testing';
 import { TemplateResult } from 'lit';
 import sinon from 'sinon';
+
 import {
-  defineComponents,
-  IgcTabsComponent,
+  IgcIconButtonComponent,
   IgcTabComponent,
   IgcTabPanelComponent,
-  IgcIconButtonComponent,
+  IgcTabsComponent,
+  defineComponents,
 } from '../../index.js';
 
 describe('Tabs component', () => {

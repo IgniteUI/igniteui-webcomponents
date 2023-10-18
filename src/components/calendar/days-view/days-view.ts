@@ -1,5 +1,6 @@
 import { html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+
 import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
@@ -26,8 +27,8 @@ import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
 import { styles } from '../themes/days-view.base.css.js';
 import { styles as bootstrap } from '../themes/light/bootstrap/days-view.bootstrap.css.js';
 import { styles as fluent } from '../themes/light/fluent/days-view.fluent.css.js';
-import { styles as material } from '../themes/light/material/days-view.material.css.js';
 import { styles as indigo } from '../themes/light/indigo/days-view.indigo.css.js';
+import { styles as material } from '../themes/light/material/days-view.material.css.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;

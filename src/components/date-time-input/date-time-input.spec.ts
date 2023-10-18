@@ -6,12 +6,9 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import { MaskParser } from '../mask-input/mask-parser.js';
+
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
-import { simulateKeyboard } from '../common/utils.spec.js';
 import {
   arrowDown,
   arrowLeft,
@@ -19,6 +16,11 @@ import {
   arrowUp,
   ctrlKey,
 } from '../common/controllers/key-bindings.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import {
+  FormAssociatedTestBed,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 
 describe('Date Time Input component', () => {
   before(() => defineComponents(IgcDateTimeInputComponent));

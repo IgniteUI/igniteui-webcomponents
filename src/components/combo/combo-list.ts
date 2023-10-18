@@ -1,4 +1,5 @@
 import { LitVirtualizer } from '@lit-labs/virtualizer';
+
 import { registerComponent } from '../common/definitions/register.js';
 
 /* blazorSuppress */

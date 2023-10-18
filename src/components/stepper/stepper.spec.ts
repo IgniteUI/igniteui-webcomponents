@@ -1,16 +1,17 @@
-import { defineComponents } from '../../index.js';
-import IgcStepperComponent from './stepper.js';
-import IgcStepComponent from './step.js';
+import { elementUpdated, expect } from '@open-wc/testing';
 import sinon from 'sinon';
+
+import IgcStepComponent from './step.js';
 import {
-  linearModeStepper,
   PARTS,
-  simpleStepper,
   SLOTS,
   StepperTestFunctions,
+  linearModeStepper,
+  simpleStepper,
   stepperActiveDisabledSteps,
 } from './stepper-utils.spec.js';
-import { elementUpdated, expect } from '@open-wc/testing';
+import IgcStepperComponent from './stepper.js';
+import { defineComponents } from '../../index.js';
 
 describe('Stepper', () => {
   before(() => {

@@ -1,8 +1,6 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import { styles } from './themes/light/nav-drawer.base.css.js';
@@ -10,6 +8,9 @@ import { styles as bootstrap } from './themes/light/nav-drawer.bootstrap.css.js'
 import { styles as fluent } from './themes/light/nav-drawer.fluent.css.js';
 import { styles as indigo } from './themes/light/nav-drawer.indigo.css.js';
 import { styles as material } from './themes/light/nav-drawer.material.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { partNameMap } from '../common/util.js';
 
 /**
  * Represents a side navigation container that provides

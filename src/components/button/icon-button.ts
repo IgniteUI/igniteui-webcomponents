@@ -1,21 +1,22 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { alternateName } from '../common/decorators/alternateName.js';
-import { blazorInclude } from '../common/decorators/blazorInclude.js';
-import { registerComponent } from '../common/definitions/register.js';
-import IgcIconComponent from '../icon/icon.js';
-import {
-  registerIcon as registerIcon_impl,
-  registerIconFromText as registerIconFromText_impl,
-} from '../icon/icon.registry.js';
+
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/icon-button/light/icon-button.base.css.js';
 import { styles as bootstrap } from './themes/icon-button/light/icon-button.bootstrap.css.js';
 import { styles as fluent } from './themes/icon-button/light/icon-button.fluent.css.js';
 import { styles as indigo } from './themes/icon-button/light/icon-button.indigo.css.js';
 import { styles as material } from './themes/icon-button/light/icon-button.material.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { alternateName } from '../common/decorators/alternateName.js';
+import { blazorInclude } from '../common/decorators/blazorInclude.js';
+import { registerComponent } from '../common/definitions/register.js';
+import IgcIconComponent from '../icon/icon.js';
+import {
+  registerIconFromText as registerIconFromText_impl,
+  registerIcon as registerIcon_impl,
+} from '../icon/icon.registry.js';
 
 /**
  * @element igc-icon-button

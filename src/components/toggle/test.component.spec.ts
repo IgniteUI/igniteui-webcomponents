@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
+
 import { igcToggle } from './toggle.directive.js';
 import type { IgcToggleOptions } from './types';
 import { blazorSuppressComponent } from '../common/decorators/blazorSuppressComponent.js';

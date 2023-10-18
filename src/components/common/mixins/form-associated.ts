@@ -1,5 +1,6 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
+
 import type { Constructor } from './constructor';
 import type { Validator } from '../validators.js';
 

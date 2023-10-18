@@ -1,14 +1,14 @@
 import {
-  html,
-  fixture,
-  expect,
-  unsafeStatic,
   elementUpdated,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
   waitUntil,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
-import { simulateKeyboard } from '../common/utils.spec.js';
+
+import { IgcExpansionPanelComponent, defineComponents } from '../../index.js';
 import {
   altKey,
   arrowDown,
@@ -16,6 +16,7 @@ import {
   enterKey,
   spaceBar,
 } from '../common/controllers/key-bindings.js';
+import { simulateKeyboard } from '../common/utils.spec.js';
 
 const SLOTS = {
   indicator: 'slot[name="indicator"]',

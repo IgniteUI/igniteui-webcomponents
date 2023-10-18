@@ -1,9 +1,10 @@
-import { html } from 'lit';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
+
 import {
-  defineComponents,
   IgcButtonGroupComponent,
   IgcIconComponent,
+  defineComponents,
   registerIcon,
 } from '../src/index.js';
 

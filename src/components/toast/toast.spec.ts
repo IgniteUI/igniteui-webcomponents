@@ -1,12 +1,13 @@
 import {
-  html,
-  fixture,
-  expect,
   elementUpdated,
+  expect,
+  fixture,
+  html,
   unsafeStatic,
   waitUntil,
 } from '@open-wc/testing';
-import { defineComponents, IgcToastComponent } from '../../index.js';
+
+import { IgcToastComponent, defineComponents } from '../../index.js';
 
 describe('Toast', () => {
   before(() => {

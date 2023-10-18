@@ -6,16 +6,13 @@ import {
   html,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import {
-  defineComponents,
-  IgcRangeSliderComponent,
-  IgcSliderComponent,
-} from '../../index.js';
+
 import { IgcSliderBaseComponent } from './slider-base.js';
 import {
-  FormAssociatedTestBed,
-  simulateKeyboard,
-} from '../common/utils.spec.js';
+  IgcRangeSliderComponent,
+  IgcSliderComponent,
+  defineComponents,
+} from '../../index.js';
 import {
   arrowDown,
   arrowLeft,
@@ -26,6 +23,10 @@ import {
   pageDownKey,
   pageUpKey,
 } from '../common/controllers/key-bindings.js';
+import {
+  FormAssociatedTestBed,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 
 describe('Slider component', () => {
   const getTrack = (el: IgcSliderComponent) =>

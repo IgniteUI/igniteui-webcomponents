@@ -1,6 +1,5 @@
-import { html, LitElement } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { LitElement, html } from 'lit';
+
 import { styles } from './themes/light/header-item/nav-drawer-header-item.base.css.js';
 import { styles as fluent } from './themes/light/header-item/nav-drawer-header-item.fluent.css.js';
 import {
@@ -8,6 +7,8 @@ import {
   styles as indigo,
   styles as material,
 } from './themes/light/header-item/nav-drawer-header-item.indigo.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * A wrapper for navigation drawer's header.

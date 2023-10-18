@@ -1,17 +1,18 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import sinon from 'sinon';
+
 import {
-  defineComponents,
   IgcRadioComponent,
   IgcRadioGroupComponent,
+  defineComponents,
 } from '../../index.js';
-import { simulateKeyboard } from '../common/utils.spec.js';
 import {
   arrowDown,
   arrowLeft,
   arrowRight,
   arrowUp,
 } from '../common/controllers/key-bindings.js';
+import { simulateKeyboard } from '../common/utils.spec.js';
 
 describe('Radio Group Component', () => {
   before(() => {

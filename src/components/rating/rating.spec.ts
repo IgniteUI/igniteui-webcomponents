@@ -7,15 +7,12 @@ import {
 } from '@open-wc/testing';
 import { nothing } from 'lit';
 import sinon from 'sinon';
+
 import {
-  defineComponents,
   IgcRatingComponent,
   IgcRatingSymbolComponent,
+  defineComponents,
 } from '../../index.js';
-import {
-  FormAssociatedTestBed,
-  simulateKeyboard,
-} from '../common/utils.spec.js';
 import {
   arrowDown,
   arrowLeft,
@@ -24,6 +21,10 @@ import {
   endKey,
   homeKey,
 } from '../common/controllers/key-bindings.js';
+import {
+  FormAssociatedTestBed,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 
 describe('Rating component', () => {
   before(() => {

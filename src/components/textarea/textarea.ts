@@ -8,6 +8,12 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
+
+import { styles } from './themes/light/textarea.base.css.js';
+import { styles as bootstrap } from './themes/light/textarea.bootstrap.css.js';
+import { styles as fluent } from './themes/light/textarea.fluent.css.js';
+import { styles as indigo } from './themes/light/textarea.indigo.css.js';
+import { styles as material } from './themes/light/textarea.material.css.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
@@ -27,11 +33,6 @@ import {
   minLengthValidator,
   requiredValidator,
 } from '../common/validators.js';
-import { styles } from './themes/light/textarea.base.css.js';
-import { styles as bootstrap } from './themes/light/textarea.bootstrap.css.js';
-import { styles as fluent } from './themes/light/textarea.fluent.css.js';
-import { styles as indigo } from './themes/light/textarea.indigo.css.js';
-import { styles as material } from './themes/light/textarea.material.css.js';
 
 export interface IgcTextareaEventMap {
   igcInput: CustomEvent<string>;
@@ -457,6 +458,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
     return html`${this.renderValueSlot()}
       <textarea
         id=${this.id || this.inputId}
+        part="input"
         style=${styleMap(this.resizeStyles)}
         @input=${this.handleInput}
         @change=${this.handleChange}

@@ -1,5 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
+
+import { styles } from './themes/accordion.base.css.js';
 import {
   addKeybindings,
   altKey,
@@ -12,7 +14,6 @@ import {
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcExpansionPanelComponent from '../expansion-panel/expansion-panel.js';
-import { styles } from './themes/accordion.base.css.js';
 
 /**
  * The Accordion is a container-based component that can house multiple expansion panels

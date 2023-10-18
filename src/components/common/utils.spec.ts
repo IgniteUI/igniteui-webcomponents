@@ -1,5 +1,6 @@
 import { expect, fixture, html } from '@open-wc/testing';
 import { TemplateResult } from 'lit';
+
 import { parseKeys } from './controllers/key-bindings.js';
 import type { FormAssociatedElementInterface } from './mixins/form-associated';
 

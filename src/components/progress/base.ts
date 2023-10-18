@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -6,6 +6,7 @@ import {
   state,
 } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
+
 import { watch } from '../common/decorators/watch.js';
 import { asPercent, clamp } from '../common/util.js';
 

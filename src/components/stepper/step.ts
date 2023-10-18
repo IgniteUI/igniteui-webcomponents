@@ -1,18 +1,19 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
-import { EaseInOut } from '../../animations/easings.js';
-import { AnimationPlayer } from '../../animations/player.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+
 import { Animation, animations } from './animations.js';
 import { styles } from './themes/step/light/step.base.css.js';
 import { styles as bootstrap } from './themes/step/light/step.bootstrap.css.js';
 import { styles as fluent } from './themes/step/light/step.fluent.css.js';
 import { styles as indigo } from './themes/step/light/step.indigo.css.js';
 import { styles as material } from './themes/step/light/step.material.css.js';
+import { EaseInOut } from '../../animations/easings.js';
+import { AnimationPlayer } from '../../animations/player.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { partNameMap } from '../common/util.js';
 
 /**
  * The step component is used within the `igc-stepper` element and it holds the content of each step.

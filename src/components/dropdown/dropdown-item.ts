@@ -1,13 +1,14 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
-import { registerComponent } from '../common/definitions/register.js';
+
 import { styles } from './themes/light/item/dropdown-item.base.css.js';
 import { styles as bootstrap } from './themes/light/item/dropdown-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/item/dropdown-item.fluent.css.js';
 import { styles as indigo } from './themes/light/item/dropdown-item.indigo.css.js';
 import { styles as material } from './themes/light/item/dropdown-item.material.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * Represents an item in a dropdown list.
