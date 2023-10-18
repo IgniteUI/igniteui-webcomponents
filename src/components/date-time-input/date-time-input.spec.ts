@@ -21,6 +21,7 @@ import {
   FormAssociatedTestBed,
   simulateKeyboard,
 } from '../common/utils.spec.js';
+import { MaskParser } from '../mask-input/mask-parser.js';
 
 describe('Date Time Input component', () => {
   before(() => defineComponents(IgcDateTimeInputComponent));
