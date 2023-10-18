@@ -97,5 +97,7 @@
 }
 
 :host([disabled]) {
-    pointer-events: none;
+    [part~='wrapper'] {
+        pointer-events: none;
+    }
 }
