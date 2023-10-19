@@ -1,8 +1,9 @@
-import { html, LitElement } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { LitElement, html } from 'lit';
+
 import { styles } from './themes/header-item.base.css.js';
 import { all } from './themes/header-item.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * A wrapper for navigation drawer's header.

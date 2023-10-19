@@ -1,4 +1,4 @@
-import { html, LitElement, TemplateResult } from 'lit';
+import { LitElement, TemplateResult, html } from 'lit';
 import {
   property,
   query,
@@ -7,13 +7,14 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
+
+import { styles } from './themes/slider.base.css.js';
+import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTypeOverride } from '../common/decorators/blazorTypeOverride.js';
 import { watch } from '../common/decorators/watch.js';
 import { isLTR } from '../common/util.js';
-import { styles } from './themes/slider.base.css.js';
-import { all } from './themes/themes.js';
 
 @themes(all, true)
 @blazorDeepImport

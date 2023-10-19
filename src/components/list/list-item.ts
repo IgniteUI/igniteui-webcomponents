@@ -1,8 +1,9 @@
-import { html, LitElement } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { LitElement, html } from 'lit';
+
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * The list-item component is a container

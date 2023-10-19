@@ -1,9 +1,10 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
+
 import { styles } from './themes/badge.base.css.js';
 import { all } from './themes/themes.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * The badge is a component indicating a status on a related item or an area

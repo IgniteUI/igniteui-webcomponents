@@ -1,21 +1,21 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { watch } from '../common/decorators/watch.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
-import { clamp, format, isLTR } from '../common/util.js';
+
+import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
 import { all } from './themes/themes.js';
-
+import { themes } from '../../theming/theming-decorator.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
+import { clamp, format, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
-import IgcRatingSymbolComponent from './rating-symbol.js';
 
 export interface IgcRatingEventMap {
   igcChange: CustomEvent<number>;

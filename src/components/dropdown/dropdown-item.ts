@@ -1,10 +1,11 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+
+import { styles } from './themes/dropdown-item.base.css.js';
+import { all } from './themes/item.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { styles } from './themes/dropdown-item.base.css.js';
-import { all } from './themes/item.js';
 
 /**
  * Represents an item in a dropdown list.

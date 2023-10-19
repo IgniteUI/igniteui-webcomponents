@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { defineComponents, IgcAvatarComponent } from '../src/index.js';
+
+import { IgcAvatarComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcAvatarComponent);
 

@@ -1,8 +1,9 @@
-import { html, LitElement } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
+import { LitElement, html } from 'lit';
+
 import { styles } from './themes/card.content.base.css.js';
 import { all } from './themes/content.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /** A container for card's text content
  * @element igc-card-content

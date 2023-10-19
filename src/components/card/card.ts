@@ -1,14 +1,14 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { styles } from './themes/container.base.css.js';
-import { all } from './themes/container.js';
 
-import { registerComponent } from '../common/definitions/register.js';
 import IgcCardActionsComponent from './card.actions.js';
 import IgcCardContentComponent from './card.content.js';
 import IgcCardHeaderComponent from './card.header.js';
 import IgcCardMediaComponent from './card.media.js';
+import { styles } from './themes/container.base.css.js';
+import { all } from './themes/container.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /** A container which wraps different elements related to a single subject
  * @element igc-card

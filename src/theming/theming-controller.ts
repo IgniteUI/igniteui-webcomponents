@@ -1,14 +1,15 @@
 import {
-  adoptStyles,
-  css,
   LitElement,
   ReactiveController,
   ReactiveControllerHost,
   ReactiveElement,
+  adoptStyles,
+  css,
 } from 'lit';
+
 import { getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
-import type { Theme, ThemeController, Themes, ThemeVariant } from './types.js';
+import type { Theme, ThemeController, ThemeVariant, Themes } from './types.js';
 
 class ThemeEventListeners {
   private readonly listeners = new Set<Function>();

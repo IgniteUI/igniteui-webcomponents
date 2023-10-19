@@ -1,13 +1,14 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
+import { styles } from './themes/avatar.base.css.js';
+import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './themes/avatar.base.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * An avatar component is used as a representation of a user identity

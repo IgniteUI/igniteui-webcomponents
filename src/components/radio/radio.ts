@@ -1,7 +1,10 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
+
+import { styles } from './themes/radio.base.css.js';
+import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
@@ -19,8 +22,6 @@ import {
   wrap,
 } from '../common/util.js';
 import { Validator } from '../common/validators.js';
-import { styles } from './themes/radio.base.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcRadioEventMap {
   igcChange: CustomEvent<boolean>;

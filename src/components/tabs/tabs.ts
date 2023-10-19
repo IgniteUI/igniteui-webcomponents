@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import {
   eventOptions,
   property,
@@ -6,24 +6,24 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { watch } from '../common/decorators/watch.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter, getOffset, isLTR } from '../common/util.js';
-import { styles } from './themes/tabs.base.css.js';
+
+import IgcTabPanelComponent from './tab-panel.js';
+import IgcTabComponent from './tab.js';
 import { all } from './themes/tabs-themes.js';
+import { styles } from './themes/tabs.base.css.js';
 import {
   getAttributesForTags,
   getNodesForTags,
   observerConfig,
 } from './utils.js';
-
+import { themes } from '../../theming/theming-decorator.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import IgcTabPanelComponent from './tab-panel.js';
-import IgcTabComponent from './tab.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { createCounter, getOffset, isLTR } from '../common/util.js';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;

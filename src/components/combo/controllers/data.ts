@@ -1,6 +1,7 @@
 import { ReactiveController } from 'lit';
-import GroupDataOperation from '../operations/group.js';
+
 import FilterDataOperation from '../operations/filter.js';
+import GroupDataOperation from '../operations/group.js';
 import {
   ComboHost,
   ComboRecord,

@@ -1,11 +1,12 @@
 import { elementUpdated, expect, waitUntil } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents } from '../../index.js';
-import IgcTreeComponent from './tree.js';
+
 import IgcTreeItemComponent from './tree-item.js';
-import { navigationTree, SLOTS, TreeTestFunctions } from './tree-utils.spec.js';
+import { SLOTS, TreeTestFunctions, navigationTree } from './tree-utils.spec.js';
 import { IgcSelectionEventArgs } from './tree.common.js';
+import IgcTreeComponent from './tree.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
+import { defineComponents } from '../../index.js';
 
 describe('Tree Navigation', () => {
   before(() => {

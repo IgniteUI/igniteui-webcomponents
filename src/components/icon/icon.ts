@@ -1,19 +1,20 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
+
+import {
+  IconsRegistry,
+  registerIconFromText as registerIconFromText_impl,
+  registerIcon as registerIcon_impl,
+} from './icon.registry.js';
+import { styles } from './themes/icon.base.css.js';
+import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './themes/icon.base.css.js';
-import { all } from './themes/themes.js';
-import {
-  IconsRegistry,
-  registerIcon as registerIcon_impl,
-  registerIconFromText as registerIconFromText_impl,
-} from './icon.registry.js';
 
 @themes(all)
 /**

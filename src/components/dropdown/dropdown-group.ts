@@ -1,12 +1,13 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { queryAssignedElements } from 'lit/decorators.js';
+
+import type IgcDropdownItemComponent from './dropdown-item';
+import { styles } from './themes/dropdown-group.base.css.js';
+import { all } from './themes/group.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { SizableInterface } from '../common/mixins/sizable.js';
-import type IgcDropdownItemComponent from './dropdown-item';
-import { all } from './themes/group.js';
-import { styles } from './themes/dropdown-group.base.css.js';
 
 /**
  * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.

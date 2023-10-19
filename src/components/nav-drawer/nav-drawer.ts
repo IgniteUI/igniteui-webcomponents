@@ -1,12 +1,13 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+
 import IgcNavDrawerHeaderItemComponent from './nav-drawer-header-item.js';
 import IgcNavDrawerItemComponent from './nav-drawer-item.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { partNameMap } from '../common/util.js';
 
 /**
  * Represents a side navigation container that provides

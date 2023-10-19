@@ -1,10 +1,11 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+
+import { all } from './themes/tab-themes.js';
+import { styles } from './themes/tab.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
-import { styles } from './themes/tab.base.css.js';
-import { all } from './themes/tab-themes.js';
 
 /**
  * Represents the tab header.

@@ -1,6 +1,9 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
+import { styles } from './themes/dialog.base.css.js';
+import { all } from './themes/themes.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -11,8 +14,6 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, partNameMap } from '../common/util.js';
-import { styles } from './themes/dialog.base.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcDialogEventMap {
   igcClosing: CustomEvent<void>;

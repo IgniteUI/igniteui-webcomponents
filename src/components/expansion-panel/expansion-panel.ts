@@ -1,5 +1,8 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+
+import { styles } from './themes/expansion-panel.base.css.js';
+import { all } from './themes/themes.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -8,8 +11,6 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
-import { styles } from './themes/expansion-panel.base.css.js';
-import { all } from './themes/themes.js';
 
 export interface IgcExpansionPanelComponentEventMap {
   igcOpening: CustomEvent<IgcExpansionPanelComponent>;

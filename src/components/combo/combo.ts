@@ -1,5 +1,4 @@
-import { html, LitElement, TemplateResult } from 'lit';
-import { all } from './themes/themes.js';
+import { LitElement, TemplateResult, html } from 'lit';
 import {
   property,
   query,
@@ -9,7 +8,27 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes, themeSymbol } from '../../theming/theming-decorator.js';
+
+import IgcComboHeaderComponent from './combo-header.js';
+import IgcComboItemComponent from './combo-item.js';
+import IgcComboListComponent from './combo-list.js';
+import { DataController } from './controllers/data.js';
+import { NavigationController } from './controllers/navigation.js';
+import { SelectionController } from './controllers/selection.js';
+import { styles } from './themes/combo.base.css.js';
+import { all } from './themes/themes.js';
+import type {
+  ComboItemTemplate,
+  ComboRecord,
+  ComboRenderFunction,
+  ComboValue,
+  FilteringOptions,
+  GroupingDirection,
+  IgcComboEventMap,
+  Item,
+  Keys,
+} from './types.js';
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
@@ -25,24 +44,6 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { IgcToggleComponent } from '../toggle/types.js';
-import IgcComboHeaderComponent from './combo-header.js';
-import IgcComboItemComponent from './combo-item.js';
-import IgcComboListComponent from './combo-list.js';
-import { DataController } from './controllers/data.js';
-import { NavigationController } from './controllers/navigation.js';
-import { SelectionController } from './controllers/selection.js';
-import { styles } from './themes/combo.base.css.js';
-import type {
-  ComboItemTemplate,
-  ComboRecord,
-  ComboRenderFunction,
-  ComboValue,
-  FilteringOptions,
-  GroupingDirection,
-  IgcComboEventMap,
-  Item,
-  Keys,
-} from './types.js';
 
 /* blazorSupportsVisualChildren */
 /**

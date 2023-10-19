@@ -6,7 +6,8 @@ import {
   unsafeStatic,
 } from '@open-wc/testing';
 import sinon from 'sinon';
-import { defineComponents, IgcButtonComponent } from '../../index.js';
+
+import { IgcButtonComponent, defineComponents } from '../../index.js';
 
 // export const DEFAULT_CLASSES = 'native';
 export const classValue = (changeableValue: string) => {

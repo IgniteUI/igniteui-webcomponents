@@ -1,15 +1,16 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import {
   property,
   queryAssignedElements,
   queryAssignedNodes,
   state,
 } from 'lit/decorators.js';
+
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { partNameMap } from '../common/util.js';
-import { styles } from './themes/item.base.css.js';
-import { all } from './themes/item.js';
 
 /**
  * Represents a navigation drawer item.

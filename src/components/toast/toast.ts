@@ -1,11 +1,12 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+
+import { all } from './themes/themes.js';
+import { styles } from './themes/toast.base.css.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { styles } from './themes/toast.base.css.js';
-import { all } from './themes/themes.js';
 
 /**
  * A toast component is used to show a notification
