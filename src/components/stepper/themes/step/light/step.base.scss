@@ -141,10 +141,8 @@
 
     > slot {
         display: block;
-        padding-inline-start: var(--horizontal-body-padding, #{calc(var(--body-indent--vertical) / 2)});
-        padding-inline-end: var(--horizontal-body-padding, var(--vertical-body-padding));
-        padding-block-start: var(--horizontal-body-padding, var(--vertical-body-padding));
-        padding-block-end: var(--horizontal-body-padding, var(--vertical-body-padding));
+        padding-inline: var(--horizontal-body-padding, #{calc(var(--body-indent--vertical) / 2)}) var(--horizontal-body-padding, var(--vertical-body-padding));
+        padding-block: var(--horizontal-body-padding, var(--vertical-body-padding)) var(--horizontal-body-padding, var(--vertical-body-padding));
     }
 }
 

@@ -22,8 +22,7 @@ $theme: $bootstrap;
 }
 
 [part='base'] {
-    padding-inline-start: rem(4px);
-    padding-inline-end: rem(4px);
+    padding-inline: rem(4px) rem(4px);
 }
 
 ::slotted(*) {
