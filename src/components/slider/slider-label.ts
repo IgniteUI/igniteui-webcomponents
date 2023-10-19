@@ -1,4 +1,5 @@
-import { css, LitElement } from 'lit';
+import { LitElement, css } from 'lit';
+
 import { registerComponent } from '../common/definitions/register.js';
 
 export default class IgcSliderLabelComponent extends LitElement {

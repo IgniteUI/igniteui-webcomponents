@@ -1,5 +1,6 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+
 import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
 import { blazorSuppressComponent } from '../../common/decorators/blazorSuppressComponent.js';
@@ -14,11 +15,11 @@ import {
 } from '../common/calendar-base.js';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model.js';
 import { setDateSafe } from '../common/utils.js';
-import { styles } from '../themes/year-month-view.base.css.js';
 import { styles as bootstrap } from '../themes/light/bootstrap/year-month-view.bootstrap.css.js';
 import { styles as fluent } from '../themes/light/fluent/year-month-view.fluent.css.js';
-import { styles as material } from '../themes/light/material/year-month-view.material.css.js';
 import { styles as indigo } from '../themes/light/indigo/year-month-view.indigo.css.js';
+import { styles as material } from '../themes/light/material/year-month-view.material.css.js';
+import { styles } from '../themes/year-month-view.base.css.js';
 
 /**
  * Instantiate a months view as a separate component in the calendar.

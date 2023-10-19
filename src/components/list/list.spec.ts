@@ -1,9 +1,10 @@
 import { expect, fixture, html, unsafeStatic } from '@open-wc/testing';
+
 import {
-  defineComponents,
   IgcListComponent,
   IgcListHeaderComponent,
   IgcListItemComponent,
+  defineComponents,
 } from '../../index.js';
 
 describe('List', () => {

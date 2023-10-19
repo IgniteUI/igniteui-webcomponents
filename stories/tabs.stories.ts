@@ -1,13 +1,14 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
+
 import {
-  defineComponents,
   IgcTabsComponent,
+  defineComponents,
   registerIcon,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcTabsComponent);
 

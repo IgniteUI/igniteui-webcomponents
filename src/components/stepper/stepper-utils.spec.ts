@@ -1,6 +1,7 @@
 import { fixture, html, unsafeStatic } from '@open-wc/testing';
-import IgcStepperComponent from './stepper.js';
+
 import IgcStepComponent from './step.js';
+import IgcStepperComponent from './stepper.js';
 
 export const DIFF_OPTIONS = {
   ignoreAttributes: ['id', 'part', 'tabindex', 'role', 'size', 'style'],

@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import {
   property,
   query,
@@ -6,10 +6,20 @@ import {
   state,
 } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+
+import IgcDropdownGroupComponent from './dropdown-group.js';
+import IgcDropdownHeaderComponent from './dropdown-header.js';
+import IgcDropdownItemComponent from './dropdown-item.js';
+import { styles } from './themes/light/dropdown.base.css.js';
+import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
+import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
+import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
+import { styles as material } from './themes/light/dropdown.material.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
@@ -19,16 +29,6 @@ import type {
   IgcToggleComponent,
   IgcToggleEventMap,
 } from '../toggle/types';
-import { styles } from './themes/light/dropdown.base.css.js';
-import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
-import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
-import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
-import { styles as material } from './themes/light/dropdown.material.css.js';
-
-import { registerComponent } from '../common/definitions/register.js';
-import IgcDropdownGroupComponent from './dropdown-group.js';
-import IgcDropdownHeaderComponent from './dropdown-header.js';
-import IgcDropdownItemComponent from './dropdown-item.js';
 
 export interface IgcDropdownEventMap extends IgcToggleEventMap {
   igcChange: CustomEvent<IgcDropdownItemComponent>;

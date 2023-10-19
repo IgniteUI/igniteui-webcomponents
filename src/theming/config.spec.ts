@@ -1,4 +1,5 @@
 import { expect, oneEvent } from '@open-wc/testing';
+
 import { configureTheme, getTheme } from './config.js';
 import { CHANGE_THEME_EVENT } from './theming-event.js';
 

@@ -6,12 +6,13 @@ import {
   html,
 } from '@open-wc/testing';
 import sinon from 'sinon';
+
+import { IgcSliderBaseComponent } from './slider-base.js';
 import {
-  defineComponents,
   IgcRangeSliderComponent,
   IgcSliderComponent,
+  defineComponents,
 } from '../../index.js';
-import { IgcSliderBaseComponent } from './slider-base.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Slider component', () => {

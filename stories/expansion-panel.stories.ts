@@ -1,6 +1,7 @@
-import { html } from 'lit';
-import { defineComponents, IgcExpansionPanelComponent } from '../src/index.js';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
+
+import { IgcExpansionPanelComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcExpansionPanelComponent);
 

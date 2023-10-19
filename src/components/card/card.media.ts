@@ -1,6 +1,7 @@
-import { html, LitElement } from 'lit';
-import { registerComponent } from '../common/definitions/register.js';
+import { LitElement, html } from 'lit';
+
 import { styles } from './themes/light/card.media.base.css.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /** A container for card's media - could be an image, gif, video
  * @element igc-card-media

@@ -1,6 +1,7 @@
 import { ReactiveController } from 'lit';
+
 import IgcComboListComponent from '../combo-list.js';
-import { ComboRecord, ComboHost } from '../types.js';
+import { ComboHost, ComboRecord } from '../types.js';
 
 const START_INDEX: Readonly<number> = -1;
 

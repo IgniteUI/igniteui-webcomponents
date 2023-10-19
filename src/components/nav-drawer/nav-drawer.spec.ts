@@ -5,7 +5,8 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import { defineComponents, IgcNavDrawerComponent } from '../../index.js';
+
+import { IgcNavDrawerComponent, defineComponents } from '../../index.js';
 import type { IgcNavDrawerItemComponent } from '../../index.js';
 
 describe('Navigation Drawer', () => {

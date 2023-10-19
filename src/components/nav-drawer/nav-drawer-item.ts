@@ -1,18 +1,19 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import {
   property,
   queryAssignedElements,
   queryAssignedNodes,
   state,
 } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
-import { partNameMap } from '../common/util.js';
+
 import { styles } from './themes/light/item/nav-drawer-item.base.css.js';
 import { styles as bootstrap } from './themes/light/item/nav-drawer-item.bootstrap.css.js';
 import { styles as fluent } from './themes/light/item/nav-drawer-item.fluent.css.js';
 import { styles as indigo } from './themes/light/item/nav-drawer-item.indigo.css.js';
 import { styles as material } from './themes/light/item/nav-drawer-item.material.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { partNameMap } from '../common/util.js';
 
 /**
  * Represents a navigation drawer item.

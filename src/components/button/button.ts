@@ -1,13 +1,14 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { registerComponent } from '../common/definitions/register.js';
+
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/button/light/button.base.css.js';
 import { styles as bootstrap } from './themes/button/light/button.bootstrap.css.js';
 import { styles as fluent } from './themes/button/light/button.fluent.css.js';
 import { styles as indigo } from './themes/button/light/button.indigo.css.js';
 import { styles as material } from './themes/button/light/button.material.css.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
 
 /**
  * Represents a clickable button, used to submit forms or anywhere in a

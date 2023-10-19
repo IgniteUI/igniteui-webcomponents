@@ -1,10 +1,11 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import {
-  defineComponents,
   IgcButtonComponent,
   IgcRippleComponent,
+  defineComponents,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcButtonComponent, IgcRippleComponent);
 
