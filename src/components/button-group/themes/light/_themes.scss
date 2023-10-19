@@ -1,7 +1,6 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
-@use '../../../../../node_modules/igniteui-theming/sass/themes/schemas/components/light/button-group' as *;
-@use '../../../../../node_modules/igniteui-theming/sass/themes/schemas/components/light/button' as *;
+@use 'igniteui-theming/sass/themes/schemas/components/light/button-group' as *;
 @use '../../../button/themes/button/light/themes' as *;
 
 $material-flat-btn-size: map.get($material-flat, 'size');
