@@ -4,8 +4,6 @@
 $theme: $indigo;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-button-group');
-
     --button-min-width: #{rem(50px)};
 }
 
@@ -14,11 +12,10 @@ $theme: $indigo;
     border-radius: var-get($theme, 'border-radius');
 }
 
-
 :host([alignment='horizontal']) {
-    --horizontal-radius: #{var-get($theme, 'border-radius')}
+    --horizontal-radius: #{var-get($theme, 'border-radius')};
 }
 
 :host([alignment='vertical']) {
-    --vertical-radius: #{var-get($theme, 'border-radius')}
+    --vertical-radius: #{var-get($theme, 'border-radius')};
 }
