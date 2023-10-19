@@ -1,23 +1,21 @@
 import { css } from 'lit';
-import { Themes } from '../../../theming/types.js';
-
-// Shared Styles
-import { styles as material } from './shared/badge.material.css.js';
-import { styles as bootstrap } from './shared/badge.bootstrap.css.js';
-import { styles as fluent } from './shared/badge.fluent.css.js';
-import { styles as indigo } from './shared/badge.indigo.css.js';
-
-// Light Overrides
-import { styles as materialLight } from './light/badge.material.css.js';
-import { styles as bootstrapLight } from './light/badge.bootstrap.css.js';
-import { styles as fluentLight } from './light/badge.fluent.css.js';
-import { styles as indigoLight } from './light/badge.indigo.css.js';
 
 // Dark Overrides
-import { styles as materialDark } from './dark/badge.material.css.js';
 import { styles as bootstrapDark } from './dark/badge.bootstrap.css.js';
 import { styles as fluentDark } from './dark/badge.fluent.css.js';
 import { styles as indigoDark } from './dark/badge.indigo.css.js';
+import { styles as materialDark } from './dark/badge.material.css.js';
+// Light Overrides
+import { styles as bootstrapLight } from './light/badge.bootstrap.css.js';
+import { styles as fluentLight } from './light/badge.fluent.css.js';
+import { styles as indigoLight } from './light/badge.indigo.css.js';
+import { styles as materialLight } from './light/badge.material.css.js';
+// Shared Styles
+import { styles as bootstrap } from './shared/badge.bootstrap.css.js';
+import { styles as fluent } from './shared/badge.fluent.css.js';
+import { styles as indigo } from './shared/badge.indigo.css.js';
+import { styles as material } from './shared/badge.material.css.js';
+import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`

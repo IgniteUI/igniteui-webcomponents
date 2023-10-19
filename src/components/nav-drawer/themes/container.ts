@@ -1,23 +1,21 @@
 import { css } from 'lit';
-import { Themes } from '../../../theming/types.js';
-
-// Shared Styles
-import { styles as material } from './shared/container/nav-drawer.material.css.js';
-import { styles as bootstrap } from './shared/container/nav-drawer.bootstrap.css.js';
-import { styles as fluent } from './shared/container/nav-drawer.fluent.css.js';
-import { styles as indigo } from './shared/container/nav-drawer.indigo.css.js';
-
-// Light Overrides
-import { styles as materialLight } from './light/container/nav-drawer.material.css.js';
-import { styles as bootstrapLight } from './light/container/nav-drawer.bootstrap.css.js';
-import { styles as fluentLight } from './light/container/nav-drawer.fluent.css.js';
-import { styles as indigoLight } from './light/container/nav-drawer.indigo.css.js';
 
 // Dark Overrides
-import { styles as materialDark } from './dark/container/nav-drawer.material.css.js';
 import { styles as bootstrapDark } from './dark/container/nav-drawer.bootstrap.css.js';
 import { styles as fluentDark } from './dark/container/nav-drawer.fluent.css.js';
 import { styles as indigoDark } from './dark/container/nav-drawer.indigo.css.js';
+import { styles as materialDark } from './dark/container/nav-drawer.material.css.js';
+// Light Overrides
+import { styles as bootstrapLight } from './light/container/nav-drawer.bootstrap.css.js';
+import { styles as fluentLight } from './light/container/nav-drawer.fluent.css.js';
+import { styles as indigoLight } from './light/container/nav-drawer.indigo.css.js';
+import { styles as materialLight } from './light/container/nav-drawer.material.css.js';
+// Shared Styles
+import { styles as bootstrap } from './shared/container/nav-drawer.bootstrap.css.js';
+import { styles as fluent } from './shared/container/nav-drawer.fluent.css.js';
+import { styles as indigo } from './shared/container/nav-drawer.indigo.css.js';
+import { styles as material } from './shared/container/nav-drawer.material.css.js';
+import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`

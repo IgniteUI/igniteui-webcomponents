@@ -1,8 +1,8 @@
 import { css } from 'lit';
-import { Themes } from '../../../theming/types.js';
 
 // Shared Styles
 import { styles as bootstrap } from './shared/actions/card.actions.bootstrap.css.js';
+import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`

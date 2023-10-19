@@ -1,23 +1,21 @@
 import { css } from 'lit';
-import { Themes } from '../../../theming/types.js';
-
-// Shared Styles
-import { styles as material } from './shared/slider.material.css.js';
-import { styles as bootstrap } from './shared/slider.bootstrap.css.js';
-import { styles as fluent } from './shared/slider.fluent.css.js';
-import { styles as indigo } from './shared/slider.indigo.css.js';
-
-// Light Overrides
-import { styles as materialLight } from './light/slider.material.css.js';
-import { styles as bootstrapLight } from './light/slider.bootstrap.css.js';
-import { styles as fluentLight } from './light/slider.fluent.css.js';
-import { styles as indigoLight } from './light/slider.indigo.css.js';
 
 // Dark Overrides
-import { styles as materialDark } from './dark/slider.material.css.js';
 import { styles as bootstrapDark } from './dark/slider.bootstrap.css.js';
 import { styles as fluentDark } from './dark/slider.fluent.css.js';
 import { styles as indigoDark } from './dark/slider.indigo.css.js';
+import { styles as materialDark } from './dark/slider.material.css.js';
+// Light Overrides
+import { styles as bootstrapLight } from './light/slider.bootstrap.css.js';
+import { styles as fluentLight } from './light/slider.fluent.css.js';
+import { styles as indigoLight } from './light/slider.indigo.css.js';
+import { styles as materialLight } from './light/slider.material.css.js';
+// Shared Styles
+import { styles as bootstrap } from './shared/slider.bootstrap.css.js';
+import { styles as fluent } from './shared/slider.fluent.css.js';
+import { styles as indigo } from './shared/slider.indigo.css.js';
+import { styles as material } from './shared/slider.material.css.js';
+import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`

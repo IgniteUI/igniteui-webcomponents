@@ -1,23 +1,21 @@
 import { css } from 'lit';
-import { Themes } from '../../../theming/types.js';
-
-// Shared Styles
-import { styles as material } from './shared/material/year-month-view.material.css.js';
-import { styles as bootstrap } from './shared/bootstrap/year-month-view.bootstrap.css.js';
-import { styles as fluent } from './shared/fluent/year-month-view.fluent.css.js';
-import { styles as indigo } from './shared/indigo/year-month-view.indigo.css.js';
-
-// Light Overrides
-import { styles as materialLight } from './light/calendar.material.css.js';
-import { styles as bootstrapLight } from './light/calendar.bootstrap.css.js';
-import { styles as fluentLight } from './light/calendar.fluent.css.js';
-import { styles as indigoLight } from './light/calendar.indigo.css.js';
 
 // Dark Overrides
-import { styles as materialDark } from './dark/calendar.material.css.js';
 import { styles as bootstrapDark } from './dark/calendar.bootstrap.css.js';
 import { styles as fluentDark } from './dark/calendar.fluent.css.js';
 import { styles as indigoDark } from './dark/calendar.indigo.css.js';
+import { styles as materialDark } from './dark/calendar.material.css.js';
+// Light Overrides
+import { styles as bootstrapLight } from './light/calendar.bootstrap.css.js';
+import { styles as fluentLight } from './light/calendar.fluent.css.js';
+import { styles as indigoLight } from './light/calendar.indigo.css.js';
+import { styles as materialLight } from './light/calendar.material.css.js';
+// Shared Styles
+import { styles as bootstrap } from './shared/bootstrap/year-month-view.bootstrap.css.js';
+import { styles as fluent } from './shared/fluent/year-month-view.fluent.css.js';
+import { styles as indigo } from './shared/indigo/year-month-view.indigo.css.js';
+import { styles as material } from './shared/material/year-month-view.material.css.js';
+import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
