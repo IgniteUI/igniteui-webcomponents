@@ -4,6 +4,7 @@
 $theme: $material;
 
 :host {
+    @include css-vars-from-theme($theme, 'ig-list');
     @include type-style('overline');
 
     display: flex;
