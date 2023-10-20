@@ -44,13 +44,11 @@
 }
 
 [name='start']::slotted(*) {
-    margin-inline-end: rem(16px);
-    margin-inline-start: rem(1px);
+    margin-inline: rem(1px) rem(16px);
 }
 
 [name='end']::slotted(*) {
-    margin-inline-start: rem(16px);
-    margin-inline-end: rem(1px);
+    margin-inline: rem(16px) rem(1px);
 }
 
 ::slotted(igc-icon) {
