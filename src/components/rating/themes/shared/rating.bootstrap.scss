@@ -22,9 +22,7 @@ $theme: $bootstrap;
 
 [part~='value-label'] {
     @include type-style('body-2');
-}
 
-[part~='value-label'] {
     color: var-get($theme, 'value-label');
 }
 
