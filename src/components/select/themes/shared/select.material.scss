@@ -12,8 +12,8 @@ $idle-border-width: rem(1px) !default;
 $active-border-width: rem(2px) !default;
 
 [part='base'] {
-    background: var-get($dropdown-theme, 'background-color');
-    border-radius: var-get($dropdown-theme, 'border-radius');
+    background: var(--dd-background-color);
+    border-radius: var(--dd-border-radius);
     box-shadow: var(--ig-elevation-8);
     padding: rem(8px) 0;
 }

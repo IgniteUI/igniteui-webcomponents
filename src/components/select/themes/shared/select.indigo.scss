@@ -27,8 +27,8 @@ $input-theme: input-theme.$indigo;
 }
 
 [part='base'] {
-    background: var-get($dropdown-theme, 'background-color');
-    border-radius: var-get($dropdown-theme, 'border-radius');
+    background: var(--dd-background-color);
+    border-radius: var(--dd-border-radius);
     box-shadow: var(--ig-elevation-3);
 }
 

@@ -1,10 +1,8 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
-@use '../../../dropdown/themes/light/themes' as dropdown-theme;
 @use '../../../input/themes/light/themes' as input-theme;
 
 $theme: $bootstrap;
-$dropdown-theme: dropdown-theme.$bootstrap;
 $input-theme: input-theme.$bootstrap;
 
 :host {
@@ -20,10 +18,10 @@ $input-theme: input-theme.$bootstrap;
 }
 
 [part='base'] {
-    background: var-get($dropdown-theme, 'background-color');
-    border-radius: var-get($dropdown-theme, 'border-radius');
+    background: var(--dd-background-color);
+    border-radius: var(--dd-border-radius);
+    border: rem(1px) solid var(--dd-border-color);
     padding: rem(8px) 0;
-    border: rem(1px) solid var-get($dropdown-theme, 'border-color');
 }
 
 [part~='toggle-icon'] {
