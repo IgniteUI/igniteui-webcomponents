@@ -8,10 +8,6 @@ $dropdown-theme: dropdown-theme.$fluent;
 $input-theme: input-theme.$fluent;
 $focused-border-width: rem(2px);
 
-:host {
-    @include css-vars-from-theme($input-theme, 'ig-input');
-    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
-}
 
 [part='base'] {
     background: var-get($dropdown-theme, 'background-color');

@@ -8,9 +8,6 @@ $dropdown-theme: dropdown-theme.$bootstrap;
 $input-theme: input-theme.$bootstrap;
 
 :host {
-    @include css-vars-from-theme($input-theme, 'ig-input');
-    @include css-vars-from-theme($dropdown-theme, 'ig-drop-down');
-
     [part='helper-text'] {
         margin-top: rem(4px);
     }
