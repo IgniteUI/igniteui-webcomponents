@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
@@ -6,10 +5,4 @@ $theme: $fluent;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dropdown');
-}
-
-[part='base'] {
-    background: var-get($theme, 'background-color');
-    border-radius: var-get($theme, 'border-radius');
-    box-shadow: var(--ig-elevation-4);
 }

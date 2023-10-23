@@ -1,0 +1,47 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    color: var-get($theme, 'body-color');
+    background: var-get($theme, 'body-background');
+    border-radius: var-get($theme, 'border-radius');
+}
+
+:host([open]) [part~='content'] {
+    @include type-style('body-1');
+}
+
+[part='header'] {
+    background: var-get($theme, 'header-background');
+
+    &:focus,
+    &:active {
+        background: var-get($theme, 'header-focus-background');
+    }
+}
+
+[part='title'] {
+    color: var-get($theme, 'header-title-color');
+}
+
+[part='subtitle'] {
+    color: var-get($theme, 'header-description-color');
+
+    &::slotted(*) {
+        @include type-style('body-2');
+    }
+}
+
+[part~='indicator'] {
+    color: var-get($theme, 'header-icon-color');
+}
+
+:host([disabled]) {
+    [part='title'],
+    [part='subtitle'],
+    [part~='indicator'] {
+        color: var-get($theme, 'disabled-color');
+    }
+}

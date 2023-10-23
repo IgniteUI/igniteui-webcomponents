@@ -15,10 +15,7 @@ import {
 } from '../common/calendar-base.js';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model.js';
 import { setDateSafe } from '../common/utils.js';
-import { styles as bootstrap } from '../themes/light/bootstrap/year-month-view.bootstrap.css.js';
-import { styles as fluent } from '../themes/light/fluent/year-month-view.fluent.css.js';
-import { styles as indigo } from '../themes/light/indigo/year-month-view.indigo.css.js';
-import { styles as material } from '../themes/light/material/year-month-view.material.css.js';
+import { all } from '../themes/year-month';
 import { styles } from '../themes/year-month-view.base.css.js';
 
 /**
@@ -32,20 +29,7 @@ import { styles } from '../themes/year-month-view.base.css.js';
  */
 @blazorIndirectRender
 @blazorSuppressComponent
-@themes({
-  light: {
-    bootstrap,
-    fluent,
-    material,
-    indigo,
-  },
-  dark: {
-    bootstrap,
-    fluent,
-    material,
-    indigo,
-  },
-})
+@themes(all)
 export default class IgcMonthsViewComponent extends EventEmitterMixin<
   IgcCalendarBaseEventMap,
   Constructor<LitElement>

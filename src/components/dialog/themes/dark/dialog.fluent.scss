@@ -3,8 +3,6 @@
 
 $theme: $fluent;
 
-@mixin theme() {
-    igc-dialog {
-        @include css-vars-from-theme($theme, 'ig-dialog');
-    }
+:host {
+    @include css-vars-from-theme($theme, 'ig-dialog');
 }

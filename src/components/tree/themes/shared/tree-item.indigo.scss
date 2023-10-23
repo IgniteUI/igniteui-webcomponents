@@ -1,0 +1,74 @@
+@use 'styles/common/component';
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+:host {
+    background: var(--node-disabled-background, var-get($theme, 'background'));
+    color: var(--node-disabled-foreground, var-get($theme, 'foreground'));
+}
+
+[part~='wrapper'] {
+    min-height: var-get($theme, 'size');
+
+    &:hover {
+        &::after {
+            background: var-get($theme, 'hover-color');
+            opacity: .3;
+        }
+    }
+}
+
+[part~='label'] {
+    max-height: var-get($theme, 'size');
+}
+
+:host(:not([disabled])[active]) {
+    background: var-get($theme, 'background-active');
+    color: var-get($theme, 'foreground-active');
+
+    &:hover {
+        color: var-get($theme, 'foreground-active');
+    }
+}
+
+[part~='active'] {
+    &:hover {
+        color: var-get($theme, 'foreground-active');
+    }
+}
+
+:host(:not([disabled])[selected]) {
+    background: var-get($theme, 'background-selected');
+    color: var-get($theme, 'foreground-selected');
+}
+
+:host(:not([disabled])[selected][active]) {
+    background: var(--node-disabled-background, var-get($theme, 'background-active-selected'));
+    color: var(--node-disabled-foreground, var-get($theme, 'foreground-active-selected'));
+}
+
+:host(:not([disabled])[selected]),
+:host(:not([disabled])[selected][active]) {
+    [part~='focused'] {
+        background: var(--node-disabled-background, var-get($theme, 'background-active-selected'));
+        color: var(--node-disabled-foreground, var-get($theme, 'foreground-active-selected'));
+    }
+}
+
+[part~='select'] {
+    margin-inline-end: rem(8px);
+}
+
+[part~='focused'] {
+    box-shadow: inset 0 0 0 1px var-get($theme, 'border-color');
+}
+
+:host([disabled]) {
+    --node-disabled-foreground: #{var-get($theme, 'foreground-disabled')};
+    --node-disabled-background: #{var-get($theme, 'background-disabled')};
+
+    color: var(--node-disabled-foreground);
+    background: var(--node-disabled-background);
+}

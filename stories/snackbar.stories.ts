@@ -14,14 +14,7 @@ defineComponents(IgcSnackbarComponent, IgcButtonComponent);
 const metadata: Meta<IgcSnackbarComponent> = {
   title: 'Snackbar',
   component: 'igc-snackbar',
-  parameters: {
-    docs: {
-      description: {
-        component:
-          'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.',
-      },
-    },
-  },
+  parameters: { docs: { description: {} } },
   argTypes: {
     open: {
       type: 'boolean',

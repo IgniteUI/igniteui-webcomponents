@@ -1,0 +1,8 @@
+@use 'sass:map';
+@use 'styles/utilities' as *;
+@use '../../../../../../node_modules/igniteui-theming/sass/themes/schemas/components/light/progress' as *;
+
+$material: digest-schema($light-progress-linear);
+$bootstrap: digest-schema($bootstrap-progress-linear);
+$fluent: digest-schema($fluent-progress-linear);
+$indigo: digest-schema($indigo-progress-linear);

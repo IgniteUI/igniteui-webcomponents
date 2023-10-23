@@ -5,10 +5,8 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import IgcRatingSymbolComponent from './rating-symbol.js';
-import { styles } from './rating.base.css.js';
-import { styles as bootstrap } from './rating.bootstrap.css.js';
-import { styles as fluent } from './rating.fluent.css.js';
-import { styles as indigo } from './rating.indigo.css.js';
+import { styles } from './themes/rating.base.css.js';
+import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -47,10 +45,7 @@ export interface IgcRatingEventMap {
  * @cssproperty --symbol-full-filter - The filter(s) used for the filled symbol.
  * @cssproperty --symbol-empty-filter - The filter(s) used for the empty symbol.
  */
-@themes({
-  light: { fluent, bootstrap, indigo },
-  dark: { fluent, bootstrap, indigo },
-})
+@themes(all, true)
 export default class IgcRatingComponent extends FormAssociatedMixin(
   SizableMixin(
     EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)

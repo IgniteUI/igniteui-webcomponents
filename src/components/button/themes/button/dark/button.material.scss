@@ -1,26 +1,23 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-@mixin theme() {
-    $flat-theme: $material-flat;
-    $contained-theme: $material-contained;
-    $fab-theme: $material-fab;
-    $outlined-theme: $material-outlined;
+$flat-theme: $material-flat;
+$contained-theme: $material-contained;
+$fab-theme: $material-fab;
+$outlined-theme: $material-outlined;
 
-    igc-button[variant='flat'] {
-        @include css-vars-from-theme($flat-theme, 'ig-button');
-    }
+:host([variant='flat']) {
+    @include css-vars-from-theme($flat-theme, 'ig-button');
+}
 
-    igc-button[variant='outlined'] {
-        @include css-vars-from-theme($outlined-theme, 'ig-button');
-    }
+:host([variant='outlined']) {
+    @include css-vars-from-theme($outlined-theme, 'ig-button');
+}
 
-    igc-button[variant='contained'] {
-        @include css-vars-from-theme($contained-theme, 'ig-button');
-    }
+:host([variant='contained']) {
+    @include css-vars-from-theme($contained-theme, 'ig-button');
+}
 
-    igc-button[variant='fab'] {
-        @include css-vars-from-theme($fab-theme, 'ig-button');
-    }
+:host([variant='fab']) {
+    @include css-vars-from-theme($fab-theme, 'ig-button');
 }

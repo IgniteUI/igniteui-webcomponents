@@ -9,11 +9,8 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
-import { styles } from './themes/light/textarea.base.css.js';
-import { styles as bootstrap } from './themes/light/textarea.bootstrap.css.js';
-import { styles as fluent } from './themes/light/textarea.fluent.css.js';
-import { styles as indigo } from './themes/light/textarea.indigo.css.js';
-import { styles as material } from './themes/light/textarea.material.css.js';
+import { styles } from './themes/textarea.base.css.js';
+import { all } from './themes/themes.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
@@ -65,13 +62,7 @@ export interface IgcTextareaEventMap {
  * @csspart suffix - The suffix wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
-@themes(
-  {
-    light: { material, bootstrap, fluent, indigo },
-    dark: { material, bootstrap, fluent, indigo },
-  },
-  true
-)
+@themes(all, true)
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
 ) {

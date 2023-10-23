@@ -1,10 +1,7 @@
 import { LitElement, html } from 'lit';
 
-import { styles } from './themes/light/header/dropdown-header.base.css.js';
-import { styles as bootstrap } from './themes/light/header/dropdown-header.bootstrap.css.js';
-import { styles as fluent } from './themes/light/header/dropdown-header.fluent.css.js';
-import { styles as indigo } from './themes/light/header/dropdown-header.indigo.css.js';
-import { styles as material } from './themes/light/header/dropdown-header.material.css.js';
+import { styles } from './themes/dropdown-header.base.css.js';
+import { all } from './themes/header.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 
@@ -13,10 +10,7 @@ import { registerComponent } from '../common/definitions/register.js';
  *
  * @slot - Renders the header.
  */
-@themes({
-  light: { bootstrap, fluent, indigo, material },
-  dark: { bootstrap, fluent, indigo, material },
-})
+@themes(all)
 export default class IgcDropdownHeaderComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-header';
   public static override styles = styles;

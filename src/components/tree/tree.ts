@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { styles } from './themes/light/tree.base.css.js';
+import { styles } from './themes/tree.base.css.js';
 import IgcTreeItemComponent from './tree-item.js';
 import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';

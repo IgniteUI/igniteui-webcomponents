@@ -1,11 +1,8 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { styles } from './themes/light/expansion-panel.base.css.js';
-import { styles as bootstrap } from './themes/light/expansion-panel.bootstrap.css.js';
-import { styles as fluent } from './themes/light/expansion-panel.fluent.css.js';
-import { styles as indigo } from './themes/light/expansion-panel.indigo.css.js';
-import { styles as material } from './themes/light/expansion-panel.material.css.js';
+import { styles } from './themes/expansion-panel.base.css.js';
+import { all } from './themes/themes.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -46,10 +43,7 @@ export interface IgcExpansionPanelComponentEventMap {
  * @csspart content - The expansion panel's content wrapper.
  */
 
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all)
 export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   IgcExpansionPanelComponentEventMap,
   Constructor<LitElement>

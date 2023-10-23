@@ -1,13 +1,10 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
+import { styles } from './themes/group.base.css.js';
+import { all } from './themes/group.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from '../button-group/themes/light/button-group.base.css.js';
-import { styles as bootstrap } from '../button-group/themes/light/button-group.bootstrap.css.js';
-import { styles as fluent } from '../button-group/themes/light/button-group.fluent.css.js';
-import { styles as indigo } from '../button-group/themes/light/button-group.indigo.css.js';
-import { styles as material } from '../button-group/themes/light/button-group.material.css.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -30,10 +27,7 @@ export interface IgcButtonGroupComponentEventMap {
  *
  * @csspart group - The button group container.
  */
-@themes({
-  light: { bootstrap, material, fluent, indigo },
-  dark: { bootstrap, material, fluent, indigo },
-})
+@themes(all, true)
 export default class IgcButtonGroupComponent extends EventEmitterMixin<
   IgcButtonGroupComponentEventMap,
   Constructor<LitElement>

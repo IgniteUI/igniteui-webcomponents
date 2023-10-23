@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 
-import { styles } from './themes/light/card.media.base.css.js';
+import { styles } from './themes/card.media.base.css.js';
 import { registerComponent } from '../common/definitions/register.js';
 
 /** A container for card's media - could be an image, gif, video

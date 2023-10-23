@@ -4,11 +4,8 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
-import { styles } from './themes/light/checkbox.base.css.js';
-import { styles as bootstrap } from './themes/light/checkbox.bootstrap.css.js';
-import { styles as fluent } from './themes/light/checkbox.fluent.css.js';
-import { styles as indigo } from './themes/light/checkbox.indigo.css.js';
-import { styles as material } from './themes/light/checkbox.material.css.js';
+import { all } from './themes/checkbox-themes.js';
+import { styles } from './themes/checkbox.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, partNameMap } from '../common/util.js';
@@ -29,10 +26,7 @@ import { createCounter, partNameMap } from '../common/util.js';
  * @csspart label - The checkbox label.
  * @csspart indicator - The checkbox icon.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all)
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
   protected static styles = styles;

@@ -24,11 +24,8 @@ import {
   isDateInRanges,
 } from '../common/calendar.model.js';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
+import { all } from '../themes/days';
 import { styles } from '../themes/days-view.base.css.js';
-import { styles as bootstrap } from '../themes/light/bootstrap/days-view.bootstrap.css.js';
-import { styles as fluent } from '../themes/light/fluent/days-view.fluent.css.js';
-import { styles as indigo } from '../themes/light/indigo/days-view.indigo.css.js';
-import { styles as material } from '../themes/light/material/days-view.material.css.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
@@ -51,20 +48,7 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
  */
 @blazorSuppressComponent
 @blazorIndirectRender
-@themes({
-  light: {
-    bootstrap,
-    fluent,
-    material,
-    indigo,
-  },
-  dark: {
-    bootstrap,
-    fluent,
-    material,
-    indigo,
-  },
-})
+@themes(all)
 export default class IgcDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>

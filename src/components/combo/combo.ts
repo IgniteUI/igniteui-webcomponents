@@ -15,11 +15,8 @@ import IgcComboListComponent from './combo-list.js';
 import { DataController } from './controllers/data.js';
 import { NavigationController } from './controllers/navigation.js';
 import { SelectionController } from './controllers/selection.js';
-import { styles } from './themes/light/combo.base.css.js';
-import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
-import { styles as fluent } from './themes/light/combo.fluent.css.js';
-import { styles as indigo } from './themes/light/combo.indigo.css.js';
-import { styles as material } from './themes/light/combo.material.css.js';
+import { styles } from './themes/combo.base.css.js';
+import { all } from './themes/themes.js';
 import type {
   ComboItemTemplate,
   ComboRecord,
@@ -91,13 +88,7 @@ import { IgcToggleComponent } from '../toggle/types.js';
  * @csspart footer - The container holding the footer content.
  * @csspart empty - The container holding the empty content.
  */
-@themes(
-  {
-    light: { material, bootstrap, fluent, indigo },
-    dark: { material, bootstrap, fluent, indigo },
-  },
-  true
-)
+@themes(all)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<T extends object = any>
