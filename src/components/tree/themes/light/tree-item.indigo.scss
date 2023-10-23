@@ -1,8 +1,10 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
+$theme: $indigo;
+
 :host {
-    @include css-vars-from-theme($indigo, 'ig-tree');
+    @include css-vars-from-theme($theme, 'ig-tree');
 
     background: var(--node-disabled-background, var-get($theme, 'background'));
     color: var(--node-disabled-foreground, var-get($theme, 'foreground'));
