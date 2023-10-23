@@ -1,0 +1,35 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $indigo;
+
+[part='headers'] {
+    background: var-get($theme, 'item-background');
+}
+
+[part='start-scroll-button'],
+[part='end-scroll-button'] {
+    background: var-get($theme, 'button-background');
+
+    &:hover,
+    &:focus {
+        background: var-get($theme, 'button-hover-background');
+    }
+}
+
+[part='selected-indicator'] {
+    background: var-get($theme, 'indicator-color');
+}
+
+igc-icon-button::part(base) {
+    color: var-get($theme, 'button-color');
+
+    &:hover,
+    &:focus-within {
+        color: var-get($theme, 'button-hover-color');
+    }
+}
+
+igc-icon-button[disabled]::part(base) {
+    color: var-get($theme, 'button-disabled-color');
+}

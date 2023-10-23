@@ -1,4 +1,3 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use '../themes' as *;
 
@@ -6,8 +5,4 @@ $theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dropdown');
-
-    ::slotted([slot='label']) {
-        color: var-get($theme, 'header-text-color');
-    }
 }

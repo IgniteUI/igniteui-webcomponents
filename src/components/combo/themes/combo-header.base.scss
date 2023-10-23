@@ -1,0 +1,6 @@
+@use 'styles/utilities' as *;
+@use '../../dropdown/themes/dropdown-header.base' as *;
+
+:host {
+    --component-size: var(--ig-size, var(--ig-size-medium));
+}

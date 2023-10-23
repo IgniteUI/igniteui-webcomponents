@@ -1,8 +1,6 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-@mixin theme() {
-    igc-navbar {
-        @include css-vars-from-theme($indigo, 'ig-navbar');
-    }
+:host {
+    @include css-vars-from-theme($indigo, 'ig-navbar');
 }

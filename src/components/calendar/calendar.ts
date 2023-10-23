@@ -13,10 +13,7 @@ import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
 import IgcDaysViewComponent from './days-view/days-view.js';
 import IgcMonthsViewComponent from './months-view/months-view.js';
 import { styles } from './themes/calendar.base.css.js';
-import { styles as bootstrap } from './themes/light/bootstrap/calendar.bootstrap.css.js';
-import { styles as fluent } from './themes/light/fluent/calendar.fluent.css.js';
-import { styles as indigo } from './themes/light/indigo/calendar.indigo.css.js';
-import { styles as material } from './themes/light/material/calendar.material.css.js';
+import { all } from './themes/calendar.js';
 import IgcYearsViewComponent from './years-view/years-view.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
@@ -60,23 +57,7 @@ import IgcIconComponent from '../icon/icon.js';
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@themes(
-  {
-    light: {
-      bootstrap,
-      fluent,
-      indigo,
-      material,
-    },
-    dark: {
-      bootstrap,
-      fluent,
-      indigo,
-      material,
-    },
-  },
-  true
-)
+@themes(all)
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,

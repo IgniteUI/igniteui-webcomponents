@@ -22,7 +22,7 @@ const renderSass = sass.compileAsync;
 
 async function sassToCss(sassFile) {
   const result = await renderSass(sassFile, {
-    outputStyle: 'compressed',
+    style: 'compressed',
     loadPaths: ['node_modules', 'src']
   });
 

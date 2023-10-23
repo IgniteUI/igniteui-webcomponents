@@ -1,0 +1,9 @@
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+$theme: $fluent;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-nav-drawer');
+    @include css-vars-from-theme($overlay-fluent, 'ig-nav-drawer');
+}

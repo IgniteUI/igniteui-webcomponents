@@ -1,10 +1,7 @@
 import { LitElement, html } from 'lit';
 
-import { styles as bootstrap } from './themes/light/navbar.bootstrap.css.js';
-import { styles as fluent } from './themes/light/navbar.fluent.css.js';
-import { styles as indigo } from './themes/light/navbar.indigo.css.js';
-import { styles as material } from './themes/light/navbar.material.css.js';
 import { styles } from './themes/navbar.base.css.js';
+import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 
@@ -23,10 +20,7 @@ import { registerComponent } from '../common/definitions/register.js';
  * @csspart middle - The navigation bar title container.
  * @csspart end - The right aligned action icons container.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all)
 export default class IgcNavbarComponent extends LitElement {
   public static readonly tagName = 'igc-navbar';
   public static override styles = styles;

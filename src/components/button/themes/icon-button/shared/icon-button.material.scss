@@ -1,0 +1,96 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$flat-theme: $material-flat;
+$contained-theme: $material-contained;
+$outlined-theme: $material-outlined;
+
+[part='base'] {
+    border-radius: var-get($flat-theme, 'border-radius');
+    width: var-get($flat-theme, 'size');
+    height: var-get($flat-theme, 'size');
+    padding: pad(6px);
+    color: var-get($flat-theme, 'foreground');
+
+    igc-icon {
+        color: var-get($flat-theme, 'foreground');
+    }
+}
+
+:host(:focus-within) {
+    [part='base'] {
+        transition: none;
+        background: var-get($flat-theme, 'focus-background');
+        box-shadow: inset 0 0 0 1px var-get($flat-theme, 'focus-border-color');
+    }
+}
+
+:host([variant='flat']) {
+    @include css-vars-from-theme($flat-theme, 'ig-icon-button');
+
+    ::slotted(igc-ripple) {
+        border-radius: var-get($flat-theme, 'border-radius');
+    }
+}
+
+:host([variant='contained']) {
+    @include css-vars-from-theme($contained-theme, 'ig-icon-button');
+
+    [part='base'] {
+        background: var-get($contained-theme, 'background');
+    }
+
+    ::slotted(igc-ripple) {
+        border-radius: var-get($contained-theme, 'border-radius');
+    }
+}
+
+:host([variant='contained']:focus-within) {
+    [part='base'] {
+        background: var-get($contained-theme, 'focus-background');
+    }
+}
+
+:host([variant='outlined']) {
+    @include css-vars-from-theme($outlined-theme, 'ig-icon-button');
+
+    [part='base'] {
+        box-shadow: inset 0 0 0 1px var-get($outlined-theme, 'border-color');
+    }
+
+    ::slotted(igc-ripple) {
+        border-radius: var-get($outlined-theme, 'border-radius');
+    }
+}
+
+:host([variant='outlined']:focus-within) {
+    [part='base'] {
+        box-shadow: inset 0 0 0 1px var-get($flat-theme, 'focus-border-color');
+    }
+}
+
+:host([disabled]),
+:host(:disabled) {
+    [part='base'] {
+        color: var-get($flat-theme, 'disabled-foreground');
+    }
+
+    igc-icon {
+        color: var-get($flat-theme, 'disabled-foreground');
+    }
+}
+
+:host([disabled][variant='contained']),
+:host(:disabled[variant='contained']) {
+    [part='base'] {
+        background: var-get($contained-theme, 'disabled-background');
+    }
+}
+
+:host(:disabled[variant='outlined']),
+:host([disabled][variant='outlined']) {
+    [part='base'] {
+        background: var-get($outlined-theme, 'disabled-background');
+        box-shadow: inset 0 0 0 1px var-get($outlined-theme, 'disabled-border-color');
+    }
+}

@@ -10,11 +10,8 @@ import { styleMap } from 'lit/directives/style-map.js';
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
 import IgcDropdownItemComponent from './dropdown-item.js';
-import { styles } from './themes/light/dropdown.base.css.js';
-import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
-import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
-import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
-import { styles as material } from './themes/light/dropdown.material.css.js';
+import { all } from './themes/container.js';
+import { styles } from './themes/dropdown.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
@@ -51,10 +48,7 @@ export interface IgcDropdownEventMap extends IgcToggleEventMap {
  * @csspart base - The dropdown list wrapper.
  * @csspart list - The dropdown list.
  */
-@themes({
-  light: { bootstrap, fluent, indigo, material },
-  dark: { bootstrap, fluent, indigo, material },
-})
+@themes(all)
 @blazorAdditionalDependencies(
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )

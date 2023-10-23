@@ -6,11 +6,8 @@ import {
   state,
 } from 'lit/decorators.js';
 
-import { styles } from './themes/light/tree-item.base.css.js';
-import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
-import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
-import { styles as indigo } from './themes/light/tree-item.indigo.css.js';
-import { styles as material } from './themes/light/tree-item.material.css.js';
+import { all } from './themes/themes';
+import { styles } from './themes/tree-item.base.css.js';
 import type IgcTreeComponent from './tree.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
@@ -45,10 +42,7 @@ import IgcCircularProgressComponent from '../progress/circular-progress.js';
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes({
-  light: { bootstrap, fluent, indigo, material },
-  dark: { bootstrap, fluent, indigo, material },
-})
+@themes(all, true)
 export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
   public static override styles = styles;

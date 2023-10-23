@@ -1,0 +1,18 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $fluent;
+
+:host {
+    color: var-get($theme, 'header-text-color');
+}
+
+::slotted([slot='title']) {
+    @include type-style('subtitle-1');
+}
+
+::slotted([slot='subtitle']) {
+    @include type-style('body-2');
+
+    color: var-get($theme, 'subtitle-text-color');
+}

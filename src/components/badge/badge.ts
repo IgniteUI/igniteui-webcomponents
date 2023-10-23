@@ -1,8 +1,8 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { styles } from './themes/light/badge.base.css.js';
-import { styles as bootstrap } from './themes/light/badge.bootstrap.css.js';
+import { styles } from './themes/badge.base.css.js';
+import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 
@@ -16,7 +16,7 @@ import { registerComponent } from '../common/definitions/register.js';
  *
  * @csspart base - The base wrapper of the badge.
  */
-@themes({ light: { bootstrap }, dark: { bootstrap } })
+@themes(all)
 export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
   public static override styles = styles;

@@ -9,11 +9,8 @@ import {
 
 import IgcTabPanelComponent from './tab-panel.js';
 import IgcTabComponent from './tab.js';
-import { styles } from './themes/light/tabs.base.css.js';
-import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
-import { styles as fluent } from './themes/light/tabs.fluent.css.js';
-import { styles as indigo } from './themes/light/tabs.indigo.css.js';
-import { styles as material } from './themes/light/tabs.material.css.js';
+import { all } from './themes/tabs-themes.js';
+import { styles } from './themes/tabs.base.css.js';
 import {
   getAttributesForTags,
   getNodesForTags,
@@ -51,10 +48,7 @@ export interface IgcTabsEventMap {
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart content - The container for the tabs content.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all, true)
 @blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,

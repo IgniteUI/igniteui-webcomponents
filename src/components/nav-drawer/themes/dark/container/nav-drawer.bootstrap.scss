@@ -1,0 +1,7 @@
+@use 'styles/utilities' as *;
+@use '../themes' as *;
+
+:host {
+    @include css-vars-from-theme($bootstrap, 'ig-nav-drawer');
+    @include css-vars-from-theme($bootstrap-overlay, 'ig-nav-drawer');
+}

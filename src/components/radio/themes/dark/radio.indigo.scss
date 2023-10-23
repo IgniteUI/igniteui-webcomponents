@@ -1,9 +1,6 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-@mixin theme() {
-    igc-radio {
-        @include css-vars-from-theme($indigo, 'ig-radio');
-    }
+:host {
+    @include css-vars-from-theme($indigo, 'ig-radio');
 }

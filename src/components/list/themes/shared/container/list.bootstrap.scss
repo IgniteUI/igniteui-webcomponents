@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    background: var-get($theme, 'background');
+    border: rem(1px) solid var-get($theme, 'border-color');
+    border-radius: var-get($theme, 'border-radius');
+}
