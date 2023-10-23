@@ -13,7 +13,7 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   },
 
   coverageConfig: {
-    exclude: ['node_modules/**/*', '**/*.css.js'],
+    exclude: ['node_modules/**/*', '**/themes/**'],
   },
 
   // See documentation for all available options
