@@ -29,6 +29,11 @@ $outline-btn-indent: rem(2px);
 
     &:hover {
         color: var-get($flat-theme, 'foreground');
+        background: var-get($flat-theme, 'hover-background');
+    }
+
+    &:focus {
+        color: var-get($flat-theme, 'foreground');
         background: var-get($flat-theme, 'focus-background');
     }
 
@@ -61,13 +66,16 @@ $outline-btn-indent: rem(2px);
         color: var-get($contained-theme, 'foreground');
         background: var-get($contained-theme, 'background');
 
-        &:hover,
-        &:focus,
-        &:focus-visible {
+        &:focus {
             background: var-get($contained-theme, 'focus-background');
         }
 
-        &:active {
+        &:hover {
+            background: var-get($contained-theme, 'hover-background');
+        }
+
+        &:active,
+        &:focus-visible {
             color: var-get($contained-theme, 'active-foreground');
             background: var-get($contained-theme, 'active-background');
         }

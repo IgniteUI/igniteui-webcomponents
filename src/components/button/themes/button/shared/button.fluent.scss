@@ -177,7 +177,7 @@ $outline-btn-indent: rem(2px);
 
         &::after {
             content: '';
-            box-shadow: 0 0 0 1px #{contrast-color(primary, 600)};
+            box-shadow: 0 0 0 1px var-get($contained-theme, 'focus-visible-foreground');
             position: absolute;
             inset-block-start: 3px;
             inset-inline-start: 3px;
@@ -232,7 +232,7 @@ $outline-btn-indent: rem(2px);
 
         &::after {
             content: '';
-            box-shadow: 0 0 0 1px #{contrast-color(primary, 600)};
+            box-shadow: 0 0 0 1px var-get($fab-theme, 'focus-visible-foreground');
             position: absolute;
             inset-block-start: 3px;
             inset-inline-start: 3px;
