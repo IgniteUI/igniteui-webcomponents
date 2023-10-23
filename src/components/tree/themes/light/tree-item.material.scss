@@ -10,12 +10,6 @@ $theme: $material;
 
 [part~='wrapper'] {
     min-height: var-get($theme, 'size');
-    background: var-get($theme, 'background');
-    color: var-get($theme, 'foreground');
-
-    &::after {
-        background: transparent;
-    }
 
     &:hover {
         &::after {
@@ -50,8 +44,9 @@ $theme: $material;
 }
 
 :host([disabled]) {
-    [part~='label'] {
+    [part~='wrapper'] {
         color: var-get($theme, 'foreground-disabled');
         background: var-get($theme, 'background-disabled');
     }
 }
+
