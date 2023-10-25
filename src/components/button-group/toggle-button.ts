@@ -1,8 +1,8 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
-import { all } from './themes/button.js';
 import { styles } from './themes/button.base.css.js';
+import { all } from './themes/button.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { registerComponent } from '../common/definitions/register.js';
