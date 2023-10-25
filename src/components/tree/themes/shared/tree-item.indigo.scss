@@ -5,8 +5,8 @@
 $theme: $indigo;
 
 :host {
-    background: var(--node-disabled-background, var-get($theme, 'background'));
-    color: var(--node-disabled-foreground, var-get($theme, 'foreground'));
+    background: var-get($theme, 'background');
+    color: var-get($theme, 'foreground');
 }
 
 [part~='wrapper'] {
@@ -45,15 +45,15 @@ $theme: $indigo;
 }
 
 :host(:not([disabled])[selected][active]) {
-    background: var(--node-disabled-background, var-get($theme, 'background-active-selected'));
-    color: var(--node-disabled-foreground, var-get($theme, 'foreground-active-selected'));
+    background: var-get($theme, 'background-active-selected');
+    color: var-get($theme, 'foreground-active-selected');
 }
 
 :host(:not([disabled])[selected]),
 :host(:not([disabled])[selected][active]) {
     [part~='focused'] {
-        background: var(--node-disabled-background, var-get($theme, 'background-active-selected'));
-        color: var(--node-disabled-foreground, var-get($theme, 'foreground-active-selected'));
+        background: var-get($theme, 'background-active-selected');
+        color: var-get($theme, 'foreground-active-selected');
     }
 }
 
@@ -66,9 +66,6 @@ $theme: $indigo;
 }
 
 :host([disabled]) {
-    --node-disabled-foreground: #{var-get($theme, 'foreground-disabled')};
-    --node-disabled-background: #{var-get($theme, 'background-disabled')};
-
-    color: var(--node-disabled-foreground);
-    background: var(--node-disabled-background);
+    color: var-get($theme, 'foreground-disabled');
+    background: var-get($theme, 'background-disabled');
 }
