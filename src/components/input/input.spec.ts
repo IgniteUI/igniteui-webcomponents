@@ -5,7 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import { IgcInputComponent, defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
@@ -225,7 +225,7 @@ describe('Input component', () => {
     });
 
     it('should focus/blur the wrapped base element when the methods are called', () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.focus();
 
       expect(el.shadowRoot?.activeElement).to.equal(input);
@@ -239,7 +239,7 @@ describe('Input component', () => {
     });
 
     it('should emit focus/blur events when methods are called', () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.focus();
 
       expect(el.shadowRoot?.activeElement).to.equal(input);

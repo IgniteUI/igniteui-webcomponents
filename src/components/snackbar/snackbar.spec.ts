@@ -7,7 +7,7 @@ import {
   unsafeStatic,
   waitUntil,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import { IgcSnackbarComponent, defineComponents } from '../../index.js';
 import type IgcButtonComponent from '../button/button.js';
@@ -128,7 +128,7 @@ describe('Snackbar', () => {
       await elementUpdated(el);
 
       button = el.shadowRoot?.querySelector('igc-button') as IgcButtonComponent;
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       button?.click();
       await elementUpdated(el);
 

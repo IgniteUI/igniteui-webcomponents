@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
@@ -575,7 +575,7 @@ describe('Dropdown component', () => {
         dropdown.open = false;
         await elementUpdated(dropdown);
 
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
         dropdown.show();
         await elementUpdated(dropdown);
 
@@ -587,7 +587,7 @@ describe('Dropdown component', () => {
         dropdown.open = false;
         await elementUpdated(dropdown);
 
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
         target(dropdown).click();
         await elementUpdated(dropdown);
 
@@ -601,7 +601,7 @@ describe('Dropdown component', () => {
         dropdown.addEventListener('igcOpening', (event: CustomEvent) => {
           event.preventDefault();
         });
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
         await elementUpdated(dropdown);
 
         target(dropdown).click();
@@ -614,7 +614,7 @@ describe('Dropdown component', () => {
       });
 
       it('does not emit `igcClosing` & `igcClosed` events on `hide` method calls.', async () => {
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
         dropdown.hide();
         await elementUpdated(dropdown);
 
@@ -622,7 +622,7 @@ describe('Dropdown component', () => {
       });
 
       it('emits `igcClosing` & `igcClosed` events on clicking the target.', async () => {
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
         target(dropdown).click();
         await elementUpdated(dropdown);
 
@@ -636,7 +636,7 @@ describe('Dropdown component', () => {
         );
         await elementUpdated(dropdown);
 
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
 
         target(dropdown).click();
         await elementUpdated(dropdown);
@@ -651,7 +651,7 @@ describe('Dropdown component', () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
         ] as IgcDropdownItemComponent[];
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
 
         ddItems(dropdown)[2].click();
         await elementUpdated(dropdown);
@@ -666,7 +666,7 @@ describe('Dropdown component', () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
         ] as IgcDropdownItemComponent[];
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
 
         pressKey('ArrowDown');
         pressKey('Enter');
@@ -686,7 +686,7 @@ describe('Dropdown component', () => {
           event.preventDefault()
         );
         await elementUpdated(dropdown);
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
 
         pressKey('ArrowDown');
         pressKey('Enter');
@@ -706,7 +706,7 @@ describe('Dropdown component', () => {
         const dropDownItems = [
           ...dropdown.querySelectorAll('igc-dropdown-item'),
         ] as IgcDropdownItemComponent[];
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
 
         ddItems(dropdown)[0].click();
         await elementUpdated(dropdown);
@@ -734,7 +734,7 @@ describe('Dropdown component', () => {
       });
 
       it('emits closing events when clicking outside', async () => {
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
 
         document.dispatchEvent(new MouseEvent('click'));
         await elementUpdated(dropdown);
@@ -745,7 +745,7 @@ describe('Dropdown component', () => {
       });
 
       it('cleans up document event listeners', async () => {
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
 
         dropdown.open = true;
         await elementUpdated(dropdown);
@@ -766,7 +766,7 @@ describe('Dropdown component', () => {
       });
 
       it('can cancel `igcClosing` event when clicking outside', async () => {
-        const eventSpy = sinon.spy(dropdown, 'emitEvent');
+        const eventSpy = spy(dropdown, 'emitEvent');
 
         dropdown.addEventListener('igcClosing', (e) => e.preventDefault());
 

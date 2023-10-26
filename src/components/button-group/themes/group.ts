@@ -15,7 +15,7 @@ import { styles as bootstrap } from './shared/group/group.bootstrap.css.js';
 import { styles as fluent } from './shared/group/group.fluent.css.js';
 import { styles as indigo } from './shared/group/group.indigo.css.js';
 import { styles as material } from './shared/group/group.material.css.js';
-import { Themes } from '../../../theming/types';
+import type { Themes } from '../../../theming/types';
 
 const light = {
   bootstrap: css`

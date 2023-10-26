@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import IgcSelectGroupComponent from './select-group.js';
 import IgcSelectHeaderComponent from './select-header.js';
@@ -247,7 +247,7 @@ describe('Select component', () => {
     });
 
     it('should not fire the igcChange event when the Home button is pressed and the first item is already selected', async () => {
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       select.select(0);
       await elementUpdated(select);
 
@@ -267,7 +267,7 @@ describe('Select component', () => {
       select.select(index);
 
       await elementUpdated(select);
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
 
       pressKey(target, 'End');
       expect(eventSpy).not.be.calledWith('igcChange');
@@ -317,7 +317,7 @@ describe('Select component', () => {
     });
 
     it('should fire the igcChange event when using ArrowUp, ArrowDown, ArrowLeft, or ArrowRight and a new item is selected', async () => {
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       select.hide();
       select.select(0);
       await elementUpdated(select);
@@ -340,7 +340,7 @@ describe('Select component', () => {
     });
 
     it('should not fire the igcChange event when using ArrowUp or ArrowLeft and the first item is already selected', async () => {
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       select.hide();
       select.select(0);
       await elementUpdated(select);
@@ -359,7 +359,7 @@ describe('Select component', () => {
 
     it('should not fire the igcChange event when using ArrowDown or ArrowRight and the last item is already selected', async () => {
       const itemIndex = items.length - 1;
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       select.hide();
 
       select.select(itemIndex);
@@ -499,7 +499,7 @@ describe('Select component', () => {
       select.open = false;
       await elementUpdated(select);
 
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       select.show();
       await elementUpdated(select);
 
@@ -511,7 +511,7 @@ describe('Select component', () => {
       select.open = false;
       await elementUpdated(select);
 
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       target.click();
       await elementUpdated(select);
 
@@ -525,7 +525,7 @@ describe('Select component', () => {
       select.addEventListener('igcOpening', (event: CustomEvent) => {
         event.preventDefault();
       });
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       await elementUpdated(select);
 
       target.click();
@@ -538,7 +538,7 @@ describe('Select component', () => {
     });
 
     it('does not emit `igcClosing` & `igcClosed` events on `hide` method calls.', async () => {
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       select.hide();
       await elementUpdated(select);
 
@@ -549,7 +549,7 @@ describe('Select component', () => {
       select.show();
       await elementUpdated(select);
 
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       target.click();
       await elementUpdated(select);
 
@@ -564,7 +564,7 @@ describe('Select component', () => {
       select.addEventListener('igcClosing', (event: CustomEvent) =>
         event.preventDefault()
       );
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
 
       selectOpts(select)[0].click();
       await elementUpdated(select);
@@ -578,7 +578,7 @@ describe('Select component', () => {
     it('emits `igcChange`, `igcClosing` and `igcClosed` events on selecting an item via mouse click.', async () => {
       select.show();
       await elementUpdated(select);
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
 
       selectOpts(select)[1].click();
       await elementUpdated(select);
@@ -589,7 +589,7 @@ describe('Select component', () => {
     });
 
     it('emits `igcChange` events on selecting an item via `Arrow` keys.', async () => {
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
       pressKey(target, 'ArrowDown', 2);
       await elementUpdated(select);
 
@@ -619,7 +619,7 @@ describe('Select component', () => {
         event.preventDefault()
       );
       await elementUpdated(select);
-      const eventSpy = sinon.spy(select, 'emitEvent');
+      const eventSpy = spy(select, 'emitEvent');
 
       pressKey(target, 'ArrowDown', 2);
       pressKey(target, 'Enter');
@@ -632,7 +632,7 @@ describe('Select component', () => {
     });
 
     it('reports validity when required', async () => {
-      const validity = sinon.spy(select, 'reportValidity');
+      const validity = spy(select, 'reportValidity');
 
       select.value = undefined;
       select.required = true;
@@ -651,7 +651,7 @@ describe('Select component', () => {
     });
 
     it('reports validity when not required', async () => {
-      const validity = sinon.spy(select, 'reportValidity');
+      const validity = spy(select, 'reportValidity');
 
       select.value = undefined;
       select.required = false;
@@ -670,7 +670,7 @@ describe('Select component', () => {
     });
 
     it('checks validity when required', async () => {
-      const validity = sinon.spy(select, 'checkValidity');
+      const validity = spy(select, 'checkValidity');
 
       select.value = undefined;
       select.required = true;
@@ -689,7 +689,7 @@ describe('Select component', () => {
     });
 
     it('checks validity when not required', async () => {
-      const validity = sinon.spy(select, 'checkValidity');
+      const validity = spy(select, 'checkValidity');
 
       select.value = undefined;
       select.required = false;

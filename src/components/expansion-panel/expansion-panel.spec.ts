@@ -6,7 +6,7 @@ import {
   unsafeStatic,
   waitUntil,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import { IgcExpansionPanelComponent, defineComponents } from '../../index.js';
 
@@ -35,7 +35,7 @@ describe('Expansion Panel', () => {
   describe('', () => {
     beforeEach(async () => {
       panel = await createExpansionPanelComponent(testTemplate);
-      eventSpy = sinon.spy(panel, 'emitEvent');
+      eventSpy = spy(panel, 'emitEvent');
     });
 
     it('Passes the a11y audit', async () => {
