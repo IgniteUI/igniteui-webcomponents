@@ -14,8 +14,8 @@ import {
   YEARS_PER_ROW,
 } from '../common/calendar-base.js';
 import { calculateYearsRangeStart, setDateSafe } from '../common/utils.js';
-import { all } from '../themes/year-month.js';
 import { styles } from '../themes/year-month-view.base.css.js';
+import { all } from '../themes/year-month.js';
 
 /**
  * Instantiate a years view as a separate component in the calendar.

@@ -15,8 +15,8 @@ import {
 } from '../common/calendar-base.js';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model.js';
 import { setDateSafe } from '../common/utils.js';
-import { all } from '../themes/year-month.js';
 import { styles } from '../themes/year-month-view.base.css.js';
+import { all } from '../themes/year-month.js';
 
 /**
  * Instantiate a months view as a separate component in the calendar.

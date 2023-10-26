@@ -24,8 +24,8 @@ import {
   isDateInRanges,
 } from '../common/calendar.model.js';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
-import { all } from '../themes/days.js';
 import { styles } from '../themes/days-view.base.css.js';
+import { all } from '../themes/days.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
