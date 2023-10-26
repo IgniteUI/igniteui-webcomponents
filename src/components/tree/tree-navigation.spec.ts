@@ -1,5 +1,5 @@
 import { elementUpdated, expect, waitUntil } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import IgcTreeItemComponent from './tree-item.js';
 import { SLOTS, TreeTestFunctions, navigationTree } from './tree-utils.spec.js';
@@ -22,7 +22,7 @@ describe('Tree Navigation', () => {
     tree = await TreeTestFunctions.createTreeElement(navigationTree);
     treeNavService = tree.navService;
     topLevelItems = tree.items.filter((i) => i.level === 0);
-    eventSpy = sinon.spy(tree, 'emitEvent');
+    eventSpy = spy(tree, 'emitEvent');
   });
 
   it('Should focus and activate the first tree item on Home key press and the last tree item on End key press', async () => {

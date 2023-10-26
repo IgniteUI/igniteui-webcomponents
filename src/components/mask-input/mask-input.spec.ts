@@ -1,6 +1,6 @@
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import IgcMaskInputComponent from './mask-input.js';
 import { MaskParser } from './mask-parser.js';
@@ -242,7 +242,7 @@ describe('Masked input', () => {
     it('igcChange event', async () => {
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = 'abc';
       await elementUpdated(masked);
 
@@ -253,7 +253,7 @@ describe('Masked input', () => {
     it('igcChange event with literals', async () => {
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = 'abc';
       masked.valueMode = 'withFormatting';
       await elementUpdated(masked);
@@ -269,7 +269,7 @@ describe('Masked input', () => {
       await elementUpdated(masked);
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = '111';
       masked.setSelectionRange(2, 3);
       await elementUpdated(masked);
@@ -283,7 +283,7 @@ describe('Masked input', () => {
       await elementUpdated(masked);
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = '111';
       masked.setSelectionRange(3, 3);
       await elementUpdated(masked);

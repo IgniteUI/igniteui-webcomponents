@@ -1,5 +1,5 @@
 import { elementUpdated, expect } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import IgcStepComponent from './step.js';
 import {
@@ -183,7 +183,7 @@ describe('Stepper', () => {
     });
 
     it('Should emit ing and ed events when a step is activated through UI', async () => {
-      eventSpy = sinon.spy(stepper, 'emitEvent');
+      eventSpy = spy(stepper, 'emitEvent');
       await elementUpdated(stepper);
 
       const argsIng = {
@@ -214,7 +214,7 @@ describe('Stepper', () => {
     });
 
     it('Should not emit events when a step is activated through API', async () => {
-      eventSpy = sinon.spy(stepper, 'emitEvent');
+      eventSpy = spy(stepper, 'emitEvent');
       await elementUpdated(stepper);
 
       expect(stepper.steps[0].active).to.be.true;
@@ -1026,7 +1026,7 @@ describe('Stepper', () => {
   describe('Keyboard navigation', async () => {
     beforeEach(async () => {
       stepper = await StepperTestFunctions.createStepperElement(simpleStepper);
-      eventSpy = sinon.spy(stepper, 'emitEvent');
+      eventSpy = spy(stepper, 'emitEvent');
     });
 
     it('Should navigate to the first/last step on Home/End key press', async () => {
@@ -1402,7 +1402,7 @@ describe('Stepper', () => {
   describe('Aria', async () => {
     beforeEach(async () => {
       stepper = await StepperTestFunctions.createStepperElement(simpleStepper);
-      eventSpy = sinon.spy(stepper, 'emitEvent');
+      eventSpy = spy(stepper, 'emitEvent');
     });
 
     it('Should render proper role and orientation attributes for the stepper', async () => {

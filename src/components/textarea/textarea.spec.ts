@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import IgcTextareaComponent from './textarea.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
@@ -59,24 +59,26 @@ describe('Textarea component', () => {
     });
 
     it('igcInput', async () => {
-      const spy = sinon.spy(element, 'emitEvent');
+      const eventSpy = spy(element, 'emitEvent');
 
       textArea.value = '123';
       textArea.dispatchEvent(new Event('input'));
 
       await elementUpdated(element);
 
-      expect(spy).calledOnceWithExactly('igcInput', { detail: '123' });
+      expect(eventSpy).calledOnceWithExactly('igcInput', { detail: '123' });
       expect(element.value).to.equal(textArea.value);
     });
 
     it('igcChange', async () => {
-      const spy = sinon.spy(element, 'emitEvent');
+      const eventSpy = spy(element, 'emitEvent');
 
       textArea.value = '20230317';
       textArea.dispatchEvent(new Event('change'));
 
-      expect(spy).calledOnceWithExactly('igcChange', { detail: '20230317' });
+      expect(eventSpy).calledOnceWithExactly('igcChange', {
+        detail: '20230317',
+      });
       expect(element.value).to.equal(textArea.value);
     });
   });
@@ -114,21 +116,21 @@ describe('Textarea component', () => {
     });
 
     it('focus()', async () => {
-      const spy = sinon.spy(element, 'emitEvent');
+      const eventSpy = spy(element, 'emitEvent');
 
       element.focus();
       expect(textArea.matches(':focus')).to.be.true;
-      expect(spy).calledOnceWithExactly('igcFocus');
+      expect(eventSpy).calledOnceWithExactly('igcFocus');
     });
 
     it('blur()', async () => {
       element.focus();
 
-      const spy = sinon.spy(element, 'emitEvent');
+      const eventSpy = spy(element, 'emitEvent');
 
       element.blur();
       expect(textArea.matches(':focus')).to.be.false;
-      expect(spy).calledOnceWithExactly('igcBlur');
+      expect(eventSpy).calledOnceWithExactly('igcBlur');
     });
 
     it('scroll()', async () => {

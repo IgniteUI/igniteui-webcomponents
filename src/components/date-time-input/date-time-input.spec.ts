@@ -5,7 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util.js';
@@ -753,7 +753,7 @@ describe('Date Time Input component', () => {
     });
 
     it('should emit events correctly', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
 
       el.focus();
       await elementUpdated(el);

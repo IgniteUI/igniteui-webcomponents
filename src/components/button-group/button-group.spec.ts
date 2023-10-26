@@ -5,7 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import {
   IgcButtonGroupComponent,
@@ -572,7 +572,7 @@ describe('Button Group', () => {
       });
 
       it('should emit `igcSelect` event on select', async () => {
-        const eventSpy = sinon.spy(buttonGroup, 'emitEvent');
+        const eventSpy = spy(buttonGroup, 'emitEvent');
 
         buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
         await elementUpdated(buttonGroup);
@@ -590,7 +590,7 @@ describe('Button Group', () => {
       });
 
       it('can cancel `igcSelect` event', async () => {
-        const eventSpy = sinon.spy(buttonGroup, 'emitEvent');
+        const eventSpy = spy(buttonGroup, 'emitEvent');
 
         buttonGroup.addEventListener('igcSelect', (event) => {
           event.preventDefault();
@@ -606,7 +606,7 @@ describe('Button Group', () => {
       });
 
       it('should emit `igcDeselect` event on deselect', async () => {
-        const eventSpy = sinon.spy(buttonGroup, 'emitEvent');
+        const eventSpy = spy(buttonGroup, 'emitEvent');
 
         buttons[0].selected = true;
         await elementUpdated(buttonGroup);
@@ -628,7 +628,7 @@ describe('Button Group', () => {
         buttons[0].selected = true;
         await elementUpdated(buttonGroup);
 
-        const eventSpy = sinon.spy(buttonGroup, 'emitEvent');
+        const eventSpy = spy(buttonGroup, 'emitEvent');
 
         buttonGroup.addEventListener('igcDeselect', (event) => {
           event.preventDefault();
@@ -643,7 +643,7 @@ describe('Button Group', () => {
       });
 
       it('events are correctly emitted on user interaction (single mode)', async () => {
-        const eventSpy = sinon.spy(buttonGroup, 'emitEvent');
+        const eventSpy = spy(buttonGroup, 'emitEvent');
         const selectArgs = { cancelable: true, detail: '' };
         const deselectArgs = { cancelable: true, detail: '' };
 
@@ -675,7 +675,7 @@ describe('Button Group', () => {
       });
 
       it('events are correctly emitted on user interaction (single-required mode)', async () => {
-        const eventSpy = sinon.spy(buttonGroup, 'emitEvent');
+        const eventSpy = spy(buttonGroup, 'emitEvent');
         const selectArgs = { cancelable: true, detail: '' };
         const deselectArgs = { cancelable: true, detail: '' };
 
@@ -724,7 +724,7 @@ describe('Button Group', () => {
       });
 
       it('events are correctly emitted on user interaction (multiple mode)', async () => {
-        const eventSpy = sinon.spy(buttonGroup, 'emitEvent');
+        const eventSpy = spy(buttonGroup, 'emitEvent');
         const selectArgs = { cancelable: true, detail: '' };
         const deselectArgs = { cancelable: true, detail: '' };
 
