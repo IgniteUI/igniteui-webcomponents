@@ -374,7 +374,7 @@ describe('Rating component', () => {
     });
 
     it('does nothing on keyboard interaction if readonly', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.readOnly = true;
       await elementUpdated(el);
 
