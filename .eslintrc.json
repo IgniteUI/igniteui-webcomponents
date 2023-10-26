@@ -19,10 +19,8 @@
     "browser": true
   },
   "settings": {
-    "import/resolver": {
-      "typescript": {
-        "project": "./tsconfig.json"
-      }
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
     }
   },
   "rules": {
@@ -36,12 +34,7 @@
         "allowSeparatedGroups": true
       }
     ],
-    "import/no-unresolved": [
-      "error",
-      {
-        "ignore": ["\\.css.js$"]
-      }
-    ],
+    "import/no-unresolved": "off",
     "import/order": [
       "error",
       {
@@ -60,12 +53,7 @@
         }
       }
     ],
-    "import/extensions": [
-      "error",
-      {
-        "js": "always"
-      }
-    ],
+    "import/extensions": ["error", "ignorePackages"],
     "no-prototype-builtins": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-function-return-type": "off",

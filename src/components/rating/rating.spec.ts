@@ -6,7 +6,7 @@ import {
   html,
 } from '@open-wc/testing';
 import { nothing } from 'lit';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import {
   IgcRatingComponent,
@@ -284,7 +284,7 @@ describe('Rating component', () => {
     });
 
     it('correctly updates value on click', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       const symbol = getRatingSymbols(el).item(2);
       const { x, width } = getBoundingRect(symbol);
       symbol.dispatchEvent(
@@ -299,7 +299,7 @@ describe('Rating component', () => {
     });
 
     it('correctly updates value on click [precision != 1]', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.step = 0.5;
       await elementUpdated(el);
 
@@ -317,7 +317,7 @@ describe('Rating component', () => {
     });
 
     it('correctly reflects hover state', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.value = 2;
       el.hoverPreview = true;
       await elementUpdated(el);
@@ -352,7 +352,7 @@ describe('Rating component', () => {
     });
 
     it('does nothing on click if disabled', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.disabled = true;
       await elementUpdated(el);
 
@@ -362,7 +362,7 @@ describe('Rating component', () => {
     });
 
     it('does nothing on click if readonly', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.readOnly = true;
       await elementUpdated(el);
 
@@ -426,7 +426,7 @@ describe('Rating component', () => {
     });
 
     it('should not emit a change event if the value is unchanged', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.value = 5;
 
       await elementUpdated(el);

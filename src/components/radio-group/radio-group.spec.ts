@@ -1,5 +1,5 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import {
   IgcRadioComponent,
@@ -60,8 +60,8 @@ describe('Radio Group Component', () => {
     });
 
     it('should be able to navigate radios using arrow keys', async () => {
-      const radio1 = sinon.spy(radios[0], 'emitEvent');
-      const radio2 = sinon.spy(radios[1], 'emitEvent');
+      const radio1 = spy(radios[0], 'emitEvent');
+      const radio2 = spy(radios[1], 'emitEvent');
       const [first, second, _] = radios;
 
       first.click();
@@ -100,9 +100,9 @@ describe('Radio Group Component', () => {
     });
 
     it('should ignore disabled radios when navigating', async () => {
-      const radio1 = sinon.spy(radios[0], 'emitEvent');
-      const radio2 = sinon.spy(radios[1], 'emitEvent');
-      const radio3 = sinon.spy(radios[2], 'emitEvent');
+      const radio1 = spy(radios[0], 'emitEvent');
+      const radio2 = spy(radios[1], 'emitEvent');
+      const radio3 = spy(radios[2], 'emitEvent');
 
       radios[0].click();
       await elementUpdated(radios[0]);

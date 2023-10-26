@@ -88,6 +88,18 @@ const metadata: Meta<IgcMaskInputComponent> = {
       description: 'The name attribute of the control.',
       control: 'text',
     },
+    validationMessage: {
+      type: 'string',
+      description:
+        'A string containing the validation message of this element.',
+      control: 'text',
+    },
+    willValidate: {
+      type: 'boolean',
+      description:
+        'A boolean value which returns true if the element is a submittable element\nthat is a candidate for constraint validation.',
+      control: 'boolean',
+    },
     disabled: {
       type: 'boolean',
       description: 'The disabled state of the component',
@@ -143,6 +155,13 @@ interface IgcMaskInputArgs {
   required: boolean;
   /** The name attribute of the control. */
   name: string;
+  /** A string containing the validation message of this element. */
+  validationMessage: string;
+  /**
+   * A boolean value which returns true if the element is a submittable element
+   * that is a candidate for constraint validation.
+   */
+  willValidate: boolean;
   /** The disabled state of the component */
   disabled: boolean;
   /** Control the validity of the control. */

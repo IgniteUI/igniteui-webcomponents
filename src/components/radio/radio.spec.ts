@@ -5,7 +5,7 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import { IgcRadioComponent, defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
@@ -176,7 +176,7 @@ describe('Radio Component', () => {
     });
 
     it('should emit focus/blur events when methods are called', () => {
-      const eventSpy = sinon.spy(radio, 'emitEvent');
+      const eventSpy = spy(radio, 'emitEvent');
       radio.focus();
 
       expect(radio.shadowRoot?.activeElement).to.equal(input);
@@ -190,7 +190,7 @@ describe('Radio Component', () => {
     });
 
     it('should emit igcChange event when radio is checked', async () => {
-      const eventSpy = sinon.spy(radio, 'emitEvent');
+      const eventSpy = spy(radio, 'emitEvent');
       radio.click();
 
       await elementUpdated(radio);

@@ -43,23 +43,12 @@
 }
 
 :host([action-text]) {
-    igc-button::part(base) {
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-
-    igc-button::part(base):hover::before {
+    igc-button::part(base):hover {
         background: transparent;
     }
 
     igc-button::part(base):focus {
-        background: transparent;
-        outline: none;
         box-shadow: none;
-
-        &::before {
-            background: transparent;
-        }
     }
 }
 

@@ -5,7 +5,7 @@ import {
   fixture,
   html,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import { IgcSliderBaseComponent } from './slider-base.js';
 import {
@@ -144,7 +144,7 @@ describe('Slider component', () => {
     });
 
     it('value should be changed when clicking and dragging the slider and corresponding events are fired', async () => {
-      const eventSpy = sinon.spy(slider, 'emitEvent');
+      const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
 
       slider.dispatchEvent(
@@ -610,7 +610,7 @@ describe('Slider component', () => {
     });
 
     it('value should be increased or decreased with 1 step when pressing right/top or down/left arrow keys', async () => {
-      const eventSpy = sinon.spy(slider, 'emitEvent');
+      const eventSpy = spy(slider, 'emitEvent');
       slider.step = 2;
       slider.value = 50;
       await elementUpdated(slider);
@@ -823,7 +823,7 @@ describe('Slider component', () => {
     });
 
     it('closest thumb value should be changed when clicking and dragging the slider and corresponding events are fired', async () => {
-      const eventSpy = sinon.spy(slider, 'emitEvent');
+      const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
 
       slider.dispatchEvent(
@@ -908,7 +908,7 @@ describe('Slider component', () => {
     });
 
     it('when the lower thumb is dragged beyond the upper thumb, the upper thumb should be focused and its dragging should continue.', async () => {
-      const eventSpy = sinon.spy(slider, 'emitEvent');
+      const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
       const lowerThumb = getLowerThumb(slider);
       const upperThumb = getUpperThumb(slider);

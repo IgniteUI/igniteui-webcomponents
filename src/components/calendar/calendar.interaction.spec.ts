@@ -1,5 +1,5 @@
 import { elementUpdated, expect } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import { createCalendarElement } from './calendar-rendering.spec.js';
 import {
@@ -45,7 +45,7 @@ describe('Calendar Interaction', () => {
       const currentDate = calendar.value;
       const prevDay = new Date(2021, 8, 28);
 
-      const eventSpy = sinon.spy(calendar, 'emitEvent');
+      const eventSpy = spy(calendar, 'emitEvent');
       dates?.item(4).querySelector('span')?.click();
       await elementUpdated(calendar);
 
@@ -162,7 +162,7 @@ describe('Calendar Interaction', () => {
     });
 
     it('should emit igcActiveDateChange event when active date is selected', async () => {
-      const eventSpy = sinon.spy(daysView, 'emitEvent');
+      const eventSpy = spy(daysView, 'emitEvent');
 
       dates?.item(4).querySelector('span')?.click();
       await elementUpdated(daysView);
@@ -195,7 +195,7 @@ describe('Calendar Interaction', () => {
     });
 
     it('should emit igcRangePreviewDateChange event', async () => {
-      const eventSpy = sinon.spy(daysView, 'emitEvent');
+      const eventSpy = spy(daysView, 'emitEvent');
 
       calendar.selection = 'range';
       await elementUpdated(calendar);

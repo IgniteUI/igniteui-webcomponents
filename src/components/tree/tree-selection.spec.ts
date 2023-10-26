@@ -1,5 +1,5 @@
 import { elementUpdated, expect } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
 
 import IgcTreeItemComponent from './tree-item.js';
 import {
@@ -183,7 +183,7 @@ describe('Tree Selection', () => {
       treeSelectionService = tree.selectionService;
       initialSelection = tree.items.filter((item) => item.selected === true);
       topLevelItems = tree.items.filter((i) => i.level === 0);
-      eventSpy = sinon.spy(tree, 'emitEvent');
+      eventSpy = spy(tree, 'emitEvent');
     });
 
     it('Should be able to set item.selected correctly', async () => {
@@ -689,7 +689,7 @@ describe('Tree Selection', () => {
     });
 
     it('Should be able to prevent the igcSelection event', async () => {
-      const eventSpy = sinon.spy(tree, 'emitEvent');
+      const eventSpy = spy(tree, 'emitEvent');
 
       const item2Children = topLevelItems[1].getChildren();
       const item211 = item2Children[0].getChildren()[0];
