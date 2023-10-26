@@ -34,6 +34,18 @@ const metadata: Meta<IgcSliderComponent> = {
       description: 'The name attribute of the control.',
       control: 'text',
     },
+    validationMessage: {
+      type: 'string',
+      description:
+        'A string containing the validation message of this element.',
+      control: 'text',
+    },
+    willValidate: {
+      type: 'boolean',
+      description:
+        'A boolean value which returns true if the element is a submittable element\nthat is a candidate for constraint validation.',
+      control: 'boolean',
+    },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
@@ -165,6 +177,13 @@ interface IgcSliderArgs {
   value: number;
   /** The name attribute of the control. */
   name: string;
+  /** A string containing the validation message of this element. */
+  validationMessage: string;
+  /**
+   * A boolean value which returns true if the element is a submittable element
+   * that is a candidate for constraint validation.
+   */
+  willValidate: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
   /** The minimum value of the slider scale. Defaults to 0. */
