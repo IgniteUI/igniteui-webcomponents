@@ -24,7 +24,7 @@ import {
   isDateInRanges,
 } from '../common/calendar.model.js';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
-import { all } from '../themes/days';
+import { all } from '../themes/days.js';
 import { styles } from '../themes/days-view.base.css.js';
 
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {

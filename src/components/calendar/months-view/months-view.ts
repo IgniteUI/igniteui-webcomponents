@@ -15,7 +15,7 @@ import {
 } from '../common/calendar-base.js';
 import { Calendar, TimeDeltaInterval } from '../common/calendar.model.js';
 import { setDateSafe } from '../common/utils.js';
-import { all } from '../themes/year-month';
+import { all } from '../themes/year-month.js';
 import { styles } from '../themes/year-month-view.base.css.js';
 
 /**
