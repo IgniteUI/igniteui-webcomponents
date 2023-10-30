@@ -6,6 +6,7 @@ import { styles as fluentDark } from './dark/expansion-panel.fluent.css.js';
 import { styles as indigoDark } from './dark/expansion-panel.indigo.css.js';
 import { styles as materialDark } from './dark/expansion-panel.material.css.js';
 // Light Overrides
+import { styles as base } from './expansion-panel.base.css.js';
 import { styles as bootstrapLight } from './light/expansion-panel.bootstrap.css.js';
 import { styles as fluentLight } from './light/expansion-panel.fluent.css.js';
 import { styles as indigoLight } from './light/expansion-panel.indigo.css.js';
@@ -14,7 +15,6 @@ import { styles as materialLight } from './light/expansion-panel.material.css.js
 import { styles as bootstrap } from './shared/expansion-panel.bootstrap.css.js';
 import { styles as fluent } from './shared/expansion-panel.fluent.css.js';
 import { styles as indigo } from './shared/expansion-panel.indigo.css.js';
-import { styles as material } from './shared/expansion-panel.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
@@ -22,7 +22,7 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${base} ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
@@ -37,7 +37,7 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${base} ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}

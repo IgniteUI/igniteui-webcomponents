@@ -6,6 +6,7 @@ import { styles as fluentDark } from './dark/dialog.fluent.css.js';
 import { styles as indigoDark } from './dark/dialog.indigo.css.js';
 import { styles as materialDark } from './dark/dialog.material.css.js';
 // Light Overrides
+import { styles as base } from './dialog.base.css.js';
 import { styles as bootstrapLight } from './light/dialog.bootstrap.css.js';
 import { styles as fluentLight } from './light/dialog.fluent.css.js';
 import { styles as indigoLight } from './light/dialog.indigo.css.js';
@@ -14,7 +15,6 @@ import { styles as materialLight } from './light/dialog.material.css.js';
 import { styles as bootstrap } from './shared/dialog.bootstrap.css.js';
 import { styles as fluent } from './shared/dialog.fluent.css.js';
 import { styles as indigo } from './shared/dialog.indigo.css.js';
-import { styles as material } from './shared/dialog.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
@@ -22,7 +22,7 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${base} ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
@@ -37,7 +37,7 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${base} ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}

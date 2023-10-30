@@ -1,5 +1,8 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use './light/themes' as *;
+
+$theme: $material;
 
 :host {
     --lines-clamped: 1;
@@ -8,6 +11,9 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    color: var-get($theme, 'body-color');
+    background: var-get($theme, 'body-background');
+    border-radius: var-get($theme, 'border-radius');
 }
 
 [part='header'] {
@@ -16,10 +22,12 @@
     cursor: pointer;
     padding-inline: pad-inline(24px);
     padding-block: pad-block(16px);
+    background: var-get($theme, 'header-background');
 
     &:focus,
     &:active {
         outline: transparent;
+        background: var-get($theme, 'header-focus-background');
     }
 
     *:not([part~='indicator']) {
@@ -32,14 +40,20 @@
     }
 }
 
-[part='title']::slotted(*) {
-    @include type-style('h5');
-    @include line-clamp(var(--lines-clamped), true, true);
+[part='title'] {
+    color: var-get($theme, 'header-title-color');
 
-    margin: 0;
+    &::slotted(*) {
+        @include type-style('h5');
+        @include line-clamp(var(--lines-clamped), true, true);
+
+        margin: 0;
+    }
 }
 
 [part='subtitle'] {
+    color: var-get($theme, 'header-description-color');
+
     &::slotted(*) {
         @include type-style('subtitle-2');
         @include ellipsis();
@@ -69,6 +83,8 @@
 }
 
 [part~='indicator'] {
+    color: var-get($theme, 'header-icon-color');
+
     igc-icon {
         --ig-size: 3;
     }
@@ -89,4 +105,10 @@
 
 :host([disabled]) {
     pointer-events: none;
+
+    [part='title'],
+    [part='subtitle'],
+    [part~='indicator'] {
+        color: var-get($theme, 'disabled-color');
+    }
 }
