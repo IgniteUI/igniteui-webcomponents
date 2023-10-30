@@ -1,5 +1,8 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use './light/themes' as *;
+
+$theme: $material;
 
 :host {
     position: fixed;
@@ -33,6 +36,10 @@
     gap: rem(24px);
     backface-visibility: hidden;
     backdrop-filter: blur(8px);
+    border-radius: var-get($theme, 'border-radius');
+    color: var-get($theme, 'text-color');
+    background: var-get($theme, 'background');
+    box-shadow: var-get($theme, 'elevation');
 }
 
 [part~='message'] {

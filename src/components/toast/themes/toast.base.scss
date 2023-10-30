@@ -1,5 +1,8 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use './light/themes' as *;
+
+$theme: $material;
 
 :host {
     @include type-style('body-2');
@@ -13,6 +16,12 @@
     transform: translateX(calc(-50% + .5px));
     margin: rem(42px) auto;
     min-width: rem(52px);
+    padding: rem(10px) rem(16px);
+    color: var-get($theme, 'text-color');
+    background: var-get($theme, 'background');
+    border: #{rem(1px)} solid var-get($theme, 'border-color');
+    box-shadow: var-get($theme, 'elevation');
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host([position='bottom']) {

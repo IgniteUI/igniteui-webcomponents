@@ -14,7 +14,7 @@ import { styles as materialLight } from './light/snackbar.material.css.js';
 import { styles as bootstrap } from './shared/snackbar.bootstrap.css.js';
 import { styles as fluent } from './shared/snackbar.fluent.css.js';
 import { styles as indigo } from './shared/snackbar.indigo.css.js';
-import { styles as material } from './shared/snackbar.material.css.js';
+import { styles as base } from './snackbar.base.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
@@ -22,7 +22,7 @@ const light = {
     ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${base} ${materialLight}
   `,
   fluent: css`
     ${fluent} ${fluentLight}
@@ -37,7 +37,7 @@ const dark = {
     ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${base} ${materialDark}
   `,
   fluent: css`
     ${fluent} ${fluentDark}

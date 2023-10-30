@@ -3,13 +3,6 @@
 
 $theme: $fluent;
 
-[part~='base'] {
-    border-radius: var-get($theme, 'border-radius');
-    color: var-get($theme, 'text-color');
-    background: var-get($theme, 'background');
-    box-shadow: var-get($theme, 'elevation');
-}
-
 [part~='message'] {
     @include type-style('caption');
 }
