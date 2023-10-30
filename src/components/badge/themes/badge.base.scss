@@ -1,5 +1,8 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
+@use './light/themes' as *;
+
+$theme: $material;
 
 :host {
     --size: #{rem(22px)};
@@ -31,8 +34,17 @@
     font-size: calc(var(--_badge-size) / 2) !important;
 }
 
+::slotted(igc-icon) {
+    color: var-get($theme, 'icon-color');
+}
+
 :host(:not(:empty)) [part='base'] {
     padding: calc(var(--size) / 8) calc(var(--size) / 5.5);
+}
+
+:host([variant='primary']) {
+    background: var-get($theme, 'background-color');
+    color: var-get($theme, 'text-color');
 }
 
 :host([variant='info']) {
@@ -58,4 +70,13 @@
 :host([shape='rounded']),
 :host([outlined][shape='rounded']) [part='base'] {
     border-radius: calc(var(--size) * 2);
+}
+
+:host([shape='square']),
+:host([outlined][shape='square']) [part='base'] {
+    border-radius: var-get($theme, 'border-radius');
+}
+
+:host([outlined]) [part='base'] {
+    box-shadow: inset 0 0 0 rem(2px) var-get($theme, 'border-color');
 }
