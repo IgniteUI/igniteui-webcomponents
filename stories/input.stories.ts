@@ -21,27 +21,37 @@ registerIconFromText(github.name, github.value);
 const metadata: Meta<IgcInputComponent> = {
   title: 'Input',
   component: 'igc-input',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: { description: { component: '' } },
+    actions: { handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'] },
+  },
   argTypes: {
+    value: {
+      type: 'string | Date',
+      description: 'The value of the control.',
+      options: ['string', 'Date'],
+      control: 'text',
+      table: { defaultValue: { summary: '' } },
+    },
     type: {
-      type: '"number" | "email" | "password" | "search" | "tel" | "text" | "url"',
+      type: '"email" | "number" | "password" | "search" | "tel" | "text" | "url"',
       description: 'The type attribute of the control.',
-      options: ['number', 'email', 'password', 'search', 'tel', 'text', 'url'],
+      options: ['email', 'number', 'password', 'search', 'tel', 'text', 'url'],
       control: { type: 'select' },
-      defaultValue: 'text',
+      table: { defaultValue: { summary: 'text' } },
     },
     inputmode: {
-      type: '"numeric" | "none" | "email" | "search" | "tel" | "url" | "txt" | "decimal"',
+      type: '"none" | "txt" | "decimal" | "numeric" | "tel" | "search" | "email" | "url"',
       description: 'The input mode attribute of the control.',
       options: [
-        'numeric',
         'none',
-        'email',
-        'search',
-        'tel',
-        'url',
         'txt',
         'decimal',
+        'numeric',
+        'tel',
+        'search',
+        'email',
+        'url',
       ],
       control: { type: 'select' },
     },
@@ -61,14 +71,16 @@ const metadata: Meta<IgcInputComponent> = {
       control: 'number',
     },
     min: {
-      type: 'string | number',
+      type: 'number | string',
       description: 'The min attribute of the control.',
-      control: 'text',
+      options: ['number', 'string'],
+      control: 'number',
     },
     max: {
-      type: 'string | number',
+      type: 'number | string',
       description: 'The max attribute of the control.',
-      control: 'text',
+      options: ['number', 'string'],
+      control: 'number',
     },
     step: {
       type: 'number',
@@ -79,30 +91,47 @@ const metadata: Meta<IgcInputComponent> = {
       type: 'boolean',
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     autocomplete: {
       type: 'string',
       description: 'The autocomplete attribute of the control.',
       control: 'text',
     },
-    tabIndex: { type: 'number', control: 'number', defaultValue: 0 },
-    value: {
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    name: {
       type: 'string',
-      description: 'The value of the control.',
+      description: 'The name attribute of the control.',
       control: 'text',
-      defaultValue: '',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     placeholder: {
       type: 'string',
@@ -114,69 +143,36 @@ const metadata: Meta<IgcInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
-    validationMessage: {
-      type: 'string',
-      description:
-        'A string containing the validation message of this element.',
-      control: 'text',
-    },
-    willValidate: {
-      type: 'boolean',
-      description:
-        'A boolean value which returns true if the element is a submittable element\nthat is a candidate for constraint validation.',
-      control: 'boolean',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled state of the component',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Control the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
   },
   args: {
-    type: 'text',
-    tabIndex: 0,
     value: '',
-    outlined: false,
-    readOnly: false,
+    type: 'text',
+    autofocus: false,
     required: false,
     disabled: false,
     invalid: false,
+    outlined: false,
+    readOnly: false,
   },
 };
 
 export default metadata;
 
 interface IgcInputArgs {
+  /** The value of the control. */
+  value: string | Date;
   /** The type attribute of the control. */
-  type: 'number' | 'email' | 'password' | 'search' | 'tel' | 'text' | 'url';
+  type: 'email' | 'number' | 'password' | 'search' | 'tel' | 'text' | 'url';
   /** The input mode attribute of the control. */
   inputmode:
-    | 'numeric'
     | 'none'
-    | 'email'
-    | 'search'
-    | 'tel'
-    | 'url'
     | 'txt'
-    | 'decimal';
+    | 'decimal'
+    | 'numeric'
+    | 'tel'
+    | 'search'
+    | 'email'
+    | 'url';
   /** The pattern attribute of the control. */
   pattern: string;
   /** The minimum string length required by the control. */
@@ -184,18 +180,23 @@ interface IgcInputArgs {
   /** The maximum string length of the control. */
   maxLength: number;
   /** The min attribute of the control. */
-  min: string | number;
+  min: number | string;
   /** The max attribute of the control. */
-  max: string | number;
+  max: number | string;
   /** The step attribute of the control. */
   step: number;
   /** The autofocus attribute of the control. */
   autofocus: boolean;
   /** The autocomplete attribute of the control. */
   autocomplete: string;
-  tabIndex: number;
-  /** The value of the control. */
-  value: string;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
   /** Makes the control a readonly field. */
@@ -204,21 +205,6 @@ interface IgcInputArgs {
   placeholder: string;
   /** The label for the control. */
   label: string;
-  /** Makes the control a required field in a form context. */
-  required: boolean;
-  /** The name attribute of the control. */
-  name: string;
-  /** A string containing the validation message of this element. */
-  validationMessage: string;
-  /**
-   * A boolean value which returns true if the element is a submittable element
-   * that is a candidate for constraint validation.
-   */
-  willValidate: boolean;
-  /** The disabled state of the component */
-  disabled: boolean;
-  /** Control the validity of the control. */
-  invalid: boolean;
 }
 type Story = StoryObj<IgcInputArgs>;
 

@@ -22,10 +22,27 @@ registerIconFromText(github.name, github.value);
 const metadata: Meta<IgcSelectComponent> = {
   title: 'Select',
   component: 'igc-select',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: {
+      description: {
+        component: 'Represents a control that provides a menu of options.',
+      },
+    },
+    actions: {
+      handles: [
+        'igcFocus',
+        'igcBlur',
+        'igcChange',
+        'igcOpening',
+        'igcOpened',
+        'igcClosing',
+        'igcClosed',
+      ],
+    },
+  },
   argTypes: {
     value: {
-      type: 'string | undefined',
+      type: 'string',
       description: 'The value attribute of the control.',
       control: 'text',
     },
@@ -33,12 +50,13 @@ const metadata: Meta<IgcSelectComponent> = {
       type: 'boolean',
       description: 'The outlined attribute of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     autofocus: {
       type: 'boolean',
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     label: {
       type: 'string',
@@ -54,63 +72,36 @@ const metadata: Meta<IgcSelectComponent> = {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
       control: 'text',
     },
-    validationMessage: {
-      type: 'string',
-      description:
-        'A string containing the validation message of this element.',
-      control: 'text',
-    },
-    willValidate: {
-      type: 'boolean',
-      description:
-        'A boolean value which returns true if the element is a submittable element\nthat is a candidate for constraint validation.',
-      control: 'boolean',
-    },
     disabled: {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     keepOpenOnSelect: {
       type: 'boolean',
       description: 'Whether the dropdown should be kept open on selection.',
       control: 'boolean',
-      defaultValue: false,
-    },
-    scrollStrategy: {
-      type: '"scroll" | "block" | "close"',
-      description:
-        'Determines the behavior of the component during scrolling the container.',
-      options: ['scroll', 'block', 'close'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'scroll',
-    },
-    keepOpenOnOutsideClick: {
-      type: 'boolean',
-      description:
-        'Whether the component should be kept open on clicking outside of it.',
-      control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the component.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     placement: {
       type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
@@ -131,26 +122,66 @@ const metadata: Meta<IgcSelectComponent> = {
         'left-end',
       ],
       control: { type: 'select' },
-      defaultValue: 'bottom-start',
+      table: { defaultValue: { summary: 'bottom-start' } },
+    },
+    positionStrategy: {
+      type: '"absolute" | "fixed"',
+      description: "Sets the component's positioning strategy.",
+      options: ['absolute', 'fixed'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'absolute' } },
+    },
+    scrollStrategy: {
+      type: '"scroll" | "block" | "close"',
+      description:
+        'Determines the behavior of the component during scrolling the container.',
+      options: ['scroll', 'block', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'scroll' } },
+    },
+    flip: {
+      type: 'boolean',
+      description:
+        "Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.\nWhen true, once enough space is detected on its preferred side, it will flip back.",
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     distance: {
       type: 'number',
       description: 'The distance from the target element.',
       control: 'number',
-      defaultValue: 0,
+      table: { defaultValue: { summary: 0 } },
+    },
+    keepOpenOnOutsideClick: {
+      type: 'boolean',
+      description:
+        'Whether the component should be kept open on clicking outside of it.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    sameWidth: {
+      type: 'boolean',
+      description:
+        "Whether the dropdown's width should be the same as the target's one.",
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
   },
   args: {
     outlined: false,
+    autofocus: false,
     required: false,
     disabled: false,
     invalid: false,
     keepOpenOnSelect: false,
-    scrollStrategy: 'scroll',
-    keepOpenOnOutsideClick: false,
     open: false,
     placement: 'bottom-start',
+    positionStrategy: 'absolute',
+    scrollStrategy: 'scroll',
+    flip: false,
     distance: 0,
+    keepOpenOnOutsideClick: false,
+    sameWidth: false,
   },
 };
 
@@ -158,7 +189,7 @@ export default metadata;
 
 interface IgcSelectArgs {
   /** The value attribute of the control. */
-  value: string | undefined;
+  value: string;
   /** The outlined attribute of the control. */
   outlined: boolean;
   /** The autofocus attribute of the control. */
@@ -171,23 +202,12 @@ interface IgcSelectArgs {
   required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** A string containing the validation message of this element. */
-  validationMessage: string;
-  /**
-   * A boolean value which returns true if the element is a submittable element
-   * that is a candidate for constraint validation.
-   */
-  willValidate: boolean;
   /** The disabled state of the component */
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
   /** Whether the dropdown should be kept open on selection. */
   keepOpenOnSelect: boolean;
-  /** Determines the behavior of the component during scrolling the container. */
-  scrollStrategy: 'scroll' | 'block' | 'close';
-  /** Whether the component should be kept open on clicking outside of it. */
-  keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
   /** The preferred placement of the component around the target element. */
@@ -204,26 +224,25 @@ interface IgcSelectArgs {
     | 'left'
     | 'left-start'
     | 'left-end';
+  /** Sets the component's positioning strategy. */
+  positionStrategy: 'absolute' | 'fixed';
+  /** Determines the behavior of the component during scrolling the container. */
+  scrollStrategy: 'scroll' | 'block' | 'close';
+  /**
+   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
+   * When true, once enough space is detected on its preferred side, it will flip back.
+   */
+  flip: boolean;
   /** The distance from the target element. */
   distance: number;
+  /** Whether the component should be kept open on clicking outside of it. */
+  keepOpenOnOutsideClick: boolean;
+  /** Whether the dropdown's width should be the same as the target's one. */
+  sameWidth: boolean;
 }
 type Story = StoryObj<IgcSelectArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: [
-      'igcFocus',
-      'igcBlur',
-      'igcChange',
-      'igcOpening',
-      'igcOpened',
-      'igcClosing',
-      'igcClosed',
-    ],
-  },
-});
 
 const items = [
   {

@@ -60,7 +60,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr
    */
   @property({ type: Number })
-  public get min() {
+  public get min(): number {
     return this._min;
   }
 
@@ -81,7 +81,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr
    */
   @property({ type: Number })
-  public get max() {
+  public get max(): number {
     return this._max;
   }
 
@@ -159,7 +159,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr
    */
   @property({ type: Number })
-  public get step() {
+  public get step(): number {
     return this._step;
   }
 

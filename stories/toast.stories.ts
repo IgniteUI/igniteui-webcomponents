@@ -26,27 +26,27 @@ const metadata: Meta<IgcToastComponent> = {
       type: 'boolean',
       description: 'Determines whether the toast is opened.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     displayTime: {
       type: 'number',
       description: 'Determines the time after which the toast will close',
       control: 'number',
-      defaultValue: 4000,
+      table: { defaultValue: { summary: 4000 } },
     },
     keepOpen: {
       type: 'boolean',
       description:
         'Determines whether the toast is closed automatically or not.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     position: {
-      type: '"top" | "bottom" | "middle"',
+      type: '"bottom" | "middle" | "top"',
       description: 'Sets the position of the toast.',
-      options: ['top', 'bottom', 'middle'],
+      options: ['bottom', 'middle', 'top'],
       control: { type: 'inline-radio' },
-      defaultValue: 'bottom',
+      table: { defaultValue: { summary: 'bottom' } },
     },
   },
   args: { open: false, displayTime: 4000, keepOpen: false, position: 'bottom' },
@@ -62,7 +62,7 @@ interface IgcToastArgs {
   /** Determines whether the toast is closed automatically or not. */
   keepOpen: boolean;
   /** Sets the position of the toast. */
-  position: 'top' | 'bottom' | 'middle';
+  position: 'bottom' | 'middle' | 'top';
 }
 type Story = StoryObj<IgcToastArgs>;
 

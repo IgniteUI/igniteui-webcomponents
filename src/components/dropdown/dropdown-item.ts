@@ -37,7 +37,7 @@ export default class IgcDropdownItemComponent extends LitElement {
    * @attr
    */
   @property()
-  public get value() {
+  public get value(): string {
     return this._value ? this._value : this.textContent ?? '';
   }
 

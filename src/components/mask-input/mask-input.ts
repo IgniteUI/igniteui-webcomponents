@@ -72,7 +72,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    */
   @property()
   @blazorTwoWayBind('igcChange', 'detail')
-  public get value() {
+  public get value(): string {
     return this.valueMode !== 'raw' ? this.maskedValue : this._value;
   }
 
@@ -87,7 +87,7 @@ export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
    * @attr
    */
   @property()
-  public get mask() {
+  public get mask(): string {
     return this._mask;
   }
 
