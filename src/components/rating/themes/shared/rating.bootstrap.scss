@@ -1,12 +1,6 @@
 @use 'styles/utilities/index' as *;
-@use '../light/themes' as *;
-
-$theme: $bootstrap;
 
 :host {
-    --symbol-full-color: #{var-get($theme, 'symbol-full-color')};
-    --symbol-empty-color: #{var-get($theme, 'symbol-empty-color')};
-
     gap: rem(4px);
 }
 
@@ -16,28 +10,8 @@ $theme: $bootstrap;
 
 [part~='label'] {
     @include type-style('body-1');
-
-    color: var-get($theme, 'label-color');
 }
 
 [part~='value-label'] {
     @include type-style('body-2');
-
-    color: var-get($theme, 'value-label');
-}
-
-:host([disabled]),
-:host(:disabled) {
-    --symbol-full-color: #{var-get($theme, 'disabled-full-symbol-color')};
-    --symbol-empty-color: #{var-get($theme, 'disabled-empty-symbol-color')};
-    --disabled-symbol-full-filter: #{var-get($theme, 'symbol-full-filter')};
-    --disabled-symbol-empty-filter: #{var-get($theme, 'symbol-empty-filter')};
-
-    [part~='label'] {
-        color: var-get($theme, 'disabled-label-color');
-    }
-
-    [part~='value-label'] {
-        color: var-get($theme, 'disabled-label-color');
-    }
 }
