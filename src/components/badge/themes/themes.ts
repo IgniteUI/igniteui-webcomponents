@@ -1,6 +1,5 @@
 import { css } from 'lit';
 
-import { styles as base } from './badge.base.css.js';
 // Dark Overrides
 import { styles as bootstrapDark } from './dark/badge.bootstrap.css.js';
 import { styles as fluentDark } from './dark/badge.fluent.css.js';
@@ -13,35 +12,36 @@ import { styles as indigoLight } from './light/badge.indigo.css.js';
 import { styles as materialLight } from './light/badge.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/badge.bootstrap.css.js';
+import { styles as shared } from './shared/badge.common.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${base} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${base} ${fluentLight}
+    ${shared} ${fluentLight}
   `,
   indigo: css`
-    ${base} ${indigoLight}
+    ${shared} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${base} ${materialDark}
+    ${shared} ${materialDark}
   `,
   fluent: css`
-    ${base} ${fluentDark}
+    ${shared} ${fluentDark}
   `,
   indigo: css`
-    ${base} ${indigoDark}
+    ${shared} ${indigoDark}
   `,
 };
 

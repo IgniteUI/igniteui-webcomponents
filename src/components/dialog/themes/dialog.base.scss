@@ -1,14 +1,9 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use './light/themes' as *;
-
-$theme: $material;
 
 :host {
     border-style: none;
     padding: unset;
-    background: var-get($theme, 'background');
-    border-radius: var-get($theme, 'border-radius');
 }
 
 [part='base'] {
@@ -19,13 +14,9 @@ $theme: $material;
     border: inherit;
     border-radius: inherit;
     min-width: inherit;
-    box-shadow: var-get($theme, 'elevation');
 }
 
 [part='content'] {
-    color: var-get($theme, 'message-color');
-    padding: rem(14px) rem(24px);
-
     @include type-style('body-1') {
         margin: 0;
     }
@@ -33,7 +24,6 @@ $theme: $material;
 
 [part='title'],
 [part='footer'] {
-    color: var-get($theme, 'title-color');
     display: flex;
     align-items: center;
 
@@ -42,16 +32,9 @@ $theme: $material;
     }
 }
 
-[part='title'] {
-    padding-inline: rem(24px);
-    padding-block-start: rem(16px);
-}
-
 [part='footer'] {
     flex-wrap: nowrap;
     justify-content: flex-end;
-    padding: rem(8px);
-    padding-block-start: 0;
 }
 
 ::slotted(*) {
@@ -80,7 +63,6 @@ dialog::backdrop {
     pointer-events: none;
     opacity: 0;
     transition: opacity 350ms ease-out;
-    background: var-get($theme, 'backdrop');
 }
 
 :host([open]) [part='backdrop'] {

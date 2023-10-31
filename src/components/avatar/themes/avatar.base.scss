@@ -1,8 +1,5 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
-@use './light/themes' as *;
-
-$theme: $material;
 
 :host {
     display: inline-flex;
@@ -20,15 +17,6 @@ $theme: $material;
     flex-shrink: 0;
     overflow: hidden;
     font-family: var(--ig-font-family);
-    color: var-get($theme, 'color');
-    background: var-get($theme, 'background');
-    width: var-get($theme, 'size');
-    height: var-get($theme, 'size');
-
-    [part='initials'] {
-        font-size: calc(var-get($theme, 'size') / 2);
-        line-height: calc(var-get($theme, 'size') / 2);
-    }
 }
 
 img {
@@ -46,12 +34,4 @@ img {
 
 :host([shape='square']) [part='base'] {
     border-radius: 0;
-}
-
-:host([shape='rounded']) [part='base'] {
-    border-radius: var-get($theme, 'border-radius');
-}
-
-:host([shape='circle']) [part='base'] {
-    border-radius: calc(var-get($theme, 'size') / 2);
 }

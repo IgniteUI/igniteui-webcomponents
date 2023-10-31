@@ -12,37 +12,37 @@ import { styles as indigoLight } from './light/toast.indigo.css.js';
 import { styles as materialLight } from './light/toast.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/toast.bootstrap.css.js';
+import { styles as shared } from './shared/toast.common.css.js';
 import { styles as fluent } from './shared/toast.fluent.css.js';
-import { styles as base } from './toast.base.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${base} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${base} ${indigoLight}
+    ${shared} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${base} ${materialDark}
+    ${shared} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${base} ${indigoDark}
+    ${shared} ${indigoDark}
   `,
 };
 

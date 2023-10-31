@@ -6,44 +6,44 @@ import { styles as fluentDark } from './dark/expansion-panel.fluent.css.js';
 import { styles as indigoDark } from './dark/expansion-panel.indigo.css.js';
 import { styles as materialDark } from './dark/expansion-panel.material.css.js';
 // Light Overrides
-import { styles as base } from './expansion-panel.base.css.js';
 import { styles as bootstrapLight } from './light/expansion-panel.bootstrap.css.js';
 import { styles as fluentLight } from './light/expansion-panel.fluent.css.js';
 import { styles as indigoLight } from './light/expansion-panel.indigo.css.js';
 import { styles as materialLight } from './light/expansion-panel.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/expansion-panel.bootstrap.css.js';
+import { styles as shared } from './shared/expansion-panel.common.css.js';
 import { styles as fluent } from './shared/expansion-panel.fluent.css.js';
 import { styles as indigo } from './shared/expansion-panel.indigo.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${base} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigo} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${base} ${materialDark}
+    ${shared} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${shared} ${indigo} ${indigoDark}
   `,
 };
 
