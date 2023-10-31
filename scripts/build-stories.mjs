@@ -1,7 +1,11 @@
 // @ts-check
-import { join } from 'node:path';
+import { exec } from 'node:child_process';
 import { readFile, access, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { promisify } from 'node:util';
 import { format } from 'prettier';
+
+const execAsync = promisify(exec);
 
 /**
  * @typedef {object} Config
@@ -188,12 +192,14 @@ class StoriesBuilder {
    * @returns {Promise<CEMSchema>}
    */
   async #parseManifest() {
-    return JSON.parse(
-      await readFile(
-        new URL(this.#config.manifestPath, import.meta.url),
-        'utf8'
-      )
-    );
+    const file = new URL(this.#config.manifestPath, import.meta.url);
+    try {
+      await access(file);
+    } catch {
+      await execAsync('npm run cem');
+    }
+
+    return JSON.parse(await readFile(file, 'utf8'));
   }
 
   /**
