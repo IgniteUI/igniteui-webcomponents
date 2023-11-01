@@ -128,8 +128,8 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
     this.addEventListener('keyup', this.handleKeyUp);
 
     addKeybindings(this, {
-      skip: [],
-      bindingDefaults: { preventDefault: true, triggers: ['keydownExclusive'] },
+      skip: () => this.disabled,
+      bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
       .set(arrowLeft, () => this.navigate(isLTR(this) ? -1 : 1))
       .set(arrowRight, () => this.navigate(isLTR(this) ? 1 : -1))

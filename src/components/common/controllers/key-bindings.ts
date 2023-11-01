@@ -40,11 +40,11 @@ export type KeyBindingSkipCallback = (
  * The event type which will trigger the bound handler.
  *
  * @remarks
- * `keydownExclusive` is similar to `keydown` with the exception
+ * `keydownRepeat` is similar to `keydown` with the exception
  * that after the handler is invoked the pressed state of the key is reset
  * in the controller.
  */
-export type KeyBindingTrigger = 'keydown' | 'keyup' | 'keydownExclusive';
+export type KeyBindingTrigger = 'keydown' | 'keyup' | 'keydownRepeat';
 
 /**
  * Configuration object for the controller.
@@ -67,11 +67,12 @@ export interface KeyBindingControllerOptions {
    * @example
    * ```ts
    * {
-   *  // Skip events originating from readonly elements
+   *  // Skip events originating from elements with `readonly` attribute
    *  skip: ['[readonly]']
    * }
    * ...
    * {
+   * // Same as above but with a callback
    *  skip: (node: Element) => node.hasAttribute('readonly')
    * }
    * ```
@@ -141,7 +142,7 @@ function isKeyup(event: Event) {
 
 function isKeydownTrigger(triggers?: KeyBindingTrigger[]) {
   return triggers
-    ? triggers.includes('keydown') || isKeydownExclusiveTrigger(triggers)
+    ? triggers.includes('keydown') || isKeydownRepeatTrigger(triggers)
     : false;
 }
 
@@ -149,8 +150,8 @@ function isKeyupTrigger(triggers?: KeyBindingTrigger[]) {
   return triggers ? triggers.includes('keyup') : false;
 }
 
-function isKeydownExclusiveTrigger(triggers?: KeyBindingTrigger[]) {
-  return triggers ? triggers.includes('keydownExclusive') : false;
+function isKeydownRepeatTrigger(triggers?: KeyBindingTrigger[]) {
+  return triggers ? triggers.includes('keydownRepeat') : false;
 }
 
 function isElement(node: EventTarget): node is Element {
@@ -262,7 +263,7 @@ class KeyBindingController implements ReactiveController {
 
         binding.handler.call(this._host, event);
 
-        if (isKeydownExclusiveTrigger(binding.options?.triggers)) {
+        if (isKeydownRepeatTrigger(binding.options?.triggers)) {
           this.pressedKeys.delete(key);
         }
       }
@@ -302,7 +303,7 @@ class KeyBindingController implements ReactiveController {
    * Register a handler function which is called when the target receives a key
    * which "activates" it.
    *
-   * In the browser context this is usually either an Enter or Space keypress.
+   * In the browser context this is usually either an Enter and/or Space keypress.
    */
   public setActivateHandler(
     fn: KeyBindingHandler,
