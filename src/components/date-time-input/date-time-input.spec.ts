@@ -9,8 +9,18 @@ import { spy } from 'sinon';
 
 import IgcDateTimeInputComponent from './date-time-input.js';
 import { DatePart, DatePartDeltas, DateTimeUtil } from './date-util.js';
+import {
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  ctrlKey,
+} from '../common/controllers/key-bindings.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import {
+  FormAssociatedTestBed,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 import { MaskParser } from '../mask-input/mask-parser.js';
 
 describe('Date Time Input component', () => {
@@ -393,10 +403,7 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
-
+      simulateKeyboard(input, arrowUp);
       await elementUpdated(el);
 
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() + 1);
@@ -409,10 +416,7 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
-      );
-
+      simulateKeyboard(input, arrowDown);
       await elementUpdated(el);
 
       expect(el.value!.getFullYear()).to.equal(value.getFullYear() - 1);
@@ -425,7 +429,7 @@ describe('Date Time Input component', () => {
       el.focus();
       await elementUpdated(el);
 
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      simulateKeyboard(input, arrowDown);
       await elementUpdated(el);
 
       expect(el.value.getFullYear()).to.equal(value.getFullYear());
@@ -467,28 +471,14 @@ describe('Date Time Input component', () => {
       await elementUpdated(el);
 
       //Move selection to the beginning of 'year' part.
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowLeft',
-          ctrlKey: true,
-          bubbles: true,
-        })
-      );
-
+      simulateKeyboard(input, [ctrlKey, arrowLeft]);
       await elementUpdated(el);
 
       expect(input.selectionStart).to.equal(6);
       expect(input.selectionEnd).to.equal(6);
 
       //Move selection to the end of 'year' part.
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowRight',
-          ctrlKey: true,
-          bubbles: true,
-        })
-      );
-
+      simulateKeyboard(input, [ctrlKey, arrowRight]);
       await elementUpdated(el);
 
       expect(input.selectionStart).to.equal(10);
@@ -612,10 +602,7 @@ describe('Date Time Input component', () => {
 
       expect(el.value).to.be.null;
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: ';', bubbles: true, ctrlKey: true })
-      );
-
+      simulateKeyboard(input, [ctrlKey, ';']);
       await elementUpdated(el);
 
       expect(el.value).to.not.be.undefined;
@@ -628,18 +615,14 @@ describe('Date Time Input component', () => {
       el.value = value;
       el.spinLoop = false;
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
+      simulateKeyboard(input, 'ArrowUp');
       await elementUpdated(el);
 
       expect(el.value!.getDate()).to.equal(value.getDate());
 
       el.spinLoop = true;
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
+      simulateKeyboard(input, 'ArrowUp');
       await elementUpdated(el);
 
       expect(el.value!.getDate()).to.equal(1);
@@ -760,17 +743,15 @@ describe('Date Time Input component', () => {
       expect(eventSpy).calledOnceWithExactly('igcFocus');
       eventSpy.resetHistory();
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
+      simulateKeyboard(input, arrowUp);
       await elementUpdated(el);
+
       expect(eventSpy).calledWith('igcInput');
       eventSpy.resetHistory();
 
-      input.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
-      );
+      simulateKeyboard(input, arrowDown);
       await elementUpdated(el);
+
       expect(eventSpy).calledWith('igcInput');
       eventSpy.resetHistory();
 
