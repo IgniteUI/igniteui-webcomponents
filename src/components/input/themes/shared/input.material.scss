@@ -26,6 +26,8 @@ $fs: rem(16px) !default;
 }
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
     input:placeholder-shown + [part='notch'] {
         @extend %floated-styles;
     }

@@ -8,6 +8,8 @@ $resting-height: calc(var-get($theme, 'size') - #{($resting-border-width * 2)});
 $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
     [part='prefix'],
     [part='suffix'] {
         font-size: rem(14px);
