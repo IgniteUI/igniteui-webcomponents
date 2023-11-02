@@ -69,7 +69,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
    * Determines whether the snackbar should close after the displayTime is over.
    * @attr keep-open
    */
-  @property({ type: Boolean, attribute: 'keep-open' })
+  @property({ type: Boolean, attribute: 'keep-open', reflect: true })
   public keepOpen = false;
 
   /**
