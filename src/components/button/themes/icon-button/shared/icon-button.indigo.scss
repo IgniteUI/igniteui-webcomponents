@@ -33,6 +33,8 @@ $outlined-theme: $indigo-outlined;
 :host([variant='flat']) {
     @include css-vars-from-theme($flat-theme, 'ig-icon-button');
 
+    --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
+
     ::slotted(igc-ripple) {
         border-radius: var-get($flat-theme, 'border-radius');
     }
@@ -40,6 +42,8 @@ $outlined-theme: $indigo-outlined;
 
 :host([variant='contained']) {
     @include css-vars-from-theme($contained-theme, 'ig-icon-button');
+
+    --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
 
     [part='base'] {
         color: var-get($contained-theme, 'foreground');
@@ -67,6 +71,8 @@ $outlined-theme: $indigo-outlined;
 
 :host([variant='outlined']) {
     @include css-vars-from-theme($outlined-theme, 'ig-icon-button');
+
+    --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
 
     [part='base'] {
         box-shadow: none;
