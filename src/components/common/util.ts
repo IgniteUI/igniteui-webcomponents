@@ -128,13 +128,26 @@ export function isDefined<T = unknown>(value: T) {
   return value !== undefined;
 }
 
-/** Convenient wrapper for `Array.some` */
-export function any<T>(
-  arr: T[],
-  predicate: keyof T | ((item: T, idx: number, array: T[]) => boolean)
-) {
-  if (predicate instanceof Function) {
-    return arr.some(predicate);
+export function* iterNodes<T = Node>(
+  root: Node,
+  whatToShow?: keyof typeof NodeFilter,
+  filter?: (node: T) => boolean
+): Generator<T> {
+  const iter = document.createTreeWalker(
+    root,
+    NodeFilter[whatToShow ?? 'SHOW_ALL']
+  );
+  let node = iter.nextNode() as T;
+
+  while (node) {
+    if (filter) {
+      if (filter(node)) {
+        yield node;
+      }
+    } else {
+      yield node;
+    }
+
+    node = iter.nextNode() as T;
   }
-  return arr.some((item) => Boolean(item[predicate]));
 }
