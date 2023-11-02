@@ -1,20 +1,30 @@
+import { radioactive } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 import {
   IgcButtonComponent,
+  IgcIconComponent,
   IgcSnackbarComponent,
   defineComponents,
+  registerIconFromText,
 } from '../src/index.js';
 
-defineComponents(IgcSnackbarComponent, IgcButtonComponent);
+registerIconFromText(radioactive.name, radioactive.value);
+defineComponents(IgcSnackbarComponent, IgcButtonComponent, IgcIconComponent);
 
 // region default
 const metadata: Meta<IgcSnackbarComponent> = {
   title: 'Snackbar',
   component: 'igc-snackbar',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.',
+      },
+    },
+  },
   argTypes: {
     open: {
       type: 'boolean',
@@ -70,39 +80,48 @@ type Story = StoryObj<IgcSnackbarArgs>;
 
 // endregion
 
-const handleOpen = () => {
-  const snackbar = document.querySelector(
-    'igc-snackbar'
-  ) as IgcSnackbarComponent;
-  snackbar?.show();
+export const Basic: Story = {
+  render: ({
+    open,
+    keepOpen,
+    displayTime,
+    actionText = 'Close',
+    position,
+  }) => html`
+    <igc-snackbar
+      id="snackbar"
+      ?open=${open}
+      ?keep-open=${keepOpen}
+      .displayTime=${displayTime}
+      .actionText=${actionText}
+      .position=${position}
+      @igcAction=${({ target }) => target.hide()}
+      >Snackbar Message</igc-snackbar
+    >
+
+    <igc-button onclick="snackbar.show()">Open snackbar</igc-button>
+    <igc-button onclick="snackbar.hide()">Close snackbar</igc-button>
+  `,
 };
 
-const handleHide = () => {
-  const snackbar = document.querySelector(
-    'igc-snackbar'
-  ) as IgcSnackbarComponent;
-  snackbar?.hide();
+export const SlottedAction: Story = {
+  render: ({ open, keepOpen, displayTime, position }) => html`
+    <igc-snackbar
+      id="snackbar"
+      ?open=${open}
+      ?keep-open=${keepOpen}
+      .displayTime=${displayTime}
+      .position=${position}
+      @igcAction=${({ target }) => target.hide()}
+    >
+      Snackbar with slotted custom action
+      <igc-button slot="action" variant="flat">
+        <igc-icon name=${radioactive.name}></igc-icon>
+        OK
+      </igc-button>
+    </igc-snackbar>
+
+    <igc-button onclick="snackbar.show()">Open snackbar</igc-button>
+    <igc-button onclick="snackbar.hide()">Close snackbar</igc-button>
+  `,
 };
-
-const Template = ({
-  open,
-  keepOpen,
-  displayTime,
-  actionText = 'Close',
-  position = 'bottom',
-}: IgcSnackbarArgs) => html`
-  <igc-snackbar
-    .open=${open}
-    ?keep-open=${keepOpen}
-    display-time=${ifDefined(displayTime)}
-    action-text=${ifDefined(actionText)}
-    .position=${position}
-  >
-    Snackbar Message
-  </igc-snackbar>
-  <igc-button @click="${handleOpen}">Open Snackbar</igc-button>
-  <igc-button @click="${handleHide}">Hide Snackbar</igc-button>
-`;
-
-export const Basic: Story = Template.bind({});
-document.addEventListener('igcAction', handleHide);

@@ -1,6 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { styles } from './themes/snackbar.base.css.js';
 import { all } from './themes/themes.js';
@@ -8,6 +7,7 @@ import { AnimationPlayer } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
 import { themes } from '../../theming/theming-decorator.js';
 import IgcButtonComponent from '../button/button.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -16,21 +16,23 @@ export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
 }
 
-@themes(all, true)
 /**
  * A snackbar component is used to provide feedback about an operation
  * by showing a brief message at the bottom of the screen.
  *
  * @element igc-snackbar
  *
- * @slot - Renders the snackbar content.
+ * @slot - Default slot to render the snackbar content.
+ * @slot action - Renders the action part of the snackbar. Usually an interactive element (button)
  *
  * @fires igcAction - Emitted when the snackbar action button is clicked.
  *
  * @csspart base - The base wrapper of the snackbar component.
  * @csspart message - The snackbar message.
- * @csspart action - The snackbar action button.
+ * @csspart action - The default snackbar action button.
+ * @csspart action-container - The area holding the actions.
  */
+@themes(all, true)
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,
   Constructor<LitElement>
@@ -42,6 +44,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
     registerComponent(this, IgcButtonComponent);
   }
 
+  private _internals: ElementInternals;
   private autoHideTimeout!: number;
   private animationPlayer!: AnimationPlayer;
 
@@ -83,8 +86,14 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   @property({ attribute: 'action-text' })
   public actionText!: string;
 
-  protected override firstUpdated() {
-    this.animationPlayer = new AnimationPlayer(this.content);
+  @watch('displayTime', { waitUntilFirstUpdate: true })
+  protected displayTimeChange() {
+    this.setAutoHideTimer();
+  }
+
+  @watch('keepOpen', { waitUntilFirstUpdate: true })
+  protected keepOpenChange() {
+    clearTimeout(this.autoHideTimeout);
   }
 
   private async toggleAnimation(dir: 'open' | 'close') {
@@ -98,22 +107,38 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
     return event.type === 'finish';
   }
 
-  /** Opens the snackbar. */
-  public show() {
-    if (this.open) {
-      return;
-    }
-
-    this.toggleAnimation('open');
-    this.open = true;
-
+  private setAutoHideTimer() {
     clearTimeout(this.autoHideTimeout);
-    if (this.open && !this.keepOpen) {
+    if (this.open && this.displayTime > 0 && !this.keepOpen) {
       this.autoHideTimeout = window.setTimeout(
         () => this.hide(),
         this.displayTime
       );
     }
+  }
+
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+
+    this._internals.role = 'status';
+    this._internals.ariaLive = 'polite';
+  }
+
+  protected override firstUpdated() {
+    this.animationPlayer = new AnimationPlayer(this.content);
+  }
+
+  /** Opens the snackbar. */
+  public async show() {
+    if (this.open) {
+      return;
+    }
+
+    this.open = true;
+    await this.toggleAnimation('open');
+
+    this.setAutoHideTimer();
   }
 
   /** Closes the snackbar. */
@@ -122,9 +147,10 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
       return;
     }
 
+    clearTimeout(this.autoHideTimeout);
+
     await this.toggleAnimation('close');
     this.open = false;
-    clearTimeout(this.autoHideTimeout);
   }
 
   /** Toggles the open state of the component. */
@@ -138,22 +164,22 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
 
   protected override render() {
     return html`
-      <div part="base">
+      <div part="base" .inert=${!this.open}>
         <span part="message">
           <slot></slot>
         </span>
-        ${this.actionText
-          ? html`
-              <igc-button
-                variant="flat"
+
+        <slot name="action" part="action-container" @click=${this.handleClick}>
+          ${this.actionText
+            ? html`<igc-button
+                type="button"
                 part="action"
+                variant="flat"
                 size="small"
-                @click=${this.handleClick}
-              >
-                ${ifDefined(this.actionText)}
-              </igc-button>
-            `
-          : nothing}
+                >${this.actionText}</igc-button
+              >`
+            : nothing}
+        </slot>
       </div>
     `;
   }
