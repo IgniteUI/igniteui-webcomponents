@@ -5,6 +5,7 @@ $theme: $indigo;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
     color: var-get($theme, 'color');
 }
 
