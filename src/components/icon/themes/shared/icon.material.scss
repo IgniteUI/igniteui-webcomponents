@@ -4,6 +4,7 @@
 $theme: $material;
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     color: var-get($theme, 'color');
 }
 

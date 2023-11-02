@@ -7,24 +7,28 @@ $fab-theme: $material-fab;
 $outlined-theme: $material-outlined;
 
 :host([variant='flat']) {
+    --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
     [part='base'] {
         height: var-get($flat-theme, 'size');
     }
 }
 
 :host([variant='outlined']) {
+    --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
     [part='base'] {
         height: var-get($outlined-theme, 'size');
     }
 }
 
 :host([variant='contained']) {
+    --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
     [part='base'] {
         height: var-get($contained-theme, 'size');
     }
 }
 
 :host([variant='fab']) {
+    --component-size: var(--ig-size, #{var-get($fab-theme, 'default-size')});
     [part='base'] {
         height: var-get($fab-theme, 'size');
     }

@@ -3,6 +3,10 @@
 
 $theme: $indigo;
 
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+}
+
 [part='base'] {
     color: var-get($theme, 'color');
     background: var-get($theme, 'background');
