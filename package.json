@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "npm run storybook",
-    "build": "npm run clean && npm run build:styles && npm run build:typescript && npm run build:meta",
+    "build": "npm run clean && npm run build:styles && npm run build:typescript && npm run cem && npm run build:meta",
     "build:publish": "node scripts/build.mjs",
     "build:typescript": "tsc",
     "cem": "cem analyze --config cem.config.mjs",

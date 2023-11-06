@@ -1,6 +1,6 @@
 // @ts-check
 import { exec } from 'node:child_process';
-import { readFile, access, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { format } from 'prettier';
@@ -194,12 +194,11 @@ class StoriesBuilder {
   async #parseManifest() {
     const file = new URL(this.#config.manifestPath, import.meta.url);
     try {
-      await access(file);
+      return JSON.parse(await readFile(file, 'utf8'));
     } catch {
       await execAsync('npm run cem');
+      return JSON.parse(await readFile(file, 'utf8'));
     }
-
-    return JSON.parse(await readFile(file, 'utf8'));
   }
 
   /**
@@ -320,14 +319,14 @@ class StoriesBuilder {
 
   async #writeStory(name, definition) {
     const file = this.#getFilePath(definition.component);
+    let data = '';
 
     try {
-      await access(file);
+      data = await readFile(file, 'utf8');
     } catch (e) {
       return;
     }
 
-    const data = await readFile(file, 'utf8');
     const storyMeta = (
       await format(template(name, definition), {
         singleQuote: true,
