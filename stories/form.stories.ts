@@ -42,6 +42,7 @@ const metadata: Meta<IgcFormComponent> = {
           'The form is a component used to collect user input from\ninteractive controls.',
       },
     },
+    actions: { handles: ['igcSubmit', 'igcReset'] },
   },
   argTypes: {
     novalidate: {
@@ -49,7 +50,7 @@ const metadata: Meta<IgcFormComponent> = {
       description:
         'Specifies if form data validation should be skipped on submit.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { novalidate: false },
@@ -105,12 +106,6 @@ const handleClear = () => {
   ) as IgcDateTimeInputComponent;
   input?.clear();
 };
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcSubmit', 'igcReset'],
-  },
-});
 
 const Template = ({ novalidate, disabled, outlined }: IgcFormArgs) => {
   const radios = ['Male', 'Female'];

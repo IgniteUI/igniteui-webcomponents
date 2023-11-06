@@ -18,7 +18,7 @@ const icons = all.map((icon) => icon.name);
 const metadata: Meta<IgcIconButtonComponent> = {
   title: 'IconButton',
   component: 'igc-icon-button',
-  parameters: { docs: { description: {} } },
+  parameters: { docs: { description: { component: '' } } },
   argTypes: {
     name: {
       type: 'string',
@@ -34,14 +34,14 @@ const metadata: Meta<IgcIconButtonComponent> = {
       type: 'boolean',
       description: 'Whether to flip the icon button. Useful for RTL layouts.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     variant: {
       type: '"flat" | "contained" | "outlined"',
       description: 'The visual variant of the icon button.',
       options: ['flat', 'contained', 'outlined'],
       control: { type: 'inline-radio' },
-      defaultValue: 'contained',
+      table: { defaultValue: { summary: 'contained' } },
     },
     type: {
       type: '"button" | "reset" | "submit"',
@@ -61,10 +61,10 @@ const metadata: Meta<IgcIconButtonComponent> = {
       control: 'text',
     },
     target: {
-      type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
+      type: '"_blank" | "_parent" | "_self" | "_top"',
       description:
         'Where to display the linked URL, as the name for a browsing context.',
-      options: ['_blank', '_parent', '_self', '_top', 'undefined'],
+      options: ['_blank', '_parent', '_self', '_top'],
       control: { type: 'select' },
     },
     rel: {
@@ -77,7 +77,7 @@ const metadata: Meta<IgcIconButtonComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { mirrored: false, variant: 'contained', disabled: false },
@@ -101,7 +101,7 @@ interface IgcIconButtonArgs {
   /** Prompts to save the linked URL instead of navigating to it. */
   download: string;
   /** Where to display the linked URL, as the name for a browsing context. */
-  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  target: '_blank' | '_parent' | '_self' | '_top';
   /**
    * The relationship of the linked URL.
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
@@ -152,7 +152,7 @@ const Template = ({
       rel=${ifDefined(rel)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .disabled=${ifDefined(disabled)}
+      .disabled=${disabled}
     >
       <igc-ripple></igc-ripple>
     </igc-icon-button>
@@ -170,7 +170,7 @@ const Template = ({
       rel=${ifDefined(rel)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .disabled=${ifDefined(disabled)}
+      .disabled=${disabled}
     >
       <igc-ripple></igc-ripple>
       💙
@@ -181,7 +181,7 @@ const Template = ({
       rel=${ifDefined(rel)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .disabled=${ifDefined(disabled)}
+      .disabled=${disabled}
     >
       <span class="material-icons">favorite</span>
     </igc-icon-button>
@@ -191,7 +191,7 @@ const Template = ({
       rel=${ifDefined(rel)}
       download=${ifDefined(download)}
       variant=${ifDefined(variant)}
-      .disabled=${ifDefined(disabled)}
+      .disabled=${disabled}
     >
       <i class="fa-solid fa-droplet"></i>
     </igc-icon-button>

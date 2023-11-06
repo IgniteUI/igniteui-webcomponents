@@ -21,8 +21,6 @@ const metadata: Meta<IgcRippleComponent> = {
       },
     },
   },
-  argTypes: {},
-  args: {},
 };
 
 export default metadata;

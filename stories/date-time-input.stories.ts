@@ -24,11 +24,18 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
           'A date time input is an input field that lets you set and edit the date and time in a chosen input element\nusing customizable display and input formats.',
       },
     },
+    actions: { handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'] },
   },
   argTypes: {
     inputFormat: {
       type: 'string',
       description: 'The date format to apply on the input.',
+      control: 'text',
+    },
+    value: {
+      type: 'string | Date',
+      description: 'The value of the input.',
+      options: ['string', 'Date'],
       control: 'text',
     },
     min: {
@@ -51,35 +58,53 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       type: 'boolean',
       description: 'Sets whether to loop over the currently spun segment.',
       control: 'boolean',
-      defaultValue: true,
+      table: { defaultValue: { summary: true } },
     },
     locale: {
       type: 'string',
       description: 'The locale settings used to display the value.',
       control: 'text',
-      defaultValue: 'en',
+      table: { defaultValue: { summary: 'en' } },
     },
     prompt: {
       type: 'string',
       description: 'The prompt symbol to use for unfilled parts of the mask.',
       control: 'text',
     },
-    value: {
-      type: 'Date | null',
-      description: 'The value of the input.',
-      control: 'date',
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    name: {
+      type: 'string',
+      description: 'The name attribute of the control.',
+      control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     placeholder: {
       type: 'string',
@@ -91,50 +116,15 @@ const metadata: Meta<IgcDateTimeInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
-    validationMessage: {
-      type: 'string',
-      description:
-        'A string containing the validation message of this element.',
-      control: 'text',
-    },
-    willValidate: {
-      type: 'boolean',
-      description:
-        'A boolean value which returns true if the element is a submittable element\nthat is a candidate for constraint validation.',
-      control: 'boolean',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled state of the component',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Control the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
   },
   args: {
     spinLoop: true,
     locale: 'en',
-    outlined: false,
-    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
+    outlined: false,
+    readOnly: false,
   },
 };
 
@@ -143,6 +133,8 @@ export default metadata;
 interface IgcDateTimeInputArgs {
   /** The date format to apply on the input. */
   inputFormat: string;
+  /** The value of the input. */
+  value: string | Date;
   /** The minimum value required for the input to remain valid. */
   min: Date;
   /** The maximum value required for the input to remain valid. */
@@ -158,8 +150,14 @@ interface IgcDateTimeInputArgs {
   locale: string;
   /** The prompt symbol to use for unfilled parts of the mask. */
   prompt: string;
-  /** The value of the input. */
-  value: Date | null;
+  /** Makes the control a required field in a form context. */
+  required: boolean;
+  /** The name attribute of the control. */
+  name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
+  /** Control the validity of the control. */
+  invalid: boolean;
   /** Whether the control will have outlined appearance. */
   outlined: boolean;
   /** Makes the control a readonly field. */
@@ -168,21 +166,6 @@ interface IgcDateTimeInputArgs {
   placeholder: string;
   /** The label for the control. */
   label: string;
-  /** Makes the control a required field in a form context. */
-  required: boolean;
-  /** The name attribute of the control. */
-  name: string;
-  /** A string containing the validation message of this element. */
-  validationMessage: string;
-  /**
-   * A boolean value which returns true if the element is a submittable element
-   * that is a candidate for constraint validation.
-   */
-  willValidate: boolean;
-  /** The disabled state of the component */
-  disabled: boolean;
-  /** Control the validity of the control. */
-  invalid: boolean;
 }
 type Story = StoryObj<IgcDateTimeInputArgs>;
 
@@ -202,12 +185,6 @@ registerIcon(
   'down',
   'https://unpkg.com/material-design-icons@3.0.1/navigation/svg/production/ic_arrow_drop_down_24px.svg'
 );
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcChange', 'igcInput'],
-  },
-});
 
 const Template = ({
   inputFormat,

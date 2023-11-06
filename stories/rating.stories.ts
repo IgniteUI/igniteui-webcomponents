@@ -33,6 +33,7 @@ const metadata: Meta<IgcRatingComponent> = {
           "Rating provides insight regarding others' opinions and experiences,\nand can allow the user to submit a rating of their own",
       },
     },
+    actions: { handles: ['igcChange', 'igcHover'] },
   },
   argTypes: {
     max: {
@@ -40,14 +41,14 @@ const metadata: Meta<IgcRatingComponent> = {
       description:
         'The maximum value for the rating.\n\nIf there are projected symbols, the maximum value will be resolved\nbased on the number of symbols.',
       control: 'number',
-      defaultValue: 5,
+      table: { defaultValue: { summary: 5 } },
     },
     step: {
       type: 'number',
       description:
         'The minimum value change allowed.\n\nValid values are in the interval between 0 and 1 inclusive.',
       control: 'number',
-      defaultValue: 1,
+      table: { defaultValue: { summary: 1 } },
     },
     label: {
       type: 'string',
@@ -64,54 +65,42 @@ const metadata: Meta<IgcRatingComponent> = {
       type: 'number',
       description: 'The current value of the component',
       control: 'number',
-      defaultValue: 0,
+      table: { defaultValue: { summary: 0 } },
     },
     hoverPreview: {
       type: 'boolean',
       description: 'Sets hover preview behavior for the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     single: {
       type: 'boolean',
       description: 'Toggles single selection visual mode.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
       control: 'text',
     },
-    validationMessage: {
-      type: 'string',
-      description:
-        'A string containing the validation message of this element.',
-      control: 'text',
-    },
-    willValidate: {
-      type: 'boolean',
-      description:
-        'A boolean value which returns true if the element is a submittable element\nthat is a candidate for constraint validation.',
-      control: 'boolean',
-    },
     disabled: {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: {
@@ -161,13 +150,6 @@ interface IgcRatingArgs {
   single: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** A string containing the validation message of this element. */
-  validationMessage: string;
-  /**
-   * A boolean value which returns true if the element is a submittable element
-   * that is a candidate for constraint validation.
-   */
-  willValidate: boolean;
   /** The disabled state of the component */
   disabled: boolean;
   /** Control the validity of the control. */
@@ -176,12 +158,6 @@ interface IgcRatingArgs {
 type Story = StoryObj<IgcRatingArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcChange', 'igcHover'],
-  },
-});
 
 const heartSVG = svg`<?xml version="1.0" ?><svg
 viewBox="0 0 24 24"

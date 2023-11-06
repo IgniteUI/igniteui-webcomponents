@@ -12,6 +12,7 @@ const metadata: Meta<IgcDialogComponent> = {
   component: 'igc-dialog',
   parameters: {
     docs: { description: { component: 'Represents a Dialog component.' } },
+    actions: { handles: ['igcClosing', 'igcClosed'] },
   },
   argTypes: {
     keepOpenOnEscape: {
@@ -19,36 +20,31 @@ const metadata: Meta<IgcDialogComponent> = {
       description:
         "Whether the dialog should be kept open when pressing the 'ESCAPE' button.",
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     closeOnOutsideClick: {
       type: 'boolean',
       description:
         'Whether the dialog should be closed when clicking outside of it.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     hideDefaultAction: {
       type: 'boolean',
       description:
         'Whether to hide the default action button for the dialog.\n\nWhen there is projected content in the `footer` slot this property\nhas no effect.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     open: {
       type: 'boolean',
       description: 'Whether the dialog is opened.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     title: {
       type: 'string',
       description: 'Sets the title of the dialog.',
-      control: 'text',
-    },
-    returnValue: {
-      type: 'string',
-      description: 'Sets the return value for the dialog.',
       control: 'text',
     },
   },
@@ -78,18 +74,10 @@ interface IgcDialogArgs {
   open: boolean;
   /** Sets the title of the dialog. */
   title: string;
-  /** Sets the return value for the dialog. */
-  returnValue: string;
 }
 type Story = StoryObj<IgcDialogArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcClosing', 'igcClosed'],
-  },
-});
 
 const openDialog = (id: string) =>
   (document.getElementById(id) as IgcDialogComponent).show();
