@@ -84,7 +84,7 @@
     "eslint-plugin-storybook": "^0.6.15",
     "globby": "^13.2.2",
     "husky": "^8.0.3",
-    "ig-typedoc-theme": "^5.0.0-beta.2",
+    "ig-typedoc-theme": "^5.0.0",
     "igniteui-theming": "^3.3.0",
     "keep-a-changelog": "^2.4.1",
     "lint-staged": "^15.0.2",
@@ -107,7 +107,7 @@
     "ts-lit-plugin": "^2.0.0",
     "tslib": "^2.6.2",
     "typedoc": "^0.25.3",
-    "typedoc-plugin-localization": "^3.0.3-beta.1",
+    "typedoc-plugin-localization": "^3.0.3",
     "typescript": "^5.0.4",
     "vite": "^4.5.0",
     "web-component-analyzer": "^2.0.0"
