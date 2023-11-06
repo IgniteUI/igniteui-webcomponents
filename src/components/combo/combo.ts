@@ -47,6 +47,12 @@ import { IgcToggleComponent } from '../toggle/types.js';
 
 /* blazorSupportsVisualChildren */
 /**
+ * The Combo component is similar to the Select component in that it provides a list of options from which the user can make a selection.
+ * In contrast to the Select component, the Combo component displays all options in a virtualized list of items,
+ * meaning the combo box can simultaneously show thousands of options, where one or more options can be selected.
+ * Additionally, users can create custom item templates, allowing for robust data visualization.
+ * The Combo component features case-sensitive filtering, grouping, complex data binding, dynamic addition of values and more.
+ *
  * @element igc-combo
  *
  * @slot prefix - Renders content before the input.
@@ -468,11 +474,11 @@ export default class IgcComboComponent<T extends object = any>
   }
 
   /**
-   * Returns the current selection as a list of commma separated values,
+   * Returns the current selection as a list of comma separated values,
    * represented by the value key, when provided.
    */
   @property({ attribute: true, type: Array })
-  public get value() {
+  public get value(): ComboValue<T>[] {
     return this._value;
   }
 

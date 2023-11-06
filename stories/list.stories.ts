@@ -22,8 +22,6 @@ const metadata: Meta<IgcListComponent> = {
       },
     },
   },
-  argTypes: {},
-  args: {},
 };
 
 export default metadata;

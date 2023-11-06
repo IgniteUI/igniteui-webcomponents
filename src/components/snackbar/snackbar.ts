@@ -16,7 +16,6 @@ export interface IgcSnackbarEventMap {
   igcAction: CustomEvent<void>;
 }
 
-@themes(all, true)
 /**
  * A snackbar component is used to provide feedback about an operation
  * by showing a brief message at the bottom of the screen.
@@ -31,6 +30,7 @@ export interface IgcSnackbarEventMap {
  * @csspart message - The snackbar message.
  * @csspart action - The snackbar action button.
  */
+@themes(all, true)
 export default class IgcSnackbarComponent extends EventEmitterMixin<
   IgcSnackbarEventMap,
   Constructor<LitElement>

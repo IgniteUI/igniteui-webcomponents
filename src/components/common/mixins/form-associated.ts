@@ -153,7 +153,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
     public name!: string;
 
     /** Returns the HTMLFormElement associated with this element. */
-    public get form() {
+    public get form(): HTMLFormElement | null {
       return this.__internals.form;
     }
 
@@ -161,12 +161,12 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      * Returns a ValidityState object which represents the different validity states
      * the element can be in, with respect to constraint validation.
      */
-    public get validity() {
+    public get validity(): ValidityState {
       return this.__internals.validity;
     }
 
     /** A string containing the validation message of this element. */
-    public get validationMessage() {
+    public get validationMessage(): string {
       return this.__internals.validationMessage;
     }
 
@@ -174,7 +174,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      * A boolean value which returns true if the element is a submittable element
      * that is a candidate for constraint validation.
      */
-    public get willValidate() {
+    public get willValidate(): boolean {
       return this.__internals.willValidate;
     }
 
@@ -183,7 +183,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      * @attr [disabled=false]
      */
     @property({ type: Boolean, reflect: true })
-    public get disabled() {
+    public get disabled(): boolean {
       return this._disabled;
     }
 
@@ -199,7 +199,7 @@ export function FormAssociatedMixin<T extends Constructor<LitElement>>(
      * @attr [invalid=false]
      */
     @property({ type: Boolean, reflect: true })
-    public get invalid() {
+    public get invalid(): boolean {
       return this._invalid;
     }
 

@@ -16,14 +16,15 @@ const metadata: Meta<IgcButtonComponent> = {
           'Represents a clickable button, used to submit forms or anywhere in a\ndocument for accessible, standard button functionality.',
       },
     },
+    actions: { handles: ['igcFocus', 'igcBlur'] },
   },
   argTypes: {
     variant: {
       type: '"flat" | "contained" | "outlined" | "fab"',
       description: 'Sets the variant of the button.',
       options: ['flat', 'contained', 'outlined', 'fab'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'contained',
+      control: { type: 'select' },
+      table: { defaultValue: { summary: 'contained' } },
     },
     type: {
       type: '"button" | "reset" | "submit"',
@@ -43,10 +44,10 @@ const metadata: Meta<IgcButtonComponent> = {
       control: 'text',
     },
     target: {
-      type: '"_blank" | "_parent" | "_self" | "_top" | undefined',
+      type: '"_blank" | "_parent" | "_self" | "_top"',
       description:
         'Where to display the linked URL, as the name for a browsing context.',
-      options: ['_blank', '_parent', '_self', '_top', 'undefined'],
+      options: ['_blank', '_parent', '_self', '_top'],
       control: { type: 'select' },
     },
     rel: {
@@ -59,7 +60,7 @@ const metadata: Meta<IgcButtonComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { variant: 'contained', disabled: false },
@@ -77,7 +78,7 @@ interface IgcButtonArgs {
   /** Prompts to save the linked URL instead of navigating to it. */
   download: string;
   /** Where to display the linked URL, as the name for a browsing context. */
-  target: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  target: '_blank' | '_parent' | '_self' | '_top';
   /**
    * The relationship of the linked URL.
    * See https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types
@@ -89,12 +90,6 @@ interface IgcButtonArgs {
 type Story = StoryObj<IgcButtonArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcBlur', 'igcFocus'],
-  },
-});
 
 const ButtonTemplate = ({ disabled = false, variant, type }: IgcButtonArgs) => {
   const handleClick = () => {

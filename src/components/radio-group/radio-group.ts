@@ -8,6 +8,13 @@ import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcRadioComponent from '../radio/radio.js';
 
+/**
+ * The igc-radio-group component unifies one or more igc-radio buttons.
+ *
+ * @element igc-radio-group
+ *
+ * @slot - Default slot
+ */
 @themes({ light: { material, fluent }, dark: { material, fluent } })
 export default class IgcRadioGroupComponent extends LitElement {
   public static readonly tagName = 'igc-radio-group';

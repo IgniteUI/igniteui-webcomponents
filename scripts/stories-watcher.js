@@ -1,5 +1,5 @@
 const watch = require('node-watch');
-const {promisify} = require('util');
+const { promisify } = require('util');
 const exec = promisify(require('child_process').exec);
 
 const watchOptions = {
@@ -9,7 +9,7 @@ const watchOptions = {
   },
 };
 
-watch(['src'], watchOptions, function(_event, fileName) {
+watch(['src'], watchOptions, function (_event, fileName) {
   addToQueue(fileName);
 });
 
@@ -23,14 +23,14 @@ async function addToQueue(fileName) {
   updating = true;
   console.log('Building documentation metadata and updating stories...');
 
-  const buildDocsPromise = exec('npm run build:docs:json && npm run build:meta');
+  const buildDocsPromise = exec('npm run build:meta');
 
   try {
     await buildDocsPromise;
     updating = false;
     console.log('Metadata build completed. Stories updated.');
   } catch (e) {
-    console.error("ERROR:", e);
+    console.error('ERROR:', e);
   }
 }
 
