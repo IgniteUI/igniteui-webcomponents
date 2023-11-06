@@ -26,15 +26,8 @@ const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
   await buildThemes();
 
   console.info(`Generating custom-elements.json file...`);
-  await exec(`npm run build:docs:schema`);
+  await exec(`npm run cem`);
   await copyFile('custom-elements.json', DEST_DIR('custom-elements.json'));
-
-  console.info(`Generating VSCode custom data file...`);
-  await exec(`npm run build:docs:vscode-schema`);
-  await copyFile(
-    'vscode-html-custom-data.json',
-    DEST_DIR('vscode-html-custom-data.json')
-  );
 
   console.info(`Generating package.json...`);
   await copyFile('scripts/_package.json', DEST_DIR('package.json'));

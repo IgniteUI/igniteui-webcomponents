@@ -28,3 +28,6 @@ storybook-static
 # component metadata
 vscode-html-custom-data.json
 custom-elements.json
+
+# Localization data
+i18nRepo

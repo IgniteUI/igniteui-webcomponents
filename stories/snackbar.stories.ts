@@ -24,34 +24,35 @@ const metadata: Meta<IgcSnackbarComponent> = {
           'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.',
       },
     },
+    actions: { handles: ['igcAction'] },
   },
   argTypes: {
     open: {
       type: 'boolean',
       description: 'Determines whether the snackbar is opened.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     displayTime: {
       type: 'number',
       description:
         'Determines the duration in ms in which the snackbar will be visible.',
       control: 'number',
-      defaultValue: 4000,
+      table: { defaultValue: { summary: 4000 } },
     },
     keepOpen: {
       type: 'boolean',
       description:
         'Determines whether the snackbar should close after the displayTime is over.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     position: {
-      type: '"top" | "bottom" | "middle"',
+      type: '"bottom" | "middle" | "top"',
       description: 'Sets the position of the snackbar.',
-      options: ['top', 'bottom', 'middle'],
+      options: ['bottom', 'middle', 'top'],
       control: { type: 'inline-radio' },
-      defaultValue: 'bottom',
+      table: { defaultValue: { summary: 'bottom' } },
     },
     actionText: {
       type: 'string',
@@ -72,7 +73,7 @@ interface IgcSnackbarArgs {
   /** Determines whether the snackbar should close after the displayTime is over. */
   keepOpen: boolean;
   /** Sets the position of the snackbar. */
-  position: 'top' | 'bottom' | 'middle';
+  position: 'bottom' | 'middle' | 'top';
   /** The snackbar action button. */
   actionText: string;
 }

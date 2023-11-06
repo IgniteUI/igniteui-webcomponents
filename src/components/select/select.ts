@@ -37,11 +37,9 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes(all, true)
-@blazorAdditionalDependencies(
-  'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
-)
 /**
+ * Represents a control that provides a menu of options.
+ *
  * @element igc-select
  *
  * @slot - Renders the list of select items.
@@ -68,6 +66,10 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
+@themes(all, true)
+@blazorAdditionalDependencies(
+  'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
+)
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcSelectEventMap, Constructor<IgcDropdownComponent>>(
     IgcDropdownComponent

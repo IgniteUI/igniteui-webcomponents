@@ -73,7 +73,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
    * @attr [disabled=false]
    */
   @property({ type: Boolean, reflect: true })
-  public get disabled() {
+  public get disabled(): boolean {
     return this._disabled;
   }
 
