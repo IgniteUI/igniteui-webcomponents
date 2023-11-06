@@ -16,14 +16,14 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 
-@themes(all)
 /**
- * Icon component
+ * The icon component allows visualizing collections of pre-registered SVG icons.
  *
  * @element igc-icon
  *
  *
  */
+@themes(all)
 export default class IgcIconComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-icon';
   public static override styles = styles;

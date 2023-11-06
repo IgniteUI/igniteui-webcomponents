@@ -216,6 +216,9 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   @property()
   public autocomplete!: string;
 
+  /**
+   * @internal
+   */
   @property({ type: Number })
   public override tabIndex = 0;
 

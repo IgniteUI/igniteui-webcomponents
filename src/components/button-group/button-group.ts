@@ -81,7 +81,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ attribute: 'selected-items', type: Array, reflect: false })
-  public get selectedItems() {
+  public get selectedItems(): string[] {
     return this._selectedButtons.map((b) => b.value).filter((v) => v);
   }
 

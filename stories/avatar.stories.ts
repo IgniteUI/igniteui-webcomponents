@@ -37,7 +37,7 @@ const metadata: Meta<IgcAvatarComponent> = {
       description: 'The shape of the avatar.',
       options: ['circle', 'rounded', 'square'],
       control: { type: 'inline-radio' },
-      defaultValue: 'square',
+      table: { defaultValue: { summary: 'square' } },
     },
   },
   args: { shape: 'square' },

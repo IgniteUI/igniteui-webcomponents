@@ -33,8 +33,6 @@ const metadata: Meta<IgcNavbarComponent> = {
       },
     },
   },
-  argTypes: {},
-  args: {},
 };
 
 export default metadata;
@@ -49,15 +47,14 @@ interface NavbarStoryArgs {
 
 type EnhancedStory = StoryObj<NavbarStoryArgs>;
 
-Object.assign(metadata.argTypes!, {
-  content: {
-    type: 'string',
-    control: 'text',
+Object.assign(metadata, {
+  argTypes: {
+    content: {
+      type: 'string',
+      control: 'text',
+    },
   },
-});
-
-Object.assign(metadata.args!, {
-  content: 'Title',
+  args: { content: 'Title' },
 });
 
 registerIcon(

@@ -17,26 +17,33 @@ const icons = all.map((icon) => icon.name);
 const metadata: Meta<IgcIconComponent> = {
   title: 'Icon',
   component: 'igc-icon',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The icon component allows visualizing collections of pre-registered SVG icons.',
+      },
+    },
+  },
   argTypes: {
     name: {
       type: 'string',
       description: 'The name of the icon glyph to draw.',
       control: 'text',
-      defaultValue: '',
+      table: { defaultValue: { summary: '' } },
     },
     collection: {
       type: 'string',
       description:
         'The name of the registered collection for look up of icons.\nDefaults to `default`.',
       control: 'text',
-      defaultValue: 'default',
+      table: { defaultValue: { summary: 'default' } },
     },
     mirrored: {
       type: 'boolean',
       description: 'Whether to flip the icon. Useful for RTL layouts.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { name: '', collection: 'default', mirrored: false },

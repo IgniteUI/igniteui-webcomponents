@@ -125,7 +125,7 @@ export default class IgcDropdownComponent
   public open = false;
 
   /** The preferred placement of the component around the target element.
-   * @type {"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"}
+   * @type {'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end'}
    * @attr
    */
   @property()

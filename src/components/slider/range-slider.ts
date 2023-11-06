@@ -79,7 +79,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ type: Number })
-  public get lower() {
+  public get lower(): number {
     return this._lower;
   }
 
@@ -94,7 +94,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ type: Number })
-  public get upper() {
+  public get upper(): number {
     return this._upper;
   }
 

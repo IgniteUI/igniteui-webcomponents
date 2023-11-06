@@ -1,5 +1,11 @@
 import { LitElement, html, nothing } from 'lit';
-import { property, query, queryAssignedNodes, state } from 'lit/decorators.js';
+import {
+  property,
+  query,
+  queryAssignedElements,
+  queryAssignedNodes,
+  state,
+} from 'lit/decorators.js';
 import { guard } from 'lit/directives/guard.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -8,6 +14,15 @@ import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  homeKey,
+} from '../common/controllers/key-bindings.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { Constructor } from '../common/mixins/constructor.js';
@@ -58,7 +73,11 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     registerComponent(this, IgcIconComponent, IgcRatingSymbolComponent);
   }
 
-  protected ratingSymbols: Array<IgcRatingSymbolComponent> = [];
+  @queryAssignedElements({
+    selector: IgcRatingSymbolComponent.tagName,
+    slot: 'symbol',
+  })
+  protected ratingSymbols!: Array<IgcRatingSymbolComponent>;
 
   @query('[part="symbols"]', true)
   protected container!: HTMLElement;
@@ -201,24 +220,33 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   constructor() {
     super();
-    this.addEventListener('keydown', this.handleKeyDown);
+
+    addKeybindings(this, {
+      skip: () => !this.isInteractive,
+      bindingDefaults: { preventDefault: true },
+    })
+      .set(arrowUp, () => this.emitValueUpdate(this.value + this.step))
+      .set(arrowRight, () =>
+        this.emitValueUpdate(
+          isLTR(this) ? this.value + this.step : this.value - this.step
+        )
+      )
+      .set(arrowDown, () => this.emitValueUpdate(this.value - this.step))
+      .set(arrowLeft, () =>
+        this.emitValueUpdate(
+          isLTR(this) ? this.value - this.step : this.value + this.step
+        )
+      )
+      .set(homeKey, () => this.emitValueUpdate(this.step))
+      .set(endKey, () => this.emitValueUpdate(this.max));
   }
 
   protected handleClick({ clientX }: MouseEvent) {
-    if (!this.isInteractive) {
-      return;
-    }
-
     const value = this.calcNewValue(clientX);
-    this.value === value ? (this.value = 0) : (this.value = value);
-    this.emitEvent('igcChange', { detail: this.value });
+    this.emitValueUpdate(this.value === value ? 0 : value);
   }
 
   protected handleMouseMove({ clientX }: MouseEvent) {
-    if (!this.isInteractive) {
-      return;
-    }
-
     const value = this.calcNewValue(clientX);
 
     if (this.hoverValue !== value) {
@@ -228,67 +256,18 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
     }
   }
 
-  protected handleMouseEnter() {
-    if (this.isInteractive) {
-      this.hoverState = true;
-    }
-  }
-
-  protected handleMouseLeave() {
-    if (this.isInteractive) {
-      this.hoverState = false;
-    }
-  }
-
-  protected handleKeyDown({ key }: KeyboardEvent) {
-    if (!this.isInteractive) {
-      return;
-    }
-
-    let result = this.value;
-    const ltr = isLTR(this);
-
-    switch (key) {
-      case 'ArrowUp':
-      case 'ArrowRight':
-        result += ltr ? this.step : -this.step;
-        break;
-      case 'ArrowDown':
-      case 'ArrowLeft':
-        result -= ltr ? this.step : -this.step;
-        break;
-      case 'Home':
-        result = this.step;
-        break;
-      case 'End':
-        result = this.max;
-        break;
-      default:
-        return;
-    }
-
-    // Verify new value is in bounds and emit
-    this.value = clamp(result, 0, this.max);
-
-    if (result === this.value) {
+  protected emitValueUpdate(value: number) {
+    this.value = clamp(value, 0, this.max);
+    if (value === this.value) {
       this.emitEvent('igcChange', { detail: this.value });
     }
   }
 
-  protected handleSlotChange(event: Event) {
-    const slot = event.target as HTMLSlotElement;
-
-    this.ratingSymbols = slot
-      .assignedElements()
-      .filter(
-        (el) => el instanceof IgcRatingSymbolComponent
-      ) as IgcRatingSymbolComponent[];
-
+  protected handleSlotChange() {
     if (this.hasProjectedSymbols) {
       this.max = this.ratingSymbols.length;
+      this.requestUpdate();
     }
-
-    this.requestUpdate();
   }
 
   protected calcNewValue(x: number) {
@@ -400,6 +379,8 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
       this.ratingSymbols,
     ];
 
+    const hoverActive = this.hoverPreview && this.isInteractive;
+
     return html`
       <label part="label" id="rating-label" ?hidden=${!this.label}
         >${this.label}</label
@@ -417,10 +398,10 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
         <div
           aria-hidden="true"
           part="symbols"
-          @click=${this.handleClick}
-          @mouseenter=${this.hoverPreview ? this.handleMouseEnter : nothing}
-          @mouseleave=${this.hoverPreview ? this.handleMouseLeave : nothing}
-          @mousemove=${this.hoverPreview ? this.handleMouseMove : nothing}
+          @click=${this.isInteractive ? this.handleClick : nothing}
+          @mouseenter=${hoverActive ? () => (this.hoverState = true) : nothing}
+          @mouseleave=${hoverActive ? () => (this.hoverState = false) : nothing}
+          @mousemove=${hoverActive ? this.handleMouseMove : nothing}
         >
           <slot name="symbol" @slotchange=${this.handleSlotChange}>
             ${guard(props, () => {

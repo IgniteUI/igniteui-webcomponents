@@ -92,7 +92,7 @@ export class IgcCalendarBaseComponent extends LitElement {
       toAttribute: (value: Date) => value.toISOString(),
     },
   })
-  public get activeDate() {
+  public get activeDate(): Date {
     return this._activeDate;
   }
 

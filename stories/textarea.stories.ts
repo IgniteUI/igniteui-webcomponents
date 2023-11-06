@@ -28,6 +28,7 @@ const metadata: Meta<IgcTextareaComponent> = {
           'This element represents a multi-line plain-text editing control,\nuseful when you want to allow users to enter a sizeable amount of free-form text,\nfor example a comment on a review or feedback form.',
       },
     },
+    actions: { handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'] },
   },
   argTypes: {
     autocomplete: {
@@ -37,25 +38,25 @@ const metadata: Meta<IgcTextareaComponent> = {
       control: 'text',
     },
     autocapitalize: {
-      type: '"none" | "off" | "on" | "sentences" | "words" | "characters"',
+      type: '"off" | "none" | "on" | "sentences" | "words" | "characters"',
       description:
         'Controls whether and how text input is automatically capitalized as it is entered/edited by the user.\n\n[MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/autocapitalize).',
-      options: ['none', 'off', 'on', 'sentences', 'words', 'characters'],
+      options: ['off', 'none', 'on', 'sentences', 'words', 'characters'],
       control: { type: 'select' },
     },
     inputMode: {
-      type: '"numeric" | "none" | "email" | "search" | "tel" | "text" | "url" | "decimal"',
+      type: '"none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url"',
       description:
         'Hints at the type of data that might be entered by the user while editing the element or its contents.\nThis allows a browser to display an appropriate virtual keyboard.\n\n[MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)',
       options: [
-        'numeric',
         'none',
-        'email',
-        'search',
-        'tel',
         'text',
-        'url',
         'decimal',
+        'numeric',
+        'tel',
+        'search',
+        'email',
+        'url',
       ],
       control: { type: 'select' },
     },
@@ -80,7 +81,7 @@ const metadata: Meta<IgcTextareaComponent> = {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     placeholder: {
       type: 'string',
@@ -91,78 +92,66 @@ const metadata: Meta<IgcTextareaComponent> = {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     resize: {
-      type: '"vertical" | "none" | "auto"',
+      type: '"auto" | "vertical" | "none"',
       description:
         'Controls whether the control can be resized.\nWhen `auto` is set, the control will try to expand and fit its content.',
-      options: ['vertical', 'none', 'auto'],
+      options: ['auto', 'vertical', 'none'],
       control: { type: 'inline-radio' },
-      defaultValue: 'vertical',
+      table: { defaultValue: { summary: 'vertical' } },
     },
     rows: {
       type: 'number',
       description:
         'The number of visible text lines for the control. If it is specified, it must be a positive integer.\nIf it is not specified, the default value is 2.',
       control: 'number',
-      defaultValue: 2,
+      table: { defaultValue: { summary: 2 } },
     },
     value: {
       type: 'string',
       description: 'The value of the component',
       control: 'text',
-      defaultValue: '',
+      table: { defaultValue: { summary: '' } },
     },
     spellcheck: {
       type: 'boolean',
       description:
         'Controls whether the element may be checked for spelling errors.',
       control: 'boolean',
-      defaultValue: true,
+      table: { defaultValue: { summary: true } },
     },
     wrap: {
-      type: '"off" | "hard" | "soft"',
+      type: '"hard" | "soft" | "off"',
       description:
         'Indicates how the control should wrap the value for form submission.\nRefer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)\nfor explanation of the available values.',
-      options: ['off', 'hard', 'soft'],
+      options: ['hard', 'soft', 'off'],
       control: { type: 'inline-radio' },
-      defaultValue: 'soft',
+      table: { defaultValue: { summary: 'soft' } },
     },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
       control: 'text',
     },
-    validationMessage: {
-      type: 'string',
-      description:
-        'A string containing the validation message of this element.',
-      control: 'text',
-    },
-    willValidate: {
-      type: 'boolean',
-      description:
-        'A boolean value which returns true if the element is a submittable element\nthat is a candidate for constraint validation.',
-      control: 'boolean',
-    },
     disabled: {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: {
@@ -193,7 +182,7 @@ interface IgcTextareaArgs {
    *
    * [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/autocapitalize).
    */
-  autocapitalize: 'none' | 'off' | 'on' | 'sentences' | 'words' | 'characters';
+  autocapitalize: 'off' | 'none' | 'on' | 'sentences' | 'words' | 'characters';
   /**
    * Hints at the type of data that might be entered by the user while editing the element or its contents.
    * This allows a browser to display an appropriate virtual keyboard.
@@ -201,14 +190,14 @@ interface IgcTextareaArgs {
    * [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode)
    */
   inputMode:
-    | 'numeric'
     | 'none'
-    | 'email'
-    | 'search'
-    | 'tel'
     | 'text'
-    | 'url'
-    | 'decimal';
+    | 'decimal'
+    | 'numeric'
+    | 'tel'
+    | 'search'
+    | 'email'
+    | 'url';
   /** The label for the control. */
   label: string;
   /**
@@ -228,7 +217,7 @@ interface IgcTextareaArgs {
    * Controls whether the control can be resized.
    * When `auto` is set, the control will try to expand and fit its content.
    */
-  resize: 'vertical' | 'none' | 'auto';
+  resize: 'auto' | 'vertical' | 'none';
   /**
    * The number of visible text lines for the control. If it is specified, it must be a positive integer.
    * If it is not specified, the default value is 2.
@@ -243,18 +232,11 @@ interface IgcTextareaArgs {
    * Refer to [this page on MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea#attributes)
    * for explanation of the available values.
    */
-  wrap: 'off' | 'hard' | 'soft';
+  wrap: 'hard' | 'soft' | 'off';
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
   name: string;
-  /** A string containing the validation message of this element. */
-  validationMessage: string;
-  /**
-   * A boolean value which returns true if the element is a submittable element
-   * that is a candidate for constraint validation.
-   */
-  willValidate: boolean;
   /** The disabled state of the component */
   disabled: boolean;
   /** Control the validity of the control. */
@@ -266,11 +248,6 @@ type Story = StoryObj<IgcTextareaArgs>;
 
 export const Default: Story = {
   args: { label: 'Your feedback' },
-  parameters: {
-    actions: {
-      handles: ['igcBlur', 'igcChange', 'igcInput', 'igcFocus'],
-    },
-  },
 };
 
 export const ProjectContent: Story = {
