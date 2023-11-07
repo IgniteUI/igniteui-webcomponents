@@ -6,6 +6,8 @@ $theme: $bootstrap;
 $input-theme: input-theme.$bootstrap;
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
     [part='helper-text'] {
         margin-top: rem(4px);
     }

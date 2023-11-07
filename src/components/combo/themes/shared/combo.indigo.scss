@@ -8,6 +8,8 @@ $input-theme: input-theme.$indigo;
 $dropdown-theme: dropdown-theme.$indigo;
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
     igc-input::part(container) {
         padding-inline: 0;
     }
