@@ -24,9 +24,13 @@ export default class IgcListComponent extends SizableMixin(LitElement) {
     registerComponent(this, IgcListItemComponent, IgcListHeaderComponent);
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('role', 'list');
+  private _internals: ElementInternals;
+
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+
+    this._internals.role = 'list';
   }
 
   protected override render() {
