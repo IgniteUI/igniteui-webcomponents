@@ -9,6 +9,7 @@ $focused-height: calc(var-get($theme, 'size') - #{($focused-border-width * 2)});
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --input-size: var(--component-size);
 
     [part='prefix'],
     [part='suffix'] {
