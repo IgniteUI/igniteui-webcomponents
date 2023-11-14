@@ -1,10 +1,5 @@
 import { css } from 'lit';
 
-// Light Overrides
-import { styles as bootstrapLight } from './light/item/dropdown-item.bootstrap.css.js';
-import { styles as fluentLight } from './light/item/dropdown-item.fluent.css.js';
-import { styles as indigoLight } from './light/item/dropdown-item.indigo.css.js';
-import { styles as materialLight } from './light/item/dropdown-item.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/item/dropdown-item.bootstrap.css.js';
 import { styles as fluent } from './shared/item/dropdown-item.fluent.css.js';
@@ -14,31 +9,31 @@ import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${bootstrap}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${material}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${fluent}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${indigo}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${bootstrap}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${material}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${fluent}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${indigo}
   `,
 };
 
