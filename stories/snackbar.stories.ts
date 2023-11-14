@@ -27,37 +27,37 @@ const metadata: Meta<IgcSnackbarComponent> = {
     actions: { handles: ['igcAction'] },
   },
   argTypes: {
+    actionText: {
+      type: 'string',
+      description: 'The snackbar action button.',
+      control: 'text',
+    },
     open: {
       type: 'boolean',
-      description: 'Determines whether the snackbar is opened.',
+      description: 'Whether the component is in shown state.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
     displayTime: {
       type: 'number',
       description:
-        'Determines the duration in ms in which the snackbar will be visible.',
+        'Determines the duration in ms in which the component will be visible.',
       control: 'number',
       table: { defaultValue: { summary: 4000 } },
     },
     keepOpen: {
       type: 'boolean',
       description:
-        'Determines whether the snackbar should close after the displayTime is over.',
+        'Determines whether the component should close after the `displayTime` is over.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
     position: {
       type: '"bottom" | "middle" | "top"',
-      description: 'Sets the position of the snackbar.',
+      description: 'Sets the position of the component in the viewport.',
       options: ['bottom', 'middle', 'top'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'bottom' } },
-    },
-    actionText: {
-      type: 'string',
-      description: 'The snackbar action button.',
-      control: 'text',
     },
   },
   args: { open: false, displayTime: 4000, keepOpen: false, position: 'bottom' },
@@ -66,16 +66,16 @@ const metadata: Meta<IgcSnackbarComponent> = {
 export default metadata;
 
 interface IgcSnackbarArgs {
-  /** Determines whether the snackbar is opened. */
-  open: boolean;
-  /** Determines the duration in ms in which the snackbar will be visible. */
-  displayTime: number;
-  /** Determines whether the snackbar should close after the displayTime is over. */
-  keepOpen: boolean;
-  /** Sets the position of the snackbar. */
-  position: 'bottom' | 'middle' | 'top';
   /** The snackbar action button. */
   actionText: string;
+  /** Whether the component is in shown state. */
+  open: boolean;
+  /** Determines the duration in ms in which the component will be visible. */
+  displayTime: number;
+  /** Determines whether the component should close after the `displayTime` is over. */
+  keepOpen: boolean;
+  /** Sets the position of the component in the viewport. */
+  position: 'bottom' | 'middle' | 'top';
 }
 type Story = StoryObj<IgcSnackbarArgs>;
 
