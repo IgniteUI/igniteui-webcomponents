@@ -125,3 +125,27 @@ export function simulateKeyboard(
     );
   }
 }
+
+/**
+ * Returns an array of all Animation objects affecting this element or which are scheduled to do so in the future.
+ * It can optionally return Animation objects for descendant elements too.
+ */
+export function getAnimationsFor(
+  element: ShadowRoot | Element,
+  options?: GetAnimationsOptions
+) {
+  return element.getAnimations(options);
+}
+
+/**
+ * Runs all animations for the given element and/or descendant elements to completion.
+ */
+export function finishAnimationsFor(
+  element: ShadowRoot | Element,
+  options?: GetAnimationsOptions
+) {
+  const animations = getAnimationsFor(element, options);
+  for (const animation of animations) {
+    animation.finish();
+  }
+}
