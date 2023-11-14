@@ -9,6 +9,7 @@ $dropdown-theme: dropdown-theme.$material;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --combo-size: var(--component-size);
 
     [part='helper-text'] {
         margin-top: rem(5px);

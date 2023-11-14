@@ -5,6 +5,12 @@
     display: block;
     font-family: var(--ig-font-family);
 
+    igc-input:not([part='search-input']) {
+        // Overwrite the igc-input component size.
+        // Needed due to imperative size declaration of size by SizableMixin.
+        --component-size: var(--combo-size) !important;
+    }
+
     > igc-input::part(input) {
         text-overflow: ellipsis;
         cursor: pointer;

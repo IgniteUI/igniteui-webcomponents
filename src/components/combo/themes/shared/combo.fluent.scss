@@ -9,6 +9,7 @@ $dropdown-theme: dropdown-theme.$fluent;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --combo-size: var(--component-size);
 
     ::slotted([slot='helper-text']) {
         @include type-style('caption');
