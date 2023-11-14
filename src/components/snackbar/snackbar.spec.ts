@@ -11,6 +11,7 @@ import { spy } from 'sinon';
 import IgcSnackbarComponent from './snackbar.js';
 import type IgcButtonComponent from '../button/button.js';
 import { defineComponents } from '../common/definitions/defineComponents.js';
+import { finishAnimationsFor, getAnimationsFor } from '../common/utils.spec.js';
 
 describe('Snackbar', () => {
   before(() => {
@@ -111,14 +112,8 @@ describe('Snackbar', () => {
 
     const showSkipAnimation = () => {
       const show = snackbar.show();
-      finishSnackbarAnimations();
+      finishAnimationsFor(snackbar.shadowRoot!);
       return show;
-    };
-
-    const getSnackbarAnimations = () => snackbar.shadowRoot!.getAnimations();
-
-    const finishSnackbarAnimations = () => {
-      getSnackbarAnimations().forEach((a) => a.finish());
     };
 
     beforeEach(async () => {
@@ -147,7 +142,7 @@ describe('Snackbar', () => {
       await aTimeout(400);
       checkOpenState(true);
       // setTimeout(() => `hide()`) should be called at this point
-      finishSnackbarAnimations();
+      finishAnimationsFor(snackbar.shadowRoot!);
 
       await aTimeout(50);
       expect(snackbar.open).to.be.false;
@@ -180,37 +175,29 @@ describe('Snackbar', () => {
 
       snackbar.show();
       checkOpenState(true);
-      expect(getSnackbarAnimations().length).to.equal(0);
+      expect(getAnimationsFor(snackbar.shadowRoot!).length).to.equal(0);
 
       snackbar.open = false;
       await elementUpdated(snackbar);
 
       snackbar.hide();
       checkOpenState(false);
-      expect(getSnackbarAnimations().length).to.equal(0);
+      expect(getAnimationsFor(snackbar.shadowRoot!).length).to.equal(0);
     });
 
     it('`toggle()`', async () => {
       // close -> open
       snackbar.toggle();
-
-      await Promise.all([
-        finishSnackbarAnimations(),
-        elementUpdated(snackbar),
-        nextFrame(),
-      ]);
+      finishAnimationsFor(snackbar.shadowRoot!);
+      await nextFrame();
 
       expect(snackbar.open).to.be.true;
       checkOpenState(true);
 
       // open -> close
       snackbar.toggle();
-
-      await Promise.all([
-        finishSnackbarAnimations(),
-        elementUpdated(snackbar),
-        nextFrame(),
-      ]);
+      finishAnimationsFor(snackbar.shadowRoot!);
+      await nextFrame();
 
       expect(snackbar.open).to.be.false;
       checkOpenState(false);
