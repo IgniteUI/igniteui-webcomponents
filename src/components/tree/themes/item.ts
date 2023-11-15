@@ -1,10 +1,10 @@
 import { css } from 'lit';
 
-// Shared Styles
-import { styles as bootstrap } from './shared/item/dropdown-item.bootstrap.css.js';
-import { styles as fluent } from './shared/item/dropdown-item.fluent.css.js';
-import { styles as indigo } from './shared/item/dropdown-item.indigo.css.js';
-import { styles as material } from './shared/item/dropdown-item.material.css.js';
+// Share Styles
+import { styles as bootstrap } from './shared/item.bootstrap.css.js';
+import { styles as fluent } from './shared/item.fluent.css.js';
+import { styles as indigo } from './shared/item.indigo.css.js';
+import { styles as material } from './shared/item.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {

@@ -3,6 +3,10 @@
 
 $theme: $bootstrap;
 
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+}
+
 :host button {
     border-radius: var-get($theme, 'border-radius');
     background: var-get($theme, 'background');
