@@ -4,6 +4,7 @@
 $theme: $bootstrap;
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --symbol-full-color: #{var-get($theme, 'symbol-full-color')};
     --symbol-empty-color: #{var-get($theme, 'symbol-empty-color')};
 

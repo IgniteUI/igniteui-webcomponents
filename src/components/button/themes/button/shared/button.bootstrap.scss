@@ -7,6 +7,8 @@ $fab-theme: $bootstrap-fab;
 $outlined-theme: $bootstrap-outlined;
 
 :host([variant='flat']) {
+    --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
+
     [part='base'] {
         height: var-get($flat-theme, 'size');
         border-radius: var-get($flat-theme, 'border-radius');
@@ -14,6 +16,8 @@ $outlined-theme: $bootstrap-outlined;
 }
 
 :host([variant='contained']) {
+    --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
+
     [part='base'] {
         height: var-get($contained-theme, 'size');
         border-radius: var-get($contained-theme, 'border-radius');
@@ -21,6 +25,8 @@ $outlined-theme: $bootstrap-outlined;
 }
 
 :host([variant='outlined']) {
+    --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
+
     [part='base'] {
         height: var-get($outlined-theme, 'size');
         border: rem(1px) solid var-get($outlined-theme, 'border-color');
@@ -29,6 +35,8 @@ $outlined-theme: $bootstrap-outlined;
 }
 
 :host([variant='fab']) {
+    --component-size: var(--ig-size, #{var-get($fab-theme, 'default-size')});
+
     [part='base'] {
         height: var-get($fab-theme, 'size');
         border-radius: var-get($fab-theme, 'border-radius');

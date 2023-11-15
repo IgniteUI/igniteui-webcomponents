@@ -8,6 +8,10 @@ $dropdown-theme: dropdown-theme.$indigo;
 $input-theme: input-theme.$indigo;
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --select-size: var(--component-size);
+    --dropdown-size: var(--component-size);
+
     ::slotted([slot='helper-text']) {
         color: var-get($input-theme, 'helper-text-color');
     }
