@@ -1,11 +1,5 @@
 import { LitElement, html } from 'lit';
-import {
-  property,
-  query,
-  queryAssignedElements,
-  state,
-} from 'lit/decorators.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import { property, query, state } from 'lit/decorators.js';
 
 import IgcDropdownGroupComponent from './dropdown-group.js';
 import IgcDropdownHeaderComponent from './dropdown-header.js';
@@ -13,21 +7,33 @@ import IgcDropdownItemComponent from './dropdown-item.js';
 import { all } from './themes/container.js';
 import { styles } from './themes/dropdown.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowUp,
+  endKey,
+  enterKey,
+  escapeKey,
+  homeKey,
+  tabKey,
+} from '../common/controllers/key-bindings.js';
+import { RootClickController } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { IgcToggleController } from '../toggle/toggle.controller.js';
-import type {
-  IgcPlacement,
-  IgcToggleComponent,
-  IgcToggleEventMap,
-} from '../toggle/types';
+import { iterNodes } from '../common/util.js';
+import IgcPopoverComponent from '../popover/popover.js';
+import type { IgcPlacement } from '../toggle/types';
 
-export interface IgcDropdownEventMap extends IgcToggleEventMap {
+export interface IgcDropdownEventMap {
+  igcOpening: CustomEvent<void>;
+  igcOpened: CustomEvent<void>;
+  igcClosing: CustomEvent<void>;
+  igcClosed: CustomEvent<void>;
   igcChange: CustomEvent<IgcDropdownItemComponent>;
 }
 
@@ -50,14 +56,11 @@ export interface IgcDropdownEventMap extends IgcToggleEventMap {
  */
 @themes(all)
 @blazorAdditionalDependencies(
-  'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
+  'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent, IgcPopoverComponent'
 )
-export default class IgcDropdownComponent
-  extends SizableMixin(
-    EventEmitterMixin<IgcDropdownEventMap, Constructor<LitElement>>(LitElement)
-  )
-  implements IgcToggleComponent
-{
+export default class IgcDropdownComponent extends SizableMixin(
+  EventEmitterMixin<IgcDropdownEventMap, Constructor<LitElement>>(LitElement)
+) {
   public static readonly tagName = 'igc-dropdown';
   public static styles = styles;
 
@@ -66,49 +69,62 @@ export default class IgcDropdownComponent
       this,
       IgcDropdownGroupComponent,
       IgcDropdownHeaderComponent,
-      IgcDropdownItemComponent
+      IgcDropdownItemComponent,
+      IgcPopoverComponent
     );
   }
 
-  protected toggleController!: IgcToggleController;
-  protected selectedItem!: IgcDropdownItemComponent | null;
+  private outsideClickController = new RootClickController(this, {
+    hideCallback: () => this._hide({ emit: true }),
+  });
 
   @state()
-  protected activeItem!: IgcDropdownItemComponent;
+  protected _selectedItem: IgcDropdownItemComponent | null = null;
 
+  @state()
+  protected _activeItem!: IgcDropdownItemComponent;
+
+  // TODO: Expose as a property
   protected target!: HTMLElement;
 
-  private readonly keyDownHandlers: Map<string, Function> = new Map(
-    Object.entries({
-      Escape: this.onEscapeKey,
-      Enter: this.onEnterKey,
-      ArrowUp: this.onArrowUpKeyDown,
-      ArrowDown: this.onArrowDownKeyDown,
-      ArrowLeft: this.onArrowUpKeyDown,
-      ArrowRight: this.onArrowDownKeyDown,
-      Home: this.onHomeKey,
-      End: this.onEndKey,
-    })
-  );
-
-  protected get allItems() {
-    return [...this.items, ...this.groups.flatMap((group) => group.items)];
+  private _getItems() {
+    return iterNodes<IgcDropdownItemComponent>(this, 'SHOW_ELEMENT', (item) =>
+      item.matches(IgcDropdownItemComponent.tagName)
+    );
   }
 
-  @queryAssignedElements({ slot: 'target' })
-  private targetNodes!: Array<HTMLElement>;
+  private _getGroups() {
+    return iterNodes<IgcDropdownGroupComponent>(this, 'SHOW_ELEMENT', (item) =>
+      item.matches(IgcDropdownGroupComponent.tagName)
+    );
+  }
 
-  @query('[part="base"]')
-  protected content!: HTMLElement;
+  private get _activeItems() {
+    const items = [];
+    for (const item of this._getItems()) {
+      if (!item.disabled) {
+        items.push(item);
+      }
+    }
 
-  @query('[part="list"]')
-  protected scrollContainer!: HTMLElement;
+    return items;
+  }
 
-  @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
-  protected items!: Array<IgcDropdownItemComponent>;
+  protected get allItems() {
+    return Array.from(this._getItems());
+  }
 
-  @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-group' })
-  protected groups!: Array<IgcDropdownGroupComponent>;
+  // TODO: After refactoring igc-select rename this
+  public get Items() {
+    return this.allItems;
+  }
+
+  public get Groups() {
+    return Array.from(this._getGroups());
+  }
+
+  @query('slot[name="target"]', true)
+  protected trigger!: HTMLSlotElement;
 
   /**
    * Whether the dropdown should be kept open on selection.
@@ -174,112 +190,97 @@ export default class IgcDropdownComponent
   @property({ type: Boolean, attribute: 'same-width' })
   public sameWidth = false;
 
-  @watch('open')
-  protected toggleDirectiveChange() {
-    if (!this.target) return;
-    this.toggleController.target = this.target;
-    this.requestUpdate();
-
-    if (this.open) {
-      document.addEventListener('keydown', this.handleKeyDown);
-      this.target.addEventListener('focusout', this.handleFocusout);
-      this.selectedItem = this.allItems.find((i) => i.selected) ?? null;
-    } else {
-      document.removeEventListener('keydown', this.handleKeyDown);
-      this.target.removeEventListener('focusout', this.handleFocusout);
-    }
-
-    this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
+  /** Returns the selected item from the dropdown or null. */
+  public get selectedItem() {
+    return this._selectedItem;
   }
 
-  @watch('placement')
-  @watch('flip')
-  @watch('positionStrategy')
-  @watch('closeOnOutsideClick')
-  @watch('distance')
-  @watch('sameWidth')
-  protected updateOptions() {
-    if (!this.toggleController) return;
-
-    this.toggleController.update();
+  @watch('open', { waitUntilFirstUpdate: true })
+  @watch('keepOpenOnOutsideClick', { waitUntilFirstUpdate: true })
+  protected toggleDirectiveChange() {
+    this.updateAccessibility();
+    this.outsideClickController.update();
   }
 
   constructor() {
     super();
-    this.toggleController = new IgcToggleController(this, {
-      target: this.target,
-      closeCallback: () => this._hide(),
-    });
+
+    addKeybindings(this, {
+      skip: () => !this.open,
+      bindingDefaults: { preventDefault: true },
+    })
+      .set(escapeKey, this.onEscapeKey)
+      .set(arrowUp, this.navigatePrev)
+      .set(arrowDown, this.navigateNext)
+      .set(enterKey, this.onEnterKey)
+      .set(tabKey, this.onTabKey, {
+        preventDefault: false,
+        triggers: ['keydownRepeat'],
+      })
+      .set(homeKey, this.onHomeKey)
+      .set(endKey, this.onEndKey);
   }
 
   protected override async firstUpdated() {
-    if (this.targetNodes.length) {
-      this.target = this.targetNodes[0];
-      this.target.setAttribute('aria-haspopup', 'listbox');
-    }
-
     await this.updateComplete;
-    this.toggleDirectiveChange();
     this.setInitialSelection();
   }
 
-  protected override async getUpdateComplete() {
-    const result = await super.getUpdateComplete();
-    await this.toggleController.rendered;
-    return result;
-  }
-
   protected setInitialSelection() {
-    const item = this.allItems.filter((item) => item.selected).at(-1);
-    this.allItems.forEach((item) => (item.selected = false));
-    if (item) {
-      this.selectItem(item, false);
+    const items = this.allItems;
+    let lastSelectedItem!: IgcDropdownItemComponent;
+
+    for (const item of items) {
+      if (item.selected) {
+        lastSelectedItem = item;
+      }
+      item.selected = false;
     }
+    this.selectItem(lastSelectedItem, false);
   }
-
-  protected handleKeyDown = (event: KeyboardEvent) => {
-    const path = event.composedPath();
-    if (!(path.includes(this.target) || path.includes(this.content))) return;
-
-    if (this.keyDownHandlers.has(event.key)) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.keyDownHandlers.get(event.key)?.call(this);
-    }
-  };
 
   protected onHomeKey() {
-    this.navigateTo(
-      this.allItems.filter((item) => !item.disabled).at(0)!.value
-    );
+    this.navigateTo(this._activeItems.at(0)!.value);
   }
 
   protected onEndKey() {
-    this.navigateTo(
-      this.allItems.filter((item) => !item.disabled).at(-1)!.value
-    );
+    this.navigateTo(this._activeItems.at(-1)!.value);
   }
 
   protected onEscapeKey() {
-    this._hide();
+    this._hide({ emit: true });
+  }
+
+  protected onTabKey() {
+    this.selectItem(this._activeItem);
+    if (this.open) {
+      this._hide({ emit: true });
+    }
   }
 
   protected onEnterKey() {
-    this.selectItem(this.activeItem);
+    this.selectItem(this._activeItem);
   }
+
+  // FIXME: delete these after refactoring igc-select
+  protected onArrowUpKeyDown() {}
+
+  protected onArrowDownKeyDown() {}
 
   protected handleClick(event: MouseEvent) {
-    const item = event
-      .composedPath()
-      .find(
-        (e) => e instanceof IgcDropdownItemComponent
-      ) as IgcDropdownItemComponent;
+    const item = event.target as IgcDropdownItemComponent;
+    const items = this._activeItems;
 
-    if (!item || item.disabled) return;
-
-    this.selectItem(item);
+    if (items.includes(item)) {
+      this.selectItem(item);
+    }
   }
 
+  protected async handleAnchorClick() {
+    this.open ? this._hide({ emit: true }) : this._show({ emit: true });
+  }
+
+  // TODO: Remove
   protected handleTargetClick = async () => {
     if (!this.open) {
       if (!this.handleOpening()) return;
@@ -292,111 +293,86 @@ export default class IgcDropdownComponent
   };
 
   protected handleOpening() {
-    const args = { cancelable: true };
-    return this.emitEvent('igcOpening', args);
+    return this.emitEvent('igcOpening', { cancelable: true });
   }
 
   protected handleClosing(): boolean {
-    const args = { cancelable: true };
-    return this.emitEvent('igcClosing', args);
+    return this.emitEvent('igcClosing', { cancelable: true });
   }
 
   protected handleChange(item: IgcDropdownItemComponent) {
-    const args = { detail: item };
-    this.emitEvent('igcChange', args);
+    this.emitEvent('igcChange', { detail: item });
   }
 
+  // TODO: Change
   protected handleSlotChange() {
     if (!this.target) return;
     this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
   }
 
+  // TODO: Remove
   protected handleFocusout(event: Event) {
     event.preventDefault();
     (event.target as HTMLElement).focus();
   }
 
   protected getItem(value: string) {
-    let itemIndex = -1;
-    let item!: IgcDropdownItemComponent;
-    this.allItems.find((i, index) => {
-      if (i.value === value) {
-        item = i;
-        itemIndex = index;
-      }
-    });
-    return { item: item, index: itemIndex };
+    const items = this.allItems;
+    const index = items.findIndex((item) => item.value === value);
+    return index !== -1 ? { item: items[index], index } : { item: null, index };
   }
 
-  protected activateItem(value: IgcDropdownItemComponent) {
-    if (!value) return;
+  protected activateItem(item: IgcDropdownItemComponent) {
+    if (!item) return;
 
-    if (this.activeItem) {
-      this.activeItem.active = false;
+    if (this._activeItem) {
+      this._activeItem.active = false;
     }
 
-    this.activeItem = value;
-    this.activeItem.active = true;
+    this._activeItem = item;
+    this._activeItem.active = true;
   }
 
   protected selectItem(
-    item: IgcDropdownItemComponent,
+    item?: IgcDropdownItemComponent,
     emit = true
   ): IgcDropdownItemComponent | null {
     if (!item) return null;
 
-    if (this.selectedItem) {
-      this.selectedItem.selected = false;
+    if (this._selectedItem) {
+      this._selectedItem.selected = false;
     }
 
     this.activateItem(item);
-    this.selectedItem = item;
-    this.selectedItem.selected = true;
-    if (emit) this.handleChange(this.selectedItem);
-    if (emit && !this.keepOpenOnSelect) this._hide();
+    this._selectedItem = item;
+    this._selectedItem.selected = true;
+    if (emit) this.handleChange(this._selectedItem);
+    if (emit && !this.keepOpenOnSelect) this._hide({ emit });
 
-    return this.selectedItem;
+    return this._selectedItem;
   }
 
-  protected navigate(direction: -1 | 1, currentIndex?: number) {
-    let index = -1;
-    if (this.activeItem) {
-      index = currentIndex
-        ? currentIndex
-        : [...this.allItems].indexOf(this.activeItem) ?? index;
-    }
+  protected navigate(direction: -1 | 1) {
+    const index = this._activeItem
+      ? this._activeItems.indexOf(this._activeItem) + direction
+      : 0;
 
-    const newIndex = this.getNearestSiblingFocusableItemIndex(index, direction);
-    this.navigateItem(newIndex);
+    this.navigateItem(index);
   }
 
-  private navigateItem(newIndex: number): IgcDropdownItemComponent | null {
-    if (!this.allItems) {
+  private navigateItem(idx: number) {
+    const items = this._activeItems;
+
+    if (items.length < 1 || idx < 0 || idx >= items.length) {
       return null;
     }
 
-    if (newIndex < 0 || newIndex >= this.allItems.length) {
-      return null;
-    }
+    const item = items[idx];
 
-    const newItem = this.allItems[newIndex];
+    this.activateItem(item);
+    item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
 
-    this.activateItem(newItem);
-    this.scrollToHiddenItem(newItem);
-
-    return newItem;
-  }
-
-  private scrollToHiddenItem(newItem: IgcDropdownItemComponent) {
-    const elementRect = newItem.getBoundingClientRect();
-    const parentRect = this.content.getBoundingClientRect();
-    if (parentRect.top > elementRect.top) {
-      this.content.scrollTop -= parentRect.top - elementRect.top;
-    }
-
-    if (parentRect.bottom < elementRect.bottom) {
-      this.content.scrollTop += elementRect.bottom - parentRect.bottom;
-    }
+    return item;
   }
 
   protected getNearestSiblingFocusableItemIndex(
@@ -426,39 +402,51 @@ export default class IgcDropdownComponent
     this.navigate(-1);
   }
 
-  protected onArrowDownKeyDown() {
-    this.navigateNext();
-  }
+  private async _hide(options: { emit: boolean } = { emit: false }) {
+    if (!this.open) {
+      return;
+    }
 
-  protected onArrowUpKeyDown() {
-    this.navigatePrev();
-  }
-
-  private async _hide(emit = true) {
-    if (!this.open) return;
-    if (emit && !this.handleClosing()) return;
+    if (options.emit && !this.handleClosing()) {
+      return;
+    }
 
     this.open = false;
 
-    if (emit) {
+    if (options.emit) {
       await this.updateComplete;
       this.emitEvent('igcClosed');
+    }
+  }
+
+  private async _show(options: { emit: boolean } = { emit: false }) {
+    if (this.open) {
+      return;
+    }
+    if (options.emit && !this.handleOpening()) {
+      return;
+    }
+
+    this.open = true;
+
+    if (options.emit) {
+      await this.updateComplete;
+      this.emitEvent('igcOpened');
     }
   }
 
   /** Shows the dropdown. */
   @blazorSuppress()
   public show(target?: HTMLElement) {
-    if (this.open && !target) return;
-
-    if (target) this.target = target;
-
-    this.open = true;
+    if (target) {
+      this.target = target;
+    }
+    this._show();
   }
 
   /** Hides the dropdown. */
   public hide(): void {
-    this._hide(false);
+    this._hide();
   }
 
   /** Toggles the open state of the dropdown. */
@@ -492,37 +480,58 @@ export default class IgcDropdownComponent
         ? this.getItem(value).item
         : this.allItems[value as number];
 
-    return this.selectItem(item, false);
+    return this.selectItem(item!, false);
   }
 
   /**  Clears the current selection of the dropdown. */
   public clearSelection() {
-    if (this.selectedItem) {
-      this.selectedItem.selected = false;
+    if (this._selectedItem) {
+      this._selectedItem.selected = false;
     }
-    this.selectedItem = null;
+    this._selectedItem = null;
+  }
+
+  protected updateAccessibility() {
+    const target = this.trigger
+      .assignedElements({ flatten: true })
+      .at(0) as HTMLElement;
+
+    if (!target) {
+      return;
+    }
+
+    target.setAttribute('aria-haspopup', 'true');
+    target.setAttribute('aria-expanded', this.open ? 'true' : `false`);
   }
 
   protected override render() {
-    return html`
+    return html`<igc-popover
+      ?open=${this.open}
+      ?flip=${this.flip}
+      ?same-width=${this.sameWidth}
+      .anchor=${this.target}
+      .strategy=${this.positionStrategy}
+      .offset=${this.distance}
+      .placement=${this.placement}
+      shift
+    >
       <slot
-        id="igcDDLTarget"
+        id="dropdown-target"
+        @click=${this.handleAnchorClick}
         name="target"
-        @click=${this.handleTargetClick}
-        @slotchange=${this.handleSlotChange}
-      >
-      </slot>
+        slot="anchor"
+      ></slot>
       <div
+        id="dropdown-list"
+        role="listbox"
         part="base"
-        style=${styleMap({ position: this.positionStrategy })}
         @click=${this.handleClick}
-        ${this.toggleController.toggleDirective}
+        .inert=${!this.open}
+        aria-labelledby="dropdown-target"
       >
-        <div role="listbox" part="list" aria-labelledby="igcDDLTarget">
-          <slot></slot>
-        </div>
+        <slot></slot>
       </div>
-    `;
+    </igc-popover>`;
   }
 }
 

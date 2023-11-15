@@ -7,10 +7,11 @@ import { all } from './themes/group.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { SizableInterface } from '../common/mixins/sizable.js';
 
 /**
- * @element igc-dropdown-group - A container for a group of `igc-dropdown-item` components.
+ * A container for a group of `igc-dropdown-item` components.
+ *
+ * @element igc-dropdown-group
  *
  * @slot label - Contains the group's label.
  * @slot - Intended to contain the items belonging to this group.
@@ -26,27 +27,24 @@ export default class IgcDropdownGroupComponent extends LitElement {
     registerComponent(this);
   }
 
-  protected parent!: SizableInterface;
+  private _internals: ElementInternals;
 
   /** All child `igc-dropdown-item`s. */
   @blazorSuppress()
   @queryAssignedElements({ flatten: true, selector: 'igc-dropdown-item' })
   public items!: Array<IgcDropdownItemComponent>;
 
-  public override connectedCallback() {
-    super.connectedCallback();
-
-    this.setAttribute('role', 'group');
-    this.parent = this.getParent();
-  }
-
-  protected getParent() {
-    return this.closest('igc-dropdown')!;
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+    this._internals.role = 'group';
   }
 
   protected override render() {
     return html`
-      <label part="label"><slot name="label"></slot></label>
+      <label part="label">
+        <slot name="label"></slot>
+      </label>
       <slot></slot>
     `;
   }

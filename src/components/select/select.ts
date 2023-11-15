@@ -111,10 +111,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   );
 
   @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
-  protected override items!: Array<IgcSelectItemComponent>;
+  protected items!: Array<IgcSelectItemComponent>;
 
   @queryAssignedElements({ flatten: true, selector: 'igc-select-group' })
-  protected override groups!: Array<IgcSelectGroupComponent>;
+  protected groups!: Array<IgcSelectGroupComponent>;
 
   @queryAssignedElements({ slot: 'helper-text' })
   protected helperText!: Array<HTMLElement>;
@@ -126,7 +126,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected inputPrefix!: Array<HTMLElement>;
 
   @state()
-  protected override selectedItem!: IgcSelectItemComponent | null;
+  protected override _selectedItem!: IgcSelectItemComponent | null;
 
   @query('div[role="combobox"]')
   protected override target!: IgcInputComponent;
@@ -234,10 +234,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     super.firstUpdated();
     await this.updateComplete;
 
-    if (!this.selectedItem && this.value) {
+    if (!this._selectedItem && this.value) {
       this.updateSelected();
-    } else if (this.selectedItem && !this.value) {
-      this._defaultValue = this.selectedItem.value;
+    } else if (this._selectedItem && !this.value) {
+      this._defaultValue = this._selectedItem.value;
     }
 
     if (this.autofocus) {
@@ -249,7 +249,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   @watch('selectedItem')
   protected updateValue() {
-    this.value = this.selectedItem?.value;
+    this.value = this._selectedItem?.value;
   }
 
   @watch('value')
@@ -261,7 +261,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       return;
     }
 
-    if (this.selectedItem?.value !== this.value) {
+    if (this._selectedItem?.value !== this.value) {
       const matches = this.allItems.filter((i) => i.value === this.value);
       const index = this.allItems.indexOf(
         matches.at(-1) as IgcSelectItemComponent
@@ -285,7 +285,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   protected selectNext() {
     const activeItemIndex = [...this.allItems].indexOf(
-      this.selectedItem ?? this.activeItem
+      this._selectedItem ?? this._activeItem
     );
 
     const next = this.getNearestSiblingFocusableItemIndex(
@@ -297,7 +297,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   protected selectPrev() {
     const activeItemIndex = [...this.allItems].indexOf(
-      this.selectedItem ?? this.activeItem
+      this._selectedItem ?? this._activeItem
     );
     const prev = this.getNearestSiblingFocusableItemIndex(
       activeItemIndex ?? -1,
@@ -442,7 +442,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
           id="input"
           readonly
           exportparts="container: input, input: native-input, label, prefix, suffix"
-          value=${ifDefined(this.selectedItem?.textContent?.trim())}
+          value=${ifDefined(this._selectedItem?.textContent?.trim())}
           placeholder=${ifDefined(this.placeholder)}
           label=${ifDefined(this.label)}
           size=${this.size}
@@ -489,7 +489,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         part="base"
         style=${styleMap({ position: this.positionStrategy })}
         @click=${this.handleClick}
-        ${this.toggleController.toggleDirective}
       >
         <div id="dropdown" role="listbox" part="list" aria-labelledby="input">
           <slot name="header"></slot>

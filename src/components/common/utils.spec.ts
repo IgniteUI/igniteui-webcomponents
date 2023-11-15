@@ -83,6 +83,14 @@ export class FormAssociatedTestBed<
   }
 }
 
+export function simulateClick(node: Element, times = 1) {
+  for (let i = 0; i < times; i++) {
+    node.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, composed: true })
+    );
+  }
+}
+
 /**
  * Simulates keyboard interaction on a given element node.
  *

@@ -8,6 +8,7 @@ export const arrowUp = 'ArrowUp' as const;
 export const arrowDown = 'ArrowDown' as const;
 export const enterKey = 'Enter' as const;
 export const spaceBar = ' ' as const;
+export const escapeKey = 'Escape' as const;
 export const homeKey = 'Home' as const;
 export const endKey = 'End' as const;
 export const pageUpKey = 'PageUp' as const;

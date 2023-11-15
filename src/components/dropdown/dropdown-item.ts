@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 
 import { styles } from './themes/dropdown-item.base.css.js';
 import { all } from './themes/item.js';
@@ -29,16 +29,28 @@ export default class IgcDropdownItemComponent extends LitElement {
     registerComponent(this);
   }
 
+  private _internals: ElementInternals;
   private _value!: string;
+
+  @query(`slot:not([name])`, true)
+  private _content!: HTMLSlotElement;
+
+  protected get slotTextContent() {
+    return this._content
+      .assignedNodes({ flatten: true })
+      .map((node) => node.textContent)
+      .join('');
+  }
 
   /**
    * Тhe current value of the item.
    * If not specified, the element's text content is used.
+   *
    * @attr
    */
   @property()
   public get value(): string {
-    return this._value ? this._value : this.textContent ?? '';
+    return this._value ? this._value : this.slotTextContent;
   }
 
   public set value(value: string) {
@@ -70,18 +82,26 @@ export default class IgcDropdownItemComponent extends LitElement {
 
   @watch('selected')
   protected selectedChange() {
-    this.toggleAttribute('aria-selected', this.selected);
+    this._internals.ariaSelected = `${this.selected}`;
     this.active = this.selected;
   }
 
   @watch('disabled')
   protected disabledChange() {
-    this.toggleAttribute('aria-disabled', this.disabled);
+    this._internals.ariaDisabled = `${this.disabled}`;
+  }
+
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+    this._internals.role = 'option';
   }
 
   public override connectedCallback() {
+    // R.K. Workaround for Axe accessibility unit tests.
+    // I guess it does not support ElementInternals ARIAMixin state yet
     super.connectedCallback();
-    this.setAttribute('role', 'option');
+    this.role = 'option';
   }
 
   protected override render() {

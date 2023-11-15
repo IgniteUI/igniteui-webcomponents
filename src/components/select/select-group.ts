@@ -51,7 +51,7 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
     super.disconnectedCallback();
   }
 
-  protected override getParent() {
+  protected getParent() {
     return this.closest('igc-select')!;
   }
 
