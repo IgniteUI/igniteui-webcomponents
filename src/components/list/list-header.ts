@@ -21,9 +21,13 @@ export default class IgcListHeaderComponent extends LitElement {
     registerComponent(this);
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('role', 'separator');
+  private _internals: ElementInternals;
+
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+
+    this._internals.role = 'separator';
   }
 
   protected override render() {
