@@ -247,28 +247,106 @@ export const Basic: Story = {
           (i) => html`<igc-dropdown-item>Item ${i}</igc-dropdown-item>`
         )}
       </igc-dropdown>
-
-      <igc-dropdown id="dropdown-groups">
-        <igc-button slot="target">Groups</igc-button>
-        <igc-dropdown-item>HTML</igc-dropdown-item>
-        <igc-dropdown-item>CSS</igc-dropdown-item>
-        <hr />
-        <igc-dropdown-group>
-          <span slot="label">Interpreted</span>
-          <igc-dropdown-item>JavaScript</igc-dropdown-item>
-          <igc-dropdown-item>Python</igc-dropdown-item>
-          <igc-dropdown-item>Lua</igc-dropdown-item>
-        </igc-dropdown-group>
-        <igc-dropdown-group>
-          <span slot="label">Compiled</span>
-          <igc-dropdown-item>Rust</igc-dropdown-item>
-          <igc-dropdown-item>Go</igc-dropdown-item>
-          <igc-dropdown-item>C/C++</igc-dropdown-item>
-        </igc-dropdown-group>
-        <hr />
-        <igc-dropdown-item>Markdown</igc-dropdown-item>
-        <igc-dropdown-item>LaTEX</igc-dropdown-item>
-      </igc-dropdown>
     </div>
+  `,
+};
+
+const gdpEurope = [
+  {
+    country: 'Luxembourg',
+    value: '135,605',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Flag_of_Luxembourg.svg/23px-Flag_of_Luxembourg.svg.png`,
+  },
+  {
+    country: 'Ireland',
+    value: '112,248',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Flag_of_Ireland.svg/23px-Flag_of_Ireland.svg.png`,
+  },
+  {
+    country: 'Switzerland',
+    value: '102,865',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Flag_of_Switzerland_%28Pantone%29.svg/15px-Flag_of_Switzerland_%28Pantone%29.svg.png`,
+  },
+];
+
+const gdpAmericas = [
+  {
+    country: 'United States',
+    value: '80,412',
+    flag: `https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/23px-Flag_of_the_United_States.svg.png`,
+  },
+  {
+    country: 'Canada',
+    value: '53,247',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Flag_of_Canada_%28Pantone%29.svg/23px-Flag_of_Canada_%28Pantone%29.svg.png`,
+  },
+  {
+    country: 'Puerto Rico',
+    value: '37,093',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Flag_of_Puerto_Rico.svg/23px-Flag_of_Puerto_Rico.svg.png`,
+  },
+];
+
+export const GroupsAndHeaders: Story = {
+  render: ({
+    open,
+    keepOpenOnOutsideClick,
+    keepOpenOnSelect,
+    distance,
+    flip,
+    placement,
+    positionStrategy,
+    sameWidth,
+  }) => html`
+    <style>
+      igc-dropdown-header {
+        text-align: end;
+      }
+      img {
+        width: 23px;
+        height: 12px;
+      }
+    </style>
+    <igc-dropdown
+      id="groups-and-headers"
+      ?open=${open}
+      ?flip=${flip}
+      ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
+      ?keep-open-on-select=${keepOpenOnSelect}
+      ?same-width=${sameWidth}
+      .placement=${placement}
+      .positionStrategy=${positionStrategy}
+      .distance=${distance}
+    >
+      <igc-button slot="target"
+        >GDP (in USD) per capita by country (IMF)</igc-button
+      >
+
+      <igc-dropdown-group>
+        <p slot="label">UN Region: <strong>Europe</strong></p>
+        <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
+
+        ${gdpEurope.map(
+          ({ country, value, flag }) =>
+            html`<igc-dropdown-item value=${country}>
+              <img slot="prefix" src=${flag} alt="Flag of ${country}" />
+              ${country} ${value}
+            </igc-dropdown-item>`
+        )}
+      </igc-dropdown-group>
+
+      <igc-dropdown-group>
+        <p slot="label">UN Region: <strong>Americas</strong></p>
+        <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
+
+        ${gdpAmericas.map(
+          ({ country, value, flag }) =>
+            html`<igc-dropdown-item value=${country}>
+              <img slot="prefix" src=${flag} alt="Flag of ${country}" />
+              ${country} ${value}
+            </igc-dropdown-item>`
+        )}
+      </igc-dropdown-group>
+    </igc-dropdown>
   `,
 };

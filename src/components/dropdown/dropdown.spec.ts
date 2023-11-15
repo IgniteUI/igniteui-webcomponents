@@ -39,7 +39,7 @@ describe('Dropdown', () => {
 
   const getTarget = () =>
     dropDown.querySelector('[slot="target"]') as IgcButtonComponent;
-  const getActiveItem = () => dropDown.Items.find((item) => item.active);
+  const getActiveItem = () => dropDown.items.find((item) => item.active);
   const getHeaders = () =>
     Array.from(
       dropDown.querySelectorAll<IgcDropdownHeaderComponent>(
@@ -129,8 +129,8 @@ describe('Dropdown', () => {
       `);
 
       await elementUpdated(dropDown);
-      expect(dropDown.Items.filter((item) => item.selected).length).to.equal(1);
-      expect(dropDown.selectedItem).to.equal(dropDown.Items.at(-1)!);
+      expect(dropDown.items.filter((item) => item.selected).length).to.equal(1);
+      expect(dropDown.selectedItem).to.equal(dropDown.items.at(-1)!);
     });
   });
 
@@ -152,23 +152,23 @@ describe('Dropdown', () => {
     });
 
     it('`items` returns the right collection', async () => {
-      expect(dropDown.Items.length).to.equal(Items.length);
+      expect(dropDown.items.length).to.equal(Items.length);
     });
 
     it('`groups` returns the right collection', async () => {
-      expect(dropDown.Groups.length).to.equal(0);
+      expect(dropDown.groups.length).to.equal(0);
     });
 
     it('`select()` works', async () => {
       // With value
       dropDown.select('Implementation');
 
-      let item = dropDown.Items.find((item) => item.value === 'Implementation');
+      let item = dropDown.items.find((item) => item.value === 'Implementation');
       expect(dropDown.selectedItem).to.equal(item);
       checkItemState(item!, { selected: true, active: true });
 
       dropDown.clearSelection();
-      item = dropDown.Items[4];
+      item = dropDown.items[4];
 
       expect(dropDown.selectedItem).to.be.null;
 
@@ -192,7 +192,7 @@ describe('Dropdown', () => {
       dropDown.navigateTo('Non-existent');
       expect(getActiveItem()).to.be.undefined;
 
-      const item = dropDown.Items.find(
+      const item = dropDown.items.find(
         (item) => item.value === 'Implementation'
       )!;
 
@@ -213,8 +213,8 @@ describe('Dropdown', () => {
     });
 
     it('correct collections', async () => {
-      expect(dropDown.Items.length).to.equal(6);
-      expect(dropDown.Groups.length).to.equal(3);
+      expect(dropDown.items.length).to.equal(6);
+      expect(dropDown.groups.length).to.equal(3);
     });
 
     it('keyboard navigation works', async () => {
@@ -224,7 +224,7 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, arrowDown, 3);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items[2], { active: true });
+      checkItemState(dropDown.items[2], { active: true });
     });
 
     it('clicking on a header is a no-op', async () => {
@@ -242,7 +242,7 @@ describe('Dropdown', () => {
       dropDown.show();
       await elementUpdated(dropDown);
 
-      for (const each of dropDown.Groups) {
+      for (const each of dropDown.groups) {
         simulateClick(each);
         await elementUpdated(dropDown);
         expect(dropDown.open).to.be.true;
@@ -271,7 +271,7 @@ describe('Dropdown', () => {
     });
 
     it('selects an item on click and closes the dropdown', async () => {
-      const targetItem = dropDown.Items[3];
+      const targetItem = dropDown.items[3];
 
       dropDown.show();
       await elementUpdated(dropDown);
@@ -285,7 +285,7 @@ describe('Dropdown', () => {
     });
 
     it('selects an item on click and does not close when keep-open-on-select is set', async () => {
-      const targetItem = dropDown.Items[3];
+      const targetItem = dropDown.items[3];
 
       dropDown.keepOpenOnSelect = true;
       dropDown.show();
@@ -300,7 +300,7 @@ describe('Dropdown', () => {
     });
 
     it('clicking on a disabled item is a no-op', async () => {
-      const targetItem = dropDown.Items[3];
+      const targetItem = dropDown.items[3];
       targetItem.disabled = true;
 
       dropDown.show();
@@ -349,7 +349,7 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, escapeKey);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items[3], { active: true, selected: false });
+      checkItemState(dropDown.items[3], { active: true, selected: false });
       expect(dropDown.selectedItem).to.be.null;
       expect(dropDown.open).to.be.false;
     });
@@ -364,8 +364,8 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, enterKey);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items[3], { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(dropDown.Items[3].value);
+      checkItemState(dropDown.items[3], { active: true, selected: true });
+      expect(dropDown.selectedItem?.value).to.equal(dropDown.items[3].value);
       expect(dropDown.open).to.be.false;
     });
 
@@ -380,8 +380,8 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, enterKey);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items[3], { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(dropDown.Items[3].value);
+      checkItemState(dropDown.items[3], { active: true, selected: true });
+      expect(dropDown.selectedItem?.value).to.equal(dropDown.items[3].value);
       expect(dropDown.open).to.be.true;
     });
 
@@ -395,8 +395,8 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, tabKey);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items[3], { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(dropDown.Items[3].value);
+      checkItemState(dropDown.items[3], { active: true, selected: true });
+      expect(dropDown.selectedItem?.value).to.equal(dropDown.items[3].value);
       expect(dropDown.open).to.be.false;
     });
 
@@ -411,8 +411,8 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, tabKey);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items[3], { active: true, selected: true });
-      expect(dropDown.selectedItem?.value).to.equal(dropDown.Items[3].value);
+      checkItemState(dropDown.items[3], { active: true, selected: true });
+      expect(dropDown.selectedItem?.value).to.equal(dropDown.items[3].value);
       expect(dropDown.open).to.be.false;
     });
 
@@ -423,7 +423,7 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, arrowDown);
       await elementUpdated(dropDown);
 
-      expect(dropDown.Items[0].active).to.be.true;
+      expect(dropDown.items[0].active).to.be.true;
     });
 
     it('sets the active element to the currently selected one', async () => {
@@ -431,7 +431,7 @@ describe('Dropdown', () => {
       dropDown.show();
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items[3], { active: true, selected: true });
+      checkItemState(dropDown.items[3], { active: true, selected: true });
     });
 
     it('moves only active state and not selection with arrow keys', async () => {
@@ -439,7 +439,7 @@ describe('Dropdown', () => {
       dropDown.show();
       await elementUpdated(dropDown);
 
-      const [prev, current, next] = dropDown.Items.slice(2, 5);
+      const [prev, current, next] = dropDown.items.slice(2, 5);
 
       checkItemState(current, { active: true, selected: true });
 
@@ -463,7 +463,7 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, homeKey);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items[0], { active: true });
+      checkItemState(dropDown.items[0], { active: true });
     });
 
     it('moves to last item with End key', async () => {
@@ -473,7 +473,7 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, endKey);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items.at(-1)!, { active: true });
+      checkItemState(dropDown.items.at(-1)!, { active: true });
     });
 
     it('does not lose active state at start/end bounds', async () => {
@@ -486,7 +486,7 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, arrowUp);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items[0], { active: true });
+      checkItemState(dropDown.items[0], { active: true });
 
       simulateKeyboard(dropDown, endKey);
       await elementUpdated(dropDown);
@@ -494,11 +494,11 @@ describe('Dropdown', () => {
       simulateKeyboard(dropDown, arrowDown);
       await elementUpdated(dropDown);
 
-      checkItemState(dropDown.Items.at(-1)!, { active: true });
+      checkItemState(dropDown.items.at(-1)!, { active: true });
     });
 
     it('skips disabled items on keyboard navigation', async () => {
-      const [first, second] = [dropDown.Items[2], dropDown.Items[4]];
+      const [first, second] = [dropDown.items[2], dropDown.items[4]];
       first.disabled = true;
       second.disabled = true;
       await elementUpdated(dropDown);
@@ -562,7 +562,7 @@ describe('Dropdown', () => {
 
     it('emits correct order of events on selection', async () => {
       const eventSpy = spy(dropDown, 'emitEvent');
-      let targetItem = dropDown.Items[3];
+      let targetItem = dropDown.items[3];
 
       // Selection through click
       dropDown.show();
@@ -581,7 +581,7 @@ describe('Dropdown', () => {
       eventSpy.resetHistory();
 
       // Selection through keyboard
-      targetItem = dropDown.Items[2];
+      targetItem = dropDown.items[2];
 
       dropDown.show();
       await elementUpdated(dropDown);

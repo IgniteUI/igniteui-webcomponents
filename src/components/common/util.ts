@@ -151,3 +151,7 @@ export function* iterNodes<T = Node>(
     node = iter.nextNode() as T;
   }
 }
+
+export function getElementByIdFromRoot(root: HTMLElement, id: string) {
+  return (root.getRootNode() as Document | ShadowRoot).getElementById(id);
+}

@@ -1,15 +1,16 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
-type IgcPopoverLikeComponent = {
-  open: boolean;
-  keepOpenOnOutsideClick: boolean;
-  hide(): void;
-};
-
 interface RootClickControllerConfig {
   hideCallback?: Function;
   target?: HTMLElement;
 }
+
+type RootClickControllerHost = ReactiveControllerHost &
+  HTMLElement & {
+    open: boolean;
+    keepOpenOnOutsideClick: boolean;
+    hide(): void;
+  };
 
 export class RootClickController implements ReactiveController {
   private _abortController: AbortController;
@@ -23,10 +24,8 @@ export class RootClickController implements ReactiveController {
   }
 
   constructor(
-    private readonly host: ReactiveControllerHost &
-      IgcPopoverLikeComponent &
-      HTMLElement,
-    private readonly config?: RootClickControllerConfig
+    private readonly host: RootClickControllerHost,
+    private config?: RootClickControllerConfig
   ) {
     this.host.addController(this);
     this._abortController = new AbortController();
@@ -35,7 +34,6 @@ export class RootClickController implements ReactiveController {
   private addEventListeners() {
     if (!this.host.keepOpenOnOutsideClick) {
       document.addEventListener('click', this.handleClick, {
-        // capture: true,
         signal: this.abortController.signal,
       });
     }
@@ -65,7 +63,10 @@ export class RootClickController implements ReactiveController {
     this.config?.hideCallback ? this.config.hideCallback() : this.host.hide();
   }
 
-  public update() {
+  public update(config?: RootClickControllerConfig) {
+    if (config) {
+      this.config = { ...this.config, ...config };
+    }
     this.configureListeners();
   }
 

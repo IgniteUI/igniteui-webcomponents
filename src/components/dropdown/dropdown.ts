@@ -74,7 +74,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     );
   }
 
-  private outsideClickController = new RootClickController(this, {
+  private _rootClickController = new RootClickController(this, {
     hideCallback: () => this._hide({ emit: true }),
   });
 
@@ -83,9 +83,6 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   @state()
   protected _activeItem!: IgcDropdownItemComponent;
-
-  // TODO: Expose as a property
-  protected target!: HTMLElement;
 
   private _getItems() {
     return iterNodes<IgcDropdownItemComponent>(this, 'SHOW_ELEMENT', (item) =>
@@ -108,19 +105,6 @@ export default class IgcDropdownComponent extends SizableMixin(
     }
 
     return items;
-  }
-
-  protected get allItems() {
-    return Array.from(this._getItems());
-  }
-
-  // TODO: After refactoring igc-select rename this
-  public get Items() {
-    return this.allItems;
-  }
-
-  public get Groups() {
-    return Array.from(this._getGroups());
   }
 
   @query('slot[name="target"]', true)
@@ -190,6 +174,16 @@ export default class IgcDropdownComponent extends SizableMixin(
   @property({ type: Boolean, attribute: 'same-width' })
   public sameWidth = false;
 
+  /** Returns the items of the dropdown. */
+  public get items() {
+    return Array.from(this._getItems());
+  }
+
+  /** Returns the group items of the dropdown. */
+  public get groups() {
+    return Array.from(this._getGroups());
+  }
+
   /** Returns the selected item from the dropdown or null. */
   public get selectedItem() {
     return this._selectedItem;
@@ -199,7 +193,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   @watch('keepOpenOnOutsideClick', { waitUntilFirstUpdate: true })
   protected toggleDirectiveChange() {
     this.updateAccessibility();
-    this.outsideClickController.update();
+    this._rootClickController.update();
   }
 
   constructor() {
@@ -207,16 +201,15 @@ export default class IgcDropdownComponent extends SizableMixin(
 
     addKeybindings(this, {
       skip: () => !this.open,
-      bindingDefaults: { preventDefault: true },
+      bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
+      .set(tabKey, this.onTabKey, {
+        preventDefault: false,
+      })
       .set(escapeKey, this.onEscapeKey)
       .set(arrowUp, this.navigatePrev)
       .set(arrowDown, this.navigateNext)
       .set(enterKey, this.onEnterKey)
-      .set(tabKey, this.onTabKey, {
-        preventDefault: false,
-        triggers: ['keydownRepeat'],
-      })
       .set(homeKey, this.onHomeKey)
       .set(endKey, this.onEndKey);
   }
@@ -227,7 +220,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   }
 
   protected setInitialSelection() {
-    const items = this.allItems;
+    const items = this.items;
     let lastSelectedItem!: IgcDropdownItemComponent;
 
     for (const item of items) {
@@ -262,11 +255,6 @@ export default class IgcDropdownComponent extends SizableMixin(
     this.selectItem(this._activeItem);
   }
 
-  // FIXME: delete these after refactoring igc-select
-  protected onArrowUpKeyDown() {}
-
-  protected onArrowDownKeyDown() {}
-
   protected handleClick(event: MouseEvent) {
     const item = event.target as IgcDropdownItemComponent;
     const items = this._activeItems;
@@ -280,18 +268,6 @@ export default class IgcDropdownComponent extends SizableMixin(
     this.open ? this._hide({ emit: true }) : this._show({ emit: true });
   }
 
-  // TODO: Remove
-  protected handleTargetClick = async () => {
-    if (!this.open) {
-      if (!this.handleOpening()) return;
-      this.show();
-      await this.updateComplete;
-      this.emitEvent('igcOpened');
-    } else {
-      this._hide();
-    }
-  };
-
   protected handleOpening() {
     return this.emitEvent('igcOpening', { cancelable: true });
   }
@@ -304,22 +280,14 @@ export default class IgcDropdownComponent extends SizableMixin(
     this.emitEvent('igcChange', { detail: item });
   }
 
-  // TODO: Change
   protected handleSlotChange() {
-    if (!this.target) return;
-    this.target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
-  }
-
-  // TODO: Remove
-  protected handleFocusout(event: Event) {
-    event.preventDefault();
-    (event.target as HTMLElement).focus();
+    this.updateAccessibility();
   }
 
   protected getItem(value: string) {
-    const items = this.allItems;
+    const items = this.items;
     const index = items.findIndex((item) => item.value === value);
-    return index !== -1 ? { item: items[index], index } : { item: null, index };
+    return index > -1 ? { item: items[index], index } : { item: null, index };
   }
 
   protected activateItem(item: IgcDropdownItemComponent) {
@@ -346,6 +314,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     this.activateItem(item);
     this._selectedItem = item;
     this._selectedItem.selected = true;
+
     if (emit) this.handleChange(this._selectedItem);
     if (emit && !this.keepOpenOnSelect) this._hide({ emit });
 
@@ -373,25 +342,6 @@ export default class IgcDropdownComponent extends SizableMixin(
     item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
 
     return item;
-  }
-
-  protected getNearestSiblingFocusableItemIndex(
-    startIndex: number,
-    direction: -1 | 1
-  ): number {
-    let index = startIndex;
-    const items = this.allItems;
-    if (!items) {
-      return -1;
-    }
-
-    while (items[index + direction] && items[index + direction].disabled) {
-      index += direction;
-    }
-
-    index += direction;
-
-    return index > -1 && index < items.length ? index : -1;
   }
 
   private navigateNext() {
@@ -437,10 +387,7 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   /** Shows the dropdown. */
   @blazorSuppress()
-  public show(target?: HTMLElement) {
-    if (target) {
-      this.target = target;
-    }
+  public show() {
     this._show();
   }
 
@@ -451,8 +398,8 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   /** Toggles the open state of the dropdown. */
   @blazorSuppress()
-  public toggle(target?: HTMLElement): void {
-    this.open ? this.hide() : this.show(target);
+  public toggle(): void {
+    this.open ? this.hide() : this.show();
   }
 
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
@@ -478,7 +425,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     const item =
       typeof value === 'string'
         ? this.getItem(value).item
-        : this.allItems[value as number];
+        : this.items[value as number];
 
     return this.selectItem(item!, false);
   }
@@ -500,6 +447,8 @@ export default class IgcDropdownComponent extends SizableMixin(
       return;
     }
 
+    // Find tabbable elements ?
+
     target.setAttribute('aria-haspopup', 'true');
     target.setAttribute('aria-expanded', this.open ? 'true' : `false`);
   }
@@ -509,7 +458,6 @@ export default class IgcDropdownComponent extends SizableMixin(
       ?open=${this.open}
       ?flip=${this.flip}
       ?same-width=${this.sameWidth}
-      .anchor=${this.target}
       .strategy=${this.positionStrategy}
       .offset=${this.distance}
       .placement=${this.placement}
@@ -517,9 +465,10 @@ export default class IgcDropdownComponent extends SizableMixin(
     >
       <slot
         id="dropdown-target"
-        @click=${this.handleAnchorClick}
         name="target"
         slot="anchor"
+        @click=${this.handleAnchorClick}
+        @slotchange=${this.handleSlotChange}
       ></slot>
       <div
         id="dropdown-list"
