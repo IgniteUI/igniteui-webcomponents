@@ -2,11 +2,9 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
-$theme: $fluent;
+$theme: $indigo;
 
 :host {
-    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-
     background: var-get($theme, 'background');
     color: var-get($theme, 'foreground');
 }
@@ -17,6 +15,7 @@ $theme: $fluent;
     &:hover {
         &::after {
             background: var-get($theme, 'hover-color');
+            opacity: .3;
         }
     }
 }
@@ -28,6 +27,16 @@ $theme: $fluent;
 :host(:not([disabled])[active]) {
     background: var-get($theme, 'background-active');
     color: var-get($theme, 'foreground-active');
+
+    &:hover {
+        color: var-get($theme, 'foreground-active');
+    }
+}
+
+[part~='active'] {
+    &:hover {
+        color: var-get($theme, 'foreground-active');
+    }
 }
 
 :host(:not([disabled])[selected]) {
@@ -60,5 +69,3 @@ $theme: $fluent;
     color: var-get($theme, 'foreground-disabled');
     background: var-get($theme, 'background-disabled');
 }
-
-

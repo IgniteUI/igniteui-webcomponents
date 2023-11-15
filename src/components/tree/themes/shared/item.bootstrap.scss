@@ -2,11 +2,9 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
-$theme: $material;
+$theme: $bootstrap;
 
 :host {
-    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-
     background: var-get($theme, 'background');
     color: var-get($theme, 'foreground');
 }
@@ -26,7 +24,7 @@ $theme: $material;
 }
 
 :host(:not([disabled])[active]) {
-    background: var-get($theme, 'background-active');
+    background:var-get($theme, 'background-active');
     color: var-get($theme, 'foreground-active');
 }
 
@@ -43,9 +41,13 @@ $theme: $material;
 :host(:not([disabled])[selected]),
 :host(:not([disabled])[selected][active]) {
     [part~='focused'] {
-        background:var-get($theme, 'background-active-selected');
+        background: var-get($theme, 'background-active-selected');
         color: var-get($theme, 'foreground-active-selected');
     }
+}
+
+[part~='select'] {
+    margin-inline-end: rem(8px);
 }
 
 [part~='focused'] {

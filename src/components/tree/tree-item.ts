@@ -6,8 +6,8 @@ import {
   state,
 } from 'lit/decorators.js';
 
-import { all } from './themes/themes.js';
-import { styles } from './themes/tree-item.base.css.js';
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
 import type IgcTreeComponent from './tree.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
