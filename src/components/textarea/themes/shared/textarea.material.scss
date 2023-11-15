@@ -8,6 +8,8 @@ $input-bottom-padding: rem(6px);
 
 :host {
     @include type-style('subtitle-1');
+
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
 
 textarea {
@@ -40,8 +42,9 @@ textarea {
             position: absolute;
             bottom: 0%;
             width: 100%;
-            border-block-end: rem(1px) solid var-get($theme, 'idle-bottom-line-color');
-            transition: all .25s $out-cubic;
+            border-block-end: rem(1px) solid
+                var-get($theme, 'idle-bottom-line-color');
+            transition: all 0.25s $out-cubic;
         }
     }
 }
@@ -90,7 +93,10 @@ textarea {
         background: var-get($theme, 'box-disabled-background');
 
         &::after {
-            border-block-end-color: var-get($theme, 'disabled-bottom-line-color');
+            border-block-end-color: var-get(
+                $theme,
+                'disabled-bottom-line-color'
+            );
             border-block-end-style: dashed;
         }
     }
@@ -127,7 +133,10 @@ textarea {
 
         &::after {
             border-block-end-width: rem(2px);
-            border-block-end-color: var-get($theme, 'focused-bottom-line-color');
+            border-block-end-color: var-get(
+                $theme,
+                'focused-bottom-line-color'
+            );
         }
     }
 
@@ -256,17 +265,17 @@ textarea {
             inline: {
                 start-width: rem(1px);
                 end-width: 0;
-            };
+            }
             block: {
                 start-width: rem(1px);
                 end-width: rem(1px);
-            };
+            }
             start: {
                 start-radius: var-get($theme, 'border-border-radius');
-            };
+            }
             end: {
                 start-radius: var-get($theme, 'border-border-radius');
-            };
+            }
         }
     }
 
@@ -312,17 +321,17 @@ textarea {
             inline: {
                 start-width: 0;
                 end-width: rem(1px);
-            };
+            }
             block: {
                 start-width: rem(1px);
                 end-width: rem(1px);
-            };
+            }
             start: {
                 end-radius: var-get($theme, 'border-border-radius');
-            };
+            }
             end: {
                 end-radius: var-get($theme, 'border-border-radius');
-            };
+            }
         }
     }
 
@@ -336,7 +345,7 @@ textarea {
     [part='notch'] {
         border-block-width: rem(2px);
     }
-    
+
     [part='filler'] {
         border-block-color: var-get($theme, 'focused-border-color');
     }
@@ -351,11 +360,11 @@ textarea {
             inline: {
                 start-width: rem(2px);
                 end-width: 0;
-            };
+            }
             block: {
                 start-width: rem(2px);
                 end-width: rem(2px);
-            };
+            }
         }
     }
 
@@ -365,11 +374,11 @@ textarea {
             inline: {
                 start-width: 0;
                 end-width: rem(2px);
-            };
+            }
             block: {
                 start-width: rem(2px);
                 end-width: rem(2px);
-            };
+            }
         }
     }
 

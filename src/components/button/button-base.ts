@@ -92,6 +92,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   constructor() {
     super();
     this.__internals = this.attachInternals();
+    this.size = 'medium';
   }
 
   /** Sets focus in the button. */

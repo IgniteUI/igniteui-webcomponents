@@ -16,7 +16,10 @@
     }
 }
 
-igc-input {
+igc-input,
+igc-icon {
+    --component-size: var(--select-size) !important;
+
     cursor: pointer;
 }
 

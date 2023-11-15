@@ -6,6 +6,8 @@ $theme: $indigo;
 
 :host {
     @include type-style('body-1');
+
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
 
 :host(:hover) {

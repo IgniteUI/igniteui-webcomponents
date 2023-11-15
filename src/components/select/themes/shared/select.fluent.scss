@@ -8,6 +8,11 @@ $dropdown-theme: dropdown-theme.$fluent;
 $input-theme: input-theme.$fluent;
 $focused-border-width: rem(2px);
 
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --select-size: var(--component-size);
+    --dropdown-size: var(--component-size);
+}
 
 [part='base'] {
     background: var(--dd-background-color);

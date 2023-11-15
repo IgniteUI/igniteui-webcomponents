@@ -13,18 +13,6 @@ svg {
     height: 1em;
 }
 
-:host([size='small']) {
-    --component-size: var(--ig-size, var(--ig-size-small));
-}
-
-:host([size='medium']) {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}
-
-:host([size='large']) {
-    --component-size: var(--ig-size, var(--ig-size-large));
-}
-
 :host([mirrored]) {
     transform: scaleX(-1);
 }

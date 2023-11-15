@@ -21,6 +21,8 @@ $outlined-theme: $bootstrap-outlined;
 :host([variant='flat']) {
     @include css-vars-from-theme($flat-theme, 'ig-icon-button');
 
+    --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
+
     [part='base'] {
         &:hover {
             color: var-get($flat-theme, 'hover-foreground');
@@ -41,6 +43,8 @@ $outlined-theme: $bootstrap-outlined;
 
 :host([variant='contained']) {
     @include css-vars-from-theme($contained-theme, 'ig-icon-button');
+
+    --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
 
     [part='base'] {
         color: var-get($contained-theme, 'foreground');
@@ -68,6 +72,8 @@ $outlined-theme: $bootstrap-outlined;
 
 :host([variant='outlined']) {
     @include css-vars-from-theme($outlined-theme, 'ig-icon-button');
+
+    --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
 
     [part='base'] {
         box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'border-color');

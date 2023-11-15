@@ -2,7 +2,10 @@
 @use '../../dropdown/themes/dropdown-item.base' as *;
 
 :host {
-    --component-size: var(--ig-size, var(--ig-size-medium));
+    // Overwrite dropdown-header default size.
+    // Needed due to how styles are imported in combo-header.ts.
+    --component-size: var(--ig-size, var(--default-size));
+    --default-size: var(--combo-size) !important;
 
     gap: rem(8px);
 }
