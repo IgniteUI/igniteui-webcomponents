@@ -392,14 +392,14 @@ export class IgcSliderBaseComponent extends LitElement {
         ? this.labels.length
         : 0
       : this.primaryTicks === 1
-      ? 2
-      : this.primaryTicks;
+        ? 2
+        : this.primaryTicks;
 
     return primaryTicks > 0
       ? (primaryTicks - 1) * this.secondaryTicks + primaryTicks
       : this.secondaryTicks > 0
-      ? this.secondaryTicks
-      : 0;
+        ? this.secondaryTicks
+        : 0;
   }
 
   private tickValue(idx: number) {
@@ -576,8 +576,8 @@ export class IgcSliderBaseComponent extends LitElement {
           this.labels
             ? this.labels[value]
             : this.valueFormat || this.valueFormatOptions
-            ? this.formatValue(value)
-            : undefined
+              ? this.formatValue(value)
+              : undefined
         )}
         aria-label=${ifDefined(ariaLabel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
