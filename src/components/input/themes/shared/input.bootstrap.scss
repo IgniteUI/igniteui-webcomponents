@@ -4,6 +4,8 @@
 $theme: $bootstrap;
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --input-size: var(--component-size);
     --font: #{sizable(rem(14px), rem(16px), rem(20px))};
     --input-font: #{sizable(rem(16px), rem(16px), rem(20px))};
 }
