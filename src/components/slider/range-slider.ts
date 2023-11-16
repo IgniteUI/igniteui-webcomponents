@@ -244,8 +244,8 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     const textValue = this.labels
       ? this.labels[value]
       : this.valueFormat || this.valueFormatOptions
-      ? this.formatValue(value)
-      : ariaValueText;
+        ? this.formatValue(value)
+        : ariaValueText;
 
     return html`
       <div
