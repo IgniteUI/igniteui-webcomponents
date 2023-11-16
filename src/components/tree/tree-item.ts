@@ -528,8 +528,8 @@ export default class IgcTreeItemComponent extends LitElement {
                           name=${this.expanded
                             ? 'keyboard_arrow_down'
                             : !ltr
-                            ? 'navigate_before'
-                            : 'keyboard_arrow_right'}
+                              ? 'navigate_before'
+                              : 'keyboard_arrow_right'}
                           collection="internal"
                         >
                         </igc-icon>
