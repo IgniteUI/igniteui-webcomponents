@@ -153,26 +153,26 @@ export default class IgcCalendarComponent extends SizableMixin(
     return this.activeView === 'days'
       ? this.resourceStrings.previousMonth
       : this.activeView === 'months'
-      ? this.resourceStrings.previousYear
-      : this.activeView === 'years'
-      ? this.resourceStrings.previousYears.replace(
-          '{0}',
-          this.yearPerPage.toString()
-        )
-      : '';
+        ? this.resourceStrings.previousYear
+        : this.activeView === 'years'
+          ? this.resourceStrings.previousYears.replace(
+              '{0}',
+              this.yearPerPage.toString()
+            )
+          : '';
   }
 
   private get nextButtonLabel() {
     return this.activeView === 'days'
       ? this.resourceStrings.nextMonth
       : this.activeView === 'months'
-      ? this.resourceStrings.nextYear
-      : this.activeView === 'years'
-      ? this.resourceStrings.nextYears.replace(
-          '{0}',
-          this.yearPerPage.toString()
-        )
-      : '';
+        ? this.resourceStrings.nextYear
+        : this.activeView === 'years'
+          ? this.resourceStrings.nextYears.replace(
+              '{0}',
+              this.yearPerPage.toString()
+            )
+          : '';
   }
 
   private monthSelectLabel(activeDate: Date) {
