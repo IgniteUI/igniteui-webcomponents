@@ -168,25 +168,13 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   private emitSelectEvent(button: IgcToggleButtonComponent) {
-    const select = this.emitEvent('igcSelect', {
-      cancelable: true,
-      detail: button.value,
-    });
-
-    if (select) {
-      button.selected = true;
-    }
+    button.selected = true;
+    this.emitEvent('igcSelect', { detail: button.value });
   }
 
   private emitDeselectEvent(button: IgcToggleButtonComponent) {
-    const deselect = this.emitEvent('igcDeselect', {
-      cancelable: true,
-      detail: button.value,
-    });
-
-    if (deselect) {
-      button.selected = false;
-    }
+    button.selected = false;
+    this.emitEvent('igcDeselect', { detail: button.value });
   }
 
   private setSelection(values: Set<string>) {
