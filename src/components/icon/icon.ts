@@ -3,7 +3,7 @@ import { property, state } from 'lit/decorators.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 
 import {
-  IconsRegistry,
+  getIconRegistry,
   registerIconFromText as registerIconFromText_impl,
   registerIcon as registerIcon_impl,
 } from './icon.registry.js';
@@ -32,7 +32,10 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
     registerComponent(this);
   }
 
-  @state() private svg = '';
+  private _internals: ElementInternals;
+
+  @state()
+  private svg = '';
 
   /**
    * The name of the icon glyph to draw.
@@ -59,19 +62,19 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   constructor() {
     super();
+    this._internals = this.attachInternals();
     this.size = 'medium';
+
+    this._internals.role = 'img';
   }
 
   public override connectedCallback() {
     super.connectedCallback();
-    if (!this.hasAttribute('role')) {
-      this.setAttribute('role', 'img');
-    }
-    IconsRegistry.instance().subscribe(this.iconLoaded);
+    getIconRegistry().subscribe(this.iconLoaded);
   }
 
   public override disconnectedCallback() {
-    IconsRegistry.instance().unsubscribe(this.iconLoaded);
+    getIconRegistry().unsubscribe(this.iconLoaded);
     super.disconnectedCallback();
   }
 
@@ -90,17 +93,18 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
   };
 
   private getIcon() {
-    const svg =
-      this.name && this.collection
-        ? IconsRegistry.instance().getIcon(this.name, this.collection)
-        : '';
+    const { svg, title } =
+      getIconRegistry().get(this.name, this.collection) ?? {};
+
     this.svg = svg ?? '';
+    this._internals.ariaLabel = title ?? null;
   }
 
   protected override render() {
-    return html` ${unsafeSVG(this.svg)} `;
+    return html`${unsafeSVG(this.svg)}`;
   }
 
+  /* c8 ignore next 8 */
   @blazorInclude()
   protected async registerIcon(
     name: string,
@@ -110,6 +114,7 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
     await registerIcon_impl(name, url, collection);
   }
 
+  /* c8 ignore next 8 */
   @blazorInclude()
   protected registerIconFromText(
     name: string,

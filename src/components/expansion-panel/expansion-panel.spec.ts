@@ -94,7 +94,7 @@ describe('Expansion Panel', () => {
         >
           <div part="indicator" aria-hidden="true">
             <slot name="indicator">
-              <igc-icon collection="internal" name="keyboard_arrow_down" role="img"></igc-icon>
+              <igc-icon collection="internal" name="keyboard_arrow_down"></igc-icon>
             </slot>
             <slot name="indicator-expanded" hidden>
             </slot>

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- The icon registry is now instantiated in the `globalThis` context. Multiple instances/bundles of the library will no longer have
+  `igc-icon` registries overwrite each other. [#985](https://github.com/IgniteUI/igniteui-webcomponents/issues/985)
+
+
 ## [4.5.0] - 2023-10-09
 ### Added
 - Text area component [#764](https://github.com/IgniteUI/igniteui-webcomponents/issues/764)
