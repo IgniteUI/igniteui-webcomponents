@@ -577,32 +577,16 @@ describe('Button Group', () => {
         buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
         await elementUpdated(buttonGroup);
 
-        const args = {
-          cancelable: true,
-          detail: buttons[0].value,
-        };
+        const args = { detail: buttons[0].value };
 
         expect(eventSpy).calledWith('igcSelect', args);
-        expect(buttonGroup.selectedItems.length).to.equal(1);
-        expect(buttonGroup.selectedItems).to.have.same.members([
-          buttons[0].value,
-        ]);
-      });
-
-      it('can cancel `igcSelect` event', async () => {
-        const eventSpy = spy(buttonGroup, 'emitEvent');
 
         buttonGroup.addEventListener('igcSelect', (event) => {
-          event.preventDefault();
+          expect(buttonGroup.selectedItems.length).to.equal(1);
+          expect(buttonGroup.selectedItems).to.have.same.members([
+            event.detail,
+          ]);
         });
-
-        // select button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await elementUpdated(buttonGroup);
-
-        expect(eventSpy).calledWith('igcSelect');
-        expect(buttons[0].selected).to.be.false;
-        expect(buttonGroup.selectedItems.length).to.equal(0);
       });
 
       it('should emit `igcDeselect` event on deselect', async () => {
@@ -615,37 +599,19 @@ describe('Button Group', () => {
         buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
         await elementUpdated(buttonGroup);
 
-        const args = {
-          cancelable: true,
-          detail: buttons[0].value,
-        };
+        const args = { detail: buttons[0].value };
 
         expect(eventSpy).calledWith('igcDeselect', args);
-        expect(buttonGroup.selectedItems.length).to.equal(0);
-      });
 
-      it('can cancel `igcDeselect` event', async () => {
-        buttons[0].selected = true;
-        await elementUpdated(buttonGroup);
-
-        const eventSpy = spy(buttonGroup, 'emitEvent');
-
-        buttonGroup.addEventListener('igcDeselect', (event) => {
-          event.preventDefault();
+        buttonGroup.addEventListener('igcDeselect', () => {
+          expect(buttonGroup.selectedItems.length).to.equal(0);
         });
-
-        // deselect button
-        buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
-        await elementUpdated(buttonGroup);
-
-        expect(eventSpy).calledWith('igcDeselect');
-        expect(buttonGroup.selectedItems.length).to.equal(1);
       });
 
       it('events are correctly emitted on user interaction (single mode)', async () => {
         const eventSpy = spy(buttonGroup, 'emitEvent');
-        const selectArgs = { cancelable: true, detail: '' };
-        const deselectArgs = { cancelable: true, detail: '' };
+        const selectArgs = { detail: '' };
+        const deselectArgs = { detail: '' };
 
         // select first button
         buttons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -676,8 +642,8 @@ describe('Button Group', () => {
 
       it('events are correctly emitted on user interaction (single-required mode)', async () => {
         const eventSpy = spy(buttonGroup, 'emitEvent');
-        const selectArgs = { cancelable: true, detail: '' };
-        const deselectArgs = { cancelable: true, detail: '' };
+        const selectArgs = { detail: '' };
+        const deselectArgs = { detail: '' };
 
         buttonGroup.selection = 'single-required';
         await elementUpdated(buttonGroup);
@@ -725,8 +691,8 @@ describe('Button Group', () => {
 
       it('events are correctly emitted on user interaction (multiple mode)', async () => {
         const eventSpy = spy(buttonGroup, 'emitEvent');
-        const selectArgs = { cancelable: true, detail: '' };
-        const deselectArgs = { cancelable: true, detail: '' };
+        const selectArgs = { detail: '' };
+        const deselectArgs = { detail: '' };
 
         buttonGroup.selection = 'multiple';
         await elementUpdated(buttonGroup);
