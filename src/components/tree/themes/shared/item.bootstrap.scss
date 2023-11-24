@@ -19,6 +19,14 @@ $theme: $bootstrap;
     }
 }
 
+[part~='wrapper'][part~='selected'] {
+    &:hover {
+        &::after {
+            background: var-get($theme, 'hover-selected-color');
+        }
+    }
+}
+
 [part~='label'] {
     max-height: var-get($theme, 'size');
 }
