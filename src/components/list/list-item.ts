@@ -33,9 +33,13 @@ export default class IgcListItemComponent extends LitElement {
     registerComponent(this);
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('role', 'listitem');
+  private _internals: ElementInternals;
+
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+
+    this._internals.role = 'listitem';
   }
 
   protected override render() {

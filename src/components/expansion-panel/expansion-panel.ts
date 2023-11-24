@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { styles } from './themes/expansion-panel.base.css.js';
@@ -37,6 +37,7 @@ export interface IgcExpansionPanelComponentEventMap {
  * @slot title - renders the title of the panel's header
  * @slot subtitle - renders the subtitle of the panel's header
  * @slot indicator - renders the expand/collapsed indicator
+ * @slot indicator-expanded - renders the expanded state of the indicator
  *
  * @fires igcOpening - Emitted before opening the expansion panel.
  * @fires igcOpened - Emitted after the expansion panel is opened.
@@ -64,6 +65,9 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
 
   private static readonly increment = createCounter();
   private animationPlayer!: AnimationPlayer;
+
+  @queryAssignedElements({ slot: 'indicator-expanded' })
+  private _indicatorExpandedElements!: HTMLElement[];
 
   /**
    * Indicates whether the contents of the control should be visible.
@@ -190,16 +194,34 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
     this.open = true;
   }
 
+  private handleSlotChange() {
+    this.requestUpdate();
+  }
+
   private indicatorTemplate() {
+    const indicatorHidden =
+      this.open && this._indicatorExpandedElements.length > 0;
+    const indicatorExpandedHidden =
+      this._indicatorExpandedElements.length < 1 || !this.open;
+
     return html`
       <div part="indicator" aria-hidden="true">
-        <slot name="indicator">
+        <slot
+          name="indicator"
+          ?hidden=${indicatorHidden}
+          @slotchange=${this.handleSlotChange}
+        >
           <igc-icon
             name=${this.open ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
             collection="internal"
           >
           </igc-icon>
         </slot>
+        <slot
+          name="indicator-expanded"
+          ?hidden=${indicatorExpandedHidden}
+          @slotchange=${this.handleSlotChange}
+        ></slot>
       </div>
     `;
   }

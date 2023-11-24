@@ -1,6 +1,11 @@
 @use 'styles/utilities/index' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
     gap: rem(5px);
 }
 

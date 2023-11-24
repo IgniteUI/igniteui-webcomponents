@@ -302,6 +302,7 @@ describe('Combo', () => {
 
     it('should select/deselect an item by value key', async () => {
       const item = cities[0];
+      combo.open = true;
       combo.select([item[combo.valueKey!]]);
 
       await elementUpdated(combo);
@@ -326,6 +327,7 @@ describe('Combo', () => {
 
     it('should select/deselect an item by value when no valueKey is present', async () => {
       combo.valueKey = undefined;
+      combo.open = true;
       await elementUpdated(combo);
 
       const item = cities[0];

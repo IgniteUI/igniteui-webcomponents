@@ -1,11 +1,13 @@
 import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
-import { styles } from './themes/tree.base.css.js';
+import { styles } from './themes/container.base.css.js';
+import { all } from './themes/container.js';
 import IgcTreeItemComponent from './tree-item.js';
 import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
@@ -29,6 +31,7 @@ import { SizableMixin } from '../common/mixins/sizable.js';
  * @fires igcItemExpanding - Emitted when tree item is about to expand.
  * @fires igcItemActivated - Emitted when the tree's `active` item changes.
  */
+@themes(all)
 @blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends SizableMixin(
   EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)

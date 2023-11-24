@@ -11,36 +11,39 @@ import { styles as fluentLight } from './light/avatar.fluent.css.js';
 import { styles as indigoLight } from './light/avatar.indigo.css.js';
 import { styles as materialLight } from './light/avatar.material.css.js';
 // Shared Styles
+import { styles as bootstrap } from './shared/avatar.bootstrap.css.js';
 import { styles as shared } from './shared/avatar.common.css.js';
+import { styles as fluent } from './shared/avatar.fluent.css.js';
+import { styles as indigo } from './shared/avatar.indigo.css.js';
 import type { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${shared} ${bootstrapLight}
+    ${bootstrap} ${bootstrapLight}
   `,
   material: css`
     ${shared} ${materialLight}
   `,
   fluent: css`
-    ${shared} ${fluentLight}
+    ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${shared} ${indigoLight}
+    ${indigo} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${shared} ${bootstrapDark}
+    ${bootstrap} ${bootstrapDark}
   `,
   material: css`
     ${shared} ${materialDark}
   `,
   fluent: css`
-    ${shared} ${fluentDark}
+    ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${shared} ${indigoDark}
+    ${indigo} ${indigoDark}
   `,
 };
 

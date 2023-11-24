@@ -3,6 +3,10 @@
 
 $theme: $indigo;
 
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+}
+
 :host button {
     border: rem(1px) solid var-get($theme, 'border-color');
 

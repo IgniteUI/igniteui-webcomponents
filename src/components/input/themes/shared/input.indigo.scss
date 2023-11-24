@@ -13,6 +13,9 @@ $transition-duration: .25s;
 }
 
 :host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --input-size: var(--component-size);
+
     [part='prefix'],
     [part='suffix'] {
         // transition-duration is needed here because of a bug in safari

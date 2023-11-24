@@ -3,6 +3,10 @@
 
 $theme: $bootstrap;
 
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+}
+
 :host button {
     &:focus {
         outline: rem(2px) solid var-get($theme, 'focus-outline-color');

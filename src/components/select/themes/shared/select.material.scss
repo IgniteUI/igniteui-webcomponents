@@ -18,6 +18,12 @@ $active-border-width: rem(2px) !default;
     padding: rem(8px) 0;
 }
 
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --select-size: var(--component-size);
+    --dropdown-size: var(--component-size);
+}
+
 :host([outlined]:focus-within) {
     igc-input[readonly]:not([disabled])::part(start) {
         border: {

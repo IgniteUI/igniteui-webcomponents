@@ -41,9 +41,13 @@
 }
 
 [name='prefix']::slotted(*) {
+    --component-size: var(--dropdown-size) !important;
+
     margin-inline-end: pad(rem(16px));
 }
 
 [name='suffix']::slotted(*) {
+    --component-size: var(--dropdown-size) !important;
+
     margin-inline-start: pad(rem(16px));
 }
