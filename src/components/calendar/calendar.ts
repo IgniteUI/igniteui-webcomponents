@@ -494,16 +494,22 @@ export default class IgcCalendarComponent extends SizableMixin(
     this.focusActiveDate();
   }
 
-  private switchToMonths(daysViewIndex: number) {
+  private async switchToMonths(daysViewIndex: number) {
     this.activateDaysView(daysViewIndex);
     this.activeView = 'months';
+
+    await this.updateComplete;
+    this.focusActiveDate();
   }
 
-  private switchToYears(daysViewIndex: number) {
+  private async switchToYears(daysViewIndex: number) {
     if (this.activeView === 'days') {
       this.activateDaysView(daysViewIndex);
     }
     this.activeView = 'years';
+
+    await this.updateComplete;
+    this.focusActiveDate();
   }
 
   private activateDaysView(daysViewIndex: number) {

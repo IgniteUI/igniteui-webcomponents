@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- Calendar not keeping focus state when switching views [#992](https://github.com/IgniteUI/igniteui-webcomponents/issues/992)
+
+
 ## [4.5.0] - 2023-10-09
 ### Added
 - Text area component [#764](https://github.com/IgniteUI/igniteui-webcomponents/issues/764)
