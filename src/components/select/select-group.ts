@@ -1,9 +1,12 @@
+import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
-import IgcSelectItemComponent from './select-item.js';
+import type IgcSelectItemComponent from './select-item.js';
+import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import IgcDropdownGroupComponent from '../dropdown/dropdown-group.js';
+import { styles } from '../dropdown/themes/dropdown-group.base.css.js';
+import { all } from '../dropdown/themes/group.js';
 
 /**
  * @element igc-select-group - A container for a group of `igc-select-item` components.
@@ -13,19 +16,22 @@ import IgcDropdownGroupComponent from '../dropdown/dropdown-group.js';
  *
  * @csspart label - The native label element.
  */
-export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
-  public static override readonly tagName = 'igc-select-group';
+@themes(all)
+export default class IgcSelectGroupComponent extends LitElement {
+  public static readonly tagName = 'igc-select-group';
+  public static override styles = styles;
 
-  public static override register() {
+  public static register() {
     registerComponent(this);
   }
 
+  private _internals: ElementInternals;
   private observer!: MutationObserver;
   private controlledItems!: Array<IgcSelectItemComponent>;
 
   /** All child `igc-select-item`s. */
   @queryAssignedElements({ flatten: true, selector: 'igc-select-item' })
-  public override items!: Array<IgcSelectItemComponent>;
+  public items!: Array<IgcSelectItemComponent>;
 
   @queryAssignedElements({
     flatten: true,
@@ -42,6 +48,8 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
 
   constructor() {
     super();
+    this._internals = this.attachInternals();
+    this._internals.role = 'group';
 
     this.observer = new MutationObserver(this.updateControlledItems.bind(this));
   }
@@ -51,14 +59,9 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
     super.disconnectedCallback();
   }
 
-  protected getParent() {
-    return this.closest('igc-select')!;
-  }
-
   protected override async firstUpdated() {
     await this.updateComplete;
     this.controlledItems = this.activeItems;
-    this.setAttribute('role', 'presentation');
 
     this.items.forEach((i) => {
       this.observer.observe(i, {
@@ -67,7 +70,7 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
       });
     });
 
-    this.updateDisabled();
+    this.disabledChange();
   }
 
   protected updateControlledItems(mutations: MutationRecord[]) {
@@ -85,12 +88,21 @@ export default class IgcSelectGroupComponent extends IgcDropdownGroupComponent {
   }
 
   @watch('disabled', { waitUntilFirstUpdate: true })
-  protected updateDisabled() {
-    this.disabled
-      ? this.setAttribute('aria-disabled', 'true')
-      : this.removeAttribute('aria-disabled');
+  protected disabledChange() {
+    this._internals.ariaDisabled = `${this.disabled}`;
 
-    this.controlledItems?.forEach((i) => (i.disabled = this.disabled));
+    for (const item of this.controlledItems) {
+      item.disabled = this.disabled;
+    }
+  }
+
+  protected override render() {
+    return html`
+      <label part="label">
+        <slot name="label"></slot>
+      </label>
+      <slot></slot>
+    `;
   }
 }
 

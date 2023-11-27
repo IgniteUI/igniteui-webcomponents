@@ -285,7 +285,7 @@ export default class IgcInputComponent extends IgcInputBaseComponent {
   }
 
   protected override handleBlur(): void {
-    this.invalid = !this.checkValidity();
+    this.checkValidity();
     super.handleBlur();
   }
 

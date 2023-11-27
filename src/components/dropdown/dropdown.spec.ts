@@ -108,6 +108,9 @@ describe('Dropdown', () => {
       await expect(dropDown).dom.to.be.accessible();
       await expect(dropDown).shadowDom.to.be.accessible();
 
+      dropDown.open = false;
+      await elementUpdated(dropDown);
+
       // Closed state again
       await expect(dropDown).dom.to.be.accessible();
       await expect(dropDown).shadowDom.to.be.accessible();
@@ -151,11 +154,11 @@ describe('Dropdown', () => {
       expect(dropDown.open).to.be.false;
     });
 
-    it('`items` returns the right collection', async () => {
+    it('`items` returns the correct collection', async () => {
       expect(dropDown.items.length).to.equal(Items.length);
     });
 
-    it('`groups` returns the right collection', async () => {
+    it('`groups` returns the correct collection', async () => {
       expect(dropDown.groups.length).to.equal(0);
     });
 
@@ -336,7 +339,7 @@ describe('Dropdown', () => {
       simulateClick(document.body);
       await elementUpdated(dropDown);
 
-      expect(dropDown.open).to.true;
+      expect(dropDown.open).to.be.true;
     });
 
     it('pressing Escape closes the dropdown without selection', async () => {
@@ -416,7 +419,7 @@ describe('Dropdown', () => {
       expect(dropDown.open).to.be.false;
     });
 
-    it('activates the first item on ArrowDown if not selection is present', async () => {
+    it('activates the first item on ArrowDown if no selection is present', async () => {
       dropDown.show();
       await elementUpdated(dropDown);
 
@@ -526,7 +529,7 @@ describe('Dropdown', () => {
       await elementUpdated(dropDown);
       expect(eventSpy).not.to.be.called;
 
-      dropDown.show();
+      dropDown.hide();
       await elementUpdated(dropDown);
       expect(eventSpy).not.to.be.called;
 

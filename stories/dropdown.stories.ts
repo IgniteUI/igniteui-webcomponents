@@ -42,18 +42,6 @@ const metadata: Meta<IgcDropdownComponent> = {
     },
   },
   argTypes: {
-    keepOpenOnSelect: {
-      type: 'boolean',
-      description: 'Whether the dropdown should be kept open on selection.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
-    open: {
-      type: 'boolean',
-      description: 'Sets the open state of the component.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
     placement: {
       type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
       description:
@@ -103,13 +91,6 @@ const metadata: Meta<IgcDropdownComponent> = {
       control: 'number',
       table: { defaultValue: { summary: 0 } },
     },
-    keepOpenOnOutsideClick: {
-      type: 'boolean',
-      description:
-        'Whether the component should be kept open on clicking outside of it.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
     sameWidth: {
       type: 'boolean',
       description:
@@ -117,27 +98,43 @@ const metadata: Meta<IgcDropdownComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
+    keepOpenOnSelect: {
+      type: 'boolean',
+      description:
+        'Whether the component dropdown should be kept open on selection.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    keepOpenOnOutsideClick: {
+      type: 'boolean',
+      description:
+        'Whether the component dropdown should be kept open on clicking outside of it.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    open: {
+      type: 'boolean',
+      description: 'Sets the open state of the component.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
   },
   args: {
-    keepOpenOnSelect: false,
-    open: false,
     placement: 'bottom-start',
     positionStrategy: 'absolute',
     scrollStrategy: 'scroll',
     flip: false,
     distance: 0,
-    keepOpenOnOutsideClick: false,
     sameWidth: false,
+    keepOpenOnSelect: false,
+    keepOpenOnOutsideClick: false,
+    open: false,
   },
 };
 
 export default metadata;
 
 interface IgcDropdownArgs {
-  /** Whether the dropdown should be kept open on selection. */
-  keepOpenOnSelect: boolean;
-  /** Sets the open state of the component. */
-  open: boolean;
   /** The preferred placement of the component around the target element. */
   placement:
     | 'top'
@@ -163,10 +160,14 @@ interface IgcDropdownArgs {
   flip: boolean;
   /** The distance from the target element. */
   distance: number;
-  /** Whether the component should be kept open on clicking outside of it. */
-  keepOpenOnOutsideClick: boolean;
   /** Whether the dropdown's width should be the same as the target's one. */
   sameWidth: boolean;
+  /** Whether the component dropdown should be kept open on selection. */
+  keepOpenOnSelect: boolean;
+  /** Whether the component dropdown should be kept open on clicking outside of it. */
+  keepOpenOnOutsideClick: boolean;
+  /** Sets the open state of the component. */
+  open: boolean;
 }
 type Story = StoryObj<IgcDropdownArgs>;
 
@@ -288,6 +289,9 @@ const gdpAmericas = [
 ];
 
 export const GroupsAndHeaders: Story = {
+  args: {
+    sameWidth: true,
+  },
   render: ({
     open,
     keepOpenOnOutsideClick,
@@ -300,11 +304,14 @@ export const GroupsAndHeaders: Story = {
   }) => html`
     <style>
       igc-dropdown-header {
-        text-align: end;
+        text-align: start;
       }
       img {
         width: 23px;
         height: 12px;
+      }
+      .group-title {
+        font-size: 0.75rem;
       }
     </style>
     <igc-dropdown
@@ -323,7 +330,9 @@ export const GroupsAndHeaders: Story = {
       >
 
       <igc-dropdown-group>
-        <p slot="label">UN Region: <strong>Europe</strong></p>
+        <p class="group-title" slot="label">
+          UN Region: <strong>Europe</strong>
+        </p>
         <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
 
         ${gdpEurope.map(
@@ -336,7 +345,9 @@ export const GroupsAndHeaders: Story = {
       </igc-dropdown-group>
 
       <igc-dropdown-group>
-        <p slot="label">UN Region: <strong>Americas</strong></p>
+        <p slot="label" class="group-title">
+          UN Region: <strong>Americas</strong>
+        </p>
         <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
 
         ${gdpAmericas.map(

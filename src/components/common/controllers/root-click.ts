@@ -12,7 +12,7 @@ type RootClickControllerHost = ReactiveControllerHost &
     hide(): void;
   };
 
-export class RootClickController implements ReactiveController {
+class RootClickController implements ReactiveController {
   private _abortController: AbortController;
 
   protected get abortController() {
@@ -60,7 +60,9 @@ export class RootClickController implements ReactiveController {
   };
 
   private hide() {
-    this.config?.hideCallback ? this.config.hideCallback() : this.host.hide();
+    this.config?.hideCallback
+      ? this.config.hideCallback.call(this.host)
+      : this.host.hide();
   }
 
   public update(config?: RootClickControllerConfig) {
@@ -77,4 +79,11 @@ export class RootClickController implements ReactiveController {
   public hostDisconnected() {
     this.abortController.abort();
   }
+}
+
+export function addRootClickHandler(
+  host: RootClickControllerHost,
+  config?: RootClickControllerConfig
+) {
+  return new RootClickController(host, config);
 }

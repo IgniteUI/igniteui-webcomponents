@@ -4,6 +4,12 @@ import { html } from 'lit';
 import { configureTheme } from '../src/theming/config';
 import type { Decorator } from '@storybook/web-components';
 import { withActions } from '@storybook/addon-actions/decorator';
+import { configureActions } from '@storybook/addon-actions';
+
+configureActions({
+  clearOnStoryChange: true,
+  limit: 5,
+});
 
 type ThemeImport = { default: string };
 

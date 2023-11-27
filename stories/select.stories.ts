@@ -93,76 +93,21 @@ const metadata: Meta<IgcSelectComponent> = {
     },
     keepOpenOnSelect: {
       type: 'boolean',
-      description: 'Whether the dropdown should be kept open on selection.',
+      description:
+        'Whether the component dropdown should be kept open on selection.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    keepOpenOnOutsideClick: {
+      type: 'boolean',
+      description:
+        'Whether the component dropdown should be kept open on clicking outside of it.',
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the component.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
-    placement: {
-      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
-      description:
-        'The preferred placement of the component around the target element.',
-      options: [
-        'top',
-        'top-start',
-        'top-end',
-        'bottom',
-        'bottom-start',
-        'bottom-end',
-        'right',
-        'right-start',
-        'right-end',
-        'left',
-        'left-start',
-        'left-end',
-      ],
-      control: { type: 'select' },
-      table: { defaultValue: { summary: 'bottom-start' } },
-    },
-    positionStrategy: {
-      type: '"absolute" | "fixed"',
-      description: "Sets the component's positioning strategy.",
-      options: ['absolute', 'fixed'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'absolute' } },
-    },
-    scrollStrategy: {
-      type: '"scroll" | "block" | "close"',
-      description:
-        'Determines the behavior of the component during scrolling the container.',
-      options: ['scroll', 'block', 'close'],
-      control: { type: 'inline-radio' },
-      table: { defaultValue: { summary: 'scroll' } },
-    },
-    flip: {
-      type: 'boolean',
-      description:
-        "Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.\nWhen true, once enough space is detected on its preferred side, it will flip back.",
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
-    distance: {
-      type: 'number',
-      description: 'The distance from the target element.',
-      control: 'number',
-      table: { defaultValue: { summary: 0 } },
-    },
-    keepOpenOnOutsideClick: {
-      type: 'boolean',
-      description:
-        'Whether the component should be kept open on clicking outside of it.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
-    sameWidth: {
-      type: 'boolean',
-      description:
-        "Whether the dropdown's width should be the same as the target's one.",
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
@@ -174,14 +119,8 @@ const metadata: Meta<IgcSelectComponent> = {
     disabled: false,
     invalid: false,
     keepOpenOnSelect: false,
-    open: false,
-    placement: 'bottom-start',
-    positionStrategy: 'absolute',
-    scrollStrategy: 'scroll',
-    flip: false,
-    distance: 0,
     keepOpenOnOutsideClick: false,
-    sameWidth: false,
+    open: false,
   },
 };
 
@@ -206,39 +145,12 @@ interface IgcSelectArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
-  /** Whether the dropdown should be kept open on selection. */
+  /** Whether the component dropdown should be kept open on selection. */
   keepOpenOnSelect: boolean;
+  /** Whether the component dropdown should be kept open on clicking outside of it. */
+  keepOpenOnOutsideClick: boolean;
   /** Sets the open state of the component. */
   open: boolean;
-  /** The preferred placement of the component around the target element. */
-  placement:
-    | 'top'
-    | 'top-start'
-    | 'top-end'
-    | 'bottom'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'right'
-    | 'right-start'
-    | 'right-end'
-    | 'left'
-    | 'left-start'
-    | 'left-end';
-  /** Sets the component's positioning strategy. */
-  positionStrategy: 'absolute' | 'fixed';
-  /** Determines the behavior of the component during scrolling the container. */
-  scrollStrategy: 'scroll' | 'block' | 'close';
-  /**
-   * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
-   * When true, once enough space is detected on its preferred side, it will flip back.
-   */
-  flip: boolean;
-  /** The distance from the target element. */
-  distance: number;
-  /** Whether the component should be kept open on clicking outside of it. */
-  keepOpenOnOutsideClick: boolean;
-  /** Whether the dropdown's width should be the same as the target's one. */
-  sameWidth: boolean;
 }
 type Story = StoryObj<IgcSelectArgs>;
 
@@ -282,6 +194,7 @@ const items = [
     selected: false,
   },
 ];
+
 const Template = ({
   label = 'Sample Label',
   placeholder,
@@ -306,8 +219,6 @@ const Template = ({
     ?disabled=${disabled}
     ?invalid=${invalid}
   >
-    <header slot="header">Sample Header</header>
-    <footer slot="footer">Sample Footer</footer>
     <span slot="helper-text">Sample helper text.</span>
     <igc-select-header>Tasks</igc-select-header>
     ${items.map(
@@ -382,6 +293,28 @@ function groupBy(objectArray: any, property: string) {
 }
 
 export const Basic: Story = Template.bind({});
+
+export const InitialValue: Story = {
+  args: { value: '1' },
+  render: ({ value }) => html`
+    <igc-select value=${value} label="Through value attribute">
+      <span slot="prefix">$</span>
+      <span slot="toggle-icon">Open</span>
+      <span slot="toggle-icon-expanded">Close</span>
+      <span slot="suffix">@$</span>
+      <igc-select-item value="1">First</igc-select-item>
+      <igc-select-item value="2">Second</igc-select-item>
+      <igc-select-item value="3">Third</igc-select-item>
+    </igc-select>
+    <igc-select label="Through selected attribute">
+      <span slot="prefix">$</span>
+      <span slot="suffix">@$</span>
+      <igc-select-item value="1">First</igc-select-item>
+      <igc-select-item value="2" selected>Second</igc-select-item>
+      <igc-select-item value="3" selected>Third</igc-select-item>
+    </igc-select>
+  `,
+};
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),

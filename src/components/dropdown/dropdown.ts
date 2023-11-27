@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { html } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 
 import IgcDropdownGroupComponent from './dropdown-group.js';
@@ -10,6 +10,8 @@ import { themes } from '../../theming/theming-decorator.js';
 import {
   addKeybindings,
   arrowDown,
+  arrowLeft,
+  arrowRight,
   arrowUp,
   endKey,
   enterKey,
@@ -17,15 +19,21 @@ import {
   homeKey,
   tabKey,
 } from '../common/controllers/key-bindings.js';
-import { RootClickController } from '../common/controllers/root-click.js';
+import { addRootClickHandler } from '../common/controllers/root-click.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
+import {
+  IgcBaseComboBoxLikeComponent,
+  getActiveItems,
+  getItems,
+  getNextActiveItem,
+  getPreviousActiveItem,
+} from '../common/mixins/combo-box.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
-import { iterNodes } from '../common/util.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import type { IgcPlacement } from '../toggle/types';
 
@@ -59,7 +67,10 @@ export interface IgcDropdownEventMap {
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent, IgcPopoverComponent'
 )
 export default class IgcDropdownComponent extends SizableMixin(
-  EventEmitterMixin<IgcDropdownEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<
+    IgcDropdownEventMap,
+    Constructor<IgcBaseComboBoxLikeComponent>
+  >(IgcBaseComboBoxLikeComponent)
 ) {
   public static readonly tagName = 'igc-dropdown';
   public static styles = styles;
@@ -74,8 +85,8 @@ export default class IgcDropdownComponent extends SizableMixin(
     );
   }
 
-  private _rootClickController = new RootClickController(this, {
-    hideCallback: () => this._hide({ emit: true }),
+  private _rootClickController = addRootClickHandler(this, {
+    hideCallback: () => this._hide(true),
   });
 
   @state()
@@ -84,45 +95,17 @@ export default class IgcDropdownComponent extends SizableMixin(
   @state()
   protected _activeItem!: IgcDropdownItemComponent;
 
-  private _getItems() {
-    return iterNodes<IgcDropdownItemComponent>(this, 'SHOW_ELEMENT', (item) =>
-      item.matches(IgcDropdownItemComponent.tagName)
-    );
-  }
-
-  private _getGroups() {
-    return iterNodes<IgcDropdownGroupComponent>(this, 'SHOW_ELEMENT', (item) =>
-      item.matches(IgcDropdownGroupComponent.tagName)
-    );
-  }
-
   private get _activeItems() {
-    const items = [];
-    for (const item of this._getItems()) {
-      if (!item.disabled) {
-        items.push(item);
-      }
-    }
-
-    return items;
+    return Array.from(
+      getActiveItems<IgcDropdownItemComponent>(
+        this,
+        IgcDropdownItemComponent.tagName
+      )
+    );
   }
 
   @query('slot[name="target"]', true)
   protected trigger!: HTMLSlotElement;
-
-  /**
-   * Whether the dropdown should be kept open on selection.
-   * @attr keep-open-on-select
-   */
-  @property({ type: Boolean, attribute: 'keep-open-on-select' })
-  public keepOpenOnSelect = false;
-
-  /**
-   * Sets the open state of the component.
-   * @attr
-   */
-  @property({ type: Boolean })
-  public open = false;
 
   /** The preferred placement of the component around the target element.
    * @type {'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end'}
@@ -161,13 +144,6 @@ export default class IgcDropdownComponent extends SizableMixin(
   public distance = 0;
 
   /**
-   * Whether the component should be kept open on clicking outside of it.
-   * @attr keep-open-on-outside-click
-   */
-  @property({ type: Boolean, attribute: 'keep-open-on-outside-click' })
-  public keepOpenOnOutsideClick = false;
-
-  /**
    * Whether the dropdown's width should be the same as the target's one.
    * @attr same-width
    */
@@ -176,12 +152,19 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   /** Returns the items of the dropdown. */
   public get items() {
-    return Array.from(this._getItems());
+    return Array.from(
+      getItems<IgcDropdownItemComponent>(this, IgcDropdownItemComponent.tagName)
+    );
   }
 
   /** Returns the group items of the dropdown. */
   public get groups() {
-    return Array.from(this._getGroups());
+    return Array.from(
+      getItems<IgcDropdownGroupComponent>(
+        this,
+        IgcDropdownGroupComponent.tagName
+      )
+    );
   }
 
   /** Returns the selected item from the dropdown or null. */
@@ -192,7 +175,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   @watch('open', { waitUntilFirstUpdate: true })
   @watch('keepOpenOnOutsideClick', { waitUntilFirstUpdate: true })
   protected toggleDirectiveChange() {
-    this.updateAccessibility();
+    this._updateAnchorAccessibility();
     this._rootClickController.update();
   }
 
@@ -207,8 +190,10 @@ export default class IgcDropdownComponent extends SizableMixin(
         preventDefault: false,
       })
       .set(escapeKey, this.onEscapeKey)
-      .set(arrowUp, this.navigatePrev)
-      .set(arrowDown, this.navigateNext)
+      .set(arrowUp, this.onArrowUp)
+      .set(arrowLeft, this.onArrowUp)
+      .set(arrowDown, this.onArrowDown)
+      .set(arrowRight, this.onArrowDown)
       .set(enterKey, this.onEnterKey)
       .set(homeKey, this.onHomeKey)
       .set(endKey, this.onEndKey);
@@ -216,10 +201,7 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   protected override async firstUpdated() {
     await this.updateComplete;
-    this.setInitialSelection();
-  }
 
-  protected setInitialSelection() {
     const items = this.items;
     let lastSelectedItem!: IgcDropdownItemComponent;
 
@@ -232,213 +214,62 @@ export default class IgcDropdownComponent extends SizableMixin(
     this.selectItem(lastSelectedItem, false);
   }
 
+  private handleListBoxClick(event: MouseEvent) {
+    const item = event.target as IgcDropdownItemComponent;
+    if (this._activeItems.includes(item)) {
+      this.selectItem(item);
+    }
+  }
+
+  private handleChange(item: IgcDropdownItemComponent) {
+    this.emitEvent('igcChange', { detail: item });
+  }
+
+  private handleSlotChange() {
+    this._updateAnchorAccessibility();
+  }
+
+  private onArrowUp() {
+    this._navigateToActiveItem(
+      getPreviousActiveItem(this.items, this._activeItem)
+    );
+  }
+
+  private onArrowDown() {
+    this._navigateToActiveItem(getNextActiveItem(this.items, this._activeItem));
+  }
+
   protected onHomeKey() {
-    this.navigateTo(this._activeItems.at(0)!.value);
+    this._navigateToActiveItem(this._activeItems.at(0));
   }
 
   protected onEndKey() {
-    this.navigateTo(this._activeItems.at(-1)!.value);
-  }
-
-  protected onEscapeKey() {
-    this._hide({ emit: true });
+    this._navigateToActiveItem(this._activeItems.at(-1));
   }
 
   protected onTabKey() {
     this.selectItem(this._activeItem);
     if (this.open) {
-      this._hide({ emit: true });
+      this._hide(true);
     }
+  }
+
+  protected onEscapeKey() {
+    this._hide(true);
   }
 
   protected onEnterKey() {
     this.selectItem(this._activeItem);
   }
 
-  protected handleClick(event: MouseEvent) {
-    const item = event.target as IgcDropdownItemComponent;
-    const items = this._activeItems;
-
-    if (items.includes(item)) {
-      this.selectItem(item);
+  private _navigateToActiveItem(item?: IgcDropdownItemComponent) {
+    if (item) {
+      this.activateItem(item);
+      item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     }
   }
 
-  protected async handleAnchorClick() {
-    this.open ? this._hide({ emit: true }) : this._show({ emit: true });
-  }
-
-  protected handleOpening() {
-    return this.emitEvent('igcOpening', { cancelable: true });
-  }
-
-  protected handleClosing(): boolean {
-    return this.emitEvent('igcClosing', { cancelable: true });
-  }
-
-  protected handleChange(item: IgcDropdownItemComponent) {
-    this.emitEvent('igcChange', { detail: item });
-  }
-
-  protected handleSlotChange() {
-    this.updateAccessibility();
-  }
-
-  protected getItem(value: string) {
-    const items = this.items;
-    const index = items.findIndex((item) => item.value === value);
-    return index > -1 ? { item: items[index], index } : { item: null, index };
-  }
-
-  protected activateItem(item: IgcDropdownItemComponent) {
-    if (!item) return;
-
-    if (this._activeItem) {
-      this._activeItem.active = false;
-    }
-
-    this._activeItem = item;
-    this._activeItem.active = true;
-  }
-
-  protected selectItem(
-    item?: IgcDropdownItemComponent,
-    emit = true
-  ): IgcDropdownItemComponent | null {
-    if (!item) return null;
-
-    if (this._selectedItem) {
-      this._selectedItem.selected = false;
-    }
-
-    this.activateItem(item);
-    this._selectedItem = item;
-    this._selectedItem.selected = true;
-
-    if (emit) this.handleChange(this._selectedItem);
-    if (emit && !this.keepOpenOnSelect) this._hide({ emit });
-
-    return this._selectedItem;
-  }
-
-  protected navigate(direction: -1 | 1) {
-    const index = this._activeItem
-      ? this._activeItems.indexOf(this._activeItem) + direction
-      : 0;
-
-    this.navigateItem(index);
-  }
-
-  private navigateItem(idx: number) {
-    const items = this._activeItems;
-
-    if (items.length < 1 || idx < 0 || idx >= items.length) {
-      return null;
-    }
-
-    const item = items[idx];
-
-    this.activateItem(item);
-    item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
-
-    return item;
-  }
-
-  private navigateNext() {
-    this.navigate(1);
-  }
-
-  private navigatePrev() {
-    this.navigate(-1);
-  }
-
-  private async _hide(options: { emit: boolean } = { emit: false }) {
-    if (!this.open) {
-      return;
-    }
-
-    if (options.emit && !this.handleClosing()) {
-      return;
-    }
-
-    this.open = false;
-
-    if (options.emit) {
-      await this.updateComplete;
-      this.emitEvent('igcClosed');
-    }
-  }
-
-  private async _show(options: { emit: boolean } = { emit: false }) {
-    if (this.open) {
-      return;
-    }
-    if (options.emit && !this.handleOpening()) {
-      return;
-    }
-
-    this.open = true;
-
-    if (options.emit) {
-      await this.updateComplete;
-      this.emitEvent('igcOpened');
-    }
-  }
-
-  /** Shows the dropdown. */
-  @blazorSuppress()
-  public show() {
-    this._show();
-  }
-
-  /** Hides the dropdown. */
-  public hide(): void {
-    this._hide();
-  }
-
-  /** Toggles the open state of the dropdown. */
-  @blazorSuppress()
-  public toggle(): void {
-    this.open ? this.hide() : this.show();
-  }
-
-  /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
-  public navigateTo(value: string): IgcDropdownItemComponent | null;
-  /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
-  public navigateTo(index: number): IgcDropdownItemComponent | null;
-  /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
-  public navigateTo(value: string | number): IgcDropdownItemComponent | null {
-    const index =
-      typeof value === 'string' ? this.getItem(value).index : (value as number);
-
-    return this.navigateItem(index);
-  }
-
-  /** Selects the item with the specified value. If it exists, returns the found item, otherwise - null. */
-  public select(value: string): IgcDropdownItemComponent | null;
-  /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
-  public select(index: number): IgcDropdownItemComponent | null;
-  /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
-  @blazorSuppress()
-  public select(value: string | number): IgcDropdownItemComponent | null {
-    const item =
-      typeof value === 'string'
-        ? this.getItem(value).item
-        : this.items[value as number];
-
-    return this.selectItem(item!, false);
-  }
-
-  /**  Clears the current selection of the dropdown. */
-  public clearSelection() {
-    if (this._selectedItem) {
-      this._selectedItem.selected = false;
-    }
-    this._selectedItem = null;
-  }
-
-  protected updateAccessibility() {
+  private _updateAnchorAccessibility() {
     const target = this.trigger
       .assignedElements({ flatten: true })
       .at(0) as HTMLElement;
@@ -450,7 +281,77 @@ export default class IgcDropdownComponent extends SizableMixin(
     // Find tabbable elements ?
 
     target.setAttribute('aria-haspopup', 'true');
-    target.setAttribute('aria-expanded', this.open ? 'true' : `false`);
+    target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
+  }
+
+  private selectItem(item?: IgcDropdownItemComponent, emit = true) {
+    if (!item) return null;
+
+    if (this._selectedItem) {
+      this._selectedItem.selected = false;
+    }
+
+    this.activateItem(item);
+    this._selectedItem = item;
+    this._selectedItem.selected = true;
+
+    if (emit) this.handleChange(this._selectedItem);
+    if (emit && !this.keepOpenOnSelect) this._hide(true);
+
+    return this._selectedItem;
+  }
+
+  private activateItem(item: IgcDropdownItemComponent) {
+    if (!item) return;
+
+    if (this._activeItem) {
+      this._activeItem.active = false;
+    }
+
+    this._activeItem = item;
+    this._activeItem.active = true;
+  }
+
+  private getItem(value: string) {
+    return this.items.find((item) => item.value === value);
+  }
+
+  /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
+  public navigateTo(value: string): IgcDropdownItemComponent | null;
+  /** Navigates to the item at the specified index. If it exists, returns the found item, otherwise - null. */
+  public navigateTo(index: number): IgcDropdownItemComponent | null;
+  /** Navigates to the specified item. If it exists, returns the found item, otherwise - null. */
+  @blazorSuppress()
+  public navigateTo(value: string | number): IgcDropdownItemComponent | null {
+    const item =
+      typeof value === 'string' ? this.getItem(value) : this.items[value];
+
+    if (item) {
+      this._navigateToActiveItem(item);
+    }
+
+    return item ?? null;
+  }
+
+  /** Selects the item with the specified value. If it exists, returns the found item, otherwise - null. */
+  public select(value: string): IgcDropdownItemComponent | null;
+  /** Selects the item at the specified index. If it exists, returns the found item, otherwise - null. */
+  public select(index: number): IgcDropdownItemComponent | null;
+  /** Selects the specified item. If it exists, returns the found item, otherwise - null. */
+  @blazorSuppress()
+  public select(value: string | number): IgcDropdownItemComponent | null {
+    const item =
+      typeof value === 'string' ? this.getItem(value) : this.items[value];
+
+    return this.selectItem(item, false);
+  }
+
+  /**  Clears the current selection of the dropdown. */
+  public clearSelection() {
+    if (this._selectedItem) {
+      this._selectedItem.selected = false;
+    }
+    this._selectedItem = null;
   }
 
   protected override render() {
@@ -470,15 +371,15 @@ export default class IgcDropdownComponent extends SizableMixin(
         @click=${this.handleAnchorClick}
         @slotchange=${this.handleSlotChange}
       ></slot>
-      <div
-        id="dropdown-list"
-        role="listbox"
-        part="base"
-        @click=${this.handleClick}
-        .inert=${!this.open}
-        aria-labelledby="dropdown-target"
-      >
-        <slot></slot>
+      <div part="base" @click=${this.handleListBoxClick} .inert=${!this.open}>
+        <div
+          id="dropdown-list"
+          role="listbox"
+          part="list"
+          aria-labelledby="dropdown-target"
+        >
+          <slot></slot>
+        </div>
       </div>
     </igc-popover>`;
   }
