@@ -7,38 +7,36 @@ import { styles as indigoLight } from './light/content/card.content.indigo.css.j
 import { styles as materialLight } from './light/content/card.content.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/content/card.content.bootstrap.css.js';
-import { styles as fluent } from './shared/content/card.content.fluent.css.js';
-import { styles as indigo } from './shared/content/card.content.indigo.css.js';
-import { styles as material } from './shared/content/card.content.material.css.js';
+import { styles as shared } from './shared/content/card.content.common.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigoLight}
   `,
 };
 

@@ -6,25 +6,21 @@ $material-flat: digest-schema($material-flat-button);
 $material-contained: digest-schema($material-raised-button);
 $material-outlined: digest-schema($material-outlined-button);
 $material-fab: digest-schema($material-fab-button);
-$material-icon: digest-schema($material-icon-button);
 
 // Fluent Themes
 $fluent-flat: digest-schema($fluent-flat-button);
 $fluent-contained: digest-schema($fluent-raised-button);
 $fluent-outlined: digest-schema($fluent-outlined-button);
 $fluent-fab: digest-schema($fluent-fab-button);
-$fluent-icon: digest-schema($fluent-icon-button);
 
 // Bootstrap Themes
 $bootstrap-flat: digest-schema($bootstrap-flat-button);
 $bootstrap-contained: digest-schema($bootstrap-raised-button);
 $bootstrap-outlined: digest-schema($bootstrap-outlined-button);
 $bootstrap-fab: digest-schema($bootstrap-fab-button);
-$bootstrap-icon: digest-schema($bootstrap-icon-button);
 
 // Indigo Themes
 $indigo-flat: digest-schema($indigo-flat-button);
 $indigo-contained: digest-schema($indigo-raised-button);
 $indigo-outlined: digest-schema($indigo-outlined-button);
 $indigo-fab: digest-schema($indigo-fab-button);
-$indigo-icon: digest-schema($indigo-icon-button);
