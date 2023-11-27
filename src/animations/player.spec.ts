@@ -1,8 +1,9 @@
-import { html } from 'lit';
 import { expect, fixture } from '@open-wc/testing';
+import { html } from 'lit';
+
+import { EaseOut } from './easings.js';
 import { AnimationPlayer } from './player.js';
 import { AnimationReferenceMetadata, animation } from './types.js';
-import { EaseOut } from './easings.js';
 
 const keyframes = [
   { opacity: 0, transform: 'scale(0.1)' },

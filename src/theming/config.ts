@@ -1,4 +1,4 @@
-import { ChangeThemeEventDetail, CHANGE_THEME_EVENT } from './theming-event.js';
+import { CHANGE_THEME_EVENT, ChangeThemeEventDetail } from './theming-event.js';
 import type { Theme, ThemeVariant } from './types.js';
 import { getAllCSSVariables } from './utils.js';
 

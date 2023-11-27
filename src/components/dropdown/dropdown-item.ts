@@ -1,13 +1,11 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+
+import { styles } from './themes/dropdown-item.base.css.js';
+import { all } from './themes/item.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { styles } from './themes/light/item/dropdown-item.base.css.js';
-import { styles as bootstrap } from './themes/light/item/dropdown-item.bootstrap.css.js';
-import { styles as fluent } from './themes/light/item/dropdown-item.fluent.css.js';
-import { styles as indigo } from './themes/light/item/dropdown-item.indigo.css.js';
-import { styles as material } from './themes/light/item/dropdown-item.material.css.js';
 
 /**
  * Represents an item in a dropdown list.
@@ -22,10 +20,7 @@ import { styles as material } from './themes/light/item/dropdown-item.material.c
  * @csspart content - The main content wrapper.
  * @csspart suffix - The suffix wrapper.
  */
-@themes({
-  light: { bootstrap, fluent, indigo, material },
-  dark: { bootstrap, fluent, indigo, material },
-})
+@themes(all)
 export default class IgcDropdownItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-dropdown-item';
   public static override styles = styles;
@@ -42,7 +37,7 @@ export default class IgcDropdownItemComponent extends LitElement {
    * @attr
    */
   @property()
-  public get value() {
+  public get value(): string {
     return this._value ? this._value : this.textContent ?? '';
   }
 

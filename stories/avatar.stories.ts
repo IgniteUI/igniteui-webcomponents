@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { defineComponents, IgcAvatarComponent } from '../src/index.js';
+
+import { IgcAvatarComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcAvatarComponent);
 
@@ -36,7 +37,7 @@ const metadata: Meta<IgcAvatarComponent> = {
       description: 'The shape of the avatar.',
       options: ['circle', 'rounded', 'square'],
       control: { type: 'inline-radio' },
-      defaultValue: 'square',
+      table: { defaultValue: { summary: 'square' } },
     },
   },
   args: { shape: 'square' },

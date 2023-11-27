@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    color: var-get($theme, 'header-text-color');
+    padding-inline: pad-inline(rem(4px), rem(8px), rem(16px));
+    padding-block: pad-block(rem(2px), rem(4px), rem(8px));
+}

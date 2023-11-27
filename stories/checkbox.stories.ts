@@ -1,12 +1,13 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineComponents, IgcCheckboxComponent } from '../src/index.js';
+
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
+import { IgcCheckboxComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcCheckboxComponent);
 
@@ -21,37 +22,20 @@ const metadata: Meta<IgcCheckboxComponent> = {
           'A check box allowing single values to be selected/deselected.',
       },
     },
+    actions: { handles: ['igcChange', 'igcFocus', 'igcBlur'] },
   },
   argTypes: {
     indeterminate: {
       type: 'boolean',
       description: 'Draws the checkbox in indeterminate state.',
       control: 'boolean',
-      defaultValue: false,
-    },
-    value: {
-      type: 'string',
-      description: 'The value attribute of the control.',
-      control: 'text',
-    },
-    checked: {
-      type: 'boolean',
-      description: 'The checked state of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    labelPosition: {
-      type: '"before" | "after"',
-      description: 'The label position of the control.',
-      options: ['before', 'after'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'after',
+      table: { defaultValue: { summary: false } },
     },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     name: {
       type: 'string',
@@ -62,22 +46,40 @@ const metadata: Meta<IgcCheckboxComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
+    },
+    value: {
+      type: 'string',
+      description: 'The value attribute of the control.',
+      control: 'text',
+    },
+    checked: {
+      type: 'boolean',
+      description: 'The checked state of the control.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    labelPosition: {
+      type: '"before" | "after"',
+      description: 'The label position of the control.',
+      options: ['before', 'after'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'after' } },
     },
   },
   args: {
     indeterminate: false,
-    checked: false,
-    labelPosition: 'after',
     required: false,
     disabled: false,
     invalid: false,
+    checked: false,
+    labelPosition: 'after',
   },
 };
 
@@ -86,12 +88,6 @@ export default metadata;
 interface IgcCheckboxArgs {
   /** Draws the checkbox in indeterminate state. */
   indeterminate: boolean;
-  /** The value attribute of the control. */
-  value: string;
-  /** The checked state of the control. */
-  checked: boolean;
-  /** The label position of the control. */
-  labelPosition: 'before' | 'after';
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -100,6 +96,12 @@ interface IgcCheckboxArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
+  /** The value attribute of the control. */
+  value: string;
+  /** The checked state of the control. */
+  checked: boolean;
+  /** The label position of the control. */
+  labelPosition: 'before' | 'after';
 }
 type Story = StoryObj<IgcCheckboxArgs>;
 

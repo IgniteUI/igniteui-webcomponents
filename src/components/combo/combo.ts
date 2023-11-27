@@ -1,4 +1,4 @@
-import { html, LitElement, TemplateResult } from 'lit';
+import { LitElement, TemplateResult, html } from 'lit';
 import {
   property,
   query,
@@ -8,7 +8,27 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { themes, themeSymbol } from '../../theming/theming-decorator.js';
+
+import IgcComboHeaderComponent from './combo-header.js';
+import IgcComboItemComponent from './combo-item.js';
+import IgcComboListComponent from './combo-list.js';
+import { DataController } from './controllers/data.js';
+import { NavigationController } from './controllers/navigation.js';
+import { SelectionController } from './controllers/selection.js';
+import { styles } from './themes/combo.base.css.js';
+import { all } from './themes/themes.js';
+import type {
+  ComboItemTemplate,
+  ComboRecord,
+  ComboRenderFunction,
+  ComboValue,
+  FilteringOptions,
+  GroupingDirection,
+  IgcComboEventMap,
+  Item,
+  Keys,
+} from './types.js';
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorIndirectRender } from '../common/decorators/blazorIndirectRender.js';
@@ -24,31 +44,15 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { IgcToggleComponent } from '../toggle/types.js';
-import IgcComboHeaderComponent from './combo-header.js';
-import IgcComboItemComponent from './combo-item.js';
-import IgcComboListComponent from './combo-list.js';
-import { DataController } from './controllers/data.js';
-import { NavigationController } from './controllers/navigation.js';
-import { SelectionController } from './controllers/selection.js';
-import { styles } from './themes/light/combo.base.css.js';
-import { styles as bootstrap } from './themes/light/combo.bootstrap.css.js';
-import { styles as fluent } from './themes/light/combo.fluent.css.js';
-import { styles as indigo } from './themes/light/combo.indigo.css.js';
-import { styles as material } from './themes/light/combo.material.css.js';
-import type {
-  ComboItemTemplate,
-  ComboRecord,
-  ComboRenderFunction,
-  ComboValue,
-  FilteringOptions,
-  GroupingDirection,
-  IgcComboEventMap,
-  Item,
-  Keys,
-} from './types.js';
 
 /* blazorSupportsVisualChildren */
 /**
+ * The Combo component is similar to the Select component in that it provides a list of options from which the user can make a selection.
+ * In contrast to the Select component, the Combo component displays all options in a virtualized list of items,
+ * meaning the combo box can simultaneously show thousands of options, where one or more options can be selected.
+ * Additionally, users can create custom item templates, allowing for robust data visualization.
+ * The Combo component features case-sensitive filtering, grouping, complex data binding, dynamic addition of values and more.
+ *
  * @element igc-combo
  *
  * @slot prefix - Renders content before the input.
@@ -90,13 +94,7 @@ import type {
  * @csspart footer - The container holding the footer content.
  * @csspart empty - The container holding the empty content.
  */
-@themes(
-  {
-    light: { material, bootstrap, fluent, indigo },
-    dark: { material, bootstrap, fluent, indigo },
-  },
-  true
-)
+@themes(all)
 @blazorAdditionalDependencies('IgcIconComponent, IgcInputComponent')
 @blazorIndirectRender
 export default class IgcComboComponent<T extends object = any>
@@ -476,11 +474,11 @@ export default class IgcComboComponent<T extends object = any>
   }
 
   /**
-   * Returns the current selection as a list of commma separated values,
+   * Returns the current selection as a list of comma separated values,
    * represented by the value key, when provided.
    */
   @property({ attribute: true, type: Array })
-  public get value() {
+  public get value(): ComboValue<T>[] {
     return this._value;
   }
 

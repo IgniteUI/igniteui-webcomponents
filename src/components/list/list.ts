@@ -1,12 +1,12 @@
-import { html, LitElement } from 'lit';
-import { themes } from '../../theming/theming-decorator.js';
-import { SizableMixin } from '../common/mixins/sizable.js';
-import { styles } from './themes/light/list.base.css.js';
-import { styles as bootstrap } from './themes/light/list.bootstrap.css.js';
+import { LitElement, html } from 'lit';
 
-import { registerComponent } from '../common/definitions/register.js';
 import IgcListHeaderComponent from './list-header.js';
 import IgcListItemComponent from './list-item.js';
+import { styles } from './themes/container.base.css.js';
+import { all } from './themes/container.js';
+import { themes } from '../../theming/theming-decorator.js';
+import { registerComponent } from '../common/definitions/register.js';
+import { SizableMixin } from '../common/mixins/sizable.js';
 
 /**
  * Displays a collection of data items in a templatable list format.
@@ -15,7 +15,7 @@ import IgcListItemComponent from './list-item.js';
  *
  * @slot - Renders the list items and list headers inside default slot.
  */
-@themes({ light: { bootstrap }, dark: { bootstrap } })
+@themes(all)
 export default class IgcListComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-list';
   public static override styles = styles;
@@ -24,9 +24,13 @@ export default class IgcListComponent extends SizableMixin(LitElement) {
     registerComponent(this, IgcListItemComponent, IgcListHeaderComponent);
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('role', 'list');
+  private _internals: ElementInternals;
+
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+
+    this._internals.role = 'list';
   }
 
   protected override render() {

@@ -1,5 +1,6 @@
-import { css, html, LitElement } from 'lit';
+import { LitElement, css, html } from 'lit';
 import { property } from 'lit/decorators.js';
+
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { registerComponent } from '../common/definitions/register.js';

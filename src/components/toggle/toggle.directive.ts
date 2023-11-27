@@ -1,23 +1,24 @@
 import {
+  ComputePositionConfig,
+  Middleware,
+  autoUpdate,
   computePosition,
   flip,
   offset,
   shift,
   size,
-  Middleware,
-  autoUpdate,
-  ComputePositionConfig,
 } from '@floating-ui/dom';
-import {
-  directive,
-  Directive,
-  PartInfo,
-  ElementPart,
-  PartType,
-} from 'lit/directive.js';
 import { noChange } from 'lit';
-import type { IgcToggleOptions } from './types.js';
+import {
+  Directive,
+  ElementPart,
+  PartInfo,
+  PartType,
+  directive,
+} from 'lit/directive.js';
+
 import type { IgcToggleController } from './toggle.controller.js';
+import type { IgcToggleOptions } from './types.js';
 
 /* blazorSuppressComponent */
 export class IgcToggleDirective extends Directive {

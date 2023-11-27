@@ -5,31 +5,4 @@ $theme: $indigo;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dialog');
-
-    background: var-get($theme, 'background');
-    border-radius: var-get($theme, 'border-radius');
-}
-
-[part~='backdrop'] {
-    background: var-get($theme, 'backdrop');
-}
-
-[part='base'] {
-    box-shadow: var-get($theme, 'elevation');
-}
-
-[part='title'] {
-    color: var-get($theme, 'title-color');
-    padding: rem(16px) rem(24px);
-}
-
-[part='content'] {
-    padding-inline: rem(24px);
-    padding-block-end: rem(8px);
-    color: var-get($theme, 'message-color');
-}
-
-[part='footer'] {
-    color: var-get($theme, 'title-color');
-    padding: rem(8px);
 }

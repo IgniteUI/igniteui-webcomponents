@@ -1,5 +1,5 @@
-import IgcTreeComponent from './tree.js';
 import IgcTreeItemComponent from './tree-item.js';
+import IgcTreeComponent from './tree.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { isLTR } from '../common/util.js';
 

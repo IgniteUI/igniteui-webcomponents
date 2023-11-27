@@ -1,8 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-@mixin theme() {
-    igc-snackbar {
-        @include css-vars-from-theme($indigo, 'ig-snackbar');
-    }
+$theme: $indigo;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-snackbar');
 }

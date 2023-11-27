@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import {
   property,
   query,
@@ -6,10 +6,17 @@ import {
   state,
 } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+
+import IgcDropdownGroupComponent from './dropdown-group.js';
+import IgcDropdownHeaderComponent from './dropdown-header.js';
+import IgcDropdownItemComponent from './dropdown-item.js';
+import { all } from './themes/container.js';
+import { styles } from './themes/dropdown.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
+import { registerComponent } from '../common/definitions/register.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
@@ -19,16 +26,6 @@ import type {
   IgcToggleComponent,
   IgcToggleEventMap,
 } from '../toggle/types';
-import { styles } from './themes/light/dropdown.base.css.js';
-import { styles as bootstrap } from './themes/light/dropdown.bootstrap.css.js';
-import { styles as fluent } from './themes/light/dropdown.fluent.css.js';
-import { styles as indigo } from './themes/light/dropdown.indigo.css.js';
-import { styles as material } from './themes/light/dropdown.material.css.js';
-
-import { registerComponent } from '../common/definitions/register.js';
-import IgcDropdownGroupComponent from './dropdown-group.js';
-import IgcDropdownHeaderComponent from './dropdown-header.js';
-import IgcDropdownItemComponent from './dropdown-item.js';
 
 export interface IgcDropdownEventMap extends IgcToggleEventMap {
   igcChange: CustomEvent<IgcDropdownItemComponent>;
@@ -51,10 +48,7 @@ export interface IgcDropdownEventMap extends IgcToggleEventMap {
  * @csspart base - The dropdown list wrapper.
  * @csspart list - The dropdown list.
  */
-@themes({
-  light: { bootstrap, fluent, indigo, material },
-  dark: { bootstrap, fluent, indigo, material },
-})
+@themes(all)
 @blazorAdditionalDependencies(
   'IgcDropdownItemComponent, IgcDropdownHeaderComponent, IgcDropdownGroupComponent'
 )
@@ -131,7 +125,7 @@ export default class IgcDropdownComponent
   public open = false;
 
   /** The preferred placement of the component around the target element.
-   * @type {"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"}
+   * @type {'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end'}
    * @attr
    */
   @property()

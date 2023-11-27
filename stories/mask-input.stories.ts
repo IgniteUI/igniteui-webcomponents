@@ -2,17 +2,18 @@ import { github } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import {
   IgcIconComponent,
   IgcMaskInputComponent,
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
-import {
-  disableStoryControls,
-  formControls,
-  formSubmitHandler,
-} from './story.js';
 
 defineComponents(IgcMaskInputComponent, IgcIconComponent);
 registerIconFromText(github.name, github.value);
@@ -28,6 +29,7 @@ const metadata: Meta<IgcMaskInputComponent> = {
           'A masked input is an input field where a developer can control user input and format the visible value,\nbased on configurable rules',
       },
     },
+    actions: { handles: ['igcInput', 'igcChange', 'igcFocus', 'igcBlur'] },
   },
   argTypes: {
     valueMode: {
@@ -36,7 +38,14 @@ const metadata: Meta<IgcMaskInputComponent> = {
         'Dictates the behavior when retrieving the value of the control:\n\n- `raw` will return the clean user input.\n- `withFormatting` will return the value with all literals and prompts.',
       options: ['raw', 'withFormatting'],
       control: { type: 'inline-radio' },
-      defaultValue: 'raw',
+      table: { defaultValue: { summary: 'raw' } },
+    },
+    value: {
+      type: 'string | Date',
+      description:
+        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
+      options: ['string', 'Date'],
+      control: 'text',
     },
     mask: {
       type: 'string',
@@ -48,23 +57,40 @@ const metadata: Meta<IgcMaskInputComponent> = {
       description: 'The prompt symbol to use for unfilled parts of the mask.',
       control: 'text',
     },
-    value: {
+    required: {
+      type: 'boolean',
+      description: 'Makes the control a required field in a form context.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    name: {
       type: 'string',
-      description:
-        'The value of the input.\n\nRegardless of the currently set `value-mode`, an empty value will return an empty string.',
+      description: 'The name attribute of the control.',
       control: 'text',
+    },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    invalid: {
+      type: 'boolean',
+      description: 'Control the validity of the control.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     outlined: {
       type: 'boolean',
       description: 'Whether the control will have outlined appearance.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     placeholder: {
       type: 'string',
@@ -76,37 +102,14 @@ const metadata: Meta<IgcMaskInputComponent> = {
       description: 'The label for the control.',
       control: 'text',
     },
-    required: {
-      type: 'boolean',
-      description: 'Makes the control a required field in a form context.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    name: {
-      type: 'string',
-      description: 'The name attribute of the control.',
-      control: 'text',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled state of the component',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    invalid: {
-      type: 'boolean',
-      description: 'Control the validity of the control.',
-      control: 'boolean',
-      defaultValue: false,
-    },
   },
   args: {
     valueMode: 'raw',
-    outlined: false,
-    readOnly: false,
     required: false,
     disabled: false,
     invalid: false,
+    outlined: false,
+    readOnly: false,
   },
 };
 
@@ -120,24 +123,16 @@ interface IgcMaskInputArgs {
    * - `withFormatting` will return the value with all literals and prompts.
    */
   valueMode: 'raw' | 'withFormatting';
-  /** The mask pattern to apply on the input. */
-  mask: string;
-  /** The prompt symbol to use for unfilled parts of the mask. */
-  prompt: string;
   /**
    * The value of the input.
    *
    * Regardless of the currently set `value-mode`, an empty value will return an empty string.
    */
-  value: string;
-  /** Whether the control will have outlined appearance. */
-  outlined: boolean;
-  /** Makes the control a readonly field. */
-  readOnly: boolean;
-  /** The placeholder attribute of the control. */
-  placeholder: string;
-  /** The label for the control. */
-  label: string;
+  value: string | Date;
+  /** The mask pattern to apply on the input. */
+  mask: string;
+  /** The prompt symbol to use for unfilled parts of the mask. */
+  prompt: string;
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -146,16 +141,18 @@ interface IgcMaskInputArgs {
   disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
+  /** Whether the control will have outlined appearance. */
+  outlined: boolean;
+  /** Makes the control a readonly field. */
+  readOnly: boolean;
+  /** The placeholder attribute of the control. */
+  placeholder: string;
+  /** The label for the control. */
+  label: string;
 }
 type Story = StoryObj<IgcMaskInputArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcChange', 'igcInput'],
-  },
-});
 
 const Template = ({
   name,

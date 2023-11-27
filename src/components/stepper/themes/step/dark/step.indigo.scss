@@ -1,8 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
-@mixin theme() {
-    igc-step {
-        @include css-vars-from-theme($indigo, 'ig-stepper');
-    }
+$theme: $indigo;
+
+:host {
+    @include css-vars-from-theme($theme, 'ig-stepper');
 }

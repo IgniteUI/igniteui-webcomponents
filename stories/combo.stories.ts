@@ -1,17 +1,18 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import {
   ComboItemTemplate,
   IgcComboComponent,
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
-import {
-  disableStoryControls,
-  formControls,
-  formSubmitHandler,
-} from './story.js';
 
 defineComponents(IgcComboComponent);
 
@@ -26,31 +27,50 @@ interface City {
 const metadata: Meta<IgcComboComponent> = {
   title: 'Combo',
   component: 'igc-combo',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The Combo component is similar to the Select component in that it provides a list of options from which the user can make a selection.\nIn contrast to the Select component, the Combo component displays all options in a virtualized list of items,\nmeaning the combo box can simultaneously show thousands of options, where one or more options can be selected.\nAdditionally, users can create custom item templates, allowing for robust data visualization.\nThe Combo component features case-sensitive filtering, grouping, complex data binding, dynamic addition of values and more.',
+      },
+    },
+    actions: {
+      handles: [
+        'igcFocus',
+        'igcBlur',
+        'igcChange',
+        'igcOpening',
+        'igcOpened',
+        'igcClosing',
+        'igcClosed',
+      ],
+    },
+  },
   argTypes: {
     outlined: {
       type: 'boolean',
       description: 'The outlined attribute of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     singleSelect: {
       type: 'boolean',
       description:
         'Enables single selection mode and moves item filtering to the main input.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     autofocus: {
       type: 'boolean',
       description: 'The autofocus attribute of the control.',
       control: 'boolean',
+      table: { defaultValue: { summary: false } },
     },
     autofocusList: {
       type: 'boolean',
       description: 'Focuses the list of options when the menu opens.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     label: {
       type: 'string',
@@ -66,41 +86,40 @@ const metadata: Meta<IgcComboComponent> = {
       type: 'string',
       description: 'The placeholder attribute of the search input.',
       control: 'text',
-      defaultValue: 'Search',
+      table: { defaultValue: { summary: 'Search' } },
     },
     open: {
       type: 'boolean',
       description: 'Sets the open state of the component.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
-    flip: { type: 'boolean', control: 'boolean', defaultValue: true },
     groupSorting: {
       type: '"asc" | "desc"',
       description:
         'Sorts the items in each group by ascending or descending order.',
       options: ['asc', 'desc'],
       control: { type: 'inline-radio' },
-      defaultValue: 'asc',
+      table: { defaultValue: { summary: 'asc' } },
     },
     caseSensitiveIcon: {
       type: 'boolean',
       description:
         'Enables the case sensitive search icon in the filtering input.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     disableFiltering: {
       type: 'boolean',
       description: 'Disables the filtering of the list of options.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     name: {
       type: 'string',
@@ -111,22 +130,22 @@ const metadata: Meta<IgcComboComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: {
     outlined: false,
     singleSelect: false,
+    autofocus: false,
     autofocusList: false,
     placeholderSearch: 'Search',
     open: false,
-    flip: true,
     groupSorting: 'asc',
     caseSensitiveIcon: false,
     disableFiltering: false,
@@ -155,7 +174,6 @@ interface IgcComboArgs {
   placeholderSearch: string;
   /** Sets the open state of the component. */
   open: boolean;
-  flip: boolean;
   /** Sorts the items in each group by ascending or descending order. */
   groupSorting: 'asc' | 'desc';
   /** Enables the case sensitive search icon in the filtering input. */
@@ -174,20 +192,6 @@ interface IgcComboArgs {
 type Story = StoryObj<IgcComboArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: [
-      'igcFocus',
-      'igcBlur',
-      'igcOpening',
-      'igcOpened',
-      'igcClosing',
-      'igcClosed',
-      'igcChange',
-    ],
-  },
-});
 
 const itemTemplate: ComboItemTemplate<City> = ({ item }) => {
   return html`

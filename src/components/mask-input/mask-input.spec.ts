@@ -1,11 +1,12 @@
-import { html } from 'lit';
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents } from '../../index.js';
-import { MaskParser } from './mask-parser.js';
+import { html } from 'lit';
+import { spy } from 'sinon';
+
 import IgcMaskInputComponent from './mask-input.js';
-import IgcFormComponent from '../form/form.js';
+import { MaskParser } from './mask-parser.js';
+import { defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import IgcFormComponent from '../form/form.js';
 
 describe('Masked input', () => {
   before(() => defineComponents(IgcMaskInputComponent, IgcFormComponent));
@@ -241,7 +242,7 @@ describe('Masked input', () => {
     it('igcChange event', async () => {
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = 'abc';
       await elementUpdated(masked);
 
@@ -252,7 +253,7 @@ describe('Masked input', () => {
     it('igcChange event with literals', async () => {
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = 'abc';
       masked.valueMode = 'withFormatting';
       await elementUpdated(masked);
@@ -268,7 +269,7 @@ describe('Masked input', () => {
       await elementUpdated(masked);
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = '111';
       masked.setSelectionRange(2, 3);
       await elementUpdated(masked);
@@ -282,7 +283,7 @@ describe('Masked input', () => {
       await elementUpdated(masked);
       syncParser();
 
-      const eventSpy = sinon.spy(masked, 'emitEvent');
+      const eventSpy = spy(masked, 'emitEvent');
       masked.value = '111';
       masked.setSelectionRange(3, 3);
       await elementUpdated(masked);

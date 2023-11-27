@@ -1,4 +1,4 @@
-import { html, LitElement, TemplateResult } from 'lit';
+import { LitElement, TemplateResult, html } from 'lit';
 import {
   property,
   query,
@@ -7,21 +7,27 @@ import {
 } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
+
+import { styles } from './themes/slider.base.css.js';
+import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
+import {
+  addKeybindings,
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  homeKey,
+  pageDownKey,
+  pageUpKey,
+} from '../common/controllers/key-bindings.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorTypeOverride } from '../common/decorators/blazorTypeOverride.js';
 import { watch } from '../common/decorators/watch.js';
 import { isLTR } from '../common/util.js';
-import { styles } from './themes/light/slider.base.css.js';
-import { styles as bootstrap } from './themes/light/slider.bootstrap.css.js';
-import { styles as fluent } from './themes/light/slider.fluent.css.js';
-import { styles as indigo } from './themes/light/slider.indigo.css.js';
-import { styles as material } from './themes/light/slider.material.css.js';
 
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all, true)
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
   public static override styles = styles;
@@ -65,7 +71,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr
    */
   @property({ type: Number })
-  public get min() {
+  public get min(): number {
     return this._min;
   }
 
@@ -86,7 +92,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr
    */
   @property({ type: Number })
-  public get max() {
+  public get max(): number {
     return this._max;
   }
 
@@ -164,7 +170,7 @@ export class IgcSliderBaseComponent extends LitElement {
    * @attr
    */
   @property({ type: Number })
-  public get step() {
+  public get step(): number {
     return this._step;
   }
 
@@ -255,18 +261,53 @@ export class IgcSliderBaseComponent extends LitElement {
     this.addEventListener('pointerdown', this.pointerDown);
     this.addEventListener('pointermove', this.pointerMove);
     this.addEventListener('lostpointercapture', this.lostPointerCapture);
-    this.addEventListener('keydown', this.handleKeydown);
+    this.addEventListener('keyup', this.handleKeyUp);
+
+    addKeybindings(this, {
+      skip: () => this.disabled,
+      bindingDefaults: { preventDefault: true },
+    })
+      .set(arrowLeft, () => this.handleArrowKeys(isLTR(this) ? -1 : 1))
+      .set(arrowRight, () => this.handleArrowKeys(isLTR(this) ? 1 : -1))
+      .set(arrowUp, () => this.handleArrowKeys(1))
+      .set(arrowDown, () => this.handleArrowKeys(-1))
+      .set(homeKey, () =>
+        this.handleKeyboardIncrement(this.actualMin - this.activeValue)
+      )
+      .set(endKey, () =>
+        this.handleKeyboardIncrement(this.actualMax - this.activeValue)
+      )
+      .set(pageUpKey, () => this.handlePageKeys(1))
+      .set(pageDownKey, () => this.handlePageKeys(-1));
+  }
+
+  private handleArrowKeys(delta: -1 | 1) {
+    const step = this.step ? this.step : 1;
+    this.handleKeyboardIncrement(step * delta);
+  }
+
+  private handlePageKeys(delta: -1 | 1) {
+    const step = this.step ? this.step : 1;
+    this.handleKeyboardIncrement(
+      delta * Math.max((this.actualMax - this.actualMin) / 10, step)
+    );
+  }
+
+  private handleKeyboardIncrement(increment: number) {
+    if (increment) {
+      const updated = this.updateValue(increment);
+      this.showThumbLabels();
+      this.hideThumbLabels();
+
+      if (updated) {
+        this.emitChangeEvent();
+      }
+    }
   }
 
   public override connectedCallback() {
     super.connectedCallback();
     this.normalizeValue();
-    this.addEventListener('keyup', this.handleKeyUp);
-  }
-
-  public override disconnectedCallback() {
-    this.removeEventListener('keyup', this.handleKeyUp);
-    super.disconnectedCallback();
   }
 
   protected handleKeyUp() {
@@ -351,14 +392,14 @@ export class IgcSliderBaseComponent extends LitElement {
         ? this.labels.length
         : 0
       : this.primaryTicks === 1
-      ? 2
-      : this.primaryTicks;
+        ? 2
+        : this.primaryTicks;
 
     return primaryTicks > 0
       ? (primaryTicks - 1) * this.secondaryTicks + primaryTicks
       : this.secondaryTicks > 0
-      ? this.secondaryTicks
-      : 0;
+        ? this.secondaryTicks
+        : 0;
   }
 
   private tickValue(idx: number) {
@@ -481,58 +522,6 @@ export class IgcSliderBaseComponent extends LitElement {
     this.startValue = undefined;
   };
 
-  private handleKeydown = (event: KeyboardEvent) => {
-    if (this.disabled) {
-      return;
-    }
-
-    const { key } = event;
-
-    let increment = 0;
-    const value = this.activeValue;
-    const step = this.step ? this.step : 1;
-    const ltr = isLTR(this);
-
-    switch (key) {
-      case 'ArrowLeft':
-        increment += ltr ? -step : step;
-        break;
-      case 'ArrowRight':
-        increment += ltr ? step : -step;
-        break;
-      case 'ArrowUp':
-        increment = step;
-        break;
-      case 'ArrowDown':
-        increment = -step;
-        break;
-      case 'Home':
-        increment = this.actualMin - value;
-        break;
-      case 'End':
-        increment = this.actualMax - value;
-        break;
-      case 'PageUp':
-        increment = Math.max((this.actualMax - this.actualMin) / 10, step);
-        break;
-      case 'PageDown':
-        increment = -Math.max((this.actualMax - this.actualMin) / 10, step);
-        break;
-      default:
-        return;
-    }
-
-    if (increment) {
-      const updated = this.updateValue(increment);
-      this.showThumbLabels();
-      this.hideThumbLabels();
-
-      if (updated) {
-        this.emitChangeEvent();
-      }
-    }
-  };
-
   protected handleThumbPointerEnter = () => {
     this.showThumbLabels();
   };
@@ -587,8 +576,8 @@ export class IgcSliderBaseComponent extends LitElement {
           this.labels
             ? this.labels[value]
             : this.valueFormat || this.valueFormatOptions
-            ? this.formatValue(value)
-            : undefined
+              ? this.formatValue(value)
+              : undefined
         )}
         aria-label=${ifDefined(ariaLabel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}

@@ -1,6 +1,7 @@
-import { expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcCalendarComponent } from '../../index.js';
+import { elementUpdated, expect } from '@open-wc/testing';
+
 import { createCalendarElement } from './calendar-rendering.spec.js';
+import { IgcCalendarComponent, defineComponents } from '../../index.js';
 
 describe('Calendar Rendering', () => {
   before(() => {

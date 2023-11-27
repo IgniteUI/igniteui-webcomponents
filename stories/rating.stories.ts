@@ -1,19 +1,20 @@
 import { bacteria, bandage } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html, svg } from 'lit';
-import { range } from 'lit-html/directives/range.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { range } from 'lit-html/directives/range.js';
+
+import {
+  disableStoryControls,
+  formControls,
+  formSubmitHandler,
+} from './story.js';
 import {
   IgcIconComponent,
   IgcRatingComponent,
   defineComponents,
   registerIconFromText,
 } from '../src/index.js';
-import {
-  disableStoryControls,
-  formControls,
-  formSubmitHandler,
-} from './story.js';
 
 defineComponents(IgcRatingComponent, IgcIconComponent);
 const icons = [bacteria, bandage];
@@ -32,6 +33,7 @@ const metadata: Meta<IgcRatingComponent> = {
           "Rating provides insight regarding others' opinions and experiences,\nand can allow the user to submit a rating of their own",
       },
     },
+    actions: { handles: ['igcChange', 'igcHover'] },
   },
   argTypes: {
     max: {
@@ -39,14 +41,14 @@ const metadata: Meta<IgcRatingComponent> = {
       description:
         'The maximum value for the rating.\n\nIf there are projected symbols, the maximum value will be resolved\nbased on the number of symbols.',
       control: 'number',
-      defaultValue: 5,
+      table: { defaultValue: { summary: 5 } },
     },
     step: {
       type: 'number',
       description:
         'The minimum value change allowed.\n\nValid values are in the interval between 0 and 1 inclusive.',
       control: 'number',
-      defaultValue: 1,
+      table: { defaultValue: { summary: 1 } },
     },
     label: {
       type: 'string',
@@ -63,25 +65,25 @@ const metadata: Meta<IgcRatingComponent> = {
       type: 'number',
       description: 'The current value of the component',
       control: 'number',
-      defaultValue: 0,
+      table: { defaultValue: { summary: 0 } },
     },
     hoverPreview: {
       type: 'boolean',
       description: 'Sets hover preview behavior for the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     readOnly: {
       type: 'boolean',
       description: 'Makes the control a readonly field.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     single: {
       type: 'boolean',
       description: 'Toggles single selection visual mode.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     name: {
       type: 'string',
@@ -92,13 +94,13 @@ const metadata: Meta<IgcRatingComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: {
@@ -156,12 +158,6 @@ interface IgcRatingArgs {
 type Story = StoryObj<IgcRatingArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcChange', 'igcHover'],
-  },
-});
 
 const heartSVG = svg`<?xml version="1.0" ?><svg
 viewBox="0 0 24 24"

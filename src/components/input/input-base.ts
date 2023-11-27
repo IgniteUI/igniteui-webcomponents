@@ -1,20 +1,18 @@
-import { html, LitElement, nothing, TemplateResult } from 'lit';
+import { LitElement, TemplateResult, html, nothing } from 'lit';
 import { property, query, queryAssignedElements } from 'lit/decorators.js';
-import { themes, themeSymbol } from '../../theming/theming-decorator.js';
+
+import { styles } from './themes/input.base.css.js';
+import { all } from './themes/themes.js';
+import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { createCounter, partNameMap } from '../common/util.js';
-import { styles } from './themes/light/input.base.css.js';
-import { styles as bootstrap } from './themes/light/input.bootstrap.css.js';
-import { styles as fluent } from './themes/light/input.fluent.css.js';
-import { styles as indigo } from './themes/light/input.indigo.css.js';
-import { styles as material } from './themes/light/input.material.css.js';
-import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 
 export interface IgcInputEventMap {
   /* alternateName: inputOcurred */
@@ -25,13 +23,7 @@ export interface IgcInputEventMap {
   igcBlur: CustomEvent<void>;
 }
 
-@themes(
-  {
-    light: { bootstrap, material, fluent, indigo },
-    dark: { bootstrap, material, fluent, indigo },
-  },
-  true
-)
+@themes(all, true)
 @blazorDeepImport
 export abstract class IgcInputBaseComponent extends FormAssociatedRequiredMixin(
   SizableMixin(

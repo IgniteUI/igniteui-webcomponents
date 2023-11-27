@@ -1,10 +1,11 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import {
-  defineComponents,
   IgcIconComponent,
   IgcNavDrawerComponent,
   IgcNavDrawerItemComponent,
+  defineComponents,
   registerIcon,
 } from '../src/index.js';
 
@@ -28,13 +29,13 @@ const metadata: Meta<IgcNavDrawerComponent> = {
       description: 'The position of the drawer.',
       options: ['start', 'end', 'top', 'bottom', 'relative'],
       control: { type: 'select' },
-      defaultValue: 'start',
+      table: { defaultValue: { summary: 'start' } },
     },
     open: {
       type: 'boolean',
       description: 'Determines whether the drawer is opened.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { position: 'start', open: false },

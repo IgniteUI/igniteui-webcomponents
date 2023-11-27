@@ -1,13 +1,14 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { range } from 'lit/directives/range.js';
+
 import {
-  defineComponents,
   IgcTabsComponent,
+  defineComponents,
   registerIcon,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcTabsComponent);
 
@@ -17,27 +18,23 @@ const metadata: Meta<IgcTabsComponent> = {
   component: 'igc-tabs',
   parameters: {
     docs: { description: { component: 'Represents tabs component' } },
+    actions: { handles: ['igcChange'] },
   },
   argTypes: {
-    selected: {
-      type: 'string',
-      description: 'Returns the currently selected tab.',
-      control: 'text',
-    },
     alignment: {
       type: '"start" | "end" | "center" | "justify"',
       description: 'Sets the alignment for the tab headers',
       options: ['start', 'end', 'center', 'justify'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'start',
+      control: { type: 'select' },
+      table: { defaultValue: { summary: 'start' } },
     },
     activation: {
-      type: '"manual" | "auto"',
+      type: '"auto" | "manual"',
       description:
         'Determines the tab activation. When set to auto,\nthe tab is instantly selected while navigating with the Left/Right Arrows, Home or End keys\nand the corresponding panel is displayed.\nWhen set to manual, the tab is only focused. The selection happens after pressing Space or Enter.',
-      options: ['manual', 'auto'],
+      options: ['auto', 'manual'],
       control: { type: 'inline-radio' },
-      defaultValue: 'auto',
+      table: { defaultValue: { summary: 'auto' } },
     },
   },
   args: { alignment: 'start', activation: 'auto' },
@@ -46,8 +43,6 @@ const metadata: Meta<IgcTabsComponent> = {
 export default metadata;
 
 interface IgcTabsArgs {
-  /** Returns the currently selected tab. */
-  selected: string;
   /** Sets the alignment for the tab headers */
   alignment: 'start' | 'end' | 'center' | 'justify';
   /**
@@ -56,17 +51,11 @@ interface IgcTabsArgs {
    * and the corresponding panel is displayed.
    * When set to manual, the tab is only focused. The selection happens after pressing Space or Enter.
    */
-  activation: 'manual' | 'auto';
+  activation: 'auto' | 'manual';
 }
 type Story = StoryObj<IgcTabsArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcChange'],
-  },
-});
 
 registerIcon(
   'home',

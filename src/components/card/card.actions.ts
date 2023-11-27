@@ -1,9 +1,10 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
+
+import { all } from './themes/actions.js';
+import { styles } from './themes/card.actions.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { styles as bootstrap } from './themes/light/card.actions.bootstrap.css.js';
-import { styles } from './themes/light/card.actions.base.css.js';
 
 /** A container for card action items like buttons
  * @element igc-card-actions
@@ -12,7 +13,7 @@ import { styles } from './themes/light/card.actions.base.css.js';
  * @slot - Renders items at the middle of actions area
  * @slot end - Renders items at the end of actions area
  */
-@themes({ light: { bootstrap }, dark: { bootstrap } })
+@themes(all)
 export default class IgcCardActionsComponent extends LitElement {
   public static readonly tagName = 'igc-card-actions';
   public static override styles = styles;

@@ -1,13 +1,17 @@
-import { html } from 'lit';
+import { radioactive } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import { html } from 'lit';
+
 import {
-  defineComponents,
   IgcButtonComponent,
+  IgcIconComponent,
   IgcSnackbarComponent,
+  defineComponents,
+  registerIconFromText,
 } from '../src/index.js';
 
-defineComponents(IgcSnackbarComponent, IgcButtonComponent);
+registerIconFromText(radioactive.name, radioactive.value);
+defineComponents(IgcSnackbarComponent, IgcButtonComponent, IgcIconComponent);
 
 // region default
 const metadata: Meta<IgcSnackbarComponent> = {
@@ -20,39 +24,40 @@ const metadata: Meta<IgcSnackbarComponent> = {
           'A snackbar component is used to provide feedback about an operation\nby showing a brief message at the bottom of the screen.',
       },
     },
+    actions: { handles: ['igcAction'] },
   },
   argTypes: {
-    open: {
-      type: 'boolean',
-      description: 'Determines whether the snackbar is opened.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    displayTime: {
-      type: 'number',
-      description:
-        'Determines the duration in ms in which the snackbar will be visible.',
-      control: 'number',
-      defaultValue: 4000,
-    },
-    keepOpen: {
-      type: 'boolean',
-      description:
-        'Determines whether the snackbar should close after the displayTime is over.',
-      control: 'boolean',
-      defaultValue: false,
-    },
-    position: {
-      type: '"top" | "bottom" | "middle"',
-      description: 'Sets the position of the snackbar.',
-      options: ['top', 'bottom', 'middle'],
-      control: { type: 'inline-radio' },
-      defaultValue: 'bottom',
-    },
     actionText: {
       type: 'string',
       description: 'The snackbar action button.',
       control: 'text',
+    },
+    open: {
+      type: 'boolean',
+      description: 'Whether the component is in shown state.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    displayTime: {
+      type: 'number',
+      description:
+        'Determines the duration in ms in which the component will be visible.',
+      control: 'number',
+      table: { defaultValue: { summary: 4000 } },
+    },
+    keepOpen: {
+      type: 'boolean',
+      description:
+        'Determines whether the component should close after the `displayTime` is over.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    position: {
+      type: '"bottom" | "middle" | "top"',
+      description: 'Sets the position of the component in the viewport.',
+      options: ['bottom', 'middle', 'top'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'bottom' } },
     },
   },
   args: { open: false, displayTime: 4000, keepOpen: false, position: 'bottom' },
@@ -61,54 +66,63 @@ const metadata: Meta<IgcSnackbarComponent> = {
 export default metadata;
 
 interface IgcSnackbarArgs {
-  /** Determines whether the snackbar is opened. */
-  open: boolean;
-  /** Determines the duration in ms in which the snackbar will be visible. */
-  displayTime: number;
-  /** Determines whether the snackbar should close after the displayTime is over. */
-  keepOpen: boolean;
-  /** Sets the position of the snackbar. */
-  position: 'top' | 'bottom' | 'middle';
   /** The snackbar action button. */
   actionText: string;
+  /** Whether the component is in shown state. */
+  open: boolean;
+  /** Determines the duration in ms in which the component will be visible. */
+  displayTime: number;
+  /** Determines whether the component should close after the `displayTime` is over. */
+  keepOpen: boolean;
+  /** Sets the position of the component in the viewport. */
+  position: 'bottom' | 'middle' | 'top';
 }
 type Story = StoryObj<IgcSnackbarArgs>;
 
 // endregion
 
-const handleOpen = () => {
-  const snackbar = document.querySelector(
-    'igc-snackbar'
-  ) as IgcSnackbarComponent;
-  snackbar?.show();
+export const Basic: Story = {
+  render: ({
+    open,
+    keepOpen,
+    displayTime,
+    actionText = 'Close',
+    position,
+  }) => html`
+    <igc-snackbar
+      id="snackbar"
+      ?open=${open}
+      ?keep-open=${keepOpen}
+      .displayTime=${displayTime}
+      .actionText=${actionText}
+      .position=${position}
+      @igcAction=${({ target }) => target.hide()}
+      >Snackbar Message</igc-snackbar
+    >
+
+    <igc-button onclick="snackbar.show()">Open snackbar</igc-button>
+    <igc-button onclick="snackbar.hide()">Close snackbar</igc-button>
+  `,
 };
 
-const handleHide = () => {
-  const snackbar = document.querySelector(
-    'igc-snackbar'
-  ) as IgcSnackbarComponent;
-  snackbar?.hide();
+export const SlottedAction: Story = {
+  render: ({ open, keepOpen, displayTime, position }) => html`
+    <igc-snackbar
+      id="snackbar"
+      ?open=${open}
+      ?keep-open=${keepOpen}
+      .displayTime=${displayTime}
+      .position=${position}
+      @igcAction=${({ target }) => target.hide()}
+    >
+      Snackbar with slotted custom action
+      <igc-button slot="action" variant="flat">
+        <igc-icon name=${radioactive.name}></igc-icon>
+        OK
+      </igc-button>
+    </igc-snackbar>
+
+    <igc-button onclick="snackbar.show()">Open snackbar</igc-button>
+    <igc-button onclick="snackbar.hide()">Close snackbar</igc-button>
+  `,
 };
-
-const Template = ({
-  open,
-  keepOpen,
-  displayTime,
-  actionText = 'Close',
-  position = 'bottom',
-}: IgcSnackbarArgs) => html`
-  <igc-snackbar
-    .open=${open}
-    ?keep-open=${keepOpen}
-    display-time=${ifDefined(displayTime)}
-    action-text=${ifDefined(actionText)}
-    .position=${position}
-  >
-    Snackbar Message
-  </igc-snackbar>
-  <igc-button @click="${handleOpen}">Open Snackbar</igc-button>
-  <igc-button @click="${handleHide}">Hide Snackbar</igc-button>
-`;
-
-export const Basic: Story = Template.bind({});
-document.addEventListener('igcAction', handleHide);

@@ -1,11 +1,12 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import {
-  defineComponents,
-  IgcListComponent,
   IgcAvatarComponent,
   IgcButtonComponent,
+  IgcListComponent,
+  defineComponents,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcListComponent, IgcAvatarComponent, IgcButtonComponent);
 
@@ -21,8 +22,6 @@ const metadata: Meta<IgcListComponent> = {
       },
     },
   },
-  argTypes: {},
-  args: {},
 };
 
 export default metadata;

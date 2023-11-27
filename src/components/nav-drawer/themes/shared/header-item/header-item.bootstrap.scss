@@ -1,0 +1,10 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    @include type-style('caption');
+
+    color: var-get($theme, 'item-header-text-color');
+}

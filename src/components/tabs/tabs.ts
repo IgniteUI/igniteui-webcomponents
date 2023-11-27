@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import {
   eventOptions,
   property,
@@ -6,27 +6,24 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
-import { themes } from '../../theming/theming-decorator.js';
-import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
-import { watch } from '../common/decorators/watch.js';
-import { Constructor } from '../common/mixins/constructor.js';
-import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import { createCounter, getOffset, isLTR } from '../common/util.js';
-import { styles } from './themes/light/tabs.base.css.js';
-import { styles as material } from './themes/light/tabs.material.css.js';
-import { styles as bootstrap } from './themes/light/tabs.bootstrap.css.js';
-import { styles as fluent } from './themes/light/tabs.fluent.css.js';
-import { styles as indigo } from './themes/light/tabs.indigo.css.js';
+
+import IgcTabPanelComponent from './tab-panel.js';
+import IgcTabComponent from './tab.js';
+import { all } from './themes/tabs-themes.js';
+import { styles } from './themes/tabs.base.css.js';
 import {
   getAttributesForTags,
   getNodesForTags,
   observerConfig,
 } from './utils.js';
-
+import { themes } from '../../theming/theming-decorator.js';
 import IgcIconButtonComponent from '../button/icon-button.js';
+import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
-import IgcTabPanelComponent from './tab-panel.js';
-import IgcTabComponent from './tab.js';
+import { Constructor } from '../common/mixins/constructor.js';
+import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { createCounter, getOffset, isLTR } from '../common/util.js';
 
 export interface IgcTabsEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
@@ -51,10 +48,7 @@ export interface IgcTabsEventMap {
  * @csspart end-scroll-button - The end scroll button displayed when the tabs overflow.
  * @csspart content - The container for the tabs content.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all, true)
 @blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
   IgcTabsEventMap,

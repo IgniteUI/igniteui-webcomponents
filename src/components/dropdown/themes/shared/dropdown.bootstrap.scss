@@ -1,0 +1,16 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $bootstrap;
+
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+    --dropdown-size: var(--component-size);
+}
+
+[part='base'] {
+    background: var-get($theme, 'background-color');
+    border-radius: var-get($theme, 'border-radius');
+    padding: rem(8px) 0;
+    border: rem(1px) solid var-get($theme, 'border-color');
+}

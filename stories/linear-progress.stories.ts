@@ -1,7 +1,8 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineComponents, IgcLinearProgressComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+
+import { IgcLinearProgressComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcLinearProgressComponent);
 
@@ -22,58 +23,58 @@ const metadata: Meta<IgcLinearProgressComponent> = {
       type: 'boolean',
       description: 'Sets the striped look of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     labelAlign: {
-      type: '"top" | "bottom" | "top-start" | "top-end" | "bottom-start" | "bottom-end"',
+      type: '"top-start" | "top" | "top-end" | "bottom-start" | "bottom" | "bottom-end"',
       description: 'The position for the default label of the control.',
       options: [
-        'top',
-        'bottom',
         'top-start',
+        'top',
         'top-end',
         'bottom-start',
+        'bottom',
         'bottom-end',
       ],
       control: { type: 'select' },
-      defaultValue: 'top-start',
+      table: { defaultValue: { summary: 'top-start' } },
     },
     max: {
       type: 'number',
       description: 'Maximum value of the control.',
       control: 'number',
-      defaultValue: 100,
+      table: { defaultValue: { summary: 100 } },
     },
     value: {
       type: 'number',
       description: 'The value of the control.',
       control: 'number',
-      defaultValue: 0,
+      table: { defaultValue: { summary: 0 } },
     },
     variant: {
       type: '"primary" | "info" | "success" | "warning" | "danger"',
       description: 'The variant of the control.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
-      defaultValue: 'primary',
+      table: { defaultValue: { summary: 'primary' } },
     },
     animationDuration: {
       type: 'number',
       description: 'Animation duration in milliseconds.',
       control: 'number',
-      defaultValue: 500,
+      table: { defaultValue: { summary: 500 } },
     },
     indeterminate: {
       type: 'boolean',
       description: 'The indeterminate state of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     hideLabel: {
       type: 'boolean',
       description: 'Shows/hides the label of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     labelFormat: {
       type: 'string',
@@ -101,11 +102,11 @@ interface IgcLinearProgressArgs {
   striped: boolean;
   /** The position for the default label of the control. */
   labelAlign:
-    | 'top'
-    | 'bottom'
     | 'top-start'
+    | 'top'
     | 'top-end'
     | 'bottom-start'
+    | 'bottom'
     | 'bottom-end';
   /** Maximum value of the control. */
   max: number;

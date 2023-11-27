@@ -1,21 +1,19 @@
 import { html } from 'lit';
 import { property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
+import { IgcButtonBaseComponent } from './button-base.js';
+import { styles } from './themes/icon-button/icon-button.base.css.js';
+import { all } from './themes/icon-button/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { registerComponent } from '../common/definitions/register.js';
 import IgcIconComponent from '../icon/icon.js';
 import {
-  registerIcon as registerIcon_impl,
   registerIconFromText as registerIconFromText_impl,
+  registerIcon as registerIcon_impl,
 } from '../icon/icon.registry.js';
-import { IgcButtonBaseComponent } from './button-base.js';
-import { styles } from './themes/icon-button/light/icon-button.base.css.js';
-import { styles as bootstrap } from './themes/icon-button/light/icon-button.bootstrap.css.js';
-import { styles as fluent } from './themes/icon-button/light/icon-button.fluent.css.js';
-import { styles as indigo } from './themes/icon-button/light/icon-button.indigo.css.js';
-import { styles as material } from './themes/icon-button/light/icon-button.material.css.js';
 
 /**
  * @element igc-icon-button
@@ -23,10 +21,7 @@ import { styles as material } from './themes/icon-button/light/icon-button.mater
  * @csspart base - The wrapping element.
  * @csspart icon - The icon element.
  */
-@themes({
-  light: { bootstrap, material, fluent, indigo },
-  dark: { bootstrap, material, fluent, indigo },
-})
+@themes(all)
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
   protected static styles = styles;

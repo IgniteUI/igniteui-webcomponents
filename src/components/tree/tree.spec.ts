@@ -1,22 +1,23 @@
 import { aTimeout, elementUpdated, expect, waitUntil } from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents } from '../../index.js';
-import type { IgcCheckboxComponent, IgcTreeItemComponent } from '../../index';
-import IgcTreeComponent from './tree.js';
+import { spy } from 'sinon';
+
 import {
-  activeItemsTree,
   DIFF_OPTIONS,
+  PARTS,
+  SLOTS,
+  TreeTestFunctions,
+  activeItemsTree,
   disabledItemsTree,
   expandCollapseTree,
   navigationTree,
-  PARTS,
   selectedItemsTree,
   simpleHierarchyTree,
   simpleTree,
-  SLOTS,
-  TreeTestFunctions,
   wrappedItemsTree,
 } from './tree-utils.spec.js';
+import IgcTreeComponent from './tree.js';
+import type { IgcCheckboxComponent, IgcTreeItemComponent } from '../../index';
+import { defineComponents } from '../../index.js';
 
 describe('Tree', () => {
   before(() => {
@@ -426,7 +427,7 @@ describe('Tree', () => {
     it('Should emit igcActiveItem event when the active item changes', async () => {
       tree = await TreeTestFunctions.createTreeElement(simpleHierarchyTree);
 
-      const eventSpy = sinon.spy(tree, 'emitEvent');
+      const eventSpy = spy(tree, 'emitEvent');
       await elementUpdated(tree);
 
       tree.items.forEach((item) => {
@@ -586,7 +587,7 @@ describe('Tree', () => {
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(expandCollapseTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
-      eventSpy = sinon.spy(tree, 'emitEvent');
+      eventSpy = spy(tree, 'emitEvent');
     });
 
     it('Should expand all collapsed (including the disabled) items w/ tree.expand()', async () => {
@@ -993,7 +994,7 @@ describe('Tree', () => {
       tree = await TreeTestFunctions.createTreeElement(disabledItemsTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
       disabledItems = tree.items.filter((i) => i.disabled === true);
-      eventSpy = sinon.spy(tree, 'emitEvent');
+      eventSpy = spy(tree, 'emitEvent');
     });
 
     it('Should be able to select/activate/expand disabled item through API', async () => {
@@ -1281,7 +1282,7 @@ describe('Tree', () => {
     beforeEach(async () => {
       tree = await TreeTestFunctions.createTreeElement(navigationTree);
       topLevelItems = tree.items.filter((i) => i.level === 0);
-      eventSpy = sinon.spy(tree, 'emitEvent');
+      eventSpy = spy(tree, 'emitEvent');
       tree.dir = 'rtl';
       await elementUpdated(tree);
     });

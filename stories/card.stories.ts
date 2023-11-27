@@ -5,6 +5,7 @@ import {
 } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import {
   IgcAvatarComponent,
   IgcCardComponent,
@@ -38,7 +39,7 @@ const metadata: Meta<IgcCardComponent> = {
       type: 'boolean',
       description: 'Sets card elevated style, otherwise card looks outlined.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { elevated: false },

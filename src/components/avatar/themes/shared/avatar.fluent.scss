@@ -1,8 +1,11 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
 $theme: $fluent;
+
+:host {
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+}
 
 [part='base'] {
     color: var-get($theme, 'color');
@@ -23,4 +26,3 @@ $theme: $fluent;
 :host([shape='circle']) [part='base'] {
     border-radius: calc(var-get($theme, 'size') / 2);
 }
-

@@ -1,0 +1,16 @@
+@use 'styles/utilities' as *;
+@use '../light/themes' as *;
+
+$theme: $indigo;
+
+[part~='base'] {
+    border-radius: var-get($theme, 'border-radius');
+    color: var-get($theme, 'text-color');
+    background: var-get($theme, 'background');
+    box-shadow: var-get($theme, 'elevation');
+}
+
+igc-button::part(base),
+igc-button::part(base):hover {
+    color: var-get($theme, 'button-color');
+}

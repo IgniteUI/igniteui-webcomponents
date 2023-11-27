@@ -5,40 +5,4 @@ $theme: $bootstrap;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-dialog');
-
-    background: var-get($theme, 'background');
-    border-radius: var-get($theme, 'border-radius');
-}
-
-[part~='backdrop'] {
-    background: var-get($theme, 'backdrop');
-}
-
-[part='base'] {
-    min-width: rem(288px);
-    border: 1px solid var-get($theme, 'border-color');
-    box-shadow: var-get($theme, 'elevation');
-}
-
-[part='title'],
-[part='footer'] {
-    @include type-style('h5') {
-        margin: 0;
-    }
-
-    color: var-get($theme, 'title-color');
-    padding: rem(16px);
-}
-
-[part='content'] {
-    color: var-get($theme, 'message-color');
-    padding: rem(16px);
-}
-
-[part='title'] {
-    border-block-end: 1px solid var-get($theme, 'border-color');
-}
-
-[part='footer'] {
-    border-block-start: 1px solid var-get($theme, 'border-color');
 }

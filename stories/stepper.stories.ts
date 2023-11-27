@@ -1,10 +1,11 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import {
-  defineComponents,
   IgcButtonComponent,
   IgcStepperComponent,
+  defineComponents,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcStepperComponent, IgcButtonComponent);
 
@@ -19,6 +20,7 @@ const metadata: Meta<IgcStepperComponent> = {
           'IgxStepper provides a wizard-like workflow by dividing content into logical steps.',
       },
     },
+    actions: { handles: ['igcActiveStepChanging', 'igcActiveStepChanged'] },
   },
   argTypes: {
     orientation: {
@@ -26,52 +28,52 @@ const metadata: Meta<IgcStepperComponent> = {
       description: 'Gets/Sets the orientation of the stepper.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
-      defaultValue: 'horizontal',
+      table: { defaultValue: { summary: 'horizontal' } },
     },
     stepType: {
       type: '"indicator" | "title" | "full"',
       description: 'Get/Set the type of the steps.',
       options: ['indicator', 'title', 'full'],
       control: { type: 'inline-radio' },
-      defaultValue: 'full',
+      table: { defaultValue: { summary: 'full' } },
     },
     linear: {
       type: 'boolean',
       description: 'Get/Set whether the stepper is linear.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     contentTop: {
       type: 'boolean',
       description: 'Get/Set whether the content is displayed above the steps.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     verticalAnimation: {
-      type: '"none" | "grow" | "fade"',
+      type: '"grow" | "fade" | "none"',
       description: 'The animation type when in vertical mode.',
-      options: ['none', 'grow', 'fade'],
+      options: ['grow', 'fade', 'none'],
       control: { type: 'inline-radio' },
-      defaultValue: 'grow',
+      table: { defaultValue: { summary: 'grow' } },
     },
     horizontalAnimation: {
-      type: '"none" | "fade" | "slide"',
+      type: '"slide" | "fade" | "none"',
       description: 'The animation type when in horizontal mode.',
-      options: ['none', 'fade', 'slide'],
+      options: ['slide', 'fade', 'none'],
       control: { type: 'inline-radio' },
-      defaultValue: 'slide',
+      table: { defaultValue: { summary: 'slide' } },
     },
     animationDuration: {
       type: 'number',
       description:
         'The animation duration in either vertical or horizontal mode.',
       control: 'number',
-      defaultValue: 320,
+      table: { defaultValue: { summary: 320 } },
     },
     titlePosition: {
-      type: '"start" | "end" | "top" | "bottom" | undefined',
+      type: '"bottom" | "top" | "end" | "start"',
       description: 'Get/Set the position of the steps title.',
-      options: ['start', 'end', 'top', 'bottom', 'undefined'],
+      options: ['bottom', 'top', 'end', 'start'],
       control: { type: 'select' },
     },
   },
@@ -98,13 +100,13 @@ interface IgcStepperArgs {
   /** Get/Set whether the content is displayed above the steps. */
   contentTop: boolean;
   /** The animation type when in vertical mode. */
-  verticalAnimation: 'none' | 'grow' | 'fade';
+  verticalAnimation: 'grow' | 'fade' | 'none';
   /** The animation type when in horizontal mode. */
-  horizontalAnimation: 'none' | 'fade' | 'slide';
+  horizontalAnimation: 'slide' | 'fade' | 'none';
   /** The animation duration in either vertical or horizontal mode. */
   animationDuration: number;
   /** Get/Set the position of the steps title. */
-  titlePosition: 'start' | 'end' | 'top' | 'bottom' | undefined;
+  titlePosition: 'bottom' | 'top' | 'end' | 'start';
 }
 type Story = StoryObj<IgcStepperArgs>;
 

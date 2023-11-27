@@ -1,0 +1,48 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $bootstrap;
+
+[part='headers'] {
+    background: var-get($theme, 'item-background');
+}
+
+[part='headers-wrapper'] {
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        inset-inline-start: 0;
+        width: 100%;
+        height: rem(1px);
+        background: var-get($theme, 'border-color');
+        z-index: 0;
+    }
+}
+
+[part='start-scroll-button'],
+[part='end-scroll-button'] {
+    background: var-get($theme, 'button-background');
+
+    &:hover,
+    &:focus {
+        background: var-get($theme, 'button-hover-background');
+    }
+}
+
+igc-icon-button::part(base) {
+    color: var-get($theme, 'button-color');
+
+    &:hover,
+    &:focus-within {
+        color: var-get($theme, 'button-hover-color');
+    }
+}
+
+igc-icon-button[disabled]::part(base) {
+    color: var-get($theme, 'button-disabled-color');
+}
+
+[part='selected-indicator'] {
+    display: none;
+}

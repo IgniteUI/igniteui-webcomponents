@@ -1,20 +1,21 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import { DatePart } from '../src/components/date-time-input/date-util.js';
 import {
-  defineComponents,
-  IgcFormComponent,
   IgcButtonComponent,
-  IgcInputComponent,
-  IgcDateTimeInputComponent,
-  IgcMaskInputComponent,
-  IgcSelectComponent,
-  IgcComboComponent,
   IgcCheckboxComponent,
-  IgcRadioGroupComponent,
-  IgcSwitchComponent,
+  IgcComboComponent,
+  IgcDateTimeInputComponent,
+  IgcFormComponent,
   IgcIconComponent,
+  IgcInputComponent,
+  IgcMaskInputComponent,
+  IgcRadioGroupComponent,
+  IgcSelectComponent,
+  IgcSwitchComponent,
+  defineComponents,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(
   IgcFormComponent,
@@ -41,6 +42,7 @@ const metadata: Meta<IgcFormComponent> = {
           'The form is a component used to collect user input from\ninteractive controls.',
       },
     },
+    actions: { handles: ['igcSubmit', 'igcReset'] },
   },
   argTypes: {
     novalidate: {
@@ -48,7 +50,7 @@ const metadata: Meta<IgcFormComponent> = {
       description:
         'Specifies if form data validation should be skipped on submit.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: { novalidate: false },
@@ -104,12 +106,6 @@ const handleClear = () => {
   ) as IgcDateTimeInputComponent;
   input?.clear();
 };
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcSubmit', 'igcReset'],
-  },
-});
 
 const Template = ({ novalidate, disabled, outlined }: IgcFormArgs) => {
   const radios = ['Male', 'Female'];

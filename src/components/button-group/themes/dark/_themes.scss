@@ -1,5 +1,4 @@
 @use 'sass:map';
-@use 'sass:list';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/button-group' as *;
 @use '../../../button/themes/button/dark/themes' as *;
@@ -12,3 +11,4 @@ $material: digest-schema($dark-button-group);
 $bootstrap: digest-schema($dark-bootstrap-button-group);
 $fluent: digest-schema($dark-fluent-button-group);
 $indigo: digest-schema($dark-indigo-button-group);
+

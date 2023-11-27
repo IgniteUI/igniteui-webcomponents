@@ -1,9 +1,9 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
+
+import { styles } from './themes/header.base.css.js';
+import { all } from './themes/header.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { styles } from './themes/light/list-header.base.css.js';
-import { styles as bootstrap } from './themes/light/list-header.bootstrap.css.js';
-import { styles as indigo } from './themes/light/list-header.indigo.css.js';
 
 /**
  * Header list item.
@@ -12,7 +12,7 @@ import { styles as indigo } from './themes/light/list-header.indigo.css.js';
  *
  * @slot - Renders header list item's content.
  */
-@themes({ light: { bootstrap, indigo }, dark: { bootstrap, indigo } })
+@themes(all)
 export default class IgcListHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-list-header';
   public static override styles = styles;
@@ -21,9 +21,13 @@ export default class IgcListHeaderComponent extends LitElement {
     registerComponent(this);
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('role', 'separator');
+  private _internals: ElementInternals;
+
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+
+    this._internals.role = 'separator';
   }
 
   protected override render() {

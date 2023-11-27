@@ -1,0 +1,55 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $material;
+
+:host {
+    [part~='toggle'] {
+        $icon-size: rem(18px);
+
+        --ig-icon-size: #{$icon-size};
+        --igx-icon-size: #{$icon-size};
+
+        min-height: $material-flat-btn-size;
+        color: var-get($theme, 'item-text-color');
+        background: var-get($theme, 'item-background');
+        padding-inline: rem(16px);
+        padding-block: pad-block(rem(1px), rem(4px), rem(6px));
+        border-color: var-get($theme, 'item-border-color');
+    }
+}
+
+:host(:hover),
+:host(:focus) {
+    [part~='toggle'] {
+        color: var-get($theme, 'item-hover-text-color');
+        background: var-get($theme, 'item-hover-background');
+    }
+}
+
+:host([selected]) {
+    [part~='toggle'] {
+        color: var-get($theme, 'item-selected-text-color');
+        background: var-get($theme, 'item-selected-background');
+        border-color: var-get($theme, 'item-selected-border-color');
+    }
+}
+
+:host([selected]:hover),
+:host([selected]:focus) {
+    [part~='toggle'] {
+        color: var-get($theme, 'item-selected-text-color');
+        background: var-get($theme, 'item-selected-hover-background');
+    }
+}
+
+:host([disabled]),
+:host(:disabled),
+:host-context([disabled]),
+:host-context(:disabled) {
+    [part~='toggle'] {
+        color: var-get($theme, 'disabled-text-color');
+        background: var-get($theme, 'disabled-background-color');
+        border-color: var-get($theme, 'item-disabled-border');
+    }
+}

@@ -1,7 +1,8 @@
-import { html, LitElement, TemplateResult } from 'lit';
+import { LitElement, TemplateResult, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
@@ -72,7 +73,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
    * @attr [disabled=false]
    */
   @property({ type: Boolean, reflect: true })
-  public get disabled() {
+  public get disabled(): boolean {
     return this._disabled;
   }
 
@@ -91,6 +92,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   constructor() {
     super();
     this.__internals = this.attachInternals();
+    this.size = 'medium';
   }
 
   /** Sets focus in the button. */

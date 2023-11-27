@@ -3,8 +3,6 @@
 
 $theme: $fluent;
 
-@mixin theme() {
-    igc-card {
-        @include css-vars-from-theme($theme, 'ig-card');
-    }
+:host {
+    @include css-vars-from-theme($theme, 'ig-card');
 }

@@ -1,11 +1,11 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
+
 import {
-  defineComponents,
   IgcButtonComponent,
   IgcToastComponent,
+  defineComponents,
 } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
 
 defineComponents(IgcToastComponent, IgcButtonComponent);
 
@@ -23,29 +23,30 @@ const metadata: Meta<IgcToastComponent> = {
   argTypes: {
     open: {
       type: 'boolean',
-      description: 'Determines whether the toast is opened.',
+      description: 'Whether the component is in shown state.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     displayTime: {
       type: 'number',
-      description: 'Determines the time after which the toast will close',
+      description:
+        'Determines the duration in ms in which the component will be visible.',
       control: 'number',
-      defaultValue: 4000,
+      table: { defaultValue: { summary: 4000 } },
     },
     keepOpen: {
       type: 'boolean',
       description:
-        'Determines whether the toast is closed automatically or not.',
+        'Determines whether the component should close after the `displayTime` is over.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     position: {
-      type: '"top" | "bottom" | "middle"',
-      description: 'Sets the position of the toast.',
-      options: ['top', 'bottom', 'middle'],
+      type: '"bottom" | "middle" | "top"',
+      description: 'Sets the position of the component in the viewport.',
+      options: ['bottom', 'middle', 'top'],
       control: { type: 'inline-radio' },
-      defaultValue: 'bottom',
+      table: { defaultValue: { summary: 'bottom' } },
     },
   },
   args: { open: false, displayTime: 4000, keepOpen: false, position: 'bottom' },
@@ -54,50 +55,33 @@ const metadata: Meta<IgcToastComponent> = {
 export default metadata;
 
 interface IgcToastArgs {
-  /** Determines whether the toast is opened. */
+  /** Whether the component is in shown state. */
   open: boolean;
-  /** Determines the time after which the toast will close */
+  /** Determines the duration in ms in which the component will be visible. */
   displayTime: number;
-  /** Determines whether the toast is closed automatically or not. */
+  /** Determines whether the component should close after the `displayTime` is over. */
   keepOpen: boolean;
-  /** Sets the position of the toast. */
-  position: 'top' | 'bottom' | 'middle';
+  /** Sets the position of the component in the viewport. */
+  position: 'bottom' | 'middle' | 'top';
 }
 type Story = StoryObj<IgcToastArgs>;
 
 // endregion
-const handleShow = () => {
-  const toast = document.querySelector('igc-toast') as IgcToastComponent;
-  toast?.show();
+
+export const Basic: Story = {
+  render: ({ open, displayTime, keepOpen, position }) => html`
+    <igc-toast
+      id="toast"
+      ?open=${open}
+      ?keep-open=${keepOpen}
+      .displayTime=${displayTime}
+      .position=${position}
+    >
+      Notification displayed
+    </igc-toast>
+
+    <igc-button onclick="toast.show()">Show Toast</igc-button>
+    <igc-button onclick="toast.hide()">Hide Toast</igc-button>
+    <igc-button onclick="toast.toggle()">Toggle Toast</igc-button>
+  `,
 };
-
-const handleHide = () => {
-  const toast = document.querySelector('igc-toast') as IgcToastComponent;
-  toast?.hide();
-};
-
-const handleToggle = () => {
-  const toast = document.querySelector('igc-toast') as IgcToastComponent;
-  toast?.toggle();
-};
-
-const Template = ({
-  open = false,
-  displayTime = 4000,
-  keepOpen = false,
-  position = 'bottom',
-}: IgcToastArgs) => html`
-  <igc-button @click=${handleShow}>Show Toast</igc-button>
-  <igc-button @click=${handleHide}>Hide Toast</igc-button>
-  <igc-button @click=${handleToggle}>Toggle Toast</igc-button>
-  <igc-toast
-    .open=${open}
-    display-time=${ifDefined(displayTime)}
-    ?keep-open=${keepOpen}
-    .position=${position}
-  >
-    Toast Message
-  </igc-toast>
-`;
-
-export const Basic: Story = Template.bind({});

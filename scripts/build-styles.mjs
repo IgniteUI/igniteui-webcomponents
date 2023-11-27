@@ -18,7 +18,7 @@ export async function buildThemes() {
 
   for (const sassFile of paths) {
     const result = renderSass(sassFile, {
-      outputStyle: 'compressed',
+      style: 'compressed',
       loadPaths: ['node_modules', 'src']
     });
 

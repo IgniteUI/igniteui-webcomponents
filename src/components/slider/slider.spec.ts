@@ -5,14 +5,28 @@ import {
   fixture,
   html,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
+
+import { IgcSliderBaseComponent } from './slider-base.js';
 import {
-  defineComponents,
   IgcRangeSliderComponent,
   IgcSliderComponent,
+  defineComponents,
 } from '../../index.js';
-import { IgcSliderBaseComponent } from './slider-base.js';
-import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import {
+  arrowDown,
+  arrowLeft,
+  arrowRight,
+  arrowUp,
+  endKey,
+  homeKey,
+  pageDownKey,
+  pageUpKey,
+} from '../common/controllers/key-bindings.js';
+import {
+  FormAssociatedTestBed,
+  simulateKeyboard,
+} from '../common/utils.spec.js';
 
 describe('Slider component', () => {
   const getTrack = (el: IgcSliderComponent) =>
@@ -130,7 +144,7 @@ describe('Slider component', () => {
     });
 
     it('value should be changed when clicking and dragging the slider and corresponding events are fired', async () => {
-      const eventSpy = sinon.spy(slider, 'emitEvent');
+      const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
 
       slider.dispatchEvent(
@@ -596,12 +610,12 @@ describe('Slider component', () => {
     });
 
     it('value should be increased or decreased with 1 step when pressing right/top or down/left arrow keys', async () => {
-      const eventSpy = sinon.spy(slider, 'emitEvent');
+      const eventSpy = spy(slider, 'emitEvent');
       slider.step = 2;
       slider.value = 50;
       await elementUpdated(slider);
 
-      slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+      simulateKeyboard(slider, arrowRight);
       await elementUpdated(slider);
       expect(slider.value).to.eq(52);
       expect(eventSpy).to.be.calledTwice;
@@ -609,21 +623,21 @@ describe('Slider component', () => {
       expect(eventSpy).calledWith('igcChange', { detail: 52 });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+      simulateKeyboard(slider, arrowLeft);
       await elementUpdated(slider);
       expect(slider.value).to.eq(50);
       expect(eventSpy).calledWith('igcInput', { detail: 50 });
       expect(eventSpy).calledWith('igcChange', { detail: 50 });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      simulateKeyboard(slider, arrowDown);
       await elementUpdated(slider);
       expect(slider.value).to.eq(48);
       expect(eventSpy).calledWith('igcInput', { detail: 48 });
       expect(eventSpy).calledWith('igcChange', { detail: 48 });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+      simulateKeyboard(slider, arrowUp);
       await elementUpdated(slider);
       expect(slider.value).to.eq(50);
       expect(eventSpy).calledWith('igcInput', { detail: 50 });
@@ -635,11 +649,11 @@ describe('Slider component', () => {
       slider.value = 50;
       await elementUpdated(slider);
 
-      slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageUp' }));
+      simulateKeyboard(slider, pageUpKey);
       await elementUpdated(slider);
       expect(slider.value).to.eq(60);
 
-      slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown' }));
+      simulateKeyboard(slider, pageDownKey);
       await elementUpdated(slider);
       expect(slider.value).to.eq(50);
     });
@@ -649,7 +663,7 @@ describe('Slider component', () => {
       slider.value = 50;
       await elementUpdated(slider);
 
-      slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home' }));
+      simulateKeyboard(slider, homeKey);
       await elementUpdated(slider);
       expect(slider.value).to.eq(10);
     });
@@ -659,7 +673,7 @@ describe('Slider component', () => {
       slider.value = 50;
       await elementUpdated(slider);
 
-      slider.dispatchEvent(new KeyboardEvent('keydown', { key: 'End' }));
+      simulateKeyboard(slider, endKey);
       await elementUpdated(slider);
       expect(slider.value).to.eq(90);
     });
@@ -809,7 +823,7 @@ describe('Slider component', () => {
     });
 
     it('closest thumb value should be changed when clicking and dragging the slider and corresponding events are fired', async () => {
-      const eventSpy = sinon.spy(slider, 'emitEvent');
+      const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
 
       slider.dispatchEvent(
@@ -894,7 +908,7 @@ describe('Slider component', () => {
     });
 
     it('when the lower thumb is dragged beyond the upper thumb, the upper thumb should be focused and its dragging should continue.', async () => {
-      const eventSpy = sinon.spy(slider, 'emitEvent');
+      const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
       const lowerThumb = getLowerThumb(slider);
       const upperThumb = getUpperThumb(slider);

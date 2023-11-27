@@ -1,11 +1,9 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
+
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { styles } from './themes/light/list-item.base.css.js';
-import { styles as material } from './themes/light/list-item.material.css.js';
-import { styles as bootstrap } from './themes/light/list-item.bootstrap.css.js';
-import { styles as fluent } from './themes/light/list-item.fluent.css.js';
-import { styles as indigo } from './themes/light/list-item.indigo.css.js';
 
 /**
  * The list-item component is a container
@@ -26,10 +24,7 @@ import { styles as indigo } from './themes/light/list-item.indigo.css.js';
  * @csspart title - The title container.
  * @csspart subtitle - The subtitle container.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+@themes(all)
 export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';
   public static override styles = styles;
@@ -38,9 +33,13 @@ export default class IgcListItemComponent extends LitElement {
     registerComponent(this);
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('role', 'listitem');
+  private _internals: ElementInternals;
+
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+
+    this._internals.role = 'listitem';
   }
 
   protected override render() {

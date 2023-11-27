@@ -3,8 +3,6 @@
 
 $theme: $bootstrap;
 
-@mixin theme() {
-    igc-slider {
-        @include css-vars-from-theme($theme, 'ig-slider');
-    }
+:host {
+    @include css-vars-from-theme($theme, 'ig-slider');
 }

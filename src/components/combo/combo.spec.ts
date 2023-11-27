@@ -1,12 +1,13 @@
-import { html } from 'lit';
-import sinon from 'sinon';
 import { elementUpdated, expect, fixture } from '@open-wc/testing';
-import { defineComponents } from '../common/definitions/defineComponents.js';
-import IgcInputComponent from '../input/input.js';
-import IgcComboComponent from './combo.js';
-import IgcComboListComponent from './combo-list.js';
+import { html } from 'lit';
+import { spy } from 'sinon';
+
 import IgcComboItemComponent from './combo-item.js';
+import IgcComboListComponent from './combo-list.js';
+import IgcComboComponent from './combo.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
+import IgcInputComponent from '../input/input.js';
 
 describe('Combo', () => {
   interface City {
@@ -197,7 +198,7 @@ describe('Combo', () => {
     });
 
     it('should open the menu upon clicking on the input', async () => {
-      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const eventSpy = spy(combo, 'emitEvent');
       input.click();
 
       await elementUpdated(combo);
@@ -208,7 +209,7 @@ describe('Combo', () => {
     });
 
     it('should hide the menu upon clicking on the input', async () => {
-      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const eventSpy = spy(combo, 'emitEvent');
       combo.show();
       input.click();
 
@@ -224,7 +225,7 @@ describe('Combo', () => {
       combo.addEventListener('igcOpening', (event: CustomEvent) => {
         event.preventDefault();
       });
-      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const eventSpy = spy(combo, 'emitEvent');
       input.click();
       await elementUpdated(combo);
 
@@ -239,7 +240,7 @@ describe('Combo', () => {
       combo.addEventListener('igcClosing', (event: CustomEvent) => {
         event.preventDefault();
       });
-      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const eventSpy = spy(combo, 'emitEvent');
       input.click();
       await elementUpdated(combo);
 
@@ -301,6 +302,7 @@ describe('Combo', () => {
 
     it('should select/deselect an item by value key', async () => {
       const item = cities[0];
+      combo.open = true;
       combo.select([item[combo.valueKey!]]);
 
       await elementUpdated(combo);
@@ -325,6 +327,7 @@ describe('Combo', () => {
 
     it('should select/deselect an item by value when no valueKey is present', async () => {
       combo.valueKey = undefined;
+      combo.open = true;
       await elementUpdated(combo);
 
       const item = cities[0];
@@ -403,12 +406,12 @@ describe('Combo', () => {
         event.preventDefault()
       );
 
-      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const eventSpy = spy(combo, 'emitEvent');
       expect(eventSpy).not.calledWith('igcChange');
     });
 
     it('should fire igcChange selection type event on mouse click', async () => {
-      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const eventSpy = spy(combo, 'emitEvent');
       const args = {
         cancelable: true,
         detail: {
@@ -428,7 +431,7 @@ describe('Combo', () => {
     });
 
     it('should fire igcChange deselection type event on mouse click', async () => {
-      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const eventSpy = spy(combo, 'emitEvent');
       const args = {
         cancelable: true,
         detail: {
@@ -456,7 +459,7 @@ describe('Combo', () => {
       combo.addEventListener('igcChange', (event: CustomEvent) => {
         event.preventDefault();
       });
-      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const eventSpy = spy(combo, 'emitEvent');
       combo.open = true;
 
       await elementUpdated(combo);
@@ -473,7 +476,7 @@ describe('Combo', () => {
       combo.addEventListener('igcChange', (event: CustomEvent) => {
         event.preventDefault();
       });
-      const eventSpy = sinon.spy(combo, 'emitEvent');
+      const eventSpy = spy(combo, 'emitEvent');
       combo.select(['BG01', 'BG02']);
       combo.open = true;
 

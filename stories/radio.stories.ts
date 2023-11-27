@@ -1,7 +1,8 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineComponents, IgcRadioComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+
+import { IgcRadioComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcRadioComponent);
 
@@ -9,7 +10,10 @@ defineComponents(IgcRadioComponent);
 const metadata: Meta<IgcRadioComponent> = {
   title: 'Radio',
   component: 'igc-radio',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: { description: { component: '' } },
+    actions: { handles: ['igcChange', 'igcFocus', 'igcBlur'] },
+  },
   argTypes: {
     value: {
       type: 'string',
@@ -20,20 +24,20 @@ const metadata: Meta<IgcRadioComponent> = {
       type: 'boolean',
       description: 'The checked state of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     labelPosition: {
       type: '"before" | "after"',
       description: 'The label position of the radio control.',
       options: ['before', 'after'],
       control: { type: 'inline-radio' },
-      defaultValue: 'after',
+      table: { defaultValue: { summary: 'after' } },
     },
     required: {
       type: 'boolean',
       description: 'Makes the control a required field in a form context.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     name: {
       type: 'string',
@@ -44,13 +48,13 @@ const metadata: Meta<IgcRadioComponent> = {
       type: 'boolean',
       description: 'The disabled state of the component',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
   },
   args: {

@@ -1,6 +1,20 @@
 import { html } from 'lit';
 import { property, query, queryAll, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
+
+import {
+  IgcCalendarBaseComponent,
+  IgcCalendarBaseEventMap,
+  MONTHS_PER_ROW,
+  YEARS_PER_ROW,
+} from './common/calendar-base.js';
+import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
+import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import IgcMonthsViewComponent from './months-view/months-view.js';
+import { styles } from './themes/calendar.base.css.js';
+import { all } from './themes/calendar.js';
+import IgcYearsViewComponent from './years-view/years-view.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { watch } from '../common/decorators/watch.js';
@@ -14,22 +28,6 @@ import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
-import {
-  IgcCalendarBaseComponent,
-  IgcCalendarBaseEventMap,
-  MONTHS_PER_ROW,
-  YEARS_PER_ROW,
-} from './common/calendar-base.js';
-import { ICalendarDate, TimeDeltaInterval } from './common/calendar.model.js';
-import { calculateYearsRangeStart, setDateSafe } from './common/utils.js';
-import IgcDaysViewComponent from './days-view/days-view.js';
-import IgcMonthsViewComponent from './months-view/months-view.js';
-import { styles } from './themes/calendar.base.css.js';
-import { styles as bootstrap } from './themes/light/bootstrap/calendar.bootstrap.css.js';
-import { styles as fluent } from './themes/light/fluent/calendar.fluent.css.js';
-import { styles as indigo } from './themes/light/indigo/calendar.indigo.css.js';
-import { styles as material } from './themes/light/material/calendar.material.css.js';
-import IgcYearsViewComponent from './years-view/years-view.js';
 
 /**
  * Represents a calendar that lets users
@@ -59,23 +57,7 @@ import IgcYearsViewComponent from './years-view/years-view.js';
  * when calendar orientation is vertical.
  * @csspart days-view-container - The days view container.
  */
-@themes(
-  {
-    light: {
-      bootstrap,
-      fluent,
-      indigo,
-      material,
-    },
-    dark: {
-      bootstrap,
-      fluent,
-      indigo,
-      material,
-    },
-  },
-  true
-)
+@themes(all)
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
     IgcCalendarBaseEventMap,
@@ -171,26 +153,26 @@ export default class IgcCalendarComponent extends SizableMixin(
     return this.activeView === 'days'
       ? this.resourceStrings.previousMonth
       : this.activeView === 'months'
-      ? this.resourceStrings.previousYear
-      : this.activeView === 'years'
-      ? this.resourceStrings.previousYears.replace(
-          '{0}',
-          this.yearPerPage.toString()
-        )
-      : '';
+        ? this.resourceStrings.previousYear
+        : this.activeView === 'years'
+          ? this.resourceStrings.previousYears.replace(
+              '{0}',
+              this.yearPerPage.toString()
+            )
+          : '';
   }
 
   private get nextButtonLabel() {
     return this.activeView === 'days'
       ? this.resourceStrings.nextMonth
       : this.activeView === 'months'
-      ? this.resourceStrings.nextYear
-      : this.activeView === 'years'
-      ? this.resourceStrings.nextYears.replace(
-          '{0}',
-          this.yearPerPage.toString()
-        )
-      : '';
+        ? this.resourceStrings.nextYear
+        : this.activeView === 'years'
+          ? this.resourceStrings.nextYears.replace(
+              '{0}',
+              this.yearPerPage.toString()
+            )
+          : '';
   }
 
   private monthSelectLabel(activeDate: Date) {

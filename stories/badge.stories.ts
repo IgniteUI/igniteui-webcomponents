@@ -1,7 +1,8 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { defineComponents, IgcBadgeComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+
+import { IgcBadgeComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcBadgeComponent);
 
@@ -23,20 +24,20 @@ const metadata: Meta<IgcBadgeComponent> = {
       description: 'The type of badge.',
       options: ['primary', 'info', 'success', 'warning', 'danger'],
       control: { type: 'select' },
-      defaultValue: 'primary',
+      table: { defaultValue: { summary: 'primary' } },
     },
     outlined: {
       type: 'boolean',
       description: 'Sets whether to draw an outlined version of the badge.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     shape: {
       type: '"rounded" | "square"',
       description: 'The shape of the badge.',
       options: ['rounded', 'square'],
       control: { type: 'inline-radio' },
-      defaultValue: 'rounded',
+      table: { defaultValue: { summary: 'rounded' } },
     },
   },
   args: { variant: 'primary', outlined: false, shape: 'rounded' },

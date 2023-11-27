@@ -1,11 +1,12 @@
+import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+
 import {
   disableStoryControls,
   formControls,
   formSubmitHandler,
 } from './story.js';
-import { defineComponents, IgcSliderComponent } from '../src/index.js';
-import { Meta, StoryObj } from '@storybook/web-components';
+import { IgcSliderComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcSliderComponent);
 
@@ -20,24 +21,31 @@ const metadata: Meta<IgcSliderComponent> = {
           'A slider component used to select numeric value within a range.',
       },
     },
+    actions: { handles: ['igcInput', 'igcChange'] },
   },
   argTypes: {
     value: {
       type: 'number',
       description: 'The current value of the component.',
       control: 'number',
-      defaultValue: 0,
+      table: { defaultValue: { summary: 0 } },
     },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
       control: 'text',
     },
+    disabled: {
+      type: 'boolean',
+      description: 'The disabled state of the component',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
     invalid: {
       type: 'boolean',
       description: 'Control the validity of the control.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     min: {
       type: 'number',
@@ -50,35 +58,29 @@ const metadata: Meta<IgcSliderComponent> = {
       control: 'number',
     },
     lowerBound: {
-      type: 'number | undefined',
+      type: 'number',
       description:
         'The lower bound of the slider value. If not set, the `min` value is applied.',
       control: 'number',
     },
     upperBound: {
-      type: 'number | undefined',
+      type: 'number',
       description:
         'The upper bound of the slider value. If not set, the `max` value is applied.',
       control: 'number',
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'The disabled state of the component',
-      control: 'boolean',
-      defaultValue: false,
     },
     discreteTrack: {
       type: 'boolean',
       description:
         'Marks the slider track as discrete so it displays the steps.\nIf the `step` is 0, the slider will remain continuos even if `discreteTrack` is `true`.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     hideTooltip: {
       type: 'boolean',
       description: 'Hides the thumb tooltip.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     step: {
       type: 'number',
@@ -91,43 +93,43 @@ const metadata: Meta<IgcSliderComponent> = {
       description:
         'The number of primary ticks. It defaults to 0 which means no primary ticks are displayed.',
       control: 'number',
-      defaultValue: 0,
+      table: { defaultValue: { summary: 0 } },
     },
     secondaryTicks: {
       type: 'number',
       description:
         'The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed.',
       control: 'number',
-      defaultValue: 0,
+      table: { defaultValue: { summary: 0 } },
     },
     tickOrientation: {
-      type: '"start" | "end" | "mirror"',
+      type: '"mirror" | "start" | "end"',
       description: 'Changes the orientation of the ticks.',
-      options: ['start', 'end', 'mirror'],
+      options: ['mirror', 'start', 'end'],
       control: { type: 'inline-radio' },
-      defaultValue: 'end',
+      table: { defaultValue: { summary: 'end' } },
     },
     hidePrimaryLabels: {
       type: 'boolean',
       description: 'Hides the primary tick labels.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     hideSecondaryLabels: {
       type: 'boolean',
       description: 'Hides the secondary tick labels.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     locale: {
       type: 'string',
       description:
         'The locale used to format the thumb and tick label values in the slider.',
       control: 'text',
-      defaultValue: 'en',
+      table: { defaultValue: { summary: 'en' } },
     },
     valueFormat: {
-      type: 'string | undefined',
+      type: 'string',
       description:
         'String format used for the thumb and tick label values in the slider.',
       control: 'text',
@@ -138,13 +140,13 @@ const metadata: Meta<IgcSliderComponent> = {
         'The degrees for the rotation of the tick labels. Defaults to 0.',
       options: ['0', '90', '-90'],
       control: { type: 'inline-radio' },
-      defaultValue: '0',
+      table: { defaultValue: { summary: '0' } },
     },
   },
   args: {
     value: 0,
-    invalid: false,
     disabled: false,
+    invalid: false,
     discreteTrack: false,
     hideTooltip: false,
     primaryTicks: 0,
@@ -164,6 +166,8 @@ interface IgcSliderArgs {
   value: number;
   /** The name attribute of the control. */
   name: string;
+  /** The disabled state of the component */
+  disabled: boolean;
   /** Control the validity of the control. */
   invalid: boolean;
   /** The minimum value of the slider scale. Defaults to 0. */
@@ -171,11 +175,9 @@ interface IgcSliderArgs {
   /** The maximum value of the slider scale. Defaults to 100. */
   max: number;
   /** The lower bound of the slider value. If not set, the `min` value is applied. */
-  lowerBound: number | undefined;
+  lowerBound: number;
   /** The upper bound of the slider value. If not set, the `max` value is applied. */
-  upperBound: number | undefined;
-  /** The disabled state of the component */
-  disabled: boolean;
+  upperBound: number;
   /**
    * Marks the slider track as discrete so it displays the steps.
    * If the `step` is 0, the slider will remain continuos even if `discreteTrack` is `true`.
@@ -193,7 +195,7 @@ interface IgcSliderArgs {
   /** The number of secondary ticks. It defaults to 0 which means no secondary ticks are displayed. */
   secondaryTicks: number;
   /** Changes the orientation of the ticks. */
-  tickOrientation: 'start' | 'end' | 'mirror';
+  tickOrientation: 'mirror' | 'start' | 'end';
   /** Hides the primary tick labels. */
   hidePrimaryLabels: boolean;
   /** Hides the secondary tick labels. */
@@ -201,19 +203,13 @@ interface IgcSliderArgs {
   /** The locale used to format the thumb and tick label values in the slider. */
   locale: string;
   /** String format used for the thumb and tick label values in the slider. */
-  valueFormat: string | undefined;
+  valueFormat: string;
   /** The degrees for the rotation of the tick labels. Defaults to 0. */
   tickLabelRotation: 0 | 90 | -90;
 }
 type Story = StoryObj<IgcSliderArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcChange', 'igcInput'],
-  },
-});
 
 const Template = ({
   disabled = false,

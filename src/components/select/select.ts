@@ -8,6 +8,12 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { styleMap } from 'lit/directives/style-map.js';
+
+import IgcSelectGroupComponent from './select-group.js';
+import IgcSelectHeaderComponent from './select-header.js';
+import IgcSelectItemComponent from './select-item.js';
+import { styles } from './themes/select.base.css.js';
+import { all } from './themes/themes.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
 import type { Theme } from '../../theming/types.js';
 import { alternateName } from '../common/decorators/alternateName.js';
@@ -25,31 +31,15 @@ import IgcDropdownComponent, {
 } from '../dropdown/dropdown.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
-import IgcSelectGroupComponent from './select-group.js';
-import IgcSelectHeaderComponent from './select-header.js';
-import IgcSelectItemComponent from './select-item.js';
-import { styles } from './themes/light/select.base.css.js';
-import { styles as bootstrap } from './themes/light/select.bootstrap.css.js';
-import { styles as fluent } from './themes/light/select.fluent.css.js';
-import { styles as indigo } from './themes/light/select.indigo.css.js';
-import { styles as material } from './themes/light/select.material.css.js';
 
 export interface IgcSelectEventMap extends IgcDropdownEventMap {
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
 }
 
-@themes(
-  {
-    light: { bootstrap, material, fluent, indigo },
-    dark: { bootstrap, material, fluent, indigo },
-  },
-  true
-)
-@blazorAdditionalDependencies(
-  'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
-)
 /**
+ * Represents a control that provides a menu of options.
+ *
  * @element igc-select
  *
  * @slot - Renders the list of select items.
@@ -76,6 +66,10 @@ export interface IgcSelectEventMap extends IgcDropdownEventMap {
  * @csspart toggle-icon - The toggle icon wrapper.
  * @csspart helper-text - The helper text wrapper.
  */
+@themes(all, true)
+@blazorAdditionalDependencies(
+  'IgcIconComponent, IgcInputComponent, IgcSelectGroupComponent, IgcSelectHeaderComponent, IgcSelectItemComponent'
+)
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcSelectEventMap, Constructor<IgcDropdownComponent>>(
     IgcDropdownComponent

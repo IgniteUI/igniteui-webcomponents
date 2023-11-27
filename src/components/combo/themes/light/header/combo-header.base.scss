@@ -1,6 +1,0 @@
-@use '../../../../../styles/utilities' as *;
-@use '../../../../dropdown/themes/light/header/dropdown-header.base' as *;
-
-:host {
-    --component-size: var(--ig-size, var(--ig-size-medium));
-}

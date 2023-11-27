@@ -1,18 +1,19 @@
 import {
-  html,
-  fixture,
-  expect,
   elementUpdated,
+  expect,
+  fixture,
+  html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
+import { spy } from 'sinon';
+
 import {
-  defineAllComponents,
-  IgcFormComponent,
-  IgcRadioComponent,
-  IgcMaskInputComponent,
-  IgcRatingComponent,
   IgcDateTimeInputComponent,
+  IgcFormComponent,
+  IgcMaskInputComponent,
+  IgcRadioComponent,
+  IgcRatingComponent,
+  defineAllComponents,
 } from '../../index.js';
 
 describe('Form', () => {
@@ -65,7 +66,7 @@ describe('Form', () => {
 
   it('should emit igcSubmit event when the form is submitted', async () => {
     const el = await createFormComponent();
-    const eventSpy = sinon.spy(el, 'emitEvent');
+    const eventSpy = spy(el, 'emitEvent');
     el.submit();
     await elementUpdated(el);
 
@@ -76,7 +77,7 @@ describe('Form', () => {
 
   it('should emit igcReset event when the form is reset', async () => {
     const el = await createEmptyFormComponent();
-    const eventSpy = sinon.spy(el, 'emitEvent');
+    const eventSpy = spy(el, 'emitEvent');
     el.reset();
 
     await elementUpdated(el);
@@ -163,7 +164,7 @@ describe('Form', () => {
     ) as HTMLInputElement;
     inputEmail.value = 'invalid.mail';
 
-    const eventSpy = sinon.spy(el, 'emitEvent');
+    const eventSpy = spy(el, 'emitEvent');
     el.submit();
     await elementUpdated(el);
 

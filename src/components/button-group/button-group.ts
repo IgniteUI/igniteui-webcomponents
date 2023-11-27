@@ -1,16 +1,14 @@
 import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
+
+import { styles } from './themes/group.base.css.js';
+import { all } from './themes/group.js';
+import IgcToggleButtonComponent from './toggle-button.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { styles } from '../button-group/themes/light/button-group.base.css.js';
-import { styles as bootstrap } from '../button-group/themes/light/button-group.bootstrap.css.js';
-import { styles as fluent } from '../button-group/themes/light/button-group.fluent.css.js';
-import { styles as indigo } from '../button-group/themes/light/button-group.indigo.css.js';
-import { styles as material } from '../button-group/themes/light/button-group.material.css.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
-import IgcToggleButtonComponent from './toggle-button.js';
 
 export interface IgcButtonGroupComponentEventMap {
   igcSelect: CustomEvent<string | undefined>;
@@ -29,10 +27,7 @@ export interface IgcButtonGroupComponentEventMap {
  *
  * @csspart group - The button group container.
  */
-@themes({
-  light: { bootstrap, material, fluent, indigo },
-  dark: { bootstrap, material, fluent, indigo },
-})
+@themes(all, true)
 export default class IgcButtonGroupComponent extends EventEmitterMixin<
   IgcButtonGroupComponentEventMap,
   Constructor<LitElement>
@@ -86,7 +81,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ attribute: 'selected-items', type: Array, reflect: false })
-  public get selectedItems() {
+  public get selectedItems(): string[] {
     return this._selectedButtons.map((b) => b.value).filter((v) => v);
   }
 
@@ -173,25 +168,13 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   }
 
   private emitSelectEvent(button: IgcToggleButtonComponent) {
-    const select = this.emitEvent('igcSelect', {
-      cancelable: true,
-      detail: button.value,
-    });
-
-    if (select) {
-      button.selected = true;
-    }
+    button.selected = true;
+    this.emitEvent('igcSelect', { detail: button.value });
   }
 
   private emitDeselectEvent(button: IgcToggleButtonComponent) {
-    const deselect = this.emitEvent('igcDeselect', {
-      cancelable: true,
-      detail: button.value,
-    });
-
-    if (deselect) {
-      button.selected = false;
-    }
+    button.selected = false;
+    this.emitEvent('igcDeselect', { detail: button.value });
   }
 
   private setSelection(values: Set<string>) {

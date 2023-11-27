@@ -5,8 +5,9 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents, IgcButtonComponent } from '../../index.js';
+import { spy } from 'sinon';
+
+import { IgcButtonComponent, defineComponents } from '../../index.js';
 
 // export const DEFAULT_CLASSES = 'native';
 export const classValue = (changeableValue: string) => {
@@ -128,7 +129,7 @@ describe('Button component', () => {
     });
 
     it('should focus/blur the wrapped base element when the methods are called', () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.focus();
 
       const btn = el.shadowRoot?.children[0];

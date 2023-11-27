@@ -1,12 +1,22 @@
 import {
-  html,
-  fixture,
-  expect,
-  unsafeStatic,
   elementUpdated,
+  expect,
+  fixture,
+  html,
+  unsafeStatic,
 } from '@open-wc/testing';
-import { defineComponents, IgcExpansionPanelComponent } from '../../index.js';
+
 import IgcAccordionComponent from './accordion.js';
+import { IgcExpansionPanelComponent, defineComponents } from '../../index.js';
+import {
+  altKey,
+  arrowDown,
+  arrowUp,
+  endKey,
+  homeKey,
+  shiftKey,
+} from '../common/controllers/key-bindings.js';
+import { simulateKeyboard } from '../common/utils.spec.js';
 
 describe('Accordion', () => {
   before(() => {
@@ -17,10 +27,6 @@ describe('Accordion', () => {
 
   beforeEach(async () => {
     accordion = await createAccordionComponent(testTemplate);
-  });
-
-  afterEach(async () => {
-    accordion.remove();
   });
 
   describe('Basic', () => {
@@ -136,9 +142,7 @@ describe('Accordion', () => {
 
   describe('Keyboard navigation', () => {
     it('Should navigate to the panel below on ArrowDown key press', async () => {
-      accordion.panels[0].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown' })
-      );
+      simulateKeyboard(accordion.panels[0], arrowDown);
       await elementUpdated(accordion);
 
       expect(accordion.panels[1]).to.equal(document.activeElement);
@@ -147,18 +151,14 @@ describe('Accordion', () => {
       accordion.panels[2].disabled = true;
       await elementUpdated(accordion);
 
-      accordion.panels[1].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown' })
-      );
+      simulateKeyboard(accordion.panels[1], arrowDown);
       await elementUpdated(accordion);
 
       expect(accordion.panels[1]).to.equal(document.activeElement);
     });
 
     it('Should navigate to the panel above on Arrow Up key press', async () => {
-      accordion.panels[2].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp' })
-      );
+      simulateKeyboard(accordion.panels[2], arrowUp);
       await elementUpdated(accordion);
 
       expect(accordion.panels[1]).to.equal(document.activeElement);
@@ -167,9 +167,7 @@ describe('Accordion', () => {
       accordion.panels[0].disabled = true;
       await elementUpdated(accordion);
 
-      accordion.panels[1].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp' })
-      );
+      simulateKeyboard(accordion.panels[1], arrowUp);
       await elementUpdated(accordion);
 
       expect(accordion.panels[1]).to.equal(document.activeElement);
@@ -178,9 +176,7 @@ describe('Accordion', () => {
     it('Should navigate between direct child panels only (nested accordion scenario)', async () => {
       accordion = await createAccordionComponent(nestedAccTemplate);
 
-      accordion.panels[0].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown' })
-      );
+      simulateKeyboard(accordion.panels[0], arrowDown);
       await elementUpdated(accordion);
 
       expect(accordion.panels[1]).to.equal(document.activeElement);
@@ -193,9 +189,7 @@ describe('Accordion', () => {
         'Expansion panel 2 title'
       );
 
-      accordion.panels[1].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp' })
-      );
+      simulateKeyboard(accordion.panels[1], arrowUp);
       await elementUpdated(accordion);
 
       expect(accordion.panels[0]).to.equal(document.activeElement);
@@ -219,9 +213,7 @@ describe('Accordion', () => {
       expect(accordion.panels[0]).to.equal(document.activeElement);
       expect(accordion.panels[0].open).to.be.false;
 
-      header1?.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true })
-      );
+      simulateKeyboard(header1, [altKey, arrowDown]);
       await elementUpdated(accordion);
 
       expect(accordion.panels[0].open).to.be.true;
@@ -237,9 +229,7 @@ describe('Accordion', () => {
       expect(accordion.panels[2]).to.equal(document.activeElement);
       expect(accordion.panels[2].open).to.be.true;
 
-      header3?.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', altKey: true })
-      );
+      simulateKeyboard(header3, [altKey, arrowUp]);
       await elementUpdated(accordion);
 
       expect(accordion.panels[2].open).to.be.false;
@@ -249,13 +239,7 @@ describe('Accordion', () => {
       expect(accordion.singleExpand).to.be.false;
       expect(accordion.panels[2].open).to.be.false;
 
-      accordion.panels[2].dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          shiftKey: true,
-          altKey: true,
-        })
-      );
+      simulateKeyboard(accordion.panels[2], [shiftKey, altKey, arrowDown]);
       await elementUpdated(accordion);
 
       accordion.panels.forEach((p) => expect(p.open).to.be.true);
@@ -265,13 +249,7 @@ describe('Accordion', () => {
       accordion.panels[1].disabled = true;
       await elementUpdated(accordion);
 
-      accordion.panels[2].dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          shiftKey: true,
-          altKey: true,
-        })
-      );
+      simulateKeyboard(accordion.panels[2], [shiftKey, altKey, arrowDown]);
       await elementUpdated(accordion);
 
       expect(accordion.panels[0].open).to.be.true;
@@ -294,13 +272,7 @@ describe('Accordion', () => {
       expect(accordion.panels[0]).to.equal(document.activeElement);
       expect(accordion.panels[0].open).to.be.false;
 
-      accordion.panels[0].dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowDown',
-          shiftKey: true,
-          altKey: true,
-        })
-      );
+      simulateKeyboard(accordion.panels[0], [shiftKey, altKey, arrowDown]);
       await elementUpdated(accordion);
 
       expect(accordion.panels[0].open).to.be.true;
@@ -312,13 +284,7 @@ describe('Accordion', () => {
       expect(accordion.panels[0].open).to.be.true;
       expect(accordion.panels[1].open).to.be.true;
 
-      accordion.panels[0].dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowUp',
-          shiftKey: true,
-          altKey: true,
-        })
-      );
+      simulateKeyboard(accordion.panels[0], [shiftKey, altKey, arrowUp]);
       await elementUpdated(accordion);
 
       accordion.panels.forEach((p) => expect(p.open).to.be.false);
@@ -327,13 +293,7 @@ describe('Accordion', () => {
       accordion.panels[0].show();
       await elementUpdated(accordion);
 
-      accordion.panels[0].dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowUp',
-          shiftKey: true,
-          altKey: true,
-        })
-      );
+      simulateKeyboard(accordion.panels[0], [shiftKey, altKey, arrowUp]);
       await elementUpdated(accordion);
 
       accordion.panels.forEach((p) => expect(p.open).to.be.false);
@@ -343,13 +303,7 @@ describe('Accordion', () => {
       accordion.panels[1].disabled = true;
       await elementUpdated(accordion);
 
-      accordion.panels[2].dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: 'ArrowUp',
-          shiftKey: true,
-          altKey: true,
-        })
-      );
+      simulateKeyboard(accordion.panels[2], [shiftKey, altKey, arrowUp]);
       await elementUpdated(accordion);
 
       expect(accordion.panels[0].open).to.be.false;
@@ -358,9 +312,7 @@ describe('Accordion', () => {
     });
 
     it('Should navigate to the first panel on Home key press', async () => {
-      accordion.panels[2].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Home' })
-      );
+      simulateKeyboard(accordion.panels[2], homeKey);
       await elementUpdated(accordion);
 
       expect(accordion.panels[0]).to.equal(document.activeElement);
@@ -369,18 +321,14 @@ describe('Accordion', () => {
       accordion.panels[0].disabled = true;
       await elementUpdated(accordion);
 
-      accordion.panels[2].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Home' })
-      );
+      simulateKeyboard(accordion.panels[2], homeKey);
       await elementUpdated(accordion);
 
       expect(accordion.panels[1]).to.equal(document.activeElement);
     });
 
     it('Should navigate to the last panel on End key press', async () => {
-      accordion.panels[0].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'End' })
-      );
+      simulateKeyboard(accordion.panels[0], endKey);
       await elementUpdated(accordion);
 
       expect(accordion.panels[2]).to.equal(document.activeElement);
@@ -389,9 +337,7 @@ describe('Accordion', () => {
       accordion.panels[2].disabled = true;
       await elementUpdated(accordion);
 
-      accordion.panels[0].dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'End' })
-      );
+      simulateKeyboard(accordion.panels[0], endKey);
       await elementUpdated(accordion);
 
       expect(accordion.panels[1]).to.equal(document.activeElement);
@@ -412,21 +358,21 @@ const testTemplate = `
             Expansion panel 1 title
         </h1>
         <h2 slot="subtitle">Expansion panel 1 subtitle</h2>
-        <p>Sample content 1</p> 
+        <p>Sample content 1</p>
     </igc-expansion-panel>
     <igc-expansion-panel open>
         <h1 slot="title">
             Expansion panel 2 title
         </h1>
         <h2 slot="subtitle">Expansion panel 2 subtitle</h2>
-        <p>Sample content 2</p> 
+        <p>Sample content 2</p>
     </igc-expansion-panel>
     <igc-expansion-panel>
         <h1 slot="title">
             Expansion panel 3 title
         </h1>
         <h2 slot="subtitle">Expansion panel 3 subtitle</h2>
-        <p>Sample content 3</p> 
+        <p>Sample content 3</p>
     </igc-expansion-panel>
 </igc-accordion>
 `;
@@ -444,7 +390,7 @@ const nestedAccTemplate = `
                   Expansion panel 1.1 title
               </h1>
               <h2 slot="subtitle">Expansion panel 1.1 subtitle</h2>
-              <p>Sample content 1.1</p> 
+              <p>Sample content 1.1</p>
           </igc-expansion-panel>
         </igc-accordion>
     </igc-expansion-panel>
@@ -453,7 +399,7 @@ const nestedAccTemplate = `
           Expansion panel 2 title
       </h1>
       <h2 slot="subtitle">Expansion panel 2 subtitle</h2>
-      <p>Sample content 2</p> 
+      <p>Sample content 2</p>
     </igc-expansion-panel>
 </igc-accordion>
 `;

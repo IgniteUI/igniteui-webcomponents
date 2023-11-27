@@ -1,0 +1,11 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+$theme: $fluent;
+
+:host {
+    ::slotted([slot='label']) {
+        color: var-get($theme, 'header-text-color');
+        padding: pad(rem(2px), rem(4px), (8px));
+    }
+}

@@ -6,13 +6,14 @@ import {
   waitUntil,
 } from '@open-wc/testing';
 import { TemplateResult } from 'lit';
-import sinon from 'sinon';
+import { spy } from 'sinon';
+
 import {
-  defineComponents,
-  IgcTabsComponent,
+  IgcIconButtonComponent,
   IgcTabComponent,
   IgcTabPanelComponent,
-  IgcIconButtonComponent,
+  IgcTabsComponent,
+  defineComponents,
 } from '../../index.js';
 
 describe('Tabs component', () => {
@@ -290,7 +291,7 @@ describe('Tabs component', () => {
     });
 
     it('emits `igcChange` when selecting item via mouse click', async () => {
-      const eventSpy = sinon.spy(element, 'emitEvent');
+      const eventSpy = spy(element, 'emitEvent');
 
       getTabs(element)[3].click();
       await elementUpdated(element);
@@ -301,7 +302,7 @@ describe('Tabs component', () => {
     });
 
     it('emits `igcChange` when selecting item via arrow key press', async () => {
-      const eventSpy = sinon.spy(element, 'emitEvent');
+      const eventSpy = spy(element, 'emitEvent');
 
       getScrollContainer(element).dispatchEvent(fireKeyboardEvent('ArrowLeft'));
       await elementUpdated(element);

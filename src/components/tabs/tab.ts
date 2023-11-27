@@ -1,13 +1,11 @@
-import { html, LitElement } from 'lit';
+import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
+
+import { all } from './themes/tab-themes.js';
+import { styles } from './themes/tab.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter } from '../common/util.js';
-import { styles } from './themes/light/tab.base.css.js';
-import { styles as material } from './themes/light/tab.material.css.js';
-import { styles as bootstrap } from './themes/light/tab.bootstrap.css.js';
-import { styles as fluent } from './themes/light/tab.fluent.css.js';
-import { styles as indigo } from './themes/light/tab.indigo.css.js';
 
 /**
  * Represents the tab header.
@@ -22,10 +20,8 @@ import { styles as indigo } from './themes/light/tab.indigo.css.js';
  * @csspart prefix - The prefix wrapper.
  * @csspart suffix - The suffix wrapper.
  */
-@themes({
-  light: { material, bootstrap, fluent, indigo },
-  dark: { material, bootstrap, fluent, indigo },
-})
+
+@themes(all, true)
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
   public static override styles = styles;

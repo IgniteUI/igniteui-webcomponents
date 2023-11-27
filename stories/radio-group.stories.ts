@@ -1,8 +1,9 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { IgcRadioGroupComponent, defineComponents } from '../src/index.js';
+
 import { formControls, formSubmitHandler } from './story.js';
+import { IgcRadioGroupComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcRadioGroupComponent);
 
@@ -10,14 +11,21 @@ defineComponents(IgcRadioGroupComponent);
 const metadata: Meta<IgcRadioGroupComponent> = {
   title: 'RadioGroup',
   component: 'igc-radio-group',
-  parameters: { docs: { description: {} } },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'The igc-radio-group component unifies one or more igc-radio buttons.',
+      },
+    },
+  },
   argTypes: {
     alignment: {
-      type: '"horizontal" | "vertical"',
+      type: '"vertical" | "horizontal"',
       description: 'Alignment of the radio controls inside this group.',
-      options: ['horizontal', 'vertical'],
+      options: ['vertical', 'horizontal'],
       control: { type: 'inline-radio' },
-      defaultValue: 'vertical',
+      table: { defaultValue: { summary: 'vertical' } },
     },
   },
   args: { alignment: 'vertical' },
@@ -27,7 +35,7 @@ export default metadata;
 
 interface IgcRadioGroupArgs {
   /** Alignment of the radio controls inside this group. */
-  alignment: 'horizontal' | 'vertical';
+  alignment: 'vertical' | 'horizontal';
 }
 type Story = StoryObj<IgcRadioGroupArgs>;
 

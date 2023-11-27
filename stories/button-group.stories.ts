@@ -1,9 +1,10 @@
-import { html } from 'lit';
 import { Meta, StoryObj } from '@storybook/web-components';
+import { html } from 'lit';
+
 import {
-  defineComponents,
   IgcButtonGroupComponent,
   IgcIconComponent,
+  defineComponents,
   registerIcon,
 } from '../src/index.js';
 
@@ -20,27 +21,28 @@ const metadata: Meta<IgcButtonGroupComponent> = {
           'The `igc-button-group` groups a series of `igc-toggle-button`s together, exposing features such as layout and selection.',
       },
     },
+    actions: { handles: ['igcSelect', 'igcDeselect'] },
   },
   argTypes: {
     disabled: {
       type: 'boolean',
       description: 'Disables all buttons inside the group.',
       control: 'boolean',
-      defaultValue: false,
+      table: { defaultValue: { summary: false } },
     },
     alignment: {
       type: '"horizontal" | "vertical"',
       description: 'Sets the orientation of the buttons in the group.',
       options: ['horizontal', 'vertical'],
       control: { type: 'inline-radio' },
-      defaultValue: 'horizontal',
+      table: { defaultValue: { summary: 'horizontal' } },
     },
     selection: {
       type: '"single" | "single-required" | "multiple"',
       description: 'Controls the mode of selection for the button group.',
       options: ['single', 'single-required', 'multiple'],
       control: { type: 'inline-radio' },
-      defaultValue: 'single',
+      table: { defaultValue: { summary: 'single' } },
     },
   },
   args: { disabled: false, alignment: 'horizontal', selection: 'single' },
@@ -59,12 +61,6 @@ interface IgcButtonGroupArgs {
 type Story = StoryObj<IgcButtonGroupArgs>;
 
 // endregion
-
-Object.assign(metadata.parameters!, {
-  actions: {
-    handles: ['igcSelect', 'igcDeselect'],
-  },
-});
 
 const icons = [
   {
@@ -90,23 +86,11 @@ const BasicTemplate = ({
   disabled,
   alignment,
 }: IgcButtonGroupArgs) => {
-  const igcSelect = (e) => {
-    console.log('igcSelect');
-    console.log(e.detail);
-  };
-
-  const igcDeselect = (e) => {
-    console.log('igcDeselect');
-    console.log(e.detail);
-  };
-
   return html`
     <igc-button-group
       .selection=${selection}
       .disabled=${disabled}
       .alignment=${alignment}
-      @igcSelect=${igcSelect}
-      @igcDeselect=${igcDeselect}
     >
       <igc-toggle-button value="left">Left</igc-toggle-button>
       <igc-toggle-button value="center">Center</igc-toggle-button>

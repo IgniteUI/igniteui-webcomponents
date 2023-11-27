@@ -5,6 +5,12 @@ import {
   queryAssignedElements,
   state,
 } from 'lit/decorators.js';
+
+import { styles } from './themes/item.base.css.js';
+import { all } from './themes/item.js';
+import type IgcTreeComponent from './tree.js';
+import { IgcTreeNavigationService } from './tree.navigation.js';
+import { IgcTreeSelectionService } from './tree.selection.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -15,14 +21,6 @@ import { registerComponent } from '../common/definitions/register.js';
 import { isLTR, partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcCircularProgressComponent from '../progress/circular-progress.js';
-import { styles } from './themes/light/tree-item.base.css.js';
-import { styles as bootstrap } from './themes/light/tree-item.bootstrap.css.js';
-import { styles as fluent } from './themes/light/tree-item.fluent.css.js';
-import { styles as indigo } from './themes/light/tree-item.indigo.css.js';
-import { styles as material } from './themes/light/tree-item.material.css.js';
-import type IgcTreeComponent from './tree.js';
-import { IgcTreeNavigationService } from './tree.navigation.js';
-import { IgcTreeSelectionService } from './tree.selection.js';
 
 /**
  * The tree-item component represents a child item of the tree component or another tree item.
@@ -44,10 +42,7 @@ import { IgcTreeSelectionService } from './tree.selection.js';
  * @csspart text - The tree item displayed text.
  * @csspart select - The checkbox of the tree item when selection is enabled.
  */
-@themes({
-  light: { bootstrap, fluent, indigo, material },
-  dark: { bootstrap, fluent, indigo, material },
-})
+@themes(all, true)
 export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
   public static override styles = styles;
@@ -533,8 +528,8 @@ export default class IgcTreeItemComponent extends LitElement {
                           name=${this.expanded
                             ? 'keyboard_arrow_down'
                             : !ltr
-                            ? 'navigate_before'
-                            : 'keyboard_arrow_right'}
+                              ? 'navigate_before'
+                              : 'keyboard_arrow_right'}
                           collection="internal"
                         >
                         </igc-icon>

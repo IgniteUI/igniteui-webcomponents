@@ -12,18 +12,10 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
     exportConditions: ['browser', 'production'],
   },
 
-  /** Amount of browsers to run concurrently */
-  // concurrentBrowsers: 2,
-
-  /** Amount of test files per browser to test concurrently */
-  // concurrency: 1,
-
-  /** Browsers to run tests on */
-  // browsers: [
-  //   playwrightLauncher({ product: 'chromium' }),
-  //   playwrightLauncher({ product: 'firefox' }),
-  //   playwrightLauncher({ product: 'webkit' }),
-  // ],
+  coverageConfig: {
+    exclude: ['node_modules/**/*', '**/themes/**'],
+  },
 
   // See documentation for all available options
+  // https://modern-web.dev/docs/test-runner/cli-and-configuration/#configuration-file
 });

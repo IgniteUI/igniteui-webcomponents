@@ -5,8 +5,9 @@ import {
   html,
   unsafeStatic,
 } from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents, IgcCheckboxComponent } from '../../index.js';
+import { spy } from 'sinon';
+
+import { IgcCheckboxComponent, defineComponents } from '../../index.js';
 import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
 describe('Checkbox', () => {
@@ -215,7 +216,7 @@ describe('Checkbox', () => {
     });
 
     it('should emit igcFocus/igcBlur events when the checkbox gains/loses focus', () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.focus();
 
       expect(el.shadowRoot?.activeElement).to.equal(input);
@@ -229,7 +230,7 @@ describe('Checkbox', () => {
     });
 
     it('should emit igcChange event when the checkbox checked state changes', async () => {
-      const eventSpy = sinon.spy(el, 'emitEvent');
+      const eventSpy = spy(el, 'emitEvent');
       el.click();
 
       await elementUpdated(el);

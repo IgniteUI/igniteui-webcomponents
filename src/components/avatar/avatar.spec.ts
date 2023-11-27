@@ -1,5 +1,6 @@
-import { html, fixture, expect, elementUpdated } from '@open-wc/testing';
-import { defineComponents, IgcAvatarComponent } from '../../index.js';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
+
+import { IgcAvatarComponent, defineComponents } from '../../index.js';
 
 describe('Avatar', () => {
   const DIFF_OPTIONS = {

@@ -1,17 +1,18 @@
 import { elementUpdated, expect } from '@open-wc/testing';
-import sinon from 'sinon';
-import { defineComponents, IgcCheckboxComponent } from '../../index.js';
-import IgcTreeComponent from './tree.js';
+import { spy } from 'sinon';
+
 import IgcTreeItemComponent from './tree-item.js';
 import {
-  cascadeSelectionTree,
   PARTS,
+  TreeTestFunctions,
+  cascadeSelectionTree,
   selectedItemsTree,
   simpleTree,
-  TreeTestFunctions,
 } from './tree-utils.spec.js';
 import { IgcSelectionEventArgs } from './tree.common.js';
+import IgcTreeComponent from './tree.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
+import { IgcCheckboxComponent, defineComponents } from '../../index.js';
 
 describe('Tree Selection', () => {
   before(() => {
@@ -182,7 +183,7 @@ describe('Tree Selection', () => {
       treeSelectionService = tree.selectionService;
       initialSelection = tree.items.filter((item) => item.selected === true);
       topLevelItems = tree.items.filter((i) => i.level === 0);
-      eventSpy = sinon.spy(tree, 'emitEvent');
+      eventSpy = spy(tree, 'emitEvent');
     });
 
     it('Should be able to set item.selected correctly', async () => {
@@ -688,7 +689,7 @@ describe('Tree Selection', () => {
     });
 
     it('Should be able to prevent the igcSelection event', async () => {
-      const eventSpy = sinon.spy(tree, 'emitEvent');
+      const eventSpy = spy(tree, 'emitEvent');
 
       const item2Children = topLevelItems[1].getChildren();
       const item211 = item2Children[0].getChildren()[0];
