@@ -30,6 +30,7 @@ import {
   getItems,
   getNextActiveItem,
   getPreviousActiveItem,
+  setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -201,23 +202,14 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   protected override async firstUpdated() {
     await this.updateComplete;
-
-    const items = this.items;
-    let lastSelectedItem!: IgcDropdownItemComponent;
-
-    for (const item of items) {
-      if (item.selected) {
-        lastSelectedItem = item;
-      }
-      item.selected = false;
-    }
-    this.selectItem(lastSelectedItem, false);
+    const selected = setInitialSelectionState(this.items);
+    this._selectItem(selected!, false);
   }
 
   private handleListBoxClick(event: MouseEvent) {
     const item = event.target as IgcDropdownItemComponent;
     if (this._activeItems.includes(item)) {
-      this.selectItem(item);
+      this._selectItem(item);
     }
   }
 
@@ -248,7 +240,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   }
 
   protected onTabKey() {
-    this.selectItem(this._activeItem);
+    this._selectItem(this._activeItem);
     if (this.open) {
       this._hide(true);
     }
@@ -259,7 +251,18 @@ export default class IgcDropdownComponent extends SizableMixin(
   }
 
   protected onEnterKey() {
-    this.selectItem(this._activeItem);
+    this._selectItem(this._activeItem);
+  }
+
+  private activateItem(item: IgcDropdownItemComponent) {
+    if (!item) return;
+
+    if (this._activeItem) {
+      this._activeItem.active = false;
+    }
+
+    this._activeItem = item;
+    this._activeItem.active = true;
   }
 
   private _navigateToActiveItem(item?: IgcDropdownItemComponent) {
@@ -269,22 +272,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     }
   }
 
-  private _updateAnchorAccessibility() {
-    const target = this.trigger
-      .assignedElements({ flatten: true })
-      .at(0) as HTMLElement;
-
-    if (!target) {
-      return;
-    }
-
-    // Find tabbable elements ?
-
-    target.setAttribute('aria-haspopup', 'true');
-    target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
-  }
-
-  private selectItem(item?: IgcDropdownItemComponent, emit = true) {
+  private _selectItem(item?: IgcDropdownItemComponent, emit = true) {
     if (!item) return null;
 
     if (this._selectedItem) {
@@ -301,15 +289,16 @@ export default class IgcDropdownComponent extends SizableMixin(
     return this._selectedItem;
   }
 
-  private activateItem(item: IgcDropdownItemComponent) {
-    if (!item) return;
+  private _updateAnchorAccessibility() {
+    const target = this.trigger
+      .assignedElements({ flatten: true })
+      .at(0) as HTMLElement;
 
-    if (this._activeItem) {
-      this._activeItem.active = false;
+    // Find tabbable elements ?
+    if (target) {
+      target.setAttribute('aria-haspopup', 'true');
+      target.setAttribute('aria-expanded', this.open ? 'true' : 'false');
     }
-
-    this._activeItem = item;
-    this._activeItem.active = true;
   }
 
   private getItem(value: string) {
@@ -342,8 +331,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   public select(value: string | number): IgcDropdownItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
-
-    return this.selectItem(item, false);
+    return item ? this._selectItem(item, false) : null;
   }
 
   /**  Clears the current selection of the dropdown. */

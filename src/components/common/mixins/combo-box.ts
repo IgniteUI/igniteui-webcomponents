@@ -153,3 +153,17 @@ export function getPreviousActiveItem<
 
   return items[current];
 }
+
+export function setInitialSelectionState<
+  T extends HTMLElement & { selected: boolean },
+>(items: T[]) {
+  const lastSelected = items.filter((item) => item.selected).at(-1) ?? null;
+
+  for (const item of items) {
+    if (!item.isSameNode(lastSelected)) {
+      item.selected = false;
+    }
+  }
+
+  return lastSelected;
+}

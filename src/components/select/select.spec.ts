@@ -217,6 +217,32 @@ describe('Select', () => {
         await expect(select).dom.to.be.accessible();
         await expect(select).shadowDom.to.be.accessible();
       });
+
+      it('relevant props are passed to the underlying input', async () => {
+        const props = {
+          required: true,
+          label: 'New Label',
+          disabled: true,
+          placeholder: 'Select placeholder',
+          outlined: true,
+        };
+
+        const input = getInput();
+
+        Object.assign(select, props);
+        select.value = 'testing';
+        await elementUpdated(select);
+
+        for (const [prop, value] of Object.entries(props)) {
+          expect((input as any)[prop]).to.equal(value);
+        }
+        expect(input.value).to.equal(select.selectedItem?.textContent);
+
+        select.value = '123151';
+        await elementUpdated(select);
+
+        expect(input.value).to.be.null;
+      });
     });
 
     describe('Slotted content', () => {
@@ -347,6 +373,18 @@ describe('Select', () => {
       checkItemState(select.selectedItem!, { selected: true });
       expect(select.selectedItem?.value).to.equal('testing');
       expect(select.value).to.equal('testing');
+
+      // Non-existent index
+      select.select(-1);
+      expect(select.items.every((item) => !item.selected)).to.be.true;
+      expect(select.selectedItem).to.be.null;
+      expect(select.value).to.equal(undefined);
+
+      // Non-existent value
+      select.select('non-existent');
+      expect(select.items.every((item) => !item.selected)).to.be.true;
+      expect(select.selectedItem).to.be.null;
+      expect(select.value).to.equal(undefined);
     });
 
     it('`navigateTo() works`', async () => {

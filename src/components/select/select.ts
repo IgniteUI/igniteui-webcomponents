@@ -40,6 +40,7 @@ import {
   getItems,
   getNextActiveItem,
   getPreviousActiveItem,
+  setInitialSelectionState,
 } from '../common/mixins/combo-box.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
@@ -143,104 +144,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   protected _activeItem!: IgcSelectItemComponent;
 
   protected override validators: Validator<this>[] = [requiredValidator];
-
-  private activateItem(item: IgcSelectItemComponent) {
-    if (this._activeItem) {
-      this._activeItem.active = false;
-    }
-
-    this._activeItem = item;
-    this._activeItem.active = true;
-  }
-
-  private setSelectedItem(item: IgcSelectItemComponent) {
-    if (item.isSameNode(this._selectedItem)) {
-      return this._selectedItem;
-    }
-
-    if (this._selectedItem) {
-      this._selectedItem.selected = false;
-    }
-
-    this._selectedItem = item;
-    this._selectedItem.selected = true;
-
-    return this._selectedItem;
-  }
-
-  private handleSearch(event: KeyboardEvent) {
-    if (!/^.$/u.test(event.key)) {
-      return;
-    }
-
-    event.preventDefault();
-    const now = Date.now();
-
-    if (now - this._lastKeyTime > 500) {
-      this._searchTerm = '';
-    }
-
-    this._lastKeyTime = now;
-    this._searchTerm += event.key.toLocaleLowerCase();
-
-    const item = this._activeItems.find(
-      (item) =>
-        item.textContent
-          ?.trim()
-          .toLocaleLowerCase()
-          .startsWith(this._searchTerm)
-    );
-
-    if (item && this.value !== item.value) {
-      this.open ? this.activateItem(item) : this.selectItemUI(item);
-    }
-  }
-
-  private selectItemUI(item?: IgcSelectItemComponent, emit = true) {
-    const items = this.items;
-    const previous = items.indexOf(this._selectedItem!);
-
-    // TODO:
-    this._selectedItem = this.setSelectedItem(item!);
-    const current = items.indexOf(this._selectedItem!);
-
-    if (!this._selectedItem) {
-      this._updateValue();
-      return null;
-    }
-
-    if (previous === current) {
-      return this._selectedItem;
-    }
-
-    this.activateItem(this._selectedItem);
-    this._updateValue(this._selectedItem.value);
-
-    if (emit) {
-      this.handleChange(this._selectedItem);
-
-      if (this.open) {
-        this.input.focus();
-      }
-
-      if (!this.keepOpenOnSelect) {
-        this._hide(true);
-      }
-    }
-
-    return this._selectedItem;
-  }
-
-  private handleClick(event: MouseEvent) {
-    const item = event.target as IgcSelectItemComponent;
-    if (this._activeItems.includes(item)) {
-      this.selectItemUI(item);
-    }
-  }
-
-  private handleChange(item: IgcSelectItemComponent) {
-    return this.emitEvent('igcChange', { detail: item });
-  }
 
   @query(IgcInputComponent.tagName, true)
   protected input!: IgcInputComponent;
@@ -392,22 +295,15 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
 
   protected override async firstUpdated() {
     await this.updateComplete;
-    const items = this.items;
-    const lastSelectedItem = items.filter((item) => item.selected).at(-1)!;
+    const selected = setInitialSelectionState(this.items);
 
-    for (const item of items) {
-      if (!item.isSameNode(lastSelectedItem)) {
-        item.selected = false;
-      }
+    if (this.value && !selected) {
+      this._selectItem(this.getItem(this.value), false);
     }
 
-    if (this.value && !lastSelectedItem) {
-      this.selectItemUI(this.getItem(this.value), false);
-    }
-
-    if (lastSelectedItem && lastSelectedItem.value !== this.value) {
-      this._defaultValue = lastSelectedItem.value;
-      this.selectItemUI(lastSelectedItem, false);
+    if (selected && selected.value !== this.value) {
+      this._defaultValue = selected.value;
+      this._selectItem(selected, false);
     }
 
     if (this.autofocus) {
@@ -415,68 +311,6 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     }
 
     this.updateValidity();
-  }
-
-  private _updateValue(value?: string) {
-    this._value = value as string;
-    this.setFormValue(this._value ? this._value : null);
-    this.updateValidity();
-    this.setInvalidState();
-  }
-
-  private clearSelectedItem() {
-    if (this._selectedItem) {
-      this._selectedItem.selected = false;
-    }
-    this._selectedItem = null;
-  }
-
-  private onEnterKey() {
-    this.open && this._activeItem
-      ? this.selectItemUI(this._activeItem)
-      : this.handleAnchorClick();
-  }
-
-  private onSpaceBarKey() {
-    if (!this.open) {
-      this.handleAnchorClick();
-    }
-  }
-
-  private onArrowDown() {
-    const item = getNextActiveItem(this.items, this._activeItem);
-    this.open ? this._navigateToActiveItem(item) : this.selectItemUI(item);
-  }
-
-  private onArrowUp() {
-    const item = getPreviousActiveItem(this.items, this._activeItem);
-    this.open ? this._navigateToActiveItem(item) : this.selectItemUI(item);
-  }
-
-  protected async onEscapeKey() {
-    if (await this._hide(true)) {
-      this.input.focus();
-    }
-  }
-
-  private altArrowDown() {
-    if (!this.open) {
-      this._show(true);
-    }
-  }
-
-  private async altArrowUp() {
-    if (this.open && (await this._hide(true))) {
-      this.input.focus();
-    }
-  }
-
-  private onTabKey(event: KeyboardEvent) {
-    if (this.open) {
-      event.preventDefault();
-      this.selectItemUI(this._activeItem);
-      this._hide(true);
-    }
   }
 
   private handleFocusIn({ relatedTarget }: FocusEvent) {
@@ -498,23 +332,154 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this.emitEvent('igcBlur');
   }
 
+  private handleClick(event: MouseEvent) {
+    const item = event.target as IgcSelectItemComponent;
+    if (this._activeItems.includes(item)) {
+      this._selectItem(item);
+    }
+  }
+
+  private handleChange(item: IgcSelectItemComponent) {
+    return this.emitEvent('igcChange', { detail: item });
+  }
+
+  private handleSearch(event: KeyboardEvent) {
+    if (!/^.$/u.test(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+    const now = Date.now();
+
+    if (now - this._lastKeyTime > 500) {
+      this._searchTerm = '';
+    }
+
+    this._lastKeyTime = now;
+    this._searchTerm += event.key.toLocaleLowerCase();
+
+    const item = this._activeItems.find(
+      (item) =>
+        item.textContent
+          ?.trim()
+          .toLocaleLowerCase()
+          .startsWith(this._searchTerm)
+    );
+
+    if (item) {
+      this.open ? this.activateItem(item) : this._selectItem(item);
+    }
+  }
+
+  private onEnterKey() {
+    this.open && this._activeItem
+      ? this._selectItem(this._activeItem)
+      : this.handleAnchorClick();
+  }
+
+  private onSpaceBarKey() {
+    if (!this.open) {
+      this.handleAnchorClick();
+    }
+  }
+
+  private onArrowDown() {
+    const item = getNextActiveItem(this.items, this._activeItem);
+    this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
+  }
+
+  private onArrowUp() {
+    const item = getPreviousActiveItem(this.items, this._activeItem);
+    this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
+  }
+
+  private altArrowDown() {
+    if (!this.open) {
+      this._show(true);
+    }
+  }
+
+  private async altArrowUp() {
+    if (this.open && (await this._hide(true))) {
+      this.input.focus();
+    }
+  }
+
+  protected async onEscapeKey() {
+    if (await this._hide(true)) {
+      this.input.focus();
+    }
+  }
+
+  private onTabKey(event: KeyboardEvent) {
+    if (this.open) {
+      event.preventDefault();
+      this._selectItem(this._activeItem);
+      this._hide(true);
+    }
+  }
+
+  protected onHomeKey() {
+    const item = this._activeItems.at(0);
+    this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
+  }
+
+  protected onEndKey() {
+    const item = this._activeItems.at(-1);
+    this.open ? this._navigateToActiveItem(item) : this._selectItem(item);
+  }
+
   /** Monitor input slot changes and request update */
   protected inputSlotChanged() {
     this.requestUpdate();
   }
 
-  protected onHomeKey() {
-    const item = this._activeItems.at(0);
-    this.open ? this._navigateToActiveItem(item) : this.selectItemUI(item);
+  private activateItem(item: IgcSelectItemComponent) {
+    if (this._activeItem) {
+      this._activeItem.active = false;
+    }
+
+    this._activeItem = item;
+    this._activeItem.active = true;
   }
 
-  protected onEndKey() {
-    const item = this._activeItems.at(-1);
-    this.open ? this._navigateToActiveItem(item) : this.selectItemUI(item);
+  private setSelectedItem(item: IgcSelectItemComponent) {
+    if (this._selectedItem) {
+      this._selectedItem.selected = false;
+    }
+
+    this._selectedItem = item;
+    this._selectedItem.selected = true;
+
+    return this._selectedItem;
   }
 
-  protected getItem(value: string) {
-    return this.items.find((item) => item.value === value);
+  private _selectItem(item?: IgcSelectItemComponent, emit = true) {
+    if (!item) {
+      this.clearSelectedItem();
+      this._updateValue();
+      return null;
+    }
+
+    const items = this.items;
+    const [previous, current] = [
+      items.indexOf(this._selectedItem!),
+      items.indexOf(item),
+    ];
+
+    if (previous === current) {
+      return this._selectedItem;
+    }
+
+    const newItem = this.setSelectedItem(item);
+    this.activateItem(newItem);
+    this._updateValue(newItem.value);
+
+    if (emit) this.handleChange(newItem);
+    if (emit && this.open) this.input.focus();
+    if (emit && !this.keepOpenOnSelect) this._hide(true);
+
+    return this._selectedItem;
   }
 
   private _navigateToActiveItem(item?: IgcSelectItemComponent) {
@@ -522,6 +487,28 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       this.activateItem(item);
       item.scrollIntoView({ behavior: 'auto', block: 'nearest' });
     }
+  }
+
+  private _updateValue(value?: string) {
+    this._value = value as string;
+    this.setFormValue(this._value ? this._value : null);
+    this.updateValidity();
+    this.setInvalidState();
+  }
+
+  private clearSelectedItem() {
+    if (this._selectedItem) {
+      this._selectedItem.selected = false;
+    }
+    this._selectedItem = null;
+  }
+
+  protected getItem(value: string) {
+    return this.items.find((item) => item.value === value);
+  }
+
+  private _stopPropagation(e: Event) {
+    e.stopPropagation();
   }
 
   /** Sets focus on the component. */
@@ -571,16 +558,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
 
-    return this.selectItemUI(item!, false);
+    return this._selectItem(item!, false);
   }
 
   /**  Clears the current selection of the dropdown. */
   public clearSelection() {
     this.value = '';
-  }
-
-  private stopPropagation(e: Event) {
-    e.stopPropagation();
   }
 
   protected renderInputSlots() {
@@ -666,8 +649,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         .invalid=${this.invalid}
         .outlined=${this.outlined}
         @click=${this.handleAnchorClick}
-        @igcFocus=${this.stopPropagation}
-        @igcBlur=${this.stopPropagation}
+        @igcFocus=${this._stopPropagation}
+        @igcBlur=${this._stopPropagation}
       >
         ${this.renderInputSlots()} ${this.renderToggleIcon()}
       </igc-input>
