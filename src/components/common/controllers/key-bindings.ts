@@ -23,6 +23,7 @@ export const shiftKey = 'Shift' as const;
 
 /* Types */
 export type KeyBindingHandler = (event: KeyboardEvent) => void;
+export type KeyBindingObserverCleanup = { unsubscribe: () => void };
 
 /**
  * Whether the current event should be ignored by the controller.
@@ -170,12 +171,37 @@ export function parseKeys(keys: string | string[]) {
 class KeyBindingController implements ReactiveController {
   protected _host: ReactiveControllerHost & Element;
   protected _ref?: Ref;
+  protected _observedElement?: Element;
   protected _options?: KeyBindingControllerOptions;
   private bindings = new Set<KeyBinding>();
   private pressedKeys = new Set<string>();
 
   protected get _element() {
+    if (this._observedElement) {
+      return this._observedElement;
+    }
     return this._ref ? this._ref.value : this._host;
+  }
+
+  /**
+   * Sets the controller to listen for keyboard events on an arbitrary `element` in the page context.
+   * All the configuration and event handlers are applied as well.
+   *
+   * Returns an object with an `unsubscribe` function which should be called when the observing of keyboard
+   * events on the `element` should cease.
+   */
+  public observeElement(element: Element): KeyBindingObserverCleanup {
+    element.addEventListener('keydown', this.onKeyDown);
+    element.addEventListener('keyup', this.onKeyUp);
+    this._observedElement = element;
+
+    return {
+      unsubscribe: () => {
+        this._observedElement?.removeEventListener('keydown', this.onKeyDown);
+        this._observedElement?.removeEventListener('keyup', this.onKeyUp);
+        this._observedElement = undefined;
+      },
+    };
   }
 
   constructor(

@@ -8,6 +8,7 @@ import { all } from './themes/container.js';
 import { styles } from './themes/dropdown.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
+  KeyBindingObserverCleanup,
   addKeybindings,
   arrowDown,
   arrowLeft,
@@ -35,6 +36,7 @@ import {
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
+import { getElementByIdFromRoot } from '../common/util.js';
 import IgcPopoverComponent from '../popover/popover.js';
 import type { IgcPlacement } from '../toggle/types';
 
@@ -86,6 +88,8 @@ export default class IgcDropdownComponent extends SizableMixin(
     );
   }
 
+  private _keyBindings: ReturnType<typeof addKeybindings>;
+
   private _rootClickController = addRootClickHandler(this, {
     hideCallback: () => this._hide(true),
   });
@@ -104,6 +108,11 @@ export default class IgcDropdownComponent extends SizableMixin(
       )
     );
   }
+
+  private _targetListeners!: KeyBindingObserverCleanup;
+
+  @state()
+  private _target!: HTMLElement | null;
 
   @query('slot[name="target"]', true)
   protected trigger!: HTMLSlotElement;
@@ -175,15 +184,21 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   @watch('open', { waitUntilFirstUpdate: true })
   @watch('keepOpenOnOutsideClick', { waitUntilFirstUpdate: true })
-  protected toggleDirectiveChange() {
-    this._updateAnchorAccessibility();
+  protected openStateChange() {
+    this._updateAnchorAccessibility(this._target);
     this._rootClickController.update();
+
+    if (!this.open) {
+      this._target = null;
+      this._targetListeners?.unsubscribe();
+      this._rootClickController.update({ target: undefined });
+    }
   }
 
   constructor() {
     super();
 
-    addKeybindings(this, {
+    this._keyBindings = addKeybindings(this, {
       skip: () => !this.open,
       bindingDefaults: { preventDefault: true, triggers: ['keydownRepeat'] },
     })
@@ -203,7 +218,14 @@ export default class IgcDropdownComponent extends SizableMixin(
   protected override async firstUpdated() {
     await this.updateComplete;
     const selected = setInitialSelectionState(this.items);
-    this._selectItem(selected!, false);
+    if (selected) {
+      this._selectItem(selected, false);
+    }
+  }
+
+  public override disconnectedCallback() {
+    this._targetListeners?.unsubscribe();
+    super.disconnectedCallback();
   }
 
   private handleListBoxClick(event: MouseEvent) {
@@ -240,7 +262,9 @@ export default class IgcDropdownComponent extends SizableMixin(
   }
 
   protected onTabKey() {
-    this._selectItem(this._activeItem);
+    if (this._activeItem) {
+      this._selectItem(this._activeItem);
+    }
     if (this.open) {
       this._hide(true);
     }
@@ -255,8 +279,6 @@ export default class IgcDropdownComponent extends SizableMixin(
   }
 
   private activateItem(item: IgcDropdownItemComponent) {
-    if (!item) return;
-
     if (this._activeItem) {
       this._activeItem.active = false;
     }
@@ -272,9 +294,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     }
   }
 
-  private _selectItem(item?: IgcDropdownItemComponent, emit = true) {
-    if (!item) return null;
-
+  private _selectItem(item: IgcDropdownItemComponent, emit = true) {
     if (this._selectedItem) {
       this._selectedItem.selected = false;
     }
@@ -289,10 +309,9 @@ export default class IgcDropdownComponent extends SizableMixin(
     return this._selectedItem;
   }
 
-  private _updateAnchorAccessibility() {
-    const target = this.trigger
-      .assignedElements({ flatten: true })
-      .at(0) as HTMLElement;
+  private _updateAnchorAccessibility(anchor?: HTMLElement | null) {
+    const target =
+      anchor ?? this.trigger.assignedElements({ flatten: true }).at(0);
 
     // Find tabbable elements ?
     if (target) {
@@ -303,6 +322,30 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   private getItem(value: string) {
     return this.items.find((item) => item.value === value);
+  }
+
+  private _setTarget(anchor: HTMLElement | string) {
+    const target =
+      typeof anchor === 'string'
+        ? (getElementByIdFromRoot(this, anchor) as HTMLElement)
+        : anchor;
+
+    this._target = target;
+    this._targetListeners = this._keyBindings.observeElement(target);
+    this._rootClickController.update({ target });
+  }
+
+  /** Shows the component. */
+  public override show(target?: HTMLElement | string) {
+    if (target) {
+      this._setTarget(target);
+    }
+    super.show();
+  }
+
+  /** Toggles the open state of the component. */
+  public override toggle(target?: HTMLElement | string) {
+    this.open ? this.hide() : this.show(target);
   }
 
   /** Navigates to the item with the specified value. If it exists, returns the found item, otherwise - null. */
@@ -347,6 +390,7 @@ export default class IgcDropdownComponent extends SizableMixin(
       ?open=${this.open}
       ?flip=${this.flip}
       ?same-width=${this.sameWidth}
+      .anchor=${this._target}
       .strategy=${this.positionStrategy}
       .offset=${this.distance}
       .placement=${this.placement}

@@ -361,3 +361,52 @@ export const GroupsAndHeaders: Story = {
     </igc-dropdown>
   `,
 };
+
+export const WithNonSlottedTarget: Story = {
+  render: ({
+    distance,
+    open,
+    flip,
+    keepOpenOnOutsideClick,
+    keepOpenOnSelect,
+    placement,
+    positionStrategy,
+    sameWidth,
+  }) => html`
+    <style>
+      .container {
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+    <div class="container">
+      <igc-button id="1st" onclick="dropdown.show('1st')">First</igc-button>
+      <igc-button id="2nd" onclick="dropdown.show('2nd')">Second</igc-button>
+      <igc-button id="3rd" onclick="dropdown.show('3rd')">Third</igc-button>
+      <igc-button id="4th" onclick="dropdown.show('4th')">Fourth</igc-button>
+    </div>
+    <igc-input
+      id="input"
+      style="max-width: 15rem"
+      label="Focus me"
+      onfocus="dropdown.show('input')"
+      onblur="dropdown.hide()"
+    ></igc-input>
+
+    <igc-dropdown
+      id="dropdown"
+      .distance=${distance}
+      ?open=${open}
+      ?flip=${flip}
+      ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
+      ?keep-open-on-select=${keepOpenOnSelect}
+      .placement=${placement}
+      .positionStrategy=${positionStrategy}
+      ?same-width=${sameWidth}
+    >
+      <igc-dropdown-item>1</igc-dropdown-item>
+      <igc-dropdown-item>2</igc-dropdown-item>
+      <igc-dropdown-item>3</igc-dropdown-item>
+    </igc-dropdown>
+  `,
+};

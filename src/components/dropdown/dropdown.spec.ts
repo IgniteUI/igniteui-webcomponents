@@ -37,9 +37,21 @@ describe('Dropdown', () => {
     'Builds',
   ];
 
+  const openDropdown = async (target?: HTMLElement | string) => {
+    dropDown.show(target);
+    await elementUpdated(dropDown);
+  };
+
+  const closeDropdown = async () => {
+    dropDown.hide();
+    await elementUpdated(dropDown);
+  };
+
   const getTarget = () =>
     dropDown.querySelector('[slot="target"]') as IgcButtonComponent;
+
   const getActiveItem = () => dropDown.items.find((item) => item.active);
+
   const getHeaders = () =>
     Array.from(
       dropDown.querySelectorAll<IgcDropdownHeaderComponent>(
@@ -86,6 +98,109 @@ describe('Dropdown', () => {
       </igc-dropdown>
     `;
   }
+
+  function createDetachedDropdown() {
+    return html`
+      <div>
+        <igc-button id="btn">Click</igc-button>
+
+        <igc-dropdown>
+          <igc-dropdown-item>1</igc-dropdown-item>
+          <igc-dropdown-item>2</igc-dropdown-item>
+          <igc-dropdown-item>3</igc-dropdown-item>
+        </igc-dropdown>
+      </div>
+    `;
+  }
+
+  describe('Detached (non-slotted anchor)', () => {
+    const getButton = () => document.getElementById('btn')!;
+
+    function checkTargetARIA(state: 'true' | 'false') {
+      const btn = getButton();
+      expect(btn.getAttribute('aria-haspopup')).to.equal('true');
+      expect(btn.getAttribute('aria-expanded')).to.equal(state);
+    }
+
+    beforeEach(async () => {
+      const dom = await fixture(createDetachedDropdown());
+      dropDown = dom.querySelector('igc-dropdown')!;
+    });
+
+    it('correctly shows the detached dropdown at a given target', async () => {
+      await openDropdown('btn');
+
+      expect(dropDown.open).to.be.true;
+      checkTargetARIA('true');
+
+      await closeDropdown();
+
+      expect(dropDown.open).to.be.false;
+      checkTargetARIA('false');
+    });
+
+    it('keyboard navigation works in detached state', async () => {
+      const btn = getButton();
+
+      await openDropdown('btn');
+
+      simulateKeyboard(btn, arrowDown, 2);
+      simulateKeyboard(btn, enterKey);
+      await elementUpdated(dropDown);
+
+      expect(dropDown.open).to.be.false;
+      checkItemState(dropDown.items[1], { active: true, selected: true });
+      expect(dropDown.selectedItem?.value).to.equal('2');
+    });
+
+    it('relevant events are fired in order', async () => {
+      const eventSpy = spy(dropDown, 'emitEvent');
+
+      // No opening sequence of events since detached dropdowns are opened with API invocation
+
+      const btn = getButton();
+
+      await openDropdown('btn');
+
+      simulateKeyboard(btn, arrowDown, 2);
+      simulateKeyboard(btn, enterKey);
+      await elementUpdated(dropDown);
+
+      expect(eventSpy.firstCall).calledWith('igcChange', {
+        detail: dropDown.selectedItem,
+      });
+      expect(eventSpy.secondCall).calledWith('igcClosing');
+      expect(eventSpy.thirdCall).calledWith('igcClosed');
+    });
+
+    it('outside click behavior is enforced', async () => {
+      const btn = getButton();
+
+      await openDropdown('btn');
+
+      // By default clicking on the `target` should not close the dropdown. Application scenario to
+      // hook up additional logic.
+      simulateClick(btn);
+      await elementUpdated(dropDown);
+
+      expect(dropDown.open).to.be.true;
+
+      // No keep-open-on-outside-click
+      simulateClick(document.body);
+      await elementUpdated(dropDown);
+
+      expect(dropDown.open).to.be.false;
+
+      dropDown.keepOpenOnOutsideClick = true;
+      await openDropdown(btn);
+
+      // With keep-open-on-outside-click
+      simulateClick(document.body);
+      await elementUpdated(dropDown);
+
+      expect(dropDown.open).to.be.true;
+    });
+  });
 
   describe('DOM', () => {
     beforeEach(async () => {
@@ -221,8 +336,7 @@ describe('Dropdown', () => {
     });
 
     it('keyboard navigation works', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, arrowDown, 3);
       await elementUpdated(dropDown);
@@ -231,8 +345,7 @@ describe('Dropdown', () => {
     });
 
     it('clicking on a header is a no-op', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateClick(getHeaders()[0]);
       await elementUpdated(dropDown);
@@ -242,8 +355,7 @@ describe('Dropdown', () => {
     });
 
     it('clicking on a group is a no-op', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       for (const each of dropDown.groups) {
         simulateClick(each);
@@ -276,8 +388,7 @@ describe('Dropdown', () => {
     it('selects an item on click and closes the dropdown', async () => {
       const targetItem = dropDown.items[3];
 
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateClick(targetItem);
       await elementUpdated(dropDown);
@@ -291,8 +402,7 @@ describe('Dropdown', () => {
       const targetItem = dropDown.items[3];
 
       dropDown.keepOpenOnSelect = true;
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateClick(targetItem);
       await elementUpdated(dropDown);
@@ -306,8 +416,7 @@ describe('Dropdown', () => {
       const targetItem = dropDown.items[3];
       targetItem.disabled = true;
 
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateClick(targetItem);
       await elementUpdated(dropDown);
@@ -322,8 +431,7 @@ describe('Dropdown', () => {
     });
 
     it('clicking outside of the dropdown DOM tree closes the dropdown', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateClick(document.body);
       await elementUpdated(dropDown);
@@ -333,8 +441,7 @@ describe('Dropdown', () => {
 
     it('clicking outside of the dropdown DOM tree with keep-open-on-outside-click', async () => {
       dropDown.keepOpenOnOutsideClick = true;
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateClick(document.body);
       await elementUpdated(dropDown);
@@ -343,8 +450,7 @@ describe('Dropdown', () => {
     });
 
     it('pressing Escape closes the dropdown without selection', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, arrowDown, 4);
       await elementUpdated(dropDown);
@@ -358,8 +464,7 @@ describe('Dropdown', () => {
     });
 
     it('pressing Enter selects the active item and closes the dropdown', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, arrowDown, 4);
       await elementUpdated(dropDown);
@@ -374,8 +479,7 @@ describe('Dropdown', () => {
 
     it('pressing Enter selects the active item and does not close the dropdown with keep-open-on-select', async () => {
       dropDown.keepOpenOnSelect = true;
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, arrowDown, 4);
       await elementUpdated(dropDown);
@@ -388,9 +492,19 @@ describe('Dropdown', () => {
       expect(dropDown.open).to.be.true;
     });
 
-    it('pressing Tab selects the active item and closes the dropdown', async () => {
-      dropDown.show();
+    it('pressing Tab with no active item closes the dropdown and does no selection', async () => {
+      await openDropdown();
+
+      simulateKeyboard(dropDown, tabKey);
       await elementUpdated(dropDown);
+
+      expect(dropDown.open).to.be.false;
+      expect(dropDown.selectedItem).to.be.null;
+      expect(getActiveItem()).to.be.undefined;
+    });
+
+    it('pressing Tab selects the active item and closes the dropdown', async () => {
+      await openDropdown();
 
       simulateKeyboard(dropDown, arrowDown, 4);
       await elementUpdated(dropDown);
@@ -405,8 +519,7 @@ describe('Dropdown', () => {
 
     it('pressing Tab selects the active item and closes the dropdown regardless of keep-open-on-select', async () => {
       dropDown.keepOpenOnSelect = true;
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, arrowDown, 4);
       await elementUpdated(dropDown);
@@ -420,8 +533,7 @@ describe('Dropdown', () => {
     });
 
     it('activates the first item on ArrowDown if no selection is present', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, arrowDown);
       await elementUpdated(dropDown);
@@ -431,16 +543,14 @@ describe('Dropdown', () => {
 
     it('sets the active element to the currently selected one', async () => {
       dropDown.select(3);
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       checkItemState(dropDown.items[3], { active: true, selected: true });
     });
 
     it('moves only active state and not selection with arrow keys', async () => {
       dropDown.select(3);
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       const [prev, current, next] = dropDown.items.slice(2, 5);
 
@@ -460,8 +570,7 @@ describe('Dropdown', () => {
     });
 
     it('moves to first item with Home key', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, homeKey);
       await elementUpdated(dropDown);
@@ -470,8 +579,7 @@ describe('Dropdown', () => {
     });
 
     it('moves to last item with End key', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, endKey);
       await elementUpdated(dropDown);
@@ -480,8 +588,7 @@ describe('Dropdown', () => {
     });
 
     it('does not lose active state at start/end bounds', async () => {
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, homeKey);
       await elementUpdated(dropDown);
@@ -506,8 +613,7 @@ describe('Dropdown', () => {
       second.disabled = true;
       await elementUpdated(dropDown);
 
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       for (let i = 0; i < 4; i++) {
         simulateKeyboard(dropDown, arrowDown);
@@ -525,12 +631,10 @@ describe('Dropdown', () => {
     it('does not emit events on API calls', async () => {
       const eventSpy = spy(dropDown, 'emitEvent');
 
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
       expect(eventSpy).not.to.be.called;
 
-      dropDown.hide();
-      await elementUpdated(dropDown);
+      await closeDropdown();
       expect(eventSpy).not.to.be.called;
 
       dropDown.select('Testing');
@@ -552,8 +656,7 @@ describe('Dropdown', () => {
     it('emits correct order of events on closing', async () => {
       const eventSpy = spy(dropDown, 'emitEvent');
 
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateClick(getTarget());
       await elementUpdated(dropDown);
@@ -568,8 +671,7 @@ describe('Dropdown', () => {
       let targetItem = dropDown.items[3];
 
       // Selection through click
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateClick(targetItem);
       await elementUpdated(dropDown);
@@ -586,8 +688,7 @@ describe('Dropdown', () => {
       // Selection through keyboard
       targetItem = dropDown.items[2];
 
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, arrowUp);
       simulateKeyboard(dropDown, enterKey);
@@ -622,8 +723,7 @@ describe('Dropdown', () => {
       });
 
       // No selection
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, escapeKey);
       await elementUpdated(dropDown);
@@ -639,8 +739,7 @@ describe('Dropdown', () => {
         once: true,
       });
 
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       simulateKeyboard(dropDown, arrowDown, 3);
       simulateKeyboard(dropDown, enterKey);
@@ -655,8 +754,7 @@ describe('Dropdown', () => {
     it('can halt closing event sequence on outside click', async () => {
       const eventSpy = spy(dropDown, 'emitEvent');
 
-      dropDown.show();
-      await elementUpdated(dropDown);
+      await openDropdown();
 
       dropDown.addEventListener('igcClosing', (e) => e.preventDefault(), {
         once: true,

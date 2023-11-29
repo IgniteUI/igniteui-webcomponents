@@ -111,12 +111,6 @@ export default class IgcPopoverComponent extends LitElement {
 
   @watch('anchor')
   protected async anchorChange() {
-    if (!this.anchor) {
-      // Fallback to slotted anchor if present
-      this._anchorSlotChange();
-      return;
-    }
-
     const newTarget =
       typeof this.anchor === 'string'
         ? getElementByIdFromRoot(this, this.anchor)
