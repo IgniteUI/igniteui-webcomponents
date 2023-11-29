@@ -374,17 +374,28 @@ describe('Select', () => {
       expect(select.selectedItem?.value).to.equal('testing');
       expect(select.value).to.equal('testing');
 
-      // Non-existent index
+      // Trying to select non-existent index with selection present
       select.select(-1);
-      expect(select.items.every((item) => !item.selected)).to.be.true;
-      expect(select.selectedItem).to.be.null;
-      expect(select.value).to.equal(undefined);
+      expect(select.selectedItem).to.not.be.null;
+      expect(select.value).to.equal('testing');
 
-      // Non-existent value
+      // Trying to select non-existent value with selection present
       select.select('non-existent');
-      expect(select.items.every((item) => !item.selected)).to.be.true;
+      expect(select.selectedItem).to.not.be.null;
+      expect(select.value).to.equal('testing');
+
+      // Non-existent index with no selection present
+      select.clearSelection();
+      select.select(-1);
+      expect(select.items.every((item) => item.selected)).to.be.false;
       expect(select.selectedItem).to.be.null;
-      expect(select.value).to.equal(undefined);
+      expect(select.value).to.be.undefined;
+
+      // Non-existent value with no selection present
+      select.select('81313213');
+      expect(select.items.every((item) => item.selected)).to.be.false;
+      expect(select.selectedItem).to.be.null;
+      expect(select.value).to.be.undefined;
     });
 
     it('`navigateTo() works`', async () => {

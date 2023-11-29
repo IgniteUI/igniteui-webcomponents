@@ -180,9 +180,14 @@ const Items = [
   'Samples',
   'Documentation',
   'Builds',
-];
+].map(
+  (each) => html`<igc-dropdown-item value=${each}>${each}</igc-dropdown-item>`
+);
 
-const overflows = Array.from(range(1, 51));
+const overflowItems = Array.from(range(1, 51)).map(
+  (each) =>
+    html`<igc-dropdown-item value=${each}>Item ${each}</igc-dropdown-item>`
+);
 
 export const Basic: Story = {
   render: ({
@@ -223,12 +228,7 @@ export const Basic: Story = {
       >
         <igc-button slot="target">Default</igc-button>
         <igc-dropdown-header>Tasks</igc-dropdown-header>
-        ${Items.map(
-          (item, idx) =>
-            html`<igc-dropdown-item ?selected=${idx >= 3}
-              >${item}</igc-dropdown-item
-            >`
-        )}
+        ${Items}
       </igc-dropdown>
 
       <igc-dropdown
@@ -244,9 +244,7 @@ export const Basic: Story = {
       >
         <igc-button slot="target">With vertical overflow</igc-button>
         <igc-dropdown-header>Tasks</igc-dropdown-header>
-        ${overflows.map(
-          (i) => html`<igc-dropdown-item>Item ${i}</igc-dropdown-item>`
-        )}
+        ${overflowItems}
       </igc-dropdown>
     </div>
   `,
@@ -268,7 +266,13 @@ const gdpEurope = [
     value: '102,865',
     flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Flag_of_Switzerland_%28Pantone%29.svg/15px-Flag_of_Switzerland_%28Pantone%29.svg.png`,
   },
-];
+].map(
+  ({ country, flag, value }) =>
+    html`<igc-dropdown-item value=${country}>
+      <img slot="prefix" src=${flag} alt="Flag of ${country}" />
+      ${country} ${value}
+    </igc-dropdown-item>`
+);
 
 const gdpAmericas = [
   {
@@ -286,7 +290,13 @@ const gdpAmericas = [
     value: '37,093',
     flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Flag_of_Puerto_Rico.svg/23px-Flag_of_Puerto_Rico.svg.png`,
   },
-];
+].map(
+  ({ country, flag, value }) =>
+    html`<igc-dropdown-item value=${country}>
+      <img slot="prefix" src=${flag} alt="Flag of ${country}" />
+      ${country} ${value}
+    </igc-dropdown-item>`
+);
 
 export const GroupsAndHeaders: Story = {
   args: {
@@ -334,14 +344,7 @@ export const GroupsAndHeaders: Story = {
           UN Region: <strong>Europe</strong>
         </p>
         <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
-
-        ${gdpEurope.map(
-          ({ country, value, flag }) =>
-            html`<igc-dropdown-item value=${country}>
-              <img slot="prefix" src=${flag} alt="Flag of ${country}" />
-              ${country} ${value}
-            </igc-dropdown-item>`
-        )}
+        ${gdpEurope}
       </igc-dropdown-group>
 
       <igc-dropdown-group>
@@ -349,14 +352,7 @@ export const GroupsAndHeaders: Story = {
           UN Region: <strong>Americas</strong>
         </p>
         <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
-
-        ${gdpAmericas.map(
-          ({ country, value, flag }) =>
-            html`<igc-dropdown-item value=${country}>
-              <img slot="prefix" src=${flag} alt="Flag of ${country}" />
-              ${country} ${value}
-            </igc-dropdown-item>`
-        )}
+        ${gdpAmericas}
       </igc-dropdown-group>
     </igc-dropdown>
   `,
@@ -390,7 +386,6 @@ export const WithNonSlottedTarget: Story = {
       style="max-width: 15rem"
       label="Focus me"
       onfocus="dropdown.show('input')"
-      onblur="dropdown.hide()"
     ></igc-input>
 
     <igc-dropdown

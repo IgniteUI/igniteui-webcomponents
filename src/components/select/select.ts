@@ -557,13 +557,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public select(value: string | number): IgcSelectItemComponent | null {
     const item =
       typeof value === 'string' ? this.getItem(value) : this.items[value];
-
-    return this._selectItem(item!, false);
+    return item ? this._selectItem(item, false) : null;
   }
 
-  /**  Clears the current selection of the dropdown. */
+  /**  Resets the current value and selection of the component. */
   public clearSelection() {
-    this.value = '';
+    this._updateValue();
+    this.clearSelectedItem();
   }
 
   protected renderInputSlots() {
@@ -635,10 +635,10 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
         id="input"
         slot="anchor"
         role="combobox"
+        readonly
         aria-controls="dropdown"
         aria-describedby="helper-text"
         aria-expanded=${this.open ? 'true' : 'false'}
-        readonly
         exportparts="container: input, input: native-input, label, prefix, suffix"
         tabIndex=${this.disabled ? -1 : 0}
         value=${ifDefined(value)}
