@@ -112,7 +112,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   private _targetListeners!: KeyBindingObserverCleanup;
 
   @state()
-  private _target!: HTMLElement | null;
+  private _target?: HTMLElement;
 
   @query('slot[name="target"]', true)
   protected trigger!: HTMLSlotElement;
@@ -189,7 +189,7 @@ export default class IgcDropdownComponent extends SizableMixin(
     this._rootClickController.update();
 
     if (!this.open) {
-      this._target = null;
+      this._target = undefined;
       this._targetListeners?.unsubscribe();
       this._rootClickController.update({ target: undefined });
     }
