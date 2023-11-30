@@ -7,13 +7,8 @@ $outlined-theme: $fluent-outlined;
 $outline-btn-indent: rem(2px);
 
 [part='base'] {
-    border-radius: var-get($flat-theme, 'border-radius');
-    background: var-get($flat-theme, 'background');
-    color: var-get($flat-theme, 'foreground');
     transition: color .15s ease-out, background .15s ease-out;
     box-shadow: none;
-    width: var-get($flat-theme, 'size');
-    height: var-get($flat-theme, 'size');
     padding: pad(4px, 6px, 7px);
 
     &::after {
@@ -26,29 +21,6 @@ $outline-btn-indent: rem(2px);
         height: calc(100% - (#{$outline-btn-indent} * 2));
         border-radius: calc(#{var-get($flat-theme, 'border-radius')} - #{$outline-btn-indent * 2});
     }
-
-    &:hover {
-        color: var-get($flat-theme, 'foreground');
-        background: var-get($flat-theme, 'hover-background');
-    }
-
-    &:focus {
-        color: var-get($flat-theme, 'foreground');
-        background: var-get($flat-theme, 'focus-background');
-    }
-
-    &:active {
-        color: var-get($flat-theme, 'foreground');
-        background: var-get($flat-theme, 'active-background');
-    }
-
-    &:focus-visible::after {
-        box-shadow: 0 0 0 rem(1px) var-get($flat-theme, 'focus-border-color');
-    }
-
-    igc-icon {
-        color: var-get($flat-theme, 'foreground');
-    }
 }
 
 :host([variant='flat']) {
@@ -56,8 +28,10 @@ $outline-btn-indent: rem(2px);
 
     --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
 
-    ::slotted(igc-ripple) {
-        border-radius: var-get($flat-theme, 'border-radius');
+    [part='base'] {
+        &:focus-visible::after {
+            box-shadow: 0 0 0 rem(1px) var-get($flat-theme, 'focus-border-color');
+        }
     }
 }
 
@@ -67,34 +41,9 @@ $outline-btn-indent: rem(2px);
     --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
 
     [part='base'] {
-        color: var-get($contained-theme, 'foreground');
-        background: var-get($contained-theme, 'background');
-
-        &:focus {
-            background: var-get($contained-theme, 'focus-background');
-        }
-
-        &:hover {
-            background: var-get($contained-theme, 'hover-background');
-        }
-
-        &:active,
-        &:focus-visible {
-            color: var-get($contained-theme, 'active-foreground');
-            background: var-get($contained-theme, 'active-background');
-        }
-
         &:focus-visible::after {
             box-shadow: 0 0 0 rem(1px) var-get($contained-theme, 'focus-border-color');
         }
-    }
-
-    igc-icon {
-        color: var-get($contained-theme, 'foreground');
-    }
-
-    ::slotted(igc-ripple) {
-        border-radius: var-get($contained-theme, 'border-radius');
     }
 }
 
@@ -104,41 +53,18 @@ $outline-btn-indent: rem(2px);
     --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
 
     [part='base'] {
-        color: var-get($outlined-theme, 'foreground');
-        box-shadow: 0 0 0 1px var-get($outlined-theme, 'border-color');
-
         &:focus {
-            background: var-get($outlined-theme, 'focus-background');
+            border-color: var-get($outlined-theme, 'focus-border-color');
         }
 
         &:hover,
         &:focus:hover,
         &:focus:active {
-            background: var-get($outlined-theme, 'active-background');
+            background: var-get($outlined-theme, 'hover-background');
         }
 
         &:focus-visible::after {
             box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'focus-border-color');
         }
-    }
-
-    igc-icon {
-        color: var-get($outlined-theme, 'foreground');
-    }
-
-    ::slotted(igc-ripple) {
-        border-radius: var-get($outlined-theme, 'border-radius');
-    }
-}
-
-:host([disabled]),
-:host(:disabled) {
-    [part='base'] {
-        color: var-get($flat-theme, 'disabled-foreground');
-        background: var-get($flat-theme, 'disabled-background');
-    }
-
-    igc-icon {
-        color: var-get($flat-theme, 'disabled-foreground');
     }
 }

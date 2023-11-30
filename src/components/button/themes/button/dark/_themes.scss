@@ -4,28 +4,24 @@
 
 // Material Themes
 $material-flat: digest-schema(map.get($dark-button, 'flat'));
-$material-contained: digest-schema(map.get($dark-button, 'raised'));
+$material-contained: digest-schema(map.get($dark-button, 'contained'));
 $material-outlined: digest-schema(map.get($dark-button, 'outlined'));
 $material-fab: digest-schema(map.get($dark-button, 'fab'));
-$material-icon: digest-schema(map.get($dark-button, 'icon'));
 
 // Bootstrap Themes
 $bootstrap-flat: digest-schema(map.get($dark-bootstrap-button, 'flat'));
-$bootstrap-contained: digest-schema(map.get($dark-bootstrap-button, 'raised'));
+$bootstrap-contained: digest-schema(map.get($dark-bootstrap-button, 'contained'));
 $bootstrap-outlined: digest-schema(map.get($dark-bootstrap-button, 'outlined'));
 $bootstrap-fab: digest-schema(map.get($dark-bootstrap-button, 'fab'));
-$bootstrap-icon: digest-schema(map.get($dark-bootstrap-button, 'icon'));
 
 // Fluent Themes
 $fluent-flat: digest-schema(map.get($dark-fluent-button, 'flat'));
-$fluent-contained: digest-schema(map.get($dark-fluent-button, 'raised'));
+$fluent-contained: digest-schema(map.get($dark-fluent-button, 'contained'));
 $fluent-outlined: digest-schema(map.get($dark-fluent-button, 'outlined'));
 $fluent-fab: digest-schema(map.get($dark-fluent-button, 'fab'));
-$fluent-icon: digest-schema(map.get($dark-fluent-button, 'icon'));
 
 // Indigo Themes
 $indigo-flat: digest-schema(map.get($dark-indigo-button, 'flat'));
-$indigo-contained: digest-schema(map.get($dark-indigo-button, 'raised'));
+$indigo-contained: digest-schema(map.get($dark-indigo-button, 'contained'));
 $indigo-outlined: digest-schema(map.get($dark-indigo-button, 'outlined'));
 $indigo-fab: digest-schema(map.get($dark-indigo-button, 'fab'));
-$indigo-icon: digest-schema(map.get($dark-indigo-button, 'icon'));

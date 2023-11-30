@@ -6,16 +6,8 @@ $contained-theme: $bootstrap-contained;
 $outlined-theme: $bootstrap-outlined;
 
 [part='base'] {
-    border-radius: var-get($flat-theme, 'border-radius');
-    width: var-get($flat-theme, 'size');
-    height: var-get($flat-theme, 'size');
     transition: box-shadow .15s ease-out, color .15s ease-out, background .15s ease-out;
-    color: var-get($flat-theme, 'foreground');
     padding: pad(7.5px, 9px, 12px);
-
-    igc-icon {
-        color: var-get($flat-theme, 'foreground');
-    }
 }
 
 :host([variant='flat']) {
@@ -24,20 +16,9 @@ $outlined-theme: $bootstrap-outlined;
     --component-size: var(--ig-size, #{var-get($flat-theme, 'default-size')});
 
     [part='base'] {
-        &:hover {
-            color: var-get($flat-theme, 'hover-foreground');
-        }
-    
-        &:focus,
         &:active {
-            color: var-get($flat-theme, 'focus-foreground');
-            background: var-get($flat-theme, 'focus-background');
             box-shadow: none;
         }
-    }
-
-    ::slotted(igc-ripple) {
-        border-radius: var-get($flat-theme, 'border-radius');
     }
 }
 
@@ -47,26 +28,14 @@ $outlined-theme: $bootstrap-outlined;
     --component-size: var(--ig-size, #{var-get($contained-theme, 'default-size')});
 
     [part='base'] {
-        color: var-get($contained-theme, 'foreground');
-        background: var-get($contained-theme, 'background');
-
-        &:hover {
-            background: var-get($contained-theme, 'focus-background');
-        }
-
         &:focus,
-        &:active {
-            background: var-get($contained-theme, 'focus-background');
+        &:focus-within {
             box-shadow: 0 0 0 rem(4px) var-get($contained-theme, 'focus-border-color');
         }
 
-        igc-icon {
-            color: var-get($contained-theme, 'foreground');
+        &:active {
+            box-shadow: 0 0 0 rem(4px) var-get($contained-theme, 'focus-border-color');
         }
-    }
-
-    ::slotted(igc-ripple) {
-        border-radius: var-get($contained-theme, 'border-radius');
     }
 }
 
@@ -76,70 +45,30 @@ $outlined-theme: $bootstrap-outlined;
     --component-size: var(--ig-size, #{var-get($outlined-theme, 'default-size')});
 
     [part='base'] {
-        box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'border-color');
-
-        &:hover {
-            color: var-get($outlined-theme, 'hover-foreground');
-            background: var-get($outlined-theme, 'focus-background');
-
+        &:hover {    
             igc-icon {
                 color: var-get($outlined-theme, 'hover-foreground');
             }
         }
 
         &:focus,
-        &:active {
-            color: var-get($outlined-theme, 'focus-foreground');
-            background: var-get($outlined-theme, 'focus-background');
+        &:focus-within {
             box-shadow: 0 0 0 rem(4px) var-get($outlined-theme, 'focus-border-color');
 
             igc-icon {
                 color: var-get($outlined-theme, 'focus-foreground');
             }
         }
-    }
 
-    igc-icon {
-        color: var-get($outlined-theme, 'foreground');
-    }
-
-    ::slotted(igc-ripple) {
-        border-radius: var-get($outlined-theme, 'border-radius');
-    }
-}
-
-:host([disabled]),
-:host(:disabled) {
-    [part='base'] {
-        color: var-get($flat-theme, 'disabled-foreground');
-        background: var-get($flat-theme, 'disabled-background');
-    }
-
-    igc-icon {
-        color: var-get($flat-theme, 'disabled-foreground');
-    }
-}
-
-:host([disabled][variant='contained']),
-:host(:disabled[variant='contained']) {
-    [part='base'] {
-        background: var-get($contained-theme, 'disabled-background');
-        color: var-get($contained-theme, 'disabled-foreground');
-    }
-
-    igc-icon {
-        color: var-get($contained-theme, 'disabled-foreground');
+        &:active {
+            box-shadow: 0 0 0 rem(4px) var-get($outlined-theme, 'focus-border-color');
+        }
     }
 }
 
 :host([disabled][variant='outlined']),
 :host(:disabled[variant='outlined']) {
     [part='base'] {
-        color: var-get($outlined-theme, 'disabled-foreground');
         box-shadow: 0 0 0 rem(1px) var-get($outlined-theme, 'disabled-border-color');
-    }
-
-    igc-icon {
-        color: var-get($outlined-theme, 'disabled-foreground');
     }
 }
