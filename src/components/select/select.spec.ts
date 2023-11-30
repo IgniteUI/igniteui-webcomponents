@@ -4,6 +4,7 @@ import {
   expect,
   fixture,
   html,
+  nextFrame,
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
@@ -188,6 +189,23 @@ describe('Select', () => {
     `;
   }
 
+  function createScrollableSelectParent() {
+    return html`
+      <div style="height: 1200px">
+        <igc-select label="Select">
+          ${Items.map(
+            (item) =>
+              html`<igc-select-item
+                ?disabled=${item.disabled}
+                value=${item.value}
+                >${item.text}</igc-select-item
+              >`
+          )}
+        </igc-select>
+      </div>
+    `;
+  }
+
   describe('DOM', () => {
     describe('Default', () => {
       beforeEach(async () => {
@@ -287,6 +305,49 @@ describe('Select', () => {
 
     it('correctly applies autofocus on init', async () => {
       expect(document.activeElement).to.equal(select);
+    });
+  });
+
+  describe('Scroll strategy', () => {
+    let container: HTMLDivElement;
+
+    const scrollBy = async (amount: number) => {
+      container.scrollTo({ top: amount });
+      container.dispatchEvent(new Event('scroll'));
+      await elementUpdated(select);
+      await nextFrame();
+    };
+
+    beforeEach(async () => {
+      container = await fixture(createScrollableSelectParent());
+      select = container.querySelector(IgcSelectComponent.tagName)!;
+    });
+
+    it('`scroll` behavior', async () => {
+      await openSelect();
+      await scrollBy(200);
+
+      expect(select.open).to.be.true;
+    });
+
+    it('`close` behavior', async () => {
+      const eventSpy = spy(select, 'emitEvent');
+
+      select.scrollStrategy = 'close';
+      await openSelect();
+      await scrollBy(200);
+
+      expect(select.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+
+    it('`block behavior`', async () => {
+      select.scrollStrategy = 'block';
+      await openSelect();
+      await scrollBy(200);
+
+      expect(select.open).to.be.true;
     });
   });
 

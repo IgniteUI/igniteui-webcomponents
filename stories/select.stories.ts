@@ -58,6 +58,12 @@ const metadata: Meta<IgcSelectComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
+    distance: {
+      type: 'number',
+      description: 'The distance of the select dropdown from its input.',
+      control: 'number',
+      table: { defaultValue: { summary: 0 } },
+    },
     label: {
       type: 'string',
       description: 'The label attribute of the control.',
@@ -67,6 +73,35 @@ const metadata: Meta<IgcSelectComponent> = {
       type: 'string',
       description: 'The placeholder attribute of the control.',
       control: 'text',
+    },
+    placement: {
+      type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
+      description:
+        'The preferred placement of the select dropdown around its input.',
+      options: [
+        'top',
+        'top-start',
+        'top-end',
+        'bottom',
+        'bottom-start',
+        'bottom-end',
+        'right',
+        'right-start',
+        'right-end',
+        'left',
+        'left-start',
+        'left-end',
+      ],
+      control: { type: 'select' },
+      table: { defaultValue: { summary: 'bottom-start' } },
+    },
+    scrollStrategy: {
+      type: '"scroll" | "block" | "close"',
+      description:
+        'Determines the behavior of the component during scrolling of the parent container.',
+      options: ['scroll', 'block', 'close'],
+      control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'scroll' } },
     },
     required: {
       type: 'boolean',
@@ -115,6 +150,9 @@ const metadata: Meta<IgcSelectComponent> = {
   args: {
     outlined: false,
     autofocus: false,
+    distance: 0,
+    placement: 'bottom-start',
+    scrollStrategy: 'scroll',
     required: false,
     disabled: false,
     invalid: false,
@@ -133,10 +171,28 @@ interface IgcSelectArgs {
   outlined: boolean;
   /** The autofocus attribute of the control. */
   autofocus: boolean;
+  /** The distance of the select dropdown from its input. */
+  distance: number;
   /** The label attribute of the control. */
   label: string;
   /** The placeholder attribute of the control. */
   placeholder: string;
+  /** The preferred placement of the select dropdown around its input. */
+  placement:
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'right'
+    | 'right-start'
+    | 'right-end'
+    | 'left'
+    | 'left-start'
+    | 'left-end';
+  /** Determines the behavior of the component during scrolling of the parent container. */
+  scrollStrategy: 'scroll' | 'block' | 'close';
   /** Makes the control a required field in a form context. */
   required: boolean;
   /** The name attribute of the control. */
@@ -206,6 +262,8 @@ const Template = ({
   invalid = false,
   required = false,
   autofocus = false,
+  scrollStrategy,
+  distance,
 }: IgcSelectArgs) => html`
   <igc-select
     value=${value}
@@ -218,6 +276,8 @@ const Template = ({
     ?required=${required}
     ?disabled=${disabled}
     ?invalid=${invalid}
+    .scrollStrategy=${scrollStrategy}
+    .distance=${distance}
   >
     <span slot="helper-text">Sample helper text.</span>
     <igc-select-header>Tasks</igc-select-header>

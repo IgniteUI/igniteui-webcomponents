@@ -1,4 +1,4 @@
-import { elementUpdated, expect, fixture } from '@open-wc/testing';
+import { elementUpdated, expect, fixture, nextFrame } from '@open-wc/testing';
 import { html } from 'lit';
 import { spy } from 'sinon';
 
@@ -112,6 +112,63 @@ describe('Dropdown', () => {
       </div>
     `;
   }
+
+  function createScrollableDropdownParent() {
+    return html`
+      <div style="height: 1200px">
+        <igc-dropdown>
+          <igc-button slot="target">Open</igc-button>
+          ${Items.map(
+            (item) =>
+              html`<igc-dropdown-item value=${item}>${item}</igc-dropdown-item>`
+          )}
+        </igc-dropdown>
+      </div>
+    `;
+  }
+
+  describe('Scroll strategy', () => {
+    let container: HTMLDivElement;
+
+    const scrollBy = async (amount: number) => {
+      container.scrollTo({ top: amount });
+      container.dispatchEvent(new Event('scroll'));
+      await elementUpdated(dropDown);
+      await nextFrame();
+    };
+
+    beforeEach(async () => {
+      container = await fixture(createScrollableDropdownParent());
+      dropDown = container.querySelector(IgcDropdownComponent.tagName)!;
+    });
+
+    it('`scroll` behavior', async () => {
+      await openDropdown();
+      await scrollBy(200);
+
+      expect(dropDown.open).to.be.true;
+    });
+
+    it('`close` behavior', async () => {
+      const eventSpy = spy(dropDown, 'emitEvent');
+
+      dropDown.scrollStrategy = 'close';
+      await openDropdown();
+      await scrollBy(200);
+
+      expect(dropDown.open).to.be.false;
+      expect(eventSpy.firstCall).calledWith('igcClosing');
+      expect(eventSpy.lastCall).calledWith('igcClosed');
+    });
+
+    it('`block behavior`', async () => {
+      dropDown.scrollStrategy = 'block';
+      await openDropdown();
+      await scrollBy(200);
+
+      expect(dropDown.open).to.be.true;
+    });
+  });
 
   describe('Detached (non-slotted anchor)', () => {
     const getButton = () => document.getElementById('btn')!;

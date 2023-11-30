@@ -21,7 +21,10 @@ function roundByDPR(value: number) {
   return Math.round(value * dpr) / dpr;
 }
 
-export type IgcPopoverPlacement =
+/**
+ * Describes the preferred placement of a toggle component.
+ */
+export type IgcPlacement =
   | 'top'
   | 'top-start'
   | 'top-end'
@@ -88,7 +91,7 @@ export default class IgcPopoverComponent extends LitElement {
    * Where to place the floating element relative to the parent anchor element.
    */
   @property()
-  public placement: IgcPopoverPlacement = 'bottom-start';
+  public placement: IgcPlacement = 'bottom-start';
 
   /**
    * When enabled the floating element will match the width of its parent anchor element.

@@ -13,39 +13,28 @@ type RootClickControllerHost = ReactiveControllerHost &
   };
 
 class RootClickController implements ReactiveController {
-  private _abortController: AbortController;
-
-  protected get abortController() {
-    if (this._abortController.signal.aborted) {
-      this._abortController = new AbortController();
-    }
-
-    return this._abortController;
-  }
-
   constructor(
     private readonly host: RootClickControllerHost,
     private config?: RootClickControllerConfig
   ) {
     this.host.addController(this);
-    this._abortController = new AbortController();
   }
 
   private addEventListeners() {
     if (!this.host.keepOpenOnOutsideClick) {
-      document.addEventListener('click', this.handleClick, {
-        signal: this.abortController.signal,
-      });
+      document.addEventListener('click', this);
     }
+  }
 
-    // TODO: Implement the scroll blocking?
+  private removeEventListeners() {
+    document.removeEventListener('click', this);
   }
 
   private configureListeners() {
-    this.host.open ? this.addEventListeners() : this.abortController.abort();
+    this.host.open ? this.addEventListeners() : this.removeEventListeners();
   }
 
-  private handleClick = (event: MouseEvent) => {
+  public handleEvent(event: MouseEvent) {
     if (this.host.keepOpenOnOutsideClick) {
       return;
     }
@@ -57,7 +46,7 @@ class RootClickController implements ReactiveController {
     }
 
     this.hide();
-  };
+  }
 
   private hide() {
     this.config?.hideCallback
@@ -77,7 +66,7 @@ class RootClickController implements ReactiveController {
   }
 
   public hostDisconnected() {
-    this.abortController.abort();
+    this.removeEventListeners();
   }
 }
 

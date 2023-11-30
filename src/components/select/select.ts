@@ -29,6 +29,7 @@ import {
   tabKey,
 } from '../common/controllers/key-bindings.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
+import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
@@ -49,7 +50,7 @@ import { partNameMap } from '../common/util.js';
 import { Validator, requiredValidator } from '../common/validators.js';
 import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
-import IgcPopoverComponent from '../popover/popover.js';
+import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 
 export interface IgcSelectEventMap {
   igcChange: CustomEvent<IgcSelectItemComponent>;
@@ -120,7 +121,12 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   private _value!: string;
   private _searchTerm = '';
   private _lastKeyTime = 0;
+
   private _rootClickController = addRootClickHandler(this, {
+    hideCallback: () => this._hide(true),
+  });
+
+  private _rootScrollController = addRootScrollHandler(this, {
     hideCallback: () => this._hide(true),
   });
 
@@ -206,6 +212,13 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public override autofocus!: boolean;
 
   /**
+   * The distance of the select dropdown from its input.
+   * @attr
+   */
+  @property({ type: Number })
+  public distance = 0;
+
+  /**
    * The label attribute of the control.
    * @attr
    */
@@ -219,11 +232,25 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   @property()
   public placeholder!: string;
 
+  /** The preferred placement of the select dropdown around its input.
+   * @type {'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'right' | 'right-start' | 'right-end' | 'left' | 'left-start' | 'left-end'}
+   * @attr
+   */
+  @property()
+  public placement: IgcPlacement = 'bottom-start';
+
   /**
    * @deprecated since version 4.3.0
    * @hidden @internal @private
    */
   public positionStrategy: 'absolute' | 'fixed' = 'fixed';
+
+  /**
+   * Determines the behavior of the component during scrolling of the parent container.
+   * @attr scroll-strategy
+   */
+  @property({ attribute: 'scroll-strategy' })
+  public scrollStrategy: 'scroll' | 'block' | 'close' = 'scroll';
 
   /**
    * Whether the dropdown's width should be the same as the target's one.
@@ -263,9 +290,15 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     return this._selectedItem;
   }
 
+  @watch('scrollStrategy', { waitUntilFirstUpdate: true })
+  protected scrollStrategyChanged() {
+    this._rootScrollController.update({ resetListeners: true });
+  }
+
   @watch('open', { waitUntilFirstUpdate: true })
   protected openChange() {
     this._rootClickController.update();
+    this._rootScrollController.update();
   }
 
   constructor() {
@@ -682,6 +715,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
       shift
       same-width
       strategy="fixed"
+      .offset=${this.distance}
+      .placement=${this.placement}
       >${this.renderInputAnchor()} ${this.renderDropdown()}
     </igc-popover>`;
   }

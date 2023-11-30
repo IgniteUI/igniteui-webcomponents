@@ -21,6 +21,7 @@ import {
   tabKey,
 } from '../common/controllers/key-bindings.js';
 import { addRootClickHandler } from '../common/controllers/root-click.js';
+import { addRootScrollHandler } from '../common/controllers/root-scroll.js';
 import { blazorAdditionalDependencies } from '../common/decorators/blazorAdditionalDependencies.js';
 import { blazorSuppress } from '../common/decorators/blazorSuppress.js';
 import { watch } from '../common/decorators/watch.js';
@@ -37,8 +38,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import { getElementByIdFromRoot } from '../common/util.js';
-import IgcPopoverComponent from '../popover/popover.js';
-import type { IgcPlacement } from '../toggle/types';
+import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 
 export interface IgcDropdownEventMap {
   igcOpening: CustomEvent<void>;
@@ -90,6 +90,10 @@ export default class IgcDropdownComponent extends SizableMixin(
 
   private _keyBindings: ReturnType<typeof addKeybindings>;
 
+  private _rootScrollController = addRootScrollHandler(this, {
+    hideCallback: () => this._hide(true),
+  });
+
   private _rootClickController = addRootClickHandler(this, {
     hideCallback: () => this._hide(true),
   });
@@ -132,7 +136,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   public positionStrategy: 'absolute' | 'fixed' = 'absolute';
 
   /**
-   * Determines the behavior of the component during scrolling the container.
+   * Determines the behavior of the component during scrolling of the parent container.
    * @attr scroll-strategy
    */
   @property({ attribute: 'scroll-strategy' })
@@ -182,11 +186,17 @@ export default class IgcDropdownComponent extends SizableMixin(
     return this._selectedItem;
   }
 
+  @watch('scrollStrategy', { waitUntilFirstUpdate: true })
+  protected scrollStrategyChanged() {
+    this._rootScrollController.update({ resetListeners: true });
+  }
+
   @watch('open', { waitUntilFirstUpdate: true })
   @watch('keepOpenOnOutsideClick', { waitUntilFirstUpdate: true })
   protected openStateChange() {
     this._updateAnchorAccessibility(this._target);
     this._rootClickController.update();
+    this._rootScrollController.update();
 
     if (!this.open) {
       this._target = undefined;

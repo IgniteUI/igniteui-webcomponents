@@ -50,7 +50,7 @@ export interface IgcToggleComponent extends IgcToggleOptions {
 /**
  * Describes the preferred placement of a toggle component.
  */
-export type IgcPlacement =
+type IgcPlacement =
   | 'top'
   | 'top-start'
   | 'top-end'

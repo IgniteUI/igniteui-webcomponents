@@ -73,7 +73,7 @@ const metadata: Meta<IgcDropdownComponent> = {
     scrollStrategy: {
       type: '"scroll" | "block" | "close"',
       description:
-        'Determines the behavior of the component during scrolling the container.',
+        'Determines the behavior of the component during scrolling of the parent container.',
       options: ['scroll', 'block', 'close'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'scroll' } },
@@ -151,7 +151,7 @@ interface IgcDropdownArgs {
     | 'left-end';
   /** Sets the component's positioning strategy. */
   positionStrategy: 'absolute' | 'fixed';
-  /** Determines the behavior of the component during scrolling the container. */
+  /** Determines the behavior of the component during scrolling of the parent container. */
   scrollStrategy: 'scroll' | 'block' | 'close';
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
@@ -199,6 +199,7 @@ export const Basic: Story = {
     placement,
     positionStrategy,
     sameWidth,
+    scrollStrategy,
   }) => html`
     <style>
       .dropdown-container {
@@ -225,6 +226,7 @@ export const Basic: Story = {
         .placement=${placement}
         .positionStrategy=${positionStrategy}
         .distance=${distance}
+        .scrollStrategy=${scrollStrategy}
       >
         <igc-button slot="target">Default</igc-button>
         <igc-dropdown-header>Tasks</igc-dropdown-header>
@@ -241,6 +243,7 @@ export const Basic: Story = {
         .placement=${placement}
         .positionStrategy=${positionStrategy}
         .distance=${distance}
+        .scrollStrategy=${scrollStrategy}
       >
         <igc-button slot="target">With vertical overflow</igc-button>
         <igc-dropdown-header>Tasks</igc-dropdown-header>
