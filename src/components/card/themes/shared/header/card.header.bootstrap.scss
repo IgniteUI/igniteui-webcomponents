@@ -1,11 +1,4 @@
 @use 'styles/utilities' as *;
-@use '../../light/themes' as *;
-
-$theme: $bootstrap;
-
-:host {
-    color: var-get($theme, 'header-text-color');
-}
 
 ::slotted([slot='title']) {
     @include type-style('h5');
@@ -13,6 +6,4 @@ $theme: $bootstrap;
 
 ::slotted([slot='subtitle']) {
     @include type-style('body-1');
-
-    color: var-get($theme, 'subtitle-text-color');
 }

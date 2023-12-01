@@ -11,39 +11,36 @@ import { styles as fluentLight } from './light/header/list-header.fluent.css.js'
 import { styles as indigoLight } from './light/header/list-header.indigo.css.js';
 import { styles as materialLight } from './light/header/list-header.material.css.js';
 // Shared Styles
-import { styles as bootstrap } from './shared/header/list-header.bootstrap.css.js';
-import { styles as fluent } from './shared/header/list-header.fluent.css.js';
-import { styles as indigo } from './shared/header/list-header.indigo.css.js';
-import { styles as material } from './shared/header/list-header.material.css.js';
+import { styles as shared } from './shared/header/list-header.common.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${materialLight}
   `,
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrapLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigoLight}
   `,
 };
 
 const dark = {
   material: css`
-    ${material} ${materialDark}
+    ${shared} ${materialDark}
   `,
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrapDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${shared} ${indigoDark}
   `,
 };
 

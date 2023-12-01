@@ -10,25 +10,6 @@ $stripe-size: rem(5px);
     --track-size: #{rem(16px)};
 }
 
-[part~='track'] {
-    background: var-get($theme, 'track-color');
-    border-radius: var-get($theme, 'track-border-radius');
-}
-
-[part~='value'] {
-    color: var-get($theme, 'text-color')
-}
-
-[part~='primary']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-default');
-}
-
-[part~='primary'] {
-    &::after {
-        background-color: var-get($theme, 'fill-color-default');
-    }
-}
-
 [part~='striped'][part~='primary']:not([part~='indeterminate']) {
     @include stripe-colors(var-get($theme, 'fill-color-default'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
 }
@@ -43,12 +24,6 @@ $stripe-size: rem(5px);
     background-color: var-get($theme, 'fill-color-default');
 }
 
-[part~='danger'] {
-    &::after {
-        background-color: var-get($theme, 'fill-color-danger');
-    }
-}
-
 [part~='striped'][part~='danger']:not([part~='indeterminate']) {
     @include stripe-colors(var-get($theme, 'fill-color-danger'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
 }
@@ -56,16 +31,6 @@ $stripe-size: rem(5px);
 [part~='striped'][part~='danger'] {
     &::after {
         @include stripe-colors(var-get($theme, 'fill-color-danger'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
-
-[part~='warning']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-warning');
-}
-
-[part~='warning'] {
-    &::after {
-        background-color: var-get($theme, 'fill-color-warning');
     }
 }
 
@@ -79,16 +44,6 @@ $stripe-size: rem(5px);
     }
 }
 
-[part~='info']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-info');
-}
-
-[part~='info'] {
-    &::after {
-        background-color: var-get($theme, 'fill-color-info');
-    }
-}
-
 [part~='striped'][part~='info']:not([part~='indeterminate']) {
     @include stripe-colors(var-get($theme, 'fill-color-info'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
 }
@@ -96,16 +51,6 @@ $stripe-size: rem(5px);
 [part~='striped'][part~='info'] {
     &::after {
         @include stripe-colors(var-get($theme, 'fill-color-info'), var-get($theme, 'stripes-color'), $stripe-size, 45deg);
-    }
-}
-
-[part~='success']:not([part~='indeterminate']) {
-    background-color: var-get($theme, 'fill-color-success');
-}
-
-[part~='success'] {
-    &::after {
-        background-color: var-get($theme, 'fill-color-success');
     }
 }
 
