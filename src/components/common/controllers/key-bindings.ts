@@ -191,14 +191,14 @@ class KeyBindingController implements ReactiveController {
    * events on the `element` should cease.
    */
   public observeElement(element: Element): KeyBindingObserverCleanup {
-    element.addEventListener('keydown', this.onKeyDown);
-    element.addEventListener('keyup', this.onKeyUp);
+    element.addEventListener('keydown', this);
+    element.addEventListener('keyup', this);
     this._observedElement = element;
 
     return {
       unsubscribe: () => {
-        this._observedElement?.removeEventListener('keydown', this.onKeyDown);
-        this._observedElement?.removeEventListener('keyup', this.onKeyUp);
+        this._observedElement?.removeEventListener('keydown', this);
+        this._observedElement?.removeEventListener('keyup', this);
         this._observedElement = undefined;
       },
     };
@@ -253,7 +253,7 @@ class KeyBindingController implements ReactiveController {
     return false;
   }
 
-  private _handleEvent(event: KeyboardEvent) {
+  public handleEvent(event: KeyboardEvent) {
     const key = event.key.toLowerCase();
     const path = event.composedPath();
     const skip = this._options?.skip;
@@ -301,14 +301,6 @@ class KeyBindingController implements ReactiveController {
     }
   }
 
-  private onKeyUp = (event: Event) => {
-    this._handleEvent(event as KeyboardEvent);
-  };
-
-  private onKeyDown = (event: Event) => {
-    this._handleEvent(event as KeyboardEvent);
-  };
-
   /**
    * Registers a keybinding handler.
    */
@@ -344,13 +336,13 @@ class KeyBindingController implements ReactiveController {
   }
 
   public hostConnected(): void {
-    this._host.addEventListener('keyup', this.onKeyUp);
-    this._host.addEventListener('keydown', this.onKeyDown);
+    this._host.addEventListener('keyup', this);
+    this._host.addEventListener('keydown', this);
   }
 
   public hostDisconnected(): void {
-    this._host.removeEventListener('keyup', this.onKeyUp);
-    this._host.removeEventListener('keydown', this.onKeyDown);
+    this._host.removeEventListener('keyup', this);
+    this._host.removeEventListener('keydown', this);
   }
 }
 
