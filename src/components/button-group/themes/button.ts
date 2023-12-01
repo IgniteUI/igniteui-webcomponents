@@ -2,38 +2,38 @@ import { css } from 'lit';
 
 // Shared Styles
 import { styles as bootstrap } from './shared/button/button.bootstrap.css.js';
+import { styles as shared } from './shared/button/button.common.css.js';
 import { styles as fluent } from './shared/button/button.fluent.css.js';
 import { styles as indigo } from './shared/button/button.indigo.css.js';
-import { styles as material } from './shared/button/button.material.css.js';
 import type { Themes } from '../../../theming/types';
 
 const light = {
   bootstrap: css`
-    ${bootstrap}
+    ${shared} ${bootstrap}
   `,
   material: css`
-    ${material}
+    ${shared}
   `,
   fluent: css`
-    ${fluent}
+    ${shared} ${fluent}
   `,
   indigo: css`
-    ${indigo}
+    ${shared} ${indigo}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap}
+    ${shared} ${bootstrap}
   `,
   material: css`
-    ${material}
+    ${shared}
   `,
   fluent: css`
-    ${fluent}
+    ${shared} ${fluent}
   `,
   indigo: css`
-    ${indigo}
+    ${shared} ${indigo}
   `,
 };
 

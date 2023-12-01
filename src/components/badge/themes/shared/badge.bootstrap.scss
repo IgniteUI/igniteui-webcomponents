@@ -3,20 +3,6 @@
 
 $theme: $bootstrap;
 
-::slotted(igc-icon) {
-    color: var-get($theme, 'icon-color');
-}
-
-:host([variant='primary']) {
-    background: var-get($theme, 'background-color');
-    color: var-get($theme, 'text-color');
-}
-
-:host([shape='square']),
-:host([outlined][shape='square']) [part='base'] {
-    border-radius: var-get($theme, 'border-radius');
-}
-
 :host([outlined]) [part='base'] {
     box-shadow: inset 0 0 0 rem(1px) var-get($theme, 'border-color');
 }
