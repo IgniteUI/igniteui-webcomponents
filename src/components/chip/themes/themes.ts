@@ -12,38 +12,38 @@ import { styles as indigoLight } from './light/chip.indigo.css.js';
 import { styles as materialLight } from './light/chip.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/chip.bootstrap.css.js';
+import { styles as shared } from './shared/chip.common.css.js';
 import { styles as fluent } from './shared/chip.fluent.css.js';
 import { styles as indigo } from './shared/chip.indigo.css.js';
-import { styles as material } from './shared/chip.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigo} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${shared} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${shared} ${indigo} ${indigoDark}
   `,
 };
 

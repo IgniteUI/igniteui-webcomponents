@@ -5,15 +5,4 @@ $theme: $bootstrap;
 
 :host {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
-
-    color: var-get($theme, 'color');
-}
-
-svg {
-    fill: currentcolor;
-}
-
-igc-icon,
-svg {
-    font-size: var-get($theme, 'size');
 }

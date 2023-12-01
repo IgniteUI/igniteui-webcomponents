@@ -77,6 +77,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
     `;
   }
 
+  /* c8 ignore next 8 */
   @blazorInclude()
   protected async registerIcon(
     name: string,
@@ -86,6 +87,7 @@ export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
     await registerIcon_impl(name, url, collection);
   }
 
+  /* c8 ignore next 8 */
   @blazorInclude()
   protected registerIconFromText(
     name: string,

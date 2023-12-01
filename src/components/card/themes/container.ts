@@ -11,39 +11,37 @@ import { styles as fluentLight } from './light/container/card.fluent.css.js';
 import { styles as indigoLight } from './light/container/card.indigo.css.js';
 import { styles as materialLight } from './light/container/card.material.css.js';
 // Shared Styles
-import { styles as bootstrap } from './shared/container/card.bootstrap.css.js';
+import { styles as shared } from './shared/container/card.common.css.js';
 import { styles as fluent } from './shared/container/card.fluent.css.js';
-import { styles as indigo } from './shared/container/card.indigo.css.js';
-import { styles as material } from './shared/container/card.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${shared} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${shared} ${indigoDark}
   `,
 };
 

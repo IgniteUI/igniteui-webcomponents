@@ -12,38 +12,38 @@ import { styles as indigoLight } from './light/linear.progress.indigo.css.js';
 import { styles as materialLight } from './light/linear.progress.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/linear.progress.bootstrap.css.js';
+import { styles as shared } from './shared/linear.progress.common.css.js';
 import { styles as fluent } from './shared/linear.progress.fluent.css.js';
 import { styles as indigo } from './shared/linear.progress.indigo.css.js';
-import { styles as material } from './shared/linear.progress.material.css.js';
 import { Themes } from '../../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigo} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${shared} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${shared} ${indigo} ${indigoDark}
   `,
 };
 
