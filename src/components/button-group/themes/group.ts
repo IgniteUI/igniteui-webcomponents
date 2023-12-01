@@ -12,38 +12,38 @@ import { styles as indigoLight } from './light/button-group.indigo.css.js';
 import { styles as materialLight } from './light/button-group.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/group/group.bootstrap.css.js';
+import { styles as shared } from './shared/group/group.common.css.js';
 import { styles as fluent } from './shared/group/group.fluent.css.js';
 import { styles as indigo } from './shared/group/group.indigo.css.js';
-import { styles as material } from './shared/group/group.material.css.js';
 import type { Themes } from '../../../theming/types';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigo} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${shared} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${shared} ${indigo} ${indigoDark}
   `,
 };
 
