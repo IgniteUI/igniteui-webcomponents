@@ -1,9 +1,9 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
-interface RootClickControllerConfig {
+type RootClickControllerConfig = {
   hideCallback?: Function;
   target?: HTMLElement;
-}
+};
 
 type RootClickControllerHost = ReactiveControllerHost &
   HTMLElement & {
