@@ -155,3 +155,17 @@ export function* iterNodes<T = Node>(
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
   return (root.getRootNode() as Document | ShadowRoot).getElementById(id);
 }
+
+export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {
+  const result: Record<string, T[]> = {};
+  const _get = typeof key === 'function' ? key : (item: T) => item[key];
+
+  for (const item of array) {
+    const category = _get(item);
+    const group = result[category];
+
+    Array.isArray(group) ? group.push(item) : (result[category] = [item]);
+  }
+
+  return result;
+}

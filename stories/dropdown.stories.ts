@@ -191,6 +191,40 @@ const overflowItems = Array.from(range(1, 51)).map(
 
 export const Basic: Story = {
   render: ({
+    open,
+    flip,
+    keepOpenOnOutsideClick,
+    keepOpenOnSelect,
+    sameWidth,
+    placement,
+    positionStrategy,
+    distance,
+    scrollStrategy,
+  }) => html`
+    <igc-dropdown
+      id="dropdown"
+      ?open=${open}
+      ?flip=${flip}
+      ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
+      ?keep-open-on-select=${keepOpenOnSelect}
+      ?same-width=${sameWidth}
+      .placement=${placement}
+      .positionStrategy=${positionStrategy}
+      .distance=${distance}
+      .scrollStrategy=${scrollStrategy}
+    >
+      <igc-button slot="target">Tasks</igc-button>
+      <igc-dropdown-header>Available tasks:</igc-dropdown-header>
+      ${Items}
+    </igc-dropdown>
+  `,
+};
+
+export const Overflow: Story = {
+  args: {
+    sameWidth: true,
+  },
+  render: ({
     distance,
     open,
     flip,
@@ -204,38 +238,18 @@ export const Basic: Story = {
     <style>
       .dropdown-container {
         display: flex;
-        gap: 2rem;
+        margin: 20rem auto;
+        justify-content: center;
       }
 
-      #dropdown-groups::part(base) {
-        max-height: 350px;
-      }
-
-      #overflowing::part(base) {
-        max-height: 350px;
+      #overflowing::part(list) {
+        max-height: 50vh;
       }
     </style>
     <div class="dropdown-container">
       <igc-dropdown
-        id="dropdown"
-        ?open=${open}
-        ?flip=${flip}
-        ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
-        ?keep-open-on-select=${keepOpenOnSelect}
-        ?same-width=${sameWidth}
-        .placement=${placement}
-        .positionStrategy=${positionStrategy}
-        .distance=${distance}
-        .scrollStrategy=${scrollStrategy}
-      >
-        <igc-button slot="target">Default</igc-button>
-        <igc-dropdown-header>Tasks</igc-dropdown-header>
-        ${Items}
-      </igc-dropdown>
-
-      <igc-dropdown
         id="overflowing"
-        same-width
+        ?same-width=${sameWidth}
         ?open=${open}
         ?flip=${flip}
         ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
@@ -246,7 +260,7 @@ export const Basic: Story = {
         .scrollStrategy=${scrollStrategy}
       >
         <igc-button slot="target">With vertical overflow</igc-button>
-        <igc-dropdown-header>Tasks</igc-dropdown-header>
+        <igc-dropdown-header>Items:</igc-dropdown-header>
         ${overflowItems}
       </igc-dropdown>
     </div>
