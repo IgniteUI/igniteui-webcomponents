@@ -12,38 +12,38 @@ import { styles as indigoLight } from './light/rating.indigo.css.js';
 import { styles as materialLight } from './light/rating.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/rating.bootstrap.css.js';
+import { styles as shared } from './shared/rating.common.css.js';
 import { styles as fluent } from './shared/rating.fluent.css.js';
 import { styles as indigo } from './shared/rating.indigo.css.js';
-import { styles as material } from './shared/rating.material.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigo} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${shared} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${shared} ${indigo} ${indigoDark}
   `,
 };
 

@@ -12,38 +12,36 @@ import { styles as indigoLight } from './light/badge.indigo.css.js';
 import { styles as materialLight } from './light/badge.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/badge.bootstrap.css.js';
-import { styles as fluent } from './shared/badge.fluent.css.js';
-import { styles as indigo } from './shared/badge.indigo.css.js';
-import { styles as material } from './shared/badge.material.css.js';
+import { styles as shared } from './shared/badge.common.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${shared} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${shared} ${indigoDark}
   `,
 };
 

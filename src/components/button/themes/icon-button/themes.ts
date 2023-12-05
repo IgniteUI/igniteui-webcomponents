@@ -12,6 +12,7 @@ import { styles as indigoLight } from './light/icon-button.indigo.css.js';
 import { styles as materialLight } from './light/icon-button.material.css.js';
 // Shared Styles
 import { styles as bootstrap } from './shared/icon-button.bootstrap.css.js';
+import { styles as shared } from './shared/icon-button.common.css.js';
 import { styles as fluent } from './shared/icon-button.fluent.css.js';
 import { styles as indigo } from './shared/icon-button.indigo.css.js';
 import { styles as material } from './shared/icon-button.material.css.js';
@@ -19,31 +20,31 @@ import { Themes } from '../../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapLight}
+    ${shared} ${bootstrap} ${bootstrapLight}
   `,
   material: css`
-    ${material} ${materialLight}
+    ${shared} ${material} ${materialLight}
   `,
   fluent: css`
-    ${fluent} ${fluentLight}
+    ${shared} ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${indigo} ${indigoLight}
+    ${shared} ${indigo} ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${bootstrap} ${bootstrapDark}
+    ${shared} ${bootstrap} ${bootstrapDark}
   `,
   material: css`
-    ${material} ${materialDark}
+    ${shared} ${material} ${materialDark}
   `,
   fluent: css`
-    ${fluent} ${fluentDark}
+    ${shared} ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${indigo} ${indigoDark}
+    ${shared} ${indigo} ${indigoDark}
   `,
 };
 

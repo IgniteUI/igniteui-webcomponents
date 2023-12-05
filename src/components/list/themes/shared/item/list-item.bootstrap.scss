@@ -4,33 +4,18 @@
 $theme: $bootstrap;
 
 :host {
-    color: var-get($theme, 'item-text-color');
-    background: var-get($theme, 'item-background');
     border-bottom: rem(1px) solid var-get($theme, 'border-color');
-    border-radius: var-get($theme, 'item-border-radius');
-}
-
-:host(:hover),
-:host(:focus-within) {
-    background: var-get($theme, 'item-background-hover');
 }
 
 :host(:last-of-type) {
     border-bottom: none;
 }
 
-::slotted(igc-icon) {
-    color: var-get($theme, 'item-action-color');
-}
 
 [part='title'] {
     @include type-style('body-1');
-
-    color: var-get($theme, 'item-title-color');
 }
 
 [part='subtitle'] {
     @include type-style('subtitle-1');
-
-    color: var-get($theme, 'item-subtitle-color');
 }

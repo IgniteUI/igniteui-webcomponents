@@ -8,27 +8,14 @@ $theme: $indigo;
 }
 
 :host button {
-    border-radius: var-get($theme, 'border-radius');
     border: rem(1px) solid var-get($theme, 'border-color');
-    background: var-get($theme, 'background');
-    color: var-get($theme, 'text-color');
-    height: var-get($theme, 'size');
-
-    &:hover {
-        background: var-get($theme, 'hover-background');
-        color: var-get($theme, 'hover-text-color');
-    }
 
     &:focus {
-        background: var-get($theme, 'focus-background');
-        color: var-get($theme, 'focus-text-color');
         outline: rem(3px) solid var-get($theme, 'focus-outline-color');
     }
 
     &[disabled] {
         border-color: var-get($theme, 'disabled-border-color');
-        background: var-get($theme, 'disabled-background');
-        color: var-get($theme, 'disabled-text-color');
     }
 }
 
