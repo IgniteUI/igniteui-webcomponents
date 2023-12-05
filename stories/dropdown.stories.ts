@@ -1,10 +1,12 @@
 import { github, whiteHouse1 } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
+import { range } from 'lit/directives/range.js';
 
 import {
+  IgcButtonComponent,
   IgcDropdownComponent,
-  IgcDropdownItemComponent,
+  IgcIconComponent,
   IgcInputComponent,
   defineComponents,
   registerIconFromText,
@@ -16,7 +18,12 @@ icons.forEach((icon) => {
   registerIconFromText(icon.name, icon.value);
 });
 
-defineComponents(IgcDropdownComponent, IgcInputComponent);
+defineComponents(
+  IgcDropdownComponent,
+  IgcInputComponent,
+  IgcButtonComponent,
+  IgcIconComponent
+);
 
 // region default
 const metadata: Meta<IgcDropdownComponent> = {
@@ -35,18 +42,6 @@ const metadata: Meta<IgcDropdownComponent> = {
     },
   },
   argTypes: {
-    keepOpenOnSelect: {
-      type: 'boolean',
-      description: 'Whether the dropdown should be kept open on selection.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
-    open: {
-      type: 'boolean',
-      description: 'Sets the open state of the component.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
     placement: {
       type: '"top" | "top-start" | "top-end" | "bottom" | "bottom-start" | "bottom-end" | "right" | "right-start" | "right-end" | "left" | "left-start" | "left-end"',
       description:
@@ -78,7 +73,7 @@ const metadata: Meta<IgcDropdownComponent> = {
     scrollStrategy: {
       type: '"scroll" | "block" | "close"',
       description:
-        'Determines the behavior of the component during scrolling the container.',
+        'Determines the behavior of the component during scrolling of the parent container.',
       options: ['scroll', 'block', 'close'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'scroll' } },
@@ -96,13 +91,6 @@ const metadata: Meta<IgcDropdownComponent> = {
       control: 'number',
       table: { defaultValue: { summary: 0 } },
     },
-    keepOpenOnOutsideClick: {
-      type: 'boolean',
-      description:
-        'Whether the component should be kept open on clicking outside of it.',
-      control: 'boolean',
-      table: { defaultValue: { summary: false } },
-    },
     sameWidth: {
       type: 'boolean',
       description:
@@ -110,27 +98,43 @@ const metadata: Meta<IgcDropdownComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
+    keepOpenOnSelect: {
+      type: 'boolean',
+      description:
+        'Whether the component dropdown should be kept open on selection.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    keepOpenOnOutsideClick: {
+      type: 'boolean',
+      description:
+        'Whether the component dropdown should be kept open on clicking outside of it.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
+    open: {
+      type: 'boolean',
+      description: 'Sets the open state of the component.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
   },
   args: {
-    keepOpenOnSelect: false,
-    open: false,
     placement: 'bottom-start',
     positionStrategy: 'absolute',
     scrollStrategy: 'scroll',
     flip: false,
     distance: 0,
-    keepOpenOnOutsideClick: false,
     sameWidth: false,
+    keepOpenOnSelect: false,
+    keepOpenOnOutsideClick: false,
+    open: false,
   },
 };
 
 export default metadata;
 
 interface IgcDropdownArgs {
-  /** Whether the dropdown should be kept open on selection. */
-  keepOpenOnSelect: boolean;
-  /** Sets the open state of the component. */
-  open: boolean;
   /** The preferred placement of the component around the target element. */
   placement:
     | 'top'
@@ -147,7 +151,7 @@ interface IgcDropdownArgs {
     | 'left-end';
   /** Sets the component's positioning strategy. */
   positionStrategy: 'absolute' | 'fixed';
-  /** Determines the behavior of the component during scrolling the container. */
+  /** Determines the behavior of the component during scrolling of the parent container. */
   scrollStrategy: 'scroll' | 'block' | 'close';
   /**
    * Whether the component should be flipped to the opposite side of the target once it's about to overflow the visible area.
@@ -156,269 +160,273 @@ interface IgcDropdownArgs {
   flip: boolean;
   /** The distance from the target element. */
   distance: number;
-  /** Whether the component should be kept open on clicking outside of it. */
-  keepOpenOnOutsideClick: boolean;
   /** Whether the dropdown's width should be the same as the target's one. */
   sameWidth: boolean;
+  /** Whether the component dropdown should be kept open on selection. */
+  keepOpenOnSelect: boolean;
+  /** Whether the component dropdown should be kept open on clicking outside of it. */
+  keepOpenOnOutsideClick: boolean;
+  /** Sets the open state of the component. */
+  open: boolean;
 }
 type Story = StoryObj<IgcDropdownArgs>;
 
 // endregion
 
-const toggleDDL = (ev: Event, ddlId: string) => {
-  const ddl = document.getElementById(ddlId) as IgcDropdownComponent;
-  if (ddlId === 'ddl2') {
-    const target = ev.target as HTMLElement;
-    ddl.placement = target.id === 'ddlButton2' ? 'top-end' : 'bottom-start';
-    ddl.toggle(ev.target as HTMLElement);
-  } else {
-    ev.stopPropagation();
-    ddl.toggle();
-  }
-};
-
-const items = [
+const Items = [
   'Specification',
   'Implementation',
   'Testing',
   'Samples',
   'Documentation',
   'Builds',
-];
-const Template = ({
-  open = false,
-  flip = false,
-  keepOpenOnOutsideClick = false,
-  positionStrategy = 'absolute',
-  placement = 'bottom-start',
-  scrollStrategy = 'block',
-  keepOpenOnSelect = false,
-  sameWidth = false,
-  distance = 0,
-}: IgcDropdownArgs) => html`
-  <div
-    style="display: flex; align-items: flex-start; position: relative; height: 400px"
-  >
+].map(
+  (each) => html`<igc-dropdown-item value=${each}>${each}</igc-dropdown-item>`
+);
+
+const overflowItems = Array.from(range(1, 51)).map(
+  (each) =>
+    html`<igc-dropdown-item value=${each}>Item ${each}</igc-dropdown-item>`
+);
+
+export const Basic: Story = {
+  render: ({
+    open,
+    flip,
+    keepOpenOnOutsideClick,
+    keepOpenOnSelect,
+    sameWidth,
+    placement,
+    positionStrategy,
+    distance,
+    scrollStrategy,
+  }) => html`
     <igc-dropdown
-      id="ddl1"
+      id="dropdown"
       ?open=${open}
       ?flip=${flip}
       ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
-      placement=${placement}
-      scroll-strategy=${scrollStrategy}
-      distance=${distance}
-      .sameWidth=${sameWidth}
-      .positionStrategy=${positionStrategy}
-      .keepOpenOnSelect=${keepOpenOnSelect}
-    >
-      <igc-button slot="target">Dropdown 1</igc-button>
-      <igc-dropdown-header>Tasks</igc-dropdown-header>
-      <!-- ${items.map(
-        (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-      )} -->
-      ${items
-        .slice(0, 2)
-        .map(
-          (item) =>
-            html`<igc-dropdown-item
-              ><igc-icon slot="prefix" name="white-house-1"></igc-icon
-              >${item}<igc-icon name="github" slot="suffix"></igc-icon
-            ></igc-dropdown-item>`
-        )}
-      ${html`<igc-dropdown-item disabled
-        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
-        >${items[2]}<igc-icon name="github" slot="suffix"></igc-icon
-      ></igc-dropdown-item>`}
-      ${html`<igc-dropdown-item
-        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
-        >${items[3]}<igc-icon name="github" slot="suffix"></igc-icon
-      ></igc-dropdown-item>`}
-      ${html`<igc-dropdown-item
-        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
-        >${items[4]}<igc-icon name="github" slot="suffix"></igc-icon
-      ></igc-dropdown-item>`}
-      ${html`<igc-dropdown-item disabled
-        ><igc-icon slot="prefix" name="white-house-1"></igc-icon
-        >${items[5]}<igc-icon name="github" slot="suffix"></igc-icon
-      ></igc-dropdown-item>`}
-    </igc-dropdown>
-
-    <div class="ig-scrollbar" style="display: flex;">
-      <div style="position: absolute; right: 0px; top: 50px">
-        <style>
-          #ddl2::part(list) {
-            height: 150px;
-            width: 200px;
-          }
-        </style>
-        <igc-button
-          id="ddlButton"
-          @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
-          >Dropdown 2.1</igc-button
-        >
-        <igc-button
-          id="ddlButton2"
-          @click="${(ev: Event) => toggleDDL(ev, 'ddl2')}"
-          >Dropdown 2.2</igc-button
-        >
-        <igc-dropdown
-          id="ddl2"
-          .open=${open}
-          .flip=${flip}
-          .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
-          .placement=${placement}
-          .scrollStrategy=${scrollStrategy}
-          .sameWidth=${sameWidth}
-          .positionStrategy=${positionStrategy}
-        >
-          <igc-dropdown-group>
-            <h3 slot="label">Research & Development</h3>
-            ${items
-              .slice(0, 3)
-              .map(
-                (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-              )}
-          </igc-dropdown-group>
-          <igc-dropdown-group>
-            <h3 slot="label">Product Guidance</h3>
-            ${items
-              .slice(3, 5)
-              .map(
-                (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-              )}
-          </igc-dropdown-group>
-          <igc-dropdown-group>
-            <h3 slot="label">Release Engineering</h3>
-            <igc-dropdown-item
-              ><igc-icon slot="prefix" name="home"></igc-icon>${items[5]}<span
-                slot="suffix"
-                >-</span
-              ></igc-dropdown-item
-            >
-          </igc-dropdown-group>
-        </igc-dropdown>
-      </div>
-    </div>
-
-    <igc-dropdown
-      id="ddl3"
-      style="align-self: center;"
-      distance=${distance}
-      .open=${open}
-      .flip=${flip}
-      .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
-      .placement=${placement}
-      .scrollStrategy=${scrollStrategy}
-      .sameWidth=${sameWidth}
-      .positionStrategy=${positionStrategy}
-    >
-      <igc-button slot="target">Dropdown 3</igc-button>
-      ${items.map(
-        (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-      )}
-    </igc-dropdown>
-
-    <igc-dropdown
-      style="position: absolute; bottom: 10px; left: 0px"
-      id="ddl4"
-      .open=${open}
-      .flip=${flip}
-      .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
-      .placement=${placement}
-      .scrollStrategy=${scrollStrategy}
-      .sameWidth=${sameWidth}
-      .positionStrategy=${positionStrategy}
-    >
-      <input
-        type="button"
-        slot="target"
-        style="width: 150px"
-        value="Dropdown 4"
-      />
-      <!-- ${items.slice(0, 5).map((item) => html`<h4>${item}</h4>`)} -->
-      ${items.map(
-        (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-      )}
-    </igc-dropdown>
-    <igc-dropdown
-      style="position: fixed; bottom: 0px; right: 0px"
-      id="ddl5"
-      .open=${open}
-      .flip=${true}
-      .keepOpenOnOutsideClick=${keepOpenOnOutsideClick}
+      ?keep-open-on-select=${keepOpenOnSelect}
+      ?same-width=${sameWidth}
       .placement=${placement}
       .positionStrategy=${positionStrategy}
+      .distance=${distance}
       .scrollStrategy=${scrollStrategy}
-      .sameWidth=${sameWidth}
     >
-      <input slot="target" style="width: 150px" />
-      <!-- ${items.slice(0, 5).map((item) => html`<h4>${item}</h4>`)} -->
-      ${items.map(
-        (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-      )}
+      <igc-button slot="target">Tasks</igc-button>
+      <igc-dropdown-header>Available tasks:</igc-dropdown-header>
+      ${Items}
     </igc-dropdown>
-  </div>
-`;
+  `,
+};
 
-const FormTemplate = () => checkoutForm;
-const countries = [
-  'Bulgaria',
-  'United Kingdom',
-  'USA',
-  'Canada',
-  'Japan',
-  'India',
-];
-const scrollStrategy = 'block';
-const checkoutForm = html`
-  <!-- <div> -->
-  <igc-form>
-    <div>
+export const Overflow: Story = {
+  args: {
+    sameWidth: true,
+  },
+  render: ({
+    distance,
+    open,
+    flip,
+    keepOpenOnOutsideClick,
+    keepOpenOnSelect,
+    placement,
+    positionStrategy,
+    sameWidth,
+    scrollStrategy,
+  }) => html`
+    <style>
+      .dropdown-container {
+        display: flex;
+        margin: 20rem auto;
+        justify-content: center;
+      }
+
+      #overflowing::part(list) {
+        max-height: 50vh;
+      }
+    </style>
+    <div class="dropdown-container">
       <igc-dropdown
-        id="ddlCountry"
-        @igcChange=${(_ev: CustomEvent) => {
-          (document.getElementById('txtCountry') as IgcInputComponent).value = (
-            _ev.detail as IgcDropdownItemComponent
-          ).value;
-        }}
+        id="overflowing"
+        ?same-width=${sameWidth}
+        ?open=${open}
+        ?flip=${flip}
+        ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
+        ?keep-open-on-select=${keepOpenOnSelect}
+        .placement=${placement}
+        .positionStrategy=${positionStrategy}
+        .distance=${distance}
         .scrollStrategy=${scrollStrategy}
       >
-        <igc-input
-          slot="target"
-          type="text"
-          label="Country"
-          id="txtCountry"
-          style="width: 150px"
-        ></igc-input>
-        <igc-dropdown-group>
-          <igc-dropdown-header slot="label">Europe</igc-dropdown-header>
-          ${countries
-            .slice(0, 2)
-            .map(
-              (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-            )}
-        </igc-dropdown-group>
-        <igc-dropdown-group>
-          <igc-dropdown-header slot="label">North America</igc-dropdown-header>
-          ${countries
-            .slice(2, 4)
-            .map(
-              (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-            )}
-        </igc-dropdown-group>
-        <igc-dropdown-group>
-          <igc-dropdown-header slot="label">Asia</igc-dropdown-header>
-          ${countries
-            .slice(4)
-            .map(
-              (item) => html`<igc-dropdown-item>${item}</igc-dropdown-item>`
-            )}
-        </igc-dropdown-group>
+        <igc-button slot="target">With vertical overflow</igc-button>
+        <igc-dropdown-header>Items:</igc-dropdown-header>
+        ${overflowItems}
       </igc-dropdown>
     </div>
-  </igc-form>
-  <!-- </div> -->
-`;
+  `,
+};
 
-export const Basic: Story = Template.bind({});
-export const Form: Story = FormTemplate.bind({});
+const gdpEurope = [
+  {
+    country: 'Luxembourg',
+    value: '135,605',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Flag_of_Luxembourg.svg/23px-Flag_of_Luxembourg.svg.png`,
+  },
+  {
+    country: 'Ireland',
+    value: '112,248',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Flag_of_Ireland.svg/23px-Flag_of_Ireland.svg.png`,
+  },
+  {
+    country: 'Switzerland',
+    value: '102,865',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Flag_of_Switzerland_%28Pantone%29.svg/15px-Flag_of_Switzerland_%28Pantone%29.svg.png`,
+  },
+].map(
+  ({ country, flag, value }) =>
+    html`<igc-dropdown-item value=${country}>
+      <img slot="prefix" src=${flag} alt="Flag of ${country}" />
+      ${country} ${value}
+    </igc-dropdown-item>`
+);
+
+const gdpAmericas = [
+  {
+    country: 'United States',
+    value: '80,412',
+    flag: `https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Flag_of_the_United_States.svg/23px-Flag_of_the_United_States.svg.png`,
+  },
+  {
+    country: 'Canada',
+    value: '53,247',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Flag_of_Canada_%28Pantone%29.svg/23px-Flag_of_Canada_%28Pantone%29.svg.png`,
+  },
+  {
+    country: 'Puerto Rico',
+    value: '37,093',
+    flag: `https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Flag_of_Puerto_Rico.svg/23px-Flag_of_Puerto_Rico.svg.png`,
+  },
+].map(
+  ({ country, flag, value }) =>
+    html`<igc-dropdown-item value=${country}>
+      <img slot="prefix" src=${flag} alt="Flag of ${country}" />
+      ${country} ${value}
+    </igc-dropdown-item>`
+);
+
+export const GroupsAndHeaders: Story = {
+  args: {
+    sameWidth: true,
+  },
+  render: ({
+    open,
+    keepOpenOnOutsideClick,
+    keepOpenOnSelect,
+    distance,
+    flip,
+    placement,
+    positionStrategy,
+    sameWidth,
+  }) => html`
+    <style>
+      igc-dropdown-header {
+        text-align: start;
+      }
+      img {
+        width: 23px;
+        height: 12px;
+      }
+      .group-title {
+        font-size: 0.75rem;
+      }
+    </style>
+    <igc-dropdown
+      id="groups-and-headers"
+      ?open=${open}
+      ?flip=${flip}
+      ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
+      ?keep-open-on-select=${keepOpenOnSelect}
+      ?same-width=${sameWidth}
+      .placement=${placement}
+      .positionStrategy=${positionStrategy}
+      .distance=${distance}
+    >
+      <igc-button slot="target"
+        >GDP (in USD) per capita by country (IMF)</igc-button
+      >
+
+      <igc-dropdown-group>
+        <p class="group-title" slot="label">
+          UN Region: <strong>Europe</strong>
+        </p>
+        <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
+        ${gdpEurope}
+      </igc-dropdown-group>
+
+      <igc-dropdown-group>
+        <p slot="label" class="group-title">
+          UN Region: <strong>Americas</strong>
+        </p>
+        <igc-dropdown-header>Estimate for 2023</igc-dropdown-header>
+        ${gdpAmericas}
+      </igc-dropdown-group>
+    </igc-dropdown>
+  `,
+};
+
+export const WithNonSlottedTarget: Story = {
+  render: ({
+    distance,
+    open,
+    flip,
+    keepOpenOnOutsideClick,
+    keepOpenOnSelect,
+    placement,
+    positionStrategy,
+    sameWidth,
+  }) => html`
+    <style>
+      .container {
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+    <div class="container">
+      <igc-button id="1st" onclick="detachedDropdown.show('1st')"
+        >First</igc-button
+      >
+      <igc-button id="2nd" onclick="detachedDropdown.show('2nd')"
+        >Second</igc-button
+      >
+      <igc-button id="3rd" onclick="detachedDropdown.show('3rd')"
+        >Third</igc-button
+      >
+      <igc-button id="4th" onclick="detachedDropdown.show('4th')"
+        >Fourth</igc-button
+      >
+    </div>
+    <igc-input
+      id="input"
+      style="max-width: 15rem"
+      label="Focus me"
+      onfocus="detachedDropdown.show('input')"
+    ></igc-input>
+
+    <igc-dropdown
+      id="detachedDropdown"
+      .distance=${distance}
+      ?open=${open}
+      ?flip=${flip}
+      ?keep-open-on-outside-click=${keepOpenOnOutsideClick}
+      ?keep-open-on-select=${keepOpenOnSelect}
+      .placement=${placement}
+      .positionStrategy=${positionStrategy}
+      ?same-width=${sameWidth}
+    >
+      <igc-dropdown-item>1</igc-dropdown-item>
+      <igc-dropdown-item>2</igc-dropdown-item>
+      <igc-dropdown-item>3</igc-dropdown-item>
+    </igc-dropdown>
+  `,
+};

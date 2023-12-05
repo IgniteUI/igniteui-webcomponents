@@ -1,16 +1,28 @@
+import { LitElement, html } from 'lit';
+
+import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
-import IgcDropdownHeaderComponent from '../dropdown/dropdown-header.js';
+import { styles } from '../dropdown/themes/dropdown-header.base.css.js';
+import { all } from '../dropdown/themes/header.js';
 
 /**
- * @element igc-select-header - Represents a header item in a select component.
+ * Represents a header item in an igc-select component.
+ *
+ * @element igc-select-header
  *
  * @slot - Renders the header.
  */
-export default class IgcSelectHeaderComponent extends IgcDropdownHeaderComponent {
-  public static override readonly tagName = 'igc-select-header';
+@themes(all)
+export default class IgcSelectHeaderComponent extends LitElement {
+  public static readonly tagName = 'igc-select-header';
+  public static override styles = styles;
 
-  public static override register() {
+  public static register() {
     registerComponent(this);
+  }
+
+  protected override render() {
+    return html`<slot></slot>`;
   }
 }
 

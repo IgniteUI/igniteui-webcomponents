@@ -8,6 +8,7 @@ export const arrowUp = 'ArrowUp' as const;
 export const arrowDown = 'ArrowDown' as const;
 export const enterKey = 'Enter' as const;
 export const spaceBar = ' ' as const;
+export const escapeKey = 'Escape' as const;
 export const homeKey = 'Home' as const;
 export const endKey = 'End' as const;
 export const pageUpKey = 'PageUp' as const;
@@ -22,6 +23,7 @@ export const shiftKey = 'Shift' as const;
 
 /* Types */
 export type KeyBindingHandler = (event: KeyboardEvent) => void;
+export type KeyBindingObserverCleanup = { unsubscribe: () => void };
 
 /**
  * Whether the current event should be ignored by the controller.
@@ -169,12 +171,37 @@ export function parseKeys(keys: string | string[]) {
 class KeyBindingController implements ReactiveController {
   protected _host: ReactiveControllerHost & Element;
   protected _ref?: Ref;
+  protected _observedElement?: Element;
   protected _options?: KeyBindingControllerOptions;
   private bindings = new Set<KeyBinding>();
   private pressedKeys = new Set<string>();
 
   protected get _element() {
+    if (this._observedElement) {
+      return this._observedElement;
+    }
     return this._ref ? this._ref.value : this._host;
+  }
+
+  /**
+   * Sets the controller to listen for keyboard events on an arbitrary `element` in the page context.
+   * All the configuration and event handlers are applied as well.
+   *
+   * Returns an object with an `unsubscribe` function which should be called when the observing of keyboard
+   * events on the `element` should cease.
+   */
+  public observeElement(element: Element): KeyBindingObserverCleanup {
+    element.addEventListener('keydown', this);
+    element.addEventListener('keyup', this);
+    this._observedElement = element;
+
+    return {
+      unsubscribe: () => {
+        this._observedElement?.removeEventListener('keydown', this);
+        this._observedElement?.removeEventListener('keyup', this);
+        this._observedElement = undefined;
+      },
+    };
   }
 
   constructor(
@@ -226,7 +253,7 @@ class KeyBindingController implements ReactiveController {
     return false;
   }
 
-  private _handleEvent(event: KeyboardEvent) {
+  public handleEvent(event: KeyboardEvent) {
     const key = event.key.toLowerCase();
     const path = event.composedPath();
     const skip = this._options?.skip;
@@ -274,14 +301,6 @@ class KeyBindingController implements ReactiveController {
     }
   }
 
-  private onKeyUp = (event: Event) => {
-    this._handleEvent(event as KeyboardEvent);
-  };
-
-  private onKeyDown = (event: Event) => {
-    this._handleEvent(event as KeyboardEvent);
-  };
-
   /**
    * Registers a keybinding handler.
    */
@@ -317,13 +336,13 @@ class KeyBindingController implements ReactiveController {
   }
 
   public hostConnected(): void {
-    this._host.addEventListener('keyup', this.onKeyUp);
-    this._host.addEventListener('keydown', this.onKeyDown);
+    this._host.addEventListener('keyup', this);
+    this._host.addEventListener('keydown', this);
   }
 
   public hostDisconnected(): void {
-    this._host.removeEventListener('keyup', this.onKeyUp);
-    this._host.removeEventListener('keydown', this.onKeyDown);
+    this._host.removeEventListener('keyup', this);
+    this._host.removeEventListener('keydown', this);
   }
 }
 

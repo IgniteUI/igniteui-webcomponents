@@ -6,7 +6,9 @@ import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 
 /**
- * @element igc-dropdown-header - Represents a header item in a dropdown list.
+ * Represents a header item in a igc-dropdown list.
+ *
+ * @element igc-dropdown-header
  *
  * @slot - Renders the header.
  */
