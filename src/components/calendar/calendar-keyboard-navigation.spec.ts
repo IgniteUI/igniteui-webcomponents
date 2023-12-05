@@ -1,7 +1,11 @@
 import { elementUpdated, expect } from '@open-wc/testing';
 
 import { createCalendarElement } from './calendar-rendering.spec.js';
-import { IgcCalendarComponent, defineComponents } from '../../index.js';
+import IgcCalendarComponent from './calendar.js';
+import IgcDaysViewComponent from './days-view/days-view.js';
+import IgcMonthsViewComponent from './months-view/months-view.js';
+import IgcYearsViewComponent from './years-view/years-view.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 
 describe('Calendar Rendering', () => {
   before(() => {
@@ -9,9 +13,46 @@ describe('Calendar Rendering', () => {
   });
 
   let el: IgcCalendarComponent;
-  let daysView: Element;
-  let monthsView: Element;
-  let yearsView: Element;
+  let daysView: IgcDaysViewComponent;
+  let monthsView: IgcMonthsViewComponent;
+  let yearsView: IgcYearsViewComponent;
+
+  describe('Focus state', () => {
+    beforeEach(async () => {
+      el = await createCalendarElement();
+      el.activeDate = new Date(2021, 6, 17);
+    });
+
+    it('keeps focus state inside the component when switching to months view', async () => {
+      const monthsButton = el.shadowRoot!.querySelector(
+        `[part="months-navigation"]`
+      ) as HTMLButtonElement;
+
+      // Simulate focus and "activation"
+      monthsButton.focus();
+      monthsButton.click();
+
+      await elementUpdated(el);
+
+      expect(document.activeElement).to.equal(el);
+      expect(el.shadowRoot?.activeElement).to.not.be.undefined;
+    });
+
+    it('keeps focus state inside the component when switching to years view', async () => {
+      const yearsButton = el.shadowRoot!.querySelector(
+        `[part="years-navigation"]`
+      ) as HTMLButtonElement;
+
+      // Simulate focus and "activation"
+      yearsButton.focus();
+      yearsButton.click();
+
+      await elementUpdated(el);
+
+      expect(document.activeElement).to.equal(el);
+      expect(el.shadowRoot?.activeElement).to.not.be.undefined;
+    });
+  });
 
   describe('Days view', async () => {
     beforeEach(async () => {
@@ -21,11 +62,11 @@ describe('Calendar Rendering', () => {
       el.activeDate = new Date(2021, 6, 17);
 
       await elementUpdated(el);
-
-      daysView = el.shadowRoot?.querySelector('igc-days-view') as Element;
+      daysView = el.shadowRoot!.querySelector(IgcDaysViewComponent.tagName)!;
     });
 
     it('passes the a11y audit', async () => {
+      await expect(daysView).to.be.accessible();
       await expect(daysView).shadowDom.to.be.accessible();
     });
 
@@ -213,7 +254,9 @@ describe('Calendar Rendering', () => {
 
       await elementUpdated(el);
 
-      monthsView = el.shadowRoot?.querySelector('igc-months-view') as Element;
+      monthsView = el.shadowRoot!.querySelector(
+        IgcMonthsViewComponent.tagName
+      )!;
     });
 
     it('successfully switches to first month by pressing Home', async () => {
@@ -342,7 +385,7 @@ describe('Calendar Rendering', () => {
 
       await elementUpdated(el);
 
-      yearsView = el.shadowRoot?.querySelector('igc-years-view') as Element;
+      yearsView = el.shadowRoot!.querySelector(IgcYearsViewComponent.tagName)!;
     });
 
     it('successfully switches to first year by pressing Home', async () => {
