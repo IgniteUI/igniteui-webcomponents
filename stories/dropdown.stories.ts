@@ -393,20 +393,28 @@ export const WithNonSlottedTarget: Story = {
       }
     </style>
     <div class="container">
-      <igc-button id="1st" onclick="dropdown.show('1st')">First</igc-button>
-      <igc-button id="2nd" onclick="dropdown.show('2nd')">Second</igc-button>
-      <igc-button id="3rd" onclick="dropdown.show('3rd')">Third</igc-button>
-      <igc-button id="4th" onclick="dropdown.show('4th')">Fourth</igc-button>
+      <igc-button id="1st" onclick="detachedDropdown.show('1st')"
+        >First</igc-button
+      >
+      <igc-button id="2nd" onclick="detachedDropdown.show('2nd')"
+        >Second</igc-button
+      >
+      <igc-button id="3rd" onclick="detachedDropdown.show('3rd')"
+        >Third</igc-button
+      >
+      <igc-button id="4th" onclick="detachedDropdown.show('4th')"
+        >Fourth</igc-button
+      >
     </div>
     <igc-input
       id="input"
       style="max-width: 15rem"
       label="Focus me"
-      onfocus="dropdown.show('input')"
+      onfocus="detachedDropdown.show('input')"
     ></igc-input>
 
     <igc-dropdown
-      id="dropdown"
+      id="detachedDropdown"
       .distance=${distance}
       ?open=${open}
       ?flip=${flip}
