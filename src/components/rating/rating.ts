@@ -32,7 +32,7 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { clamp, format, isLTR } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 
-export interface IgcRatingEventMap {
+export interface IgcRatingComponentEventMap {
   igcChange: CustomEvent<number>;
   igcHover: CustomEvent<number>;
 }
@@ -63,7 +63,9 @@ export interface IgcRatingEventMap {
 @themes(all, true)
 export default class IgcRatingComponent extends FormAssociatedMixin(
   SizableMixin(
-    EventEmitterMixin<IgcRatingEventMap, Constructor<LitElement>>(LitElement)
+    EventEmitterMixin<IgcRatingComponentEventMap, Constructor<LitElement>>(
+      LitElement
+    )
   )
 ) {
   public static readonly tagName = 'igc-rating';

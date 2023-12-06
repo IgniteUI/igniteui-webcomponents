@@ -31,7 +31,7 @@ import {
   requiredValidator,
 } from '../common/validators.js';
 
-export interface IgcTextareaEventMap {
+export interface IgcTextareaComponentEventMap {
   igcInput: CustomEvent<string>;
   igcChange: CustomEvent<string>;
   igcFocus: CustomEvent<void>;
@@ -64,7 +64,9 @@ export interface IgcTextareaEventMap {
  */
 @themes(all, true)
 export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcTextareaComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   public static readonly tagName = 'igc-textarea';
   public static styles = [styles];

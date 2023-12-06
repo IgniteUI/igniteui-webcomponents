@@ -52,7 +52,7 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 
-export interface IgcSelectEventMap {
+export interface IgcSelectComponentEventMap {
   igcChange: CustomEvent<IgcSelectItemComponent>;
   igcBlur: CustomEvent<void>;
   igcFocus: CustomEvent<void>;
@@ -98,7 +98,7 @@ export interface IgcSelectEventMap {
 )
 export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<
-    IgcSelectEventMap,
+    IgcSelectComponentEventMap,
     Constructor<IgcBaseComboBoxLikeComponent>
   >(IgcBaseComboBoxLikeComponent)
 ) {

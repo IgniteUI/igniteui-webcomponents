@@ -8,12 +8,12 @@ import { themes } from '../../theming/theming-decorator.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
 import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { registerComponent } from '../common/definitions/register.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 import IgcIconComponent from '../icon/icon.js';
 
-export interface IgcChipEventMap {
+export interface IgcChipComponentEventMap {
   igcRemove: CustomEvent<boolean>;
   igcSelect: CustomEvent<boolean>;
 }
@@ -35,7 +35,9 @@ export interface IgcChipEventMap {
  */
 @themes(all)
 export default class IgcChipComponent extends SizableMixin(
-  EventEmitterMixin<IgcChipEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcChipComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   public static readonly tagName = 'igc-chip';
   public static styles = styles;

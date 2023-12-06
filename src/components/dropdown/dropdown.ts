@@ -40,7 +40,7 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { getElementByIdFromRoot } from '../common/util.js';
 import IgcPopoverComponent, { type IgcPlacement } from '../popover/popover.js';
 
-export interface IgcDropdownEventMap {
+export interface IgcDropdownComponentEventMap {
   igcOpening: CustomEvent<void>;
   igcOpened: CustomEvent<void>;
   igcClosing: CustomEvent<void>;
@@ -71,7 +71,7 @@ export interface IgcDropdownEventMap {
 )
 export default class IgcDropdownComponent extends SizableMixin(
   EventEmitterMixin<
-    IgcDropdownEventMap,
+    IgcDropdownComponentEventMap,
     Constructor<IgcBaseComboBoxLikeComponent>
   >(IgcBaseComboBoxLikeComponent)
 ) {

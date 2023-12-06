@@ -15,7 +15,7 @@ import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, partNameMap } from '../common/util.js';
 
-export interface IgcDialogEventMap {
+export interface IgcDialogComponentEventMap {
   igcClosing: CustomEvent<void>;
   igcClosed: CustomEvent<void>;
 }
@@ -40,7 +40,7 @@ export interface IgcDialogEventMap {
 @themes(all)
 @blazorAdditionalDependencies('IgcButtonComponent')
 export default class IgcDialogComponent extends EventEmitterMixin<
-  IgcDialogEventMap,
+  IgcDialogComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-dialog';

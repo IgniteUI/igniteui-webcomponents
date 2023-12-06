@@ -11,7 +11,7 @@ import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
 import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 
-export interface IgcSnackbarEventMap {
+export interface IgcSnackbarComponentEventMap {
   igcAction: CustomEvent<void>;
 }
 
@@ -33,7 +33,7 @@ export interface IgcSnackbarEventMap {
  */
 @themes(all)
 export default class IgcSnackbarComponent extends EventEmitterMixin<
-  IgcSnackbarEventMap,
+  IgcSnackbarComponentEventMap,
   AbstractConstructor<IgcBaseAlertLikeComponent>
 >(IgcBaseAlertLikeComponent) {
   public static readonly tagName = 'igc-snackbar';

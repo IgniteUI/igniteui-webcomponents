@@ -7,6 +7,11 @@ import { all } from './themes/button/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 
+export interface IgcButtonComponentEventMap {
+  igcFocus: CustomEvent<void>;
+  igcBlur: CustomEvent<void>;
+}
+
 /**
  * Represents a clickable button, used to submit forms or anywhere in a
  * document for accessible, standard button functionality.

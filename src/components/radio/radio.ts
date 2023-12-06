@@ -19,13 +19,13 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
 import { createCounter, isLTR, partNameMap, wrap } from '../common/util.js';
 import { Validator } from '../common/validators.js';
 
-export interface IgcRadioEventMap {
+export interface IgcRadioComponentEventMap {
   igcChange: CustomEvent<boolean>;
   igcFocus: CustomEvent<void>;
   igcBlur: CustomEvent<void>;
@@ -46,7 +46,9 @@ export interface IgcRadioEventMap {
  */
 @themes(all)
 export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
-  EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcRadioComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   public static readonly tagName = 'igc-radio';
   protected static styles = styles;

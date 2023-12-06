@@ -9,6 +9,12 @@ import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, partNameMap } from '../common/util.js';
 
+export interface IgcSwitchComponentEventMap {
+  igcChange: CustomEvent<boolean>;
+  igcFocus: CustomEvent<void>;
+  igcBlur: CustomEvent<void>;
+}
+
 /**
  * Similar to a checkbox, a switch controls the state of a single setting on or off.
  *

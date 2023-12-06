@@ -22,19 +22,21 @@ import { blazorTwoWayBind } from '../common/decorators/blazorTwoWayBind.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
-import { AbstractConstructor } from '../common/mixins/constructor.js';
+import type { AbstractConstructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { format, partNameMap } from '../common/util.js';
 import { Validator } from '../common/validators.js';
-import { IgcInputEventMap } from '../input/input-base.js';
 import {
   IgcMaskInputBaseComponent,
   MaskRange,
 } from '../mask-input/mask-input-base.js';
 
-export interface IgcDateTimeInputEventMap
-  extends Omit<IgcInputEventMap, 'igcChange'> {
+export interface IgcDateTimeInputComponentEventMap {
   igcChange: CustomEvent<Date | null>;
+  /* alternateName: inputOcurred */
+  igcInput: CustomEvent<string>;
+  igcBlur: CustomEvent<void>;
+  igcFocus: CustomEvent<void>;
 }
 
 const converter: ComplexAttributeConverter<Date | null> = {
@@ -66,7 +68,7 @@ const converter: ComplexAttributeConverter<Date | null> = {
  * @csspart helper-text - The helper text wrapper.
  */
 export default class IgcDateTimeInputComponent extends EventEmitterMixin<
-  IgcDateTimeInputEventMap,
+  IgcDateTimeInputComponentEventMap,
   AbstractConstructor<IgcMaskInputBaseComponent>
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';

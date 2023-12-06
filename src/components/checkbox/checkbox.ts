@@ -10,6 +10,12 @@ import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, partNameMap } from '../common/util.js';
 
+export interface IgcCheckboxComponentEventMap {
+  igcChange: CustomEvent<boolean>;
+  igcFocus: CustomEvent<void>;
+  igcBlur: CustomEvent<void>;
+}
+
 /**
  * A check box allowing single values to be selected/deselected.
  *
