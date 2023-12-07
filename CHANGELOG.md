@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - **`indicator-expanded`** slot added to Expansion panel [#982](https://github.com/IgniteUI/igniteui-webcomponents/pull/982)
 - **`toggle-icon-expanded`** slot added to Select [#983](https://github.com/IgniteUI/igniteui-webcomponents/pull/983)
 - Select, Dropdown - exposed **`selectedItem`**, **`items`** and **`groups`** getters
+- Tree: Added `toggleNodeOnClick` property that determines whether clicking over a node will change its expanded state or not. Defaults to `false`.
 
 ### Changed
 - Updated the package to Lit v3
