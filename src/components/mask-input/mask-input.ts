@@ -10,6 +10,9 @@ import { registerComponent } from '../common/definitions/register.js';
 import messages from '../common/localization/validation-en.js';
 import { partNameMap } from '../common/util.js';
 import { Validator, requiredValidator } from '../common/validators.js';
+import type { IgcInputEventMap } from '../input/input-base.js';
+
+export interface IgcMaskInputComponentEventMap extends IgcInputEventMap {}
 
 /**
  * A masked input is an input field where a developer can control user input and format the visible value,

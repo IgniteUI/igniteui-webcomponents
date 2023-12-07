@@ -9,7 +9,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedMixin } from '../common/mixins/form-associated.js';
 
-export interface IgcSliderEventMap {
+export interface IgcSliderComponentEventMap {
   /**
    * Emitted when a value is changed via thumb drag or keyboard interaction.
    */
@@ -44,9 +44,10 @@ export interface IgcSliderEventMap {
  * @csspart fill - The filled part of the track.
  */
 export default class IgcSliderComponent extends FormAssociatedMixin(
-  EventEmitterMixin<IgcSliderEventMap, Constructor<IgcSliderBaseComponent>>(
-    IgcSliderBaseComponent
-  )
+  EventEmitterMixin<
+    IgcSliderComponentEventMap,
+    Constructor<IgcSliderBaseComponent>
+  >(IgcSliderBaseComponent)
 ) {
   public static readonly tagName = 'igc-slider';
 

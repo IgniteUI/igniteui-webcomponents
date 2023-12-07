@@ -4,7 +4,6 @@ import { property } from 'lit/decorators.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
 import IgcTreeItemComponent from './tree-item.js';
-import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -29,12 +28,14 @@ import { SizableMixin } from '../common/mixins/sizable.js';
  * @fires igcItemCollapsing - Emitted when tree item is about to collapse.
  * @fires igcItemExpanded - Emitted when tree item is expanded.
  * @fires igcItemExpanding - Emitted when tree item is about to expand.
- * @fires igcItemActivated - Emitted when the tree's `active` item changes.
+ * @fires igcActiveItem - Emitted when the tree's `active` item changes.
  */
 @themes(all)
 @blazorAdditionalDependencies('IgcTreeItemComponent')
 export default class IgcTreeComponent extends SizableMixin(
-  EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
+  EventEmitterMixin<IgcTreeComponentEventMap, Constructor<LitElement>>(
+    LitElement
+  )
 ) {
   public static readonly tagName = 'igc-tree';
   public static styles = styles;
@@ -206,6 +207,24 @@ export default class IgcTreeComponent extends SizableMixin(
   protected override render() {
     return html`<slot></slot>`;
   }
+}
+
+export interface IgcTreeComponentEventMap {
+  /* alternateName: selectionChanged */
+  igcSelection: CustomEvent<TreeSelectionChange>;
+  igcItemExpanding: CustomEvent<IgcTreeItemComponent>;
+  igcItemExpanded: CustomEvent<IgcTreeItemComponent>;
+  igcItemCollapsing: CustomEvent<IgcTreeItemComponent>;
+  igcItemCollapsed: CustomEvent<IgcTreeItemComponent>;
+  igcActiveItem: CustomEvent<IgcTreeItemComponent>;
+}
+export interface IgcSelectionEventArgs {
+  detail: TreeSelectionChange;
+  cancelable: boolean;
+}
+
+export interface TreeSelectionChange {
+  newSelection: IgcTreeItemComponent[];
 }
 
 declare global {

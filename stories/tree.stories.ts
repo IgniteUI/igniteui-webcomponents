@@ -27,7 +27,7 @@ const metadata: Meta<IgcTreeComponent> = {
         'igcItemCollapsing',
         'igcItemExpanded',
         'igcItemExpanding',
-        'igcItemActivated',
+        'igcActiveItem',
       ],
     },
   },

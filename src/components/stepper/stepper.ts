@@ -2,7 +2,6 @@ import { LitElement, html } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 
 import IgcStepComponent from './step.js';
-import { IgcStepperEventMap } from './stepper.common.js';
 import { styles } from './themes/stepper/stepper.base.css.js';
 import { styles as bootstrap } from './themes/stepper/stepper.bootstrap.css.js';
 import { styles as fluent } from './themes/stepper/stepper.fluent.css.js';
@@ -13,6 +12,20 @@ import { registerComponent } from '../common/definitions/register.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { isLTR } from '../common/util.js';
+
+export interface IgcActiveStepChangingArgs {
+  oldIndex: number;
+  newIndex: number;
+}
+
+export interface IgcActiveStepChangedArgs {
+  index: number;
+}
+
+export interface IgcStepperComponentEventMap {
+  igcActiveStepChanging: CustomEvent<IgcActiveStepChangingArgs>;
+  igcActiveStepChanged: CustomEvent<IgcActiveStepChangedArgs>;
+}
 
 /**
  * IgxStepper provides a wizard-like workflow by dividing content into logical steps.
@@ -33,7 +46,7 @@ import { isLTR } from '../common/util.js';
   dark: { bootstrap, fluent, indigo },
 })
 export default class IgcStepperComponent extends EventEmitterMixin<
-  IgcStepperEventMap,
+  IgcStepperComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-stepper';

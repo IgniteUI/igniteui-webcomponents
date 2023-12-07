@@ -25,7 +25,7 @@ import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { createCounter, getOffset, isLTR } from '../common/util.js';
 
-export interface IgcTabsEventMap {
+export interface IgcTabsComponentEventMap {
   igcChange: CustomEvent<IgcTabComponent>;
 }
 
@@ -51,7 +51,7 @@ export interface IgcTabsEventMap {
 @themes(all, true)
 @blazorAdditionalDependencies('IgcTabComponent, IgcTabPanelComponent')
 export default class IgcTabsComponent extends EventEmitterMixin<
-  IgcTabsEventMap,
+  IgcTabsComponentEventMap,
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tabs';

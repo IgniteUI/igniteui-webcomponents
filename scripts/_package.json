@@ -6,9 +6,16 @@
   "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://www.infragistics.com/products/ignite-ui-web-components",
   "type": "module",
-  "main": "index.js",
-  "module": "index.js",
   "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./react": {
+      "import": "./react/index.js"
+    }
+  },
   "sideEffects": ["*.css"],
   "repository": {
     "type": "git",
@@ -61,6 +68,7 @@
   "customElements": "custom-elements.json",
   "dependencies": {
     "@floating-ui/dom": "^1.5.3",
+    "@lit/react": "^1.0.0",
     "@lit-labs/virtualizer": "^2.0.10",
     "lit": "^3.1.0"
   }

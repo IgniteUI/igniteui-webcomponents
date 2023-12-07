@@ -29,6 +29,8 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 import { partNameMap } from '../common/util.js';
 import IgcIconComponent from '../icon/icon.js';
 
+export interface IgcCalendarComponentEventMap extends IgcCalendarBaseEventMap {}
+
 /**
  * Represents a calendar that lets users
  * to select a date value in a variety of different ways.
@@ -60,7 +62,7 @@ import IgcIconComponent from '../icon/icon.js';
 @themes(all)
 export default class IgcCalendarComponent extends SizableMixin(
   EventEmitterMixin<
-    IgcCalendarBaseEventMap,
+    IgcCalendarComponentEventMap,
     Constructor<IgcCalendarBaseComponent>
   >(IgcCalendarBaseComponent)
 ) {

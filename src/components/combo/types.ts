@@ -45,16 +45,6 @@ export interface IgcComboChangeEventArgs<T extends object = any> {
   type: ComboChangeType;
 }
 
-export interface IgcComboEventMap {
-  igcChange: CustomEvent<IgcComboChangeEventArgs>;
-  igcFocus: CustomEvent<void>;
-  igcBlur: CustomEvent<void>;
-  igcOpening: CustomEvent<void>;
-  igcOpened: CustomEvent<void>;
-  igcClosing: CustomEvent<void>;
-  igcClosed: CustomEvent<void>;
-}
-
 export type ComboItemTemplate<T extends object> = (
   props: ComboTemplateProps<T>
 ) => TemplateResult;

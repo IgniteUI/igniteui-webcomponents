@@ -24,7 +24,7 @@ import type {
   ComboValue,
   FilteringOptions,
   GroupingDirection,
-  IgcComboEventMap,
+  IgcComboChangeEventArgs,
   Item,
   Keys,
 } from './types.js';
@@ -44,6 +44,16 @@ import IgcIconComponent from '../icon/icon.js';
 import IgcInputComponent from '../input/input.js';
 import { IgcToggleController } from '../toggle/toggle.controller.js';
 import { IgcToggleComponent } from '../toggle/types.js';
+
+export interface IgcComboComponentEventMap {
+  igcChange: CustomEvent<IgcComboChangeEventArgs>;
+  igcFocus: CustomEvent<void>;
+  igcBlur: CustomEvent<void>;
+  igcOpening: CustomEvent<void>;
+  igcOpened: CustomEvent<void>;
+  igcClosing: CustomEvent<void>;
+  igcClosed: CustomEvent<void>;
+}
 
 /* blazorSupportsVisualChildren */
 /**
@@ -99,7 +109,9 @@ import { IgcToggleComponent } from '../toggle/types.js';
 @blazorIndirectRender
 export default class IgcComboComponent<T extends object = any>
   extends FormAssociatedRequiredMixin(
-    EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(LitElement)
+    EventEmitterMixin<IgcComboComponentEventMap, Constructor<LitElement>>(
+      LitElement
+    )
   )
   implements Partial<IgcToggleComponent>
 {

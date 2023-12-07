@@ -15,7 +15,7 @@ export interface IgcRangeSliderValue {
   upper: number;
 }
 
-export interface IgcRangeSliderEventMap {
+export interface IgcRangeSliderComponentEventMap {
   /**
    * Emitted when a value is changed via thumb drag or keyboard interaction.
    */
@@ -50,7 +50,7 @@ export interface IgcRangeSliderEventMap {
  * @csspart fill - The filled part of the track.
  */
 export default class IgcRangeSliderComponent extends EventEmitterMixin<
-  IgcRangeSliderEventMap,
+  IgcRangeSliderComponentEventMap,
   Constructor<IgcSliderBaseComponent>
 >(IgcSliderBaseComponent) {
   public static readonly tagName = 'igc-range-slider';

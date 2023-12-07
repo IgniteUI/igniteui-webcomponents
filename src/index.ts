@@ -87,7 +87,7 @@ export type { IgcRangeSliderValue } from './components/slider/range-slider.js';
 export type {
   IgcActiveStepChangingArgs,
   IgcActiveStepChangedArgs,
-} from './components/stepper/stepper.common.js';
+} from './components/stepper/stepper.js';
 export type {
   ComboItemTemplate,
   IgcComboChangeEventArgs,
