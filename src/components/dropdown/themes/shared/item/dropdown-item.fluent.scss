@@ -2,6 +2,7 @@
 @use '../../light/themes' as *;
 
 $theme: $fluent;
+$outline-indent: rem(1px);
 
 :host {
     border-radius: var-get($theme, 'item-border-radius');
@@ -18,6 +19,19 @@ $theme: $fluent;
 :host([active]) {
     background: var-get($theme, 'focused-item-background');
     color: var-get($theme, 'focused-item-text-color');
+
+    &::after {
+        content: '';
+        position: absolute;
+        pointer-events: none;
+        inset-block-start: $outline-indent;
+        inset-inline-start: $outline-indent;
+        pointer-events: none;
+        width: calc(100% - (#{$outline-indent} * 2));
+        height: calc(100% - (#{$outline-indent} * 2));
+        border-radius: var-get($theme, 'item-border-radius');
+        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
+    }
 }
 
 :host([selected]) {
