@@ -297,6 +297,13 @@ export default class IgcTreeItemComponent extends LitElement {
       return;
     }
     this.tabIndex = 0;
+    if (this.tree?.toggleNodeOnClick && event.button === 0) {
+      if (this.expanded) {
+        this.collapseWithEvent();
+      } else {
+        this.expandWithEvent();
+      }
+    }
     this.navService?.setFocusedAndActiveItem(this, true, false);
   }
 
@@ -304,11 +311,18 @@ export default class IgcTreeItemComponent extends LitElement {
     if (this.disabled) {
       return;
     }
-    if (this.expanded) {
-      this.collapseWithEvent();
-    } else {
-      this.expandWithEvent();
+    if (!this.tree?.toggleNodeOnClick) {
+      if (this.expanded) {
+        this.collapseWithEvent();
+      } else {
+        this.expandWithEvent();
+      }
     }
+  }
+
+  private selectorPointerDown(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   private selectorClick(event: MouseEvent): void {
@@ -543,6 +557,7 @@ export default class IgcTreeItemComponent extends LitElement {
               <div part="select" aria-hidden="true">
                 <igc-checkbox
                   @click=${this.selectorClick}
+                  @pointerdown=${this.selectorPointerDown}
                   .checked=${this.selected}
                   .indeterminate=${this.indeterminate}
                   .disabled=${this.disabled}

@@ -772,6 +772,96 @@ describe('Tree', () => {
       expect(eventSpy.called).to.be.false;
     });
 
+    it('Should expand/collapse nodes when clicking over them if `toggleNodeOnClick` is set to `true`', async () => {
+      tree.toggleNodeOnClick = true;
+      topLevelItems[0].active = true;
+      await elementUpdated(tree);
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      topLevelItems[0].dispatchEvent(new MouseEvent('pointerdown'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
+      await waitUntil(() => eventSpy.calledWith('igcItemExpanded'));
+
+      // Should emit ing and ed events when item state is toggled through UI
+      const expandingArgs = {
+        detail: topLevelItems[0],
+        cancelable: true,
+      };
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith('igcItemExpanding', expandingArgs);
+      expect(eventSpy.secondCall).calledWith('igcItemExpanded', {
+        detail: topLevelItems[0],
+      });
+
+      eventSpy.resetHistory();
+
+      topLevelItems[0].dispatchEvent(new MouseEvent('pointerdown'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
+      await waitUntil(() => eventSpy.calledWith('igcItemCollapsed'));
+
+      // Should emit ing and ed events when item state is toggled through UI
+      const collapsingArgs = {
+        detail: topLevelItems[0],
+        cancelable: true,
+      };
+      expect(eventSpy.callCount).to.equal(2);
+      expect(eventSpy.firstCall).calledWith(
+        'igcItemCollapsing',
+        collapsingArgs
+      );
+      expect(eventSpy.secondCall).calledWith('igcItemCollapsed', {
+        detail: topLevelItems[0],
+      });
+    });
+
+    it('Should expand/collapse nodes only when clicking the expand indicator if `toggleNodeOnClick` is set to `false`', async () => {
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      topLevelItems[0].dispatchEvent(new MouseEvent('pointerdown'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
+    });
+
+    it('Should not expand/collapse nodes on right click', async () => {
+      tree.toggleNodeOnClick = true;
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      topLevelItems[0].dispatchEvent(
+        new MouseEvent('pointerdown', { button: 2 })
+      );
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
+    });
+
+    it('Should not be able to expand/collapse nodes when clicking over nodes` checkbox if `toggleNodeOnClick` is set to `true`', async () => {
+      tree.toggleNodeOnClick = true;
+      tree.selection = 'multiple';
+      await elementUpdated(tree);
+
+      expect(topLevelItems[0].expanded).to.be.false;
+
+      TreeTestFunctions.verifyItemSelection(topLevelItems[0], false);
+
+      const selectionPart = topLevelItems[0].shadowRoot!.querySelector(
+        PARTS.select
+      );
+      const cb = selectionPart?.children[0] as IgcCheckboxComponent;
+      cb?.dispatchEvent(new MouseEvent('click'));
+      await elementUpdated(tree);
+
+      TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
+      TreeTestFunctions.verifyItemSelection(topLevelItems[0], true);
+      expect(cb.checked).to.be.true;
+    });
+
     it('Should toggle item state when item.toggle() is called', async () => {
       expect(topLevelItems[1].expanded).to.be.true;
 
