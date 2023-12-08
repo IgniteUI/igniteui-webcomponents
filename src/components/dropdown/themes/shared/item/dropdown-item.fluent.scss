@@ -10,7 +10,8 @@ $theme: $fluent;
 }
 
 :host([active]),
-:host(:hover) {
+:host(:hover),
+:host([active]:hover) {
     background: var-get($theme, 'hover-item-background');
     color: var-get($theme, 'hover-item-text-color');
 }
@@ -18,6 +19,8 @@ $theme: $fluent;
 :host([active]) {
     background: var-get($theme, 'focused-item-background');
     color: var-get($theme, 'focused-item-text-color');
+    outline: rem(1px) solid var-get($theme, 'border-color');
+    outline-offset: rem(-1px);
 }
 
 :host([selected]) {
