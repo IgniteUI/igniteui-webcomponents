@@ -10,7 +10,8 @@ $theme: $fluent;
 }
 
 :host([active]),
-:host(:hover) {
+:host(:hover),
+:host([active]:hover) {
     background: var-get($theme, 'hover-item-background');
     color: var-get($theme, 'hover-item-text-color');
 }
