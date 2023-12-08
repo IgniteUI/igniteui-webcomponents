@@ -28,9 +28,10 @@ const metadata: Meta<IgcButtonComponent> = {
     },
     type: {
       type: '"button" | "reset" | "submit"',
-      description: 'The type of the button. Defaults to undefined.',
+      description: 'The type of the button. Defaults to `button`.',
       options: ['button', 'reset', 'submit'],
       control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'button' } },
     },
     href: {
       type: 'string',
@@ -63,7 +64,7 @@ const metadata: Meta<IgcButtonComponent> = {
       table: { defaultValue: { summary: false } },
     },
   },
-  args: { variant: 'contained', disabled: false },
+  args: { variant: 'contained', type: 'button', disabled: false },
 };
 
 export default metadata;
@@ -71,7 +72,7 @@ export default metadata;
 interface IgcButtonArgs {
   /** Sets the variant of the button. */
   variant: 'flat' | 'contained' | 'outlined' | 'fab';
-  /** The type of the button. Defaults to undefined. */
+  /** The type of the button. Defaults to `button`. */
   type: 'button' | 'reset' | 'submit';
   /** The URL the button points to. */
   href: string;
@@ -91,48 +92,57 @@ type Story = StoryObj<IgcButtonArgs>;
 
 // endregion
 
-const ButtonTemplate = ({ disabled = false, variant, type }: IgcButtonArgs) => {
-  const handleClick = () => {
-    console.log('the button was clicked');
-  };
-
-  return html`
-    <igc-button
-      @click=${handleClick}
-      .disabled=${disabled}
-      .variant=${variant}
-      .type=${type}
-    >
-      <span slot="prefix">+</span>
-      Click
-      <span slot="suffix">-</span>
+export const BasicButton: Story = {
+  render: ({ disabled, variant, type }) => html`
+    <igc-button ?disabled=${disabled} variant=${variant} type=${type}>
+      Basic button
     </igc-button>
-  `;
+  `,
 };
 
-const LinkTemplate = ({
-  disabled = false,
-  variant,
-  href = 'http://www.infragistics.com',
-  download,
-  rel,
-  target,
-}: IgcButtonArgs) => html`
-  <igc-button
-    .disabled=${disabled}
-    .variant=${variant}
-    .href=${href}
-    .download=${download}
-    .rel=${rel}
-    .target=${target}
-  >
-    Click me
-  </igc-button>
-`;
+export const ButtonWithSlots: Story = {
+  render: ({ disabled, variant, type }) => html`
+    <igc-button ?disabled=${disabled} variant=${variant} type=${type}>
+      <span slot="prefix">+</span>
+      Click me
+      <span slot="suffix">-</span>
+    </igc-button>
+  `,
+};
 
-export const Button: Story = ButtonTemplate.bind({});
-export const Link: Story = LinkTemplate.bind({});
-export const BlankTarget: Story = LinkTemplate.bind({});
-BlankTarget.args = {
-  target: '_blank',
+export const BasicLinkButton: Story = {
+  args: {
+    href: 'https://www.infragistics.com/products/ignite-ui-web-components',
+  },
+  render: ({ disabled, download, href, rel, target, variant }) =>
+    html`<igc-button
+      ?disabled=${disabled}
+      download=${download}
+      href=${href}
+      rel=${rel}
+      target=${target}
+      variant=${variant}
+    >
+      Basic link button
+    </igc-button>`,
+};
+
+export const LinkButtonWithSlots: Story = {
+  args: {
+    href: 'https://www.infragistics.com/products/ignite-ui-web-components',
+    target: '_blank',
+  },
+  render: ({ disabled, download, href, rel, target, variant }) =>
+    html`<igc-button
+      ?disabled=${disabled}
+      download=${download}
+      href=${href}
+      rel=${rel}
+      target=${target}
+      variant=${variant}
+    >
+      <span slot="prefix">+</span>
+      Open in new tab
+      <span slot="suffix">-</span>
+    </igc-button>`,
 };
