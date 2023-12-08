@@ -19,18 +19,8 @@ $outline-indent: rem(1px);
 :host([active]) {
     background: var-get($theme, 'focused-item-background');
     color: var-get($theme, 'focused-item-text-color');
-
-    &::after {
-        content: '';
-        position: absolute;
-        pointer-events: none;
-        inset-block-start: $outline-indent;
-        inset-inline-start: $outline-indent;
-        width: calc(100% - (#{$outline-indent} * 2));
-        height: calc(100% - (#{$outline-indent} * 2));
-        border-radius: var-get($theme, 'item-border-radius');
-        box-shadow: 0 0 0 rem(1px) var-get($theme, 'border-color');
-    }
+    outline: rem(1px) solid var-get($theme, 'border-color');
+    outline-offset: rem(-1px);
 }
 
 :host([selected]) {
