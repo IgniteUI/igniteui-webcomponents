@@ -2,7 +2,6 @@
 @use '../../light/themes' as *;
 
 $theme: $fluent;
-$outline-indent: rem(1px);
 
 :host {
     border-radius: var-get($theme, 'item-border-radius');
