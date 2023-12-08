@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { styles } from './themes/avatar.base.css.js';
+import { styles as shared } from './themes/shared/avatar.common.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
@@ -26,7 +27,7 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 @themes(all)
 export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-avatar';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { styles } from './themes/chip.base.css.js';
+import { styles as shared } from './themes/shared/chip.common.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { addKeybindings } from '../common/controllers/key-bindings.js';
@@ -38,7 +39,7 @@ export default class IgcChipComponent extends SizableMixin(
   EventEmitterMixin<IgcChipEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-chip';
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcIconComponent);

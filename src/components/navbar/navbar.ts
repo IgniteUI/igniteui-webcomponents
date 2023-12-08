@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 
 import { styles } from './themes/navbar.base.css.js';
+import { styles as shared } from './themes/shared/navbar.common.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -23,7 +24,7 @@ import { registerComponent } from '../common/definitions/register.js';
 @themes(all)
 export default class IgcNavbarComponent extends LitElement {
   public static readonly tagName = 'igc-navbar';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);
