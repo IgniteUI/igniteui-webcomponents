@@ -143,10 +143,9 @@
     }
 }
 
-:host([open]) {
-    [part='mini'] {
-        display: none;
-    }
+:host([open]) [part='mini'],
+[part='mini hidden'] {
+    display: none;
 }
 
 :host([open]:not([position='relative'])) {
