@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Changed
+- Improved WAI-ARIA compliance for Avatar, Badge and Combo components [#1007](https://github.com/IgniteUI/igniteui-webcomponents/pull/1007)
+
+### Fixed
+- Active item visual styles for Dropdown, Select and Combo components [#1002](https://github.com/IgniteUI/igniteui-webcomponents/pull/1002)
+
+
 ## [4.6.0] - 2023-12-05
 ### Added
 - **`action`** slot added to Snackbar [#974](https://github.com/IgniteUI/igniteui-webcomponents/issues/974)
