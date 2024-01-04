@@ -11,14 +11,6 @@ export default class IgcComboListComponent extends LitVirtualizer {
   public static register() {
     registerComponent(this);
   }
-
-  public override async connectedCallback() {
-    await super.layoutComplete;
-
-    super.connectedCallback();
-    this.setAttribute('tabindex', '0');
-    this.setAttribute('role', 'listbox');
-  }
 }
 
 declare global {

@@ -8,7 +8,7 @@ type RootClickControllerConfig = {
 type RootClickControllerHost = ReactiveControllerHost &
   HTMLElement & {
     open: boolean;
-    keepOpenOnOutsideClick: boolean;
+    keepOpenOnOutsideClick?: boolean;
     hide(): void;
   };
 

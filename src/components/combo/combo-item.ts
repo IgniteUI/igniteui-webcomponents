@@ -18,6 +18,8 @@ export default class IgcComboItemComponent extends LitElement {
     registerComponent(this, IgcCheckboxComponent);
   }
 
+  private _internals: ElementInternals;
+
   @property({ attribute: false })
   public index!: number;
 
@@ -43,9 +45,14 @@ export default class IgcComboItemComponent extends LitElement {
 
   @watch('selected')
   protected selectedChange() {
-    this.selected
-      ? this.setAttribute('aria-selected', 'true')
-      : this.removeAttribute('aria-selected');
+    this._internals.ariaSelected = `${this.selected}`;
+  }
+
+  constructor() {
+    super();
+
+    this._internals = this.attachInternals();
+    this._internals.role = 'option';
   }
 
   public override connectedCallback() {
@@ -56,9 +63,8 @@ export default class IgcComboItemComponent extends LitElement {
   private renderCheckbox() {
     return html`<section part="prefix">
       <igc-checkbox
-        aria-hidden="true"
+        inert
         ?checked=${this.selected}
-        tabindex="-1"
         exportparts="control: checkbox, indicator: checkbox-indicator, checked"
       ></igc-checkbox>
     </section>`;
