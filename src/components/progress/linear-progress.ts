@@ -4,6 +4,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 
 import { IgcProgressBaseComponent } from './base.js';
 import { styles } from './themes/linear/linear.progress.base.css.js';
+import { styles as shared } from './themes/linear/shared/linear.progress.common.css.js';
 import { all } from './themes/linear/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -32,7 +33,7 @@ import { asPercent, partNameMap } from '../common/util.js';
 @themes(all, true)
 export default class IgcLinearProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-linear-progress';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

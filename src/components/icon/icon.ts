@@ -8,6 +8,7 @@ import {
   registerIcon as registerIcon_impl,
 } from './icon.registry.js';
 import { styles } from './themes/icon.base.css.js';
+import { styles as shared } from './themes/shared/icon.common.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
@@ -25,7 +26,7 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 @themes(all)
 export default class IgcIconComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-icon';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

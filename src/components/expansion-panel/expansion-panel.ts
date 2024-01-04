@@ -3,6 +3,7 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
 
 import { styles } from './themes/expansion-panel.base.css.js';
+import { styles as shared } from './themes/shared/expansion-panel.common.css.js';
 import { all } from './themes/themes.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { growVerIn, growVerOut } from '../../animations/presets/grow/index.js';
@@ -57,7 +58,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-expansion-panel';
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcIconComponent);

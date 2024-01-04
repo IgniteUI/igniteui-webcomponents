@@ -1,6 +1,7 @@
 import { html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
+import { styles as shared } from './themes/shared/snackbar.common.css.js';
 import { styles } from './themes/snackbar.base.css.js';
 import { all } from './themes/themes.js';
 import { AnimationPlayer } from '../../animations/player.js';
@@ -37,7 +38,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   AbstractConstructor<IgcBaseAlertLikeComponent>
 >(IgcBaseAlertLikeComponent) {
   public static readonly tagName = 'igc-snackbar';
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcButtonComponent);
