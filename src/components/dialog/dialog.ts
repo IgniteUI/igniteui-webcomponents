@@ -3,6 +3,7 @@ import { property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { styles } from './themes/dialog.base.css.js';
+import { styles as shared } from './themes/shared/dialog.common.css.js';
 import { all } from './themes/themes.js';
 import { AnimationPlayer } from '../../animations/player.js';
 import { fadeIn, fadeOut } from '../../animations/presets/fade/index.js';
@@ -44,7 +45,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-dialog';
-  public static styles = [styles];
+  public static styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcButtonComponent);

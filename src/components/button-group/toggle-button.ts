@@ -3,6 +3,7 @@ import { property, query } from 'lit/decorators.js';
 
 import { styles } from './themes/button.base.css.js';
 import { all } from './themes/button.js';
+import { styles as shared } from './themes/shared/button/button.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 
@@ -18,7 +19,7 @@ import { registerComponent } from '../common/definitions/register.js';
  */
 @themes(all, true)
 export default class IgcToggleButtonComponent extends LitElement {
-  public static override styles = styles;
+  public static override styles = [styles, shared];
   public static readonly tagName = 'igc-toggle-button';
 
   public static override shadowRootOptions = {

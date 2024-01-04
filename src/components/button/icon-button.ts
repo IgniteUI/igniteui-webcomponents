@@ -4,6 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { IgcButtonBaseComponent } from './button-base.js';
 import { styles } from './themes/icon-button/icon-button.base.css.js';
+import { styles as shared } from './themes/icon-button/shared/icon-button.common.css.js';
 import { all } from './themes/icon-button/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { alternateName } from '../common/decorators/alternateName.js';
@@ -24,7 +25,7 @@ import {
 @themes(all)
 export default class IgcIconButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-icon-button';
-  protected static styles = styles;
+  protected static styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcIconComponent);

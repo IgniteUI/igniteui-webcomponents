@@ -12,6 +12,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
+import { styles as shared } from './themes/shared/rating.common.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
@@ -67,7 +68,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   )
 ) {
   public static readonly tagName = 'igc-rating';
-  public static styles = [styles];
+  public static styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcIconComponent, IgcRatingSymbolComponent);
