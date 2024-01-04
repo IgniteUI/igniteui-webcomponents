@@ -62,6 +62,7 @@ type Story = StoryObj<IgcAvatarArgs>;
 export const Image: Story = {
   args: {
     src: 'https://www.infragistics.com/angular-demos/assets/images/men/1.jpg',
+    alt: 'Image of a man',
   },
 };
 
