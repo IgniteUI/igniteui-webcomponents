@@ -6,6 +6,7 @@ import { when } from 'lit/directives/when.js';
 import { IgcProgressBaseComponent } from './base.js';
 import IgcCircularGradientComponent from './circular-gradient.js';
 import { styles } from './themes/circular/circular.progress.base.css.js';
+import { styles as shared } from './themes/circular/shared/circular.progress.common.css.js';
 import { all } from './themes/circular/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -37,7 +38,7 @@ import { asPercent, partNameMap } from '../common/util.js';
 @themes(all, true)
 export default class IgcCircularProgressComponent extends IgcProgressBaseComponent {
   public static readonly tagName = 'igc-circular-progress';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcCircularGradientComponent);

@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 import { property, query } from 'lit/decorators.js';
 
+import { styles as shared } from './themes/shared/tab/tab.common.css.js';
 import { all } from './themes/tab-themes.js';
 import { styles } from './themes/tab.base.css.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -24,7 +25,7 @@ import { createCounter } from '../common/util.js';
 @themes(all, true)
 export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

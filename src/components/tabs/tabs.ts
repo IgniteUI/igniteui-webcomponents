@@ -9,6 +9,7 @@ import {
 
 import IgcTabPanelComponent from './tab-panel.js';
 import IgcTabComponent from './tab.js';
+import { styles as shared } from './themes/shared/tabs/tabs.common.css.js';
 import { all } from './themes/tabs-themes.js';
 import { styles } from './themes/tabs.base.css.js';
 import {
@@ -55,7 +56,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-tabs';
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   public static register() {
     registerComponent(

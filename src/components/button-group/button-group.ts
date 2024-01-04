@@ -3,6 +3,7 @@ import { property, queryAssignedElements } from 'lit/decorators.js';
 
 import { styles } from './themes/group.base.css.js';
 import { all } from './themes/group.js';
+import { styles as shared } from './themes/shared/group/group.common.css.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
@@ -33,7 +34,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   Constructor<LitElement>
 >(LitElement) {
   public static readonly tagName = 'igc-button-group';
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcToggleButtonComponent);
