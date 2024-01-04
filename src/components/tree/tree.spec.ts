@@ -435,7 +435,7 @@ describe('Tree', () => {
         expect(selectionPart).to.be.null;
       });
 
-      tree.items[0].dispatchEvent(new PointerEvent('pointerdown'));
+      tree.items[0].dispatchEvent(new PointerEvent('click'));
       await elementUpdated(tree);
       expect(tree.navService.activeItem).to.equal(tree.items[0]);
       expect(eventSpy).calledOnceWithExactly('igcActiveItem', {
@@ -778,7 +778,7 @@ describe('Tree', () => {
       await elementUpdated(tree);
       expect(topLevelItems[0].expanded).to.be.false;
 
-      topLevelItems[0].dispatchEvent(new MouseEvent('pointerdown'));
+      topLevelItems[0].dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], true);
@@ -797,7 +797,7 @@ describe('Tree', () => {
 
       eventSpy.resetHistory();
 
-      topLevelItems[0].dispatchEvent(new MouseEvent('pointerdown'));
+      topLevelItems[0].dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
@@ -821,7 +821,7 @@ describe('Tree', () => {
     it('Should expand/collapse nodes only when clicking the expand indicator if `toggleNodeOnClick` is set to `false`', async () => {
       expect(topLevelItems[0].expanded).to.be.false;
 
-      topLevelItems[0].dispatchEvent(new MouseEvent('pointerdown'));
+      topLevelItems[0].dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
@@ -833,9 +833,7 @@ describe('Tree', () => {
 
       expect(topLevelItems[0].expanded).to.be.false;
 
-      topLevelItems[0].dispatchEvent(
-        new MouseEvent('pointerdown', { button: 2 })
-      );
+      topLevelItems[0].dispatchEvent(new MouseEvent('click', { button: 2 }));
       await elementUpdated(tree);
 
       TreeTestFunctions.verifyExpansionState(topLevelItems[0], false);
@@ -1158,7 +1156,7 @@ describe('Tree', () => {
       expect(item11.active).to.be.false;
       expect(eventSpy).not.to.be.called;
 
-      item11.dispatchEvent(new MouseEvent('pointerdown'));
+      item11.dispatchEvent(new MouseEvent('click'));
       await elementUpdated(tree);
 
       expect(item11.active).to.be.false;

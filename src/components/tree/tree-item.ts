@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -238,7 +238,7 @@ export default class IgcTreeItemComponent extends LitElement {
     this.setAttribute('role', 'treeitem');
     this.addEventListener('blur', this.onBlur);
     this.addEventListener('focus', this.onFocus);
-    this.addEventListener('pointerdown', this.pointerDown);
+    this.addEventListener('click', this.itemClick);
     this.activeChange();
     // if the item is not added/moved runtime
     if (this.init) {
@@ -291,7 +291,7 @@ export default class IgcTreeItemComponent extends LitElement {
     return this.parent?.path ? [...this.parent.path, this] : [this];
   }
 
-  private pointerDown(event: MouseEvent): void {
+  private itemClick(event: MouseEvent): void {
     event.stopPropagation();
     if (this.disabled) {
       return;
@@ -311,22 +311,18 @@ export default class IgcTreeItemComponent extends LitElement {
     if (this.disabled) {
       return;
     }
-    if (!this.tree?.toggleNodeOnClick) {
-      if (this.expanded) {
-        this.collapseWithEvent();
-      } else {
-        this.expandWithEvent();
-      }
+    if (this.expanded) {
+      this.collapseWithEvent();
+    } else {
+      this.expandWithEvent();
     }
-  }
-
-  private selectorPointerDown(event: MouseEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
   }
 
   private selectorClick(event: MouseEvent): void {
     event.preventDefault();
+    if (this.tree?.toggleNodeOnClick) {
+      event.stopPropagation();
+    }
     if (event.shiftKey) {
       this.selectionService?.selectMultipleItems(this);
       return;
@@ -390,7 +386,7 @@ export default class IgcTreeItemComponent extends LitElement {
     });
 
     if (this.navService?.focusedItem === this) {
-      // called twice when clicking on already focused item with link (pointerDown handler)
+      // called twice when clicking on already focused item with link (itemClick handler)
       this.setAttribute('tabindex', '0');
     }
   }
@@ -535,7 +531,12 @@ export default class IgcTreeItemComponent extends LitElement {
                 </slot>
               `
             : html`
-                <slot name="indicator" @click=${this.expandIndicatorClick}>
+                <slot
+                  name="indicator"
+                  @click=${this.tree?.toggleNodeOnClick
+                    ? nothing
+                    : this.expandIndicatorClick}
+                >
                   ${this.hasChildren
                     ? html`
                         <igc-icon
@@ -557,7 +558,6 @@ export default class IgcTreeItemComponent extends LitElement {
               <div part="select" aria-hidden="true">
                 <igc-checkbox
                   @click=${this.selectorClick}
-                  @pointerdown=${this.selectorPointerDown}
                   .checked=${this.selected}
                   .indeterminate=${this.indeterminate}
                   .disabled=${this.disabled}
