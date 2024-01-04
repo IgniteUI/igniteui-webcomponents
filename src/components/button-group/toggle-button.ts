@@ -5,7 +5,6 @@ import { styles } from './themes/button.base.css.js';
 import { all } from './themes/button.js';
 import { styles as shared } from './themes/shared/button/button.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { registerComponent } from '../common/definitions/register.js';
 
 /**
@@ -21,7 +20,6 @@ import { registerComponent } from '../common/definitions/register.js';
 @themes(all, true)
 export default class IgcToggleButtonComponent extends LitElement {
   public static override styles = [styles, shared];
-
   public static readonly tagName = 'igc-toggle-button';
 
   public static override shadowRootOptions = {
@@ -34,7 +32,7 @@ export default class IgcToggleButtonComponent extends LitElement {
   }
 
   @query('[part="toggle"]', true)
-  private nativeElement!: HTMLElement;
+  private _nativeButton!: HTMLButtonElement;
 
   /**
    * The value attribute of the control.
@@ -57,21 +55,21 @@ export default class IgcToggleButtonComponent extends LitElement {
   @property({ type: Boolean, reflect: true })
   public disabled = false;
 
+  /* alternateName: focusComponent */
   /** Sets focus on the button. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
-    this.nativeElement.focus(options);
+    this._nativeButton.focus(options);
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the button. */
-  @alternateName('blurComponent')
   public override blur() {
-    this.nativeElement.blur();
+    this._nativeButton.blur();
   }
 
   /** Simulates a mouse click on the element. */
   public override click() {
-    this.nativeElement.click();
+    this._nativeButton.click();
   }
 
   protected override render() {
@@ -79,7 +77,7 @@ export default class IgcToggleButtonComponent extends LitElement {
       <button
         part="toggle"
         type="button"
-        .disabled=${this.disabled}
+        ?disabled=${this.disabled}
         .ariaLabel=${this.ariaLabel}
         aria-pressed=${this.selected}
         aria-disabled=${this.disabled}

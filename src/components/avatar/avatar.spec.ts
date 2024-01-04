@@ -1,6 +1,7 @@
 import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 
-import { IgcAvatarComponent, defineComponents } from '../../index.js';
+import IgcAvatarComponent from './avatar.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
 
 describe('Avatar', () => {
   const DIFF_OPTIONS = {
@@ -17,6 +18,7 @@ describe('Avatar', () => {
     );
 
     await expect(el).shadowDom.to.be.accessible();
+    await expect(el).to.be.accessible();
   });
 
   it('should initialize avatar component with default values', async () => {
@@ -79,14 +81,14 @@ describe('Avatar', () => {
 
     expect(el.src).to.be.undefined;
     expect(el).shadowDom.to.equal(
-      `<div part="base" role="img" aria-label="avatar" aria-roledescription="square" class="square">
+      `<div part="base">
       <span part="initials">ab</span>
       </div>`
     );
 
     el.setAttribute('src', 'abs');
     expect(el).shadowDom.to.equal(
-      `<div part="base" role="img" aria-label="avatar" aria-roledescription="square" class="square">
+      `<div part="base">
       <span part="initials">ab</span>
       </div>`
     );

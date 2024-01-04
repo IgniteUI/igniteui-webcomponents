@@ -1,5 +1,6 @@
+import { groupBy } from '../../common/util.js';
 import { DataController } from '../controllers/data.js';
-import { ComboRecord, GroupingDirection, Keys, Values } from '../types.js';
+import type { ComboRecord, GroupingDirection, Keys, Values } from '../types.js';
 
 export default class GroupDataOperation<T extends object> {
   protected orderBy = new Map(
@@ -41,37 +42,26 @@ export default class GroupDataOperation<T extends object> {
 
     if (!groupKey) return data;
 
-    const groups = new Map();
+    const groups = Object.entries(
+      groupBy(data, (item) => item.value[groupKey] ?? 'Other')
+    );
 
-    data.forEach((item: ComboRecord<T>) => {
-      if (typeof item !== 'object' || item === null) return;
+    return groups.flatMap(([group, items]) => {
+      items.sort((a, b) =>
+        this.compareObjects(a.value, b.value, displayKey!, direction)
+      );
 
-      const key = item.value[groupKey!] ?? 'Other';
-      const group: ComboRecord<T>[] = groups.get(key) ?? [];
-
-      if (group.length === 0) {
-        group.push({
-          value: {
-            [valueKey as Keys<T>]: key,
-            [displayKey as Keys<T>]: key,
-            [groupKey as Keys<T>]: key,
-          } as T,
-          header: true,
-          dataIndex: -1,
-        });
-      }
-
-      group.push(item);
-      groups.set(key, group);
-    });
-
-    groups.forEach((group) => {
-      group.sort((a: ComboRecord<T>, b: ComboRecord<T>) => {
-        if (a.header || b.header) return;
-        return this.compareObjects(a.value, b.value, displayKey!, direction);
+      items.unshift({
+        dataIndex: -1,
+        header: true,
+        value: {
+          [valueKey as Keys<T>]: group,
+          [displayKey as Keys<T>]: group,
+          [groupKey as Keys<T>]: group,
+        } as T,
       });
-    });
 
-    return Array.from(groups.values()).flat();
+      return items;
+    });
   }
 }
