@@ -84,7 +84,7 @@ describe('Dialog component', () => {
       expect(footer).dom.to.equal(
         `<footer>
           <slot name="footer">
-            <igc-button>OK</igc-button>
+            <igc-button type="button">OK</igc-button>
           </slot>
         </footer>`,
         {
@@ -120,7 +120,7 @@ describe('Dialog component', () => {
           </section>
           <footer>
             <slot name="footer">
-              <igc-button>
+              <igc-button type="button">
                 OK
               </igc-button>
             </slot>

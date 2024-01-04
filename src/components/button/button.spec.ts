@@ -1,404 +1,256 @@
-import {
-  elementUpdated,
-  expect,
-  fixture,
-  html,
-  unsafeStatic,
-} from '@open-wc/testing';
+import { elementUpdated, expect, fixture, html } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import { IgcButtonComponent, defineComponents } from '../../index.js';
+import IgcButtonComponent from './button.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { FormAssociatedTestBed } from '../common/utils.spec.js';
 
-// export const DEFAULT_CLASSES = 'native';
-export const classValue = (changeableValue: string) => {
-  return `${changeableValue}`;
-};
+const Variants: Array<IgcButtonComponent['variant']> = [
+  'contained',
+  'fab',
+  'flat',
+  'outlined',
+];
+const Types: Array<IgcButtonComponent['type']> = ['button', 'reset', 'submit'];
 
-describe('Button component', () => {
-  before(() => {
-    defineComponents(IgcButtonComponent);
+describe('Button tests', () => {
+  let button: IgcButtonComponent;
+  before(() => defineComponents(IgcButtonComponent));
+
+  describe('Button component', () => {
+    const ignored_DOM_parts = {
+      ignoreChildren: ['button'],
+      ignoreAttributes: ['part'],
+    };
+
+    beforeEach(
+      async () =>
+        (button = await fixture<IgcButtonComponent>(
+          html`<igc-button>Click</igc-button>`
+        ))
+    );
+
+    it('is initialized with sensible default values', async () => {
+      expect([button.disabled, button.variant]).to.eql([false, 'contained']);
+      expect(button).shadowDom.to.equal(
+        `<button type="${button.type}"></button>`,
+        ignored_DOM_parts
+      );
+    });
+
+    it('is accessible', async () => {
+      await expect(button).to.be.accessible();
+      await expect(button).shadowDom.to.be.accessible();
+    });
+
+    it('reflects disabled property', async () => {
+      button.disabled = true;
+      await elementUpdated(button);
+
+      expect(button).shadowDom.to.equal(
+        `<button disabled type="${button.type}"></button>`,
+        ignored_DOM_parts
+      );
+    });
+
+    it('reflects variant property', async () => {
+      for (const variant of Variants) {
+        button.variant = variant;
+        await elementUpdated(button);
+
+        expect(button).attribute('variant').to.equal(variant);
+        expect(button).shadowDom.to.equal(
+          `<button type="${button.type}"></button>`,
+          ignored_DOM_parts
+        );
+      }
+    });
+
+    it('reflects type property', async () => {
+      for (const type of Types) {
+        button.type = type;
+        await elementUpdated(button);
+
+        expect(button).attribute('type').to.equal(type);
+        expect(button).shadowDom.to.equal(
+          `<button type="${type}"></button>`,
+          ignored_DOM_parts
+        );
+      }
+    });
+
+    it('has the correct shadow DOM structure', async () => {
+      expect(button).shadowDom.to.equal(
+        `<button part="base" type="${button.type}">
+          <slot name="prefix"></slot>
+          <slot></slot>
+          <slot name="suffix"></slot>
+        </button>`
+      );
+    });
   });
 
-  const DIFF_OPTIONS = {
-    ignoreChildren: ['button'],
-    ignoreAttributes: ['part'],
-  };
-  let el: IgcButtonComponent;
+  describe('Link button', () => {
+    const ignored_DOM_parts = {
+      ignoreChildren: ['a'],
+      ignoreAttributes: ['part', 'aria-disabled'],
+    };
 
-  describe('', () => {
-    beforeEach(async () => {
-      el = await createButtonComponent();
-    });
+    beforeEach(
+      async () =>
+        (button = await fixture<IgcButtonComponent>(
+          html`<igc-button href="/">Click</igc-button>`
+        ))
+    );
 
-    it('is initialized with the proper default values', async () => {
-      expect(el.disabled).to.equal(false);
-      expect(el.variant).to.equal('contained');
-      expect(el.dir).to.equal('');
+    it('is initialized with sensible default values', async () => {
+      const { disabled, download, target, rel, variant } = button;
 
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`contained`)}"/>`,
-        DIFF_OPTIONS
+      expect([disabled, variant, download, target, rel]).to.eql([
+        false,
+        'contained',
+        undefined,
+        undefined,
+        undefined,
+      ]);
+
+      expect(button).shadowDom.to.equal(
+        `<a
+          role="button"
+          href="${button.href}"
+        >
+        </a>`,
+        ignored_DOM_parts
       );
     });
 
-    it('changes size property values successfully', async () => {
-      el.size = 'medium';
-      expect(el.size).to.equal('medium');
-      await elementUpdated(el);
+    it('is accessible', async () => {
+      await expect(button).to.be.accessible();
+      await expect(button).shadowDom.to.be.accessible();
+    });
 
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`contained`)}"/>`,
-        DIFF_OPTIONS
-      );
+    it('reflects disabled property', async () => {
+      button.disabled = true;
+      await elementUpdated(button);
 
-      el.size = 'small';
-      expect(el.size).to.equal('small');
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`contained`)}"/>`,
-        DIFF_OPTIONS
-      );
-
-      el.size = 'large';
-      expect(el.size).to.equal('large');
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`contained`)}"/>`,
-        DIFF_OPTIONS
+      expect(button).shadowDom.to.equal(
+        `<a
+          aria-disabled="${button.disabled}"
+          href="/"
+          role="button"
+        >
+        </a>`,
+        ignored_DOM_parts
       );
     });
 
-    it('sets disabled property successfully', async () => {
-      el.disabled = true;
-      expect(el.disabled).to.be.true;
-      await elementUpdated(el);
+    it('reflects variant property', async () => {
+      for (const variant of Variants) {
+        button.variant = variant;
+        await elementUpdated(button);
 
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`disabled contained`)}" disabled/>`,
-        DIFF_OPTIONS
-      );
+        expect(button).attribute('variant').to.equal(variant);
+        expect(button).shadowDom.to.equal(
+          `<a
+            role="button"
+            href="/"
+          >
+          </a>`,
+          ignored_DOM_parts
+        );
+      }
+    });
 
-      el.disabled = false;
-      expect(el.disabled).to.be.false;
-      await elementUpdated(el);
+    it('reflects link properties', async () => {
+      const rel = 'dns-prefetch',
+        href = '/downloads/entity',
+        download = 'file.txt',
+        target = '_blank';
 
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`contained`)}"/>`,
-        DIFF_OPTIONS
+      Object.assign(button, { rel, download, target, href });
+      await elementUpdated(button);
+
+      expect(button).shadowDom.to.equal(
+        `<a
+          aria-disabled="${button.disabled}"
+          rel="${rel}" download="${download}"
+          target="${target}"
+          href="${href}"
+          role="button"
+        >
+        </a>`,
+        ignored_DOM_parts
       );
     });
 
-    it('sets variant property successfully', async () => {
-      el.variant = 'contained';
-      expect(el.variant).to.equal('contained');
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`contained`)}"/>`,
-        DIFF_OPTIONS
-      );
-
-      el.variant = 'outlined';
-      expect(el.variant).to.equal('outlined');
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`outlined`)}"/>`,
-        DIFF_OPTIONS
-      );
-
-      el.variant = 'fab';
-      expect(el.variant).to.equal('fab');
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`fab`)}"/>`,
-        DIFF_OPTIONS
-      );
-
-      el.variant = 'flat';
-      expect(el.variant).to.equal('flat');
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue(`flat`)}"/>`,
-        DIFF_OPTIONS
+    it('has the correct shadow DOM structure', async () => {
+      expect(button).shadowDom.to.equal(
+        `<a part="base" href="/" role="button">
+          <slot name="prefix"></slot>
+          <slot></slot>
+          <slot name="suffix"></slot>
+        </a>`,
+        ignored_DOM_parts
       );
     });
+  });
 
-    it('should focus/blur the wrapped base element when the methods are called', () => {
-      const eventSpy = spy(el, 'emitEvent');
-      el.focus();
+  describe('Events', () => {
+    beforeEach(
+      async () =>
+        (button = await fixture<IgcButtonComponent>(
+          html`<igc-button>Click</igc-button>`
+        ))
+    );
 
-      const btn = el.shadowRoot?.children[0];
-      expect(el.shadowRoot?.activeElement).to.equal(btn);
+    it('focus/blur events are emitted from corresponding methods', async () => {
+      const eventSpy = spy(button, 'emitEvent');
+
+      button.focus();
       expect(eventSpy).calledOnceWithExactly('igcFocus');
-
-      el.blur();
-
-      expect(el.shadowRoot?.activeElement).to.be.null;
-      expect(eventSpy).calledTwice;
-      expect(eventSpy).calledWithExactly('igcBlur');
-    });
-
-    it('renders a button element successfully', async () => {
-      await expect(el).shadowDom.to.be.accessible();
-      expect(el).shadowDom.to.equal(`<button/>`, {
-        ignoreChildren: ['button'],
-        ignoreAttributes: ['class', 'part'],
-      });
-    });
-
-    it('renders the prefix, content and suffix slots successfully', async () => {
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue('contained')}" part="base">
-         <slot name="prefix"></slot>
-         <slot></slot>
-         <slot name="suffix"></slot>
-         </button>`
-      );
-    });
-
-    it('sets type property successfully', async () => {
-      el.type = 'reset';
-      expect(el.type).to.equal('reset');
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue('contained')}" type="reset"/>`,
-        DIFF_OPTIONS
+      expect(button.shadowRoot?.activeElement).to.equal(
+        button.shadowRoot?.querySelector('button')
       );
 
-      el.type = 'submit';
-      expect(el.type).to.equal('submit');
-      await elementUpdated(el);
+      eventSpy.resetHistory();
 
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue('contained')}" type="submit"/>`,
-        DIFF_OPTIONS
-      );
-
-      el.type = 'button';
-      expect(el.type).to.equal('button');
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<button class="${classValue('contained')}" type="button"/>`,
-        DIFF_OPTIONS
-      );
+      button.blur();
+      expect(eventSpy).calledOnceWithExactly('igcBlur');
+      expect(button.shadowRoot?.activeElement).to.be.null;
     });
   });
-
-  describe('applies the correct CSS class to the base element for variant', () => {
-    const variants = ['flat', 'contained', 'outlined', 'fab'];
-
-    variants.forEach((variant) => {
-      it(variant, async () => {
-        el = await createButtonComponent(`<igc-button variant="${variant}"/>`);
-        expect(el).shadowDom.to.equal(
-          `<button class="${classValue(`${variant}`)}"/>`,
-          DIFF_OPTIONS
-        );
-      });
-    });
-  });
-
-  it('applies the correct CSS class to the base element when button is disabled', async () => {
-    el = await createButtonComponent(`<igc-button disabled="true"/>`);
-    expect(el).shadowDom.to.equal(
-      `<button class="${classValue(`disabled contained`)}" disabled/>`,
-      DIFF_OPTIONS
-    );
-  });
-
-  it('applies all button specific properties to the wrapped base element', async () => {
-    el = await createButtonComponent(
-      `<igc-button type="submit" variant="contained" size="medium">Submit<igc-button>`
-    );
-    expect(el).shadowDom.to.equal(
-      `<button class="${classValue(`contained`)}" type="submit" />`,
-      DIFF_OPTIONS
-    );
-  });
-
-  const createButtonComponent = (
-    template = '<igc-button>Click</igc-button>'
-  ) => {
-    return fixture<IgcButtonComponent>(html`${unsafeStatic(template)}`);
-  };
-});
-
-describe('LinkButton component', () => {
-  const DIFF_OPTIONS = {
-    ignoreChildren: ['a'],
-    ignoreAttributes: ['aria-disabled', 'part', 'role'],
-  };
-  let el: IgcButtonComponent;
-
-  describe('', () => {
-    beforeEach(async () => {
-      el = await createLinkButtonComponent();
-    });
-
-    it('renders an anchor element successfully', async () => {
-      await expect(el).shadowDom.to.be.accessible();
-      expect(el).shadowDom.to.equal(
-        `<a aria-disabled="false" class="${classValue(
-          `contained`
-        )}" href="/" part="base" role="button"/>`,
-        { ignoreChildren: ['a'] }
-      );
-    });
-
-    it('renders the prefix, content and suffix slots successfully', async () => {
-      expect(el).shadowDom.to.equal(
-        `<a aria-disabled="false"
-        class="${classValue(`contained`)}" href="/" part="base" role="button">
-        <slot name="prefix"></slot>
-        <slot></slot>
-        <slot name="suffix"></slot>
-      </a>`
-      );
-    });
-
-    it('is created with the proper default values', async () => {
-      expect(el.rel).to.be.undefined;
-      expect(el.target).to.be.undefined;
-      expect(el.download).to.be.undefined;
-    });
-
-    it('sets href property successfully', async () => {
-      el.href = '../test';
-      expect(el.href).to.equal('../test');
-      await elementUpdated(el);
-      expect(el).shadowDom.to.equal(
-        `<a class="${classValue(`contained`)}" href="../test" />`,
-        DIFF_OPTIONS
-      );
-
-      el.href = '';
-      expect(el.href).to.equal('');
-    });
-
-    it('sets rel property successfully', async () => {
-      el.rel = 'test';
-      expect(el.rel).to.equal('test');
-      await elementUpdated(el);
-
-      expect(el).shadowDom.to.equal(
-        `<a class="${classValue(`contained`)}" href="/" rel="test" />`,
-        DIFF_OPTIONS
-      );
-    });
-
-    it('sets target property successfully', async () => {
-      el.target = '_parent';
-      expect(el.target).to.equal('_parent');
-      await elementUpdated(el);
-      expect(el).shadowDom.to.equal(
-        `<a class="${classValue(`contained`)}" href="/" target="_parent"/>`,
-        DIFF_OPTIONS
-      );
-      el.target = undefined;
-      expect(el.target).to.be.undefined;
-    });
-
-    it('sets download property successfully', async () => {
-      el.download = 'test';
-      expect(el.download).to.equal('test');
-      await elementUpdated(el);
-      expect(el).shadowDom.to.equal(
-        `<a class="${classValue(`contained`)}" href="/" download="test"/>`,
-        DIFF_OPTIONS
-      );
-    });
-  });
-
-  describe('applies the correct CSS class to the base element for variant', () => {
-    const variants = ['flat', 'contained', 'outlined', 'fab'];
-
-    variants.forEach((variant) => {
-      it(variant, async () => {
-        el = await createLinkButtonComponent(
-          `<igc-button href="/" variant="${variant}"/>`
-        );
-        expect(el).shadowDom.to.equal(
-          `<a class="${classValue(`${variant}`)}" href="/"/>`,
-          DIFF_OPTIONS
-        );
-      });
-    });
-  });
-
-  it('applies the correct CSS class to the base element when link button is disabled', async () => {
-    el = await createLinkButtonComponent(
-      `<igc-button href="/" disabled="true"/>`
-    );
-    expect(el).shadowDom.to.equal(
-      `<a class="${classValue(`disabled contained`)}" href="/"/>`,
-      DIFF_OPTIONS
-    );
-  });
-
-  it('applies all anchor specific properties to the wrapped base element', async () => {
-    el = await createLinkButtonComponent(
-      `<igc-button variant="contained" size="medium" href="test" target="_blank" download="test" rel="test">Submit<igc-button>`
-    );
-    expect(el).shadowDom.to.equal(
-      `<a class="${classValue(
-        `contained`
-      )}" href="test" target="_blank" download="test" rel="test"/>`,
-      DIFF_OPTIONS
-    );
-  });
-
-  const createLinkButtonComponent = (
-    template = '<igc-button href="/">Click</igc-button>'
-  ) => {
-    return fixture<IgcButtonComponent>(html`${unsafeStatic(template)}`);
-  };
 
   describe('Form integration', () => {
-    let form: HTMLFormElement;
-    let button: IgcButtonComponent;
+    const spec = new FormAssociatedTestBed(
+      html`<input type="text" name="username" value="John Doe" />
+        <igc-button type="submit">Submit</igc-button>`
+    );
 
-    beforeEach(async () => {
-      form = await fixture<HTMLFormElement>(
-        html`<form>
-          <input type="text" name="username" value="John Doe" />
-          <fieldset>
-            <igc-button type="submit">Process</igc-button>
-          </fieldset>
-        </form>`
-      );
-      button = form.querySelector(IgcButtonComponent.tagName)!;
-    });
+    beforeEach(async () => await spec.setup(IgcButtonComponent.tagName));
 
     it('is form associated', async () => {
-      expect(button.form).to.equal(form);
+      expect(spec.element.form).to.equal(spec.form);
     });
 
     it('submits the associated form', async () => {
-      let data: FormData;
-      form.addEventListener(
-        'submit',
-        (e) => {
-          e.preventDefault();
-          data = new FormData(form);
-        },
-        { once: true }
-      );
+      const button = spec.element as unknown as IgcButtonComponent;
 
+      const handler = (event: SubmitEvent) => {
+        event.preventDefault();
+        expect(
+          new FormData(event.target as HTMLFormElement).get('username')
+        ).to.equal('John Doe');
+      };
+
+      spec.form.addEventListener('submit', handler, { once: true });
       button.click();
-      expect(data!.get('username')).to.equal('John Doe');
     });
 
     it('resets the associated form', async () => {
-      const input = form.querySelector('input')!;
-      input.value = '';
+      const button = spec.element as unknown as IgcButtonComponent;
+      const input = spec.form.querySelector('input') as HTMLInputElement;
 
+      input.value = 'Jane Doe';
       button.type = 'reset';
       await elementUpdated(button);
 
@@ -407,13 +259,11 @@ describe('LinkButton component', () => {
     });
 
     it('reflects disabled ancestor state', async () => {
-      const fieldset = form.querySelector('fieldset')!;
+      spec.setAncestorDisabledState(true);
+      expect(spec.element.disabled).to.be.true;
 
-      fieldset.toggleAttribute('disabled');
-      expect(button.disabled).to.be.true;
-
-      fieldset.toggleAttribute('disabled');
-      expect(button.disabled).to.be.false;
+      spec.setAncestorDisabledState(false);
+      expect(spec.element.disabled).to.be.false;
     });
   });
 });

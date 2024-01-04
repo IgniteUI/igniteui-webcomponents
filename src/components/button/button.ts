@@ -40,16 +40,9 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
   @property({ reflect: true })
   public variant: 'flat' | 'contained' | 'outlined' | 'fab' = 'contained';
 
-  protected override get classes() {
-    const { variant } = this;
-
-    return {
-      flat: variant === 'flat',
-      outlined: variant === 'outlined',
-      contained: variant === 'contained',
-      fab: variant === 'fab',
-      disabled: this.disabled,
-    };
+  constructor() {
+    super();
+    this.size = 'medium';
   }
 
   protected renderContent() {

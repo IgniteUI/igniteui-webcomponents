@@ -83,6 +83,11 @@ describe('Combo', () => {
         .querySelectorAll('[part~="item"]'),
     ] as IgcComboItemComponent[];
 
+  const filterCombo = async (term: string) => {
+    input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
+    await Promise.all([elementUpdated(combo), list.layoutComplete]);
+  };
+
   before(() => {
     defineComponents(IgcComboComponent);
   });
@@ -119,9 +124,8 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      await expect(combo).to.be.accessible({
-        ignoredRules: ['aria-hidden-focus', 'nested-interactive'],
-      });
+      await expect(combo).shadowDom.to.be.accessible();
+      await expect(combo).to.be.accessible();
     });
 
     it('is successfully created with default properties.', () => {
@@ -684,11 +688,6 @@ describe('Combo', () => {
     });
 
     it('diacritic filtering configuration (matchDiacritics = false)', async () => {
-      const filter = async (str: string) => {
-        input.dispatchEvent(new CustomEvent('igcInput', { detail: str }));
-        await elementUpdated(combo);
-      };
-
       combo.data = [
         ...cities,
         { country: 'Brazil', id: 'BR01', name: 'São Paulo', zip: '0000' },
@@ -697,28 +696,16 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       combo.show();
-      await elementUpdated(combo);
-      await list.layoutComplete;
+      await Promise.all([elementUpdated(combo), list.layoutComplete]);
 
-      await filter('sao');
+      await filterCombo('Sao');
       expect(items(combo).length).to.equal(1);
 
-      await filter('Sao');
-      expect(items(combo).length).to.equal(1);
-
-      await filter('São');
-      expect(items(combo).length).to.equal(1);
-
-      await filter('são');
+      await filterCombo('São');
       expect(items(combo).length).to.equal(1);
     });
 
     it('diacritic filtering configuration (matchDiacritics = true)', async () => {
-      const filter = async (str: string) => {
-        input.dispatchEvent(new CustomEvent('igcInput', { detail: str }));
-        await elementUpdated(combo);
-      };
-
       combo.data = [
         ...cities,
         { country: 'Brazil', id: 'BR01', name: 'São Paulo', zip: '0000' },
@@ -728,19 +715,12 @@ describe('Combo', () => {
       await elementUpdated(combo);
 
       combo.show();
-      await elementUpdated(combo);
-      await list.layoutComplete;
+      await Promise.all([elementUpdated(combo), list.layoutComplete]);
 
-      await filter('sao');
+      await filterCombo('Sao');
       expect(items(combo).length).to.equal(0);
 
-      await filter('Sao');
-      expect(items(combo).length).to.equal(0);
-
-      await filter('São');
-      expect(items(combo).length).to.equal(1);
-
-      await filter('são');
+      await filterCombo('São');
       expect(items(combo).length).to.equal(1);
     });
 
@@ -757,11 +737,7 @@ describe('Combo', () => {
       expect(input.getAttribute('readonly')).to.not.exist;
       expect(items(combo).length).to.equal(cities.length);
 
-      const term = 'sof';
-      input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
-
-      await elementUpdated(combo);
-      await list.layoutComplete;
+      await filterCombo('sof');
 
       expect(items(combo).length).to.equal(1);
       expect(items(combo)[0].textContent).to.equal('Sofia');
@@ -775,11 +751,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      const term = 'sof';
-      input.dispatchEvent(new CustomEvent('igcInput', { detail: term }));
-
-      await elementUpdated(combo);
-      await list.layoutComplete;
+      await filterCombo('sof');
 
       expect(items(combo)[0].active).to.be.true;
 
@@ -845,10 +817,7 @@ describe('Combo', () => {
       expect(items(combo)[0].selected).to.be.true;
       expect(combo.value).to.deep.equal(['BG02']);
 
-      input.dispatchEvent(new CustomEvent('igcInput', { detail: 'sof' }));
-
-      await elementUpdated(combo);
-      await list.layoutComplete;
+      await filterCombo('sof');
 
       items(combo).forEach((i) => {
         expect(i.selected).to.be.false;

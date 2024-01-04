@@ -45,9 +45,10 @@ const metadata: Meta<IgcIconButtonComponent> = {
     },
     type: {
       type: '"button" | "reset" | "submit"',
-      description: 'The type of the button. Defaults to undefined.',
+      description: 'The type of the button. Defaults to `button`.',
       options: ['button', 'reset', 'submit'],
       control: { type: 'inline-radio' },
+      table: { defaultValue: { summary: 'button' } },
     },
     href: {
       type: 'string',
@@ -80,7 +81,12 @@ const metadata: Meta<IgcIconButtonComponent> = {
       table: { defaultValue: { summary: false } },
     },
   },
-  args: { mirrored: false, variant: 'contained', disabled: false },
+  args: {
+    mirrored: false,
+    variant: 'contained',
+    type: 'button',
+    disabled: false,
+  },
 };
 
 export default metadata;
@@ -94,7 +100,7 @@ interface IgcIconButtonArgs {
   mirrored: boolean;
   /** The visual variant of the icon button. */
   variant: 'flat' | 'contained' | 'outlined';
-  /** The type of the button. Defaults to undefined. */
+  /** The type of the button. Defaults to `button`. */
   type: 'button' | 'reset' | 'submit';
   /** The URL the button points to. */
   href: string;

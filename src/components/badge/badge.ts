@@ -4,6 +4,7 @@ import { property } from 'lit/decorators.js';
 import { styles } from './themes/badge.base.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
+import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 
 /**
@@ -24,6 +25,8 @@ export default class IgcBadgeComponent extends LitElement {
   public static register() {
     registerComponent(this);
   }
+
+  private __internals: ElementInternals;
 
   /**
    * The type of badge.
@@ -47,9 +50,20 @@ export default class IgcBadgeComponent extends LitElement {
   @property({ reflect: true })
   public shape: 'rounded' | 'square' = 'rounded';
 
+  constructor() {
+    super();
+    this.__internals = this.attachInternals();
+    this.__internals.role = 'status';
+  }
+
+  @watch('variant')
+  protected variantChange() {
+    this.__internals.ariaRoleDescription = `badge ${this.variant}`;
+  }
+
   protected override render() {
     return html`
-      <span part="base" role="img" aria-label="badge">
+      <span part="base">
         <slot></slot>
       </span>
     `;
