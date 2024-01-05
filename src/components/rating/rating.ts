@@ -188,6 +188,13 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   @property({ type: Boolean })
   public single = false;
 
+  /**
+   * Whether to reset the rating when the user selects the same value.
+   * @attr allow-reset
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'allow-reset' })
+  public allowReset = false;
+
   @watch('max')
   protected handleMaxChange() {
     this.hasProjectedSymbols
@@ -244,7 +251,13 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   protected handleClick({ clientX }: MouseEvent) {
     const value = this.calcNewValue(clientX);
-    this.emitValueUpdate(this.value === value ? 0 : value);
+    const sameValue = this.value === value;
+
+    if (this.allowReset && sameValue) {
+      this.emitValueUpdate(0);
+    } else if (!sameValue) {
+      this.emitValueUpdate(value);
+    }
   }
 
   protected handleMouseMove({ clientX }: MouseEvent) {
