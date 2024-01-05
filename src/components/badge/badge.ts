@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 import { property } from 'lit/decorators.js';
 
 import { styles } from './themes/badge.base.css.js';
+import { styles as shared } from './themes/shared/badge.common.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
@@ -20,7 +21,7 @@ import { registerComponent } from '../common/definitions/register.js';
 @themes(all)
 export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

@@ -58,6 +58,13 @@ export default class IgcTreeComponent extends SizableMixin(
   public singleBranchExpand = false;
 
   /**
+   * Whether clicking over nodes will change their expanded state or not.
+   * @attr toggle-node-on-click
+   */
+  @property({ attribute: 'toggle-node-on-click', reflect: true, type: Boolean })
+  public toggleNodeOnClick = false;
+
+  /**
    * The selection state of the tree.
    * @attr
    */

@@ -1,5 +1,6 @@
 import { html } from 'lit';
 
+import { styles as shared } from './themes/shared/toast.common.css.js';
 import { all } from './themes/themes.js';
 import { styles } from './themes/toast.base.css.js';
 import { AnimationPlayer } from '../../animations/player.js';
@@ -17,7 +18,7 @@ import { IgcBaseAlertLikeComponent } from '../common/mixins/alert.js';
 @themes(all)
 export default class IgcToastComponent extends IgcBaseAlertLikeComponent {
   public static readonly tagName = 'igc-toast';
-  public static override styles = [styles];
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

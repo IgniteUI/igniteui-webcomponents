@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
+import { styles as shared } from './themes/shared/item/list-item.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 
@@ -27,7 +28,7 @@ import { registerComponent } from '../common/definitions/register.js';
 @themes(all)
 export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

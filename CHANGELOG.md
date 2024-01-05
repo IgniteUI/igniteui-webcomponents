@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- Rating - `allowReset` added. When enabled selecting the same value will reset the component [[#1014](https://github.com/IgniteUI/igniteui-webcomponents/issues/1014)].
+- Tree: Added `toggleNodeOnClick` property that determines whether clicking over a node will change its expanded state or not. Defaults to `false`. [#1003](https://github.com/IgniteUI/igniteui-webcomponents/pull/1003).
+- Rating - `allowReset` added. When enabled selecting the same value will reset the component [#1014](https://github.com/IgniteUI/igniteui-webcomponents/issues/1014).
   **Behavioral change**
 
   In previous releases this was the default behavior of the rating component. Make sure to set `allowReset` if you need to keep this behavior in your application.

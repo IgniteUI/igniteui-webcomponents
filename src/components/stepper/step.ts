@@ -3,6 +3,7 @@ import { property, query, queryAssignedElements } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 
 import { Animation, animations } from './animations.js';
+import { styles as shared } from './themes/step/shared/step.common.css.js';
 import { styles } from './themes/step/step.base.css.js';
 import { all } from './themes/step/themes.js';
 import { EaseInOut } from '../../animations/easings.js';
@@ -45,7 +46,7 @@ import { partNameMap } from '../common/util.js';
 @themes(all, true)
 export default class IgcStepComponent extends LitElement {
   public static readonly tagName = 'igc-step';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);
