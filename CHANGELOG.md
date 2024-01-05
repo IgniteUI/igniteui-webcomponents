@@ -4,22 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [4.7.0] - 2024-01-05
 ### Added
-- Tree: Added `toggleNodeOnClick` property that determines whether clicking over a node will change its expanded state or not. Defaults to `false`. [#1003](https://github.com/IgniteUI/igniteui-webcomponents/pull/1003).
-- Rating - `allowReset` added. When enabled selecting the same value will reset the component [#1014](https://github.com/IgniteUI/igniteui-webcomponents/issues/1014).
+- Tree - Added **`toggleNodeOnClick`** property that determines whether clicking over a node will change its expanded state or not. Defaults to `false`. [#1003](https://github.com/IgniteUI/igniteui-webcomponents/pull/1003).
+- Rating - **`allowReset`** added. When enabled selecting the same value will reset the component [#1014](https://github.com/IgniteUI/igniteui-webcomponents/issues/1014).
   **Behavioral change**
 
   In previous releases this was the default behavior of the rating component. Make sure to set `allowReset` if you need to keep this behavior in your application.
-
-
 
 ### Changed
 - Improved WAI-ARIA compliance for Avatar, Badge and Combo components [#1007](https://github.com/IgniteUI/igniteui-webcomponents/pull/1007)
 
 ### Fixed
 - Active item visual styles for Dropdown, Select and Combo components [#1002](https://github.com/IgniteUI/igniteui-webcomponents/pull/1002)
-
+- Navigation drawer - mini variant broken visual style [#1011](https://github.com/IgniteUI/igniteui-webcomponents/pull/1011)
 
 ## [4.6.0] - 2023-12-05
 ### Added
@@ -401,6 +399,7 @@ Initial release of Ignite UI Web Components
 - Ripple component
 - Switch component
 
+[4.7.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.6.0...4.7.0
 [4.6.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.5.0...4.6.0
 [4.5.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.4.0...4.5.0
 [4.4.0]: https://github.com/IgniteUI/igniteui-webcomponents/compare/4.3.1...4.4.0
