@@ -39,6 +39,13 @@ const metadata: Meta<IgcTreeComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
+    toggleNodeOnClick: {
+      type: 'boolean',
+      description:
+        'Whether clicking over nodes will change their expanded state or not.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
     selection: {
       type: '"none" | "multiple" | "cascade"',
       description: 'The selection state of the tree.',
@@ -47,7 +54,11 @@ const metadata: Meta<IgcTreeComponent> = {
       table: { defaultValue: { summary: 'none' } },
     },
   },
-  args: { singleBranchExpand: false, selection: 'none' },
+  args: {
+    singleBranchExpand: false,
+    toggleNodeOnClick: false,
+    selection: 'none',
+  },
 };
 
 export default metadata;
@@ -55,6 +66,8 @@ export default metadata;
 interface IgcTreeArgs {
   /** Whether a single or multiple of a parent's child items can be expanded. */
   singleBranchExpand: boolean;
+  /** Whether clicking over nodes will change their expanded state or not. */
+  toggleNodeOnClick: boolean;
   /** The selection state of the tree. */
   selection: 'none' | 'multiple' | 'cascade';
 }
@@ -152,12 +165,17 @@ const log4 = () => {
   );
 };
 
-const BasicTemplate = ({ singleBranchExpand, selection }: IgcTreeArgs) => {
+const BasicTemplate = ({
+  singleBranchExpand,
+  selection,
+  toggleNodeOnClick,
+}: IgcTreeArgs) => {
   return html`
       <igc-tree style="height: 250px"
         id="tree"
         .selection=${selection}
         .singleBranchExpand=${singleBranchExpand}
+        .toggleNodeOnClick = ${toggleNodeOnClick}
       >
         <igc-tree-item expanded active selected label="Tree Node 1">
           <igc-tree-item expanded id="parent" label="Tree Node 1.1">

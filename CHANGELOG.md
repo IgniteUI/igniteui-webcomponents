@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Tree: Added `toggleNodeOnClick` property that determines whether clicking over a node will change its expanded state or not. Defaults to `false`.
+
 ### Changed
 - Improved WAI-ARIA compliance for Avatar, Badge and Combo components [#1007](https://github.com/IgniteUI/igniteui-webcomponents/pull/1007)
 
