@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/avatar' as *;
 
-$material: digest-schema($light-avatar);
+$material: digest-schema($material-avatar);
 $bootstrap: digest-schema($bootstrap-avatar);
 $fluent: digest-schema($fluent-avatar);
 $indigo: digest-schema($indigo-avatar);

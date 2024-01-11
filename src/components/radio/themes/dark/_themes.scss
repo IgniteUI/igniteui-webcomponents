@@ -1,8 +1,7 @@
-@use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/dark/radio' as *;
 
-$material: digest-schema($dark-radio);
+$material: digest-schema($dark-material-radio);
 $bootstrap: digest-schema($dark-bootstrap-radio);
 $fluent: digest-schema($dark-fluent-radio);
 $indigo: digest-schema($dark-indigo-radio);
