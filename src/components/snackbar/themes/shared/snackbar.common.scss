@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
-$theme: $material;
+$theme: $base;
 
 [part~='base'] {
     border-radius: var-get($theme, 'border-radius');
