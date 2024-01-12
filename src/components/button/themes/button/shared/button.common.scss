@@ -6,6 +6,22 @@ $contained-theme: $material-contained;
 $fab-theme: $material-fab;
 $outlined-theme: $material-outlined;
 
+:host([variant='flat']) {
+    @include css-vars-from-theme($base-flat, 'ig-button');
+}
+
+:host([variant='outlined']) {
+    @include css-vars-from-theme($base-outlined, 'ig-button');
+}
+
+:host([variant='contained']) {
+    @include css-vars-from-theme($base-contained, 'ig-button');
+}
+
+:host([variant='fab']) {
+    @include css-vars-from-theme($base-fab, 'ig-button');
+}
+
 /* stylelint-disable */
 :host([variant='flat']) [part='base'] {
     border-radius: var-get($flat-theme, 'border-radius');

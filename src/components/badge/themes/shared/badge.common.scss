@@ -3,6 +3,10 @@
 
 $theme: $material;
 
+:host {
+    @include css-vars-from-theme($base, 'ig-badge');
+}
+
 ::slotted(igc-icon) {
     color: var-get($theme, 'icon-color');
 }

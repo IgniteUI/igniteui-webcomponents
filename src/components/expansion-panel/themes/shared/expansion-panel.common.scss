@@ -4,6 +4,8 @@
 $theme: $material;
 
 :host {
+    @include css-vars-from-theme($base, 'ig-expansion-panel');
+
     color: var-get($theme, 'body-color');
     background: var-get($theme, 'body-background');
     border-radius: var-get($theme, 'border-radius');

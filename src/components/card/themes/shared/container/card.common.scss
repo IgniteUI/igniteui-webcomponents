@@ -4,6 +4,8 @@
 $theme: $material;
 
 :host {
+    @include css-vars-from-theme($base, 'ig-card');
+
     border: rem(1px) solid var-get($theme, 'outline-color');
     background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');

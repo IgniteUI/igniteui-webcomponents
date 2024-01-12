@@ -1,9 +1,11 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
-$theme: $material;
+$theme: $base;
 
 :host {
+    @include css-vars-from-theme($base, 'ig-card');
+
     color: var-get($theme, 'header-text-color');
 }
 

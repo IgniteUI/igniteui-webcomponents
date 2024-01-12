@@ -4,6 +4,8 @@
 $theme: $material;
 
 :host {
+    @include css-vars-from-theme($base, 'ig-button-group');
+
     [part~='toggle'] {
         $icon-size: rem(18px);
 
