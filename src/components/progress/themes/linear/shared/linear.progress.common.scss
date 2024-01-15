@@ -5,6 +5,10 @@
 
 $theme: $material;
 
+:host {
+    @include css-vars-from-theme($base, 'ig-linear-progress');
+}
+
 [part~='track'] {
     border-radius: var-get($theme, 'track-border-radius');
     background: var-get($theme, 'track-color');

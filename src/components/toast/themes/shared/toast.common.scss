@@ -1,9 +1,11 @@
 @use 'styles/utilities' as *;
 @use '../light/themes' as *;
 
-$theme: $base;
+$theme: $material;
 
 :host {
+    @include css-vars-from-theme($base, 'ig-toast');
+
     padding: rem(10px) rem(16px);
     color: var-get($theme, 'text-color');
     background: var-get($theme, 'background');

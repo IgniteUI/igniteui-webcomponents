@@ -3,6 +3,10 @@
 
 $theme: $material;
 
+:host {
+    @include css-vars-from-theme($base, 'ig-circular-progress');
+}
+
 [part~='label'] {
     fill: var-get($theme, 'text-color');
 }
