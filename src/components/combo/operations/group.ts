@@ -46,11 +46,13 @@ export default class GroupDataOperation<T extends object> {
       groupBy(data, (item) => item.value[groupKey] ?? 'Other')
     );
 
-    return groups.flatMap(([group, items]) => {
-      items.sort((a, b) =>
-        this.compareObjects(a.value, b.value, displayKey!, direction)
-      );
+    if (direction !== 'none') {
+      groups.sort((a, b) => {
+        return this.orderBy.get(direction)! * a[0].localeCompare(b[0]);
+      });
+    }
 
+    return groups.flatMap(([group, items]) => {
       items.unshift({
         dataIndex: -1,
         header: true,

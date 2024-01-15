@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.8.0]
+### Added
+ - Combo component can now set `groupSorting` to `none` which shows the groups in the order of the provided data.
+
+### Changed
+ - Grouping in Combo component no longer sorts the data. `groupSorting` property now affects the sorting direction only of the groups.
+  **Behavioral change**
+  In previous release the sorting directions of the groups sorted the items as well. If you want to achieve this behavior you can pass already sorted data to the Combo component.
+
 ## [4.7.0] - 2024-01-05
 ### Added
 - Tree - Added **`toggleNodeOnClick`** property that determines whether clicking over a node will change its expanded state or not. Defaults to `false`. [#1003](https://github.com/IgniteUI/igniteui-webcomponents/pull/1003).
