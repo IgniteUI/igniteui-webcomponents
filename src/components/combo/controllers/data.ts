@@ -13,6 +13,7 @@ export class DataController<T extends object> implements ReactiveController {
   protected grouping = new GroupDataOperation<T>();
   protected filtering = new FilterDataOperation<T>();
   private _searchTerm = '';
+  private _compareCollator = new Intl.Collator();
 
   constructor(protected host: ComboHost<T>) {
     this.host.addController(this);
@@ -38,6 +39,10 @@ export class DataController<T extends object> implements ReactiveController {
       groupKey: this.host.groupKey,
       direction: this.host.groupSorting,
     };
+  }
+
+  public get compareCollator(): Intl.Collator {
+    return this._compareCollator;
   }
 
   private index(data: T[]): ComboRecord<T>[] {
