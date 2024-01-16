@@ -8,6 +8,7 @@ import {
 
 import { styles } from './themes/item.base.css.js';
 import { all } from './themes/item.js';
+import { styles as shared } from './themes/shared/item.common.css.js';
 import type IgcTreeComponent from './tree.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
 import { IgcTreeSelectionService } from './tree.selection.js';
@@ -45,7 +46,7 @@ import IgcCircularProgressComponent from '../progress/circular-progress.js';
 @themes(all, true)
 export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(

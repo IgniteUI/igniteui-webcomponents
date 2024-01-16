@@ -87,7 +87,6 @@
     display: flex;
     align-items: center;
     z-index: 1;
-    margin-inline-end: rem(4px);
 
     igc-checkbox {
         &::part(label) {
