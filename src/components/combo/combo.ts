@@ -255,7 +255,7 @@ export default class IgcComboComponent<
   /**
    * Sorts the items in each group by ascending or descending order.
    * @attr group-sorting
-   * @type {"asc" | "desc"}
+   * @type {"asc" | "desc" | "none"}
    */
   @property({ attribute: 'group-sorting', reflect: false })
   public groupSorting: GroupingDirection = 'asc';
