@@ -5,8 +5,6 @@ $theme: $fluent;
 
 [part~='label'] {
     @include type-style('body-2');
-
-    color: var-get($theme, 'label-color');
 }
 
 :host [part~='base'] {
@@ -125,10 +123,6 @@ $theme: $fluent;
 }
 
 :host(:not([disabled])[invalid]) {
-    [part~='label'] {
-        color: var-get($theme, 'error-color');
-    }
-
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'error-color');
@@ -154,10 +148,6 @@ $theme: $fluent;
 
 :host([disabled]),
 :host(:disabled) {
-    [part~='label'] {
-        color: var-get($theme, 'disabled-label-color');
-    }
-
     [part~='control'] {
         &::after {
             border-color: var-get($theme, 'disabled-color');
