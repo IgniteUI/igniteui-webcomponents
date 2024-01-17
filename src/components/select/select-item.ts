@@ -4,6 +4,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import { IgcBaseOptionLikeComponent } from '../common/mixins/option.js';
 import { styles } from '../dropdown/themes/dropdown-item.base.css.js';
 import { all } from '../dropdown/themes/item.js';
+import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
 
 /**
  * Represents an item in a select list.
@@ -21,7 +22,7 @@ import { all } from '../dropdown/themes/item.js';
 @themes(all)
 export default class IgcSelectItemComponent extends IgcBaseOptionLikeComponent {
   public static readonly tagName = 'igc-select-item';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

@@ -15,6 +15,7 @@ import { DataController } from './controllers/data.js';
 import { NavigationController } from './controllers/navigation.js';
 import { SelectionController } from './controllers/selection.js';
 import { styles } from './themes/combo.base.css.js';
+import { styles as shared } from './themes/shared/combo.common.css.js';
 import { all } from './themes/themes.js';
 import type {
   ComboItemTemplate,
@@ -104,7 +105,7 @@ export default class IgcComboComponent<
   EventEmitterMixin<IgcComboEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-combo';
-  public static styles = styles;
+  public static styles = [styles, shared];
 
   public static register() {
     registerComponent(
