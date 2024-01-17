@@ -7,12 +7,6 @@ $week-number-radius: var-get($theme, 'week-number-border-radius');
 $border-radius: border-radius(rem(4px));
 $row-gap: rem(6px);
 
-[part~='date'] {
-    @include type-style('subtitle-1');
-
-    font-weight: 400;
-}
-
 [part~='date'],
 [part~='week-number'],
 [part~='label'] {
@@ -63,6 +57,10 @@ $row-gap: rem(6px);
 }
 
 [part~='date'] {
+    @include type-style('subtitle-1');
+
+    font-weight: 400;
+
     &[part~='range'] {
         background: var-get($theme, 'date-selected-range-background');
     }
