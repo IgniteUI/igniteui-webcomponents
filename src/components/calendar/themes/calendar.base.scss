@@ -1,18 +1,12 @@
 @use 'styles/common/component';
 @use 'styles/utilities' as *;
 
-// TODO Remove theme and commented colors and radius
-
 :host(igc-calendar) {
     --size: #{sizable(#{rem(24px)}, #{rem(28px)}, #{rem(32px)})};
 
     display: flex;
     flex-direction: column;
     font-family: var(--ig-font-family);
-
-    > * {
-        font-family: var(--ig-font-family);
-    }
 
     igc-days-view::part(date),
     igc-days-view::part(week-number),
@@ -30,7 +24,6 @@
 
     igc-days-view::part(label) {
         min-width: var(--size);
-        height: var(--size);
     }
 
     igc-months-view {
@@ -48,6 +41,13 @@
             height: var(--size);
         }
     }
+
+    igc-days-view,
+    igc-months-view,
+    igc-years-view {
+        font-family: var(--ig-font-family);
+        overflow: visible;
+    }
 }
 
 [part='navigation'] {
@@ -63,10 +63,10 @@
 [part='months-navigation'],
 [part='years-navigation'],
 [part~='navigation-button'] {
+    background: transparent;
     display: inline-flex;
     user-select: none;
     border: none;
-    font-size: rem(16px);
     padding: 0;
     transition: color 150ms ease-in-out;
 
@@ -145,14 +145,8 @@
 }
 
 [part='header-date'] {
-    @include type-style('h4');
-
     display: flex;
     white-space: pre-wrap;
-}
-
-[part='header-title'] {
-    @include type-style('overline');
 }
 
 .aria-off-screen {

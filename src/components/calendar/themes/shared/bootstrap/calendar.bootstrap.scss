@@ -1,11 +1,14 @@
-@use 'vars' as *;
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
 $theme: $bootstrap;
 
 :host(igc-calendar) {
-    border: rem(1px) solid $border-color;
+    --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
+
+    color: var-get($theme, 'content-foreground');
+    background: var-get($theme, 'content-background');
+    border: rem(1px) solid var-get($theme, 'border-color');
 }
 
 :host([hide-header]) {
@@ -17,25 +20,51 @@ $theme: $bootstrap;
 
 [part~='navigation-button'] {
     background: transparent;
-    color: color(primary, 500);
+    color: var-get($theme, 'navigation-color');
 
-    &:hover,
+    &:hover {
+        color: var-get($theme, 'navigation-hover-color');
+    }
+
     &:focus {
-        color: color(primary, 600);
+        color: var-get($theme, 'navigation-focus-color');
     }
 }
 
 [part~='navigation'],
 [part~='header'] {
-    background: $header-background;
-    color: $header-color;
+    background: var-get($theme, 'header-background');
+    color: var-get($theme, 'header-foreground');
+}
+
+
+[part='months-navigation'],
+[part='years-navigation'],
+[part='years-range'] {
+    @include type-style('subtitle-2');
 }
 
 [part='header-title'] {
     @include type-style('subtitle-1');
 }
 
-[part='header'] {
-    background: color(secondary, 50, .2);
-    color: contrast-color(gray, 50);
+[part='header-date'] {
+    @include type-style('h4');
+}
+
+[part='years-range'] {
+    color: var-get($theme, 'navigation-color');
+}
+
+[part~='months-navigation'],
+[part~='years-navigation'] {
+    color: var-get($theme, 'navigation-color');
+
+    &:hover {
+        color: var-get($theme, 'navigation-hover-color');
+    }
+
+    &:focus {
+        color: var-get($theme, 'navigation-focus-color');
+    }
 }

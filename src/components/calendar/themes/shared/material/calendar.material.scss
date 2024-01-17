@@ -1,7 +1,7 @@
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
-$theme: $fluent;
+$theme: $material;
 
 :host(igc-calendar) {
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
@@ -10,49 +10,10 @@ $theme: $fluent;
     background: var-get($theme, 'content-background');
     border: rem(1px) solid var-get($theme, 'border-color');
     border-radius: var-get($theme, 'border-radius');
-}
 
-[part='header'] {
-    color: var-get($theme, 'header-foreground');
-    background: var-get($theme, 'header-background');
-}
-
-[part~='navigation-buttons'] {
-    gap: rem(8px);
-}
-
-[part~='navigation-button'][part~='vertical'] {
-    transform: none;
-}
-
-[part='months-navigation'],
-[part='years-navigation'],
-[part='years-range'] {
-    @include type-style('subtitle-2');
-}
-
-[part='header-title'] {
-    @include type-style('subtitle-1');
-}
-
-[part='header-date'] {
-    @include type-style('h4');
-}
-
-[part='years-range'] {
-    color: var-get($theme, 'navigation-color');
-}
-
-[part~='months-navigation'],
-[part~='years-navigation'] {
-    color: var-get($theme, 'navigation-color');
-
-    &:hover {
-        color: var-get($theme, 'navigation-hover-color');
-    }
-
-    &:focus {
-        color: var-get($theme, 'navigation-focus-color');
+    [part~='header'] {
+        background: var-get($theme, 'header-background');
+        color: var-get($theme, 'header-foreground');
     }
 }
 
@@ -68,3 +29,26 @@ $theme: $fluent;
     }
 }
 
+[part~='months-navigation'],
+[part~='years-navigation'] {
+    color: var-get($theme, 'navigation-color');
+
+    &:hover {
+        color: var-get($theme, 'navigation-hover-color');
+    }
+
+    &:focus {
+        color: var-get($theme, 'navigation-focus-color');
+    }
+}
+
+[part='months-navigation'],
+[part='years-navigation'],
+[part='years-range'],
+[part='header-title'] {
+    @include type-style('subtitle-1');
+}
+
+[part='header-date'] {
+    @include type-style('h4');
+}

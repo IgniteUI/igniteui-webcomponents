@@ -1,71 +1,133 @@
-@use 'vars' as *;
 @use 'styles/utilities' as *;
 @use '../../light/themes' as *;
 
 $theme: $bootstrap;
 
 :host {
-    @include css-vars-from-theme($theme, 'ig-calendar');
-
     padding-block-start: rem(16px);
-}
-
-[part~='month-inner'][part~='selected'],
-[part~='year-inner'][part~='selected'] {
-    color: $selected-color;
-    background: $selected-background;
-
-    &:focus,
-    &:hover {
-        color: $selected-color;
-        background: $selected-background;
-    }
-}
-
-[part~='month-inner'][part~='current'],
-[part~='year-inner'][part~='current'] {
-    box-shadow: none;
-    background: $current-background;
-    color: $current-color;
-
-    &:hover,
-    &:focus {
-        background: $current-background;
-        color: $current-color;
-    }
 }
 
 [part~='month-inner'],
 [part~='year-inner'] {
-    border-radius: var-get($theme, 'month-border-radius');
+    border-radius: var-get($theme, 'month-year-border-radius');
 
-    &:hover,
-    &:focus {
-        background: color(gray, 200);
-    }
-
-    &:hover {
-        background: color(gray, 200);
-    }
-}
-
-[part~='month-inner'][part~='selected'][part~='current'],
-[part~='year-inner'][part~='selected'][part~='current'] {
-    box-shadow: none;
-    background: $selected-background;
-    color: $selected-color;
-
-    &:hover,
-    &:focus {
-        background: $selected-background;
-        color: $selected-color;
-    }
-}
-
-[part~='months-navigation'],
-[part~='years-navigation'] {
     &:focus,
+    &:focus-visible,
+    &:focus-within {
+        outline-color: transparent;
+    }
+}
+
+[part~='month-inner'] {
     &:hover {
-        color: color(primary, 500);
+        color: var-get($theme, 'month-hover-foreground');
+        background: var-get($theme, 'month-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'month-focus-foreground');
+        background: var-get($theme, 'month-focus-background');
+    }
+}
+
+[part~='year-inner'] {
+    &:hover {
+        color: var-get($theme, 'year-hover-foreground');
+        background: var-get($theme, 'year-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'year-focus-foreground');
+        background: var-get($theme, 'year-focus-background');
+    }
+}
+
+[part~='month-inner'][part~='current'] {
+    color: var-get($theme, 'month-current-foreground');
+    background: var-get($theme, 'month-current-background');
+
+    &:hover {
+        color: var-get($theme, 'month-current-hover-foreground');
+        background: var-get($theme, 'month-current-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'month-current-focus-foreground');
+        background: var-get($theme, 'month-current-focus-background');
+    }
+}
+
+[part~='year-inner'][part~='current'] {
+    color: var-get($theme, 'year-current-foreground');
+    background: var-get($theme, 'year-current-background');
+
+    &:hover {
+        color: var-get($theme, 'year-current-hover-foreground');
+        background: var-get($theme, 'year-current-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'year-current-focus-foreground');
+        background: var-get($theme, 'year-current-focus-background');
+    }
+}
+
+[part~='month-inner'][part~='selected'] {
+    color: var-get($theme, 'month-selected-foreground');
+    background: var-get($theme, 'month-selected-background');
+
+    &:hover {
+        color: var-get($theme, 'month-selected-hover-foreground');
+        background: var-get($theme, 'month-selected-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'month-selected-focus-foreground');
+        background: var-get($theme, 'month-selected-focus-background');
+    }
+}
+
+[part~='year-inner'][part~='selected'] {
+    color: var-get($theme, 'year-selected-foreground');
+    background: var-get($theme, 'year-selected-background');
+
+    &:hover {
+        color: var-get($theme, 'year-selected-hover-foreground');
+        background: var-get($theme, 'year-selected-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'year-selected-focus-foreground');
+        background: var-get($theme, 'year-selected-focus-background');
+    }
+}
+
+[part~='month-inner'][part~='selected'][part~='current'] {
+    color: var-get($theme, 'month-selected-current-foreground');
+    background: var-get($theme, 'month-selected-current-background');
+
+    &:hover {
+        color: var-get($theme, 'month-selected-current-hover-foreground');
+        background: var-get($theme, 'month-selected-current-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'month-selected-current-focus-foreground');
+        background: var-get($theme, 'month-selected-current-focus-background');
+    }
+}
+
+[part~='year-inner'][part~='selected'][part~='current'] {
+    color: var-get($theme, 'year-selected-current-foreground');
+    background: var-get($theme, 'year-selected-current-background');
+
+    &:hover {
+        color: var-get($theme, 'year-selected-current-hover-foreground');
+        background: var-get($theme, 'year-selected-current-hover-background');
+    }
+
+    &:focus {
+        color: var-get($theme, 'year-selected-current-focus-foreground');
+        background: var-get($theme, 'year-selected-current-focus-background');
     }
 }

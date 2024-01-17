@@ -1,10 +1,7 @@
 @use 'styles/utilities' as *;
 
 $border-width: rem(1px);
-$week-number-bg: color(gray, 200);
-$week-number-color: color(gray, 500);
 $week-number-radius: rem(4px);
-$border-radius: border-radius(rem(4px));
 $row-gap: rem(6px);
 
 :host([part='days-view']) {
@@ -33,7 +30,6 @@ $row-gap: rem(6px);
 [part~='date'],
 [part~='week-number'],
 [part~='label'] {
-    font-size: var(--ig-subtitle-1-font-size);
     width: 100%;
     position: relative;
     display: flex;
@@ -91,12 +87,6 @@ $row-gap: rem(6px);
     }
 }
 
-[part~='date-inner'][part~='inactive'],
-[part~='date-inner'][part~='label'],
-[part~='date-inner'][part~='disabled'] {
-    color: $week-number-color;
-}
-
 [part~='week-number'] {
     order: 0;
     cursor: default;
@@ -107,7 +97,6 @@ $row-gap: rem(6px);
         display: none;
     }
 }
-
 
 [part~='week-number-inner'] {
     position: relative;
