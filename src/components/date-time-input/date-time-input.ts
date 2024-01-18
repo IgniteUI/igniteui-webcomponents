@@ -144,12 +144,12 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
    * The value of the input.
    * @attr
    */
-  @property({ converter: converter })
-  @blazorTwoWayBind('igcChange', 'detail')
   public get value(): Date | null {
     return this._value;
   }
 
+  @property({ converter: converter })
+  @blazorTwoWayBind('igcChange', 'detail')
   public set value(val: Date | null) {
     this._value = val
       ? DateTimeUtil.isValidDate(val)
