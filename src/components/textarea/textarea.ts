@@ -9,6 +9,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
+import { styles as shared } from './themes/shared/textarea.common.css.js';
 import { styles } from './themes/textarea.base.css.js';
 import { all } from './themes/themes.js';
 import { themeSymbol, themes } from '../../theming/theming-decorator.js';
@@ -67,7 +68,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcTextareaEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-textarea';
-  public static styles = [styles];
+  public static styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

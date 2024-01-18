@@ -7,6 +7,7 @@ import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { styles } from '../dropdown/themes/dropdown-group.base.css.js';
 import { all } from '../dropdown/themes/group.js';
+import { styles as shared } from '../dropdown/themes/shared/group/dropdown-group.common.css.js';
 
 /**
  * @element igc-select-group - A container for a group of `igc-select-item` components.
@@ -19,7 +20,7 @@ import { all } from '../dropdown/themes/group.js';
 @themes(all)
 export default class IgcSelectGroupComponent extends LitElement {
   public static readonly tagName = 'igc-select-group';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

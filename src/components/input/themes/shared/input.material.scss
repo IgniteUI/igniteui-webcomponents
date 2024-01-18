@@ -38,16 +38,6 @@ $fs: rem(16px) !default;
     }
 }
 
-[part='prefix'] {
-    color: var-get($theme, 'input-prefix-color');
-    background: var-get($theme, 'input-prefix-background');
-}
-
-[part='suffix'] {
-    color: var-get($theme, 'input-suffix-color');
-    background: var-get($theme, 'input-suffix-background');
-}
-
 [part='prefix'],
 [part='suffix'] {
     ::slotted(*) {
@@ -78,18 +68,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
     text-overflow: ellipsis;
     overflow: hidden;
     will-change: font-size, color, transform;
-}
-
-[part~='filled'] {
-    [part~='prefix'] {
-        background: var-get($theme, 'input-prefix-background--filled');
-        color: var-get($theme, 'input-prefix-color--filled');
-    }
-
-    [part~='suffix'] {
-        background: var-get($theme, 'input-suffix-background--filled');
-        color: var-get($theme, 'input-suffix-color--filled');
-    }
 }
 
 [part^='container'] {
@@ -157,7 +135,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
     padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
     margin-top: rem(5px);
-    color: var-get($theme, 'helper-text-color');
 }
 
 :host(:focus-within) {
@@ -165,16 +142,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
         @extend %label;
 
         color: var-get($theme, 'focused-secondary-color');
-    }
-
-    [part~='prefix'] {
-        background: var-get($theme, 'input-prefix-background--focused');
-        color: var-get($theme, 'input-prefix-color--focused');
-    }
-
-    [part~='suffix'] {
-        background: var-get($theme, 'input-suffix-background--focused');
-        color: var-get($theme, 'input-suffix-color--focused');
     }
 }
 
@@ -472,10 +439,6 @@ input:placeholder-shown + [part='notch'] [part='label'],
 
 :host([invalid]) {
     [part='label'] {
-        color: var-get($theme, 'error-secondary-color');
-    }
-
-    [part='helper-text'] {
         color: var-get($theme, 'error-secondary-color');
     }
 }

@@ -6,6 +6,7 @@ import { live } from 'lit/directives/live.js';
 import { IgcCheckboxBaseComponent } from './checkbox-base.js';
 import { all } from './themes/checkbox-themes.js';
 import { styles } from './themes/checkbox.base.css.js';
+import { styles as shared } from './themes/shared/checkbox/checkbox.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { createCounter, partNameMap } from '../common/util.js';
@@ -29,7 +30,7 @@ import { createCounter, partNameMap } from '../common/util.js';
 @themes(all)
 export default class IgcCheckboxComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-checkbox';
-  protected static styles = styles;
+  protected static styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

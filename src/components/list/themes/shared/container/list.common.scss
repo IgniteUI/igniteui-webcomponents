@@ -1,0 +1,6 @@
+@use 'styles/utilities' as *;
+@use '../../light/themes' as *;
+
+:host {
+    @include css-vars-from-theme($base, 'ig-list');
+}

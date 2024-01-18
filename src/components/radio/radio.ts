@@ -4,6 +4,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 
 import { styles } from './themes/radio.base.css.js';
+import { styles as shared } from './themes/shared/radio.common.css.js';
 import { all } from './themes/themes.js';
 import { getGroup } from './utils.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -49,7 +50,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   EventEmitterMixin<IgcRadioEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-radio';
-  protected static styles = styles;
+  protected static styles = [styles, shared];
 
   public static register() {
     registerComponent(this);

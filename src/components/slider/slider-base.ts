@@ -8,6 +8,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
+import { styles as shared } from './themes/shared/slider.common.css.js';
 import { styles } from './themes/slider.base.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
@@ -30,7 +31,7 @@ import { isLTR } from '../common/util.js';
 @themes(all, true)
 @blazorDeepImport
 export class IgcSliderBaseComponent extends LitElement {
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   @query(`[part~='thumb']`)
   protected thumb!: HTMLElement;

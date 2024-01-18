@@ -5,7 +5,7 @@
 $theme: $material;
 
 :host(igc-calendar) {
-    @include css-vars-from-theme($theme, 'ig-calendar');
+    @include css-vars-from-theme($base, 'ig-calendar');
 
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 

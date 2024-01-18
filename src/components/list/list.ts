@@ -4,6 +4,7 @@ import IgcListHeaderComponent from './list-header.js';
 import IgcListItemComponent from './list-item.js';
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
+import { styles as shared } from './themes/shared/container/list.common.css.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
@@ -18,7 +19,7 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 @themes(all)
 export default class IgcListComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-list';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcListItemComponent, IgcListHeaderComponent);

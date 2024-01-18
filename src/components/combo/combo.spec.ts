@@ -2,6 +2,7 @@ import { elementUpdated, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import { spy } from 'sinon';
 
+import IgcComboHeaderComponent from './combo-header.js';
 import IgcComboItemComponent from './combo-item.js';
 import IgcComboListComponent from './combo-list.js';
 import IgcComboComponent from './combo.js';
@@ -59,6 +60,63 @@ describe('Combo', () => {
     },
   ];
 
+  const citiesWithDiacritics = [
+    {
+      id: 'US01',
+      name: 'New York',
+      country: 'Méxícó',
+      zip: '10001',
+    },
+    {
+      id: 'JP01',
+      name: 'Tokyo',
+      country: 'Ángel',
+      zip: '163-8001',
+    },
+    {
+      id: 'US02',
+      name: 'Boston',
+      country: 'Méxícó',
+      zip: '02108',
+    },
+    {
+      id: 'US03',
+      name: 'San Francisco',
+      country: 'Méxícó',
+      zip: '94103',
+    },
+    {
+      id: 'JP02',
+      name: 'Yokohama',
+      country: 'Ángel',
+      zip: '781-0240',
+    },
+    {
+      id: 'JP03',
+      name: 'Osaka',
+      country: 'Ángel',
+      zip: '552-0021',
+    },
+    {
+      id: 'BG01',
+      name: 'diakritikós',
+      country: 'México',
+      zip: '1000',
+    },
+    {
+      id: 'BG02',
+      name: 'coöperate',
+      country: 'México',
+      zip: '4000',
+    },
+    {
+      id: 'BG03',
+      name: 'Muğams',
+      country: 'México',
+      zip: '9000',
+    },
+  ];
+
   const primitive = [
     0,
     'Sofia',
@@ -88,6 +146,12 @@ describe('Combo', () => {
     await Promise.all([elementUpdated(combo), list.layoutComplete]);
   };
 
+  const headerItems = <T extends object>(combo: IgcComboComponent<T>) =>
+    [
+      ...combo
+        .shadowRoot!.querySelector('igc-combo-list')!
+        .querySelectorAll('[part~="group-header"]'),
+    ] as IgcComboHeaderComponent[];
   before(() => {
     defineComponents(IgcComboComponent);
   });
@@ -419,8 +483,8 @@ describe('Combo', () => {
       const args = {
         cancelable: true,
         detail: {
-          newValue: ['BG02'],
-          items: [cities[1]],
+          newValue: ['BG01'],
+          items: [cities[0]],
           type: 'selection',
         },
       };
@@ -430,7 +494,7 @@ describe('Combo', () => {
       await list.layoutComplete;
 
       items(combo)[0].click();
-      expect(combo.value).to.deep.equal(['BG02']);
+      expect(combo.value).to.deep.equal(['BG01']);
       expect(eventSpy).calledWithExactly('igcChange', args);
     });
 
@@ -439,8 +503,8 @@ describe('Combo', () => {
       const args = {
         cancelable: true,
         detail: {
-          newValue: ['BG01', 'BG03'],
-          items: [cities[1]],
+          newValue: ['BG02', 'BG03'],
+          items: [cities[0]],
           type: 'deselection',
         },
       };
@@ -454,7 +518,7 @@ describe('Combo', () => {
 
       items(combo)[0].click();
       await elementUpdated(combo);
-      expect(combo.value).to.deep.equal(['BG01', 'BG03']);
+      expect(combo.value).to.deep.equal(['BG02', 'BG03']);
 
       expect(eventSpy).calledWithExactly('igcChange', args);
     });
@@ -783,16 +847,16 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      expect(items(combo)[0].selected).to.be.true;
+      expect(items(combo)[1].selected).to.be.true;
 
-      pressKey(options, 'ArrowDown');
+      pressKey(options, 'ArrowDown', 2);
       pressKey(options, ' ');
 
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      expect(items(combo)[0].selected).to.be.false;
-      expect(items(combo)[1].selected).to.be.true;
+      expect(items(combo)[1].selected).to.be.false;
+      expect(items(combo)[2].selected).to.be.true;
     });
 
     it('should clear selection upon changing the search term via input', async () => {
@@ -814,7 +878,7 @@ describe('Combo', () => {
       await elementUpdated(combo);
       await list.layoutComplete;
 
-      expect(items(combo)[0].selected).to.be.true;
+      expect(items(combo)[1].selected).to.be.true;
       expect(combo.value).to.deep.equal(['BG02']);
 
       await filterCombo('sof');
@@ -1116,6 +1180,33 @@ describe('Combo', () => {
       await elementUpdated(combo);
       expect(combo.selection[0]).to.equal(cities[3]);
       expect(combo.selection[1]).to.equal(cities[4]);
+    });
+
+    it('should sort groups with diacritics and none as groupSorting direction', async () => {
+      combo.data = citiesWithDiacritics;
+      combo.groupSorting = 'asc';
+      combo.open = true;
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      let comboHeadersLabel = headerItems(combo).map(
+        (header) => header.innerText
+      );
+      expect(comboHeadersLabel).to.eql(['Ángel', 'México', 'Méxícó']);
+
+      combo.groupSorting = 'desc';
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      comboHeadersLabel = headerItems(combo).map((header) => header.innerText);
+      expect(comboHeadersLabel).to.eql(['Méxícó', 'México', 'Ángel']);
+
+      combo.groupSorting = 'none';
+      await elementUpdated(combo);
+      await list.layoutComplete;
+
+      comboHeadersLabel = headerItems(combo).map((header) => header.innerText);
+      expect(comboHeadersLabel).to.eql(['Méxícó', 'Ángel', 'México']);
     });
   });
 

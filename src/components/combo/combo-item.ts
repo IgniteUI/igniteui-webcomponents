@@ -7,12 +7,13 @@ import IgcCheckboxComponent from '../checkbox/checkbox.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { all } from '../dropdown/themes/item.js';
+import { styles as shared } from '../dropdown/themes/shared/item/dropdown-item.common.css.js';
 
 /* blazorSuppress */
 @themes(all)
 export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
   public static register() {
     registerComponent(this, IgcCheckboxComponent);
