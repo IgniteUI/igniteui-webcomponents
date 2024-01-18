@@ -50,6 +50,7 @@ export default class IgcSliderComponent extends FormAssociatedMixin(
 ) {
   public static readonly tagName = 'igc-slider';
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcSliderLabelComponent);
   }

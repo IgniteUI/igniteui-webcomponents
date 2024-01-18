@@ -36,6 +36,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-button-group';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcToggleButtonComponent);
   }

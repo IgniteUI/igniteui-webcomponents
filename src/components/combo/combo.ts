@@ -106,6 +106,7 @@ export default class IgcComboComponent<
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,

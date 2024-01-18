@@ -48,6 +48,7 @@ export default class IgcStepComponent extends LitElement {
   public static readonly tagName = 'igc-step';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

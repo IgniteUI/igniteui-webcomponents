@@ -40,6 +40,7 @@ export default class IgcCircularProgressComponent extends IgcProgressBaseCompone
   public static readonly tagName = 'igc-circular-progress';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcCircularGradientComponent);
   }

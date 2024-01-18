@@ -70,6 +70,7 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   public static readonly tagName = 'igc-rating';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcIconComponent, IgcRatingSymbolComponent);
   }

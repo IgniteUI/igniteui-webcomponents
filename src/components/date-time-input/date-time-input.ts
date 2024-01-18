@@ -71,6 +71,7 @@ export default class IgcDateTimeInputComponent extends EventEmitterMixin<
 >(IgcMaskInputBaseComponent) {
   public static readonly tagName = 'igc-date-time-input';
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

@@ -12,6 +12,7 @@ export default class IgcCardMediaComponent extends LitElement {
   public static readonly tagName = 'igc-card-media';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

@@ -30,6 +30,7 @@ export default class IgcSwitchComponent extends IgcCheckboxBaseComponent {
   public static readonly tagName = 'igc-switch';
   public static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

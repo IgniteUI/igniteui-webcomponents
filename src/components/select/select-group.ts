@@ -21,6 +21,7 @@ export default class IgcSelectGroupComponent extends LitElement {
   public static readonly tagName = 'igc-select-group';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

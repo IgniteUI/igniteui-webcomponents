@@ -36,6 +36,7 @@ import { Validator, requiredValidator } from '../common/validators.js';
 export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

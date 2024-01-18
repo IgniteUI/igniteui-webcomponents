@@ -56,6 +56,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-days-view';
   public static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

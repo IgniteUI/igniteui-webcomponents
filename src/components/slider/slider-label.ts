@@ -10,6 +10,7 @@ export default class IgcSliderLabelComponent extends LitElement {
     }
   `;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }
