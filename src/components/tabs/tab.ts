@@ -27,6 +27,7 @@ export default class IgcTabComponent extends LitElement {
   public static readonly tagName = 'igc-tab';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

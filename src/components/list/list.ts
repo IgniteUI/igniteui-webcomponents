@@ -20,6 +20,7 @@ export default class IgcListComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-list';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcListItemComponent, IgcListHeaderComponent);
   }

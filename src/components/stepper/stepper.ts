@@ -39,6 +39,7 @@ export default class IgcStepperComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-stepper';
   protected static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcStepComponent);
   }

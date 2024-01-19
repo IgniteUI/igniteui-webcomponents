@@ -30,6 +30,7 @@ export default class IgcButtonComponent extends IgcButtonBaseComponent {
   public static readonly tagName = 'igc-button';
   protected static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

@@ -28,6 +28,7 @@ export default class IgcNavDrawerComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,

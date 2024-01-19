@@ -67,6 +67,7 @@ export default class IgcCalendarComponent extends SizableMixin(
   public static readonly tagName = 'igc-calendar';
   public static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,

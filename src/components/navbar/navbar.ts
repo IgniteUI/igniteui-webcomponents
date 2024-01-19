@@ -26,6 +26,7 @@ export default class IgcNavbarComponent extends LitElement {
   public static readonly tagName = 'igc-navbar';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

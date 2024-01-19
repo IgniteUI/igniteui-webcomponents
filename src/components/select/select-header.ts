@@ -17,6 +17,7 @@ export default class IgcSelectHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-select-header';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

@@ -14,6 +14,7 @@ export default class IgcComboItemComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-item';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcCheckboxComponent);
   }
