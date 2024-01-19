@@ -47,6 +47,7 @@ export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,

@@ -16,6 +16,7 @@ export default class IgcCardContentComponent extends LitElement {
   public static readonly tagName = 'igc-card-content';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

@@ -51,6 +51,7 @@ export default class IgcRadioComponent extends FormAssociatedRequiredMixin(
   public static readonly tagName = 'igc-radio';
   protected static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

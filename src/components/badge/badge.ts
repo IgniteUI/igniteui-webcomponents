@@ -23,6 +23,7 @@ export default class IgcBadgeComponent extends LitElement {
   public static readonly tagName = 'igc-badge';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

@@ -41,6 +41,7 @@ export default class IgcChipComponent extends SizableMixin(
   public static readonly tagName = 'igc-chip';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcIconComponent);
   }

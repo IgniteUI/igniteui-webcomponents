@@ -105,6 +105,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public static readonly tagName = 'igc-select';
   public static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,

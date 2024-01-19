@@ -20,6 +20,7 @@ export default class IgcRatingSymbolComponent extends LitElement {
   public static readonly tagName = 'igc-rating-symbol';
   public static override styles = [styles];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

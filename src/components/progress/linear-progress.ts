@@ -35,6 +35,7 @@ export default class IgcLinearProgressComponent extends IgcProgressBaseComponent
   public static readonly tagName = 'igc-linear-progress';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

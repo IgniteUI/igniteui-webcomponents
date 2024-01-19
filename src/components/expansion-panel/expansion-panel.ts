@@ -60,6 +60,7 @@ export default class IgcExpansionPanelComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-expansion-panel';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcIconComponent);
   }

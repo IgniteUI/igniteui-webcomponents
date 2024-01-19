@@ -55,6 +55,7 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 >(IgcSliderBaseComponent) {
   public static readonly tagName = 'igc-range-slider';
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcSliderLabelComponent);
   }

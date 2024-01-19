@@ -17,6 +17,7 @@ export default class IgcNavDrawerHeaderItemComponent extends LitElement {
   public static readonly tagName = 'igc-nav-drawer-header-item';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }
