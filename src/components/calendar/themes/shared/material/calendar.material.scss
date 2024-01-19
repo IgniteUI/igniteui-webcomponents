@@ -44,9 +44,12 @@ $theme: $material;
 
 [part='months-navigation'],
 [part='years-navigation'],
-[part='years-range'],
-[part='header-title'] {
+[part='years-range'] {
     @include type-style('subtitle-1');
+}
+
+[part='header-title'] {
+    @include type-style('overline');
 }
 
 [part='header-date'] {
