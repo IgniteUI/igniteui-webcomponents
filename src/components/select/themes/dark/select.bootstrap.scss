@@ -1,14 +1,17 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 @use '../../../dropdown/themes/dark/themes' as dropdown-theme;
+@use '../../../input/themes/dark/themes' as input-theme;
 
 $dropdown-theme: dropdown-theme.$bootstrap;
+$input-theme: input-theme.$bootstrap;
 $theme: $bootstrap;
 
 
 :host {
     @include css-vars-from-theme($theme, 'ig-select');
     @include css-vars-from-theme($dropdown-theme, 'ig-dropdown');
+    @include css-vars-from-theme($input-theme, 'ig-input');
 
     --dd-background-color: #{var-get($dropdown-theme, 'background-color')};
     --dd-border-radius:#{var-get($dropdown-theme, 'border-radius')};
