@@ -45,14 +45,14 @@ $theme: $fluent;
 
 [part~='months-navigation'],
 [part~='years-navigation'] {
-    color: var-get($theme, 'navigation-color');
+    color: var-get($theme, 'picker-foreground');
 
     &:hover {
-        color: var-get($theme, 'navigation-hover-color');
+        color: var-get($theme, 'picker-hover-foreground');
     }
 
     &:focus {
-        color: var-get($theme, 'navigation-focus-color');
+        color: var-get($theme, 'picker-focus-foreground');
     }
 }
 

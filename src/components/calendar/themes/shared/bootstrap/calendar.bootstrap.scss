@@ -18,20 +18,6 @@ $theme: $bootstrap;
     }
 }
 
-[part~='navigation-button'] {
-    background: transparent;
-    color: var-get($theme, 'navigation-color');
-
-    &:hover {
-        color: var-get($theme, 'navigation-hover-color');
-    }
-
-    &:focus {
-        color: var-get($theme, 'navigation-focus-color');
-    }
-}
-
-[part~='navigation'],
 [part~='header'] {
     background: var-get($theme, 'header-background');
     color: var-get($theme, 'header-foreground');
@@ -56,8 +42,26 @@ $theme: $bootstrap;
     color: var-get($theme, 'navigation-color');
 }
 
+[part~='navigation'] {
+    background: var-get($theme, 'picker-background');
+    color: var-get($theme, 'picker-foreground');
+}
+
 [part~='months-navigation'],
 [part~='years-navigation'] {
+    color: var-get($theme, 'picker-foreground');
+
+    &:hover {
+        color: var-get($theme, 'picker-hover-foreground');
+    }
+
+    &:focus {
+        color: var-get($theme, 'picker-focus-foreground');
+    }
+}
+
+[part~='navigation-button'] {
+    background: transparent;
     color: var-get($theme, 'navigation-color');
 
     &:hover {
