@@ -1,42 +1,36 @@
 import { globby } from 'globby';
 import report from './report.js';
-import { sassRender, template, postProcessor } from './sass.mjs';
-import path from 'path';
-import { mkdirSync as makeDir } from 'fs';
-import * as sass from 'sass';
-import { fileURLToPath } from 'url';
-import { writeFile } from 'fs/promises';
+import { fromTemplate, compileSass } from './sass.mjs';
+import path from 'node:path';
+import { mkdirSync as makeDir } from 'node:fs';
+import * as sass from 'sass-embedded';
+import { fileURLToPath } from 'node:url';
+import { writeFile } from 'node:fs/promises';
 
-const renderSass = sass.compile;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 const DEST_DIR = path.join.bind(null, path.resolve(__dirname, '../dist'));
-const THEMES_PATH = `src/styles/themes`;
 
 export async function buildThemes() {
-  const paths = await globby(`${THEMES_PATH}/{light,dark}/*.scss`);
+  const compiler = await sass.initAsyncCompiler();
+  const paths = await globby(`src/styles/themes/{light,dark}/*.scss`);
 
   for (const sassFile of paths) {
-    const result = renderSass(sassFile, {
-      style: 'compressed',
-      loadPaths: ['node_modules', 'src']
-    });
-
-    let outCss = postProcessor.process(result.css).css;
-    if (outCss.charCodeAt(0) === 0xfeff) {
-      outCss = outCss.substring(1);
-    }
+    const css = await compileSass(sassFile, compiler);
 
     const outputFile = DEST_DIR(
       sassFile.replace(/\.scss$/, '.css').replace('src/styles/', '')
     );
     makeDir(path.dirname(outputFile), { recursive: true });
-    await writeFile(outputFile, outCss, 'utf-8');
+    await writeFile(outputFile, css, 'utf-8');
   }
+
+  await compiler.dispose();
 }
 
 (async () => {
-  const startTime = new Date();
+  const compiler = await sass.initAsyncCompiler();
+  const start = performance.now();
+
   const paths = await globby([
     'src/components/**/*.base.scss',
     'src/components/**/*.common.scss',
@@ -46,15 +40,25 @@ export async function buildThemes() {
     'src/components/**/*.fluent.scss',
   ]);
 
-  for (const sourceFile of paths) {
-    const output = sourceFile.replace(/\.scss$/, '.css.ts');
-    await sassRender(sourceFile, template, output).catch((err) => {
-      report.error(err);
-      process.exit(-1);
-    });
+  try {
+    await Promise.all(
+      paths.map(async (path) => {
+        writeFile(
+          path.replace(/\.scss$/, '.css.ts'),
+          fromTemplate(await compileSass(path, compiler)),
+          'utf8'
+        );
+      })
+    );
+  } catch (err) {
+    await compiler.dispose();
+    report.error(err);
+    process.exit(1);
   }
 
+  await compiler.dispose();
+
   report.success(
-    `Styles generated in ${Math.round((Date.now() - startTime) / 1000)}s`
+    `Styles generated in ${((performance.now() - start) / 1000).toFixed(2)}s`
   );
 })();
