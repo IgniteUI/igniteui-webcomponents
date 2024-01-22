@@ -9,6 +9,7 @@ $theme: $bootstrap;
     color: var-get($theme, 'content-foreground');
     background: var-get($theme, 'content-background');
     border: rem(1px) solid var-get($theme, 'border-color');
+    border-radius: var-get($theme, 'border-radius');
 }
 
 :host([hide-header]) {
