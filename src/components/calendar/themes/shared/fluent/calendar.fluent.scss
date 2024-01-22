@@ -32,7 +32,7 @@ $theme: $fluent;
 }
 
 [part='header-title'] {
-    @include type-style('subtitle-1');
+    @include type-style('overline');
 }
 
 [part='header-date'] {
