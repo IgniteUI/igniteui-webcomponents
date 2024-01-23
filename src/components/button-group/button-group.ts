@@ -6,6 +6,10 @@ import { all } from './themes/group.js';
 import { styles as shared } from './themes/shared/group/group.common.css.js';
 import IgcToggleButtonComponent from './toggle-button.js';
 import { themes } from '../../theming/theming-decorator.js';
+import {
+  MutationControllerParams,
+  createMutationController,
+} from '../common/controllers/mutation-observer.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
@@ -41,20 +45,36 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     registerComponent(this, IgcToggleButtonComponent);
   }
 
+  private get isMultiple() {
+    return this.selection === 'multiple';
+  }
+
   private _selectedItems: Set<string> = new Set();
 
-  private mutationObserver: MutationObserver = this.setMutationsObserver();
-  private observerConfig: MutationObserverInit = {
-    attributeFilter: ['selected'],
-    childList: true,
-    subtree: true,
-  };
+  private _observerCallback({
+    changes: { added, attributes },
+  }: MutationControllerParams<IgcToggleButtonComponent>) {
+    if (this.isMultiple || this._selectedButtons.length <= 1) {
+      return;
+    }
+
+    const buttons = this.toggleButtons;
+    const idx = buttons.indexOf(
+      added.length ? added.at(-1)! : attributes.at(-1)!
+    );
+
+    buttons.forEach((button, i) => {
+      if (button.selected && i !== idx) {
+        button.selected = false;
+      }
+    });
+  }
 
   private get _selectedButtons(): Array<IgcToggleButtonComponent> {
     return this.toggleButtons.filter((b) => b.selected);
   }
 
-  @queryAssignedElements({ selector: 'igc-toggle-button' })
+  @queryAssignedElements({ selector: IgcToggleButtonComponent.tagName })
   private toggleButtons!: Array<IgcToggleButtonComponent>;
 
   /**
@@ -106,14 +126,18 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     }
   }
 
-  public override connectedCallback() {
-    super.connectedCallback();
-    this.mutationObserver.observe(this, this.observerConfig);
-  }
+  constructor() {
+    super();
 
-  public override disconnectedCallback() {
-    this.mutationObserver.disconnect();
-    super.disconnectedCallback();
+    createMutationController(this, {
+      callback: this._observerCallback,
+      filter: [IgcToggleButtonComponent.tagName],
+      config: {
+        attributeFilter: ['selected'],
+        childList: true,
+        subtree: true,
+      },
+    });
   }
 
   protected override firstUpdated() {
@@ -124,7 +148,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     const buttons = this._selectedButtons;
 
     if (buttons.length) {
-      if (this.selection !== 'multiple') {
+      if (!this.isMultiple) {
         const index = buttons.indexOf(buttons.at(-1)!);
 
         for (let i = 0; i < index; i++) {
@@ -144,7 +168,7 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
       ) as IgcToggleButtonComponent;
 
     if (button) {
-      this.selection === 'multiple'
+      this.isMultiple
         ? this.handleMultipleSelection(button)
         : this.handleSingleSelection(button);
     }
@@ -183,54 +207,11 @@ export default class IgcButtonGroupComponent extends EventEmitterMixin<
     for (const button of this.toggleButtons) {
       if (values.has(button.value)) {
         button.selected = true;
-        if (this.selection !== 'multiple') {
+        if (!this.isMultiple) {
           break;
         }
       }
     }
-  }
-
-  private setMutationsObserver() {
-    return new MutationObserver((records, observer) => {
-      // Stop observing while handling changes
-      observer.disconnect();
-
-      if (this.selection !== 'multiple' && this._selectedButtons.length > 1) {
-        const added = this.getAddedButtons(records);
-
-        const button = added.buttons.length
-          ? (added.buttons.at(-1) as IgcToggleButtonComponent)
-          : (records.at(-1)?.target as IgcToggleButtonComponent);
-
-        const index = this.toggleButtons.indexOf(button);
-
-        this.toggleButtons.forEach((b, i) => {
-          if (b.selected && i !== index) {
-            b.selected = false;
-          }
-        });
-      }
-
-      // Watch for changes again
-      observer.observe(this, this.observerConfig);
-    });
-  }
-
-  private getAddedButtons(records: MutationRecord[]) {
-    const added: { buttons: IgcToggleButtonComponent[] } = { buttons: [] };
-
-    records
-      .filter((x) => x.type === 'childList')
-      .reduce((prev, curr) => {
-        prev.buttons = prev.buttons.concat(
-          Array.from(curr.addedNodes).map(
-            (node) => node as IgcToggleButtonComponent
-          )
-        );
-        return prev;
-      }, added);
-
-    return added;
   }
 
   protected override render() {
