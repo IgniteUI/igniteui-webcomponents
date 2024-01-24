@@ -19,13 +19,13 @@ $theme: $material;
 
     igc-months-view {
         &::part(month-inner) {
-            border-radius: var-get($theme, 'month-border-radius');
+            border-radius: var-get($theme, 'month-year-border-radius');
         }
     }
 
     igc-years-view {
         &::part(year-inner) {
-            border-radius: var-get($theme, 'month-border-radius');
+            border-radius: var-get($theme, 'month-year-border-radius');
         }
     }
 }

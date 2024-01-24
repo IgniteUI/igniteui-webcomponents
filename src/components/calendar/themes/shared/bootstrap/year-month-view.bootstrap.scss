@@ -37,7 +37,7 @@ $theme: $bootstrap;
 
 [part~='month-inner'],
 [part~='year-inner'] {
-    border-radius: var-get($theme, 'month-border-radius');
+    border-radius: var-get($theme, 'month-year-border-radius');
 
     &:hover,
     &:focus {

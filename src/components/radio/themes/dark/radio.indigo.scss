@@ -1,6 +1,8 @@
 @use 'styles/utilities' as *;
 @use 'themes' as *;
 
+$theme: $indigo;
+
 :host {
-    @include css-vars-from-theme($indigo, 'ig-radio');
+    @include css-vars-from-theme($theme, 'ig-radio');
 }
