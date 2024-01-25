@@ -275,11 +275,8 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private get directChildren(): Array<IgcTreeItemComponent> {
-    return this.allChildren.filter(
-      (x) =>
-        (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(
-          this
-        )
+    return this.allChildren.filter((x) =>
+      (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(this)
     ) as IgcTreeItemComponent[];
   }
 
