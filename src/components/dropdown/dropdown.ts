@@ -79,6 +79,7 @@ export default class IgcDropdownComponent extends SizableMixin(
   public static readonly tagName = 'igc-dropdown';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,

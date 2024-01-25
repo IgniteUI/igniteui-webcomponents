@@ -23,6 +23,7 @@ export default class IgcDropdownItemComponent extends IgcBaseOptionLikeComponent
   public static readonly tagName = 'igc-dropdown-item';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

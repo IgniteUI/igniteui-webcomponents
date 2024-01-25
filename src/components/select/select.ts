@@ -106,6 +106,7 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
   public static readonly tagName = 'igc-select';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,
@@ -392,12 +393,8 @@ export default class IgcSelectComponent extends FormAssociatedRequiredMixin(
     this._lastKeyTime = now;
     this._searchTerm += event.key.toLocaleLowerCase();
 
-    const item = this._activeItems.find(
-      (item) =>
-        item.textContent
-          ?.trim()
-          .toLocaleLowerCase()
-          .startsWith(this._searchTerm)
+    const item = this._activeItems.find((item) =>
+      item.textContent?.trim().toLocaleLowerCase().startsWith(this._searchTerm)
     );
 
     if (item) {

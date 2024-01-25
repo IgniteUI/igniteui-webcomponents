@@ -48,6 +48,7 @@ export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,
@@ -275,11 +276,8 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private get directChildren(): Array<IgcTreeItemComponent> {
-    return this.allChildren.filter(
-      (x) =>
-        (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(
-          this
-        )
+    return this.allChildren.filter((x) =>
+      (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(this)
     ) as IgcTreeItemComponent[];
   }
 

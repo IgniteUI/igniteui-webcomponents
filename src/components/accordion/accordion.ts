@@ -27,6 +27,7 @@ export default class IgcAccordionComponent extends LitElement {
   public static readonly tagName = 'igc-accordion';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcExpansionPanelComponent);
   }

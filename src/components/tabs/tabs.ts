@@ -58,6 +58,7 @@ export default class IgcTabsComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-tabs';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,

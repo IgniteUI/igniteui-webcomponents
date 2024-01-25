@@ -70,6 +70,7 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   public static readonly tagName = 'igc-textarea';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

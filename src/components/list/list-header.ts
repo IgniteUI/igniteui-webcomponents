@@ -18,6 +18,7 @@ export default class IgcListHeaderComponent extends LitElement {
   public static readonly tagName = 'igc-list-header';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

@@ -40,6 +40,7 @@ export default class IgcTreeComponent extends SizableMixin(
   public static readonly tagName = 'igc-tree';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcTreeItemComponent);
   }

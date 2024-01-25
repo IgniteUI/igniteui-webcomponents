@@ -47,6 +47,7 @@ export default class IgcDialogComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-dialog';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcButtonComponent);
   }

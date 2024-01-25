@@ -8,6 +8,7 @@ export default class IgcComboListComponent extends LitVirtualizer {
   public static readonly tagName = 'igc-combo-list';
   public override scroller = true;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

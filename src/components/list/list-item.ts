@@ -30,6 +30,7 @@ export default class IgcListItemComponent extends LitElement {
   public static readonly tagName = 'igc-list-item';
   public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

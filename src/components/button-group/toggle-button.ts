@@ -27,6 +27,7 @@ export default class IgcToggleButtonComponent extends LitElement {
     delegatesFocus: true,
   };
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

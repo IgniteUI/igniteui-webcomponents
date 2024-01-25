@@ -40,6 +40,7 @@ export default class IgcSnackbarComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-snackbar';
   public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcButtonComponent);
   }
