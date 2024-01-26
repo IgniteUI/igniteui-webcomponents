@@ -44,9 +44,7 @@ $theme: $material;
 }
 
 :host([disabled]),
-:host(:disabled),
-:host-context([disabled]),
-:host-context(:disabled) {
+:host(:disabled) {
     [part~='toggle'] {
         color: var-get($theme, 'disabled-text-color');
         background: var-get($theme, 'disabled-background-color');
