@@ -95,8 +95,9 @@ async function onInputSearch({ detail }: CustomEvent<string>) {
 
 function prev() {
   const highlight = document.querySelector(IgcHighlightComponent.tagName)!;
-  highlight.next();
-  updateStatus(highlight.current - 1, highlight.size);
+  highlight.previous();
+
+  updateStatus(highlight.current + 1, highlight.size);
 }
 
 function next() {
@@ -143,12 +144,20 @@ export const Default: Story = {
     </style>
 
     <igc-input class="sticky" label="Search" @igcInput=${onInputSearch}>
-      <igc-icon-button variant="flat" @click=${prev} slot="suffix"
-        ><</igc-icon-button
-      >
-      <igc-icon-button variant="flat" @click=${next} slot="suffix"
-        >></igc-icon-button
-      >
+      <igc-icon-button
+        variant="flat"
+        name="navigate_before"
+        collection="internal"
+        @click=${prev}
+        slot="suffix"
+      ></igc-icon-button>
+      <igc-icon-button
+        variant="flat"
+        @click=${next}
+        slot="suffix"
+        name="navigate_next"
+        collection="internal"
+      ></igc-icon-button>
       <p id="result" slot="helper-text"></p>
     </igc-input>
 

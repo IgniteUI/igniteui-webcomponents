@@ -23,6 +23,8 @@ function getHighlightsAPI() {
   return (CSS as any).highlights;
 }
 
+type HighlightNavigation = { preventScroll?: boolean };
+
 /**
  * The highlight component provides a way for efficient searching and highlighting of
  * text projected into it.
@@ -163,7 +165,7 @@ export default class IgcHighlightComponent extends LitElement {
     }
   }
 
-  private moveTo(idx: number) {
+  private moveTo(idx: number, options?: HighlightNavigation) {
     if (!this._size) return;
     this._current = wrap(0, this._size - 1, idx);
 
@@ -172,6 +174,11 @@ export default class IgcHighlightComponent extends LitElement {
     this.activeHighlight.add(range.cloneRange());
 
     // REVIEW: Is this an overkill?
+
+    if (options?.preventScroll) {
+      return;
+    }
+
     const container = range.commonAncestorContainer.parentElement;
     if (container) {
       container.scrollIntoView({
@@ -183,13 +190,13 @@ export default class IgcHighlightComponent extends LitElement {
   }
 
   /** Moves the active state to the next match. */
-  public next() {
-    this.moveTo(this._current + 1);
+  public next(options?: HighlightNavigation) {
+    this.moveTo(this._current + 1, options);
   }
 
   /** Moves the active state to the previous match. */
-  public previous() {
-    this.moveTo(this._current - 1);
+  public previous(options?: HighlightNavigation) {
+    this.moveTo(this._current - 1, options);
   }
 
   protected override render() {
