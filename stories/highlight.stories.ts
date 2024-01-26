@@ -4,11 +4,13 @@ import { html } from 'lit';
 import {
   IgcExpansionPanelComponent,
   IgcHighlightComponent,
+  IgcIconButtonComponent,
   IgcInputComponent,
   defineComponents,
 } from '../src/index.js';
 
 defineComponents(
+  IgcIconButtonComponent,
   IgcExpansionPanelComponent,
   IgcInputComponent,
   IgcHighlightComponent
@@ -77,19 +79,46 @@ type Story = StoryObj<IgcHighlightArgs>;
 
 // endregion
 
+function updateStatus(current: number, matches: number) {
+  document.getElementById('result')!.textContent = matches
+    ? `Showing: ${current} of ${matches} result${matches === 1 ? '' : 's'}`
+    : '';
+}
+
 async function onInputSearch({ detail }: CustomEvent<string>) {
   const highlight = document.querySelector(IgcHighlightComponent.tagName)!;
   highlight.search = detail;
   await highlight.updateComplete;
 
-  document.getElementById('result')!.textContent = highlight.size
-    ? `Found: ${highlight.size} result${highlight.size == 1 ? '' : 's'}`
-    : '';
+  updateStatus(highlight.current + 1, highlight.size);
+}
+
+function prev() {
+  const highlight = document.querySelector(IgcHighlightComponent.tagName)!;
+  highlight.next();
+  updateStatus(highlight.current - 1, highlight.size);
+}
+
+function next() {
+  const highlight = document.querySelector(IgcHighlightComponent.tagName)!;
+  highlight.next();
+  updateStatus(highlight.current + 1, highlight.size);
 }
 
 export const Default: Story = {
-  render: ({ activeTheme, caseSensitive, theme }) => html`
+  render: (
+    { activeTheme, caseSensitive, theme },
+    { globals: { variant } }
+  ) => html`
     <style>
+      .sticky {
+        position: sticky;
+        top: 0;
+        padding: 1rem 0;
+        z-index: 1;
+        background: ${variant === 'dark' ? '#000' : '#fff'};
+      }
+
       ::highlight(igc-default-highlight) {
         background-color: deeppink;
         color: floralwhite;
@@ -113,9 +142,16 @@ export const Default: Story = {
       }
     </style>
 
-    <igc-input label="Search" @igcInput=${onInputSearch}>
+    <igc-input class="sticky" label="Search" @igcInput=${onInputSearch}>
+      <igc-icon-button variant="flat" @click=${prev} slot="suffix"
+        ><</igc-icon-button
+      >
+      <igc-icon-button variant="flat" @click=${next} slot="suffix"
+        >></igc-icon-button
+      >
       <p id="result" slot="helper-text"></p>
     </igc-input>
+
     <igc-highlight
       ?case-sensitive=${caseSensitive}
       .activeTheme=${activeTheme}

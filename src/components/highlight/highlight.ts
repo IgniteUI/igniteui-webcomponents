@@ -53,7 +53,7 @@ export default class IgcHighlightComponent extends LitElement {
   }
 
   @state()
-  private current = 0;
+  private _current = 0;
 
   /**
    * Whether to match the searched text with case sensitivity in mind.
@@ -88,6 +88,11 @@ export default class IgcHighlightComponent extends LitElement {
     return this._size;
   }
 
+  /** The index of the currently active match. */
+  public get current() {
+    return this._current;
+  }
+
   @watch('theme', { waitUntilFirstUpdate: true })
   protected themeChanged(previous: string) {
     const api = getHighlightsAPI();
@@ -108,7 +113,7 @@ export default class IgcHighlightComponent extends LitElement {
   protected searchChanged() {
     this.highlight.clear();
     this.activeHighlight.clear();
-    this.current = 0;
+    this._current = 0;
 
     this.find(this.search);
   }
@@ -157,32 +162,38 @@ export default class IgcHighlightComponent extends LitElement {
 
   private setActive() {
     if (this._size) {
-      const range = Array.from(this.highlight.values())[this.current] as Range;
+      const range = Array.from(this.highlight.values())[this._current] as Range;
       this.activeHighlight.add(range.cloneRange());
     }
   }
 
   private moveTo(idx: number) {
     if (!this._size) return;
-    this.current = wrap(0, this._size - 1, idx);
+    this._current = wrap(0, this._size - 1, idx);
 
-    const range = Array.from(this.highlight.values())[this.current] as Range;
+    const range = Array.from(this.highlight.values())[this._current] as Range;
     this.activeHighlight.clear();
     this.activeHighlight.add(range.cloneRange());
 
     // REVIEW: Is this an overkill?
-    const { x, y } = range.getBoundingClientRect();
-    window.scrollTo({ left: x, top: y, behavior: 'auto' });
+    const container = range.commonAncestorContainer.parentElement;
+    if (container) {
+      container.scrollIntoView({
+        block: 'center',
+        inline: 'center',
+        behavior: 'auto',
+      });
+    }
   }
 
   /** Moves the active state to the next match. */
   public next() {
-    this.moveTo(this.current + 1);
+    this.moveTo(this._current + 1);
   }
 
   /** Moves the active state to the previous match. */
   public previous() {
-    this.moveTo(this.current - 1);
+    this.moveTo(this._current - 1);
   }
 
   protected override render() {
