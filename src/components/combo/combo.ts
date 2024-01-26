@@ -108,14 +108,13 @@ export interface IgcComboComponentEventMap {
   'IgcIconComponent, IgcInputComponent, IgcPopoverComponent'
 )
 @blazorIndirectRender
-export default class IgcComboComponent<T extends object = any>
-  extends FormAssociatedRequiredMixin(
-    EventEmitterMixin<IgcComboComponentEventMap, Constructor<LitElement>>(
-      LitElement
-    )
+export default class IgcComboComponent<
+  T extends object = any,
+> extends FormAssociatedRequiredMixin(
+  EventEmitterMixin<IgcComboComponentEventMap, Constructor<LitElement>>(
+    LitElement
   )
-  implements Partial<IgcToggleComponent>
-{
+) {
   public static readonly tagName = 'igc-combo';
   public static styles = styles;
 
