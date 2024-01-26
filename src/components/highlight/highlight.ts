@@ -148,12 +148,8 @@ export default class IgcHighlightComponent extends LitElement {
     const regex = new RegExp(`${escapeRegex(term)}`, flags);
 
     for (const node of nodes) {
-      const matches = Array.from(node.textContent!.matchAll(regex)).flatMap(
-        ({ indices }) => indices
-      );
-
-      for (const span of matches) {
-        this.highlight.add(createRange(node, span!));
+      for (const { indices } of node.textContent!.matchAll(regex)) {
+        this.highlight.add(createRange(node, indices![0]));
       }
     }
 
