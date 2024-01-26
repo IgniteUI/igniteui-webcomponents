@@ -16,7 +16,7 @@ export type ComboRecord<T extends object> = {
 export type ComboHost<T extends object> = ReactiveControllerHost &
   IgcComboComponent<T>;
 
-export type GroupingDirection = 'asc' | 'desc';
+export type GroupingDirection = 'asc' | 'desc' | 'none';
 export type ComboChangeType = 'selection' | 'deselection' | 'addition';
 export type ComboRenderFunction<T extends object> = RenderItemFunction<
   ComboRecord<T>

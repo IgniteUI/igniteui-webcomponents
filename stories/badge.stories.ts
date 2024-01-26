@@ -1,10 +1,13 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { IgcBadgeComponent, defineComponents } from '../src/index.js';
+import {
+  IgcBadgeComponent,
+  IgcTabsComponent,
+  defineComponents,
+} from '../src/index.js';
 
-defineComponents(IgcBadgeComponent);
+defineComponents(IgcBadgeComponent, IgcTabsComponent);
 
 // region default
 const metadata: Meta<IgcBadgeComponent> = {
@@ -57,54 +60,40 @@ type Story = StoryObj<IgcBadgeArgs>;
 
 // endregion
 
-const Template = ({ outlined = false, shape, variant }: IgcBadgeArgs) => {
-  return html`
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant=${ifDefined(variant)}
-    >
+function renderTabs(args: IgcBadgeArgs) {
+  return ['primary', 'info', 'success', 'warning', 'danger'].map(
+    (variant, idx) => html`
+      <igc-tab>
+        <span>
+          ${variant.toUpperCase()}
+          <igc-badge
+            variant=${variant as IgcBadgeArgs['variant']}
+            ?outlined=${args.outlined}
+            shape=${args.shape}
+            >${idx + 1}</igc-badge
+          >
+        </span>
+      </igc-tab>
+    `
+  );
+}
+
+export const Basic: Story = {
+  render: ({ outlined, shape, variant }) => html`
+    <igc-badge ?outlined=${outlined} shape=${shape} variant=${variant}>
+      1
     </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant=${ifDefined(variant)}
-    >
-      <span>1</span>
-    </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant=${ifDefined(variant)}
-    >
-      <span>99</span>
-    </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant="success"
-    >
-      <span>online</span>
-    </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant=${ifDefined(variant)}
-    >
-      <igc-icon name="star" collection="internal"></igc-icon>
-    </igc-badge>
-    <igc-badge
-      ?outlined=${outlined}
-      shape=${ifDefined(shape)}
-      variant="warning"
-    >
-      <span class="material-icons">wifi</span>
-    </igc-badge>
-  `;
+  `,
 };
 
-export const Basic: Story = Template.bind({});
+export const Variants: Story = {
+  render: (args) =>
+    html` <style>
+        igc-badge {
+          position: absolute;
+          top: 0;
+          right: 0;
+        }
+      </style>
+      <igc-tabs>${renderTabs(args)}</igc-tabs>`,
+};

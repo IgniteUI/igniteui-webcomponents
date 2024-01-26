@@ -19,7 +19,8 @@
         overflow-x: hidden;
         inset-block: 0;
         z-index: 999;
-        transition: transform ease-out .3s, .3s;
+        opacity: 1;
+        transition: transform ease-out .3s, .3s, opacity ease-out .3s, .3s;
     }
 
     [part~='mini'] {
@@ -143,10 +144,9 @@
     }
 }
 
-:host([open]) {
-    [part='mini'] {
-        display: none;
-    }
+:host([open]) [part='mini'],
+[part='mini hidden'] {
+    display: none;
 }
 
 :host([open]:not([position='relative'])) {
@@ -159,6 +159,7 @@
 :host(:not([open])) {
     [part='base'] {
         transform: translateX(calc(100% * var(--dir)));
+        opacity: 0;
     }
 
     [part='overlay'] {

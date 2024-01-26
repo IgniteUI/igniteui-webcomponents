@@ -1,8 +1,7 @@
 import autoprefixer from 'autoprefixer';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import postcss from 'postcss';
-import * as sass from 'sass-embedded';
 
 const stripComments = () => {
   return {
@@ -12,34 +11,24 @@ const stripComments = () => {
     },
   };
 };
-
 stripComments.postcss = true;
 
-export const template = path.resolve(process.argv[1], '../styles.tmpl');
-export const postProcessor = postcss([autoprefixer, stripComments]);
+const _template = await readFile(
+  resolve(process.argv[1], '../styles.tmpl'),
+  'utf8'
+);
+const _postProcessor = postcss([autoprefixer, stripComments]);
 
-const renderSass = sass.compileAsync;
-
-async function sassToCss(sassFile) {
-  const result = await renderSass(sassFile, {
-    style: 'compressed',
-    loadPaths: ['node_modules', 'src']
-  });
-
-  let cssStr = postProcessor.process(result.css).css;
-
-  // Strip BOM if any
-  if (cssStr.charCodeAt(0) === 0xfeff) {
-    cssStr = cssStr.substring(1);
-  }
-  return cssStr;
+export function fromTemplate(content) {
+  return _template.replace(/<%\s*content\s*%>/, content);
 }
 
-export async function sassRender(sourceFile, templateFile, outputFile) {
-  const regex = /<%\s*content\s*%>/;
-  const template = await readFile(templateFile, 'utf-8');
-  const replacement = await sassToCss(sourceFile);
-  const newContent = template.replace(regex, replacement);
+export async function compileSass(src, compiler) {
+  const compiled = await compiler.compileAsync(src, {
+    style: 'compressed',
+    loadPaths: ['node_modules', 'src'],
+  });
 
-  return writeFile(outputFile, newContent, 'utf-8');
+  const out = _postProcessor.process(compiled.css).css;
+  return out.charCodeAt(0) === 0xfeff ? out.slice(1) : out;
 }

@@ -1,12 +1,10 @@
-import { LitElement, TemplateResult, html } from 'lit';
+import { LitElement, TemplateResult, html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { EventEmitterMixin } from '../common//mixins/event-emitter.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorDeepImport } from '../common/decorators/blazorDeepImport.js';
-import { Constructor } from '../common/mixins/constructor.js';
+import type { Constructor } from '../common/mixins/constructor.js';
 import { SizableMixin } from '../common/mixins/sizable.js';
 
 export interface IgcButtonEventMap {
@@ -19,25 +17,25 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
   EventEmitterMixin<IgcButtonEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly formAssociated = true;
+
   protected static shadowRootOptions = {
     ...LitElement.shadowRootOptions,
     delegatesFocus: true,
   };
 
-  private __internals: ElementInternals;
-
-  @query('[part="base"]', true)
-  private nativeElement!: HTMLElement;
-
+  protected __internals: ElementInternals;
   protected _disabled = false;
 
+  @query('[part="base"]', true)
+  private _nativeButton!: HTMLButtonElement;
+
+  /* alternateName: displayType */
   /**
-   * The type of the button. Defaults to undefined.
+   * The type of the button. Defaults to `button`.
    * @attr
    */
-  @alternateName('displayType')
-  @property()
-  public type!: 'button' | 'reset' | 'submit';
+  @property({ reflect: true })
+  public type: 'button' | 'reset' | 'submit' = 'button';
 
   /**
    * The URL the button points to.
@@ -58,7 +56,7 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
    * @attr
    */
   @property()
-  public target!: '_blank' | '_parent' | '_self' | '_top' | undefined;
+  public target?: '_blank' | '_parent' | '_self' | '_top';
 
   /**
    * The relationship of the linked URL.
@@ -95,21 +93,21 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     this.size = 'medium';
   }
 
+  /* alternateName: focusComponent */
   /** Sets focus in the button. */
-  @alternateName('focusComponent')
   public override focus(options?: FocusOptions) {
-    this.nativeElement.focus(options);
+    this._nativeButton.focus(options);
   }
 
   /** Simulates a mouse click on the element */
   public override click() {
-    this.nativeElement.click();
+    this._nativeButton.click();
   }
 
+  /* alternateName: blurComponent */
   /** Removes focus from the button. */
-  @alternateName('blurComponent')
   public override blur() {
-    this.nativeElement.blur();
+    this._nativeButton.blur();
   }
 
   protected handleFocus() {
@@ -118,10 +116,6 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
 
   protected handleBlur() {
     this.emitEvent('igcBlur');
-  }
-
-  protected get classes() {
-    return {};
   }
 
   protected handleClick() {
@@ -144,9 +138,8 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
     return html`
       <button
         part="base"
-        .ariaLabel=${this.ariaLabel}
-        .disabled=${this.disabled}
-        class=${classMap(this.classes)}
+        aria-label=${ifDefined(this.ariaLabel ?? nothing)}
+        ?disabled=${this.disabled}
         type=${ifDefined(this.type)}
         @click=${this.handleClick}
         @focus=${this.handleFocus}
@@ -162,15 +155,14 @@ export abstract class IgcButtonBaseComponent extends SizableMixin(
       <a
         part="base"
         role="button"
+        aria-label=${ifDefined(this.ariaLabel ?? nothing)}
+        aria-disabled=${this.disabled ? 'true' : 'false'}
         href=${ifDefined(this.href)}
         target=${ifDefined(this.target)}
         download=${ifDefined(this.download)}
         rel=${ifDefined(this.rel)}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
-        .ariaLabel=${this.ariaLabel}
-        class=${classMap(this.classes)}
-        @focus=${!this.disabled && this.handleFocus}
-        @blur=${!this.disabled && this.handleBlur}
+        @focus=${this.disabled ? nothing : this.handleFocus}
+        @blur=${this.disabled ? nothing : this.handleBlur}
       >
         ${this.renderContent()}
       </a>

@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import {
   property,
   query,
@@ -47,6 +47,7 @@ export default class IgcTreeItemComponent extends LitElement {
   public static readonly tagName = 'igc-tree-item';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(
       this,
@@ -238,7 +239,7 @@ export default class IgcTreeItemComponent extends LitElement {
     this.setAttribute('role', 'treeitem');
     this.addEventListener('blur', this.onBlur);
     this.addEventListener('focus', this.onFocus);
-    this.addEventListener('pointerdown', this.pointerDown);
+    this.addEventListener('click', this.itemClick);
     this.activeChange();
     // if the item is not added/moved runtime
     if (this.init) {
@@ -274,11 +275,8 @@ export default class IgcTreeItemComponent extends LitElement {
   }
 
   private get directChildren(): Array<IgcTreeItemComponent> {
-    return this.allChildren.filter(
-      (x) =>
-        (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(
-          this
-        )
+    return this.allChildren.filter((x) =>
+      (x.parent ?? x.parentElement?.closest('igc-tree-item'))?.isSameNode(this)
     ) as IgcTreeItemComponent[];
   }
 
@@ -291,12 +289,19 @@ export default class IgcTreeItemComponent extends LitElement {
     return this.parent?.path ? [...this.parent.path, this] : [this];
   }
 
-  private pointerDown(event: MouseEvent): void {
+  private itemClick(event: MouseEvent): void {
     event.stopPropagation();
     if (this.disabled) {
       return;
     }
     this.tabIndex = 0;
+    if (this.tree?.toggleNodeOnClick && event.button === 0) {
+      if (this.expanded) {
+        this.collapseWithEvent();
+      } else {
+        this.expandWithEvent();
+      }
+    }
     this.navService?.setFocusedAndActiveItem(this, true, false);
   }
 
@@ -313,6 +318,9 @@ export default class IgcTreeItemComponent extends LitElement {
 
   private selectorClick(event: MouseEvent): void {
     event.preventDefault();
+    if (this.tree?.toggleNodeOnClick) {
+      event.stopPropagation();
+    }
     if (event.shiftKey) {
       this.selectionService?.selectMultipleItems(this);
       return;
@@ -376,7 +384,7 @@ export default class IgcTreeItemComponent extends LitElement {
     });
 
     if (this.navService?.focusedItem === this) {
-      // called twice when clicking on already focused item with link (pointerDown handler)
+      // called twice when clicking on already focused item with link (itemClick handler)
       this.setAttribute('tabindex', '0');
     }
   }
@@ -521,7 +529,12 @@ export default class IgcTreeItemComponent extends LitElement {
                 </slot>
               `
             : html`
-                <slot name="indicator" @click=${this.expandIndicatorClick}>
+                <slot
+                  name="indicator"
+                  @click=${this.tree?.toggleNodeOnClick
+                    ? nothing
+                    : this.expandIndicatorClick}
+                >
                   ${this.hasChildren
                     ? html`
                         <igc-icon

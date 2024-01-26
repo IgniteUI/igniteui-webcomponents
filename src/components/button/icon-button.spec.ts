@@ -26,18 +26,21 @@ describe('IconButton component', () => {
 
     it('renders a button element internally', async () => {
       await expect(el).shadowDom.to.be.accessible();
-      expect(el).shadowDom.to.equal(`<button><slot></slot></button>`, {
-        ignoreAttributes: [
-          'variant',
-          'aria-label',
-          'aria-disabled',
-          'aria-hidden',
-          'part',
-          'role',
-          'size',
-          'style',
-        ],
-      });
+      expect(el).shadowDom.to.equal(
+        `<button type="button"><slot></slot></button>`,
+        {
+          ignoreAttributes: [
+            'variant',
+            'aria-label',
+            'aria-disabled',
+            'aria-hidden',
+            'part',
+            'role',
+            'size',
+            'style',
+          ],
+        }
+      );
     });
 
     it('renders an anchor element internally', async () => {
@@ -78,7 +81,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button>
+        `<button type="button">
           <igc-icon name="${el.name}" collection="${el.collection}"></igc-icon>
           <slot></slot>
         </button>`,
@@ -102,7 +105,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button>
+        `<button type="button">
           <igc-icon mirrored></igc-icon>
           <slot></slot>
         </button>`,
@@ -166,7 +169,7 @@ describe('IconButton component', () => {
       await elementUpdated(el);
 
       expect(el).shadowDom.to.equal(
-        `<button disabled>
+        `<button type="button" disabled>
           <slot>
           </slot>
         </button>`,

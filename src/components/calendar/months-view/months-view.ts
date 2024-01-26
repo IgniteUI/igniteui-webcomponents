@@ -37,6 +37,7 @@ export default class IgcMonthsViewComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-months-view';
   public static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

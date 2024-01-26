@@ -12,6 +12,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 
 import IgcRatingSymbolComponent from './rating-symbol.js';
 import { styles } from './themes/rating.base.css.js';
+import { styles as shared } from './themes/shared/rating.common.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import {
@@ -69,8 +70,9 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   )
 ) {
   public static readonly tagName = 'igc-rating';
-  public static styles = [styles];
+  public static styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcIconComponent, IgcRatingSymbolComponent);
   }
@@ -189,6 +191,13 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
   @property({ type: Boolean })
   public single = false;
 
+  /**
+   * Whether to reset the rating when the user selects the same value.
+   * @attr allow-reset
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'allow-reset' })
+  public allowReset = false;
+
   @watch('max')
   protected handleMaxChange() {
     this.hasProjectedSymbols
@@ -245,7 +254,13 @@ export default class IgcRatingComponent extends FormAssociatedMixin(
 
   protected handleClick({ clientX }: MouseEvent) {
     const value = this.calcNewValue(clientX);
-    this.emitValueUpdate(this.value === value ? 0 : value);
+    const sameValue = this.value === value;
+
+    if (this.allowReset && sameValue) {
+      this.emitValueUpdate(0);
+    } else if (!sameValue) {
+      this.emitValueUpdate(value);
+    }
   }
 
   protected handleMouseMove({ clientX }: MouseEvent) {

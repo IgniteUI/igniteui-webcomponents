@@ -39,6 +39,7 @@ export interface IgcMaskInputComponentEventMap extends IgcInputEventMap {}
 export default class IgcMaskInputComponent extends IgcMaskInputBaseComponent {
   public static readonly tagName = 'igc-mask-input';
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

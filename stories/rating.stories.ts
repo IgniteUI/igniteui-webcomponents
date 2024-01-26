@@ -1,9 +1,8 @@
-import { bacteria, bandage } from '@igniteui/material-icons-extended';
 import { Meta, StoryObj } from '@storybook/web-components';
-import { html, svg } from 'lit';
+import { html } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { range } from 'lit-html/directives/range.js';
 
+import utils from './rating.common.js';
 import {
   disableStoryControls,
   formControls,
@@ -17,10 +16,7 @@ import {
 } from '../src/index.js';
 
 defineComponents(IgcRatingComponent, IgcIconComponent);
-const icons = [bacteria, bandage];
-icons.forEach((icon) => {
-  registerIconFromText(icon.name, icon.value);
-});
+utils.icons.forEach((icon) => registerIconFromText(icon.name, icon.value));
 
 // region default
 const metadata: Meta<IgcRatingComponent> = {
@@ -85,6 +81,13 @@ const metadata: Meta<IgcRatingComponent> = {
       control: 'boolean',
       table: { defaultValue: { summary: false } },
     },
+    allowReset: {
+      type: 'boolean',
+      description:
+        'Whether to reset the rating when the user selects the same value.',
+      control: 'boolean',
+      table: { defaultValue: { summary: false } },
+    },
     name: {
       type: 'string',
       description: 'The name attribute of the control.',
@@ -110,6 +113,7 @@ const metadata: Meta<IgcRatingComponent> = {
     hoverPreview: false,
     readOnly: false,
     single: false,
+    allowReset: false,
     disabled: false,
     invalid: false,
   },
@@ -148,6 +152,8 @@ interface IgcRatingArgs {
   readOnly: boolean;
   /** Toggles single selection visual mode. */
   single: boolean;
+  /** Whether to reset the rating when the user selects the same value. */
+  allowReset: boolean;
   /** The name attribute of the control. */
   name: string;
   /** The disabled state of the component */
@@ -159,159 +165,159 @@ type Story = StoryObj<IgcRatingArgs>;
 
 // endregion
 
-const heartSVG = svg`<?xml version="1.0" ?><svg
-viewBox="0 0 24 24"
-xmlns="http://www.w3.org/2000/svg"
-width="100%"
-height="100%"
->
-<defs>
-  <style>
-    .cls-1 {
-      fill: #da3380;
-    }
-    .cls-2 {
-      fill: #f55fa6;
-    }
-    .cls-3 {
-      fill: #6c2e7c;
-    }
-  </style>
-</defs>
-<g id="Icons">
-  <path
-    class="cls-1"
-    d="M23,8c0,5-3,10-11,14C4,18,1,13,1,8a5.823,5.823,0,0,1,.37-2.05A5.989,5.989,0,0,1,12,4.69,5.989,5.989,0,0,1,22.63,5.95,5.823,5.823,0,0,1,23,8Z"
-  />
-  <path
-    class="cls-2"
-    d="M22.63,5.95c-.96,3.782-3.9,7.457-9.7,10.567a1.984,1.984,0,0,1-1.864,0c-5.8-3.11-8.738-6.785-9.7-10.567A5.989,5.989,0,0,1,12,4.69,5.989,5.989,0,0,1,22.63,5.95Z"
-  />
-</g>
-<g data-name="Layer 4" id="Layer_4">
-  <path
-    class="cls-3"
-    d="M17,1a6.98,6.98,0,0,0-5,2.1A7,7,0,0,0,0,8c0,4.16,2,10.12,11.553,14.9a1,1,0,0,0,.894,0C22,18.12,24,12.16,24,8A7.008,7.008,0,0,0,17,1ZM12,20.878C5.363,17.447,2,13.116,2,8a5,5,0,0,1,9.167-2.761,1.038,1.038,0,0,0,1.666,0A5,5,0,0,1,22,8C22,13.116,18.637,17.447,12,20.878Z"
-  />
-</g>
-</svg>`;
-
-const Template = ({
-  hoverPreview,
-  step,
-  max,
-  disabled,
-  readOnly,
-  label = 'Default',
-  value,
-  valueFormat,
-  single,
-}: IgcRatingArgs) => {
-  const emoji = ['😣', '😔', '😐', '🙂', '😆'];
-
-  const hoverHandler = (e: CustomEvent) => {
-    const labels = [
-      'Select a value',
-      'Terrible',
-      'Bad',
-      'Meh',
-      'Great',
-      'Superb',
-    ];
-    document.getElementById('selection')!.textContent = `${
-      labels[Math.ceil(e.detail)] ?? 'Unknown'
-    }`;
-  };
-
-  return html`
-    <div>
-      <igc-rating
-        label=${ifDefined(label)}
-        ?disabled=${disabled}
-        ?hover-preview=${hoverPreview}
-        ?readonly=${readOnly}
-        ?single=${single}
-        .step=${Number(step)}
-        .value=${value}
-        .max=${max}
-        .valueFormat=${valueFormat}
-      ></igc-rating>
-    </div>
-    <div
-      style="display: inline-flex; align-items: flex-end; gap: 8px; margin: 24px 0;"
-    >
-      <igc-rating
-        label="Custom symbols with single selection enabled"
-        @igcChange=${hoverHandler}
-        @igcHover=${hoverHandler}
-        ?disabled=${disabled}
-        ?hover-preview=${hoverPreview}
-        ?readonly=${readOnly}
-        .step=${Number(step)}
-        .valueFormat=${valueFormat}
-        max="5"
-        single
-      >
-        ${emoji.map(
-          (each) =>
-            html`<igc-rating-symbol>
-              <div>${each}</div>
-              <div slot="empty">${each}</div>
-            </igc-rating-symbol>`
-        )}
-        <span slot="value-label" id="selection">Select a value</span>
-      </igc-rating>
-    </div>
-    <div>
-      <igc-rating
-        label="With custom igc-icon(s)"
-        ?disabled=${disabled}
-        ?hover-preview=${hoverPreview}
-        ?readonly=${readOnly}
-        ?single=${single}
-        .step=${Number(step)}
-        .value=${value}
-        .max=${max}
-        .valueFormat=${valueFormat}
-      >
-        ${Array.from(range(5)).map(
-          () =>
-            html`<igc-rating-symbol>
-              <igc-icon collection="default" name="bandage"></igc-icon>
-              <igc-icon
-                collection="default"
-                name="bacteria"
-                slot="empty"
-              ></igc-icon>
-            </igc-rating-symbol>`
-        )}
-      </igc-rating>
-    </div>
-    <div>
-      <igc-rating
-        label="With custom SVG"
-        ?disabled=${disabled}
-        ?hover-preview=${hoverPreview}
-        ?readonly=${readOnly}
-        ?single=${single}
-        .step=${Number(step)}
-        .value=${value}
-        .max=${max}
-        .valueFormat=${valueFormat}
-      >
-        ${Array.from(range(5)).map(
-          () =>
-            html`<igc-rating-symbol>
-              <div>${heartSVG}</div>
-              <div slot="empty">${heartSVG}</div>
-            </igc-rating-symbol>`
-        )}
-      </igc-rating>
-    </div>
-  `;
+export const Default: Story = {
+  args: {
+    label: 'Default rating',
+  },
+  render: ({
+    single,
+    label,
+    disabled,
+    allowReset,
+    hoverPreview,
+    invalid,
+    max,
+    readOnly,
+    step,
+    value,
+    valueFormat,
+  }) =>
+    html`<igc-rating
+      label=${ifDefined(label)}
+      ?single=${single}
+      ?allow-reset=${allowReset}
+      ?hover-preview=${hoverPreview}
+      ?readonly=${readOnly}
+      ?invalid=${invalid}
+      ?disabled=${disabled}
+      .max=${max}
+      .step=${step}
+      .value=${value}
+      .valueFormat=${valueFormat}
+    ></igc-rating>`,
 };
 
-export const Basic: Story = Template.bind({});
+export const SingleSelection: Story = {
+  args: {
+    label: 'Single selection',
+    single: true,
+  },
+  render: ({
+    single,
+    label,
+    disabled,
+    allowReset,
+    hoverPreview,
+    invalid,
+    max,
+    readOnly,
+    step,
+    value,
+    valueFormat,
+  }) =>
+    html`<igc-rating
+      label=${ifDefined(label)}
+      ?single=${single}
+      ?allow-reset=${allowReset}
+      ?hover-preview=${hoverPreview}
+      ?readonly=${readOnly}
+      ?invalid=${invalid}
+      ?disabled=${disabled}
+      .max=${max}
+      .step=${step}
+      .value=${value}
+      .valueFormat=${valueFormat}
+    ></igc-rating>`,
+};
+
+export const Slots: Story = {
+  render: ({
+    allowReset,
+    disabled,
+    hoverPreview,
+    invalid,
+    max,
+    readOnly,
+    single,
+    step,
+    value,
+    valueFormat,
+  }) => html`
+    <style>
+      igc-rating {
+        display: flex;
+      }
+    </style>
+
+    <igc-rating
+      label="Custom Icons"
+      ?single=${single}
+      ?allow-reset=${allowReset}
+      ?hover-preview=${hoverPreview}
+      ?readonly=${readOnly}
+      ?invalid=${invalid}
+      ?disabled=${disabled}
+      .max=${max}
+      .step=${step}
+      .value=${value}
+      .valueFormat=${valueFormat}
+    >
+      ${utils.renderSymbols(
+        max,
+        () => html`
+          <igc-rating-symbol>
+            <igc-icon collection="default" name="bandage"></igc-icon>
+            <igc-icon
+              collection="default"
+              name="bacteria"
+              slot="empty"
+            ></igc-icon>
+          </igc-rating-symbol>
+        `
+      )}
+    </igc-rating>
+
+    <igc-rating
+      label="SVG"
+      ?single=${single}
+      ?allow-reset=${allowReset}
+      ?hover-preview=${hoverPreview}
+      ?readonly=${readOnly}
+      ?invalid=${invalid}
+      ?disabled=${disabled}
+      .max=${max}
+      .step=${step}
+      .value=${value}
+      .valueFormat=${valueFormat}
+    >
+      ${utils.renderSymbols(
+        max,
+        () => html`
+          <igc-rating-symbol>
+            <div>${utils.svg}</div>
+            <div slot="empty">${utils.svg}</div>
+          </igc-rating-symbol>
+        `
+      )}
+    </igc-rating>
+
+    <igc-rating
+      label="Custom symbols with single selection"
+      @igcChange=${utils.hoverListener}
+      @igcHover=${utils.hoverListener}
+      ?allow-reset=${allowReset}
+      ?disabled=${disabled}
+      ?hover-preview=${hoverPreview}
+      ?readonly=${readOnly}
+      .step=${step}
+      max="5"
+      single
+    >
+      ${utils.emoji}
+      <p slot="value-label" id="selection">Select a value</p>
+    </igc-rating>
+  `,
+};
 
 export const Form: Story = {
   argTypes: disableStoryControls(metadata),
@@ -329,12 +335,14 @@ export const Form: Story = {
               single
               value="1"
             >
-              ${Array.from(range(5)).map(
-                () =>
-                  html`<igc-rating-symbol>
-                    <div>${heartSVG}</div>
-                    <div slot="empty">${heartSVG}</div>
-                  </igc-rating-symbol>`
+              ${utils.renderSymbols(
+                5,
+                () => html`
+                  <igc-rating-symbol>
+                    <div>${utils.svg}</div>
+                    <div slot="empty">${utils.svg}</div>
+                  </igc-rating-symbol>
+                `
               )}
             </igc-rating>
           </div>
@@ -348,6 +356,7 @@ export const Form: Story = {
             ></igc-rating>
           </div>
         </fieldset>
+
         <fieldset>
           <igc-rating
             name="readonly-rating"
@@ -356,6 +365,7 @@ export const Form: Story = {
             readonly
           ></igc-rating>
         </fieldset>
+
         <fieldset disabled>
           <igc-rating
             name="disabled-rating"
@@ -363,6 +373,7 @@ export const Form: Story = {
             label="Disabled"
           ></igc-rating>
         </fieldset>
+
         ${formControls()}
       </form>
     `;

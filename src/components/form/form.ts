@@ -38,6 +38,7 @@ export default class IgcFormComponent extends EventEmitterMixin<
     }
   `;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

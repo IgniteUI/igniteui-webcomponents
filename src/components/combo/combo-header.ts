@@ -11,6 +11,7 @@ export default class IgcComboHeaderComponent extends LitElement {
   public static readonly tagName: string = 'igc-combo-header';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

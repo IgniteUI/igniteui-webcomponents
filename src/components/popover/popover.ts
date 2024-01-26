@@ -48,6 +48,7 @@ export default class IgcPopoverComponent extends LitElement {
   public static readonly tagName = 'igc-popover';
   public static override styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

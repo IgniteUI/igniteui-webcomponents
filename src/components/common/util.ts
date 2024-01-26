@@ -53,16 +53,6 @@ export function isLTR(element: HTMLElement) {
   return getComputedStyle(element).getPropertyValue('direction') === 'ltr';
 }
 
-export function extractText<T extends Node>(arr: T[]) {
-  return arr.reduce((agg: string[], item: T) => {
-    const text = item.textContent?.trim();
-    if (text) {
-      agg.push(text);
-    }
-    return agg;
-  }, []);
-}
-
 /**
  * Builds a string from format specifiers and replacement parameters.
  *
@@ -154,6 +144,10 @@ export function* iterNodes<T = Node>(
 
 export function getElementByIdFromRoot(root: HTMLElement, id: string) {
   return (root.getRootNode() as Document | ShadowRoot).getElementById(id);
+}
+
+export function isElement(node: unknown): node is Element {
+  return node instanceof Node && node.nodeType === Node.ELEMENT_NODE;
 }
 
 export function groupBy<T>(array: T[], key: keyof T | ((item: T) => any)) {

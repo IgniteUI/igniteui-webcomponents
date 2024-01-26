@@ -1,9 +1,9 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { styles } from './themes/avatar.base.css.js';
+import { styles as shared } from './themes/shared/avatar.common.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
 import { watch } from '../common/decorators/watch.js';
@@ -26,11 +26,17 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 @themes(all)
 export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-avatar';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }
+
+  private __internals: ElementInternals;
+
+  @state()
+  private hasError = false;
 
   /**
    * The image source to use.
@@ -38,9 +44,6 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
    */
   @property()
   public src!: string;
-
-  @state()
-  private hasError = false;
 
   /**
    * Alternative text for the image.
@@ -63,19 +66,20 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
   @property({ reflect: true })
   public shape: 'circle' | 'rounded' | 'square' = 'square';
 
-  private get classes() {
-    const { shape } = this;
-
-    return {
-      circle: shape === 'circle',
-      rounded: shape === 'rounded',
-      square: shape === 'square',
-    };
-  }
-
   constructor() {
     super();
+
+    this.__internals = this.attachInternals();
+    this.__internals.role = 'img';
+    this.__internals.ariaLabel = 'avatar';
+
     this.size = 'small';
+  }
+
+  @watch('initials')
+  @watch('alt')
+  protected roleDescriptionChange() {
+    this.__internals.ariaRoleDescription = this.alt ?? this.initials;
   }
 
   @watch('src')
@@ -85,26 +89,20 @@ export default class IgcAvatarComponent extends SizableMixin(LitElement) {
 
   protected override render() {
     return html`
-      <div
-        part="base"
-        role="img"
-        aria-label="avatar"
-        aria-roledescription=${this.shape}
-        class=${classMap(this.classes)}
-      >
+      <div part="base">
         ${this.initials
           ? html`<span part="initials">${this.initials}</span>`
-          : html` <slot></slot> `}
+          : html`<slot></slot>`}
         ${this.src && !this.hasError
           ? html`
               <img
                 part="image"
                 alt=${ifDefined(this.alt)}
                 src=${ifDefined(this.src)}
-                @error="${() => (this.hasError = true)}"
+                @error=${() => (this.hasError = true)}
               />
             `
-          : ''}
+          : nothing}
       </div>
     `;
   }

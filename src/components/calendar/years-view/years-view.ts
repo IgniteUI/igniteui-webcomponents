@@ -36,6 +36,7 @@ export default class IgcYearsViewComponent extends EventEmitterMixin<
   public static readonly tagName = 'igc-years-view';
   public static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

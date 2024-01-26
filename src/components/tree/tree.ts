@@ -40,6 +40,7 @@ export default class IgcTreeComponent extends SizableMixin(
   public static readonly tagName = 'igc-tree';
   public static styles = styles;
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this, IgcTreeItemComponent);
   }
@@ -57,6 +58,13 @@ export default class IgcTreeComponent extends SizableMixin(
    */
   @property({ attribute: 'single-branch-expand', reflect: true, type: Boolean })
   public singleBranchExpand = false;
+
+  /**
+   * Whether clicking over nodes will change their expanded state or not.
+   * @attr toggle-node-on-click
+   */
+  @property({ attribute: 'toggle-node-on-click', reflect: true, type: Boolean })
+  public toggleNodeOnClick = false;
 
   /**
    * The selection state of the tree.

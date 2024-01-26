@@ -8,9 +8,9 @@ import {
   registerIcon as registerIcon_impl,
 } from './icon.registry.js';
 import { styles } from './themes/icon.base.css.js';
+import { styles as shared } from './themes/shared/icon.common.css.js';
 import { all } from './themes/themes.js';
 import { themes } from '../../theming/theming-decorator.js';
-import { alternateName } from '../common/decorators/alternateName.js';
 import { blazorInclude } from '../common/decorators/blazorInclude.js';
 import { watch } from '../common/decorators/watch.js';
 import { registerComponent } from '../common/definitions/register.js';
@@ -26,23 +26,24 @@ import { SizableMixin } from '../common/mixins/sizable.js';
 @themes(all)
 export default class IgcIconComponent extends SizableMixin(LitElement) {
   public static readonly tagName = 'igc-icon';
-  public static override styles = styles;
+  public static override styles = [styles, shared];
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }
 
-  private _internals: ElementInternals;
+  private __internals: ElementInternals;
 
   @state()
   private svg = '';
 
+  /* alternateName: iconName */
   /**
    * The name of the icon glyph to draw.
    * @attr
    */
   @property()
-  @alternateName('iconName')
   public name = '';
 
   /**
@@ -62,10 +63,9 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
 
   constructor() {
     super();
-    this._internals = this.attachInternals();
+    this.__internals = this.attachInternals();
+    this.__internals.role = 'img';
     this.size = 'medium';
-
-    this._internals.role = 'img';
   }
 
   public override connectedCallback() {
@@ -97,7 +97,7 @@ export default class IgcIconComponent extends SizableMixin(LitElement) {
       getIconRegistry().get(this.name, this.collection) ?? {};
 
     this.svg = svg ?? '';
-    this._internals.ariaLabel = title ?? null;
+    this.__internals.ariaLabel = title ?? null;
   }
 
   protected override render() {

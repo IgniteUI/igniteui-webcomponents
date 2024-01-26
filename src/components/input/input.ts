@@ -46,6 +46,7 @@ export interface IgcInputComponentEventMap extends IgcInputEventMap {}
 export default class IgcInputComponent extends IgcInputBaseComponent {
   public static readonly tagName = 'igc-input';
 
+  /* blazorSuppress */
   public static register() {
     registerComponent(this);
   }

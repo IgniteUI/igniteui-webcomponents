@@ -335,11 +335,13 @@ describe('Rating component', () => {
       expect(el.value).to.equal(2);
     });
 
-    it('correctly resets value if the same rating value is clicked', async () => {
-      el.value = 5;
-      await elementUpdated(el);
+    it('does not reset value if the same rating value is clicked with allow-reset = false', async () => {
+      const eventSpy = spy(el, 'emitEvent');
       const symbol = getRatingSymbols(el).item(4);
       const { x, width } = getBoundingRect(symbol);
+
+      el.value = 5;
+      await elementUpdated(el);
 
       symbol.dispatchEvent(
         fireMouseEvent('click', {
@@ -348,7 +350,30 @@ describe('Rating component', () => {
           clientX: x + width / 2,
         })
       );
+
+      expect(el.value).to.equal(5);
+      expect(eventSpy).not.to.be.called;
+    });
+
+    it('correctly resets value if the same rating value is clicked with allow-reset = true', async () => {
+      const eventSpy = spy(el, 'emitEvent');
+      const symbol = getRatingSymbols(el).item(4);
+      const { x, width } = getBoundingRect(symbol);
+
+      el.value = 5;
+      el.allowReset = true;
+      await elementUpdated(el);
+
+      symbol.dispatchEvent(
+        fireMouseEvent('click', {
+          bubbles: true,
+          composed: true,
+          clientX: x + width / 2,
+        })
+      );
+
       expect(el.value).to.equal(0);
+      expect(eventSpy).to.have.been.calledOnceWith('igcChange', { detail: 0 });
     });
 
     it('does nothing on click if disabled', async () => {

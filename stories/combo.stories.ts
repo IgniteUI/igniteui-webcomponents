@@ -95,10 +95,10 @@ const metadata: Meta<IgcComboComponent> = {
       table: { defaultValue: { summary: false } },
     },
     groupSorting: {
-      type: '"asc" | "desc"',
+      type: '"asc" | "desc" | "none"',
       description:
         'Sorts the items in each group by ascending or descending order.',
-      options: ['asc', 'desc'],
+      options: ['asc', 'desc', 'none'],
       control: { type: 'inline-radio' },
       table: { defaultValue: { summary: 'asc' } },
     },
@@ -175,7 +175,7 @@ interface IgcComboArgs {
   /** Sets the open state of the component. */
   open: boolean;
   /** Sorts the items in each group by ascending or descending order. */
-  groupSorting: 'asc' | 'desc';
+  groupSorting: 'asc' | 'desc' | 'none';
   /** Enables the case sensitive search icon in the filtering input. */
   caseSensitiveIcon: boolean;
   /** Disables the filtering of the list of options. */

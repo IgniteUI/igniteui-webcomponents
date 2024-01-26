@@ -11,37 +11,36 @@ import { styles as fluentLight } from './light/container/card.fluent.css.js';
 import { styles as indigoLight } from './light/container/card.indigo.css.js';
 import { styles as materialLight } from './light/container/card.material.css.js';
 // Shared Styles
-import { styles as shared } from './shared/container/card.common.css.js';
 import { styles as fluent } from './shared/container/card.fluent.css.js';
 import { Themes } from '../../../theming/types.js';
 
 const light = {
   bootstrap: css`
-    ${shared} ${bootstrapLight}
+    ${bootstrapLight}
   `,
   material: css`
-    ${shared} ${materialLight}
+    ${materialLight}
   `,
   fluent: css`
-    ${shared} ${fluent} ${fluentLight}
+    ${fluent} ${fluentLight}
   `,
   indigo: css`
-    ${shared} ${indigoLight}
+    ${indigoLight}
   `,
 };
 
 const dark = {
   bootstrap: css`
-    ${shared} ${bootstrapDark}
+    ${bootstrapDark}
   `,
   material: css`
-    ${shared} ${materialDark}
+    ${materialDark}
   `,
   fluent: css`
-    ${shared} ${fluent} ${fluentDark}
+    ${fluent} ${fluentDark}
   `,
   indigo: css`
-    ${shared} ${indigoDark}
+    ${indigoDark}
   `,
 };
 
