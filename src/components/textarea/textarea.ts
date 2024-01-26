@@ -19,12 +19,7 @@ import { registerComponent } from '../common/definitions/register.js';
 import type { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
 import { FormAssociatedRequiredMixin } from '../common/mixins/form-associated-required.js';
-import {
-  asNumber,
-  createCounter,
-  extractText,
-  partNameMap,
-} from '../common/util.js';
+import { asNumber, createCounter, partNameMap } from '../common/util.js';
 import {
   Validator,
   maxLengthValidator,
@@ -373,7 +368,14 @@ export default class IgcTextareaComponent extends FormAssociatedRequiredMixin(
   }
 
   protected valueSlotChange() {
-    const value = extractText(this.projected);
+    const value = [];
+
+    for (const node of this.projected) {
+      const text = node.textContent?.trim();
+      if (text) {
+        value.push(text);
+      }
+    }
 
     if (value.length) {
       this.value = value.join('\r\n');

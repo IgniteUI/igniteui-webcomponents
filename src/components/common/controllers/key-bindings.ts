@@ -1,6 +1,8 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
 
+import { isElement } from '../util.js';
+
 /* Common keys */
 export const arrowLeft = 'ArrowLeft' as const;
 export const arrowRight = 'ArrowRight' as const;
@@ -154,10 +156,6 @@ function isKeyupTrigger(triggers?: KeyBindingTrigger[]) {
 
 function isKeydownRepeatTrigger(triggers?: KeyBindingTrigger[]) {
   return triggers ? triggers.includes('keydownRepeat') : false;
-}
-
-function isElement(node: EventTarget): node is Element {
-  return (node as Element).nodeType === Node.ELEMENT_NODE;
 }
 
 export function parseKeys(keys: string | string[]) {
