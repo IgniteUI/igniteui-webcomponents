@@ -53,10 +53,10 @@ $theme: $material;
 
 :host([disabled]),
 :host(:disabled) {
-    @include disabled;
+    @include disabled();
 }
 
 :host-context([disabled]),
 :host-context(:disabled) {
-    @include disabled;
+    @include disabled();
 }
