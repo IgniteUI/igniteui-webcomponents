@@ -3,10 +3,6 @@
 
 $theme: $base;
 
-:host {
-    @include css-vars-from-theme($theme, 'ig-textarea');
-}
-
 [part~='prefixed'] {
     [part~='prefix'] {
         color: var-get($theme, 'input-prefix-color');

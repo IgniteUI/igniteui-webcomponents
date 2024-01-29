@@ -4,8 +4,6 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme($base, 'ig-rating');
-
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
     --symbol-full-color: #{var-get($theme, 'symbol-full-color')};
     --symbol-empty-color: #{var-get($theme, 'symbol-empty-color')};

@@ -3,7 +3,6 @@ import { property } from 'lit/decorators.js';
 
 import { styles } from './themes/container.base.css.js';
 import { all } from './themes/container.js';
-import { styles as shared } from './themes/shared/container.common.css.js';
 import IgcTreeItemComponent from './tree-item.js';
 import { IgcTreeEventMap } from './tree.common.js';
 import { IgcTreeNavigationService } from './tree.navigation.js';
@@ -38,7 +37,7 @@ export default class IgcTreeComponent extends SizableMixin(
   EventEmitterMixin<IgcTreeEventMap, Constructor<LitElement>>(LitElement)
 ) {
   public static readonly tagName = 'igc-tree';
-  public static styles = [styles, shared];
+  public static styles = styles;
 
   /* blazorSuppress */
   public static register() {

@@ -3,10 +3,6 @@
 
 $theme: $base;
 
-:host {
-    @include css-vars-from-theme($base, 'ig-radio');
-}
-
 [part~='label'] {
     color: var-get($theme, 'label-color');
 }
