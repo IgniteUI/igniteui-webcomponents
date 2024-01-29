@@ -4,8 +4,6 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme($base, 'ig-dialog');
-
     background: var-get($theme, 'background');
     border-radius: var-get($theme, 'border-radius');
 }

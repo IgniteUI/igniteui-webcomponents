@@ -3,10 +3,6 @@
 
 $theme: $base;
 
-:host {
-    @include css-vars-from-theme($theme, 'ig-input');
-}
-
 [part='helper-text'] {
     color: var-get($theme, 'helper-text-color');
 }

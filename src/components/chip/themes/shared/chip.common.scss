@@ -4,8 +4,6 @@
 $theme: $material;
 
 :host {
-    @include css-vars-from-theme($base, 'ig-chip');
-    
     --component-size: var(--ig-size, #{var-get($theme, 'default-size')});
 }
 

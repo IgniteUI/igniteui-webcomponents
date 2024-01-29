@@ -3,10 +3,6 @@
 
 $theme: $base;
 
-:host {
-    @include css-vars-from-theme($base, 'ig-checkbox');
-}
-
 [part~='label'] {
     @include type-style('body-2');
 

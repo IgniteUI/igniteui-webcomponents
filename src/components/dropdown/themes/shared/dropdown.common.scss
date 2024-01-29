@@ -3,10 +3,6 @@
 
 $theme: $base;
 
-:host {
-    @include css-vars-from-theme($theme, 'ig-dropdown');
-}
-
 [part='base'] {
     background: var-get($theme, 'background-color');
     border-radius: var-get($theme, 'border-radius');
