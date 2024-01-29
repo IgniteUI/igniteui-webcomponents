@@ -3,6 +3,14 @@
 
 $theme: $material;
 
+@mixin disabled {
+    [part~='toggle'] {
+        color: var-get($theme, 'disabled-text-color');
+        background: var-get($theme, 'disabled-background-color');
+        border-color: var-get($theme, 'item-disabled-border');
+    }
+}
+
 :host {
     [part~='toggle'] {
         $icon-size: rem(18px);
@@ -45,9 +53,10 @@ $theme: $material;
 
 :host([disabled]),
 :host(:disabled) {
-    [part~='toggle'] {
-        color: var-get($theme, 'disabled-text-color');
-        background: var-get($theme, 'disabled-background-color');
-        border-color: var-get($theme, 'item-disabled-border');
-    }
+    @include disabled;
+}
+
+:host-context([disabled]),
+:host-context(:disabled) {
+    @include disabled;
 }
