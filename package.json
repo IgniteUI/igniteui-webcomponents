@@ -49,10 +49,10 @@
     "build:typedoc:ja": "set NODE_ENV=production && node scripts/build-typedoc.js buildJA",
     "build:typedoc:en": "set NODE_ENV=production && node scripts/build-typedoc.js buildEN",
     "deploy-storybook": "storybook-to-ghpages --ci --existing-output-dir=./storybook-static",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.5.4",
+    "@floating-ui/dom": "^1.6.1",
     "@lit-labs/virtualizer": "^2.0.12",
     "lit": "^3.1.1"
   },
@@ -69,8 +69,8 @@
     "@storybook/web-components": "^7.6.10",
     "@storybook/web-components-vite": "^7.6.10",
     "@types/mocha": "^10.0.6",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/parser": "^6.19.1",
     "@web/test-runner": "^0.18.0",
     "@web/test-runner-playwright": "^0.11.0",
     "autoprefixer": "^10.4.17",
@@ -83,7 +83,7 @@
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-storybook": "^0.6.15",
     "globby": "^14.0.0",
-    "husky": "^8.0.3",
+    "husky": "^9.0.6",
     "ig-typedoc-theme": "^5.0.3",
     "igniteui-theming": "^4.1.0",
     "keep-a-changelog": "^2.5.3",
