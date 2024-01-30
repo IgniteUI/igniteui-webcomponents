@@ -57,7 +57,7 @@ $row-gap: rem(6px);
 }
 
 [part~='date'] {
-    @include type-style('subtitle-1');
+    @include type-style('body-1');
 
     font-weight: 400;
 
