@@ -78,6 +78,18 @@ describe('Slider component', () => {
       );
     });
 
+    it('is accessible', async () => {
+      await expect(slider).shadowDom.not.to.be.accessible();
+      await expect(slider).lightDom.not.to.be.accessible();
+
+      slider.ariaLabel = 'Slider thumb value';
+      slider.requestUpdate();
+      await elementUpdated(slider);
+
+      await expect(slider).shadowDom.to.be.accessible();
+      await expect(slider).lightDom.to.be.accessible();
+    });
+
     it('value should be restricted by min value', async () => {
       slider.min = 10;
       await elementUpdated(slider);
@@ -199,7 +211,7 @@ describe('Slider component', () => {
       slider.valueFormatOptions = { style: 'currency', currency: 'USD' };
       await elementUpdated(slider);
 
-      expect(slider.hasAttribute('aria-label')).to.be.false;
+      expect(slider.hasAttribute('aria-label')).to.be.true;
       expect(thumb.getAttribute('role')).to.eq('slider');
       expect(thumb.ariaValueMin).to.eq('0');
       expect(thumb.ariaValueMax).to.eq('100');
@@ -690,6 +702,18 @@ describe('Slider component', () => {
       slider = await fixture<IgcRangeSliderComponent>(
         html`<igc-range-slider></igc-range-slider>`
       );
+    });
+
+    it('is accessible', async () => {
+      await expect(slider).shadowDom.not.to.be.accessible();
+      await expect(slider).lightDom.not.to.be.accessible();
+
+      slider.ariaLabelUpper = 'Thumb upper';
+      slider.ariaLabelLower = 'Thumb lower';
+      await elementUpdated(slider);
+
+      await expect(slider).shadowDom.to.be.accessible();
+      await expect(slider).lightDom.to.be.accessible();
     });
 
     it('lower value should be restricted by min value', async () => {

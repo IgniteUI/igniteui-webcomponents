@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import { property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -8,6 +8,7 @@ import IgcSliderLabelComponent from './slider-label.js';
 import { registerComponent } from '../common/definitions/register.js';
 import { Constructor } from '../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../common/mixins/event-emitter.js';
+import { asNumber, asPercent } from '../common/util.js';
 
 /* blazorSuppress */
 export interface IgcRangeSliderValue {
@@ -69,25 +70,17 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   private _lower = 0;
   private _upper = 0;
 
-  public set lower(val: number) {
-    const oldVal = this._lower;
-    this._lower = this.validateValue(val);
-    this.requestUpdate('lower', oldVal);
-  }
-
   /**
    * The current value of the lower thumb.
    * @attr
    */
   @property({ type: Number })
-  public get lower(): number {
-    return this._lower;
+  public set lower(val: number) {
+    this._lower = this.validateValue(asNumber(val, this._lower));
   }
 
-  public set upper(val: number) {
-    const oldVal = this._upper;
-    this._upper = this.validateValue(val);
-    this.requestUpdate('upper', oldVal);
+  public get lower(): number {
+    return this._lower;
   }
 
   /**
@@ -95,6 +88,10 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
    * @attr
    */
   @property({ type: Number })
+  public set upper(val: number) {
+    this._upper = this.validateValue(asNumber(val, this._upper));
+  }
+
   public get upper(): number {
     return this._upper;
   }
@@ -123,16 +120,11 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   }
 
   protected override getTrackStyle() {
-    const toPosition = this.valueToFraction(this.upper);
-    const fromPosition = this.valueToFraction(this.lower);
-    const positionGap = toPosition - fromPosition;
-
-    const filledTrackStyle = {
-      width: `${positionGap * 100}%`,
-      insetInlineStart: `${fromPosition * 100}%`,
+    const start = asPercent(this.lower - this.min, this.distance);
+    return {
+      insetInlineStart: `${start}%`,
+      width: `${asPercent(this.upper - this.min, this.distance) - start}%`,
     };
-
-    return filledTrackStyle;
   }
 
   private closestTo(goal: number, positions: number[]): number {
@@ -161,25 +153,16 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
 
   protected override updateValue(increment: number) {
     const oldValue = this.activeValue;
+    const isThumbFromActive = this.activeThumb === this.thumbFrom;
+    let [lower, upper] = [this.lower, this.upper];
 
-    let lower = this.lower;
-    let upper = this.upper;
-
-    if (this.activeThumb === this.thumbFrom) {
-      lower += increment;
-    } else {
-      upper += increment;
-    }
+    isThumbFromActive ? (lower += increment) : (upper += increment);
 
     if (lower >= upper) {
-      this.swapValues(lower, upper);
+      [this.lower, this.upper] = [upper, lower];
       this.toggleActiveThumb();
     } else {
-      if (this.activeThumb === this.thumbFrom) {
-        this.lower = lower;
-      } else {
-        this.upper = upper;
-      }
+      isThumbFromActive ? (this.lower = lower) : (this.upper = upper);
     }
 
     if (oldValue === this.activeValue) {
@@ -202,35 +185,25 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     });
   }
 
-  private swapValues(lower: number, upper: number) {
-    this.lower = upper;
-    this.upper = lower;
-  }
-
   private toggleActiveThumb() {
     const thumb =
       this.activeThumb === this.thumbFrom ? this.thumbTo : this.thumbFrom;
     thumb.focus();
   }
 
-  private handleFocus(ev: Event) {
-    this.activeThumb = ev.target as HTMLElement;
-    const thumbId = this.activeThumb?.id;
-    const thumbs = this.shadowRoot?.querySelectorAll('div[part="thumb"]');
+  private handleFocus(event: FocusEvent) {
+    this.activeThumb = event.target as HTMLElement;
+    const id = this.activeThumb.id;
 
-    thumbs?.forEach((t) => {
-      if (t.id !== thumbId) {
-        const activeThumbVal = parseFloat(this.activeThumb!.ariaValueNow!);
-        const thumbVal = parseFloat(t.ariaValueNow!);
-        const rangeFrom = Math.min(activeThumbVal, thumbVal);
-        const rangeTo = Math.max(activeThumbVal, thumbVal);
+    for (const thumb of [this.thumbFrom, this.thumbTo]) {
+      if (thumb.id === id) continue;
+      const [activeValue, thumbVal] = [
+        asNumber(this.activeThumb.ariaValueNow),
+        asNumber(thumb.ariaValueNow),
+      ];
 
-        this.activeThumb?.setAttribute(
-          'aria-valuetext',
-          `${this.formatValue(rangeFrom)} - ${this.formatValue(rangeTo)}`
-        );
-      }
-    });
+      this.activeThumb.ariaValueText = `${this.formatValue(Math.min(activeValue, thumbVal))} - ${this.formatValue(Math.max(activeValue, thumbVal))}`;
+    }
   }
 
   protected override renderThumb(
@@ -238,11 +211,16 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
     ariaLabel?: string,
     thumbId?: string
   ) {
-    const percent = `${this.valueToFraction(value) * 100}%`;
+    const percent = `${asPercent(value - this.min, this.distance)}%`;
+    const thumbStyles = { insetInlineStart: percent };
+    const tooltipStyles = {
+      insetInlineStart: percent,
+      opacity: this.thumbLabelsVisible ? 1 : 0,
+    };
     const ariaValueText =
       thumbId === 'thumbFrom' ? `min ${this.lower}` : `max ${this.upper}`;
 
-    const textValue = this.labels
+    const textValue = this.hasLabels
       ? this.labels[value]
       : this.valueFormat || this.valueFormatOptions
         ? this.formatValue(value)
@@ -253,34 +231,25 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
         part="thumb"
         id=${ifDefined(thumbId)}
         tabindex=${this.disabled ? -1 : 0}
-        style=${styleMap({ insetInlineStart: percent })}
+        style=${styleMap(thumbStyles)}
         role="slider"
-        aria-valuemin=${this.actualMin}
-        aria-valuemax=${this.actualMax}
+        aria-valuemin=${this.lowerBound}
+        aria-valuemax=${this.upperBound}
         aria-valuenow=${value}
         aria-valuetext=${ifDefined(textValue)}
         aria-label=${ifDefined(ariaLabel)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
-        @pointerenter=${this.handleThumbPointerEnter}
-        @pointerleave=${this.handleThumbPointerLeave}
-        @focus=${(ev: Event) => this.handleFocus(ev)}
-        @blur=${() => (
-          this.activeThumb?.part.remove('focused'),
-          (this.activeThumb = undefined)
-        )}
+        @pointerenter=${this.showThumbLabels}
+        @pointerleave=${this.hideThumbLabels}
+        @focus=${this.handleFocus}
+        @blur=${this.handleThumbBlur}
       ></div>
       ${this.hideTooltip
-        ? html``
+        ? nothing
         : html`
-            <div
-              part="thumb-label"
-              style=${styleMap({
-                opacity: this.thumbLabelsVisible ? '1' : '0',
-                insetInlineStart: percent,
-              })}
-            >
+            <div part="thumb-label" style=${styleMap(tooltipStyles)}>
               <div part="thumb-label-inner">
-                ${this.labels ? this.labels[value] : this.formatValue(value)}
+                ${this.hasLabels ? this.labels[value] : this.formatValue(value)}
               </div>
             </div>
           `}

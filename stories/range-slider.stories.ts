@@ -1,6 +1,7 @@
 import { Meta, StoryObj } from '@storybook/web-components';
 import { html } from 'lit';
 
+import { disableStoryControls } from './story.js';
 import { IgcRangeSliderComponent, defineComponents } from '../src/index.js';
 
 defineComponents(IgcRangeSliderComponent);
@@ -41,12 +42,14 @@ const metadata: Meta<IgcRangeSliderComponent> = {
     },
     min: {
       type: 'number',
-      description: 'The minimum value of the slider scale. Defaults to 0.',
+      description:
+        'The minimum value of the slider scale. Defaults to 0.\n\nIf `min` is greater than `max` the call is a no-op.\n\nIf `labels` are provided (projected), then `min` is always set to 0.\n\nIf `lowerBound` ends up being less than than the current `min` value,\nit is automatically assigned the new `min` value.',
       control: 'number',
     },
     max: {
       type: 'number',
-      description: 'The maximum value of the slider scale. Defaults to 100.',
+      description:
+        'The maximum value of the slider scale. Defaults to 100.\n\nIf `max` is less than `min` the call is a no-op.\n\nIf `labels` are provided (projected), then `max` is always set to\nthe number of labels.\n\nIf `upperBound` ends up being greater than than the current `max` value,\nit is automatically assigned the new `max` value.',
       control: 'number',
     },
     lowerBound: {
@@ -83,7 +86,7 @@ const metadata: Meta<IgcRangeSliderComponent> = {
     step: {
       type: 'number',
       description:
-        'Specifies the granularity that the value must adhere to.\nIf set to 0 no stepping is implied and any value in the range is allowed.',
+        'Specifies the granularity that the value must adhere to.\n\nIf set to 0 no stepping is implied and any value in the range is allowed.\nIf `labels` are provided (projected) then the step is always assumed to be 1 since it is a discrete slider.',
       control: 'number',
     },
     primaryTicks: {
@@ -166,9 +169,28 @@ interface IgcRangeSliderArgs {
   ariaLabelLower: string;
   /** The aria label of the upper thumb. */
   ariaLabelUpper: string;
-  /** The minimum value of the slider scale. Defaults to 0. */
+  /**
+   * The minimum value of the slider scale. Defaults to 0.
+   *
+   * If `min` is greater than `max` the call is a no-op.
+   *
+   * If `labels` are provided (projected), then `min` is always set to 0.
+   *
+   * If `lowerBound` ends up being less than than the current `min` value,
+   * it is automatically assigned the new `min` value.
+   */
   min: number;
-  /** The maximum value of the slider scale. Defaults to 100. */
+  /**
+   * The maximum value of the slider scale. Defaults to 100.
+   *
+   * If `max` is less than `min` the call is a no-op.
+   *
+   * If `labels` are provided (projected), then `max` is always set to
+   * the number of labels.
+   *
+   * If `upperBound` ends up being greater than than the current `max` value,
+   * it is automatically assigned the new `max` value.
+   */
   max: number;
   /** The lower bound of the slider value. If not set, the `min` value is applied. */
   lowerBound: number;
@@ -185,7 +207,9 @@ interface IgcRangeSliderArgs {
   hideTooltip: boolean;
   /**
    * Specifies the granularity that the value must adhere to.
+   *
    * If set to 0 no stepping is implied and any value in the range is allowed.
+   * If `labels` are provided (projected) then the step is always assumed to be 1 since it is a discrete slider.
    */
   step: number;
   /** The number of primary ticks. It defaults to 0 which means no primary ticks are displayed. */
@@ -209,47 +233,124 @@ type Story = StoryObj<IgcRangeSliderArgs>;
 
 // endregion
 
-const Template = ({
-  disabled = false,
-  discreteTrack = false,
-  hideTooltip = false,
-  step = 2,
-  lower = 0,
-  upper = 0,
-  min = 0,
-  max = 100,
-  lowerBound,
-  upperBound,
-  primaryTicks = 3,
-  secondaryTicks = 2,
-  hidePrimaryLabels = false,
-  hideSecondaryLabels = false,
-  tickOrientation = 'end',
-  tickLabelRotation = 0,
-  ariaLabelLower,
-  ariaLabelUpper,
-}: IgcRangeSliderArgs) => html`
-  <igc-range-slider
-    style="margin: 40px 20px;"
-    ?disabled=${disabled}
-    ?discrete-track=${discreteTrack}
-    ?hide-tooltip=${hideTooltip}
-    step=${step}
-    .lower=${lower}
-    .upper=${upper}
-    min=${min}
-    max=${max}
-    .ariaLabelLower=${ariaLabelLower}
-    .ariaLabelUpper=${ariaLabelUpper}
-    .lowerBound=${lowerBound}
-    .upperBound=${upperBound}
-    .primaryTicks=${primaryTicks}
-    .secondaryTicks=${secondaryTicks}
-    .hidePrimaryLabels=${hidePrimaryLabels}
-    .hideSecondaryLabels=${hideSecondaryLabels}
-    .tickOrientation=${tickOrientation}
-    .tickLabelRotation=${tickLabelRotation}
-  ></igc-range-slider>
-`;
+export const Default: Story = {
+  args: {
+    ariaLabelLower: 'Default slider lower thumb',
+    ariaLabelUpper: 'Default slider upper thumb',
+    lower: 0,
+    upper: 25,
+  },
+  render: (args) => html`
+    <style>
+      igc-range-slider {
+        padding: 60px;
+      }
+    </style>
+    <igc-range-slider
+      .ariaLabelLower=${args.ariaLabelLower}
+      .ariaLabelUpper=${args.ariaLabelUpper}
+      .lower=${args.lower}
+      .upper=${args.upper}
+      ?disabled=${args.disabled}
+      ?discrete-track=${args.discreteTrack}
+      ?hide-tooltip=${args.hideTooltip}
+      ?hide-primary-labels=${args.hidePrimaryLabels}
+      ?hide-secondary-labels=${args.hideSecondaryLabels}
+      .step=${args.step}
+      .min=${args.min}
+      .max=${args.max}
+      .locale=${args.locale}
+      .lowerBound=${args.lowerBound}
+      .upperBound=${args.upperBound}
+      .primaryTicks=${args.primaryTicks}
+      .secondaryTicks=${args.secondaryTicks}
+      .tickOrientation=${args.tickOrientation}
+      .tickLabelRotation=${args.tickLabelRotation}
+      .valueFormat=${args.valueFormat}
+    ></igc-range-slider>
+  `,
+};
 
-export const Basic: Story = Template.bind({});
+const currencyFormat: Intl.NumberFormatOptions = {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+};
+
+const distanceFormat: Intl.NumberFormatOptions = {
+  style: 'unit',
+  unit: 'kilometer',
+  minimumFractionDigits: 2,
+};
+
+const temperatureFormat: Intl.NumberFormatOptions = {
+  style: 'unit',
+  unit: 'celsius',
+  maximumFractionDigits: 2,
+};
+
+export const ValueFormat: Story = {
+  argTypes: disableStoryControls(metadata),
+  parameters: {
+    actions: { handles: ['igcChange'] },
+  },
+  render: () => html`
+    <style>
+      igc-range-slider {
+        padding: 60px;
+      }
+    </style>
+
+    <igc-range-slider
+      aria-label-lower="Currency low"
+      aria-label-upper="Currency high"
+      lower="10"
+      upper="50"
+      primary-ticks="3"
+      secondary-ticks="4"
+      .valueFormatOptions=${currencyFormat}
+    ></igc-range-slider>
+
+    <igc-range-slider
+      aria-label-lower="Distance low"
+      aria-label-upper="Distance high"
+      value-format="Distance: {0}"
+      .valueFormatOptions=${distanceFormat}
+    ></igc-range-slider>
+
+    <igc-range-slider
+      aria-label-lower="Temperature low"
+      aria-label-upper="Temperature high"
+      step="1"
+      lower="0"
+      upper="37"
+      value-format="{0}"
+      primary-ticks="15"
+      .valueFormatOptions=${temperatureFormat}
+      min="-273"
+      max="273"
+    ></igc-range-slider>
+  `,
+};
+
+export const Labels: Story = {
+  argTypes: disableStoryControls(metadata),
+  render: () => html`
+    <igc-range-slider
+      style="padding: 60px"
+      aria-label-lower="Severity level low"
+      aria-label-upper="Severity level high"
+      discrete-track
+      primary-ticks="1"
+    >
+      <igc-slider-label>Debugging</igc-slider-label>
+      <igc-slider-label>Informational</igc-slider-label>
+      <igc-slider-label>Notification</igc-slider-label>
+      <igc-slider-label>Warning</igc-slider-label>
+      <igc-slider-label>Error</igc-slider-label>
+      <igc-slider-label>Critical</igc-slider-label>
+      <igc-slider-label>Alert</igc-slider-label>
+      <igc-slider-label>Emergency</igc-slider-label>
+    </igc-range-slider>
+  `,
+};
