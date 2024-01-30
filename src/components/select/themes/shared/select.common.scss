@@ -6,8 +6,6 @@ $theme: $material;
 $input-theme: input-theme.$material;
 
 :host {
-    @include css-vars-from-theme($base, 'ig-select');
-
     ::slotted([slot='helper-text']) {
         color: var-get($input-theme, 'helper-text-color');
     }

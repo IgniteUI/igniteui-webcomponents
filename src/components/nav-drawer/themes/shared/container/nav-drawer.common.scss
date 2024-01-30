@@ -5,9 +5,6 @@ $theme: $material;
 $background: var-get($theme, 'background') !default;
 
 :host {
-    @include css-vars-from-theme($base, 'ig-nav-drawer');
-    @include css-vars-from-theme($base-overlay, 'ig-nav-drawer');
-
     [part='base'] {
         border-radius: var-get($theme, 'border-radius');
         background: $background;

@@ -15,7 +15,7 @@ $outlined-theme: $bootstrap-outlined;
 }
 
 :host([variant='contained']) {
-    @include css-vars-from-theme(diff($base-contained ,$contained-theme), 'ig-button');
+    @include css-vars-from-theme(diff($base-contained, $contained-theme), 'ig-button');
 }
 
 :host([variant='fab']) {

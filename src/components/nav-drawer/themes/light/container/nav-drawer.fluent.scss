@@ -5,5 +5,5 @@ $theme: $fluent;
 
 :host {
     @include css-vars-from-theme(diff($base, $theme), 'ig-nav-drawer');
-    @include css-vars-from-theme($overlay-fluent, 'ig-nav-drawer');
+    @include css-vars-from-theme(diff($base, $overlay-fluent), 'ig-nav-drawer');
 }
