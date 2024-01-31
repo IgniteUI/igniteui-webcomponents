@@ -29,6 +29,11 @@ $outlined-theme: $material-outlined;
         &:focus-within {
             background: var-get($flat-theme, 'focus-background');
             color: var-get($flat-theme, 'focus-foreground');
+
+            &:hover {
+                background: var-get($flat-theme, 'focus-hover-background');
+                color: var-get($flat-theme, 'focus-hover-foreground');
+            }
         }
 
         &:active {
@@ -64,6 +69,11 @@ $outlined-theme: $material-outlined;
         &:focus-within {
             background: var-get($contained-theme, 'focus-background');
             color: var-get($contained-theme, 'focus-foreground');
+
+            &:hover {
+                background: var-get($contained-theme, 'focus-hover-background');
+                color: var-get($contained-theme, 'focus-hover-foreground');
+            }
         }
 
         &:active {
@@ -100,6 +110,11 @@ $outlined-theme: $material-outlined;
         &:focus-within {
             background: var-get($outlined-theme, 'focus-background');
             color: var-get($outlined-theme, 'focus-foreground');
+
+            &:hover {
+                background: var-get($outlined-theme, 'focus-hover-background');
+                color: var-get($outlined-theme, 'focus-hover-foreground');
+            }
         }
 
         &:active {

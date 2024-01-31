@@ -15,6 +15,10 @@ $outlined-theme: $bootstrap-outlined;
 
     [part='base'] {
         border: rem(1px) solid var-get($outlined-theme, 'border-color');
+
+        &:focus {
+            border: rem(1px) solid var-get($outlined-theme, 'focus-border-color');
+        }
     }
 }
 
