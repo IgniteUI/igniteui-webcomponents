@@ -30,14 +30,14 @@ const metadata: Meta<IgcRangeSliderComponent> = {
       description: 'The current value of the upper thumb.',
       control: 'number',
     },
-    ariaLabelLower: {
+    thumbLabelLower: {
       type: 'string',
-      description: 'The aria label of the lower thumb.',
+      description: 'The aria label for the lower thumb.',
       control: 'text',
     },
-    ariaLabelUpper: {
+    thumbLabelUpper: {
       type: 'string',
-      description: 'The aria label of the upper thumb.',
+      description: 'The aria label for the upper thumb.',
       control: 'text',
     },
     min: {
@@ -165,10 +165,10 @@ interface IgcRangeSliderArgs {
   lower: number;
   /** The current value of the upper thumb. */
   upper: number;
-  /** The aria label of the lower thumb. */
-  ariaLabelLower: string;
-  /** The aria label of the upper thumb. */
-  ariaLabelUpper: string;
+  /** The aria label for the lower thumb. */
+  thumbLabelLower: string;
+  /** The aria label for the upper thumb. */
+  thumbLabelUpper: string;
   /**
    * The minimum value of the slider scale. Defaults to 0.
    *
@@ -235,8 +235,8 @@ type Story = StoryObj<IgcRangeSliderArgs>;
 
 export const Default: Story = {
   args: {
-    ariaLabelLower: 'Default slider lower thumb',
-    ariaLabelUpper: 'Default slider upper thumb',
+    thumbLabelLower: 'Default slider lower thumb',
+    thumbLabelUpper: 'Default slider upper thumb',
     lower: 0,
     upper: 25,
   },
@@ -247,8 +247,8 @@ export const Default: Story = {
       }
     </style>
     <igc-range-slider
-      .ariaLabelLower=${args.ariaLabelLower}
-      .ariaLabelUpper=${args.ariaLabelUpper}
+      .thumbLabelLower=${args.thumbLabelLower}
+      .thumbLabelUpper=${args.thumbLabelUpper}
       .lower=${args.lower}
       .upper=${args.upper}
       ?disabled=${args.disabled}
@@ -302,8 +302,8 @@ export const ValueFormat: Story = {
     </style>
 
     <igc-range-slider
-      aria-label-lower="Currency low"
-      aria-label-upper="Currency high"
+      thumb-label-lower="Currency low"
+      thumb-label-upper="Currency high"
       lower="10"
       upper="50"
       primary-ticks="3"
@@ -312,15 +312,15 @@ export const ValueFormat: Story = {
     ></igc-range-slider>
 
     <igc-range-slider
-      aria-label-lower="Distance low"
-      aria-label-upper="Distance high"
+      thumb-label-lower="Distance low"
+      thumb-label-upper="Distance high"
       value-format="Distance: {0}"
       .valueFormatOptions=${distanceFormat}
     ></igc-range-slider>
 
     <igc-range-slider
-      aria-label-lower="Temperature low"
-      aria-label-upper="Temperature high"
+      thumb-label-lower="Temperature low"
+      thumb-label-upper="Temperature high"
       step="1"
       lower="0"
       upper="37"
@@ -338,8 +338,8 @@ export const Labels: Story = {
   render: () => html`
     <igc-range-slider
       style="padding: 60px"
-      aria-label-lower="Severity level low"
-      aria-label-upper="Severity level high"
+      thumb-label-lower="Severity level low"
+      thumb-label-upper="Severity level high"
       discrete-track
       primary-ticks="1"
     >

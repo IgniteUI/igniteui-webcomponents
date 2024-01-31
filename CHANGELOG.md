@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
  - Combo component can now set `groupSorting` to `none` which shows the groups in the order of the provided data.
 
+### Deprecated
+ - Slider
+   - `aria-label-upper` and `aria-label-lower` are deprecated and will be removed in the next major release. Use `thumb-label-upper` and `thumb-label-lower` instead.
+
 ### Fixed
  - Slider
    - clicks on the slider track now use the track element width as a basis for the calculation.

@@ -97,18 +97,48 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   }
 
   /**
+   * The aria label for the lower thumb.
+   * @attr thumb-label-lower
+   */
+  @property({ attribute: 'thumb-label-lower' })
+  public thumbLabelLower!: string;
+
+  /**
+   * The aria label for the upper thumb.
+   * @attr thumb-label-upper
+   */
+  @property({ attribute: 'thumb-label-upper' })
+  public thumbLabelUpper!: string;
+
+  /**
    * The aria label of the lower thumb.
    * @attr aria-label-lower
+   *
+   * @deprecated - since v4.8.0. Use the `thumb-label-lower` attribute instead.
    */
   @property({ attribute: 'aria-label-lower' })
-  public ariaLabelLower!: string;
+  public set ariaLabelLower(value: string) {
+    this.thumbLabelLower = value;
+  }
+
+  public get ariaLabelLower() {
+    return this.thumbLabelLower;
+  }
 
   /**
    * The aria label of the upper thumb.
    * @attr aria-label-upper
+   *
+   * @deprecated - since v4.8.0. Use the `thumb-label-upper` attribute instead.
    */
   @property({ attribute: 'aria-label-upper' })
-  public ariaLabelUpper!: string;
+  public set ariaLabelUpper(value: string) {
+    this.thumbLabelUpper = value;
+  }
+
+  public get ariaLabelUpper() {
+    return this.thumbLabelUpper;
+  }
 
   protected override get activeValue(): number {
     return this.activeThumb === this.thumbFrom ? this.lower : this.upper;
@@ -259,10 +289,10 @@ export default class IgcRangeSliderComponent extends EventEmitterMixin<
   protected override renderThumbs() {
     return html`${this.renderThumb(
       this.lower,
-      this.ariaLabelLower,
+      this.thumbLabelLower,
       'thumbFrom'
     )}
-    ${this.renderThumb(this.upper, this.ariaLabelUpper, 'thumbTo')}`;
+    ${this.renderThumb(this.upper, this.thumbLabelUpper, 'thumbTo')}`;
   }
 }
 

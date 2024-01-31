@@ -7,12 +7,9 @@ import {
 } from '@open-wc/testing';
 import { spy } from 'sinon';
 
-import { IgcSliderBaseComponent } from './slider-base.js';
-import {
-  IgcRangeSliderComponent,
-  IgcSliderComponent,
-  defineComponents,
-} from '../../index.js';
+import IgcRangeSliderComponent from './range-slider.js';
+import type { IgcSliderBaseComponent } from './slider-base.js';
+import IgcSliderComponent from './slider.js';
 import {
   arrowDown,
   arrowLeft,
@@ -23,48 +20,17 @@ import {
   pageDownKey,
   pageUpKey,
 } from '../common/controllers/key-bindings.js';
+import { defineComponents } from '../common/definitions/defineComponents.js';
+import { asPercent } from '../common/util.js';
 import {
   FormAssociatedTestBed,
   simulateKeyboard,
+  simulateLostPointerCapture,
+  simulatePointerDown,
+  simulatePointerMove,
 } from '../common/utils.spec.js';
 
 describe('Slider component', () => {
-  const getTrack = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelector(`[part='track']`) as HTMLElement;
-  const getTrackFill = (el: IgcSliderBaseComponent) =>
-    el.shadowRoot!.querySelector(`[part='fill']`) as HTMLElement;
-  const getTrackSteps = (el: IgcSliderBaseComponent) =>
-    el.shadowRoot!.querySelector(`[part='steps']`) as HTMLElement;
-  const getThumb = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelector(`[part='thumb']`) as HTMLElement;
-  const getLowerThumb = (el: IgcRangeSliderComponent) =>
-    el.shadowRoot!.querySelector('#thumbFrom') as HTMLElement;
-  const getUpperThumb = (el: IgcRangeSliderComponent) =>
-    el.shadowRoot!.querySelector('#thumbTo') as HTMLElement;
-  const getThumbLabel = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelector(`[part='thumb-label']`) as HTMLElement;
-  const getPrimaryTicks = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelectorAll(
-      `[part='tick'][data-primary='true']`
-    ) as NodeListOf<HTMLElement>;
-  const getSecondaryTicks = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelectorAll(
-      `[part='tick'][data-primary='false']`
-    ) as NodeListOf<HTMLElement>;
-  const getAllTicks = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelectorAll(`[part='tick']`) as NodeListOf<HTMLElement>;
-  const getTickLabels = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelectorAll(
-      `[part='tick-label']`
-    ) as NodeListOf<HTMLElement>;
-  const getTickLabelsInner = (el: IgcSliderComponent) =>
-    el.shadowRoot!.querySelectorAll(
-      `[part='tick-label-inner']`
-    ) as NodeListOf<HTMLElement>;
-  const absDiff = (a: number, b: number) => {
-    return Math.abs(a - b);
-  };
-
   describe('Regular', () => {
     let slider: IgcSliderComponent;
 
@@ -159,57 +125,84 @@ describe('Slider component', () => {
       const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
 
-      slider.dispatchEvent(
-        new PointerEvent('pointerdown', {
-          clientX: x + width / 2,
-          pointerId: 1,
-        })
-      );
+      simulatePointerDown(slider, { clientX: x + width / 2 });
       await elementUpdated(slider);
 
       expect(slider.value).to.eq(50);
       expect(eventSpy).calledOnceWithExactly('igcInput', { detail: 50 });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(
-        new PointerEvent('pointermove', {
-          clientX: x + width * 0.7,
-          pointerId: 1,
-        })
-      );
+      simulatePointerMove(slider, { clientX: x + width * 0.7 });
       await elementUpdated(slider);
 
       expect(slider.value).to.eq(70);
       expect(eventSpy).calledOnceWithExactly('igcInput', { detail: 70 });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(
-        new PointerEvent('lostpointercapture', { pointerId: 1 })
-      );
+
+      simulateLostPointerCapture(slider);
       await elementUpdated(slider);
 
       expect(slider.value).to.eq(70);
       expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 70 });
     });
 
-    it('track fill and thumb should be positioned correctly according to the current value', async () => {
-      const trackFill = getTrackFill(slider);
-      const thumb = getThumb(slider);
+    it('events should not be emitted once thumbs reaches end boundary even if pointer events are still fired', async () => {
+      const eventSpy = spy(slider, 'emitEvent');
+      const { x, width } = slider.getBoundingClientRect();
 
+      const sliderCenterX = {
+        clientX: x + width / 2,
+      } satisfies PointerEventInit;
+
+      const deltaX = { x: width * 0.25 };
+
+      simulatePointerDown(slider, sliderCenterX);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.eq(50);
+      expect(eventSpy).calledOnceWithExactly('igcInput', { detail: 50 });
+
+      // Simulate 10 pointer moves with stacking delta = 1/4 of the slider's width
+      simulatePointerMove(slider, sliderCenterX, deltaX, 10);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.equal(100);
+
+      // 1 igcInput for pointerDown + 2 more for each pointermove till the end
+      expect(eventSpy.callCount).to.equal(3);
+      expect(eventSpy.lastCall).calledWithExactly('igcInput', {
+        detail: 100,
+      });
+
+      eventSpy.resetHistory();
+
+      simulateLostPointerCapture(slider);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.eq(100);
+      expect(eventSpy).calledOnceWithExactly('igcChange', { detail: 100 });
+    });
+
+    it('track fill and thumb should be positioned correctly according to the current value', async () => {
       slider.value = 23;
       await elementUpdated(slider);
 
-      expect(trackFill.style.width).to.eq('23%');
-      expect(thumb.style.insetInlineStart).to.eq('23%');
+      const { track, thumbs } = getDOM(slider);
+
+      expect(track.fill.style.width).to.eq('23%');
+      expect(thumbs.current.style.insetInlineStart).to.eq('23%');
     });
 
     it('thumb should have correct aria attributes set.', async () => {
-      const thumb = getThumb(slider);
-
       slider.value = 23;
       slider.setAttribute('aria-label', 'Price');
       slider.valueFormatOptions = { style: 'currency', currency: 'USD' };
       await elementUpdated(slider);
+
+      const {
+        thumbs: { current: thumb },
+      } = getDOM(slider);
 
       expect(slider.hasAttribute('aria-label')).to.be.true;
       expect(thumb.getAttribute('role')).to.eq('slider');
@@ -323,224 +316,236 @@ describe('Slider component', () => {
       slider.step = 0;
       await elementUpdated(slider);
 
-      slider.dispatchEvent(
-        new PointerEvent('pointerdown', {
-          clientX: x + width * 0.54321,
-          pointerId: 1,
-        })
-      );
+      simulatePointerDown(slider, { clientX: x + width * 0.54321 });
       await elementUpdated(slider);
 
       expect(slider.value).to.eq(54.321);
     });
 
     it('primary tick marks should be displayed when primaryTickMarks is greater than 0', async () => {
-      let ticks = getPrimaryTicks(slider);
-      expect(ticks.length).to.eq(0);
+      const { ticks } = getDOM(slider);
+
+      expect(ticks.primary).lengthOf(0);
 
       slider.primaryTicks = 3;
       await elementUpdated(slider);
-      ticks = getPrimaryTicks(slider);
-      expect(ticks.length).to.eq(3);
 
-      const sliderRect = slider.getBoundingClientRect();
-      for (let i = 0; i < ticks.length; i++) {
-        const tick = ticks[i];
+      expect(ticks.primary).lengthOf(3);
+
+      const { x: sliderX, width: sliderWidth } = slider.getBoundingClientRect();
+      const primary = ticks.primary;
+
+      for (const [i, tick] of primary.entries()) {
         const { x } = tick.getBoundingClientRect();
-        const expectedX =
-          sliderRect.x + (i * sliderRect.width) / (ticks.length - 1);
-        expect(absDiff(x, expectedX) <= 2).to.eq(
-          true,
-          `tick ${i}; actual: ${x}; expected: ${expectedX}`
+        const expected = sliderX + (i * sliderWidth) / (primary.length - 1);
+        expect(x).approximately(
+          expected,
+          2,
+          `tick ${i}: ${x}px not close to ${expected}px`
         );
       }
     });
 
     it('secondary tick marks should be displayed when secondaryTickMarks is greater than 0', async () => {
-      let secondaryTicks = getSecondaryTicks(slider);
-      expect(secondaryTicks.length).to.eq(0);
+      const { ticks } = getDOM(slider);
+
+      expect(ticks.secondary).lengthOf(0);
 
       slider.primaryTicks = 3;
       slider.secondaryTicks = 4;
       await elementUpdated(slider);
-      secondaryTicks = getSecondaryTicks(slider);
-      const allTicks = getAllTicks(slider);
-      expect(secondaryTicks.length).to.eq(8);
-      expect(allTicks.length).to.eq(11);
 
-      const sliderRect = slider.getBoundingClientRect();
-      for (let i = 0; i < allTicks.length; i++) {
-        const tick = allTicks[i];
+      expect(ticks.secondary).lengthOf(8);
+      expect(ticks.all).lengthOf(11);
+
+      const allTicks = ticks.all;
+      const { x: sliderX, width: sliderWidth } = slider.getBoundingClientRect();
+
+      for (const [i, tick] of allTicks.entries()) {
         const { x } = tick.getBoundingClientRect();
-        const expectedX =
-          sliderRect.x + (i * sliderRect.width) / (allTicks.length - 1);
-        expect(absDiff(x, expectedX) <= 3).to.eq(
-          true,
-          `tick ${i}; actual: ${x}; expected: ${expectedX}`
+        const expected = sliderX + (i * sliderWidth) / (allTicks.length - 1);
+
+        expect(x).approximately(
+          expected,
+          3,
+          `tick ${i}: ${x}px not close to ${expected}px`
         );
-        expect(tick.getAttribute('data-primary')).to.eq(
-          i % 5 === 0 ? 'true' : 'false'
-        );
+        expect(tick.dataset.primary).to.equal(i % 5 === 0 ? 'true' : 'false');
       }
     });
 
     it('primary tick mark labels should be displayed based on hidePrimaryLabels', async () => {
+      const { ticks } = getDOM(slider);
+
       slider.primaryTicks = 3;
       await elementUpdated(slider);
-      let ticks = getAllTicks(slider);
-      let tickLabels = getTickLabels(slider);
-      expect(ticks.length).to.eq(3);
-      expect(tickLabels.length).to.eq(3);
 
-      for (let i = 0; i < tickLabels.length; i++) {
-        const label = tickLabels[i];
-        expect(label.innerText).to.eq(`${(i / (tickLabels.length - 1)) * 100}`);
+      expect(ticks.all).lengthOf(3);
+      expect(ticks.labels).lengthOf(3);
+
+      const tickLabels = ticks.labels;
+
+      for (const [i, label] of tickLabels.entries()) {
+        expect(label.textContent?.trim()).to.equal(
+          `${asPercent(i, tickLabels.length - 1)}`
+        );
       }
 
       slider.hidePrimaryLabels = true;
       await elementUpdated(slider);
-      ticks = getAllTicks(slider);
-      tickLabels = getTickLabels(slider);
-      expect(ticks.length).to.eq(3);
-      expect(tickLabels.length).to.eq(0);
+
+      expect(ticks.all).lengthOf(3);
+      expect(ticks.labels).lengthOf(0);
     });
 
     it('secondary tick mark labels should be displayed based on hideSecondaryLabels', async () => {
+      const { ticks } = getDOM(slider);
+
       slider.primaryTicks = 3;
       slider.secondaryTicks = 4;
       await elementUpdated(slider);
-      let ticks = getAllTicks(slider);
-      let tickLabels = getTickLabels(slider);
-      expect(ticks.length).to.eq(11);
-      expect(tickLabels.length).to.eq(11);
 
-      for (let i = 0; i < tickLabels.length; i++) {
-        const label = tickLabels[i];
-        expect(label.innerText).to.eq(`${(i / (tickLabels.length - 1)) * 100}`);
+      expect(ticks.all).lengthOf(11);
+      expect(ticks.labels).lengthOf(11);
+
+      const tickLabels = ticks.labels;
+
+      for (const [i, label] of tickLabels.entries()) {
+        expect(label.textContent?.trim()).to.equal(
+          `${asPercent(i, tickLabels.length - 1)}`
+        );
       }
 
       slider.hideSecondaryLabels = true;
       await elementUpdated(slider);
-      ticks = getAllTicks(slider);
-      tickLabels = getTickLabels(slider);
-      expect(ticks.length).to.eq(11);
-      expect(tickLabels.length).to.eq(3);
+
+      expect(ticks.all).lengthOf(11);
+      expect(ticks.labels).lengthOf(3);
     });
 
     it('tick marks and their labels should be displayed correctly when tickOrientation is start, end or mirror', async () => {
+      const { ticks, track } = getDOM(slider);
+
       slider.primaryTicks = 3;
       slider.secondaryTicks = 4;
       await elementUpdated(slider);
-      let ticks = getAllTicks(slider);
-      let tickLabels = getTickLabels(slider);
-      expect(ticks.length).to.eq(11);
-      expect(tickLabels.length).to.eq(11);
+
+      expect(ticks.all).lengthOf(11);
+      expect(ticks.labels).lengthOf(11);
       expect(slider.tickOrientation).to.eq('end');
 
-      const trackRect = getTrack(slider).getBoundingClientRect();
-      for (let i = 0; i < ticks.length; i++) {
-        const tick = ticks[i];
-        expect(tick.getBoundingClientRect().y > trackRect.y).to.be.true;
+      const { y: trackTop } = track.element.getBoundingClientRect();
+
+      for (const tick of ticks.all) {
+        expect(tick.getBoundingClientRect().y).greaterThan(trackTop);
       }
 
       slider.tickOrientation = 'start';
       await elementUpdated(slider);
-      ticks = getAllTicks(slider);
-      tickLabels = getTickLabels(slider);
-      expect(ticks.length).to.eq(11);
-      expect(tickLabels.length).to.eq(11);
 
-      for (let i = 0; i < ticks.length; i++) {
-        const tick = ticks[i];
-        expect(tick.getBoundingClientRect().y < trackRect.y).to.be.true;
+      expect(ticks.all).lengthOf(11);
+      expect(ticks.labels).lengthOf(11);
+
+      for (const tick of ticks.all) {
+        expect(tick.getBoundingClientRect().y).lessThan(trackTop);
       }
 
       slider.tickOrientation = 'mirror';
       await elementUpdated(slider);
-      ticks = getAllTicks(slider);
-      tickLabels = getTickLabels(slider);
-      expect(ticks.length).to.eq(22);
-      expect(tickLabels.length).to.eq(22);
 
-      for (let i = 0; i < ticks.length; i++) {
-        const tick = ticks[i];
-        if (i < 11) {
-          expect(tick.getBoundingClientRect().y < trackRect.y).to.be.true;
-        } else {
-          expect(tick.getBoundingClientRect().y > trackRect.y).to.be.true;
-        }
+      expect(ticks.all).lengthOf(22);
+      expect(ticks.labels).lengthOf(22);
+
+      for (const [i, tick] of ticks.all.entries()) {
+        i < 11
+          ? expect(tick.getBoundingClientRect().y).lessThan(trackTop)
+          : expect(tick.getBoundingClientRect().y).greaterThan(trackTop);
       }
     });
 
     it('tick mark labels should be displayed correctly when tickLabelRotation is 0, 90 or -90', async () => {
+      const { ticks } = getDOM(slider);
+
       slider.primaryTicks = 3;
       slider.secondaryTicks = 4;
       await elementUpdated(slider);
-      const tickLabels = getTickLabelsInner(slider);
-      expect(tickLabels.length).to.eq(11);
+
+      expect(ticks.labelsInner).lengthOf(11);
       expect(slider.tickLabelRotation).to.eq(0);
 
-      for (let i = 0; i < tickLabels.length; i++) {
-        const label = tickLabels[i];
-        const style = getComputedStyle(label);
-        expect(style.marginInlineStart).to.eq('-50%');
-        expect(style.marginBlock).to.eq('0px');
-        expect(style.writingMode).to.eq('horizontal-tb');
-        expect(style.transform).to.eq('none');
-      }
+      ticks.labelsInner
+        .map((tick) => getComputedStyle(tick))
+        .forEach(({ marginInlineStart, marginBlock, writingMode, transform }) =>
+          expect([
+            marginInlineStart,
+            marginBlock,
+            writingMode,
+            transform,
+          ]).to.eql(['-50%', '0px', 'horizontal-tb', 'none'])
+        );
 
       slider.tickLabelRotation = 90;
       await elementUpdated(slider);
 
-      for (let i = 0; i < tickLabels.length; i++) {
-        const label = tickLabels[i];
-        const style = getComputedStyle(label);
-        expect(style.marginInlineStart).to.eq('0px');
-        expect(style.marginBlock).to.eq('-9px');
-        expect(style.writingMode).to.eq('vertical-rl');
-        expect(style.transform).to.eq('none');
-      }
+      ticks.labelsInner
+        .map((tick) => getComputedStyle(tick))
+        .forEach(({ marginInlineStart, marginBlock, writingMode, transform }) =>
+          expect([
+            marginInlineStart,
+            marginBlock,
+            writingMode,
+            transform,
+          ]).to.eql(['0px', '-9px', 'vertical-rl', 'none'])
+        );
 
       slider.tickLabelRotation = -90;
       await elementUpdated(slider);
 
-      for (let i = 0; i < tickLabels.length; i++) {
-        const label = tickLabels[i];
-        const style = getComputedStyle(label);
-        expect(style.marginInlineStart).to.eq('0px');
-        expect(style.marginBlock).to.eq('-9px');
-        expect(style.writingMode).to.eq('vertical-rl');
-        expect(style.transform).to.eq('matrix(-1, 0, 0, -1, 0, 0)');
-      }
+      ticks.labelsInner
+        .map((tick) => getComputedStyle(tick))
+        .forEach(({ marginInlineStart, marginBlock, writingMode, transform }) =>
+          expect([
+            marginInlineStart,
+            marginBlock,
+            writingMode,
+            transform,
+          ]).to.eql([
+            '0px',
+            '-9px',
+            'vertical-rl',
+            'matrix(-1, 0, 0, -1, 0, 0)',
+          ])
+        );
     });
 
     it('track should be continuos or discrete based on discreteTrack', async () => {
+      const { track } = getDOM(slider);
+
       slider.step = 10;
       await elementUpdated(slider);
 
-      let steps = getTrackSteps(slider);
-      expect(steps).to.be.null;
+      expect(track.steps).to.be.null;
 
       slider.discreteTrack = true;
       await elementUpdated(slider);
-      steps = getTrackSteps(slider);
-      expect(steps).not.to.be.null;
 
-      const line = steps.querySelector('line');
-      expect(line!.getAttribute('stroke-dasharray')).to.eq(
-        '0, calc(14.142135623730951%)'
-      );
+      expect(track.steps).not.to.be.null;
+      expect(
+        track.steps.querySelector('line')!.getAttribute('stroke-dasharray')
+      ).not.to.be.null;
     });
 
     it('UI interactions should not be possible when the slider is disabled', async () => {
-      const thumb = getThumb(slider);
-      expect(thumb.tabIndex).to.eq(0);
+      const { thumbs } = getDOM(slider);
+
+      expect(thumbs.current.tabIndex).to.eq(0);
       expect(getComputedStyle(slider).pointerEvents).to.eq('auto');
 
       slider.disabled = true;
       await elementUpdated(slider);
-      expect(thumb.tabIndex).to.eq(-1);
-      expect(thumb.ariaDisabled).to.eq('true');
+
+      expect(thumbs.current.tabIndex).to.eq(-1);
+      expect(thumbs.current.ariaDisabled).to.eq('true');
       expect(getComputedStyle(slider).pointerEvents).to.eq('none');
     });
 
@@ -551,16 +556,18 @@ describe('Slider component', () => {
       slider.valueFormat = 'P: {0}';
       slider.valueFormatOptions = { style: 'currency', currency: 'USD' };
       await elementUpdated(slider);
-      const tickLabels = getTickLabels(slider);
-      const thumbLabel = getThumbLabel(slider);
 
-      expect(tickLabels.length).to.eq(11);
-      expect(thumbLabel.innerText).to.eq('P: $23.00');
+      const {
+        ticks: { labels },
+        thumbs,
+      } = getDOM(slider);
 
-      for (let i = 0; i < tickLabels.length; i++) {
-        const label = tickLabels[i];
-        expect(label.innerText).to.eq(
-          `P: $${(i / (tickLabels.length - 1)) * 100}.00`
+      expect(labels).lengthOf(11);
+      expect(thumbs.label.textContent?.trim()).to.equal('P: $23.00');
+
+      for (const [i, label] of labels.entries()) {
+        expect(label.textContent?.trim()).to.equal(
+          `P: $${asPercent(i, labels.length - 1)}.00`
         );
       }
     });
@@ -574,51 +581,49 @@ describe('Slider component', () => {
       );
       await elementUpdated(slider);
 
-      const tickLabels = getTickLabels(slider);
-      const thumbLabel = getThumbLabel(slider);
-      const thumb = getThumb(slider);
+      const { ticks, thumbs } = getDOM(slider);
 
-      expect(tickLabels.length).to.eq(3);
-      expect(thumbLabel.innerText).to.eq(labels[0]);
-      expect(thumb.ariaValueText).to.eq(labels[0]);
+      expect(ticks.labels).lengthOf(3);
+      expect(thumbs.label.textContent?.trim()).to.equal(labels[0]);
+      expect(thumbs.current.ariaValueText).to.equal(labels[0]);
 
-      for (let i = 0; i < tickLabels.length; i++) {
-        const label = tickLabels[i];
-        expect(label.innerText).to.eq(labels[i]);
+      for (const [i, label] of ticks.labels.entries()) {
+        expect(label.textContent?.trim()).to.equal(labels[i]);
       }
 
       slider.value = 1;
       await elementUpdated(slider);
-      expect(thumbLabel.innerText).to.eq(labels[1]);
-      expect(thumb.ariaValueText).to.eq(labels[1]);
+
+      expect(thumbs.label.textContent?.trim()).to.equal(labels[1]);
+      expect(thumbs.current.ariaValueText).to.equal(labels[1]);
     });
 
     it('thumb tooltip should be displayed on hovering the thumb', async () => {
-      const thumb = getThumb(slider);
-      const thumbLabel = getThumbLabel(slider);
-      expect(thumbLabel.style.opacity).to.eq('0');
+      const { thumbs } = getDOM(slider);
 
-      thumb.dispatchEvent(new PointerEvent('pointerenter'));
+      expect(thumbs.label.style.opacity).to.eq('0');
+
+      thumbs.current.dispatchEvent(new PointerEvent('pointerenter'));
       await elementUpdated(slider);
-      expect(thumbLabel.style.opacity).to.eq('1');
+      expect(thumbs.label.style.opacity).to.eq('1');
 
-      thumb.dispatchEvent(new PointerEvent('pointerleave'));
+      thumbs.current.dispatchEvent(new PointerEvent('pointerleave'));
       await elementUpdated(slider);
       await aTimeout(800);
-      expect(thumbLabel.style.opacity).to.eq('0');
+      expect(thumbs.label.style.opacity).to.eq('0');
     });
 
     it('thumb tooltip should not be displayed when hideTooltip is set to true', async () => {
       slider.hideTooltip = true;
       await elementUpdated(slider);
 
-      const thumb = getThumb(slider);
-      const thumbLabel = getThumbLabel(slider);
-      expect(thumbLabel).to.be.null;
+      const { thumbs } = getDOM(slider);
 
-      thumb.dispatchEvent(new PointerEvent('pointerenter'));
+      expect(thumbs.label).to.be.null;
+
+      thumbs.current.dispatchEvent(new PointerEvent('pointerenter'));
       await elementUpdated(slider);
-      expect(thumbLabel).to.be.null;
+      expect(thumbs.label).to.be.null;
     });
 
     it('value should be increased or decreased with 1 step when pressing right/top or down/left arrow keys', async () => {
@@ -656,6 +661,58 @@ describe('Slider component', () => {
       expect(eventSpy).calledWith('igcChange', { detail: 50 });
     });
 
+    it('fractional step', async () => {
+      const eventSpy = spy(slider, 'emitEvent');
+
+      const step = 0.25;
+      const lower = 50 - step;
+      const higher = 50 + step;
+
+      slider.step = step;
+      slider.value = 50;
+      await elementUpdated(slider);
+
+      simulateKeyboard(slider, arrowLeft);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.equal(lower);
+      expect(eventSpy).calledWith('igcInput', { detail: lower });
+      expect(eventSpy).calledWith('igcChange', { detail: lower });
+
+      eventSpy.resetHistory();
+      slider.value = 50;
+
+      simulateKeyboard(slider, arrowRight);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.equal(higher);
+      expect(eventSpy).calledWith('igcInput', { detail: higher });
+      expect(eventSpy).calledWith('igcChange', { detail: higher });
+    });
+
+    it('if step is set to 0 it should default to 1 for keyboard selection', async () => {
+      const eventSpy = spy(slider, 'emitEvent');
+
+      const value = Math.PI;
+      slider.step = 0;
+      slider.value = value;
+
+      simulateKeyboard(slider, arrowLeft);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.equal(value - 1);
+      expect(eventSpy).calledWith('igcInput', { detail: value - 1 });
+      expect(eventSpy).calledWith('igcChange', { detail: value - 1 });
+
+      eventSpy.resetHistory();
+      slider.value = value;
+
+      simulateKeyboard(slider, arrowRight);
+      expect(slider.value).to.equal(value + 1);
+      expect(eventSpy).calledWith('igcInput', { detail: value + 1 });
+      expect(eventSpy).calledWith('igcChange', { detail: value + 1 });
+    });
+
     it('value should be increased/decreased with 1/10th of the slider range when pressing page up/down keys', async () => {
       slider.step = 2;
       slider.value = 50;
@@ -671,23 +728,37 @@ describe('Slider component', () => {
     });
 
     it('value should be set to minimum when pressing home key', async () => {
+      const eventSpy = spy(slider, 'emitEvent');
+
       slider.min = 10;
       slider.value = 50;
       await elementUpdated(slider);
 
-      simulateKeyboard(slider, homeKey);
+      // Simulate 2 presses
+      simulateKeyboard(slider, homeKey, 2);
       await elementUpdated(slider);
+
       expect(slider.value).to.eq(10);
+
+      // Only one igcInput and one igcChange events should be fired
+      expect(eventSpy.callCount).to.equal(2);
     });
 
     it('value should be set to maximum when pressing end key', async () => {
+      const eventSpy = spy(slider, 'emitEvent');
+
       slider.max = 90;
       slider.value = 50;
       await elementUpdated(slider);
 
-      simulateKeyboard(slider, endKey);
+      // Simulate 2 presses
+      simulateKeyboard(slider, endKey, 2);
       await elementUpdated(slider);
+
       expect(slider.value).to.eq(90);
+
+      // Only one igcInput and one igcChange events should be fired
+      expect(eventSpy.callCount).to.equal(2);
     });
   });
 
@@ -850,12 +921,7 @@ describe('Slider component', () => {
       const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
 
-      slider.dispatchEvent(
-        new PointerEvent('pointerdown', {
-          clientX: x + width * 0.5,
-          pointerId: 1,
-        })
-      );
+      simulatePointerDown(slider, { clientX: x + width * 0.5 });
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(50);
@@ -864,12 +930,7 @@ describe('Slider component', () => {
       });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(
-        new PointerEvent('pointermove', {
-          clientX: x + width * 0.7,
-          pointerId: 1,
-        })
-      );
+      simulatePointerMove(slider, { clientX: x + width * 0.7 });
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(70);
@@ -878,9 +939,7 @@ describe('Slider component', () => {
       });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(
-        new PointerEvent('lostpointercapture', { pointerId: 1 })
-      );
+      simulateLostPointerCapture(slider);
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(70);
@@ -889,12 +948,7 @@ describe('Slider component', () => {
       });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(
-        new PointerEvent('pointerdown', {
-          clientX: x + width * 0.2,
-          pointerId: 1,
-        })
-      );
+      simulatePointerDown(slider, { clientX: x + width * 0.2 });
       await elementUpdated(slider);
 
       expect(slider.lower).to.eq(20);
@@ -904,12 +958,7 @@ describe('Slider component', () => {
       });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(
-        new PointerEvent('pointermove', {
-          clientX: x + width * 0.4,
-          pointerId: 1,
-        })
-      );
+      simulatePointerMove(slider, { clientX: x + width * 0.4 });
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(70);
@@ -919,9 +968,7 @@ describe('Slider component', () => {
       });
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(
-        new PointerEvent('lostpointercapture', { pointerId: 1 })
-      );
+      simulateLostPointerCapture(slider);
       await elementUpdated(slider);
 
       expect(slider.upper).to.eq(70);
@@ -934,19 +981,13 @@ describe('Slider component', () => {
     it('when the lower thumb is dragged beyond the upper thumb, the upper thumb should be focused and its dragging should continue.', async () => {
       const eventSpy = spy(slider, 'emitEvent');
       const { x, width } = slider.getBoundingClientRect();
-      const lowerThumb = getLowerThumb(slider);
-      const upperThumb = getUpperThumb(slider);
+      const { thumbs } = getDOM(slider);
 
       slider.lower = 20;
       slider.upper = 50;
       await elementUpdated(slider);
 
-      slider.dispatchEvent(
-        new PointerEvent('pointerdown', {
-          clientX: x + width * 0.25,
-          pointerId: 1,
-        })
-      );
+      simulatePointerDown(slider, { clientX: x + width * 0.25 });
       await elementUpdated(slider);
 
       expect(slider.lower).to.eq(25);
@@ -955,15 +996,10 @@ describe('Slider component', () => {
         detail: { lower: 25, upper: 50 },
       });
       expect(slider).to.eq(document.activeElement);
-      expect(lowerThumb).to.eq(slider.shadowRoot?.activeElement);
+      expect(thumbs.lower).to.eq(slider.shadowRoot?.activeElement);
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(
-        new PointerEvent('pointermove', {
-          clientX: x + width * 0.7,
-          pointerId: 1,
-        })
-      );
+      simulatePointerMove(slider, { clientX: x + width * 0.7 });
       await elementUpdated(slider);
 
       expect(slider.lower).to.eq(50);
@@ -972,12 +1008,10 @@ describe('Slider component', () => {
         detail: { lower: 50, upper: 70 },
       });
       expect(slider).to.eq(document.activeElement);
-      expect(upperThumb).to.eq(slider.shadowRoot?.activeElement);
+      expect(thumbs.upper).to.eq(slider.shadowRoot?.activeElement);
 
       eventSpy.resetHistory();
-      slider.dispatchEvent(
-        new PointerEvent('lostpointercapture', { pointerId: 1 })
-      );
+      simulateLostPointerCapture(slider);
       await elementUpdated(slider);
 
       expect(slider.lower).to.eq(50);
@@ -988,23 +1022,21 @@ describe('Slider component', () => {
     });
 
     it('track fill and thumbs should be positioned correctly according to the current values', async () => {
-      const trackFill = getTrackFill(slider);
-      const lowerThumb = getLowerThumb(slider);
-      const upperThumb = getUpperThumb(slider);
+      const { track, thumbs } = getDOM(slider);
 
       slider.lower = 20;
       slider.upper = 70;
       await elementUpdated(slider);
 
-      expect(trackFill.style.width).to.eq('50%');
-      expect(trackFill.style.insetInlineStart).to.eq('20%');
-      expect(lowerThumb.style.insetInlineStart).to.eq('20%');
-      expect(upperThumb.style.insetInlineStart).to.eq('70%');
+      expect(track.fill.style.width).to.eq('50%');
+      expect(track.fill.style.insetInlineStart).to.eq('20%');
+      expect(thumbs.lower.style.insetInlineStart).to.eq('20%');
+      expect(thumbs.upper.style.insetInlineStart).to.eq('70%');
     });
 
     it('thumbs should have correct aria attributes set.', async () => {
-      const lowerThumb = getLowerThumb(slider);
-      const upperThumb = getUpperThumb(slider);
+      const { thumbs } = getDOM(slider);
+
       slider.lower = 20;
       slider.upper = 70;
       slider.ariaLabelLower = 'Price From';
@@ -1012,23 +1044,65 @@ describe('Slider component', () => {
       slider.valueFormatOptions = { style: 'currency', currency: 'USD' };
       await elementUpdated(slider);
 
-      expect(lowerThumb.getAttribute('role')).to.eq('slider');
-      expect(lowerThumb.ariaValueMin).to.eq('0');
-      expect(lowerThumb.ariaValueMax).to.eq('100');
-      expect(lowerThumb.ariaValueNow).to.eq('20');
-      expect(lowerThumb.ariaValueText).to.eq('$20.00');
-      expect(lowerThumb.ariaDisabled).to.eq('false');
-      expect(lowerThumb.ariaLabel).to.eq('Price From');
+      expect(thumbs.lower.getAttribute('role')).to.eq('slider');
+      expect(thumbs.lower.ariaValueMin).to.eq('0');
+      expect(thumbs.lower.ariaValueMax).to.eq('100');
+      expect(thumbs.lower.ariaValueNow).to.eq('20');
+      expect(thumbs.lower.ariaValueText).to.eq('$20.00');
+      expect(thumbs.lower.ariaDisabled).to.eq('false');
+      expect(thumbs.lower.ariaLabel).to.eq('Price From');
 
-      expect(upperThumb.getAttribute('role')).to.eq('slider');
-      expect(upperThumb.ariaValueMin).to.eq('0');
-      expect(upperThumb.ariaValueMax).to.eq('100');
-      expect(upperThumb.ariaValueNow).to.eq('70');
-      expect(upperThumb.ariaValueText).to.eq('$70.00');
-      expect(upperThumb.ariaDisabled).to.eq('false');
-      expect(upperThumb.ariaLabel).to.eq('Price To');
+      expect(thumbs.upper.getAttribute('role')).to.eq('slider');
+      expect(thumbs.upper.ariaValueMin).to.eq('0');
+      expect(thumbs.upper.ariaValueMax).to.eq('100');
+      expect(thumbs.upper.ariaValueNow).to.eq('70');
+      expect(thumbs.upper.ariaValueText).to.eq('$70.00');
+      expect(thumbs.upper.ariaDisabled).to.eq('false');
+      expect(thumbs.upper.ariaLabel).to.eq('Price To');
 
       await expect(slider).to.be.accessible();
+    });
+  });
+
+  describe('Initial rendering race condition', () => {
+    let slider: IgcSliderComponent;
+
+    before(() => defineComponents(IgcSliderComponent));
+
+    beforeEach(async () => {
+      slider = await fixture<IgcSliderComponent>(
+        html`<igc-slider
+          lower-bound="-100"
+          upper-bound="100"
+          value="33"
+          min="-200"
+          max="200"
+        ></igc-slider>`
+      );
+    });
+
+    it('is correctly initialized', async () => {
+      /**
+       * This tests for an issue where setting the lower/upper-bound attributes
+       * before the min/max ones, would incorrectly reset the *-bound attributes based
+       * on the min/max values.
+       */
+
+      expect(slider.value).to.equal(33);
+      expect(slider.max).to.equal(200);
+      expect(slider.min).to.equal(-200);
+      expect(slider.lowerBound).to.equal(-100);
+      expect(slider.upperBound).to.equal(100);
+
+      simulateKeyboard(slider, homeKey);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.equal(-100);
+
+      simulateKeyboard(slider, endKey);
+      await elementUpdated(slider);
+
+      expect(slider.value).to.equal(100);
     });
   });
 
@@ -1079,3 +1153,74 @@ describe('Slider component', () => {
     });
   });
 });
+
+/** Returns Shadow DOM parts of the slider component */
+function getDOM<T = HTMLElement>(slider: IgcSliderBaseComponent) {
+  const root = slider.shadowRoot!;
+
+  return {
+    /** Track element parts */
+    track: {
+      /** The track element itself */
+      get element() {
+        return root.querySelector(`[part='track']`) as T;
+      },
+      /** Track element fill part */
+      get fill() {
+        return root.querySelector(`[part='fill']`) as T;
+      },
+      /** Track element steps part */
+      get steps() {
+        return root.querySelector(`[part='steps']`) as T;
+      },
+    },
+    /** Slider's thumb(s) */
+    thumbs: {
+      /** The thumb element. */
+      get current() {
+        return root.querySelector(`[part='thumb']`) as T;
+      },
+      /** The lower thumb (range-slider) */
+      get lower() {
+        return root.getElementById('thumbFrom') as T;
+      },
+      /** The upper thumb (range-slider) */
+      get upper() {
+        return root.getElementById('thumbTo') as T;
+      },
+      /** The label of the current thumb */
+      get label() {
+        return root.querySelector(`[part='thumb-label']`) as T;
+      },
+    },
+    /** Slider ticks */
+    ticks: {
+      /** All tick parts */
+      get all() {
+        return Array.from(root.querySelectorAll(`[part='tick']`)) as T[];
+      },
+      /** Primary tick parts */
+      get primary() {
+        return Array.from(
+          root.querySelectorAll(`[part='tick'][data-primary='true']`)
+        ) as T[];
+      },
+      /** Secondary tick parts */
+      get secondary() {
+        return Array.from(
+          root.querySelectorAll(`[part='tick'][data-primary='false']`)
+        ) as T[];
+      },
+      /** Tick labels */
+      get labels() {
+        return Array.from(root.querySelectorAll(`[part='tick-label']`)) as T[];
+      },
+      /** Tick labels inner part */
+      get labelsInner() {
+        return Array.from(
+          root.querySelectorAll(`[part='tick-label-inner']`)
+        ) as T[];
+      },
+    },
+  };
+}

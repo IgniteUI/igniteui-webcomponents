@@ -83,6 +83,65 @@ export class FormAssociatedTestBed<
   }
 }
 
+export function simulatePointerDown(
+  node: Element,
+  options?: PointerEventInit,
+  times = 1
+) {
+  for (let i = 0; i < times; i++) {
+    node.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        composed: true,
+        pointerId: 1,
+        ...options,
+      })
+    );
+  }
+}
+
+export function simulateLostPointerCapture(
+  node: Element,
+  options?: PointerEventInit
+) {
+  node.dispatchEvent(
+    new PointerEvent('lostpointercapture', {
+      composed: true,
+      bubbles: true,
+      pointerId: 1,
+      ...options,
+    })
+  );
+}
+
+type PointerEventIncrement = {
+  x?: number;
+  y?: number;
+};
+
+export function simulatePointerMove(
+  node: Element,
+  options?: PointerEventInit,
+  increment?: PointerEventIncrement,
+  times = 1
+) {
+  const { x = 0, y = 0 } = increment ?? {};
+  const { clientX = 0, clientY = 0 } = options ?? {};
+
+  for (let i = 0; i < times; i++) {
+    node.dispatchEvent(
+      new PointerEvent('pointermove', {
+        bubbles: true,
+        composed: true,
+        pointerId: 1,
+        ...options,
+        clientX: clientX + i * x,
+        clientY: clientY + i * y,
+      })
+    );
+  }
+}
+
 export function simulateClick(node: Element, times = 1) {
   for (let i = 0; i < times; i++) {
     node.dispatchEvent(
