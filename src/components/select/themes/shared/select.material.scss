@@ -156,14 +156,14 @@ $active-border-width: rem(2px) !default;
 
 
 [part='helper-text'] {
-    color: var-get($input-theme, 'helper-text-color');
+    color: $material-helper-text;
     margin-top: rem(5px);
     padding-inline: pad-inline(rem(14px), rem(16px), rem(18px));
 }
 
 :host([invalid]) {
     [part='helper-text'] {
-        color: var-get($input-theme, 'error-secondary-color');
+        color: $material-error-text;
     }
 }
 
@@ -183,7 +183,7 @@ $active-border-width: rem(2px) !default;
     }
 
     [part='helper-text'] {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: $material-disabled-text;
     }
 }
 

@@ -13,7 +13,7 @@ $input-theme: input-theme.$indigo;
     --dropdown-size: var(--component-size);
 
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'helper-text-color');
+        color: $indigo-helper-text;
     }
 
     igc-input::part(input) {
@@ -70,24 +70,24 @@ $input-theme: input-theme.$indigo;
 
 :host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'error-secondary-color');
+        color: $indigo-error-text;
     }
 }
 
 :host([invalid]:focus-within) {
     igc-input::part(label) {
-        color: var-get($input-theme, 'error-secondary-color');
+        color: $indigo-error-text;
     }
 }
 
 :host(:disabled),
 :host([disabled]) {
     igc-input::part(input) {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: $indigo-disabled-text;
     }
 
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: $indigo-disabled-text;
     }
 
     [part~='toggle-icon'] {

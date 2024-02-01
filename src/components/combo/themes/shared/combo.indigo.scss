@@ -21,7 +21,7 @@ $dropdown-theme: dropdown-theme.$indigo;
     }
 
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'helper-text-color');
+        color: $indigo-helper-text;
     }
 }
 
@@ -101,7 +101,7 @@ $dropdown-theme: dropdown-theme.$indigo;
 
 :host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'error-secondary-color');
+        color: $indigo-error-text;
     }
 }
 
@@ -110,7 +110,7 @@ $dropdown-theme: dropdown-theme.$indigo;
     ::slotted([slot='prefix']),
     ::slotted([slot='suffix']),
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: $indigo-disabled-text;
     }
 
     igc-input::part(input)::selection {
@@ -119,7 +119,7 @@ $dropdown-theme: dropdown-theme.$indigo;
 
     [part~='clear-icon'] {
         background: inherit;
-        color: var-get($input-theme, 'disabled-text-color');
+        color: $indigo-disabled-text;
 
         igc-icon {
             color: inherit;

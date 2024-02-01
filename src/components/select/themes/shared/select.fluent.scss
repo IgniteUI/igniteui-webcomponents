@@ -24,7 +24,7 @@ $focused-border-width: rem(2px);
     margin-top: rem(5px);
 
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'helper-text-color');
+        color: $fluent-helper-text;
     }
 }
 
@@ -67,10 +67,16 @@ $focused-border-width: rem(2px);
     }
 }
 
+:host([invalid]) {
+    ::slotted([slot='helper-text']) {
+        color: $fluent-error-text;
+    }
+}
+
 :host(:disabled),
 :host([disabled]) {
     [part='helper-text'] ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: $fluent-disabled-text;
     }
 
     [part~='toggle-icon'] {

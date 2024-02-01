@@ -17,7 +17,7 @@ $input-theme: input-theme.$bootstrap;
     ::slotted([slot='helper-text']) {
         @include type-style('body-2');
 
-        color: var-get($input-theme, 'helper-text-color');
+        color: $bootstrap-helper-text;
     }
 }
 
@@ -63,14 +63,14 @@ $input-theme: input-theme.$bootstrap;
 
 :host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'error-secondary-color');
+        color: $bootstrap-error-text;
     }
 }
 
 :host([disabled]),
 :host(:disabled) {
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: $bootstrap-disabled-text;
     }
 
     [part~='toggle-icon'] {

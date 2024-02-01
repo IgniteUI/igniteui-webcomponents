@@ -19,7 +19,7 @@ $dropdown-theme: dropdown-theme.$material;
     ::slotted([slot='helper-text']) {
         @include type-style('caption');
 
-        color: var-get($input-theme, 'helper-text-color');
+        color: $material-helper-text;
         line-height: 1;
     }
 
@@ -122,7 +122,7 @@ $dropdown-theme: dropdown-theme.$material;
 
 :host([invalid]) {
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'error-secondary-color');
+        color: $material-error-text;
     }
 }
 
@@ -133,12 +133,12 @@ $dropdown-theme: dropdown-theme.$material;
     igc-input::part(label),
     igc-input::part(input)::placeholder,
     ::slotted([slot='helper-text']) {
-        color: var-get($input-theme, 'disabled-text-color');
+        color: $material-disabled-text;
     }
 
     [part~='clear-icon'] {
         background: inherit;
-        color: var-get($input-theme, 'disabled-text-color');
+        color: $material-disabled-text;
 
         igc-icon {
             color: inherit;

@@ -1,15 +1,12 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'components/dropdown/themes/light/themes' as dropdown;
-@use '../../../input/themes/light/themes' as input-theme;
 @use 'themes' as *;
 
 $theme: $material;
 $dropdown: map.remove(dropdown.$material, 'default-size');
-$input-theme: input-theme.$material;
 
 :host {
     @include css-vars-from-theme($theme, 'ig-combo');
     @include css-vars-from-theme($dropdown, 'ig-combo-list');
-    @include css-vars-from-theme($input-theme, 'ig-input');
 }

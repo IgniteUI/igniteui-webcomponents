@@ -1,7 +1,20 @@
 @use 'sass:map';
 @use 'styles/utilities' as *;
 @use 'igniteui-theming/sass/themes/schemas/components/light/select' as *;
+@use '../../../input/themes/light/themes' as input-theme;
 
+$material-helper-text: map.get(input-theme.$material, 'helper-text-color');
+$material-disabled-text: map.get(input-theme.$material, 'disabled-text-color');
+$material-error-text: map.get(input-theme.$material, 'error-secondary-color');
+$fluent-helper-text: map.get(input-theme.$fluent, 'helper-text-color');
+$fluent-disabled-text: map.get(input-theme.$fluent, 'disabled-text-color');
+$fluent-error-text: map.get(input-theme.$fluent, 'error-secondary-color');
+$bootstrap-helper-text: map.get(input-theme.$bootstrap, 'helper-text-color');
+$bootstrap-disabled-text: map.get(input-theme.$bootstrap, 'disabled-text-color');
+$bootstrap-error-text: map.get(input-theme.$bootstrap, 'error-secondary-color');
+$indigo-helper-text: map.get(input-theme.$indigo, 'helper-text-color');
+$indigo-disabled-text: map.get(input-theme.$indigo, 'disabled-text-color');
+$indigo-error-text: map.get(input-theme.$indigo, 'error-secondary-color');
 $material: digest-schema($light-select);
 $bootstrap: digest-schema($bootstrap-select);
 $fluent: digest-schema($fluent-select);
