@@ -1,5 +1,5 @@
-import { html } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { html, nothing } from 'lit';
+import { property, query, state } from 'lit/decorators.js';
 
 import { themes } from '../../../theming/theming-decorator.js';
 import { blazorIndirectRender } from '../../common/decorators/blazorIndirectRender.js';
@@ -14,6 +14,7 @@ import { Constructor } from '../../common/mixins/constructor.js';
 import { EventEmitterMixin } from '../../common/mixins/event-emitter.js';
 import { partNameMap } from '../../common/util.js';
 import {
+  BaseCalendarModel,
   IgcCalendarBaseComponent,
   IgcCalendarBaseEventMap,
 } from '../common/calendar-base.js';
@@ -23,6 +24,15 @@ import {
   TimeDeltaInterval,
   isDateInRanges,
 } from '../common/calendar.model.js';
+import {
+  CalendarDay,
+  isDateInRanges as _isDateInRanges,
+  chunk,
+  daysInWeek,
+  generateFullMonth,
+  isToday,
+} from '../common/day.js';
+import { createDateTimeFormatters } from '../common/intl-formatters.js';
 import { areEqualDates, getDateOnly, isEqual } from '../common/utils.js';
 import { styles } from '../themes/days-view.base.css.js';
 import { all } from '../themes/days.js';
@@ -30,6 +40,363 @@ import { all } from '../themes/days.js';
 export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
   igcActiveDateChange: CustomEvent<ICalendarDate>;
   igcRangePreviewDateChange: CustomEvent<Date>;
+}
+
+function isPreviousMonth(day: CalendarDay, anchor: CalendarDay) {
+  return day.year === anchor.year
+    ? day.month < anchor.month
+    : day.year < anchor.year;
+}
+
+function isNextMonth(day: CalendarDay, anchor: CalendarDay) {
+  return day.year === anchor.year
+    ? day.month > anchor.month
+    : day.year > anchor.year;
+}
+
+// function isSameMonth(day: CalendarDay, anchor: CalendarDay) {
+//   return day.year === anchor.year && day.month === anchor.month;
+// }
+
+/**
+ * Instantiate a days view as a separate component in the calendar.
+ *
+ * @element igc-days-view
+ *
+ * @fires igcActiveDateChange - Emitted when the active date changes.
+ * @fires igcRangePreviewDateChange - Emitted when the range preview date changes.
+ *
+ * @csspart days-row - The days row container.
+ * @csspart label - The label container.
+ * @csspart label-inner - The inner label container.
+ * @csspart week-number - The week number container.
+ * @csspart week-number-inner - The inner week number container.
+ */
+@themes(all)
+export default class IgcDaysViewComponent extends EventEmitterMixin<
+  IgcDaysViewEventMap,
+  Constructor<BaseCalendarModel>
+>(BaseCalendarModel) {
+  public static readonly tagName = 'igc-days-view';
+  public static styles = styles;
+
+  public static register() {
+    registerComponent(this);
+  }
+
+  private _days!: CalendarDay[];
+
+  private get _hasValues() {
+    return this._values.length > 0;
+  }
+
+  @query(`[tabindex='0']`)
+  private _activeDay!: HTMLElement;
+
+  @state()
+  protected _rangePreviewDay?: CalendarDay;
+
+  public get rangePreviewDate() {
+    return this._rangePreviewDay?.native;
+  }
+
+  @property({ attribute: false })
+  public set rangePreviewDate(value) {
+    this._rangePreviewDay = value ? CalendarDay.from(value) : undefined;
+  }
+
+  @property({ attribute: 'week-day-format' })
+  public weekDayFormat: 'long' | 'short' | 'narrow' = 'narrow';
+
+  /** Controls the visibility of the leading dates that do not belong to the current month. */
+  @property({ type: Boolean, attribute: 'hide-leading-days' })
+  public hideLeadingDays = false;
+
+  /** Controls the visibility of the trailing dates that do not belong to the current month. */
+  @property({ type: Boolean, attribute: 'hide-trailing-days' })
+  public hideTrailingDays = false;
+
+  private __formatters = createDateTimeFormatters(this.locale, {
+    weekday: { weekday: this.weekDayFormat },
+    label: {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    },
+    ariaWeekday: { weekday: 'long' },
+  });
+
+  /** The resource strings. */
+  @property({ attribute: false })
+  public resourceStrings: IgcCalendarResourceStrings =
+    IgcCalendarResourceStringEN;
+
+  @watch('weekStart')
+  @watch('activeDate')
+  protected refreshMonth() {
+    this._days = Array.from(
+      generateFullMonth(this._activeDate, this._firstDayOfWeek)
+    );
+  }
+
+  @watch('locale')
+  protected localeChanged() {
+    this.__formatters.locale = this.locale;
+  }
+
+  @watch('weekDayFormat')
+  protected weekDayFormatChange() {
+    this.__formatters.update({ weekday: { weekday: this.weekDayFormat } });
+  }
+
+  public focusActiveDate() {
+    this._activeDay.focus();
+  }
+
+  public override connectedCallback() {
+    super.connectedCallback();
+    this.setAttribute('role', 'grid');
+  }
+
+  private selectionIs(value: 'single' | 'multiple' | 'range') {
+    return this.selection === value;
+  }
+
+  protected isDisabled(day: CalendarDay) {
+    return this.disabledDates?.length
+      ? _isDateInRanges(day, this.disabledDates)
+      : false;
+  }
+
+  protected isSpecial(day: CalendarDay) {
+    return this.specialDates?.length
+      ? _isDateInRanges(day, this.specialDates)
+      : false;
+  }
+
+  protected isSelected(day: CalendarDay) {
+    if (this.selectionIs('single')) {
+      return this._value ? this._value.equalTo(day) : false;
+    }
+
+    if (this.selectionIs('multiple')) {
+      return this._hasValues ? this._values.some((v) => v.equalTo(day)) : false;
+    }
+
+    return false;
+  }
+
+  protected isRangeDate(day: CalendarDay) {
+    if (!this._hasValues) return false;
+    const singleRange = this._values.length === 1;
+
+    if (singleRange && !this._rangePreviewDay) {
+      return false;
+    }
+
+    const min = this._values[0];
+    const max = singleRange ? this._rangePreviewDay! : this._values.at(-1)!;
+
+    return _isDateInRanges(day, [
+      {
+        type: DateRangeType.Between,
+        dateRange: [min.native, max.native],
+      },
+    ]);
+  }
+
+  protected isRangePreview(day: CalendarDay) {
+    if (
+      !(this.selectionIs('range') && this._hasValues && this._rangePreviewDay)
+    ) {
+      return false;
+    }
+    return _isDateInRanges(day, [
+      {
+        type: DateRangeType.Between,
+        dateRange: [this._values[0].native, this._rangePreviewDay.native],
+      },
+    ]);
+  }
+
+  protected resolveDayProps(day: CalendarDay) {
+    const inactive = day.month !== this._activeDate.month;
+    const hidden =
+      (this.hideLeadingDays && isPreviousMonth(day, this._activeDate)) ||
+      (this.hideTrailingDays && isNextMonth(day, this._activeDate));
+    const current = isToday(day);
+    const disabled = this.isDisabled(day);
+    const selected = !disabled && this.isSelected(day);
+    const weekend = day.isWeekend;
+    const special = this.isSpecial(day);
+    const single = this.selection !== 'range';
+    const first = this.isFirstInRange(day);
+    const last = this.isLastInRange(day);
+    const range = this.selectionIs('range') && this.isRangeDate(day);
+    const preview = this.isRangePreview(day);
+
+    return {
+      current,
+      date: true,
+      disabled: hidden || disabled,
+      first,
+      last,
+      range,
+      hidden,
+      inactive,
+      preview,
+      selected,
+      single,
+      special,
+      weekend,
+    };
+  }
+
+  protected renderHeaders() {
+    const labels = this.__formatters.getFormatter('weekday');
+    const ariaLabels = this.__formatters.getFormatter('ariaWeekday');
+
+    const headers = this._days.slice(0, daysInWeek).map(
+      ({ native }) => html`
+        <span
+          role="columnheader"
+          part="label"
+          aria-label=${ariaLabels.format(native)}
+        >
+          <span part="label-inner">${labels.format(native)}</span>
+        </span>
+      `
+    );
+
+    return html`
+      <div role="row" part="days-row first">
+        ${this.showWeekNumbers ? this.renderWeekHeader() : nothing}${headers}
+      </div>
+    `;
+  }
+
+  protected renderWeekHeader() {
+    return html`
+      <span role="columnheader" part="label week-number first">
+        <span part="week-number-inner first">
+          ${this.resourceStrings.weekLabel}
+        </span>
+      </span>
+    `;
+  }
+
+  protected renderWeekNumber(week: CalendarDay[]) {
+    return html`<span role="rowheader" part="week-number">
+      <span part="week-number-inner">${week[0].week}</span>
+    </span>`;
+  }
+
+  protected *renderWeeks() {
+    for (const week of chunk(this._days, daysInWeek)) {
+      yield html`<div role="row" part="days-row">
+        ${this.showWeekNumbers ? this.renderWeekNumber(week) : nothing}
+        ${week.map((day) => this.renderDay(day))}
+      </div>`;
+    }
+  }
+
+  protected isFirstInRange(day: CalendarDay) {
+    if (this.selectionIs('single') || !this._hasValues) {
+      return false;
+    }
+
+    const first = this._values[0];
+    const preview = this._rangePreviewDay;
+
+    return preview && preview.lessThan(first)
+      ? preview.equalTo(day)
+      : first.equalTo(day);
+  }
+
+  protected isLastInRange(day: CalendarDay) {
+    if (this.selectionIs('single') || !this._hasValues) {
+      return false;
+    }
+
+    const last = this._values.at(-1)!;
+    const preview = this._rangePreviewDay;
+
+    return preview && preview.greaterThan(day)
+      ? preview.equalTo(day)
+      : last.equalTo(day);
+  }
+
+  protected dayLabelFormatter(day: CalendarDay) {
+    const formatter = this.__formatters.getFormatter('label');
+
+    // Range selection active
+    if (this._rangePreviewDay && this._rangePreviewDay.equalTo(day)) {
+      return formatter.formatRange(
+        this._values[0].native,
+        this._rangePreviewDay.native
+      );
+    }
+
+    // Range selection finished
+    if (this.isFirstInRange(day) || this.isLastInRange(day)) {
+      return formatter.formatRange(this.values.at(0)!, this.values.at(-1)!);
+    }
+
+    // Default
+    return formatter.format(day.native);
+  }
+
+  protected setRangePreviewDay(day?: CalendarDay) {
+    this._rangePreviewDay = day;
+    this.emitEvent('igcRangePreviewDateChange', {
+      detail: day ? day.native : undefined,
+    });
+  }
+
+  protected changeRangePreview(day: CalendarDay) {
+    if (this._hasValues && !this._values[0].equalTo(day)) {
+      this.setRangePreviewDay(day);
+    }
+  }
+
+  protected clearRangePreview() {
+    if (this._rangePreviewDay) {
+      this.setRangePreviewDay(undefined);
+    }
+  }
+
+  protected renderDay(day: CalendarDay) {
+    const props = this.resolveDayProps(day);
+
+    const parts = partNameMap(props);
+    const partsInner = parts.replace('date', 'date-inner');
+    const ariaLabel = this.dayLabelFormatter(day);
+    const rangeSelection = this.selectionIs('range');
+    const tabindex = day.equalTo(this._activeDate) ? 0 : -1;
+
+    return html`<span part=${parts}>
+      <span
+        role="gridcell"
+        part=${partsInner}
+        aria-label=${ariaLabel}
+        aria-selected=${props.selected}
+        aria-disabled=${props.disabled}
+        tabindex=${tabindex}
+        @focus=${rangeSelection ? () => this.changeRangePreview(day) : nothing}
+        @blur=${rangeSelection ? this.clearRangePreview : nothing}
+        @mouseenter=${rangeSelection
+          ? () => this.changeRangePreview(day)
+          : nothing}
+        @mouseleave=${rangeSelection ? this.clearRangePreview : nothing}
+        >${day.date}</span
+      >
+    </span>`;
+  }
+
+  protected override render() {
+    return html`${this.renderHeaders()}${this.renderWeeks()}`;
+  }
 }
 
 /**
@@ -49,7 +416,7 @@ export interface IgcDaysViewEventMap extends IgcCalendarBaseEventMap {
 @blazorSuppressComponent
 @blazorIndirectRender
 @themes(all)
-export default class IgcDaysViewComponent extends EventEmitterMixin<
+export class IgccDaysViewComponent extends EventEmitterMixin<
   IgcDaysViewEventMap,
   Constructor<IgcCalendarBaseComponent>
 >(IgcCalendarBaseComponent) {
@@ -61,8 +428,10 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     registerComponent(this);
   }
 
-  private labelFormatter!: Intl.DateTimeFormat;
-  private formatterWeekday!: Intl.DateTimeFormat;
+  private get hasValues() {
+    return Array.isArray(this.values) && this.values.length > 0;
+  }
+
   private dates!: ICalendarDate[][];
 
   @query('[tabindex="0"]')
@@ -93,10 +462,14 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   public resourceStrings: IgcCalendarResourceStrings =
     IgcCalendarResourceStringEN;
 
-  @watch('weekDayFormat')
   @watch('locale')
-  protected formattersChange() {
-    this.initFormatters();
+  protected localeChanged() {
+    this.__formatters.locale = this.locale;
+  }
+
+  @watch('weekDayFormat')
+  protected weekDayFormatChange() {
+    this.__formatters.update({ weekday: { weekday: this.weekDayFormat } });
   }
 
   @watch('weekStart')
@@ -105,10 +478,20 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     this.dates = this.getCalendarMonth();
   }
 
+  private __formatters = createDateTimeFormatters(this.locale, {
+    weekday: { weekday: this.weekDayFormat },
+    label: {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    },
+    ariaWeekday: { weekday: 'long' },
+  });
+
   constructor() {
     super();
     this.setAttribute('role', 'grid');
-    this.initFormatters();
   }
 
   /** Focuses the active date. */
@@ -116,28 +499,19 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
     this.activeDay.focus();
   }
 
-  private initFormatters() {
-    this.formatterWeekday = new Intl.DateTimeFormat(this.locale, {
-      weekday: this.weekDayFormat,
-    });
-    this.labelFormatter = new Intl.DateTimeFormat(this.locale, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  }
-
   private generateWeekHeader(): { label: string; ariaLabel: string }[] {
     const dayNames = [];
+    const labelFormatter = this.__formatters.getFormatter('weekday');
+    const ariaFormatter = this.__formatters.getFormatter('ariaWeekday');
     const rv = this.calendarModel.monthdatescalendar(
       this.activeDate.getFullYear(),
       this.activeDate.getMonth()
     )[0];
+
     for (const day of rv) {
       dayNames.push({
-        label: this.formatterWeekday.format(day.date),
-        ariaLabel: day.date.toLocaleString(this.locale, { weekday: 'long' }),
+        label: labelFormatter.format(day.date),
+        ariaLabel: ariaFormatter.format(day.date),
       });
     }
 
@@ -158,10 +532,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
 
   private getWeekNumber(date: Date): number {
     return this.calendarModel.getWeekNumber(date);
-  }
-
-  private formattedDate(value: Date): string {
-    return `${value.getDate()}`;
   }
 
   private get isSingleSelection(): boolean {
@@ -186,12 +556,12 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   private isFirstInRange(date: ICalendarDate): boolean {
-    if (this.isSingleSelection || !this.values || this.values.length === 0) {
+    if (this.isSingleSelection || !this.hasValues) {
       return false;
     }
 
     const dates = this.values;
-    let firstDate = dates[0];
+    let firstDate = dates![0];
 
     if (this.rangePreviewDate) {
       if (this.rangePreviewDate < firstDate) {
@@ -307,22 +677,6 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
         this.values[this.values.length - 1]
       );
     }
-  }
-
-  private isToday(day: ICalendarDate): boolean {
-    const today = new Date(Date.now());
-    const date = day.date;
-
-    // TODO
-    // if (date.getDate() === today.getDate()) {
-    //     this.nativeElement.setAttribute('aria-current', 'date');
-    // }
-
-    return (
-      date.getFullYear() === today.getFullYear() &&
-      date.getMonth() === today.getMonth() &&
-      date.getDate() === today.getDate()
-    );
   }
 
   private isWeekend(date: ICalendarDate): boolean {
@@ -499,7 +853,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
       selected: !isDisabled && this.isSelected(day),
       inactive: isInactive,
       hidden: isHidden,
-      current: this.isToday(day),
+      current: isToday(day.date),
       weekend: this.isWeekend(day),
       range: this.selection === 'range' && this.isRangeDate(day.date),
       special: this.isSpecial(day),
@@ -552,27 +906,23 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
   }
 
   protected dayLabelFormatter(value: ICalendarDate) {
+    const formatter = this.__formatters.getFormatter('label');
+
     // Range selection in progress
     if (
       this.rangePreviewDate &&
       areEqualDates(this.rangePreviewDate, value.date)
     ) {
-      return (this.labelFormatter as any).formatRange(
-        this.values!.at(0),
-        this.rangePreviewDate
-      );
+      return formatter.formatRange(this.values!.at(0)!, this.rangePreviewDate);
     }
 
     // Range selection finished
     if (this.isFirstInRange(value) || this.isLastInRange(value)) {
-      return (this.labelFormatter as any).formatRange(
-        this.values!.at(0),
-        this.values!.at(-1)
-      );
+      return formatter.formatRange(this.values!.at(0)!, this.values!.at(-1)!);
     }
 
     // Default
-    return this.labelFormatter.format(value.date);
+    return formatter.format(value.date);
   }
 
   private renderDateItem(day: ICalendarDate) {
@@ -595,7 +945,7 @@ export default class IgcDaysViewComponent extends EventEmitterMixin<
         @keydown=${(event: KeyboardEvent) => this.dateKeyDown(event, day)}
         @mouseenter=${() => this.changeRangePreview(day.date)}
         @mouseleave=${() => this.clearRangePreview()}
-        >${this.formattedDate(day.date)}</span
+        >${day.date.getDate()}</span
       >
     </span>`;
   }
